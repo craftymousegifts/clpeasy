@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CLPeasy — Label Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--white:#fff;--off:#F7F8FA;--border:#E8EAED;--text:#111318;--muted:#6B7280;--teal:#0D9488;--teal-light:#CCFBF1;--teal-dark:#0F766E;--amber:#F59E0B;--amber-light:#FEF3C7;--red:#EF4444;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{-webkit-text-size-adjust:100%;}
+body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,0.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:'DM Serif Display',serif;font-size:19px;color:var(--text);text-decoration:none;}
+.nav-badge{width:30px;height:30px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;}
+.nav-back{font-size:13px;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;white-space:nowrap;}
+.nav-back:hover{color:var(--teal);border-color:var(--teal);}
+
+/* DESKTOP LAYOUT */
+.builder-layout{display:grid;grid-template-columns:1fr 360px;min-height:100vh;padding-top:56px;}
+.wizard-panel{padding:28px 32px 80px;min-width:0;overflow-y:auto;}
+.preview-panel{background:#1a1f2e;position:sticky;top:56px;height:calc(100vh - 56px);display:flex;flex-direction:column;overflow:hidden;align-self:start;}
+
+/* MOBILE LAYOUT */
+@media(max-width:860px){
+  .builder-layout{display:block;padding-top:56px;}
+  .wizard-panel{padding:20px 16px 40px;max-width:100%;width:100%;}
+  .preview-panel{display:none;}
+  .mobile-preview-bar{display:flex !important;}
+  .form-row{grid-template-columns:1fr;}
+  body{padding-bottom:20px;}
+}
+
+/* MOBILE PREVIEW BAR - shown at top of each step on mobile */
+.mobile-preview-bar{
+  display:none;
+  background:#1a1f2e;
+  border-radius:16px;
+  padding:16px;
+  margin-bottom:24px;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
+}
+.mobile-preview-bar-label{
+  font-size:11px;color:rgba(255,255,255,0.4);
+  letter-spacing:1px;text-transform:uppercase;
+  align-self:flex-start;
+}
+.mobile-preview-dims{
+  font-size:11px;color:rgba(255,255,255,0.35);
+}
+.mobile-dl-row{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;
+}
+
+/* STEPS */
+.steps-bar{display:flex;align-items:center;margin-bottom:28px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
+.steps-bar::-webkit-scrollbar{display:none;}
+.step-item{display:flex;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;}
+.step-circle{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:all .2s;}
+.step-item.done .step-circle{background:var(--teal-dark);color:white;}
+.step-item.active .step-circle{background:var(--teal);color:white;box-shadow:0 0 0 3px rgba(13,148,136,0.15);}
+.step-item.inactive .step-circle{background:var(--border);color:var(--muted);}
+.step-label{font-size:11px;font-weight:600;white-space:nowrap;}
+.step-item.done .step-label{color:var(--teal-dark);}
+.step-item.active .step-label{color:var(--teal);}
+.step-item.inactive .step-label{color:var(--muted);}
+.step-line{flex:1;height:2px;background:var(--border);margin:0 5px;min-width:8px;transition:background .3s;}
+.step-line.done{background:var(--teal-dark);}
+
+/* STEP PANELS */
+.step-panel{display:none;}
+.step-panel.active{display:block;animation:fadeIn .25s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.step-heading{font-family:'DM Serif Display',serif;font-size:24px;margin-bottom:4px;}
+.step-sub{font-size:13px;color:var(--muted);margin-bottom:24px;}
+
+/* FORMS */
+.form-group{margin-bottom:16px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+label{display:block;font-size:13px;font-weight:600;margin-bottom:5px;}
+label span{font-weight:400;color:var(--muted);}
+input[type=text],input[type=number],select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:16px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;transition:border-color .2s;outline:none;-webkit-appearance:none;appearance:none;}
+input:focus,select:focus,textarea:focus{border-color:var(--teal);}
+textarea{resize:vertical;min-height:80px;font-size:14px;}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+
+/* SHAPE/SIZE CARDS */
+.shape-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px;}
+.shape-card{border:1.5px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;background:white;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:7px;-webkit-tap-highlight-color:transparent;}
+.shape-card:active,.shape-card:hover{border-color:var(--teal);}
+.shape-card.selected{border-color:var(--teal);background:var(--teal-light);}
+.shape-label{font-size:12px;font-weight:600;}
+.size-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+.size-card{border:1.5px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;background:white;transition:all .2s;-webkit-tap-highlight-color:transparent;}
+.size-card:active,.size-card:hover{border-color:var(--teal);}
+.size-card.selected{border-color:var(--teal);background:var(--teal-light);}
+.size-card .sz{font-size:17px;font-weight:700;font-family:'DM Serif Display',serif;color:var(--teal);}
+.size-card .sz-label{font-size:11px;color:var(--muted);margin-top:2px;}
+.custom-dims{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.custom-dims .form-group{margin-bottom:0;}
+
+/* PICTOGRAMS */
+.picto-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:8px;}
+@media(max-width:400px){.picto-grid{grid-template-columns:repeat(3,1fr);}}
+.picto-btn{border:1.5px solid var(--border);border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;background:white;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:3px;-webkit-tap-highlight-color:transparent;}
+.picto-btn:active,.picto-btn:hover{border-color:var(--teal);}
+.picto-btn.selected{border-color:var(--red);background:#FEF2F2;}
+.picto-icon{font-size:22px;}
+.picto-name{font-size:9px;color:var(--muted);line-height:1.2;}
+
+/* SIGNAL */
+.signal-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.signal-btn{border:2px solid var(--border);border-radius:10px;padding:13px;text-align:center;cursor:pointer;background:white;transition:all .2s;font-weight:700;font-size:15px;-webkit-tap-highlight-color:transparent;}
+.signal-btn.sel-warn{border-color:var(--amber);background:var(--amber-light);color:#92400E;}
+.signal-btn.sel-danger{border-color:var(--red);background:#FEF2F2;color:#991B1B;}
+
+/* SMART PASTE */
+.smart-paste-box{background:linear-gradient(135deg,#F0FDF4,#ECFDF5);border:1.5px dashed var(--teal);border-radius:12px;padding:16px;margin-bottom:18px;}
+.smart-paste-box h4{font-size:14px;font-weight:700;color:var(--teal-dark);margin-bottom:3px;}
+.smart-paste-box p{font-size:13px;color:var(--muted);margin-bottom:10px;}
+.btn-extract{background:var(--teal);color:white;border:none;padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;width:100%;}
+.btn-extract:active,.btn-extract:hover{background:var(--teal-dark);}
+
+/* CHIPS */
+.chip-library{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+.h-chip{background:white;border:1.5px solid var(--border);border-radius:8px;padding:5px 9px;font-size:12px;cursor:pointer;transition:all .2s;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
+.h-chip:active,.h-chip:hover{border-color:var(--teal);color:var(--teal);}
+.h-chip.selected{border-color:var(--teal);background:var(--teal-light);color:var(--teal-dark);font-weight:600;}
+.library-toggle{font-size:12px;color:var(--teal);cursor:pointer;font-weight:600;margin-bottom:8px;display:inline-block;user-select:none;padding:4px 0;}
+
+/* SENSITISER CHIPS */
+.sensitiser-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin-bottom:12px;}
+.s-chip{background:white;border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:1px;-webkit-tap-highlight-color:transparent;}
+.s-chip:active,.s-chip:hover{border-color:var(--amber);}
+.s-chip.selected{border-color:var(--amber);background:var(--amber-light);}
+.s-chip .s-name{font-weight:600;color:var(--text);font-size:11px;}
+.s-chip.selected .s-name{color:#92400E;}
+.s-chip .s-cat{font-size:10px;color:var(--muted);}
+.s-chip.selected .s-cat{color:#B45309;}
+.s-chip.cat1a{border-left:3px solid var(--red);}
+.s-chip.cat1b{border-left:3px solid var(--amber);}
+.sensitiser-legend{display:flex;gap:14px;margin-bottom:10px;font-size:12px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:5px;color:var(--muted);}
+.legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+.allergen-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.allergen-tag{background:var(--off);border:1px solid var(--border);border-radius:100px;padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:5px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+
+/* DIVIDER */
+.sdiv{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);margin:22px 0 12px;display:flex;align-items:center;gap:10px;}
+.sdiv::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* NAV BUTTONS */
+.step-nav{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid var(--border);}
+.btn-prev{background:white;color:var(--text);border:1.5px solid var(--border);padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;-webkit-tap-highlight-color:transparent;}
+.btn-prev:active,.btn-prev:hover{border-color:var(--teal);color:var(--teal);}
+.btn-next{background:var(--teal);color:white;border:none;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;box-shadow:0 4px 14px rgba(13,148,136,0.25);-webkit-tap-highlight-color:transparent;}
+.btn-next:active,.btn-next:hover{background:var(--teal-dark);}
+
+/* PREVIEW PANEL DESKTOP */
+.preview-header{padding:16px 20px 12px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;}
+.preview-header h3{font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);letter-spacing:1px;}
+.preview-badge{font-size:11px;background:rgba(13,148,136,0.2);color:#5EEAD4;padding:3px 10px;border-radius:100px;font-weight:600;white-space:nowrap;}
+.preview-canvas-area{flex:1;display:flex;align-items:center;justify-content:center;padding:24px;}
+.preview-footer{padding:12px 18px 16px;border-top:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:8px;}
+.preview-size-info{font-size:12px;color:rgba(255,255,255,0.35);text-align:center;}
+
+/* DOWNLOAD BUTTONS */
+.dl-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.btn-dl{background:var(--teal);color:white;border:none;padding:11px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;width:100%;-webkit-tap-highlight-color:transparent;}
+.btn-dl:active,.btn-dl:hover{background:var(--teal-dark);}
+.btn-dl-svg{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.8);border:1.5px solid rgba(255,255,255,0.15);padding:11px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;width:100%;}
+.btn-dl-svg:active,.btn-dl-svg:hover{background:rgba(255,255,255,0.15);}
+.cricut-note{font-size:11px;color:rgba(255,255,255,0.3);text-align:center;}
+
+/* MOBILE PREVIEW SHEET */
+.mobile-preview-btn{display:none;background:rgba(13,148,136,0.15);color:#5EEAD4;border:1.5px solid rgba(13,148,136,0.3);padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
+.preview-sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;align-items:flex-end;justify-content:center;}
+.preview-sheet.open{display:flex;}
+.preview-sheet-inner{background:#1a1f2e;border-radius:20px 20px 0 0;padding:20px;width:100%;max-height:90vh;overflow-y:auto;}
+.preview-sheet-handle{width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:100px;margin:0 auto 20px;}
+.preview-sheet-label{display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
+.preview-sheet-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;}
+
+/* SUPPLIER LIBRARY */
+.supplier-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:16px;}
+.supplier-card{border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;background:white;transition:all .2s;-webkit-tap-highlight-color:transparent;}
+.supplier-card:hover{border-color:var(--teal);}
+.supplier-card.selected{border-color:var(--teal);background:var(--teal-light);}
+.supplier-name{font-size:13px;font-weight:600;color:var(--text);}
+.supplier-card.selected .supplier-name{color:var(--teal-dark);}
+.supplier-region{font-size:11px;color:var(--muted);margin-top:2px;}
+.sds-link-box{background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:10px;padding:12px 14px;font-size:13px;color:#166534;line-height:1.6;}
+.sds-link-box a{color:var(--teal-dark);font-weight:600;}
+.saved-section{margin-top:32px;padding-top:24px;border-top:1px solid var(--border);}
+.saved-section h3{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+.saved-count{font-size:12px;color:var(--muted);font-weight:400;}
+.saved-item{display:flex;align-items:center;justify-content:space-between;background:white;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:8px;gap:10px;}
+.saved-item-info{flex:1;min-width:0;}
+.saved-item-name{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.saved-item-meta{font-size:11px;color:var(--muted);margin-top:1px;}
+.saved-item-btns{display:flex;gap:6px;flex-shrink:0;}
+.sb{padding:6px 10px;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;-webkit-tap-highlight-color:transparent;}
+.sb-teal{background:var(--teal);color:white;}
+.sb-grey{background:var(--off);color:var(--text);border:1px solid var(--border);}
+.sb-red{background:#FEF2F2;color:var(--red);border:1px solid #FECACA;}
+.info-note{background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:10px;padding:12px 14px;font-size:12px;color:#92400E;margin-bottom:14px;line-height:1.5;}
+.compliance-box{background:var(--teal-light);border:1.5px solid var(--teal);border-radius:14px;padding:16px;margin-bottom:20px;}
+.compliance-box p{font-size:13px;color:var(--teal-dark);font-weight:500;line-height:1.6;}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;color:var(--muted);}
+.summary-grid strong{color:var(--text);display:block;font-size:12px;}
+.watermark-note{background:#F3F4F6;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--muted);margin-bottom:16px;text-align:center;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo"><div class="nav-badge">CLP</div>CLPeasy</a>
+  <a href="index.html" class="nav-back">← Home</a>
+</nav>
+
+<div class="builder-layout">
+<!-- WIZARD -->
+<div class="wizard-panel">
+  <!-- MOBILE PREVIEW BAR -->
+  <div class="mobile-preview-bar" id="mobile-preview-bar">
+    <div class="mobile-preview-bar-label">Live Preview</div>
+    <div id="mobile-preview-svg"></div>
+    <div class="mobile-preview-dims" id="mobile-preview-dims">35 × 35mm</div>
+    <div class="mobile-dl-row">
+      <button class="btn-dl" onclick="downloadPNG()">⬇ PNG</button>
+      <button class="btn-dl-svg" onclick="downloadSVG()">⬡ SVG</button>
+    </div>
+  </div>
+
+  <div class="steps-bar" id="steps-bar">
+    <div class="step-item active" data-step="1" onclick="goToStep(1)"><div class="step-circle">1</div><div class="step-label">Label</div></div>
+    <div class="step-line" id="line-1"></div>
+    <div class="step-item inactive" data-step="2" onclick="goToStep(2)"><div class="step-circle">2</div><div class="step-label">Product</div></div>
+    <div class="step-line" id="line-2"></div>
+    <div class="step-item inactive" data-step="3" onclick="goToStep(3)"><div class="step-circle">3</div><div class="step-label">Hazards</div></div>
+    <div class="step-line" id="line-3"></div>
+    <div class="step-item inactive" data-step="4" onclick="goToStep(4)"><div class="step-circle">4</div><div class="step-label">Business</div></div>
+    <div class="step-line" id="line-4"></div>
+    <div class="step-item inactive" data-step="5" onclick="goToStep(5)"><div class="step-circle">5</div><div class="step-label">Download</div></div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="step-panel active" id="step-1">
+    <h2 class="step-heading">Label size &amp; shape</h2>
+    <div style="background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:10px;padding:12px 14px;font-size:12px;color:#92400E;margin-bottom:20px;line-height:1.6;">
+      ⚠️ <strong>Important:</strong> CLPeasy generates labels based on the data you enter. You must always verify all hazard information against your fragrance supplier's SDS sheet at your actual fragrance load before printing and selling. You are solely responsible for ensuring your labels are accurate and legally compliant.
+    </div>
+    <p class="step-sub">Choose a preset or enter your own dimensions.</p>
+    <div class="sdiv" style="margin-top:0">Shape</div>
+    <div class="shape-grid">
+      <div class="shape-card selected" data-shape="circle" onclick="selectShape('circle')">
+        <svg width="34" height="34" viewBox="0 0 34 34"><circle cx="17" cy="17" r="14" fill="none" stroke="#0D9488" stroke-width="2.5"/></svg>
+        <div class="shape-label">Circle</div>
+      </div>
+      <div class="shape-card" data-shape="rectangle" onclick="selectShape('rectangle')">
+        <svg width="42" height="28" viewBox="0 0 42 28"><rect x="2" y="2" width="38" height="24" rx="4" fill="none" stroke="#6B7280" stroke-width="2.5"/></svg>
+        <div class="shape-label">Rectangle</div>
+      </div>
+      <div class="shape-card" data-shape="square" onclick="selectShape('square')">
+        <svg width="32" height="32" viewBox="0 0 32 32"><rect x="2" y="2" width="28" height="28" rx="4" fill="none" stroke="#6B7280" stroke-width="2.5"/></svg>
+        <div class="shape-label">Square</div>
+      </div>
+    </div>
+    <div class="sdiv">Preset sizes</div>
+    <div class="size-grid">
+      <div class="size-card selected" data-size="35" onclick="selectSize(35)"><div class="sz">35mm</div><div class="sz-label">Wax Melt</div></div>
+      <div class="size-card" data-size="40" onclick="selectSize(40)"><div class="sz">40mm</div><div class="sz-label">Small Candle</div></div>
+      <div class="size-card" data-size="50" onclick="selectSize(50)"><div class="sz">50mm</div><div class="sz-label">Standard Candle</div></div>
+      <div class="size-card" data-size="63" onclick="selectSize(63)"><div class="sz">63mm</div><div class="sz-label">Large Jar</div></div>
+      <div class="size-card" data-size="custom" onclick="selectSize('custom')"><div class="sz" style="font-size:14px">Custom</div><div class="sz-label">Your own size</div></div>
+    </div>
+    <div class="sdiv">Dimensions (mm)</div>
+    <div class="custom-dims">
+      <div class="form-group"><label>Width (mm)</label><input type="number" id="custom-w" placeholder="e.g. 50" inputmode="numeric" min="10" max="200" oninput="onDimInput()"></div>
+      <div class="form-group"><label>Height (mm) <span id="height-note">— matches width</span></label><input type="number" id="custom-h" placeholder="e.g. 40" inputmode="numeric" min="10" max="200" oninput="onDimInput()"></div>
+    </div>
+    <div class="step-nav"><div></div><button class="btn-next" onclick="nextStep()">Next: Product details →</button></div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step-panel" id="step-2">
+    <h2 class="step-heading">Product details</h2>
+    <p class="step-sub">This information appears directly on your label.</p>
+    <div class="form-group"><label>Fragrance / Scent name</label><input type="text" id="scent-name" placeholder="e.g. Black Plum &amp; Rhubarb" autocomplete="off" oninput="updateLabel()"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Product type</label><select id="product-type" onchange="updateLabel();saveProdDetails()"><option>Scented Candle</option><option>Wax Melt</option><option>Reed Diffuser</option><option>Room Spray</option><option>Wax Tart</option></select></div>
+      <div class="form-group"><label>Net weight <span>(optional)</span></label><input type="text" id="net-weight" placeholder="e.g. 200g" oninput="updateLabel();saveProdDetails()"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Fragrance load % <span>(optional)</span></label><input type="text" id="frag-load" placeholder="e.g. 10%" oninput="updateLabel();saveProdDetails()"></div>
+      <div class="form-group"><label>Burn time <span>(optional)</span></label><input type="text" id="burn-time" placeholder="e.g. 45hrs" oninput="updateLabel();saveProdDetails()"></div>
+    </div>
+    <div class="step-nav"><button class="btn-prev" onclick="prevStep()">← Back</button><button class="btn-next" onclick="nextStep()">Next: Hazard data →</button></div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step-panel" id="step-3">
+    <h2 class="step-heading">Hazard data</h2>
+    <p class="step-sub">Select your fragrance supplier to get your SDS, then use Smart Paste to extract the data.</p>
+
+    <!-- SUPPLIER SELECTOR -->
+    <div class="sdiv" style="margin-top:0">Your fragrance supplier</div>
+    <div class="supplier-grid" id="supplier-grid">
+      <div class="supplier-card" data-supplier="sfc" onclick="selectSupplier(this,'sfc')">
+        <div class="supplier-name">Supplies for Candles</div>
+        <div class="supplier-region">🇬🇧 UK</div>
+      </div>
+      <div class="supplier-card" data-supplier="cs" onclick="selectSupplier(this,'cs')">
+        <div class="supplier-name">Candle Shack</div>
+        <div class="supplier-region">🇬🇧 UK</div>
+      </div>
+      <div class="supplier-card" data-supplier="gf" onclick="selectSupplier(this,'gf')">
+        <div class="supplier-name">Gracefruit</div>
+        <div class="supplier-region">🇬🇧 UK</div>
+      </div>
+      <div class="supplier-card" data-supplier="ni" onclick="selectSupplier(this,'ni')">
+        <div class="supplier-name">NI Candle Supplies</div>
+        <div class="supplier-region">🇬🇧 UK</div>
+      </div>
+      <div class="supplier-card" data-supplier="csc" onclick="selectSupplier(this,'csc')">
+        <div class="supplier-name">CandleScience</div>
+        <div class="supplier-region">🇺🇸 US</div>
+      </div>
+      <div class="supplier-card" data-supplier="ng" onclick="selectSupplier(this,'ng')">
+        <div class="supplier-name">Natures Garden</div>
+        <div class="supplier-region">🇺🇸 US</div>
+      </div>
+      <div class="supplier-card" data-supplier="bb" onclick="selectSupplier(this,'bb')">
+        <div class="supplier-name">Brambleberry</div>
+        <div class="supplier-region">🇺🇸 US</div>
+      </div>
+      <div class="supplier-card" data-supplier="other" onclick="selectSupplier(this,'other')">
+        <div class="supplier-name">Other supplier</div>
+        <div class="supplier-region">Manual entry</div>
+      </div>
+    </div>
+    <div id="supplier-sds-link" style="display:none;margin-bottom:16px;"></div>
+    <div class="smart-paste-box">
+      <h4>✨ Smart Paste — paste SDS Section 2.2</h4>
+      <p>Copy Section 2.2 from your fragrance supplier's SDS PDF and paste it here. CLPeasy extracts all hazard data automatically.</p>
+      <textarea id="smart-paste-input" placeholder="Paste SDS Section 2.2 text here..."></textarea>
+      <br><br><button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
+    </div>
+    <div class="sdiv">Signal word</div>
+    <div class="signal-row">
+      <div class="signal-btn" id="signal-warning" onclick="selectSignal('Warning')">⚠️ Warning</div>
+      <div class="signal-btn" id="signal-danger" onclick="selectSignal('Danger')">🔴 Danger</div>
+    </div>
+    <div class="sdiv">Hazard pictograms</div>
+    <div class="picto-grid">
+      <div class="picto-btn" data-picto="flame" onclick="togglePicto(this,'flame')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="82" font-size="44" text-anchor="middle">🔥</text></svg></div><div class="picto-name">Flammable</div></div>
+      <div class="picto-btn" data-picto="exclamation" onclick="togglePicto(this,'exclamation')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="82" font-size="52" text-anchor="middle" font-weight="900" fill="#000">!</text></svg></div><div class="picto-name">Irritant</div></div>
+      <div class="picto-btn" data-picto="health" onclick="togglePicto(this,'health')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="40" text-anchor="middle">⚕</text></svg></div><div class="picto-name">Health Hazard</div></div>
+      <div class="picto-btn" data-picto="aquatic" onclick="togglePicto(this,'aquatic')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="36" text-anchor="middle">🐟</text></svg></div><div class="picto-name">Aquatic Toxic</div></div>
+      <div class="picto-btn" data-picto="corrosive" onclick="togglePicto(this,'corrosive')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="36" text-anchor="middle">⚗</text></svg></div><div class="picto-name">Corrosive</div></div>
+      <div class="picto-btn" data-picto="skull" onclick="togglePicto(this,'skull')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="38" text-anchor="middle">☠</text></svg></div><div class="picto-name">Toxic</div></div>
+      <div class="picto-btn" data-picto="oxidiser" onclick="togglePicto(this,'oxidiser')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="38" text-anchor="middle">○</text></svg></div><div class="picto-name">Oxidiser</div></div>
+      <div class="picto-btn" data-picto="gas" onclick="togglePicto(this,'gas')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="36" text-anchor="middle">⊕</text></svg></div><div class="picto-name">Gas Pressure</div></div>
+      <div class="picto-btn" data-picto="explosion" onclick="togglePicto(this,'explosion')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="36" text-anchor="middle">✸</text></svg></div><div class="picto-name">Explosive</div></div>
+    </div>
+    <div class="sdiv">H Statements</div>
+    <span class="library-toggle" onclick="toggleLib('h-library',this)">▼ Show H statement library</span>
+    <div id="h-library" style="display:none;margin-bottom:8px;"><div class="chip-library" id="h-chips"></div></div>
+    <div class="form-group"><input type="text" id="h-statements" placeholder="e.g. H317, H411, EUH208" oninput="updateLabel()"></div>
+    <div class="sdiv">P Statements</div>
+    <span class="library-toggle" onclick="toggleLib('p-library',this)">▼ Show P statement library</span>
+    <div id="p-library" style="display:none;margin-bottom:8px;"><div class="chip-library" id="p-chips"></div></div>
+    <div class="form-group"><input type="text" id="p-statements" placeholder="e.g. P261, P273, P501" oninput="updateLabel()"></div>
+    <div class="sdiv">EUH208 Sensitisers <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--muted)">— CLP/REACH skin sensitisers only</span></div>
+    <div class="info-note">⚠️ Only include sensitisers that appear on your fragrance supplier's SDS. Always verify before printing.</div>
+    <div class="sensitiser-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Skin Sens. 1A (strong — EUH208 at ≥0.01%)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Skin Sens. 1B (moderate — EUH208 at ≥0.1%)</div>
+    </div>
+    <span class="library-toggle" onclick="toggleLib('s-library',this)">▼ Show sensitiser library</span>
+    <div id="s-library" style="display:none;margin-bottom:10px;"><div class="sensitiser-grid" id="sensitiser-chips"></div></div>
+    <div class="allergen-tags" id="allergen-tags"></div>
+    <div style="display:flex;gap:8px;">
+      <input type="text" id="allergen-input" placeholder="Type sensitiser name and press Enter..." onkeydown="if(event.key==='Enter'){addManualAllergen();}">
+      <button onclick="addManualAllergen()" style="background:var(--off);border:1.5px solid var(--border);padding:11px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;flex-shrink:0;">+ Add</button>
+    </div>
+    <div class="step-nav"><button class="btn-prev" onclick="prevStep()">← Back</button><button class="btn-next" onclick="nextStep()">Next: Business details →</button></div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step-panel" id="step-4">
+    <h2 class="step-heading">Your business details</h2>
+    <p class="step-sub">Required on CLP labels — your name and address as the responsible person.</p>
+    <div class="form-group"><label>Business / Brand name</label><input type="text" id="biz-name" placeholder="As you want it to appear on the label" oninput="updateLabel();saveBizDetails()"></div>
+    <div class="form-group"><label>Address <span>(town, county or full address)</span></label><input type="text" id="biz-address" placeholder="e.g. Scottish Borders, Scotland" oninput="updateLabel();saveBizDetails()"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Website <span>(optional)</span></label><input type="text" id="biz-website" placeholder="e.g. clpeasy.com" oninput="updateLabel();saveBizDetails()"></div>
+      <div class="form-group"><label>Batch / Lot number <span>(optional)</span></label><input type="text" id="batch-num" placeholder="e.g. LOT-001" oninput="updateLabel()"></div>
+    </div>
+    <div class="step-nav"><button class="btn-prev" onclick="prevStep()">← Back</button><button class="btn-next" onclick="nextStep()">Preview &amp; download →</button></div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="step-panel" id="step-5">
+    <h2 class="step-heading">Your label is ready!</h2>
+    <p class="step-sub">Review your label, then download in your preferred format.</p>
+    <div class="compliance-box"><p>⚠️ <strong>Compliance reminder:</strong> Always verify all hazard data against your fragrance supplier's SDS at your actual fragrance load before printing. You are responsible for final verification.</p></div>
+    <div class="watermark-note">🆓 Free plan — labels include a CLPeasy watermark. Upgrade to Pro to remove it.</div>
+    <div style="background:white;border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;">
+      <div class="sdiv" style="margin-top:0">Label summary</div>
+      <div class="summary-grid" id="label-summary"></div>
+    </div>
+    <!-- MOBILE PREVIEW IN STEP 5 -->
+    <div style="background:#1a1f2e;border-radius:16px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:20px;" id="mobile-preview-container">
+      <div id="mobile-label-preview"></div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.35)" id="mobile-size-info">Print size: 35 × 35mm</div>
+    </div>
+    <div style="background:#F8FAFC;border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;">
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:var(--text);font-weight:500;line-height:1.5;">
+        <input type="checkbox" id="verify-checkbox" onchange="toggleDownload()" style="width:18px;height:18px;margin-top:1px;flex-shrink:0;accent-color:var(--teal);">
+        I confirm I have verified all hazard data on this label against my fragrance supplier's SDS sheet at my actual fragrance load. I understand I am solely responsible for ensuring this label is accurate and legally compliant before printing and selling.
+      </label>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;" id="download-buttons">
+      <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ Download PNG — save to device</button>
+      <button id="btn-svg" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;">⬡ Download SVG — for Cricut Design Space</button>
+      <button id="btn-save" onclick="saveLabel()" style="background:var(--off);color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;">💾 Save to my label library</button>
+    </div>
+    <div style="margin-top:10px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 14px;font-size:12px;color:#166534;">
+      💡 <strong>Cricut tip:</strong> Import the SVG into Cricut Design Space → resize to your label mm dimensions → use Print Then Cut for best results.
+    </div>
+    <div style="margin-top:20px;display:flex;justify-content:center;">
+      <button onclick="prevStep()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;padding:8px;">← Edit label</button>
+      <button onclick="startOver()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;padding:8px;">↺ New label</button>
+    </div>
+  </div>
+
+  <!-- SAVED LABELS LIBRARY -->
+  <div class="saved-section" id="saved-section" style="display:none;">
+    <h3>Your saved labels <span class="saved-count" id="saved-count"></span></h3>
+    <div id="saved-list"></div>
+  </div>
+
+</div>
+
+<!-- DESKTOP PREVIEW PANEL -->
+<div class="preview-panel">
+  <div class="preview-header"><h3>LIVE PREVIEW</h3><div class="preview-badge" id="preview-badge">35mm · Circle</div></div>
+  <div class="preview-canvas-area"><div id="label-svg-container"></div></div>
+  <div class="preview-footer">
+    <div class="preview-size-info" id="preview-size-info">Print size: 35 × 35mm</div>
+    <div class="dl-row">
+      <button class="btn-dl" onclick="downloadPNG()">⬇ PNG</button>
+      <button class="btn-dl-svg" onclick="downloadSVG()">⬡ SVG</button>
+    </div>
+    <div class="cricut-note">SVG optimised for Cricut Design Space</div>
+  </div>
+</div>
+</div>
+
+<!-- MOBILE PREVIEW SHEET -->
+<div class="preview-sheet" id="preview-sheet" onclick="closeSheet(event)">
+  <div class="preview-sheet-inner">
+    <div class="preview-sheet-handle"></div>
+    <div class="preview-sheet-label" id="sheet-label-container"></div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.4);text-align:center;margin-bottom:4px;" id="sheet-size-info"></div>
+    <div class="preview-sheet-actions">
+      <button class="btn-dl" onclick="downloadPNG();closeSheet()">⬇ PNG</button>
+      <button class="btn-dl-svg" onclick="downloadSVG();closeSheet()">⬡ SVG</button>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.3);text-align:center;">SVG for Cricut Design Space · PNG for printing</div>
+    <div style="margin-top:12px;text-align:center;"><button onclick="closeSheet()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:8px;">Close</button></div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────
+const SENSITISERS=[
+  {name:'Cinnamal',cat:'1A',cas:'104-55-2'},
+  {name:'Cinnamyl Alcohol',cat:'1A',cas:'104-54-1'},
+  {name:'Isoeugenol',cat:'1A',cas:'97-54-1'},
+  {name:'Methyl 2-Octynoate',cat:'1A',cas:'111-12-6'},
+  {name:'Oak Moss Extract',cat:'1A',cas:'90028-68-5'},
+  {name:'Treemoss Extract',cat:'1A',cas:'90028-67-4'},
+  {name:'HICC / Lyral',cat:'1A',cas:'31906-04-4'},
+  {name:'Alpha-Methyl Cinnamal',cat:'1A',cas:'101-39-3'},
+  {name:'Eugenol',cat:'1A',cas:'97-53-0'},
+  {name:'Geraniol',cat:'1A',cas:'106-24-1'},
+  {name:'Linalool (oxidised)',cat:'1B',cas:'78-70-6'},
+  {name:'Limonene (oxidised)',cat:'1B',cas:'5989-27-5'},
+  {name:'Citral',cat:'1B',cas:'5392-40-5'},
+  {name:'Citronellol',cat:'1B',cas:'106-22-9'},
+  {name:'Geranyl Acetate',cat:'1B',cas:'105-87-3'},
+  {name:'Farnesol',cat:'1B',cas:'4602-84-0'},
+  {name:'Hexyl Cinnamal',cat:'1B',cas:'101-86-0'},
+  {name:'Benzyl Benzoate',cat:'1B',cas:'120-51-4'},
+  {name:'Benzyl Salicylate',cat:'1B',cas:'118-58-1'},
+  {name:'Benzyl Cinnamate',cat:'1B',cas:'103-41-3'},
+  {name:'Benzyl Alcohol',cat:'1B',cas:'100-51-6'},
+  {name:'Hydroxycitronellal',cat:'1B',cas:'107-75-5'},
+  {name:'Coumarin',cat:'1B',cas:'91-64-5'},
+  {name:'Alpha-Isomethyl Ionone',cat:'1B',cas:'127-51-5'},
+  {name:'Amyl Cinnamal',cat:'1B',cas:'122-40-7'},
+  {name:'Amylcinnamyl Alcohol',cat:'1B',cas:'101-85-9'},
+  {name:'Anise Alcohol',cat:'1B',cas:'105-13-5'},
+  {name:'Butylphenyl Methylpropional',cat:'1B',cas:'80-54-6'},
+];
+const H_LIB=[{code:'H315',desc:'Causes skin irritation'},{code:'H317',desc:'May cause allergic skin reaction'},{code:'H319',desc:'Causes serious eye irritation'},{code:'H361',desc:'Suspected of damaging fertility'},{code:'H400',desc:'Very toxic to aquatic life'},{code:'H410',desc:'Very toxic to aquatic life, long lasting'},{code:'H411',desc:'Toxic to aquatic life, long lasting'},{code:'H412',desc:'Harmful to aquatic life, long lasting'},{code:'H413',desc:'May cause long lasting harmful effects to aquatic life'},{code:'EUH208',desc:'Contains sensitiser — may produce allergic reaction'}];
+const P_LIB=[{code:'P261',desc:'Avoid breathing vapours/dust'},{code:'P264',desc:'Wash hands thoroughly after handling'},{code:'P272',desc:'Contaminated clothing not to leave workplace'},{code:'P273',desc:'Avoid release to environment'},{code:'P280',desc:'Wear protective gloves/eye protection'},{code:'P302+P352',desc:'IF ON SKIN: wash with soap and water'},{code:'P333+P313',desc:'If skin irritation/rash: get medical advice'},{code:'P362',desc:'Take off contaminated clothing'},{code:'P391',desc:'Collect spillage'},{code:'P501',desc:'Dispose of contents/container per regulations'}];
+// GHS pictogram SVG symbols — black and white, diamond shaped, industry standard
+const GHS_SVG={
+  flame:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="10" font-size="13" text-anchor="middle" font-family="sans-serif">\uD83D\uDD25</text></g>',
+  exclamation:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="11" font-size="16" font-weight="900" text-anchor="middle" font-family="sans-serif" fill="#000">!</text></g>',
+  health:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="10" font-size="12" text-anchor="middle" font-family="sans-serif">\u2695</text></g>',
+  aquatic:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="10" font-size="11" text-anchor="middle" font-family="sans-serif">\uD83D\uDC1F</text></g>',
+  corrosive:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="10" font-size="11" text-anchor="middle" font-family="sans-serif">\u2697</text></g>',
+  skull:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="10" font-size="12" text-anchor="middle" font-family="sans-serif">\u2620</text></g>',
+  oxidiser:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="9" font-size="11" text-anchor="middle" font-family="sans-serif">O</text></g>',
+  gas:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="9" font-size="10" text-anchor="middle" font-family="sans-serif">G</text></g>',
+  explosion:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="9" font-size="11" text-anchor="middle" font-family="sans-serif">\u2731</text></g>',
+};
+function ghsPicto(key,x,y,size){
+  const sc=(size/28).toFixed(3);
+  return (GHS_SVG[key]||GHS_SVG.exclamation).replace(/__X__/g,x.toFixed(1)).replace(/__Y__/g,y.toFixed(1)).replace(/__S__/g,sc);
+}
+
+// ── STATE ─────────────────────────────────────────────────────
+const S={step:1,shape:'circle',size:35,customW:50,customH:50,scentName:'',productType:'Scented Candle',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],bizName:'',bizAddress:'',bizWebsite:'',batchNum:'',isPro:false,supplier:''};
+
+// ── SUPPLIER LIBRARY ──────────────────────────────────────────
+const SUPPLIERS={
+  sfc:{name:'Supplies for Candles',sdsUrl:'https://www.suppliersforcandles.co.uk',instructions:'Visit the Supplies for Candles website → find your fragrance oil product page → scroll down to find the SDS/Safety Data Sheet PDF link → download it → copy Section 2.2 → paste below.'},
+  cs:{name:'Candle Shack',sdsUrl:'https://www.candleshack.co.uk',instructions:'Visit the Candle Shack website → find your fragrance product page → look for the Safety Data Sheet download link → copy Section 2.2 → paste below.'},
+  gf:{name:'Gracefruit',sdsUrl:'https://www.gracefruit.com',instructions:'Visit Gracefruit → find your fragrance oil → look for the SDS or Safety Data Sheet PDF on the product page → copy Section 2.2 → paste below.'},
+  ni:{name:'NI Candle Supplies',sdsUrl:'https://www.nicandlesupplies.co.uk',instructions:'Visit NI Candle Supplies → find your fragrance → download the SDS from the product page → copy Section 2.2 → paste below.'},
+  csc:{name:'CandleScience',sdsUrl:'https://www.candlescience.com',instructions:'Visit CandleScience → find your fragrance product page → look under Documents for the SDS PDF → copy Section 2 → paste below. If not listed, email support@candlescience.com to request it.'},
+  ng:{name:'Natures Garden',sdsUrl:'https://www.naturesgardencandles.com',instructions:'Visit Natures Garden → find your fragrance → download the SDS from the product page → copy Section 2 → paste below.'},
+  bb:{name:'Brambleberry',sdsUrl:'https://www.brambleberry.com',instructions:'Visit Brambleberry → find your fragrance product page → look for the SDS document download → copy Section 2 → paste below.'},
+  other:{name:'Other supplier',sdsUrl:null,instructions:'Download the SDS PDF from your supplier\'s website — it is usually found on the individual fragrance product page. Copy Section 2.2 (Label elements / Hazard identification) and paste it below. CLPeasy will extract all hazard data automatically.'},
+};
+
+function selectSupplier(el,key){
+  document.querySelectorAll('.supplier-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  S.supplier=key;
+  const s=SUPPLIERS[key];
+  const box=document.getElementById('supplier-sds-link');
+  if(s.sdsUrl){
+    box.innerHTML=`<div class="sds-link-box">📄 <strong>${s.name} SDS:</strong> ${s.instructions}<br><br><a href="${s.sdsUrl}" target="_blank" rel="noopener">Open ${s.name} SDS page →</a></div>`;
+  } else {
+    box.innerHTML=`<div class="sds-link-box">📄 ${s.instructions}</div>`;
+  }
+  box.style.display='';
+}
+
+// ── SAVED LABELS LIBRARY ──────────────────────────────────────
+function getSaved(){try{return JSON.parse(localStorage.getItem('clpeasy_labels')||'[]');}catch(e){return[];}}
+function persistSaved(arr){localStorage.setItem('clpeasy_labels',JSON.stringify(arr));}
+
+function saveLabel(){
+  readForm();
+  if(!S.scentName){alert('Please enter a scent name before saving.');return;}
+  const entry={scentName:S.scentName,productType:S.productType,shape:S.shape,size:S.size,signal:S.signal,hStatements:S.hStatements,sensitisers:[...S.sensitisers],bizName:S.bizName,bizAddress:S.bizAddress,bizWebsite:S.bizWebsite,netWeight:S.netWeight,burnTime:S.burnTime,batchNum:S.batchNum,savedAt:new Date().toLocaleDateString('en-GB')};
+  const arr=getSaved();
+  const idx=arr.findIndex(e=>e.scentName===entry.scentName&&e.productType===entry.productType);
+  if(idx>=0)arr[idx]=entry;else arr.push(entry);
+  persistSaved(arr);
+  renderSaved();
+  const btn=document.getElementById('btn-save');
+  if(btn){btn.textContent='✅ Saved!';btn.style.background='#ECFDF5';btn.style.borderColor='var(--teal)';}
+  setTimeout(()=>{if(btn){btn.textContent='💾 Save to my label library';btn.style.background='';btn.style.borderColor='';}},2000);
+}
+
+function loadLabel(i){
+  const arr=getSaved();const e=arr[i];if(!e)return;
+  S.scentName=e.scentName;S.productType=e.productType;S.shape=e.shape;S.size=e.size;S.signal=e.signal||'';S.hStatements=e.hStatements||'';S.sensitisers=e.sensitisers||[];S.bizName=e.bizName||'';S.bizAddress=e.bizAddress||'';S.bizWebsite=e.bizWebsite||'';S.netWeight=e.netWeight||'';S.burnTime=e.burnTime||'';S.batchNum=e.batchNum||'';
+  // Restore form fields
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};
+  set('scent-name',e.scentName);set('product-type',e.productType);set('h-statements',e.hStatements||'');set('biz-name',e.bizName||'');set('biz-address',e.bizAddress||'');set('biz-website',e.bizWebsite||'');set('net-weight',e.netWeight||'');set('burn-time',e.burnTime||'');set('batch-num',e.batchNum||'');
+  // Restore shape/size
+  selectShape(e.shape||'circle');selectSize(e.size||35);
+  if(e.signal)selectSignal(e.signal);
+  renderTags();updateLabel();
+  goToStep(1);
+}
+
+function deleteLabel(i){
+  if(!confirm('Delete this saved label?'))return;
+  const arr=getSaved();arr.splice(i,1);persistSaved(arr);renderSaved();
+}
+
+function renderSaved(){
+  const arr=getSaved();
+  const sec=document.getElementById('saved-section');
+  const list=document.getElementById('saved-list');
+  const count=document.getElementById('saved-count');
+  if(!arr.length){sec.style.display='none';return;}
+  sec.style.display='';
+  count.textContent='('+arr.length+')';
+  list.innerHTML=arr.map((e,i)=>`
+    <div class="saved-item">
+      <div class="saved-item-info">
+        <div class="saved-item-name">${e.scentName}</div>
+        <div class="saved-item-meta">${e.productType} · ${e.size}mm ${e.shape} · ${e.savedAt||''}</div>
+      </div>
+      <div class="saved-item-btns">
+        <button class="sb sb-teal" onclick="loadLabel(${i})">Load</button>
+        <button class="sb sb-red" onclick="deleteLabel(${i})">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+function init(){
+  buildHChips();buildPChips();buildSensitiserChips();
+  // Restore saved business details
+  const biz=JSON.parse(localStorage.getItem('clpeasy_biz')||'{}');
+  if(biz.bizName){document.getElementById('biz-name').value=biz.bizName;S.bizName=biz.bizName;}
+  if(biz.bizAddress){document.getElementById('biz-address').value=biz.bizAddress;S.bizAddress=biz.bizAddress;}
+  if(biz.bizWebsite){document.getElementById('biz-website').value=biz.bizWebsite;S.bizWebsite=biz.bizWebsite;}
+  // Restore saved product details
+  const prod=JSON.parse(localStorage.getItem('clpeasy_prod')||'{}');
+  if(prod.productType){const el=document.getElementById('product-type');if(el)el.value=prod.productType;}
+  if(prod.netWeight){const el=document.getElementById('net-weight');if(el)el.value=prod.netWeight;}
+  if(prod.fragLoad){const el=document.getElementById('frag-load');if(el)el.value=prod.fragLoad;}
+  if(prod.burnTime){const el=document.getElementById('burn-time');if(el)el.value=prod.burnTime;}
+  syncDimFields();updateLabel();
+  document.getElementById('custom-w').value=35;
+  document.getElementById('custom-h').value=35;
+  renderSaved();
+}
+function saveBizDetails(){
+  const biz={bizName:document.getElementById('biz-name')?.value||'',bizAddress:document.getElementById('biz-address')?.value||'',bizWebsite:document.getElementById('biz-website')?.value||''};
+  localStorage.setItem('clpeasy_biz',JSON.stringify(biz));
+}
+function saveProdDetails(){
+  const prod={productType:document.getElementById('product-type')?.value||'',netWeight:document.getElementById('net-weight')?.value||'',fragLoad:document.getElementById('frag-load')?.value||'',burnTime:document.getElementById('burn-time')?.value||''};
+  localStorage.setItem('clpeasy_prod',JSON.stringify(prod));
+}
+
+// ── CHIP BUILDERS ─────────────────────────────────────────────
+function buildHChips(){document.getElementById('h-chips').innerHTML=H_LIB.map(h=>`<div class="h-chip" data-code="${h.code}" onclick="toggleHChip(this,'${h.code}')" title="${h.desc}">${h.code}</div>`).join('');}
+function buildPChips(){document.getElementById('p-chips').innerHTML=P_LIB.map(p=>`<div class="h-chip" data-code="${p.code}" onclick="togglePChip(this,'${p.code}')" title="${p.desc}">${p.code}</div>`).join('');}
+function buildSensitiserChips(){
+  document.getElementById('sensitiser-chips').innerHTML=SENSITISERS.map(s=>
+    `<div class="s-chip cat${s.cat.toLowerCase().replace(/\./g,'').replace(' ','')} " data-name="${s.name}" onclick="toggleSensitiser(this,'${s.name.replace(/'/g,"\\'")}')"><span class="s-name">${s.name}</span><span class="s-cat">Skin Sens. ${s.cat}</span></div>`
+  ).join('');
+}
+function toggleDownload(){
+  const checked=document.getElementById('verify-checkbox')?.checked;
+  const btns=['btn-png','btn-svg','btn-save'];
+  btns.forEach(id=>{
+    const btn=document.getElementById(id);
+    if(!btn)return;
+    btn.style.opacity=checked?'1':'0.4';
+    btn.style.pointerEvents=checked?'auto':'none';
+  });
+}
+function toggleLib(id,tog){
+  const el=document.getElementById(id);
+  const vis=el.style.display!=='none';
+  el.style.display=vis?'none':'block';
+  tog.textContent=(vis?'▼ Show':'▲ Hide')+tog.textContent.slice(tog.textContent.indexOf(' ',2));
+}
+function toggleHChip(el,code){el.classList.toggle('selected');const i=S.hSelected.indexOf(code);if(i>-1)S.hSelected.splice(i,1);else S.hSelected.push(code);document.getElementById('h-statements').value=S.hSelected.join(', ');updateLabel();}
+function togglePChip(el,code){el.classList.toggle('selected');const i=S.pSelected.indexOf(code);if(i>-1)S.pSelected.splice(i,1);else S.pSelected.push(code);document.getElementById('p-statements').value=S.pSelected.join(', ');updateLabel();}
+function toggleSensitiser(el,name){el.classList.toggle('selected');if(el.classList.contains('selected')){if(!S.sensitisers.includes(name))S.sensitisers.push(name);}else S.sensitisers=S.sensitisers.filter(x=>x!==name);renderTags();updateLabel();}
+function addManualAllergen(){const inp=document.getElementById('allergen-input');const val=inp.value.trim();if(!val)return;val.split(',').forEach(v=>{const t=v.trim();if(t&&!S.sensitisers.includes(t))S.sensitisers.push(t);});inp.value='';renderTags();updateLabel();}
+function removeSensitiser(name){S.sensitisers=S.sensitisers.filter(x=>x!==name);const c=document.querySelector(`#sensitiser-chips .s-chip[data-name="${name}"]`);if(c)c.classList.remove('selected');renderTags();updateLabel();}
+function renderTags(){document.getElementById('allergen-tags').innerHTML=S.sensitisers.map(a=>`<div class="allergen-tag" onclick="removeSensitiser('${a.replace(/'/g,"\\'")}')"><span>${a}</span><span style="color:var(--muted)">×</span></div>`).join('');}
+
+// ── SMART PASTE ───────────────────────────────────────────────
+function extractSDS(){
+  const text=document.getElementById('smart-paste-input').value;
+  if(!text.trim()){alert('Please paste SDS Section 2.2 text first.');return;}
+  const hM=[...new Set(text.match(/(?:EUH\d+|H\d{3}[A-Z]?)/g)||[])];
+  if(hM.length){S.hSelected=[...new Set([...S.hSelected,...hM])];document.getElementById('h-statements').value=S.hSelected.join(', ');hM.forEach(c=>{const ch=document.querySelector(`#h-chips .h-chip[data-code="${c}"]`);if(ch)ch.classList.add('selected');});}
+  const pM=[...new Set(text.match(/P\d{3}(?:\+P\d{3})*/g)||[])];
+  if(pM.length){S.pSelected=[...new Set([...S.pSelected,...pM])];document.getElementById('p-statements').value=S.pSelected.join(', ');pM.forEach(c=>{const ch=document.querySelector(`#p-chips .h-chip[data-code="${c}"]`);if(ch)ch.classList.add('selected');});}
+  if(/\bDanger\b/i.test(text))selectSignal('Danger');else if(/\bWarning\b/i.test(text))selectSignal('Warning');
+  if(/GHS02|flammable/i.test(text))addPicto('flame');
+  if(/GHS07|irritant/i.test(text))addPicto('exclamation');
+  if(/GHS08|health hazard/i.test(text))addPicto('health');
+  if(/GHS09|aquatic/i.test(text))addPicto('aquatic');
+  let fs=0;
+  SENSITISERS.forEach(s=>{const pat=new RegExp(s.name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').split('(')[0].trim(),'i');if(pat.test(text)&&!S.sensitisers.includes(s.name)){S.sensitisers.push(s.name);const c=document.querySelector(`#sensitiser-chips .s-chip[data-name="${s.name}"]`);if(c)c.classList.add('selected');fs++;}});
+  renderTags();updateLabel();
+  alert(`✅ Extracted!\n• ${hM.length} H/EUH statements\n• ${pM.length} P statements\n• ${fs} CLP sensitisers\n\nAlways verify against your SDS before printing.`);
+}
+function addPicto(k){if(!S.pictograms.includes(k)){S.pictograms.push(k);const b=document.querySelector(`.picto-btn[data-picto="${k}"]`);if(b)b.classList.add('selected');}}
+
+// ── NAVIGATION ────────────────────────────────────────────────
+function goToStep(n){if(n>S.step+1)return;S.step=n;document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+n).classList.add('active');updateStepsBar();if(n===5)buildSummary();updateLabel();}
+function nextStep(){if(S.step<5)goToStep(S.step+1);}
+function prevStep(){if(S.step>1)goToStep(S.step-1);}
+function startOver(){location.reload();}
+function updateStepsBar(){
+  document.querySelectorAll('.step-item').forEach(el=>{const n=parseInt(el.dataset.step);el.classList.remove('active','done','inactive');if(n<S.step){el.classList.add('done');el.querySelector('.step-circle').textContent='✓';}else if(n===S.step)el.classList.add('active');else el.classList.add('inactive');});
+  for(let i=1;i<=4;i++){const l=document.getElementById('line-'+i);if(l)l.classList.toggle('done',i<S.step);}
+}
+
+// ── SHAPE/SIZE ────────────────────────────────────────────────
+function selectShape(s){S.shape=s;document.querySelectorAll('.shape-card').forEach(c=>c.classList.toggle('selected',c.dataset.shape===s));syncDimFields();updateLabel();}
+function selectSize(sz){
+  S.size=sz;document.querySelectorAll('.size-card').forEach(c=>c.classList.toggle('selected',c.dataset.size==sz));
+  if(sz!=='custom'){const mm=parseInt(sz);document.getElementById('custom-w').value=mm;document.getElementById('custom-h').value=(S.shape==='rectangle')?Math.round(mm*0.7):mm;S.customW=mm;S.customH=(S.shape==='rectangle')?Math.round(mm*0.7):mm;}
+  syncDimFields();updateLabel();
+}
+function onDimInput(){S.size='custom';document.querySelectorAll('.size-card').forEach(c=>c.classList.toggle('selected',c.dataset.size==='custom'));S.customW=parseInt(document.getElementById('custom-w').value)||50;S.customH=parseInt(document.getElementById('custom-h').value)||50;updateLabel();}
+function syncDimFields(){
+  const hI=document.getElementById('custom-h'),hN=document.getElementById('height-note');
+  if(S.shape==='rectangle'){hI.disabled=false;hI.style.opacity='1';if(hN)hN.textContent='';}
+  else{hI.disabled=true;hI.style.opacity='0.45';if(hN)hN.textContent='— matches width';const wv=document.getElementById('custom-w').value;if(wv)hI.value=wv;}
+}
+function selectSignal(s){S.signal=s;document.getElementById('signal-warning').className='signal-btn'+(s==='Warning'?' sel-warn':'');document.getElementById('signal-danger').className='signal-btn'+(s==='Danger'?' sel-danger':'');updateLabel();}
+function togglePicto(el,key){el.classList.toggle('selected');const i=S.pictograms.indexOf(key);if(i>-1)S.pictograms.splice(i,1);else S.pictograms.push(key);updateLabel();}
+
+// ── READ FORM ─────────────────────────────────────────────────
+function readForm(){
+  S.scentName=document.getElementById('scent-name')?.value||'';
+  S.productType=document.getElementById('product-type')?.value||'Scented Candle';
+  S.netWeight=document.getElementById('net-weight')?.value||'';
+  S.fragLoad=document.getElementById('frag-load')?.value||'';
+  S.burnTime=document.getElementById('burn-time')?.value||'';
+  S.hStatements=document.getElementById('h-statements')?.value||'';
+  S.pStatements=document.getElementById('p-statements')?.value||'';
+  S.bizName=document.getElementById('biz-name')?.value||'';
+  S.bizAddress=document.getElementById('biz-address')?.value||'';
+  S.bizWebsite=document.getElementById('biz-website')?.value||'';
+  S.batchNum=document.getElementById('batch-num')?.value||'';
+  S.customW=parseInt(document.getElementById('custom-w')?.value)||50;
+  S.customH=(S.shape==='rectangle')?(parseInt(document.getElementById('custom-h')?.value)||40):S.customW;
+}
+function getDims(){
+  let mmW,mmH;
+  if(S.size==='custom'){mmW=S.customW||50;mmH=(S.shape==='rectangle')?(S.customH||40):mmW;}
+  else{mmW=parseInt(S.size)||50;mmH=(S.shape==='rectangle')?Math.round(mmW*0.7):mmW;}
+  const scale=220/mmW;
+  return{mmW,mmH,pw:Math.round(mmW*scale),ph:Math.round(mmH*scale)};
+}
+function adaptFont(txt,maxPx,start,min,step=1){
+  const cvs=document.createElement('canvas'),ctx=cvs.getContext('2d');let sz=start;
+  while(sz>=min){ctx.font=`700 ${sz}px serif`;if(ctx.measureText(txt).width<=maxPx)break;sz-=step;}
+  return sz;
+}
+function xe(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ── SVG BUILDER ───────────────────────────────────────────────
+// isPng: true = emoji pictograms; false = text fallback safe for SVG export
+function buildSVG(forExport=false){
+  const{mmW,mmH,pw,ph}=getDims();
+  const cx=pw/2,cy=ph/2,safeW=pw*0.62;
+  const scent=S.scentName||'Your Scent Name';
+  const type=(S.productType||'Scented Candle').toUpperCase();
+  const sig=S.signal||'WARNING';
+  const hText=(S.hStatements||'H317, H411').split(',').map(h=>h.trim()).filter(Boolean).slice(0,5).join(' · ');
+  const sensStr=S.sensitisers.length?'Contains: '+S.sensitisers.slice(0,3).join(', ')+(S.sensitisers.length>3?'...':''):'Contains: Linalool, Citral';
+  const bizLine=(S.bizName||'Your Brand')+(S.bizAddress?' · '+S.bizAddress:'');
+  const detailLine=[S.netWeight,S.burnTime?'Burn: '+S.burnTime:'',S.batchNum].filter(Boolean).join(' · ');
+  const webLine=S.bizWebsite||'';
+  const pictos=S.pictograms.length?[...new Set(S.pictograms)].slice(0,6):['exclamation','aquatic'];
+  const scentFS=adaptFont(scent,safeW*0.70,pw*0.11,pw*0.045);
+  const topH=ph*0.20,botH=ph*0.16,midY=topH,midH=ph-topH-botH;
+
+  // Pictogram row
+  const GHS_TEXT={flame:'GHS02',exclamation:'GHS07',health:'GHS08',aquatic:'GHS09',corrosive:'GHS05',skull:'GHS06',oxidiser:'GHS03',gas:'GHS04',explosion:'GHS01'};
+  const pictoFS=Math.min(pw/(pictos.length+1)*0.55,ph*0.08,16);
+  const pictoGap=pictoFS*1.8;
+  const pStartX=cx-((pictos.length-1)*pictoGap)/2;
+  const pictoY=midY+midH*0.62;
+  const pictoRow=pictos.map((p,i)=>{
+    if(forExport){
+      const px=pStartX+i*pictoGap,py=pictoY,r=pictoFS*0.5;
+      return`<rect x="${px-r}" y="${py-r}" width="${r*2}" height="${r*2}" fill="none" stroke="#000" stroke-width="1.2" transform="rotate(45,${px},${py})"/><text x="${px}" y="${py}" font-family="sans-serif" font-size="${r*0.7}" fill="#000" text-anchor="middle" dominant-baseline="middle">${GHS_TEXT[p]||'!'}</text>`;
+    }
+    return ghsPicto(p, pStartX+i*pictoGap, pictoY, pictoFS);
+  }).join('');
+
+  let clip='',bg='';
+  if(S.shape==='circle'){const r=Math.min(pw,ph)/2-2;clip=`<clipPath id="lc"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath>`;bg=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff"/><circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3"/>`;}
+  else if(S.shape==='square'){const s=Math.min(pw,ph)-4,x0=cx-s/2,y0=cy-s/2;clip=`<clipPath id="lc"><rect x="${x0}" y="${y0}" width="${s}" height="${s}" rx="5"/></clipPath>`;bg=`<rect x="${x0}" y="${y0}" width="${s}" height="${s}" rx="5" fill="#fff"/><rect x="${x0}" y="${y0}" width="${s}" height="${s}" rx="5" fill="none" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3"/>`;}
+  else{clip=`<clipPath id="lc"><rect x="2" y="2" width="${pw-4}" height="${ph-4}" rx="4"/></clipPath>`;bg=`<rect x="2" y="2" width="${pw-4}" height="${ph-4}" rx="4" fill="#fff"/><rect x="2" y="2" width="${pw-4}" height="${ph-4}" rx="4" fill="none" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3"/>`;}
+  const fs=(b,m)=>Math.max(pw*b,m);
+
+  // Watermark for free tier
+  const wm=!S.isPro?`<text x="${cx}" y="${ph-botH-3}" font-family="sans-serif" font-size="${Math.max(pw*0.028,3.5)}" fill="rgba(0,0,0,0.2)" text-anchor="middle" font-weight="600">clpeasy.com</text>`:'';
+
+  const svgW=forExport?mmW*3.7795:pw;
+  const svgH=forExport?mmH*3.7795:ph;
+  const vbW=pw,vbH=ph;
+
+  const bizNameFS=adaptFont(S.bizName||'YOUR BRAND',safeW*0.68,fs(0.065,6),fs(0.025,4));
+  const bizLineFS=adaptFont(bizLine,safeW*0.72,fs(0.036,3.8),fs(0.018,3));
+  return`<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" viewBox="0 0 ${vbW} ${vbH}" id="label-svg">
+<defs>${clip}</defs>
+<g clip-path="url(#lc)">
+  ${bg}
+  <rect x="0" y="0" width="${pw}" height="${topH}" fill="#fff"/>
+  <text x="${cx}" y="${topH*0.36}" font-family="serif" font-size="${bizNameFS}" font-weight="700" fill="#111" text-anchor="middle" dominant-baseline="middle">${xe(S.bizName||'YOUR BRAND')}</text>
+  <text x="${cx}" y="${topH*0.76}" font-family="sans-serif" font-size="${fs(0.034,3.8)}" fill="#555" text-anchor="middle" dominant-baseline="middle">${xe(webLine)}</text>
+  <line x1="${pw*0.15}" y1="${topH}" x2="${pw*0.85}" y2="${topH}" stroke="#ddd" stroke-width="0.5"/>
+  <text x="${cx}" y="${midY+midH*0.14}" font-family="serif" font-size="${scentFS}" font-weight="700" fill="#111" text-anchor="middle" dominant-baseline="middle">${xe(scent)}</text>
+  <text x="${cx}" y="${midY+midH*0.295}" font-family="sans-serif" font-size="${fs(0.043,4.5)}" font-weight="700" fill="#111" text-anchor="middle" letter-spacing="0.8">${xe(type)}</text>
+  <text x="${cx}" y="${midY+midH*0.445}" font-family="sans-serif" font-size="${fs(0.048,5)}" font-weight="800" fill="#111" text-anchor="middle">${xe(sig.toUpperCase())}</text>
+  ${pictoRow}
+  <text x="${cx}" y="${midY+midH*0.80}" font-family="sans-serif" font-size="${fs(0.038,4)}" fill="#111" text-anchor="middle">${xe(hText)}</text>
+  <text x="${cx}" y="${midY+midH*0.91}" font-family="sans-serif" font-size="${fs(0.033,3.5)}" font-style="italic" fill="#555" text-anchor="middle">${xe(sensStr)}</text>
+  <line x1="${pw*0.15}" y1="${ph-botH}" x2="${pw*0.85}" y2="${ph-botH}" stroke="#ddd" stroke-width="0.5"/>
+  <rect x="0" y="${ph-botH}" width="${pw}" height="${botH}" fill="#fff"/>
+  <text x="${cx}" y="${ph-botH+botH*0.35}" font-family="sans-serif" font-size="${bizLineFS}" fill="#111" text-anchor="middle" dominant-baseline="middle">${xe(bizLine)}</text>
+  <text x="${cx}" y="${ph-botH+botH*0.72}" font-family="sans-serif" font-size="${fs(0.033,3.5)}" fill="#555" text-anchor="middle" dominant-baseline="middle">${xe(detailLine)}</text>
+  ${wm}
+</g></svg>`;
+}
+
+// ── UPDATE PREVIEW ────────────────────────────────────────────
+function updateLabel(){
+  readForm();
+  const{mmW,mmH}=getDims();
+  const svgHtml=buildSVG(false);
+  // Desktop preview
+  const dc=document.getElementById('label-svg-container');
+  if(dc)dc.innerHTML=svgHtml;
+  // Mobile top bar preview
+  const mb=document.getElementById('mobile-preview-svg');
+  if(mb)mb.innerHTML=svgHtml;
+  const md=document.getElementById('mobile-preview-dims');
+  if(md)md.textContent=`Print size: ${mmW} × ${mmH}mm`;
+  // Mobile step 5 preview
+  const mc=document.getElementById('mobile-label-preview');
+  if(mc)mc.innerHTML=svgHtml;
+  const mi=document.getElementById('mobile-size-info');
+  if(mi)mi.textContent=`Print size: ${mmW} × ${mmH}mm`;
+  // Sheet preview
+  const sc=document.getElementById('sheet-label-container');
+  if(sc)sc.innerHTML=svgHtml;
+  const si=document.getElementById('sheet-size-info');
+  if(si)si.textContent=`Print size: ${mmW} × ${mmH}mm`;
+  const szName=S.size==='custom'?`${mmW}×${mmH}mm`:`${S.size}mm`;
+  const shName=S.shape.charAt(0).toUpperCase()+S.shape.slice(1);
+  const pb=document.getElementById('preview-badge');if(pb)pb.textContent=`${szName} · ${shName}`;
+  const ps=document.getElementById('preview-size-info');if(ps)ps.textContent=`Print size: ${mmW} × ${mmH}mm`;
+  if(S.shape!=='rectangle'){const wv=document.getElementById('custom-w').value;const hf=document.getElementById('custom-h');if(hf&&hf.disabled)hf.value=wv||'';}
+}
+
+// ── SUMMARY ───────────────────────────────────────────────────
+function buildSummary(){
+  readForm();const{mmW,mmH}=getDims();
+  const items=[['Shape',S.shape.charAt(0).toUpperCase()+S.shape.slice(1)],['Size',`${mmW} × ${mmH}mm`],['Scent',S.scentName||'—'],['Type',S.productType],['Signal word',S.signal||'—'],['H statements',S.hStatements||'—'],['Sensitisers',S.sensitisers.slice(0,3).join(', ')+(S.sensitisers.length>3?'...':'')||'—'],['Business',S.bizName||'—']];
+  document.getElementById('label-summary').innerHTML=items.map(([k,v])=>`<div><strong>${k}</strong>${v}</div>`).join('');
+}
+
+// ── PNG DOWNLOAD (works on iPhone Safari) ─────────────────────
+function downloadPNG(){
+  readForm();
+  const{mmW,mmH,pw,ph}=getDims();
+  const DPI=300,MPI=25.4;
+  const eW=Math.round(mmW/MPI*DPI),eH=Math.round(mmH/MPI*DPI);
+  const svgStr=buildSVG(false);
+  const clone=new DOMParser().parseFromString(svgStr,'image/svg+xml').documentElement;
+  clone.setAttribute('width',eW);clone.setAttribute('height',eH);
+  clone.setAttribute('viewBox',`0 0 ${pw} ${ph}`);
+  const svgData=new XMLSerializer().serializeToString(clone);
+  const slug=(S.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  const fname=`clpeasy-${slug}-${S.size}mm.png`;
+  // Use data URI for iOS Safari compatibility
+  const svgDataUri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgData);
+  const img=new Image();
+  img.onload=function(){
+    const cvs=document.createElement('canvas');cvs.width=eW;cvs.height=eH;
+    const ctx=cvs.getContext('2d');
+    ctx.fillStyle='white';ctx.fillRect(0,0,eW,eH);
+    ctx.drawImage(img,0,0,eW,eH);
+    const pngDataUri=cvs.toDataURL('image/png');
+    const a=document.createElement('a');
+    a.href=pngDataUri;
+    a.download=fname;
+    document.body.appendChild(a);a.click();
+    setTimeout(()=>document.body.removeChild(a),1000);
+  };
+  img.onerror=function(){
+    // Fallback — open SVG in new tab
+    window.open(svgDataUri,'_blank');
+  };
+  img.src=svgDataUri;
+}
+
+// ── SVG DOWNLOAD (Cricut Design Space) ────────────────────────
+function downloadSVG(){
+  try{
+    readForm();
+    const{mmW,mmH,pw,ph}=getDims();
+    const svgStr=buildSVG(true);
+    // Build clean SVG string directly without DOMParser (avoids iOS parse errors)
+    const slug=(S.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+    const fname=`clpeasy-${slug}-${S.size}mm-cricut.svg`;
+    // Replace the auto-generated width/height/id with mm dimensions
+    const cleanSvg=svgStr
+      .replace(/id="label-svg"/,'')
+      .replace(/width="[^"]*"/,`width="${mmW}mm"`)
+      .replace(/height="[^"]*"/,`height="${mmH}mm"`);
+    const serialised='<?xml version="1.0" encoding="UTF-8"?>\n'+cleanSvg;
+    const dataUri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(serialised);
+    const a=document.createElement('a');
+    a.href=dataUri;
+    a.download=fname;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{if(a.parentNode)a.parentNode.removeChild(a);},1000);
+  }catch(err){
+    console.error('SVG download error:',err);
+    alert('SVG download failed. Please try again.');
+  }
+}
+
+// ── MOBILE SHEET ──────────────────────────────────────────────
+function openSheet(){document.getElementById('preview-sheet').classList.add('open');document.body.style.overflow='hidden';}
+function closeSheet(e){if(!e||e.target===document.getElementById('preview-sheet')||e===undefined){document.getElementById('preview-sheet').classList.remove('open');document.body.style.overflow='';}}
+
+init();
+</script>
+</body>
+</html>
