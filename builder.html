@@ -425,7 +425,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         I confirm I have verified all hazard data on this label against my fragrance supplier's SDS sheet at my actual fragrance load. I understand I am solely responsible for ensuring this label is accurate and legally compliant before printing and selling.
       </label>
     </div>
-    <div style="display:flex;flex-direction:column;gap:10px;" id="download-buttons">
+    <div style="background:#F8FAFC;border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--muted);line-height:1.6;">
+      ✂️ <strong style="color:var(--text);">About the dashed line:</strong> The pale dashed circle you see on your label is a <strong>cut guide only</strong> — it will not print. It shows exactly where to cut your label. In Cricut Design Space it becomes the cut path automatically. When printing at home, simply cut along the dashed line.
+    </div>
       <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ Download PNG — save to device</button>
       <button id="btn-svg" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;">⬡ Download SVG — for Cricut Design Space</button>
       <button id="btn-save" onclick="saveLabel()" style="background:var(--off);color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;">💾 Save to my label library</button>
