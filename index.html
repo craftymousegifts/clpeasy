@@ -686,13 +686,11 @@ function toggleFaq(el) {
 const _sb=window.supabase.createClient('https://qvkosdqcryrcfbjtaxic.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw');
 _sb.auth.getSession().then(({data:{session}})=>{
   if(session){
-    // Update all CTA buttons to go to builder
-    document.querySelectorAll('a[href="auth.html"]').forEach(a=>{
-      if(a.classList.contains('btn-nav')||a.classList.contains('btn-primary')||a.classList.contains('btn-cta')||a.textContent.includes('free')||a.textContent.includes('trial')){
+    document.querySelectorAll('a[href="auth.html"], a[href="builder.html"]').forEach(a=>{
+      const t=a.textContent.trim();
+      if(t==='Get started free'||t==='Start for free'||t.includes('free trial')||t.includes('Start 7')||t.includes('Get Pro')){
         a.href='builder.html';
-        if(a.textContent.trim()==='Get started free') a.textContent='Go to builder';
-        if(a.textContent.includes('Start for free')) a.textContent='Go to builder';
-        if(a.textContent.includes('free trial')) a.textContent='Go to builder';
+        a.textContent='Go to builder';
       }
     });
     // Update nav
