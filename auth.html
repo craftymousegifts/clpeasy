@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLPeasy — Sign in</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--teal:#0D9488;--teal-dark:#0F766E;--teal-light:#CCFBF1;--border:#E8EAED;--text:#111318;--muted:#6B7280;--off:#F7F8FA;--red:#EF4444;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);-webkit-font-smoothing:antialiased;}
+body{display:flex;flex-direction:column;min-height:100vh;}
+
+/* NAV */
+nav{background:white;border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{display:flex;align-items:center;gap:10px;font-family:'DM Serif Display',serif;font-size:19px;color:var(--text);text-decoration:none;}
+.nav-badge{width:30px;height:30px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;}
+.nav-back{font-size:13px;color:var(--muted);text-decoration:none;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;}
+.nav-back:hover{color:var(--teal);border-color:var(--teal);}
+
+/* MAIN */
+main{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 16px;}
+
+/* CARD */
+.auth-card{background:white;border-radius:20px;border:1px solid var(--border);padding:40px;width:100%;max-width:420px;box-shadow:0 4px 24px rgba(0,0,0,0.06);}
+.auth-title{font-family:'DM Serif Display',serif;font-size:28px;margin-bottom:6px;text-align:center;}
+.auth-sub{font-size:14px;color:var(--muted);text-align:center;margin-bottom:28px;}
+
+/* TABS */
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--off);border-radius:10px;padding:4px;margin-bottom:28px;}
+.tab{padding:9px;text-align:center;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;color:var(--muted);}
+.tab.active{background:white;color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+
+/* FORM */
+.form-group{margin-bottom:16px;}
+label{display:block;font-size:13px;font-weight:600;margin-bottom:5px;}
+input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;transition:border-color .2s;}
+input:focus{border-color:var(--teal);}
+
+/* BUTTONS */
+.btn-primary{width:100%;background:var(--teal);color:white;border:none;padding:13px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;box-shadow:0 4px 14px rgba(13,148,136,0.25);}
+.btn-primary:hover{background:var(--teal-dark);}
+.btn-primary:disabled{opacity:0.6;cursor:not-allowed;}
+
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--muted);font-size:13px;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
+.btn-social{width:100%;background:white;color:var(--text);border:1.5px solid var(--border);padding:11px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;}
+.btn-social:hover{border-color:var(--teal);color:var(--teal);}
+.btn-social svg{width:18px;height:18px;flex-shrink:0;}
+
+/* MESSAGES */
+.msg{padding:12px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none;}
+.msg.error{background:#FEF2F2;border:1px solid #FECACA;color:var(--red);}
+.msg.success{background:#F0FDF4;border:1px solid #BBF7D0;color:#166534;}
+.msg.show{display:block;}
+
+/* FORGOT */
+.forgot{text-align:right;margin-top:-8px;margin-bottom:16px;}
+.forgot a{font-size:12px;color:var(--teal);text-decoration:none;}
+
+/* TERMS */
+.terms{font-size:11px;color:var(--muted);text-align:center;margin-top:16px;line-height:1.6;}
+.terms a{color:var(--teal);text-decoration:none;}
+
+/* VERIFY */
+.verify-screen{display:none;text-align:center;padding:20px 0;}
+.verify-icon{font-size:48px;margin-bottom:16px;}
+.verify-title{font-family:'DM Serif Display',serif;font-size:24px;margin-bottom:8px;}
+.verify-sub{font-size:14px;color:var(--muted);line-height:1.6;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo"><div class="nav-badge">CLP</div>CLPeasy</a>
+  <a href="index.html" class="nav-back">← Home</a>
+</nav>
+
+<main>
+  <div class="auth-card">
+
+    <!-- LOGO -->
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="width:48px;height:48px;border-radius:50%;background:var(--teal);color:white;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;">CLP</div>
+    </div>
+
+    <!-- VERIFY SCREEN -->
+    <div class="verify-screen" id="verify-screen">
+      <div class="verify-icon">📧</div>
+      <div class="verify-title">Check your email</div>
+      <div class="verify-sub" id="verify-sub">We've sent a verification link to your email address. Click the link to activate your CLPeasy account.</div>
+      <br>
+      <a href="index.html" style="color:var(--teal);font-size:14px;font-weight:600;">← Back to home</a>
+    </div>
+
+    <!-- AUTH FORM -->
+    <div id="auth-form">
+      <h1 class="auth-title" id="auth-title">Welcome back</h1>
+      <p class="auth-sub" id="auth-sub">Sign in to your CLPeasy account</p>
+
+      <!-- TABS -->
+      <div class="tabs">
+        <div class="tab active" id="tab-signin" onclick="switchTab('signin')">Sign in</div>
+        <div class="tab" id="tab-signup" onclick="switchTab('signup')">Create account</div>
+      </div>
+
+      <!-- MESSAGE -->
+      <div class="msg" id="msg"></div>
+
+      <!-- EMAIL/PASSWORD FORM -->
+      <div class="form-group">
+        <label>Email address</label>
+        <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <div class="forgot" id="forgot-link">
+        <a href="#" onclick="resetPassword()">Forgot password?</a>
+      </div>
+
+      <button class="btn-primary" id="submit-btn" onclick="handleSubmit()">Sign in</button>
+
+      <div class="divider">or continue with</div>
+
+      <!-- GOOGLE -->
+      <button class="btn-social" onclick="signInWithGoogle()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Continue with Google
+      </button>
+
+      <!-- APPLE -->
+      <button class="btn-social" onclick="signInWithApple()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+          <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+        </svg>
+        Continue with Apple
+      </button>
+
+      <div class="terms" id="terms-text">
+        By signing in you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+const SUPABASE_URL = 'https://qvkosdqcryrcfbjtaxic.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let mode = 'signin';
+
+function switchTab(tab) {
+  mode = tab;
+  document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
+  document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+  document.getElementById('auth-title').textContent = tab === 'signin' ? 'Welcome back' : 'Create your account';
+  document.getElementById('auth-sub').textContent = tab === 'signin' ? 'Sign in to your CLPeasy account' : 'Start generating compliant CLP labels';
+  document.getElementById('submit-btn').textContent = tab === 'signin' ? 'Sign in' : 'Create account';
+  document.getElementById('forgot-link').style.display = tab === 'signin' ? '' : 'none';
+  document.getElementById('terms-text').style.display = tab === 'signup' ? '' : 'none';
+  document.getElementById('password').autocomplete = tab === 'signin' ? 'current-password' : 'new-password';
+  hideMsg();
+}
+
+function showMsg(text, type) {
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = 'msg ' + type + ' show';
+}
+function hideMsg() {
+  document.getElementById('msg').className = 'msg';
+}
+
+async function handleSubmit() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const btn = document.getElementById('submit-btn');
+
+  if (!email || !password) { showMsg('Please enter your email and password.', 'error'); return; }
+  if (password.length < 6) { showMsg('Password must be at least 6 characters.', 'error'); return; }
+
+  btn.disabled = true;
+  btn.textContent = mode === 'signin' ? 'Signing in...' : 'Creating account...';
+  hideMsg();
+
+  if (mode === 'signin') {
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) {
+      showMsg(error.message === 'Invalid login credentials' ? 'Incorrect email or password.' : error.message, 'error');
+      btn.disabled = false;
+      btn.textContent = 'Sign in';
+    } else {
+      window.location.href = 'builder.html';
+    }
+  } else {
+    const { error } = await sb.auth.signUp({ email, password });
+    if (error) {
+      showMsg(error.message, 'error');
+      btn.disabled = false;
+      btn.textContent = 'Create account';
+    } else {
+      document.getElementById('auth-form').style.display = 'none';
+      document.getElementById('verify-screen').style.display = 'block';
+      document.getElementById('verify-sub').textContent = `We've sent a verification link to ${email}. Click the link to activate your CLPeasy account.`;
+    }
+  }
+}
+
+async function signInWithGoogle() {
+  await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin + '/builder.html' }
+  });
+}
+
+async function signInWithApple() {
+  await sb.auth.signInWithOAuth({
+    provider: 'apple',
+    options: { redirectTo: window.location.origin + '/builder.html' }
+  });
+}
+
+async function resetPassword() {
+  const email = document.getElementById('email').value.trim();
+  if (!email) { showMsg('Enter your email address first, then click Forgot password.', 'error'); return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/auth.html'
+  });
+  if (error) { showMsg(error.message, 'error'); }
+  else { showMsg('Password reset email sent — check your inbox.', 'success'); }
+}
+
+// Allow Enter key to submit
+document.addEventListener('keydown', e => { if (e.key === 'Enter') handleSubmit(); });
+
+// Check if already logged in
+sb.auth.getSession().then(({ data: { session } }) => {
+  if (session) window.location.href = 'builder.html';
+});
+
+// Set initial state
+switchTab('signin');
+</script>
+</body>
+</html>
