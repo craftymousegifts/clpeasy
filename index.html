@@ -681,5 +681,32 @@ function toggleFaq(el) {
   item.classList.toggle('open');
 }
 </script>
-</body>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const _sb=window.supabase.createClient('https://qvkosdqcryrcfbjtaxic.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw');
+_sb.auth.getSession().then(({data:{session}})=>{
+  if(session){
+    // Update all CTA buttons to go to builder
+    document.querySelectorAll('a[href="auth.html"]').forEach(a=>{
+      if(a.classList.contains('btn-nav')||a.classList.contains('btn-primary')||a.classList.contains('btn-cta')||a.textContent.includes('free')||a.textContent.includes('trial')){
+        a.href='builder.html';
+        if(a.textContent.trim()==='Get started free') a.textContent='Go to builder';
+        if(a.textContent.includes('Start for free')) a.textContent='Go to builder';
+        if(a.textContent.includes('free trial')) a.textContent='Go to builder';
+      }
+    });
+    // Update nav
+    const navLinks=document.querySelector('.nav-links');
+    if(navLinks){
+      const signinLink=navLinks.querySelector('a[href="auth.html?mode=signin"]');
+      if(signinLink){
+        signinLink.textContent=session.user.email;
+        signinLink.href='builder.html';
+      }
+      const getStarted=navLinks.querySelector('.btn-nav');
+      if(getStarted){getStarted.textContent='Go to builder';getStarted.href='builder.html';}
+    }
+  }
+});
+</script>
 </html>
