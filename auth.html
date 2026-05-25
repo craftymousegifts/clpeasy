@@ -245,7 +245,13 @@ async function resetPassword() {
 // Allow Enter key to submit
 document.addEventListener('keydown', e => { if (e.key === 'Enter') handleSubmit(); });
 
-// Check if already logged in
+// Check if already logged in or handle redirect from email verification
+sb.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+    window.location.href = 'builder.html';
+  }
+});
+
 sb.auth.getSession().then(({ data: { session } }) => {
   if (session) window.location.href = 'builder.html';
 });
