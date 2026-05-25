@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>CLPeasy — Label Builder</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--white:#fff;--off:#F7F8FA;--border:#E8EAED;--text:#111318;--muted:#6B7280;--teal:#0D9488;--teal-light:#CCFBF1;--teal-dark:#0F766E;--amber:#F59E0B;--amber-light:#FEF3C7;--red:#EF4444;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -219,7 +220,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 <nav>
   <a href="index.html" class="nav-logo"><div class="nav-badge">CLP</div>CLPeasy</a>
-  <a href="index.html" class="nav-back">← Home</a>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span id="nav-user" style="font-size:13px;color:var(--muted);display:none;"></span>
+    <a href="auth.html" id="nav-signin" class="nav-back" style="display:none;">Sign in</a>
+    <button id="nav-signout" onclick="signOut()" style="display:none;font-size:13px;color:var(--muted);background:none;border:1.5px solid var(--border);padding:7px 12px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;" onmouseover="this.style.borderColor='var(--teal)';this.style.color='var(--teal)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Sign out</button>
+  </div>
 </nav>
 
 <div class="builder-layout">
@@ -533,7 +538,41 @@ function ghsPicto(key,x,y,size){
 // ── STATE ─────────────────────────────────────────────────────
 const S={step:1,shape:'circle',size:35,customW:50,customH:50,scentName:'',productType:'Scented Candle',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],bizName:'',bizAddress:'',bizWebsite:'',batchNum:'',isPro:false,supplier:''};
 
-// ── SUPPLIER LIBRARY ──────────────────────────────────────────
+// ── SUPABASE AUTH ─────────────────────────────────────────────
+const SUPABASE_URL='https://qvkosdqcryrcfbjtaxic.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
+let sbClient=null;
+let currentUser=null;
+
+async function initAuth(){
+  try{
+    const {createClient}=window.supabase;
+    sbClient=createClient(SUPABASE_URL,SUPABASE_KEY);
+    const {data:{session}}=await sbClient.auth.getSession();
+    if(session){
+      currentUser=session.user;
+      S.isPro=false; // Will check Pro status later with Stripe
+      const email=currentUser.email;
+      const navUser=document.getElementById('nav-user');
+      const navSignout=document.getElementById('nav-signout');
+      const navSignin=document.getElementById('nav-signin');
+      if(navUser){navUser.textContent=email;navUser.style.display='';}
+      if(navSignout)navSignout.style.display='';
+      if(navSignin)navSignin.style.display='none';
+    } else {
+      // Not logged in — show sign in button but still allow builder access
+      const navSignin=document.getElementById('nav-signin');
+      const navSignout=document.getElementById('nav-signout');
+      if(navSignin)navSignin.style.display='';
+      if(navSignout)navSignout.style.display='none';
+    }
+  }catch(e){console.log('Auth init error:',e);}
+}
+
+async function signOut(){
+  if(sbClient){await sbClient.auth.signOut();}
+  window.location.href='auth.html';
+}
 const SUPPLIERS={
   sfc:{name:'Supplies for Candles',sdsUrl:'https://www.suppliesforcandles.co.uk',instructions:'Visit Supplies for Candles → find your fragrance oil product page → scroll down to find the SDS PDF → download it → copy Section 2.2 → paste below.'},
   cs:{name:'Candle Shack',sdsUrl:'https://candleshack.co.uk',instructions:'Visit Candle Shack → find your fragrance product page → look for the Safety Data Sheet download → copy Section 2.2 → paste below.'},
@@ -617,6 +656,7 @@ function renderSaved(){
 }
 
 function init(){
+  initAuth();
   buildHChips();buildPChips();buildSensitiserChips();
   // Restore saved business details
   const biz=JSON.parse(localStorage.getItem('clpeasy_biz')||'{}');
