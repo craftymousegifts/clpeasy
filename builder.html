@@ -213,15 +213,17 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .preview-sheet-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;}
 
 /* SUPPLIER LIBRARY */
-.supplier-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:16px;}
+.supplier-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:16px;}
 .supplier-card{border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;background:white;transition:all .2s;-webkit-tap-highlight-color:transparent;}
-.supplier-card:hover{border-color:var(--teal);}
+.supplier-card:hover{border-color:var(--teal);background:#F9FFFE;}
 .supplier-card.selected{border-color:var(--teal);background:var(--teal-light);}
-.supplier-name{font-size:13px;font-weight:600;color:var(--text);}
+.supplier-name{font-size:12px;font-weight:600;color:var(--text);line-height:1.3;}
 .supplier-card.selected .supplier-name{color:var(--teal-dark);}
-.supplier-region{font-size:11px;color:var(--muted);margin-top:2px;}
-.sds-link-box{background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:10px;padding:12px 14px;font-size:13px;color:#166534;line-height:1.6;}
-.sds-link-box a{color:var(--teal-dark);font-weight:600;}
+.supplier-region{font-size:10px;color:var(--muted);margin-top:3px;}
+.supplier-card.selected .supplier-region{color:var(--teal);}
+.sds-link-box{background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:12px;padding:14px 16px;margin-bottom:4px;}
+.sds-link-box a{color:var(--teal-dark);font-weight:600;text-decoration:none;}
+.sds-link-box a:hover{text-decoration:underline;}
 .saved-section{margin-top:32px;padding-top:24px;border-top:1px solid var(--border);}
 .saved-section h3{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
 @media(min-width:861px){.saved-section{position:sticky;bottom:0;background:var(--off);padding-bottom:16px;z-index:10;box-shadow:0 -8px 16px rgba(247,248,250,0.9);}}
@@ -468,12 +470,28 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="supplier-name">Candle Shack</div>
         <div class="supplier-region">🇬🇧 UK</div>
       </div>
-      <div class="supplier-card" data-supplier="gf" onclick="selectSupplier(this,'gf')">
-        <div class="supplier-name">Gracefruit</div>
-        <div class="supplier-region">🇬🇧 UK</div>
-      </div>
       <div class="supplier-card" data-supplier="ni" onclick="selectSupplier(this,'ni')">
         <div class="supplier-name">NI Candle Supplies</div>
+        <div class="supplier-region">🇬🇧 UK</div>
+      </div>
+      <div class="supplier-card" data-supplier="nikura" onclick="selectSupplier(this,'nikura')">
+        <div class="supplier-name">Nikura</div>
+        <div class="supplier-region">🇬🇧 UK</div>
+      </div>
+      <div class="supplier-card" data-supplier="ps" onclick="selectSupplier(this,'ps')">
+        <div class="supplier-name">Pure Scented</div>
+        <div class="supplier-region">🇬🇧 UK</div>
+      </div>
+      <div class="supplier-card" data-supplier="fod" onclick="selectSupplier(this,'fod')">
+        <div class="supplier-name">Fragrance Oils Direct</div>
+        <div class="supplier-region">🇬🇧 UK</div>
+      </div>
+      <div class="supplier-card" data-supplier="lm" onclick="selectSupplier(this,'lm')">
+        <div class="supplier-name">LiveMoor</div>
+        <div class="supplier-region">🇬🇧 UK</div>
+      </div>
+      <div class="supplier-card" data-supplier="gf" onclick="selectSupplier(this,'gf')">
+        <div class="supplier-name">Gracefruit</div>
         <div class="supplier-region">🇬🇧 UK</div>
       </div>
       <div class="supplier-card" data-supplier="csc" onclick="selectSupplier(this,'csc')">
@@ -559,7 +577,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <h2 class="step-heading">Your label is ready!</h2>
     <p class="step-sub">Review your label, then download in your preferred format.</p>
     <div class="compliance-box"><p>⚠️ <strong>Compliance reminder:</strong> Always verify all hazard data against your fragrance supplier's SDS at your actual fragrance load before printing. You are responsible for final verification.</p></div>
-    <div class="watermark-note">🆓 Free plan — labels include a CLPeasy watermark. Upgrade to Pro to remove it.</div>
+    <div class="watermark-note">🆓 Trial label — includes a CLPeasy watermark. Upgrade to Pro to remove it.</div>
     <div style="background:white;border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;">
       <div class="sdiv" style="margin-top:0">Label summary</div>
       <div class="summary-grid" id="label-summary"></div>
@@ -831,14 +849,18 @@ async function signOut(){
   window.location.href='auth.html';
 }
 const SUPPLIERS={
-  sfc:{name:'Supplies for Candles',sdsUrl:'https://www.suppliesforcandles.co.uk',instructions:'Visit Supplies for Candles → find your fragrance oil product page → scroll down to find the SDS PDF → download it → copy Section 2.2 → paste below.'},
-  cs:{name:'Candle Shack',sdsUrl:'https://candleshack.co.uk',instructions:'Visit Candle Shack → find your fragrance product page → look for the Safety Data Sheet download → copy Section 2.2 → paste below.'},
-  gf:{name:'Gracefruit',sdsUrl:'https://gracefruit.com',instructions:'Visit Gracefruit → find your fragrance oil → look for the SDS PDF on the product page → copy Section 2.2 → paste below.'},
-  ni:{name:'NI Candle Supplies',sdsUrl:'https://nicandlesupplies.co.uk',instructions:'Visit NI Candle Supplies → find your fragrance → download the SDS from the product page → copy Section 2.2 → paste below.'},
-  csc:{name:'CandleScience',sdsUrl:'https://www.candlescience.com',instructions:'Visit CandleScience → find your fragrance product page → look under Documents for the SDS PDF → copy Section 2 → paste below.'},
-  ng:{name:'Natures Garden',sdsUrl:'https://www.naturesgardencandles.com',instructions:'Visit Natures Garden → find your fragrance → download the SDS from the product page → copy Section 2 → paste below.'},
-  bb:{name:'Brambleberry',sdsUrl:'https://www.brambleberry.com',instructions:'Visit Brambleberry → find your fragrance product page → look for the SDS document → copy Section 2 → paste below.'},
-  other:{name:'Other supplier',sdsUrl:null,instructions:'Download the SDS PDF from your supplier\'s website — usually found on the individual fragrance product page. Copy Section 2.2 (Label elements / Hazard identification) and paste below.'},
+  sfc:{name:'Supplies for Candles',region:'🇬🇧 UK',sdsUrl:'https://www.suppliesforcandles.co.uk/product-category/fragrance-oils/',instructions:'Find your fragrance on the Supplies for Candles website → open the product page → click the <strong>Data Sheets</strong> tab → download the SDS at your fragrance load (10% or 25%) → open the PDF and copy Section 2.2 → paste below.'},
+  cs:{name:'Candle Shack',region:'🇬🇧 UK',sdsUrl:'https://candle-shack.co.uk/collections/fragrance-oils',instructions:'Find your fragrance on the Candle Shack website → open the product page → scroll to the bottom → download the <strong>SDS PDF</strong> at your fragrance load → copy Section 2.2 → paste below.'},
+  ni:{name:'NI Candle Supplies',region:'🇬🇧 UK',sdsUrl:'https://www.nicandlesupplies.co.uk/collections/data-sheets',instructions:'Visit the NI Candle Supplies <strong>SDS & CLP Data</strong> page → find your fragrance oil → download the SDS at your fragrance load → copy Section 2.2 → paste below.'},
+  nikura:{name:'Nikura',region:'🇬🇧 UK',sdsUrl:'https://nikura.com/pages/technical-documents',instructions:'Visit the Nikura <strong>Technical Documents</strong> page → find your fragrance oil → download the SDS → copy Section 2.2 → paste below.'},
+  ps:{name:'Pure Scented',region:'🇬🇧 UK',sdsUrl:'https://purescented.com/regulatory-documentation/',instructions:'Visit the Pure Scented <strong>Regulatory Documentation</strong> page → find your fragrance oil → download the SDS at your fragrance load → copy Section 2.2 → paste below.'},
+  fod:{name:'Fragrance Oils Direct',region:'🇬🇧 UK',sdsUrl:'https://www.fragranceoilsdirect.co.uk/collections/all-fragrance-oils',instructions:'Find your fragrance on the Fragrance Oils Direct website → open the product page → download the <strong>SDS PDF</strong> → copy Section 2.2 → paste below.'},
+  lm:{name:'LiveMoor',region:'🇬🇧 UK',sdsUrl:'https://www.livemoor.co.uk/pages/material-safety-data-sheets-msds',instructions:'Visit the LiveMoor <strong>MSDS/SDS page</strong> → find your fragrance oil → download the SDS → copy Section 2.2 → paste below.'},
+  gf:{name:'Gracefruit',region:'🇬🇧 UK',sdsUrl:'https://gracefruit.com',instructions:'Visit Gracefruit → find your fragrance oil product page → look for the SDS PDF → download it → copy Section 2.2 → paste below.'},
+  csc:{name:'CandleScience',region:'🇺🇸 US',sdsUrl:'https://www.candlescience.com',instructions:'Visit CandleScience → find your fragrance product page → look under <strong>Documents</strong> for the SDS PDF → copy Section 2 → paste below.'},
+  ng:{name:'Natures Garden',region:'🇺🇸 US',sdsUrl:'https://www.naturesgardencandles.com',instructions:'Visit Natures Garden → find your fragrance → download the SDS from the product page → copy Section 2 → paste below.'},
+  bb:{name:'Brambleberry',region:'🇺🇸 US',sdsUrl:'https://www.brambleberry.com',instructions:'Visit Brambleberry → find your fragrance product page → look for the SDS document → copy Section 2 → paste below.'},
+  other:{name:'Other supplier',region:'Manual entry',sdsUrl:null,instructions:'Download the SDS PDF from your supplier\'s website — usually found on the individual fragrance product page. Copy Section 2.2 (Label elements / Hazard identification) and paste below.'},
 };
 
 function selectSupplier(el,key){
@@ -848,9 +870,9 @@ function selectSupplier(el,key){
   const s=SUPPLIERS[key];
   const box=document.getElementById('supplier-sds-link');
   if(s.sdsUrl){
-    box.innerHTML=`<div class="sds-link-box">📄 <strong>${s.name} SDS:</strong> ${s.instructions}<br><br><a href="${s.sdsUrl}" target="_blank" rel="noopener">Open ${s.name} SDS page →</a></div>`;
+    box.innerHTML=`<div class="sds-link-box"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;"><strong style="font-size:14px;color:#065F46;">📄 ${s.name} — find your SDS</strong><a href="${s.sdsUrl}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;background:var(--teal);color:white;font-size:12px;font-weight:700;padding:7px 13px;border-radius:7px;text-decoration:none;white-space:nowrap;flex-shrink:0;">Go to SDS page →</a></div><p style="font-size:13px;color:#166534;line-height:1.6;">${s.instructions}</p></div>`;
   } else {
-    box.innerHTML=`<div class="sds-link-box">📄 ${s.instructions}</div>`;
+    box.innerHTML=`<div class="sds-link-box"><strong style="font-size:14px;color:#065F46;">📄 Other supplier</strong><p style="font-size:13px;color:#166534;line-height:1.6;margin-top:8px;">${s.instructions}</p></div>`;
   }
   box.style.display='';
 }
