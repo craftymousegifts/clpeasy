@@ -544,6 +544,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
     <div id="supplier-sds-link" style="display:none;margin-bottom:16px;"></div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:16px;line-height:1.5;padding:8px 10px;background:var(--off);border-radius:6px;">CLPeasy is not affiliated with any of the suppliers listed. Links are provided for convenience to help you locate SDS sheets. Always verify hazard data against your supplier's current SDS at your actual fragrance load before printing and selling.</div>
     <div class="smart-paste-box">
       <h4>✨ Smart Paste — paste SDS Section 2.2</h4>
       <p>Copy Section 2.2 from your fragrance supplier's SDS PDF and paste it here. CLPeasy extracts all hazard data automatically.</p>
@@ -1326,6 +1327,32 @@ function openSheet(){document.getElementById('preview-sheet').classList.add('ope
 function closeSheet(e){if(!e||e.target===document.getElementById('preview-sheet')||e===undefined){document.getElementById('preview-sheet').classList.remove('open');document.body.style.overflow='';}}
 
 init();
+</script>
+
+<!-- COOKIE BANNER -->
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1a1f2e;color:white;padding:16px 24px;z-index:9999;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;box-shadow:0 -4px 20px rgba(0,0,0,0.2);">
+  <div style="flex:1;min-width:200px;">
+    <p style="font-size:13px;line-height:1.6;color:rgba(255,255,255,0.85);margin:0;">We use essential cookies to keep you logged in. No advertising or tracking cookies. <a href="/cookie-policy.html" style="color:#5EEAD4;text-decoration:none;">Cookie Policy</a></p>
+  </div>
+  <div style="display:flex;gap:10px;flex-shrink:0;">
+    <button onclick="acceptCookies()" style="background:#0D9488;color:white;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">Accept</button>
+    <button onclick="declineCookies()" style="background:none;color:rgba(255,255,255,0.6);border:1.5px solid rgba(255,255,255,0.2);padding:10px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;">Essential only</button>
+  </div>
+</div>
+<script>
+(function(){
+  if(!localStorage.getItem('clpeasy-cookie-consent')){
+    document.getElementById('cookie-banner').style.display='flex';
+  }
+  window.acceptCookies=function(){
+    localStorage.setItem('clpeasy-cookie-consent','accepted');
+    document.getElementById('cookie-banner').style.display='none';
+  };
+  window.declineCookies=function(){
+    localStorage.setItem('clpeasy-cookie-consent','essential');
+    document.getElementById('cookie-banner').style.display='none';
+  };
+})();
 </script>
 </body>
 </html>
