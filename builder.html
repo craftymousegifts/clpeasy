@@ -14,8 +14,9 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 
 /* NAV */
 nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,0.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between;}
-.nav-logo{display:flex;align-items:center;gap:10px;font-family:'DM Serif Display',serif;font-size:19px;color:var(--text);text-decoration:none;}
-.nav-badge{width:30px;height:30px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;}
+.nav-logo{display:flex;align-items:center;gap:0;text-decoration:none;line-height:1;}
+.nav-badge{width:42px;height:42px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;font-family:'DM Sans',sans-serif;letter-spacing:0.5px;}
+.nav-easy{font-family:'DM Serif Display',serif;font-size:22px;color:var(--text);margin-left:6px;letter-spacing:-0.5px;}
 .nav-back{font-size:13px;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;white-space:nowrap;}
 .nav-back:hover{color:var(--teal);border-color:var(--teal);}
 .btn-help{width:32px;height:32px;border-radius:50%;background:var(--off);border:1.5px solid var(--border);color:var(--muted);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:'DM Sans',sans-serif;flex-shrink:0;}
@@ -245,15 +246,35 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <body>
 
 <nav>
-  <a href="index.html" class="nav-logo"><div class="nav-badge">CLP</div>easy</a>
+  <a href="index.html" class="nav-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span></a>
   <div style="display:flex;align-items:center;gap:8px;">
-    <a href="mailto:support@clpeasy.com" style="font-size:13px;color:var(--muted);text-decoration:none;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;white-space:nowrap;" onmouseover="this.style.borderColor='var(--teal)';this.style.color='var(--teal)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Support</a>
+    <button onclick="openSupport()" style="font-size:13px;color:var(--muted);background:none;text-decoration:none;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;white-space:nowrap;cursor:pointer;font-family:'DM Sans',sans-serif;" onmouseover="this.style.borderColor='var(--teal)';this.style.color='var(--teal)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Support</button>
     <button class="btn-help" onclick="openHelp()" title="Help guide">?</button>
     <span id="nav-user" style="font-size:13px;color:var(--muted);display:none;"></span>
     <a href="auth.html" id="nav-signin" class="nav-back" style="display:none;">Sign in</a>
     <button id="nav-signout" onclick="signOut()" style="display:none;font-size:13px;color:var(--muted);background:none;border:1.5px solid var(--border);padding:7px 12px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;" onmouseover="this.style.borderColor='var(--teal)';this.style.color='var(--teal)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Sign out</button>
   </div>
 </nav>
+
+<!-- SUPPORT MODAL -->
+<div id="support-overlay" onclick="closeSupport()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center;padding:24px;"></div>
+<div id="support-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;border-radius:20px;padding:36px;width:100%;max-width:440px;z-index:501;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+  <div style="text-align:center;margin-bottom:20px;">
+    <div style="width:52px;height:52px;border-radius:50%;background:var(--teal-light);display:inline-flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:12px;">💬</div>
+    <h2 style="font-family:'DM Serif Display',serif;font-size:24px;margin-bottom:8px;">We're here to help</h2>
+    <p style="font-size:14px;color:var(--muted);line-height:1.6;">Our support team can assist with any queries about CLPeasy — from technical issues to questions about CLP labelling.</p>
+  </div>
+  <div style="background:var(--off);border-radius:12px;padding:20px;margin-bottom:20px;text-align:center;">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:6px;">Email us at</div>
+    <a href="mailto:support@clpeasy.com" style="font-size:18px;font-weight:700;color:var(--teal);text-decoration:none;">support@clpeasy.com</a>
+    <div style="font-size:12px;color:var(--muted);margin-top:8px;">We aim to respond within 24 hours</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;background:#F0FDF4;border-radius:10px;padding:12px 14px;margin-bottom:20px;">
+    <div style="font-size:18px;">✓</div>
+    <div style="font-size:13px;color:#166534;line-height:1.5;">Before emailing, check our <strong>Help guide</strong> (the ? button) — most questions are answered there.</div>
+  </div>
+  <button onclick="closeSupport()" style="width:100%;padding:13px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">Got it</button>
+</div>
 
 <!-- HELP PANEL -->
 <div class="help-overlay" id="help-overlay" onclick="closeHelp()"></div>
@@ -751,6 +772,17 @@ function printToPDF(){
     setTimeout(()=>win.print(),500);
   };
   img.src=svgDataUri;
+}
+
+function openSupport(){
+  document.getElementById('support-overlay').style.display='block';
+  document.getElementById('support-modal').style.display='block';
+  document.body.style.overflow='hidden';
+}
+function closeSupport(){
+  document.getElementById('support-overlay').style.display='none';
+  document.getElementById('support-modal').style.display='none';
+  document.body.style.overflow='';
 }
 
 // ── HELP PANEL ────────────────────────────────────────────────
