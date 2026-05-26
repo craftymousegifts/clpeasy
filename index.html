@@ -243,8 +243,10 @@
     background: white; border: 1px solid var(--border);
     border-radius: 10px; padding: 14px 16px;
     display: flex; align-items: center; gap: 10px;
-    font-size: 13px; font-weight: 500;
+    font-size: 13px; font-weight: 500; color: var(--text);
+    text-decoration: none; transition: all .2s;
   }
+  a.supplier-chip:hover { border-color: var(--teal); color: var(--teal); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(13,148,136,0.1); }
   .supplier-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); flex-shrink: 0; }
   .supplier-chip.coming { opacity: 0.5; }
   .supplier-chip.coming .supplier-dot { background: var(--muted); }
@@ -366,12 +368,13 @@
 <nav>
   <a href="#" class="nav-logo">
     <div class="nav-badge">CLP</div>
-    CLPeasy
+    easy
   </a>
   <div class="nav-links">
     <a href="#features">Features</a>
     <a href="#pricing">Pricing</a>
     <a href="#faq">FAQ</a>
+    <a href="#about">Our story</a>
     <a href="auth.html?mode=signin" style="font-size:14px;font-weight:500;color:var(--muted);text-decoration:none;padding:6px 12px;">Sign in</a>
     <a href="auth.html" class="btn-nav">Get started free</a>
   </div>
@@ -379,14 +382,14 @@
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-pill"><span></span> CLP compliance made simple for candle makers</div>
+  <div class="hero-pill"><span></span> CLP compliance made simple for candle and wax melt makers</div>
   <h1>Generate <em>print-ready</em><br>CLP labels in seconds</h1>
   <p class="hero-sub">Stop wrestling with SDS PDFs and regulations. CLPeasy creates compliant CLP labels for your candles and wax melts — fast, accurate, and beautifully formatted.</p>
   <div class="hero-actions">
-    <a href="auth.html" class="btn-primary">Start for free</a>
+    <a href="auth.html" class="btn-primary">Start 7-day free trial</a>
     <a href="auth.html" class="btn-secondary">See how it works</a>
   </div>
-  <p class="hero-note">Free forever for up to 5 labels per month · No credit card required · Upgrade anytime</p>
+  <p class="hero-note">7-day free trial · No credit card required · Cancel anytime</p>
 </section>
 
 <!-- WHY START FREE -->
@@ -532,14 +535,16 @@
     <h2 class="section-title">Supported suppliers</h2>
     <p class="section-sub">Select your supplier and CLPeasy guides you to their SDS page instantly. Don't see yours? Use Smart Paste with any supplier's SDS PDF.</p>
     <div class="suppliers-grid">
-      <div class="supplier-chip"><span class="supplier-dot"></span> Supplies for Candles</div>
-      <div class="supplier-chip"><span class="supplier-dot"></span> Candle Shack</div>
-      <div class="supplier-chip"><span class="supplier-dot"></span> Gracefruit</div>
-      <div class="supplier-chip"><span class="supplier-dot"></span> NI Candle Supplies <span class="supplier-tag">Soon</span></div>
-      <div class="supplier-chip"><span class="supplier-dot"></span> The Candle Lab <span class="supplier-tag">Soon</span></div>
-      <div class="supplier-chip"><span class="supplier-dot"></span> CandleScience (US) <span class="supplier-tag">Soon</span></div>
-      <div class="supplier-chip"><span class="supplier-dot"></span> Natures Garden (US) <span class="supplier-tag">Soon</span></div>
-      <div class="supplier-chip coming"><span class="supplier-dot"></span> Brambleberry (US) <span class="supplier-tag">Soon</span></div>
+      <a href="https://www.suppliersforcandles.co.uk" target="_blank" rel="noopener" class="supplier-chip"><span class="supplier-dot"></span> Supplies for Candles</a>
+      <a href="https://candleshack.co.uk" target="_blank" rel="noopener" class="supplier-chip"><span class="supplier-dot"></span> Candle Shack</a>
+      <a href="https://gracefruit.com" target="_blank" rel="noopener" class="supplier-chip"><span class="supplier-dot"></span> Gracefruit</a>
+      <a href="https://nicandlesupplies.co.uk" target="_blank" rel="noopener" class="supplier-chip"><span class="supplier-dot"></span> NI Candle Supplies</a>
+      <a href="https://www.candlescience.com" target="_blank" rel="noopener" class="supplier-chip"><span class="supplier-dot"></span> CandleScience</a>
+      <a href="https://www.naturesgardencandles.com" target="_blank" rel="noopener" class="supplier-chip"><span class="supplier-dot"></span> Natures Garden</a>
+      <a href="https://www.brambleberry.com" target="_blank" rel="noopener" class="supplier-chip"><span class="supplier-dot"></span> Brambleberry</a>
+      <div class="supplier-chip coming"><span class="supplier-dot"></span> The Soap Kitchen <span class="supplier-tag">Soon</span></div>
+      <div class="supplier-chip coming"><span class="supplier-dot"></span> Cosy Owl <span class="supplier-tag">Soon</span></div>
+      <div class="supplier-chip coming"><span class="supplier-dot"></span> Voyageur Soap &amp; Candle <span class="supplier-tag">Soon</span></div>
     </div>
   </div>
 </section>
@@ -549,40 +554,27 @@
 <section class="pricing" id="pricing">
   <div class="section-label">Pricing</div>
   <h2 class="section-title">Simple, honest pricing</h2>
-  <p class="section-sub" style="margin:0 auto">Start free and upgrade when you're ready. No hidden fees, no surprise renewals.</p>
-  <div class="pricing-grid">
-    <div class="price-card">
-      <div class="price-name">Free</div>
-      <div class="price-amount">£0 <span>/ forever</span></div>
-      <p class="price-desc">Perfect for trying CLPeasy and hobby makers with a small range.</p>
-      <ul class="price-features">
-        <li><span class="check">✓</span> Up to 5 labels per month</li>
-        <li><span class="check">✓</span> Smart Paste SDS reader</li>
-        <li><span class="check">✓</span> PNG + SVG download</li>
-        <li><span class="check">✓</span> Supplier SDS guide</li>
-        <li><span class="check">✓</span> Manual H/P statement entry</li>
-        <li><span class="check">✓</span> CLPeasy watermark on labels <em style="color:var(--muted);font-size:12px;">(removed on Pro)</em></li>
-        <li><span class="cross">✗</span> Unlimited labels</li>
-      </ul>
-      <button class="btn-plan btn-plan-free" onclick="window.location.href='builder.html'">Get started free</button>
-    </div>
+  <p class="section-sub" style="margin:0 auto 40px;">Start with a 7-day free trial. No credit card required. Cancel anytime.</p>
+  <div class="pricing-grid" style="max-width:700px;margin:0 auto;">
     <div class="price-card featured">
-      <div class="popular-tag">MOST POPULAR</div>
+      <div class="popular-tag">START FREE FOR 7 DAYS</div>
       <div class="price-name">Pro</div>
-      <div class="price-amount">£4.99 <span>/ month</span></div>
-      <p class="price-desc">For serious makers and small businesses who need unlimited labels.</p>
+      <div class="price-amount">£4.99 <span>/ month after trial</span></div>
+      <p class="price-desc">Everything you need to create unlimited compliant CLP labels. Try free for 7 days — no card needed.</p>
       <ul class="price-features">
-        <li><span class="check">✓</span> Unlimited saved labels</li>
+        <li><span class="check">✓</span> 7-day free trial — no card required</li>
+        <li><span class="check">✓</span> Unlimited labels</li>
         <li><span class="check">✓</span> Smart Paste SDS reader</li>
-        <li><span class="check">✓</span> PNG + SVG download</li>
+        <li><span class="check">✓</span> PNG, JPEG, SVG &amp; PDF download</li>
         <li><span class="check">✓</span> Supplier SDS guide</li>
         <li><span class="check">✓</span> Manual H/P statement entry</li>
         <li><span class="check">✓</span> No watermark</li>
         <li><span class="check">✓</span> Priority support</li>
+        <li><span class="check">✓</span> Cancel anytime</li>
         <li><span class="check">✓</span> PDF print sheets <span style="font-size:11px;color:var(--teal-dark);font-weight:600;">(coming soon)</span></li>
         <li><span class="check">✓</span> Community SDS contributions <span style="font-size:11px;color:var(--teal-dark);font-weight:600;">(coming soon)</span></li>
       </ul>
-      <button class="btn-plan btn-plan-paid" onclick="window.location.href='builder.html'">Start 7-day free trial</button>
+      <button class="btn-plan btn-plan-paid" onclick="window.location.href='auth.html'">Start 7-day free trial</button>
     </div>
     <div class="price-card">
       <div class="price-name">Pro Annual</div>
@@ -590,19 +582,60 @@
       <p class="price-desc">Everything in Pro — save 2 months by paying annually. Best value for regular makers.</p>
       <ul class="price-features">
         <li><span class="check">✓</span> Everything in Pro</li>
-        <li><span class="check">✓</span> No watermark</li>
         <li><span class="check">✓</span> Save £18.30 vs monthly</li>
         <li><span class="check">✓</span> Equivalent to £3.47/month</li>
         <li><span class="check">✓</span> Cancel anytime</li>
       </ul>
-      <button class="btn-plan btn-plan-free" onclick="window.location.href='builder.html'">Get Pro Annual</button>
+      <button class="btn-plan btn-plan-free" onclick="window.location.href='auth.html'">Get Pro Annual</button>
     </div>
   </div>
-  <p style="margin-top:20px;font-size:13px;color:var(--muted)">All prices shown in GBP. Cancel anytime — no questions asked.</p>
+  <p style="margin-top:24px;font-size:13px;color:var(--muted);text-align:center;">All prices shown in GBP. 14-day cooling off period applies under UK consumer law. Cancel anytime — no questions asked.</p>
 </section>
 </div>
 
 <div style="background:white;">
+<!-- ABOUT -->
+<div style="background:white;">
+<section style="padding:80px 24px;max-width:860px;margin:0 auto;" id="about">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;">
+    <div>
+      <div class="section-label">Our story</div>
+      <h2 class="section-title">Created by a maker, for makers</h2>
+      <p style="font-size:16px;color:var(--muted);line-height:1.8;margin-bottom:16px;">I started making candles and wax melts as a hobby and quickly fell in love with it. But when it came to selling my products, the CLP labelling requirements felt overwhelming — reading SDS sheets, decoding H statements, figuring out what pictograms were needed.</p>
+      <p style="font-size:16px;color:var(--muted);line-height:1.8;margin-bottom:16px;">I couldn't find a simple, affordable tool that worked the way I needed it to — one that wasn't tied to a single supplier, worked on my phone, and guided me through the process step by step.</p>
+      <p style="font-size:16px;color:var(--muted);line-height:1.8;">So I built CLPeasy. A tool I wish had existed when I started. I hope it makes your journey as a maker just a little bit easier.</p>
+      <p style="margin-top:20px;font-size:15px;font-weight:600;color:var(--text);">— Michaela, Crafty Mouse Gifts 🕯️</p>
+    </div>
+    <div style="background:var(--off);border-radius:20px;padding:32px;border:1px solid var(--border);">
+      <div style="font-size:40px;margin-bottom:16px;">🕯️</div>
+      <h3 style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:12px;">Why CLPeasy is different</h3>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="width:20px;height:20px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:2px;">✓</div>
+          <div><strong style="font-size:14px;">Works on any device</strong><div style="font-size:13px;color:var(--muted);margin-top:2px;">Desktop, tablet or mobile — create labels wherever you are</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="width:20px;height:20px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:2px;">✓</div>
+          <div><strong style="font-size:14px;">Works with any supplier</strong><div style="font-size:13px;color:var(--muted);margin-top:2px;">Not tied to one brand — use Smart Paste with any SDS from any supplier worldwide</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="width:20px;height:20px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:2px;">✓</div>
+          <div><strong style="font-size:14px;">Multiple download formats</strong><div style="font-size:13px;color:var(--muted);margin-top:2px;">PNG, JPEG, SVG for Cricut, or print to PDF — whatever works for you</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="width:20px;height:20px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:2px;">✓</div>
+          <div><strong style="font-size:14px;">Your branding, your colours</strong><div style="font-size:13px;color:var(--muted);margin-top:2px;">Customise background colour and label style to match your brand</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start;">
+          <div style="width:20px;height:20px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:2px;">✓</div>
+          <div><strong style="font-size:14px;">Built by a maker</strong><div style="font-size:13px;color:var(--muted);margin-top:2px;">We understand your process because we've been through it ourselves</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
 <!-- FAQ -->
 <section class="faq" id="faq">
   <div class="faq-inner">
@@ -666,13 +699,41 @@
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-links">
-    <a href="#">Privacy Policy</a>
-    <a href="#">Terms of Service</a>
-    <a href="#">Contact</a>
-    <a href="#">Blog</a>
+  <div style="max-width:960px;margin:0 auto;padding:0 24px 24px;border-top:1px solid rgba(255,255,255,0.1);margin-top:0;padding-top:32px;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:32px;margin-bottom:32px;">
+      <div>
+        <div style="font-family:'DM Serif Display',serif;font-size:20px;color:white;margin-bottom:8px;">CLPeasy</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;">CLP label generation for candle and wax melt makers. Built by a maker, for makers.</div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">Product</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <a href="#features" style="font-size:13px;color:rgba(255,255,255,0.6);text-decoration:none;">Features</a>
+          <a href="#pricing" style="font-size:13px;color:rgba(255,255,255,0.6);text-decoration:none;">Pricing</a>
+          <a href="#faq" style="font-size:13px;color:rgba(255,255,255,0.6);text-decoration:none;">FAQ</a>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">Support</div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.8;">
+          <p style="margin-bottom:8px;">Got a question or need help?</p>
+          <a href="mailto:support@clpeasy.com" style="color:#5EEAD4;text-decoration:none;font-weight:600;">support@clpeasy.com</a>
+          <p style="margin-top:8px;font-size:12px;color:rgba(255,255,255,0.4);">We aim to respond within 24 hours.</p>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">Legal</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <a href="#" style="font-size:13px;color:rgba(255,255,255,0.6);text-decoration:none;">Privacy Policy</a>
+          <a href="#" style="font-size:13px;color:rgba(255,255,255,0.6);text-decoration:none;">Terms of Service</a>
+        </div>
+      </div>
+    </div>
+    <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <p style="font-size:12px;color:rgba(255,255,255,0.3);">&copy; 2026 CLPeasy. Built for candle makers, by candle makers.</p>
+      <p style="font-size:12px;color:rgba(255,255,255,0.3);">Made with ❤️ in the Scottish Borders</p>
+    </div>
   </div>
-  <p>&copy; 2026 CLPeasy. Built for candle makers, by candle makers.</p>
 </footer>
 
 <script>

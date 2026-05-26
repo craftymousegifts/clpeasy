@@ -188,7 +188,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .preview-header{padding:16px 20px 12px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;}
 .preview-header h3{font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);letter-spacing:1px;}
 .preview-badge{font-size:11px;background:rgba(13,148,136,0.2);color:#5EEAD4;padding:3px 10px;border-radius:100px;font-weight:600;white-space:nowrap;}
-.preview-canvas-area{flex:1;display:flex;align-items:center;justify-content:center;padding:24px;}
+.preview-canvas-area{flex:1;display:flex;align-items:center;justify-content:center;padding:16px;overflow:hidden;}
+#label-svg-container{display:flex;align-items:center;justify-content:center;width:100%;height:100%;}
+#label-svg-container svg{max-width:100%;max-height:100%;width:auto;height:auto;filter:drop-shadow(0 4px 16px rgba(0,0,0,0.3));}
 .preview-footer{padding:12px 18px 16px;border-top:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:8px;}
 .preview-size-info{font-size:12px;color:rgba(255,255,255,0.35);text-align:center;}
 
@@ -221,6 +223,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .sds-link-box a{color:var(--teal-dark);font-weight:600;}
 .saved-section{margin-top:32px;padding-top:24px;border-top:1px solid var(--border);}
 .saved-section h3{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+@media(min-width:861px){.saved-section{position:sticky;bottom:0;background:var(--off);padding-bottom:16px;z-index:10;box-shadow:0 -8px 16px rgba(247,248,250,0.9);}}
 .saved-count{font-size:12px;color:var(--muted);font-weight:400;}
 .saved-item{display:flex;align-items:center;justify-content:space-between;background:white;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:8px;gap:10px;}
 .saved-item-info{flex:1;min-width:0;}
@@ -242,7 +245,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <body>
 
 <nav>
-  <a href="index.html" class="nav-logo"><div class="nav-badge">CLP</div>CLPeasy</a>
+  <a href="index.html" class="nav-logo"><div class="nav-badge">CLP</div>easy</a>
   <div style="display:flex;align-items:center;gap:8px;">
     <a href="mailto:support@clpeasy.com" style="font-size:13px;color:var(--muted);text-decoration:none;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;white-space:nowrap;" onmouseover="this.style.borderColor='var(--teal)';this.style.color='var(--teal)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Support</a>
     <button class="btn-help" onclick="openHelp()" title="Help guide">?</button>
@@ -384,6 +387,30 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="custom-dims">
       <div class="form-group"><label>Width (mm)</label><input type="number" id="custom-w" placeholder="e.g. 50" inputmode="numeric" min="10" max="200" oninput="onDimInput()"></div>
       <div class="form-group"><label>Height (mm) <span id="height-note">— matches width</span></label><input type="number" id="custom-h" placeholder="e.g. 40" inputmode="numeric" min="10" max="200" oninput="onDimInput()"></div>
+    </div>
+    <div class="sdiv">Label appearance</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Background colour</label>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <input type="color" id="label-bg-colour" value="#ffffff" oninput="updateLabel()" style="width:48px;height:38px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;padding:2px;">
+          <input type="text" id="label-bg-hex" value="#ffffff" placeholder="#ffffff" oninput="syncColourFromHex()" style="flex:1;" maxlength="7">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Text colour</label>
+        <div style="display:flex;gap:8px;">
+          <button id="text-dark" onclick="setTextColour('dark')" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--teal);background:var(--teal-light);color:var(--teal-dark);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Dark</button>
+          <button id="text-light" onclick="setTextColour('light')" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Light</button>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Cut guide border</label>
+      <div style="display:flex;gap:8px;">
+        <button id="border-on" onclick="setBorder(true)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--teal);background:var(--teal-light);color:var(--teal-dark);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Show border</button>
+        <button id="border-off" onclick="setBorder(false)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Hide border</button>
+      </div>
     </div>
     <div class="step-nav"><div></div><button class="btn-next" onclick="nextStep()">Next: Product details →</button></div>
   </div>
@@ -530,9 +557,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div style="background:#F8FAFC;border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--muted);line-height:1.6;">
       ✂️ <strong style="color:var(--text);">About the dashed line:</strong> The pale dashed circle you see on your label is a <strong>cut guide only</strong> — it will not print. It shows exactly where to cut your label. In Cricut Design Space it becomes the cut path automatically. When printing at home, simply cut along the dashed line.
     </div>
-      <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ Download PNG — save to device</button>
-      <button id="btn-svg" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;">⬡ Download SVG — for Cricut Design Space</button>
-      <button id="btn-save" onclick="saveLabel()" style="background:var(--off);color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;">💾 Save to my label library</button>
+      <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ Download PNG — for printing &amp; Canva</button>
+      <button id="btn-jpeg" onclick="downloadJPEG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬇ Download JPEG — smaller file size</button>
+      <button id="btn-svg" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬡ Download SVG — for Cricut Design Space</button>
+      <button id="btn-pdf" onclick="printToPDF()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">🖨 Print to PDF</button>
+      <button id="btn-save" onclick="saveLabel()" style="background:var(--off);color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">💾 Save to my label library</button>
     </div>
     <div style="margin-top:10px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 14px;font-size:12px;color:#166534;">
       💡 <strong>Cricut tip:</strong> Import the SVG into Cricut Design Space → resize to your label mm dimensions → use Print Then Cut for best results.
@@ -561,7 +590,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button class="btn-dl" onclick="downloadPNG()">⬇ PNG</button>
       <button class="btn-dl-svg" onclick="downloadSVG()">⬡ SVG</button>
     </div>
-    <div class="cricut-note">SVG optimised for Cricut Design Space</div>
+    <div class="cricut-note" style="display:none;"></div>
   </div>
 </div>
 </div>
@@ -576,7 +605,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button class="btn-dl" onclick="downloadPNG();closeSheet()">⬇ PNG</button>
       <button class="btn-dl-svg" onclick="downloadSVG();closeSheet()">⬡ SVG</button>
     </div>
-    <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.3);text-align:center;">SVG for Cricut Design Space · PNG for printing</div>
+    <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.3);text-align:center;">PNG for printing · SVG for Cricut</div>
     <div style="margin-top:12px;text-align:center;"><button onclick="closeSheet()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:8px;">Close</button></div>
   </div>
 </div>
@@ -633,7 +662,96 @@ function ghsPicto(key,x,y,size){
 }
 
 // ── STATE ─────────────────────────────────────────────────────
-const S={step:1,shape:'circle',size:35,customW:50,customH:50,scentName:'',productType:'Scented Candle',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],bizName:'',bizAddress:'',bizWebsite:'',batchNum:'',isPro:false,supplier:''};
+const S={step:1,shape:'circle',size:35,customW:50,customH:50,scentName:'',productType:'Scented Candle',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],bizName:'',bizAddress:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true};
+
+// ── LABEL APPEARANCE ─────────────────────────────────────────
+function syncColourFromHex(){
+  const hex=document.getElementById('label-bg-hex')?.value;
+  if(hex&&/^#[0-9A-Fa-f]{6}$/.test(hex)){
+    const picker=document.getElementById('label-bg-colour');
+    if(picker)picker.value=hex;
+    updateLabel();
+  }
+}
+function setTextColour(mode){
+  S.textColour=mode;
+  ['dark','light'].forEach(m=>{
+    const btn=document.getElementById('text-'+m);
+    if(!btn)return;
+    const active=m===mode;
+    btn.style.border=active?'1.5px solid var(--teal)':'1.5px solid var(--border)';
+    btn.style.background=active?'var(--teal-light)':'white';
+    btn.style.color=active?'var(--teal-dark)':'var(--muted)';
+  });
+  updateLabel();
+}
+function setBorder(show){
+  S.showBorder=show;
+  const onBtn=document.getElementById('border-on');
+  const offBtn=document.getElementById('border-off');
+  if(onBtn){onBtn.style.border=show?'1.5px solid var(--teal)':'1.5px solid var(--border)';onBtn.style.background=show?'var(--teal-light)':'white';onBtn.style.color=show?'var(--teal-dark)':'var(--muted)';}
+  if(offBtn){offBtn.style.border=!show?'1.5px solid var(--teal)':'1.5px solid var(--border)';offBtn.style.background=!show?'var(--teal-light)':'white';offBtn.style.color=!show?'var(--teal-dark)':'var(--muted)';}
+  updateLabel();
+}
+
+// ── JPEG DOWNLOAD ─────────────────────────────────────────────
+function downloadJPEG(){
+  readForm();
+  const{mmW,mmH,pw,ph}=getDims();
+  const DPI=300;const scale=DPI/25.4;
+  const eW=Math.round(mmW*scale);const eH=Math.round(mmH*scale);
+  const svgStr=buildSVG(false);
+  const clone=new DOMParser().parseFromString(svgStr,'image/svg+xml').documentElement;
+  clone.setAttribute('width',eW);clone.setAttribute('height',eH);
+  clone.setAttribute('viewBox',`0 0 ${pw} ${ph}`);
+  const svgData=new XMLSerializer().serializeToString(clone);
+  const slug=(S.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  const fname=`clpeasy-${slug}-${S.size}mm.jpg`;
+  const svgDataUri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgData);
+  const img=new Image();
+  img.onload=function(){
+    const cvs=document.createElement('canvas');cvs.width=eW;cvs.height=eH;
+    const ctx=cvs.getContext('2d');
+    ctx.fillStyle='white';ctx.fillRect(0,0,eW,eH);
+    ctx.drawImage(img,0,0,eW,eH);
+    const a=document.createElement('a');a.href=cvs.toDataURL('image/jpeg',0.92);a.download=fname;
+    document.body.appendChild(a);a.click();
+    setTimeout(()=>document.body.removeChild(a),1000);
+  };
+  img.src=svgDataUri;
+}
+
+// ── PRINT TO PDF ──────────────────────────────────────────────
+function printToPDF(){
+  readForm();
+  const{mmW,mmH,pw,ph}=getDims();
+  const DPI=300;const scale=DPI/25.4;
+  const eW=Math.round(mmW*scale);const eH=Math.round(mmH*scale);
+  const svgStr=buildSVG(false);
+  const clone=new DOMParser().parseFromString(svgStr,'image/svg+xml').documentElement;
+  clone.setAttribute('width',eW);clone.setAttribute('height',eH);
+  clone.setAttribute('viewBox',`0 0 ${pw} ${ph}`);
+  const svgData=new XMLSerializer().serializeToString(clone);
+  const svgDataUri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgData);
+  const img=new Image();
+  img.onload=function(){
+    const cvs=document.createElement('canvas');cvs.width=eW;cvs.height=eH;
+    const ctx=cvs.getContext('2d');
+    ctx.fillStyle='white';ctx.fillRect(0,0,eW,eH);
+    ctx.drawImage(img,0,0,eW,eH);
+    const pngDataUri=cvs.toDataURL('image/png');
+    const win=window.open('','_blank');
+    if(!win){alert('Please allow pop-ups for clpeasy.com to use Print to PDF.');return;}
+    win.document.write(`<!DOCTYPE html><html><head><title>CLPeasy Label</title>
+    <style>*{margin:0;padding:0;}body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:white;}
+    img{width:${mmW}mm;height:${mmH}mm;}
+    @media print{@page{size:${mmW}mm ${mmH}mm;margin:5mm;}}</style></head>
+    <body><img src="${pngDataUri}"/></body></html>`);
+    win.document.close();
+    setTimeout(()=>win.print(),500);
+  };
+  img.src=svgDataUri;
+}
 
 // ── HELP PANEL ────────────────────────────────────────────────
 function openHelp(){
@@ -800,7 +918,7 @@ function buildSensitiserChips(){
 }
 function toggleDownload(){
   const checked=document.getElementById('verify-checkbox')?.checked;
-  const btns=['btn-png','btn-svg','btn-save'];
+  const btns=['btn-png','btn-jpeg','btn-svg','btn-pdf','btn-save'];
   btns.forEach(id=>{
     const btn=document.getElementById(id);
     if(!btn)return;
@@ -928,10 +1046,13 @@ function buildSVG(forExport=false){
     return ghsPicto(p, pStartX+i*pictoGap, pictoY, pictoFS);
   }).join('');
 
+  const bgCol=(document.getElementById('label-bg-colour')?.value)||'#ffffff';
+  const txtCol=S.textColour==='light'?'#ffffff':'#111111';
+  const showBdr=S.showBorder!==false;
   let clip='',bg='';
-  if(S.shape==='circle'){const r=Math.min(pw,ph)/2-2;clip=`<clipPath id="lc"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath>`;bg=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff"/><circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3"/>`;}
-  else if(S.shape==='square'){const s=Math.min(pw,ph)-4,x0=cx-s/2,y0=cy-s/2;clip=`<clipPath id="lc"><rect x="${x0}" y="${y0}" width="${s}" height="${s}" rx="5"/></clipPath>`;bg=`<rect x="${x0}" y="${y0}" width="${s}" height="${s}" rx="5" fill="#fff"/><rect x="${x0}" y="${y0}" width="${s}" height="${s}" rx="5" fill="none" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3"/>`;}
-  else{clip=`<clipPath id="lc"><rect x="2" y="2" width="${pw-4}" height="${ph-4}" rx="4"/></clipPath>`;bg=`<rect x="2" y="2" width="${pw-4}" height="${ph-4}" rx="4" fill="#fff"/><rect x="2" y="2" width="${pw-4}" height="${ph-4}" rx="4" fill="none" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3"/>`;}
+  if(S.shape==='circle'){const r=Math.min(pw,ph)/2-2;clip=`<clipPath id="lc"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath>`;bg=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${bgCol}"/>${showBdr?`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3"/>`:""}`;}
+  else if(S.shape==='square'){const s=Math.min(pw,ph)-4,x0=cx-s/2,y0=cy-s/2;clip=`<clipPath id="lc"><rect x="${x0}" y="${y0}" width="${s}" height="${s}" rx="5"/></clipPath>`;bg=`<rect x="${x0}" y="${y0}" width="${s}" height="${s}" rx="5" fill="${bgCol}"/>${showBdr?`<rect x="${x0}" y="${y0}" width="${s}" height="${s}" rx="5" fill="none" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3"/>`:""}`;}
+  else{clip=`<clipPath id="lc"><rect x="2" y="2" width="${pw-4}" height="${ph-4}" rx="4"/></clipPath>`;bg=`<rect x="2" y="2" width="${pw-4}" height="${ph-4}" rx="4" fill="${bgCol}"/>${showBdr?`<rect x="2" y="2" width="${pw-4}" height="${ph-4}" rx="4" fill="none" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3"/>`:""}`;}
   const fs=(b,m)=>Math.max(pw*b,m);
 
   // Watermark for free tier
@@ -947,20 +1068,20 @@ function buildSVG(forExport=false){
 <defs>${clip}</defs>
 <g clip-path="url(#lc)">
   ${bg}
-  <rect x="0" y="0" width="${pw}" height="${topH}" fill="#fff"/>
-  <text x="${cx}" y="${topH*0.36}" font-family="serif" font-size="${bizNameFS}" font-weight="700" fill="#111" text-anchor="middle" dominant-baseline="middle">${xe(S.bizName||'YOUR BRAND')}</text>
-  <text x="${cx}" y="${topH*0.76}" font-family="sans-serif" font-size="${fs(0.034,3.8)}" fill="#555" text-anchor="middle" dominant-baseline="middle">${xe(webLine)}</text>
+  <rect x="0" y="0" width="${pw}" height="${topH}" fill="${bgCol}"/>
+  <text x="${cx}" y="${topH*0.36}" font-family="serif" font-size="${bizNameFS}" font-weight="700" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(S.bizName||'YOUR BRAND')}</text>
+  <text x="${cx}" y="${topH*0.76}" font-family="sans-serif" font-size="${fs(0.034,3.8)}" fill="${txtCol=="#ffffff"?"rgba(255,255,255,0.7)":"#555"}" text-anchor="middle" dominant-baseline="middle">${xe(webLine)}</text>
   <line x1="${pw*0.15}" y1="${topH}" x2="${pw*0.85}" y2="${topH}" stroke="#ddd" stroke-width="0.5"/>
-  <text x="${cx}" y="${midY+midH*0.14}" font-family="serif" font-size="${scentFS}" font-weight="700" fill="#111" text-anchor="middle" dominant-baseline="middle">${xe(scent)}</text>
-  <text x="${cx}" y="${midY+midH*0.295}" font-family="sans-serif" font-size="${fs(0.043,4.5)}" font-weight="700" fill="#111" text-anchor="middle" letter-spacing="0.8">${xe(type)}</text>
-  <text x="${cx}" y="${midY+midH*0.445}" font-family="sans-serif" font-size="${fs(0.048,5)}" font-weight="800" fill="#111" text-anchor="middle">${xe(sig.toUpperCase())}</text>
+  <text x="${cx}" y="${midY+midH*0.14}" font-family="serif" font-size="${scentFS}" font-weight="700" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(scent)}</text>
+  <text x="${cx}" y="${midY+midH*0.295}" font-family="sans-serif" font-size="${fs(0.043,4.5)}" font-weight="700" fill="${txtCol}" text-anchor="middle" letter-spacing="0.8">${xe(type)}</text>
+  <text x="${cx}" y="${midY+midH*0.445}" font-family="sans-serif" font-size="${fs(0.048,5)}" font-weight="800" fill="${txtCol}" text-anchor="middle">${xe(sig.toUpperCase())}</text>
   ${pictoRow}
-  <text x="${cx}" y="${midY+midH*0.80}" font-family="sans-serif" font-size="${fs(0.038,4)}" fill="#111" text-anchor="middle">${xe(hText)}</text>
-  <text x="${cx}" y="${midY+midH*0.91}" font-family="sans-serif" font-size="${fs(0.033,3.5)}" font-style="italic" fill="#555" text-anchor="middle">${xe(sensStr)}</text>
+  <text x="${cx}" y="${midY+midH*0.80}" font-family="sans-serif" font-size="${fs(0.038,4)}" fill="${txtCol}" text-anchor="middle">${xe(hText)}</text>
+  <text x="${cx}" y="${midY+midH*0.91}" font-family="sans-serif" font-size="${fs(0.033,3.5)}" font-style="italic" fill="${txtCol=="#ffffff"?"rgba(255,255,255,0.7)":"#555"}" text-anchor="middle">${xe(sensStr)}</text>
   <line x1="${pw*0.15}" y1="${ph-botH}" x2="${pw*0.85}" y2="${ph-botH}" stroke="#ddd" stroke-width="0.5"/>
-  <rect x="0" y="${ph-botH}" width="${pw}" height="${botH}" fill="#fff"/>
-  <text x="${cx}" y="${ph-botH+botH*0.35}" font-family="sans-serif" font-size="${bizLineFS}" fill="#111" text-anchor="middle" dominant-baseline="middle">${xe(bizLine)}</text>
-  <text x="${cx}" y="${ph-botH+botH*0.72}" font-family="sans-serif" font-size="${fs(0.033,3.5)}" fill="#555" text-anchor="middle" dominant-baseline="middle">${xe(detailLine)}</text>
+  <rect x="0" y="${ph-botH}" width="${pw}" height="${botH}" fill="${bgCol}"/>
+  <text x="${cx}" y="${ph-botH+botH*0.35}" font-family="sans-serif" font-size="${bizLineFS}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(bizLine)}</text>
+  <text x="${cx}" y="${ph-botH+botH*0.72}" font-family="sans-serif" font-size="${fs(0.033,3.5)}" fill="${txtCol=="#ffffff"?"rgba(255,255,255,0.7)":"#555"}" text-anchor="middle" dominant-baseline="middle">${xe(detailLine)}</text>
   ${wm}
 </g></svg>`;
 }
