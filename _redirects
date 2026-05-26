@@ -1,7 +1,9 @@
 /               /coming-soon.html       200
-/index.html     /coming-soon.html       200
+/home           /home.html              200
+/home.html      /home.html              200
 /privacy        /privacy.html           200
 /terms          /terms.html             200
 /cookies        /cookie-policy.html     200
 /cookie-policy  /cookie-policy.html     200
+
 
