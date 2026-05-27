@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLPeasy — Beta Tester Sign-Up</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --teal: #0D9488;
+    --teal-dark: #0A7C71;
+    --teal-light: #E6FAF8;
+    --teal-mid: #CCFAF5;
+    --text: #111318;
+    --muted: #6B7280;
+    --border: #E8EAED;
+    --off: #F7F8FA;
+    --white: #FFFFFF;
+    --error: #EF4444;
+    --success: #10B981;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--off);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+  }
+
+  .logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    text-decoration: none;
+  }
+  .logo span.clp { color: var(--teal); font-weight: 700; }
+  .logo span.easy { color: var(--text); }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, var(--teal) 0%, #0A7C71 100%);
+    color: white;
+    padding: 56px 24px 48px;
+    text-align: center;
+  }
+
+  .badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.35);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 999px;
+    margin-bottom: 20px;
+  }
+
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.9rem, 5vw, 2.8rem);
+    font-weight: 400;
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+
+  .hero p {
+    font-size: 1.05rem;
+    opacity: 0.9;
+    max-width: 520px;
+    margin: 0 auto 28px;
+    line-height: 1.6;
+  }
+
+  .spots-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    opacity: 0.85;
+  }
+
+  .spot-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.5);
+    display: inline-block;
+  }
+  .spot-dot.taken { background: white; }
+
+  /* MAIN */
+  main {
+    flex: 1;
+    max-width: 560px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 40px 20px 60px;
+  }
+
+  /* FULL CARD */
+  .full-message {
+    display: none;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 48px 32px;
+    text-align: center;
+  }
+
+  .full-message .icon {
+    font-size: 3rem;
+    margin-bottom: 20px;
+  }
+
+  .full-message h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.7rem;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+
+  .full-message p {
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .full-message a {
+    color: var(--teal);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  /* FORM CARD */
+  .form-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px 32px;
+  }
+
+  .form-card h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    margin-bottom: 6px;
+  }
+
+  .form-card .subtitle {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  .field {
+    margin-bottom: 18px;
+  }
+
+  label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  input, textarea, select {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    color: var(--text);
+    background: var(--white);
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--teal);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 90px;
+  }
+
+  .checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .checkbox-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    margin-top: 2px;
+    accent-color: var(--teal);
+  }
+
+  .checkbox-row label {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .checkbox-row label a {
+    color: var(--teal);
+    text-decoration: none;
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--teal);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 4px;
+  }
+
+  .submit-btn:hover { background: var(--teal-dark); }
+  .submit-btn:active { transform: scale(0.99); }
+  .submit-btn:disabled { background: #9CA3AF; cursor: not-allowed; }
+
+  .error-msg {
+    color: var(--error);
+    font-size: 0.82rem;
+    margin-top: 4px;
+    display: none;
+  }
+
+  /* SUCCESS */
+  .success-card {
+    display: none;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 48px 32px;
+    text-align: center;
+  }
+
+  .success-card .icon {
+    width: 64px;
+    height: 64px;
+    background: var(--teal-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 1.8rem;
+  }
+
+  .success-card h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.7rem;
+    margin-bottom: 12px;
+  }
+
+  .success-card p {
+    color: var(--muted);
+    line-height: 1.6;
+    font-size: 0.95rem;
+  }
+
+  /* WHAT TO EXPECT */
+  .expect-section {
+    margin-top: 28px;
+  }
+
+  .expect-section h3 {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .expect-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .expect-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .expect-list li .tick {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    background: var(--teal-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+    font-size: 0.7rem;
+    color: var(--teal);
+    font-weight: 700;
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 24px;
+    font-size: 0.8rem;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    background: white;
+  }
+
+  footer a { color: var(--teal); text-decoration: none; }
+
+  /* LOADING SPINNER */
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 480px) {
+    .form-card, .full-message, .success-card { padding: 28px 20px; }
+    .hero { padding: 40px 20px 36px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="https://clpeasy.com" class="logo">
+    <span class="clp">CLP</span><span class="easy">easy</span>
+  </a>
+</nav>
+
+<div class="hero">
+  <div class="badge">Beta Programme</div>
+  <h1>Be one of the first<br>to try CLPeasy</h1>
+  <p>We're looking for 5 candle and wax melt makers to test CLPeasy free for 7 days and help shape the product before launch.</p>
+  <div class="spots-row" id="spotsRow">
+    <span>Loading spots...</span>
+  </div>
+</div>
+
+<main>
+
+  <!-- FULL MESSAGE (shown when 5 testers reached) -->
+  <div class="full-message" id="fullMessage">
+    <div class="icon">🙏</div>
+    <h2>We're full for now</h2>
+    <p>We've reached our limit of 5 beta testers — thank you so much for your interest! We'll be opening CLPeasy to everyone very soon.</p>
+    <p style="margin-top:12px;">In the meantime, feel free to email us at <a href="mailto:support@clpeasy.com">support@clpeasy.com</a> and we'll let you know the moment we launch.</p>
+  </div>
+
+  <!-- SIGN-UP FORM -->
+  <div class="form-card" id="formCard">
+    <h2>Apply to be a beta tester</h2>
+    <p class="subtitle">Fill in the form below. We'll review your application and be in touch within 24 hours.</p>
+
+    <div class="field">
+      <label for="name">Your name *</label>
+      <input type="text" id="name" placeholder="e.g. Sarah Johnson" autocomplete="name">
+      <div class="error-msg" id="nameError">Please enter your name</div>
+    </div>
+
+    <div class="field">
+      <label for="email">Email address *</label>
+      <input type="email" id="email" placeholder="e.g. sarah@example.com" autocomplete="email">
+      <div class="error-msg" id="emailError">Please enter a valid email address</div>
+    </div>
+
+    <div class="field">
+      <label for="business">Business name (optional)</label>
+      <input type="text" id="business" placeholder="e.g. Sarah's Scents">
+    </div>
+
+    <div class="field">
+      <label for="products">What products do you make? *</label>
+      <select id="products">
+        <option value="">Select one...</option>
+        <option value="Candles">Candles</option>
+        <option value="Wax melts">Wax melts</option>
+        <option value="Both candles and wax melts">Both candles and wax melts</option>
+        <option value="Candles, wax melts and other products">Candles, wax melts and other products</option>
+      </select>
+      <div class="error-msg" id="productsError">Please select what you make</div>
+    </div>
+
+    <div class="field">
+      <label for="why">Why would you like to be a beta tester? *</label>
+      <textarea id="why" placeholder="Tell us a little about yourself and why you'd like to try CLPeasy..."></textarea>
+      <div class="error-msg" id="whyError">Please tell us a little about yourself</div>
+    </div>
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="agree">
+      <label for="agree">I understand this is a 7-day free trial in exchange for honest feedback, and I agree to the <a href="https://clpeasy.com/terms.html" target="_blank">Terms of Use</a> and <a href="https://clpeasy.com/privacy.html" target="_blank">Privacy Policy</a>.</label>
+    </div>
+    <div class="error-msg" id="agreeError" style="margin-top:-10px; margin-bottom:14px;">Please tick the box to continue</div>
+
+    <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">Apply now →</button>
+
+    <div class="expect-section">
+      <h3>What to expect</h3>
+      <ul class="expect-list">
+        <li><span class="tick">✓</span> Free full access to CLPeasy for 7 days</li>
+        <li><span class="tick">✓</span> We'll be in touch within 24 hours to confirm your spot</li>
+        <li><span class="tick">✓</span> We'll ask for honest feedback at the end of your trial</li>
+        <li><span class="tick">✓</span> No payment details required — ever</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SUCCESS MESSAGE -->
+  <div class="success-card" id="successCard">
+    <div class="icon">🎉</div>
+    <h2>Application received!</h2>
+    <p>Thank you for applying, <span id="successName"></span>! We'll review your application and be in touch at <strong id="successEmail"></strong> within 24 hours.</p>
+    <p style="margin-top:16px; color: var(--muted);">Keep an eye on your inbox — and check your spam folder just in case.</p>
+  </div>
+
+</main>
+
+<footer>
+  CLPeasy — CLP compliance made simple for candle and wax melt makers<br>
+  Made with ❤️ in the Scottish Borders &nbsp;·&nbsp;
+  <a href="mailto:support@clpeasy.com">support@clpeasy.com</a> &nbsp;·&nbsp;
+  <a href="https://clpeasy.com/terms.html">Terms</a> &nbsp;·&nbsp;
+  <a href="https://clpeasy.com/privacy.html">Privacy</a>
+</footer>
+
+<script>
+  // ============================================================
+  // SUPABASE CONFIG — replace with your actual values
+  // ============================================================
+  const SUPABASE_URL = 'https://qvkosdqcryrcfbjtaxic.supabase.co';
+  const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY_HERE'; // Replace with your anon key
+  const MAX_TESTERS = 5;
+
+  // ============================================================
+  // SUPABASE HELPER
+  // ============================================================
+  async function supabase(method, path, body) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+      method,
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': method === 'POST' ? 'return=representation' : ''
+      },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.status === 204 ? null : res.json();
+  }
+
+  // ============================================================
+  // ON LOAD — check tester count
+  // ============================================================
+  async function checkSpots() {
+    try {
+      const data = await supabase('GET', 'beta_testers?select=id&status=neq.rejected');
+      const taken = Array.isArray(data) ? data.length : 0;
+      const remaining = MAX_TESTERS - taken;
+
+      const spotsRow = document.getElementById('spotsRow');
+
+      if (remaining <= 0) {
+        // Show full message, hide form
+        document.getElementById('formCard').style.display = 'none';
+        document.getElementById('fullMessage').style.display = 'block';
+        spotsRow.innerHTML = '<span>All 5 spots filled — thank you!</span>';
+      } else {
+        // Show spots indicator
+        let dots = '';
+        for (let i = 0; i < MAX_TESTERS; i++) {
+          dots += `<span class="spot-dot${i < taken ? ' taken' : ''}"></span>`;
+        }
+        spotsRow.innerHTML = `${dots} &nbsp; <span>${remaining} of ${MAX_TESTERS} spots remaining</span>`;
+      }
+    } catch (e) {
+      document.getElementById('spotsRow').innerHTML = '<span>Spots available — apply below</span>';
+    }
+  }
+
+  // ============================================================
+  // FORM SUBMIT
+  // ============================================================
+  async function handleSubmit() {
+    // Clear errors
+    ['name','email','products','why','agree'].forEach(f => {
+      document.getElementById(f + 'Error').style.display = 'none';
+    });
+
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const business = document.getElementById('business').value.trim();
+    const products = document.getElementById('products').value;
+    const why = document.getElementById('why').value.trim();
+    const agreed = document.getElementById('agree').checked;
+
+    let valid = true;
+
+    if (!name) { document.getElementById('nameError').style.display = 'block'; valid = false; }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { document.getElementById('emailError').style.display = 'block'; valid = false; }
+    if (!products) { document.getElementById('productsError').style.display = 'block'; valid = false; }
+    if (!why || why.length < 10) { document.getElementById('whyError').style.display = 'block'; valid = false; }
+    if (!agreed) { document.getElementById('agreeError').style.display = 'block'; valid = false; }
+
+    if (!valid) return;
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Submitting...';
+
+    try {
+      // Re-check spots before submitting
+      const existing = await supabase('GET', 'beta_testers?select=id&status=neq.rejected');
+      if (existing.length >= MAX_TESTERS) {
+        document.getElementById('formCard').style.display = 'none';
+        document.getElementById('fullMessage').style.display = 'block';
+        return;
+      }
+
+      // Check for duplicate email
+      const dupe = await supabase('GET', `beta_testers?email=eq.${encodeURIComponent(email)}&select=id`);
+      if (dupe && dupe.length > 0) {
+        btn.disabled = false;
+        btn.innerHTML = 'Apply now →';
+        document.getElementById('emailError').textContent = 'This email has already been used to apply.';
+        document.getElementById('emailError').style.display = 'block';
+        return;
+      }
+
+      // Insert tester
+      await supabase('POST', 'beta_testers', {
+        name,
+        email,
+        business_name: business || null,
+        products_made: products,
+        reason: why,
+        status: 'pending',
+        applied_at: new Date().toISOString()
+      });
+
+      // Show success
+      document.getElementById('formCard').style.display = 'none';
+      document.getElementById('successName').textContent = name.split(' ')[0];
+      document.getElementById('successEmail').textContent = email;
+      document.getElementById('successCard').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    } catch (e) {
+      btn.disabled = false;
+      btn.innerHTML = 'Apply now →';
+      alert('Something went wrong — please try again or email support@clpeasy.com');
+    }
+  }
+
+  // Run on load
+  checkSpots();
+</script>
+
+</body>
+</html>
