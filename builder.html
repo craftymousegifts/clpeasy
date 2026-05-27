@@ -225,6 +225,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .supplier-name{font-size:13px;font-weight:600;color:var(--text);}
 .supplier-card.selected .supplier-name{color:var(--teal-dark);}
 .supplier-region{font-size:11px;color:var(--muted);margin-top:2px;}
+.supplier-featured-badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;background:var(--amber-light);color:#92400E;padding:2px 6px;border-radius:100px;margin-top:3px;}
+.supplier-card.featured{border-color:#F59E0B;background:#FFFBEB;}
+.supplier-card.featured:hover{border-color:#D97706;background:#FEF3C7;}
+.supplier-card.featured.selected{border-color:var(--teal);background:var(--teal-light);}
 .sds-link-box{background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:10px;padding:12px 14px;font-size:13px;color:#166534;line-height:1.6;}
 .sds-link-box a{color:var(--teal-dark);font-weight:600;}
 .saved-section{margin-top:32px;padding-top:24px;border-top:1px solid var(--border);}
@@ -510,21 +514,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <!-- SUPPLIER SELECTOR -->
     <div class="sdiv" style="margin-top:0">Your fragrance supplier</div>
     <div class="supplier-grid" id="supplier-grid">
-      <div class="supplier-card" data-supplier="sfc" onclick="selectSupplier(this,'sfc')">
+      <div class="supplier-card featured" data-supplier="sfc" onclick="selectSupplier(this,'sfc')">
         <div class="supplier-name">Supplies for Candles</div>
         <div class="supplier-region">🇬🇧 UK</div>
+        <div class="supplier-featured-badge">⭐ Featured</div>
       </div>
-      <div class="supplier-card" data-supplier="cs" onclick="selectSupplier(this,'cs')">
-        <div class="supplier-name">Candle Shack</div>
-        <div class="supplier-region">🇬🇧 UK</div>
-      </div>
-      <div class="supplier-card" data-supplier="gf" onclick="selectSupplier(this,'gf')">
-        <div class="supplier-name">Gracefruit</div>
-        <div class="supplier-region">🇬🇧 UK</div>
-      </div>
-      <div class="supplier-card" data-supplier="ni" onclick="selectSupplier(this,'ni')">
+      <div class="supplier-card featured" data-supplier="ni" onclick="selectSupplier(this,'ni')">
         <div class="supplier-name">NI Candle Supplies</div>
         <div class="supplier-region">🇬🇧 UK</div>
+        <div class="supplier-featured-badge">⭐ Featured</div>
       </div>
       <div class="supplier-card" data-supplier="other" onclick="selectSupplier(this,'other')">
         <div class="supplier-name">Other supplier</div>
@@ -930,8 +928,6 @@ async function signOut(){
 }
 const SUPPLIERS={
   sfc:{name:'Supplies for Candles',sdsUrl:'https://www.suppliesforcandles.co.uk',instructions:'Visit Supplies for Candles → find your fragrance oil product page → scroll down to find the SDS PDF → download it → copy Section 2.2 → paste below.'},
-  cs:{name:'Candle Shack',sdsUrl:'https://candleshack.co.uk',instructions:'Visit Candle Shack → find your fragrance product page → look for the Safety Data Sheet download → copy Section 2.2 → paste below.'},
-  gf:{name:'Gracefruit',sdsUrl:'https://gracefruit.com',instructions:'Visit Gracefruit → find your fragrance oil → look for the SDS PDF on the product page → copy Section 2.2 → paste below.'},
   ni:{name:'NI Candle Supplies',sdsUrl:'https://nicandlesupplies.co.uk',instructions:'Visit NI Candle Supplies → find your fragrance → download the SDS from the product page → copy Section 2.2 → paste below.'},
   csc:{name:'CandleScience',sdsUrl:'https://www.candlescience.com',instructions:'Visit CandleScience → find your fragrance product page → look under Documents for the SDS PDF → copy Section 2 → paste below.'},
   ng:{name:'Natures Garden',sdsUrl:'https://www.naturesgardencandles.com',instructions:'Visit Natures Garden → find your fragrance → download the SDS from the product page → copy Section 2 → paste below.'},
