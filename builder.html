@@ -544,7 +544,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
     <div id="supplier-sds-link" style="display:none;margin-bottom:16px;"></div>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:16px;line-height:1.5;padding:8px 10px;background:var(--off);border-radius:6px;">CLPeasy is not affiliated with any of the suppliers listed. Links are provided for convenience to help you locate SDS sheets. Always verify hazard data against your supplier's current SDS at your actual fragrance load before printing and selling.</div>
     <div class="smart-paste-box">
       <h4>✨ Smart Paste — paste SDS Section 2.2</h4>
       <p>Copy Section 2.2 from your fragrance supplier's SDS PDF and paste it here. CLPeasy extracts all hazard data automatically.</p>
@@ -558,15 +557,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <div class="sdiv">Hazard pictograms</div>
     <div class="picto-grid">
-      <div class="picto-btn" data-picto="flame" onclick="togglePicto(this,'flame')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="32" height="32"><rect width="100" height="100" fill="white"/><polygon points="50,3 97,97 3,97" fill="white" stroke="#e00" stroke-width="7"/><text x="50" y="86" font-size="46" text-anchor="middle" font-family="serif">🔥</text></svg></div><div class="picto-name">Flammable</div></div>
-      <div class="picto-btn" data-picto="exclamation" onclick="togglePicto(this,'exclamation')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="32" height="32"><rect width="100" height="100" fill="white"/><polygon points="50,3 97,97 3,97" fill="white" stroke="#e00" stroke-width="7"/><text x="50" y="85" font-size="54" font-weight="900" text-anchor="middle" font-family="Arial,sans-serif" fill="#000">!</text></svg></div><div class="picto-name">Irritant</div></div>
-      <div class="picto-btn" data-picto="health" onclick="togglePicto(this,'health')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="32" height="32"><rect width="100" height="100" fill="white"/><polygon points="50,3 97,97 3,97" fill="white" stroke="#e00" stroke-width="7"/><g transform="translate(50,54)"><path d="M0,-18 C8,-18 16,-10 16,0 C16,8 8,16 0,24 C-8,16 -16,8 -16,0 C-16,-10 -8,-18 0,-18Z" fill="none" stroke="#000" stroke-width="4"/><line x1="0" y1="-10" x2="0" y2="10" stroke="#000" stroke-width="4"/><line x1="-10" y1="0" x2="10" y2="0" stroke="#000" stroke-width="4"/></g></svg></div><div class="picto-name">Health Hazard</div></div>
-      <div class="picto-btn" data-picto="aquatic" onclick="togglePicto(this,'aquatic')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="32" height="32"><rect width="100" height="100" fill="white"/><polygon points="50,3 97,97 3,97" fill="white" stroke="#e00" stroke-width="7"/><g transform="translate(50,58)"><ellipse cx="0" cy="-8" rx="12" ry="8" fill="#000"/><path d="M-8,2 Q0,12 8,2" fill="none" stroke="#000" stroke-width="3"/><path d="M-14,-4 Q-18,-10 -14,-16 Q-10,-10 -14,-4Z" fill="#000"/></g></svg></div><div class="picto-name">Aquatic Toxic</div></div>
-      <div class="picto-btn" data-picto="corrosive" onclick="togglePicto(this,'corrosive')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="32" height="32"><rect width="100" height="100" fill="white"/><polygon points="50,3 97,97 3,97" fill="white" stroke="#e00" stroke-width="7"/><g transform="translate(50,56)"><rect x="-18" y="-20" width="14" height="20" rx="2" fill="none" stroke="#000" stroke-width="3"/><path d="M-16,-20 L-16,-26 L-10,-26" fill="none" stroke="#000" stroke-width="3"/><path d="M-12,-26 Q-8,-20 -4,-16 Q0,-8 2,0" stroke="#000" stroke-width="2.5" fill="none"/><path d="M4,-20 Q8,-14 6,-8 Q4,-4 6,0" stroke="#000" stroke-width="2.5" fill="none"/></g></svg></div><div class="picto-name">Corrosive</div></div>
-      <div class="picto-btn" data-picto="skull" onclick="togglePicto(this,'skull')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="32" height="32"><rect width="100" height="100" fill="white"/><polygon points="50,3 97,97 3,97" fill="white" stroke="#e00" stroke-width="7"/><g transform="translate(50,56)"><ellipse cx="0" cy="-14" rx="14" ry="12" fill="#000"/><rect x="-10" y="-4" width="20" height="10" rx="2" fill="#000"/><circle cx="-6" cy="-16" r="4" fill="white"/><circle cx="6" cy="-16" r="4" fill="white"/><line x1="-3" y1="0" x2="-3" y2="6" stroke="white" stroke-width="2"/><line x1="3" y1="0" x2="3" y2="6" stroke="white" stroke-width="2"/><line x1="-8" y1="0" x2="-8" y2="6" stroke="white" stroke-width="1.5"/><line x1="8" y1="0" x2="8" y2="6" stroke="white" stroke-width="1.5"/></g></svg></div><div class="picto-name">Toxic</div></div>
-      <div class="picto-btn" data-picto="oxidiser" onclick="togglePicto(this,'oxidiser')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="32" height="32"><rect width="100" height="100" fill="white"/><polygon points="50,3 97,97 3,97" fill="white" stroke="#e00" stroke-width="7"/><g transform="translate(50,54)"><circle cx="0" cy="-6" r="12" fill="none" stroke="#000" stroke-width="3.5"/><path d="M-8,-18 L-4,-10 M8,-18 L4,-10" stroke="#000" stroke-width="3" stroke-linecap="round"/><path d="M-14,-12 L-8,-8 M14,-12 L8,-8" stroke="#000" stroke-width="3" stroke-linecap="round"/></g></svg></div><div class="picto-name">Oxidiser</div></div>
-      <div class="picto-btn" data-picto="gas" onclick="togglePicto(this,'gas')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="32" height="32"><rect width="100" height="100" fill="white"/><polygon points="50,3 97,97 3,97" fill="white" stroke="#e00" stroke-width="7"/><g transform="translate(50,58)"><ellipse cx="0" cy="-8" rx="13" ry="16" fill="none" stroke="#000" stroke-width="3.5"/><rect x="-5" y="-24" width="10" height="6" rx="2" fill="#000"/><rect x="-2" y="-30" width="4" height="6" rx="1" fill="#000"/></g></svg></div><div class="picto-name">Gas Pressure</div></div>
-      <div class="picto-btn" data-picto="explosion" onclick="togglePicto(this,'explosion')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="32" height="32"><rect width="100" height="100" fill="white"/><polygon points="50,3 97,97 3,97" fill="white" stroke="#e00" stroke-width="7"/><g transform="translate(50,56)"><path d="M0,-22 L4,-10 L14,-18 L8,-6 L20,-4 L10,4 L16,14 L6,8 L4,20 L0,8 L-4,20 L-6,8 L-16,14 L-10,4 L-20,-4 L-8,-6 L-14,-18 L-4,-10 Z" fill="#000"/></g></svg></div><div class="picto-name">Explosive</div></div>
+      <div class="picto-btn" data-picto="flame" onclick="togglePicto(this,'flame')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="82" font-size="44" text-anchor="middle">🔥</text></svg></div><div class="picto-name">Flammable</div></div>
+      <div class="picto-btn" data-picto="exclamation" onclick="togglePicto(this,'exclamation')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="82" font-size="52" text-anchor="middle" font-weight="900" fill="#000">!</text></svg></div><div class="picto-name">Irritant</div></div>
+      <div class="picto-btn" data-picto="health" onclick="togglePicto(this,'health')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="40" text-anchor="middle">⚕</text></svg></div><div class="picto-name">Health Hazard</div></div>
+      <div class="picto-btn" data-picto="aquatic" onclick="togglePicto(this,'aquatic')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="36" text-anchor="middle">🐟</text></svg></div><div class="picto-name">Aquatic Toxic</div></div>
+      <div class="picto-btn" data-picto="corrosive" onclick="togglePicto(this,'corrosive')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="36" text-anchor="middle">⚗</text></svg></div><div class="picto-name">Corrosive</div></div>
+      <div class="picto-btn" data-picto="skull" onclick="togglePicto(this,'skull')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="38" text-anchor="middle">☠</text></svg></div><div class="picto-name">Toxic</div></div>
+      <div class="picto-btn" data-picto="oxidiser" onclick="togglePicto(this,'oxidiser')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="38" text-anchor="middle">○</text></svg></div><div class="picto-name">Oxidiser</div></div>
+      <div class="picto-btn" data-picto="gas" onclick="togglePicto(this,'gas')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="36" text-anchor="middle">⊕</text></svg></div><div class="picto-name">Gas Pressure</div></div>
+      <div class="picto-btn" data-picto="explosion" onclick="togglePicto(this,'explosion')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="36" text-anchor="middle">✸</text></svg></div><div class="picto-name">Explosive</div></div>
     </div>
     <div class="sdiv">H Statements</div>
     <span class="library-toggle" onclick="toggleLib('h-library',this)">▼ Show H statement library</span>
@@ -598,12 +597,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <p class="step-sub">Required on CLP labels — your name and address as the responsible person.</p>
     <div class="form-group"><label>Business / Brand name</label><input type="text" id="biz-name" placeholder="As you want it to appear on the label" oninput="updateLabel();saveBizDetails()"></div>
     <div class="form-group"><label>Address <span>(town, county or full address)</span></label><input type="text" id="biz-address" placeholder="e.g. Scottish Borders, Scotland" oninput="updateLabel();saveBizDetails()"></div>
+    <div class="form-group"><label>Phone number <span>(required for CLP compliance)</span></label><input type="tel" id="biz-phone" placeholder="e.g. 07700 900000" oninput="updateLabel();saveBizDetails()"></div>
     <div class="form-row">
       <div class="form-group"><label>Website <span>(optional)</span></label><input type="text" id="biz-website" placeholder="e.g. clpeasy.com" oninput="updateLabel();saveBizDetails()"></div>
       <div class="form-group"><label>Batch / Lot number <span>(optional)</span></label><input type="text" id="batch-num" placeholder="e.g. LOT-001" oninput="updateLabel()"></div>
-      <div class="form-group"><label>UFI code <span>(optional)</span></label><input type="text" id="ufi-code" placeholder="e.g. UFI: HUF0-F02Y-8001-UV1E" oninput="updateLabel()">
-        <div style="margin-top:6px;font-size:12px;color:var(--muted);line-height:1.5;padding:8px 10px;background:var(--off);border-radius:6px;">UFI (Unique Formula Identifier) is required if selling in the EU or Northern Ireland. Not currently required for Great Britain (England, Scotland, Wales). Generate yours free at <strong>ufi.echa.europa.eu</strong></div>
-      </div>
     </div>
     <div class="step-nav"><button class="btn-prev" onclick="prevStep()">← Back</button><button class="btn-next" onclick="nextStep()">Preview &amp; download →</button></div>
   </div>
@@ -632,12 +629,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div style="background:#F8FAFC;border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--muted);line-height:1.6;">
       ✂️ <strong style="color:var(--text);">About the dashed line:</strong> The pale dashed circle you see on your label is a <strong>cut guide only</strong> — it will not print. It shows exactly where to cut your label. In Cricut Design Space it becomes the cut path automatically. When printing at home, simply cut along the dashed line.
     </div>
-    <div style="display:flex;flex-direction:column;gap:0;">
       <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ Download PNG — for printing &amp; Canva</button>
       <button id="btn-jpeg" onclick="downloadJPEG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬇ Download JPEG — smaller file size</button>
       <button id="btn-svg" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬡ Download SVG — for Cricut Design Space</button>
       <button id="btn-pdf" onclick="printToPDF()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">🖨 Print to PDF</button>
-      <button id="btn-save" onclick="saveLabel()" style="background:var(--off);color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">💾 Save to label library (this device)</button>
+      <button id="btn-save" onclick="saveLabel()" style="background:var(--off);color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">💾 Save to my label library</button>
     </div>
     <div style="margin-top:10px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 14px;font-size:12px;color:#166534;">
       💡 <strong>Cricut tip:</strong> Import the SVG into Cricut Design Space → resize to your label mm dimensions → use Print Then Cut for best results.
@@ -647,7 +643,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button onclick="startOver()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;padding:8px;">↺ New label</button>
     </div>
   </div>
-  <!-- END STEP 5 -->
 
   <!-- SAVED LABELS LIBRARY -->
   <div class="saved-section" id="saved-section" style="display:none;">
@@ -721,58 +716,25 @@ const SENSITISERS=[
 ];
 const H_LIB=[{code:'H315',desc:'Causes skin irritation'},{code:'H317',desc:'May cause allergic skin reaction'},{code:'H319',desc:'Causes serious eye irritation'},{code:'H361',desc:'Suspected of damaging fertility'},{code:'H400',desc:'Very toxic to aquatic life'},{code:'H410',desc:'Very toxic to aquatic life, long lasting'},{code:'H411',desc:'Toxic to aquatic life, long lasting'},{code:'H412',desc:'Harmful to aquatic life, long lasting'},{code:'H413',desc:'May cause long lasting harmful effects to aquatic life'},{code:'EUH208',desc:'Contains sensitiser — may produce allergic reaction'}];
 const P_LIB=[{code:'P261',desc:'Avoid breathing vapours/dust'},{code:'P264',desc:'Wash hands thoroughly after handling'},{code:'P272',desc:'Contaminated clothing not to leave workplace'},{code:'P273',desc:'Avoid release to environment'},{code:'P280',desc:'Wear protective gloves/eye protection'},{code:'P302+P352',desc:'IF ON SKIN: wash with soap and water'},{code:'P333+P313',desc:'If skin irritation/rash: get medical advice'},{code:'P362',desc:'Take off contaminated clothing'},{code:'P391',desc:'Collect spillage'},{code:'P501',desc:'Dispose of contents/container per regulations'}];
-// GHS pictogram SVG symbols — proper red diamond CLP/GHS standard
-// Plain strings only — no template literals — __X__ __Y__ __S__ replaced at runtime
-const GHS_PICTOS={
-  flame:'<g transform="translate(__X__,__Y__)"><polygon points="0,-__Q__ __Q__,__Q__ -__Q__,__Q__" fill="white" stroke="#CC0000" stroke-width="__W__"/><text x="0" y="__T__" font-size="__F__" text-anchor="middle" font-family="serif">&#x1F525;</text></g>',
-  exclamation:'<g transform="translate(__X__,__Y__)"><polygon points="0,-__Q__ __Q__,__Q__ -__Q__,__Q__" fill="white" stroke="#CC0000" stroke-width="__W__"/><text x="0" y="__T__" font-size="__F2__" font-weight="900" text-anchor="middle" font-family="Arial,sans-serif" fill="#000">!</text></g>',
-  health:'<g transform="translate(__X__,__Y__)"><polygon points="0,-__Q__ __Q__,__Q__ -__Q__,__Q__" fill="white" stroke="#CC0000" stroke-width="__W__"/><ellipse cx="0" cy="__E1__" rx="__R1__" ry="__R2__" fill="none" stroke="#000" stroke-width="__W2__"/><line x1="0" y1="-__L1__" x2="0" y2="__L1__" stroke="#000" stroke-width="__W2__"/><line x1="-__L1__" y1="__E1__" x2="__L1__" y2="__E1__" stroke="#000" stroke-width="__W2__"/></g>',
-  aquatic:'<g transform="translate(__X__,__Y__)"><polygon points="0,-__Q__ __Q__,__Q__ -__Q__,__Q__" fill="white" stroke="#CC0000" stroke-width="__W__"/><ellipse cx="0" cy="-__E2__" rx="__R3__" ry="__R4__" fill="#000"/><path d="M-__L2__,__E2__ Q0,__L3__ __L2__,__E2__" fill="none" stroke="#000" stroke-width="__W3__"/><path d="M-__L4__,-__E2__ Q-__L5__,-__L6__ -__L4__,-__L7__ Q-__L8__,-__L6__ -__L4__,-__E2__Z" fill="#000"/></g>',
-  corrosive:'<g transform="translate(__X__,__Y__)"><polygon points="0,-__Q__ __Q__,__Q__ -__Q__,__Q__" fill="white" stroke="#CC0000" stroke-width="__W__"/><rect x="-__L9__" y="-__L9__" width="__R5__" height="__L9__" rx="__W3__" fill="none" stroke="#000" stroke-width="__W3__"/><path d="M-__L8__,-__L9__ L-__L8__,-__L10__ L-__L11__,-__L10__" fill="none" stroke="#000" stroke-width="__W3__"/><path d="M-__L11__,-__L10__ Q-__E2__,-__L9__ 0,0" stroke="#000" stroke-width="__W3__" fill="none"/><path d="M__W3__,-__L9__ Q__E2__,-__L11__ __W3__,0" stroke="#000" stroke-width="__W3__" fill="none"/></g>',
-  skull:'<g transform="translate(__X__,__Y__)"><polygon points="0,-__Q__ __Q__,__Q__ -__Q__,__Q__" fill="white" stroke="#CC0000" stroke-width="__W__"/><ellipse cx="0" cy="-__E2__" rx="__R6__" ry="__R7__" fill="#000"/><rect x="-__L11__" y="-__W3__" width="__L7__" height="__E2__" rx="__W3__" fill="#000"/><circle cx="-__W2__" cy="-__L11__" r="__W2__" fill="white"/><circle cx="__W2__" cy="-__L11__" r="__W2__" fill="white"/><line x1="-__W3__" y1="__W3__" x2="-__W3__" y2="__E2__" stroke="white" stroke-width="__W3__"/><line x1="__W3__" y1="__W3__" x2="__W3__" y2="__E2__" stroke="white" stroke-width="__W3__"/><line x1="-__L8__" y1="__W3__" x2="-__L8__" y2="__E2__" stroke="white" stroke-width="2"/><line x1="__L8__" y1="__W3__" x2="__L8__" y2="__E2__" stroke="white" stroke-width="2"/></g>',
-  oxidiser:'<g transform="translate(__X__,__Y__)"><polygon points="0,-__Q__ __Q__,__Q__ -__Q__,__Q__" fill="white" stroke="#CC0000" stroke-width="__W__"/><circle cx="0" cy="__W2__" r="__R1__" fill="none" stroke="#000" stroke-width="__W2__"/><line x1="-__L11__" y1="-__L7__" x2="-__W2__" y2="-__E2__" stroke="#000" stroke-width="__W2__" stroke-linecap="round"/><line x1="__L11__" y1="-__L7__" x2="__W2__" y2="-__E2__" stroke="#000" stroke-width="__W2__" stroke-linecap="round"/><line x1="-__R6__" y1="-__L11__" x2="-__L11__" y2="-__W2__" stroke="#000" stroke-width="__W2__" stroke-linecap="round"/><line x1="__R6__" y1="-__L11__" x2="__L11__" y2="-__W2__" stroke="#000" stroke-width="__W2__" stroke-linecap="round"/></g>',
-  gas:'<g transform="translate(__X__,__Y__)"><polygon points="0,-__Q__ __Q__,__Q__ -__Q__,__Q__" fill="white" stroke="#CC0000" stroke-width="__W__"/><ellipse cx="0" cy="__W2__" rx="__L8__" ry="__R6__" fill="none" stroke="#000" stroke-width="__W2__"/><rect x="-__W2__" y="-__L9__" width="__E2__" height="__W2__" rx="__W3__" fill="#000"/><rect x="-__W3__" y="-__L10__" width="__W2__" height="__W2__" rx="2" fill="#000"/></g>',
-  explosion:'<g transform="translate(__X__,__Y__)"><polygon points="0,-__Q__ __Q__,__Q__ -__Q__,__Q__" fill="white" stroke="#CC0000" stroke-width="__W__"/><path d="M0,-__L7__ L__W3__,-__E2__ L__R6__,-__L10__ L__L11__,-__W2__ L__L7__,-__W3__ L__L11__,__W3__ L__R6__,__L11__ L__W3__,__E2__ L__W2__,__L7__ L0,__E2__ L-__W2__,__L7__ L-__W3__,__E2__ L-__R6__,__L11__ L-__L11__,__W3__ L-__L7__,-__W3__ L-__L11__,-__W2__ L-__R6__,-__L10__ L-__W3__,-__E2__ Z" fill="#000"/></g>'
+// GHS pictogram SVG symbols — black and white, diamond shaped, industry standard
+const GHS_SVG={
+  flame:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="10" font-size="13" text-anchor="middle" font-family="sans-serif">\uD83D\uDD25</text></g>',
+  exclamation:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="11" font-size="16" font-weight="900" text-anchor="middle" font-family="sans-serif" fill="#000">!</text></g>',
+  health:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="10" font-size="12" text-anchor="middle" font-family="sans-serif">\u2695</text></g>',
+  aquatic:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="10" font-size="11" text-anchor="middle" font-family="sans-serif">\uD83D\uDC1F</text></g>',
+  corrosive:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="10" font-size="11" text-anchor="middle" font-family="sans-serif">\u2697</text></g>',
+  skull:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="10" font-size="12" text-anchor="middle" font-family="sans-serif">\u2620</text></g>',
+  oxidiser:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="9" font-size="11" text-anchor="middle" font-family="sans-serif">O</text></g>',
+  gas:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="9" font-size="10" text-anchor="middle" font-family="sans-serif">G</text></g>',
+  explosion:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="9" font-size="11" text-anchor="middle" font-family="sans-serif">\u2731</text></g>',
 };
 function ghsPicto(key,x,y,size){
-  const h=(size/2).toFixed(1);
-  const q=(size*0.47).toFixed(1);
-  const w=(size*0.07).toFixed(1);
-  const w2=(size*0.055).toFixed(1);
-  const w3=(size*0.04).toFixed(1);
-  const t=(size*0.32).toFixed(1);
-  const f=(size*0.5).toFixed(1);
-  const f2=(size*0.58).toFixed(1);
-  const e1=(size*0.02).toFixed(1);
-  const e2=(size*0.1).toFixed(1);
-  const r1=(size*0.22).toFixed(1);
-  const r2=(size*0.26).toFixed(1);
-  const r3=(size*0.18).toFixed(1);
-  const r4=(size*0.12).toFixed(1);
-  const r5=(size*0.2).toFixed(1);
-  const r6=(size*0.2).toFixed(1);
-  const r7=(size*0.18).toFixed(1);
-  const l1=(size*0.13).toFixed(1);
-  const l2=(size*0.12).toFixed(1);
-  const l3=(size*0.2).toFixed(1);
-  const l4=(size*0.22).toFixed(1);
-  const l5=(size*0.28).toFixed(1);
-  const l6=(size*0.14).toFixed(1);
-  const l7=(size*0.28).toFixed(1);
-  const l8=(size*0.16).toFixed(1);
-  const l9=(size*0.28).toFixed(1);
-  const l10=(size*0.36).toFixed(1);
-  const l11=(size*0.14).toFixed(1);
-  return (GHS_PICTOS[key]||GHS_PICTOS.exclamation)
-    .replace(/__X__/g,x.toFixed(1)).replace(/__Y__/g,y.toFixed(1))
-    .replace(/__Q__/g,q).replace(/__H__/g,h).replace(/__W3__/g,w3).replace(/__W2__/g,w2).replace(/__W__/g,w)
-    .replace(/__F2__/g,f2).replace(/__F__/g,f).replace(/__T__/g,t)
-    .replace(/__E2__/g,e2).replace(/__E1__/g,e1)
-    .replace(/__R7__/g,r7).replace(/__R6__/g,r6).replace(/__R5__/g,r5).replace(/__R4__/g,r4).replace(/__R3__/g,r3).replace(/__R2__/g,r2).replace(/__R1__/g,r1)
-    .replace(/__L11__/g,l11).replace(/__L10__/g,l10).replace(/__L9__/g,l9).replace(/__L8__/g,l8).replace(/__L7__/g,l7).replace(/__L6__/g,l6).replace(/__L5__/g,l5).replace(/__L4__/g,l4).replace(/__L3__/g,l3).replace(/__L2__/g,l2).replace(/__L1__/g,l1).replace(/__S__/g,size.toFixed(1));
+  const sc=(size/28).toFixed(3);
+  return (GHS_SVG[key]||GHS_SVG.exclamation).replace(/__X__/g,x.toFixed(1)).replace(/__Y__/g,y.toFixed(1)).replace(/__S__/g,sc);
 }
+
 // ── STATE ─────────────────────────────────────────────────────
-const S={step:1,shape:'circle',size:35,customW:50,customH:50,scentName:'',productType:'Scented Candle',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],bizName:'',bizAddress:'',bizWebsite:'',batchNum:'',ufi:'',isPro:false,supplier:'',textColour:'dark',showBorder:true};
+const S={step:1,shape:'circle',size:35,customW:50,customH:50,scentName:'',productType:'Scented Candle',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true};
 
 // ── PRODUCT TYPE GUIDANCE ─────────────────────────────────────
 const FRAG_LOAD_TIPS={
@@ -1004,7 +966,7 @@ function persistSaved(arr){localStorage.setItem('clpeasy_labels',JSON.stringify(
 function saveLabel(){
   readForm();
   if(!S.scentName){alert('Please enter a scent name before saving.');return;}
-  const entry={scentName:S.scentName,productType:S.productType,shape:S.shape,size:S.size,signal:S.signal,hStatements:S.hStatements,sensitisers:[...S.sensitisers],bizName:S.bizName,bizAddress:S.bizAddress,bizWebsite:S.bizWebsite,netWeight:S.netWeight,burnTime:S.burnTime,batchNum:S.batchNum,savedAt:new Date().toLocaleDateString('en-GB')};
+  const entry={scentName:S.scentName,productType:S.productType,shape:S.shape,size:S.size,signal:S.signal,hStatements:S.hStatements,sensitisers:[...S.sensitisers],bizName:S.bizName,bizAddress:S.bizAddress,bizPhone:S.bizPhone,bizWebsite:S.bizWebsite,netWeight:S.netWeight,burnTime:S.burnTime,batchNum:S.batchNum,savedAt:new Date().toLocaleDateString('en-GB')};
   const arr=getSaved();
   const idx=arr.findIndex(e=>e.scentName===entry.scentName&&e.productType===entry.productType);
   if(idx>=0)arr[idx]=entry;else arr.push(entry);
@@ -1017,10 +979,10 @@ function saveLabel(){
 
 function loadLabel(i){
   const arr=getSaved();const e=arr[i];if(!e)return;
-  S.scentName=e.scentName;S.productType=e.productType;S.shape=e.shape;S.size=e.size;S.signal=e.signal||'';S.hStatements=e.hStatements||'';S.sensitisers=e.sensitisers||[];S.bizName=e.bizName||'';S.bizAddress=e.bizAddress||'';S.bizWebsite=e.bizWebsite||'';S.netWeight=e.netWeight||'';S.burnTime=e.burnTime||'';S.batchNum=e.batchNum||'';
+  S.scentName=e.scentName;S.productType=e.productType;S.shape=e.shape;S.size=e.size;S.signal=e.signal||'';S.hStatements=e.hStatements||'';S.sensitisers=e.sensitisers||[];S.bizName=e.bizName||'';S.bizAddress=e.bizAddress||'';S.bizPhone=e.bizPhone||'';S.bizWebsite=e.bizWebsite||'';S.netWeight=e.netWeight||'';S.burnTime=e.burnTime||'';S.batchNum=e.batchNum||'';
   // Restore form fields
   const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};
-  set('scent-name',e.scentName);set('product-type',e.productType);set('h-statements',e.hStatements||'');set('biz-name',e.bizName||'');set('biz-address',e.bizAddress||'');set('biz-website',e.bizWebsite||'');set('net-weight',e.netWeight||'');set('burn-time',e.burnTime||'');set('batch-num',e.batchNum||'');
+  set('scent-name',e.scentName);set('product-type',e.productType);set('h-statements',e.hStatements||'');set('biz-name',e.bizName||'');set('biz-address',e.bizAddress||'');set('biz-phone',e.bizPhone||'');set('biz-website',e.bizWebsite||'');set('net-weight',e.netWeight||'');set('burn-time',e.burnTime||'');set('batch-num',e.batchNum||'');
   // Restore shape/size
   selectShape(e.shape||'circle');selectSize(e.size||35);
   if(e.signal)selectSignal(e.signal);
@@ -1061,6 +1023,7 @@ function init(){
   const biz=JSON.parse(localStorage.getItem('clpeasy_biz')||'{}');
   if(biz.bizName){document.getElementById('biz-name').value=biz.bizName;S.bizName=biz.bizName;}
   if(biz.bizAddress){document.getElementById('biz-address').value=biz.bizAddress;S.bizAddress=biz.bizAddress;}
+  if(biz.bizPhone){document.getElementById('biz-phone').value=biz.bizPhone;S.bizPhone=biz.bizPhone;}
   if(biz.bizWebsite){document.getElementById('biz-website').value=biz.bizWebsite;S.bizWebsite=biz.bizWebsite;}
   // Restore saved product details
   const prod=JSON.parse(localStorage.getItem('clpeasy_prod')||'{}');
@@ -1074,7 +1037,7 @@ function init(){
   renderSaved();
 }
 function saveBizDetails(){
-  const biz={bizName:document.getElementById('biz-name')?.value||'',bizAddress:document.getElementById('biz-address')?.value||'',bizWebsite:document.getElementById('biz-website')?.value||''};
+  const biz={bizName:document.getElementById('biz-name')?.value||'',bizAddress:document.getElementById('biz-address')?.value||'',bizPhone:document.getElementById('biz-phone')?.value||'',bizWebsite:document.getElementById('biz-website')?.value||''};
   localStorage.setItem('clpeasy_biz',JSON.stringify(biz));
 }
 function saveProdDetails(){
@@ -1170,9 +1133,9 @@ function readForm(){
   S.pStatements=document.getElementById('p-statements')?.value||'';
   S.bizName=document.getElementById('biz-name')?.value||'';
   S.bizAddress=document.getElementById('biz-address')?.value||'';
+  S.bizPhone=document.getElementById('biz-phone')?.value||'';
   S.bizWebsite=document.getElementById('biz-website')?.value||'';
   S.batchNum=document.getElementById('batch-num')?.value||'';
-  S.ufi=document.getElementById('ufi-code')?.value||'';
   S.customW=parseInt(document.getElementById('custom-w')?.value)||50;
   S.customH=(S.shape==='rectangle')?(parseInt(document.getElementById('custom-h')?.value)||40):S.customW;
 }
@@ -1194,102 +1157,73 @@ function xe(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').r
 // isPng: true = emoji pictograms; false = text fallback safe for SVG export
 function buildSVG(forExport=false){
   const{mmW,mmH,pw,ph}=getDims();
-  const cx=pw/2,cy=ph/2;
+  const cx=pw/2,cy=ph/2,safeW=pw*0.62;
   const scent=S.scentName||'Your Scent Name';
   const type=(S.productType||'Scented Candle').toUpperCase();
   const sig=S.signal||'WARNING';
-  const hText=(S.hStatements||'H317 · H411').split(',').map(h=>h.trim()).filter(Boolean).slice(0,5).join(' · ');
-  const sensStr=S.sensitisers.length?'Contains: '+S.sensitisers.slice(0,3).join(', ')+(S.sensitisers.length>3?'...':''):S.hStatements?'Contains: [allergens from your SDS]':'';
-  const bizLine=(S.bizName||'Your Brand')+(S.bizAddress?' · '+S.bizAddress:'');
+  const hText=(S.hStatements||'H317, H411').split(',').map(h=>h.trim()).filter(Boolean).slice(0,5).join(' · ');
+  const sensStr=S.sensitisers.length?'Contains: '+S.sensitisers.slice(0,3).join(', ')+(S.sensitisers.length>3?'...':''):'Contains: Linalool, Citral';
+  const bizLine=(S.bizName||'Your Brand')+(S.bizAddress?' · '+S.bizAddress:'')+(S.bizPhone?' · '+S.bizPhone:'');
   const detailLine=[S.netWeight,S.burnTime?'Burn: '+S.burnTime:'',S.batchNum].filter(Boolean).join(' · ');
-  const ufiLine=S.ufi?'UFI: '+S.ufi.replace(/^UFI:\s*/i,''):'';
   const webLine=S.bizWebsite||'';
-
-  const bgCol=(document.getElementById('label-bg-colour')?.value)||'#ffffff';
-  const txtCol=S.textColour==='light'?'#ffffff':'#111111';
-  const mutedCol=txtCol==='#ffffff'?'rgba(255,255,255,0.65)':'#555555';
-  const showBdr=S.showBorder!==false;
-
-  // For circle: chord width at a given y offset from centre
-  // radius of inscribed circle
-  const r=Math.min(pw,ph)/2-2;
-  function chordW(yFromCentre){
-    const d=Math.abs(yFromCentre);
-    if(d>=r) return 4;
-    return Math.max(4, 2*Math.sqrt(r*r-d*d)*0.88); // 0.88 = safe margin
-  }
-
-  // Layout zones as fractions of ph
-  const topH=ph*0.195;
-  const botH=ph*0.16;
-  const midY=topH;
-  const midH=ph-topH-botH;
-
-  // Safe widths per zone based on position within circle
-  const topZoneY=topH/2-cy;
-  const topSafeW=S.shape==='circle'?chordW(topZoneY):pw*0.85;
-  const midSafeW=S.shape==='circle'?chordW(0)*0.92:pw*0.88;
-  const botZoneY=ph-botH/2-cy;
-  const botSafeW=S.shape==='circle'?chordW(botZoneY):pw*0.85;
-
-  // Font helper
-  const fs=(b,m)=>Math.max(pw*b,m);
-  const minFontPx=Math.max(pw*0.042,5);
-
-  // Adapt fonts to safe widths
-  const scentFS=adaptFont(scent,midSafeW*0.80,fs(0.10,6),fs(0.042,4.5));
-  const bizNameFS=adaptFont(S.bizName||'Your Brand',topSafeW*0.90,fs(0.058,5.5),fs(0.024,3.5));
-  const bizLineFS=Math.max(adaptFont(bizLine,botSafeW*0.90,fs(0.034,3.8),fs(0.018,3)),minFontPx);
+  const pictos=S.pictograms.length?[...new Set(S.pictograms)].slice(0,6):['exclamation','aquatic'];
+  const scentFS=adaptFont(scent,safeW*0.70,pw*0.11,pw*0.045);
+  const topH=ph*0.20,botH=ph*0.16,midY=topH,midH=ph-topH-botH;
 
   // Pictogram row
-  const pictos=S.pictograms.length?[...new Set(S.pictograms)].slice(0,6):['exclamation','aquatic'];
   const GHS_TEXT={flame:'GHS02',exclamation:'GHS07',health:'GHS08',aquatic:'GHS09',corrosive:'GHS05',skull:'GHS06',oxidiser:'GHS03',gas:'GHS04',explosion:'GHS01'};
-  const pictoFS=Math.min(midSafeW/(pictos.length+0.5)*0.42, ph*0.075, 14);
-  const pictoGap=pictoFS*1.85;
+  const pictoFS=Math.min(pw/(pictos.length+1)*0.55,ph*0.08,16);
+  const pictoGap=pictoFS*1.8;
   const pStartX=cx-((pictos.length-1)*pictoGap)/2;
   const pictoY=midY+midH*0.62;
   const pictoRow=pictos.map((p,i)=>{
     if(forExport){
-      const px=pStartX+i*pictoGap,py=pictoY,pr=pictoFS*0.5;
-      return`<rect x="${px-pr}" y="${py-pr}" width="${pr*2}" height="${pr*2}" fill="none" stroke="#000" stroke-width="1.2" transform="rotate(45,${px},${py})"/><text x="${px}" y="${py}" font-family="sans-serif" font-size="${pr*0.7}" fill="#000" text-anchor="middle" dominant-baseline="middle">${GHS_TEXT[p]||'!'}</text>`;
+      const px=pStartX+i*pictoGap,py=pictoY,r=pictoFS*0.5;
+      return`<rect x="${px-r}" y="${py-r}" width="${r*2}" height="${r*2}" fill="none" stroke="#000" stroke-width="1.2" transform="rotate(45,${px},${py})"/><text x="${px}" y="${py}" font-family="sans-serif" font-size="${r*0.7}" fill="#000" text-anchor="middle" dominant-baseline="middle">${GHS_TEXT[p]||'!'}</text>`;
     }
-    return ghsPicto(p,pStartX+i*pictoGap,pictoY,pictoFS);
+    return ghsPicto(p, pStartX+i*pictoGap, pictoY, pictoFS);
   }).join('');
 
-  // Clip and background
+  const bgCol=(document.getElementById('label-bg-colour')?.value)||'#ffffff';
+  const txtCol=S.textColour==='light'?'#ffffff':'#111111';
+  const showBdr=S.showBorder!==false;
   let clip='',bg='';
-  if(S.shape==='circle'){clip=`<clipPath id="lc"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath>`;bg=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${bgCol}"/>${showBdr?`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3"/>`:''}`;}
-  else if(S.shape==='square'){const s=Math.min(pw,ph)-4,x0=cx-s/2,y0=cy-s/2;clip=`<clipPath id="lc"><rect x="${x0}" y="${y0}" width="${s}" height="${s}" rx="5"/></clipPath>`;bg=`<rect x="${x0}" y="${y0}" width="${s}" height="${s}" rx="5" fill="${bgCol}"/>${showBdr?`<rect x="${x0}" y="${y0}" width="${s}" height="${s}" rx="5" fill="none" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3"/>`:''}`;}
-  else{clip=`<clipPath id="lc"><rect x="2" y="2" width="${pw-4}" height="${ph-4}" rx="4"/></clipPath>`;bg=`<rect x="2" y="2" width="${pw-4}" height="${ph-4}" rx="4" fill="${bgCol}"/>${showBdr?`<rect x="2" y="2" width="${pw-4}" height="${ph-4}" rx="4" fill="none" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3"/>`:''}`;}
+  if(S.shape==='circle'){const r=Math.min(pw,ph)/2-2;clip=`<clipPath id="lc"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath>`;bg=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${bgCol}"/>${showBdr?`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3"/>`:""}`;}
+  else if(S.shape==='square'){const s=Math.min(pw,ph)-4,x0=cx-s/2,y0=cy-s/2;clip=`<clipPath id="lc"><rect x="${x0}" y="${y0}" width="${s}" height="${s}" rx="5"/></clipPath>`;bg=`<rect x="${x0}" y="${y0}" width="${s}" height="${s}" rx="5" fill="${bgCol}"/>${showBdr?`<rect x="${x0}" y="${y0}" width="${s}" height="${s}" rx="5" fill="none" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3"/>`:""}`;}
+  else{clip=`<clipPath id="lc"><rect x="2" y="2" width="${pw-4}" height="${ph-4}" rx="4"/></clipPath>`;bg=`<rect x="2" y="2" width="${pw-4}" height="${ph-4}" rx="4" fill="${bgCol}"/>${showBdr?`<rect x="2" y="2" width="${pw-4}" height="${ph-4}" rx="4" fill="none" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3"/>`:""}`;}
+  const fs=(b,m)=>Math.max(pw*b,m);
 
-  const wm=!S.isPro?`<text x="${cx}" y="${ph-botH-2}" font-family="sans-serif" font-size="${fs(0.026,3)}" fill="rgba(0,0,0,0.15)" text-anchor="middle" font-weight="600">clpeasy.com</text>`:'';
+  // Watermark for free tier
+  const wm=!S.isPro?`<text x="${cx}" y="${ph-botH-3}" font-family="sans-serif" font-size="${Math.max(pw*0.028,3.5)}" fill="rgba(0,0,0,0.2)" text-anchor="middle" font-weight="600">clpeasy.com</text>`:'';
 
   const svgW=forExport?mmW*3.7795:pw;
   const svgH=forExport?mmH*3.7795:ph;
+  const vbW=pw,vbH=ph;
 
-  // H statements — truncate to fit
-  const hTextShort=adaptFont(hText,midSafeW*0.90,fs(0.036,4),fs(0.018,3))<fs(0.018,3)?hText.split(' · ').slice(0,3).join(' · ')+'…':hText;
-
-  return`<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" viewBox="0 0 ${pw} ${ph}" id="label-svg">
+  const bizNameFS=adaptFont(S.bizName||'YOUR BRAND',safeW*0.68,fs(0.065,6),fs(0.025,4));
+  const bizLineFS=adaptFont(bizLine,safeW*0.72,fs(0.036,3.8),fs(0.018,3));
+  return`<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" viewBox="0 0 ${vbW} ${vbH}" id="label-svg">
 <defs>${clip}</defs>
 <g clip-path="url(#lc)">
   ${bg}
-  <text x="${cx}" y="${topH*0.38}" font-family="serif" font-size="${bizNameFS}" font-weight="700" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(S.bizName||'Your Brand')}</text>
-  ${webLine?`<text x="${cx}" y="${topH*0.76}" font-family="sans-serif" font-size="${fs(0.030,3.2)}" fill="${mutedCol}" text-anchor="middle" dominant-baseline="middle">${xe(webLine)}</text>`:''}
-  <line x1="${cx-topSafeW*0.4}" y1="${topH}" x2="${cx+topSafeW*0.4}" y2="${topH}" stroke="#ddd" stroke-width="0.4"/>
-  <text x="${cx}" y="${midY+midH*0.13}" font-family="serif" font-size="${scentFS}" font-weight="700" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(scent)}</text>
-  <text x="${cx}" y="${midY+midH*0.275}" font-family="sans-serif" font-size="${fs(0.040,4.2)}" font-weight="700" fill="${txtCol}" text-anchor="middle" letter-spacing="0.5">${xe(type)}</text>
-  <text x="${cx}" y="${midY+midH*0.42}" font-family="sans-serif" font-size="${fs(0.046,4.8)}" font-weight="800" fill="${txtCol}" text-anchor="middle">${xe(sig.toUpperCase())}</text>
+  <rect x="0" y="0" width="${pw}" height="${topH}" fill="${bgCol}"/>
+  <text x="${cx}" y="${topH*0.36}" font-family="serif" font-size="${bizNameFS}" font-weight="700" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(S.bizName||'YOUR BRAND')}</text>
+  <text x="${cx}" y="${topH*0.76}" font-family="sans-serif" font-size="${fs(0.034,3.8)}" fill="${txtCol=="#ffffff"?"rgba(255,255,255,0.7)":"#555"}" text-anchor="middle" dominant-baseline="middle">${xe(webLine)}</text>
+  <line x1="${pw*0.15}" y1="${topH}" x2="${pw*0.85}" y2="${topH}" stroke="#ddd" stroke-width="0.5"/>
+  <text x="${cx}" y="${midY+midH*0.14}" font-family="serif" font-size="${scentFS}" font-weight="700" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(scent)}</text>
+  <text x="${cx}" y="${midY+midH*0.295}" font-family="sans-serif" font-size="${fs(0.043,4.5)}" font-weight="700" fill="${txtCol}" text-anchor="middle" letter-spacing="0.8">${xe(type)}</text>
+  <text x="${cx}" y="${midY+midH*0.445}" font-family="sans-serif" font-size="${fs(0.048,5)}" font-weight="800" fill="${txtCol}" text-anchor="middle">${xe(sig.toUpperCase())}</text>
   ${pictoRow}
-  <text x="${cx}" y="${midY+midH*0.795}" font-family="sans-serif" font-size="${fs(0.034,3.8)}" fill="${txtCol}" text-anchor="middle">${xe(hTextShort)}</text>
-  ${sensStr?`<text x="${cx}" y="${midY+midH*0.90}" font-family="sans-serif" font-size="${fs(0.030,3.2)}" font-style="italic" fill="${mutedCol}" text-anchor="middle">${xe(sensStr)}</text>`:''}
-  <line x1="${cx-botSafeW*0.4}" y1="${ph-botH}" x2="${cx+botSafeW*0.4}" y2="${ph-botH}" stroke="#ddd" stroke-width="0.4"/>
-  <text x="${cx}" y="${ph-botH+botH*(ufiLine?0.28:0.35)}" font-family="sans-serif" font-size="${bizLineFS}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(bizLine)}</text>
-  ${detailLine?`<text x="${cx}" y="${ph-botH+botH*(ufiLine?0.56:0.68)}" font-family="sans-serif" font-size="${Math.max(fs(0.030,3.2),minFontPx)}" fill="${mutedCol}" text-anchor="middle" dominant-baseline="middle">${xe(detailLine)}</text>`:''}
-  ${ufiLine?`<text x="${cx}" y="${ph-botH+botH*0.84}" font-family="sans-serif" font-size="${Math.max(fs(0.028,3),minFontPx)}" fill="${mutedCol}" text-anchor="middle" dominant-baseline="middle">${xe(ufiLine)}</text>`:''}
+  <text x="${cx}" y="${midY+midH*0.80}" font-family="sans-serif" font-size="${fs(0.038,4)}" fill="${txtCol}" text-anchor="middle">${xe(hText)}</text>
+  <text x="${cx}" y="${midY+midH*0.91}" font-family="sans-serif" font-size="${fs(0.033,3.5)}" font-style="italic" fill="${txtCol=="#ffffff"?"rgba(255,255,255,0.7)":"#555"}" text-anchor="middle">${xe(sensStr)}</text>
+  <line x1="${pw*0.15}" y1="${ph-botH}" x2="${pw*0.85}" y2="${ph-botH}" stroke="#ddd" stroke-width="0.5"/>
+  <rect x="0" y="${ph-botH}" width="${pw}" height="${botH}" fill="${bgCol}"/>
+  <text x="${cx}" y="${ph-botH+botH*0.35}" font-family="sans-serif" font-size="${bizLineFS}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(bizLine)}</text>
+  <text x="${cx}" y="${ph-botH+botH*0.72}" font-family="sans-serif" font-size="${fs(0.033,3.5)}" fill="${txtCol=="#ffffff"?"rgba(255,255,255,0.7)":"#555"}" text-anchor="middle" dominant-baseline="middle">${xe(detailLine)}</text>
   ${wm}
 </g></svg>`;
 }
+
 // ── UPDATE PREVIEW ────────────────────────────────────────────
 function updateLabel(){
   readForm();
@@ -1395,32 +1329,6 @@ function openSheet(){document.getElementById('preview-sheet').classList.add('ope
 function closeSheet(e){if(!e||e.target===document.getElementById('preview-sheet')||e===undefined){document.getElementById('preview-sheet').classList.remove('open');document.body.style.overflow='';}}
 
 init();
-</script>
-
-<!-- COOKIE BANNER -->
-<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1a1f2e;color:white;padding:16px 24px;z-index:9999;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;box-shadow:0 -4px 20px rgba(0,0,0,0.2);">
-  <div style="flex:1;min-width:200px;">
-    <p style="font-size:13px;line-height:1.6;color:rgba(255,255,255,0.85);margin:0;">We use essential cookies to keep you logged in. No advertising or tracking cookies. <a href="/cookie-policy.html" style="color:#5EEAD4;text-decoration:none;">Cookie Policy</a></p>
-  </div>
-  <div style="display:flex;gap:10px;flex-shrink:0;">
-    <button onclick="acceptCookies()" style="background:#0D9488;color:white;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">Accept</button>
-    <button onclick="declineCookies()" style="background:none;color:rgba(255,255,255,0.6);border:1.5px solid rgba(255,255,255,0.2);padding:10px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;">Essential only</button>
-  </div>
-</div>
-<script>
-(function(){
-  if(!localStorage.getItem('clpeasy-cookie-consent')){
-    document.getElementById('cookie-banner').style.display='flex';
-  }
-  window.acceptCookies=function(){
-    localStorage.setItem('clpeasy-cookie-consent','accepted');
-    document.getElementById('cookie-banner').style.display='none';
-  };
-  window.declineCookies=function(){
-    localStorage.setItem('clpeasy-cookie-consent','essential');
-    document.getElementById('cookie-banner').style.display='none';
-  };
-})();
 </script>
 </body>
 </html>
