@@ -526,18 +526,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="supplier-name">NI Candle Supplies</div>
         <div class="supplier-region">🇬🇧 UK</div>
       </div>
-      <div class="supplier-card" data-supplier="csc" onclick="selectSupplier(this,'csc')">
-        <div class="supplier-name">CandleScience</div>
-        <div class="supplier-region">🇺🇸 US</div>
-      </div>
-      <div class="supplier-card" data-supplier="ng" onclick="selectSupplier(this,'ng')">
-        <div class="supplier-name">Natures Garden</div>
-        <div class="supplier-region">🇺🇸 US</div>
-      </div>
-      <div class="supplier-card" data-supplier="bb" onclick="selectSupplier(this,'bb')">
-        <div class="supplier-name">Brambleberry</div>
-        <div class="supplier-region">🇺🇸 US</div>
-      </div>
       <div class="supplier-card" data-supplier="other" onclick="selectSupplier(this,'other')">
         <div class="supplier-name">Other supplier</div>
         <div class="supplier-region">Manual entry</div>
@@ -1232,13 +1220,13 @@ function buildSVG(forExport=false){
   <text x="${cx}" y="${midY+midH*0.295}" font-family="sans-serif" font-size="${fs(0.055,5.5)}" font-weight="700" fill="${txtCol}" text-anchor="middle" letter-spacing="0.8">${xe(type)}</text>
   <text x="${cx}" y="${midY+midH*0.445}" font-family="sans-serif" font-size="${fs(0.062,6)}" font-weight="800" fill="${txtCol}" text-anchor="middle">${xe(sig.toUpperCase())}</text>
   ${pictoRow}
-  <text x="${cx}" y="${midY+midH*0.80}" font-family="sans-serif" font-size="${fs(0.045,4.5)}" fill="${txtCol}" text-anchor="middle">${xe(hText)}</text>
-  <text x="${cx}" y="${midY+midH*0.91}" font-family="sans-serif" font-size="${adaptFont(sensStr,safeW,fs(0.038,4),fs(0.020,3))}" font-style="italic" fill="${txtCol=="#ffffff"?"rgba(255,255,255,0.7)":"#555"}" text-anchor="middle">${xe(sensStr)}</text>
+  <text x="${cx}" y="${midY+midH*0.80}" font-family="sans-serif" font-size="${fs(0.038,4)}" fill="${txtCol}" text-anchor="middle">${xe(hText)}</text>
+  <text x="${cx}" y="${midY+midH*0.91}" font-family="sans-serif" font-size="${fs(0.033,3.5)}" font-style="italic" fill="${txtCol=="#ffffff"?"rgba(255,255,255,0.7)":"#555"}" text-anchor="middle">${xe(sensStr)}</text>
   <line x1="${pw*0.15}" y1="${ph-botH}" x2="${pw*0.85}" y2="${ph-botH}" stroke="#ddd" stroke-width="0.5"/>
   <rect x="0" y="${ph-botH}" width="${pw}" height="${botH}" fill="${bgCol}"/>
   <text x="${cx}" y="${ph-botH+botH*0.22}" font-family="sans-serif" font-size="${bizLineFS}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(bizLine)}</text>
-  <text x="${cx}" y="${ph-botH+botH*0.50}" font-family="sans-serif" font-size="${fs(0.040,4.5)}" font-weight="700" fill="${txtCol=="#ffffff"?"rgba(255,255,255,0.9)":"#222"}" text-anchor="middle" dominant-baseline="middle">${xe(phoneLine)}</text>
-  <text x="${cx}" y="${ph-botH+botH*0.78}" font-family="sans-serif" font-size="${fs(0.036,4)}" fill="${txtCol=="#ffffff"?"rgba(255,255,255,0.7)":"#444"}" text-anchor="middle" dominant-baseline="middle">${xe(detailLine)}</text>
+  <text x="${cx}" y="${ph-botH+botH*0.50}" font-family="sans-serif" font-size="${fs(0.040,4.5)}" font-weight="700" fill="${txtCol==="#ffffff"?"rgba(255,255,255,0.85)":"#222"}" text-anchor="middle" dominant-baseline="middle">${xe(phoneLine)}</text>
+  <text x="${cx}" y="${ph-botH+botH*0.78}" font-family="sans-serif" font-size="${fs(0.036,4)}" fill="${txtCol==="#ffffff"?"rgba(255,255,255,0.7)":"#444"}" text-anchor="middle" dominant-baseline="middle">${xe(detailLine)}</text>
   ${wm}
 </g></svg>`;
 }
