@@ -635,7 +635,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button id="btn-pdf" onclick="printToPDF()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">🖨 Print to PDF</button>
       <button id="btn-save" onclick="saveLabel()" style="background:var(--off);color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">💾 Save to my label library</button>
     </div>
-    <div style="margin-top:10px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 14px;font-size:12px;color:#166534;">
+    <div id="cricut-tip-box" style="margin-top:10px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 14px;font-size:12px;color:#166534;display:none;">
       💡 <strong>Cricut tip:</strong> Import the SVG into Cricut Design Space → resize to your label mm dimensions → use Print Then Cut for best results.
     </div>
     <div style="margin-top:20px;display:flex;justify-content:center;">
@@ -1097,7 +1097,7 @@ function extractSDS(){
 function addPicto(k){if(!S.pictograms.includes(k)){S.pictograms.push(k);const b=document.querySelector(`.picto-btn[data-picto="${k}"]`);if(b)b.classList.add('selected');}}
 
 // ── NAVIGATION ────────────────────────────────────────────────
-function goToStep(n){if(n>S.step+1)return;S.step=n;document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+n).classList.add('active');updateStepsBar();if(n===5)buildSummary();updateLabel();}
+function goToStep(n){if(n>S.step+1)return;S.step=n;document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+n).classList.add('active');updateStepsBar();if(n===5)buildSummary();updateLabel();const ct=document.getElementById('cricut-tip-box');if(ct)ct.style.display=n===5?'block':'none';}
 function nextStep(){if(S.step<5)goToStep(S.step+1);}
 function prevStep(){if(S.step>1)goToStep(S.step-1);}
 function startOver(){location.reload();}
