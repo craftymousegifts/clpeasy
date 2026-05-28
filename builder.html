@@ -51,7 +51,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 /* DESKTOP LAYOUT */
 .builder-layout{display:grid;grid-template-columns:1fr 360px;min-height:100vh;padding-top:88px;}
 .wizard-panel{padding:28px 32px 80px;min-width:0;overflow-y:auto;}
-.preview-panel{background:#1a1f2e;position:sticky;top:88px;height:calc(100vh - 88px);display:flex;flex-direction:column;overflow:hidden;align-self:start;}
+.preview-panel{background:#1a1f2e;-webkit-user-select:none;-moz-user-select:none;user-select:none;position:sticky;top:88px;height:calc(100vh - 88px);display:flex;flex-direction:column;overflow:hidden;align-self:start;}
 
 /* MOBILE LAYOUT */
 @media(max-width:860px){
@@ -1087,6 +1087,25 @@ function extractSDS(){
 function addPicto(k){if(!S.pictograms.includes(k)){S.pictograms.push(k);const b=document.querySelector(`.picto-btn[data-picto="${k}"]`);if(b)b.classList.add('selected');}}
 
 // ── NAVIGATION ────────────────────────────────────────────────
+// COPY PROTECTION
+document.addEventListener('contextmenu', function(e) {
+  const preview = document.getElementById('label-preview') || document.querySelector('.preview-panel') || document.querySelector('canvas') || document.querySelector('svg');
+  if (preview && preview.contains(e.target)) {
+    e.preventDefault();
+    return false;
+  }
+});
+document.addEventListener('keydown', function(e) {
+  // Block PrintScreen, Ctrl+S, Ctrl+P
+  if (e.key === 'PrintScreen') {
+    e.preventDefault();
+    navigator.clipboard.writeText('').catch(()=>{});
+  }
+  if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+    e.preventDefault();
+  }
+});
+
 function goToStep(n){if(n>S.step+1)return;S.step=n;document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+n).classList.add('active');updateStepsBar();if(n===5)buildSummary();updateLabel();const ct=document.getElementById('cricut-tip-box');if(ct)ct.style.display=n===5?'block':'none';if(n===3){const cb=document.getElementById('hazard-confirm');const btn=document.getElementById('btn-next-step3');if(cb){cb.checked=false;}if(btn){btn.style.opacity='0.4';btn.style.pointerEvents='none';}}}
 function nextStep(){if(S.step<5)goToStep(S.step+1);}
 function toggleHazardNext(){
