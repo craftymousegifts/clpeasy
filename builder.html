@@ -1238,31 +1238,64 @@ function getDims(){
   return{mmW,mmH,pw:Math.round(mmW*scale),ph:Math.round(mmH*scale)};
 }
 
-// ── SVG BUILDER — Adaptive Label Engine v2 ────────────────────
-// forExport=false → preview; forExport=true → Cricut/download SVG
+// ── SVG BUILDER — Adaptive Label Engine v3 ────────────────────
 function buildSVG(forExport=false){
   const{mmW,mmH,pw,ph}=getDims();
   const cx=pw/2,cy=ph/2;
   const isCircle=S.shape==='circle';
   const isSquare=S.shape==='square';
-  const isRect=S.shape==='rectangle';
 
-  // ── SAFE ZONE CALCULATION ────────────────────────────────────
-  // For circle: inscribed rectangle at each vertical band uses chord width
-  // chord(y) = 2 * sqrt(r² - (y-cy)²)  with 6% inset margin each side
-  const r=Math.min(pw,ph)/2-2;
-  function chordW(y,inset=0.10){
-    if(!isCircle)return pw*(1-inset*2);
-    const dy=Math.abs(y-cy);
-    if(dy>=r)return 0;
+  // ── SHAPE GEOMETRY ───────────────────────────────────────────
+  // Circle: radius, inset boundary for text
+  // Square: side length, start offsets
+  // Rectangle: full pw x ph, small corner radius
+  let shapeX=0,shapeY=0,shapeW=pw,shapeH=ph; // bounding box of the actual shape
+  let r=0;
+  if(isCircle){
+    r=Math.min(pw,ph)/2-1.5;
+    shapeX=cx-r; shapeY=cy-r; shapeW=r*2; shapeH=r*2;
+  } else if(isSquare){
+    const s=Math.min(pw,ph)-4;
+    shapeX=cx-s/2; shapeY=cy-s/2; shapeW=s; shapeH=s;
+  } else {
+    shapeX=2; shapeY=2; shapeW=pw-4; shapeH=ph-4;
+  }
+
+  // All Y positions are relative to shapeY (top of actual shape)
+  // so content always sits inside the shape regardless of viewBox size
+  const sH=shapeH; // usable height
+  const sW=shapeW; // usable width
+  const sTop=shapeY;
+  const sBot=shapeY+shapeH;
+  const sMidX=shapeX+shapeW/2; // = cx for all shapes
+
+  // ── CHORD WIDTH for circle at a given absolute Y ──────────────
+  function chordW(absY, inset=0.08){
+    if(!isCircle) return sW*(1-inset*2);
+    const dy=Math.abs(absY-cy);
+    if(dy>=r) return 0;
     return 2*Math.sqrt(Math.max(0,r*r-dy*dy))*(1-inset);
   }
 
-  // ── GATHER DATA ───────────────────────────────────────────────
+  // ── BAND HEIGHTS (as fraction of sH) ─────────────────────────
+  // Top band: biz name + website
+  // Bottom band: address, phone, detail
+  // Mid band: everything else
+  const topFrac = 0.18;
+  const botFrac = 0.20;
+  const topH = sH * topFrac;
+  const botH = sH * botFrac;
+  const midH = sH - topH - botH;
+  const topY  = sTop;                // absolute Y: top of shape
+  const midY  = sTop + topH;        // absolute Y: mid band starts
+  const botY  = sTop + topH + midH; // absolute Y: bottom band starts
+
+  // ── GATHER CONTENT ────────────────────────────────────────────
   const bgCol=(document.getElementById('label-bg-colour')?.value)||'#ffffff';
   const txtCol=S.textColour==='light'?'#ffffff':'#111111';
-  const mutedCol=S.textColour==='light'?'rgba(255,255,255,0.65)':'#555555';
+  const mutedCol=S.textColour==='light'?'rgba(255,255,255,0.60)':'#666666';
   const showBdr=S.showBorder!==false;
+  const BASE=sW; // font sizes relative to shape width
 
   const scent=S.scentName||'Your Scent Name';
   const type=(S.productType||'Scented Candle').toUpperCase();
@@ -1276,160 +1309,170 @@ function buildSVG(forExport=false){
   const phone=S.bizPhone||'';
   const detailParts=[S.netWeight,S.burnTime?'Burn time: '+S.burnTime:'',S.batchNum?'Batch: '+S.batchNum:''].filter(Boolean);
   const pictos=S.pictograms.length?[...new Set(S.pictograms)].slice(0,6):['exclamation','aquatic'];
+  const clamp=(v,mn,mx)=>Math.min(Math.max(v,mn),mx);
 
-  // ── LAYOUT ZONES (as Y positions, top=0) ────────────────────
-  // Header band: biz name + website
-  // Middle band: scent, type, signal, pictograms, H stmts, sensitisers
-  // Footer band: address, phone, detail line
-  const topBandH = isCircle ? ph*0.20 : ph*0.19;
-  const botBandH = isCircle ? ph*0.23 : ph*0.26;
-  const midY = topBandH;
-  const midH = ph - topBandH - botBandH;
-  const botY = ph - botBandH;
-
-  // ── SHAPE CLIP & BACKGROUND ───────────────────────────────────
+  // ── CLIP & BACKGROUND ────────────────────────────────────────
   let clip='',bg='';
   if(isCircle){
     clip=`<clipPath id="lc"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath>`;
     bg=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${bgCol}"/>`;
-    if(showBdr)bg+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3"/>`;
+    if(showBdr)bg+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#bbb" stroke-width="0.8" stroke-dasharray="3,3"/>`;
   } else if(isSquare){
-    const s=Math.min(pw,ph)-4,x0=cx-s/2,y0=cy-s/2;
-    clip=`<clipPath id="lc"><rect x="${x0}" y="${y0}" width="${s}" height="${s}" rx="5"/></clipPath>`;
-    bg=`<rect x="${x0}" y="${y0}" width="${s}" height="${s}" rx="5" fill="${bgCol}"/>`;
-    if(showBdr)bg+=`<rect x="${x0}" y="${y0}" width="${s}" height="${s}" rx="5" fill="none" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3"/>`;
+    clip=`<clipPath id="lc"><rect x="${shapeX}" y="${shapeY}" width="${shapeW}" height="${shapeH}" rx="5"/></clipPath>`;
+    bg=`<rect x="${shapeX}" y="${shapeY}" width="${shapeW}" height="${shapeH}" rx="5" fill="${bgCol}"/>`;
+    if(showBdr)bg+=`<rect x="${shapeX}" y="${shapeY}" width="${shapeW}" height="${shapeH}" rx="5" fill="none" stroke="#bbb" stroke-width="0.8" stroke-dasharray="3,3"/>`;
   } else {
-    clip=`<clipPath id="lc"><rect x="2" y="2" width="${pw-4}" height="${ph-4}" rx="4"/></clipPath>`;
-    bg=`<rect x="2" y="2" width="${pw-4}" height="${ph-4}" rx="4" fill="${bgCol}"/>`;
-    if(showBdr)bg+=`<rect x="2" y="2" width="${pw-4}" height="${ph-4}" rx="4" fill="none" stroke="#aaa" stroke-width="1" stroke-dasharray="4,3"/>`;
+    clip=`<clipPath id="lc"><rect x="${shapeX}" y="${shapeY}" width="${shapeW}" height="${shapeH}" rx="4"/></clipPath>`;
+    bg=`<rect x="${shapeX}" y="${shapeY}" width="${shapeW}" height="${shapeH}" rx="4" fill="${bgCol}"/>`;
+    if(showBdr)bg+=`<rect x="${shapeX}" y="${shapeY}" width="${shapeW}" height="${shapeH}" rx="4" fill="none" stroke="#bbb" stroke-width="0.8" stroke-dasharray="3,3"/>`;
   }
 
-  // ── FONT SIZE CONSTANTS (relative to pw) ─────────────────────
-  const BASE=pw; // reference dimension
-  // Clamp helper: clamp(val, min, max)
-  const clamp=(v,mn,mx)=>Math.min(Math.max(v,mn),mx);
+  // ── HEADER BAND ───────────────────────────────────────────────
+  const bizY = topY + topH*0.40;
+  const webY = topY + topH*0.78;
+  // bizSW must use sW (shape width), not pw, for rect/square to avoid overflow
+  const bizSW = Math.min(chordW(bizY, 0.10), sW*0.88);
+  const webSW = Math.min(chordW(webY, 0.10), sW*0.88);
+  const bizFS = fitFont(bizName, bizSW*0.84, clamp(BASE*0.065,4,13), clamp(BASE*0.030,3,6.5), true, true);
+  const webFS = clamp(BASE*0.038, 2.8, 7);
 
-  // ── HEADER: business name ─────────────────────────────────────
-  const headerMidY = topBandH * 0.42;
-  const headerSafeW = chordW(headerMidY, 0.12);
-  const bizNameMaxFS = clamp(BASE*0.072, 5, 14);
-  const bizNameMinFS = clamp(BASE*0.032, 4, 8);
-  const bizNameFS = fitFont(bizName, headerSafeW*0.90, bizNameMaxFS, bizNameMinFS, true, true);
+  // ── DIVIDER LINES ─────────────────────────────────────────────
+  const divTopY = midY;
+  const divBotY = botY;
+  const divTopHW = chordW(divTopY, 0.08)/2;
+  const divBotHW = chordW(divBotY, 0.08)/2;
+  const divTop = `<line x1="${(cx-divTopHW).toFixed(1)}" y1="${divTopY.toFixed(1)}" x2="${(cx+divTopHW).toFixed(1)}" y2="${divTopY.toFixed(1)}" stroke="#ddd" stroke-width="0.5"/>`;
+  const divBot = `<line x1="${(cx-divBotHW).toFixed(1)}" y1="${divBotY.toFixed(1)}" x2="${(cx+divBotHW).toFixed(1)}" y2="${divBotY.toFixed(1)}" stroke="#ddd" stroke-width="0.5"/>`;
 
-  // Website line
-  const webMidY = topBandH * 0.80;
-  const webSafeW = chordW(webMidY, 0.12);
-  const webFS = clamp(BASE*0.038, 3.5, 7.5);
+  // ── MID BAND: fixed proportional layout ──────────────────────
+  // Uses fixed fractions of midH so content always fits regardless of measureText accuracy.
+  // Font sizes scale with shape width (BASE=sW) and are capped to ensure they fit vertically.
 
-  // Divider lines
-  const divInset=isCircle?pw*0.10:pw*0.08;
+  // Reserve vertical slots as fractions of midH:
+  // scent: 22%, type: 13%, signal: 16%, pictos: 14%, H-stmts: 13%, sens: 11%, gap: 11%
+  const slot = {
+    scent:  midH * 0.21,
+    type:   midH * 0.13,
+    signal: midH * 0.16,
+    picto:  midH * 0.14,
+    h:      midH * 0.12,
+    sens:   midH * 0.10,
+    p:      midH * 0.09,
+    gap:    midH * 0.05,
+  };
 
-  // ── SCENT NAME (biggest text on label) ────────────────────────
-  // Scent sits just below the top divider — allow up to 2 lines
-  const scentMidY = midY + midH*0.12;
-  const scentSafeW = chordW(scentMidY, 0.08);
-  const scentMaxFS = clamp(BASE*0.105, 7, 20);
-  const scentMinFS = clamp(BASE*0.040, 4, 8);
-  // Try single line first; if too wide, wrap to 2 lines
-  let scentFS = fitFont(scent, scentSafeW*0.92, scentMaxFS, scentMinFS, true, true);
-  let scentLines = [scent];
-  if(measureText(scent,scentFS,true,true) > scentSafeW*0.92){
-    // Try fitting on two lines
-    const halfW = scentSafeW*0.92;
-    const fs2 = fitFont(scent, halfW, scentMaxFS*0.85, scentMinFS, true, true);
-    scentLines = wrapText(scent, halfW, fs2, true, true);
+  const topGap = slot.gap;
+  let curY = midY + topGap;
+
+  // Scent name: font sized to fill its slot height, also width-constrained
+  const scentSW    = chordW(curY + slot.scent*0.5, 0.08);
+  const scentMaxFS = Math.min(slot.scent * 0.72, scentSW * 0.38, clamp(BASE*0.110,6,22));
+  const scentMinFS = clamp(BASE*0.036, 3, 7);
+  let scentFS      = fitFont(scent, scentSW*0.90, scentMaxFS, scentMinFS, true, true);
+  let scentLines   = wrapText(scent, scentSW*0.90, scentFS, true, true);
+  // If wrapping to 2 lines, reduce font size so 2 lines fit in slot
+  if(scentLines.length > 1){
+    const fs2 = Math.min(scentFS, slot.scent * 0.42);
+    scentLines = wrapText(scent, scentSW*0.90, fs2, true, true);
     scentFS = fs2;
   }
-  const scentLineH = scentFS * 1.2;
-  const scentBlockH = scentLines.length * scentLineH;
+  const scentLH   = scentFS * 1.15;
+  const scentBlock= scentLines.length * scentLH;
 
-  // ── PRODUCT TYPE ───────────────────────────────────────────────
-  const typeMidY = midY + midH*0.12 + scentBlockH + scentLineH*0.4;
-  const typeSafeW = chordW(typeMidY, 0.10);
-  const typeFS = clamp(fitFont(type, typeSafeW*0.88, BASE*0.060, BASE*0.030, true, false), BASE*0.030, BASE*0.070);
+  const scentY    = curY + slot.scent*0.5 - scentBlock*0.5 + scentLH*0.5;
+  curY += slot.scent;
 
-  // ── SIGNAL WORD ───────────────────────────────────────────────
-  const sigMidY = typeMidY + typeFS*1.5;
-  const sigSafeW = chordW(sigMidY, 0.10);
-  const sigFS = clamp(fitFont(sig, sigSafeW*0.75, BASE*0.072, BASE*0.034, true, false), BASE*0.034, BASE*0.080);
+  // Product type
+  const typeSW  = chordW(curY + slot.type*0.5, 0.09);
+  const typeFS  = Math.min(slot.type * 0.68, fitFont(type, typeSW*0.88, clamp(BASE*0.060,4,14), clamp(BASE*0.028,2.5,6), true, false));
+  const typeY   = curY + slot.type*0.5;
+  curY += slot.type;
 
-  // ── PICTOGRAM ROW ─────────────────────────────────────────────
-  const n=pictos.length;
-  // Each pictogram = a rotated square. Size so all fit with 8% gap
-  const maxPictoSize = clamp(BASE*0.095, 8, 22);
-  const pictoMidY = sigMidY + sigFS*1.6;
-  const pictoRowSafeW = chordW(pictoMidY, 0.06);
-  const gap = pictoRowSafeW*0.06;
-  const pictoSize = Math.min(maxPictoSize, (pictoRowSafeW - gap*(n+1)) / n);
-  const totalPictoW = n*pictoSize + (n-1)*gap;
-  const pictoStartX = cx - totalPictoW/2 + pictoSize/2;
+  // Signal word
+  const sigSW   = chordW(curY + slot.signal*0.5, 0.09);
+  const sigFS   = Math.min(slot.signal * 0.68, fitFont(sig, sigSW*0.76, clamp(BASE*0.074,5,16), clamp(BASE*0.032,3,7), true, false));
+  const sigY    = curY + slot.signal*0.5;
+  curY += slot.signal;
 
+  // Pictograms: size to fit within slot height and row width
+  const nP      = pictos.length;
+  const pictoSW = chordW(curY + slot.picto*0.5, 0.06);
+  const pictoMaxH = slot.picto * 0.80;
+  const pictoGap  = pictoSW * 0.04;
+  const pictoSz   = Math.min(pictoMaxH, (pictoSW - pictoGap*(nP+1)) / nP, clamp(BASE*0.10,5,20));
+  const pictoTotW = nP*pictoSz + (nP-1)*pictoGap;
+  const pictoSX   = cx - pictoTotW/2 + pictoSz/2;
+  const pictoY    = curY + slot.picto*0.5;
+  curY += slot.picto;
+
+  // H statements
+  const hSW     = chordW(curY + slot.h*0.5, 0.08);
+  const hFS     = Math.min(slot.h * 0.52, clamp(BASE*0.037, 2.5, 7.5));
+  const hLH     = hFS * 1.25;
+  const hText   = hCodes.slice(0,8).join(' · ') || 'H317, H411';
+  const hLines  = wrapText(hText, hSW*0.92, hFS, false, false);
+  const hY      = curY + hLH*0.5;
+  curY += Math.max(slot.h, hLines.length*hLH);
+
+  // Sensitisers
+  const sensSW  = chordW(curY + slot.sens*0.5, 0.08);
+  const sensFS  = Math.min(slot.sens * 0.52, clamp(BASE*0.034, 2.5, 7));
+  const sensLH  = sensFS * 1.25;
+  const sensStr = 'Contains: '+sensArr.slice(0,5).join(', ')+(sensArr.length>5?'...':'');
+  const sensLines = wrapText(sensStr, sensSW*0.90, sensFS, false, false);
+  const sensStY = curY + sensLH*0.5;
+  curY += Math.max(slot.sens, sensLines.length*sensLH);
+
+  // P statements (only if space remains before footer)
+  const pSW     = chordW(curY + slot.p*0.5, 0.08);
+  const pFS     = Math.min(slot.p * 0.50, clamp(BASE*0.030, 2.5, 6));
+  const pLH     = pFS * 1.25;
+  const pText   = pCodes.slice(0,8).join(' · ');
+  const pLines  = pText ? wrapText(pText, pSW*0.90, pFS, false, false) : [];
+  const pStY    = curY + pLH*0.5;
+  const showP   = pLines.length > 0 && (curY + pLines.length*pLH) < botY - 2;
+
+  // ── RENDER PICTOGRAMS ─────────────────────────────────────────
   const GHS_TEXT={flame:'GHS02',exclamation:'GHS07',health:'GHS08',aquatic:'GHS09',corrosive:'GHS05',skull:'GHS06',oxidiser:'GHS03',gas:'GHS04',explosion:'GHS01'};
   const pictoRow=pictos.map((p,i)=>{
-    const px=pictoStartX+i*(pictoSize+gap);
-    const py=pictoMidY;
+    const px=pictoSX+i*(pictoSz+pictoGap);
+    const py=pictoY;
     if(forExport){
-      const hSz=pictoSize*0.48;
-      return`<rect x="${(px-hSz).toFixed(1)}" y="${(py-hSz).toFixed(1)}" width="${(hSz*2).toFixed(1)}" height="${(hSz*2).toFixed(1)}" fill="none" stroke="${txtCol}" stroke-width="1" transform="rotate(45,${px.toFixed(1)},${py.toFixed(1)})"/><text x="${px.toFixed(1)}" y="${py.toFixed(1)}" font-family="sans-serif" font-size="${(pictoSize*0.35).toFixed(1)}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${GHS_TEXT[p]||'!'}</text>`;
+      const hSz=pictoSz*0.48;
+      return`<rect x="${(px-hSz).toFixed(1)}" y="${(py-hSz).toFixed(1)}" width="${(hSz*2).toFixed(1)}" height="${(hSz*2).toFixed(1)}" fill="none" stroke="${txtCol}" stroke-width="1" transform="rotate(45,${px.toFixed(1)},${py.toFixed(1)})"/><text x="${px.toFixed(1)}" y="${py.toFixed(1)}" font-family="sans-serif" font-size="${(pictoSz*0.35).toFixed(1)}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${GHS_TEXT[p]||'!'}</text>`;
     }
-    return ghsPicto(p, px, py, pictoSize);
+    return ghsPicto(p, px, py, pictoSz);
   }).join('');
 
-  // ── H STATEMENTS (wrapped) ────────────────────────────────────
-  const hAreaY = pictoMidY + pictoSize*0.55 + 2;
-  const hAreaMidY = hAreaY + 4;
-  const hSafeW = chordW(hAreaMidY, 0.08);
-  const hFS = clamp(BASE*0.036, 3, 7);
-  const hLineH = hFS*1.25;
-  // Join codes with · and wrap
-  const hText = hCodes.slice(0,8).join(' · ') || 'H317, H411';
-  const hLines = wrapText(hText, hSafeW*0.94, hFS, false, false);
-  const hBlockH = hLines.length * hLineH;
-
-  // ── SENSITISERS / CONTAINS (wrapped) ──────────────────────────
-  const sensY = hAreaY + hBlockH + hLineH*0.25;
-  const sensMidY = sensY + 3;
-  const sensSafeW = chordW(sensMidY, 0.08);
-  const sensFS = clamp(BASE*0.033, 3, 6.5);
-  const sensLineH = sensFS*1.25;
-  const sensStr='Contains: '+sensArr.slice(0,5).join(', ')+(sensArr.length>5?'...':'');
-  const sensLines = wrapText(sensStr, sensSafeW*0.92, sensFS, false, false);
-  const sensBlockH = sensLines.length * sensLineH;
-
-  // ── P STATEMENTS (wrapped, italic, smaller) ───────────────────
-  const pY = sensY + sensBlockH + sensLineH*0.25;
-  const pMidY = pY + 3;
-  const pSafeW = chordW(pMidY, 0.08);
-  const pFS = clamp(BASE*0.030, 3, 6);
-  const pLineH = pFS*1.25;
-  const pText = pCodes.slice(0,8).join(' · ');
-  const pLines = pText ? wrapText(pText, pSafeW*0.92, pFS, false, false) : [];
-  const pBlockH = pLines.length * pLineH;
-
   // ── FOOTER BAND ───────────────────────────────────────────────
-  // Business name (already rendered in header), address, phone, detail line
   const footerSlots=[];
   if(addr)footerSlots.push({text:addr,bold:false});
   if(phone)footerSlots.push({text:phone,bold:true});
   if(detailParts.length)footerSlots.push({text:detailParts.join(' · '),bold:false});
 
-  const footerFS = clamp(BASE*0.038, 3.2, 7.5);
-  const footerLineH = footerFS*1.3;
-  const footerRendered=footerSlots.map((slot,i)=>{
-    const fY=botY + botBandH*(0.25 + i*0.28);
-    const fSafeW=chordW(fY,0.10);
-    const fs2=fitFont(slot.text,fSafeW*0.90,footerFS,clamp(BASE*0.026,2.8,5),slot.bold,false);
-    return`<text x="${cx}" y="${fY.toFixed(1)}" font-family="sans-serif" font-size="${fs2.toFixed(2)}" font-weight="${slot.bold?'700':'400'}" fill="${slot.bold?txtCol:mutedCol}" text-anchor="middle" dominant-baseline="middle">${xe(slot.text)}</text>`;
+  const fCount = Math.min(footerSlots.length, 3);
+  const fTopPad = botH * 0.10;
+  const fBotPad = botH * 0.14; // slightly more bottom padding to avoid clipping
+  const fUsable = botH - fTopPad - fBotPad;
+  const fStep   = fCount > 0 ? fUsable / fCount : fUsable;
+  const footerRendered = footerSlots.slice(0,3).map((slot,i)=>{
+    const fYraw = botY + fTopPad + fStep*(i+0.5);
+    // Guard: never render below shape bottom (sBot)
+    const fY  = Math.min(fYraw, sBot - 3);
+    const fSW = Math.min(chordW(fY, 0.09), sW*0.88);
+    const fFS = fitFont(slot.text, fSW*0.88, clamp(BASE*0.036,3,7.5), clamp(BASE*0.022,2.5,5), slot.bold, false);
+    return`<text x="${cx}" y="${fY.toFixed(1)}" font-family="sans-serif" font-size="${fFS.toFixed(2)}" font-weight="${slot.bold?'700':'400'}" fill="${slot.bold?txtCol:mutedCol}" text-anchor="middle" dominant-baseline="middle">${xe(slot.text)}</text>`;
   }).join('');
 
   // ── WATERMARK ─────────────────────────────────────────────────
+  const wmSz=sW*0.12;
   const wm=!S.isPro?`<g transform="translate(${cx},${cy}) rotate(-35)">
-    <text x="0" y="${(-pw*0.07).toFixed(1)}" font-family="sans-serif" font-size="${Math.max(pw*0.11,7).toFixed(1)}" fill="rgba(0,0,0,0.16)" text-anchor="middle" font-weight="900" letter-spacing="1">CLPeasy</text>
-    <text x="0" y="${(pw*0.06).toFixed(1)}" font-family="sans-serif" font-size="${Math.max(pw*0.065,5).toFixed(1)}" fill="rgba(0,0,0,0.13)" text-anchor="middle" font-weight="700">PREVIEW ONLY</text>
-    <text x="0" y="${(pw*0.16).toFixed(1)}" font-family="sans-serif" font-size="${Math.max(pw*0.045,4).toFixed(1)}" fill="rgba(0,0,0,0.10)" text-anchor="middle">clpeasy.com</text>
+    <text x="0" y="${(-wmSz*0.6).toFixed(1)}" font-family="sans-serif" font-size="${Math.max(wmSz,6).toFixed(1)}" fill="rgba(0,0,0,0.15)" text-anchor="middle" font-weight="900" letter-spacing="1">CLPeasy</text>
+    <text x="0" y="${(wmSz*0.55).toFixed(1)}" font-family="sans-serif" font-size="${Math.max(wmSz*0.60,4).toFixed(1)}" fill="rgba(0,0,0,0.12)" text-anchor="middle" font-weight="700">PREVIEW ONLY</text>
+    <text x="0" y="${(wmSz*1.4).toFixed(1)}" font-family="sans-serif" font-size="${Math.max(wmSz*0.42,3).toFixed(1)}" fill="rgba(0,0,0,0.09)" text-anchor="middle">clpeasy.com</text>
   </g>`:'';
 
-  // ── ASSEMBLE SVG ─────────────────────────────────────────────
+  // ── ASSEMBLE ──────────────────────────────────────────────────
   const svgW=forExport?mmW*3.7795:pw;
   const svgH=forExport?mmH*3.7795:ph;
 
@@ -1437,39 +1480,35 @@ function buildSVG(forExport=false){
 <defs>${clip}</defs>
 <g clip-path="url(#lc)">
   ${bg}
+  ${divTop}
+  ${divBot}
 
-  <!-- HEADER BAND -->
-  <rect x="0" y="0" width="${pw}" height="${topBandH}" fill="${bgCol}"/>
-  ${svgWrapped([bizName],cx,headerMidY,scentLineH,bizNameFS,true,true,txtCol)}
-  ${webLine?`<text x="${cx}" y="${webMidY.toFixed(1)}" font-family="sans-serif" font-size="${webFS.toFixed(2)}" fill="${mutedCol}" text-anchor="middle" dominant-baseline="middle">${xe(webLine)}</text>`:''}
-  <line x1="${(cx-pw/2+divInset).toFixed(1)}" y1="${topBandH.toFixed(1)}" x2="${(cx+pw/2-divInset).toFixed(1)}" y2="${topBandH.toFixed(1)}" stroke="#ddd" stroke-width="0.5"/>
+  <!-- HEADER -->
+  ${svgWrapped([bizName],cx,bizY,scentLH,bizFS,true,true,txtCol)}
+  ${webLine?`<text x="${cx}" y="${webY.toFixed(1)}" font-family="sans-serif" font-size="${webFS.toFixed(2)}" fill="${mutedCol}" text-anchor="middle" dominant-baseline="middle">${xe(webLine)}</text>`:''}
 
-  <!-- MID BAND: SCENT -->
-  ${svgWrapped(scentLines,cx,midY+midH*0.11,scentLineH,scentFS,true,true,txtCol)}
+  <!-- SCENT NAME -->
+  ${svgWrapped(scentLines,cx,scentY,scentLH,scentFS,true,true,txtCol)}
 
   <!-- PRODUCT TYPE -->
-  <text x="${cx}" y="${typeMidY.toFixed(1)}" font-family="sans-serif" font-size="${typeFS.toFixed(2)}" font-weight="700" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle" letter-spacing="0.8">${xe(type)}</text>
+  <text x="${cx}" y="${typeY.toFixed(1)}" font-family="sans-serif" font-size="${typeFS.toFixed(2)}" font-weight="700" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle" letter-spacing="0.6">${xe(type)}</text>
 
   <!-- SIGNAL WORD -->
-  <text x="${cx}" y="${sigMidY.toFixed(1)}" font-family="sans-serif" font-size="${sigFS.toFixed(2)}" font-weight="800" fill="${sig==='DANGER'?'#cc0000':txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(sig)}</text>
+  <text x="${cx}" y="${sigY.toFixed(1)}" font-family="sans-serif" font-size="${sigFS.toFixed(2)}" font-weight="800" fill="${sig==='DANGER'?'#cc0000':txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(sig)}</text>
 
   <!-- PICTOGRAMS -->
   ${pictoRow}
 
   <!-- H STATEMENTS -->
-  ${svgWrapped(hLines,cx,hAreaY+hLineH*0.5,hLineH,hFS,false,false,txtCol)}
+  ${svgWrapped(hLines,cx,hY,hLH,hFS,false,false,txtCol)}
 
   <!-- SENSITISERS -->
-  ${svgWrapped(sensLines,cx,sensY+sensLineH*0.5,sensLineH,sensFS,false,false,mutedCol)}
+  ${svgWrapped(sensLines,cx,sensStY,sensLH,sensFS,false,false,mutedCol)}
 
   <!-- P STATEMENTS -->
-  ${pLines.length?`<g font-style="italic">${svgWrapped(pLines,cx,pY+pLineH*0.5,pLineH,pFS,false,false,mutedCol)}</g>`:''}
+  ${showP?`<g font-style="italic">${svgWrapped(pLines,cx,pStY,pLH,pFS,false,false,mutedCol)}</g>`:''}
 
-  <!-- FOOTER DIVIDER -->
-  <line x1="${(cx-pw/2+divInset).toFixed(1)}" y1="${botY.toFixed(1)}" x2="${(cx+pw/2-divInset).toFixed(1)}" y2="${botY.toFixed(1)}" stroke="#ddd" stroke-width="0.5"/>
-
-  <!-- FOOTER BAND -->
-  <rect x="0" y="${botY.toFixed(1)}" width="${pw}" height="${botBandH}" fill="${bgCol}"/>
+  <!-- FOOTER -->
   ${footerRendered}
 
   <!-- WATERMARK -->
