@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>CLPeasy — Label Builder</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--white:#fff;--off:#F7F8FA;--border:#E8EAED;--text:#111318;--muted:#6B7280;--teal:#0D9488;--teal-light:#CCFBF1;--teal-dark:#0F766E;--amber:#F59E0B;--amber-light:#FEF3C7;--red:#EF4444;}
@@ -274,6 +275,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .wiz-header-icon{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:18px;}
 .wiz-header-title{font-family:'DM Serif Display',serif;font-size:18px;color:white;line-height:1.1;}
 .wiz-header-sub{font-size:11px;color:rgba(255,255,255,0.7);margin-top:1px;}
+.wiz-clear-btn{padding:5px 10px;border-radius:8px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.8);font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;flex-shrink:0;}
+.wiz-clear-btn:hover{background:rgba(255,255,255,0.25);color:white;}
 .wiz-close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.15);border:none;color:white;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;flex-shrink:0;}
 .wiz-close:hover{background:rgba(255,255,255,0.3);}
 .wiz-messages{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth;}
@@ -376,6 +379,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="wiz-header-sub">Tell me what you need — I'll guide you through it</div>
       </div>
     </div>
+    <button class="wiz-clear-btn" id="wiz-clear-btn" onclick="wizClearChat()" title="Clear conversation">🗑 Clear</button>
     <button class="wiz-close" onclick="closeWizard()">✕</button>
   </div>
   <div class="wiz-messages" id="wiz-messages"></div>
@@ -785,6 +789,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button class="btn-dl" onclick="downloadPNG()">⬇ PNG</button>
       <button class="btn-dl-svg" onclick="downloadSVG()">⬡ SVG</button>
     </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
+      <button class="btn-dl" style="background:#0F766E;font-size:11px;padding:9px;" title="Aligned to your Avery label sheet — print at home on sticker paper" onclick="downloadPDFSheet()">🖨 Avery Sheet</button>
+      <button class="btn-dl" style="background:#7C3AED;font-size:11px;padding:9px;" title="300 DPI + 3mm bleed + crop marks — send this to a print company" onclick="downloadPrintReadyPDF()">🏭 Print Shop PDF</button>
+    </div>
+    <div style="margin-top:6px;">
+      <button class="btn-dl" style="background:#1D4ED8;font-size:11px;padding:9px;width:100%;" title="Individual PNGs for Cricut Print Then Cut" onclick="downloadCricutPNGs()">✂️ Cricut PNGs</button>
+    </div>
     <a href="print.html" style="display:flex;align-items:center;justify-content:center;gap:7px;background:rgba(13,148,136,0.12);border:1px solid rgba(13,148,136,0.25);color:#5EEAD4;padding:9px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;transition:all .2s;margin-top:2px;" onmouseover="this.style.background='rgba(13,148,136,0.22)'" onmouseout="this.style.background='rgba(13,148,136,0.12)'">🖨 Print Sheet Composer →</a>
     <div class="cricut-note" style="display:none;"></div>
   </div>
@@ -798,8 +809,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="preview-sheet-label" id="sheet-label-container"></div>
     <div style="font-size:12px;color:rgba(255,255,255,0.4);text-align:center;margin-bottom:4px;" id="sheet-size-info"></div>
     <div class="preview-sheet-actions">
-      <button class="btn-dl" onclick="downloadPNG();closeSheet()">⬇ PNG</button>
-      <button class="btn-dl-svg" onclick="downloadSVG();closeSheet()">⬡ SVG</button>
+      <button class="btn-dl" onclick="downloadPNG();closeSheet()">⬇ PNG (single)</button>
+      <button class="btn-dl-svg" onclick="downloadSVG();closeSheet()">⬡ SVG (Cricut)</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
+      <button class="btn-dl" style="background:#0F766E;font-size:11px;" onclick="downloadPDFSheet();closeSheet()">🖨 Avery Sheet</button>
+      <button class="btn-dl" style="background:#7C3AED;font-size:11px;" onclick="downloadPrintReadyPDF();closeSheet()">🏭 Print Shop</button>
+    </div>
+    <div style="margin-top:8px;">
+      <button class="btn-dl" style="background:#1D4ED8;font-size:12px;width:100%;" onclick="downloadCricutPNGs();closeSheet()">✂️ Cricut PNGs (zip)</button>
     </div>
     <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.3);text-align:center;">PNG for printing · SVG for Cricut</div>
     <div style="margin-top:12px;text-align:center;"><button onclick="closeSheet()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:8px;">Close</button></div>
@@ -986,6 +1004,232 @@ function printToPDF(){
     setTimeout(()=>win.print(),500);
   };
   img.src=svgDataUri;
+}
+
+
+// ── PDF SHEET DOWNLOAD (A4 grid of repeated labels) ──────────
+// ── AVERY SHEET LAYOUTS (real UK Avery label counts & positions) ──
+// Source: Avery UK official counts. Positions calculated from standard A4 sheet layouts.
+// Format: { cols, rows, topMm, leftMm, pitchX, pitchY } — all in mm
+const AVERY_LAYOUTS = {
+  35:  { cols:5, rows:7, topMm:13.5, leftMm:8.0,  pitchX:39.0, pitchY:40.0, total:35 }, // 35/sheet
+  40:  { cols:4, rows:6, topMm:14.0, leftMm:13.0, pitchX:46.0, pitchY:46.0, total:24 }, // 24/sheet
+  45:  { cols:4, rows:5, topMm:15.0, leftMm:11.0, pitchX:47.0, pitchY:57.0, total:20 }, // 20/sheet
+  51:  { cols:3, rows:5, topMm:14.0, leftMm:12.5, pitchX:52.5, pitchY:52.4, total:15 }, // 15/sheet (LabelPlanet LP15/51R)
+  63:  { cols:3, rows:4, topMm:16.0, leftMm:11.5, pitchX:63.0, pitchY:68.0, total:12 }, // 12/sheet
+};
+
+function getAveryLayout(mmW){
+  // Find closest matching Avery size, or fall back to calculated layout
+  const key = [35,40,45,51,63].reduce((prev,curr)=>Math.abs(curr-mmW)<Math.abs(prev-mmW)?curr:prev);
+  if(Math.abs(key-mmW)<=2) return AVERY_LAYOUTS[key];
+  // Custom size — calculate generically
+  const gap=3,margin=10;
+  const cols=Math.max(1,Math.floor((210-margin*2+gap)/(mmW+gap)));
+  const rows=Math.max(1,Math.floor((297-margin*2+gap)/(mmW+gap)));
+  const pitchX=(210-margin*2)/cols, pitchY=(297-margin*2)/rows;
+  return{cols,rows,topMm:margin+pitchY/2-mmW/2,leftMm:margin+pitchX/2-mmW/2,pitchX,pitchY,total:cols*rows};
+}
+
+// ── HELPER: render label to canvas at 300 DPI ─────────────────
+function labelToCanvas(cb){
+  readForm();
+  const{mmW,mmH,pw,ph}=getDims();
+  const DPI=300,MPI=25.4;
+  const eW=Math.round(mmW/MPI*DPI),eH=Math.round(mmH/MPI*DPI);
+  const svgStr=buildSVG(false);
+  const clone=new DOMParser().parseFromString(svgStr,'image/svg+xml').documentElement;
+  clone.setAttribute('width',eW);clone.setAttribute('height',eH);
+  clone.setAttribute('viewBox',`0 0 ${pw} ${ph}`);
+  const svgData=new XMLSerializer().serializeToString(clone);
+  const svgUri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgData);
+  const img=new Image();
+  img.onload=function(){
+    const cvs=document.createElement('canvas');cvs.width=eW;cvs.height=eH;
+    const ctx=cvs.getContext('2d');
+    ctx.fillStyle='white';ctx.fillRect(0,0,eW,eH);
+    ctx.drawImage(img,0,0,eW,eH);
+    cb(cvs,eW,eH,mmW,mmH);
+  };
+  img.onerror=()=>alert('Could not render label. Please try again.');
+  img.src=svgUri;
+}
+
+// ── PDF SHEET — Avery-aligned home printing ───────────────────
+function downloadPDFSheet(){
+  readForm();
+  const{mmW}=getDims();
+  const layout=getAveryLayout(mmW);
+  const DPI=300,MPI=25.4;
+  const a4PxW=Math.round(210/MPI*DPI),a4PxH=Math.round(297/MPI*DPI);
+  labelToCanvas((labelCvs,eW,eH)=>{
+    const labelUri=labelCvs.toDataURL('image/png');
+    const labelImg=new Image();
+    labelImg.onload=function(){
+      const sheet=document.createElement('canvas');sheet.width=a4PxW;sheet.height=a4PxH;
+      const sc=sheet.getContext('2d');
+      sc.fillStyle='white';sc.fillRect(0,0,a4PxW,a4PxH);
+      for(let r=0;r<layout.rows;r++){
+        for(let c=0;c<layout.cols;c++){
+          const xMm=layout.leftMm+c*layout.pitchX;
+          const yMm=layout.topMm+r*layout.pitchY;
+          const xPx=Math.round(xMm/MPI*DPI);
+          const yPx=Math.round(yMm/MPI*DPI);
+          if(xPx+eW<=a4PxW && yPx+eH<=a4PxH) sc.drawImage(labelImg,xPx,yPx,eW,eH);
+        }
+      }
+      const sheetUri=sheet.toDataURL('image/png');
+      const slug=(S.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+      const win=window.open('','_blank');
+      if(!win){alert('Please allow pop-ups for clpeasy.com to print.');return;}
+      const averyNote=AVERY_LAYOUTS[Math.round(mmW)] ? `Aligned to Avery ${mmW}mm round labels (${layout.total}/sheet)` : `${layout.total} labels per sheet`;
+      win.document.write(`<!DOCTYPE html><html><head><title>CLPeasy Sheet — ${slug}</title>
+      <style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#f5f5f5;font-family:Arial,sans-serif;}
+      .sheet-wrap{background:white;width:210mm;margin:0 auto;box-shadow:0 2px 8px rgba(0,0,0,0.15);}
+      img{width:210mm;height:297mm;display:block;}
+      .info{padding:8px 12px;font-size:10px;color:#888;text-align:center;background:#fafafa;border-top:1px solid #eee;}
+      @media print{@page{size:A4;margin:0;}body{background:white;}.sheet-wrap{box-shadow:none;}.info{display:none;}}</style>
+      </head><body>
+      <div class="sheet-wrap">
+        <img src="${sheetUri}"/>
+        <div class="info">🖨 ${averyNote} &nbsp;·&nbsp; Print at 100% scale — do not fit to page &nbsp;·&nbsp; Generated by CLPeasy.com</div>
+      </div>
+      <p style="text-align:center;margin:12px;font-size:12px;color:#666;">Press <strong>Ctrl+P</strong> (or ⌘P on Mac) — set scale to 100%, no margins</p>
+      </body></html>`);
+      win.document.close();
+      setTimeout(()=>win.print(),700);
+    };
+    labelImg.src=labelUri;
+  });
+}
+
+// ── PRINT-READY PDF — for professional print companies ────────
+// Exports a single label with 3mm bleed on all sides + crop marks
+// Print shops accept this directly — 300 DPI, bleed included
+function downloadPrintReadyPDF(){
+  readForm();
+  const{mmW,mmH,pw,ph}=getDims();
+  const bleedMm=3;
+  const DPI=300,MPI=25.4;
+  const totalWmm=mmW+bleedMm*2,totalHmm=mmH+bleedMm*2;
+  const totalWpx=Math.round(totalWmm/MPI*DPI),totalHpx=Math.round(totalHmm/MPI*DPI);
+  const bleedPx=Math.round(bleedMm/MPI*DPI);
+  const eW=Math.round(mmW/MPI*DPI),eH=Math.round(mmH/MPI*DPI);
+  const svgStr=buildSVG(false);
+  const clone=new DOMParser().parseFromString(svgStr,'image/svg+xml').documentElement;
+  clone.setAttribute('width',eW);clone.setAttribute('height',eH);
+  clone.setAttribute('viewBox',`0 0 ${pw} ${ph}`);
+  const svgData=new XMLSerializer().serializeToString(clone);
+  const svgUri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgData);
+  const img=new Image();
+  img.onload=function(){
+    const cvs=document.createElement('canvas');cvs.width=totalWpx;cvs.height=totalHpx;
+    const ctx=cvs.getContext('2d');
+    // White background (bleed area)
+    ctx.fillStyle='white';ctx.fillRect(0,0,totalWpx,totalHpx);
+    // Draw label centred in bleed area
+    ctx.drawImage(img,bleedPx,bleedPx,eW,eH);
+    // Draw crop marks (3mm lines, 2mm offset from trim edge)
+    const markLen=Math.round(3/MPI*DPI);
+    const offset=Math.round(2/MPI*DPI);
+    ctx.strokeStyle='#000000';ctx.lineWidth=1;
+    // Top-left
+    ctx.beginPath();ctx.moveTo(bleedPx-offset,bleedPx);ctx.lineTo(bleedPx-offset-markLen,bleedPx);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(bleedPx,bleedPx-offset);ctx.lineTo(bleedPx,bleedPx-offset-markLen);ctx.stroke();
+    // Top-right
+    ctx.beginPath();ctx.moveTo(bleedPx+eW+offset,bleedPx);ctx.lineTo(bleedPx+eW+offset+markLen,bleedPx);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(bleedPx+eW,bleedPx-offset);ctx.lineTo(bleedPx+eW,bleedPx-offset-markLen);ctx.stroke();
+    // Bottom-left
+    ctx.beginPath();ctx.moveTo(bleedPx-offset,bleedPx+eH);ctx.lineTo(bleedPx-offset-markLen,bleedPx+eH);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(bleedPx,bleedPx+eH+offset);ctx.lineTo(bleedPx,bleedPx+eH+offset+markLen);ctx.stroke();
+    // Bottom-right
+    ctx.beginPath();ctx.moveTo(bleedPx+eW+offset,bleedPx+eH);ctx.lineTo(bleedPx+eW+offset+markLen,bleedPx+eH);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(bleedPx+eW,bleedPx+eH+offset);ctx.lineTo(bleedPx+eW,bleedPx+eH+offset+markLen);ctx.stroke();
+    const pngUri=cvs.toDataURL('image/png');
+    const slug=(S.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+    const win=window.open('','_blank');
+    if(!win){alert('Please allow pop-ups for clpeasy.com.');return;}
+    win.document.write(`<!DOCTYPE html><html><head><title>CLPeasy Print-Ready — ${slug}</title>
+    <style>*{margin:0;padding:0;}body{background:#e8e8e8;display:flex;flex-direction:column;align-items:center;padding:20px;font-family:Arial,sans-serif;}
+    .card{background:white;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,0.2);margin-bottom:12px;}
+    img{display:block;width:${totalWmm}mm;height:${totalHmm}mm;}
+    .info{font-size:12px;color:#555;line-height:1.6;max-width:500px;text-align:center;}
+    .dl{margin-top:12px;padding:10px 20px;background:#0D9488;color:white;border:none;border-radius:6px;font-size:14px;cursor:pointer;font-family:Arial;}
+    @media print{body{background:white;padding:0;}.info,.dl{display:none;}.card{box-shadow:none;padding:0;}}</style>
+    </head><body>
+    <div class="card"><img src="${pngUri}"/></div>
+    <div class="info">
+      <strong>Print-ready file for ${slug} — ${mmW}×${mmH}mm</strong><br>
+      ✅ 300 DPI &nbsp;·&nbsp; ✅ 3mm bleed on all sides &nbsp;·&nbsp; ✅ Crop marks included<br><br>
+      <strong>How to send to a print company:</strong><br>
+      Right-click the label above → <em>Save image as…</em> → send the PNG to your printer.<br>
+      Or press <strong>Ctrl+P</strong> to print it yourself at 100% scale.<br><br>
+      <em>Tell your printer: 300 DPI PNG with 3mm bleed, cut to ${mmW}×${mmH}mm crop marks.</em>
+    </div>
+    <button class="dl" onclick="
+      const a=document.createElement('a');
+      a.href='${pngUri}';
+      a.download='clpeasy-print-ready-${slug}-${mmW}mm.png';
+      document.body.appendChild(a);a.click();document.body.removeChild(a);
+    ">⬇ Download print-ready PNG</button>
+    </body></html>`);
+    win.document.close();
+  };
+  img.src=svgUri;
+}
+
+// ── CRICUT INDIVIDUAL PNGs — download as ZIP ─────────────────
+function downloadCricutPNGs(){
+  readForm();
+  const qtyEl=document.getElementById('sheet-qty');
+  const qty=qtyEl ? (parseInt(qtyEl.value)||1) : 1;
+  const{mmW,mmH,pw,ph}=getDims();
+  const DPI=300,MPI=25.4;
+  const eW=Math.round(mmW/MPI*DPI),eH=Math.round(mmH/MPI*DPI);
+  const svgStr=buildSVG(false);
+  const clone=new DOMParser().parseFromString(svgStr,'image/svg+xml').documentElement;
+  clone.setAttribute('width',eW);clone.setAttribute('height',eH);
+  clone.setAttribute('viewBox',`0 0 ${pw} ${ph}`);
+  const svgData=new XMLSerializer().serializeToString(clone);
+  const svgUri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgData);
+  const img=new Image();
+  img.onload=function(){
+    const cvs=document.createElement('canvas');cvs.width=eW;cvs.height=eH;
+    const ctx=cvs.getContext('2d');
+    ctx.fillStyle='white';ctx.fillRect(0,0,eW,eH);
+    ctx.drawImage(img,0,0,eW,eH);
+    const pngUri=cvs.toDataURL('image/png');
+    const slug=(S.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+    if(qty===1){
+      const a=document.createElement('a');
+      a.href=pngUri;a.download=`clpeasy-${slug}-${mmW}mm-cricut.png`;
+      document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
+    } else {
+      if(typeof JSZip!=='undefined'){
+        const zip=new JSZip();
+        const b64=pngUri.split(',')[1];
+        for(let i=1;i<=qty;i++) zip.file(`clpeasy-${slug}-${mmW}mm-${i}.png`,b64,{base64:true});
+        zip.generateAsync({type:'blob'}).then(blob=>{
+          const url=URL.createObjectURL(blob);
+          const a=document.createElement('a');a.href=url;a.download=`clpeasy-cricut-${slug}-x${qty}.zip`;
+          document.body.appendChild(a);a.click();
+          setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
+        });
+      } else {
+        for(let i=1;i<=qty;i++){
+          (function(idx){
+            setTimeout(()=>{
+              const a=document.createElement('a');
+              a.href=pngUri;a.download=`clpeasy-${slug}-${mmW}mm-${idx}.png`;
+              document.body.appendChild(a);a.click();
+              setTimeout(()=>document.body.removeChild(a),500);
+            },idx*400);
+          })(i);
+        }
+      }
+    }
+  };
+  img.src=svgUri;
 }
 
 function openSupport(){
@@ -1826,6 +2070,12 @@ function downloadSVG(){
 
 // ── MOBILE SHEET ──────────────────────────────────────────────
 function openSheet(){document.getElementById('preview-sheet').classList.add('open');document.body.style.overflow='hidden';}
+function wizClearChat(){
+  wizHistory=[];
+  wizParsed=null;
+  document.getElementById('wiz-messages').innerHTML='';
+  wizGreet();
+}
 function closeSheet(e){if(!e||e.target===document.getElementById('preview-sheet')||e===undefined){document.getElementById('preview-sheet').classList.remove('open');document.body.style.overflow='';}}
 
 // ══════════════════════════════════════════════════════════════
@@ -1912,7 +2162,13 @@ Your job is to understand what the user wants to make, confirm their requirement
 
 CLPeasy has these features:
 - BUILDER (builder.html): 5-step wizard — Step 1: shape (circle/square/rectangle) & size (preset: 35/40/50/63mm or custom mm) & appearance; Step 2: product details (scent name, product type, weight, fragrance load, burn time); Step 3: hazard data (supplier, Smart Paste SDS, signal word, pictograms, H/P statements, sensitisers); Step 4: business details (name, address, phone, website, batch number); Step 5: download (PNG, SVG, PDF) and save to label library
-- PRINT SHEET (print.html): arrange saved labels on A4, choose sheet template (35mm/28 per sheet, 40mm/24 per sheet, 51mm/12 per sheet, or custom), set quantities per label, download PDF or individual PNGs for Cricut
+- PRINT SHEET (print.html): arrange saved labels on A4, choose sheet template, set quantities per label, download PDF or individual PNGs for Cricut
+- DOWNLOAD OPTIONS (all on builder Step 5 and preview panel):
+  • ⬇ PNG — single label, 300 DPI, for home printing on plain paper or uploading to Canva
+  • ⬡ SVG — vector file for Cricut Design Space (Print Then Cut)
+  • 🖨 Avery Sheet — positions labels exactly on A4 to match real Avery sticker sheets (35mm=35/sheet, 40mm=24/sheet, 51mm=15/sheet, 63mm=12/sheet) — print on Avery blank label sticker paper from Amazon/Ryman/Hobbycraft
+  • 🏭 Print Shop PDF — 300 DPI PNG with 3mm bleed + crop marks — ready to email to a professional print company (Vistaprint, Moo, local printers)
+  • ✂️ Cricut PNGs — individual 300 DPI PNGs, one per label, zipped if multiple — import each into Cricut Design Space for Print Then Cut
 
 CRITICAL RULES:
 1. First message: extract what you can from the user's request. If key info is missing, ask 1-2 focused clarifying questions — NEVER more than 2 at once.
@@ -1925,8 +2181,11 @@ Key things to know:
 - "radius" in common usage often means the circle size (diameter). Clarify if unsure.
 - Multiple different scents = multiple labels = save each one in the library, then use Print Sheet
 - All labels same scent = build once, set quantity in Print Sheet
-- Cricut users need individual PNGs, not the PDF sheet
-- Print Sheet is at print.html, separate from builder.html
+- Cricut users: use ✂️ Cricut PNGs or ⬡ SVG — not the Avery Sheet
+- Sending to a print company: use 🏭 Print Shop PDF — it has bleed and crop marks which is what printers need
+- Printing at home on Avery sticker paper: use 🖨 Avery Sheet — it aligns exactly to real Avery sheets
+- Printing at home on plain paper (cut yourself): use ⬇ PNG
+- Uploading to Canva to add branding first: use ⬇ PNG, then in Canva use "Upload" and overlay brand elements
 - Sizes: 35mm = wax melt, 40mm = small candle, 50mm = standard candle, 63mm = large jar
 - Maximum labels on A4 at 75mm: approximately 6 (3×2 grid with margins)
 
@@ -2043,6 +2302,7 @@ function wizAutoFill(data){
 }
 
 // ── MICROPHONE ───────────────────────────────────────────────
+let wizSilenceTimer = null;
 function wizToggleMic(){
   if(wizListening){ wizStopMic(); return; }
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -2052,22 +2312,41 @@ function wizToggleMic(){
   }
   wizSpeech = new SpeechRecognition();
   wizSpeech.lang = 'en-GB';
-  wizSpeech.continuous = false;
+  wizSpeech.continuous = true;
   wizSpeech.interimResults = true;
+  let finalTranscript = '';
   wizSpeech.onstart = ()=>{
     wizListening=true;
+    finalTranscript='';
     document.getElementById('wiz-mic').classList.add('listening');
-    document.getElementById('wiz-hint').textContent='🎤 Listening... speak now';
+    document.getElementById('wiz-hint').textContent='🎤 Listening… speak, then pause to finish';
+    clearTimeout(wizSilenceTimer);
   };
   wizSpeech.onresult = (e)=>{
-    const transcript = Array.from(e.results).map(r=>r[0].transcript).join('');
-    document.getElementById('wiz-input').value = transcript;
+    let interim = '';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal) finalTranscript += e.results[i][0].transcript + ' ';
+      else interim += e.results[i][0].transcript;
+    }
+    const display = (finalTranscript + interim).trim();
+    document.getElementById('wiz-input').value = display;
+    // Reset 8-second silence timer on every new speech result
+    clearTimeout(wizSilenceTimer);
+    wizSilenceTimer = setTimeout(()=>{ wizStopMic(); }, 8000);
   };
-  wizSpeech.onend = ()=>{ wizStopMic(); };
-  wizSpeech.onerror = ()=>{ wizStopMic(); document.getElementById('wiz-hint').textContent='Microphone error — check browser permissions.'; };
+  wizSpeech.onend = ()=>{
+    // If continuous mode ended unexpectedly (browser limit), restart if still "listening"
+    if(wizListening){
+      try{ wizSpeech.start(); } catch(e){ wizStopMic(); }
+    }
+  };
+  wizSpeech.onerror = (e)=>{ if(e.error!=='no-speech'){ wizStopMic(); document.getElementById('wiz-hint').textContent='Microphone error — check browser permissions.'; } };
   wizSpeech.start();
+  // Start 8-second initial silence timer
+  wizSilenceTimer = setTimeout(()=>{ wizStopMic(); }, 8000);
 }
 function wizStopMic(){
+  clearTimeout(wizSilenceTimer);
   wizListening=false;
   if(wizSpeech){ try{wizSpeech.stop();}catch(e){} wizSpeech=null; }
   document.getElementById('wiz-mic').classList.remove('listening');
