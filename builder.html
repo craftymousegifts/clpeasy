@@ -264,7 +264,66 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .sb-teal{background:var(--teal);color:white;}
 .sb-grey{background:var(--off);color:var(--text);border:1px solid var(--border);}
 .sb-red{background:#FEF2F2;color:var(--red);border:1px solid #FECACA;}
-.info-note{background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:10px;padding:12px 14px;font-size:12px;color:#92400E;margin-bottom:14px;line-height:1.5;}
+/* ── WIZARD PANEL ─────────────────────────────────────────── */
+.wizard-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:600;opacity:0;pointer-events:none;transition:opacity .3s;}
+.wizard-overlay.open{opacity:1;pointer-events:auto;}
+.wizard-panel-ai{position:fixed;top:0;right:-480px;width:460px;max-width:100vw;height:100vh;background:#fff;z-index:601;display:flex;flex-direction:column;box-shadow:-4px 0 32px rgba(0,0,0,0.15);transition:right .35s cubic-bezier(.4,0,.2,1);}
+.wizard-panel-ai.open{right:0;}
+.wiz-header{padding:16px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#0D9488 0%,#0F766E 100%);flex-shrink:0;}
+.wiz-header-left{display:flex;align-items:center;gap:10px;}
+.wiz-header-icon{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:18px;}
+.wiz-header-title{font-family:'DM Serif Display',serif;font-size:18px;color:white;line-height:1.1;}
+.wiz-header-sub{font-size:11px;color:rgba(255,255,255,0.7);margin-top:1px;}
+.wiz-close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.15);border:none;color:white;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;flex-shrink:0;}
+.wiz-close:hover{background:rgba(255,255,255,0.3);}
+.wiz-messages{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth;}
+.wiz-msg{display:flex;gap:10px;animation:wizFadeIn .3s ease;}
+@keyframes wizFadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.wiz-msg.user{flex-direction:row-reverse;}
+.wiz-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px;}
+.wiz-msg.ai .wiz-avatar{background:linear-gradient(135deg,#0D9488,#0F766E);color:white;}
+.wiz-msg.user .wiz-avatar{background:var(--off);border:1.5px solid var(--border);font-size:16px;}
+.wiz-bubble{max-width:85%;padding:11px 14px;border-radius:14px;font-size:13px;line-height:1.6;color:var(--text);}
+.wiz-msg.ai .wiz-bubble{background:var(--off);border:1px solid var(--border);border-top-left-radius:4px;}
+.wiz-msg.user .wiz-bubble{background:var(--teal);color:white;border-top-right-radius:4px;}
+.wiz-bubble strong{font-weight:700;}
+.wiz-bubble .step-card{background:white;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;margin:8px 0;display:flex;gap:10px;align-items:flex-start;}
+.wiz-bubble .step-num{width:22px;height:22px;border-radius:50%;background:var(--teal);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.wiz-bubble .step-text{font-size:12px;line-height:1.5;color:var(--text);}
+.wiz-bubble .step-text b{color:var(--teal-dark);}
+.wiz-bubble .step-diagram{background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:8px 10px;margin-top:6px;font-size:11px;color:#065F46;font-family:monospace;line-height:1.6;}
+.wiz-confirm-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.wiz-confirm-btn{padding:7px 14px;border-radius:8px;border:1.5px solid var(--teal);background:var(--teal-light);color:var(--teal-dark);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.wiz-confirm-btn:hover{background:var(--teal);color:white;}
+.wiz-confirm-btn.secondary{background:white;border-color:var(--border);color:var(--muted);}
+.wiz-confirm-btn.secondary:hover{border-color:var(--teal);color:var(--teal);}
+.wiz-style-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px;}
+.wiz-style-card{background:white;border:1.5px solid var(--border);border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;transition:all .2s;}
+.wiz-style-card:hover{border-color:var(--teal);background:var(--teal-light);}
+.wiz-style-card .style-icon{font-size:22px;margin-bottom:4px;}
+.wiz-style-card .style-name{font-size:11px;font-weight:700;color:var(--text);}
+.wiz-style-card .style-desc{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.3;}
+.wiz-autofill-bar{background:linear-gradient(135deg,#0D9488,#059669);border-radius:10px;padding:10px 12px;margin-top:8px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:opacity .2s;}
+.wiz-autofill-bar:hover{opacity:0.85;}
+.wiz-autofill-bar span{color:white;font-size:12px;font-weight:600;}
+.wiz-typing{display:flex;gap:4px;align-items:center;padding:4px 0;}
+.wiz-typing span{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:wizDot 1.2s ease-in-out infinite;}
+.wiz-typing span:nth-child(2){animation-delay:.2s;}
+.wiz-typing span:nth-child(3){animation-delay:.4s;}
+@keyframes wizDot{0%,80%,100%{transform:scale(0.7);opacity:0.4;}40%{transform:scale(1);opacity:1;}}
+.wiz-input-area{padding:12px 16px 16px;border-top:1px solid var(--border);background:white;flex-shrink:0;}
+.wiz-input-row{display:flex;gap:8px;align-items:flex-end;}
+.wiz-textarea{flex:1;padding:10px 13px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);resize:none;outline:none;min-height:42px;max-height:120px;line-height:1.5;transition:border-color .2s;}
+.wiz-textarea:focus{border-color:var(--teal);}
+.wiz-send-btn{width:42px;height:42px;border-radius:10px;background:var(--teal);border:none;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s;}
+.wiz-send-btn:hover{background:var(--teal-dark);}
+.wiz-send-btn:disabled{opacity:0.4;pointer-events:none;}
+.wiz-mic-btn{width:42px;height:42px;border-radius:10px;background:var(--off);border:1.5px solid var(--border);color:var(--muted);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;}
+.wiz-mic-btn:hover{border-color:var(--teal);color:var(--teal);}
+.wiz-mic-btn.listening{background:var(--red);border-color:var(--red);color:white;animation:micPulse 1s ease-in-out infinite;}
+@keyframes micPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
+.wiz-hint{font-size:11px;color:var(--muted);text-align:center;margin-top:6px;}
+@media(max-width:860px){.wizard-panel-ai{width:100vw;right:-100vw;}.wizard-panel-ai.open{right:0;}}
 .compliance-box{background:var(--teal-light);border:1.5px solid var(--teal);border-radius:14px;padding:16px;margin-bottom:20px;}
 .compliance-box p{font-size:13px;color:var(--teal-dark);font-weight:500;line-height:1.6;}
 .summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;color:var(--muted);}
@@ -277,6 +336,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <nav>
   <a href="index.html" class="nav-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span></a>
   <div style="display:flex;align-items:center;gap:8px;">
+    <button onclick="openWizard()" style="font-size:13px;color:var(--teal);background:var(--teal-light);border:1.5px solid var(--teal);padding:7px 13px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:5px;" onmouseover="this.style.background='#A7F3D0'" onmouseout="this.style.background='var(--teal-light)'" title="AI Label Guide">✨ Guide me</button>
     <button onclick="openSupport()" style="font-size:13px;color:var(--muted);background:none;text-decoration:none;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;white-space:nowrap;cursor:pointer;font-family:'DM Sans',sans-serif;" onmouseover="this.style.borderColor='var(--teal)';this.style.color='var(--teal)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Support</button>
     <button class="btn-help" onclick="openHelp()" title="Help guide">?</button>
     <span id="nav-user" style="font-size:13px;color:var(--muted);display:none;"></span>
@@ -305,7 +365,33 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <button onclick="closeSupport()" style="width:100%;padding:13px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">Got it</button>
 </div>
 
-<!-- BETA EXPIRED SCREEN -->
+<!-- WIZARD OVERLAY + PANEL -->
+<div class="wizard-overlay" id="wiz-overlay" onclick="closeWizard()"></div>
+<div class="wizard-panel-ai" id="wiz-panel">
+  <div class="wiz-header">
+    <div class="wiz-header-left">
+      <div class="wiz-header-icon">✨</div>
+      <div>
+        <div class="wiz-header-title">Label Wizard</div>
+        <div class="wiz-header-sub">Tell me what you need — I'll guide you through it</div>
+      </div>
+    </div>
+    <button class="wiz-close" onclick="closeWizard()">✕</button>
+  </div>
+  <div class="wiz-messages" id="wiz-messages"></div>
+  <div class="wiz-input-area">
+    <div class="wiz-input-row">
+      <textarea class="wiz-textarea" id="wiz-input" placeholder="e.g. I need an A4 sheet of 75mm circles with 2 different scents..." rows="1"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();wizSend();}"
+        oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+      <button class="wiz-mic-btn" id="wiz-mic" onclick="wizToggleMic()" title="Speak your requirement">🎤</button>
+      <button class="wiz-send-btn" id="wiz-send" onclick="wizSend()" title="Send">➤</button>
+    </div>
+    <div class="wiz-hint" id="wiz-hint">Describe what you want to make — I'll figure out the steps</div>
+  </div>
+</div>
+
+<div class="info-note" style="display:none"></div>
 <div class="beta-expired" id="beta-expired" style="display:none;">
   <div class="beta-expired-card">
     <div class="beta-expired-icon">🕯️</div>
@@ -1742,7 +1828,251 @@ function downloadSVG(){
 function openSheet(){document.getElementById('preview-sheet').classList.add('open');document.body.style.overflow='hidden';}
 function closeSheet(e){if(!e||e.target===document.getElementById('preview-sheet')||e===undefined){document.getElementById('preview-sheet').classList.remove('open');document.body.style.overflow='';}}
 
-init();
+// ══════════════════════════════════════════════════════════════
+// LABEL WIZARD — AI-powered natural language guide
+// ══════════════════════════════════════════════════════════════
+
+let wizHistory = []; // [{role, content}]
+let wizListening = false;
+let wizSpeech = null;
+let wizParsed = null; // parsed requirements from AI
+
+function openWizard(){
+  document.getElementById('wiz-overlay').classList.add('open');
+  document.getElementById('wiz-panel').classList.add('open');
+  document.body.style.overflow='hidden';
+  if(!wizHistory.length) wizGreet();
+}
+function closeWizard(){
+  document.getElementById('wiz-overlay').classList.remove('open');
+  document.getElementById('wiz-panel').classList.remove('open');
+  document.body.style.overflow='';
+  if(wizListening) wizStopMic();
+}
+
+function wizGreet(){
+  wizAddMsg('ai', `<strong>Hi! I'm your Label Wizard 🕯️</strong><br><br>
+Tell me what you want to create — in your own words. For example:<br><br>
+<em>"I need an A4 sheet of 75mm circle labels, 6 labels, all with different scents"</em><br>
+<em>"I want 4 of Sea Breeze and 4 of Coconut on one page"</em><br>
+<em>"Just one label for a 50mm circle wax melt"</em><br><br>
+You can type or use the 🎤 microphone button to speak.`);
+}
+
+function wizAddMsg(role, html, skipHistory=false){
+  const msgs = document.getElementById('wiz-messages');
+  const div = document.createElement('div');
+  div.className = `wiz-msg ${role}`;
+  const avatarContent = role==='ai' ? '✨' : '👤';
+  div.innerHTML = `<div class="wiz-avatar">${avatarContent}</div><div class="wiz-bubble">${html}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  if(!skipHistory && role==='user'){
+    wizHistory.push({role:'user', content: div.querySelector('.wiz-bubble').innerText});
+  }
+  return div;
+}
+
+function wizShowTyping(){
+  const msgs = document.getElementById('wiz-messages');
+  const div = document.createElement('div');
+  div.className = 'wiz-msg ai';
+  div.id = 'wiz-typing-indicator';
+  div.innerHTML = `<div class="wiz-avatar">✨</div><div class="wiz-bubble"><div class="wiz-typing"><span></span><span></span><span></span></div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+function wizHideTyping(){
+  const el = document.getElementById('wiz-typing-indicator');
+  if(el) el.remove();
+}
+
+async function wizSend(){
+  const input = document.getElementById('wiz-input');
+  const text = input.value.trim();
+  if(!text) return;
+  input.value=''; input.style.height='42px';
+  document.getElementById('wiz-send').disabled = true;
+  wizAddMsg('user', text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'));
+  wizHistory.push({role:'user', content:text});
+  wizShowTyping();
+  try {
+    await wizCallAPI(text);
+  } catch(e) {
+    wizHideTyping();
+    wizAddMsg('ai', `Sorry, I couldn't reach the AI right now. Please try again in a moment.`);
+  }
+  document.getElementById('wiz-send').disabled = false;
+}
+
+async function wizCallAPI(userMessage){
+  const systemPrompt = `You are the CLPeasy Label Wizard — a friendly, expert guide embedded in CLPeasy, a CLP label generator for UK candle and wax melt makers.
+
+Your job is to understand what the user wants to make, confirm their requirements, then provide clear step-by-step instructions to achieve it in CLPeasy.
+
+CLPeasy has these features:
+- BUILDER (builder.html): 5-step wizard — Step 1: shape (circle/square/rectangle) & size (preset: 35/40/50/63mm or custom mm) & appearance; Step 2: product details (scent name, product type, weight, fragrance load, burn time); Step 3: hazard data (supplier, Smart Paste SDS, signal word, pictograms, H/P statements, sensitisers); Step 4: business details (name, address, phone, website, batch number); Step 5: download (PNG, SVG, PDF) and save to label library
+- PRINT SHEET (print.html): arrange saved labels on A4, choose sheet template (35mm/28 per sheet, 40mm/24 per sheet, 51mm/12 per sheet, or custom), set quantities per label, download PDF or individual PNGs for Cricut
+
+CRITICAL RULES:
+1. First message: extract what you can from the user's request. If key info is missing, ask 1-2 focused clarifying questions — NEVER more than 2 at once.
+2. Once you have enough info, present a clear confirmation summary like: "So you want: [X]mm circle labels, [N] labels total, [description of scents/variants] on one A4 sheet — is that right?"
+3. After confirmation, ask which guide style they prefer using this exact format:
+<STYLE_CHOICE>
+4. When they choose a style, generate the steps using that style. Always end steps with a helpful tip.
+
+Key things to know:
+- "radius" in common usage often means the circle size (diameter). Clarify if unsure.
+- Multiple different scents = multiple labels = save each one in the library, then use Print Sheet
+- All labels same scent = build once, set quantity in Print Sheet
+- Cricut users need individual PNGs, not the PDF sheet
+- Print Sheet is at print.html, separate from builder.html
+- Sizes: 35mm = wax melt, 40mm = small candle, 50mm = standard candle, 63mm = large jar
+- Maximum labels on A4 at 75mm: approximately 6 (3×2 grid with margins)
+
+When generating steps, format them clearly. For WALKTHROUGH style, include visual hints in brackets like [→ Click "Circle" in the shape grid] or [→ Step 1: Label size & shape].
+
+Respond in plain HTML suitable for a chat bubble. Use <strong> for key terms. Use line breaks. Keep responses friendly and concise.`;
+
+  const messages = [
+    ...wizHistory.slice(-8) // last 8 messages for context
+  ];
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      system: systemPrompt,
+      messages: messages
+    })
+  });
+
+  if(!response.ok) throw new Error('API error '+response.status);
+  const data = await response.json();
+  wizHideTyping();
+
+  const content = data.content?.[0]?.text || '';
+  wizHistory.push({role:'assistant', content});
+
+  // Check if AI wants to show style choice
+  if(content.includes('<STYLE_CHOICE>')){
+    const beforeChoice = content.replace('<STYLE_CHOICE>','').trim();
+    if(beforeChoice) wizAddMsg('ai', beforeChoice, true);
+    wizShowStyleChoice();
+    return;
+  }
+
+  // Check if content contains auto-fill data
+  if(content.includes('<AUTOFILL>')){
+    const parts = content.split('<AUTOFILL>');
+    if(parts[0]) wizAddMsg('ai', parts[0], true);
+    try {
+      const fillData = JSON.parse(parts[1].split('</AUTOFILL>')[0]);
+      wizAutoFill(fillData);
+      wizAddMsg('ai', `✅ <strong>Done! I've filled in the builder for you.</strong><br>Review each step and make any changes, then click through to complete your label.`, true);
+    } catch(e) { wizAddMsg('ai', content, true); }
+    return;
+  }
+
+  wizAddMsg('ai', content, true);
+}
+
+function wizShowStyleChoice(){
+  const msgs = document.getElementById('wiz-messages');
+  const div = document.createElement('div');
+  div.className = 'wiz-msg ai';
+  div.innerHTML = `<div class="wiz-avatar">✨</div><div class="wiz-bubble">
+    <strong>How would you like me to guide you?</strong>
+    <div class="wiz-style-grid">
+      <div class="wiz-style-card" onclick="wizChooseStyle('walkthrough')">
+        <div class="style-icon">🎯</div>
+        <div class="style-name">Walkthrough</div>
+        <div class="style-desc">Animated steps with visual hints showing exactly where to click</div>
+      </div>
+      <div class="wiz-style-card" onclick="wizChooseStyle('quicklist')">
+        <div class="style-icon">📋</div>
+        <div class="style-name">Quick list</div>
+        <div class="style-desc">Clear numbered steps, fast to read</div>
+      </div>
+      <div class="wiz-style-card" onclick="wizChooseStyle('autofill')">
+        <div class="style-icon">⚡</div>
+        <div class="style-name">Auto-fill</div>
+        <div class="style-desc">I fill in the builder fields for you automatically</div>
+      </div>
+    </div>
+  </div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function wizChooseStyle(style){
+  const styleNames = {walkthrough:'Walkthrough — show me animated steps', quicklist:'Quick list — numbered steps', autofill:'Auto-fill — fill it in for me'};
+  wizAddMsg('user', styleNames[style]);
+  wizHistory.push({role:'user', content:`Please use the ${style} style to guide me through the steps.`});
+  wizShowTyping();
+  try {
+    await wizCallAPI(`Please use the ${style} style to guide me through the steps.`);
+  } catch(e) {
+    wizHideTyping();
+    wizAddMsg('ai','Sorry, something went wrong. Try again?');
+  }
+}
+
+// Auto-fill: takes a parsed data object and sets builder fields
+function wizAutoFill(data){
+  if(!data) return;
+  try {
+    if(data.shape) selectShape(data.shape);
+    if(data.size) selectSize(data.size);
+    if(data.customW){ document.getElementById('custom-w').value=data.customW; S.customW=data.customW; }
+    if(data.customH){ document.getElementById('custom-h').value=data.customH; S.customH=data.customH; }
+    if(data.scentName){ document.getElementById('scent-name').value=data.scentName; S.scentName=data.scentName; }
+    if(data.productType){ document.getElementById('product-type').value=data.productType; }
+    if(data.netWeight){ document.getElementById('net-weight').value=data.netWeight; }
+    if(data.signal) selectSignal(data.signal);
+    if(data.bizName){ document.getElementById('biz-name').value=data.bizName; }
+    if(data.bgColour){ document.getElementById('label-bg-colour').value=data.bgColour; document.getElementById('label-bg-hex').value=data.bgColour; }
+    updateLabel();
+    // Scroll wizard to top of steps
+    goToStep(1);
+    closeWizard();
+    setTimeout(()=>openWizard(),100); // reopen to show success
+  } catch(e){ console.log('Autofill error:',e); }
+}
+
+// ── MICROPHONE ───────────────────────────────────────────────
+function wizToggleMic(){
+  if(wizListening){ wizStopMic(); return; }
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SpeechRecognition){
+    document.getElementById('wiz-hint').textContent = 'Speech recognition not supported in your browser — try Chrome.';
+    return;
+  }
+  wizSpeech = new SpeechRecognition();
+  wizSpeech.lang = 'en-GB';
+  wizSpeech.continuous = false;
+  wizSpeech.interimResults = true;
+  wizSpeech.onstart = ()=>{
+    wizListening=true;
+    document.getElementById('wiz-mic').classList.add('listening');
+    document.getElementById('wiz-hint').textContent='🎤 Listening... speak now';
+  };
+  wizSpeech.onresult = (e)=>{
+    const transcript = Array.from(e.results).map(r=>r[0].transcript).join('');
+    document.getElementById('wiz-input').value = transcript;
+  };
+  wizSpeech.onend = ()=>{ wizStopMic(); };
+  wizSpeech.onerror = ()=>{ wizStopMic(); document.getElementById('wiz-hint').textContent='Microphone error — check browser permissions.'; };
+  wizSpeech.start();
+}
+function wizStopMic(){
+  wizListening=false;
+  if(wizSpeech){ try{wizSpeech.stop();}catch(e){} wizSpeech=null; }
+  document.getElementById('wiz-mic').classList.remove('listening');
+  document.getElementById('wiz-hint').textContent='Describe what you want to make — I\'ll figure out the steps';
+}
 </script>
 </body>
 </html>
