@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLPeasy — Print Sheet Composer</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --white:#fff;--off:#F7F8FA;--border:#E8EAED;--text:#111318;--muted:#6B7280;
+  --teal:#0D9488;--teal-light:#CCFBF1;--teal-dark:#0F766E;
+  --amber:#F59E0B;--amber-light:#FEF3C7;--red:#EF4444;
+  --dark:#1a1f2e;--dark2:#222840;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{-webkit-text-size-adjust:100%;}
+body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);line-height:1.6;-webkit-font-smoothing:antialiased;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,0.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 20px;height:64px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{display:flex;align-items:center;gap:0;text-decoration:none;line-height:1;}
+.nav-badge{width:52px;height:52px;border-radius:50%;background:#0D9488;color:white;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;flex-shrink:0;font-family:'DM Sans',sans-serif;letter-spacing:-1px;}
+.nav-easy{font-family:'DM Sans',sans-serif;font-size:26px;font-weight:900;color:#0D9488;margin-left:4px;letter-spacing:-1.5px;line-height:1;}
+.nav-right{display:flex;align-items:center;gap:8px;}
+.nav-link{font-size:13px;color:var(--muted);text-decoration:none;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;white-space:nowrap;}
+.nav-link:hover{color:var(--teal);border-color:var(--teal);}
+.nav-user{font-size:13px;color:var(--muted);}
+
+/* LAYOUT */
+.page{padding-top:64px;min-height:100vh;}
+.two-col{display:grid;grid-template-columns:380px 1fr;min-height:calc(100vh - 64px);}
+
+/* LEFT PANEL */
+.left-panel{background:white;border-right:1px solid var(--border);padding:24px 20px;overflow-y:auto;display:flex;flex-direction:column;gap:0;}
+.section-head{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);margin:20px 0 10px;display:flex;align-items:center;gap:8px;}
+.section-head::after{content:'';flex:1;height:1px;background:var(--border);}
+.section-head:first-child{margin-top:0;}
+
+/* TEMPLATE CARDS */
+.template-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;}
+.tpl-card{border:1.5px solid var(--border);border-radius:10px;padding:10px 11px;cursor:pointer;background:var(--off);transition:all .2s;-webkit-tap-highlight-color:transparent;}
+.tpl-card:hover{border-color:var(--teal);}
+.tpl-card.selected{border-color:var(--teal);background:var(--teal-light);}
+.tpl-name{font-size:12px;font-weight:700;color:var(--text);}
+.tpl-card.selected .tpl-name{color:var(--teal-dark);}
+.tpl-detail{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4;}
+.tpl-card.selected .tpl-detail{color:var(--teal);}
+
+/* CUSTOM DIMS */
+.custom-dims-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.dim-group{display:flex;flex-direction:column;gap:3px;}
+.dim-group label{font-size:11px;font-weight:600;color:var(--muted);}
+.dim-group input{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;outline:none;-webkit-appearance:none;}
+.dim-group input:focus{border-color:var(--teal);}
+
+/* SAVED LABELS LIST */
+.no-labels{text-align:center;padding:24px 16px;color:var(--muted);font-size:13px;background:var(--off);border-radius:10px;border:1.5px dashed var(--border);}
+.saved-label-item{display:flex;align-items:center;gap:10px;background:var(--off);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;transition:all .2s;}
+.saved-label-item:hover{border-color:var(--teal-light);}
+.sli-preview{width:38px;height:38px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:white;border-radius:6px;border:1px solid var(--border);overflow:hidden;}
+.sli-preview svg{width:34px;height:34px;}
+.sli-info{flex:1;min-width:0;}
+.sli-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sli-meta{font-size:11px;color:var(--muted);}
+.sli-qty{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.qty-btn{width:26px;height:26px;border-radius:6px;border:1.5px solid var(--border);background:white;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text);transition:all .2s;font-family:'DM Sans',sans-serif;line-height:1;}
+.qty-btn:hover{border-color:var(--teal);color:var(--teal);}
+.qty-num{width:28px;text-align:center;font-size:13px;font-weight:700;color:var(--text);}
+.add-btn{background:var(--teal);color:white;border:none;padding:6px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:background .2s;}
+.add-btn:hover{background:var(--teal-dark);}
+.add-btn.added{background:#059669;}
+.add-btn.added::before{content:'✓ ';}
+
+/* SHEET SUMMARY */
+.sheet-summary{background:var(--off);border-radius:10px;padding:12px 14px;font-size:13px;margin-bottom:4px;}
+.sheet-summary-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;}
+.sheet-summary-row .label{color:var(--muted);}
+.sheet-summary-row .val{font-weight:700;color:var(--text);}
+.sheet-summary-row .val.over{color:var(--red);}
+.sheet-summary-row .val.ok{color:#059669;}
+
+/* ACTION BUTTONS */
+.btn-primary{width:100%;background:var(--teal);color:white;border:none;padding:13px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-bottom:8px;}
+.btn-primary:hover{background:var(--teal-dark);}
+.btn-primary:disabled{opacity:0.4;pointer-events:none;}
+.btn-secondary{width:100%;background:white;color:var(--text);border:1.5px solid var(--border);padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-bottom:8px;}
+.btn-secondary:hover{border-color:var(--teal);color:var(--teal);}
+.pro-gate{background:var(--amber-light);border:1.5px solid var(--amber);border-radius:10px;padding:12px 14px;font-size:12px;color:#92400E;margin-bottom:8px;line-height:1.6;text-align:center;}
+.pro-gate strong{display:block;font-size:13px;margin-bottom:4px;}
+.pro-gate a{color:var(--teal-dark);font-weight:700;}
+
+/* RIGHT PANEL — SHEET PREVIEW */
+.right-panel{background:var(--dark);display:flex;flex-direction:column;overflow:hidden;}
+.preview-header{padding:16px 20px 12px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;}
+.preview-header h3{font-size:12px;font-weight:600;color:rgba(255,255,255,0.45);letter-spacing:1px;text-transform:uppercase;}
+.preview-controls{display:flex;align-items:center;gap:8px;}
+.zoom-btn{width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:'DM Sans',sans-serif;}
+.zoom-btn:hover{background:rgba(255,255,255,0.14);}
+.zoom-label{font-size:11px;color:rgba(255,255,255,0.35);min-width:32px;text-align:center;}
+.preview-scroll{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:24px;}
+.sheet-canvas-wrap{position:relative;display:inline-block;}
+.sheet-canvas{background:white;box-shadow:0 8px 40px rgba(0,0,0,0.5);position:relative;overflow:hidden;}
+.sheet-margin-guide{position:absolute;pointer-events:none;border:1px dashed rgba(13,148,136,0.25);}
+.sheet-cell{position:absolute;display:flex;align-items:center;justify-content:center;}
+.sheet-cell svg{width:100%;height:100%;display:block;}
+.sheet-cell-empty{position:absolute;display:flex;align-items:center;justify-content:center;}
+.empty-slot{border-radius:50%;border:1px dashed rgba(0,0,0,0.08);width:80%;height:80%;}
+.preview-footer{padding:10px 20px 14px;border-top:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;}
+.preview-info{font-size:11px;color:rgba(255,255,255,0.3);}
+.preview-badge{font-size:11px;background:rgba(13,148,136,0.18);color:#5EEAD4;padding:3px 10px;border-radius:100px;font-weight:600;}
+
+/* CRICUT TIP BOX */
+.cricut-tip{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px;font-size:12px;color:rgba(255,255,255,0.45);line-height:1.6;margin:0 20px 14px;}
+.cricut-tip strong{color:#5EEAD4;display:block;margin-bottom:3px;}
+
+/* EMPTY STATE */
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center;}
+.empty-icon{font-size:48px;margin-bottom:16px;opacity:0.4;}
+.empty-title{font-family:'DM Serif Display',serif;font-size:22px;color:rgba(255,255,255,0.5);margin-bottom:8px;}
+.empty-sub{font-size:14px;color:rgba(255,255,255,0.25);max-width:280px;line-height:1.6;}
+
+/* MOBILE */
+@media(max-width:860px){
+  .two-col{grid-template-columns:1fr;grid-template-rows:auto 1fr;}
+  .right-panel{min-height:60vh;}
+  .left-panel{order:2;}
+  .right-panel{order:1;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="home.html" class="nav-logo">
+    <div class="nav-badge">CLP</div>
+    <span class="nav-easy">easy</span>
+  </a>
+  <div class="nav-right">
+    <a href="builder.html" class="nav-link">← Label Builder</a>
+    <span class="nav-user" id="nav-user" style="display:none;"></span>
+    <button id="nav-signout" onclick="signOut()" style="display:none;font-size:13px;color:var(--muted);background:none;border:1.5px solid var(--border);padding:6px 12px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;" onmouseover="this.style.borderColor='var(--teal)';this.style.color='var(--teal)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Sign out</button>
+  </div>
+</nav>
+
+<div class="page">
+<div class="two-col">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel" id="left-panel">
+
+    <div class="section-head">Sheet template</div>
+
+    <div class="template-grid" id="template-grid">
+      <div class="tpl-card selected" data-tpl="l6008" onclick="selectTemplate('l6008',this)">
+        <div class="tpl-name">Avery L6008</div>
+        <div class="tpl-detail">35mm circles · 28/sheet</div>
+      </div>
+      <div class="tpl-card" data-tpl="l7157" onclick="selectTemplate('l7157',this)">
+        <div class="tpl-name">Avery L7157</div>
+        <div class="tpl-detail">40mm circles · 24/sheet</div>
+      </div>
+      <div class="tpl-card" data-tpl="l7096" onclick="selectTemplate('l7096',this)">
+        <div class="tpl-name">Avery L7096</div>
+        <div class="tpl-detail">51mm circles · 12/sheet</div>
+      </div>
+      <div class="tpl-card" data-tpl="custom" onclick="selectTemplate('custom',this)">
+        <div class="tpl-name">Custom sheet</div>
+        <div class="tpl-detail">Set your own size</div>
+      </div>
+    </div>
+
+    <div id="custom-dims-panel" style="display:none;margin-bottom:4px;">
+      <div class="custom-dims-row">
+        <div class="dim-group">
+          <label>Label mm</label>
+          <input type="number" id="cust-label-mm" value="50" min="10" max="150" oninput="rebuildSheet()">
+        </div>
+        <div class="dim-group">
+          <label>Cols</label>
+          <input type="number" id="cust-cols" value="3" min="1" max="10" oninput="rebuildSheet()">
+        </div>
+        <div class="dim-group">
+          <label>Rows</label>
+          <input type="number" id="cust-rows" value="5" min="1" max="12" oninput="rebuildSheet()">
+        </div>
+      </div>
+      <div class="custom-dims-row">
+        <div class="dim-group">
+          <label>Margin mm</label>
+          <input type="number" id="cust-margin" value="10" min="0" max="30" oninput="rebuildSheet()">
+        </div>
+        <div class="dim-group">
+          <label>H gap mm</label>
+          <input type="number" id="cust-gapH" value="5" min="0" max="20" oninput="rebuildSheet()">
+        </div>
+        <div class="dim-group">
+          <label>V gap mm</label>
+          <input type="number" id="cust-gapV" value="5" min="0" max="20" oninput="rebuildSheet()">
+        </div>
+      </div>
+    </div>
+
+    <div class="section-head">Your saved labels</div>
+    <div id="saved-list"></div>
+
+    <div class="section-head">Sheet summary</div>
+    <div class="sheet-summary">
+      <div class="sheet-summary-row"><span class="label">Template</span><span class="val" id="sum-tpl">Avery L6008</span></div>
+      <div class="sheet-summary-row"><span class="label">Slots on sheet</span><span class="val" id="sum-slots">28</span></div>
+      <div class="sheet-summary-row"><span class="label">Labels added</span><span class="val" id="sum-added">0</span></div>
+      <div class="sheet-summary-row"><span class="label">Slots remaining</span><span class="val" id="sum-remain">28</span></div>
+    </div>
+
+    <div class="section-head">Export</div>
+
+    <div id="pro-gate" class="pro-gate" style="display:none;">
+      <strong>🔒 Pro feature</strong>
+      Download your print sheet with a <a href="home.html#pricing">Pro subscription</a> — from £6.99/month with a 14-day free trial.
+    </div>
+
+    <button class="btn-primary" id="btn-pdf" onclick="downloadPDF()">⬇ Download PDF sheet</button>
+    <button class="btn-secondary" id="btn-png-all" onclick="downloadAllPNGs()">⬇ Download individual PNGs (for Cricut)</button>
+
+    <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 12px;font-size:12px;color:#166534;line-height:1.6;margin-top:4px;">
+      <strong>🖨 Home printing / print companies:</strong> Use the PDF sheet — print on A4 sticker paper.<br>
+      <strong>✂ Cricut Print Then Cut:</strong> Download individual PNGs and upload each one to Cricut separately. Cricut cannot split a sheet into individual labels.
+    </div>
+
+  </div><!-- /left-panel -->
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel" id="right-panel">
+    <div class="preview-header">
+      <h3>Sheet Preview</h3>
+      <div class="preview-controls">
+        <button class="zoom-btn" onclick="changeZoom(-0.15)">−</button>
+        <span class="zoom-label" id="zoom-label">75%</span>
+        <button class="zoom-btn" onclick="changeZoom(0.15)">+</button>
+      </div>
+    </div>
+    <div class="preview-scroll" id="preview-scroll">
+      <div id="empty-state" class="empty-state">
+        <div class="empty-icon">🖨</div>
+        <div class="empty-title">No labels on sheet yet</div>
+        <div class="empty-sub">Add labels from your saved library on the left to build your print sheet.</div>
+      </div>
+      <div id="sheet-canvas-wrap" class="sheet-canvas-wrap" style="display:none;">
+        <div id="sheet-canvas" class="sheet-canvas"></div>
+      </div>
+    </div>
+    <div class="cricut-tip" id="cricut-tip">
+      <strong>💡 Cricut tip</strong>
+      Use <strong>Download individual PNGs</strong> for Cricut — upload each label separately as a "Print Then Cut" image. Maximum Cricut Print Then Cut size is 171 × 235mm.
+    </div>
+    <div class="preview-footer">
+      <span class="preview-info" id="preview-info">A4 · 210 × 297mm</span>
+      <span class="preview-badge" id="preview-badge">28 slots · 0 filled</span>
+    </div>
+  </div><!-- /right-panel -->
+
+</div>
+</div><!-- /page -->
+
+<script>
+// ── SUPABASE AUTH ─────────────────────────────────────────────
+const SUPABASE_URL='https://qvkosdqcryrcfbjtaxic.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
+let sbClient=null,currentUser=null,isPro=false;
+
+async function initAuth(){
+  try{
+    const{createClient}=window.supabase;
+    sbClient=createClient(SUPABASE_URL,SUPABASE_KEY);
+    const{data:{session}}=await sbClient.auth.getSession();
+    if(session){
+      currentUser=session.user;
+      isPro=false; // swap for real check when Stripe live
+      const nu=document.getElementById('nav-user');
+      const ns=document.getElementById('nav-signout');
+      if(nu){nu.textContent=session.user.email;nu.style.display='';}
+      if(ns)ns.style.display='';
+    }
+    updateProGate();
+  }catch(e){console.log('Auth init:',e);}
+}
+async function signOut(){if(sbClient)await sbClient.auth.signOut();window.location.href='auth.html';}
+function updateProGate(){
+  const gate=document.getElementById('pro-gate');
+  const btnPdf=document.getElementById('btn-pdf');
+  const btnPng=document.getElementById('btn-png-all');
+  if(isPro){
+    if(gate)gate.style.display='none';
+    if(btnPdf)btnPdf.disabled=false;
+    if(btnPng)btnPng.disabled=false;
+  } else {
+    if(gate)gate.style.display='';
+    if(btnPdf)btnPdf.disabled=true;
+    if(btnPng)btnPng.disabled=true;
+  }
+}
+
+// ── AVERY TEMPLATES (mm) ──────────────────────────────────────
+// marginT, marginL, labelMM (diameter), cols, rows, gapH, gapV
+const TEMPLATES={
+  l6008:{name:'Avery L6008',labelMM:35,cols:4,rows:7,marginT:13,marginL:8,gapH:3,gapV:3,shape:'circle'},
+  l7157:{name:'Avery L7157',labelMM:40,cols:4,rows:6,marginT:13,marginL:8,gapH:3,gapV:3,shape:'circle'},
+  l7096:{name:'Avery L7096',labelMM:51,cols:3,rows:4,marginT:21,marginL:13,gapH:9,gapV:9,shape:'circle'},
+  custom:{name:'Custom',labelMM:50,cols:3,rows:5,marginT:10,marginL:10,gapH:5,gapV:5,shape:'circle'},
+};
+const A4_W=210,A4_H=297; // mm
+
+// ── STATE ─────────────────────────────────────────────────────
+let currentTpl='l6008';
+let sheetItems=[]; // [{labelData, qty}]
+let zoom=0.75;
+
+// ── SAVED LABELS ──────────────────────────────────────────────
+function getSaved(){try{return JSON.parse(localStorage.getItem('clpeasy_labels')||'[]');}catch(e){return[];}}
+
+function renderSavedList(){
+  const arr=getSaved();
+  const el=document.getElementById('saved-list');
+  if(!arr.length){
+    el.innerHTML=`<div class="no-labels">No saved labels yet.<br><a href="builder.html" style="color:var(--teal);font-weight:600;">Go to Label Builder →</a></div>`;
+    return;
+  }
+  el.innerHTML=arr.map((e,i)=>{
+    const inSheet=sheetItems.findIndex(s=>s.id===i);
+    const qty=inSheet>=0?sheetItems[inSheet].qty:0;
+    return`<div class="saved-label-item" id="sli-${i}">
+      <div class="sli-preview" id="sli-prev-${i}"></div>
+      <div class="sli-info">
+        <div class="sli-name">${xe(e.scentName||'Unnamed')}</div>
+        <div class="sli-meta">${xe(e.productType||'')} · ${e.size||'35'}mm ${e.shape||'circle'}</div>
+      </div>
+      <div class="sli-qty">
+        ${qty>0?`
+          <button class="qty-btn" onclick="changeQty(${i},-1)">−</button>
+          <span class="qty-num">${qty}</span>
+          <button class="qty-btn" onclick="changeQty(${i},1)">+</button>
+        `:`<button class="add-btn" id="addbtn-${i}" onclick="addToSheet(${i})">Add</button>`}
+      </div>
+    </div>`;
+  }).join('');
+  // Render mini previews
+  arr.forEach((e,i)=>{
+    const el2=document.getElementById('sli-prev-'+i);
+    if(el2)el2.innerHTML=buildMiniSVG(e);
+  });
+}
+
+function addToSheet(idx){
+  const arr=getSaved();
+  const e=arr[idx];if(!e)return;
+  const existing=sheetItems.findIndex(s=>s.id===idx);
+  if(existing>=0){sheetItems[existing].qty+=1;}
+  else{sheetItems.push({id:idx,labelData:e,qty:1});}
+  renderSavedList();
+  rebuildSheet();
+}
+
+function changeQty(idx,delta){
+  const pos=sheetItems.findIndex(s=>s.id===idx);
+  if(pos<0)return;
+  sheetItems[pos].qty=Math.max(0,sheetItems[pos].qty+delta);
+  if(sheetItems[pos].qty===0)sheetItems.splice(pos,1);
+  renderSavedList();
+  rebuildSheet();
+}
+
+// ── TEMPLATE SELECTION ────────────────────────────────────────
+function selectTemplate(key,el){
+  currentTpl=key;
+  document.querySelectorAll('.tpl-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('custom-dims-panel').style.display=key==='custom'?'block':'none';
+  rebuildSheet();
+}
+
+function getTplConfig(){
+  const t={...TEMPLATES[currentTpl]};
+  if(currentTpl==='custom'){
+    t.labelMM=parseFloat(document.getElementById('cust-label-mm')?.value)||50;
+    t.cols=parseInt(document.getElementById('cust-cols')?.value)||3;
+    t.rows=parseInt(document.getElementById('cust-rows')?.value)||5;
+    const m=parseFloat(document.getElementById('cust-margin')?.value)||10;
+    t.marginT=m;t.marginL=m;
+    t.gapH=parseFloat(document.getElementById('cust-gapH')?.value)||5;
+    t.gapV=parseFloat(document.getElementById('cust-gapV')?.value)||5;
+  }
+  return t;
+}
+
+// ── ZOOM ──────────────────────────────────────────────────────
+function changeZoom(delta){
+  zoom=Math.min(1.5,Math.max(0.3,zoom+delta));
+  document.getElementById('zoom-label').textContent=Math.round(zoom*100)+'%';
+  renderSheetCanvas();
+}
+
+// ── SHEET REBUILD ─────────────────────────────────────────────
+function rebuildSheet(){
+  renderSheetCanvas();
+  updateSummary();
+}
+
+function getTotalQty(){return sheetItems.reduce((s,x)=>s+x.qty,0);}
+
+function updateSummary(){
+  const t=getTplConfig();
+  const slots=t.cols*t.rows;
+  const added=getTotalQty();
+  const remain=slots-added;
+  document.getElementById('sum-tpl').textContent=t.name||TEMPLATES[currentTpl]?.name||'Custom';
+  document.getElementById('sum-slots').textContent=slots;
+  document.getElementById('sum-added').textContent=added;
+  const remEl=document.getElementById('sum-remain');
+  remEl.textContent=remain<0?Math.abs(remain)+' over limit':remain;
+  remEl.className='val '+(remain<0?'over':'ok');
+  document.getElementById('preview-badge').textContent=`${slots} slots · ${Math.min(added,slots)} filled`;
+}
+
+function renderSheetCanvas(){
+  const t=getTplConfig();
+  const slots=t.cols*t.rows;
+  const hasContent=getTotalQty()>0;
+
+  document.getElementById('empty-state').style.display=hasContent?'none':'flex';
+  document.getElementById('sheet-canvas-wrap').style.display=hasContent?'block':'none';
+  if(!hasContent){updateSummary();return;}
+
+  // Convert mm → px for screen (96dpi equivalent for display, zoom applied)
+  const MM2PX=3.7795*zoom;
+  const shW=Math.round(A4_W*MM2PX);
+  const shH=Math.round(A4_H*MM2PX);
+  const lMM=t.labelMM;
+  const lPX=Math.round(lMM*MM2PX);
+  const marginTPX=Math.round(t.marginT*MM2PX);
+  const marginLPX=Math.round(t.marginL*MM2PX);
+  const gapHPX=Math.round(t.gapH*MM2PX);
+  const gapVPX=Math.round(t.gapV*MM2PX);
+
+  const canvas=document.getElementById('sheet-canvas');
+  canvas.style.width=shW+'px';
+  canvas.style.height=shH+'px';
+
+  // Build flat ordered list of label slots
+  const flatLabels=[];
+  sheetItems.forEach(item=>{
+    for(let q=0;q<item.qty;q++) flatLabels.push(item.labelData);
+  });
+
+  // Build cells HTML
+  let html='';
+  // Margin guide
+  html+=`<div class="sheet-margin-guide" style="left:${marginLPX}px;top:${marginTPX}px;width:${shW-marginLPX*2}px;height:${shH-marginTPX*2}px;"></div>`;
+
+  let labelIdx=0;
+  for(let row=0;row<t.rows;row++){
+    for(let col=0;col<t.cols;col++){
+      const x=marginLPX+col*(lPX+gapHPX);
+      const y=marginTPX+row*(lPX+gapVPX);
+      if(labelIdx<flatLabels.length){
+        const ld=flatLabels[labelIdx];
+        html+=`<div class="sheet-cell" style="left:${x}px;top:${y}px;width:${lPX}px;height:${lPX}px;">${buildLabelSVGFromData(ld,lPX)}</div>`;
+        labelIdx++;
+      } else {
+        // Empty slot indicator
+        html+=`<div class="sheet-cell-empty" style="left:${x}px;top:${y}px;width:${lPX}px;height:${lPX}px;"><div class="empty-slot"></div></div>`;
+      }
+    }
+  }
+  canvas.innerHTML=html;
+  updateSummary();
+}
+
+// ── SVG HELPERS ───────────────────────────────────────────────
+function xe(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+const _cvs2=document.createElement('canvas'),_ctx2=_cvs2.getContext('2d');
+function mTxt(txt,sz,bold,serif){_ctx2.font=`${bold?'700':'400'} ${sz}px ${serif?'serif':'sans-serif'}`;return _ctx2.measureText(txt).width;}
+function fitFnt(txt,maxPx,start,min,bold=true,serif=false){let sz=start;while(sz>min){if(mTxt(txt,sz,bold,serif)<=maxPx)break;sz-=0.5;}return Math.max(sz,min);}
+function wrapTxt(txt,maxPx,sz,bold=false,serif=false){if(!txt)return[];const words=txt.split(/\s+/);const lines=[];let cur='';for(const w of words){const test=cur?cur+' '+w:w;if(mTxt(test,sz,bold,serif)<=maxPx){cur=test;}else{if(cur)lines.push(cur);cur=w;}}if(cur)lines.push(cur);return lines;}
+
+function buildLabelSVGFromData(e,sizePx){
+  // Reconstruct a full label SVG from saved label data at exact sizePx
+  const pw=sizePx,ph=sizePx;
+  const cx=pw/2,cy=ph/2;
+  const isCircle=(e.shape||'circle')==='circle';
+  const r=pw/2-1.5;
+  function chordW(y,inset=0.10){if(!isCircle)return pw*(1-inset*2);const dy=Math.abs(y-cy);if(dy>=r)return 0;return 2*Math.sqrt(Math.max(0,r*r-dy*dy))*(1-inset);}
+
+  const bgCol='#ffffff';
+  const txtCol='#111111';
+  const mutedCol='#555555';
+
+  const topH=ph*0.20,botH=ph*0.23,midY=topH,midH=ph-topH-botH,botY=ph-botH;
+  const scent=e.scentName||'Your Scent';
+  const type=(e.productType||'Scented Candle').toUpperCase();
+  const sig=(e.signal||'WARNING').toUpperCase();
+  const bizName=e.bizName||'Your Brand';
+  const hCodes=(e.hStatements||'H317').split(',').map(h=>h.trim()).filter(Boolean);
+  const sensArr=(e.sensitisers||[]).length?e.sensitisers:['Linalool'];
+  const pCodes=(e.pStatements||'').split(',').map(p=>p.trim()).filter(Boolean);
+
+  // Clip
+  let clip='',bgEl='';
+  if(isCircle){
+    clip=`<clipPath id="pc${sizePx}"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath>`;
+    bgEl=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${bgCol}"/><circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#ccc" stroke-width="0.8" stroke-dasharray="3,2"/>`;
+  } else {
+    clip=`<clipPath id="pc${sizePx}"><rect x="1" y="1" width="${pw-2}" height="${ph-2}" rx="3"/></clipPath>`;
+    bgEl=`<rect x="1" y="1" width="${pw-2}" height="${ph-2}" rx="3" fill="${bgCol}"/>`;
+  }
+
+  const BASE=pw;
+  const clamp=(v,mn,mx)=>Math.min(Math.max(v,mn),mx);
+
+  // Header
+  const hMY=topH*0.42,hSW=chordW(hMY,0.12);
+  const bizFS=fitFnt(bizName,hSW*0.88,clamp(BASE*0.072,5,14),clamp(BASE*0.032,4,8),true,true);
+  const wMY=topH*0.80,wSW=chordW(wMY,0.12);
+  const webLine=e.bizWebsite||'';
+  const webFS=clamp(BASE*0.038,3.5,7.5);
+
+  // Scent
+  const sMY=midY+midH*0.12,sSW=chordW(sMY,0.08);
+  const sMaxFS=clamp(BASE*0.105,7,20),sMinFS=clamp(BASE*0.040,4,8);
+  let sFS=fitFnt(scent,sSW*0.92,sMaxFS,sMinFS,true,true);
+  let sLines=wrapTxt(scent,sSW*0.92,sFS,true,true);
+  const sLH=sFS*1.2;
+
+  // Type
+  const tMY=midY+midH*0.12+sLines.length*sLH+sLH*0.4,tSW=chordW(tMY,0.10);
+  const tFS=clamp(fitFnt(type,tSW*0.88,BASE*0.060,BASE*0.030,true,false),BASE*0.030,BASE*0.070);
+
+  // Signal
+  const sigMY=tMY+tFS*1.5,sigSW=chordW(sigMY,0.10);
+  const sigFS=clamp(fitFnt(sig,sigSW*0.75,BASE*0.072,BASE*0.034,true,false),BASE*0.034,BASE*0.080);
+
+  // Pictograms
+  const pictos=(e.pictograms||[]).length?e.pictograms.slice(0,6):['exclamation','aquatic'];
+  const n=pictos.length;
+  const pictoMY=sigMY+sigFS*1.6,pictoSW=chordW(pictoMY,0.06);
+  const gap2=pictoSW*0.06;
+  const pSz=Math.min(clamp(BASE*0.095,8,22),(pictoSW-gap2*(n+1))/n);
+  const pTW=n*pSz+(n-1)*gap2;
+  const pSX=cx-pTW/2+pSz/2;
+  const GHS_TEXT={flame:'GHS02',exclamation:'GHS07',health:'GHS08',aquatic:'GHS09',corrosive:'GHS05',skull:'GHS06',oxidiser:'GHS03',gas:'GHS04',explosion:'GHS01'};
+  const pictoRow=pictos.map((p,i)=>{
+    const px=pSX+i*(pSz+gap2),py=pictoMY,hSz=pSz*0.48;
+    return`<rect x="${(px-hSz).toFixed(1)}" y="${(py-hSz).toFixed(1)}" width="${(hSz*2).toFixed(1)}" height="${(hSz*2).toFixed(1)}" fill="none" stroke="#000" stroke-width="0.8" transform="rotate(45,${px.toFixed(1)},${py.toFixed(1)})"/><text x="${px.toFixed(1)}" y="${py.toFixed(1)}" font-family="sans-serif" font-size="${(pSz*0.35).toFixed(1)}" fill="#000" text-anchor="middle" dominant-baseline="middle">${GHS_TEXT[p]||'!'}</text>`;
+  }).join('');
+
+  // H stmts
+  const hAreaY=pictoMY+pSz*0.55+2,hMY2=hAreaY+4,hSW2=chordW(hMY2,0.08);
+  const hFS=clamp(BASE*0.036,3,7),hLH=hFS*1.25;
+  const hTxt=hCodes.slice(0,8).join(' · ')||'H317';
+  const hLines=wrapTxt(hTxt,hSW2*0.94,hFS);
+
+  // Sensitisers
+  const snsY=hAreaY+hLines.length*hLH+hLH*0.25,snsMY=snsY+3,snsSW=chordW(snsMY,0.08);
+  const snsFS=clamp(BASE*0.033,3,6.5),snsLH=snsFS*1.25;
+  const snsStr='Contains: '+sensArr.slice(0,5).join(', ');
+  const snsLines=wrapTxt(snsStr,snsSW*0.92,snsFS);
+
+  // P stmts
+  const pY=snsY+snsLines.length*snsLH+snsLH*0.25,pMY2=pY+3,pSW=chordW(pMY2,0.08);
+  const pFS=clamp(BASE*0.030,3,6),pLH=pFS*1.25;
+  const pTxt=pCodes.slice(0,8).join(' · ');
+  const pLines2=pTxt?wrapTxt(pTxt,pSW*0.92,pFS):[];
+
+  // Footer
+  const footerParts=[];
+  if(e.bizAddress)footerParts.push({text:e.bizAddress,bold:false});
+  if(e.bizPhone)footerParts.push({text:e.bizPhone,bold:true});
+  const detP=[e.netWeight,e.burnTime?'Burn: '+e.burnTime:'',e.batchNum?'Batch: '+e.batchNum:''].filter(Boolean);
+  if(detP.length)footerParts.push({text:detP.join(' · '),bold:false});
+  const fFS=clamp(BASE*0.038,3.2,7.5);
+  const footerHTML=footerParts.map((fp,i)=>{
+    const fY=botY+botH*(0.25+i*0.28);
+    const fSW=chordW(fY,0.10);
+    const fs2=fitFnt(fp.text,fSW*0.90,fFS,clamp(BASE*0.026,2.8,5),fp.bold,false);
+    return`<text x="${cx}" y="${fY.toFixed(1)}" font-family="sans-serif" font-size="${fs2.toFixed(2)}" font-weight="${fp.bold?'700':'400'}" fill="${fp.bold?txtCol:mutedCol}" text-anchor="middle" dominant-baseline="middle">${xe(fp.text)}</text>`;
+  }).join('');
+
+  const divInset=isCircle?pw*0.10:pw*0.08;
+
+  function svgW2(lines,x,sy,lh,sz,bold,serif,fill){
+    if(!lines.length)return'';
+    const fw=bold?'700':'400',ff=serif?'serif':'sans-serif';
+    return`<text x="${x}" y="${sy.toFixed(1)}" font-family="${ff}" font-size="${sz.toFixed(2)}" font-weight="${fw}" fill="${fill}" text-anchor="middle" dominant-baseline="middle">${lines.map((l,i)=>i===0?xe(l):`<tspan x="${x}" dy="${lh.toFixed(2)}">${xe(l)}</tspan>`).join('')}</text>`;
+  }
+
+  return`<svg xmlns="http://www.w3.org/2000/svg" width="${pw}" height="${ph}" viewBox="0 0 ${pw} ${ph}">
+<defs>${clip}</defs>
+<g clip-path="url(#pc${sizePx})">
+  ${bgEl}
+  <rect x="0" y="0" width="${pw}" height="${topH}" fill="${bgCol}"/>
+  ${svgW2([bizName],cx,hMY,sLH,bizFS,true,true,txtCol)}
+  ${webLine?`<text x="${cx}" y="${(topH*0.80).toFixed(1)}" font-family="sans-serif" font-size="${webFS.toFixed(2)}" fill="${mutedCol}" text-anchor="middle" dominant-baseline="middle">${xe(webLine)}</text>`:''}
+  <line x1="${(cx-pw/2+divInset).toFixed(1)}" y1="${topH.toFixed(1)}" x2="${(cx+pw/2-divInset).toFixed(1)}" y2="${topH.toFixed(1)}" stroke="#ddd" stroke-width="0.4"/>
+  ${svgW2(sLines,cx,midY+midH*0.11,sLH,sFS,true,true,txtCol)}
+  <text x="${cx}" y="${tMY.toFixed(1)}" font-family="sans-serif" font-size="${tFS.toFixed(2)}" font-weight="700" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle" letter-spacing="0.5">${xe(type)}</text>
+  <text x="${cx}" y="${sigMY.toFixed(1)}" font-family="sans-serif" font-size="${sigFS.toFixed(2)}" font-weight="800" fill="${sig==='DANGER'?'#cc0000':txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(sig)}</text>
+  ${pictoRow}
+  ${svgW2(hLines,cx,hAreaY+hLH*0.5,hLH,hFS,false,false,txtCol)}
+  ${svgW2(snsLines,cx,snsY+snsLH*0.5,snsLH,snsFS,false,false,mutedCol)}
+  ${pLines2.length?svgW2(pLines2,cx,pY+pLH*0.5,pLH,pFS,false,false,mutedCol):''}
+  <line x1="${(cx-pw/2+divInset).toFixed(1)}" y1="${botY.toFixed(1)}" x2="${(cx+pw/2-divInset).toFixed(1)}" y2="${botY.toFixed(1)}" stroke="#ddd" stroke-width="0.4"/>
+  <rect x="0" y="${botY.toFixed(1)}" width="${pw}" height="${botH}" fill="${bgCol}"/>
+  ${footerHTML}
+</g></svg>`;
+}
+
+function buildMiniSVG(e){return buildLabelSVGFromData(e,36);}
+
+// ── PDF EXPORT (print-sheet quality) ─────────────────────────
+function downloadPDF(){
+  const t=getTplConfig();
+  if(getTotalQty()===0){alert('Add at least one label to the sheet before downloading.');return;}
+
+  const DPI=300,MM2PT=2.8346; // PDF points per mm
+  const shWmm=A4_W,shHmm=A4_H;
+
+  // Build an A4 SVG at 300dpi (px = mm * DPI/25.4)
+  const M2PX=DPI/25.4;
+  const shWpx=Math.round(shWmm*M2PX);
+  const shHpx=Math.round(shHmm*M2PX);
+  const lPX=Math.round(t.labelMM*M2PX);
+  const marTPX=Math.round(t.marginT*M2PX);
+  const marLPX=Math.round(t.marginL*M2PX);
+  const gHPX=Math.round(t.gapH*M2PX);
+  const gVPX=Math.round(t.gapV*M2PX);
+
+  // Flatten label order
+  const flatLabels=[];
+  sheetItems.forEach(item=>{for(let q=0;q<item.qty;q++)flatLabels.push(item.labelData);});
+
+  let cellsHTML='';
+  let idx=0;
+  for(let row=0;row<t.rows;row++){
+    for(let col=0;col<t.cols;col++){
+      const x=marLPX+col*(lPX+gHPX);
+      const y=marTPX+row*(lPX+gVPX);
+      if(idx<flatLabels.length){
+        cellsHTML+=`<g transform="translate(${x},${y})">${buildLabelSVGFromData(flatLabels[idx],lPX)}</g>`;
+        idx++;
+      }
+    }
+  }
+
+  const sheetSVG=`<svg xmlns="http://www.w3.org/2000/svg" width="${shWpx}" height="${shHpx}" viewBox="0 0 ${shWpx} ${shHpx}">
+  <rect width="${shWpx}" height="${shHpx}" fill="white"/>
+  ${cellsHTML}
+</svg>`;
+
+  // Open in print window — user saves as PDF from browser print dialog
+  const slug=sheetItems.map(s=>s.labelData.scentName||'label').join('-').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').substring(0,40);
+  const encoded=encodeURIComponent(sheetSVG);
+  const win=window.open('','_blank');
+  if(!win){alert('Please allow pop-ups for clpeasy.com to download your PDF.');return;}
+  win.document.write(`<!DOCTYPE html><html><head><title>CLPeasy Print Sheet — ${xe(t.name)}</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:white;display:flex;align-items:center;justify-content:center;min-height:100vh;}
+    img{display:block;}
+    @media print{
+      *{margin:0;padding:0;}
+      body{display:block;}
+      img{width:210mm;height:297mm;page-break-after:avoid;}
+      @page{size:A4 portrait;margin:0;}
+    }
+    .print-btn{position:fixed;bottom:20px;right:20px;background:#0D9488;color:white;border:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:sans-serif;box-shadow:0 4px 16px rgba(0,0,0,0.2);}
+    .print-btn:hover{background:#0F766E;}
+    @media print{.print-btn{display:none;}}
+  </style></head>
+  <body>
+    <img src="data:image/svg+xml;charset=utf-8,${encoded}" width="${shWpx}" height="${shHpx}" style="width:210mm;height:297mm;"/>
+    <button class="print-btn" onclick="window.print()">🖨 Print / Save as PDF</button>
+  </body></html>`);
+  win.document.close();
+}
+
+// ── INDIVIDUAL PNGs DOWNLOAD (for Cricut) ────────────────────
+function downloadAllPNGs(){
+  const arr=getSaved();
+  if(!sheetItems.length){alert('Add at least one label before downloading.');return;}
+  const DPI=300,M2PX=DPI/25.4;
+
+  let count=0;
+  sheetItems.forEach(item=>{
+    const e=item.labelData;
+    const mmSize=parseInt(e.size)||35;
+    const pxSize=Math.round(mmSize*M2PX);
+    const svgStr=buildLabelSVGFromData(e,pxSize);
+    const slug=(e.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+    const fname=`clpeasy-${slug}-${mmSize}mm.png`;
+
+    const svgDataUri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgStr);
+    const img=new Image();
+    img.onload=function(){
+      const cvs=document.createElement('canvas');cvs.width=pxSize;cvs.height=pxSize;
+      const ctx=cvs.getContext('2d');
+      ctx.fillStyle='white';ctx.fillRect(0,0,pxSize,pxSize);
+      ctx.drawImage(img,0,0,pxSize,pxSize);
+      const a=document.createElement('a');a.href=cvs.toDataURL('image/png');a.download=fname;
+      document.body.appendChild(a);a.click();
+      setTimeout(()=>{if(a.parentNode)a.parentNode.removeChild(a);},800);
+    };
+    img.src=svgDataUri;
+    count++;
+  });
+  if(count>0){
+    setTimeout(()=>alert(`✅ ${count} PNG file${count>1?'s':''} downloaded.\n\nTo use in Cricut: Upload each PNG → Print Then Cut → resize to your label size in Cricut Design Space.`),500);
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+function init(){
+  initAuth();
+  renderSavedList();
+  updateSummary();
+  // Show preview hint even before labels added
+  document.getElementById('preview-info').textContent=`A4 · 210 × 297mm`;
+}
+
+init();
+</script>
+</body>
+</html>
