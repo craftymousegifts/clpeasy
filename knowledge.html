@@ -803,10 +803,7 @@ async function askCLP() {
   try {
     const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/clp-search', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question: q })
     });
     const data = await res.json();
