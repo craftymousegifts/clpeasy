@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLPeasy — Knowledge Base: CLP Legislation Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --white:#ffffff;--off:#F7F8FA;--border:#E8EAED;--text:#111318;--muted:#6B7280;
+  --teal:#0D9488;--teal-light:#CCFBF1;--teal-dark:#0F766E;--teal-bg:#E6FAF8;
+  --amber:#F59E0B;--amber-light:#FEF3C7;--red:#EF4444;--red-light:#FEF2F2;
+  --blue:#3B82F6;--blue-light:#EFF6FF;--purple:#7C3AED;--purple-light:#F5F3FF;
+  --green:#10B981;--green-light:#ECFDF5;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);line-height:1.6;-webkit-font-smoothing:antialiased;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,0.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 32px;height:72px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{display:flex;align-items:center;text-decoration:none;}
+.nav-badge{width:52px;height:52px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;letter-spacing:-1px;flex-shrink:0;}
+.nav-easy{font-size:26px;font-weight:900;color:var(--teal);margin-left:4px;letter-spacing:-1px;}
+.nav-links{display:flex;align-items:center;gap:8px;}
+.nav-links a{font-size:14px;font-weight:500;color:var(--muted);text-decoration:none;padding:6px 12px;border-radius:6px;transition:color .2s,background .2s;}
+.nav-links a:hover{color:var(--text);background:var(--off);}
+.nav-links a.active{color:var(--teal);font-weight:600;}
+.btn-nav{background:var(--teal)!important;color:white!important;border:none;padding:8px 18px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;text-decoration:none!important;display:inline-block;}
+.btn-nav:hover{background:var(--teal-dark)!important;}
+
+/* HERO */
+.hero{padding:100px 24px 0;background:linear-gradient(135deg,var(--teal) 0%,#0A7C71 100%);text-align:center;color:white;}
+.hero-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);color:white;padding:6px 14px;border-radius:100px;font-size:13px;font-weight:500;margin-bottom:20px;border:1px solid rgba(255,255,255,0.25);}
+.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(28px,5vw,52px);line-height:1.15;margin-bottom:12px;font-weight:400;}
+.hero p{font-size:16px;opacity:.88;max-width:580px;margin:0 auto 28px;line-height:1.7;}
+.disclaimer-bar{background:rgba(0,0,0,0.2);border-top:1px solid rgba(255,255,255,0.1);padding:12px 24px;font-size:12px;opacity:.8;text-align:center;}
+
+/* SEARCH BAR */
+.search-section{background:white;border-bottom:1px solid var(--border);padding:20px 24px;position:sticky;top:72px;z-index:40;box-shadow:0 2px 12px rgba(0,0,0,0.06);}
+.search-inner{max-width:680px;margin:0 auto;}
+.search-label{font-size:12px;color:var(--muted);font-weight:600;text-align:center;margin-bottom:10px;letter-spacing:0.3px;}
+.search-row{display:flex;gap:8px;}
+.search-row input{flex:1;padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);outline:none;transition:border-color .2s;}
+.search-row input:focus{border-color:var(--teal);}
+.search-row button{background:var(--teal);color:white;border:none;padding:12px 20px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .2s;}
+.search-row button:hover{background:var(--teal-dark);}
+.search-result{display:none;margin-top:14px;background:var(--off);border:1px solid var(--border);border-radius:12px;padding:18px;}
+.search-result .answer{font-size:14px;line-height:1.75;color:var(--text);}
+.search-result .disclaimer{font-size:11px;color:var(--muted);margin-top:10px;border-top:1px solid var(--border);padding-top:10px;}
+.search-loading{display:none;text-align:center;margin-top:14px;font-size:13px;color:var(--muted);}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
+
+/* CATEGORY CARDS */
+.categories{max-width:960px;margin:0 auto;padding:32px 24px 0;}
+.categories-title{font-size:12px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:32px;}
+.cat-card{background:white;border:1px solid var(--border);border-radius:12px;padding:16px;text-decoration:none;color:var(--text);transition:all .2s;display:flex;align-items:flex-start;gap:12px;}
+.cat-card:hover{border-color:var(--teal);transform:translateY(-2px);box-shadow:0 4px 16px rgba(13,148,136,0.1);}
+.cat-icon{font-size:20px;flex-shrink:0;margin-top:1px;}
+.cat-card strong{display:block;font-size:13px;font-weight:700;margin-bottom:2px;}
+.cat-card span{font-size:12px;color:var(--muted);}
+
+/* LAYOUT */
+.page-wrapper{max-width:960px;margin:0 auto;padding:0 24px 80px;display:grid;grid-template-columns:220px 1fr;gap:32px;align-items:start;}
+
+/* SIDEBAR */
+.sidebar{position:sticky;top:160px;background:white;border:1px solid var(--border);border-radius:14px;padding:18px;margin-top:32px;}
+.sidebar-title{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.sidebar nav{display:flex;flex-direction:column;gap:2px;}
+.sidebar nav a{font-size:13px;color:var(--muted);text-decoration:none;padding:7px 10px;border-radius:7px;transition:all .2s;display:block;font-weight:500;}
+.sidebar nav a:hover{background:var(--teal-bg);color:var(--teal);}
+.sidebar nav a.active{background:var(--teal-bg);color:var(--teal);font-weight:600;}
+.sidebar-divider{height:1px;background:var(--border);margin:8px 0;}
+
+/* CONTENT */
+.content{display:flex;flex-direction:column;gap:20px;margin-top:32px;}
+
+/* SECTION CARD */
+.section-card{background:white;border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+
+/* SECTION HEADER — always visible */
+.section-header{padding:20px 24px;display:flex;align-items:flex-start;gap:14px;}
+.section-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.section-header-text{flex:1;}
+.section-label{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:3px;}
+.section-header h2{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;line-height:1.3;}
+.section-summary{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.5;}
+
+/* ALWAYS VISIBLE CONTENT — critical warnings etc */
+.always-visible{padding:0 24px 16px;}
+
+/* ACCORDION */
+.accordion-trigger{width:100%;text-align:left;background:none;border:none;border-top:1px solid var(--border);padding:14px 24px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;justify-content:space-between;transition:background .15s;}
+.accordion-trigger:hover{background:var(--off);}
+.accordion-trigger .acc-label{display:flex;align-items:center;gap:8px;}
+.accordion-icon{font-size:16px;color:var(--teal);transition:transform .25s;flex-shrink:0;}
+.accordion-trigger.open .accordion-icon{transform:rotate(45deg);}
+.accordion-body{display:none;padding:16px 24px 20px;border-top:1px solid var(--off);}
+.accordion-body.open{display:block;}
+
+/* INFO BLOCKS */
+.info-block{background:var(--off);border-radius:10px;padding:14px 16px;margin-bottom:12px;border-left:3px solid var(--teal);}
+.info-block:last-child{margin-bottom:0;}
+.info-block h3{font-size:13px;font-weight:700;margin-bottom:5px;}
+.info-block p{font-size:13px;color:var(--muted);line-height:1.65;}
+.info-block p+p{margin-top:6px;}
+
+.warn{background:var(--amber-light);border-left-color:var(--amber);}
+.warn h3{color:#92400E;}.warn p{color:#78400A;}
+
+.danger{background:var(--red-light);border-left-color:var(--red);}
+.danger h3{color:#991B1B;}.danger p{color:#7F1D1D;}
+
+.ni{background:var(--purple-light);border-left-color:var(--purple);}
+.ni h3{color:#5B21B6;}.ni p{color:#4C1D95;}
+
+.tip{background:var(--green-light);border-left-color:var(--green);}
+.tip h3{color:#065F46;}.tip p{color:#064E3B;}
+
+/* TAGS */
+.tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;padding:2px 7px;border-radius:100px;margin-left:6px;vertical-align:middle;}
+.tag-uk{background:#DBEAFE;color:#1E40AF;}
+.tag-eu{background:#EDE9FE;color:#5B21B6;}
+.tag-global{background:var(--teal-light);color:var(--teal-dark);}
+.tag-new{background:var(--amber-light);color:#92400E;}
+
+/* QUICK GRID */
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.quick-card{background:var(--off);border-radius:10px;padding:12px 14px;border:1px solid var(--border);}
+.quick-card .q-label{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.quick-card .q-value{font-size:13px;font-weight:700;color:var(--text);}
+.quick-card .q-note{font-size:11px;color:var(--muted);margin-top:2px;}
+
+/* LABEL REQUIREMENTS */
+.req-list{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.req-list li{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--text);line-height:1.55;padding:10px 12px;background:var(--off);border-radius:8px;}
+.req-num{width:20px;height:20px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:2px;}
+.req-list li strong{display:block;font-weight:700;margin-bottom:1px;font-size:13px;}
+
+/* TABLE */
+.reg-table{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:12px;}
+.reg-table th{background:var(--off);font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);padding:9px 12px;text-align:left;border-bottom:1px solid var(--border);}
+.reg-table td{padding:10px 12px;color:var(--text);border-bottom:1px solid var(--border);vertical-align:top;line-height:1.5;}
+.reg-table tr:last-child td{border-bottom:none;}
+.reg-table tr:hover td{background:var(--off);}
+
+/* LINKS */
+.link-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+.link-card{display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--off);border:1px solid var(--border);border-radius:10px;text-decoration:none;color:var(--text);transition:all .2s;font-size:13px;}
+.link-card:hover{border-color:var(--teal);color:var(--teal);transform:translateX(2px);}
+.link-card strong{display:block;font-weight:600;font-size:13px;}
+.link-card span{font-size:11px;color:var(--muted);}
+.link-card:hover span{color:var(--teal-dark);}
+.link-arrow{margin-left:auto;color:var(--muted);font-size:12px;}
+.link-section-title{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;margin-top:4px;}
+
+/* STILL NEED HELP */
+.help-cta{background:linear-gradient(135deg,var(--teal) 0%,#0A7C71 100%);border-radius:16px;padding:28px;text-align:center;color:white;margin-top:8px;}
+.help-cta h3{font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:8px;font-weight:400;}
+.help-cta p{font-size:14px;opacity:.88;margin-bottom:18px;}
+.help-cta a{background:white;color:var(--teal);font-weight:700;padding:10px 22px;border-radius:8px;text-decoration:none;font-size:14px;display:inline-block;transition:opacity .2s;}
+.help-cta a:hover{opacity:.9;}
+
+/* FOOTER */
+footer{background:#0A0F1A;padding:28px 24px;text-align:center;border-top:1px solid #1F2937;}
+footer p{font-size:12px;color:#4B5563;}
+footer a{color:#6B7280;text-decoration:none;}
+footer a:hover{color:var(--teal);}
+
+@media(max-width:768px){
+  .page-wrapper{grid-template-columns:1fr;padding:0 16px 60px;}
+  .sidebar{display:none;}
+  .cat-grid{grid-template-columns:1fr 1fr;}
+  .quick-grid{grid-template-columns:1fr;}
+  nav .nav-links a:not(.btn-nav){display:none;}
+  .search-section{position:relative;top:0;z-index:10;}
+  .hero{padding:88px 20px 0;}
+  .categories{padding:20px 16px 0;}
+  .section-header{padding:16px 18px;}
+  .always-visible{padding:0 18px 12px;}
+  .accordion-trigger{padding:12px 18px;}
+  .accordion-body{padding:12px 18px 16px;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="home.html" class="nav-logo">
+    <div class="nav-badge">CLP</div><span class="nav-easy">easy</span>
+  </a>
+  <div class="nav-links">
+    <a href="home.html#features">Features</a>
+    <a href="home.html#pricing">Pricing</a>
+    <a href="knowledge.html" class="active">Knowledge Base</a>
+    <a href="auth.html?mode=signin">Sign in</a>
+    <a href="auth.html" class="btn-nav">Get started free</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-pill">📚 Knowledge Base</div>
+  <h1>CLP Legislation<br><em style="font-style:italic;color:#5EEAD4;">Explained Simply</em></h1>
+  <p>Everything anyone who creates a product that needs CLP labelling needs to know — written in plain English, with links to official legislation.</p>
+  <div class="disclaimer-bar">⚠️ This knowledge base is for general information only and does not constitute legal advice. Always verify against official legislation and consult Trading Standards or a qualified compliance professional if in doubt.</div>
+</div>
+
+<!-- STICKY SEARCH -->
+<div class="search-section">
+  <div class="search-inner">
+    <div class="search-label">🔍 Ask anything about CLP — answered using live information and our knowledge base</div>
+    <div class="search-row">
+      <input type="text" id="clp-search" placeholder="e.g. Do I need a CLP label for wax melts? What is EUH208? UFI for GB sales?" onkeydown="if(event.key==='Enter')askCLP()">
+      <button onclick="askCLP()" id="search-btn">Ask CLPeasy</button>
+    </div>
+    <div class="search-loading" id="search-loading"><span class="spinner"></span>Searching legislation and knowledge base...</div>
+    <div class="search-result" id="search-result">
+      <div class="answer" id="search-answer"></div>
+      <div class="disclaimer">⚠️ AI-generated response for guidance only — always verify against official legislation. Not legal advice.</div>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY CARDS -->
+<div class="categories">
+  <div class="categories-title">Browse by topic</div>
+  <div class="cat-grid">
+    <a href="#what-is-clp" class="cat-card"><span class="cat-icon">⚗️</span><div><strong>What is CLP?</strong><span>Foundation & when you need it</span></div></a>
+    <a href="#uk-clp" class="cat-card"><span class="cat-icon">🇬🇧</span><div><strong>UK CLP</strong><span>Great Britain legislation</span></div></a>
+    <a href="#eu-clp" class="cat-card"><span class="cat-icon">🇪🇺</span><div><strong>EU CLP</strong><span>EC 1272/2008 & 2026 updates</span></div></a>
+    <a href="#northern-ireland" class="cat-card"><span class="cat-icon">🏴</span><div><strong>Northern Ireland</strong><span>Windsor Framework rules</span></div></a>
+    <a href="#label-elements" class="cat-card"><span class="cat-icon">🏷️</span><div><strong>Label Elements</strong><span>What must go on your label</span></div></a>
+    <a href="#h-statements" class="cat-card"><span class="cat-icon">⚠️</span><div><strong>H & P Statements</strong><span>Hazard & precautionary statements</span></div></a>
+    <a href="#euh208" class="cat-card"><span class="cat-icon">🌿</span><div><strong>EUH208 & Sensitisers</strong><span>Allergen declaration rules</span></div></a>
+    <a href="#ufi" class="cat-card"><span class="cat-icon">🔢</span><div><strong>UFI Numbers</strong><span>GB vs EU requirements</span></div></a>
+    <a href="#reach" class="cat-card"><span class="cat-icon">🧪</span><div><strong>REACH</strong><span>UK & EU chemical regulation</span></div></a>
+    <a href="#gpsr" class="cat-card"><span class="cat-icon">🛡️</span><div><strong>GPSR</strong><span>Product safety — updated 2024</span></div></a>
+    <a href="#ifra" class="cat-card"><span class="cat-icon">🌸</span><div><strong>IFRA Standards</strong><span>Fragrance usage limits</span></div></a>
+    <a href="#global-clp" class="cat-card"><span class="cat-icon">🌍</span><div><strong>Global CLP Laws</strong><span>USA, Australia, Canada & more</span></div></a>
+    <a href="#blended" class="cat-card"><span class="cat-icon">🔬</span><div><strong>Blended Fragrances</strong><span>Important legal warning</span></div></a>
+    <a href="#official-links" class="cat-card"><span class="cat-icon">🔗</span><div><strong>Official Links</strong><span>All legislation sources</span></div></a>
+  </div>
+</div>
+
+<div class="page-wrapper">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-title">On this page</div>
+  <nav>
+    <a href="#what-is-clp">What is CLP?</a>
+    <a href="#uk-clp">UK CLP (GB)</a>
+    <a href="#eu-clp">EU CLP</a>
+    <a href="#northern-ireland">Northern Ireland</a>
+    <a href="#label-elements">Label Elements</a>
+    <a href="#h-statements">H & P Statements</a>
+    <a href="#euh208">EUH208 & Sensitisers</a>
+    <a href="#ufi">UFI Numbers</a>
+    <a href="#reach">REACH</a>
+    <a href="#gpsr">GPSR</a>
+    <a href="#ifra">IFRA Standards</a>
+    <a href="#global-clp">Global CLP Laws</a>
+    <a href="#blended">Blended Fragrances</a>
+    <div class="sidebar-divider"></div>
+    <a href="#official-links">Official Links</a>
+  </nav>
+</aside>
+
+<!-- CONTENT -->
+<main class="content">
+
+<!-- WHAT IS CLP -->
+<div class="section-card" id="what-is-clp">
+  <div class="section-header">
+    <div class="section-icon" style="background:var(--teal-bg);">⚗️</div>
+    <div class="section-header-text">
+      <div class="section-label" style="color:var(--teal);">Foundation</div>
+      <h2>What is CLP?</h2>
+      <p class="section-summary">Classification, Labelling and Packaging — the legal framework requiring hazard communication on products containing chemicals.</p>
+    </div>
+  </div>
+  <div class="always-visible">
+    <div class="info-block warn">
+      <h3>⚠️ Do I need a CLP label?</h3>
+      <p>Yes — if your product contains any hazardous ingredient (which most scented products do, due to fragrance oils), you are legally required to produce a CLP-compliant label before selling. This applies to all makers regardless of size — cottage industry sellers follow the same rules as large manufacturers.</p>
+    </div>
+  </div>
+  <button class="accordion-trigger" onclick="toggleAcc(this)">
+    <span class="acc-label">📖 What CLP means and how it works</span>
+    <span class="accordion-icon">+</span>
+  </button>
+  <div class="accordion-body">
+    <div class="info-block">
+      <h3>What is CLP?</h3>
+      <p>CLP stands for Classification, Labelling and Packaging. It requires anyone who sells products containing hazardous chemical substances — including products — to clearly communicate those hazards on the product label using standardised symbols, signal words and statements.</p>
+    </div>
+    <div class="info-block tip">
+      <h3>✓ Unscented products</h3>
+      <p>If your product contains no hazardous substances — for example a pure unscented beeswax candle — you may not require a CLP label. However you must still comply with GPSR general product safety requirements. Always check with Trading Standards if unsure.</p>
+    </div>
+  </div>
+</div>
+
+<!-- UK CLP -->
+<div class="section-card" id="uk-clp">
+  <div class="section-header">
+    <div class="section-icon" style="background:#DBEAFE;">🇬🇧</div>
+    <div class="section-header-text">
+      <div class="section-label" style="color:#1E40AF;">United Kingdom</div>
+      <h2>UK CLP — Great Britain <span class="tag tag-uk">GB</span></h2>
+      <p class="section-summary">England, Scotland and Wales follow retained EU law via the European Union (Withdrawal) Act 2018, administered by the HSE.</p>
+    </div>
+  </div>
+  <div class="always-visible">
+    <div class="quick-grid">
+      <div class="quick-card"><div class="q-label">Legislation</div><div class="q-value">UK CLP</div><div class="q-note">Retained from EC 1272/2008</div></div>
+      <div class="quick-card"><div class="q-label">Enforced by</div><div class="q-value">HSE / Trading Standards</div><div class="q-note">Depending on business scale</div></div>
+      <div class="quick-card"><div class="q-label">UFI (GB)</div><div class="q-value">Voluntary</div><div class="q-note">Good practice to include</div></div>
+      <div class="quick-card"><div class="q-label">Applies to</div><div class="q-value">England, Scotland, Wales</div><div class="q-note">Not Northern Ireland</div></div>
+    </div>
+  </div>
+  <button class="accordion-trigger" onclick="toggleAcc(this)">
+    <span class="acc-label">📖 UK CLP details — differences from EU CLP</span>
+    <span class="accordion-icon">+</span>
+  </button>
+  <div class="accordion-body">
+    <div class="info-block">
+      <h3>Key differences from EU CLP for GB labels</h3>
+      <p>• Labels must reference the GB responsible person (your name, address and contact details)<br>• UFI registration goes to the GB NPIS system — not the EU ECHA system<br>• Labels use GHS pictograms (same symbols as EU CLP)<br>• The HSE is the enforcement body in Great Britain for larger operations<br>• For retail sales, Trading Standards are your primary enforcement contact</p>
+    </div>
+  </div>
+</div>
+
+<!-- EU CLP -->
+<div class="section-card" id="eu-clp">
+  <div class="section-header">
+    <div class="section-icon" style="background:#EDE9FE;">🇪🇺</div>
+    <div class="section-header-text">
+      <div class="section-label" style="color:#5B21B6;">European Union</div>
+      <h2>EU CLP — Regulation (EC) No 1272/2008 <span class="tag tag-eu">EU</span></h2>
+      <p class="section-summary">The core EU regulation, amended in 2023 and 2024 with significant 2026 requirements now in force.</p>
+    </div>
+  </div>
+  <div class="always-visible">
+    <div class="info-block warn">
+      <h3>⚠️ 2026 Update — now in force</h3>
+      <p>Regulation (EU) 2023/707 is mandatory from 1 May 2026 for all new products placed on the EU market. SDS sheets must be updated even for products containing no endocrine disruptors, as this must now be clearly stated on the SDS. Check with your fragrance supplier that their documents are 2026 compliant.</p>
+    </div>
+    <div class="info-block warn">
+      <h3>⚠️ CLP 2024/2865 — new label formatting rules</h3>
+      <p>Published November 2024, in force December 2024. New rules include mandatory minimum font sizes, text must be black on white background, line spacing at least 120% of font size, and new digital labelling provisions. These may require larger labels on some products.</p>
+    </div>
+  </div>
+  <button class="accordion-trigger" onclick="toggleAcc(this)">
+    <span class="acc-label">📖 EU CLP full details — selling into the EU</span>
+    <span class="accordion-icon">+</span>
+  </button>
+  <div class="accordion-body">
+    <div class="info-block">
+      <h3>If you sell into the EU</h3>
+      <p>UK makers selling to EU consumers must comply with EU CLP — not just UK CLP. This includes having an EU Responsible Person if you are not based in the EU, and registering your UFI with the EU ECHA system (mandatory since January 2025).</p>
+    </div>
+    <div class="quick-grid">
+      <div class="quick-card"><div class="q-label">Regulation</div><div class="q-value">EC No 1272/2008</div><div class="q-note">Amended by 2023/707 & 2024/2865</div></div>
+      <div class="quick-card"><div class="q-label">UFI (EU)</div><div class="q-value">Mandatory</div><div class="q-note">Required since Jan 2025</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- NORTHERN IRELAND -->
+<div class="section-card" id="northern-ireland">
+  <div class="section-header">
+    <div class="section-icon" style="background:#F5F3FF;">🏴</div>
+    <div class="section-header-text">
+      <div class="section-label" style="color:#5B21B6;">Special Case</div>
+      <h2>Northern Ireland — Windsor Framework <span class="tag tag-eu">EU CLP</span></h2>
+      <p class="section-summary">Northern Ireland follows EU CLP — not UK CLP — under the Windsor Framework.</p>
+    </div>
+  </div>
+  <div class="always-visible">
+    <div class="info-block ni">
+      <h3>Northern Ireland follows EU CLP — not UK CLP</h3>
+      <p>Under the Windsor Framework, Northern Ireland remains aligned with EU single market rules for goods. Products sold in Northern Ireland must comply with EU CLP, including EU UFI registration which has been mandatory since January 2025. If your customers include Northern Ireland buyers, you may technically need EU CLP-compliant labels.</p>
+    </div>
+  </div>
+  <button class="accordion-trigger" onclick="toggleAcc(this)">
+    <span class="acc-label">📖 Practical guidance for selling into Northern Ireland</span>
+    <span class="accordion-icon">+</span>
+  </button>
+  <div class="accordion-body">
+    <div class="info-block tip">
+      <h3>✓ Safest approach</h3>
+      <p>Produce labels compliant with both GB and EU CLP requirements. The core label content is very similar — the main differences are around the Responsible Person details and UFI registration system. CLPeasy will offer dual UK/EU label generation in a future update.</p>
+    </div>
+  </div>
+</div>
+
+<!-- LABEL ELEMENTS -->
+<div class="section-card" id="label-elements">
+  <div class="section-header">
+    <div class="section-icon" style="background:var(--teal-bg);">🏷️</div>
+    <div class="section-header-text">
+      <div class="section-label" style="color:var(--teal);">Required Elements</div>
+      <h2>What must go on a CLP label?</h2>
+      <p class="section-summary">A CLP-compliant label for a scented product must include all 10 of the following elements.</p>
+    </div>
+  </div>
+  <button class="accordion-trigger" onclick="toggleAcc(this)">
+    <span class="acc-label">📋 View all 10 required label elements</span>
+    <span class="accordion-icon">+</span>
+  </button>
+  <div class="accordion-body">
+    <ul class="req-list">
+      <li><span class="req-num">1</span><div><strong>Product name / identifier</strong>The name of the product or scent as it appears on your product</div></li>
+      <li><span class="req-num">2</span><div><strong>Responsible person details</strong>Your full business name, address and contact details — the person legally responsible for the product's compliance</div></li>
+      <li><span class="req-num">3</span><div><strong>Net quantity</strong>The weight or volume of the product (e.g. 200g, 85ml)</div></li>
+      <li><span class="req-num">4</span><div><strong>Hazard pictograms (GHS symbols)</strong>The relevant GHS diamond-shaped hazard symbols determined by your fragrance's hazard classification</div></li>
+      <li><span class="req-num">5</span><div><strong>Signal word</strong>Either DANGER or WARNING — determined by the hazard classification at your fragrance load percentage</div></li>
+      <li><span class="req-num">6</span><div><strong>Hazard statements (H statements)</strong>Standardised phrases describing the hazard — e.g. H317 "May cause an allergic skin reaction"</div></li>
+      <li><span class="req-num">7</span><div><strong>Precautionary statements (P statements)</strong>Standardised phrases advising safe handling — e.g. P102 "Keep out of reach of children"</div></li>
+      <li><span class="req-num">8</span><div><strong>Allergen declaration (EUH208)</strong>If the fragrance contains classified skin sensitisers above threshold — "Contains [name]. May produce an allergic reaction"</div></li>
+      <li><span class="req-num">9</span><div><strong>UFI (Unique Formula Identifier)</strong>Mandatory for EU/NI sales since January 2025. Voluntary but recommended for GB sales</div></li>
+      <li><span class="req-num">10</span><div><strong>Batch / lot number</strong>A code allowing the product to be traced back to a specific production batch</div></li>
+    </ul>
+  </div>
+</div>
+
+<!-- H & P STATEMENTS -->
+<div class="section-card" id="h-statements">
+  <div class="section-header">
+    <div class="section-icon" style="background:var(--red-light);">⚠️</div>
+    <div class="section-header-text">
+      <div class="section-label" style="color:var(--red);">Hazard & Precautionary</div>
+      <h2>H & P Statements</h2>
+      <p class="section-summary">Standardised codes and phrases that describe hazards (H) and safe handling instructions (P). Found in your SDS Section 2.2.</p>
+    </div>
+  </div>
+  <button class="accordion-trigger" onclick="toggleAcc(this)">
+    <span class="acc-label">📋 Common H statements for product makers</span>
+    <span class="accordion-icon">+</span>
+  </button>
+  <div class="accordion-body">
+    <table class="reg-table">
+      <thead><tr><th>Code</th><th>Statement</th><th>Type</th></tr></thead>
+      <tbody>
+        <tr><td><strong>H226</strong></td><td>Flammable liquid and vapour</td><td>Physical</td></tr>
+        <tr><td><strong>H302</strong></td><td>Harmful if swallowed</td><td>Health</td></tr>
+        <tr><td><strong>H304</strong></td><td>May be fatal if swallowed and enters airways</td><td>Health</td></tr>
+        <tr><td><strong>H315</strong></td><td>Causes skin irritation</td><td>Health</td></tr>
+        <tr><td><strong>H317</strong></td><td>May cause an allergic skin reaction</td><td>Health</td></tr>
+        <tr><td><strong>H319</strong></td><td>Causes serious eye irritation</td><td>Health</td></tr>
+        <tr><td><strong>H361</strong></td><td>Suspected of damaging fertility or the unborn child</td><td>Health</td></tr>
+        <tr><td><strong>H400</strong></td><td>Very toxic to aquatic life</td><td>Environmental</td></tr>
+        <tr><td><strong>H410</strong></td><td>Very toxic to aquatic life with long lasting effects</td><td>Environmental</td></tr>
+        <tr><td><strong>H411</strong></td><td>Toxic to aquatic life with long lasting effects</td><td>Environmental</td></tr>
+        <tr><td><strong>H412</strong></td><td>Harmful to aquatic life with long lasting effects</td><td>Environmental</td></tr>
+        <tr><td><strong>EUH208</strong></td><td>Contains [name]. May produce an allergic reaction</td><td>Allergen</td></tr>
+      </tbody>
+    </table>
+    <div class="info-block tip">
+      <h3>✓ Where to find your H statements</h3>
+      <p>Your fragrance supplier's SDS Section 2.2 (Label elements) lists all H statements that apply at the stated concentration. Always use the SDS for the exact fragrance load you use in your product.</p>
+    </div>
+  </div>
+</div>
+
+<!-- EUH208 -->
+<div class="section-card" id="euh208">
+  <div class="section-header">
+    <div class="section-icon" style="background:var(--amber-light);">🌿</div>
+    <div class="section-header-text">
+      <div class="section-label" style="color:#92400E;">Allergen Declaration</div>
+      <h2>EUH208 & Sensitisers</h2>
+      <p class="section-summary">If your fragrance contains classified skin sensitisers above threshold, EUH208 must appear on your label.</p>
+    </div>
+  </div>
+  <div class="always-visible">
+    <div class="info-block">
+      <h3>Threshold concentrations</h3>
+      <p>• Category 1A sensitisers: declare at ≥ 0.01% in the finished product<br>• Category 1B sensitisers: declare at ≥ 0.1% in the finished product<br><br>Your SDS Section 2.2 lists which sensitisers are present and at what classification level.</p>
+    </div>
+  </div>
+  <button class="accordion-trigger" onclick="toggleAcc(this)">
+    <span class="acc-label">🌿 Common sensitisers found in product fragrances</span>
+    <span class="accordion-icon">+</span>
+  </button>
+  <div class="accordion-body">
+    <div class="info-block warn">
+      <h3>Common sensitisers to check for</h3>
+      <p>Geraniol, Linalool, Linalool (oxidised), Citral, Limonene, Citronellol, Eugenol, Benzyl alcohol, Benzyl benzoate, Coumarin, Isoeugenol, Cinnamal, Farnesol, Hydroxycitronellal, Lilial, Lyral, Methyl 2-octynoate and others. CLPeasy has a built-in library of all 28 common CLP fragrance sensitisers.</p>
+    </div>
+  </div>
+</div>
+
+<!-- UFI -->
+<div class="section-card" id="ufi">
+  <div class="section-header">
+    <div class="section-icon" style="background:var(--blue-light);">🔢</div>
+    <div class="section-header-text">
+      <div class="section-label" style="color:var(--blue);">Formula Identifier</div>
+      <h2>UFI — Unique Formula Identifier</h2>
+      <p class="section-summary">A 16-character code linking your product to poison centre data — mandatory for EU/NI, voluntary for GB.</p>
+    </div>
+  </div>
+  <div class="always-visible">
+    <div class="quick-grid">
+      <div class="quick-card"><div class="q-label">GB (England, Scotland, Wales)</div><div class="q-value">Voluntary</div><div class="q-note">Good practice to include</div></div>
+      <div class="quick-card"><div class="q-label">EU & Northern Ireland</div><div class="q-value">Mandatory</div><div class="q-note">Required since January 2025</div></div>
+    </div>
+  </div>
+  <button class="accordion-trigger" onclick="toggleAcc(this)">
+    <span class="acc-label">🔢 How to generate your UFI — free and straightforward</span>
+    <span class="accordion-icon">+</span>
+  </button>
+  <div class="accordion-body">
+    <div class="info-block tip">
+      <h3>✓ Generate your UFI for free</h3>
+      <p>Visit <strong>ufi.echa.europa.eu</strong> to generate your UFI code for free. For GB: register with the UK National Poisons Information Service (NPIS). For EU/NI: register via the ECHA PCN portal. CLPeasy includes a UFI field so you can add your code directly to your label.</p>
+    </div>
+  </div>
+</div>
+
+<!-- REACH -->
+<div class="section-card" id="reach">
+  <div class="section-header">
+    <div class="section-icon" style="background:var(--teal-bg);">🧪</div>
+    <div class="section-header-text">
+      <div class="section-label" style="color:var(--teal);">Chemical Regulation</div>
+      <h2>REACH Regulation <span class="tag tag-uk">UK</span><span class="tag tag-eu">EU</span></h2>
+      <p class="section-summary">Governs chemical substances. As a product maker you are typically a downstream user — your fragrance supplier handles REACH registration.</p>
+    </div>
+  </div>
+  <button class="accordion-trigger" onclick="toggleAcc(this)">
+    <span class="acc-label">🧪 What REACH means for product makers</span>
+    <span class="accordion-icon">+</span>
+  </button>
+  <div class="accordion-body">
+    <div class="info-block">
+      <h3>Your responsibilities under REACH</h3>
+      <p>As a downstream user, your fragrance supplier handles substance registration. However you are still responsible for using compliant materials and applying correct CLP labelling. UK REACH and EU REACH may diverge over time — check both if you sell into both markets.</p>
+    </div>
+    <div class="info-block tip">
+      <h3>✓ Practical advice</h3>
+      <p>Ask your fragrance supplier to confirm their products are REACH compliant and that their SDS is up to date. A current SDS from a reputable UK supplier is your primary protection as a downstream user.</p>
+    </div>
+  </div>
+</div>
+
+<!-- GPSR -->
+<div class="section-card" id="gpsr">
+  <div class="section-header">
+    <div class="section-icon" style="background:var(--blue-light);">🛡️</div>
+    <div class="section-header-text">
+      <div class="section-label" style="color:var(--blue);">Product Safety</div>
+      <h2>GPSR — General Product Safety <span class="tag tag-new">Updated Dec 2024</span></h2>
+      <p class="section-summary">All consumer products must be safe under normal use — beyond CLP labelling. EU GPSR came into force December 2024.</p>
+    </div>
+  </div>
+  <div class="always-visible">
+    <div class="info-block warn">
+      <h3>⚠️ Selling online to EU customers — December 2024 onwards</h3>
+      <p>Since December 2024, if you sell products to EU consumers (including via Etsy, Folksy or your own website), you must comply with EU GPSR Regulation 2023/988. This includes having a Responsible Person established within the EU. Non-compliant products can be removed from online marketplaces.</p>
+    </div>
+  </div>
+  <button class="accordion-trigger" onclick="toggleAcc(this)">
+    <span class="acc-label">🛡️ What GPSR requires for product makers</span>
+    <span class="accordion-icon">+</span>
+  </button>
+  <div class="accordion-body">
+    <div class="info-block">
+      <h3>GPSR requirements for products</h3>
+      <p>• Your product must be safe under normal use<br>• Adequate burning instructions and warnings must be provided<br>• Packaging must be secure and not create hazards<br>• You must be able to trace and recall products if needed<br>• If selling to EU: may need an EU Responsible Person</p>
+    </div>
+  </div>
+</div>
+
+<!-- IFRA -->
+<div class="section-card" id="ifra">
+  <div class="section-header">
+    <div class="section-icon" style="background:var(--purple-light);">🌸</div>
+    <div class="section-header-text">
+      <div class="section-label" style="color:var(--purple);">Fragrance Standards</div>
+      <h2>IFRA Standards <span class="tag tag-global">Global</span></h2>
+      <p class="section-summary">International Fragrance Association standards set maximum usage levels for fragrance ingredients by product category.</p>
+    </div>
+  </div>
+  <button class="accordion-trigger" onclick="toggleAcc(this)">
+    <span class="acc-label">🌸 IFRA, product makers and how to get certificates</span>
+    <span class="accordion-icon">+</span>
+  </button>
+  <div class="accordion-body">
+    <div class="info-block">
+      <h3>IFRA and product makers</h3>
+      <p>Your fragrance supplier's IFRA certificate lists the maximum recommended fragrance load per product category. Staying within IFRA limits helps ensure your CLP hazard classification remains accurate. Note: IFRA compliance is separate from CLP — a fragrance may be IFRA compliant but still require a CLP label.</p>
+    </div>
+    <div class="info-block tip">
+      <h3>✓ Ask your supplier for IFRA certificates</h3>
+      <p>Reputable UK fragrance suppliers will provide an IFRA certificate for each fragrance alongside the SDS. Keep these on file as part of your compliance records.</p>
+    </div>
+  </div>
+</div>
+
+<!-- GLOBAL CLP -->
+<div class="section-card" id="global-clp">
+  <div class="section-header">
+    <div class="section-icon" style="background:var(--teal-bg);">🌍</div>
+    <div class="section-header-text">
+      <div class="section-label" style="color:var(--teal);">Global</div>
+      <h2>Global CLP & GHS Laws by Country <span class="tag tag-global">Worldwide</span></h2>
+      <p class="section-summary">Most countries base their chemical labelling laws on the UN GHS framework — but each implements it differently. Always verify before exporting.</p>
+    </div>
+  </div>
+  <div class="always-visible">
+    <div class="info-block warn">
+      <h3>⚠️ Always verify before exporting to any country</h3>
+      <p>Regulations change frequently. The table below is a general guide only. Before selling products into any country, always verify the current requirements with an official source or a qualified compliance professional in that country.</p>
+    </div>
+  </div>
+  <button class="accordion-trigger" onclick="toggleAcc(this)">
+    <span class="acc-label">🌍 Global CLP laws — 12 countries at a glance</span>
+    <span class="accordion-icon">+</span>
+  </button>
+  <div class="accordion-body">
+    <table class="reg-table">
+      <thead><tr><th>Country</th><th>Regulation</th><th>GHS</th><th>Key notes</th></tr></thead>
+      <tbody>
+        <tr><td><strong>🇬🇧 UK</strong></td><td>UK CLP (EC 1272/2008)</td><td>Rev 7+</td><td>HSE / Trading Standards. UFI voluntary for GB</td></tr>
+        <tr><td><strong>🇪🇺 EU</strong></td><td>EC 1272/2008, 2023/707, 2024/2865</td><td>Rev 7+</td><td>UFI mandatory Jan 2025. 2026 SDS update required</td></tr>
+        <tr><td><strong>🇺🇸 USA</strong></td><td>OSHA HCS 29 CFR 1910.1200</td><td>Rev 7 (2024)</td><td>Mixtures compliance deadline July 2027. Enforced by OSHA</td></tr>
+        <tr><td><strong>🇨🇦 Canada</strong></td><td>WHMIS 2015 + CCPSA</td><td>Rev 7</td><td>Consumer products also governed by Canada Consumer Product Safety Act</td></tr>
+        <tr><td><strong>🇦🇺 Australia</strong></td><td>Safe Work Australia WHS Regulations</td><td>Rev 7</td><td>Consumer safety governed by ACCC. Check ACCC for candle specifics</td></tr>
+        <tr><td><strong>🇳🇿 New Zealand</strong></td><td>HSWA Hazardous Substances Regs 2017</td><td>Rev 6/7</td><td>Administered by WorkSafe NZ</td></tr>
+        <tr><td><strong>🇯🇵 Japan</strong></td><td>ISHA + JIS Z7252/Z7253</td><td>Rev 6</td><td>Verify current requirements with local specialist before exporting</td></tr>
+        <tr><td><strong>🇰🇷 South Korea</strong></td><td>Chemicals Control Act + K-REACH</td><td>Rev 7</td><td>Importers must register with Korean government</td></tr>
+        <tr><td><strong>🇨🇳 China</strong></td><td>GB 30000 series</td><td>Rev 8 (Aug 2025)</td><td>Mandatory national catalogue. Local specialist advice essential</td></tr>
+        <tr><td><strong>🇸🇬 Singapore</strong></td><td>WSH Act</td><td>Rev 7</td><td>Also subject to Consumer Protection (Fair Trading) Act</td></tr>
+        <tr><td><strong>🇮🇳 India</strong></td><td>MSIHC Rules 1989 (amended)</td><td>Partial GHS</td><td>Progressive GHS adoption — specialist advice recommended</td></tr>
+        <tr><td><strong>🇿🇦 South Africa</strong></td><td>OHS Act + SANS standards</td><td>Partial GHS</td><td>GHS adoption in progress. Local specialist advice recommended</td></tr>
+      </tbody>
+    </table>
+    <div class="info-block tip">
+      <h3>✓ The UN GHS reference — the Purple Book</h3>
+      <p>The United Nations publishes the master GHS document that all national regulations are based on. Freely available at <strong>unece.org/transport/dangerous-goods/ghs</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- BLENDED FRAGRANCES -->
+<div class="section-card" id="blended">
+  <div class="section-header">
+    <div class="section-icon" style="background:var(--red-light);">🔬</div>
+    <div class="section-header-text">
+      <div class="section-label" style="color:var(--red);">Critical Warning</div>
+      <h2>Blended Fragrances — Important Legal Warning</h2>
+      <p class="section-summary">Combining fragrance oils creates a new chemical mixture that requires its own SDS and hazard assessment.</p>
+    </div>
+  </div>
+  <div class="always-visible">
+    <div class="info-block danger">
+      <h3>🚨 Blending fragrances creates a new mixture requiring its own CLP assessment</h3>
+      <p>If you combine two or more fragrance oils to create a custom scent, the resulting blend is legally a new chemical mixture. You cannot simply use the individual SDS sheets — the combined hazard classification must be calculated for the blend as a whole. Before releasing a blended fragrance product to the public, industry best practice requires a new SDS for the blend from a fragrance house or safety assessor, combined hazard classification verified, and labels generated based on the blend's SDS — not the individual components.</p>
+    </div>
+    <div class="info-block warn">
+      <h3>⚠️ CLPeasy currently supports single-fragrance products only</h3>
+      <p>If you blend fragrances, please consult your fragrance supplier or a qualified safety assessor before generating any CLP labels. Some fragrance suppliers will produce a combined SDS for custom blends on request. Specialist CLP compliance consultants can also assist.</p>
+    </div>
+  </div>
+</div>
+
+<!-- OFFICIAL LINKS -->
+<div class="section-card" id="official-links">
+  <div class="section-header">
+    <div class="section-icon" style="background:var(--teal-bg);">🔗</div>
+    <div class="section-header-text">
+      <div class="section-label" style="color:var(--teal);">Official Resources</div>
+      <h2>Official Legislation & Reference Links</h2>
+      <p class="section-summary">All the official sources in one place — legislation, guidance and tools.</p>
+    </div>
+  </div>
+  <button class="accordion-trigger" onclick="toggleAcc(this)">
+    <span class="acc-label">🇬🇧 UK legislation & guidance</span>
+    <span class="accordion-icon">+</span>
+  </button>
+  <div class="accordion-body">
+    <div class="link-grid">
+      <a href="https://www.legislation.gov.uk/eur/2008/1272/contents" target="_blank" rel="noopener" class="link-card"><span>📋</span><div><strong>Regulation (EC) No 1272/2008 — UK CLP</strong><span>legislation.gov.uk — retained UK version of core CLP regulation</span></div><span class="link-arrow">↗</span></a>
+      <a href="https://www.hse.gov.uk/chemical-classification/legal/clp-regulation.htm" target="_blank" rel="noopener" class="link-card"><span>🏛️</span><div><strong>HSE — UK CLP guidance</strong><span>hse.gov.uk — Health and Safety Executive official CLP guidance</span></div><span class="link-arrow">↗</span></a>
+      <a href="https://www.hse.gov.uk/reach/" target="_blank" rel="noopener" class="link-card"><span>🧪</span><div><strong>HSE — UK REACH</strong><span>hse.gov.uk — UK REACH chemical regulation</span></div><span class="link-arrow">↗</span></a>
+      <a href="https://www.businesscompanion.info/en/quick-guides/good-practice/candles-diffusers-oil-heaters-and-incense" target="_blank" rel="noopener" class="link-card"><span>🕯️</span><div><strong>Business Companion — Candles & diffusers guide</strong><span>businesscompanion.info — Trading Standards plain English guide</span></div><span class="link-arrow">↗</span></a>
+    </div>
+  </div>
+  <button class="accordion-trigger" onclick="toggleAcc(this)">
+    <span class="acc-label">🇪🇺 EU legislation & guidance</span>
+    <span class="accordion-icon">+</span>
+  </button>
+  <div class="accordion-body">
+    <div class="link-grid">
+      <a href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02008R1272-20231201" target="_blank" rel="noopener" class="link-card"><span>🇪🇺</span><div><strong>EU CLP Regulation (EC) 1272/2008 — EUR-Lex</strong><span>eur-lex.europa.eu — official consolidated EU CLP text</span></div><span class="link-arrow">↗</span></a>
+      <a href="https://echa.europa.eu/regulations/clp/understanding-clp" target="_blank" rel="noopener" class="link-card"><span>⚗️</span><div><strong>ECHA — Understanding CLP</strong><span>echa.europa.eu — European Chemicals Agency CLP guidance</span></div><span class="link-arrow">↗</span></a>
+      <a href="https://ufi.echa.europa.eu" target="_blank" rel="noopener" class="link-card"><span>🔢</span><div><strong>ECHA UFI Generator — free</strong><span>ufi.echa.europa.eu — generate your UFI code here</span></div><span class="link-arrow">↗</span></a>
+      <a href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R0988" target="_blank" rel="noopener" class="link-card"><span>🛡️</span><div><strong>EU GPSR — Regulation 2023/988</strong><span>eur-lex.europa.eu — General Product Safety Regulation</span></div><span class="link-arrow">↗</span></a>
+    </div>
+  </div>
+  <button class="accordion-trigger" onclick="toggleAcc(this)">
+    <span class="acc-label">🌍 Global resources</span>
+    <span class="accordion-icon">+</span>
+  </button>
+  <div class="accordion-body">
+    <div class="link-grid">
+      <a href="https://unece.org/transport/dangerous-goods/ghs" target="_blank" rel="noopener" class="link-card"><span>🌍</span><div><strong>UN GHS — The Purple Book</strong><span>unece.org — global foundation document all national CLP/GHS laws are based on</span></div><span class="link-arrow">↗</span></a>
+      <a href="https://www.osha.gov/hazcom" target="_blank" rel="noopener" class="link-card"><span>🇺🇸</span><div><strong>USA — OSHA Hazard Communication Standard</strong><span>osha.gov — US GHS/HCS requirements</span></div><span class="link-arrow">↗</span></a>
+      <a href="https://www.safeworkaustralia.gov.au/law-and-regulation/model-whs-laws" target="_blank" rel="noopener" class="link-card"><span>🇦🇺</span><div><strong>Australia — Safe Work Australia</strong><span>safeworkaustralia.gov.au — Australian GHS guidance</span></div><span class="link-arrow">↗</span></a>
+      <a href="https://www.canada.ca/en/health-canada/services/chemical-substances/canada-approach-chemicals/workplace-hazardous-materials-information-system.html" target="_blank" rel="noopener" class="link-card"><span>🇨🇦</span><div><strong>Canada — WHMIS guidance</strong><span>canada.ca — Canadian hazardous materials system</span></div><span class="link-arrow">↗</span></a>
+    </div>
+  </div>
+  <button class="accordion-trigger" onclick="toggleAcc(this)">
+    <span class="acc-label">🕯️ Industry bodies & product specific guidance</span>
+    <span class="accordion-icon">+</span>
+  </button>
+  <div class="accordion-body">
+    <div class="link-grid">
+      <a href="https://www.britishcandles.org" target="_blank" rel="noopener" class="link-card"><span>🕯️</span><div><strong>British Candlemakers Federation (BCMF)</strong><span>britishcandles.org — industry body, advice packs, Trading Standards guidance</span></div><span class="link-arrow">↗</span></a>
+      <a href="https://www.ifrafragrance.org/standards" target="_blank" rel="noopener" class="link-card"><span>🌸</span><div><strong>IFRA — Fragrance Standards</strong><span>ifrafragrance.org — ingredient restrictions and usage limits</span></div><span class="link-arrow">↗</span></a>
+      <a href="https://www.gov.uk/guidance/product-safety-for-businesses" target="_blank" rel="noopener" class="link-card"><span>🏛️</span><div><strong>UK Gov — Product safety for businesses</strong><span>gov.uk — GPSR and product safety obligations</span></div><span class="link-arrow">↗</span></a>
+      <a href="https://www.business.gov.uk/campaign/europe/european-union-eu-regulations/eu-general-product-safety-regulation-eu-gpsr" target="_blank" rel="noopener" class="link-card"><span>🇪🇺</span><div><strong>UK Gov — EU GPSR guidance for UK businesses</strong><span>business.gov.uk — what UK businesses need for EU GPSR compliance</span></div><span class="link-arrow">↗</span></a>
+    </div>
+  </div>
+</div>
+
+<!-- STILL NEED HELP -->
+<div class="help-cta">
+  <h3>Still have a question?</h3>
+  <p>Our AI search bar at the top of this page can answer most CLP questions instantly using live information. Or get in touch — we're happy to help point you in the right direction.</p>
+  <a href="mailto:support@clpeasy.com">Email support@clpeasy.com →</a>
+</div>
+
+</main>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p style="margin-bottom:8px;">CLPeasy Knowledge Base — for general information only. Not legal advice.</p>
+  <p><a href="home.html">Home</a> &nbsp;·&nbsp; <a href="home.html#pricing">Pricing</a> &nbsp;·&nbsp; <a href="privacy.html">Privacy</a> &nbsp;·&nbsp; <a href="terms.html">Terms</a> &nbsp;·&nbsp; <a href="mailto:support@clpeasy.com">support@clpeasy.com</a></p>
+  <p style="margin-top:10px;">© 2026 CLPeasy — CLP compliance made simple for product makers</p>
+</footer>
+
+<script>
+function toggleAcc(btn) {
+  const body = btn.nextElementSibling;
+  const isOpen = btn.classList.contains('open');
+  btn.classList.toggle('open', !isOpen);
+  body.classList.toggle('open', !isOpen);
+}
+
+// Sidebar active state
+const sections = document.querySelectorAll('.section-card[id]');
+const navLinks = document.querySelectorAll('.sidebar nav a');
+window.addEventListener('scroll', () => {
+  let cur = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 180) cur = s.id; });
+  navLinks.forEach(a => { a.classList.toggle('active', a.getAttribute('href') === '#' + cur); });
+});
+
+// AI Search
+async function askCLP() {
+  const input = document.getElementById('clp-search');
+  const result = document.getElementById('search-result');
+  const answer = document.getElementById('search-answer');
+  const loading = document.getElementById('search-loading');
+  const btn = document.getElementById('search-btn');
+  const q = input.value.trim();
+  if (!q) return;
+  result.style.display = 'none';
+  loading.style.display = 'block';
+  btn.disabled = true;
+  btn.textContent = 'Searching...';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        system: 'You are a CLP compliance expert for CLPeasy, a tool for UK product makers. Answer CLP labelling law questions clearly in plain English. Be practical and specific. Reference the relevant regulation where possible. Keep answers under 300 words. Always end with: "⚠️ This is general guidance only — not legal advice."',
+        messages: [{ role: 'user', content: 'CLP question from a product maker: ' + q }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content.filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
+    answer.innerHTML = text.replace(/\n/g, '<br>');
+    result.style.display = 'block';
+  } catch (e) {
+    answer.innerHTML = 'Sorry — something went wrong. Please try again or email <a href="mailto:support@clpeasy.com" style="color:var(--teal)">support@clpeasy.com</a>';
+    result.style.display = 'block';
+  } finally {
+    loading.style.display = 'none';
+    btn.disabled = false;
+    btn.textContent = 'Ask CLPeasy';
+  }
+}
+</script>
+</body>
+</html>
