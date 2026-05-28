@@ -163,7 +163,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
       </div>
       <div class="tpl-card" data-tpl="l7096" onclick="selectTemplate('l7096',this)">
         <div class="tpl-name">51mm circles</div>
-        <div class="tpl-detail">3 × 4 grid · 12/sheet</div>
+        <div class="tpl-detail">3 × 5 grid · 15/sheet</div>
       </div>
       <div class="tpl-card" data-tpl="custom" onclick="selectTemplate('custom',this)">
         <div class="tpl-name">Custom sheet</div>
@@ -220,7 +220,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
       Download your print sheet with a <a href="home.html#pricing">Pro subscription</a> — from £6.99/month with a 14-day free trial.
     </div>
 
-    <button class="btn-primary" id="btn-pdf" onclick="downloadPDF()">⬇ Download PDF sheet</button>
+    <button class="btn-primary" id="btn-pdf" onclick="downloadPDF()">🖨 Print / Save as PDF</button>
     <button class="btn-secondary" id="btn-png-all" onclick="downloadAllPNGs()">⬇ Download individual PNGs (for Cricut)</button>
 
     <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 12px;font-size:12px;color:#166534;line-height:1.6;margin-top:4px;">
@@ -306,7 +306,7 @@ function updateProGate(){
 const TEMPLATES={
   l6008:{name:'35mm circles · 28/sheet',labelMM:35,cols:4,rows:7,marginT:13,marginL:8,gapH:3,gapV:3,shape:'circle'},
   l7157:{name:'40mm circles · 24/sheet',labelMM:40,cols:4,rows:6,marginT:13,marginL:8,gapH:3,gapV:3,shape:'circle'},
-  l7096:{name:'51mm circles · 12/sheet',labelMM:51,cols:3,rows:4,marginT:21,marginL:13,gapH:9,gapV:9,shape:'circle'},
+  l7096:{name:'51mm circles · 15/sheet',labelMM:51,cols:3,rows:5,marginT:14,marginL:12,gapH:1,gapV:2,shape:'circle'},
   custom:{name:'Custom sheet',labelMM:50,cols:3,rows:5,marginT:10,marginL:10,gapH:5,gapV:5,shape:'circle'},
 };
 const A4_W=210,A4_H=297; // mm
@@ -355,6 +355,12 @@ function renderSavedList(){
 function addToSheet(idx){
   const arr=getSaved();
   const e=arr[idx];if(!e)return;
+  const t=getTplConfig();
+  const slots=t.cols*t.rows;
+  if(getTotalQty()>=slots){
+    alert('Sheet is full ('+slots+' slots). Increase the sheet size or reduce quantities to add more labels.');
+    return;
+  }
   const existing=sheetItems.findIndex(s=>s.id===idx);
   if(existing>=0){sheetItems[existing].qty+=1;}
   else{sheetItems.push({id:idx,labelData:e,qty:1});}
@@ -365,6 +371,14 @@ function addToSheet(idx){
 function changeQty(idx,delta){
   const pos=sheetItems.findIndex(s=>s.id===idx);
   if(pos<0)return;
+  if(delta>0){
+    const t=getTplConfig();
+    const slots=t.cols*t.rows;
+    if(getTotalQty()>=slots){
+      alert('Sheet is full ('+slots+' slots). Increase the sheet size or reduce other labels first.');
+      return;
+    }
+  }
   sheetItems[pos].qty=Math.max(0,sheetItems[pos].qty+delta);
   if(sheetItems[pos].qty===0)sheetItems.splice(pos,1);
   renderSavedList();
