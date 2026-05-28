@@ -808,19 +808,17 @@ async function askCLP() {
     });
     const data = await res.json();
     if (data.error) throw new Error(data.error);
-    let formatted = data.answer
-      .replace(/## (.*?)
-/g, '<h4 style="margin:12px 0 6px;font-size:14px;color:var(--text);">$1</h4>')
-      .replace(/# (.*?)
-/g, '<h3 style="margin:12px 0 8px;font-size:16px;color:var(--teal);">$1</h3>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/
-- /g, '<br>• ')
-      .replace(/
-(\d+)\. /g, '<br>$1. ')
-      .replace(/
-/g, '<br>');
-    answer.innerHTML = formatted;
+    let txt = data.answer || '';
+    txt = txt.split('\n').map(function(line) {
+      if (line.indexOf('## ') === 0) return '<h4 style="margin:12px 0 6px;font-size:14px;font-weight:700;color:var(--text);">' + line.slice(3) + '</h4>';
+      if (line.indexOf('# ') === 0) return '<h3 style="margin:12px 0 8px;font-size:16px;font-weight:700;color:var(--teal);">' + line.slice(2) + '</h3>';
+      if (line.indexOf('- ') === 0) return '&bull; ' + line.slice(2) + '<br>';
+      if (line.match(/^[0-9]+\. /)) return line + '<br>';
+      return line + '<br>';
+    }).join('');
+    // Bold text
+    txt = txt.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    answer.innerHTML = txt;
     result.style.display = 'block';
   } catch (e) {
     answer.innerHTML = 'Sorry — something went wrong. Please try again or email <a href="mailto:support@clpeasy.com" style="color:var(--teal)">support@clpeasy.com</a>';
