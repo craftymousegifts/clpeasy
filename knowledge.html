@@ -801,20 +801,29 @@ async function askCLP() {
   btn.disabled = true;
   btn.textContent = 'Searching...';
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/clp-search', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        system: 'You are a CLP compliance expert for CLPeasy, a tool for UK product makers. Answer CLP labelling law questions clearly in plain English. Be practical and specific. Reference the relevant regulation where possible. Keep answers under 300 words. Always end with: "⚠️ This is general guidance only — not legal advice."',
-        messages: [{ role: 'user', content: 'CLP question from a product maker: ' + q }]
-      })
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw'
+      },
+      body: JSON.stringify({ question: q })
     });
     const data = await res.json();
-    const text = data.content.filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
-    answer.innerHTML = text.replace(/\n/g, '<br>');
+    if (data.error) throw new Error(data.error);
+    let formatted = data.answer
+      .replace(/## (.*?)
+/g, '<h4 style="margin:12px 0 6px;font-size:14px;color:var(--text);">$1</h4>')
+      .replace(/# (.*?)
+/g, '<h3 style="margin:12px 0 8px;font-size:16px;color:var(--teal);">$1</h3>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/
+- /g, '<br>• ')
+      .replace(/
+(\d+)\. /g, '<br>$1. ')
+      .replace(/
+/g, '<br>');
+    answer.innerHTML = formatted;
     result.style.display = 'block';
   } catch (e) {
     answer.innerHTML = 'Sorry — something went wrong. Please try again or email <a href="mailto:support@clpeasy.com" style="color:var(--teal)">support@clpeasy.com</a>';
