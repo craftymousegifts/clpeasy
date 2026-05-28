@@ -64,9 +64,10 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 .sli-name{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .sli-meta{font-size:11px;color:var(--muted);}
 .sli-qty{display:flex;align-items:center;gap:6px;flex-shrink:0;}
-.qty-btn{width:26px;height:26px;border-radius:6px;border:1.5px solid var(--border);background:white;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text);transition:all .2s;font-family:'DM Sans',sans-serif;line-height:1;}
+.qty-btn{width:28px;height:32px;border-radius:6px;border:1.5px solid var(--border);background:white;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text);transition:all .2s;font-family:'DM Sans',sans-serif;line-height:1;flex-shrink:0;}
 .qty-btn:hover{border-color:var(--teal);color:var(--teal);}
-.qty-num{width:28px;text-align:center;font-size:13px;font-weight:700;color:var(--text);}
+.qty-input{width:40px;height:32px;text-align:center;font-size:13px;font-weight:700;color:var(--text);border:1.5px solid var(--border);border-radius:6px;font-family:'DM Sans',sans-serif;outline:none;-webkit-appearance:none;appearance:none;padding:0;}
+.qty-input:focus{border-color:var(--teal);}
 .add-btn{background:var(--teal);color:white;border:none;padding:6px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:background .2s;}
 .add-btn:hover{background:var(--teal-dark);}
 .add-btn.added{background:#059669;}
@@ -153,16 +154,16 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 
     <div class="template-grid" id="template-grid">
       <div class="tpl-card selected" data-tpl="l6008" onclick="selectTemplate('l6008',this)">
-        <div class="tpl-name">Avery L6008</div>
-        <div class="tpl-detail">35mm circles · 28/sheet</div>
+        <div class="tpl-name">35mm circles</div>
+        <div class="tpl-detail">4 × 7 grid · 28/sheet</div>
       </div>
       <div class="tpl-card" data-tpl="l7157" onclick="selectTemplate('l7157',this)">
-        <div class="tpl-name">Avery L7157</div>
-        <div class="tpl-detail">40mm circles · 24/sheet</div>
+        <div class="tpl-name">40mm circles</div>
+        <div class="tpl-detail">4 × 6 grid · 24/sheet</div>
       </div>
       <div class="tpl-card" data-tpl="l7096" onclick="selectTemplate('l7096',this)">
-        <div class="tpl-name">Avery L7096</div>
-        <div class="tpl-detail">51mm circles · 12/sheet</div>
+        <div class="tpl-name">51mm circles</div>
+        <div class="tpl-detail">3 × 4 grid · 12/sheet</div>
       </div>
       <div class="tpl-card" data-tpl="custom" onclick="selectTemplate('custom',this)">
         <div class="tpl-name">Custom sheet</div>
@@ -206,7 +207,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 
     <div class="section-head">Sheet summary</div>
     <div class="sheet-summary">
-      <div class="sheet-summary-row"><span class="label">Template</span><span class="val" id="sum-tpl">Avery L6008</span></div>
+      <div class="sheet-summary-row"><span class="label">Template</span><span class="val" id="sum-tpl">35mm circles</span></div>
       <div class="sheet-summary-row"><span class="label">Slots on sheet</span><span class="val" id="sum-slots">28</span></div>
       <div class="sheet-summary-row"><span class="label">Labels added</span><span class="val" id="sum-added">0</span></div>
       <div class="sheet-summary-row"><span class="label">Slots remaining</span><span class="val" id="sum-remain">28</span></div>
@@ -300,13 +301,13 @@ function updateProGate(){
   }
 }
 
-// ── AVERY TEMPLATES (mm) ──────────────────────────────────────
-// marginT, marginL, labelMM (diameter), cols, rows, gapH, gapV
+// ── SHEET TEMPLATES (mm) ─────────────────────────────────────
+// Generic label sheet sizes — no brand references
 const TEMPLATES={
-  l6008:{name:'Avery L6008',labelMM:35,cols:4,rows:7,marginT:13,marginL:8,gapH:3,gapV:3,shape:'circle'},
-  l7157:{name:'Avery L7157',labelMM:40,cols:4,rows:6,marginT:13,marginL:8,gapH:3,gapV:3,shape:'circle'},
-  l7096:{name:'Avery L7096',labelMM:51,cols:3,rows:4,marginT:21,marginL:13,gapH:9,gapV:9,shape:'circle'},
-  custom:{name:'Custom',labelMM:50,cols:3,rows:5,marginT:10,marginL:10,gapH:5,gapV:5,shape:'circle'},
+  l6008:{name:'35mm circles · 28/sheet',labelMM:35,cols:4,rows:7,marginT:13,marginL:8,gapH:3,gapV:3,shape:'circle'},
+  l7157:{name:'40mm circles · 24/sheet',labelMM:40,cols:4,rows:6,marginT:13,marginL:8,gapH:3,gapV:3,shape:'circle'},
+  l7096:{name:'51mm circles · 12/sheet',labelMM:51,cols:3,rows:4,marginT:21,marginL:13,gapH:9,gapV:9,shape:'circle'},
+  custom:{name:'Custom sheet',labelMM:50,cols:3,rows:5,marginT:10,marginL:10,gapH:5,gapV:5,shape:'circle'},
 };
 const A4_W=210,A4_H=297; // mm
 
@@ -337,7 +338,8 @@ function renderSavedList(){
       <div class="sli-qty">
         ${qty>0?`
           <button class="qty-btn" onclick="changeQty(${i},-1)">−</button>
-          <span class="qty-num">${qty}</span>
+          <input class="qty-input" type="number" min="0" max="99" value="${qty}" id="qty-input-${i}"
+            onchange="setQty(${i},this.value)" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
           <button class="qty-btn" onclick="changeQty(${i},1)">+</button>
         `:`<button class="add-btn" id="addbtn-${i}" onclick="addToSheet(${i})">Add</button>`}
       </div>
@@ -365,6 +367,19 @@ function changeQty(idx,delta){
   if(pos<0)return;
   sheetItems[pos].qty=Math.max(0,sheetItems[pos].qty+delta);
   if(sheetItems[pos].qty===0)sheetItems.splice(pos,1);
+  renderSavedList();
+  rebuildSheet();
+}
+
+function setQty(idx,val){
+  const n=Math.max(0,Math.min(99,parseInt(val)||0));
+  const pos=sheetItems.findIndex(s=>s.id===idx);
+  if(n===0){
+    if(pos>=0)sheetItems.splice(pos,1);
+  } else {
+    if(pos>=0){sheetItems[pos].qty=n;}
+    else{const arr=getSaved();const e=arr[idx];if(e)sheetItems.push({id:idx,labelData:e,qty:n});}
+  }
   renderSavedList();
   rebuildSheet();
 }
