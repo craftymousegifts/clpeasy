@@ -337,6 +337,52 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;color:var(--muted);}
 .summary-grid strong{color:var(--text);display:block;font-size:12px;}
 .watermark-note{background:#F3F4F6;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--muted);margin-bottom:16px;text-align:center;}
+
+/* ── LABEL LIBRARY FOLDERS ───────────────────────────────────── */
+.lib-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.lib-title{font-size:15px;font-weight:700;display:flex;align-items:center;gap:6px;}
+.lib-manage-btn{font-size:11px;color:var(--teal);background:var(--teal-light);border:1px solid rgba(13,148,136,0.2);padding:4px 10px;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;transition:all .2s;white-space:nowrap;}
+.lib-manage-btn:hover{background:#A7F3D0;}
+.folder-toggle-panel{background:white;border:1.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px;display:none;}
+.folder-toggle-panel.open{display:block;}
+.folder-toggle-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;}
+.folder-toggle-list{display:flex;flex-direction:column;gap:7px;}
+.folder-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.folder-toggle-label{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px;}
+.folder-toggle-label .folder-icon{font-size:14px;}
+.folder-count-badge{font-size:10px;color:var(--muted);background:var(--off);border:1px solid var(--border);padding:2px 7px;border-radius:10px;}
+.folder-toggle-switch{position:relative;width:34px;height:19px;flex-shrink:0;}
+.folder-toggle-switch input{opacity:0;width:0;height:0;position:absolute;}
+.folder-toggle-switch .slider{position:absolute;cursor:pointer;inset:0;background:#D1D5DB;border-radius:19px;transition:.2s;}
+.folder-toggle-switch .slider:before{content:'';position:absolute;height:13px;width:13px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.2s;}
+.folder-toggle-switch input:checked+.slider{background:var(--teal);}
+.folder-toggle-switch input:checked+.slider:before{transform:translateX(15px);}
+.folder-toggle-switch input:disabled+.slider{opacity:0.5;cursor:not-allowed;}
+.folder-delete-btn{font-size:10px;color:#EF4444;background:none;border:1px solid #FECACA;padding:3px 8px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;flex-shrink:0;}
+.folder-delete-btn:hover{background:#FEF2F2;}
+.folder-group{margin-bottom:10px;}
+.folder-group-header{display:flex;align-items:center;gap:7px;padding:7px 10px;background:var(--off);border:1.5px solid var(--border);border-radius:8px;cursor:pointer;margin-bottom:4px;transition:background .15s;user-select:none;}
+.folder-group-header:hover{background:#EEF0F3;}
+.folder-group-icon{font-size:14px;}
+.folder-group-name{font-size:13px;font-weight:700;color:var(--text);flex:1;}
+.folder-group-count{font-size:11px;color:var(--muted);}
+.folder-group-chevron{font-size:10px;color:var(--muted);transition:transform .2s;}
+.folder-group-chevron.open{transform:rotate(90deg);}
+.folder-group-items{display:none;padding-left:4px;}
+.folder-group-items.open{display:block;}
+/* Folder delete modal */
+.fdel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;}
+.fdel-overlay.show{opacity:1;pointer-events:all;}
+.fdel-box{background:white;border-radius:16px;padding:28px;width:100%;max-width:380px;box-shadow:0 16px 48px rgba(0,0,0,0.2);}
+.fdel-title{font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:8px;color:var(--text);}
+.fdel-sub{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px;}
+.fdel-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
+.fdel-opt{border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all .2s;font-size:13px;line-height:1.5;text-align:left;background:white;font-family:'DM Sans',sans-serif;}
+.fdel-opt:hover{border-color:var(--teal);}
+.fdel-opt strong{display:block;font-weight:700;margin-bottom:2px;}
+.fdel-opt.danger:hover{border-color:#EF4444;background:#FEF2F2;}
+.fdel-cancel{width:100%;background:transparent;border:1px solid var(--border);color:var(--muted);padding:9px;border-radius:8px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.fdel-cancel:hover{border-color:var(--muted);}
 </style>
 </head>
 <body>
@@ -764,7 +810,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
   <!-- SAVED LABELS LIBRARY -->
   <div class="saved-section" id="saved-section" style="display:none;">
-    <h3>Your saved labels <span class="saved-count" id="saved-count"></span></h3>
+    <div class="lib-header">
+      <div class="lib-title">📁 Your label library <span class="saved-count" id="saved-count"></span></div>
+      <button class="lib-manage-btn" onclick="toggleFolderPanel()">⚙ Folders</button>
+    </div>
+    <!-- Folder toggle panel -->
+    <div class="folder-toggle-panel" id="folder-toggle-panel">
+      <div class="folder-toggle-title">Activate folders to organise your labels</div>
+      <div class="folder-toggle-list" id="folder-toggle-list"></div>
+    </div>
     <div id="saved-list"></div>
   </div>
 
@@ -1004,7 +1058,8 @@ function printToPDF(){
     <style>*{margin:0;padding:0;}body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:white;}
     img{width:${mmW}mm;height:${mmH}mm;}
     @media print{@page{size:${mmW}mm ${mmH}mm;margin:5mm;}}</style></head>
-    <body><img src="${pngDataUri}"/></body></html>`);
+    <body><img src="${pngDataUri}"/>
+</body></html>`);
     win.document.close();
     setTimeout(()=>win.print(),500);
   };
@@ -1334,10 +1389,163 @@ function selectSupplier(el,key){
 function getSaved(){try{return JSON.parse(localStorage.getItem('clpeasy_labels')||'[]');}catch(e){return[];}}
 function persistSaved(arr){localStorage.setItem('clpeasy_labels',JSON.stringify(arr));}
 
+// ── FOLDER DEFINITIONS ─────────────────────────────────────────
+// Map every product type to a canonical folder key
+const PRODUCT_FOLDER_MAP={
+  'Scented Candle':'candles','Soy Candle':'candles','Votive Candle':'candles',
+  'Tea Light Candle':'candles','Pillar Candle':'candles','Advent Calendar Candle':'candles',
+  'Wax Melt':'wax_melts','Wax Tart':'wax_melts','Snap Bar':'wax_melts',
+  'Wax Melt Clamshell':'wax_melts','Advent Calendar Wax Melt':'wax_melts',
+  'Reed Diffuser':'diffusers','Electric Diffuser':'diffusers',
+  'Car Diffuser':'diffusers','Plugin Diffuser':'diffusers',
+  'Room Spray':'sprays','Car Air Freshener Spray':'sprays','Linen Spray':'sprays',
+  'Wax Melt Bouquet':'other','Scented Sachet':'other','Potpourri':'other',
+};
+
+const FOLDER_DEFS=[
+  {key:'candles',   label:'Candles',       icon:'🕯️'},
+  {key:'wax_melts', label:'Wax Melts',     icon:'🌸'},
+  {key:'diffusers', label:'Diffusers',     icon:'🌿'},
+  {key:'sprays',    label:'Room Sprays',   icon:'💨'},
+  {key:'other',     label:'Other',         icon:'✨'},
+];
+
+function getFolders(){try{return JSON.parse(localStorage.getItem('clpeasy_folders')||'{}');}catch(e){return{};}}
+function persistFolders(obj){localStorage.setItem('clpeasy_folders',JSON.stringify(obj));}
+
+function isFolderActive(key){
+  const f=getFolders();
+  return !!(f[key]&&f[key].active);
+}
+
+function getLabelFolder(productType){
+  return PRODUCT_FOLDER_MAP[productType]||'other';
+}
+
+// Activate or deactivate a folder (cannot deactivate if has labels)
+function toggleFolder(key,active){
+  const f=getFolders();
+  if(!active){
+    // Count labels in this folder
+    const arr=getSaved();
+    const count=arr.filter(e=>getLabelFolder(e.productType)===key).length;
+    if(count>0){
+      alert(`This folder contains ${count} label${count>1?'s':''}. Remove all labels from it before deactivating.`);
+      // Recheck the toggle
+      const cb=document.getElementById('ftoggle-'+key);
+      if(cb)cb.checked=true;
+      return;
+    }
+  }
+  if(!f[key])f[key]={};
+  f[key].active=active;
+  persistFolders(f);
+  renderFolderToggles();
+  renderSaved();
+}
+
+function toggleFolderPanel(){
+  const panel=document.getElementById('folder-toggle-panel');
+  panel.classList.toggle('open');
+  renderFolderToggles();
+}
+
+function renderFolderToggles(){
+  const list=document.getElementById('folder-toggle-list');
+  if(!list)return;
+  const arr=getSaved();
+  list.innerHTML=FOLDER_DEFS.map(fd=>{
+    const active=isFolderActive(fd.key);
+    const count=arr.filter(e=>getLabelFolder(e.productType)===fd.key).length;
+    const hasLabels=count>0;
+    return `<div class="folder-toggle-row">
+      <span class="folder-toggle-label">
+        <span class="folder-icon">${fd.icon}</span>${fd.label}
+        ${hasLabels?`<span class="folder-count-badge">${count}</span>`:''}
+      </span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        ${active?`<button class="folder-delete-btn" onclick="confirmDeleteFolder('${fd.key}')">Delete</button>`:''}
+        <label class="folder-toggle-switch">
+          <input type="checkbox" id="ftoggle-${fd.key}" ${active?'checked':''} ${hasLabels&&active?'':''}
+            onchange="toggleFolder('${fd.key}',this.checked)">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── FOLDER DELETE ──────────────────────────────────────────────
+let _fdelKey=null;
+function confirmDeleteFolder(key){
+  const fd=FOLDER_DEFS.find(f=>f.key===key);
+  const arr=getSaved();
+  const count=arr.filter(e=>getLabelFolder(e.productType)===key).length;
+  _fdelKey=key;
+  document.getElementById('fdel-title').textContent=`Delete "${fd.label}" folder?`;
+  const sub=count>0
+    ?`This folder contains <strong>${count} label${count>1?'s':''}</strong>. What would you like to do with them?`
+    :`The folder is empty. Are you sure you want to delete it?`;
+  document.getElementById('fdel-sub').innerHTML=sub;
+  const opts=document.getElementById('fdel-opts');
+  if(count>0){
+    opts.innerHTML=`
+      <button class="fdel-opt" onclick="executeFolderDelete('move')">
+        <strong>Move labels to Uncategorised</strong>
+        Keep all ${count} label${count>1?'s':''} — just remove the folder organisation.
+      </button>
+      <button class="fdel-opt danger" onclick="executeFolderDelete('delete')">
+        <strong>Delete folder and all labels inside</strong>
+        This permanently removes all ${count} label${count>1?'s':''} in this folder.
+      </button>`;
+  }else{
+    opts.innerHTML=`<button class="fdel-opt" onclick="executeFolderDelete('empty')"><strong>Yes, delete this folder</strong></button>`;
+  }
+  document.getElementById('fdelModal').classList.add('show');
+}
+
+function closeFdelModal(){document.getElementById('fdelModal').classList.remove('show');_fdelKey=null;}
+
+function executeFolderDelete(action){
+  if(!_fdelKey)return;
+  const key=_fdelKey;
+  let arr=getSaved();
+  if(action==='move'){
+    // Labels stay but folder becomes inactive — they fall into uncategorised view
+  }else if(action==='delete'){
+    arr=arr.filter(e=>getLabelFolder(e.productType)!==key);
+    persistSaved(arr);
+  }
+  // Deactivate folder
+  const f=getFolders();
+  if(f[key])f[key].active=false;
+  persistFolders(f);
+  closeFdelModal();
+  renderFolderToggles();
+  renderSaved();
+}
+
+// Overlay click-to-close — use event delegation on document
+document.addEventListener('click',function(e){
+  if(e.target&&e.target.id==='fdelModal')closeFdelModal();
+});
+
+// ── SAVE / LOAD / DELETE ───────────────────────────────────────
 function saveLabel(){
   readForm();
   if(!S.scentName){alert('Please enter a scent name before saving.');return;}
-  const entry={scentName:S.scentName,productType:S.productType,shape:S.shape,size:S.size,signal:S.signal,hStatements:S.hStatements,sensitisers:[...S.sensitisers],bizName:S.bizName,bizAddress:S.bizAddress,bizPhone:S.bizPhone,bizWebsite:S.bizWebsite,netWeight:S.netWeight,burnTime:S.burnTime,batchNum:S.batchNum,savedAt:new Date().toLocaleDateString('en-GB')};
+  const entry={scentName:S.scentName,productType:S.productType,shape:S.shape,size:S.size,signal:S.signal,
+    hStatements:S.hStatements,sensitisers:[...S.sensitisers],bizName:S.bizName,bizAddress:S.bizAddress,
+    bizPhone:S.bizPhone,bizWebsite:S.bizWebsite,netWeight:S.netWeight,burnTime:S.burnTime,batchNum:S.batchNum,
+    bgColour:(document.getElementById('label-bg-colour')?.value)||'#ffffff',
+    pStatements:S.pStatements||'',textColour:S.textColour||'dark',showBorder:S.showBorder!==false,
+    savedAt:new Date().toLocaleDateString('en-GB')};
+  // Auto-activate folder for this product type
+  const folderKey=getLabelFolder(entry.productType);
+  const f=getFolders();
+  if(!f[folderKey])f[folderKey]={};
+  f[folderKey].active=true;
+  persistFolders(f);
   const arr=getSaved();
   const idx=arr.findIndex(e=>e.scentName===entry.scentName&&e.productType===entry.productType);
   if(idx>=0)arr[idx]=entry;else arr.push(entry);
@@ -1350,11 +1558,19 @@ function saveLabel(){
 
 function loadLabel(i){
   const arr=getSaved();const e=arr[i];if(!e)return;
-  S.scentName=e.scentName;S.productType=e.productType;S.shape=e.shape;S.size=e.size;S.signal=e.signal||'';S.hStatements=e.hStatements||'';S.sensitisers=e.sensitisers||[];S.bizName=e.bizName||'';S.bizAddress=e.bizAddress||'';S.bizPhone=e.bizPhone||'';S.bizWebsite=e.bizWebsite||'';S.netWeight=e.netWeight||'';S.burnTime=e.burnTime||'';S.batchNum=e.batchNum||'';
-  // Restore form fields
+  S.scentName=e.scentName;S.productType=e.productType;S.shape=e.shape;S.size=e.size;
+  S.signal=e.signal||'';S.hStatements=e.hStatements||'';S.sensitisers=e.sensitisers||[];
+  S.bizName=e.bizName||'';S.bizAddress=e.bizAddress||'';S.bizPhone=e.bizPhone||'';
+  S.bizWebsite=e.bizWebsite||'';S.netWeight=e.netWeight||'';S.burnTime=e.burnTime||'';S.batchNum=e.batchNum||'';
+  if(e.pStatements!==undefined)S.pStatements=e.pStatements;
+  if(e.textColour)S.textColour=e.textColour;
+  if(e.showBorder!==undefined)S.showBorder=e.showBorder;
   const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};
-  set('scent-name',e.scentName);set('product-type',e.productType);set('h-statements',e.hStatements||'');set('biz-name',e.bizName||'');set('biz-address',e.bizAddress||'');set('biz-phone',e.bizPhone||'');set('biz-website',e.bizWebsite||'');set('net-weight',e.netWeight||'');set('burn-time',e.burnTime||'');set('batch-num',e.batchNum||'');
-  // Restore shape/size
+  set('scent-name',e.scentName);set('product-type',e.productType);set('h-statements',e.hStatements||'');
+  set('biz-name',e.bizName||'');set('biz-address',e.bizAddress||'');set('biz-phone',e.bizPhone||'');
+  set('biz-website',e.bizWebsite||'');set('net-weight',e.netWeight||'');set('burn-time',e.burnTime||'');
+  set('batch-num',e.batchNum||'');
+  if(e.bgColour){const bc=document.getElementById('label-bg-colour');const bh=document.getElementById('label-bg-hex');if(bc)bc.value=e.bgColour;if(bh)bh.value=e.bgColour;}
   selectShape(e.shape||'circle');selectSize(e.size||35);
   if(e.signal)selectSignal(e.signal);
   renderTags();updateLabel();
@@ -1366,12 +1582,12 @@ function deleteLabel(i){
   const arr=getSaved();arr.splice(i,1);persistSaved(arr);renderSaved();
 }
 
+// ── RENDER SAVED ───────────────────────────────────────────────
 function renderSaved(){
   const arr=getSaved();
   const sec=document.getElementById('saved-section');
   const list=document.getElementById('saved-list');
   const count=document.getElementById('saved-count');
-  // Show/hide Print Sheet Composer links based on whether user has saved labels
   const hasSaved=arr.length>0;
   const psLink=document.getElementById('print-sheet-link');
   const psLinkPreview=document.getElementById('print-sheet-link-preview');
@@ -1380,17 +1596,83 @@ function renderSaved(){
   if(!arr.length){sec.style.display='none';return;}
   sec.style.display='';
   count.textContent='('+arr.length+')';
-  list.innerHTML=arr.map((e,i)=>`
-    <div class="saved-item">
-      <div class="saved-item-info">
-        <div class="saved-item-name">${e.scentName}</div>
-        <div class="saved-item-meta">${e.productType} · ${e.size}mm ${e.shape} · ${e.savedAt||''}</div>
+
+  // Check which folders are active
+  const activeFolders=FOLDER_DEFS.filter(fd=>isFolderActive(fd.key));
+
+  if(activeFolders.length===0){
+    // No folders active — flat list (original behaviour)
+    list.innerHTML=arr.map((e,i)=>savedItemHTML(e,i)).join('');
+    return;
+  }
+
+  // Folder view
+  let html='';
+  // Active folders first
+  activeFolders.forEach(fd=>{
+    const items=arr.map((e,i)=>({e,i})).filter(({e})=>getLabelFolder(e.productType)===fd.key);
+    if(!items.length)return;
+    const openState=getFolderOpenState(fd.key);
+    html+=`<div class="folder-group">
+      <div class="folder-group-header" onclick="toggleFolderGroup('${fd.key}')">
+        <span class="folder-group-icon">${fd.icon}</span>
+        <span class="folder-group-name">${fd.label}</span>
+        <span class="folder-group-count">${items.length}</span>
+        <span class="folder-group-chevron ${openState?'open':''}">▶</span>
       </div>
-      <div class="saved-item-btns">
-        <button class="sb sb-teal" onclick="loadLabel(${i})">Load</button>
-        <button class="sb sb-red" onclick="deleteLabel(${i})">Delete</button>
+      <div class="folder-group-items ${openState?'open':''}" id="fgroup-${fd.key}">
+        ${items.map(({e,i})=>savedItemHTML(e,i)).join('')}
       </div>
-    </div>`).join('');
+    </div>`;
+  });
+
+  // Uncategorised — labels whose folder is NOT active
+  const uncatItems=arr.map((e,i)=>({e,i})).filter(({e})=>!isFolderActive(getLabelFolder(e.productType)));
+  if(uncatItems.length){
+    const openState=getFolderOpenState('_uncat');
+    html+=`<div class="folder-group">
+      <div class="folder-group-header" onclick="toggleFolderGroup('_uncat')">
+        <span class="folder-group-icon">📋</span>
+        <span class="folder-group-name">Uncategorised</span>
+        <span class="folder-group-count">${uncatItems.length}</span>
+        <span class="folder-group-chevron ${openState?'open':''}">▶</span>
+      </div>
+      <div class="folder-group-items ${openState?'open':''}" id="fgroup-_uncat">
+        ${uncatItems.map(({e,i})=>savedItemHTML(e,i)).join('')}
+      </div>
+    </div>`;
+  }
+
+  list.innerHTML=html||'<div style="font-size:13px;color:var(--muted);padding:8px 0;">No labels yet.</div>';
+}
+
+// Track open/closed state of folder groups in session
+const _folderOpenStates={};
+function getFolderOpenState(key){return _folderOpenStates[key]!==false;} // default open
+function toggleFolderGroup(key){
+  _folderOpenStates[key]=!getFolderOpenState(key);
+  const items=document.getElementById('fgroup-'+key);
+  const headers=document.querySelectorAll('.folder-group-header');
+  headers.forEach(h=>{
+    if(h.getAttribute('onclick')===`toggleFolderGroup('${key}')`){
+      const chev=h.querySelector('.folder-group-chevron');
+      if(chev)chev.classList.toggle('open',_folderOpenStates[key]!==false);
+    }
+  });
+  if(items)items.classList.toggle('open',_folderOpenStates[key]!==false);
+}
+
+function savedItemHTML(e,i){
+  return `<div class="saved-item">
+    <div class="saved-item-info">
+      <div class="saved-item-name">${e.scentName}</div>
+      <div class="saved-item-meta">${e.productType} · ${e.size}mm ${e.shape} · ${e.savedAt||''}</div>
+    </div>
+    <div class="saved-item-btns">
+      <button class="sb sb-teal" onclick="loadLabel(${i})">Load</button>
+      <button class="sb sb-red" onclick="deleteLabel(${i})">Delete</button>
+    </div>
+  </div>`;
 }
 
 function init(){
@@ -2387,5 +2669,15 @@ function wizStopMic(){
 // ── BOOT ──────────────────────────────────────────────────────
 init();
 </script>
+
+<!-- ── FOLDER DELETE MODAL ───────────────────────────────────── -->
+<div class="fdel-overlay" id="fdelModal">
+  <div class="fdel-box">
+    <div class="fdel-title" id="fdel-title">Delete folder?</div>
+    <div class="fdel-sub" id="fdel-sub"></div>
+    <div class="fdel-opts" id="fdel-opts"></div>
+    <button class="fdel-cancel" onclick="closeFdelModal()">Cancel</button>
+  </div>
+</div>
 </body>
 </html>
