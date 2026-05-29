@@ -6,6 +6,7 @@
 <title>CLPeasy — Print Sheet Composer</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 :root{
   --white:#fff;--off:#F7F8FA;--border:#E8EAED;--text:#111318;--muted:#6B7280;
@@ -128,6 +129,26 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
   .left-panel{order:2;}
   .right-panel{order:1;}
 }
+
+/* ── CRICUT MODAL ─────────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-overlay.show{opacity:1;pointer-events:all;}
+.modal-box{background:#1A1F2E;border:1px solid rgba(255,255,255,0.12);border-radius:18px;padding:32px;width:100%;max-width:440px;box-shadow:0 24px 64px rgba(0,0,0,0.5);transform:translateY(12px);transition:transform .2s;}
+.modal-overlay.show .modal-box{transform:translateY(0);}
+.modal-title{font-family:'DM Serif Display',serif;font-size:22px;color:white;margin-bottom:6px;}
+.modal-sub{font-size:13px;color:rgba(255,255,255,0.45);margin-bottom:24px;line-height:1.5;}
+.modal-options{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+.modal-opt{background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px 18px;cursor:pointer;transition:all .2s;text-align:left;}
+.modal-opt:hover{border-color:#0D9488;background:rgba(13,148,136,0.1);}
+.modal-opt-title{font-size:15px;font-weight:700;color:white;margin-bottom:3px;}
+.modal-opt-desc{font-size:12px;color:rgba(255,255,255,0.45);line-height:1.5;}
+.modal-opt-icon{font-size:22px;margin-bottom:8px;display:block;}
+.modal-cancel{width:100%;background:transparent;border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.4);padding:10px;border-radius:10px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.modal-cancel:hover{border-color:rgba(255,255,255,0.3);color:rgba(255,255,255,0.7);}
+.modal-progress{display:none;margin-bottom:16px;}
+.modal-progress-bar{height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;margin-bottom:8px;}
+.modal-progress-fill{height:100%;background:#0D9488;border-radius:2px;transition:width .3s;}
+.modal-progress-text{font-size:12px;color:rgba(255,255,255,0.45);text-align:center;}
 </style>
 </head>
 <body>
@@ -221,7 +242,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
     </div>
 
     <button class="btn-primary" id="btn-pdf" onclick="downloadPDF()">🖨 Print / Save as PDF</button>
-    <button class="btn-secondary" id="btn-png-all" onclick="downloadAllPNGs()">⬇ Download individual PNGs (for Cricut)</button>
+    <button class="btn-secondary" id="btn-png-all" onclick="openCricutModal()">✂️ Download for Cricut</button>
 
     <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 12px;font-size:12px;color:#166534;line-height:1.6;margin-top:4px;">
       <strong>🖨 Home printing / print companies:</strong> Use the PDF sheet — print on A4 sticker paper.<br>
@@ -520,7 +541,7 @@ function buildLabelSVGFromData(e,sizePx){
   const r=pw/2-1.5;
   function chordW(y,inset=0.10){if(!isCircle)return pw*(1-inset*2);const dy=Math.abs(y-cy);if(dy>=r)return 0;return 2*Math.sqrt(Math.max(0,r*r-dy*dy))*(1-inset);}
 
-  const bgCol='#ffffff';
+  const bgCol=(e.bgColour&&e.bgColour!=='')?e.bgColour:'#ffffff';
   const txtCol='#111111';
   const mutedCol='#555555';
 
@@ -685,66 +706,166 @@ function downloadPDF(){
   ${cellsHTML}
 </svg>`;
 
-  // Open in print window — user saves as PDF from browser print dialog
-  const slug=sheetItems.map(s=>s.labelData.scentName||'label').join('-').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').substring(0,40);
-  const encoded=encodeURIComponent(sheetSVG);
-  const win=window.open('','_blank');
-  if(!win){alert('Please allow pop-ups for clpeasy.com to download your PDF.');return;}
-  win.document.write(`<!DOCTYPE html><html><head><title>CLPeasy Print Sheet — ${xe(t.name)}</title>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{background:white;display:flex;align-items:center;justify-content:center;min-height:100vh;}
-    img{display:block;}
-    @media print{
-      *{margin:0;padding:0;}
-      body{display:block;}
-      img{width:210mm;height:297mm;page-break-after:avoid;}
+  // Convert SVG→canvas PNG then open print window — prevents 2-page browser split
+  const svgImg=new Image();
+  svgImg.onload=function(){
+    const cvs=document.createElement('canvas');
+    cvs.width=shWpx;cvs.height=shHpx;
+    const ctx=cvs.getContext('2d');
+    ctx.fillStyle='white';ctx.fillRect(0,0,shWpx,shHpx);
+    ctx.drawImage(svgImg,0,0,shWpx,shHpx);
+    const pngDataUri=cvs.toDataURL('image/png');
+    const win=window.open('','_blank');
+    if(!win){alert('Please allow pop-ups for clpeasy.com to download your PDF.');return;}
+    win.document.write(`<!DOCTYPE html><html><head><title>CLPeasy Print Sheet</title>
+    <style>
+      *{margin:0;padding:0;box-sizing:border-box;}
+      html,body{width:210mm;height:297mm;overflow:hidden;background:white;}
+      img{display:block;width:210mm;height:297mm;}
       @page{size:A4 portrait;margin:0;}
-    }
-    .print-btn{position:fixed;bottom:20px;right:20px;background:#0D9488;color:white;border:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:sans-serif;box-shadow:0 4px 16px rgba(0,0,0,0.2);}
-    .print-btn:hover{background:#0F766E;}
-    @media print{.print-btn{display:none;}}
-  </style></head>
-  <body>
-    <img src="data:image/svg+xml;charset=utf-8,${encoded}" width="${shWpx}" height="${shHpx}" style="width:210mm;height:297mm;"/>
-    <button class="print-btn" onclick="window.print()">🖨 Print / Save as PDF</button>
-  </body></html>`);
-  win.document.close();
+      @media print{
+        html,body{width:210mm;height:297mm;overflow:hidden;}
+        img{width:210mm;height:297mm;page-break-after:avoid;page-break-inside:avoid;}
+        .print-btn{display:none;}
+      }
+      .print-btn{position:fixed;bottom:20px;right:20px;background:#0D9488;color:white;border:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:sans-serif;box-shadow:0 4px 16px rgba(0,0,0,0.2);}
+      .print-btn:hover{background:#0F766E;}
+    </style></head>
+    <body>
+      <img src="${pngDataUri}"/>
+      <button class="print-btn" onclick="window.print()">🖨 Print / Save as PDF</button>
+    
+<!-- ── CRICUT DOWNLOAD MODAL ─────────────────────────────────── -->
+<div class="modal-overlay" id="cricutModal">
+  <div class="modal-box">
+    <div class="modal-title">✂️ Download for Cricut</div>
+    <div class="modal-sub" id="modal-sub">Choose how to save your <span id="modal-count">0</span> label PNG<span id="modal-plural">s</span>.</div>
+    <div class="modal-progress" id="modal-progress">
+      <div class="modal-progress-bar"><div class="modal-progress-fill" id="modal-progress-fill" style="width:0%"></div></div>
+      <div class="modal-progress-text" id="modal-progress-text">Preparing...</div>
+    </div>
+    <div class="modal-options" id="modal-options">
+      <div class="modal-opt" onclick="cricutDownloadZip()">
+        <span class="modal-opt-icon">📦</span>
+        <div class="modal-opt-title">Download as ZIP</div>
+        <div class="modal-opt-desc">All PNGs in one ZIP file — extract and upload each to Cricut Design Space. Cleanest option.</div>
+      </div>
+      <div class="modal-opt" onclick="cricutDownloadSequential()">
+        <span class="modal-opt-icon">⬇️</span>
+        <div class="modal-opt-title">Download one by one</div>
+        <div class="modal-opt-desc">Each PNG saves separately with a short delay so your browser doesn't block them.</div>
+      </div>
+    </div>
+    <button class="modal-cancel" onclick="closeCricutModal()">Cancel</button>
+  </div>
+</div>
+
+</body></html>`);
+    win.document.close();
+  };
+  svgImg.onerror=function(){alert('Could not render sheet. Please try again.');};
+  svgImg.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(sheetSVG);
 }
 
-// ── INDIVIDUAL PNGs DOWNLOAD (for Cricut) ────────────────────
-function downloadAllPNGs(){
-  const arr=getSaved();
-  if(!sheetItems.length){alert('Add at least one label before downloading.');return;}
-  const DPI=300,M2PX=DPI/25.4;
-
-  let count=0;
-  sheetItems.forEach(item=>{
+// ── CRICUT MODAL & DOWNLOAD LOGIC ────────────────────────────
+function buildLabelPNGBlob(item){
+  return new Promise(resolve=>{
     const e=item.labelData;
+    const DPI=300,M2PX=DPI/25.4;
     const mmSize=parseInt(e.size)||35;
     const pxSize=Math.round(mmSize*M2PX);
     const svgStr=buildLabelSVGFromData(e,pxSize);
-    const slug=(e.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-    const fname=`clpeasy-${slug}-${mmSize}mm.png`;
-
     const svgDataUri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgStr);
     const img=new Image();
     img.onload=function(){
       const cvs=document.createElement('canvas');cvs.width=pxSize;cvs.height=pxSize;
       const ctx=cvs.getContext('2d');
-      ctx.fillStyle='white';ctx.fillRect(0,0,pxSize,pxSize);
+      ctx.clearRect(0,0,pxSize,pxSize);
       ctx.drawImage(img,0,0,pxSize,pxSize);
-      const a=document.createElement('a');a.href=cvs.toDataURL('image/png');a.download=fname;
-      document.body.appendChild(a);a.click();
-      setTimeout(()=>{if(a.parentNode)a.parentNode.removeChild(a);},800);
+      cvs.toBlob(blob=>resolve({blob,fname:getFileName(e,mmSize)}),'image/png');
     };
     img.src=svgDataUri;
-    count++;
   });
-  if(count>0){
-    setTimeout(()=>alert(`✅ ${count} PNG file${count>1?'s':''} downloaded.\n\nTo use in Cricut: Upload each PNG → Print Then Cut → resize to your label size in Cricut Design Space.`),500);
-  }
 }
+
+function getFileName(e,mmSize){
+  const slug=(e.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  return `clpeasy-${slug}-${mmSize}mm.png`;
+}
+
+function openCricutModal(){
+  if(!sheetItems.length){alert('Add at least one label to the sheet first.');return;}
+  const count=sheetItems.length;
+  document.getElementById('modal-count').textContent=count;
+  document.getElementById('modal-plural').textContent=count===1?'':'s';
+  document.getElementById('modal-progress').style.display='none';
+  document.getElementById('modal-options').style.display='flex';
+  document.getElementById('modal-sub').style.display='';
+  document.getElementById('cricutModal').classList.add('show');
+}
+
+function closeCricutModal(){
+  document.getElementById('cricutModal').classList.remove('show');
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  const overlay=document.getElementById('cricutModal');
+  if(overlay) overlay.addEventListener('click',function(e){if(e.target===this)closeCricutModal();});
+});
+
+async function cricutDownloadZip(){
+  document.getElementById('modal-options').style.display='none';
+  document.getElementById('modal-sub').style.display='none';
+  const prog=document.getElementById('modal-progress');
+  const fill=document.getElementById('modal-progress-fill');
+  const txt=document.getElementById('modal-progress-text');
+  prog.style.display='block';
+  const zip=new JSZip();
+  const total=sheetItems.length;
+  for(let i=0;i<total;i++){
+    txt.textContent=`Preparing ${i+1} of ${total}...`;
+    fill.style.width=`${Math.round((i/total)*100)}%`;
+    const{blob,fname}=await buildLabelPNGBlob(sheetItems[i]);
+    let finalName=fname;let counter=1;
+    while(zip.files[finalName]){finalName=fname.replace('.png',`-${counter++}.png`);}
+    zip.file(finalName,blob);
+  }
+  txt.textContent='Creating ZIP file...';fill.style.width='95%';
+  const zipBlob=await zip.generateAsync({type:'blob'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(zipBlob);
+  a.download='clpeasy-cricut-labels.zip';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);if(a.parentNode)a.parentNode.removeChild(a);},1000);
+  fill.style.width='100%';
+  txt.textContent=`✅ ZIP downloaded — extract and upload each PNG to Cricut Design Space.`;
+  setTimeout(()=>closeCricutModal(),2500);
+}
+
+async function cricutDownloadSequential(){
+  document.getElementById('modal-options').style.display='none';
+  document.getElementById('modal-sub').style.display='none';
+  const prog=document.getElementById('modal-progress');
+  const fill=document.getElementById('modal-progress-fill');
+  const txt=document.getElementById('modal-progress-text');
+  prog.style.display='block';
+  const total=sheetItems.length;
+  for(let i=0;i<total;i++){
+    txt.textContent=`Downloading ${i+1} of ${total}...`;
+    fill.style.width=`${Math.round((i/total)*100)}%`;
+    const{blob,fname}=await buildLabelPNGBlob(sheetItems[i]);
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);a.download=fname;
+    document.body.appendChild(a);a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href);if(a.parentNode)a.parentNode.removeChild(a);},800);
+    await new Promise(r=>setTimeout(r,700));
+  }
+  fill.style.width='100%';
+  txt.textContent=`✅ ${total} PNG file${total===1?'':'s'} saved to your Downloads folder.`;
+  setTimeout(()=>closeCricutModal(),2500);
+}
+
+function downloadAllPNGs(){openCricutModal();}
 
 // ── INIT ──────────────────────────────────────────────────────
 function init(){

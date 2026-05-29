@@ -1201,7 +1201,7 @@ function downloadCricutPNGs(){
   img.onload=function(){
     const cvs=document.createElement('canvas');cvs.width=eW;cvs.height=eH;
     const ctx=cvs.getContext('2d');
-    ctx.fillStyle='white';ctx.fillRect(0,0,eW,eH);
+    ctx.clearRect(0,0,eW,eH);
     ctx.drawImage(img,0,0,eW,eH);
     const pngUri=cvs.toDataURL('image/png');
     const slug=(S.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
@@ -2029,13 +2029,13 @@ function downloadPNG(){
   const svgData=new XMLSerializer().serializeToString(clone);
   const slug=(S.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
   const fname=`clpeasy-${slug}-${S.size}mm.png`;
-  // Use data URI for iOS Safari compatibility
   const svgDataUri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgData);
   const img=new Image();
   img.onload=function(){
     const cvs=document.createElement('canvas');cvs.width=eW;cvs.height=eH;
     const ctx=cvs.getContext('2d');
-    ctx.fillStyle='white';ctx.fillRect(0,0,eW,eH);
+    // No white fill — keep transparent so only the label shape is visible
+    ctx.clearRect(0,0,eW,eH);
     ctx.drawImage(img,0,0,eW,eH);
     const pngDataUri=cvs.toDataURL('image/png');
     const a=document.createElement('a');
@@ -2045,7 +2045,6 @@ function downloadPNG(){
     setTimeout(()=>document.body.removeChild(a),1000);
   };
   img.onerror=function(){
-    // Fallback — open SVG in new tab
     window.open(svgDataUri,'_blank');
   };
   img.src=svgDataUri;
