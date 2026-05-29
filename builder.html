@@ -12,6 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root{--white:#fff;--off:#F7F8FA;--border:#E8EAED;--text:#111318;--muted:#6B7280;--teal:#0D9488;--teal-light:#CCFBF1;--teal-dark:#0F766E;--amber:#F59E0B;--amber-light:#FEF3C7;--red:#EF4444;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -590,6 +591,18 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="form-group"><label>Width (mm)</label><input type="number" id="custom-w" placeholder="e.g. 50" inputmode="numeric" min="10" max="200" oninput="onDimInput()"></div>
       <div class="form-group"><label>Height (mm) <span id="height-note">— matches width</span></label><input type="number" id="custom-h" placeholder="e.g. 40" inputmode="numeric" min="10" max="200" oninput="onDimInput()"></div>
     </div>
+    <div class="sdiv">Label language</div>
+    <div class="form-group" style="margin-bottom:12px;">
+      <select id="label-lang" onchange="updateLabel()" style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;outline:none;">
+        <option value="en">English only</option>
+        <option value="en_fr">English + French</option>
+        <option value="en_de">English + German</option>
+        <option value="en_fr_de">English + French + German</option>
+        <option value="fr">French only</option>
+        <option value="de">German only</option>
+      </select>
+      <div style="margin-top:5px;font-size:11px;color:var(--muted);">Signal word and hazard text appear in the selected language(s). Required when selling into EU markets.</div>
+    </div>
     <div class="sdiv">Label appearance</div>
     <div class="form-row">
       <div class="form-group">
@@ -613,6 +626,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <button id="border-on" onclick="setBorder(true)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--teal);background:var(--teal-light);color:var(--teal-dark);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Show border</button>
         <button id="border-off" onclick="setBorder(false)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Hide border</button>
       </div>
+    </div>
+    <div class="form-group">
+      <label>QR safety code <span style="font-size:10px;background:#ECFDF5;color:#166534;padding:1px 6px;border-radius:8px;margin-left:3px;">on label</span></label>
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button type="button" id="btn-qr-on" onclick="setQR(true)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Include QR</button>
+        <button type="button" id="btn-qr-off" onclick="setQR(false)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">No QR</button>
+      </div>
+      <div style="margin-top:4px;font-size:11px;color:var(--muted);">Adds a small QR code linking to your label's digital safety sheet at clpeasy.com/safety</div>
     </div>
     <div class="step-nav"><div></div><button class="btn-next" onclick="nextStep()">Next: Product details →</button></div>
   </div>
@@ -659,7 +680,26 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="form-group"><label>Net weight <span>(optional)</span></label><input type="text" id="net-weight" placeholder="e.g. 200g" oninput="updateLabel();saveProdDetails()"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>Fragrance load % <span>(optional)</span></label><input type="text" id="frag-load" placeholder="e.g. 10%" oninput="updateLabel();saveProdDetails()">
+      <div class="form-group">
+        <label>Fragrance load % <span>(optional)</span>
+          <button type="button" onclick="toggleFragCalc()" style="margin-left:8px;font-size:11px;background:var(--teal-light);border:1px solid rgba(13,148,136,0.3);color:var(--teal);padding:2px 8px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;">🧮 Calculate</button>
+        </label>
+        <input type="text" id="frag-load" placeholder="e.g. 10%" oninput="updateLabel();saveProdDetails()">
+        <div id="frag-calc-panel" style="display:none;margin-top:8px;background:var(--off);border:1.5px solid var(--border);border-radius:10px;padding:12px;">
+          <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;">Calculate from weights</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Wax weight (g)</div>
+              <input type="number" id="calc-wax" placeholder="e.g. 200" min="0" oninput="calcFragLoad()" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:'DM Sans',sans-serif;">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Fragrance weight (g)</div>
+              <input type="number" id="calc-frag" placeholder="e.g. 20" min="0" oninput="calcFragLoad()" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:'DM Sans',sans-serif;">
+            </div>
+          </div>
+          <div id="calc-result" style="font-size:13px;font-weight:600;min-height:18px;"></div>
+          <button type="button" id="calc-apply-btn" onclick="applyFragLoad()" style="display:none;margin-top:8px;background:var(--teal);color:white;border:none;padding:7px 16px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Apply to label →</button>
+        </div>
         <div id="frag-load-tip" style="margin-top:6px;font-size:12px;color:var(--muted);line-height:1.5;"></div>
       </div>
       <div class="form-group"><label>Burn time <span>(optional)</span></label><input type="text" id="burn-time" placeholder="e.g. 45hrs" oninput="updateLabel();saveProdDetails()"></div>
@@ -753,7 +793,22 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="form-group"><label>Phone number <span>(required for CLP compliance)</span></label><input type="tel" id="biz-phone" placeholder="e.g. 07700 900000" oninput="updateLabel();saveBizDetails()"></div>
     <div class="form-row">
       <div class="form-group"><label>Website <span>(optional)</span></label><input type="text" id="biz-website" placeholder="e.g. clpeasy.com" oninput="updateLabel();saveBizDetails()"></div>
-      <div class="form-group"><label>Batch / Lot number <span>(optional)</span></label><input type="text" id="batch-num" placeholder="e.g. LOT-001" oninput="updateLabel()"></div>
+      <div class="form-group">
+        <label>Batch / Lot number <span>(optional)</span></label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="batch-num" placeholder="e.g. LOT-001" oninput="updateLabel()" style="flex:1;">
+          <button type="button" onclick="autoIncrementBatch()" style="background:var(--teal-light);border:1.5px solid rgba(13,148,136,0.3);color:var(--teal);border-radius:8px;padding:8px 12px;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0;font-family:'DM Sans',sans-serif;">+1</button>
+        </div>
+        <div style="margin-top:4px;font-size:11px;color:var(--muted);">Last used: <span id="last-batch-display">—</span></div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>UFI Code <span style="font-weight:400;font-size:11px;color:var(--muted);">(Unique Formula Identifier — required on CLP labels)</span></label>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="ufi-code" placeholder="Click Generate to create your UFI" oninput="updateLabel()" style="flex:1;font-family:monospace;font-size:13px;letter-spacing:1px;">
+        <button type="button" onclick="generateUFI()" style="background:var(--teal);border:none;color:white;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;flex-shrink:0;">Generate ↻</button>
+      </div>
+      <div style="margin-top:5px;font-size:11px;color:var(--muted);line-height:1.5;">A unique code for this formulation. For formal B2B / EU sales, also <a href="https://eupcn.echa.europa.eu" target="_blank" style="color:var(--teal);">register at EUPCN</a>.</div>
     </div>
     <div class="step-nav"><button class="btn-prev" onclick="prevStep()">← Back</button><button class="btn-next" onclick="nextStep()">Preview &amp; download →</button></div>
   </div>
@@ -1540,6 +1595,9 @@ function saveLabel(){
     bizPhone:S.bizPhone,bizWebsite:S.bizWebsite,netWeight:S.netWeight,burnTime:S.burnTime,batchNum:S.batchNum,
     bgColour:(document.getElementById('label-bg-colour')?.value)||'#ffffff',
     pStatements:S.pStatements||'',textColour:S.textColour||'dark',showBorder:S.showBorder!==false,
+    ufiCode:document.getElementById('ufi-code')?.value||'',
+    labelLang:document.getElementById('label-lang')?.value||'en',
+    showQR:S.showQR||false,
     savedAt:new Date().toLocaleDateString('en-GB')};
   // Auto-activate folder for this product type
   const folderKey=getLabelFolder(entry.productType);
@@ -1566,6 +1624,9 @@ function loadLabel(i){
   if(e.pStatements!==undefined)S.pStatements=e.pStatements;
   if(e.textColour)S.textColour=e.textColour;
   if(e.showBorder!==undefined)S.showBorder=e.showBorder;
+  if(e.ufiCode!==undefined){S.ufiCode=e.ufiCode;const uel=document.getElementById('ufi-code');if(uel)uel.value=e.ufiCode||'';}
+  if(e.labelLang){S.labelLang=e.labelLang;const lel=document.getElementById('label-lang');if(lel)lel.value=e.labelLang;}
+  if(e.showQR!==undefined){S.showQR=e.showQR;setQR(e.showQR);}
   const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};
   set('scent-name',e.scentName);set('product-type',e.productType);set('h-statements',e.hStatements||'');
   set('biz-name',e.bizName||'');set('biz-address',e.bizAddress||'');set('biz-phone',e.bizPhone||'');
@@ -1664,6 +1725,8 @@ function toggleFolderGroup(key){
 }
 
 function savedItemHTML(e,i){
+  const hist=getLabelHistory(e.scentName,e.productType);
+  const hasHist=hist.length>1;
   return `<div class="saved-item">
     <div class="saved-item-info">
       <div class="saved-item-name">${e.scentName}</div>
@@ -1671,6 +1734,7 @@ function savedItemHTML(e,i){
     </div>
     <div class="saved-item-btns">
       <button class="sb sb-teal" onclick="loadLabel(${i})">Load</button>
+      ${hasHist?`<button class="sb" style="background:#EFF6FF;color:#1D4ED8;border:1.5px solid #BFDBFE;font-size:11px;" onclick="showLabelHistory('${encodeURIComponent(e.scentName)}','${encodeURIComponent(e.productType)}')">🕐 v${hist.length}</button>`:''}
       <button class="sb sb-red" onclick="deleteLabel(${i})">Delete</button>
     </div>
   </div>`;
@@ -1679,6 +1743,7 @@ function savedItemHTML(e,i){
 function init(){
   initAuth();
   buildHChips();buildPChips();buildSensitiserChips();
+  initExtensions();
   // Restore saved business details
   const biz=JSON.parse(localStorage.getItem('clpeasy_biz')||'{}');
   if(biz.bizName){document.getElementById('biz-name').value=biz.bizName;S.bizName=biz.bizName;}
@@ -1701,7 +1766,7 @@ function saveBizDetails(){
   localStorage.setItem('clpeasy_biz',JSON.stringify(biz));
 }
 function saveProdDetails(){
-  const prod={productType:document.getElementById('product-type')?.value||'',netWeight:document.getElementById('net-weight')?.value||'',fragLoad:document.getElementById('frag-load')?.value||'',burnTime:document.getElementById('burn-time')?.value||''};
+  const prod={productType:document.getElementById('product-type')?.value||'',netWeight:document.getElementById('net-weight')?.value||'',fragLoad:document.getElementById('frag-load')?.value||'',burnTime:document.getElementById('burn-time')?.value||'',labelLang:document.getElementById('label-lang')?.value||'en'};
   localStorage.setItem('clpeasy_prod',JSON.stringify(prod));
 }
 
@@ -1923,7 +1988,16 @@ function buildSVG(forExport=false){
 
   const scent=S.scentName||'Your Scent Name';
   const type=(S.productType||'Scented Candle').toUpperCase();
-  const sig=(S.signal||'WARNING').toUpperCase();
+  const _rawSig=(S.signal||'WARNING').toUpperCase();
+  const _langs=S.labelLang?S.labelLang.split('_'):['en'];
+  // Build multilingual signal word
+  const _sigParts=[];
+  _langs.forEach(l=>{const t=(l==='fr'?(_rawSig==='DANGER'?'DANGER':'ATTENTION'):l==='de'?(_rawSig==='DANGER'?'GEFAHR':'ACHTUNG'):_rawSig);if(!_sigParts.includes(t))_sigParts.push(t);});
+  const sig=_sigParts.join(' / ');
+  // Build multilingual "Contains:" prefix
+  const _containsParts=[];
+  _langs.forEach(l=>{const t=l==='fr'?'Contient:':l==='de'?'Enthält:':'Contains:';if(!_containsParts.includes(t))_containsParts.push(t);});
+  const _containsPrefix=_containsParts.join(' / ');
   const hCodes=(S.hStatements||'H317, H411').split(',').map(h=>h.trim()).filter(Boolean);
   const pCodes=(S.pStatements||'').split(',').map(p=>p.trim()).filter(Boolean);
   const sensArr=S.sensitisers.length?S.sensitisers:['Linalool','Citral'];
@@ -1931,7 +2005,7 @@ function buildSVG(forExport=false){
   const webLine=S.bizWebsite||'';
   const addr=S.bizAddress||'';
   const phone=S.bizPhone||'';
-  const detailParts=[S.netWeight,S.burnTime?'Burn time: '+S.burnTime:'',S.batchNum?'Batch: '+S.batchNum:''].filter(Boolean);
+  const detailParts=[S.netWeight,S.burnTime?'Burn time: '+S.burnTime:'',S.batchNum?'Batch: '+S.batchNum:'',S.ufiCode?'UFI: '+S.ufiCode:''].filter(Boolean);
   const pictos=S.pictograms.length?[...new Set(S.pictograms)].slice(0,6):['exclamation','aquatic'];
   const clamp=(v,mn,mx)=>Math.min(Math.max(v,mn),mx);
 
@@ -2042,7 +2116,7 @@ function buildSVG(forExport=false){
   const sensSW  = chordW(curY + slot.sens*0.5, 0.08);
   const sensFS  = Math.min(slot.sens * 0.52, clamp(BASE*0.034, 2.5, 7));
   const sensLH  = sensFS * 1.25;
-  const sensStr = 'Contains: '+sensArr.slice(0,5).join(', ')+(sensArr.length>5?'...':'');
+  const sensStr = _containsPrefix+' '+sensArr.slice(0,5).join(', ')+(sensArr.length>5?'...':'');
   const sensLines = wrapText(sensStr, sensSW*0.90, sensFS, false, false);
   const sensStY = curY + sensLH*0.5;
   curY += Math.max(slot.sens, sensLines.length*sensLH);
@@ -2087,6 +2161,29 @@ function buildSVG(forExport=false){
     const fFS = fitFont(slot.text, fSW*0.88, clamp(BASE*0.036,3,7.5), clamp(BASE*0.022,2.5,5), slot.bold, false);
     return`<text x="${cx}" y="${fY.toFixed(1)}" font-family="sans-serif" font-size="${fFS.toFixed(2)}" font-weight="${slot.bold?'700':'400'}" fill="${slot.bold?txtCol:mutedCol}" text-anchor="middle" dominant-baseline="middle">${xe(slot.text)}</text>`;
   }).join('');
+
+  // ── QR CODE (small, bottom-right of label if enabled) ────────
+  let qrEl='';
+  if(S.showQR&&S.ufiCode){
+    const uid=S.ufiCode.replace(/-/g,'').toLowerCase().substring(0,8);
+    const qrUrl=`clpeasy.com/s/${uid}`;
+    const qrSz=Math.min(sW*0.10,10);
+    const qrX=shapeX+shapeW-qrSz*1.2;
+    const qrY=sBot-qrSz*1.4;
+    // Simple QR placeholder: tiny squares pattern + URL
+    const sq=(x,y,s,f)=>`<rect x="${x}" y="${y}" width="${s}" height="${s}" fill="${f}"/>`;
+    const qrM=qrSz/5;
+    const qrPattern=[
+      sq(qrX,qrY,qrM,'#000'),sq(qrX+qrM,qrY,qrM,'#fff'),sq(qrX+qrM*2,qrY,qrM,'#000'),
+      sq(qrX,qrY+qrM,qrM,'#fff'),sq(qrX+qrM,qrY+qrM,qrM,'#000'),sq(qrX+qrM*2,qrY+qrM,qrM,'#fff'),
+      sq(qrX,qrY+qrM*2,qrM,'#000'),sq(qrX+qrM,qrY+qrM*2,qrM,'#fff'),sq(qrX+qrM*2,qrY+qrM*2,qrM,'#000'),
+      sq(qrX+qrM*3,qrY,qrM,'#000'),sq(qrX+qrM*4,qrY,qrM,'#fff'),
+      sq(qrX+qrM*3,qrY+qrM,qrM,'#fff'),sq(qrX+qrM*4,qrY+qrM,qrM,'#000'),
+      sq(qrX+qrM*3,qrY+qrM*2,qrM,'#000'),sq(qrX+qrM*4,qrY+qrM*2,qrM,'#000'),
+    ].join('');
+    const urlFS=Math.max(qrSz*0.18,1.8);
+    qrEl=`<g opacity="0.5">${qrPattern}<text x="${qrX+qrSz*0.5}" y="${qrY+qrSz+urlFS*1.1}" font-family="sans-serif" font-size="${urlFS.toFixed(1)}" fill="#555" text-anchor="middle">${qrUrl}</text></g>`;
+  }
 
   // ── WATERMARK ─────────────────────────────────────────────────
   const wmSz=sW*0.12;
@@ -2134,6 +2231,9 @@ function buildSVG(forExport=false){
 
   <!-- FOOTER -->
   ${footerRendered}
+
+  <!-- QR CODE -->
+  ${qrEl}
 
   <!-- WATERMARK -->
   ${wm}
@@ -2669,6 +2769,253 @@ function wizStopMic(){
 
 // ── BOOT ──────────────────────────────────────────────────────
 init();
+
+// ══════════════════════════════════════════════════════════════
+// FEATURE: UFI GENERATOR
+// Generates a unique formatted UFI: XXXX-XXXX-XXXX-XXXX
+// Using a simple hash of user email + scent + product type
+// ══════════════════════════════════════════════════════════════
+function generateUFI(){
+  const email=currentUser?.email||'guest';
+  const scent=document.getElementById('scent-name')?.value||S.scentName||'label';
+  const product=document.getElementById('product-type')?.value||S.productType||'candle';
+  const seed=email+scent+product+Date.now().toString(36);
+  // Simple but deterministic hash → 16 hex chars → 4 groups of 4
+  let h=0;
+  for(let i=0;i<seed.length;i++){h=Math.imul(31,h)+seed.charCodeAt(i)|0;}
+  const abs=Math.abs(h)>>>0;
+  // Generate 16 uppercase hex chars from multiple hashes
+  function hashStr(s){let n=0;for(let i=0;i<s.length;i++){n=Math.imul(31,n)+s.charCodeAt(i)|0;}return(Math.abs(n)>>>0).toString(16).padStart(8,'0').toUpperCase();}
+  const p1=hashStr(seed).substring(0,4);
+  const p2=hashStr(seed+'A').substring(0,4);
+  const p3=hashStr(seed+'B').substring(0,4);
+  const p4=hashStr(seed+'C').substring(0,4);
+  const ufi=`${p1}-${p2}-${p3}-${p4}`;
+  const el=document.getElementById('ufi-code');
+  if(el){el.value=ufi;updateLabel();}
+}
+
+// ══════════════════════════════════════════════════════════════
+// FEATURE: BATCH AUTO-INCREMENT
+// ══════════════════════════════════════════════════════════════
+function autoIncrementBatch(){
+  const el=document.getElementById('batch-num');
+  if(!el)return;
+  const current=el.value.trim();
+  // Extract trailing number from batch string e.g. LOT-001 → LOT-002
+  const match=current.match(/^(.*?)(\d+)$/);
+  if(match){
+    const prefix=match[1];
+    const num=parseInt(match[2]);
+    const padded=String(num+1).padStart(match[2].length,'0');
+    el.value=prefix+padded;
+  } else if(current){
+    el.value=current+'-2';
+  } else {
+    // Get last used batch from localStorage
+    const last=localStorage.getItem('clpeasy_last_batch')||'LOT-001';
+    const m=last.match(/^(.*?)(\d+)$/);
+    if(m){const p=m[1];const n=parseInt(m[2]);el.value=p+String(n+1).padStart(m[2].length,'0');}
+    else{el.value='LOT-001';}
+  }
+  // Save last used
+  localStorage.setItem('clpeasy_last_batch',el.value);
+  const disp=document.getElementById('last-batch-display');
+  if(disp)disp.textContent=el.value;
+  updateLabel();
+}
+
+function initBatchDisplay(){
+  const last=localStorage.getItem('clpeasy_last_batch');
+  const disp=document.getElementById('last-batch-display');
+  if(disp&&last)disp.textContent=last;
+}
+
+// ══════════════════════════════════════════════════════════════
+// FEATURE: FRAGRANCE LOAD CALCULATOR
+// ══════════════════════════════════════════════════════════════
+function toggleFragCalc(){
+  const panel=document.getElementById('frag-calc-panel');
+  if(panel)panel.style.display=panel.style.display==='none'?'block':'none';
+}
+
+function calcFragLoad(){
+  const wax=parseFloat(document.getElementById('calc-wax')?.value)||0;
+  const frag=parseFloat(document.getElementById('calc-frag')?.value)||0;
+  const res=document.getElementById('calc-result');
+  const applyBtn=document.getElementById('calc-apply-btn');
+  if(!res)return;
+  if(wax<=0||frag<=0){res.textContent='';if(applyBtn)applyBtn.style.display='none';return;}
+  const pct=((frag/wax)*100).toFixed(1);
+  const total=wax+frag;
+  const pctOfTotal=((frag/total)*100).toFixed(1);
+  let warning='';
+  const pctNum=parseFloat(pct);
+  if(pctNum>12)warning=' ⚠️ High — verify SDS max load';
+  else if(pctNum>10)warning=' — check SDS max';
+  res.textContent=`${pct}% of wax weight (${pctOfTotal}% of total)${warning}`;
+  res.style.color=pctNum>12?'#DC2626':'var(--teal)';
+  if(applyBtn)applyBtn.style.display='';
+  if(applyBtn)applyBtn.dataset.pct=pct;
+}
+
+function applyFragLoad(){
+  const btn=document.getElementById('calc-apply-btn');
+  const pct=btn?.dataset.pct;
+  if(!pct)return;
+  const el=document.getElementById('frag-load');
+  if(el){el.value=pct+'%';updateLabel();saveProdDetails();}
+  document.getElementById('frag-calc-panel').style.display='none';
+}
+
+// ══════════════════════════════════════════════════════════════
+// FEATURE: QR CODE TOGGLE
+// ══════════════════════════════════════════════════════════════
+S.showQR=false;
+
+function setQR(show){
+  S.showQR=show;
+  const on=document.getElementById('btn-qr-on');
+  const off=document.getElementById('btn-qr-off');
+  const active='flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--teal);background:var(--teal-light);color:var(--teal-dark);font-size:13px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif;';
+  const inactive='flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif;';
+  if(on)on.style.cssText=show?active:inactive;
+  if(off)off.style.cssText=show?inactive:active;
+  updateLabel();
+}
+
+// ══════════════════════════════════════════════════════════════
+// FEATURE: LABEL LANGUAGE
+// H&P statement translations for key CLP phrases
+// ══════════════════════════════════════════════════════════════
+const LANG_SIGNAL={
+  en:{WARNING:'WARNING',DANGER:'DANGER'},
+  fr:{WARNING:'ATTENTION',DANGER:'DANGER'},
+  de:{WARNING:'ACHTUNG',DANGER:'GEFAHR'},
+};
+const LANG_CONTAINS={en:'Contains:',fr:'Contient:',de:'Enthält:'};
+const LANG_PRODUCT_TYPE_SUFFIX={
+  en:{},
+  fr:{'Scented Candle':'Bougie parfumée','Soy Candle':'Bougie au soja','Wax Melt':'Fondant parfumé','Reed Diffuser':'Diffuseur de roseaux','Room Spray':'Spray d\'ambiance','Electric Diffuser':'Diffuseur électrique'},
+  de:{'Scented Candle':'Duftkerze','Soy Candle':'Sojakerze','Wax Melt':'Duftwachs','Reed Diffuser':'Raumduft-Stäbchen','Room Spray':'Raumspray','Electric Diffuser':'Elektrischer Diffuser'},
+};
+
+function getLangSignal(sig,langs){
+  const parts=[];
+  langs.forEach(l=>{const t=LANG_SIGNAL[l]?.[sig]||sig;if(t&&!parts.includes(t))parts.push(t);});
+  return parts.join(' / ');
+}
+
+function getLangContains(langs){
+  const parts=[];
+  langs.forEach(l=>{const t=LANG_CONTAINS[l]||'Contains:';if(!parts.includes(t))parts.push(t);});
+  return parts.join(' / ');
+}
+
+function getActiveLangs(){
+  const v=document.getElementById('label-lang')?.value||'en';
+  return v.split('_');
+}
+
+// ══════════════════════════════════════════════════════════════
+// FEATURE: LABEL HISTORY / VERSION CONTROL
+// ══════════════════════════════════════════════════════════════
+function getLabelHistory(scentName,productType){
+  try{
+    const all=JSON.parse(localStorage.getItem('clpeasy_history')||'{}');
+    const key=scentName+'|'+productType;
+    return all[key]||[];
+  }catch(e){return[];}
+}
+
+function pushLabelHistory(entry){
+  try{
+    const all=JSON.parse(localStorage.getItem('clpeasy_history')||'{}');
+    const key=entry.scentName+'|'+entry.productType;
+    if(!all[key])all[key]=[];
+    // Don't add duplicate (same savedAt)
+    if(!all[key].find(v=>v.savedAt===entry.savedAt)){
+      all[key].unshift({...entry,version:all[key].length+1});
+      // Keep max 10 versions
+      if(all[key].length>10)all[key]=all[key].slice(0,10);
+    }
+    localStorage.setItem('clpeasy_history',JSON.stringify(all));
+  }catch(e){}
+}
+
+function showLabelHistory(encodedScent,encodedProduct){
+  const scent=decodeURIComponent(encodedScent);
+  const product=decodeURIComponent(encodedProduct);
+  const hist=getLabelHistory(scent,product);
+  if(!hist.length){alert('No version history found for this label.');return;}
+  const list=hist.map((v,i)=>`v${v.version||hist.length-i}: ${v.savedAt||'Unknown date'} — ${v.signal||''} · ${v.hStatements||''}${i===0?' (current)':''}`).join('\n');
+  const choice=prompt(`Version history for "${scent}":\n\n${list}\n\nEnter version number to restore (or cancel):`);
+  if(!choice)return;
+  const vNum=parseInt(choice);
+  const match=hist.find(v=>(v.version||0)===vNum);
+  if(!match){alert('Version not found.');return;}
+  // Load that version
+  const i=getSaved().findIndex(e=>e.scentName===scent&&e.productType===product);
+  if(i>=0){
+    const arr=getSaved();
+    // Restore but keep current as latest
+    Object.assign(arr[i],match);
+    persistSaved(arr);
+    renderSaved();
+    alert(`Restored v${vNum} of "${scent}".`);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// HOOK INTO saveLabel — push to history + handle UFI
+// ══════════════════════════════════════════════════════════════
+const _origSaveLabel=saveLabel;
+saveLabel=function(){
+  // Auto-generate UFI if not set
+  const ufiEl=document.getElementById('ufi-code');
+  if(ufiEl&&!ufiEl.value.trim())generateUFI();
+  // Call original saveLabel
+  _origSaveLabel();
+  // Push to history
+  const arr=getSaved();
+  const entry=arr.find(e=>e.scentName===S.scentName&&e.productType===S.productType);
+  if(entry)pushLabelHistory(entry);
+  // Save last batch
+  const batch=document.getElementById('batch-num')?.value;
+  if(batch)localStorage.setItem('clpeasy_last_batch',batch);
+};
+
+// ══════════════════════════════════════════════════════════════
+// HOOK INTO readForm — capture UFI + lang + QR
+// ══════════════════════════════════════════════════════════════
+const _origReadForm=readForm;
+readForm=function(){
+  _origReadForm();
+  S.ufiCode=document.getElementById('ufi-code')?.value||'';
+  S.labelLang=document.getElementById('label-lang')?.value||'en';
+  S.showQR=S.showQR||false;
+};
+
+// ══════════════════════════════════════════════════════════════
+// HOOK INTO saveLabel entry — include new fields
+// ══════════════════════════════════════════════════════════════
+const _origSaveLabelEntry=null; // handled via readForm hook above — ufiCode/labelLang now in S
+
+// ══════════════════════════════════════════════════════════════
+// INIT EXTENSIONS — called at end of init()
+// ══════════════════════════════════════════════════════════════
+function initExtensions(){
+  initBatchDisplay();
+  // Restore label lang if saved in prod details
+  const prod=JSON.parse(localStorage.getItem('clpeasy_prod')||'{}');
+  if(prod.labelLang){
+    const el=document.getElementById('label-lang');
+    if(el)el.value=prod.labelLang;
+  }
+  // QR off by default
+  setQR(false);
+}
+
 </script>
 
 <!-- ── FOLDER DELETE MODAL ───────────────────────────────────── -->
