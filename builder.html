@@ -2979,11 +2979,37 @@ saveLabel=function(){
   // Push to history
   const arr=getSaved();
   const entry=arr.find(e=>e.scentName===S.scentName&&e.productType===S.productType);
-  if(entry)pushLabelHistory(entry);
+  if(entry){
+    pushLabelHistory(entry);
+    syncSafetySheet(entry); // Write to Supabase safety_sheets table
+  }
   // Save last batch
   const batch=document.getElementById('batch-num')?.value;
   if(batch)localStorage.setItem('clpeasy_last_batch',batch);
 };
+
+// ══════════════════════════════════════════════════════════════
+// SYNC SAFETY SHEET TO SUPABASE
+// Called every time a label is saved. Creates or updates the
+// safety_sheets row for this label so the QR code always points
+// to current data.
+// ══════════════════════════════════════════════════════════════
+async function syncSafetySheet(entry){
+  if(!sbClient||!currentUser)return; // not logged in
+  if(!entry.ufiCode)return; // no UFI = no QR
+  // Generate a stable UID from the UFI code (strip dashes, lowercase)
+  const uid=entry.ufiCode.replace(/-/g,'').toLowerCase().substring(0,16);
+  try{
+    await sbClient.from('safety_sheets').upsert({
+      uid,
+      user_id:currentUser.id,
+      label_data:entry,
+      updated_at:new Date().toISOString()
+    },{onConflict:'uid'});
+  }catch(e){
+    console.log('Safety sheet sync failed:',e.message);
+  }
+}
 
 // ══════════════════════════════════════════════════════════════
 // HOOK INTO readForm — capture UFI + lang + QR
