@@ -130,7 +130,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
   .right-panel{order:1;}
 }
 
-/* ── CRICUT MODAL ─────────────────────────────────────────────── */
+/* ── CRICUT MODAL ───────────────────────────────────────────── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;}
 .modal-overlay.show{opacity:1;pointer-events:all;}
 .modal-box{background:#1A1F2E;border:1px solid rgba(255,255,255,0.12);border-radius:18px;padding:32px;width:100%;max-width:440px;box-shadow:0 24px 64px rgba(0,0,0,0.5);transform:translateY(12px);transition:transform .2s;}
@@ -237,8 +237,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
     <div class="section-head">Export</div>
 
     <div id="pro-gate" class="pro-gate" style="display:none;">
-      <strong>🔒 Pro feature</strong>
-      Download your print sheet with a <a href="home.html#pricing">Pro subscription</a> — from £6.99/month with a 14-day free trial.
+      <strong>🔒 Sign in to download</strong>
+      Please <a href="auth.html">sign in to your CLPeasy account</a> to download your print sheet.
     </div>
 
     <button class="btn-primary" id="btn-pdf" onclick="downloadPDF()">🖨 Print / Save as PDF</button>
@@ -297,7 +297,7 @@ async function initAuth(){
     const{data:{session}}=await sbClient.auth.getSession();
     if(session){
       currentUser=session.user;
-      isPro=false; // swap for real check when Stripe live
+      isPro=true; // Beta: all logged-in users get Pro access. Swap for real Stripe check at launch.
       const nu=document.getElementById('nav-user');
       const ns=document.getElementById('nav-signout');
       if(nu){nu.textContent=session.user.email;nu.style.display='';}
@@ -706,7 +706,7 @@ function downloadPDF(){
   ${cellsHTML}
 </svg>`;
 
-  // Convert SVG→canvas PNG then open print window — prevents 2-page browser split
+  // Convert SVG→canvas PNG then print — prevents 2-page browser split
   const svgImg=new Image();
   svgImg.onload=function(){
     const cvs=document.createElement('canvas');
@@ -734,40 +734,14 @@ function downloadPDF(){
     <body>
       <img src="${pngDataUri}"/>
       <button class="print-btn" onclick="window.print()">🖨 Print / Save as PDF</button>
-    
-<!-- ── CRICUT DOWNLOAD MODAL ─────────────────────────────────── -->
-<div class="modal-overlay" id="cricutModal">
-  <div class="modal-box">
-    <div class="modal-title">✂️ Download for Cricut</div>
-    <div class="modal-sub" id="modal-sub">Choose how to save your <span id="modal-count">0</span> label PNG<span id="modal-plural">s</span>.</div>
-    <div class="modal-progress" id="modal-progress">
-      <div class="modal-progress-bar"><div class="modal-progress-fill" id="modal-progress-fill" style="width:0%"></div></div>
-      <div class="modal-progress-text" id="modal-progress-text">Preparing...</div>
-    </div>
-    <div class="modal-options" id="modal-options">
-      <div class="modal-opt" onclick="cricutDownloadZip()">
-        <span class="modal-opt-icon">📦</span>
-        <div class="modal-opt-title">Download as ZIP</div>
-        <div class="modal-opt-desc">All PNGs in one ZIP file — extract and upload each to Cricut Design Space. Cleanest option.</div>
-      </div>
-      <div class="modal-opt" onclick="cricutDownloadSequential()">
-        <span class="modal-opt-icon">⬇️</span>
-        <div class="modal-opt-title">Download one by one</div>
-        <div class="modal-opt-desc">Each PNG saves separately with a short delay so your browser doesn't block them.</div>
-      </div>
-    </div>
-    <button class="modal-cancel" onclick="closeCricutModal()">Cancel</button>
-  </div>
-</div>
-
-</body></html>`);
+    </body></html>`);
     win.document.close();
   };
   svgImg.onerror=function(){alert('Could not render sheet. Please try again.');};
   svgImg.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(sheetSVG);
 }
 
-// ── CRICUT MODAL & DOWNLOAD LOGIC ────────────────────────────
+// ── CRICUT MODAL & DOWNLOAD ──────────────────────────────────
 function buildLabelPNGBlob(item){
   return new Promise(resolve=>{
     const e=item.labelData;
@@ -787,12 +761,10 @@ function buildLabelPNGBlob(item){
     img.src=svgDataUri;
   });
 }
-
 function getFileName(e,mmSize){
   const slug=(e.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
   return `clpeasy-${slug}-${mmSize}mm.png`;
 }
-
 function openCricutModal(){
   if(!sheetItems.length){alert('Add at least one label to the sheet first.');return;}
   const count=sheetItems.length;
@@ -803,16 +775,8 @@ function openCricutModal(){
   document.getElementById('modal-sub').style.display='';
   document.getElementById('cricutModal').classList.add('show');
 }
-
-function closeCricutModal(){
-  document.getElementById('cricutModal').classList.remove('show');
-}
-
-document.addEventListener('DOMContentLoaded',function(){
-  const overlay=document.getElementById('cricutModal');
-  if(overlay) overlay.addEventListener('click',function(e){if(e.target===this)closeCricutModal();});
-});
-
+function closeCricutModal(){document.getElementById('cricutModal').classList.remove('show');}
+document.addEventListener('click',function(e){if(e.target&&e.target.id==='cricutModal')closeCricutModal();});
 async function cricutDownloadZip(){
   document.getElementById('modal-options').style.display='none';
   document.getElementById('modal-sub').style.display='none';
@@ -830,18 +794,14 @@ async function cricutDownloadZip(){
     while(zip.files[finalName]){finalName=fname.replace('.png',`-${counter++}.png`);}
     zip.file(finalName,blob);
   }
-  txt.textContent='Creating ZIP file...';fill.style.width='95%';
+  txt.textContent='Creating ZIP...';fill.style.width='95%';
   const zipBlob=await zip.generateAsync({type:'blob'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(zipBlob);
-  a.download='clpeasy-cricut-labels.zip';
+  const a=document.createElement('a');a.href=URL.createObjectURL(zipBlob);a.download='clpeasy-cricut-labels.zip';
   document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(a.href);if(a.parentNode)a.parentNode.removeChild(a);},1000);
-  fill.style.width='100%';
-  txt.textContent=`✅ ZIP downloaded — extract and upload each PNG to Cricut Design Space.`;
+  fill.style.width='100%';txt.textContent='✅ ZIP downloaded — extract and upload each PNG to Cricut Design Space.';
   setTimeout(()=>closeCricutModal(),2500);
 }
-
 async function cricutDownloadSequential(){
   document.getElementById('modal-options').style.display='none';
   document.getElementById('modal-sub').style.display='none';
@@ -854,17 +814,14 @@ async function cricutDownloadSequential(){
     txt.textContent=`Downloading ${i+1} of ${total}...`;
     fill.style.width=`${Math.round((i/total)*100)}%`;
     const{blob,fname}=await buildLabelPNGBlob(sheetItems[i]);
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);a.download=fname;
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;
     document.body.appendChild(a);a.click();
     setTimeout(()=>{URL.revokeObjectURL(a.href);if(a.parentNode)a.parentNode.removeChild(a);},800);
     await new Promise(r=>setTimeout(r,700));
   }
-  fill.style.width='100%';
-  txt.textContent=`✅ ${total} PNG file${total===1?'':'s'} saved to your Downloads folder.`;
+  fill.style.width='100%';txt.textContent=`✅ ${total} PNG file${total===1?'':'s'} saved to your Downloads folder.`;
   setTimeout(()=>closeCricutModal(),2500);
 }
-
 function downloadAllPNGs(){openCricutModal();}
 
 // ── INIT ──────────────────────────────────────────────────────
@@ -878,5 +835,29 @@ function init(){
 
 init();
 </script>
+
+<div class="modal-overlay" id="cricutModal">
+  <div class="modal-box">
+    <div class="modal-title">✂️ Download for Cricut</div>
+    <div class="modal-sub" id="modal-sub">Choose how to save your <span id="modal-count">0</span> label PNG<span id="modal-plural">s</span>.</div>
+    <div class="modal-progress" id="modal-progress">
+      <div class="modal-progress-bar"><div class="modal-progress-fill" id="modal-progress-fill" style="width:0%"></div></div>
+      <div class="modal-progress-text" id="modal-progress-text">Preparing...</div>
+    </div>
+    <div class="modal-options" id="modal-options">
+      <div class="modal-opt" onclick="cricutDownloadZip()">
+        <span class="modal-opt-icon">📦</span>
+        <div class="modal-opt-title">Download as ZIP</div>
+        <div class="modal-opt-desc">All PNGs in one ZIP — extract and upload each to Cricut Design Space. Cleanest option.</div>
+      </div>
+      <div class="modal-opt" onclick="cricutDownloadSequential()">
+        <span class="modal-opt-icon">⬇️</span>
+        <div class="modal-opt-title">Download one by one</div>
+        <div class="modal-opt-desc">Each PNG saves separately with a delay so your browser doesn't block them.</div>
+      </div>
+    </div>
+    <button class="modal-cancel" onclick="closeCricutModal()">Cancel</button>
+  </div>
+</div>
 </body>
 </html>
