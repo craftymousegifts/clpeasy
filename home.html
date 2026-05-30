@@ -82,7 +82,7 @@
 
   /* HERO */
   .hero {
-    padding: 140px 24px 80px;
+    padding: 140px 24px 48px;
     max-width: 960px; margin: 0 auto;
     text-align: center;
     background: white;
@@ -190,17 +190,7 @@
     font-size: 11px; font-weight: 700; flex-shrink: 0;
   }
 
-  /* SOCIAL PROOF */
-  .proof {
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    padding: 24px;
-    text-align: center;
-    background: var(--off);
-  }
-  .proof p { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
-  .proof-logos { display: flex; align-items: center; justify-content: center; gap: 32px; flex-wrap: wrap; }
-  .proof-logo { font-size: 13px; font-weight: 600; color: var(--muted); opacity: 0.6; }
+
 
   /* FEATURES */
   .features {
@@ -368,8 +358,17 @@
   .hero > *:nth-child(5) { animation-delay: .5s; }
 
   @media (max-width: 600px) {
+    nav { height: 64px; padding: 0 16px; }
+    .nav-badge { width: 52px; height: 52px; font-size: 24px; }
+    .nav-easy { font-size: 26px; margin-left: 4px; }
     .nav-links a:not(:last-child) { display: none; }
-    .preview-wrapper { flex-direction: column; padding: 28px 20px; }
+    .btn-nav { padding: 7px 14px; font-size: 13px; }
+    .hero { padding: 90px 20px 40px; }
+    .hero-sub { margin-bottom: 28px; }
+    .preview-wrapper { flex-direction: column; padding: 24px 16px; gap: 24px; }
+    .preview-text h2 { font-size: 22px; }
+    .preview-text p { max-width: 100%; font-size: 14px; }
+    .step-item { align-items: flex-start; font-size: 13px; line-height: 1.5; }
   }
 
   .feature-item{font-size:13px;color:var(--text);border-bottom:1px solid rgba(0,0,0,0.06);}
@@ -413,7 +412,7 @@
 <section class="hero">
   <div style="display:inline-flex;align-items:center;gap:8px;background:var(--teal-light);color:var(--teal-dark);padding:6px 16px;border-radius:100px;font-size:12px;font-weight:700;letter-spacing:0.5px;margin-bottom:16px;">🕯️ BUILT BY A MAKER, FOR MAKERS</div>
   <h1>Generate <em>print-ready</em><br>CLP labels in seconds</h1>
-  <p class="hero-sub">I am a candle and wax melt maker who spent hours getting my handmade home fragrance products just right — only to hit a wall of SDS sheets, hazard statements and compliance rules with no clear process to follow. It was confusing, time-consuming and expensive, and I knew other makers felt the same. So I built CLPeasy. What used to take hours of guesswork now takes minutes — and the <strong>£200–£600 a year</strong> most makers spend on compliance stays where it belongs: in your craft.</p>
+  <p class="hero-sub">I am a candle and wax melt maker who spends hours getting my handmade home fragrance products just right — only to hit a wall of SDS sheets, hazard statements and compliance rules with no clear process to follow. It was confusing, time-consuming and expensive, and I knew other makers felt the same. So I built CLPeasy. What used to take hours of guesswork now takes minutes — and the <strong>£200–£600 a year</strong> most makers spend on compliance stays where it belongs: in your craft.</p>
   <div class="hero-actions">
     <a href="auth.html" class="btn-primary">Start 14-day free trial</a>
     <a href="#features" class="btn-secondary">See how it works</a>
@@ -423,7 +422,7 @@
 
 <!-- PRICING -->
 <div style="background:white;">
-<section class="pricing" id="pricing">
+<section class="pricing" id="pricing" style="padding-top:40px;">
   <div class="section-label">Pricing</div>
   <h2 class="section-title">Simple, honest pricing</h2>
   <p class="section-sub" style="margin:0 auto 40px;">Start with a 14-day free trial. No credit card required. Cancel anytime.</p>
@@ -556,10 +555,6 @@
   </div>
 </section>
 
-<!-- PROOF -->
-<div class="proof">
-  <p>Smart Paste works with SDS sheets from all major UK fragrance suppliers</p>
-</div>
 
 <!-- FEATURES -->
 <div style="background:white;">
