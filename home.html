@@ -371,6 +371,24 @@
     .nav-links a:not(:last-child) { display: none; }
     .preview-wrapper { flex-direction: column; padding: 28px 20px; }
   }
+
+  .feature-item{font-size:13px;color:var(--text);border-bottom:1px solid rgba(0,0,0,0.06);}
+  .feature-item:last-child{border-bottom:none;}
+  .pro-card .feature-item{color:rgba(255,255,255,0.8);border-color:rgba(255,255,255,0.07);}
+  .feature-trigger{display:flex;align-items:flex-start;gap:9px;padding:8px 0;cursor:pointer;width:100%;background:none;border:none;text-align:left;font-family:inherit;font-size:13px;color:inherit;line-height:1.4;-webkit-tap-highlight-color:transparent;}
+  .feature-trigger:hover .feature-chevron{opacity:1;}
+  .feature-chevron{margin-left:auto;font-size:10px;opacity:0.35;flex-shrink:0;margin-top:2px;transition:transform .2s;}
+  .feature-chevron.open{transform:rotate(180deg);opacity:0.6;}
+  .feature-desc{display:none;font-size:12px;color:var(--muted);line-height:1.5;padding:0 0 8px 23px;}
+  .feature-desc.open{display:block;}
+  .pro-card .feature-desc{color:rgba(255,255,255,0.45);}
+  .tick{flex-shrink:0;margin-top:1px;color:var(--teal);}
+  .tick-gold{flex-shrink:0;margin-top:1px;color:#F59E0B;}
+  .features-label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;}
+  .pro-card .features-label{color:rgba(255,255,255,0.35);}
+  .price-highlight{background:var(--teal-light);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--teal-dark);margin-bottom:12px;line-height:1.5;}
+  .pro-card .price-highlight{background:rgba(52,211,153,0.12);color:#34D399;}
+
 </style>
 </head>
 <body>
@@ -403,6 +421,80 @@
   </div>
   <p class="hero-note">14-day free trial · No credit card required · Cancel anytime</p>
 </section>
+
+<!-- PRICING -->
+<div style="background:white;">
+<section class="pricing" id="pricing">
+  <div class="section-label">Pricing</div>
+  <h2 class="section-title">Simple, honest pricing</h2>
+  <p class="section-sub" style="margin:0 auto 40px;">Start with a 14-day free trial. No credit card required. Cancel anytime.</p>
+  <div class="pricing-grid" style="max-width:960px;margin:0 auto;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));">
+
+    <!-- Easy Trial -->
+    <div class="price-card">
+      <div class="price-name" style="font-size:18px;font-family:'DM Serif Display',serif;text-transform:none;letter-spacing:0;color:var(--text);">✦ Easy Trial</div>
+      <p class="price-desc">Full access for 14 days so you can try everything before you commit.</p>
+      <div class="price-amount">Free</div>
+      <p style="font-size:13px;color:var(--teal);font-weight:600;margin:6px 0 20px;">14-day trial · No card needed</p>
+      <div class="features-label">Includes during trial</div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Full label builder — all shapes &amp; sizes<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Build round, square or rectangular CLP labels in any size from 25mm to 100mm. All GHS pictograms, signal words and hazard statements included.</div></div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>All download formats<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">PNG, SVG, JPEG, PDF — download your label in whatever format you need for home printing or sending to a print company.</div></div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>All hazard data &amp; product types<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Candles, wax melts, reed diffusers, room sprays and more — all product types with their associated GHS hazard and precautionary statements.</div></div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Every Easy Start &amp; Easy Pro feature<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">The trial gives you full access to every feature across all plans so you can properly test what works for your business.</div></div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>No credit card required<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Sign up with just your email. No payment details needed until you decide to subscribe.</div></div>
+
+      <button class="btn-plan btn-plan-free" style="border:1.5px solid var(--teal);color:var(--teal);background:white;" onclick="window.location.href='auth.html'">Start free trial →</button>
+      <div style="margin-top:16px;background:#FEF9C3;border-radius:10px;padding:12px 14px;font-size:12px;color:#92400E;text-align:left;">
+        <strong>🤔 Not sure which plan after your trial?</strong><br>
+        Answer 5 quick questions and we'll recommend the right one. <a href="plan-picker.html" style="color:#92400E;font-weight:700;">Find your plan →</a>
+      </div>
+    </div>
+
+    <!-- Easy Start -->
+    <div class="price-card featured">
+      <div class="popular-tag">⭐ Most popular</div>
+      <div class="price-name" style="font-size:18px;font-family:'DM Serif Display',serif;text-transform:none;letter-spacing:0;color:var(--text);">🕯️ Easy Start</div>
+      <p class="price-desc">Everything a growing UK maker needs to stay compliant, organised and print-ready.</p>
+      <div class="price-amount">£9.99 <span>/mo</span></div>
+      <p style="font-size:13px;color:var(--teal);font-weight:600;margin:6px 0 20px;">or £99/year — pay monthly it's £119.88 — save £20.88</p>
+      <div class="price-highlight">🔒 Your label library, version history and compliance records live inside CLPeasy. Downloaded files are yours to keep — but staying subscribed means your labels stay up to date, organised and audit-ready.</div>
+      <div class="features-label">What's included</div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Unlimited saved labels<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Save as many labels as you like — no cap. Whether you have 5 scents or 500 they're all stored safely in your library. Hazard data is entered manually from your supplier's SDS.</div></div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Unlimited downloads<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Download your labels as many times as you need in any format — PNG, SVG, JPEG or PDF. No monthly caps, no counting, no worrying. Print, reprint and share as often as your business needs.</div></div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>No CLPeasy watermark<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Free trial labels have a faint preview watermark. Easy Start removes it completely so your labels are clean and ready to sell with.</div></div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Label folders &amp; library<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Organise labels into folders — Candles, Wax Melts, Diffusers, Room Sprays. Keeps everything tidy as your range grows.</div></div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>A4 print sheet composer<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Lay out multiple labels on an A4 sheet for home printing. Supports standard Avery label sizes and custom spacing.</div></div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Cricut PNG export<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Download individual label PNGs sized and optimised for Cricut Design Space. Cut perfectly every time.</div></div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Supplier SDS guide<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Select your fragrance supplier and CLPeasy guides you directly to their SDS page. Works with all major UK suppliers.</div></div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Cancel anytime<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">No lock-in, no questions asked. Cancel from your account settings and your labels stay safe for 30 days.</div></div>
+
+      <button class="btn-plan btn-plan-paid" onclick="window.location.href='auth.html'">Get started →</button>
+    </div>
+
+    <!-- Easy Pro -->
+    <div class="price-card pro-card" style="background:#111827;border-color:#374151;">
+      <div class="popular-tag" style="background:#F59E0B;color:#111827;">⚡ Full compliance suite</div>
+      <div class="price-name" style="font-size:18px;font-family:'DM Serif Display',serif;text-transform:none;letter-spacing:0;color:white;">⚡ Easy Pro</div>
+      <p class="price-desc" style="color:#9CA3AF;">For serious sellers who need full CLP compliance tools and EU export features.</p>
+      <div class="price-amount" style="color:white;">£14.99 <span>/mo</span></div>
+      <p style="font-size:13px;color:#34D399;font-weight:600;margin:6px 0 20px;">or £149/year — pay monthly it's £179.88 — save £30.88</p>
+      <div class="price-highlight">🔒 Your full compliance suite — UFI codes, safety sheets, version history and regulation alerts — all live in CLPeasy. Safety sheets for labels already on products stay live permanently.</div>
+      <div class="features-label">All Easy Start features, plus</div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick-gold" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>UFI code generator<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">A UFI (Unique Formula Identifier) is a 16-character code required on CLP labels for products sold in the UK and EU. CLPeasy generates one for each of your formulations automatically.</div></div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick-gold" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>SDS Smart Import ⚡<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Drop in your supplier's SDS PDF and CLPeasy reads Section 2.2 and fills in all the hazard data automatically. No manual entry, no transcription errors.</div></div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick-gold" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>QR safety code on label<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Add a QR code to any label that links to a hosted digital safety sheet — required for products that must include a digital SDS link.</div></div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick-gold" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Digital safety sheets (hosted)<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Every label with a QR code gets its own permanently hosted safety page at clpeasy.com/safety. Creating new QR codes requires Easy Pro — but pages already live stay accessible forever.</div></div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick-gold" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Cancel anytime<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">No lock-in, no questions asked. Cancel from your account settings and your labels stay safe for 30 days.</div></div>
+
+      <button class="btn-plan btn-plan-paid" style="background:linear-gradient(135deg,#0D9488,#0891B2);" onclick="window.location.href='https://clpeasy.com/pricing'">Get started →</button>
+    </div>
+
+  </div>
+  <p style="margin-top:24px;font-size:13px;color:var(--muted);text-align:center;">All prices shown in GBP. <a href="refund.html" style="color:var(--teal);">14-day cooling off period</a> applies under UK consumer law. Cancel anytime — no questions asked.</p>
+</section>
+</div>
+
+<div style="background:white;">
 
 <!-- WHY START FREE -->
 <section style="background:white;padding:60px 24px;">
@@ -583,77 +675,6 @@
 </section>
 
 
-<!-- PRICING -->
-<div style="background:white;">
-<section class="pricing" id="pricing">
-  <div class="section-label">Pricing</div>
-  <h2 class="section-title">Simple, honest pricing</h2>
-  <p class="section-sub" style="margin:0 auto 40px;">Start with a 14-day free trial. No credit card required. Cancel anytime.</p>
-  <div class="pricing-grid" style="max-width:960px;margin:0 auto;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));">
-
-    <!-- Easy Trial -->
-    <div class="price-card">
-      <div class="price-name" style="font-size:18px;font-family:'DM Serif Display',serif;text-transform:none;letter-spacing:0;color:var(--text);">✦ Easy Trial</div>
-      <p class="price-desc">Full access for 14 days so you can try everything before you commit.</p>
-      <div class="price-amount">Free</div>
-      <p style="font-size:13px;color:var(--teal);font-weight:600;margin:6px 0 20px;">14-day trial · No card needed</p>
-      <ul class="price-features">
-        <li><span class="check">✓</span> Every Easy Start &amp; Easy Pro feature</li>
-        <li><span class="check">✓</span> Full label builder</li>
-        <li><span class="check">✓</span> All download formats</li>
-        <li><span class="check">✓</span> No credit card required</li>
-      </ul>
-      <button class="btn-plan btn-plan-free" style="border:1.5px solid var(--teal);color:var(--teal);background:white;" onclick="window.location.href='auth.html'">Start free trial →</button>
-      <div style="margin-top:16px;background:#FEF9C3;border-radius:10px;padding:12px 14px;font-size:12px;color:#92400E;text-align:left;">
-        <strong>🤔 Not sure which plan after your trial?</strong><br>
-        Answer 5 quick questions and we'll recommend the right one. <a href="plan-picker.html" style="color:#92400E;font-weight:700;">Find your plan →</a>
-      </div>
-    </div>
-
-    <!-- Easy Start -->
-    <div class="price-card featured">
-      <div class="popular-tag">⭐ Most popular</div>
-      <div class="price-name" style="font-size:18px;font-family:'DM Serif Display',serif;text-transform:none;letter-spacing:0;color:var(--text);">🕯️ Easy Start</div>
-      <p class="price-desc">Everything a growing UK maker needs to stay compliant, organised and print-ready.</p>
-      <div class="price-amount">£9.99 <span>/mo</span></div>
-      <p style="font-size:13px;color:var(--teal);font-weight:600;margin:6px 0 20px;">or £99/year — pay monthly it's £119.88 — save £20.88</p>
-      <ul class="price-features">
-        <li><span class="check">✓</span> Unlimited label downloads</li>
-        <li><span class="check">✓</span> No CLPeasy watermark</li>
-        <li><span class="check">✓</span> Full label builder</li>
-        <li><span class="check">✓</span> Supplier SDS guide</li>
-        <li><span class="check">✓</span> A4 print sheet composer</li>
-        <li><span class="check">✓</span> Cricut PNG export</li>
-        <li><span class="check">✓</span> Label library &amp; folders</li>
-        <li><span class="check">✓</span> Cancel anytime</li>
-      </ul>
-      <button class="btn-plan btn-plan-paid" onclick="window.location.href='auth.html'">Get started →</button>
-    </div>
-
-    <!-- Easy Pro -->
-    <div class="price-card" style="background:#111827;border-color:#374151;">
-      <div class="popular-tag" style="background:#F59E0B;color:#111827;">⚡ Full compliance suite</div>
-      <div class="price-name" style="font-size:18px;font-family:'DM Serif Display',serif;text-transform:none;letter-spacing:0;color:white;">⚡ Easy Pro</div>
-      <p class="price-desc" style="color:#9CA3AF;">For serious sellers who need full CLP compliance tools and EU export features.</p>
-      <div class="price-amount" style="color:white;">£14.99 <span>/mo</span></div>
-      <p style="font-size:13px;color:#34D399;font-weight:600;margin:6px 0 20px;">or £149/year — pay monthly it's £179.88 — save £30.88</p>
-      <ul class="price-features">
-        <li><span style="color:#34D399;font-size:16px;flex-shrink:0;">✓</span> <span style="color:#D1FAE5;">All Easy Start features, plus</span></li>
-        <li><span style="color:#34D399;font-size:16px;flex-shrink:0;">✓</span> <span style="color:#D1FAE5;">SDS Smart Import (AI paste)</span></li>
-        <li><span style="color:#34D399;font-size:16px;flex-shrink:0;">✓</span> <span style="color:#D1FAE5;">UFI generator</span></li>
-        <li><span style="color:#34D399;font-size:16px;flex-shrink:0;">✓</span> <span style="color:#D1FAE5;">QR digital safety sheets</span></li>
-        <li><span style="color:#34D399;font-size:16px;flex-shrink:0;">✓</span> <span style="color:#D1FAE5;">Batch export &amp; label folders</span></li>
-        <li><span style="color:#34D399;font-size:16px;flex-shrink:0;">✓</span> <span style="color:#D1FAE5;">Cancel anytime</span></li>
-      </ul>
-      <button class="btn-plan btn-plan-paid" style="background:linear-gradient(135deg,#0D9488,#0891B2);" onclick="window.location.href='https://clpeasy.com/pricing'">Get started →</button>
-    </div>
-
-  </div>
-  <p style="margin-top:24px;font-size:13px;color:var(--muted);text-align:center;">All prices shown in GBP. <a href="refund.html" style="color:var(--teal);">14-day cooling off period</a> applies under UK consumer law. Cancel anytime — no questions asked.</p>
-</section>
-</div>
-
-<div style="background:white;">
 <!-- ABOUT -->
 <div style="background:white;">
 <section style="padding:80px 24px;max-width:860px;margin:0 auto;" id="about">
@@ -808,6 +829,12 @@
 </footer>
 
 <script>
+function toggleFeature(btn) {
+  var desc = btn.nextElementSibling;
+  var chev = btn.querySelector('.feature-chevron');
+  desc.classList.toggle('open');
+  if(chev) chev.classList.toggle('open');
+}
 function toggleFaq(el) {
   var item = el.parentElement;
   item.classList.toggle('open');
