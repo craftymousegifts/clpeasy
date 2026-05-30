@@ -37,11 +37,11 @@
   /* NAV */
   nav {
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    background: rgba(255,255,255,0.97);
+    background: rgba(255,255,255,0.98);
     backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    padding: 0 32px;
-    height: 88px;
+    border-bottom: 1.5px solid var(--border);
+    padding: 0 40px;
+    height: 72px;
     display: flex; align-items: center; justify-content: space-between;
   }
   .nav-logo {
@@ -62,27 +62,27 @@
     color: #0D9488;
     margin-left: 5px; letter-spacing: -2px; line-height: 1;
   }
-  .nav-links { display: flex; align-items: center; gap: 8px; }
+  .nav-links { display: flex; align-items: center; gap: 4px; }
   .nav-links a:not(.btn-nav) {
-    font-size: 14px; font-weight: 500; color: var(--muted);
-    text-decoration: none; padding: 6px 12px; border-radius: 6px;
+    font-size: 15px; font-weight: 600; color: #374151;
+    text-decoration: none; padding: 7px 14px; border-radius: 6px;
     transition: color .2s, background .2s;
   }
-  .nav-links a:not(.btn-nav):hover { color: var(--text); background: var(--off); }
+  .nav-links a:not(.btn-nav):hover { color: var(--teal); background: var(--teal-light); }
   .btn-nav {
     background: var(--teal) !important;
     color: #ffffff !important;
     border: none;
-    padding: 8px 18px; border-radius: 8px; font-size: 14px;
+    padding: 10px 22px; border-radius: 8px; font-size: 15px;
     font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif;
     transition: background .2s; text-decoration: none !important;
-    display: inline-block;
+    display: inline-block; margin-left: 8px;
   }
   .btn-nav:hover { background: var(--teal-dark) !important; color: #ffffff !important; }
 
   /* HERO */
   .hero {
-    padding: 140px 24px 48px;
+    padding: 120px 24px 48px;
     max-width: 960px; margin: 0 auto;
     text-align: center;
     background: white;
@@ -125,7 +125,7 @@
 
   /* LABEL PREVIEW */
   .preview-section {
-    padding: 0 24px 80px;
+    padding: 0 24px 40px;
     max-width: 960px; margin: 0 auto;
   }
   .preview-wrapper {
@@ -181,8 +181,8 @@
 
   .preview-text h2 { font-family: 'DM Serif Display', serif; font-size: 28px; margin-bottom: 12px; }
   .preview-text p { color: var(--muted); font-size: 15px; max-width: 340px; line-height: 1.7; }
-  .preview-steps { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
-  .step-item { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+  .preview-steps { margin-top: 20px; display: flex; flex-direction: column; gap: 12px; }
+  .step-item { display: flex; align-items: flex-start; gap: 12px; font-size: 14px; line-height: 1.5; }
   .step-num {
     width: 24px; height: 24px; border-radius: 50%;
     background: var(--teal); color: white;
@@ -194,7 +194,7 @@
 
   /* FEATURES */
   .features {
-    padding: 80px 24px;
+    padding: 40px 24px 80px;
     max-width: 960px; margin: 0 auto;
     background: white;
   }
@@ -436,9 +436,9 @@
       <p style="font-size:13px;color:var(--teal);font-weight:600;margin:6px 0 20px;">14-day trial · No card needed</p>
       <div class="features-label">Includes during trial</div>
       <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Full label builder — all shapes &amp; sizes<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Build round, square or rectangular CLP labels in any size from 25mm to 100mm. All GHS pictograms, signal words and hazard statements included.</div></div>
-      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>All download formats<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">PNG, SVG, JPEG, PDF — download your label in whatever format you need for home printing or sending to a print company.</div></div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>All download formats<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">PNG, SVG, JPEG, PDF — download up to 10 labels during your trial in any format. Watermarked to indicate trial status.</div></div>
       <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>All hazard data &amp; product types<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Candles, wax melts, reed diffusers, room sprays and more — all product types with their associated GHS hazard and precautionary statements.</div></div>
-      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Every Easy Start &amp; Easy Pro feature<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">The trial gives you full access to every feature across all plans so you can properly test what works for your business.</div></div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Every Easy Start &amp; Easy Pro feature<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">The trial gives you access to every feature across all plans — with up to 10 watermarked label downloads so you can properly test what works for your business before committing.</div></div>
       <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>No credit card required<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Sign up with just your email. No payment details needed until you decide to subscribe.</div></div>
 
       <button class="btn-plan btn-plan-free" style="border:1.5px solid var(--teal);color:var(--teal);background:white;" onclick="window.location.href='auth.html'">Start free trial →</button>
@@ -547,9 +547,9 @@
       <h2>Labels that look as good as your products</h2>
       <p>CLPeasy defaults to <strong>50mm circle for candles</strong> and <strong>35mm circle for wax melts</strong> — the two most common sizes. Need something different? Switch to any custom size in millimetres, and choose circle, square or rectangle to match your product perfectly.</p>
       <div class="preview-steps">
-        <div class="step-item"><span class="step-num">1</span> <strong>Easy Start:</strong> Select your supplier and paste Section 2.2 from your SDS — CLPeasy extracts all hazard data instantly</div>
-        <div class="step-item"><span class="step-num">1</span> <strong>Easy Pro:</strong> Paste your entire SDS PDF — CLPeasy reads the whole document and extracts exactly what your label needs automatically</div>
-        <div class="step-item"><span class="step-num">3</span> Download your print-ready label as PNG, SVG or PDF</div>
+        <div class="step-item"><span class="step-num">S</span><span><strong>Easy Start:</strong> Select your supplier and paste Section 2.2 from your SDS — CLPeasy extracts all hazard data instantly</span></div>
+        <div class="step-item"><span class="step-num" style="background:#F59E0B;">P</span><span><strong>Easy Pro:</strong> Paste your entire SDS PDF — CLPeasy reads the whole document and extracts exactly what your label needs automatically</span></div>
+        <div class="step-item"><span class="step-num">3</span><span>Download your print-ready label as PNG, SVG or PDF</span></div>
       </div>
     </div>
   </div>
@@ -665,6 +665,7 @@
     <div style="background:var(--off);border-radius:20px;padding:32px;border:1px solid var(--border);">
       
       <h3 style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:12px;">Why CLPeasy is different</h3>
+      <p style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);">After searching for a single tool that could handle CLP compliance from start to finish, I quickly discovered that nothing like this existed. CLPeasy is the only service in the global market built specifically to help fragrance product makers stay legally compliant — with confidence that they are meeting every rule and regulation. We understand the effort, skill, creativity and dedication that goes into creating your products and building your brand. Your labels are the final detail that completes that picture. The smallest things make the biggest impact, and your products deserve to look as professional as they are.</p>
       <div style="display:flex;flex-direction:column;gap:12px;">
         <div style="display:flex;gap:12px;align-items:flex-start;">
           <div style="width:20px;height:20px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:2px;">✓</div>
@@ -743,11 +744,11 @@
     </div>
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">What's the difference between Easy Trial, Easy Start and Easy Pro?</div>
-      <div class="faq-a">Easy Trial is free for 14 days with full access to every feature — no card needed. After the trial, Easy Start (£9.99/mo or £99/year) gives you unlimited downloads, no watermark, the full label builder, supplier SDS guide, A4 print sheets and Cricut export. Easy Pro (£14.99/mo or £149/year) adds SDS Smart Import (AI paste), UFI generator, QR digital safety sheets, batch export and label folders. Not sure which plan is right for you? <a href="plan-picker.html" style="color:var(--teal);">Try our 5-question plan finder →</a></div>
+      <div class="faq-a">Easy Trial is free for 14 days with access to every feature and up to 10 watermarked downloads — no card needed. After the trial, Easy Start (£9.99/mo or £99/year) gives you unlimited downloads, no watermark, the full label builder, supplier SDS guide, A4 print sheets and Cricut export. Easy Pro (£14.99/mo or £149/year) adds SDS Smart Import (AI paste), UFI generator, QR digital safety sheets, batch export and label folders. Not sure which plan is right for you? <a href="plan-picker.html" style="color:var(--teal);">Try our 5-question plan finder →</a></div>
     </div>
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">Are there any download limits?</div>
-      <div class="faq-a">No — both Easy Start and Easy Pro include unlimited downloads. Download your labels as PNG, SVG, JPEG or PDF as many times as you need. No monthly caps, no counting, no worrying.</div>
+      <div class="faq-a">The Easy Trial includes up to 10 watermarked label downloads so you can test the full workflow. Once you subscribe to Easy Start or Easy Pro, downloads are unlimited — no caps, no counting, no worrying.</div>
     </div>
   </div>
 </section>
@@ -796,8 +797,7 @@
       </div>
     </div>
     <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-      <p style="font-size:12px;color:rgba(255,255,255,0.3);">&copy; 2026 CLPeasy. Built for candle makers, by candle makers.</p>
-      <p style="font-size:12px;color:rgba(255,255,255,0.3);">Made with ❤️ in the Scottish Borders</p>
+      <p style="font-size:12px;color:rgba(255,255,255,0.3);">&copy; 2026 CLPeasy. Built for fragrance product makers, by a maker.</p>
     </div>
   </div>
 </footer>
