@@ -235,7 +235,7 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 24px;height
       <div class="reason-title">Why Easy Start suits you</div>
       <div id="start-reasons"></div>
     </div>
-    <div class="price-display">From <strong>£6.99</strong>/month &nbsp;·&nbsp; or £59/year</div>
+    <div class="price-display">From <strong>£9.99</strong>/month &nbsp;·&nbsp; or £99/year</div>
     <a href="auth.html" class="btn-cta">Get started with Easy Start →</a>
     <a href="pricing.html" class="btn-see-all">Compare all plans</a>
     <div class="retake"><button class="btn-retake" onclick="retake()">← Retake the quiz</button></div>
@@ -250,7 +250,7 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 24px;height
       <div class="reason-title">Why Easy Pro suits you</div>
       <div id="pro-reasons"></div>
     </div>
-    <div class="price-display">From <strong>£9.99</strong>/month &nbsp;·&nbsp; or £84/year</div>
+    <div class="price-display">From <strong>£14.99</strong>/month &nbsp;·&nbsp; or £149/year</div>
     <a href="auth.html" class="btn-cta pro-cta">Get started with Easy Pro →</a>
     <a href="pricing.html" class="btn-see-all">Compare all plans</a>
     <div class="retake"><button class="btn-retake" onclick="retake()">← Retake the quiz</button></div>
@@ -373,6 +373,15 @@ function retake() {
   document.getElementById('progress-label').textContent = 'Question 1 of 5';
   window.scrollTo({top: 0, behavior: 'smooth'});
 }
+</script>
+<style>
+  body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; user-select:none; }
+</style>
+<script>
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  document.addEventListener('keydown', function(e){
+    if((e.ctrlKey||e.metaKey) && (e.key==='c'||e.key==='u'||e.key==='s'||e.key==='a'||e.key==='p')) e.preventDefault();
+  });
 </script>
 </body>
 </html>
