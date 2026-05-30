@@ -429,7 +429,11 @@
         <option value="Candles">Candles</option>
         <option value="Wax melts">Wax melts</option>
         <option value="Both candles and wax melts">Both candles and wax melts</option>
-        <option value="Candles, wax melts and other products">Candles, wax melts and other products</option>
+        <option value="Reed diffusers">Reed diffusers</option>
+        <option value="Room sprays">Room sprays</option>
+        <option value="Fragrance oils">Fragrance oils</option>
+        <option value="Multiple fragrance products">Multiple fragrance products (candles, wax melts and more)</option>
+        <option value="Other fragrance products">Other fragrance products</option>
       </select>
       <div class="error-msg" id="productsError">Please select what you make</div>
     </div>
@@ -470,7 +474,7 @@
 </main>
 
 <footer>
-  CLPeasy — CLP compliance made simple for candle and wax melt makers<br>
+  CLPeasy — CLP compliance made simple for fragrance product makers<br>
   <a href="mailto:support@clpeasy.com">support@clpeasy.com</a> &nbsp;·&nbsp;
   <a href="https://clpeasy.com/terms.html">Terms</a> &nbsp;·&nbsp;
   <a href="https://clpeasy.com/privacy.html">Privacy</a>
@@ -609,5 +613,14 @@
   checkSpots();
 </script>
 
+<style>
+  body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; user-select:none; }
+</style>
+<script>
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  document.addEventListener('keydown', function(e){
+    if((e.ctrlKey||e.metaKey) && (e.key==='c'||e.key==='u'||e.key==='s'||e.key==='a'||e.key==='p')) e.preventDefault();
+  });
+</script>
 </body>
 </html>

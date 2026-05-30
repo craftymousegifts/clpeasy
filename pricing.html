@@ -545,5 +545,14 @@ function toggleFeature(el){
   if(chev)chev.classList.toggle('open');
 }
 </script>
+<style>
+  body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; user-select:none; }
+</style>
+<script>
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  document.addEventListener('keydown', function(e){
+    if((e.ctrlKey||e.metaKey) && (e.key==='c'||e.key==='u'||e.key==='s'||e.key==='a'||e.key==='p')) e.preventDefault();
+  });
+</script>
 </body>
 </html>

@@ -80,8 +80,8 @@ input:focus{border-color:var(--teal);}
 <body>
 
 <nav>
-  <a href="index.html" class="nav-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span></a>
-  <a href="index.html" class="nav-back">← Home</a>
+  <a href="home.html" class="nav-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span></a>
+  <a href="home.html" class="nav-back">← Home</a>
 </nav>
 
 <main>
@@ -98,7 +98,7 @@ input:focus{border-color:var(--teal);}
       <div class="verify-title">Check your email</div>
       <div class="verify-sub" id="verify-sub">We've sent a verification link to your email address. Click the link to activate your CLPeasy account.</div>
       <br>
-      <a href="index.html" style="color:var(--teal);font-size:14px;font-weight:600;">← Back to home</a>
+      <a href="home.html" style="color:var(--teal);font-size:14px;font-weight:600;">← Back to home</a>
     </div>
 
     <!-- AUTH FORM -->
@@ -253,6 +253,15 @@ sb.auth.getSession().then(({ data: { session } }) => {
 
 // Set initial state
 switchTab(defaultTab);
+</script>
+<style>
+  body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; user-select:none; }
+</style>
+<script>
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  document.addEventListener('keydown', function(e){
+    if((e.ctrlKey||e.metaKey) && (e.key==='c'||e.key==='u'||e.key==='s'||e.key==='a'||e.key==='p')) e.preventDefault();
+  });
 </script>
 </body>
 </html>
