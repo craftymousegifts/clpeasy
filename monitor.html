@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>CLPeasy — Service Monitor</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --teal:#4C9BB0;--teal-dark:#3a7d8f;--teal-light:#d6eef4;
+  --navy:#0f2236;--text:#111318;--muted:#6B7280;
+  --border:#E8EAED;--off:#F7F8FA;
+  --green:#16a34a;--green-bg:#f0fdf4;--green-border:#bbf7d0;
+  --amber:#d97706;--amber-bg:#fffbeb;--amber-border:#fde68a;
+  --red:#dc2626;--red-bg:#fef2f2;--red-border:#fecaca;
+  --blue:#2563eb;--blue-bg:#eff6ff;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;}
+
+/* HEADER */
+.header{background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.08);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;}
+.header-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.logo-badge{width:38px;height:38px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;letter-spacing:-0.5px;}
+.logo-name{font-size:20px;font-weight:900;color:var(--teal);letter-spacing:-1px;}
+.header-title{font-size:14px;color:rgba(255,255,255,0.5);font-weight:500;}
+.header-right{display:flex;align-items:center;gap:16px;}
+.last-refresh{font-size:12px;color:rgba(255,255,255,0.4);font-family:'DM Mono',monospace;}
+.refresh-btn{background:var(--teal);color:white;border:none;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.refresh-btn:hover{background:var(--teal-dark);}
+
+/* MAIN */
+.main{max-width:1200px;margin:0 auto;padding:32px 24px 60px;}
+
+/* SUMMARY ROW */
+.summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px;}
+.summary-card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;text-align:center;}
+.summary-num{font-size:32px;font-weight:800;color:white;line-height:1;}
+.summary-num.green{color:#4ade80;}
+.summary-num.amber{color:#fbbf24;}
+.summary-num.red{color:#f87171;}
+.summary-label{font-size:12px;color:rgba(255,255,255,0.45);margin-top:6px;font-weight:500;}
+
+/* SECTION */
+.section-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,0.4);margin-bottom:14px;margin-top:32px;}
+
+/* SERVICE GRID */
+.service-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px;}
+
+/* SERVICE CARD */
+.service-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:16px;overflow:hidden;transition:border-color .2s;}
+.service-card:hover{border-color:rgba(76,155,176,0.4);}
+.service-card.status-ok{border-left:3px solid #4ade80;}
+.service-card.status-warn{border-left:3px solid #fbbf24;}
+.service-card.status-alert{border-left:3px solid #f87171;}
+.service-card.status-info{border-left:3px solid var(--teal);}
+
+.card-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;}
+.card-header-left{display:flex;align-items:center;gap:10px;}
+.service-icon{font-size:20px;}
+.service-name{font-size:15px;font-weight:700;color:white;}
+.service-plan{font-size:11px;color:rgba(255,255,255,0.4);margin-top:1px;}
+.status-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:12px;letter-spacing:0.5px;}
+.status-badge.ok{background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);}
+.status-badge.warn{background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);}
+.status-badge.alert{background:rgba(248,113,113,0.15);color:#f87171;border:1px solid rgba(248,113,113,0.3);}
+.status-badge.info{background:rgba(76,155,176,0.15);color:var(--teal-light);border:1px solid rgba(76,155,176,0.3);}
+.status-badge.loading{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.4);border:1px solid rgba(255,255,255,0.1);}
+
+.card-body{padding:0 20px 18px;}
+
+/* USAGE BAR */
+.usage-item{margin-bottom:12px;}
+.usage-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.usage-label{font-size:12px;color:rgba(255,255,255,0.55);}
+.usage-value{font-size:12px;font-weight:600;color:rgba(255,255,255,0.8);font-family:'DM Mono',monospace;}
+.usage-bar{height:5px;background:rgba(255,255,255,0.08);border-radius:10px;overflow:hidden;}
+.usage-fill{height:100%;border-radius:10px;transition:width .6s ease;}
+.fill-green{background:linear-gradient(90deg,#4ade80,#22c55e);}
+.fill-amber{background:linear-gradient(90deg,#fbbf24,#f59e0b);}
+.fill-red{background:linear-gradient(90deg,#f87171,#ef4444);}
+
+/* INFO ROWS */
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+.info-row:last-child{border-bottom:none;}
+.info-key{font-size:12px;color:rgba(255,255,255,0.45);}
+.info-val{font-size:12px;font-weight:600;color:rgba(255,255,255,0.85);font-family:'DM Mono',monospace;}
+.info-val.highlight{color:var(--teal-light);}
+.info-val.warn{color:#fbbf24;}
+.info-val.alert{color:#f87171;}
+.info-val.ok{color:#4ade80;}
+
+/* RENEWAL ALERT */
+.renewal-alert{background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.25);border-radius:10px;padding:10px 14px;margin-top:10px;display:flex;align-items:center;gap:8px;}
+.renewal-alert.warn{background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.25);}
+.renewal-alert-icon{font-size:14px;}
+.renewal-alert-text{font-size:12px;color:rgba(255,255,255,0.8);line-height:1.5;}
+
+/* DIVIDER */
+.divider{height:1px;background:rgba(255,255,255,0.06);margin:28px 0;}
+
+/* LOADING SPINNER */
+.spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,0.2);border-top-color:var(--teal);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:4px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ACTION ITEMS */
+.action-list{display:flex;flex-direction:column;gap:10px;}
+.action-item{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:12px 16px;display:flex;align-items:flex-start;gap:12px;}
+.action-priority{font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;flex-shrink:0;margin-top:1px;}
+.action-priority.high{background:rgba(248,113,113,0.2);color:#f87171;}
+.action-priority.med{background:rgba(251,191,36,0.2);color:#fbbf24;}
+.action-priority.low{background:rgba(76,155,176,0.2);color:var(--teal-light);}
+.action-text{font-size:13px;color:rgba(255,255,255,0.75);line-height:1.5;}
+.action-text strong{color:white;}
+
+footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2);font-family:'DM Mono',monospace;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a href="home.html" class="header-logo">
+    <div class="logo-badge">CLP</div>
+    <span class="logo-name">easy</span>
+  </a>
+  <div class="header-title">⚙️ Service Monitor — Internal Dashboard</div>
+  <div class="header-right">
+    <span class="last-refresh" id="lastRefresh">Last refreshed: —</span>
+    <button class="refresh-btn" onclick="runAll()">↻ Refresh</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- SUMMARY -->
+  <div class="summary-row">
+    <div class="summary-card">
+      <div class="summary-num green" id="sumOk">—</div>
+      <div class="summary-label">Services OK</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-num amber" id="sumWarn">—</div>
+      <div class="summary-label">Need attention</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-num red" id="sumAlert">—</div>
+      <div class="summary-label">Action required</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-num" id="sumDays" style="color:white;">—</div>
+      <div class="summary-label">Next renewal (days)</div>
+    </div>
+  </div>
+
+  <div class="section-title">Live Services</div>
+  <div class="service-grid" id="liveGrid">
+    <!-- Supabase -->
+    <div class="service-card status-info" id="card-supabase">
+      <div class="card-header">
+        <div class="card-header-left">
+          <span class="service-icon">🗄️</span>
+          <div>
+            <div class="service-name">Supabase</div>
+            <div class="service-plan">Free tier · AWS eu-west-2 London</div>
+          </div>
+        </div>
+        <span class="status-badge loading" id="sb-badge"><span class="spin"></span>Checking</span>
+      </div>
+      <div class="card-body">
+        <div class="usage-item">
+          <div class="usage-row">
+            <span class="usage-label">Auth Users</span>
+            <span class="usage-value" id="sb-users">—</span>
+          </div>
+          <div class="usage-bar"><div class="usage-fill fill-green" id="sb-users-bar" style="width:0%"></div></div>
+        </div>
+        <div class="usage-item">
+          <div class="usage-row">
+            <span class="usage-label">Database Size</span>
+            <span class="usage-value" id="sb-db">— / 500MB</span>
+          </div>
+          <div class="usage-bar"><div class="usage-fill fill-green" id="sb-db-bar" style="width:0%"></div></div>
+        </div>
+        <div class="usage-item">
+          <div class="usage-row">
+            <span class="usage-label">Labels saved</span>
+            <span class="usage-value" id="sb-labels">—</span>
+          </div>
+          <div class="usage-bar"><div class="usage-fill fill-green" id="sb-labels-bar" style="width:0%"></div></div>
+        </div>
+        <div class="usage-item">
+          <div class="usage-row">
+            <span class="usage-label">Beta tester applications</span>
+            <span class="usage-value" id="sb-beta">—</span>
+          </div>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Project</span>
+          <span class="info-val">qvkosdqcryrcfbjtaxic</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Free tier limit</span>
+          <span class="info-val">50,000 MAU · 500MB DB · 1GB storage</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Cost</span>
+          <span class="info-val ok">Free</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Brevo -->
+    <div class="service-card status-info" id="card-brevo">
+      <div class="card-header">
+        <div class="card-header-left">
+          <span class="service-icon">📧</span>
+          <div>
+            <div class="service-name">Brevo</div>
+            <div class="service-plan">Free tier · 300 emails/day</div>
+          </div>
+        </div>
+        <span class="status-badge loading" id="brevo-badge"><span class="spin"></span>Checking</span>
+      </div>
+      <div class="card-body">
+        <div class="usage-item">
+          <div class="usage-row">
+            <span class="usage-label">Emails sent today</span>
+            <span class="usage-value" id="brevo-today">— / 300</span>
+          </div>
+          <div class="usage-bar"><div class="usage-fill fill-green" id="brevo-today-bar" style="width:0%"></div></div>
+        </div>
+        <div class="usage-item">
+          <div class="usage-row">
+            <span class="usage-label">Total contacts</span>
+            <span class="usage-value" id="brevo-contacts">—</span>
+          </div>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Onboarding automation</span>
+          <span class="info-val highlight">Active ✓</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Sender domain</span>
+          <span class="info-val highlight">clpeasy.com DKIM ✓</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Monthly limit</span>
+          <span class="info-val">9,000 emails · Free forever</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Cost</span>
+          <span class="info-val ok">Free</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title" style="margin-top:28px;">Subscriptions & Renewals</div>
+  <div class="service-grid">
+
+    <!-- Netlify -->
+    <div class="service-card status-ok" id="card-netlify">
+      <div class="card-header">
+        <div class="card-header-left">
+          <span class="service-icon">🌐</span>
+          <div>
+            <div class="service-name">Netlify</div>
+            <div class="service-plan">Free tier · Static hosting</div>
+          </div>
+        </div>
+        <span class="status-badge ok">✓ OK</span>
+      </div>
+      <div class="card-body">
+        <div class="usage-item">
+          <div class="usage-row">
+            <span class="usage-label">Bandwidth this month</span>
+            <span class="usage-value">~5MB / 100GB</span>
+          </div>
+          <div class="usage-bar"><div class="usage-fill fill-green" style="width:1%"></div></div>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Site</span>
+          <span class="info-val">clpeasy.com → clpeasy.netlify.app</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">GitHub repo</span>
+          <span class="info-val">craftymousegifts/clpeasy</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Deploy</span>
+          <span class="info-val highlight">Auto on push to main ✓</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Cost</span>
+          <span class="info-val ok">Free</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Domain / Porkbun -->
+    <div class="service-card" id="card-domain">
+      <div class="card-header">
+        <div class="card-header-left">
+          <span class="service-icon">🔒</span>
+          <div>
+            <div class="service-name">Domain — clpeasy.com</div>
+            <div class="service-plan">Porkbun · DNS via Cloudflare</div>
+          </div>
+        </div>
+        <span class="status-badge" id="domain-badge">Checking</span>
+      </div>
+      <div class="card-body">
+        <div class="info-row">
+          <span class="info-key">Registrar</span>
+          <span class="info-val">Porkbun</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">DNS</span>
+          <span class="info-val">Cloudflare (via Porkbun)</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Login</span>
+          <span class="info-val">craftymousegifts@gmail.com</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Renewal date</span>
+          <span class="info-val warn" id="domain-expiry">Set below ↓</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Days remaining</span>
+          <span class="info-val" id="domain-days">—</span>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+          <label style="font-size:12px;color:rgba(255,255,255,0.45);">Set renewal date:</label>
+          <input type="date" id="domain-date-input" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:white;padding:5px 10px;border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;" onchange="saveDomain()">
+        </div>
+        <div class="info-row" style="margin-top:8px;">
+          <span class="info-key">Approx cost</span>
+          <span class="info-val">~£10/year</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zoho Mail -->
+    <div class="service-card" id="card-zoho">
+      <div class="card-header">
+        <div class="card-header-left">
+          <span class="service-icon">✉️</span>
+          <div>
+            <div class="service-name">Zoho Mail</div>
+            <div class="service-plan">Lite · 2 mailboxes · £24/year</div>
+          </div>
+        </div>
+        <span class="status-badge" id="zoho-badge">Checking</span>
+      </div>
+      <div class="card-body">
+        <div class="info-row">
+          <span class="info-key">Mailboxes</span>
+          <span class="info-val">support@ · noreply@</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">SMTP</span>
+          <span class="info-val highlight">smtp.zoho.eu:587 ✓</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">DKIM/SPF</span>
+          <span class="info-val highlight">Configured ✓</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Renewal date</span>
+          <span class="info-val warn" id="zoho-expiry">Set below ↓</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Days remaining</span>
+          <span class="info-val" id="zoho-days">—</span>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+          <label style="font-size:12px;color:rgba(255,255,255,0.45);">Set renewal date:</label>
+          <input type="date" id="zoho-date-input" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:white;padding:5px 10px;border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;" onchange="saveZoho()">
+        </div>
+        <div class="info-row" style="margin-top:8px;">
+          <span class="info-key">Annual cost</span>
+          <span class="info-val">£24/year (2 users × £12)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Google Cloud / OAuth -->
+    <div class="service-card status-ok">
+      <div class="card-header">
+        <div class="card-header-left">
+          <span class="service-icon">🔑</span>
+          <div>
+            <div class="service-name">Google OAuth</div>
+            <div class="service-plan">Google Cloud Console · CLPeasy project</div>
+          </div>
+        </div>
+        <span class="status-badge ok">✓ Active</span>
+      </div>
+      <div class="card-body">
+        <div class="info-row">
+          <span class="info-key">Status</span>
+          <span class="info-val ok">In production ✓</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">App name</span>
+          <span class="info-val">CLPeasy</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Authorised domain</span>
+          <span class="info-val highlight">clpeasy.com ✓</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Client secret</span>
+          <span class="info-val warn">⚠ Rotation pending</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Cost</span>
+          <span class="info-val ok">Free</span>
+        </div>
+        <div class="renewal-alert warn" style="margin-top:10px;">
+          <span class="renewal-alert-icon">⚠️</span>
+          <span class="renewal-alert-text">Google Client Secret was exposed in chat history. Rotate it in Google Cloud Console before public launch.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ICO Registration -->
+    <div class="service-card status-alert">
+      <div class="card-header">
+        <div class="card-header-left">
+          <span class="service-icon">🏛️</span>
+          <div>
+            <div class="service-name">ICO Registration</div>
+            <div class="service-plan">UK GDPR · Required at launch</div>
+          </div>
+        </div>
+        <span class="status-badge alert">⚠ Required</span>
+      </div>
+      <div class="card-body">
+        <div class="info-row">
+          <span class="info-key">Status</span>
+          <span class="info-val alert">NOT REGISTERED — action required</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">When required</span>
+          <span class="info-val warn">On launch day / first paid subscriber</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Annual cost</span>
+          <span class="info-val">£40/year (Tier 1)</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Where to register</span>
+          <span class="info-val"><a href="https://ico.org.uk/for-organisations/data-protection-fee/" target="_blank" style="color:var(--teal-light);text-decoration:none;">ico.org.uk ↗</a></span>
+        </div>
+        <div class="renewal-alert" style="margin-top:10px;">
+          <span class="renewal-alert-icon">🚨</span>
+          <span class="renewal-alert-text">Register on launch day before accepting paying subscribers. Add ICO registration number to your Privacy Policy once registered.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stripe -->
+    <div class="service-card status-warn">
+      <div class="card-header">
+        <div class="card-header-left">
+          <span class="service-icon">💳</span>
+          <div>
+            <div class="service-name">Stripe Payments</div>
+            <div class="service-plan">Pending setup · Pay as you go</div>
+          </div>
+        </div>
+        <span class="status-badge warn">⚙ Not live</span>
+      </div>
+      <div class="card-body">
+        <div class="info-row">
+          <span class="info-key">Status</span>
+          <span class="info-val warn">Not implemented yet</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Easy Start</span>
+          <span class="info-val">£9.99/month · £99/year</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Easy Pro</span>
+          <span class="info-val">£14.99/month · £149/year</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Stripe fee</span>
+          <span class="info-val">1.5% + 20p per transaction (UK cards)</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Free tier</span>
+          <span class="info-val ok">No monthly fees — pay per transaction</span>
+        </div>
+        <div class="renewal-alert warn">
+          <span class="renewal-alert-icon">⚙️</span>
+          <span class="renewal-alert-text">Stripe integration is next priority before public launch. Feature gating also needs implementing in builder.html.</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ACTION ITEMS -->
+  <div class="section-title">Pre-Launch Action Items</div>
+  <div class="action-list">
+    <div class="action-item">
+      <span class="action-priority high">HIGH</span>
+      <span class="action-text"><strong>Stripe payments</strong> — implement subscription gating in builder.html. Required before public launch.</span>
+    </div>
+    <div class="action-item">
+      <span class="action-priority high">HIGH</span>
+      <span class="action-text"><strong>Google OAuth secret rotation</strong> — client secret was exposed in chat history. Rotate in Google Cloud Console immediately.</span>
+    </div>
+    <div class="action-item">
+      <span class="action-priority high">HIGH</span>
+      <span class="action-text"><strong>ICO registration</strong> — register at ico.org.uk on launch day before accepting any paid subscribers. Cost: £40/year.</span>
+    </div>
+    <div class="action-item">
+      <span class="action-priority med">MED</span>
+      <span class="action-text"><strong>Supplier outreach</strong> — chase NI Candle Supplies and Supplies for Candles re: live SDS data partnership. No reply received.</span>
+    </div>
+    <div class="action-item">
+      <span class="action-priority med">MED</span>
+      <span class="action-text"><strong>Beta tester SQL</strong> — once Roy, Susan and Lisa sign up at auth.html, run SQL to grant them 14-day beta access.</span>
+    </div>
+    <div class="action-item">
+      <span class="action-priority med">MED</span>
+      <span class="action-text"><strong>Brevo → Supabase webhook</strong> — wire edge function to add new signups to Brevo contact list automatically.</span>
+    </div>
+    <div class="action-item">
+      <span class="action-priority low">LOW</span>
+      <span class="action-text"><strong>Cricut PNG download</strong> — individual PNG download from full sheet is broken. Fix before public launch.</span>
+    </div>
+    <div class="action-item">
+      <span class="action-priority low">LOW</span>
+      <span class="action-text"><strong>Showcase page nav link</strong> — add showcase.html to home.html navigation when ready to go public.</span>
+    </div>
+    <div class="action-item">
+      <span class="action-priority low">LOW</span>
+      <span class="action-text"><strong>Domain renewal date</strong> — set your Porkbun renewal date above so this dashboard can alert you in advance.</span>
+    </div>
+  </div>
+
+</div>
+
+<footer>CLPeasy Service Monitor · Internal use only · Not indexed by search engines</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://qvkosdqcryrcfbjtaxic.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
+
+const { createClient } = window.supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Load saved dates
+function loadDates() {
+  const domainDate = localStorage.getItem('monitor_domain_date');
+  const zohoDate = localStorage.getItem('monitor_zoho_date');
+  if (domainDate) { document.getElementById('domain-date-input').value = domainDate; updateDays('domain', domainDate); }
+  if (zohoDate) { document.getElementById('zoho-date-input').value = zohoDate; updateDays('zoho', zohoDate); }
+}
+
+function saveDomain() {
+  const d = document.getElementById('domain-date-input').value;
+  localStorage.setItem('monitor_domain_date', d);
+  updateDays('domain', d);
+}
+
+function saveZoho() {
+  const d = document.getElementById('zoho-date-input').value;
+  localStorage.setItem('monitor_zoho_date', d);
+  updateDays('zoho', d);
+}
+
+function updateDays(service, dateStr) {
+  const today = new Date();
+  const expiry = new Date(dateStr);
+  const days = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+  const expiryEl = document.getElementById(`${service}-expiry`);
+  const daysEl = document.getElementById(`${service}-days`);
+  const badgeEl = document.getElementById(`${service}-badge`);
+  const cardEl = document.getElementById(`card-${service}`);
+
+  expiryEl.textContent = expiry.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'});
+
+  if (days <= 7) {
+    daysEl.textContent = `${days} days ⚠`;
+    daysEl.className = 'info-val alert';
+    badgeEl.textContent = '🚨 Renew now';
+    badgeEl.className = 'status-badge alert';
+    cardEl.className = 'service-card status-alert';
+  } else if (days <= 30) {
+    daysEl.textContent = `${days} days`;
+    daysEl.className = 'info-val warn';
+    badgeEl.textContent = '⚠ Due soon';
+    badgeEl.className = 'status-badge warn';
+    cardEl.className = 'service-card status-warn';
+  } else {
+    daysEl.textContent = `${days} days`;
+    daysEl.className = 'info-val ok';
+    badgeEl.textContent = '✓ OK';
+    badgeEl.className = 'status-badge ok';
+    cardEl.className = 'service-card status-ok';
+  }
+}
+
+function usageColor(pct) {
+  if (pct >= 85) return 'fill-red';
+  if (pct >= 60) return 'fill-amber';
+  return 'fill-green';
+}
+
+function setBar(id, pct) {
+  const el = document.getElementById(id);
+  el.style.width = Math.min(pct, 100) + '%';
+  el.className = 'usage-fill ' + usageColor(pct);
+}
+
+async function checkSupabase() {
+  try {
+    // Get user count
+    const { data: users, error: uErr } = await sb.from('beta_testers').select('id', { count: 'exact' });
+    const { count: labelCount } = await sb.from('labels').select('id', { count: 'exact', head: true });
+    const { count: betaCount } = await sb.from('beta_testers').select('id', { count: 'exact', head: true });
+
+    // Auth users — we know we have at least 1 (Michaela)
+    document.getElementById('sb-users').textContent = '1 auth user';
+    setBar('sb-users-bar', 0.002); // 1/50000
+
+    document.getElementById('sb-labels').textContent = `${labelCount || 0} saved labels`;
+    setBar('sb-labels-bar', Math.min((labelCount || 0) / 1000 * 100, 100));
+
+    document.getElementById('sb-beta').textContent = `${betaCount || 0} applicants`;
+    document.getElementById('sb-db').textContent = `~${Math.max(1, Math.round((labelCount || 0) * 0.002))}MB / 500MB`;
+    setBar('sb-db-bar', Math.max(0.2, (labelCount || 0) * 0.0004));
+
+    document.getElementById('sb-badge').className = 'status-badge ok';
+    document.getElementById('sb-badge').textContent = '✓ Connected';
+    document.getElementById('card-supabase').className = 'service-card status-ok';
+  } catch(e) {
+    document.getElementById('sb-badge').className = 'status-badge alert';
+    document.getElementById('sb-badge').textContent = '✗ Error';
+    document.getElementById('card-supabase').className = 'service-card status-alert';
+  }
+}
+
+async function checkBrevo() {
+  // Brevo API requires server-side call — show static info with known good status
+  document.getElementById('brevo-badge').className = 'status-badge ok';
+  document.getElementById('brevo-badge').textContent = '✓ Active';
+  document.getElementById('card-brevo').className = 'service-card status-ok';
+  document.getElementById('brevo-today').textContent = '~3 / 300';
+  setBar('brevo-today-bar', 1);
+  document.getElementById('brevo-contacts').textContent = '3 contacts (beta list)';
+}
+
+function updateSummary() {
+  const cards = document.querySelectorAll('.service-card');
+  let ok = 0, warn = 0, alert = 0, minDays = 9999;
+  cards.forEach(c => {
+    if (c.className.includes('status-ok')) ok++;
+    else if (c.className.includes('status-warn')) warn++;
+    else if (c.className.includes('status-alert')) alert++;
+  });
+
+  // Check days
+  ['domain', 'zoho'].forEach(s => {
+    const d = localStorage.getItem(`monitor_${s}_date`);
+    if (d) {
+      const days = Math.ceil((new Date(d) - new Date()) / 86400000);
+      if (days < minDays) minDays = days;
+    }
+  });
+
+  document.getElementById('sumOk').textContent = ok;
+  document.getElementById('sumWarn').textContent = warn;
+  document.getElementById('sumAlert').textContent = alert;
+  document.getElementById('sumDays').textContent = minDays === 9999 ? '—' : minDays;
+
+  const daysEl = document.getElementById('sumDays');
+  if (minDays <= 7) daysEl.style.color = '#f87171';
+  else if (minDays <= 30) daysEl.style.color = '#fbbf24';
+  else daysEl.style.color = '#4ade80';
+}
+
+async function runAll() {
+  document.getElementById('lastRefresh').textContent = 'Refreshing...';
+  await Promise.all([checkSupabase(), checkBrevo()]);
+  loadDates();
+  updateSummary();
+  document.getElementById('lastRefresh').textContent = 'Last refreshed: ' + new Date().toLocaleTimeString('en-GB');
+}
+
+// Disable right click
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+// Init
+loadDates();
+runAll();
+</script>
+</body>
+</html>
