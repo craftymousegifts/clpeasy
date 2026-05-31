@@ -558,11 +558,59 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
       </div>
     </div>
 
-  </div>
+    <!-- Horton Mix Virtual Address -->
+    <div class="service-card" id="card-hortonmix">
+      <div class="card-header">
+        <div class="card-header-left">
+          <span class="service-icon">🏢</span>
+          <div>
+            <div class="service-name">Horton Mix — Virtual Address</div>
+            <div class="service-plan">London · 66 Paul Street, EC2A 4NA</div>
+          </div>
+        </div>
+        <span class="status-badge warn" id="hm-badge">⚠ Pending</span>
+      </div>
+      <div class="card-body">
+        <div class="info-row">
+          <span class="info-key">Status</span>
+          <span class="info-val warn" id="hm-status">Verification in progress</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Address</span>
+          <span class="info-val">CLPeasy, 66 Paul Street, London, EC2A 4NA</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Monthly cost</span>
+          <span class="info-val">£26/month</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Renewal date</span>
+          <span class="info-val warn" id="hm-expiry">Set below ↓</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Days remaining</span>
+          <span class="info-val" id="hm-days">—</span>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+          <label style="font-size:12px;color:rgba(255,255,255,0.45);">Set renewal date:</label>
+          <input type="date" id="hm-date-input" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:white;padding:5px 10px;border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;" onchange="saveHM()">
+        </div>
+        <div class="info-row" style="margin-top:8px;">
+          <span class="info-key">Used for</span>
+          <span class="info-val highlight">IPO trade mark · ICO · Legal docs · Website</span>
+        </div>
+        <div class="renewal-alert warn" style="margin-top:10px;">
+          <span class="renewal-alert-icon">⚠️</span>
+          <span class="renewal-alert-text">Once verified, update status below. Ensure mail forwarding is active — IPO examination correspondence may arrive here.</span>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+          <label style="font-size:12px;color:rgba(255,255,255,0.45);">Mark as verified:</label>
+          <button onclick="markHMVerified()" style="background:var(--teal);color:white;border:none;padding:5px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">✓ Mark Verified</button>
+        </div>
+      </div>
+    </div>
 
-  <div class="divider"></div>
 
-  <!-- ACTION ITEMS -->
   <div class="section-title">Pre-Launch Action Items</div>
   <div class="action-list">
     <div class="action-item">
@@ -612,6 +660,7 @@ function loadDates() {
   const zohoDate = localStorage.getItem('monitor_zoho_date');
   if (domainDate) { document.getElementById('domain-date-input').value = domainDate; updateDays('domain', domainDate); }
   if (zohoDate) { document.getElementById('zoho-date-input').value = zohoDate; updateDays('zoho', zohoDate); }
+  loadHM();
 }
 
 function saveDomain() {
@@ -626,7 +675,29 @@ function saveZoho() {
   updateDays('zoho', d);
 }
 
-function updateDays(service, dateStr) {
+function saveHM() {
+  const d = document.getElementById('hm-date-input').value;
+  localStorage.setItem('monitor_hm_date', d);
+  updateDays('hm', d);
+}
+
+function markHMVerified() {
+  localStorage.setItem('monitor_hm_verified', 'true');
+  document.getElementById('hm-badge').textContent = '✓ Active';
+  document.getElementById('hm-badge').className = 'status-badge ok';
+  document.getElementById('hm-status').textContent = 'Verified ✓';
+  document.getElementById('hm-status').className = 'info-val ok';
+  document.getElementById('card-hortonmix').className = 'service-card status-ok';
+}
+
+function loadHM() {
+  const d = localStorage.getItem('monitor_hm_date');
+  const verified = localStorage.getItem('monitor_hm_verified');
+  if (d) { document.getElementById('hm-date-input').value = d; updateDays('hm', d); }
+  if (verified) { markHMVerified(); }
+}
+
+
   const today = new Date();
   const expiry = new Date(dateStr);
   const days = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
@@ -734,7 +805,7 @@ function updateSummary() {
   const tmDaysNum = Math.ceil((new Date('2036-05-31') - new Date()) / 86400000);
   if (tmDaysNum < minDays) minDays = tmDaysNum;
 
-  ['domain', 'zoho'].forEach(s => {
+  ['domain', 'zoho', 'hm'].forEach(s => {
     const d = localStorage.getItem(`monitor_${s}_date`);
     if (d) {
       const days = Math.ceil((new Date(d) - new Date()) / 86400000);
