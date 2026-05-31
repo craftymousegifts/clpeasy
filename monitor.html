@@ -502,6 +502,62 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
       </div>
     </div>
 
+    <!-- UK Trade Mark -->
+    <div class="service-card status-ok" id="card-trademark">
+      <div class="card-header">
+        <div class="card-header-left">
+          <span class="service-icon">™️</span>
+          <div>
+            <div class="service-name">CLPeasy™ Trade Mark</div>
+            <div class="service-plan">UK IPO · Application filed</div>
+          </div>
+        </div>
+        <span class="status-badge ok">✓ Filed</span>
+      </div>
+      <div class="card-body">
+        <div class="info-row">
+          <span class="info-key">Trade mark number</span>
+          <span class="info-val highlight">UK00004395085</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Your reference</span>
+          <span class="info-val">CLPeasyTM</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Date of filing</span>
+          <span class="info-val">31 May 2026 · 4:42pm</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Status</span>
+          <span class="info-val warn">Under examination — allow ~4 months</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Symbol permitted now</span>
+          <span class="info-val highlight">™ (® only after full registration)</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Renewal due</span>
+          <span class="info-val warn" id="tm-expiry">31 May 2036</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Days to renewal</span>
+          <span class="info-val" id="tm-days">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Renewal cost</span>
+          <span class="info-val">~£200 per class</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">IPO login</span>
+          <span class="info-val"><a href="https://www.ipo.gov.uk" target="_blank" style="color:var(--teal-light);text-decoration:none;">ipo.gov.uk ↗</a></span>
+        </div>
+        <div class="renewal-alert warn" style="margin-top:10px;">
+          <span class="renewal-alert-icon">⚠️</span>
+          <span class="renewal-alert-text">Set a calendar reminder for 31 May 2036 to renew. Keep your IPO correspondence email monitored during examination — they may contact you.</span>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <div class="divider"></div>
@@ -661,7 +717,23 @@ function updateSummary() {
     else if (c.className.includes('status-alert')) alert++;
   });
 
+  // Trade mark renewal — 10 years from filing: 31 May 2036
+  const tmExpiry = new Date('2036-05-31');
+  const tmDays = Math.ceil((tmExpiry - new Date()) / 86400000);
+  const tmDaysEl = document.getElementById('tm-days');
+  tmDaysEl.textContent = `${tmDays.toLocaleString()} days`;
+  if (tmDays <= 365) {
+    tmDaysEl.className = 'info-val warn';
+    document.getElementById('tm-expiry').className = 'info-val alert';
+  } else {
+    tmDaysEl.className = 'info-val ok';
+  }
+
   // Check days
+  // Include trade mark in next renewal check
+  const tmDaysNum = Math.ceil((new Date('2036-05-31') - new Date()) / 86400000);
+  if (tmDaysNum < minDays) minDays = tmDaysNum;
+
   ['domain', 'zoho'].forEach(s => {
     const d = localStorage.getItem(`monitor_${s}_date`);
     if (d) {
