@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Beta Feedback — CLPeasy</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --teal:#4C9BB0;--teal-dark:#3a7d8f;--teal-light:#d6eef4;--teal-bg:#f0f9fc;
+  --navy:#0f2236;--text:#111318;--muted:#6B7280;--border:#E8EAED;--off:#F7F8FA;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--teal-bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;}
+
+/* PAGE LAYOUT */
+.page{max-width:640px;margin:0 auto;padding:48px 20px 80px;}
+
+/* HEADER */
+.header{text-align:center;margin-bottom:40px;}
+.logo{display:inline-flex;align-items:center;gap:6px;text-decoration:none;margin-bottom:24px;}
+.logo-badge{width:48px;height:48px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;letter-spacing:-1px;}
+.logo-name{font-size:28px;font-weight:900;color:var(--teal);letter-spacing:-1.5px;}
+.beta-chip{display:inline-block;background:var(--teal);color:white;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:4px 12px;border-radius:20px;margin-bottom:16px;}
+.header h1{font-family:'DM Serif Display',serif;font-size:clamp(26px,5vw,36px);color:var(--navy);line-height:1.2;margin-bottom:10px;}
+.header p{font-size:15px;color:var(--muted);line-height:1.7;max-width:460px;margin:0 auto;}
+
+/* FORM CARD */
+.form-card{background:white;border-radius:20px;border:1px solid var(--border);box-shadow:0 4px 24px rgba(0,0,0,0.06);overflow:hidden;}
+
+/* PROGRESS BAR */
+.progress-bar{height:4px;background:var(--border);}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--teal-dark));transition:width .4s ease;border-radius:0 2px 2px 0;}
+
+.form-body{padding:36px 36px 32px;}
+
+/* QUESTION BLOCKS */
+.question{display:none;animation:fadeIn .3s ease;}
+.question.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+.q-num{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin-bottom:8px;}
+.q-text{font-family:'DM Serif Display',serif;font-size:22px;color:var(--navy);line-height:1.3;margin-bottom:6px;}
+.q-sub{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.6;}
+
+/* STAR RATING */
+.star-group{display:flex;gap:8px;margin-bottom:8px;}
+.star-btn{width:48px;height:48px;border-radius:12px;border:2px solid var(--border);background:white;font-size:22px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;}
+.star-btn:hover,.star-btn.active{border-color:var(--teal);background:var(--teal-light);transform:scale(1.08);}
+.star-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);}
+
+/* RADIO CARDS */
+.radio-group{display:flex;flex-direction:column;gap:10px;}
+.radio-card{display:flex;align-items:center;gap:14px;padding:14px 18px;border:2px solid var(--border);border-radius:12px;cursor:pointer;transition:all .15s;background:white;}
+.radio-card:hover{border-color:var(--teal);background:var(--teal-bg);}
+.radio-card.selected{border-color:var(--teal);background:var(--teal-light);}
+.radio-card input{display:none;}
+.radio-dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.radio-card.selected .radio-dot{border-color:var(--teal);background:var(--teal);}
+.radio-card.selected .radio-dot::after{content:'';width:8px;height:8px;border-radius:50%;background:white;}
+.radio-label{font-size:14px;font-weight:500;color:var(--text);}
+.radio-emoji{font-size:18px;}
+
+/* TEXTAREA */
+.textarea-wrap{position:relative;}
+textarea{width:100%;min-height:120px;padding:14px 16px;border:2px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);resize:vertical;transition:border-color .2s;outline:none;line-height:1.6;background:var(--off);}
+textarea:focus{border-color:var(--teal);background:white;}
+textarea::placeholder{color:#aaa;}
+.char-count{text-align:right;font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* TEXT INPUT */
+input[type=text],input[type=email]{width:100%;padding:14px 16px;border:2px solid var(--border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);transition:border-color .2s;outline:none;background:var(--off);}
+input[type=text]:focus,input[type=email]:focus{border-color:var(--teal);background:white;}
+.input-group{display:flex;flex-direction:column;gap:12px;}
+.input-label{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;}
+
+/* NAVIGATION */
+.form-nav{display:flex;justify-content:space-between;align-items:center;padding:20px 36px 28px;border-top:1px solid var(--border);}
+.btn-back{background:none;border:2px solid var(--border);color:var(--muted);padding:11px 22px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
+.btn-back:hover{border-color:var(--text);color:var(--text);}
+.btn-next{background:var(--teal);color:white;border:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:8px;}
+.btn-next:hover{background:var(--teal-dark);}
+.btn-next:disabled{background:var(--border);color:var(--muted);cursor:not-allowed;}
+.btn-submit{background:linear-gradient(135deg,var(--teal),var(--teal-dark));color:white;border:none;padding:14px 32px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
+.btn-submit:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(76,155,176,0.4);}
+.step-indicator{font-size:12px;color:var(--muted);}
+
+/* THANK YOU */
+.thankyou{display:none;text-align:center;padding:60px 36px;}
+.thankyou.show{display:block;}
+.thankyou-icon{font-size:56px;margin-bottom:20px;}
+.thankyou h2{font-family:'DM Serif Display',serif;font-size:28px;color:var(--navy);margin-bottom:10px;}
+.thankyou p{font-size:15px;color:var(--muted);line-height:1.7;max-width:380px;margin:0 auto 28px;}
+.thankyou-link{display:inline-block;background:var(--teal);color:white;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;}
+
+/* ERROR */
+.error-msg{font-size:12px;color:#dc2626;margin-top:6px;display:none;}
+.error-msg.show{display:block;}
+
+@media(max-width:480px){
+  .form-body{padding:24px 20px 20px;}
+  .form-nav{padding:16px 20px 22px;}
+  .star-btn{width:40px;height:40px;font-size:18px;}
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <a href="home.html" class="logo">
+      <div class="logo-badge">CLP</div>
+      <span class="logo-name">easy</span>
+    </a>
+    <div class="beta-chip">Beta Feedback</div>
+    <h1>How was your<br><em style="font-style:italic;color:var(--teal);">CLPeasy experience?</em></h1>
+    <p>Your feedback shapes CLPeasy before it launches. Honest answers — good or bad — are exactly what we need. This takes about 3 minutes.</p>
+  </div>
+
+  <!-- FORM CARD -->
+  <div class="form-card" id="formCard">
+
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:16%;"></div></div>
+
+    <div class="form-body">
+
+      <!-- Q1: Ease of use rating -->
+      <div class="question active" id="q1">
+        <div class="q-num">Question 1 of 7</div>
+        <div class="q-text">How easy was it to build your first label?</div>
+        <div class="q-sub">1 = really struggled, 5 = breeze from start to finish</div>
+        <div class="star-group" id="starGroup">
+          <button class="star-btn" data-val="1" onclick="selectStar(1)">1</button>
+          <button class="star-btn" data-val="2" onclick="selectStar(2)">2</button>
+          <button class="star-btn" data-val="3" onclick="selectStar(3)">3</button>
+          <button class="star-btn" data-val="4" onclick="selectStar(4)">4</button>
+          <button class="star-btn" data-val="5" onclick="selectStar(5)">5</button>
+        </div>
+        <div class="star-labels"><span>Really struggled</span><span>Total breeze</span></div>
+        <div class="error-msg" id="err1">Please select a rating before continuing.</div>
+      </div>
+
+      <!-- Q2: Trust in hazard data -->
+      <div class="question" id="q2">
+        <div class="q-num">Question 2 of 7</div>
+        <div class="q-text">Did the hazard data feel accurate and trustworthy?</div>
+        <div class="q-sub">Think about the H statements, signal word and GHS pictograms CLPeasy generated.</div>
+        <div class="radio-group" id="rg2">
+          <label class="radio-card" onclick="selectRadio('rg2',this,'Yes')">
+            <div class="radio-dot"></div>
+            <span class="radio-emoji">✅</span>
+            <span class="radio-label">Yes — it looked accurate to me</span>
+          </label>
+          <label class="radio-card" onclick="selectRadio('rg2',this,'Not sure')">
+            <div class="radio-dot"></div>
+            <span class="radio-emoji">🤔</span>
+            <span class="radio-label">Not sure — I couldn't fully verify it</span>
+          </label>
+          <label class="radio-card" onclick="selectRadio('rg2',this,'No')">
+            <div class="radio-dot"></div>
+            <span class="radio-emoji">❌</span>
+            <span class="radio-label">No — something didn't look right</span>
+          </label>
+        </div>
+        <div class="error-msg" id="err2">Please select an option before continuing.</div>
+      </div>
+
+      <!-- Q3: Most useful feature -->
+      <div class="question" id="q3">
+        <div class="q-num">Question 3 of 7</div>
+        <div class="q-text">What feature did you find most useful?</div>
+        <div class="q-sub">Pick the one that stood out most to you.</div>
+        <div class="radio-group" id="rg3">
+          <label class="radio-card" onclick="selectRadio('rg3',this,'Guide Me wizard')">
+            <div class="radio-dot"></div>
+            <span class="radio-emoji">🧙</span>
+            <span class="radio-label">Guide Me wizard — step-by-step help</span>
+          </label>
+          <label class="radio-card" onclick="selectRadio('rg3',this,'SDS paste / import')">
+            <div class="radio-dot"></div>
+            <span class="radio-emoji">📋</span>
+            <span class="radio-label">Pasting in SDS Section 2.2 data</span>
+          </label>
+          <label class="radio-card" onclick="selectRadio('rg3',this,'Label downloads')">
+            <div class="radio-dot"></div>
+            <span class="radio-emoji">🖨️</span>
+            <span class="radio-label">Downloading labels (PNG / PDF / Avery)</span>
+          </label>
+          <label class="radio-card" onclick="selectRadio('rg3',this,'QR safety sheet')">
+            <div class="radio-dot"></div>
+            <span class="radio-emoji">📱</span>
+            <span class="radio-label">QR code linking to digital safety sheet</span>
+          </label>
+          <label class="radio-card" onclick="selectRadio('rg3',this,'UFI code generation')">
+            <div class="radio-dot"></div>
+            <span class="radio-emoji">🔢</span>
+            <span class="radio-label">UFI code auto-generation</span>
+          </label>
+          <label class="radio-card" onclick="selectRadio('rg3',this,'Label history')">
+            <div class="radio-dot"></div>
+            <span class="radio-emoji">📂</span>
+            <span class="radio-label">Saved label history</span>
+          </label>
+        </div>
+        <div class="error-msg" id="err3">Please select an option before continuing.</div>
+      </div>
+
+      <!-- Q4: What was confusing or missing -->
+      <div class="question" id="q4">
+        <div class="q-num">Question 4 of 7</div>
+        <div class="q-text">What was confusing, broken, or missing?</div>
+        <div class="q-sub">Be brutal — this is exactly what beta testing is for. No feedback is too small.</div>
+        <div class="textarea-wrap">
+          <textarea id="ans4" placeholder="e.g. I couldn't figure out how to add my business address... The PDF download didn't work on my phone... I wish there was a way to..." maxlength="1000" oninput="updateChar('ans4','char4',1000)"></textarea>
+          <div class="char-count"><span id="char4">0</span>/1000</div>
+        </div>
+        <div class="error-msg" id="err4">Please share at least a few words — even "nothing was wrong" helps!</div>
+      </div>
+
+      <!-- Q5: Would you pay -->
+      <div class="question" id="q5">
+        <div class="q-num">Question 5 of 7</div>
+        <div class="q-text">Would you pay for CLPeasy when it launches?</div>
+        <div class="q-sub">Easy Start is £9.99/month or £99/year. Easy Pro is £14.99/month or £149/year.</div>
+        <div class="radio-group" id="rg5">
+          <label class="radio-card" onclick="selectRadio('rg5',this,'Yes - Easy Start')">
+            <div class="radio-dot"></div>
+            <span class="radio-emoji">💳</span>
+            <span class="radio-label">Yes — Easy Start (£9.99/month)</span>
+          </label>
+          <label class="radio-card" onclick="selectRadio('rg5',this,'Yes - Easy Pro')">
+            <div class="radio-dot"></div>
+            <span class="radio-emoji">⭐</span>
+            <span class="radio-label">Yes — Easy Pro (£14.99/month)</span>
+          </label>
+          <label class="radio-card" onclick="selectRadio('rg5',this,'Maybe')">
+            <div class="radio-dot"></div>
+            <span class="radio-emoji">🤔</span>
+            <span class="radio-label">Maybe — depends on the final product</span>
+          </label>
+          <label class="radio-card" onclick="selectRadio('rg5',this,'No')">
+            <div class="radio-dot"></div>
+            <span class="radio-emoji">👋</span>
+            <span class="radio-label">No — not for me right now</span>
+          </label>
+        </div>
+        <div class="error-msg" id="err5">Please select an option before continuing.</div>
+      </div>
+
+      <!-- Q6: Any other comments -->
+      <div class="question" id="q6">
+        <div class="q-num">Question 6 of 7</div>
+        <div class="q-text">Anything else you'd like to tell us?</div>
+        <div class="q-sub">Any other thoughts, suggestions, compliments or complaints — we want to hear it all.</div>
+        <div class="textarea-wrap">
+          <textarea id="ans6other" placeholder="e.g. I loved the QR code feature... It would be great if you could... I had a problem when..." maxlength="1000" oninput="updateChar('ans6other','char6other',1000)"></textarea>
+          <div class="char-count"><span id="char6other">0</span>/1000</div>
+        </div>
+      </div>
+
+      <!-- Q7: Name and email -->
+      <div class="question" id="q7">
+        <div class="q-num">Question 7 of 7</div>
+        <div class="q-text">Last one — who are you?</div>
+        <div class="q-sub">So Michaela can follow up personally if she has questions about your feedback.</div>
+        <div class="input-group">
+          <div>
+            <div class="input-label">Your name</div>
+            <input type="text" id="ans7name" placeholder="e.g. Susan">
+          </div>
+          <div>
+            <div class="input-label">Your email</div>
+            <input type="email" id="ans7email" placeholder="e.g. susan@example.com">
+          </div>
+        </div>
+        <div class="error-msg" id="err7">Please enter your name and email address.</div>
+        <p style="font-size:12px;color:var(--muted);margin-top:14px;line-height:1.6;">Your responses will only be seen by Michaela at CLPeasy. They won't be shared or used for marketing without your permission.</p>
+      </div>
+
+    </div><!-- end form-body -->
+
+    <!-- NAV -->
+    <div class="form-nav" id="formNav">
+      <button class="btn-back" id="btnBack" onclick="prevQ()" style="visibility:hidden;">← Back</button>
+      <span class="step-indicator" id="stepIndicator">1 of 6</span>
+      <button class="btn-next" id="btnNext" onclick="nextQ()">Next →</button>
+    </div>
+
+    <!-- THANK YOU -->
+    <div class="thankyou" id="thankyou">
+      <div class="thankyou-icon">🎉</div>
+      <h2>Thank you so much!</h2>
+      <p>Your feedback means everything at this stage. Michaela reads every single response personally and will be in touch.</p>
+      <a href="builder.html" class="thankyou-link">Back to the builder →</a>
+    </div>
+
+  </div><!-- end form-card -->
+
+</div><!-- end page -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://qvkosdqcryrcfbjtaxic.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
+
+const { createClient } = window.supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentQ = 1;
+const totalQ = 7;
+const answers = { rating: null, hazard_trust: null, best_feature: null, feedback: '', would_pay: null, other_comments: '', name: '', email: '' };
+
+function updateProgress() {
+  const pct = (currentQ / totalQ) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('stepIndicator').textContent = currentQ + ' of ' + totalQ;
+  document.getElementById('btnBack').style.visibility = currentQ > 1 ? 'visible' : 'hidden';
+  const btnNext = document.getElementById('btnNext');
+  if (currentQ === totalQ) {
+    btnNext.textContent = '';
+    btnNext.innerHTML = 'Submit feedback ✓';
+    btnNext.onclick = submitForm;
+  } else {
+    btnNext.innerHTML = 'Next →';
+    btnNext.onclick = nextQ;
+  }
+}
+
+function selectStar(val) {
+  answers.rating = val;
+  document.querySelectorAll('.star-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.val) <= val);
+  });
+}
+
+function selectRadio(groupId, el, val) {
+  document.querySelectorAll('#' + groupId + ' .radio-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  if (groupId === 'rg2') answers.hazard_trust = val;
+  if (groupId === 'rg3') answers.best_feature = val;
+  if (groupId === 'rg5') answers.would_pay = val;
+}
+
+function updateChar(id, countId, max) {
+  const val = document.getElementById(id).value.length;
+  document.getElementById(countId).textContent = val;
+}
+
+function validate(q) {
+  const errs = { 1: 'err1', 2: 'err2', 3: 'err3', 4: 'err4', 5: 'err5', 6: 'err7' };
+  let valid = true;
+  if (errs[q]) document.getElementById(errs[q]).classList.remove('show');
+
+  if (q === 1 && !answers.rating) valid = false;
+  if (q === 2 && !answers.hazard_trust) valid = false;
+  if (q === 3 && !answers.best_feature) valid = false;
+  if (q === 4 && document.getElementById('ans4').value.trim().length < 3) valid = false;
+  if (q === 5 && !answers.would_pay) valid = false;
+  // q6 = other comments, optional — always valid
+  if (q === 7) {
+    const name = document.getElementById('ans7name').value.trim();
+    const email = document.getElementById('ans7email').value.trim();
+    if (!name || !email || !email.includes('@')) valid = false;
+  }
+
+  if (!valid && errs[q]) document.getElementById(errs[q]).classList.add('show');
+  return valid;
+}
+
+function nextQ() {
+  if (!validate(currentQ)) return;
+  if (currentQ === 4) answers.feedback = document.getElementById('ans4').value.trim();
+  if (currentQ === 6) { const el = document.getElementById('ans6other'); if(el) answers.other_comments = el.value.trim(); }
+  document.getElementById('q' + currentQ).classList.remove('active');
+  currentQ++;
+  document.getElementById('q' + currentQ).classList.add('active');
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function prevQ() {
+  document.getElementById('q' + currentQ).classList.remove('active');
+  currentQ--;
+  document.getElementById('q' + currentQ).classList.add('active');
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function submitForm() {
+  if (!validate(6)) return;
+  answers.name = document.getElementById('ans7name').value.trim();
+  answers.email = document.getElementById('ans7email').value.trim();
+  answers.feedback = document.getElementById('ans4').value.trim();
+
+  const btnNext = document.getElementById('btnNext');
+  btnNext.innerHTML = 'Submitting…';
+  btnNext.disabled = true;
+
+  try {
+    await sb.from('beta_feedback').insert([{
+      name: answers.name,
+      email: answers.email,
+      ease_rating: answers.rating,
+      hazard_trust: answers.hazard_trust,
+      best_feature: answers.best_feature,
+      feedback: answers.feedback,
+      would_pay: answers.would_pay,
+      other_comments: answers.other_comments,
+      submitted_at: new Date().toISOString()
+    }]);
+  } catch(e) {
+    console.error('Supabase error:', e);
+  }
+
+  // Show thank you regardless (graceful degradation)
+  document.getElementById('formNav').style.display = 'none';
+  document.querySelector('.form-body').style.display = 'none';
+  document.getElementById('thankyou').classList.add('show');
+  document.getElementById('progressFill').style.width = '100%';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+updateProgress();
+</script>
+</body>
+</html>
