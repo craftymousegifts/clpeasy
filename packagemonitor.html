@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Package Monitor — CLPeasy Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0B0F17;
+  --surface:#131820;
+  --surface2:#1A2030;
+  --border:#1E2840;
+  --teal:#4C9BB0;
+  --teal-dim:rgba(76,155,176,0.15);
+  --teal-glow:rgba(76,155,176,0.4);
+  --amber:#F59E0B;
+  --amber-dim:rgba(245,158,11,0.12);
+  --red:#EF4444;
+  --red-dim:rgba(239,68,68,0.12);
+  --green:#22C55E;
+  --green-dim:rgba(34,197,94,0.12);
+  --text:#E2E8F0;
+  --muted:#64748B;
+  --mono:'DM Mono',monospace;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;}
+
+/* AUTH GATE */
+#auth-gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;}
+.auth-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px;width:320px;text-align:center;}
+.auth-logo{font-size:13px;font-weight:700;color:var(--teal);letter-spacing:2px;text-transform:uppercase;margin-bottom:24px;}
+.auth-box h2{font-size:18px;font-weight:600;margin-bottom:6px;}
+.auth-box p{font-size:13px;color:var(--muted);margin-bottom:24px;}
+.auth-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border .2s;}
+.auth-input:focus{border-color:var(--teal);}
+.auth-btn{width:100%;margin-top:12px;background:var(--teal);color:white;border:none;padding:11px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.auth-err{font-size:12px;color:var(--red);margin-top:8px;display:none;}
+
+/* LAYOUT */
+#dashboard{display:none;}
+nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;}
+.nav-brand{display:flex;align-items:center;gap:10px;}
+.nav-badge{width:32px;height:32px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;}
+.nav-title{font-size:14px;font-weight:700;color:var(--text);}
+.nav-sub{font-size:11px;color:var(--muted);font-family:var(--mono);}
+.nav-right{display:flex;align-items:center;gap:16px;}
+.last-refresh{font-size:11px;color:var(--muted);font-family:var(--mono);}
+.refresh-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:border-color .2s;}
+.refresh-btn:hover{border-color:var(--teal);}
+
+.main{max-width:1200px;margin:0 auto;padding:32px 24px;}
+
+/* ALERT BANNER */
+.alert-banner{background:var(--red-dim);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:14px 20px;margin-bottom:28px;display:flex;align-items:center;gap:12px;display:none;}
+.alert-banner.show{display:flex;}
+.alert-dot{width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;animation:pulse 1.5s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+.alert-text{font-size:13px;color:#FCA5A5;flex:1;}
+.alert-text strong{color:var(--red);}
+.alert-action{background:var(--red);color:white;border:none;padding:6px 14px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+
+/* SUMMARY STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;}
+.stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:8px;}
+.stat-value{font-size:32px;font-weight:700;letter-spacing:-1px;line-height:1;}
+.stat-value.teal{color:var(--teal);}
+.stat-value.amber{color:var(--amber);}
+.stat-value.red{color:var(--red);}
+.stat-value.green{color:var(--green);}
+.stat-delta{font-size:11px;color:var(--muted);margin-top:5px;font-family:var(--mono);}
+
+/* PLAN USAGE OVERVIEW */
+.section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:14px;}
+.plan-overview{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
+.plan-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 24px;}
+.plan-box-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.plan-name{font-size:15px;font-weight:700;}
+.plan-limit-badge{font-size:11px;font-family:var(--mono);color:var(--muted);background:var(--surface2);padding:3px 9px;border-radius:20px;border:1px solid var(--border);}
+.usage-tiers{display:flex;flex-direction:column;gap:10px;}
+.tier-row{display:flex;align-items:center;gap:12px;}
+.tier-label{font-size:12px;color:var(--muted);width:80px;flex-shrink:0;}
+.tier-bar-wrap{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+.tier-bar{height:100%;border-radius:3px;transition:width 1s ease;}
+.tier-bar.ok{background:var(--green);}
+.tier-bar.warn{background:var(--amber);}
+.tier-bar.alert{background:var(--red);}
+.tier-pct{font-size:11px;font-family:var(--mono);color:var(--muted);width:36px;text-align:right;flex-shrink:0;}
+.tier-count{font-size:11px;color:var(--muted);width:60px;text-align:right;flex-shrink:0;}
+
+/* THRESHOLD CONTROL */
+.threshold-row{display:flex;align-items:center;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);}
+.threshold-label{font-size:12px;color:var(--muted);flex:1;}
+.threshold-input{width:56px;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:6px;font-size:12px;font-family:var(--mono);text-align:center;outline:none;}
+.threshold-input:focus{border-color:var(--teal);}
+.threshold-unit{font-size:12px;color:var(--muted);}
+
+/* USERS TABLE */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:28px;}
+.table-header{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.table-header-title{font-size:13px;font-weight:700;}
+.filter-row{display:flex;gap:8px;}
+.filter-btn{font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.filter-btn.active{background:var(--teal-dim);border-color:var(--teal);color:var(--teal);}
+table{width:100%;border-collapse:collapse;}
+th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);padding:10px 16px;text-align:left;border-bottom:1px solid var(--border);}
+td{font-size:12px;padding:11px 16px;border-bottom:1px solid rgba(30,40,64,0.5);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--surface2);}
+.user-name{font-weight:600;color:var(--text);}
+.user-email{font-family:var(--mono);font-size:11px;color:var(--muted);}
+.plan-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:0.5px;}
+.plan-tag.start{background:var(--teal-dim);color:var(--teal);}
+.plan-tag.pro{background:rgba(168,85,247,0.15);color:#C084FC;}
+.plan-tag.trial{background:var(--amber-dim);color:var(--amber);}
+.usage-cell{display:flex;align-items:center;gap:8px;}
+.mini-bar-wrap{width:80px;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;flex-shrink:0;}
+.mini-bar{height:100%;border-radius:2px;}
+.mini-bar.ok{background:var(--green);}
+.mini-bar.warn{background:var(--amber);}
+.mini-bar.alert{background:var(--red);}
+.usage-text{font-family:var(--mono);font-size:11px;}
+.topup-badge{font-size:10px;background:var(--amber-dim);color:var(--amber);padding:2px 8px;border-radius:20px;font-weight:700;}
+.upgrade-btn{font-size:10px;background:var(--teal-dim);color:var(--teal);border:1px solid rgba(76,155,176,0.3);padding:3px 10px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;transition:background .15s;}
+.upgrade-btn:hover{background:rgba(76,155,176,0.25);}
+.days-left{font-family:var(--mono);font-size:11px;}
+.days-left.urgent{color:var(--red);}
+.days-left.soon{color:var(--amber);}
+.days-left.fine{color:var(--muted);}
+.status-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:5px;}
+.status-dot.active{background:var(--green);}
+.status-dot.paused{background:var(--muted);}
+.status-dot.trial{background:var(--amber);}
+
+/* BULK ACTION */
+.bulk-bar{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 20px;margin-bottom:28px;display:flex;align-items:center;gap:14px;display:none;}
+.bulk-bar.show{display:flex;}
+.bulk-text{font-size:13px;flex:1;}
+.bulk-text strong{color:var(--teal);}
+.bulk-actions{display:flex;gap:8px;}
+.bulk-btn{font-size:12px;font-weight:700;padding:7px 16px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;border:none;transition:opacity .15s;}
+.bulk-btn:hover{opacity:0.85;}
+.bulk-btn.upgrade-all{background:var(--teal);color:white;}
+.bulk-btn.announce{background:var(--amber);color:#1A1A0A;}
+.bulk-btn.dismiss{background:var(--surface);color:var(--muted);border:1px solid var(--border);}
+
+/* ANNOUNCE MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:500;backdrop-filter:blur(4px);}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;width:520px;max-width:90vw;}
+.modal h3{font-size:17px;font-weight:700;margin-bottom:6px;}
+.modal p{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6;}
+.modal-preview{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;font-size:13px;line-height:1.7;color:var(--text);margin-bottom:20px;white-space:pre-wrap;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+.modal-btn{font-size:13px;font-weight:700;padding:9px 20px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;border:none;}
+.modal-btn.send{background:var(--teal);color:white;}
+.modal-btn.cancel{background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
+
+/* TOPUP REPEAT PANEL */
+.topup-panel{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 24px;margin-bottom:28px;}
+.topup-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px;}
+.topup-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;}
+.topup-user{font-size:12px;font-weight:600;margin-bottom:2px;}
+.topup-email{font-size:10px;color:var(--muted);font-family:var(--mono);margin-bottom:8px;}
+.topup-months{font-size:11px;color:var(--amber);}
+.topup-nudge{font-size:10px;color:var(--muted);margin-top:4px;}
+.nudge-sent{display:inline-block;font-size:10px;background:var(--green-dim);color:var(--green);padding:2px 8px;border-radius:20px;margin-top:6px;}
+
+@media(max-width:768px){
+  .stats-row{grid-template-columns:repeat(2,1fr);}
+  .plan-overview{grid-template-columns:1fr;}
+  .topup-grid{grid-template-columns:1fr;}
+  nav{padding:0 16px;}
+  .main{padding:20px 14px;}
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH GATE -->
+<div id="auth-gate">
+  <div class="auth-box">
+    <div class="auth-logo">CLPeasy Admin</div>
+    <h2>Package Monitor</h2>
+    <p>Enter your admin password to continue.</p>
+    <input type="password" class="auth-input" id="pw-input" placeholder="Admin password" onkeydown="if(event.key==='Enter')checkAuth()">
+    <button class="auth-btn" onclick="checkAuth()">Unlock →</button>
+    <div class="auth-err" id="auth-err">Incorrect password</div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+<nav>
+  <div class="nav-brand">
+    <div class="nav-badge">CLP</div>
+    <div>
+      <div class="nav-title">Package Monitor</div>
+      <div class="nav-sub">admin · clpeasy.com</div>
+    </div>
+  </div>
+  <div class="nav-right">
+    <span class="last-refresh" id="last-refresh">Last refreshed: just now</span>
+    <button class="refresh-btn" onclick="refreshData()">↻ Refresh</button>
+  </div>
+</nav>
+
+<div class="main">
+
+  <!-- ALERT BANNER -->
+  <div class="alert-banner" id="alert-banner">
+    <div class="alert-dot"></div>
+    <div class="alert-text" id="alert-text"><strong>Usage alert:</strong> Loading…</div>
+    <button class="alert-action" onclick="showAnnounceModal()">Send upgrade announcement →</button>
+  </div>
+
+  <!-- SUMMARY STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total subscribers</div>
+      <div class="stat-value teal" id="stat-total">—</div>
+      <div class="stat-delta" id="stat-total-delta"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Easy Start</div>
+      <div class="stat-value" id="stat-start">—</div>
+      <div class="stat-delta" id="stat-start-delta"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Easy Pro</div>
+      <div class="stat-value" id="stat-pro">—</div>
+      <div class="stat-delta" id="stat-pro-delta"></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">In trial</div>
+      <div class="stat-value amber" id="stat-trial">—</div>
+      <div class="stat-delta" id="stat-trial-delta"></div>
+    </div>
+  </div>
+
+  <!-- PLAN USAGE OVERVIEW -->
+  <div class="section-title">Download allowance usage — current billing month</div>
+  <div class="plan-overview">
+    <div class="plan-box">
+      <div class="plan-box-header">
+        <div class="plan-name">Easy Start</div>
+        <div class="plan-limit-badge">20 downloads/mo</div>
+      </div>
+      <div class="usage-tiers" id="start-tiers">
+        <div class="tier-row"><div class="tier-label">0–25% used</div><div class="tier-bar-wrap"><div class="tier-bar ok" id="start-bar-0" style="width:0%"></div></div><div class="tier-pct" id="start-pct-0">—</div><div class="tier-count" id="start-cnt-0">— users</div></div>
+        <div class="tier-row"><div class="tier-label">25–50% used</div><div class="tier-bar-wrap"><div class="tier-bar ok" id="start-bar-1" style="width:0%"></div></div><div class="tier-pct" id="start-pct-1">—</div><div class="tier-count" id="start-cnt-1">— users</div></div>
+        <div class="tier-row"><div class="tier-label">50–75% used</div><div class="tier-bar-wrap"><div class="tier-bar warn" id="start-bar-2" style="width:0%"></div></div><div class="tier-pct" id="start-pct-2">—</div><div class="tier-count" id="start-cnt-2">— users</div></div>
+        <div class="tier-row"><div class="tier-label">75–99% used</div><div class="tier-bar-wrap"><div class="tier-bar warn" id="start-bar-3" style="width:0%"></div></div><div class="tier-pct" id="start-pct-3">—</div><div class="tier-count" id="start-cnt-3">— users</div></div>
+        <div class="tier-row"><div class="tier-label">Cap reached</div><div class="tier-bar-wrap"><div class="tier-bar alert" id="start-bar-4" style="width:0%"></div></div><div class="tier-pct" id="start-pct-4">—</div><div class="tier-count" id="start-cnt-4">— users</div></div>
+      </div>
+      <div class="threshold-row">
+        <div class="threshold-label">🔔 Alert me when <span id="start-alert-pct">50</span>% of Easy Start users hit ≥80% of allowance</div>
+        <input type="number" class="threshold-input" id="start-threshold" value="50" min="10" max="100" onchange="updateThreshold('start')">
+        <span class="threshold-unit">%</span>
+      </div>
+    </div>
+    <div class="plan-box">
+      <div class="plan-box-header">
+        <div class="plan-name">Easy Pro</div>
+        <div class="plan-limit-badge">40 downloads/mo</div>
+      </div>
+      <div class="usage-tiers" id="pro-tiers">
+        <div class="tier-row"><div class="tier-label">0–25% used</div><div class="tier-bar-wrap"><div class="tier-bar ok" id="pro-bar-0" style="width:0%"></div></div><div class="tier-pct" id="pro-pct-0">—</div><div class="tier-count" id="pro-cnt-0">— users</div></div>
+        <div class="tier-row"><div class="tier-label">25–50% used</div><div class="tier-bar-wrap"><div class="tier-bar ok" id="pro-bar-1" style="width:0%"></div></div><div class="tier-pct" id="pro-pct-1">—</div><div class="tier-count" id="pro-cnt-1">— users</div></div>
+        <div class="tier-row"><div class="tier-label">50–75% used</div><div class="tier-bar-wrap"><div class="tier-bar warn" id="pro-bar-2" style="width:0%"></div></div><div class="tier-pct" id="pro-pct-2">—</div><div class="tier-count" id="pro-cnt-2">— users</div></div>
+        <div class="tier-row"><div class="tier-label">75–99% used</div><div class="tier-bar-wrap"><div class="tier-bar warn" id="pro-bar-3" style="width:0%"></div></div><div class="tier-pct" id="pro-pct-3">—</div><div class="tier-count" id="pro-cnt-3">— users</div></div>
+        <div class="tier-row"><div class="tier-label">Cap reached</div><div class="tier-bar-wrap"><div class="tier-bar alert" id="pro-bar-4" style="width:0%"></div></div><div class="tier-pct" id="pro-pct-4">—</div><div class="tier-count" id="pro-cnt-4">— users</div></div>
+      </div>
+      <div class="threshold-row">
+        <div class="threshold-label">🔔 Alert me when <span id="pro-alert-pct">50</span>% of Easy Pro users hit ≥80% of allowance</div>
+        <input type="number" class="threshold-input" id="pro-threshold" value="50" min="10" max="100" onchange="updateThreshold('pro')">
+        <span class="threshold-unit">%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPEAT TOP-UP PANEL -->
+  <div class="topup-panel">
+    <div class="section-title" style="margin-bottom:4px;">Repeat top-up buyers <span style="color:var(--amber);font-size:11px;margin-left:6px;">upgrade candidates</span></div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:0;">Users who have purchased top-up packs 3+ months in a row. Nudging these users to upgrade saves them money and improves your MRR.</p>
+    <div class="topup-grid" id="topup-grid">
+      <div style="grid-column:1/-1;font-size:12px;color:var(--muted);padding:16px 0;">No repeat top-up buyers yet — will populate once download tracking is wired.</div>
+    </div>
+  </div>
+
+  <!-- BULK ACTION BAR -->
+  <div class="bulk-bar" id="bulk-bar">
+    <div class="bulk-text">⚠️ Alert threshold reached — <strong id="bulk-affected">0 users</strong> have used ≥80% of their allowance this month.</div>
+    <div class="bulk-actions">
+      <button class="bulk-btn upgrade-all" onclick="showAnnounceModal()">📣 Announce free upgrade</button>
+      <button class="bulk-btn dismiss" onclick="dismissBulk()">Dismiss</button>
+    </div>
+  </div>
+
+  <!-- USER TABLE -->
+  <div class="table-wrap">
+    <div class="table-header">
+      <div class="table-header-title">All subscribers</div>
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="filterTable('all',this)">All</button>
+        <button class="filter-btn" onclick="filterTable('trial',this)">Trial</button>
+        <button class="filter-btn" onclick="filterTable('start',this)">Easy Start</button>
+        <button class="filter-btn" onclick="filterTable('pro',this)">Easy Pro</button>
+        <button class="filter-btn" onclick="filterTable('alert',this)">⚠ At cap</button>
+      </div>
+    </div>
+    <table id="user-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Plan</th>
+          <th>Status</th>
+          <th>Downloads used</th>
+          <th>Top-ups</th>
+          <th>Days left in period</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+
+</div><!-- /main -->
+</div><!-- /dashboard -->
+
+<!-- ANNOUNCE MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h3>📣 Free allowance upgrade announcement</h3>
+    <p>This will send a Brevo email to all affected users announcing that their monthly download allowance has been increased — no charge, no action needed from them.</p>
+    <div class="modal-preview" id="modal-preview"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal()">Cancel</button>
+      <button class="modal-btn send" onclick="sendAnnouncement()">Send via Brevo →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── ADMIN PASSWORD ─────────────────────────────────────────────
+// Change this to your real password before deploying
+const ADMIN_PASSWORD = 'clpeasy-admin-2026';
+
+function checkAuth(){
+  const pw = document.getElementById('pw-input').value;
+  if(pw === ADMIN_PASSWORD){
+    document.getElementById('auth-gate').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadData();
+  } else {
+    document.getElementById('auth-err').style.display = 'block';
+  }
+}
+
+// ── MOCK DATA (replace with Supabase queries when wired) ───────
+// Structure mirrors what you'll pull from Supabase:
+// SELECT id, email, display_name, plan, status, downloads_used, 
+//        billing_period_end, topup_months_consecutive 
+// FROM users JOIN download_usage ON ...
+
+const MOCK_USERS = [
+  {id:1, name:'Sarah M.', email:'sarah@example.com', plan:'start', status:'active', used:18, limit:20, topups:0, periodEnd:3},
+  {id:2, name:'Claire B.', email:'claire@example.com', plan:'start', status:'active', used:20, limit:20, topups:2, periodEnd:8},
+  {id:3, name:'Jenny K.', email:'jenny@example.com', plan:'pro', status:'active', used:12, limit:40, topups:0, periodEnd:14},
+  {id:4, name:'Rachel T.', email:'rachel@example.com', plan:'trial', status:'trial', used:7, limit:999, topups:0, periodEnd:5},
+  {id:5, name:'Fiona W.', email:'fiona@example.com', plan:'start', status:'active', used:9, limit:20, topups:0, periodEnd:21},
+  {id:6, name:'Amy D.', email:'amy@example.com', plan:'pro', status:'active', used:38, limit:40, topups:1, periodEnd:2},
+  {id:7, name:'Laura P.', email:'laura@example.com', plan:'start', status:'paused', used:0, limit:20, topups:0, periodEnd:0},
+  {id:8, name:'Emma S.', email:'emma@example.com', plan:'trial', status:'trial', used:3, limit:999, topups:0, periodEnd:11},
+  {id:9, name:'Nicola H.', email:'nicola@example.com', plan:'start', status:'active', used:19, limit:20, topups:3, periodEnd:6},
+  {id:10, name:'Kat O.', email:'kat@example.com', plan:'pro', status:'active', used:8, limit:40, topups:0, periodEnd:18},
+];
+
+let thresholds = { start: 50, pro: 50 };
+let currentFilter = 'all';
+
+function loadData(){
+  // ── When Supabase is wired, replace MOCK_USERS with:
+  // const { data } = await supabase.from('download_usage_view').select('*');
+  renderStats();
+  renderPlanOverview();
+  renderTable(MOCK_USERS);
+  checkAlerts();
+  updateRefreshTime();
+}
+
+function refreshData(){
+  loadData();
+}
+
+function renderStats(){
+  const total = MOCK_USERS.filter(u => u.status !== 'trial').length;
+  const starts = MOCK_USERS.filter(u => u.plan === 'start').length;
+  const pros = MOCK_USERS.filter(u => u.plan === 'pro').length;
+  const trials = MOCK_USERS.filter(u => u.status === 'trial').length;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-start').textContent = starts;
+  document.getElementById('stat-pro').textContent = pros;
+  document.getElementById('stat-trial').textContent = trials;
+  document.getElementById('stat-total-delta').textContent = 'paid subscribers';
+  document.getElementById('stat-start-delta').textContent = `£${(starts*9.99).toFixed(2)} MRR`;
+  document.getElementById('stat-pro-delta').textContent = `£${(pros*14.99).toFixed(2)} MRR`;
+  document.getElementById('stat-trial-delta').textContent = 'converting to paid';
+}
+
+function renderPlanOverview(){
+  ['start','pro'].forEach(plan => {
+    const lim = plan === 'start' ? 20 : 40;
+    const users = MOCK_USERS.filter(u => u.plan === plan && u.status === 'active');
+    const total = users.length || 1;
+    const buckets = [0,0,0,0,0]; // 0-25, 25-50, 50-75, 75-99, 100
+    users.forEach(u => {
+      const pct = u.used / lim;
+      if(pct >= 1) buckets[4]++;
+      else if(pct >= 0.75) buckets[3]++;
+      else if(pct >= 0.5) buckets[2]++;
+      else if(pct >= 0.25) buckets[1]++;
+      else buckets[0]++;
+    });
+    buckets.forEach((count,i) => {
+      const pct = Math.round(count/total*100);
+      const barEl = document.getElementById(`${plan}-bar-${i}`);
+      const pctEl = document.getElementById(`${plan}-pct-${i}`);
+      const cntEl = document.getElementById(`${plan}-cnt-${i}`);
+      if(barEl) barEl.style.width = pct + '%';
+      if(pctEl) pctEl.textContent = pct + '%';
+      if(cntEl) cntEl.textContent = count + ' user' + (count!==1?'s':'');
+    });
+  });
+}
+
+function checkAlerts(){
+  ['start','pro'].forEach(plan => {
+    const lim = plan === 'start' ? 20 : 40;
+    const users = MOCK_USERS.filter(u => u.plan === plan && u.status === 'active');
+    const total = users.length;
+    const heavy = users.filter(u => u.used / lim >= 0.8).length;
+    const pct = total > 0 ? Math.round(heavy/total*100) : 0;
+    if(pct >= thresholds[plan]){
+      const planName = plan === 'start' ? 'Easy Start' : 'Easy Pro';
+      document.getElementById('alert-banner').classList.add('show');
+      document.getElementById('alert-text').innerHTML = `<strong>Usage alert:</strong> ${pct}% of ${planName} users have used ≥80% of their monthly download allowance — above your ${thresholds[plan]}% threshold. Consider a free allowance increase.`;
+      document.getElementById('bulk-bar').classList.add('show');
+      document.getElementById('bulk-affected').textContent = heavy + ' users';
+    }
+  });
+}
+
+function updateThreshold(plan){
+  const val = parseInt(document.getElementById(`${plan}-threshold`).value);
+  thresholds[plan] = val;
+  document.getElementById(`${plan}-alert-pct`).textContent = val;
+  checkAlerts();
+}
+
+function renderTable(users){
+  const body = document.getElementById('table-body');
+  body.innerHTML = '';
+  users.forEach(u => {
+    const pct = u.limit >= 999 ? 0 : Math.round(u.used/u.limit*100);
+    const barClass = pct >= 100 ? 'alert' : pct >= 75 ? 'warn' : 'ok';
+    const daysClass = u.periodEnd <= 3 ? 'urgent' : u.periodEnd <= 7 ? 'soon' : 'fine';
+    const usageDisplay = u.limit >= 999 ? `${u.used} (unlimited)` : `${u.used} / ${u.limit}`;
+    const dotClass = u.status === 'trial' ? 'trial' : u.status === 'paused' ? 'paused' : 'active';
+    const statusLabel = u.status === 'trial' ? 'Trial' : u.status === 'paused' ? 'Paused' : 'Active';
+    const daysDisplay = u.status === 'paused' ? '—' : `${u.periodEnd}d`;
+    const showUpgrade = u.plan === 'start' && pct >= 80;
+    const repeatTopup = u.topups >= 3;
+
+    const tr = document.createElement('tr');
+    tr.dataset.plan = u.plan;
+    tr.dataset.status = u.status;
+    tr.dataset.alert = pct >= 100 ? 'true' : 'false';
+    tr.innerHTML = `
+      <td><div class="user-name">${u.name}</div><div class="user-email">${u.email}</div></td>
+      <td><span class="plan-tag ${u.plan}">${u.plan === 'start' ? 'Easy Start' : u.plan === 'pro' ? 'Easy Pro' : 'Trial'}</span></td>
+      <td><span class="status-dot ${dotClass}"></span>${statusLabel}</td>
+      <td>
+        <div class="usage-cell">
+          ${u.limit < 999 ? `<div class="mini-bar-wrap"><div class="mini-bar ${barClass}" style="width:${Math.min(pct,100)}%"></div></div>` : ''}
+          <span class="usage-text">${usageDisplay}</span>
+        </div>
+      </td>
+      <td>${u.topups > 0 ? `<span class="topup-badge">×${u.topups} pack${u.topups!==1?'s':''}</span>` : '<span style="color:var(--muted);font-size:11px;">—</span>'}${repeatTopup ? ' <span style="font-size:9px;color:var(--amber);">⚠ repeat</span>':''}</td>
+      <td><span class="days-left ${daysClass}">${daysDisplay}</span></td>
+      <td>${showUpgrade ? `<button class="upgrade-btn" onclick="nudgeUpgrade(${u.id})">Nudge to upgrade</button>` : '<span style="color:var(--muted);font-size:11px;">—</span>'}</td>
+    `;
+    body.appendChild(tr);
+  });
+}
+
+function filterTable(type, btn){
+  currentFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  let filtered = MOCK_USERS;
+  if(type === 'trial') filtered = MOCK_USERS.filter(u => u.status === 'trial');
+  else if(type === 'start') filtered = MOCK_USERS.filter(u => u.plan === 'start');
+  else if(type === 'pro') filtered = MOCK_USERS.filter(u => u.plan === 'pro');
+  else if(type === 'alert') filtered = MOCK_USERS.filter(u => u.limit < 999 && u.used/u.limit >= 1);
+  renderTable(filtered);
+}
+
+function nudgeUpgrade(userId){
+  const user = MOCK_USERS.find(u => u.id === userId);
+  if(!user) return;
+  alert(`Upgrade nudge email queued for ${user.email}\n\nWhen Brevo is wired, this will send:\n"You're regularly using your full download allowance — upgrading to Easy Pro doubles it to 40/month for just £5 more."`);
+}
+
+function showAnnounceModal(){
+  const startHeavy = MOCK_USERS.filter(u => u.plan==='start' && u.used/u.limit >= 0.8).length;
+  const proHeavy = MOCK_USERS.filter(u => u.plan==='pro' && u.used/u.limit >= 0.8).length;
+  document.getElementById('modal-preview').textContent =
+`Subject: Good news — your CLPeasy download allowance just got bigger 🎉
+
+Hi [first name],
+
+We've been watching how our makers use CLPeasy and we noticed that some of you are powering through your monthly download allowance — which tells us your business is growing. Brilliant.
+
+So we're doing something about it. As of today, we're increasing your monthly download allowance — no extra charge, no action needed from you. It updates automatically in your account.
+
+Easy Start: 20 → 25 downloads/month
+Easy Pro: 40 → 50 downloads/month
+
+Thank you for being part of CLPeasy from the early days. We'll keep listening.
+
+— Michaela, CLPeasy`;
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+function closeModal(){
+  document.getElementById('modal-overlay').classList.remove('show');
+}
+
+function sendAnnouncement(){
+  // Wire to Brevo API when ready
+  alert('Announcement queued!\n\nWhen Brevo is wired, this will send to all affected users via your CLPeasy Brevo account.');
+  closeModal();
+}
+
+function dismissBulk(){
+  document.getElementById('bulk-bar').classList.remove('show');
+}
+
+function updateRefreshTime(){
+  const now = new Date();
+  document.getElementById('last-refresh').textContent =
+    `Last refreshed: ${now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}`;
+}
+
+// Allow Enter key on password field
+document.getElementById('pw-input').addEventListener('keydown', e => {
+  if(e.key === 'Enter') checkAuth();
+});
+</script>
+</body>
+</html>
