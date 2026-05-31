@@ -410,6 +410,15 @@
   </div>
 </nav>
 
+<!-- LAPSED USER WIN-BACK BANNER (shown only when logged in + cancelled/lapsed) -->
+<div id="lapsed-banner" style="display:none;background:linear-gradient(90deg,#0f2236,#1a3a50);padding:12px 24px;text-align:center;position:relative;">
+  <span style="font-size:13px;color:rgba(255,255,255,0.85);">👋 Welcome back — your labels are still here.
+    <strong style="color:white;">We've increased download allowances since you left.</strong>
+    <a href="account.html" style="color:#4C9BB0;font-weight:700;margin-left:10px;text-decoration:none;">Reactivate my account →</a>
+  </span>
+  <button onclick="this.parentElement.style.display='none'" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:none;border:none;color:rgba(255,255,255,0.4);font-size:18px;cursor:pointer;line-height:1;">×</button>
+</div>
+
 <!-- HERO -->
 <section class="hero">
   <div style="display:inline-flex;align-items:center;gap:8px;background:var(--teal-light);color:var(--teal-dark);padding:6px 16px;border-radius:100px;font-size:12px;font-weight:700;letter-spacing:0.5px;margin-bottom:16px;">🕯️ BUILT BY A MAKER, FOR MAKERS</div>
@@ -825,7 +834,7 @@ function toggleFaq(el) {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const _sb=window.supabase.createClient('https://qvkosdqcryrcfbjtaxic.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw');
-_sb.auth.getSession().then(({data:{session}})=>{
+_sb.auth.getSession().then(async ({data:{session}})=>{
   if(session){
     document.querySelectorAll('a[href="auth.html"], a[href="builder.html"]').forEach(a=>{
       const t=a.textContent.trim();
@@ -840,11 +849,18 @@ _sb.auth.getSession().then(({data:{session}})=>{
       const signinLink=navLinks.querySelector('a[href="auth.html?mode=signin"]');
       if(signinLink){
         signinLink.textContent=session.user.email;
-        signinLink.href='builder.html';
+        signinLink.href='account.html';
       }
       const getStarted=navLinks.querySelector('.btn-nav');
       if(getStarted){getStarted.textContent='Go to builder';getStarted.href='builder.html';}
     }
+    // Check for lapsed/cancelled subscription and show win-back banner
+    try {
+      const { data: profile } = await _sb.from('subscriptions').select('status').eq('user_id', session.user.id).single();
+      if(profile && (profile.status === 'cancelled' || profile.status === 'lapsed')){
+        document.getElementById('lapsed-banner').style.display = 'block';
+      }
+    } catch(e){ /* subscriptions table not yet wired — banner stays hidden */ }
   }
 });
 </script>

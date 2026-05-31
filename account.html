@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Account — CLPeasy™</title>
+<meta name="description" content="Manage your CLPeasy subscription, billing and account settings.">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --teal:#4C9BB0;--teal-light:#EBF6F9;--teal-dark:#2d7a8f;
+  --border:#E8EAED;--text:#111318;--muted:#6B7280;--off:#F7F8FA;
+  --red:#EF4444;--red-light:#FEF2F2;--amber:#F59E0B;--amber-light:#FFFBEB;
+  --green:#22C55E;--green-light:#F0FDF4;
+}
+body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-webkit-font-smoothing:antialiased;min-height:100vh;}
+
+/* NAV */
+nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height:72px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.nav-logo{display:flex;align-items:center;text-decoration:none;}
+.nav-badge{width:40px;height:40px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;}
+.nav-easy{font-size:20px;font-weight:900;color:var(--teal);margin-left:5px;letter-spacing:-1px;}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.nav-email{font-size:13px;color:var(--muted);}
+.nav-signout{font-size:13px;color:var(--muted);text-decoration:none;padding:6px 14px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;background:white;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.nav-signout:hover{border-color:var(--teal);color:var(--teal);}
+
+/* LAYOUT */
+.main{max-width:720px;margin:0 auto;padding:40px 24px 80px;}
+.page-title{font-family:'DM Serif Display',serif;font-size:32px;margin-bottom:4px;}
+.page-sub{font-size:14px;color:var(--muted);margin-bottom:36px;}
+
+/* CARDS */
+.card{background:white;border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:20px;}
+.card-title{font-size:15px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:8px;}
+.card-title span{font-size:18px;}
+
+/* PLAN STATUS */
+.plan-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;}
+.plan-name{font-size:22px;font-weight:800;letter-spacing:-0.5px;}
+.plan-badge{font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;text-transform:uppercase;letter-spacing:0.5px;}
+.plan-badge.active{background:var(--green-light);color:#15803D;}
+.plan-badge.trial{background:var(--amber-light);color:#92400E;}
+.plan-badge.paused{background:var(--off);color:var(--muted);border:1px solid var(--border);}
+.plan-badge.lapsed{background:var(--red-light);color:var(--red);}
+.renewal-line{font-size:13px;color:var(--muted);margin-bottom:20px;}
+.renewal-line strong{color:var(--text);}
+
+/* DOWNLOAD BAR */
+.dl-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.dl-label-text{font-size:13px;font-weight:600;}
+.dl-label-count{font-size:13px;font-family:'DM Mono',monospace,sans-serif;color:var(--muted);}
+.dl-bar-wrap{height:8px;background:var(--off);border-radius:4px;overflow:hidden;margin-bottom:6px;}
+.dl-bar{height:100%;border-radius:4px;transition:width .8s ease;}
+.dl-bar.ok{background:var(--teal);}
+.dl-bar.warn{background:var(--amber);}
+.dl-bar.full{background:var(--red);}
+.dl-note{font-size:12px;color:var(--muted);}
+.topup-btn{margin-top:12px;font-size:13px;font-weight:700;color:var(--teal);background:var(--teal-light);border:none;padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s;}
+.topup-btn:hover{background:#d4eef5;}
+
+/* ACTION BUTTONS */
+.action-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;padding-top:20px;border-top:1px solid var(--border);}
+.btn{font-size:13px;font-weight:700;padding:10px 20px;border-radius:10px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;text-decoration:none;display:inline-block;}
+.btn-teal{background:var(--teal);color:white;}
+.btn-teal:hover{background:var(--teal-dark);}
+.btn-outline{background:white;color:var(--text);border:1.5px solid var(--border);}
+.btn-outline:hover{border-color:var(--teal);color:var(--teal);}
+.btn-pause{background:var(--amber-light);color:#92400E;border:1.5px solid #FDE68A;}
+.btn-pause:hover{background:#FEF3C7;}
+.btn-cancel{background:white;color:var(--red);border:1.5px solid #FECACA;font-size:12px;padding:8px 16px;}
+.btn-cancel:hover{background:var(--red-light);}
+
+/* WIN-BACK BANNER (lapsed state) */
+.winback-banner{background:linear-gradient(135deg,#0f2236,#1a3a50);border-radius:14px;padding:24px 28px;margin-bottom:24px;color:white;}
+.winback-banner h3{font-size:17px;font-weight:800;margin-bottom:6px;}
+.winback-banner p{font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin-bottom:16px;}
+.winback-pills{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+.winback-pill{font-size:12px;background:rgba(76,155,176,0.25);color:#7dd3e8;padding:5px 12px;border-radius:20px;}
+.winback-btn{background:var(--teal);color:white;border:none;padding:11px 24px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+/* DETAIL ROWS */
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border);font-size:14px;}
+.detail-row:last-child{border-bottom:none;}
+.detail-label{color:var(--muted);}
+.detail-value{font-weight:600;}
+
+/* ── MODAL OVERLAY ─────────────────────────────────────────────── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:500;backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .2s;}
+.overlay.open{opacity:1;pointer-events:all;}
+.modal{background:white;border-radius:20px;padding:36px;width:480px;max-width:92vw;max-height:90vh;overflow-y:auto;transform:translateY(16px);transition:transform .25s;}
+.overlay.open .modal{transform:translateY(0);}
+.modal-title{font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:6px;}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.6;}
+
+/* SURVEY */
+.survey-options{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
+.survey-opt{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;border:1.5px solid var(--border);cursor:pointer;transition:all .15s;font-size:14px;}
+.survey-opt:hover{border-color:var(--teal);background:var(--teal-light);}
+.survey-opt.selected{border-color:var(--teal);background:var(--teal-light);}
+.survey-opt input[type=radio]{accent-color:var(--teal);width:16px;height:16px;flex-shrink:0;}
+.other-input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;color:var(--text);margin-top:4px;display:none;}
+.other-input:focus{border-color:var(--teal);}
+.other-input.show{display:block;}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
+.modal-btn{font-size:13px;font-weight:700;padding:10px 22px;border-radius:10px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.modal-btn.primary{background:var(--teal);color:white;}
+.modal-btn.ghost{background:var(--off);color:var(--muted);border:1.5px solid var(--border);}
+.modal-btn.danger{background:var(--red);color:white;}
+.modal-btn.amber{background:var(--amber);color:white;}
+
+/* SAVE OFFER */
+.save-offer{background:linear-gradient(135deg,#0f2236,#1a3a50);border-radius:14px;padding:24px;color:white;margin-bottom:20px;}
+.save-offer-tag{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--teal);margin-bottom:10px;}
+.save-offer h3{font-size:20px;font-weight:800;margin-bottom:6px;}
+.save-offer p{font-size:13px;color:rgba(255,255,255,0.75);line-height:1.6;margin-bottom:16px;}
+.save-offer-price{display:flex;align-items:baseline;gap:8px;margin-bottom:16px;}
+.save-offer-price .old{font-size:16px;color:rgba(255,255,255,0.4);text-decoration:line-through;}
+.save-offer-price .new{font-size:28px;font-weight:900;color:white;letter-spacing:-1px;}
+.save-offer-price .period{font-size:13px;color:rgba(255,255,255,0.6);}
+.save-offer-terms{font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:16px;}
+.save-offer-btns{display:flex;gap:10px;}
+.save-offer-accept{background:var(--teal);color:white;border:none;padding:11px 22px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;flex:1;}
+.save-offer-decline{background:transparent;color:rgba(255,255,255,0.5);border:1.5px solid rgba(255,255,255,0.15);padding:11px 18px;border-radius:10px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+/* CONFIRM CANCEL */
+.confirm-cancel-box{background:var(--red-light);border:1.5px solid #FECACA;border-radius:12px;padding:18px 20px;margin-bottom:20px;}
+.confirm-cancel-box h4{font-size:14px;font-weight:700;color:var(--red);margin-bottom:6px;}
+.confirm-cancel-box p{font-size:13px;color:#991B1B;line-height:1.6;}
+
+/* PAUSE CONFIRM */
+.pause-confirm-box{background:var(--amber-light);border:1.5px solid #FDE68A;border-radius:12px;padding:18px 20px;margin-bottom:20px;}
+.pause-confirm-box h4{font-size:14px;font-weight:700;color:#92400E;margin-bottom:6px;}
+.pause-confirm-box p{font-size:13px;color:#78350F;line-height:1.6;}
+
+/* SUCCESS STATE */
+.success-msg{text-align:center;padding:20px 0;}
+.success-icon{font-size:48px;margin-bottom:12px;}
+.success-msg h3{font-size:20px;font-weight:700;margin-bottom:8px;}
+.success-msg p{font-size:14px;color:var(--muted);line-height:1.6;}
+
+/* LOADING */
+#loading{text-align:center;padding:80px 24px;color:var(--muted);font-size:14px;}
+#account-content{display:none;}
+
+@media(max-width:600px){
+  .action-row{flex-direction:column;}
+  .btn{text-align:center;}
+  .plan-row{flex-direction:column;align-items:flex-start;}
+  nav{padding:0 16px;}
+  .main{padding:24px 14px 60px;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="home.html" class="nav-logo">
+    <div class="nav-badge">CLP</div><span class="nav-easy">easy™</span>
+  </a>
+  <div class="nav-right">
+    <span class="nav-email" id="nav-email"></span>
+    <button class="nav-signout" onclick="signOut()">Sign out</button>
+  </div>
+</nav>
+
+<div class="main">
+  <div id="loading">Loading your account…</div>
+  <div id="account-content">
+
+    <h1 class="page-title">My Account</h1>
+    <p class="page-sub" id="page-sub">Manage your subscription and downloads.</p>
+
+    <!-- WIN-BACK BANNER (shown only when lapsed/cancelled) -->
+    <div class="winback-banner" id="winback-banner" style="display:none;">
+      <h3>👋 Welcome back — your labels are still here</h3>
+      <p>Your account is currently inactive but your label library is safe for <strong id="winback-days">30</strong> more days. A lot has changed since you left — we've increased download allowances across all plans.</p>
+      <div class="winback-pills">
+        <span class="winback-pill">✓ Easy Start now 20 downloads/month</span>
+        <span class="winback-pill">✓ Easy Pro now 40 downloads/month</span>
+        <span class="winback-pill">✓ 7-day re-download grace</span>
+      </div>
+      <button class="winback-btn" onclick="openModal('resubscribe')">Reactivate my account →</button>
+    </div>
+
+    <!-- SUBSCRIPTION CARD -->
+    <div class="card" id="sub-card">
+      <div class="card-title"><span>💳</span> Subscription</div>
+
+      <div class="plan-row">
+        <div class="plan-name" id="plan-name">Easy Start</div>
+        <div class="plan-badge active" id="plan-badge">Active</div>
+      </div>
+      <div class="renewal-line" id="renewal-line"></div>
+
+      <!-- DOWNLOAD USAGE BAR -->
+      <div id="dl-section">
+        <div class="dl-label">
+          <span class="dl-label-text">Downloads this month</span>
+          <span class="dl-label-count" id="dl-count">— / —</span>
+        </div>
+        <div class="dl-bar-wrap">
+          <div class="dl-bar ok" id="dl-bar" style="width:0%"></div>
+        </div>
+        <div class="dl-note" id="dl-note">Resets on your next billing date. Re-downloading the same label within 7 days is free.</div>
+        <button class="topup-btn" id="topup-btn" style="display:none;" onclick="buyTopup()">+ Buy more downloads</button>
+      </div>
+
+      <div class="action-row" id="action-row">
+        <!-- Populated by JS based on plan state -->
+      </div>
+    </div>
+
+    <!-- BILLING DETAILS CARD -->
+    <div class="card">
+      <div class="card-title"><span>🧾</span> Billing</div>
+      <div class="detail-row"><span class="detail-label">Plan</span><span class="detail-value" id="billing-plan">—</span></div>
+      <div class="detail-row"><span class="detail-label">Billing cycle</span><span class="detail-value" id="billing-cycle">—</span></div>
+      <div class="detail-row"><span class="detail-label">Next payment</span><span class="detail-value" id="billing-next">—</span></div>
+      <div class="detail-row"><span class="detail-label">Payment method</span><span class="detail-value" id="billing-card">—</span></div>
+      <div style="margin-top:16px;">
+        <a href="#" onclick="openStripePortal();return false;" style="font-size:13px;color:var(--teal);font-weight:600;text-decoration:none;">Update payment method via Stripe →</a>
+      </div>
+    </div>
+
+    <!-- ACCOUNT DETAILS CARD -->
+    <div class="card">
+      <div class="card-title"><span>👤</span> Account</div>
+      <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value" id="acct-email">—</span></div>
+      <div class="detail-row"><span class="detail-label">Member since</span><span class="detail-value" id="acct-since">—</span></div>
+      <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
+        <a href="builder.html" class="btn btn-teal">Go to builder →</a>
+        <a href="support.html" class="btn btn-outline">Contact support</a>
+      </div>
+    </div>
+
+  </div><!-- /account-content -->
+</div><!-- /main -->
+
+<!-- ═══════════════════════════════════════════════════════════════
+     MODAL SYSTEM
+═══════════════════════════════════════════════════════════════ -->
+
+<!-- PAUSE FLOW -->
+<div class="overlay" id="modal-pause">
+  <div class="modal">
+    <div id="pause-step-1">
+      <div class="modal-title">Pause your subscription</div>
+      <div class="modal-sub">Your label library stays safe while paused. Everything picks up exactly where you left off when you return — labels, folders, version history, all of it.</div>
+      <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;">Before you go — what's the reason?</div>
+      <div class="survey-options" id="pause-survey">
+        <label class="survey-opt"><input type="radio" name="pause-reason" value="break"> Just taking a break</label>
+        <label class="survey-opt"><input type="radio" name="pause-reason" value="quiet"> Business is quiet right now</label>
+        <label class="survey-opt"><input type="radio" name="pause-reason" value="cost"> Cost — want to save money</label>
+        <label class="survey-opt"><input type="radio" name="pause-reason" value="missing"> Missing a feature I need</label>
+        <label class="survey-opt"><input type="radio" name="pause-reason" value="other"> Other</label>
+      </div>
+      <textarea class="other-input" id="pause-other" placeholder="Tell us more…" rows="3"></textarea>
+      <div class="pause-confirm-box">
+        <h4>While paused:</h4>
+        <p>Your library is preserved · Downloads are paused · You can reactivate any time · Pauses last up to 3 months</p>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn ghost" onclick="closeModal('modal-pause')">Keep my subscription</button>
+        <button class="modal-btn amber" onclick="confirmPause()">Confirm pause</button>
+      </div>
+    </div>
+    <div id="pause-step-2" style="display:none;">
+      <div class="success-msg">
+        <div class="success-icon">⏸️</div>
+        <h3>Subscription paused</h3>
+        <p>Your label library is safe. You can reactivate any time from this page. We'll send you a reminder before your 3-month pause window closes.</p>
+      </div>
+      <div class="modal-actions" style="justify-content:center;">
+        <button class="modal-btn primary" onclick="location.reload()">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CANCEL FLOW -->
+<div class="overlay" id="modal-cancel">
+  <div class="modal">
+
+    <!-- STEP 1: Exit survey -->
+    <div id="cancel-step-1">
+      <div class="modal-title">Before you cancel…</div>
+      <div class="modal-sub">We're sorry to see you go. Your answer helps us improve CLPeasy for every maker.</div>
+      <div class="survey-options" id="cancel-survey">
+        <label class="survey-opt"><input type="radio" name="cancel-reason" value="price"> Too expensive</label>
+        <label class="survey-opt"><input type="radio" name="cancel-reason" value="downloads"> Hit my download limit too quickly</label>
+        <label class="survey-opt"><input type="radio" name="cancel-reason" value="usage"> Not using it enough to justify the cost</label>
+        <label class="survey-opt"><input type="radio" name="cancel-reason" value="missing"> Missing a feature I need</label>
+        <label class="survey-opt"><input type="radio" name="cancel-reason" value="switching"> Switching to something else</label>
+        <label class="survey-opt"><input type="radio" name="cancel-reason" value="other"> Other</label>
+      </div>
+      <textarea class="other-input" id="cancel-other" placeholder="Tell us more…" rows="3"></textarea>
+      <div class="modal-actions">
+        <button class="modal-btn ghost" onclick="closeModal('modal-cancel')">Keep my subscription</button>
+        <button class="modal-btn primary" onclick="handleCancelReason()">Continue</button>
+      </div>
+    </div>
+
+    <!-- STEP 2a: SAVE OFFER (price or downloads objection) -->
+    <div id="cancel-step-save" style="display:none;">
+      <div class="save-offer">
+        <div class="save-offer-tag">💛 Stay offer — just for you</div>
+        <h3 id="save-offer-headline">How about 3 months at half price?</h3>
+        <p id="save-offer-body">We don't want to lose you. As a thank you for being an early CLPeasy member, we'd like to offer you 3 months at 50% off — no strings attached. After 3 months it returns to the normal price, and we'll remind you a month before.</p>
+        <div class="save-offer-price">
+          <span class="old" id="save-old-price">£9.99/mo</span>
+          <span class="new" id="save-new-price">£4.99</span>
+          <span class="period">/mo for 3 months</span>
+        </div>
+        <div class="save-offer-terms" id="save-offer-terms">Then £9.99/month. Cancel anytime. Offer applied automatically — no code needed.</div>
+        <div class="save-offer-btns">
+          <button class="save-offer-accept" onclick="acceptSaveOffer()">Yes — apply the discount ✓</button>
+          <button class="save-offer-decline" onclick="showCancelConfirm()">No thanks, cancel anyway</button>
+        </div>
+      </div>
+      <div style="text-align:center;">
+        <button onclick="closeModal('modal-cancel')" style="font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;padding:8px;">← Actually, keep my subscription as-is</button>
+      </div>
+    </div>
+
+    <!-- STEP 2b: FINAL CANCEL CONFIRM (non-price reasons) -->
+    <div id="cancel-step-confirm" style="display:none;">
+      <div class="modal-title">Cancel subscription</div>
+      <div class="modal-sub">Are you sure? Here's what happens when you cancel:</div>
+      <div class="confirm-cancel-box">
+        <h4>⚠️ What you'll lose</h4>
+        <p>Your label library will be deleted 30 days after your billing period ends · Downloaded files on your device are yours to keep · QR safety codes already printed on products stay live permanently</p>
+      </div>
+      <div style="background:var(--teal-light);border:1px solid #c5e4ed;border-radius:10px;padding:14px 16px;margin-bottom:20px;font-size:13px;color:var(--teal-dark);line-height:1.6;">
+        💡 <strong>Consider pausing instead.</strong> Pausing keeps your library safe and lets you return without starting over — no data lost.
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn ghost" onclick="closeModal('modal-cancel')">Keep my subscription</button>
+        <button class="modal-btn ghost" onclick="closeModal('modal-cancel');openModal('pause')">Pause instead</button>
+        <button class="modal-btn danger" onclick="confirmCancel()">Yes, cancel</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: Save offer accepted -->
+    <div id="cancel-step-saved" style="display:none;">
+      <div class="success-msg">
+        <div class="success-icon">🎉</div>
+        <h3>Discount applied!</h3>
+        <p>Your 50% discount is now active. You'll be billed at the reduced rate for the next 3 months. We'll email you at month 2 to give you a heads-up before it returns to the standard price.</p>
+      </div>
+      <div class="modal-actions" style="justify-content:center;">
+        <button class="modal-btn primary" onclick="location.reload()">Back to my account</button>
+      </div>
+    </div>
+
+    <!-- STEP 4: Cancellation confirmed -->
+    <div id="cancel-step-done" style="display:none;">
+      <div class="success-msg">
+        <div class="success-icon">😢</div>
+        <h3>Subscription cancelled</h3>
+        <p>Your access continues until the end of your current billing period. Your label library will be kept for 30 days after that. We hope to see you back — your account will always be here if you return.</p>
+      </div>
+      <div class="modal-actions" style="justify-content:center;">
+        <button class="modal-btn ghost" onclick="location.reload()">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- RESUBSCRIBE MODAL -->
+<div class="overlay" id="modal-resubscribe">
+  <div class="modal">
+    <div class="modal-title">Reactivate your account</div>
+    <div class="modal-sub">Pick a plan to restore your label library and pick up right where you left off.</div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
+      <div style="border:1.5px solid var(--border);border-radius:12px;padding:18px 20px;cursor:pointer;transition:border-color .15s;" onclick="selectResub('start')" id="resub-start">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <div style="font-size:15px;font-weight:700;">Easy Start</div>
+          <div style="font-size:15px;font-weight:800;">£9.99<span style="font-size:12px;font-weight:400;color:var(--muted);">/mo</span></div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);">20 downloads/month · Full label library · All builders</div>
+      </div>
+      <div style="border:1.5px solid var(--border);border-radius:12px;padding:18px 20px;cursor:pointer;transition:border-color .15s;" onclick="selectResub('pro')" id="resub-pro">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <div style="font-size:15px;font-weight:700;">Easy Pro</div>
+          <div style="font-size:15px;font-weight:800;">£14.99<span style="font-size:12px;font-weight:400;color:var(--muted);">/mo</span></div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);">40 downloads/month · SDS Smart Import · UFI · QR codes</div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn ghost" onclick="closeModal('modal-resubscribe')">Not yet</button>
+      <button class="modal-btn primary" id="resub-confirm-btn" onclick="confirmResub()" disabled style="opacity:0.5;">Reactivate →</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOP-UP MODAL -->
+<div class="overlay" id="modal-topup">
+  <div class="modal">
+    <div class="modal-title">Buy more downloads</div>
+    <div class="modal-sub">Top-up packs add to your allowance for the current month. Downloads don't roll over to next month.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+      <div class="survey-opt" onclick="selectTopup(5,1.49,this)" style="justify-content:space-between;">
+        <span>5 extra downloads</span><strong>£1.49</strong>
+      </div>
+      <div class="survey-opt" onclick="selectTopup(15,3.49,this)" style="justify-content:space-between;">
+        <span>15 extra downloads</span><strong>£3.49</strong>
+      </div>
+    </div>
+    <div style="background:var(--teal-light);border-radius:10px;padding:12px 16px;font-size:12px;color:var(--teal-dark);line-height:1.6;margin-bottom:20px;" id="topup-upgrade-nudge" style="display:none;">
+      💡 You've bought top-ups before. Upgrading to Easy Pro gives you 40 downloads/month — double your current allowance — for £5 more per month. <a href="pricing.html" style="color:var(--teal);font-weight:600;">Compare plans →</a>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn ghost" onclick="closeModal('modal-topup')">Cancel</button>
+      <button class="modal-btn primary" id="topup-confirm-btn" onclick="confirmTopup()" disabled style="opacity:0.5;">Pay via Stripe →</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const _sb = window.supabase.createClient(
+  'https://qvkosdqcryrcfbjtaxic.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw'
+);
+
+// ── STATE ────────────────────────────────────────────────────────
+let currentUser = null;
+let userProfile = null; // from Supabase users/subscriptions table
+let selectedTopupQty = 0, selectedTopupPrice = 0;
+let selectedResub = null;
+let cancelReason = '';
+
+// ── MOCK PROFILE (replace with real Supabase query when wired) ───
+// Swap status to test different states:
+// 'trial' | 'active' | 'paused' | 'cancelled'
+const MOCK_PROFILE = {
+  plan: 'start',           // 'start' | 'pro'
+  status: 'active',        // 'trial' | 'active' | 'paused' | 'cancelled'
+  billing_cycle: 'monthly',
+  next_payment: '28 Jun 2026',
+  card_last4: '4242',
+  downloads_used: 16,
+  downloads_limit: 20,
+  topup_months: 0,          // consecutive months with top-up purchase
+  trial_ends: null,         // date string if on trial
+  cancelled_days_remaining: null, // days library remains after cancel
+  created_at: 'May 2026',
+  discount_active: false,
+  discount_ends: null,
+};
+
+// ── INIT ─────────────────────────────────────────────────────────
+_sb.auth.getSession().then(({ data: { session } }) => {
+  if (!session) {
+    window.location.href = 'auth.html?mode=signin&next=account.html';
+    return;
+  }
+  currentUser = session.user;
+  userProfile = MOCK_PROFILE; // replace with Supabase fetch
+  renderAccount();
+});
+
+// ── RENDER ───────────────────────────────────────────────────────
+function renderAccount() {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('account-content').style.display = 'block';
+
+  const u = userProfile;
+  const planLabel = u.plan === 'pro' ? 'Easy Pro' : 'Easy Start';
+  const planPrice = u.plan === 'pro' ? '£14.99' : '£9.99';
+
+  document.getElementById('nav-email').textContent = currentUser.email;
+  document.getElementById('acct-email').textContent = currentUser.email;
+  document.getElementById('acct-since').textContent = u.created_at;
+
+  // Plan name & badge
+  document.getElementById('plan-name').textContent =
+    u.status === 'cancelled' ? planLabel + ' (Cancelled)' :
+    u.status === 'paused' ? planLabel + ' (Paused)' :
+    u.status === 'trial' ? 'Easy Trial' : planLabel;
+
+  const badge = document.getElementById('plan-badge');
+  badge.textContent = u.status === 'trial' ? 'Free trial' :
+    u.status === 'active' ? 'Active' :
+    u.status === 'paused' ? 'Paused' : 'Cancelled';
+  badge.className = 'plan-badge ' + u.status;
+
+  // Renewal line
+  const renewLine = document.getElementById('renewal-line');
+  if (u.status === 'trial') {
+    renewLine.innerHTML = `Trial ends <strong>${u.trial_ends || 'in 14 days'}</strong>. No card required until you choose a plan.`;
+  } else if (u.status === 'active') {
+    renewLine.innerHTML = u.discount_active
+      ? `Next payment: <strong>${planPrice === '£9.99' ? '£4.99' : '£7.49'}/mo</strong> (discount active until ${u.discount_ends}) · then ${planPrice}/mo`
+      : `Next payment: <strong>${planPrice}/mo</strong> on ${u.next_payment}`;
+  } else if (u.status === 'paused') {
+    renewLine.innerHTML = `Subscription paused · Your library is safe · <a href="#" onclick="openModal('resubscribe');return false;" style="color:var(--teal);">Reactivate →</a>`;
+  } else if (u.status === 'cancelled') {
+    renewLine.innerHTML = `Cancelled · Library deleted in <strong>${u.cancelled_days_remaining || 30} days</strong> · <a href="#" onclick="openModal('resubscribe');return false;" style="color:var(--teal);">Reactivate to keep it →</a>`;
+  }
+
+  // Win-back banner
+  if (u.status === 'cancelled') {
+    document.getElementById('winback-banner').style.display = 'block';
+    document.getElementById('winback-days').textContent = u.cancelled_days_remaining || 30;
+  }
+
+  // Download bar
+  if (u.status === 'active' || u.status === 'trial') {
+    const pct = u.status === 'trial' ? 0 : Math.min(Math.round(u.downloads_used / u.downloads_limit * 100), 100);
+    const bar = document.getElementById('dl-bar');
+    bar.style.width = (u.status === 'trial' ? 0 : pct) + '%';
+    bar.className = 'dl-bar ' + (pct >= 100 ? 'full' : pct >= 75 ? 'warn' : 'ok');
+    document.getElementById('dl-count').textContent =
+      u.status === 'trial' ? 'Unlimited during trial' : `${u.downloads_used} / ${u.downloads_limit}`;
+    if (pct >= 80 && u.status !== 'trial') {
+      document.getElementById('topup-btn').style.display = 'inline-block';
+    }
+    if (pct >= 100) {
+      document.getElementById('dl-note').textContent =
+        "You've reached your monthly limit. Buy a top-up pack or wait until your allowance resets next billing date.";
+    }
+  } else {
+    document.getElementById('dl-section').style.display = 'none';
+  }
+
+  // Billing details
+  document.getElementById('billing-plan').textContent = planLabel + ' · ' + (u.billing_cycle === 'annual' ? 'Annual' : 'Monthly');
+  document.getElementById('billing-cycle').textContent = u.billing_cycle === 'annual' ? 'Annual (paid yearly)' : 'Monthly';
+  document.getElementById('billing-next').textContent = u.status === 'active' ? u.next_payment : '—';
+  document.getElementById('billing-card').textContent = u.card_last4 ? `Visa ending ${u.card_last4}` : '—';
+
+  // Action buttons
+  renderActionRow(u.status);
+}
+
+function renderActionRow(status) {
+  const row = document.getElementById('action-row');
+  if (status === 'active' || status === 'trial') {
+    row.innerHTML = `
+      <a href="builder.html" class="btn btn-teal">Go to builder →</a>
+      <a href="pricing.html" class="btn btn-outline">Upgrade plan</a>
+      <button class="btn btn-pause" onclick="openModal('pause')">Pause subscription</button>
+      <button class="btn btn-cancel" onclick="openModal('cancel')">Cancel subscription</button>
+    `;
+  } else if (status === 'paused') {
+    row.innerHTML = `
+      <button class="btn btn-teal" onclick="openModal('resubscribe')">Reactivate subscription</button>
+      <button class="btn btn-cancel" onclick="openModal('cancel')">Cancel instead</button>
+    `;
+  } else if (status === 'cancelled') {
+    row.innerHTML = `
+      <button class="btn btn-teal" onclick="openModal('resubscribe')">Reactivate my account</button>
+    `;
+  }
+}
+
+// ── MODAL HELPERS ─────────────────────────────────────────────────
+function openModal(name) {
+  closeAllModals();
+  document.getElementById('modal-' + name).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+function closeAllModals() {
+  document.querySelectorAll('.overlay').forEach(o => o.classList.remove('open'));
+}
+
+// Close on overlay click
+document.querySelectorAll('.overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closeAllModals();
+  });
+});
+
+// Survey option styling + other field toggle
+document.querySelectorAll('.survey-options').forEach(group => {
+  group.querySelectorAll('.survey-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      group.querySelectorAll('.survey-opt').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+      const radio = opt.querySelector('input[type=radio]');
+      if (radio) radio.checked = true;
+      // show other field if needed
+      const form = group.id;
+      const otherId = form === 'cancel-survey' ? 'cancel-other' : 'pause-other';
+      const otherEl = document.getElementById(otherId);
+      if (otherEl) otherEl.classList.toggle('show', radio && radio.value === 'other');
+    });
+  });
+});
+
+// ── PAUSE FLOW ────────────────────────────────────────────────────
+function confirmPause() {
+  const reason = document.querySelector('input[name="pause-reason"]:checked');
+  if (!reason) { alert('Please select a reason before pausing.'); return; }
+  // TODO: call Supabase to update subscription status to 'paused' + log reason
+  document.getElementById('pause-step-1').style.display = 'none';
+  document.getElementById('pause-step-2').style.display = 'block';
+}
+
+// ── CANCEL FLOW ───────────────────────────────────────────────────
+function handleCancelReason() {
+  const radio = document.querySelector('input[name="cancel-reason"]:checked');
+  if (!radio) { alert('Please select a reason to continue.'); return; }
+  cancelReason = radio.value;
+
+  document.getElementById('cancel-step-1').style.display = 'none';
+
+  // Price or download limit objection → show save offer
+  if (cancelReason === 'price' || cancelReason === 'downloads') {
+    const isPro = userProfile.plan === 'pro';
+    const fullPrice = isPro ? '£14.99/mo' : '£9.99/mo';
+    const halfPrice = isPro ? '£7.49' : '£4.99';
+    const headline = cancelReason === 'downloads'
+      ? 'Stay on — we\'ve boosted allowances'
+      : 'How about 3 months at half price?';
+    const body = cancelReason === 'downloads'
+      ? `We hear you — hitting the download limit is frustrating. As a thank you for being an early CLPeasy member, we'd like to offer you 3 months at 50% off while you settle into a rhythm. That's more breathing room for less.`
+      : `We don't want to lose you. As a thank you for being an early CLPeasy member, here's 3 months at 50% off — no strings attached. After 3 months it returns to the normal price, and we'll remind you a month before.`;
+    document.getElementById('save-offer-headline').textContent = headline;
+    document.getElementById('save-offer-body').textContent = body;
+    document.getElementById('save-old-price').textContent = fullPrice;
+    document.getElementById('save-new-price').textContent = halfPrice;
+    document.getElementById('save-offer-terms').textContent =
+      `Then ${fullPrice}. Cancel anytime. Discount applied automatically — no code needed.`;
+    document.getElementById('cancel-step-save').style.display = 'block';
+  } else {
+    // Other reasons → straight to confirm
+    document.getElementById('cancel-step-confirm').style.display = 'block';
+  }
+}
+
+function acceptSaveOffer() {
+  // TODO: apply Stripe coupon via Supabase edge function
+  document.getElementById('cancel-step-save').style.display = 'none';
+  document.getElementById('cancel-step-saved').style.display = 'block';
+}
+
+function showCancelConfirm() {
+  document.getElementById('cancel-step-save').style.display = 'none';
+  document.getElementById('cancel-step-confirm').style.display = 'block';
+}
+
+function confirmCancel() {
+  // TODO: call Stripe to cancel subscription, update Supabase
+  document.getElementById('cancel-step-confirm').style.display = 'none';
+  document.getElementById('cancel-step-done').style.display = 'block';
+}
+
+// ── TOP-UP ────────────────────────────────────────────────────────
+function buyTopup() {
+  const showNudge = userProfile.topup_months >= 2;
+  document.getElementById('topup-upgrade-nudge').style.display = showNudge ? 'block' : 'none';
+  openModal('topup');
+}
+function selectTopup(qty, price, el) {
+  document.querySelectorAll('#modal-topup .survey-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedTopupQty = qty; selectedTopupPrice = price;
+  const btn = document.getElementById('topup-confirm-btn');
+  btn.disabled = false; btn.style.opacity = '1';
+  btn.textContent = `Pay £${price} via Stripe →`;
+}
+function confirmTopup() {
+  // TODO: create Stripe payment intent for top-up
+  alert(`Top-up of ${selectedTopupQty} downloads (£${selectedTopupPrice}) — Stripe checkout will open here when wired.`);
+  closeModal('modal-topup');
+}
+
+// ── RESUBSCRIBE ───────────────────────────────────────────────────
+function selectResub(plan) {
+  selectedResub = plan;
+  ['start','pro'].forEach(p => {
+    document.getElementById('resub-' + p).style.borderColor = p === plan ? 'var(--teal)' : 'var(--border)';
+    document.getElementById('resub-' + p).style.background = p === plan ? 'var(--teal-light)' : 'white';
+  });
+  const btn = document.getElementById('resub-confirm-btn');
+  btn.disabled = false; btn.style.opacity = '1';
+}
+function confirmResub() {
+  // TODO: create Stripe subscription, update Supabase
+  alert(`Reactivation for Easy ${selectedResub === 'pro' ? 'Pro' : 'Start'} — Stripe checkout will open here when wired.`);
+  closeModal('modal-resubscribe');
+}
+
+// ── OTHER ─────────────────────────────────────────────────────────
+function openStripePortal() {
+  // TODO: generate Stripe customer portal session URL via edge function
+  alert('Stripe customer portal will open here when wired.');
+}
+async function signOut() {
+  await _sb.auth.signOut();
+  window.location.href = 'home.html';
+}
+</script>
+</body>
+</html>
