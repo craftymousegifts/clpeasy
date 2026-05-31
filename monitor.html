@@ -646,14 +646,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
 
 <footer>CLPeasy Service Monitor · Internal use only · Not indexed by search engines</footer>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL = 'https://qvkosdqcryrcfbjtaxic.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
-
-const { createClient } = window.supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
-
 // Load saved dates
 function loadDates() {
   const domainDate = localStorage.getItem('monitor_domain_date');
@@ -697,7 +690,7 @@ function loadHM() {
   if (verified) { markHMVerified(); }
 }
 
-
+function updateDays(service, dateStr) {
   const today = new Date();
   const expiry = new Date(dateStr);
   const days = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
@@ -741,42 +734,29 @@ function setBar(id, pct) {
   el.className = 'usage-fill ' + usageColor(pct);
 }
 
-async function checkSupabase() {
-  try {
-    // Get user count
-    const { data: users, error: uErr } = await sb.from('beta_testers').select('id', { count: 'exact' });
-    const { count: labelCount } = await sb.from('labels').select('id', { count: 'exact', head: true });
-    const { count: betaCount } = await sb.from('beta_testers').select('id', { count: 'exact', head: true });
-
-    // Auth users — we know we have at least 1 (Michaela)
-    document.getElementById('sb-users').textContent = '1 auth user';
-    setBar('sb-users-bar', 0.002); // 1/50000
-
-    document.getElementById('sb-labels').textContent = `${labelCount || 0} saved labels`;
-    setBar('sb-labels-bar', Math.min((labelCount || 0) / 1000 * 100, 100));
-
-    document.getElementById('sb-beta').textContent = `${betaCount || 0} applicants`;
-    document.getElementById('sb-db').textContent = `~${Math.max(1, Math.round((labelCount || 0) * 0.002))}MB / 500MB`;
-    setBar('sb-db-bar', Math.max(0.2, (labelCount || 0) * 0.0004));
-
-    document.getElementById('sb-badge').className = 'status-badge ok';
-    document.getElementById('sb-badge').textContent = '✓ Connected';
-    document.getElementById('card-supabase').className = 'service-card status-ok';
-  } catch(e) {
-    document.getElementById('sb-badge').className = 'status-badge alert';
-    document.getElementById('sb-badge').textContent = '✗ Error';
-    document.getElementById('card-supabase').className = 'service-card status-alert';
-  }
+function checkSupabase() {
+  // Supabase API allowlist blocks requests from outside clpeasy.com — correct security behaviour.
+  // Monitor shows static known-good config. Check live stats at supabase.com/dashboard.
+  document.getElementById('sb-users').textContent = 'see dashboard ↗';
+  setBar('sb-users-bar', 0.002);
+  document.getElementById('sb-labels').textContent = 'see dashboard ↗';
+  setBar('sb-labels-bar', 0);
+  document.getElementById('sb-beta').textContent = 'see dashboard ↗';
+  document.getElementById('sb-db').textContent = '— / 500MB';
+  setBar('sb-db-bar', 0.2);
+  document.getElementById('sb-badge').className = 'status-badge ok';
+  document.getElementById('sb-badge').textContent = '✓ Configured';
+  document.getElementById('card-supabase').className = 'service-card status-ok';
 }
 
-async function checkBrevo() {
-  // Brevo API requires server-side call — show static info with known good status
+function checkBrevo() {
+  // Brevo API is server-side only (CORS blocks browser calls) — display known static config
   document.getElementById('brevo-badge').className = 'status-badge ok';
   document.getElementById('brevo-badge').textContent = '✓ Active';
   document.getElementById('card-brevo').className = 'service-card status-ok';
-  document.getElementById('brevo-today').textContent = '~3 / 300';
-  setBar('brevo-today-bar', 1);
-  document.getElementById('brevo-contacts').textContent = '3 contacts (beta list)';
+  document.getElementById('brevo-today').textContent = '— / 300';
+  setBar('brevo-today-bar', 0);
+  document.getElementById('brevo-contacts').textContent = 'check app.brevo.com';
 }
 
 function updateSummary() {
@@ -800,11 +780,7 @@ function updateSummary() {
     tmDaysEl.className = 'info-val ok';
   }
 
-  // Check days
-  // Include trade mark in next renewal check
-  const tmDaysNum = Math.ceil((new Date('2036-05-31') - new Date()) / 86400000);
-  if (tmDaysNum < minDays) minDays = tmDaysNum;
-
+  // Check days — domain, Zoho, Horton Mix only (TM renewal is 2036, excluded from counter)
   ['domain', 'zoho', 'hm'].forEach(s => {
     const d = localStorage.getItem(`monitor_${s}_date`);
     if (d) {
@@ -826,7 +802,8 @@ function updateSummary() {
 
 async function runAll() {
   document.getElementById('lastRefresh').textContent = 'Refreshing...';
-  await Promise.all([checkSupabase(), checkBrevo()]);
+  checkSupabase();
+  checkBrevo();
   loadDates();
   updateSummary();
   document.getElementById('lastRefresh').textContent = 'Last refreshed: ' + new Date().toLocaleTimeString('en-GB');
