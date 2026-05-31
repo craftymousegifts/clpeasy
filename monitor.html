@@ -387,7 +387,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
     </div>
 
     <!-- Google Cloud / OAuth -->
-    <div class="service-card status-ok">
+    <div class="service-card status-ok" id="card-oauth">
       <div class="card-header">
         <div class="card-header-left">
           <span class="service-icon">🔑</span>
@@ -413,7 +413,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
         </div>
         <div class="info-row">
           <span class="info-key">Client secret</span>
-          <span class="info-val warn">⚠ Rotation pending</span>
+          <span class="info-val ok">✓ Rotated</span>
         </div>
         <div class="info-row">
           <span class="info-key">Cost</span>
@@ -513,10 +513,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
       <span class="action-priority high">HIGH</span>
       <span class="action-text"><strong>Stripe payments</strong> — implement subscription gating in builder.html. Required before public launch.</span>
     </div>
-    <div class="action-item">
-      <span class="action-priority high">HIGH</span>
-      <span class="action-text"><strong>Google OAuth secret rotation</strong> — client secret was exposed in chat history. Rotate in Google Cloud Console immediately.</span>
-    </div>
+
     <div class="action-item">
       <span class="action-priority high">HIGH</span>
       <span class="action-text"><strong>ICO registration</strong> — register at ico.org.uk on launch day before accepting any paid subscribers. Cost: £40/year.</span>
@@ -537,14 +534,8 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
       <span class="action-priority low">LOW</span>
       <span class="action-text"><strong>Cricut PNG download</strong> — individual PNG download from full sheet is broken. Fix before public launch.</span>
     </div>
-    <div class="action-item">
-      <span class="action-priority low">LOW</span>
-      <span class="action-text"><strong>Showcase page nav link</strong> — add showcase.html to home.html navigation when ready to go public.</span>
-    </div>
-    <div class="action-item">
-      <span class="action-priority low">LOW</span>
-      <span class="action-text"><strong>Domain renewal date</strong> — set your Porkbun renewal date above so this dashboard can alert you in advance.</span>
-    </div>
+
+
   </div>
 
 </div>
