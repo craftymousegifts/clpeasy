@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLPeasy — Get Support</title>
+<meta name="description" content="Submit a support request to CLPeasy. Tell us what step you were on, any error messages, and what you've already tried.">
+<meta property="og:title" content="CLPeasy — Get Support">
+<meta property="og:url" content="https://clpeasy.com/support.html">
+<meta property="og:type" content="website">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --teal:#4C9BB0;--teal-dark:#3a7d8f;--teal-light:#d6eef4;--teal-mid:#4C9BB0;
+  --border:#E8EAED;--text:#111318;--muted:#6B7280;--off:#F7F8FA;
+  --red:#EF4444;--amber:#F59E0B;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);-webkit-font-smoothing:antialiased;min-height:100vh;}
+
+/* NAV */
+nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height:72px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.nav-logo{display:flex;align-items:center;text-decoration:none;}
+.nav-badge{width:44px;height:44px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;flex-shrink:0;}
+.nav-easy{font-size:22px;font-weight:900;color:var(--teal);margin-left:5px;letter-spacing:-1px;}
+.nav-back{font-size:13px;color:var(--muted);text-decoration:none;padding:7px 14px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;}
+.nav-back:hover{color:var(--teal);border-color:var(--teal);}
+
+/* HERO */
+.hero{background:white;border-bottom:1px solid var(--border);padding:48px 24px 40px;text-align:center;}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:6px;background:var(--teal-light);color:var(--teal-dark);padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:18px;}
+.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(26px,4vw,40px);line-height:1.2;margin-bottom:12px;}
+.hero h1 em{font-style:italic;color:var(--teal);}
+.hero p{font-size:15px;color:var(--muted);max-width:520px;margin:0 auto;line-height:1.7;}
+
+/* SELF-HELP BANNER */
+.self-help{max-width:680px;margin:32px auto 0;background:var(--teal-light);border:1.5px solid var(--teal-mid);border-radius:14px;padding:20px 24px;display:flex;gap:14px;align-items:flex-start;}
+.self-help-icon{font-size:22px;flex-shrink:0;margin-top:2px;}
+.self-help-text{font-size:14px;color:var(--teal-dark);line-height:1.65;}
+.self-help-text strong{display:block;margin-bottom:4px;font-size:15px;}
+.self-help-text a{color:var(--teal-dark);font-weight:700;text-decoration:underline;}
+
+/* FORM CONTAINER */
+.container{max-width:680px;margin:32px auto 60px;padding:0 16px;}
+
+/* STEPS CHECKLIST */
+.checklist-card{background:white;border:1.5px solid var(--border);border-radius:16px;padding:24px 28px;margin-bottom:24px;}
+.checklist-title{font-size:15px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.checklist-sub{font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.5;}
+.check-item{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;cursor:pointer;}
+.check-item:last-child{margin-bottom:0;}
+.check-box{width:20px;height:20px;border:2px solid var(--border);border-radius:5px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .2s;background:white;}
+.check-item.checked .check-box{background:var(--teal);border-color:var(--teal);}
+.check-item.checked .check-box::after{content:'✓';color:white;font-size:11px;font-weight:700;}
+.check-item.checked .check-label{text-decoration:line-through;color:var(--muted);}
+.check-label{font-size:14px;line-height:1.5;color:var(--text);}
+.check-hint{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4;}
+
+/* STILL STUCK */
+.still-stuck{background:white;border:1.5px solid var(--border);border-radius:16px;padding:28px;margin-bottom:0;}
+.still-stuck-header{font-size:16px;font-weight:700;margin-bottom:4px;}
+.still-stuck-sub{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.5;}
+
+/* FORM */
+.form-group{margin-bottom:18px;}
+label{display:block;font-size:13px;font-weight:700;margin-bottom:6px;color:var(--text);}
+label span{font-weight:400;color:var(--muted);}
+input[type=text],input[type=email],select,textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;outline:none;transition:border-color .2s;-webkit-appearance:none;}
+input[type=text]:focus,input[type=email]:focus,select:focus,textarea:focus{border-color:var(--teal);}
+textarea{resize:vertical;min-height:100px;line-height:1.6;}
+select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;}
+
+/* RADIO GROUP */
+.radio-group{display:flex;flex-direction:column;gap:8px;}
+.radio-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:all .2s;background:white;}
+.radio-item:hover{border-color:var(--teal-mid);}
+.radio-item.selected{border-color:var(--teal);background:var(--teal-light);}
+.radio-item input{display:none;}
+.radio-dot{width:16px;height:16px;border:2px solid var(--border);border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.radio-item.selected .radio-dot{border-color:var(--teal);background:var(--teal);}
+.radio-item.selected .radio-dot::after{content:'';width:6px;height:6px;background:white;border-radius:50%;display:block;}
+.radio-label{font-size:14px;color:var(--text);}
+
+/* SUBMIT */
+.btn-submit{width:100%;background:var(--teal);color:white;border:none;padding:14px;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;box-shadow:0 4px 14px rgba(13,148,136,0.25);margin-top:8px;}
+.btn-submit:hover{background:var(--teal-dark);}
+.btn-submit:disabled{opacity:0.6;cursor:not-allowed;}
+
+/* SUCCESS */
+.success-screen{display:none;text-align:center;background:white;border:1.5px solid var(--border);border-radius:16px;padding:48px 28px;}
+.success-icon{font-size:52px;margin-bottom:16px;}
+.success-title{font-family:'DM Serif Display',serif;font-size:28px;margin-bottom:10px;}
+.success-sub{font-size:15px;color:var(--muted);line-height:1.6;max-width:400px;margin:0 auto;}
+
+/* MSG */
+.msg{padding:12px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none;}
+.msg.error{background:#FEF2F2;border:1px solid #FECACA;color:var(--red);}
+.msg.show{display:block;}
+
+/* INCOGNITO STEPS */
+.incognito-steps{background:var(--off);border-radius:10px;padding:14px 16px;margin-top:8px;font-size:13px;color:var(--muted);line-height:1.7;display:none;}
+.incognito-steps.show{display:block;}
+.incognito-steps strong{color:var(--text);display:block;margin-bottom:4px;}
+
+footer{background:#0A0F1A;padding:24px;text-align:center;}
+footer p{font-size:12px;color:#4B5563;}
+footer a{color:#6B7280;text-decoration:none;}
+footer a:hover{color:white;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="home.html" class="nav-logo">
+    <div class="nav-badge">CLP</div><span class="nav-easy">easy</span>
+  </a>
+  <a href="home.html" class="nav-back">← Home</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">🛠️ Support</div>
+  <h1>We're here to <em>help</em></h1>
+  <p>Before submitting a request, try the quick fixes below — most issues are resolved in seconds. If you're still stuck, fill in the form and Michaela will get back to you personally.</p>
+</div>
+
+<div class="container">
+
+  <!-- SELF-HELP BANNER -->
+  <div class="self-help">
+    <div class="self-help-icon">💡</div>
+    <div class="self-help-text">
+      <strong>Can't find your answer?</strong>
+      Check the <a href="knowledge.html">Knowledge Base</a> for plain-English answers to CLP questions, or browse the <a href="pricing.html#faq">FAQ section</a> on the pricing page. If you still can't find what you need, submit your query below.
+    </div>
+  </div>
+
+  <!-- QUICK FIX CHECKLIST -->
+  <div class="checklist-card" style="margin-top:24px;">
+    <div class="checklist-title">⚡ Try these first</div>
+    <div class="checklist-sub">Tick each one off — these fix the majority of issues before you need to contact us.</div>
+
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div>
+        <div class="check-label">Hard refresh the page</div>
+        <div class="check-hint">On Windows: press <strong>Ctrl + Shift + R</strong> — this clears the cache and reloads the latest version of the page.</div>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div>
+        <div class="check-label">Close the browser completely and reopen it</div>
+        <div class="check-hint">Not just the tab — close the whole browser, reopen it and try again.</div>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggleCheck(this)" id="incognito-check">
+      <div class="check-box"></div>
+      <div>
+        <div class="check-label">Try in Incognito / Private mode</div>
+        <div class="check-hint">This rules out browser extensions or cached data causing the issue. <span style="color:var(--teal);font-weight:600;cursor:pointer;" onclick="event.stopPropagation();toggleIncognito()">How do I open Incognito? ▼</span></div>
+        <div class="incognito-steps" id="incognito-steps">
+          <strong>How to open Incognito mode on Windows:</strong>
+          Chrome: Press <strong>Ctrl + Shift + N</strong><br>
+          Firefox: Press <strong>Ctrl + Shift + P</strong><br>
+          Edge: Press <strong>Ctrl + Shift + N</strong><br><br>
+          Then go to <strong>https://clpeasy.com</strong> and try again. If the issue is gone in Incognito, a browser extension is likely causing it.
+        </div>
+      </div>
+    </div>
+
+    <div class="check-item" onclick="toggleCheck(this)">
+      <div class="check-box"></div>
+      <div>
+        <div class="check-label">Check you're logged in</div>
+        <div class="check-hint">Go to <a href="auth.html" style="color:var(--teal);">clpeasy.com/auth.html</a> and confirm you're signed into the correct account.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SUPPORT FORM -->
+  <div class="still-stuck" id="form-card">
+    <div class="still-stuck-header">Still having trouble? Tell us what's happening</div>
+    <div class="still-stuck-sub">Fill in as much detail as you can — it helps us fix your issue much faster.</div>
+
+    <div class="msg error" id="msg"></div>
+
+    <div class="form-group">
+      <label>Your name</label>
+      <input type="text" id="name" placeholder="e.g. Sarah">
+    </div>
+
+    <div class="form-group">
+      <label>Your email address</label>
+      <input type="email" id="email" placeholder="you@example.com">
+    </div>
+
+    <div class="form-group">
+      <label>What were you trying to do? <span>(required)</span></label>
+      <select id="step">
+        <option value="">Select the step you were on...</option>
+        <option>Logging in or creating an account</option>
+        <option>Choosing a label size and shape</option>
+        <option>Entering fragrance details</option>
+        <option>Adding hazard data / H statements</option>
+        <option>Using Smart Paste / SDS Smart Import</option>
+        <option>Downloading a label (PNG, SVG, PDF)</option>
+        <option>Using the A4 Print Sheet Composer</option>
+        <option>Exporting for Cricut</option>
+        <option>Generating a UFI code</option>
+        <option>Using the QR safety sheet feature</option>
+        <option>Managing my label library</option>
+        <option>Billing or subscription</option>
+        <option>Something else</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Describe what happened <span>(required)</span></label>
+      <textarea id="description" placeholder="Tell us exactly what happened. What did you expect to happen? What happened instead?"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Any error messages? <span>(copy them exactly if you can)</span></label>
+      <textarea id="errors" style="min-height:70px;" placeholder='e.g. "Something went wrong. Please try again." or "Invalid login credentials."'></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Did the issue still happen after a hard refresh? <span>(Ctrl + Shift + R)</span></label>
+      <div class="radio-group">
+        <div class="radio-item" onclick="selectRadio(this,'refresh')">
+          <input type="radio" name="refresh"><div class="radio-dot"></div><span class="radio-label">Yes — still happening after hard refresh</span>
+        </div>
+        <div class="radio-item" onclick="selectRadio(this,'refresh')">
+          <input type="radio" name="refresh"><div class="radio-dot"></div><span class="radio-label">No — hard refresh fixed it</span>
+        </div>
+        <div class="radio-item" onclick="selectRadio(this,'refresh')">
+          <input type="radio" name="refresh"><div class="radio-dot"></div><span class="radio-label">I haven't tried yet</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Did the issue happen in Incognito mode?</label>
+      <div class="radio-group">
+        <div class="radio-item" onclick="selectRadio(this,'incognito')">
+          <input type="radio" name="incognito"><div class="radio-dot"></div><span class="radio-label">Yes — still happening in Incognito</span>
+        </div>
+        <div class="radio-item" onclick="selectRadio(this,'incognito')">
+          <input type="radio" name="incognito"><div class="radio-dot"></div><span class="radio-label">No — works fine in Incognito</span>
+        </div>
+        <div class="radio-item" onclick="selectRadio(this,'incognito')">
+          <input type="radio" name="incognito"><div class="radio-dot"></div><span class="radio-label">I haven't tried yet</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>What browser and device are you using? <span>(optional but helpful)</span></label>
+      <input type="text" id="browser" placeholder="e.g. Chrome on Windows 11, Safari on iPhone">
+    </div>
+
+    <div class="form-group">
+      <label>Anything else we should know? <span>(optional)</span></label>
+      <textarea id="other" style="min-height:70px;" placeholder="Any other details that might help us understand the issue."></textarea>
+    </div>
+
+    <button class="btn-submit" id="submit-btn" onclick="submitForm()">Send support request →</button>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="success-screen" id="success">
+    <div class="success-icon">✅</div>
+    <div class="success-title">Request received</div>
+    <div class="success-sub">Thanks for getting in touch. Michaela will review your request and get back to you at your email address — usually within 1 working day.</div>
+    <br>
+    <a href="home.html" style="color:var(--teal);font-size:14px;font-weight:600;">← Back to CLPeasy</a>
+  </div>
+
+</div>
+
+<footer>
+  <p><a href="home.html">Home</a> &nbsp;·&nbsp; <a href="knowledge.html">Knowledge Base</a> &nbsp;·&nbsp; <a href="privacy.html">Privacy</a> &nbsp;·&nbsp; <a href="terms.html">Terms</a> &nbsp;·&nbsp; <a href="mailto:support@clpeasy.com">support@clpeasy.com</a></p>
+  <p style="margin-top:8px;">© 2026 CLPeasy · Crafty Mouse Gifts</p>
+</footer>
+
+<script>
+function toggleCheck(el) {
+  el.classList.toggle('checked');
+}
+
+function toggleIncognito() {
+  const steps = document.getElementById('incognito-steps');
+  steps.classList.toggle('show');
+}
+
+function selectRadio(el, group) {
+  document.querySelectorAll(`.radio-item[onclick*="${group}"]`).forEach(r => r.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function showMsg(text) {
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = 'msg error show';
+}
+
+async function submitForm() {
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const step = document.getElementById('step').value;
+  const description = document.getElementById('description').value.trim();
+
+  if (!name) { showMsg('Please enter your name.'); return; }
+  if (!email || !email.includes('@')) { showMsg('Please enter a valid email address.'); return; }
+  if (!step) { showMsg('Please select the step you were on.'); return; }
+  if (!description) { showMsg('Please describe what happened.'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+
+  // Collect all fields
+  const errors = document.getElementById('errors').value.trim();
+  const browser = document.getElementById('browser').value.trim();
+  const other = document.getElementById('other').value.trim();
+  const refresh = document.querySelector('.radio-item[onclick*="refresh"].selected .radio-label')?.textContent || 'Not answered';
+  const incognito = document.querySelector('.radio-item[onclick*="incognito"].selected .radio-label')?.textContent || 'Not answered';
+
+  const body = `
+New CLPeasy Support Request
+===========================
+Name: ${name}
+Email: ${email}
+Step: ${step}
+
+What happened:
+${description}
+
+Error messages:
+${errors || 'None provided'}
+
+Hard refresh result: ${refresh}
+Incognito result: ${incognito}
+Browser/device: ${browser || 'Not provided'}
+
+Additional info:
+${other || 'None'}
+  `.trim();
+
+  // Send via mailto as fallback (replace with Brevo API or Supabase edge function for production)
+  try {
+    const mailtoLink = `mailto:support@clpeasy.com?subject=Support Request from ${encodeURIComponent(name)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoLink;
+
+    // Show success after short delay
+    setTimeout(() => {
+      document.getElementById('form-card').style.display = 'none';
+      document.getElementById('success').style.display = 'block';
+    }, 1000);
+  } catch(e) {
+    showMsg('Something went wrong. Please email support@clpeasy.com directly.');
+    btn.disabled = false;
+    btn.textContent = 'Send support request →';
+  }
+}
+
+// Copy protection
+document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+document.addEventListener('keydown', function(e){
+  if((e.ctrlKey||e.metaKey) && (e.key==='c'||e.key==='u'||e.key==='s'||e.key==='a'||e.key==='p')) e.preventDefault();
+});
+</script>
+<style>
+  body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; user-select:none; }
+  input, textarea, select { -webkit-user-select:text; -moz-user-select:text; user-select:text; }
+</style>
+</body>
+</html>

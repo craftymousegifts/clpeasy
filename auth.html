@@ -12,7 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--teal:#0D9488;--teal-dark:#0F766E;--teal-light:#CCFBF1;--border:#E8EAED;--text:#111318;--muted:#6B7280;--off:#F7F8FA;--red:#EF4444;}
+:root{--teal:#4C9BB0;--teal-dark:#3a7d8f;--teal-light:#d6eef4;--border:#E8EAED;--text:#111318;--muted:#6B7280;--off:#F7F8FA;--red:#EF4444;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);-webkit-font-smoothing:antialiased;}
 body{display:flex;flex-direction:column;min-height:100vh;}
@@ -20,8 +20,8 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 /* NAV */
 nav{background:white;border-bottom:1px solid var(--border);padding:0 24px;height:88px;display:flex;align-items:center;justify-content:space-between;}
 .nav-logo{display:flex;align-items:center;gap:0;text-decoration:none;line-height:1;}
-.nav-badge{width:80px;height:80px;border-radius:50%;background:#0D9488;color:white;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;flex-shrink:0;font-family:'DM Sans',sans-serif;letter-spacing:-1px;}
-.nav-easy{font-family:'DM Sans',sans-serif;font-size:38px;font-weight:900;color:#0D9488;margin-left:5px;letter-spacing:-2px;line-height:1;}
+.nav-badge{width:80px;height:80px;border-radius:50%;background:#4C9BB0;color:white;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;flex-shrink:0;font-family:'DM Sans',sans-serif;letter-spacing:-1px;}
+.nav-easy{font-family:'DM Sans',sans-serif;font-size:38px;font-weight:900;color:#4C9BB0;margin-left:5px;letter-spacing:-2px;line-height:1;}
 .nav-back{font-size:13px;color:var(--muted);text-decoration:none;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;}
 .nav-back:hover{color:var(--teal);border-color:var(--teal);}
 
@@ -81,7 +81,10 @@ input:focus{border-color:var(--teal);}
 
 <nav>
   <a href="home.html" class="nav-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span></a>
-  <a href="home.html" class="nav-back">← Home</a>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <a href="support.html" style="font-size:13px;color:var(--muted);text-decoration:none;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;" onmouseover="this.style.color='#4C9BB0';this.style.borderColor='#4C9BB0'" onmouseout="this.style.color='';this.style.borderColor=''">Support</a>
+    <a href="home.html" class="nav-back">← Home</a>
+  </div>
 </nav>
 
 <main>
