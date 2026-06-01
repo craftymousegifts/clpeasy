@@ -13,7 +13,7 @@
 <style>
   :root {
     --white: #ffffff;
-    --off: #F7F8FA;
+    --off: #ffffff;
     --border: #E8EAED;
     --text: #111318;
     --muted: #6B7280;
@@ -36,7 +36,7 @@
 
   /* NAV */
   nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    position: fixed; top: 4px; left: 0; right: 0; z-index: 100;
     background: rgba(255,255,255,0.98);
     backdrop-filter: blur(12px);
     border-bottom: 1.5px solid var(--border);
@@ -83,9 +83,13 @@
   /* HERO */
   .hero {
     padding: 120px 24px 48px;
-    max-width: 960px; margin: 0 auto;
     text-align: center;
     background: white;
+  }
+  .hero > * {
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
   }
   .hero-pill {
     display: inline-flex; align-items: center; gap: 6px;
@@ -422,8 +426,8 @@
 </div>
 
 <!-- HERO -->
-<div style="background:linear-gradient(160deg, rgba(76,155,176,0.15) 0%, rgba(76,155,176,0.06) 50%, white 100%);">
-<section class="hero">
+<div style="background:white;width:100%;">
+<section class="hero" style="background:white;">
   <div style="display:inline-flex;align-items:center;gap:8px;background:var(--teal-light);color:var(--teal-dark);padding:6px 16px;border-radius:100px;font-size:12px;font-weight:700;letter-spacing:0.5px;margin-bottom:16px;">🕯️ BUILT BY A MAKER, FOR MAKERS</div>
   <h1>Generate <em>print-ready</em><br>CLP labels in seconds</h1>
   <p class="hero-sub">Hi, I'm Michaela — a candle and wax melt maker and the person who built CLPeasy. My background is in IT. I spent years supporting a Formula 1 team and working inside a global enterprise software company. In those environments I learned that the best tools are invisible — they do the hard work so the people using them can focus on what they're actually brilliant at. When I started making candles and hit the wall of CLP compliance, I didn't find a tool that did that. So I built one. What used to take hours of guesswork now takes minutes — and the <strong>£200–£600 a year</strong> most makers spend on compliance stays where it belongs: in your craft. Massively inspired by Joy Mangano — American inventor, entrepreneur, and proof that the best ideas come from solving your own problems.</p>
@@ -597,6 +601,8 @@
 </section>
 </div>
 
+
+
 <!-- FAQ -->
 <section class="faq" id="faq">
   <div class="faq-inner">
@@ -654,350 +660,6 @@
 </section>
 </div>
 
-<!-- CLP LABEL LIFECYCLE DIAGRAM -->
-<div id="lifecycle" style="background:linear-gradient(180deg,#F7F8FA 0%,white 100%);padding:72px 24px;overflow:hidden;">
-  <div style="max-width:860px;margin:0 auto;">
-
-    <div style="text-align:center;margin-bottom:52px;">
-      <div style="display:inline-flex;align-items:center;gap:6px;background:#EBF6F9;color:#2d7a8f;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:14px;">The CLP label lifecycle</div>
-      <h2 style="font-family:'DM Serif Display',serif;font-size:28px;color:#111318;margin-bottom:10px;line-height:1.3;">A label isn't a one-time job.<br><em style="color:#4C9BB0;font-style:italic;">It grows with your business.</em></h2>
-      <p style="font-size:15px;color:#6B7280;max-width:520px;margin:0 auto;line-height:1.7;">Every new scent, every formula change, every supplier update means your label needs to keep up. CLPeasy handles every stage — so you never fall behind.</p>
-    </div>
-
-    <!-- LIFECYCLE NODES -->
-    <div class="lc-wrap">
-
-      <!-- Node 1 -->
-      <div class="lc-node" data-step="1">
-        <div class="lc-icon-wrap lc-start">
-          <div class="lc-icon">🌱</div>
-        </div>
-        <div class="lc-content">
-          <div class="lc-step">Step 1</div>
-          <div class="lc-title">New fragrance idea</div>
-          <div class="lc-desc">You discover a new scent — a seasonal blend, a new supplier, a new product type. Exciting. But before you make a single batch to sell, a compliant CLP label is a legal requirement.</div>
-        </div>
-      </div>
-
-      <div class="lc-connector"><div class="lc-line"></div><div class="lc-arrow">↓</div></div>
-
-      <!-- Node 2 -->
-      <div class="lc-node" data-step="2">
-        <div class="lc-icon-wrap">
-          <div class="lc-icon">📄</div>
-        </div>
-        <div class="lc-content">
-          <div class="lc-step">Step 2</div>
-          <div class="lc-title">Get your SDS</div>
-          <div class="lc-desc">Download the Safety Data Sheet from your fragrance supplier. CLPeasy links you directly to the right page for all major UK suppliers — no hunting around.</div>
-          <div class="lc-clpeasy-tag">CLPeasy: Supplier directory built in</div>
-        </div>
-      </div>
-
-      <div class="lc-connector"><div class="lc-line"></div><div class="lc-arrow">↓</div></div>
-
-      <!-- Node 3 -->
-      <div class="lc-node" data-step="3">
-        <div class="lc-icon-wrap">
-          <div class="lc-icon">✨</div>
-        </div>
-        <div class="lc-content">
-          <div class="lc-step">Step 3</div>
-          <div class="lc-title">Import hazard data</div>
-          <div class="lc-desc">Paste Section 2.2 from your SDS and CLPeasy extracts all hazard data automatically — or drop in the entire PDF and let Easy Pro do it all for you. Signal word, H statements, pictograms — done.</div>
-          <div class="lc-clpeasy-tag">CLPeasy: Smart Paste &amp; SDS PDF import</div>
-        </div>
-      </div>
-
-      <div class="lc-connector"><div class="lc-line"></div><div class="lc-arrow">↓</div></div>
-
-      <!-- Node 4 -->
-      <div class="lc-node" data-step="4">
-        <div class="lc-icon-wrap">
-          <div class="lc-icon">🏷️</div>
-        </div>
-        <div class="lc-content">
-          <div class="lc-step">Step 4</div>
-          <div class="lc-title">Build your label</div>
-          <div class="lc-desc">Add your product name, scent, batch number, fragrance load and business details. CLPeasy composes the full compliant label — the right size, the right format, everything in the right place.</div>
-          <div class="lc-clpeasy-tag">CLPeasy: Label builder with all shapes &amp; sizes</div>
-        </div>
-      </div>
-
-      <div class="lc-connector"><div class="lc-line"></div><div class="lc-arrow">↓</div></div>
-
-      <!-- Node 5 -->
-      <div class="lc-node" data-step="5">
-        <div class="lc-icon-wrap">
-          <div class="lc-icon">🖨️</div>
-        </div>
-        <div class="lc-content">
-          <div class="lc-step">Step 5</div>
-          <div class="lc-title">Download &amp; print</div>
-          <div class="lc-desc">Download as PNG, SVG, PDF or Avery sheet. Print at home or send to a print shop. Cut with your Cricut. Your label is saved in your library forever — reprint any time.</div>
-          <div class="lc-clpeasy-tag">CLPeasy: PNG · SVG · Avery · Print shop PDF · Cricut ZIP</div>
-        </div>
-      </div>
-
-      <div class="lc-connector"><div class="lc-line"></div><div class="lc-arrow">↓</div></div>
-
-      <!-- Node 6 -->
-      <div class="lc-node" data-step="6">
-        <div class="lc-icon-wrap lc-milestone">
-          <div class="lc-icon">🛍️</div>
-        </div>
-        <div class="lc-content">
-          <div class="lc-step lc-step-milestone">Milestone</div>
-          <div class="lc-title">You sell your product</div>
-          <div class="lc-desc">Your product is correctly labelled and on sale. Labels are compliant at the point of sale — this is the legal requirement met. But the lifecycle doesn't end here.</div>
-        </div>
-      </div>
-
-      <div class="lc-connector"><div class="lc-line"></div><div class="lc-arrow">↓</div></div>
-
-      <!-- Node 7 -->
-      <div class="lc-node" data-step="7">
-        <div class="lc-icon-wrap lc-warning">
-          <div class="lc-icon">🔔</div>
-        </div>
-        <div class="lc-content">
-          <div class="lc-step lc-step-warning">Watch out</div>
-          <div class="lc-title">Things change</div>
-          <div class="lc-desc">Your supplier quietly updates their SDS. A regulation changes. You tweak your fragrance load. You switch supplier for the same scent. Any of these mean your existing label may no longer be accurate — and selling with an inaccurate label is a legal risk.</div>
-        </div>
-      </div>
-
-      <div class="lc-connector"><div class="lc-line"></div><div class="lc-arrow">↓</div></div>
-
-      <!-- Node 8 -->
-      <div class="lc-node" data-step="8">
-        <div class="lc-icon-wrap lc-clpeasy">
-          <div class="lc-icon">🛡️</div>
-        </div>
-        <div class="lc-content">
-          <div class="lc-step lc-step-clpeasy">CLPeasy handles this</div>
-          <div class="lc-title">Alerts &amp; reminders</div>
-          <div class="lc-desc">CLPeasy emails you when it's time to review your SDS — and Easy Pro alerts you automatically when regulations change. Your library shows exactly which labels need attention.</div>
-          <div class="lc-clpeasy-tag">CLPeasy: SDS reminders · Regulation alerts (Pro)</div>
-        </div>
-      </div>
-
-      <div class="lc-connector"><div class="lc-line"></div><div class="lc-arrow">↓</div></div>
-
-      <!-- Node 9 — loops back -->
-      <div class="lc-node lc-node-loop" data-step="9">
-        <div class="lc-icon-wrap lc-loop">
-          <div class="lc-icon">🔄</div>
-        </div>
-        <div class="lc-content">
-          <div class="lc-step lc-step-loop">The loop</div>
-          <div class="lc-title">Update, reprint, carry on</div>
-          <div class="lc-desc">Open your saved label in CLPeasy, update the hazard data, re-download. Your version history is preserved. Everything is tracked. Your label library is always current — and you're always covered.</div>
-          <div class="lc-clpeasy-tag">CLPeasy: Version history · 7-day free re-download</div>
-        </div>
-        <!-- Loop arrow back to step 3 -->
-        <div class="lc-loop-arrow">
-          <div class="lc-loop-line"></div>
-          <div class="lc-loop-label">Back to Step 3 →</div>
-        </div>
-      </div>
-
-    </div><!-- /lc-wrap -->
-
-    <div style="text-align:center;margin-top:48px;padding:24px 28px;background:#EBF6F9;border-radius:14px;border:1px solid #c5e4ed;">
-      <p style="font-size:15px;color:#0f2236;font-weight:600;margin-bottom:4px;">CLPeasy supports every stage of this lifecycle — automatically.</p>
-      <p style="font-size:13px;color:#4C9BB0;">From your first label to your hundredth reprint, we've got you covered.</p>
-    </div>
-
-  </div>
-</div>
-
-<style>
-/* ── LIFECYCLE DIAGRAM ──────────────────────────────── */
-.lc-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-}
-
-.lc-node {
-  display: flex;
-  align-items: flex-start;
-  gap: 20px;
-  width: 100%;
-  max-width: 620px;
-  background: white;
-  border: 1.5px solid #E8EAED;
-  border-radius: 14px;
-  padding: 20px 22px;
-  position: relative;
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.3s, box-shadow 0.3s;
-}
-.lc-node.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-.lc-node:hover {
-  border-color: #4C9BB0;
-  box-shadow: 0 4px 20px rgba(76,155,176,0.12);
-}
-
-.lc-icon-wrap {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: #F7F8FA;
-  border: 2px solid #E8EAED;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  font-size: 22px;
-  transition: transform 0.3s;
-}
-.lc-node:hover .lc-icon-wrap { transform: scale(1.1); }
-
-.lc-icon-wrap.lc-start   { background: #F0FDF4; border-color: #22C55E; }
-.lc-icon-wrap.lc-milestone{ background: #EBF6F9; border-color: #4C9BB0; }
-.lc-icon-wrap.lc-warning  { background: #FFFBEB; border-color: #F59E0B; }
-.lc-icon-wrap.lc-clpeasy  { background: #EBF6F9; border-color: #4C9BB0; }
-.lc-icon-wrap.lc-loop     { background: #F0FDF4; border-color: #22C55E; }
-
-.lc-content { flex: 1; min-width: 0; }
-.lc-step {
-  font-size: 10px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: #9CA3AF;
-  margin-bottom: 3px;
-}
-.lc-step-milestone { color: #4C9BB0; }
-.lc-step-warning   { color: #F59E0B; }
-.lc-step-clpeasy   { color: #4C9BB0; }
-.lc-step-loop      { color: #22C55E; }
-
-.lc-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #111318;
-  margin-bottom: 5px;
-}
-.lc-desc {
-  font-size: 13px;
-  color: #6B7280;
-  line-height: 1.6;
-}
-.lc-clpeasy-tag {
-  display: inline-block;
-  margin-top: 8px;
-  font-size: 11px;
-  font-weight: 700;
-  background: #EBF6F9;
-  color: #2d7a8f;
-  padding: 3px 10px;
-  border-radius: 20px;
-}
-
-/* Connectors */
-.lc-connector {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 40px;
-  position: relative;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-.lc-connector.visible { opacity: 1; }
-.lc-line {
-  width: 2px;
-  flex: 1;
-  background: linear-gradient(to bottom, #E8EAED, #4C9BB0);
-}
-.lc-arrow {
-  font-size: 16px;
-  color: #4C9BB0;
-  line-height: 1;
-  margin-top: 2px;
-}
-
-/* Loop arrow */
-.lc-node-loop { position: relative; }
-.lc-loop-arrow {
-  display: none;
-  position: absolute;
-  right: -80px;
-  top: 50%;
-  transform: translateY(-50%);
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-.lc-loop-line {
-  width: 2px;
-  height: 60px;
-  background: #22C55E;
-}
-.lc-loop-label {
-  font-size: 10px;
-  font-weight: 700;
-  color: #22C55E;
-  white-space: nowrap;
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-}
-@media(min-width: 700px) {
-  .lc-loop-arrow { display: flex; }
-}
-
-/* Step number badge */
-.lc-node::before {
-  content: attr(data-step);
-  position: absolute;
-  top: -10px;
-  left: 20px;
-  width: 20px;
-  height: 20px;
-  background: #4C9BB0;
-  color: white;
-  border-radius: 50%;
-  font-size: 10px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'DM Sans', sans-serif;
-}
-.lc-node[data-step="6"]::before { background: #4C9BB0; }
-.lc-node[data-step="7"]::before { background: #F59E0B; }
-.lc-node[data-step="8"]::before { background: #4C9BB0; }
-.lc-node[data-step="9"]::before { background: #22C55E; }
-</style>
-
-<script>
-(function(){
-  // Intersection Observer — animate nodes in as user scrolls
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry, i) => {
-      if (entry.isIntersecting) {
-        setTimeout(() => {
-          entry.target.classList.add('visible');
-        }, entry.target.dataset.delay || 0);
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.2 });
-
-  document.querySelectorAll('.lc-node, .lc-connector').forEach((el, i) => {
-    el.dataset.delay = i * 80;
-    observer.observe(el);
-  });
-})();
-</script>
 
 <!-- CTA -->
 <section class="cta">
@@ -1129,4 +791,183 @@ _sb.auth.getSession().then(async ({data:{session}})=>{
 </script>
 
 <script src="seasons.js"></script>
-</html>
+</html><!-- CLP LABEL LIFECYCLE -->
+<div id="lifecycle" style="background:linear-gradient(180deg,white 0%,#F7FBFC 100%);padding:72px 24px;overflow:hidden;">
+  <div style="max-width:860px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:52px;">
+      <div style="display:inline-flex;align-items:center;gap:6px;background:#EBF6F9;color:#2d7a8f;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:14px;">The CLP label lifecycle</div>
+      <h2 style="font-family:'DM Serif Display',serif;font-size:28px;color:#111318;margin-bottom:10px;line-height:1.3;">A label isn't a one-time job.<br><em style="color:#4C9BB0;font-style:italic;">It grows with your business.</em></h2>
+      <p style="font-size:15px;color:#6B7280;max-width:520px;margin:0 auto;line-height:1.7;">Every new scent, every formula change, every supplier update means your label needs to keep up. CLPeasy handles every stage automatically.</p>
+    </div>
+
+    <!-- CIRCULAR DIAGRAM -->
+    <div style="position:relative;width:100%;max-width:600px;margin:0 auto 48px;">
+      <svg id="lc-svg" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;">
+        <!-- Outer ring -->
+        <circle cx="300" cy="300" r="250" fill="none" stroke="#E8EAED" stroke-width="2" stroke-dasharray="6 4"/>
+        <!-- Inner ring -->
+        <circle cx="300" cy="300" r="80" fill="#EBF6F9" stroke="#4C9BB0" stroke-width="2"/>
+        <text x="300" y="290" text-anchor="middle" font-family="DM Serif Display,serif" font-size="18" fill="#0f2236" font-weight="700">CLP</text>
+        <text x="300" y="312" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#4C9BB0" font-weight="600">LIFECYCLE</text>
+
+        <!-- Step 1 — top (12 o'clock) -->
+        <g class="lc-step-g" data-step="1" style="cursor:pointer;">
+          <circle cx="300" cy="50" r="32" fill="#F0FDF4" stroke="#22C55E" stroke-width="2"/>
+          <text x="300" y="45" text-anchor="middle" font-size="20">🌱</text>
+          <text x="300" y="62" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#15803D" font-weight="700">1</text>
+          <text x="300" y="96" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#111318" font-weight="700">New scent</text>
+          <text x="300" y="109" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#6B7280">idea</text>
+        </g>
+
+        <!-- Step 2 — 1 o'clock -->
+        <g class="lc-step-g" data-step="2" style="cursor:pointer;">
+          <circle cx="473" cy="107" r="32" fill="#EBF6F9" stroke="#4C9BB0" stroke-width="2"/>
+          <text x="473" y="102" text-anchor="middle" font-size="20">📄</text>
+          <text x="473" y="119" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#4C9BB0" font-weight="700">2</text>
+          <text x="492" y="153" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#111318" font-weight="700">Get SDS</text>
+          <text x="492" y="166" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#6B7280">from supplier</text>
+        </g>
+
+        <!-- Step 3 — 3 o'clock -->
+        <g class="lc-step-g" data-step="3" style="cursor:pointer;">
+          <circle cx="550" cy="300" r="32" fill="#EBF6F9" stroke="#4C9BB0" stroke-width="2"/>
+          <text x="550" y="295" text-anchor="middle" font-size="20">✨</text>
+          <text x="550" y="312" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#4C9BB0" font-weight="700">3</text>
+          <text x="552" y="346" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#111318" font-weight="700">Import</text>
+          <text x="552" y="359" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#6B7280">hazard data</text>
+        </g>
+
+        <!-- Step 4 — 5 o'clock -->
+        <g class="lc-step-g" data-step="4" style="cursor:pointer;">
+          <circle cx="473" cy="493" r="32" fill="#EBF6F9" stroke="#4C9BB0" stroke-width="2"/>
+          <text x="473" y="488" text-anchor="middle" font-size="20">🏷️</text>
+          <text x="473" y="505" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#4C9BB0" font-weight="700">4</text>
+          <text x="453" y="538" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#111318" font-weight="700">Build label</text>
+          <text x="453" y="551" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#6B7280">in CLPeasy</text>
+        </g>
+
+        <!-- Step 5 — 7 o'clock -->
+        <g class="lc-step-g" data-step="5" style="cursor:pointer;">
+          <circle cx="127" cy="493" r="32" fill="#EBF6F9" stroke="#4C9BB0" stroke-width="2"/>
+          <text x="127" y="488" text-anchor="middle" font-size="20">🖨️</text>
+          <text x="127" y="505" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#4C9BB0" font-weight="700">5</text>
+          <text x="147" y="538" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#111318" font-weight="700">Download</text>
+          <text x="147" y="551" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#6B7280">&amp; print</text>
+        </g>
+
+        <!-- Step 6 — 9 o'clock — SELL (milestone) -->
+        <g class="lc-step-g" data-step="6" style="cursor:pointer;">
+          <circle cx="50" cy="300" r="32" fill="#EBF6F9" stroke="#4C9BB0" stroke-width="2.5"/>
+          <text x="50" y="295" text-anchor="middle" font-size="20">🛍️</text>
+          <text x="50" y="312" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#4C9BB0" font-weight="700">6</text>
+          <text x="48" y="346" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#111318" font-weight="700">Sell your</text>
+          <text x="48" y="359" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#6B7280">product</text>
+        </g>
+
+        <!-- Step 7 — 11 o'clock — WARNING -->
+        <g class="lc-step-g" data-step="7" style="cursor:pointer;">
+          <circle cx="127" cy="107" r="32" fill="#FFFBEB" stroke="#F59E0B" stroke-width="2"/>
+          <text x="127" y="102" text-anchor="middle" font-size="20">🔔</text>
+          <text x="127" y="119" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#F59E0B" font-weight="700">7</text>
+          <text x="108" y="153" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#111318" font-weight="700">Things</text>
+          <text x="108" y="166" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#6B7280">change</text>
+        </g>
+
+        <!-- Step 8 — between 11 and 12 — CLPeasy alerts -->
+        <g class="lc-step-g" data-step="8" style="cursor:pointer;">
+          <circle cx="195" cy="55" r="28" fill="#EBF6F9" stroke="#4C9BB0" stroke-width="2"/>
+          <text x="195" y="50" text-anchor="middle" font-size="17">🛡️</text>
+          <text x="195" y="64" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#4C9BB0" font-weight="700">8</text>
+          <text x="168" y="95" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#111318" font-weight="700">CLPeasy</text>
+          <text x="168" y="107" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#6B7280">alerts you</text>
+        </g>
+
+        <!-- Step 9 — between 12 and 1 — loop/update -->
+        <g class="lc-step-g" data-step="9" style="cursor:pointer;">
+          <circle cx="405" cy="55" r="28" fill="#F0FDF4" stroke="#22C55E" stroke-width="2"/>
+          <text x="405" y="50" text-anchor="middle" font-size="17">🔄</text>
+          <text x="405" y="64" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#22C55E" font-weight="700">9</text>
+          <text x="432" y="95" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="10" fill="#111318" font-weight="700">Update</text>
+          <text x="432" y="107" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="9" fill="#6B7280">&amp; reprint</text>
+        </g>
+
+        <!-- Directional arrows around the ring -->
+        <path d="M 340 52 A 250 250 0 0 1 473 75" fill="none" stroke="#4C9BB0" stroke-width="1.5" marker-end="url(#arr)"/>
+        <path d="M 505 140 A 250 250 0 0 1 548 265" fill="none" stroke="#4C9BB0" stroke-width="1.5" marker-end="url(#arr)"/>
+        <path d="M 548 335 A 250 250 0 0 1 505 460" fill="none" stroke="#4C9BB0" stroke-width="1.5" marker-end="url(#arr)"/>
+        <path d="M 473 525 A 250 250 0 0 1 335 548" fill="none" stroke="#4C9BB0" stroke-width="1.5" marker-end="url(#arr)"/>
+        <path d="M 265 548 A 250 250 0 0 1 127 525" fill="none" stroke="#4C9BB0" stroke-width="1.5" marker-end="url(#arr)"/>
+        <path d="M 95 460 A 250 250 0 0 1 52 335" fill="none" stroke="#4C9BB0" stroke-width="1.5" marker-end="url(#arr)"/>
+        <path d="M 52 265 A 250 250 0 0 1 95 140" fill="none" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arr-amber)"/>
+        <path d="M 127 75 A 250 250 0 0 1 195 27" fill="none" stroke="#4C9BB0" stroke-width="1.5" marker-end="url(#arr)"/>
+        <path d="M 225 30 A 250 250 0 0 1 340 52" fill="none" stroke="#22C55E" stroke-width="1.5" marker-end="url(#arr-green)"/>
+
+        <!-- Arrow markers -->
+        <defs>
+          <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#4C9BB0"/>
+          </marker>
+          <marker id="arr-amber" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#F59E0B"/>
+          </marker>
+          <marker id="arr-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#22C55E"/>
+          </marker>
+        </defs>
+      </svg>
+
+      <!-- Tooltip -->
+      <div id="lc-tooltip" style="display:none;position:absolute;background:#0f2236;color:white;padding:10px 14px;border-radius:10px;font-size:13px;max-width:220px;line-height:1.5;z-index:10;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,0.2);"></div>
+    </div>
+
+    <!-- Step descriptions below diagram -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:8px;">
+      <div style="background:white;border:1px solid #E8EAED;border-radius:10px;padding:14px;font-size:12px;">
+        <div style="font-weight:700;color:#111318;margin-bottom:4px;">🌱 1. New scent idea</div>
+        <div style="color:#6B7280;line-height:1.5;">Before you make a single batch to sell, a compliant CLP label is a legal requirement.</div>
+      </div>
+      <div style="background:white;border:1px solid #E8EAED;border-radius:10px;padding:14px;font-size:12px;">
+        <div style="font-weight:700;color:#111318;margin-bottom:4px;">📄 2. Get your SDS</div>
+        <div style="color:#6B7280;line-height:1.5;">CLPeasy links you directly to your supplier's SDS page — no hunting around.</div>
+      </div>
+      <div style="background:white;border:1px solid #E8EAED;border-radius:10px;padding:14px;font-size:12px;">
+        <div style="font-weight:700;color:#111318;margin-bottom:4px;">✨ 3. Import hazard data</div>
+        <div style="color:#6B7280;line-height:1.5;">Paste Section 2.2 or drop in the full PDF — CLPeasy extracts everything automatically.</div>
+      </div>
+      <div style="background:white;border:1px solid #E8EAED;border-radius:10px;padding:14px;font-size:12px;">
+        <div style="font-weight:700;color:#111318;margin-bottom:4px;">🏷️ 4. Build your label</div>
+        <div style="color:#6B7280;line-height:1.5;">CLPeasy composes your full compliant label — right size, right format, every element in the right place.</div>
+      </div>
+      <div style="background:white;border:1px solid #E8EAED;border-radius:10px;padding:14px;font-size:12px;">
+        <div style="font-weight:700;color:#111318;margin-bottom:4px;">🖨️ 5. Download &amp; print</div>
+        <div style="color:#6B7280;line-height:1.5;">PNG, SVG, Avery sheet, Print shop PDF or Cricut ZIP. Saved in your library forever.</div>
+      </div>
+      <div style="background:white;border:1px solid #E8EAED;border-radius:10px;padding:14px;font-size:12px;">
+        <div style="font-weight:700;color:#4C9BB0;margin-bottom:4px;">🛍️ 6. Sell your product</div>
+        <div style="color:#6B7280;line-height:1.5;">Your product is correctly labelled and compliant at the point of sale. ✓</div>
+      </div>
+      <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:14px;font-size:12px;">
+        <div style="font-weight:700;color:#92400E;margin-bottom:4px;">🔔 7. Things change</div>
+        <div style="color:#78350F;line-height:1.5;">Supplier updates their SDS. Regulation changes. Formula tweaked. Your label may need updating.</div>
+      </div>
+      <div style="background:#EBF6F9;border:1px solid #c5e4ed;border-radius:10px;padding:14px;font-size:12px;">
+        <div style="font-weight:700;color:#2d7a8f;margin-bottom:4px;">🛡️ 8. CLPeasy alerts you</div>
+        <div style="color:#374151;line-height:1.5;">SDS review reminders and regulation change alerts mean you never use outdated data.</div>
+      </div>
+      <div style="background:#F0FDF4;border:1px solid #86EFAC;border-radius:10px;padding:14px;font-size:12px;">
+        <div style="font-weight:700;color:#15803D;margin-bottom:4px;">🔄 9. Update &amp; loop</div>
+        <div style="color:#374151;line-height:1.5;">Open, update, re-download. Version history preserved. Always current, always covered.</div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:28px;padding:18px 24px;background:#EBF6F9;border-radius:12px;border:1px solid #c5e4ed;">
+      <p style="font-size:14px;color:#0f2236;font-weight:600;margin-bottom:2px;">CLPeasy supports every stage of this lifecycle — automatically.</p>
+      <p style="font-size:12px;color:#4C9BB0;">From your first label to your hundredth reprint, we've got you covered.</p>
+    </div>
+  </div>
+</div>
+
+<style>
+.lc-step-g circle { transition: transform 0.2s; transform-origin: center; transform-box: fill-box; }
+.lc-step-g:hover circle { transform: scale(1.15); }
+</style>
