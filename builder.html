@@ -1682,6 +1682,7 @@ function loadFromLibrarySelect(i){
   if(i==='')return;
   loadLabel(parseInt(i));
   document.getElementById('load-from-library').value='';
+  goToStep(5);
 }
 
 function populateLibraryDropdown(){
