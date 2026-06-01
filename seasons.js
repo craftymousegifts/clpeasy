@@ -24,7 +24,7 @@
       pillBg: '#EFF6FF',
       pillColor: '#1D4ED8',
       icon: '❄️',
-      iconLabel: 'Winter scents',
+      iconLabel: 'Time to plan your winter scents',
       heroItalicColor: '#60A5FA',
       topStripe: 'linear-gradient(90deg, #93C5FD, #4C9BB0, #93C5FD)',
       bannerBg: '#EFF6FF',
@@ -42,7 +42,7 @@
       pillBg: '#FDF2F8',
       pillColor: '#BE185D',
       icon: '🌹',
-      iconLabel: "Valentine's scents",
+      iconLabel: 'Get your Valentine\'s scents ready',
       heroItalicColor: '#EC4899',
       topStripe: 'linear-gradient(90deg, #F9A8D4, #4C9BB0, #F9A8D4)',
       bannerBg: '#FDF2F8',
@@ -60,7 +60,7 @@
       pillBg: '#F0FDF4',
       pillColor: '#15803D',
       icon: '🌸',
-      iconLabel: 'Spring scents',
+      iconLabel: 'Launch your spring scents now',
       heroItalicColor: '#22C55E',
       topStripe: 'linear-gradient(90deg, #86EFAC, #4C9BB0, #86EFAC)',
       bannerBg: '#F0FDF4',
@@ -78,7 +78,7 @@
       pillBg: '#ECFDF5',
       pillColor: '#047857',
       icon: '🐣',
-      iconLabel: 'Easter scents',
+      iconLabel: 'Easter scents need labels first',
       heroItalicColor: '#10B981',
       topStripe: 'linear-gradient(90deg, #A7F3D0, #4C9BB0, #A7F3D0)',
       bannerBg: '#ECFDF5',
@@ -96,7 +96,7 @@
       pillBg: '#FFFBEB',
       pillColor: '#B45309',
       icon: '🎪',
-      iconLabel: 'Craft fair season',
+      iconLabel: 'Craft fair season — are your labels ready?',
       heroItalicColor: '#F59E0B',
       topStripe: 'linear-gradient(90deg, #FDE68A, #4C9BB0, #FDE68A)',
       bannerBg: '#FFFBEB',
@@ -114,7 +114,7 @@
       pillBg: '#FFFBEB',
       pillColor: '#92400E',
       icon: '☀️',
-      iconLabel: 'Summer scents',
+      iconLabel: 'Prepare your summer scents now',
       heroItalicColor: '#F59E0B',
       topStripe: 'linear-gradient(90deg, #FCD34D, #4C9BB0, #FCD34D)',
       bannerBg: '#FFFBEB',
@@ -132,7 +132,7 @@
       pillBg: '#FFFBEB',
       pillColor: '#92400E',
       icon: '🏖️',
-      iconLabel: 'Summer planning',
+      iconLabel: 'Start planning your autumn range',
       heroItalicColor: '#F59E0B',
       topStripe: 'linear-gradient(90deg, #FCD34D, #4C9BB0, #FCD34D)',
       bannerBg: '#FFFBEB',
@@ -150,7 +150,7 @@
       pillBg: '#FFF7ED',
       pillColor: '#C2410C',
       icon: '🍂',
-      iconLabel: 'Autumn prep',
+      iconLabel: 'Autumn scents — prep your labels early',
       heroItalicColor: '#F97316',
       topStripe: 'linear-gradient(90deg, #FDBA74, #4C9BB0, #FDBA74)',
       bannerBg: '#FFF7ED',
@@ -168,7 +168,7 @@
       pillBg: '#FFF7ED',
       pillColor: '#C2410C',
       icon: '🍁',
-      iconLabel: 'Autumn range',
+      iconLabel: 'Build your autumn range labels now',
       heroItalicColor: '#F97316',
       topStripe: 'linear-gradient(90deg, #FB923C, #4C9BB0, #FB923C)',
       bannerBg: '#FFF7ED',
@@ -186,7 +186,7 @@
       pillBg: '#FEF2F2',
       pillColor: '#991B1B',
       icon: '🎃',
-      iconLabel: 'Halloween scents',
+      iconLabel: 'Halloween scents — check your hazard data',
       heroItalicColor: '#EF4444',
       topStripe: 'linear-gradient(90deg, #EF4444, #4C9BB0, #EF4444)',
       bannerBg: '#FEF2F2',
@@ -204,7 +204,7 @@
       pillBg: '#F0F9FF',
       pillColor: '#0369A1',
       icon: '🎄',
-      iconLabel: 'Christmas prep',
+      iconLabel: 'Build your Christmas labels now',
       heroItalicColor: '#0EA5E9',
       topStripe: 'linear-gradient(90deg, #7DD3FC, #4C9BB0, #7DD3FC)',
       bannerBg: '#F0F9FF',
@@ -222,7 +222,7 @@
       pillBg: '#F0F9FF',
       pillColor: '#0369A1',
       icon: '🎅',
-      iconLabel: 'Festive season',
+      iconLabel: 'Festive scents — label them right',
       heroItalicColor: '#0EA5E9',
       topStripe: 'linear-gradient(90deg, #7DD3FC, #4C9BB0, #7DD3FC)',
       bannerBg: '#F0F9FF',
@@ -363,10 +363,14 @@
       animation:clpeasy-float 3s ease-in-out infinite;
     `;
     icon.innerHTML = `<span style="font-size:16px">${m.icon}</span><span>${m.iconLabel}</span>`;
-    // Insert before the hero h1
-    const h1 = hero.querySelector('h1');
-    if (h1) {
-      hero.insertBefore(icon, h1);
+    // Insert after the hero pill (below "BUILT BY A MAKER, FOR MAKERS")
+    const pill = hero.querySelector('[style*="hero-pill"], .hero-pill') ||
+                 Array.from(hero.querySelectorAll('div')).find(el => el.textContent.includes('BUILT BY A MAKER'));
+    if (pill && pill.parentNode) {
+      pill.parentNode.insertBefore(icon, pill.nextSibling);
+    } else {
+      const h1 = hero.querySelector('h1');
+      if (h1) hero.insertBefore(icon, h1);
     }
     // Add float animation
     if (!document.getElementById('clpeasy-float-style')) {
