@@ -363,6 +363,8 @@
     .nav-easy { font-size: 26px; margin-left: 4px; }
     .nav-links a:not(:last-child) { display: none; }
     .btn-nav { padding: 7px 14px; font-size: 13px; }
+    nav { justify-content: space-between; gap: 8px; }
+    .nav-logo { flex-shrink: 0; }
     .hero { padding: 90px 20px 40px; }
     .hero-sub { margin-bottom: 28px; }
     .preview-wrapper { flex-direction: column; padding: 24px 16px; gap: 24px; }
@@ -573,7 +575,7 @@
 <section class="features" id="features">
   <div class="section-label">Features</div>
   <h2 class="section-title">Everything you need to stay compliant</h2>
-  <p class="section-sub">Built specifically for UK and global makers who need a legitimate, compliant CLP label on any product they make and sell publicly — not generic label software.</p>
+  <p class="section-sub">Built specifically for UK makers who need a legitimate, compliant CLP label on any product they make and sell publicly — not generic label software.</p>
   <div class="features-grid">
     <div class="feature-card">
       <div class="feature-icon">⚡</div>
@@ -840,7 +842,7 @@ _sb.auth.getSession().then(async ({data:{session}})=>{
       const t=a.textContent.trim();
       if(t==='Get started free'||t==='Start for free'||t.includes('free trial')||t.includes('Start 7')||t.includes('Get Pro')){
         a.href='builder.html';
-        a.textContent='Go to builder';
+        a.textContent='Go to builder →';
       }
     });
     // Update nav
@@ -852,7 +854,7 @@ _sb.auth.getSession().then(async ({data:{session}})=>{
         signinLink.href='account.html';
       }
       const getStarted=navLinks.querySelector('.btn-nav');
-      if(getStarted){getStarted.textContent='Go to builder';getStarted.href='builder.html';}
+      if(getStarted){getStarted.textContent='Go to builder →';getStarted.href='builder.html';}
     }
     // Check for lapsed/cancelled subscription and show win-back banner
     try {
