@@ -577,8 +577,8 @@ function buildLabelSVGFromData(e,sizePx){
   // Scent
   const sMY=midY+midH*0.12,sSW=chordW(sMY,0.08);
   const sMaxFS=clamp(BASE*0.105,7,20),sMinFS=clamp(BASE*0.040,4,8);
-  let sFS=fitFnt(scent,sSW*0.92,sMaxFS,sMinFS,true,true);
-  let sLines=wrapTxt(scent,sSW*0.92,sFS,true,true);
+  let sFS=fitFnt(scent,sSW*0.80,sMaxFS,sMinFS,true,true);
+  let sLines=wrapTxt(scent,sSW*0.80,sFS,true,true);
   const sLH=sFS*1.2;
 
   // Type
@@ -607,13 +607,13 @@ function buildLabelSVGFromData(e,sizePx){
   const hAreaY=pictoMY+pSz*0.55+2,hMY2=hAreaY+4,hSW2=chordW(hMY2,0.08);
   const hFS=clamp(BASE*0.036,3,7),hLH=hFS*1.25;
   const hTxt=hCodes.slice(0,8).join(' · ')||'H317';
-  const hLines=wrapTxt(hTxt,hSW2*0.94,hFS);
+  const hLines=wrapTxt(hTxt,hSW2*0.85,hFS);
 
   // Sensitisers
   const snsY=hAreaY+hLines.length*hLH+hLH*0.25,snsMY=snsY+3,snsSW=chordW(snsMY,0.08);
   const snsFS=clamp(BASE*0.033,3,6.5),snsLH=snsFS*1.25;
   const snsStr='Contains: '+sensArr.slice(0,5).join(', ');
-  const snsLines=wrapTxt(snsStr,snsSW*0.92,snsFS);
+  const snsLines=wrapTxt(snsStr,snsSW*0.85,snsFS);
 
   // P stmts
   const pY=snsY+snsLines.length*snsLH+snsLH*0.25,pMY2=pY+3,pSW=chordW(pMY2,0.08);
