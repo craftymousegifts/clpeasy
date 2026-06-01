@@ -720,12 +720,12 @@ function downloadPDF(){
     win.document.write(`<!DOCTYPE html><html><head><title>CLPeasy Print Sheet</title>
     <style>
       *{margin:0;padding:0;box-sizing:border-box;}
-      html,body{width:210mm;height:297mm;overflow:hidden;background:white;}
-      img{display:block;width:210mm;height:297mm;}
+      html,body{width:210mm;height:297mm;max-height:297mm;overflow:hidden;background:white;}
+      img{display:block;width:210mm;height:auto;max-height:297mm;}
       @page{size:A4 portrait;margin:0;}
       @media print{
-        html,body{width:210mm;height:297mm;overflow:hidden;}
-        img{width:210mm;height:297mm;page-break-after:avoid;page-break-inside:avoid;}
+        html,body{width:210mm;height:297mm;max-height:297mm;overflow:hidden;}
+        img{display:block;width:210mm;height:297mm;max-height:297mm;page-break-after:avoid;page-break-before:avoid;page-break-inside:avoid;}
         .print-btn{display:none;}
       }
       .print-btn{position:fixed;bottom:20px;right:20px;background:#4C9BB0;color:white;border:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:sans-serif;box-shadow:0 4px 16px rgba(0,0,0,0.2);}
@@ -767,7 +767,7 @@ function getFileName(e,mmSize){
 }
 function openCricutModal(){
   if(!sheetItems.length){alert('Add at least one label to the sheet first.');return;}
-  const count=sheetItems.length;
+  const count=getTotalQty();
   document.getElementById('modal-count').textContent=count;
   document.getElementById('modal-plural').textContent=count===1?'':'s';
   document.getElementById('modal-progress').style.display='none';
@@ -785,11 +785,14 @@ async function cricutDownloadZip(){
   const txt=document.getElementById('modal-progress-text');
   prog.style.display='block';
   const zip=new JSZip();
-  const total=sheetItems.length;
+  // Expand sheetItems by qty so each slot gets its own PNG
+  const expanded=[];
+  sheetItems.forEach(item=>{for(let q=0;q<item.qty;q++)expanded.push(item);});
+  const total=expanded.length;
   for(let i=0;i<total;i++){
     txt.textContent=`Preparing ${i+1} of ${total}...`;
     fill.style.width=`${Math.round((i/total)*100)}%`;
-    const{blob,fname}=await buildLabelPNGBlob(sheetItems[i]);
+    const{blob,fname}=await buildLabelPNGBlob(expanded[i]);
     let finalName=fname;let counter=1;
     while(zip.files[finalName]){finalName=fname.replace('.png',`-${counter++}.png`);}
     zip.file(finalName,blob);
@@ -809,11 +812,14 @@ async function cricutDownloadSequential(){
   const fill=document.getElementById('modal-progress-fill');
   const txt=document.getElementById('modal-progress-text');
   prog.style.display='block';
-  const total=sheetItems.length;
+  // Expand sheetItems by qty so each slot gets its own PNG
+  const expanded=[];
+  sheetItems.forEach(item=>{for(let q=0;q<item.qty;q++)expanded.push(item);});
+  const total=expanded.length;
   for(let i=0;i<total;i++){
     txt.textContent=`Downloading ${i+1} of ${total}...`;
     fill.style.width=`${Math.round((i/total)*100)}%`;
-    const{blob,fname}=await buildLabelPNGBlob(sheetItems[i]);
+    const{blob,fname}=await buildLabelPNGBlob(expanded[i]);
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;
     document.body.appendChild(a);a.click();
     setTimeout(()=>{URL.revokeObjectURL(a.href);if(a.parentNode)a.parentNode.removeChild(a);},800);
