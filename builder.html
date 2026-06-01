@@ -1687,7 +1687,18 @@ function loadFromLibrarySelect(i){
 
 function loadLabelAndGotoStep5(i){
   loadLabel(i);
-  goToStep(5);
+  forceGoToStep(5);
+}
+
+function forceGoToStep(n){
+  S.step=n;
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('step-'+n).classList.add('active');
+  updateStepsBar();
+  if(n===5)buildSummary();
+  updateLabel();
+  const ct=document.getElementById('cricut-tip-box');
+  if(ct)ct.style.display=n===5?'block':'none';
 }
 
 function populateLibraryDropdown(){
