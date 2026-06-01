@@ -433,33 +433,67 @@ let selectedTopupQty = 0, selectedTopupPrice = 0;
 let selectedResub = null;
 let cancelReason = '';
 
-// ── MOCK PROFILE (replace with real Supabase query when wired) ───
-// Swap status to test different states:
-// 'trial' | 'active' | 'paused' | 'cancelled'
-const MOCK_PROFILE = {
-  plan: 'start',           // 'start' | 'pro'
-  status: 'active',        // 'trial' | 'active' | 'paused' | 'cancelled'
-  billing_cycle: 'monthly',
-  next_payment: '28 Jun 2026',
-  card_last4: '4242',
-  downloads_used: 16,
-  downloads_limit: 20,
-  topup_months: 0,          // consecutive months with top-up purchase
-  trial_ends: null,         // date string if on trial
-  cancelled_days_remaining: null, // days library remains after cancel
-  created_at: 'May 2026',
-  discount_active: false,
-  discount_ends: null,
-};
-
 // ── INIT ─────────────────────────────────────────────────────────
-_sb.auth.getSession().then(({ data: { session } }) => {
+async function fetchProfile(userId) {
+  const { data, error } = await _sb
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single();
+  if (error || !data) return null;
+
+  // Map Supabase profile fields to account page shape
+  const now = new Date();
+  const trialEnd = data.trial_end ? new Date(data.trial_end) : null;
+  const deletionDate = data.deletion_date ? new Date(data.deletion_date) : null;
+  const isOnTrial = data.subscription_status === 'trial' && trialEnd && trialEnd > now;
+  const trialDaysLeft = isOnTrial ? Math.ceil((trialEnd - now) / (1000*60*60*24)) : null;
+  const cancelledDaysRemaining = deletionDate
+    ? Math.max(0, Math.ceil((deletionDate - now) / (1000*60*60*24)))
+    : null;
+
+  return {
+    plan: data.is_pro ? 'pro' : 'start',
+    status: data.subscription_status || 'inactive',
+    billing_cycle: data.billing_cycle || 'monthly',
+    next_payment: data.next_payment
+      ? new Date(data.next_payment).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})
+      : null,
+    card_last4: data.card_last4 || null,
+    downloads_used: data.downloads_used || 0,
+    downloads_limit: data.is_pro ? 40 : 20,
+    topup_months: data.topup_months || 0,
+    trial_ends: trialDaysLeft ? `${trialDaysLeft} days` : null,
+    cancelled_days_remaining: cancelledDaysRemaining,
+    created_at: new Date(data.created_at).toLocaleDateString('en-GB', {month:'long',year:'numeric'}),
+    discount_active: data.discount_active || false,
+    discount_ends: data.discount_ends
+      ? new Date(data.discount_ends).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})
+      : null,
+    email: data.email,
+    full_name: data.full_name,
+    is_beta: data.is_beta || false,
+  };
+}
+
+_sb.auth.getSession().then(async ({ data: { session } }) => {
   if (!session) {
     window.location.href = 'auth.html?mode=signin&next=account.html';
     return;
   }
   currentUser = session.user;
-  userProfile = MOCK_PROFILE; // replace with Supabase fetch
+  userProfile = await fetchProfile(session.user.id);
+  if (!userProfile) {
+    // Profile missing — create a basic one and retry
+    await _sb.from('profiles').upsert({
+      id: session.user.id,
+      email: session.user.email,
+      full_name: session.user.user_metadata?.full_name || '',
+      subscription_status: 'trial',
+      trial_end: new Date(Date.now() + 14*24*60*60*1000).toISOString(),
+    });
+    userProfile = await fetchProfile(session.user.id);
+  }
   renderAccount();
 });
 
@@ -594,10 +628,27 @@ document.querySelectorAll('.survey-options').forEach(group => {
 });
 
 // ── PAUSE FLOW ────────────────────────────────────────────────────
-function confirmPause() {
+async function confirmPause() {
   const reason = document.querySelector('input[name="pause-reason"]:checked');
   if (!reason) { alert('Please select a reason before pausing.'); return; }
-  // TODO: call Supabase to update subscription status to 'paused' + log reason
+  const otherText = document.getElementById('pause-other').value || '';
+  const pauseReason = reason.value === 'other' ? otherText : reason.value;
+
+  // Update Supabase profile
+  const { error } = await _sb.from('profiles').update({
+    subscription_status: 'paused',
+    pause_reason: pauseReason,
+    paused_at: new Date().toISOString(),
+  }).eq('id', currentUser.id);
+
+  if (error) { alert('Something went wrong — please try again or contact support@clpeasy.com'); return; }
+
+  // Notify via Supabase edge function → Brevo
+  await _sb.functions.invoke('clp-account-events', {
+    body: { event: 'subscription_paused', userId: currentUser.id, email: currentUser.email, reason: pauseReason }
+  }).catch(() => {}); // non-blocking — email failure shouldn't block UI
+
+  userProfile.status = 'paused';
   document.getElementById('pause-step-1').style.display = 'none';
   document.getElementById('pause-step-2').style.display = 'block';
 }
@@ -634,8 +685,25 @@ function handleCancelReason() {
   }
 }
 
-function acceptSaveOffer() {
-  // TODO: apply Stripe coupon via Supabase edge function
+async function acceptSaveOffer() {
+  // Update Supabase — mark discount active
+  const discountEnds = new Date(Date.now() + 90*24*60*60*1000).toISOString();
+  await _sb.from('profiles').update({
+    discount_active: true,
+    discount_ends: discountEnds,
+  }).eq('id', currentUser.id).catch(() => {});
+
+  // Notify edge function (Stripe coupon + Brevo confirmation)
+  await _sb.functions.invoke('clp-account-events', {
+    body: {
+      event: 'save_offer_accepted',
+      userId: currentUser.id,
+      email: currentUser.email,
+      plan: userProfile.plan,
+      discountEnds: discountEnds,
+    }
+  }).catch(() => {});
+
   document.getElementById('cancel-step-save').style.display = 'none';
   document.getElementById('cancel-step-saved').style.display = 'block';
 }
@@ -645,8 +713,30 @@ function showCancelConfirm() {
   document.getElementById('cancel-step-confirm').style.display = 'block';
 }
 
-function confirmCancel() {
-  // TODO: call Stripe to cancel subscription, update Supabase
+async function confirmCancel() {
+  const deletionDate = new Date(Date.now() + 30*24*60*60*1000).toISOString();
+
+  // Update Supabase profile
+  const { error } = await _sb.from('profiles').update({
+    subscription_status: 'cancelled',
+    cancel_reason: cancelReason,
+    deletion_date: deletionDate,
+  }).eq('id', currentUser.id);
+
+  if (error) { alert('Something went wrong — please try again or contact support@clpeasy.com'); return; }
+
+  // Notify via Supabase edge function → Brevo
+  await _sb.functions.invoke('clp-account-events', {
+    body: {
+      event: 'subscription_cancelled',
+      userId: currentUser.id,
+      email: currentUser.email,
+      reason: cancelReason,
+      deletionDate: deletionDate,
+    }
+  }).catch(() => {}); // non-blocking
+
+  userProfile.status = 'cancelled';
   document.getElementById('cancel-step-confirm').style.display = 'none';
   document.getElementById('cancel-step-done').style.display = 'block';
 }
