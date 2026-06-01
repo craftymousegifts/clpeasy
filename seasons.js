@@ -209,7 +209,7 @@
       bannerBorder: '#F59E0B',
       bannerEmoji: '☀️',
       bannerText: 'Summer is the perfect time for your annual SDS audit — suppliers update hazard data quietly. When did you last check yours?',
-      bannerCta: 'Run your SDS audit',
+      bannerCta: 'Open my label library',
       bannerCtaUrl: 'builder.html',
       btnLabel: 'Download PNG',
       character: `
@@ -582,10 +582,17 @@
       </div>
     `;
     document.body.appendChild(banner);
-    // Slide in after 4 seconds if not dismissed this session
+    // Slide in after 4 seconds, auto-dismiss after 8 seconds if not dismissed this session
     const dismissKey = `clpeasy-banner-dismissed-${new Date().getMonth()}`;
     if (!sessionStorage.getItem(dismissKey)) {
-      setTimeout(() => { banner.style.transform = 'translateY(0)'; }, 4000);
+      setTimeout(() => {
+        banner.style.transform = 'translateY(0)';
+        // Auto-dismiss after 8 seconds
+        setTimeout(() => {
+          banner.style.transform = 'translateY(100%)';
+          sessionStorage.setItem(dismissKey, '1');
+        }, 8000);
+      }, 4000);
     }
     document.getElementById('clpeasy-banner-close').addEventListener('click', () => {
       banner.style.transform = 'translateY(100%)';
