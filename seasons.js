@@ -364,7 +364,7 @@
     `;
     icon.innerHTML = `<span style="font-size:16px">${m.icon}</span><span>${m.iconLabel}</span>`;
     // Insert after the hero pill (below "BUILT BY A MAKER, FOR MAKERS")
-    const pill = hero.querySelector('[style*="hero-pill"], .hero-pill') ||
+    const pill = document.getElementById('hero-pill') ||
                  Array.from(hero.querySelectorAll('div')).find(el => el.textContent.includes('BUILT BY A MAKER'));
     if (pill && pill.parentNode) {
       pill.parentNode.insertBefore(icon, pill.nextSibling);

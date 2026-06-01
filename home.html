@@ -405,7 +405,7 @@
   </a>
   <div class="nav-links">
     <a href="#features">Features</a>
-    <a href="#pricing">Pricing</a>
+    <a href="pricing.html">Pricing</a>
     <a href="#faq">FAQ</a>
     <a href="#about">Our story</a>
     <a href="knowledge.html">Knowledge Base</a>
@@ -428,7 +428,8 @@
 <!-- HERO -->
 <div style="background:white;width:100%;">
 <section class="hero" style="background:white;">
-  <div style="display:inline-flex;align-items:center;gap:8px;background:var(--teal-light);color:var(--teal-dark);padding:6px 16px;border-radius:100px;font-size:12px;font-weight:700;letter-spacing:0.5px;margin-bottom:16px;">🕯️ BUILT BY A MAKER, FOR MAKERS</div>
+  <div style="display:inline-flex;align-items:center;gap:8px;background:var(--teal-light);color:var(--teal-dark);padding:6px 16px;border-radius:100px;font-size:12px;font-weight:700;letter-spacing:0.5px;margin-bottom:10px;" id="hero-pill">🕯️ BUILT BY A MAKER, FOR MAKERS</div>
+  <div style="height:8px;"></div>
   <h1>Generate <em>print-ready</em><br>CLP labels in seconds</h1>
   <p class="hero-sub">Hi, I'm Michaela — a candle and wax melt maker and the person who built CLPeasy. My background is in IT. I spent years supporting a Formula 1 team and working inside a global enterprise software company. In those environments I learned that the best tools are invisible — they do the hard work so the people using them can focus on what they're actually brilliant at. When I started making candles and hit the wall of CLP compliance, I didn't find a tool that did that. So I built one. What used to take hours of guesswork now takes minutes — and the <strong>£200–£600 a year</strong> most makers spend on compliance stays where it belongs: in your craft. Massively inspired by Joy Mangano — American inventor, entrepreneur, and proof that the best ideas come from solving your own problems.</p>
   <div style="background:linear-gradient(135deg,#0f2236,#1a3a50);border-radius:14px;padding:18px 22px;margin-bottom:20px;text-align:center;">
@@ -536,7 +537,206 @@
       </div>
     </div>
 
-    <!-- CTA -->
+    <!-- CLP LABEL LIFECYCLE -->
+<div id="lifecycle" style="background:linear-gradient(180deg,white 0%,#F7FBFC 100%);padding:72px 24px;overflow:hidden;">
+  <div style="max-width:860px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:48px;">
+      <div style="display:inline-flex;align-items:center;gap:6px;background:#EBF6F9;color:#2d7a8f;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:14px;">The CLP label lifecycle</div>
+      <h2 style="font-family:'DM Serif Display',serif;font-size:28px;color:#111318;margin-bottom:10px;line-height:1.3;">A label isn't a one-time job.<br><em style="color:#4C9BB0;font-style:italic;">It grows with your business.</em></h2>
+      <p style="font-size:15px;color:#6B7280;max-width:520px;margin:0 auto;line-height:1.7;">Every new scent, every formula change, every supplier update means your label needs to keep up. CLPeasy™ handles every stage automatically.</p>
+      <p style="font-size:12px;color:#9CA3AF;margin-top:12px;">👆 Click or hover any step to learn more</p>
+    </div>
+
+    <div style="position:relative;width:100%;max-width:580px;margin:0 auto 24px;">
+
+      <!-- TOOLTIP -->
+      <div id="lc-tip" style="display:none;position:absolute;background:#0f2236;color:white;padding:14px 16px;border-radius:12px;max-width:220px;font-family:'DM Sans',sans-serif;z-index:50;box-shadow:0 6px 24px rgba(0,0,0,0.3);pointer-events:none;">
+        <div id="lc-tip-step" style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#4C9BB0;margin-bottom:4px;"></div>
+        <div id="lc-tip-title" style="font-size:13px;font-weight:700;margin-bottom:6px;"></div>
+        <div id="lc-tip-desc" style="font-size:12px;color:rgba(255,255,255,0.75);line-height:1.5;"></div>
+      </div>
+
+      <svg id="lc-svg" viewBox="0 0 560 560" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;overflow:visible;">
+        <defs>
+          <marker id="a-teal" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#4C9BB0"/></marker>
+          <marker id="a-amber" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#F59E0B"/></marker>
+          <marker id="a-green" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#22C55E"/></marker>
+        </defs>
+
+        <!-- Orbit ring -->
+        <circle cx="280" cy="280" r="210" fill="none" stroke="#E2EEF2" stroke-width="1.5" stroke-dasharray="5 4"/>
+
+        <!-- ARROWS -->
+        <line x1="309" y1="81" x2="381" y2="107" stroke="#4C9BB0" stroke-width="1.8" marker-end="url(#a-teal)"/>
+        <line x1="431" y1="146" x2="469" y2="212" stroke="#4C9BB0" stroke-width="1.8" marker-end="url(#a-teal)"/>
+        <line x1="481" y1="274" x2="468" y2="350" stroke="#4C9BB0" stroke-width="1.8" marker-end="url(#a-teal)"/>
+        <line x1="438" y1="405" x2="379" y2="454" stroke="#4C9BB0" stroke-width="1.8" marker-end="url(#a-teal)"/>
+        <line x1="321" y1="477" x2="244" y2="477" stroke="#4C9BB0" stroke-width="1.8" marker-end="url(#a-teal)"/>
+        <line x1="184" y1="457" x2="126" y2="408" stroke="#F59E0B" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#a-amber)"/>
+        <line x1="93" y1="355" x2="79" y2="279" stroke="#4C9BB0" stroke-width="1.8" marker-end="url(#a-teal)"/>
+        <line x1="89" y1="217" x2="127" y2="150" stroke="#4C9BB0" stroke-width="1.8" marker-end="url(#a-teal)"/>
+        <line x1="174" y1="109" x2="246" y2="82" stroke="#22C55E" stroke-width="1.8" marker-end="url(#a-green)"/>
+
+        <!-- CENTRE MOCK LABEL -->
+        <circle cx="280" cy="280" r="94" fill="white" stroke="#4C9BB0" stroke-width="2"/>
+        <rect x="224" y="216" width="112" height="13" rx="2" fill="#0f2236"/>
+        <text x="280" y="226" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="white" font-weight="700">Crafty Mouse Gifts</text>
+        <text x="280" y="247" text-anchor="middle" font-family="DM Serif Display,serif" font-size="10.5" fill="#111318" font-weight="700">Summer Bloom</text>
+        <text x="280" y="259" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#6B7280" letter-spacing="0.5">SCENTED CANDLE</text>
+        <text x="280" y="272" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="#EF4444" font-weight="800">WARNING</text>
+        <rect x="261" y="276" width="12" height="12" rx="1" fill="none" stroke="#111318" stroke-width="1" transform="rotate(45 267 282)"/>
+        <text x="267" y="285" text-anchor="middle" font-size="6" fill="#111318">⚠</text>
+        <rect x="281" y="276" width="12" height="12" rx="1" fill="none" stroke="#111318" stroke-width="1" transform="rotate(45 287 282)"/>
+        <text x="287" y="285" text-anchor="middle" font-size="6" fill="#111318">♻</text>
+        <text x="280" y="302" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="6.5" fill="#374151">H317 · H411</text>
+        <text x="280" y="313" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="6" fill="#6B7280">Contains: Linalool, Citral</text>
+        <line x1="230" y1="319" x2="330" y2="319" stroke="#E8EAED" stroke-width="0.8"/>
+        <text x="280" y="329" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="5.5" fill="#9CA3AF">100ml · Batch: CMG-2026-001</text>
+        <text x="280" y="341" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="5.5" fill="#4C9BB0" opacity="0.6">clpeasy.com</text>
+
+        <!-- STEP NODES — each wrapped in <g> with data-step for JS -->
+        <g class="lc-node" data-step="1" style="cursor:pointer;">
+          <circle cx="280" cy="70" r="28" fill="#F0FDF4" stroke="#22C55E" stroke-width="2"/>
+          <text x="280" y="64" text-anchor="middle" font-size="16">🌱</text>
+          <text x="280" y="79" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#15803D" font-weight="800">1</text>
+        </g>
+        <g class="lc-node" data-step="2" style="cursor:pointer;">
+          <circle cx="415" cy="119" r="26" fill="#EBF6F9" stroke="#4C9BB0" stroke-width="2"/>
+          <text x="415" y="113" text-anchor="middle" font-size="15">📄</text>
+          <text x="415" y="127" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4C9BB0" font-weight="800">2</text>
+        </g>
+        <g class="lc-node" data-step="3" style="cursor:pointer;">
+          <circle cx="487" cy="244" r="26" fill="#EBF6F9" stroke="#4C9BB0" stroke-width="2"/>
+          <text x="487" y="238" text-anchor="middle" font-size="15">✨</text>
+          <text x="487" y="252" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4C9BB0" font-weight="800">3</text>
+        </g>
+        <g class="lc-node" data-step="4" style="cursor:pointer;">
+          <circle cx="462" cy="385" r="26" fill="#EBF6F9" stroke="#4C9BB0" stroke-width="2"/>
+          <text x="462" y="379" text-anchor="middle" font-size="15">🏷️</text>
+          <text x="462" y="393" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4C9BB0" font-weight="800">4</text>
+        </g>
+        <g class="lc-node" data-step="5" style="cursor:pointer;">
+          <circle cx="352" cy="477" r="26" fill="#EBF6F9" stroke="#4C9BB0" stroke-width="2"/>
+          <text x="352" y="471" text-anchor="middle" font-size="15">🖨️</text>
+          <text x="352" y="485" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4C9BB0" font-weight="800">5</text>
+        </g>
+        <g class="lc-node" data-step="6" style="cursor:pointer;">
+          <circle cx="208" cy="477" r="26" fill="#EBF6F9" stroke="#4C9BB0" stroke-width="2.5"/>
+          <text x="208" y="471" text-anchor="middle" font-size="15">🛍️</text>
+          <text x="208" y="485" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4C9BB0" font-weight="800">6</text>
+        </g>
+        <g class="lc-node" data-step="7" style="cursor:pointer;">
+          <circle cx="98" cy="385" r="26" fill="#FFFBEB" stroke="#F59E0B" stroke-width="2"/>
+          <text x="98" y="379" text-anchor="middle" font-size="15">🔔</text>
+          <text x="98" y="393" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#F59E0B" font-weight="800">7</text>
+        </g>
+        <g class="lc-node" data-step="8" style="cursor:pointer;">
+          <circle cx="73" cy="244" r="26" fill="#EBF6F9" stroke="#4C9BB0" stroke-width="2"/>
+          <text x="73" y="238" text-anchor="middle" font-size="15">🛡️</text>
+          <text x="73" y="252" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4C9BB0" font-weight="800">8</text>
+        </g>
+        <g class="lc-node" data-step="9" style="cursor:pointer;">
+          <circle cx="145" cy="119" r="26" fill="#F0FDF4" stroke="#22C55E" stroke-width="2"/>
+          <text x="145" y="113" text-anchor="middle" font-size="15">🔄</text>
+          <text x="145" y="127" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#22C55E" font-weight="800">9</text>
+        </g>
+
+      </svg>
+    </div>
+
+    <div style="text-align:center;margin-top:8px;padding:16px 24px;background:#EBF6F9;border-radius:12px;border:1px solid #c5e4ed;">
+      <p style="font-size:14px;color:#0f2236;font-weight:600;margin-bottom:2px;">CLPeasy™ supports every stage of this lifecycle — automatically.</p>
+      <p style="font-size:12px;color:#4C9BB0;">From your first label to your hundredth reprint, we've got you covered.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var steps = {
+    1:{t:"New scent idea",d:"Before you make a single batch to sell, a compliant CLP label is a legal requirement — regardless of where or how you sell.",c:"#22C55E"},
+    2:{t:"Get your SDS",d:"Download the Safety Data Sheet from your supplier. CLPeasy™ links you directly to their supplier page where you can find and download your SDS — no hunting around.",c:"#4C9BB0"},
+    3:{t:"Import hazard data",d:"Paste Section 2.2 or drop in the full PDF on Easy Pro. CLPeasy™ extracts signal word, H statements and pictograms automatically.",c:"#4C9BB0"},
+    4:{t:"Build your label",d:"CLPeasy™ composes your full compliant label — right size, right format, every required element in the right place.",c:"#4C9BB0"},
+    5:{t:"Download & print",d:"PNG, SVG, Avery sheet, Print shop PDF with bleed marks or Cricut ZIP. Saved in your library forever — reprint any time.",c:"#4C9BB0"},
+    6:{t:"Sell your product",d:"Your product is correctly labelled and compliant at the point of sale ✓ — but the lifecycle doesn't end here.",c:"#4C9BB0"},
+    7:{t:"Things change",d:"Supplier updates their SDS. A regulation changes. You tweak your formula. Any of these mean your label may need updating.",c:"#F59E0B"},
+    8:{t:"CLPeasy™ alerts you",d:"SDS review reminders at 11 months, plus automatic regulation change alerts on Easy Pro — so you never sell with outdated data.",c:"#4C9BB0"},
+    9:{t:"Update & reprint",d:"Open your saved label, update the data, re-download. Version history preserved. Always current, always covered.",c:"#22C55E"}
+  };
+
+  var tip = document.getElementById('lc-tip');
+  var tipStep = document.getElementById('lc-tip-step');
+  var tipTitle = document.getElementById('lc-tip-title');
+  var tipDesc = document.getElementById('lc-tip-desc');
+  var svg = document.getElementById('lc-svg');
+  if(!tip || !svg) return;
+
+  function showTip(node, n) {
+    var s = steps[n];
+    tipStep.textContent = 'Step ' + n + ' of 9';
+    tipStep.style.color = s.c;
+    tipTitle.textContent = s.t;
+    tipDesc.innerHTML = s.d;
+    tip.style.display = 'block';
+
+    // Position tooltip near node, staying within SVG bounds
+    var svgRect = svg.getBoundingClientRect();
+    var nodeCircle = node.querySelector('circle');
+    var cx = parseFloat(nodeCircle.getAttribute('cx'));
+    var cy = parseFloat(nodeCircle.getAttribute('cy'));
+    var scaleX = svgRect.width / 560;
+    var scaleY = svgRect.height / 560;
+    var px = cx * scaleX;
+    var py = cy * scaleY;
+
+    // Position above/below node depending on position
+    var tipW = 220, tipH = 100;
+    var left = Math.max(0, Math.min(px - tipW/2, svgRect.width - tipW));
+    var top = (cy < 280) ? py + 35 * scaleY : py - tipH - 35 * scaleY;
+
+    tip.style.left = left + 'px';
+    tip.style.top = top + 'px';
+    tip.style.maxWidth = tipW + 'px';
+  }
+
+  function hideTip() {
+    tip.style.display = 'none';
+  }
+
+  document.querySelectorAll('.lc-node').forEach(function(node) {
+    var n = parseInt(node.getAttribute('data-step'));
+    var circle = node.querySelector('circle');
+
+    // Hover
+    node.addEventListener('mouseenter', function() {
+      circle.setAttribute('filter', 'brightness(1.15)');
+      circle.style.transform = 'scale(1.1)';
+      circle.style.transformOrigin = circle.getAttribute('cx') + 'px ' + circle.getAttribute('cy') + 'px';
+      showTip(node, n);
+    });
+    node.addEventListener('mouseleave', function() {
+      circle.style.transform = '';
+      hideTip();
+    });
+
+    // Click/tap (mobile)
+    node.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if(tip.style.display === 'none' || tip.style.display === '') {
+        showTip(node, n);
+      } else {
+        hideTip();
+      }
+    });
+  });
+
+  // Click outside to hide
+  document.addEventListener('click', function() { hideTip(); });
+})();
+</script>
+
+<!-- CTA -->
     <div style="background:var(--teal);border-radius:16px;padding:32px;text-align:center;">
       <h3 style="font-family:'DM Serif Display',serif;font-size:26px;color:white;margin-bottom:8px;">Makers gotta make. Learners gotta learn.</h3>
       <p style="color:rgba(255,255,255,0.88);font-size:15px;margin-bottom:12px;max-width:520px;margin-left:auto;margin-right:auto;">Whether you're just starting out, growing a side hustle, or turning your passion into your full-time thing — your time and money belong in your craft. Not in compliance paperwork.</p>
@@ -791,201 +991,4 @@ _sb.auth.getSession().then(async ({data:{session}})=>{
 </script>
 
 <script src="seasons.js"></script>
-</html><!-- CLP LABEL LIFECYCLE -->
-<div id="lifecycle" style="background:linear-gradient(180deg,white 0%,#F7FBFC 100%);padding:72px 24px;overflow:hidden;">
-  <div style="max-width:860px;margin:0 auto;">
-    <div style="text-align:center;margin-bottom:48px;">
-      <div style="display:inline-flex;align-items:center;gap:6px;background:#EBF6F9;color:#2d7a8f;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:14px;">The CLP label lifecycle</div>
-      <h2 style="font-family:'DM Serif Display',serif;font-size:28px;color:#111318;margin-bottom:10px;line-height:1.3;">A label isn't a one-time job.<br><em style="color:#4C9BB0;font-style:italic;">It grows with your business.</em></h2>
-      <p style="font-size:15px;color:#6B7280;max-width:520px;margin:0 auto;line-height:1.7;">Every new scent, every formula change, every supplier update means your label needs to keep up. CLPeasy™ handles every stage automatically.</p>
-      <p style="font-size:12px;color:#9CA3AF;margin-top:12px;">👆 Click or hover any step to learn more</p>
-    </div>
-
-    <div style="position:relative;width:100%;max-width:580px;margin:0 auto 24px;">
-
-      <!-- TOOLTIP -->
-      <div id="lc-tip" style="display:none;position:absolute;background:#0f2236;color:white;padding:14px 16px;border-radius:12px;max-width:220px;font-family:'DM Sans',sans-serif;z-index:50;box-shadow:0 6px 24px rgba(0,0,0,0.3);pointer-events:none;">
-        <div id="lc-tip-step" style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#4C9BB0;margin-bottom:4px;"></div>
-        <div id="lc-tip-title" style="font-size:13px;font-weight:700;margin-bottom:6px;"></div>
-        <div id="lc-tip-desc" style="font-size:12px;color:rgba(255,255,255,0.75);line-height:1.5;"></div>
-      </div>
-
-      <svg id="lc-svg" viewBox="0 0 560 560" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;overflow:visible;">
-        <defs>
-          <marker id="a-teal" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#4C9BB0"/></marker>
-          <marker id="a-amber" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#F59E0B"/></marker>
-          <marker id="a-green" markerWidth="7" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#22C55E"/></marker>
-        </defs>
-
-        <!-- Orbit ring -->
-        <circle cx="280" cy="280" r="210" fill="none" stroke="#E2EEF2" stroke-width="1.5" stroke-dasharray="5 4"/>
-
-        <!-- ARROWS -->
-        <line x1="309" y1="81" x2="381" y2="107" stroke="#4C9BB0" stroke-width="1.8" marker-end="url(#a-teal)"/>
-        <line x1="431" y1="146" x2="469" y2="212" stroke="#4C9BB0" stroke-width="1.8" marker-end="url(#a-teal)"/>
-        <line x1="481" y1="274" x2="468" y2="350" stroke="#4C9BB0" stroke-width="1.8" marker-end="url(#a-teal)"/>
-        <line x1="438" y1="405" x2="379" y2="454" stroke="#4C9BB0" stroke-width="1.8" marker-end="url(#a-teal)"/>
-        <line x1="321" y1="477" x2="244" y2="477" stroke="#4C9BB0" stroke-width="1.8" marker-end="url(#a-teal)"/>
-        <line x1="184" y1="457" x2="126" y2="408" stroke="#F59E0B" stroke-width="1.8" stroke-dasharray="5 3" marker-end="url(#a-amber)"/>
-        <line x1="93" y1="355" x2="79" y2="279" stroke="#4C9BB0" stroke-width="1.8" marker-end="url(#a-teal)"/>
-        <line x1="89" y1="217" x2="127" y2="150" stroke="#4C9BB0" stroke-width="1.8" marker-end="url(#a-teal)"/>
-        <line x1="174" y1="109" x2="246" y2="82" stroke="#22C55E" stroke-width="1.8" marker-end="url(#a-green)"/>
-
-        <!-- CENTRE MOCK LABEL -->
-        <circle cx="280" cy="280" r="94" fill="white" stroke="#4C9BB0" stroke-width="2"/>
-        <rect x="224" y="216" width="112" height="13" rx="2" fill="#0f2236"/>
-        <text x="280" y="226" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7.5" fill="white" font-weight="700">Crafty Mouse Gifts</text>
-        <text x="280" y="247" text-anchor="middle" font-family="DM Serif Display,serif" font-size="10.5" fill="#111318" font-weight="700">Summer Bloom</text>
-        <text x="280" y="259" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="7" fill="#6B7280" letter-spacing="0.5">SCENTED CANDLE</text>
-        <text x="280" y="272" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8.5" fill="#EF4444" font-weight="800">WARNING</text>
-        <rect x="261" y="276" width="12" height="12" rx="1" fill="none" stroke="#111318" stroke-width="1" transform="rotate(45 267 282)"/>
-        <text x="267" y="285" text-anchor="middle" font-size="6" fill="#111318">⚠</text>
-        <rect x="281" y="276" width="12" height="12" rx="1" fill="none" stroke="#111318" stroke-width="1" transform="rotate(45 287 282)"/>
-        <text x="287" y="285" text-anchor="middle" font-size="6" fill="#111318">♻</text>
-        <text x="280" y="302" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="6.5" fill="#374151">H317 · H411</text>
-        <text x="280" y="313" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="6" fill="#6B7280">Contains: Linalool, Citral</text>
-        <line x1="230" y1="319" x2="330" y2="319" stroke="#E8EAED" stroke-width="0.8"/>
-        <text x="280" y="329" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="5.5" fill="#9CA3AF">100ml · Batch: CMG-2026-001</text>
-        <text x="280" y="341" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="5.5" fill="#4C9BB0" opacity="0.6">clpeasy.com</text>
-
-        <!-- STEP NODES — each wrapped in <g> with data-step for JS -->
-        <g class="lc-node" data-step="1" style="cursor:pointer;">
-          <circle cx="280" cy="70" r="28" fill="#F0FDF4" stroke="#22C55E" stroke-width="2"/>
-          <text x="280" y="64" text-anchor="middle" font-size="16">🌱</text>
-          <text x="280" y="79" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#15803D" font-weight="800">1</text>
-        </g>
-        <g class="lc-node" data-step="2" style="cursor:pointer;">
-          <circle cx="415" cy="119" r="26" fill="#EBF6F9" stroke="#4C9BB0" stroke-width="2"/>
-          <text x="415" y="113" text-anchor="middle" font-size="15">📄</text>
-          <text x="415" y="127" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4C9BB0" font-weight="800">2</text>
-        </g>
-        <g class="lc-node" data-step="3" style="cursor:pointer;">
-          <circle cx="487" cy="244" r="26" fill="#EBF6F9" stroke="#4C9BB0" stroke-width="2"/>
-          <text x="487" y="238" text-anchor="middle" font-size="15">✨</text>
-          <text x="487" y="252" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4C9BB0" font-weight="800">3</text>
-        </g>
-        <g class="lc-node" data-step="4" style="cursor:pointer;">
-          <circle cx="462" cy="385" r="26" fill="#EBF6F9" stroke="#4C9BB0" stroke-width="2"/>
-          <text x="462" y="379" text-anchor="middle" font-size="15">🏷️</text>
-          <text x="462" y="393" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4C9BB0" font-weight="800">4</text>
-        </g>
-        <g class="lc-node" data-step="5" style="cursor:pointer;">
-          <circle cx="352" cy="477" r="26" fill="#EBF6F9" stroke="#4C9BB0" stroke-width="2"/>
-          <text x="352" y="471" text-anchor="middle" font-size="15">🖨️</text>
-          <text x="352" y="485" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4C9BB0" font-weight="800">5</text>
-        </g>
-        <g class="lc-node" data-step="6" style="cursor:pointer;">
-          <circle cx="208" cy="477" r="26" fill="#EBF6F9" stroke="#4C9BB0" stroke-width="2.5"/>
-          <text x="208" y="471" text-anchor="middle" font-size="15">🛍️</text>
-          <text x="208" y="485" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4C9BB0" font-weight="800">6</text>
-        </g>
-        <g class="lc-node" data-step="7" style="cursor:pointer;">
-          <circle cx="98" cy="385" r="26" fill="#FFFBEB" stroke="#F59E0B" stroke-width="2"/>
-          <text x="98" y="379" text-anchor="middle" font-size="15">🔔</text>
-          <text x="98" y="393" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#F59E0B" font-weight="800">7</text>
-        </g>
-        <g class="lc-node" data-step="8" style="cursor:pointer;">
-          <circle cx="73" cy="244" r="26" fill="#EBF6F9" stroke="#4C9BB0" stroke-width="2"/>
-          <text x="73" y="238" text-anchor="middle" font-size="15">🛡️</text>
-          <text x="73" y="252" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#4C9BB0" font-weight="800">8</text>
-        </g>
-        <g class="lc-node" data-step="9" style="cursor:pointer;">
-          <circle cx="145" cy="119" r="26" fill="#F0FDF4" stroke="#22C55E" stroke-width="2"/>
-          <text x="145" y="113" text-anchor="middle" font-size="15">🔄</text>
-          <text x="145" y="127" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="8" fill="#22C55E" font-weight="800">9</text>
-        </g>
-
-      </svg>
-    </div>
-
-    <div style="text-align:center;margin-top:8px;padding:16px 24px;background:#EBF6F9;border-radius:12px;border:1px solid #c5e4ed;">
-      <p style="font-size:14px;color:#0f2236;font-weight:600;margin-bottom:2px;">CLPeasy™ supports every stage of this lifecycle — automatically.</p>
-      <p style="font-size:12px;color:#4C9BB0;">From your first label to your hundredth reprint, we've got you covered.</p>
-    </div>
-  </div>
-</div>
-
-<script>
-(function(){
-  var steps = {
-    1:{t:"New scent idea",d:"Before you make a single batch to sell, a compliant CLP label is a legal requirement — regardless of where or how you sell.",c:"#22C55E"},
-    2:{t:"Get your SDS",d:"Download the Safety Data Sheet from your supplier. CLPeasy™ links you directly to their SDS page — no hunting around.",c:"#4C9BB0"},
-    3:{t:"Import hazard data",d:"Paste Section 2.2 or drop in the full PDF on Easy Pro. CLPeasy™ extracts signal word, H statements and pictograms automatically.",c:"#4C9BB0"},
-    4:{t:"Build your label",d:"CLPeasy™ composes your full compliant label — right size, right format, every required element in the right place.",c:"#4C9BB0"},
-    5:{t:"Download & print",d:"PNG, SVG, Avery sheet, Print shop PDF with bleed marks or Cricut ZIP. Saved in your library forever — reprint any time.",c:"#4C9BB0"},
-    6:{t:"Sell your product",d:"Your product is correctly labelled and compliant at the point of sale ✓ — but the lifecycle doesn't end here.",c:"#4C9BB0"},
-    7:{t:"Things change",d:"Supplier updates their SDS. A regulation changes. You tweak your formula. Any of these mean your label may need updating.",c:"#F59E0B"},
-    8:{t:"CLPeasy™ alerts you",d:"SDS review reminders at 11 months, plus automatic regulation change alerts on Easy Pro — so you never sell with outdated data.",c:"#4C9BB0"},
-    9:{t:"Update & reprint",d:"Open your saved label, update the data, re-download. Version history preserved. Always current, always covered.",c:"#22C55E"}
-  };
-
-  var tip = document.getElementById('lc-tip');
-  var tipStep = document.getElementById('lc-tip-step');
-  var tipTitle = document.getElementById('lc-tip-title');
-  var tipDesc = document.getElementById('lc-tip-desc');
-  var svg = document.getElementById('lc-svg');
-  if(!tip || !svg) return;
-
-  function showTip(node, n) {
-    var s = steps[n];
-    tipStep.textContent = 'Step ' + n + ' of 9';
-    tipStep.style.color = s.c;
-    tipTitle.textContent = s.t;
-    tipDesc.innerHTML = s.d;
-    tip.style.display = 'block';
-
-    // Position tooltip near node, staying within SVG bounds
-    var svgRect = svg.getBoundingClientRect();
-    var nodeCircle = node.querySelector('circle');
-    var cx = parseFloat(nodeCircle.getAttribute('cx'));
-    var cy = parseFloat(nodeCircle.getAttribute('cy'));
-    var scaleX = svgRect.width / 560;
-    var scaleY = svgRect.height / 560;
-    var px = cx * scaleX;
-    var py = cy * scaleY;
-
-    // Position above/below node depending on position
-    var tipW = 220, tipH = 100;
-    var left = Math.max(0, Math.min(px - tipW/2, svgRect.width - tipW));
-    var top = (cy < 280) ? py + 35 * scaleY : py - tipH - 35 * scaleY;
-
-    tip.style.left = left + 'px';
-    tip.style.top = top + 'px';
-    tip.style.maxWidth = tipW + 'px';
-  }
-
-  function hideTip() {
-    tip.style.display = 'none';
-  }
-
-  document.querySelectorAll('.lc-node').forEach(function(node) {
-    var n = parseInt(node.getAttribute('data-step'));
-    var circle = node.querySelector('circle');
-
-    // Hover
-    node.addEventListener('mouseenter', function() {
-      circle.setAttribute('filter', 'brightness(1.15)');
-      circle.style.transform = 'scale(1.1)';
-      circle.style.transformOrigin = circle.getAttribute('cx') + 'px ' + circle.getAttribute('cy') + 'px';
-      showTip(node, n);
-    });
-    node.addEventListener('mouseleave', function() {
-      circle.style.transform = '';
-      hideTip();
-    });
-
-    // Click/tap (mobile)
-    node.addEventListener('click', function(e) {
-      e.stopPropagation();
-      if(tip.style.display === 'none' || tip.style.display === '') {
-        showTip(node, n);
-      } else {
-        hideTip();
-      }
-    });
-  });
-
-  // Click outside to hide
-  document.addEventListener('click', function() { hideTip(); });
-})();
-</script>
+</html>
