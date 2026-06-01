@@ -789,12 +789,14 @@ async function cricutDownloadZip(){
   const expanded=[];
   sheetItems.forEach(item=>{for(let q=0;q<item.qty;q++)expanded.push(item);});
   const total=expanded.length;
+  const usedNames=new Set();
   for(let i=0;i<total;i++){
     txt.textContent=`Preparing ${i+1} of ${total}...`;
     fill.style.width=`${Math.round((i/total)*100)}%`;
     const{blob,fname}=await buildLabelPNGBlob(expanded[i]);
     let finalName=fname;let counter=1;
-    while(zip.files[finalName]){finalName=fname.replace('.png',`-${counter++}.png`);}
+    while(usedNames.has(finalName)){finalName=fname.replace('.png',`-${counter++}.png`);}
+    usedNames.add(finalName);
     zip.file(finalName,blob);
   }
   txt.textContent='Creating ZIP...';fill.style.width='95%';
@@ -816,11 +818,15 @@ async function cricutDownloadSequential(){
   const expanded=[];
   sheetItems.forEach(item=>{for(let q=0;q<item.qty;q++)expanded.push(item);});
   const total=expanded.length;
+  const usedNames=new Set();
   for(let i=0;i<total;i++){
     txt.textContent=`Downloading ${i+1} of ${total}...`;
     fill.style.width=`${Math.round((i/total)*100)}%`;
     const{blob,fname}=await buildLabelPNGBlob(expanded[i]);
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;
+    let finalName=fname;let counter=1;
+    while(usedNames.has(finalName)){finalName=fname.replace('.png',`-${counter++}.png`);}
+    usedNames.add(finalName);
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=finalName;
     document.body.appendChild(a);a.click();
     setTimeout(()=>{URL.revokeObjectURL(a.href);if(a.parentNode)a.parentNode.removeChild(a);},800);
     await new Promise(r=>setTimeout(r,700));
