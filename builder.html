@@ -562,6 +562,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div style="background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:10px;padding:12px 14px;font-size:12px;color:#92400E;margin-bottom:20px;line-height:1.6;">
       ⚠️ <strong>Important:</strong> CLPeasy generates labels based on the data you enter. You must always verify all hazard information against your fragrance supplier's SDS sheet at your actual fragrance load before printing and selling. You are solely responsible for ensuring your labels are accurate and legally compliant.
     </div>
+    <div class="sdiv">Load from your library</div>
+    <div class="form-group" style="margin-bottom:20px;">
+      <select id="load-from-library" onchange="loadFromLibrarySelect(this.value)" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;background:white;cursor:pointer;">
+        <option value="">— Select a saved label to load —</option>
+      </select>
+    </div>
     <p class="step-sub">Choose a preset or enter your own dimensions.</p>
     <div class="sdiv" style="margin-top:0">Shape</div>
     <div class="shape-grid">
@@ -1672,6 +1678,28 @@ function loadLabel(i){
   goToStep(1);
 }
 
+function loadFromLibrarySelect(i){
+  if(i==='')return;
+  loadLabel(parseInt(i));
+  document.getElementById('load-from-library').value='';
+}
+
+function populateLibraryDropdown(){
+  const arr=getSaved();
+  const sel=document.getElementById('load-from-library');
+  if(!sel)return;
+  sel.innerHTML='<option value="">— Select a saved label to load —</option>';
+  arr.forEach((e,i)=>{
+    const label=e.scentName||'Unnamed';
+    const size=e.size||35;
+    const shape=e.shape||'circle';
+    const opt=document.createElement('option');
+    opt.value=i;
+    opt.textContent=`${label} (${size}mm ${shape})`;
+    sel.appendChild(opt);
+  });
+}
+
 function deleteLabel(i){
   if(!confirm('Delete this saved label?'))return;
   const arr=getSaved();arr.splice(i,1);persistSaved(arr);renderSaved();
@@ -1739,6 +1767,7 @@ function renderSaved(){
   }
 
   list.innerHTML=html||'<div style="font-size:13px;color:var(--muted);padding:8px 0;">No labels yet.</div>';
+  populateLibraryDropdown();
 }
 
 // Track open/closed state of folder groups in session
@@ -3065,6 +3094,7 @@ const _origSaveLabelEntry=null; // handled via readForm hook above — ufiCode/l
 // ══════════════════════════════════════════════════════════════
 function initExtensions(){
   initBatchDisplay();
+  populateLibraryDropdown();
   // Restore label lang if saved in prod details
   const prod=JSON.parse(localStorage.getItem('clpeasy_prod')||'{}');
   if(prod.labelLang){
