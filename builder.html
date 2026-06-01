@@ -1699,6 +1699,7 @@ function forceGoToStep(n){
   updateLabel();
   const ct=document.getElementById('cricut-tip-box');
   if(ct)ct.style.display=n===5?'block':'none';
+  window.scrollTo(0,0);
 }
 
 function populateLibraryDropdown(){
