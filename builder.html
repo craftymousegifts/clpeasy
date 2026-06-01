@@ -1685,6 +1685,11 @@ function loadFromLibrarySelect(i){
   goToStep(5);
 }
 
+function loadLabelAndGotoStep5(i){
+  loadLabel(i);
+  goToStep(5);
+}
+
 function populateLibraryDropdown(){
   const arr=getSaved();
   const sel=document.getElementById('load-from-library');
@@ -1796,7 +1801,7 @@ function savedItemHTML(e,i){
       <div class="saved-item-meta">${e.productType} · ${e.size}mm ${e.shape} · ${e.savedAt||''}</div>
     </div>
     <div class="saved-item-btns">
-      <button class="sb sb-teal" onclick="loadLabel(${i})">Load</button>
+      <button class="sb sb-teal" onclick="loadLabelAndGotoStep5(${i})">Load</button>
       ${hasHist?`<button class="sb" style="background:#EFF6FF;color:#1D4ED8;border:1.5px solid #BFDBFE;font-size:11px;" onclick="showLabelHistory('${encodeURIComponent(e.scentName)}','${encodeURIComponent(e.productType)}')">🕐 v${hist.length}</button>`:''}
       <button class="sb sb-red" onclick="deleteLabel(${i})">Delete</button>
     </div>
