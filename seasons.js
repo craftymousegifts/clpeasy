@@ -312,24 +312,8 @@
   }
 
   // ── HERO PILL ──────────────────────────────────────────────────
-  function applyHeroPill(m) {
-    const pill = document.querySelector('.hero-pill, [class*="hero-pill"], .pill');
-    if (!pill) {
-      // Find by text content
-      document.querySelectorAll('div, span').forEach(el => {
-        if (el.textContent.trim().includes('BUILT BY A MAKER')) {
-          el.style.background = m.pillBg;
-          el.style.color = m.pillColor;
-          el.style.borderColor = m.accent;
-          el.style.transition = 'all 1s ease';
-        }
-      });
-    } else {
-      pill.style.background = m.pillBg;
-      pill.style.color = m.pillColor;
-      pill.style.transition = 'all 1s ease';
-    }
-  }
+  // Pill keeps its own teal brand styling — seasonal accent shown via season icon below
+  function applyHeroPill(m) { /* intentionally no-op */ }
 
   // ── HERO ITALIC ACCENT ─────────────────────────────────────────
   function applyHeroItalic(m) {
