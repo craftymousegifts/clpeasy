@@ -249,6 +249,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
       <strong>✂ Cricut Print Then Cut:</strong> Download individual PNGs and upload each one to Cricut separately. Cricut cannot split a sheet into individual labels.
     </div>
 
+    <a href="builder.html" style="display:inline-block;background:white;color:#6B7280;font-weight:600;padding:12px 24px;border-radius:8px;text-decoration:none;font-size:14px;border:1px solid #E5E7EB;transition:all .2s;margin-top:12px;cursor:pointer;" onmouseover="this.style.background='#F3F4F6'" onmouseout="this.style.background='white'">← Cancel</a>
+
   </div><!-- /left-panel -->
 
   <!-- RIGHT PANEL -->
@@ -569,7 +571,7 @@ function buildLabelSVGFromData(e,sizePx){
 
   // Header
   const hMY=topH*0.42,hSW=chordW(hMY,0.12);
-  const bizFS=fitFnt(bizName,hSW*0.88,clamp(BASE*0.072,5,14),clamp(BASE*0.032,4,8),true,true);
+  const bizFS=fitFnt(bizName,hSW*0.88,clamp(BASE*0.072,5,10),clamp(BASE*0.032,5,8),true,true);
   const wMY=topH*0.80,wSW=chordW(wMY,0.12);
   const webLine=e.bizWebsite||'';
   const webFS=clamp(BASE*0.038,3.5,7.5);
