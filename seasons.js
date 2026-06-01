@@ -114,7 +114,7 @@
       pillBg: '#FFFBEB',
       pillColor: '#92400E',
       icon: '☀️',
-      iconLabel: 'Prepare your summer scents now',
+      iconLabel: 'Prepare your summer scent labels now',
       heroItalicColor: '#F59E0B',
       topStripe: 'linear-gradient(90deg, #FCD34D, #4C9BB0, #FCD34D)',
       bannerBg: '#FFFBEB',
