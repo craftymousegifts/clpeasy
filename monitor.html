@@ -655,11 +655,11 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
     </div>
     <div class="action-item">
       <span class="action-priority med">MED</span>
-      <span class="action-text"><strong>Brevo → Supabase webhook</strong> — wire edge function to add new signups to Brevo contact list automatically.</span>
+      <span class="action-text"><strong>Brevo → Supabase sign-up wiring</strong> — the onboarding email sequence is built and active in Brevo ✓ (trigger: contact added to list). Still to do: a Supabase edge function that adds each new sign-up to that Brevo list, so the sequence actually fires for them.</span>
     </div>
     <div class="action-item">
       <span class="action-priority med">MED</span>
-      <span class="action-text"><strong>Google sign-in branding</strong> — the Google login screen still shows "qvkosdqcryrcfbjtaxic.supabase.co" instead of CLPeasy. Fix: Google Cloud Console → OAuth consent screen → set App name to CLPeasy + add logo/support email; make sure the Supabase Google provider uses your own OAuth client (not Supabase's default); publish the consent screen.</span>
+      <span class="action-text"><strong>Google sign-in branding</strong> — the OAuth consent screen App name already shows "CLPeasy" ✓. The only leftover is the "continue to qvkosdqcryrcfbjtaxic.supabase.co" line on the account chooser; fully removing it needs a custom Supabase auth domain (e.g. auth.clpeasy.com). Cosmetic — optional before launch.</span>
     </div>
     <div class="action-item">
       <span class="action-priority low">LOW</span>
@@ -676,24 +676,12 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
   <div class="section-title">Pre-Launch Legal &amp; Tax Checklist</div>
   <div class="action-list">
     <div class="action-item">
-      <span class="action-priority low">LOW</span>
-      <span class="action-text"><strong>Subscription transparency — done ✓</strong> Pricing page now states, near the plans before sign-up, that paid plans auto-renew (monthly/annually) until cancelled and can be cancelled anytime from the account.</span>
-    </div>
-    <div class="action-item">
-      <span class="action-priority low">LOW</span>
-      <span class="action-text"><strong>Easy cancellation — done ✓</strong> Stripe Customer Portal built, deployed and proven working. Dashboard "Manage billing" opens it for self-serve cancel (at end of billing period), card updates and invoices.</span>
-    </div>
-    <div class="action-item">
-      <span class="action-priority high">HIGH</span>
-      <span class="action-text"><strong>Digital-content consent</strong> — at checkout, capture the customer&#39;s agreement that access starts immediately and they waive the 14-day cancellation right.</span>
+      <span class="action-priority med">MED</span>
+      <span class="action-text"><strong>Digital-content consent</strong> — the waiver is already stated in your Terms &amp; Refund pages ✓. Still to do (at go-live, when checkout buttons are re-enabled): capture an active tick at checkout confirming access starts immediately and the 14-day right is waived.</span>
     </div>
     <div class="action-item">
       <span class="action-priority med">MED</span>
       <span class="action-text"><strong>VAT</strong> — UK: register once turnover tops £90k/12 months (not yet). EU: digital sales have NO threshold — decide before launch whether to restrict sign-ups to the UK or enable Stripe Tax / OSS.</span>
-    </div>
-    <div class="action-item">
-      <span class="action-priority low">LOW</span>
-      <span class="action-text"><strong>Policies — done ✓</strong> Terms, Privacy and Refund now cover renewal/auto-renewal, cancellation (+ self-serve via the portal), digital-content quality, the waiver, top-ups and Brevo. Remaining: confirm <em>cookie-policy.html</em> actually exists (it's linked from footers) and get a final solicitor glance over the wording.
     </div>
     <div class="action-item">
       <span class="action-priority med">MED</span>
@@ -701,7 +689,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
     </div>
     <div class="action-item">
       <span class="action-priority low">LOW</span>
-      <span class="action-text"><strong>Cookie consent &amp; UK GDPR</strong> — cookie banner in place and a documented lawful basis for processing customer data.</span>
+      <span class="action-text"><strong>Cookie consent &amp; UK GDPR</strong> — UK GDPR lawful basis is documented in the privacy policy ✓. Still to do: add a cookie consent banner and confirm <em>cookie-policy.html</em> exists (it's linked from footers).</span>
     </div>
   </div>
 
