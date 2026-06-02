@@ -153,6 +153,29 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
     </div>
   </div>
 
+  <style>
+    .svc-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-left:3px solid var(--teal);border-radius:16px;padding:20px 22px;margin-bottom:8px;}
+    .svc-intro{color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:16px;line-height:1.5;}
+    .svc-q{color:#fff;font-size:15px;font-weight:700;margin-bottom:14px;}
+    .svc-opt{display:block;width:100%;text-align:left;background:rgba(76,155,176,0.15);border:1px solid rgba(76,155,176,0.4);color:#fff;padding:12px 14px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:8px;transition:background .15s;}
+    .svc-opt:hover{background:rgba(76,155,176,0.32);}
+    .svc-back{background:none;border:none;color:rgba(255,255,255,0.5);font-size:13px;cursor:pointer;font-family:inherit;margin-top:6px;text-decoration:underline;}
+    .svc-result{border-radius:12px;padding:16px 18px;margin-bottom:12px;}
+    .svc-info{background:rgba(76,155,176,0.12);border:1px solid rgba(76,155,176,0.45);}
+    .svc-amber{background:rgba(217,119,6,0.14);border:1px solid rgba(251,191,36,0.5);}
+    .svc-red{background:rgba(220,38,38,0.14);border:1px solid rgba(248,113,113,0.55);}
+    .svc-r-title{font-size:15px;font-weight:800;color:#fff;margin-bottom:12px;}
+    .svc-r-row{font-size:13px;color:rgba(255,255,255,0.88);line-height:1.55;margin-bottom:10px;}
+    .svc-r-row span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,0.42);font-weight:700;margin-bottom:3px;}
+    .svc-r-row code,.svc-r-note code{background:rgba(255,255,255,0.12);padding:1px 5px;border-radius:4px;font-family:Consolas,monospace;font-size:12px;}
+    .svc-r-note{font-size:12px;color:rgba(255,255,255,0.55);font-style:italic;margin-top:4px;}
+  </style>
+  <div class="section-title">🔧 Service Check — Payment &amp; Integration Troubleshooter</div>
+  <div class="svc-card">
+    <div class="svc-intro">Something not working? Answer the questions and this will point you to the likely cause, the fix, and exactly where to look. Covers payments, sign-in, downloads, hosting and email.</div>
+    <div id="svc-check"></div>
+  </div>
+
   <div class="section-title">Live Services</div>
   <div class="service-grid" id="liveGrid">
     <!-- Supabase -->
@@ -815,6 +838,160 @@ document.addEventListener('contextmenu', e => e.preventDefault());
 // Init
 loadDates();
 runAll();
+</script>
+<script>
+(function(){
+  const TREE = {
+    start: { q: "What\u2019s happening?", options: [
+      { label: "Customer can\u2019t sign in or sign up", next: "A1" },
+      { label: "Checkout / payment won\u2019t start", next: "B1" },
+      { label: "Paid, but plan or downloads didn\u2019t update", next: "C1" },
+      { label: "Downloads counting wrong, or blocked", next: "D1" },
+      { label: "A page won\u2019t load or looks broken", next: "E1" },
+      { label: "Onboarding emails not sending", next: "F1" }
+    ]},
+
+    A1: { q: "Does it affect everyone, or just one customer?", options: [
+      { label: "Everyone", next: "A_all" },
+      { label: "Just one customer", next: "A2" }
+    ]},
+    A_all: { diagnosis: { level: "red", cause: "Supabase Auth is down or its settings changed",
+      fix: "Check the Supabase status page, and that the Email and Google sign-in providers are still enabled.",
+      where: "Supabase \u2192 Authentication \u2192 Providers, and status.supabase.com" }},
+    A2: { q: "Which sign-in method?", options: [
+      { label: "Google", next: "A_google" },
+      { label: "Email & password", next: "A_email" }
+    ]},
+    A_google: { diagnosis: { level: "amber", cause: "Google sign-in (OAuth) redirect or consent issue",
+      fix: "Confirm Google is enabled in Supabase and the authorised redirect URI in Google Cloud matches your Supabase callback URL.",
+      where: "Supabase \u2192 Auth \u2192 Providers \u2192 Google; Google Cloud Console \u2192 Credentials",
+      note: "Known cosmetic item: the consent screen shows the Supabase project id instead of CLPeasy \u2014 fix in Google Cloud \u2192 OAuth consent screen." }},
+    A_email: { diagnosis: { level: "info", cause: "Wrong password, or the email was never confirmed",
+      fix: "Ask them to use \u2018Forgot password?\u2019 on auth.html. Check the account exists and is confirmed.",
+      where: "Supabase \u2192 Authentication \u2192 Users" }},
+
+    B1: { q: "Are you testing on the live site (clpeasy.com)?", options: [
+      { label: "No \u2014 a local file or other host", next: "B_cors" },
+      { label: "Yes \u2014 on clpeasy.com", next: "B2" }
+    ]},
+    B_cors: { diagnosis: { level: "info", cause: "Blocked by CORS \u2014 checkout only runs on the live domain",
+      fix: "Test on https://clpeasy.com. The function deliberately rejects other origins.",
+      where: "create-checkout-session (Allow-Origin is clpeasy.com only)" }},
+    B2: { q: "Have the checkout buttons been switched on for go-live yet?", options: [
+      { label: "Not sure / they still go to the sign-in page", next: "B_paused" },
+      { label: "Yes, wired to checkout", next: "B3" }
+    ]},
+    B_paused: { diagnosis: { level: "amber", cause: "The checkout buttons are still paused",
+      fix: "Re-point the pricing buttons to call create-checkout-session (startCheckout). This is go-live step 5 in the guide.",
+      where: "pricing.html and the dashboard \u2018Choose plan\u2019 button" }},
+    B3: { q: "What happens when it\u2019s clicked?", options: [
+      { label: "An error appears / it spins then fails", next: "B_fnerr" },
+      { label: "Nothing happens at all", next: "B_nothing" }
+    ]},
+    B_fnerr: { diagnosis: { level: "red", cause: "create-checkout-session is erroring",
+      fix: "Check its logs. Common causes: missing/invalid <code>STRIPE_SECRET_KEY</code>, or a price_ ID that doesn\u2019t exist in the current Stripe mode (test vs live).",
+      where: "Supabase \u2192 Edge Functions \u2192 create-checkout-session \u2192 Logs" }},
+    B_nothing: { diagnosis: { level: "amber", cause: "User probably isn\u2019t logged in, or a JavaScript error",
+      fix: "Checkout needs a signed-in user (it sends userId). Make sure they\u2019re logged in, and open the browser console (F12) to see any error.",
+      where: "Browser console; the user\u2019s sign-in state" }},
+
+    C1: { q: "In Stripe \u2192 Payments, did the payment actually succeed?", options: [
+      { label: "No / it was declined", next: "C_declined" },
+      { label: "Yes, it succeeded", next: "C2" }
+    ]},
+    C_declined: { diagnosis: { level: "info", cause: "The payment didn\u2019t complete (declined or 3-D Secure failed)",
+      fix: "Ask the customer to retry, perhaps with another card. The decline reason is shown in Stripe.",
+      where: "Stripe \u2192 Payments" }},
+    C2: { q: "In Stripe \u2192 Developers \u2192 Webhooks, did the event deliver with a 200?", options: [
+      { label: "No \u2014 it failed / shows an error", next: "C_webhookfail" },
+      { label: "Yes \u2014 delivered 200", next: "C3" },
+      { label: "I can\u2019t tell / no endpoint is listed", next: "C_noendpoint" }
+    ]},
+    C_webhookfail: { diagnosis: { level: "red", cause: "The webhook isn\u2019t verifying \u2014 the most common payment-sync failure",
+      fix: "Make sure <code>STRIPE_WEBHOOK_SECRET</code> in Supabase matches the signing secret of this exact endpoint (and is the live <code>whsec_</code> in live mode).",
+      where: "Stripe \u2192 Developers \u2192 Webhooks \u2192 (endpoint) \u2192 Signing secret  \u2194  Supabase \u2192 Edge Functions \u2192 Secrets" }},
+    C_noendpoint: { diagnosis: { level: "red", cause: "No webhook endpoint is registered for this Stripe mode",
+      fix: "Add an endpoint pointing to the stripe-webhook function URL, then copy its signing secret into STRIPE_WEBHOOK_SECRET. Live mode needs its own endpoint and secret.",
+      where: "Stripe \u2192 Developers \u2192 Webhooks \u2192 Add endpoint" }},
+    C3: { q: "Check the customer\u2019s row in the subscriptions table \u2014 is status \u2018active\u2019?", options: [
+      { label: "Active \u2014 but downloads still show trial / 0", next: "C_profiles" },
+      { label: "No \u2014 still inactive or empty", next: "C_meta" },
+      { label: "Active and the downloads look right", next: "C_refresh" }
+    ]},
+    C_profiles: { diagnosis: { level: "amber", cause: "Subscription recorded, but the profiles allowance didn\u2019t update",
+      fix: "Check the webhook log for the profiles update, and that the profiles row id matches the user id. Re-test with a fresh test purchase.",
+      where: "stripe-webhook logs; the user\u2019s profiles row (downloads_limit)" }},
+    C_meta: { diagnosis: { level: "amber", cause: "The webhook ran without a userId to match the customer",
+      fix: "Confirm create-checkout-session stamps <code>metadata { userId }</code> (and subscription_data.metadata). Sessions created before that won\u2019t match.",
+      where: "create-checkout-session; the event\u2019s metadata in Stripe" }},
+    C_refresh: { diagnosis: { level: "info", cause: "The data is correct \u2014 the page was just stale",
+      fix: "Hard-refresh the dashboard / builder (Ctrl or Cmd + Shift + R).",
+      where: "The customer\u2019s browser" }},
+
+    D1: { q: "Which is it?", options: [
+      { label: "Blocked when they should still have downloads", next: "D_blocked" },
+      { label: "The number shown looks wrong", next: "D_number" }
+    ]},
+    D_blocked: { diagnosis: { level: "amber", cause: "Their profiles allowance is used up, or was never set",
+      fix: "Check downloads_used vs downloads_limit on their profiles row. If the limit is 0/10 despite paying, the webhook didn\u2019t set it (see \u2018Paid but not updated\u2019). If used is unexpectedly high, look for repeated exports.",
+      where: "profiles table \u2192 that user\u2019s row" }},
+    D_number: { diagnosis: { level: "info", cause: "Stale page, or a missed monthly refill",
+      fix: "Hard-refresh first. Dashboard and builder both read profiles, so they should match. Refill happens on payment and on builder load once downloads_reset_date has passed \u2014 check that date for annual plans.",
+      where: "profiles table (downloads_reset_date)" }},
+
+    E1: { q: "Is it one page, or the whole site?", options: [
+      { label: "The whole site", next: "E_site" },
+      { label: "Just one page", next: "E_page" }
+    ]},
+    E_site: { diagnosis: { level: "red", cause: "Likely a failed deploy or hosting issue",
+      fix: "Check that the latest Netlify deploy didn\u2019t fail and the site is published.",
+      where: "Netlify \u2192 Deploys" }},
+    E_page: { diagnosis: { level: "amber", cause: "A script error on that page, or the newest file wasn\u2019t uploaded",
+      fix: "Hard-refresh, then open the console (F12) for errors. Confirm the latest version was pushed to GitHub. (Reminder: the landing page is uploaded as home.html, never index.html.)",
+      where: "Browser console; the GitHub repo" }},
+
+    F1: { diagnosis: { level: "info", cause: "Brevo onboarding isn\u2019t connected to sign-ups yet",
+      fix: "Still on the to-do list: a Supabase function/automation needs to add new sign-ups to the Brevo contact list. Until that\u2019s wired, the emails won\u2019t fire automatically.",
+      where: "Brevo automations; the planned sign-up \u2192 Brevo function" }}
+  };
+
+  let path = [];
+  function rootEl(){ return document.getElementById('svc-check'); }
+
+  function render(id){
+    const node = TREE[id];
+    const root = rootEl();
+    if(!root || !node) return;
+    root.innerHTML = '';
+    if(node.diagnosis){ renderDiagnosis(node.diagnosis); return; }
+    const q = document.createElement('div'); q.className = 'svc-q'; q.textContent = node.q; root.appendChild(q);
+    node.options.forEach(function(o){
+      const b = document.createElement('button'); b.className = 'svc-opt'; b.textContent = o.label;
+      b.onclick = function(){ path.push(id); render(o.next); };
+      root.appendChild(b);
+    });
+    if(path.length){
+      const back = document.createElement('button'); back.className = 'svc-back'; back.textContent = '\u2190 Back';
+      back.onclick = function(){ render(path.pop()); };
+      root.appendChild(back);
+    }
+  }
+
+  function renderDiagnosis(d){
+    const root = rootEl();
+    root.innerHTML =
+      '<div class="svc-result svc-' + (d.level || 'info') + '">' +
+        '<div class="svc-r-title">' + d.cause + '</div>' +
+        '<div class="svc-r-row"><span>Most likely fix</span>' + d.fix + '</div>' +
+        '<div class="svc-r-row"><span>Where to look</span>' + d.where + '</div>' +
+        (d.note ? '<div class="svc-r-note">' + d.note + '</div>' : '') +
+      '</div>' +
+      '<button class="svc-opt" id="svc-restart">\u21bb Start another check</button>';
+    document.getElementById('svc-restart').onclick = function(){ path = []; render('start'); };
+  }
+
+  path = []; render('start');
+})();
 </script>
 </body>
 </html>
