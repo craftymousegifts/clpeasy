@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head> 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
@@ -118,7 +118,84 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
 </style>
 </head>
 <body>
+<!-- ========== CLPeasy Monitor Login Gate — paste this at the TOP of your <body> tag ========== -->
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  #clp-gate {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #0f1117;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Sans', sans-serif;
+  }
+  #clp-gate .box {
+    background: #181c27;
+    border: 1px solid #2a2f3e;
+    border-radius: 14px;
+    padding: 2.5rem 2.5rem 2rem;
+    width: 340px;
+    text-align: center;
+  }
+  #clp-gate .logo { font-size: 1.1rem; font-weight: 600; letter-spacing: 0.08em; color: #7b8cde; margin-bottom: 0.25rem; }
+  #clp-gate h1 { font-size: 1rem; font-weight: 400; color: #8b94a8; margin: 0 0 1.75rem; }
+  #clp-gate input[type=password] {
+    width: 100%; box-sizing: border-box;
+    padding: 0.65rem 1rem; border-radius: 8px;
+    border: 1px solid #2a2f3e; background: #0f1117;
+    color: #e8ecf2; font-size: 1rem; font-family: inherit;
+    outline: none; transition: border-color 0.2s; margin-bottom: 0.75rem;
+  }
+  #clp-gate input[type=password]:focus { border-color: #7b8cde; }
+  #clp-gate input[type=password].err { border-color: #e24b4a; animation: shake 0.3s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  #clp-gate button {
+    width: 100%; padding: 0.65rem; border-radius: 8px;
+    border: none; background: #7b8cde; color: #fff;
+    font-size: 0.95rem; font-weight: 500; font-family: inherit;
+    cursor: pointer; transition: background 0.2s;
+  }
+  #clp-gate button:hover { background: #6070c4; }
+  #clp-gate .msg { font-size: 0.8rem; color: #e24b4a; margin-top: 0.6rem; min-height: 1.1rem; }
+  #clp-gate .lock-icon { font-size: 2rem; margin-bottom: 0.75rem; opacity: 0.5; }
+</style>
+ 
+<div id="clp-gate">
+  <div class="box">
+    <div class="lock-icon">&#x1F512;</div>
+    <div class="logo">CLPeasy</div>
+    <h1>Monitor Dashboard</h1>
+    <input type="password" id="clp-pwd" placeholder="Enter password" autocomplete="current-password" />
+    <button onclick="clpCheck()">Unlock</button>
+    <div class="msg" id="clp-msg"></div>
+  </div>
+</div>
 
+<script>
+(function(){
+  var h='aea3763183efe526e2fd24d28b5552d8ba9c1d3053fb53b22a35a50a3b9a16ad';
+  function sha256(str){
+    return crypto.subtle.digest('SHA-256',new TextEncoder().encode(str))
+      .then(function(b){return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');});
+  }
+  if(sessionStorage.getItem('clp_auth')==='1'){
+    document.getElementById('clp-gate').style.display='none';
+  }
+  document.getElementById('clp-pwd').addEventListener('keydown',function(e){if(e.key==='Enter')clpCheck();});
+  window.clpCheck=function(){
+    var inp=document.getElementById('clp-pwd');
+    sha256(inp.value).then(function(d){
+      if(d===h){
+        sessionStorage.setItem('clp_auth','1');
+        document.getElementById('clp-gate').style.display='none';
+      } else {
+        document.getElementById('clp-msg').textContent='Incorrect password';
+        inp.value=''; inp.classList.add('err');
+        setTimeout(function(){inp.classList.remove('err');},400);
+      }
+    });
+  };
+})();
+</script>
+<!-- ========== End Login Gate ========== -->
 <div class="header">
   <a href="home.html" class="header-logo">
     <div class="logo-badge">CLP</div>
@@ -945,12 +1022,12 @@ runAll();
       where: "Stripe \u2192 Developers \u2192 Webhooks \u2192 (endpoint) \u2192 Signing secret  \u2194  Supabase \u2192 Edge Functions \u2192 Secrets" }},
     C_noendpoint: { diagnosis: { level: "red", cause: "No webhook endpoint is registered for this Stripe mode",
       fix: "Add an endpoint pointing to the stripe-webhook function URL, then copy its signing secret into STRIPE_WEBHOOK_SECRET. Live mode needs its own endpoint and secret.",
-      where: "Stripe \u2192 Developers \u2192 Webhooks \u2192 Add endpoint" }},
+       where: "Stripe \u2192 Developers \u2192 Webhooks \u2192 Add endpoint" }},
     C3: { q: "Check the customer\u2019s row in the subscriptions table \u2014 is status \u2018active\u2019?", options: [
       { label: "Active \u2014 but downloads still show trial / 0", next: "C_profiles" },
       { label: "No \u2014 still inactive or empty", next: "C_meta" },
       { label: "Active and the downloads look right", next: "C_refresh" }
-    ]},
+     ]},
     C_profiles: { diagnosis: { level: "amber", cause: "Subscription recorded, but the profiles allowance didn\u2019t update",
       fix: "Check the webhook log for the profiles update, and that the profiles row id matches the user id. Re-test with a fresh test purchase.",
       where: "stripe-webhook logs; the user\u2019s profiles row (downloads_limit)" }},
