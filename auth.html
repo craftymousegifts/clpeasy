@@ -196,14 +196,42 @@ async function handleSubmit() {
   btn.textContent = mode === 'signin' ? 'Signing in...' : 'Creating account...';
   hideMsg();
 
-  if (mode === 'signin') {
-    const { error } = await sb.auth.signInWithPassword({ email, password });
-    if (error) {
-      showMsg(error.message === 'Invalid login credentials' ? 'Incorrect email or password.' : error.message, 'error');
-      btn.disabled = false;
-      btn.textContent = 'Sign in';
-    } else {
-      window.location.href = 'builder.html';
+if (mode === 'signin') {
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    showMsg(
+      error.message === 'Invalid login credentials'
+        ? 'Incorrect email or password.'
+        : error.message,
+      'error'
+    );
+    btn.disabled = false;
+    btn.textContent = 'Sign in';
+  } else {
+
+    // ── GET LOGGED IN USER ─────────────────────────────
+    const { data: { user } } = await sb.auth.getUser();
+
+    // ── ENSURE USER EXISTS IN PUBLIC.USERS ─────────────
+    if (user) {
+      await sb
+        .from('users')
+        .upsert([
+          {
+            id: user.id,
+            email: user.email,
+            plan: 'free',
+            credits: 0,
+            subscription_status: 'inactive'
+          }
+        ]);
+    }
+
+    // ── GO TO BUILDER ───────────────────────────────────
+    window.location.href = 'builder.html';
+  }
+}
     }
   } else {
     const { error } = await sb.auth.signUp({ email, password });
