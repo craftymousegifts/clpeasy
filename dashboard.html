@@ -185,6 +185,21 @@ const PLAN_CONFIG = {
 };
 const TRIAL_DAYS = 14;
 
+// The subscriptions table stores granular plans (easy_start_monthly / _annual,
+// easy_pro_monthly / _annual, free). Collapse them to the display tier + cycle.
+function normalisePlan(planStr){
+  const p = planStr || 'free';
+  if(p.indexOf('easy_pro') === 0) return 'easy_pro';
+  if(p.indexOf('easy_start') === 0) return 'easy_start';
+  return 'free';
+}
+function billingCycle(planStr){
+  if(!planStr) return null;
+  if(planStr.endsWith('_annual')) return 'annual';
+  if(planStr.endsWith('_monthly')) return 'monthly';
+  return null;
+}
+
 function showMsg(text, type){
   const el = document.getElementById('msg');
   el.textContent = text;
@@ -300,7 +315,37 @@ async function loadDashboard(){
   }
 
   if(!row.email) row.email = user.email;
-  render(row);
+
+  // Billing state lives in `subscriptions` (written by the stripe-webhook),
+  // NOT in public.users. RLS lets a user read only their own row.
+  // Credits + trial countdown stay on public.users.
+  let effectivePlan = 'free';
+  let effectiveStatus = 'inactive';
+  let cycle = null;
+  try {
+    const { data: sub } = await sb
+      .from('subscriptions')
+      .select('plan, status, price_id, updated_at')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if(sub && sub.status === 'active' && sub.plan && sub.plan !== 'free'){
+      effectivePlan = normalisePlan(sub.plan);
+      effectiveStatus = 'active';
+      cycle = billingCycle(sub.plan);
+    }
+  } catch(e){
+    console.error('subscriptions read failed:', e);
+    // Fall back to trial display; don't block the page.
+  }
+
+  render({
+    email: row.email,
+    plan: effectivePlan,
+    credits: Number.isFinite(row.credits) ? row.credits : 0,
+    subscription_status: effectiveStatus,
+    created_at: row.created_at,
+    billingCycle: cycle
+  });
 }
 
 async function resetPassword(){
