@@ -214,18 +214,23 @@ if (mode === 'signin') {
     const { data: { user } } = await sb.auth.getUser();
 
     // ── ENSURE USER EXISTS IN PUBLIC.USERS ─────────────
+    // Insert-only: seed defaults for brand-new users, never overwrite an
+    // existing row (otherwise a returning paid user would be reset to free).
     if (user) {
       await sb
         .from('users')
-        .upsert([
-          {
-            id: user.id,
-            email: user.email,
-            plan: 'free',
-            credits: 0,
-            subscription_status: 'inactive'
-          }
-        ]);
+        .upsert(
+          [
+            {
+              id: user.id,
+              email: user.email,
+              plan: 'free',
+              credits: 10,
+              subscription_status: 'inactive'
+            }
+          ],
+          { onConflict: 'id', ignoreDuplicates: true }
+        );
     }
 
     // ── GO TO BUILDER ───────────────────────────────────

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLPeasy™ — Your account</title>
+<meta name="description" content="Your CLPeasy account dashboard — manage your plan, downloads and subscription.">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --teal:#4C9BB0;--teal-dark:#3a7d8f;--teal-light:#d6eef4;
+  --gold:#D97706;--gold-light:#FEF3C7;
+  --border:#E8EAED;--text:#111318;--muted:#6B7280;--off:#F7F8FA;--red:#EF4444;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);-webkit-font-smoothing:antialiased;min-height:100%;}
+
+/* NAV */
+nav{background:white;border-bottom:1px solid var(--border);padding:0 24px;height:72px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{display:flex;align-items:center;text-decoration:none;}
+.nav-badge{width:44px;height:44px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;flex-shrink:0;}
+.nav-easy{font-size:22px;font-weight:900;color:var(--teal);margin-left:5px;letter-spacing:-1px;}
+.nav-right{display:flex;gap:8px;align-items:center;}
+.nav-link{font-size:13px;color:var(--muted);text-decoration:none;padding:7px 14px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;background:none;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.nav-link:hover{color:var(--teal);border-color:var(--teal);}
+.nav-cta{background:var(--teal);color:white;border:none;padding:9px 18px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;}
+.nav-cta:hover{background:var(--teal-dark);}
+
+/* LAYOUT */
+.wrap{max-width:920px;margin:0 auto;padding:40px 24px 64px;}
+.page-head{margin-bottom:28px;}
+.page-head h1{font-family:'DM Serif Display',serif;font-size:clamp(26px,4vw,36px);margin-bottom:4px;}
+.page-head p{font-size:14px;color:var(--muted);}
+.grid{display:grid;grid-template-columns:1.4fr 1fr;gap:20px;align-items:start;}
+@media(max-width:760px){.grid{grid-template-columns:1fr;}}
+
+.card{background:white;border:1.5px solid var(--border);border-radius:18px;padding:26px;}
+.card.accent{border-color:var(--teal);box-shadow:0 6px 24px rgba(76,155,176,0.12);}
+.card h2{font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:14px;}
+.card h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:12px;}
+
+/* PLAN HEADER */
+.plan-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px;flex-wrap:wrap;}
+.plan-name{font-family:'DM Serif Display',serif;font-size:28px;}
+.badge{font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;letter-spacing:0.4px;text-transform:capitalize;white-space:nowrap;}
+.badge.active{background:#F0FDF4;color:#166534;border:1px solid #BBF7D0;}
+.badge.inactive{background:var(--gold-light);color:#92400E;border:1px solid #FDE68A;}
+.badge.trialing{background:var(--teal-light);color:var(--teal-dark);border:1px solid #B6DDE8;}
+.plan-price{font-size:14px;color:var(--muted);margin-bottom:18px;}
+
+/* TRIAL STRIP */
+.trial-strip{background:var(--teal-light);border:1px solid #B6DDE8;border-radius:12px;padding:14px 16px;margin-bottom:18px;font-size:13px;color:var(--teal-dark);line-height:1.5;}
+.trial-strip.warn{background:var(--gold-light);border-color:#FDE68A;color:#92400E;}
+.trial-strip strong{font-weight:700;}
+
+/* USAGE */
+.usage-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px;}
+.usage-label .left{font-weight:600;}
+.usage-label .right{color:var(--muted);}
+.usage-track{height:10px;background:var(--off);border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:6px;}
+.usage-fill{height:100%;background:linear-gradient(90deg,var(--teal),#0EA5E9);border-radius:20px;transition:width .4s ease;}
+.usage-note{font-size:12px;color:var(--muted);line-height:1.5;}
+
+/* BUTTONS */
+.btn{display:block;width:100%;text-align:center;padding:12px;border-radius:11px;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;transition:all .2s;margin-bottom:10px;}
+.btn-teal{background:var(--teal);color:white;box-shadow:0 4px 14px rgba(76,155,176,0.3);}
+.btn-teal:hover{background:var(--teal-dark);}
+.btn-outline{background:transparent;color:var(--teal);border:2px solid var(--teal);}
+.btn-outline:hover{background:var(--teal-light);}
+.btn-ghost{background:var(--off);color:var(--text);border:1.5px solid var(--border);}
+.btn-ghost:hover{border-color:var(--teal);color:var(--teal);}
+.btn:disabled,.btn.is-disabled{opacity:0.55;cursor:not-allowed;pointer-events:none;}
+.btn .soon{font-size:10px;font-weight:700;background:var(--gold-light);color:#92400E;padding:1px 7px;border-radius:10px;margin-left:6px;letter-spacing:0.3px;vertical-align:middle;}
+
+/* ACCOUNT ROWS */
+.acct-row{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.acct-row:last-of-type{border-bottom:none;}
+.acct-row .k{color:var(--muted);}
+.acct-row .v{font-weight:600;text-align:right;word-break:break-word;}
+
+/* MSG */
+.msg{padding:11px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;display:none;}
+.msg.error{background:#FEF2F2;border:1px solid #FECACA;color:var(--red);display:block;}
+.msg.success{background:#F0FDF4;border:1px solid #BBF7D0;color:#166534;display:block;}
+
+/* LOADING */
+.skeleton{color:transparent !important;background:linear-gradient(90deg,#eee,#f5f5f5,#eee);background-size:200% 100%;animation:sk 1.2s infinite;border-radius:6px;}
+@keyframes sk{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+#dash{display:none;}
+#loading{text-align:center;padding:60px 0;color:var(--muted);font-size:14px;}
+
+footer{background:#0A0F1A;padding:24px;text-align:center;}
+footer p{font-size:12px;color:#4B5563;}
+footer a{color:#6B7280;text-decoration:none;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="home.html" class="nav-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span><sup style="font-size:9px;font-weight:700;color:#4C9BB0;vertical-align:super;line-height:0;margin-left:1px;">™</sup></a>
+  <div class="nav-right">
+    <a href="builder.html" class="nav-link">Builder</a>
+    <a href="support.html" class="nav-link">Support</a>
+    <button class="nav-link" onclick="signOut()">Sign out</button>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div id="loading">Loading your account…</div>
+
+  <div id="dash">
+    <div class="page-head">
+      <h1>Your account</h1>
+      <p id="hello">Signed in</p>
+    </div>
+
+    <div id="msg" class="msg"></div>
+
+    <div class="grid">
+      <!-- LEFT: PLAN + USAGE -->
+      <div>
+        <div class="card accent" style="margin-bottom:20px;">
+          <h3>Current plan</h3>
+          <div class="plan-row">
+            <span class="plan-name" id="plan-name">—</span>
+            <span class="badge inactive" id="status-badge">—</span>
+          </div>
+          <div class="plan-price" id="plan-price"></div>
+
+          <div class="trial-strip" id="trial-strip" style="display:none;"></div>
+
+          <div id="usage-block">
+            <div class="usage-label">
+              <span class="left">Downloads this month</span>
+              <span class="right" id="usage-count">—</span>
+            </div>
+            <div class="usage-track"><div class="usage-fill" id="usage-fill" style="width:0%;"></div></div>
+            <div class="usage-note" id="usage-note"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Plan &amp; billing</h3>
+          <a href="builder.html" class="btn btn-teal">Open the label builder →</a>
+          <a href="pricing.html" class="btn btn-outline" id="plan-action">View plans &amp; pricing</a>
+          <a href="pricing.html" class="btn btn-ghost">Buy top-up downloads</a>
+          <button class="btn btn-ghost is-disabled" disabled>Manage billing &amp; payment<span class="soon">SOON</span></button>
+          <p class="usage-note" style="margin-top:4px;">Card management opens once Stripe billing is connected to your account.</p>
+        </div>
+      </div>
+
+      <!-- RIGHT: ACCOUNT -->
+      <div class="card">
+        <h3>Account details</h3>
+        <div class="acct-row"><span class="k">Email</span><span class="v" id="acct-email">—</span></div>
+        <div class="acct-row"><span class="k">Plan</span><span class="v" id="acct-plan">—</span></div>
+        <div class="acct-row"><span class="k">Status</span><span class="v" id="acct-status">—</span></div>
+        <div class="acct-row"><span class="k">Member since</span><span class="v" id="acct-since">—</span></div>
+        <div style="margin-top:18px;">
+          <button class="btn btn-ghost" onclick="resetPassword()">Send password reset email</button>
+          <button class="btn btn-ghost" onclick="signOut()">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p><a href="home.html">Home</a> &nbsp;·&nbsp; <a href="pricing.html">Pricing</a> &nbsp;·&nbsp; <a href="privacy.html">Privacy</a> &nbsp;·&nbsp; <a href="terms.html">Terms</a> &nbsp;·&nbsp; <a href="mailto:support@clpeasy.com">support@clpeasy.com</a></p>
+  <p style="margin-top:8px;">&copy; 2026 CLPeasy™ &nbsp;·&nbsp; Crafty Mouse Gifts</p>
+</footer>
+
+<script>
+const SUPABASE_URL = 'https://qvkosdqcryrcfbjtaxic.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Plan display config — single source of truth for labels, prices, monthly download allowance.
+const PLAN_CONFIG = {
+  free:       { label: 'Easy Trial™',  price: 'Free 14-day trial',  allowance: 10, trial: true },
+  easy_start: { label: 'Easy Start™',  price: '£9.99/month',        allowance: 20   },
+  easy_pro:   { label: 'Easy Pro™',    price: '£14.99/month',       allowance: 30   }
+};
+const TRIAL_DAYS = 14;
+
+function showMsg(text, type){
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = 'msg ' + type;
+}
+
+function fmtDate(iso){
+  if(!iso) return '—';
+  const d = new Date(iso);
+  if(isNaN(d)) return '—';
+  return d.toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+}
+
+function render(row){
+  const plan = (row.plan || 'free');
+  const cfg = PLAN_CONFIG[plan] || PLAN_CONFIG.free;
+  const status = (row.subscription_status || 'inactive');
+
+  // Header / greeting
+  document.getElementById('hello').textContent = 'Signed in as ' + (row.email || '');
+
+  // Plan card
+  document.getElementById('plan-name').textContent = cfg.label;
+  document.getElementById('plan-price').textContent = cfg.price;
+
+  // Status badge
+  const badge = document.getElementById('status-badge');
+  badge.textContent = status.replace(/_/g,' ');
+  badge.className = 'badge ' + (status === 'active' ? 'active' : status === 'trialing' ? 'trialing' : 'inactive');
+
+  // Trial countdown (free plan, computed from created_at)
+  const strip = document.getElementById('trial-strip');
+  if(plan === 'free' && row.created_at){
+    const created = new Date(row.created_at);
+    const elapsedDays = Math.floor((Date.now() - created.getTime()) / 86400000);
+    const left = Math.max(0, TRIAL_DAYS - elapsedDays);
+    strip.style.display = 'block';
+    if(left > 0){
+      strip.classList.toggle('warn', left <= 3);
+      strip.innerHTML = '🕯️ <strong>' + left + ' day' + (left===1?'':'s') + ' left</strong> on your free trial. Full access, no card needed. <a href="pricing.html" style="color:inherit;font-weight:700;text-decoration:underline;">Choose a plan →</a>';
+    } else {
+      strip.classList.add('warn');
+      strip.innerHTML = '⏳ Your free trial has ended. Your labels are kept safe — <a href="pricing.html" style="color:inherit;font-weight:700;text-decoration:underline;">choose a plan</a> to keep downloading.';
+    }
+  } else {
+    strip.style.display = 'none';
+  }
+
+  // Downloads / usage
+  const credits = Number.isFinite(row.credits) ? row.credits : 0;
+  const fill = document.getElementById('usage-fill');
+  const count = document.getElementById('usage-count');
+  const note = document.getElementById('usage-note');
+  const used = Math.max(0, cfg.allowance - credits);
+  const pct = Math.min(100, Math.round((credits / cfg.allowance) * 100));
+  count.textContent = credits + ' of ' + cfg.allowance + ' left';
+  fill.style.width = pct + '%';
+  note.textContent = cfg.trial
+    ? used + ' used \u00b7 ' + cfg.allowance + ' downloads across your 14-day trial \u00b7 top-up packs available if you run low.'
+    : used + ' used this month \u00b7 resets on your billing date \u00b7 top-up packs available if you run low.';
+
+  // Plan action button label
+  const action = document.getElementById('plan-action');
+  action.textContent = plan === 'free' ? 'Choose a plan →' : 'View or change plan';
+
+  // Account details
+  document.getElementById('acct-email').textContent  = row.email || '—';
+  document.getElementById('acct-plan').textContent   = cfg.label;
+  document.getElementById('acct-status').textContent = status.replace(/_/g,' ');
+  document.getElementById('acct-since').textContent  = fmtDate(row.created_at);
+
+  // Reveal
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('dash').style.display = 'block';
+}
+
+async function loadDashboard(){
+  // Auth gate
+  const { data: { session } } = await sb.auth.getSession();
+  if(!session){
+    window.location.href = 'auth.html?mode=signin';
+    return;
+  }
+  const user = session.user;
+
+  // Read the user's row
+  let { data: row, error } = await sb
+    .from('users')
+    .select('email, plan, credits, subscription_status, stripe_customer_id, created_at')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  // Self-heal: if no row yet (e.g. fresh OAuth user), create defaults then use them
+  if(!row && !error){
+    const defaults = {
+      id: user.id,
+      email: user.email,
+      plan: 'free',
+      credits: 10,
+      subscription_status: 'inactive'
+    };
+    const up = await sb.from('users').upsert([defaults]).select('email, plan, credits, subscription_status, created_at').maybeSingle();
+    row = up.data || { ...defaults, created_at: new Date().toISOString() };
+  }
+
+  if(error || !row){
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('dash').style.display = 'block';
+    showMsg('We couldn\u2019t load your account details. Please refresh, or contact support@clpeasy.com.', 'error');
+    // Still show what we can from the auth session
+    render({ email: user.email, plan: 'free', credits: 10, subscription_status: 'inactive', created_at: user.created_at });
+    return;
+  }
+
+  if(!row.email) row.email = user.email;
+  render(row);
+}
+
+async function resetPassword(){
+  const { data: { session } } = await sb.auth.getSession();
+  const email = session && session.user ? session.user.email : null;
+  if(!email){ showMsg('No email on file for this session.', 'error'); return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/auth.html' });
+  if(error){ showMsg(error.message, 'error'); }
+  else { showMsg('Password reset email sent to ' + email + ' — check your inbox.', 'success'); }
+}
+
+async function signOut(){
+  await sb.auth.signOut();
+  window.location.href = 'home.html';
+}
+
+// If the session ends in another tab, send them out
+sb.auth.onAuthStateChange((event) => {
+  if(event === 'SIGNED_OUT'){ window.location.href = 'home.html'; }
+});
+
+loadDashboard();
+</script>
+
+<style>
+  body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; user-select:none; }
+</style>
+<script>
+  document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  document.addEventListener('keydown', function(e){
+    if((e.ctrlKey||e.metaKey) && (e.key==='c'||e.key==='u'||e.key==='s'||e.key==='a'||e.key==='p')) e.preventDefault();
+  });
+</script>
+</body>
+</html>
