@@ -492,15 +492,15 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
           <span class="service-icon">💳</span>
           <div>
             <div class="service-name">Stripe Payments</div>
-            <div class="service-plan">Pending setup · Pay as you go</div>
+            <div class="service-plan">Built · Test mode · Pay as you go</div>
           </div>
         </div>
-        <span class="status-badge warn">⚙ Not live</span>
+        <span class="status-badge warn">⚙ Test mode</span>
       </div>
       <div class="card-body">
         <div class="info-row">
           <span class="info-key">Status</span>
-          <span class="info-val warn">Not implemented yet</span>
+          <span class="info-val warn">Built — not taking live payments yet</span>
         </div>
         <div class="info-row">
           <span class="info-key">Easy Start</span>
@@ -512,7 +512,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
         </div>
         <div class="info-row">
           <span class="info-key">Stripe fee</span>
-          <span class="info-val">1.5% + 20p per transaction (UK cards)</span>
+          <span class="info-val">1.5% + 20p UK cards · 2.5% + 20p EU/EEA cards</span>
         </div>
         <div class="info-row">
           <span class="info-key">Free tier</span>
@@ -520,7 +520,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
         </div>
         <div class="renewal-alert warn">
           <span class="renewal-alert-icon">⚙️</span>
-          <span class="renewal-alert-text">Stripe integration is next priority before public launch. Feature gating also needs implementing in builder.html.</span>
+          <span class="renewal-alert-text">Backend built &amp; deployed in TEST mode (both functions, products, tables). Checkout buttons are paused. At go-live: swap to live keys, re-enable buttons, then update this card to live.</span>
         </div>
       </div>
     </div>
@@ -638,7 +638,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
   <div class="action-list">
     <div class="action-item">
       <span class="action-priority high">HIGH</span>
-      <span class="action-text"><strong>Stripe payments</strong> — implement subscription gating in builder.html. Required before public launch.</span>
+      <span class="action-text"><strong>Stripe go-live</strong> — swap pk_test_/sk_test_ and price IDs for live, add the live webhook endpoint + secret, re-enable the checkout buttons, then update the Stripe card above to live. (Backend &amp; download gating already built.)</span>
     </div>
 
     <div class="action-item">
@@ -663,6 +663,38 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
     </div>
 
 
+  </div>
+
+  <div class="section-title">Pre-Launch Legal &amp; Tax Checklist</div>
+  <div class="action-list">
+    <div class="action-item">
+      <span class="action-priority high">HIGH</span>
+      <span class="action-text"><strong>Subscription transparency</strong> — show price, auto-renewal terms and how to cancel clearly <em>before</em> sign-up (not buried). Required under the DMCC Act subscription rules.</span>
+    </div>
+    <div class="action-item">
+      <span class="action-priority high">HIGH</span>
+      <span class="action-text"><strong>Easy cancellation</strong> — provide a self-serve online cancel route (Stripe Customer Portal). Cancelling must be no harder than signing up.</span>
+    </div>
+    <div class="action-item">
+      <span class="action-priority high">HIGH</span>
+      <span class="action-text"><strong>Digital-content consent</strong> — at checkout, capture the customer&#39;s agreement that access starts immediately and they waive the 14-day cancellation right.</span>
+    </div>
+    <div class="action-item">
+      <span class="action-priority med">MED</span>
+      <span class="action-text"><strong>VAT</strong> — UK: register once turnover tops £90k/12 months (not yet). EU: digital sales have NO threshold — decide before launch whether to restrict sign-ups to the UK or enable Stripe Tax / OSS.</span>
+    </div>
+    <div class="action-item">
+      <span class="action-priority med">MED</span>
+      <span class="action-text"><strong>Policies cover the rules</strong> — confirm Terms, Privacy and Refund pages address renewal, cancellation, digital-content quality and the waiver.</span>
+    </div>
+    <div class="action-item">
+      <span class="action-priority med">MED</span>
+      <span class="action-text"><strong>Business insurance</strong> — confirm the Simply Business policy covers the CLPeasy SaaS, not just Crafty Mouse Gifts.</span>
+    </div>
+    <div class="action-item">
+      <span class="action-priority low">LOW</span>
+      <span class="action-text"><strong>Cookie consent &amp; UK GDPR</strong> — cookie banner in place and a documented lawful basis for processing customer data.</span>
+    </div>
   </div>
 
 </div>
