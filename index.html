@@ -10,12 +10,6 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 
-:root{
-  --teal:#0D9488;
-  --teal-light:#14B8A6;
-  --teal-pale:#E6FAF8;
-}
-
 body{
   font-family:'DM Sans',sans-serif;
   background:#F7F8FA;
@@ -27,11 +21,10 @@ body{
   flex-direction:column;
 }
 
-/* CARD */
 .card{
   background:white;
   border-radius:24px;
-  padding:52px 48px 44px;
+  padding:52px 48px;
   max-width:500px;
   width:100%;
   text-align:center;
@@ -40,96 +33,97 @@ body{
 
 .logo{
   display:flex;
-  align-items:center;
   justify-content:center;
+  align-items:center;
   margin-bottom:28px;
 }
 
 .logo-badge{
-  width:64px;
-  height:64px;
+  width:64px;height:64px;
   border-radius:50%;
-  background:var(--teal);
+  background:#0D9488;
   color:white;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:20px;
   font-weight:900;
 }
 
 .logo-easy{
   font-size:36px;
   font-weight:900;
-  color:var(--teal);
+  color:#0D9488;
   margin-left:6px;
 }
 
 .pill{
   display:inline-block;
-  background:var(--teal-pale);
-  color:var(--teal);
-  font-size:13px;
-  font-weight:600;
+  background:#E6FAF8;
+  color:#0D9488;
   padding:6px 14px;
   border-radius:20px;
+  font-weight:600;
   margin-bottom:20px;
 }
 
 h1{
   font-family:'DM Serif Display',serif;
-  font-size:30px;
   margin-bottom:12px;
 }
 
 .subtitle{
   font-size:15px;
   color:#6B7280;
-  line-height:1.7;
   margin-bottom:28px;
+  line-height:1.6;
 }
 
-/* launch */
 .launch-date{
   background:#E6FAF8;
+  padding:14px;
   border-radius:14px;
-  padding:14px 20px;
-  margin-bottom:24px;
-}
-
-.launch-date-text{
-  color:var(--teal);
+  margin-bottom:20px;
+  color:#0D9488;
   font-weight:600;
 }
 
-/* email */
 .email-note{
   font-size:13px;
   color:#9CA3AF;
+  margin-bottom:20px;
+}
+
+/* TOP UPS */
+.topups{
+  margin-top:30px;
+  padding-top:20px;
+  border-top:1px solid #E5E7EB;
+}
+
+.topups h3{
+  font-family:'DM Serif Display',serif;
   margin-bottom:10px;
 }
 
-.email-note a{
-  color:var(--teal);
-  font-weight:600;
-  text-decoration:none;
+.topups p{
+  font-size:13px;
+  color:#6B7280;
+  margin-bottom:16px;
 }
 
-/* doodle */
-.doodle-bar{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  height:56px;
-  background:white;
-  border-top:1px solid #E8EAED;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:12px;
-  z-index:100;
+.btn{
+  display:inline-block;
+  padding:10px 16px;
+  border-radius:10px;
+  color:white;
+  text-decoration:none;
+  font-weight:600;
+  margin:6px;
 }
+
+.btn5{background:#0D9488;}
+.btn10{background:#14B8A6;}
+
 </style>
 </head>
 
@@ -139,7 +133,7 @@ h1{
 
   <div class="logo">
     <div class="logo-badge">CLP</div>
-    <span class="logo-easy">easy</span>
+    <div class="logo-easy">easy</div>
   </div>
 
   <div class="pill">Coming soon</div>
@@ -151,30 +145,32 @@ h1{
   </p>
 
   <div class="launch-date">
-    <span class="launch-date-text">Launching Monday 15 June 2026</span>
+    Launching Monday 15 June 2026
   </div>
 
-  <p class="email-note">
+  <div class="email-note">
     support@clpeasy.com
-  </p>
+  </div>
 
-  <!-- STRIPE (HIDDEN - SAFE MODE) -->
-  <div style="display:none;">
+  <!-- TOP UPS -->
+  <div class="topups">
 
-    <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
+    <h3>Need extra downloads?</h3>
 
-    <stripe-pricing-table
-      pricing-table-id="prctbl_1TdopTGZLILz5vqUOp3h7g3V"
-      publishable-key="pk_live_51TdczNGZLILz5vqULMO4CDSLAecJW5THMU5HADvJniGDUp0Vd6Z2KQbA686mBtU6tyjBcRtiW5QbeII31LUuQyp900fKF27IXf">
-    </stripe-pricing-table>
+    <p>Top-up credits never expire and stack with your plan.</p>
+
+    <a class="btn btn5"
+       href="https://buy.stripe.com/6oU9AT1PY4iZ8ISb6DbbG00">
+       Buy 5 downloads (£3.99)
+    </a>
+
+    <a class="btn btn10"
+       href="https://buy.stripe.com/4gM9AT9iq16Ngbka2zbbG01">
+       Buy 10 downloads (£7.99)
+    </a>
 
   </div>
 
-</div>
-
-<!-- bottom bar -->
-<div class="doodle-bar">
-  ⚽ Scotland at the World Cup 2026
 </div>
 
 </body>
