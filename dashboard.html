@@ -145,8 +145,8 @@ footer a{color:#6B7280;text-decoration:none;}
           <a href="builder.html" class="btn btn-teal">Open the label builder →</a>
           <a href="pricing.html" class="btn btn-outline" id="plan-action">View plans &amp; pricing</a>
           <a href="pricing.html" class="btn btn-ghost">Buy top-up downloads</a>
-          <button class="btn btn-ghost is-disabled" disabled>Manage billing &amp; payment<span class="soon">SOON</span></button>
-          <p class="usage-note" style="margin-top:4px;">Card management opens once Stripe billing is connected to your account.</p>
+          <button class="btn btn-ghost" id="btn-portal" onclick="openBillingPortal()">Manage billing &amp; payment</button>
+          <p class="usage-note" style="margin-top:4px;">Cancel, change plan or update your card anytime — opens your secure Stripe billing page.</p>
         </div>
       </div>
 
@@ -344,6 +344,34 @@ async function resetPassword(){
 async function signOut(){
   await sb.auth.signOut();
   window.location.href = 'home.html';
+}
+
+async function openBillingPortal(){
+  const btn = document.getElementById('btn-portal');
+  const { data: { session } } = await sb.auth.getSession();
+  if(!session){ window.location.href = 'auth.html?mode=signin'; return; }
+  const original = btn ? btn.textContent : '';
+  if(btn){ btn.textContent = 'Opening…'; btn.disabled = true; }
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/create-portal-session`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
+      body: JSON.stringify({ userId: session.user.id })
+    });
+    const data = await res.json();
+    if(res.ok && data.url){
+      window.location.href = data.url;
+      return;
+    }
+    if(res.status === 404){
+      showMsg('You don’t have an active paid subscription to manage yet. You can choose a plan from “View plans & pricing”.', 'error');
+    } else {
+      throw new Error(data.error || 'Could not open the billing portal.');
+    }
+  } catch (e) {
+    showMsg('Couldn’t open the billing portal — please try again, or email support@clpeasy.com.', 'error');
+  }
+  if(btn){ btn.textContent = original || 'Manage billing & payment'; btn.disabled = false; }
 }
 
 // If the session ends in another tab, send them out
