@@ -248,18 +248,25 @@ function render(row){
     strip.style.display = 'none';
   }
 
-  // Downloads / usage
-  const credits = Number.isFinite(row.credits) ? row.credits : 0;
+  // Downloads / usage — real values from the profiles table
+  const limit = Number.isFinite(row.downloadsLimit) ? row.downloadsLimit : cfg.allowance;
+  const usedDl = Number.isFinite(row.downloadsUsed) ? row.downloadsUsed : 0;
   const fill = document.getElementById('usage-fill');
   const count = document.getElementById('usage-count');
   const note = document.getElementById('usage-note');
-  const used = Math.max(0, cfg.allowance - credits);
-  const pct = Math.min(100, Math.round((credits / cfg.allowance) * 100));
-  count.textContent = credits + ' of ' + cfg.allowance + ' left';
-  fill.style.width = pct + '%';
-  note.textContent = cfg.trial
-    ? used + ' used \u00b7 ' + cfg.allowance + ' downloads across your 14-day trial \u00b7 top-up packs available if you run low.'
-    : used + ' used this month \u00b7 resets on your billing date \u00b7 top-up packs available if you run low.';
+  if(!Number.isFinite(limit) || limit <= 0){
+    count.textContent = '0 left';
+    fill.style.width = '0%';
+    note.textContent = 'No downloads on this plan right now — choose a plan to start downloading.';
+  } else {
+    const left = Math.max(0, limit - usedDl);
+    const pct = Math.min(100, Math.round((left / limit) * 100));
+    count.textContent = left + ' of ' + limit + ' left';
+    fill.style.width = pct + '%';
+    note.textContent = cfg.trial
+      ? usedDl + ' used \u00b7 ' + limit + ' downloads across your 14-day trial \u00b7 top-up packs available if you run low.'
+      : usedDl + ' used this month \u00b7 refills monthly \u00b7 top-up packs available if you run low.';
+  }
 
   // Plan action button label
   const action = document.getElementById('plan-action');
@@ -285,40 +292,16 @@ async function loadDashboard(){
   }
   const user = session.user;
 
-  // Read the user's row
-  let { data: row, error } = await sb
-    .from('users')
-    .select('email, plan, credits, subscription_status, stripe_customer_id, created_at')
+  // Account + downloads live in `profiles` (created by the signup trigger,
+  // download counts kept in step by the builder + stripe-webhook).
+  let { data: prof } = await sb
+    .from('profiles')
+    .select('email, plan, is_pro, downloads_used, downloads_limit, created_at')
     .eq('id', user.id)
     .maybeSingle();
 
-  // Self-heal: if no row yet (e.g. fresh OAuth user), create defaults then use them
-  if(!row && !error){
-    const defaults = {
-      id: user.id,
-      email: user.email,
-      plan: 'free',
-      credits: 10,
-      subscription_status: 'inactive'
-    };
-    const up = await sb.from('users').upsert([defaults]).select('email, plan, credits, subscription_status, created_at').maybeSingle();
-    row = up.data || { ...defaults, created_at: new Date().toISOString() };
-  }
-
-  if(error || !row){
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('dash').style.display = 'block';
-    showMsg('We couldn\u2019t load your account details. Please refresh, or contact support@clpeasy.com.', 'error');
-    // Still show what we can from the auth session
-    render({ email: user.email, plan: 'free', credits: 10, subscription_status: 'inactive', created_at: user.created_at });
-    return;
-  }
-
-  if(!row.email) row.email = user.email;
-
-  // Billing state lives in `subscriptions` (written by the stripe-webhook),
-  // NOT in public.users. RLS lets a user read only their own row.
-  // Credits + trial countdown stay on public.users.
+  // Billing state (plan + active status) lives in `subscriptions`, written by
+  // the stripe-webhook. RLS lets a user read only their own row.
   let effectivePlan = 'free';
   let effectiveStatus = 'inactive';
   let cycle = null;
@@ -339,11 +322,12 @@ async function loadDashboard(){
   }
 
   render({
-    email: row.email,
+    email: (prof && prof.email) || user.email,
     plan: effectivePlan,
-    credits: Number.isFinite(row.credits) ? row.credits : 0,
     subscription_status: effectiveStatus,
-    created_at: row.created_at,
+    downloadsUsed: prof ? prof.downloads_used : undefined,
+    downloadsLimit: prof ? prof.downloads_limit : undefined,
+    created_at: (prof && prof.created_at) || user.created_at,
     billingCycle: cycle
   });
 }
