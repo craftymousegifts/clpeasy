@@ -672,11 +672,13 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
 <script>
 // Load saved dates
 function loadDates() {
-  const domainDate = localStorage.getItem('monitor_domain_date');
-  const zohoDate = localStorage.getItem('monitor_zoho_date');
-  if (domainDate) { document.getElementById('domain-date-input').value = domainDate; updateDays('domain', domainDate); }
-  if (zohoDate) { document.getElementById('zoho-date-input').value = zohoDate; updateDays('zoho', zohoDate); }
-  loadHM();
+  try {
+    const domainDate = localStorage.getItem('monitor_domain_date');
+    const zohoDate = localStorage.getItem('monitor_zoho_date');
+    if (domainDate) { const el = document.getElementById('domain-date-input'); if (el) el.value = domainDate; updateDays('domain', domainDate); }
+    if (zohoDate) { const el = document.getElementById('zoho-date-input'); if (el) el.value = zohoDate; updateDays('zoho', zohoDate); }
+    loadHM();
+  } catch (e) { /* storage unavailable — dates just won't pre-fill */ }
 }
 
 function saveDomain() {
@@ -791,33 +793,40 @@ function updateSummary() {
     else if (c.className.includes('status-alert')) alert++;
   });
 
-  // Trade mark renewal — 10 years from filing: 31 May 2036
-  const tmExpiry = new Date('2036-05-31');
-  const tmDays = Math.ceil((tmExpiry - new Date()) / 86400000);
-  const tmDaysEl = document.getElementById('tm-days');
-  tmDaysEl.textContent = `${tmDays.toLocaleString()} days`;
-  if (tmDays <= 365) {
-    tmDaysEl.className = 'info-val warn';
-    document.getElementById('tm-expiry').className = 'info-val alert';
-  } else {
-    tmDaysEl.className = 'info-val ok';
-  }
-
-  // Check days — domain, Zoho, Horton Mix only (TM renewal is 2036, excluded from counter)
-  ['domain', 'zoho', 'hm'].forEach(s => {
-    const d = localStorage.getItem(`monitor_${s}_date`);
-    if (d) {
-      const days = Math.ceil((new Date(d) - new Date()) / 86400000);
-      if (days < minDays) minDays = days;
-    }
-  });
-
+  // Set the counts FIRST so nothing below can block them.
   document.getElementById('sumOk').textContent = ok;
   document.getElementById('sumWarn').textContent = warn;
   document.getElementById('sumAlert').textContent = alert;
-  document.getElementById('sumDays').textContent = minDays === 9999 ? '—' : minDays;
+
+  // Trade mark renewal — 10 years from filing: 31 May 2036
+  try {
+    const tmExpiry = new Date('2036-05-31');
+    const tmDays = Math.ceil((tmExpiry - new Date()) / 86400000);
+    const tmDaysEl = document.getElementById('tm-days');
+    if (tmDaysEl) {
+      tmDaysEl.textContent = `${tmDays.toLocaleString()} days`;
+      if (tmDays <= 365) {
+        tmDaysEl.className = 'info-val warn';
+        const ex = document.getElementById('tm-expiry'); if (ex) ex.className = 'info-val alert';
+      } else {
+        tmDaysEl.className = 'info-val ok';
+      }
+    }
+  } catch (e) { /* non-critical */ }
+
+  // Check days — domain, Zoho, Horton Mix only (TM renewal is 2036, excluded from counter)
+  try {
+    ['domain', 'zoho', 'hm'].forEach(s => {
+      const d = localStorage.getItem(`monitor_${s}_date`);
+      if (d) {
+        const days = Math.ceil((new Date(d) - new Date()) / 86400000);
+        if (days < minDays) minDays = days;
+      }
+    });
+  } catch (e) { /* storage unavailable — skip renewal countdown */ }
 
   const daysEl = document.getElementById('sumDays');
+  daysEl.textContent = minDays === 9999 ? '—' : minDays;
   if (minDays <= 7) daysEl.style.color = '#f87171';
   else if (minDays <= 30) daysEl.style.color = '#fbbf24';
   else daysEl.style.color = '#4ade80';
@@ -825,10 +834,10 @@ function updateSummary() {
 
 async function runAll() {
   document.getElementById('lastRefresh').textContent = 'Refreshing...';
-  checkSupabase();
-  checkBrevo();
-  loadDates();
-  updateSummary();
+  try { checkSupabase(); } catch (e) { console.error('checkSupabase', e); }
+  try { checkBrevo(); } catch (e) { console.error('checkBrevo', e); }
+  try { loadDates(); } catch (e) { console.error('loadDates', e); }
+  try { updateSummary(); } catch (e) { console.error('updateSummary', e); }
   document.getElementById('lastRefresh').textContent = 'Last refreshed: ' + new Date().toLocaleTimeString('en-GB');
 }
 
