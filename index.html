@@ -9,7 +9,12 @@
 
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{--teal:#0D9488;--teal-light:#14B8A6;--teal-pale:#E6FAF8;}
+
+:root{
+  --teal:#0D9488;
+  --teal-light:#14B8A6;
+  --teal-pale:#E6FAF8;
+}
 
 body{
   font-family:'DM Sans',sans-serif;
@@ -41,7 +46,8 @@ body{
 }
 
 .logo-badge{
-  width:64px;height:64px;
+  width:64px;
+  height:64px;
   border-radius:50%;
   background:var(--teal);
   color:white;
@@ -109,15 +115,12 @@ h1{
   text-decoration:none;
 }
 
-/* STRIPE spacing */
-.stripe-wrap{
-  margin-top:35px;
-}
-
-/* doodle bar */
+/* doodle */
 .doodle-bar{
   position:fixed;
-  bottom:0;left:0;right:0;
+  bottom:0;
+  left:0;
+  right:0;
   height:56px;
   background:white;
   border-top:1px solid #E8EAED;
@@ -155,8 +158,8 @@ h1{
     support@clpeasy.com
   </p>
 
-  <!-- STRIPE -->
-  <div class="stripe-wrap">
+  <!-- STRIPE (HIDDEN - SAFE MODE) -->
+  <div style="display:none;">
 
     <script async src="https://js.stripe.com/v3/pricing-table.js"></script>
 
@@ -169,7 +172,7 @@ h1{
 
 </div>
 
-<!-- doodle bar -->
+<!-- bottom bar -->
 <div class="doodle-bar">
   ⚽ Scotland at the World Cup 2026
 </div>
