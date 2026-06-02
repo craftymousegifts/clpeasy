@@ -662,10 +662,6 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
       <span class="action-text"><strong>Google sign-in branding</strong> — the OAuth consent screen App name already shows "CLPeasy" ✓. The only leftover is the "continue to qvkosdqcryrcfbjtaxic.supabase.co" line on the account chooser; fully removing it needs a custom Supabase auth domain (e.g. auth.clpeasy.com). Cosmetic — optional before launch.</span>
     </div>
     <div class="action-item">
-      <span class="action-priority low">LOW</span>
-      <span class="action-text"><strong>Cricut PNG download</strong> — individual PNG download from full sheet is broken. Fix before public launch.</span>
-    </div>
-    <div class="action-item">
       <span class="action-priority med">MED</span>
       <span class="action-text"><strong>Top-up crediting (build)</strong> — make purchased top-up packs actually add downloads. Steps: (1) add <em>topup_credits</em> column to profiles; (2) webhook handles one-off payments (mode=payment) → add 5 or 10 to topup_credits (needs the two top-up price IDs); (3) builder consumes monthly allowance first, then top-ups, and monthly reset must NOT wipe top-ups (they never expire); (4) dashboard shows top-up balance; (5) wire the "Buy top-up downloads" button to checkout in payment mode. Fresh-session job — get the top-up price IDs from Stripe first.</span>
     </div>

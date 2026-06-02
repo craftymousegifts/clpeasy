@@ -745,21 +745,31 @@ function downloadPDF(){
 // ── CRICUT MODAL & DOWNLOAD ──────────────────────────────────
 function buildLabelPNGBlob(item){
   return new Promise(resolve=>{
-    const e=item.labelData;
-    const DPI=300,M2PX=DPI/25.4;
+    const e=item.labelData||{};
     const mmSize=parseInt(e.size)||35;
-    const pxSize=Math.round(mmSize*M2PX);
-    const svgStr=buildLabelSVGFromData(e,pxSize);
-    const svgDataUri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgStr);
-    const img=new Image();
-    img.onload=function(){
-      const cvs=document.createElement('canvas');cvs.width=pxSize;cvs.height=pxSize;
-      const ctx=cvs.getContext('2d');
-      ctx.clearRect(0,0,pxSize,pxSize);
-      ctx.drawImage(img,0,0,pxSize,pxSize);
-      cvs.toBlob(blob=>resolve({blob,fname:getFileName(e,mmSize)}),'image/png');
-    };
-    img.src=svgDataUri;
+    const fname=getFileName(e,mmSize);
+    let settled=false;
+    const finish=(res)=>{ if(settled)return; settled=true; clearTimeout(timer); resolve(res); };
+    // Safety net: if the image never loads or errors, don't hang the whole batch.
+    const timer=setTimeout(()=>finish({blob:null,fname,error:true}),12000);
+    try{
+      const DPI=300,M2PX=DPI/25.4;
+      const pxSize=Math.round(mmSize*M2PX);
+      const svgStr=buildLabelSVGFromData(e,pxSize);
+      const svgDataUri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgStr);
+      const img=new Image();
+      img.onload=function(){
+        try{
+          const cvs=document.createElement('canvas');cvs.width=pxSize;cvs.height=pxSize;
+          const ctx=cvs.getContext('2d');
+          ctx.clearRect(0,0,pxSize,pxSize);
+          ctx.drawImage(img,0,0,pxSize,pxSize);
+          cvs.toBlob(blob=>finish({blob,fname,error:!blob}),'image/png');
+        }catch(err){ console.error('Cricut PNG render failed:',err); finish({blob:null,fname,error:true}); }
+      };
+      img.onerror=function(){ console.error('Cricut PNG image load failed for',fname); finish({blob:null,fname,error:true}); };
+      img.src=svgDataUri;
+    }catch(err){ console.error('Cricut PNG build failed:',err); finish({blob:null,fname,error:true}); }
   });
 }
 function getFileName(e,mmSize){
@@ -791,21 +801,29 @@ async function cricutDownloadZip(){
   sheetItems.forEach(item=>{for(let q=0;q<item.qty;q++)expanded.push(item);});
   const total=expanded.length;
   const usedNames=new Set();
+  let made=0, failed=0;
   for(let i=0;i<total;i++){
     txt.textContent=`Preparing ${i+1} of ${total}...`;
     fill.style.width=`${Math.round((i/total)*100)}%`;
-    const{blob,fname}=await buildLabelPNGBlob(expanded[i]);
+    const{blob,fname,error}=await buildLabelPNGBlob(expanded[i]);
+    if(error||!blob){ failed++; continue; }
     let finalName=fname;let counter=1;
     while(usedNames.has(finalName)){finalName=fname.replace('.png',`-${counter++}.png`);}
     usedNames.add(finalName);
     zip.file(finalName,blob);
+    made++;
+  }
+  if(made===0){
+    txt.textContent='⚠️ Sorry, none of the labels could be generated. Please try again, or contact support@clpeasy.com.';
+    return;
   }
   txt.textContent='Creating ZIP...';fill.style.width='95%';
   const zipBlob=await zip.generateAsync({type:'blob'});
   const a=document.createElement('a');a.href=URL.createObjectURL(zipBlob);a.download='clpeasy-cricut-labels.zip';
   document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(a.href);if(a.parentNode)a.parentNode.removeChild(a);},1000);
-  fill.style.width='100%';txt.textContent='✅ ZIP downloaded — extract and upload each PNG to Cricut Design Space.';
+  fill.style.width='100%';
+  txt.textContent=`✅ ZIP downloaded — ${made} PNG${made===1?'':'s'}`+(failed?` (${failed} couldn't be generated)`:'')+`. Extract and upload each PNG to Cricut Design Space.`;
   setTimeout(()=>closeCricutModal(),2500);
 }
 async function cricutDownloadSequential(){
@@ -820,19 +838,27 @@ async function cricutDownloadSequential(){
   sheetItems.forEach(item=>{for(let q=0;q<item.qty;q++)expanded.push(item);});
   const total=expanded.length;
   const usedNames=new Set();
+  let made=0, failed=0;
   for(let i=0;i<total;i++){
     txt.textContent=`Downloading ${i+1} of ${total}...`;
     fill.style.width=`${Math.round((i/total)*100)}%`;
-    const{blob,fname}=await buildLabelPNGBlob(expanded[i]);
+    const{blob,fname,error}=await buildLabelPNGBlob(expanded[i]);
+    if(error||!blob){ failed++; continue; }
     let finalName=fname;let counter=1;
     while(usedNames.has(finalName)){finalName=fname.replace('.png',`-${counter++}.png`);}
     usedNames.add(finalName);
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=finalName;
     document.body.appendChild(a);a.click();
     setTimeout(()=>{URL.revokeObjectURL(a.href);if(a.parentNode)a.parentNode.removeChild(a);},800);
+    made++;
     await new Promise(r=>setTimeout(r,700));
   }
-  fill.style.width='100%';txt.textContent=`✅ ${total} PNG file${total===1?'':'s'} saved to your Downloads folder.`;
+  fill.style.width='100%';
+  if(made===0){
+    txt.textContent='⚠️ Sorry, none of the labels could be generated. Please try again, or contact support@clpeasy.com.';
+    return;
+  }
+  txt.textContent=`✅ ${made} PNG file${made===1?'':'s'} saved to your Downloads folder`+(failed?` (${failed} couldn't be generated)`:'')+`.`;
   setTimeout(()=>closeCricutModal(),2500);
 }
 function downloadAllPNGs(){openCricutModal();}
