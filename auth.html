@@ -231,8 +231,6 @@ if (mode === 'signin') {
     // ── GO TO BUILDER ───────────────────────────────────
     window.location.href = 'builder.html';
   }
-}
-    }
   } else {
     const { error } = await sb.auth.signUp({ email, password });
     if (error) {
