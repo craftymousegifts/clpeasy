@@ -843,6 +843,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div style="background:#F8FAFC;border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--muted);line-height:1.6;">
       ✂️ <strong style="color:var(--text);">About the dashed line:</strong> The pale dashed circle you see on your label is a <strong>cut guide only</strong> — it will not print. It shows exactly where to cut your label. In Cricut Design Space it becomes the cut path automatically. When printing at home, simply cut along the dashed line.
     </div>
+      <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
       <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ Download PNG — for printing &amp; Canva</button>
       <button id="btn-jpeg" onclick="downloadJPEG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬇ Download JPEG — smaller file size</button>
       <button id="btn-svg" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬡ Download SVG — for Cricut Design Space</button>
@@ -1413,6 +1414,8 @@ const SUPABASE_URL='https://qvkosdqcryrcfbjtaxic.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
 let sbClient=null;
 let currentUser=null;
+// Download allowance (from profiles table). loaded=false means don't block.
+let DL={ used:0, limit:10, plan:'free', is_pro:false, loaded:false };
 
 async function initAuth(){
   try{
@@ -1448,6 +1451,9 @@ async function initAuth(){
         }
       }catch(e){/* no subscription row yet — trial */}
 
+      // ── DOWNLOAD ALLOWANCE (profiles table) ────────────────
+      await loadDownloadAllowance();
+
       // ── BETA EXPIRY CHECK ──────────────────────────────────
       const meta=currentUser.user_metadata||{};
       if(meta.beta_expires){
@@ -1476,6 +1482,108 @@ async function initAuth(){
       if(navSignout)navSignout.style.display='none';
     }
   }catch(e){console.log('Auth init error:',e);}
+}
+
+// ───────────────────────────────────────────────────────────────
+// DOWNLOAD ALLOWANCE — counts each export against profiles limits
+// ───────────────────────────────────────────────────────────────
+async function loadDownloadAllowance(){
+  if(!sbClient||!currentUser) return;
+  try{
+    const {data:prof}=await sbClient.from('profiles')
+      .select('downloads_used,downloads_limit,plan,is_pro,downloads_reset_date')
+      .eq('id',currentUser.id).single();
+    if(prof){
+      DL.used  = prof.downloads_used||0;
+      DL.limit = (prof.downloads_limit==null?10:prof.downloads_limit);
+      DL.plan  = prof.plan||'free';
+      DL.is_pro= !!prof.is_pro;
+      DL.loaded= true;
+      // Monthly refill: if past the reset date, zero the counter (covers annual plans too)
+      if(prof.downloads_reset_date && new Date(prof.downloads_reset_date) < new Date()){
+        DL.used=0;
+        const next=new Date(); next.setMonth(next.getMonth()+1);
+        try{ await sbClient.from('profiles').update({downloads_used:0,downloads_reset_date:next.toISOString()}).eq('id',currentUser.id); }catch(e){}
+      }
+      updateDlCounter();
+    }
+  }catch(e){ /* no profile row / not loaded — fail open, don't block */ }
+}
+
+function updateDlCounter(){
+  const el=document.getElementById('dl-counter');
+  if(!el) return;
+  if(!DL.loaded){ el.style.display='none'; return; }
+  const left=Math.max(0,DL.limit-DL.used);
+  el.style.display='block';
+  el.textContent=left+' of '+DL.limit+' downloads left'+(DL.plan==='free'?' on your trial':' this month');
+  el.style.color = left===0 ? '#DC2626' : (left<=2 ? '#D97706' : 'var(--muted)');
+}
+
+function dlGate(){
+  if(!DL.loaded) return true;          // not logged in / no data — don't block
+  if(DL.used < DL.limit) return true;
+  showDlLimitModal();
+  return false;
+}
+
+function dlRecord(){
+  if(!DL.loaded) return;
+  DL.used=Math.min(DL.limit,DL.used+1);
+  updateDlCounter();
+  try{ sbClient.from('profiles').update({downloads_used:DL.used}).eq('id',currentUser.id); }catch(e){}
+}
+
+function closeDlLimitModal(){
+  const m=document.getElementById('dl-limit-modal');
+  if(m)m.remove();
+}
+
+function showDlLimitModal(){
+  closeDlLimitModal();
+  const btn='display:inline-block;padding:11px 18px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;font-family:\'DM Sans\',sans-serif;margin:6px 4px 0;';
+  let title, msg, actions;
+  if(DL.is_pro){
+    title='Monthly downloads used up';
+    msg='You\u2019ve used all '+DL.limit+' downloads this month. Add a top-up pack to keep going — your allowance refills on your next billing date.';
+    actions='<a href="pricing.html" style="'+btn+'background:#4C9BB0;color:white;">Buy a top-up pack</a>';
+  } else if(DL.plan==='easy_start'){
+    title='Monthly downloads used up';
+    msg='You\u2019ve used all '+DL.limit+' downloads this month. Upgrade to Easy Pro for 30 downloads a month, or grab a top-up pack.';
+    actions='<a href="pricing.html" style="'+btn+'background:#4C9BB0;color:white;">Upgrade to Easy Pro</a><a href="pricing.html" style="'+btn+'background:#F7F8FA;color:#111318;border:1.5px solid #E8EAED;">Top-up pack</a>';
+  } else {
+    title='Trial downloads used up';
+    msg='You\u2019ve used all '+DL.limit+' trial downloads. Subscribe to Easy Start (20/month) or Easy Pro (30/month) to keep downloading.';
+    actions='<a href="pricing.html" style="'+btn+'background:#4C9BB0;color:white;">Choose a plan \u2192</a>';
+  }
+  const m=document.createElement('div');
+  m.id='dl-limit-modal';
+  m.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,0.55);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px;';
+  m.innerHTML='<div style="background:white;border-radius:18px;padding:28px 26px;max-width:380px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);font-family:\'DM Sans\',sans-serif;">'
+    +'<div style="font-size:32px;margin-bottom:10px;">\uD83D\uDD52</div>'
+    +'<div style="font-family:\'DM Serif Display\',serif;font-size:22px;margin-bottom:8px;color:#111318;">'+title+'</div>'
+    +'<div style="font-size:14px;color:#6B7280;line-height:1.55;margin-bottom:14px;">'+msg+'</div>'
+    +'<div>'+actions+'</div>'
+    +'<div style="margin-top:14px;"><button onclick="closeDlLimitModal()" style="background:none;border:none;color:#6B7280;font-size:13px;cursor:pointer;font-family:\'DM Sans\',sans-serif;text-decoration:underline;">Close</button></div>'
+    +'</div>';
+  m.addEventListener('click',function(e){ if(e.target===m) closeDlLimitModal(); });
+  document.body.appendChild(m);
+}
+
+// Wrap every export function so it checks the allowance, then counts. saveLabel is NOT wrapped (saving is unlimited).
+function wrapDownloads(){
+  ['downloadPNG','downloadJPEG','downloadSVG','downloadPDFSheet','downloadPrintReadyPDF','downloadCricutPNGs','printToPDF'].forEach(function(fn){
+    const orig=window[fn];
+    if(typeof orig!=='function' || orig.__dlwrapped) return;
+    const wrapped=function(){
+      if(!dlGate()) return;
+      const r=orig.apply(this,arguments);
+      dlRecord();
+      return r;
+    };
+    wrapped.__dlwrapped=true;
+    window[fn]=wrapped;
+  });
 }
 
 async function signOut(){
@@ -1847,6 +1955,7 @@ function savedItemHTML(e,i){
 
 function init(){
   initAuth();
+  wrapDownloads();
   buildHChips();buildPChips();buildSensitiserChips();
   initExtensions();
   // Restore saved business details
