@@ -7,28 +7,205 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{--teal:#0D9488;}
-body{font-family:'DM Sans',sans-serif;background:#F7F8FA;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;-webkit-font-smoothing:antialiased;}
-.card{background:white;border-radius:24px;padding:56px 48px;max-width:480px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.08);}
-.logo{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:32px;}
+:root{--teal:#0D9488;--teal-light:#14B8A6;--teal-pale:#E6FAF8;}
+body{font-family:'DM Sans',sans-serif;background:#F7F8FA;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 24px 80px;-webkit-font-smoothing:antialiased;flex-direction:column;}
+
+/* ── CARD ─────────────────────────────────────────────────────── */
+.card{background:white;border-radius:24px;padding:52px 48px 44px;max-width:500px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.08);}
+.logo{display:flex;align-items:center;justify-content:center;margin-bottom:28px;}
 .logo-badge{width:64px;height:64px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;letter-spacing:-1px;font-family:'DM Sans',sans-serif;}
 .logo-easy{font-size:36px;font-weight:900;color:var(--teal);margin-left:5px;letter-spacing:-1px;}
-h1{font-family:'DM Serif Display',serif;font-size:32px;color:#111318;margin-bottom:12px;}
-p{font-size:15px;color:#6B7280;line-height:1.7;margin-bottom:24px;}
-.pill{display:inline-block;background:#E6FAF8;color:var(--teal);font-size:13px;font-weight:600;padding:6px 14px;border-radius:20px;margin-bottom:24px;}
-.footer{margin-top:32px;font-size:12px;color:#9CA3AF;}
+.pill{display:inline-block;background:var(--teal-pale);color:var(--teal);font-size:13px;font-weight:600;padding:6px 14px;border-radius:20px;margin-bottom:20px;}
+h1{font-family:'DM Serif Display',serif;font-size:30px;color:#111318;margin-bottom:12px;line-height:1.25;}
+.subtitle{font-size:15px;color:#6B7280;line-height:1.7;margin-bottom:28px;}
+
+/* ── COUNTDOWN ────────────────────────────────────────────────── */
+.countdown-label{font-size:12px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;}
+.countdown{display:flex;justify-content:center;gap:12px;margin-bottom:28px;}
+.cd-unit{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.cd-num{background:#111318;color:white;font-size:32px;font-weight:700;font-family:'DM Serif Display',serif;width:72px;height:72px;border-radius:14px;display:flex;align-items:center;justify-content:center;letter-spacing:-1px;position:relative;overflow:hidden;}
+.cd-num::after{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:rgba(255,255,255,0.08);}
+.cd-label{font-size:10px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:1px;}
+.cd-sep{font-size:28px;font-weight:700;color:#D1D5DB;align-self:flex-start;margin-top:20px;}
+
+/* ── LAUNCH DATE ──────────────────────────────────────────────── */
+.launch-date{background:linear-gradient(135deg,var(--teal-pale),#F0FFFE);border:1.5px solid #99E6E0;border-radius:14px;padding:14px 20px;margin-bottom:24px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.launch-date-text{font-size:13px;font-weight:600;color:var(--teal);}
+.launch-icon{font-size:16px;}
+
+/* ── EMAIL ────────────────────────────────────────────────────── */
+.email-note{font-size:13px;color:#9CA3AF;}
+.email-note a{color:var(--teal);text-decoration:none;font-weight:600;}
+.email-note a:hover{text-decoration:underline;}
+
+/* ── SCOTLAND EASTER EGG (Google Doodle style) ────────────────── */
+.doodle-bar{
+  position:fixed;
+  bottom:0;left:0;right:0;
+  height:56px;
+  background:white;
+  border-top:1px solid #E8EAED;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  cursor:pointer;
+  transition:background 0.2s;
+  z-index:100;
+}
+.doodle-bar:hover{background:#FAFFFE;}
+.doodle-flag{font-size:22px;animation:wave 2.5s ease-in-out infinite;}
+@keyframes wave{0%,100%{transform:rotate(-8deg);}50%{transform:rotate(8deg);}}
+.doodle-text{font-size:12px;color:#6B7280;font-family:'DM Sans',sans-serif;}
+.doodle-text strong{color:#111318;}
+.doodle-badge{background:linear-gradient(135deg,#003F87,#005EB8);color:white;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;letter-spacing:0.5px;text-transform:uppercase;}
+.doodle-ball{font-size:18px;display:inline-block;animation:spin 3s linear infinite;}
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+
+/* ── DOODLE TOOLTIP (expanded) ────────────────────────────────── */
+.doodle-tooltip{
+  position:fixed;
+  bottom:64px;left:50%;transform:translateX(-50%);
+  background:white;
+  border-radius:16px;
+  box-shadow:0 8px 40px rgba(0,0,0,0.14);
+  padding:20px 24px;
+  max-width:340px;width:calc(100% - 48px);
+  text-align:center;
+  display:none;
+  z-index:200;
+  border:1px solid #E8EAED;
+}
+.doodle-tooltip.visible{display:block;animation:popUp 0.25s ease;}
+@keyframes popUp{from{opacity:0;transform:translateX(-50%) translateY(8px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+.doodle-tooltip h3{font-family:'DM Serif Display',serif;font-size:18px;color:#111318;margin-bottom:6px;}
+.doodle-tooltip p{font-size:13px;color:#6B7280;line-height:1.6;}
+.doodle-flags{font-size:28px;letter-spacing:4px;margin-bottom:8px;}
+.doodle-close{margin-top:12px;font-size:12px;color:#9CA3AF;cursor:pointer;}
+.doodle-close:hover{color:#111318;}
+
+/* ── ANIMATIONS ───────────────────────────────────────────────── */
+.card{animation:fadeUp 0.5s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.cd-num{transition:transform 0.15s ease;}
+.cd-num.flip{transform:scale(0.92);}
 </style>
 </head>
 <body>
+
 <div class="card">
   <div class="logo">
     <div class="logo-badge">CLP</div>
     <span class="logo-easy">easy</span>
   </div>
+
   <div class="pill">Coming soon</div>
   <h1>Something exciting<br>is on its way</h1>
-  <p>CLPeasy is a brand new tool that makes CLP labelling simple for candle and wax melt makers. We're putting the finishing touches on — check back very soon!</p>
-  <p style="font-size:13px;color:#9CA3AF;">Want to be first to know? Email us at<br><a href="mailto:support@clpeasy.com" style="color:#0D9488;text-decoration:none;font-weight:600;">support@clpeasy.com</a></p>
+  <p class="subtitle">CLPeasy makes CLP labelling simple for candle and wax melt makers. We're putting the finishing touches on — launching very soon!</p>
+
+  <!-- Countdown -->
+  <div class="countdown-label">Launching in</div>
+  <div class="countdown">
+    <div class="cd-unit">
+      <div class="cd-num" id="cd-days">00</div>
+      <div class="cd-label">Days</div>
+    </div>
+    <div class="cd-sep">:</div>
+    <div class="cd-unit">
+      <div class="cd-num" id="cd-hours">00</div>
+      <div class="cd-label">Hours</div>
+    </div>
+    <div class="cd-sep">:</div>
+    <div class="cd-unit">
+      <div class="cd-num" id="cd-mins">00</div>
+      <div class="cd-label">Mins</div>
+    </div>
+    <div class="cd-sep">:</div>
+    <div class="cd-unit">
+      <div class="cd-num" id="cd-secs">00</div>
+      <div class="cd-label">Secs</div>
+    </div>
+  </div>
+
+  <!-- Launch date badge -->
+  <div class="launch-date">
+    <span class="launch-icon">🗓️</span>
+    <span class="launch-date-text">Launching Monday 15 June 2026</span>
+  </div>
+
+  <p class="email-note">Want to be first to know? Email us at<br>
+  <a href="mailto:support@clpeasy.com">support@clpeasy.com</a></p>
 </div>
+
+<!-- Scotland World Cup Easter Egg — Google Doodle style -->
+<div class="doodle-bar" onclick="toggleDoodle()" title="A wee celebration...">
+  <span class="doodle-ball">⚽</span>
+  <span class="doodle-flag">🏴󠁧󠁢󠁳󠁣󠁴󠁿</span>
+  <span class="doodle-text"><strong>Scotland at the World Cup 2026</strong> · Mon 15 Jun · Scotland Bank Holiday</span>
+  <span class="doodle-badge">28 years!</span>
+</div>
+
+<!-- Expanded tooltip -->
+<div class="doodle-tooltip" id="doodle-tooltip">
+  <div class="doodle-flags">🏴󠁧󠁢󠁳󠁣󠁴󠁿⚽🏆</div>
+  <h3>Scotland at the World Cup!</h3>
+  <p>CLPeasy launches on <strong>Monday 15 June 2026</strong> — a special one-off Scottish bank holiday celebrating Scotland's men's national team qualifying for the <strong>FIFA World Cup for the first time in 28 years</strong>. It's a big day for Scotland. It's a big day for CLPeasy. Come on Scotland! 🎉</p>
+  <div class="doodle-close" onclick="toggleDoodle()">Close ✕</div>
+</div>
+
+<script>
+// ── COUNTDOWN ────────────────────────────────────────────────────
+const LAUNCH = new Date('2026-06-15T09:00:00+01:00'); // 9am BST launch day
+
+function pad(n){ return String(n).padStart(2,'0'); }
+
+function tick(){
+  const now = new Date();
+  const diff = LAUNCH - now;
+
+  if(diff <= 0){
+    document.getElementById('cd-days').textContent = '00';
+    document.getElementById('cd-hours').textContent = '00';
+    document.getElementById('cd-mins').textContent = '00';
+    document.getElementById('cd-secs').textContent = '00';
+    document.querySelector('.countdown-label').textContent = 'We\'re live! 🎉';
+    return;
+  }
+
+  const days  = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const mins  = Math.floor((diff % 3600000)  / 60000);
+  const secs  = Math.floor((diff % 60000)    / 1000);
+
+  const els = ['cd-days','cd-hours','cd-mins','cd-secs'];
+  const vals = [pad(days), pad(hours), pad(mins), pad(secs)];
+
+  els.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if(el.textContent !== vals[i]){
+      el.classList.add('flip');
+      setTimeout(()=>{ el.textContent = vals[i]; el.classList.remove('flip'); }, 75);
+    }
+  });
+}
+
+tick();
+setInterval(tick, 1000);
+
+// ── DOODLE TOGGLE ────────────────────────────────────────────────
+function toggleDoodle(){
+  const tt = document.getElementById('doodle-tooltip');
+  tt.classList.toggle('visible');
+}
+
+// Close tooltip if clicking outside
+document.addEventListener('click', function(e){
+  const tt = document.getElementById('doodle-tooltip');
+  const bar = document.querySelector('.doodle-bar');
+  if(!tt.contains(e.target) && !bar.contains(e.target)){
+    tt.classList.remove('visible');
+  }
+});
+</script>
 </body>
 </html>
