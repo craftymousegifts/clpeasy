@@ -35,7 +35,7 @@ main{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 
 
 /* TABS */
 .tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--off);border-radius:10px;padding:4px;margin-bottom:28px;}
-.tab{padding:9px;text-align:center;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;color:var(--muted);}
+.tab{padding:9px;text-align:center;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;color:var(--muted);background:none;border:none;font-family:'DM Sans',sans-serif;width:100%;}
 .tab.active{background:white;color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.08);}
 
 /* FORM */
@@ -111,8 +111,8 @@ input:focus{border-color:var(--teal);}
 
       <!-- TABS -->
       <div class="tabs">
-        <div class="tab active" id="tab-signin" onclick="switchTab('signin')">Sign in</div>
-        <div class="tab" id="tab-signup" onclick="switchTab('signup')">Create account</div>
+        <button type="button" class="tab active" id="tab-signin" onclick="switchTab('signin')">Sign in</button>
+        <button type="button" class="tab" id="tab-signup" onclick="switchTab('signup')">Create account</button>
       </div>
 
       <!-- MESSAGE -->
@@ -157,8 +157,6 @@ input:focus{border-color:var(--teal);}
 <script>
 const SUPABASE_URL = 'https://qvkosdqcryrcfbjtaxic.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
-const { createClient } = supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let mode = 'signin';
 
@@ -174,6 +172,9 @@ function switchTab(tab) {
   document.getElementById('password').autocomplete = tab === 'signin' ? 'current-password' : 'new-password';
   hideMsg();
 }
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 function showMsg(text, type) {
   const el = document.getElementById('msg');
@@ -272,7 +273,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Enter') handleSubmit(
 
 // Check URL params to determine which tab to show
 const urlParams=new URLSearchParams(window.location.search);
-const defaultTab=urlParams.get('mode')==='signin'?'signin':'signup';
+const defaultTab=urlParams.get('mode')==='signup'?'signup':'signin';
 
 // Check if already logged in or handle redirect from email verification
 sb.auth.onAuthStateChange((event, session) => {
