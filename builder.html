@@ -511,7 +511,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <h3>Step 5 — Download</h3>
       <div class="help-step"><div class="help-num">1</div><div class="help-step-text">Review your label in the preview carefully.</div></div>
       <div class="help-step"><div class="help-num">2</div><div class="help-step-text"><strong>Tick the verification checkbox</strong> to confirm you have checked all data against your SDS.</div></div>
-      <div class="help-step"><div class="help-num">3</div><div class="help-step-text">Click <strong>Download PNG</strong> for home printing or Canva. Click <strong>Download SVG</strong> for Cricut Design Space.</div></div>
+      <div class="help-step"><div class="help-num">3</div><div class="help-step-text">Click <strong>Download PNG</strong> for home printing or Canva. Click <strong>Download SVG</strong> for cutting machines.</div></div>
       <div class="help-step"><div class="help-num">4</div><div class="help-step-text">Click <strong>Save to my label library</strong> to save this label to your account for future use.</div></div>
       <div class="help-warn">The dashed circle is a cut guide only — it will not print. Cut along this line after printing.</div>
     </div>
@@ -595,7 +595,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="sdiv">Dimensions (mm)</div>
     <div class="custom-dims">
       <div class="form-group"><label>Width (mm)</label><input type="number" id="custom-w" placeholder="e.g. 50" inputmode="numeric" min="10" max="200" oninput="onDimInput()"></div>
-      <div class="form-group"><label>Height (mm) <span id="height-note">— matches width</span></label><input type="number" id="custom-h" placeholder="e.g. 40" inputmode="numeric" min="10" max="200" oninput="onDimInput()"></div>
+      <div class="form-group"><label>Height (mm) <span id="height-note" style="font-weight:400;color:#6B7280;font-size:11px;"></span></label><input type="number" id="custom-h" placeholder="e.g. 40" inputmode="numeric" min="10" max="200" oninput="onDimInput()"></div>
       <div id="custom-size-warn" style="display:none;background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:9px 12px;font-size:12px;color:#92400E;line-height:1.5;grid-column:1/-1;"></div>
     </div>
     <div class="sdiv">Label language</div>
@@ -842,12 +842,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </label>
     </div>
     <div style="background:#F8FAFC;border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--muted);line-height:1.6;">
-      ✂️ <strong style="color:var(--text);">About the dashed line:</strong> The pale dashed circle you see on your label is a <strong>cut guide only</strong> — it will not print. It shows exactly where to cut your label. In Cricut Design Space it becomes the cut path automatically. When printing at home, simply cut along the dashed line.
+      ✂️ <strong style="color:var(--text);">About the dashed line:</strong> The pale dashed circle you see on your label is a <strong>cut guide only</strong> — it will not print. It shows exactly where to cut your label. In cutting machine software it becomes the cut path automatically. When printing at home, simply cut along the dashed line.
     </div>
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
       <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ Download PNG — for printing &amp; Canva</button>
       <button id="btn-jpeg" onclick="downloadJPEG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬇ Download JPEG — smaller file size</button>
-      <button id="btn-svg" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬡ Download SVG — for Cricut Design Space</button>
+      <button id="btn-svg" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬡ Download SVG</button>
       <button id="btn-pdf" onclick="printToPDF()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">🖨 Print to PDF</button>
       <button id="btn-save" onclick="saveLabel()" style="background:var(--off);color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">💾 Save to my label library</button>
     </div>
@@ -864,7 +864,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </a>
 
     <div id="cricut-tip-box" style="margin-top:10px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 14px;font-size:12px;color:#166534;display:none;">
-      💡 <strong>Cricut tip:</strong> Import the SVG into Cricut Design Space → resize to your label mm dimensions → use Print Then Cut for best results.
+      💡 <strong>Tip:</strong> Import the SVG into your cutting machine software → resize to your label dimensions → use Print Then Cut for best results.
     </div>
     <div style="margin-top:20px;display:flex;justify-content:center;">
       <button onclick="prevStep()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;padding:8px;">← Edit label</button>
@@ -919,7 +919,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div style="margin-top:6px;">
       <button class="btn-dl" style="background:#1D4ED8;font-size:11px;padding:9px;width:100%;" title="Individual PNGs for Cricut Print Then Cut" onclick="downloadCricutPNGs()">✂️ Cricut PNGs</button>
     </div>
-    <a id="print-sheet-link-preview" href="print.html" style="display:none;align-items:center;justify-content:center;gap:7px;background:rgba(13,148,136,0.12);border:1px solid rgba(13,148,136,0.25);color:#5EEAD4;padding:9px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;transition:all .2s;margin-top:2px;" title="Arrange your saved labels on an A4 sheet. For Cricut: labels must be the same size on each sheet." onmouseover="this.style.background='rgba(13,148,136,0.22)'" onmouseout="this.style.background='rgba(13,148,136,0.12)'">🖨 Print Sheet Composer →</a>
+    <a id="print-sheet-link-preview" href="print.html" style="display:none;align-items:center;justify-content:center;gap:7px;background:rgba(13,148,136,0.12);border:1px solid rgba(13,148,136,0.25);color:#5EEAD4;padding:9px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;transition:all .2s;margin-top:2px;" title="Arrange your saved labels on an A4 sheet. For cutting machines: labels must be the same size on each sheet." onmouseover="this.style.background='rgba(13,148,136,0.22)'" onmouseout="this.style.background='rgba(13,148,136,0.12)'">🖨 Print Sheet Composer →</a>
     <div class="cricut-note" style="display:none;"></div>
   </div>
 </div>
@@ -933,7 +933,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div style="font-size:12px;color:rgba(255,255,255,0.4);text-align:center;margin-bottom:4px;" id="sheet-size-info"></div>
     <div class="preview-sheet-actions">
       <button class="btn-dl" onclick="downloadPNG();closeSheet()">⬇ PNG (single)</button>
-      <button class="btn-dl-svg" onclick="downloadSVG();closeSheet()">⬡ SVG (Cricut)</button>
+      <button class="btn-dl-svg" onclick="downloadSVG();closeSheet()">⬡ SVG</button>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
       <button class="btn-dl" style="background:#3a7d8f;font-size:11px;" onclick="downloadPDFSheet();closeSheet()">🖨 Avery Sheet</button>
@@ -942,7 +942,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div style="margin-top:8px;">
       <button class="btn-dl" style="background:#1D4ED8;font-size:12px;width:100%;" onclick="downloadCricutPNGs();closeSheet()">✂️ Cricut PNGs (zip)</button>
     </div>
-    <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.3);text-align:center;">PNG for printing · SVG for Cricut</div>
+    <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.3);text-align:center;">PNG for printing · SVG for cutting machines</div>
     <div style="margin-top:12px;text-align:center;"><button onclick="closeSheet()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:8px;">Close</button></div>
   </div>
 </div>
@@ -1082,7 +1082,7 @@ function downloadJPEG(){
   clone.setAttribute('viewBox',`0 0 ${pw} ${ph}`);
   const svgData=new XMLSerializer().serializeToString(clone);
   const slug=(S.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-  const fname=`clpeasy-${slug}-${S.size}mm.jpg`;
+  const fname=`clpeasy-${slug}-${S.size==='custom'?mmW+'x'+mmH:''+S.size}mm.jpg`;
   const svgDataUri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgData);
   const img=new Image();
   img.onload=function(){
@@ -2192,8 +2192,9 @@ function onDimInput(){
 }
 function syncDimFields(){
   const hI=document.getElementById('custom-h'),hN=document.getElementById('height-note');
-  if(S.shape==='rectangle'){hI.disabled=false;hI.style.opacity='1';if(hN)hN.textContent='';}
-  else{hI.disabled=true;hI.style.opacity='0.45';if(hN)hN.textContent='— matches width';const wv=document.getElementById('custom-w').value;if(wv)hI.value=wv;}
+  const isRect=S.shape==='rectangle';
+  if(isRect){hI.disabled=false;hI.style.opacity='1';if(hN)hN.textContent='';}
+  else{hI.disabled=true;hI.style.opacity='0.45';if(hN)hN.innerHTML='— <a href="#" onclick="selectShape(\'rectangle\');return false;" style="color:#4C9BB0;font-size:11px;">Use Rectangle for different height</a>';const wv=document.getElementById('custom-w').value;if(wv)hI.value=wv;}
 }
 function selectSignal(s){S.signal=s;document.getElementById('signal-warning').className='signal-btn'+(s==='Warning'?' sel-warn':'');document.getElementById('signal-danger').className='signal-btn'+(s==='Danger'?' sel-danger':'');updateLabel();}
 function togglePicto(el,key){el.classList.toggle('selected');const i=S.pictograms.indexOf(key);if(i>-1)S.pictograms.splice(i,1);else S.pictograms.push(key);updateLabel();}
@@ -2728,7 +2729,7 @@ function downloadPNG(){
   clone.setAttribute('viewBox',`0 0 ${pw} ${ph}`);
   const svgData=new XMLSerializer().serializeToString(clone);
   const slug=(S.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-  const fname=`clpeasy-${slug}-${S.size}mm.png`;
+  const fname=`clpeasy-${slug}-${S.size==='custom'?mmW+'x'+mmH:''+S.size}mm.png`;
   const svgDataUri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgData);
   const img=new Image();
   img.onload=function(){
@@ -2758,7 +2759,7 @@ function downloadSVG(){
     const svgStr=buildSVG(true);
     // Build clean SVG string directly without DOMParser (avoids iOS parse errors)
     const slug=(S.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-    const fname=`clpeasy-${slug}-${S.size}mm-cricut.svg`;
+    const fname=`clpeasy-${slug}-${S.size==='custom'?mmW+'x'+mmH:''+S.size}mm.svg`;
     // Replace the auto-generated width/height/id with mm dimensions
     const cleanSvg=svgStr
       .replace(/id="label-svg"/,'')
