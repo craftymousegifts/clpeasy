@@ -412,7 +412,7 @@
     <a href="showcase.html">Label Showcase</a>
     <a href="support.html">Support</a>
     <a href="auth.html?mode=signin" style="font-size:14px;font-weight:500;color:var(--muted);text-decoration:none;padding:6px 12px;">Sign in</a>
-    <a href="auth.html" class="btn-nav">Get started free</a>
+    <a href="auth.html" class="btn-nav">Start free trial</a>
   </div>
 </nav>
 
@@ -440,6 +440,11 @@
   </div>
 
 
+  <div class="hero-actions" style="margin-top:20px;">
+    <a href="auth.html" class="btn-primary">Start your 14-day free trial →</a>
+    <a href="pricing.html" class="btn-secondary">See pricing</a>
+  </div>
+  <p class="hero-note">No credit card needed. Cancel anytime.</p>
 </section>
 </div>
 
@@ -451,7 +456,7 @@
     <h2 class="section-title">Simple, honest pricing</h2>
     <p style="font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:8px;">Start free for 14 days — no card needed. Easy Start from £9.99/mo, Easy Pro from £14.99/mo.</p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px;">
-      <a href="auth.html" style="background:var(--teal);color:white;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;">Start free trial →</a>
+      <a href="auth.html" style="background:var(--teal);color:white;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;">Start your 14-day free trial →</a>
       <a href="pricing.html" style="background:white;color:var(--text);padding:12px 24px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;border:1.5px solid var(--border);">See all plans →</a>
     </div>
   </div>
@@ -931,7 +936,7 @@ _sb.auth.getSession().then(async ({data:{session}})=>{
   if(session){
     document.querySelectorAll('a[href="auth.html"], a[href="builder.html"]').forEach(a=>{
       const t=a.textContent.trim();
-      if(t==='Get started free'||t==='Start for free'||t.includes('free trial')||t.includes('Start 7')||t.includes('Get Pro')){
+      if(t==='Start free trial'||t==='Get started free'||t==='Start for free'||t.includes('free trial')||t.includes('Start 7')||t.includes('Get Pro')){
         a.href='builder.html';
         a.textContent='Go to builder →';
       }

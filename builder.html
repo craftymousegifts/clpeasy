@@ -596,6 +596,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="custom-dims">
       <div class="form-group"><label>Width (mm)</label><input type="number" id="custom-w" placeholder="e.g. 50" inputmode="numeric" min="10" max="200" oninput="onDimInput()"></div>
       <div class="form-group"><label>Height (mm) <span id="height-note">— matches width</span></label><input type="number" id="custom-h" placeholder="e.g. 40" inputmode="numeric" min="10" max="200" oninput="onDimInput()"></div>
+      <div id="custom-size-warn" style="display:none;background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:9px 12px;font-size:12px;color:#92400E;line-height:1.5;grid-column:1/-1;"></div>
     </div>
     <div class="sdiv">Label language</div>
     <div class="form-group" style="margin-bottom:12px;">
@@ -2106,7 +2107,25 @@ function selectSize(sz){
   if(sz!=='custom'){const mm=parseInt(sz);document.getElementById('custom-w').value=mm;document.getElementById('custom-h').value=(S.shape==='rectangle')?Math.round(mm*0.7):mm;S.customW=mm;S.customH=(S.shape==='rectangle')?Math.round(mm*0.7):mm;}
   syncDimFields();updateLabel();
 }
-function onDimInput(){S.size='custom';document.querySelectorAll('.size-card').forEach(c=>c.classList.toggle('selected',c.dataset.size==='custom'));S.customW=parseInt(document.getElementById('custom-w').value)||50;S.customH=parseInt(document.getElementById('custom-h').value)||50;updateLabel();}
+function onDimInput(){
+  S.size='custom';
+  document.querySelectorAll('.size-card').forEach(c=>c.classList.toggle('selected',c.dataset.size==='custom'));
+  const rawW = parseInt(document.getElementById('custom-w').value)||50;
+  const rawH = parseInt(document.getElementById('custom-h').value)||50;
+  // Warn but don't block — let the user type freely; only show warning
+  const warn = document.getElementById('custom-size-warn');
+  if(warn){
+    if(rawW < 30 || rawH < 12){
+      warn.style.display='block';
+      warn.textContent='⚠️ Labels smaller than 30×12mm may not fit all required CLP text. Consider 35mm or larger.';
+    } else {
+      warn.style.display='none';
+    }
+  }
+  S.customW = Math.max(rawW, 10);
+  S.customH = Math.max(rawH, 10);
+  updateLabel();
+}
 function syncDimFields(){
   const hI=document.getElementById('custom-h'),hN=document.getElementById('height-note');
   if(S.shape==='rectangle'){hI.disabled=false;hI.style.opacity='1';if(hN)hN.textContent='';}
@@ -2362,18 +2381,38 @@ function buildSVG(forExport=false){
   if(phone)footerSlots.push({text:phone,bold:true});
   if(detailParts.length)footerSlots.push({text:detailParts.join(' · '),bold:false});
 
-  const fCount = Math.min(footerSlots.length, 3);
+  // ── FOOTER BAND: wrapped address support ─────────────────────
+  // Address is allowed to wrap to 2 lines on narrow labels.
+  // Font scales down before wrapping so minimum readable size is preserved.
   const fTopPad = botH * 0.10;
-  const fBotPad = botH * 0.14; // slightly more bottom padding to avoid clipping
+  const fBotPad = botH * 0.10;
   const fUsable = botH - fTopPad - fBotPad;
-  const fStep   = fCount > 0 ? fUsable / fCount : fUsable;
-  const footerRendered = footerSlots.slice(0,3).map((slot,i)=>{
-    const fYraw = botY + fTopPad + fStep*(i+0.5);
-    // Guard: never render below shape bottom (sBot)
-    const fY  = Math.min(fYraw, sBot - 3);
-    const fSW = Math.min(chordW(fY, 0.09), sW*0.88);
-    const fFS = fitFont(slot.text, fSW*0.88, clamp(BASE*0.036,3,7.5), clamp(BASE*0.022,2.5,5), slot.bold, false);
-    return`<text x="${cx}" y="${fY.toFixed(1)}" font-family="sans-serif" font-size="${fFS.toFixed(2)}" font-weight="${slot.bold?'700':'400'}" fill="${slot.bold?txtCol:mutedCol}" text-anchor="middle" dominant-baseline="middle">${xe(slot.text)}</text>`;
+  const maxFooterFS = clamp(BASE*0.036,3,7.5);
+  const minFooterFS = clamp(BASE*0.022,2,4.5);
+
+  let footerElems = [];
+  footerSlots.slice(0,3).forEach(slot=>{
+    const fSW = Math.min(chordW(botY + fTopPad, 0.09), sW*0.88);
+    const fs1 = fitFont(slot.text, fSW*0.88, maxFooterFS, minFooterFS, slot.bold, false);
+    const lines1 = wrapText(slot.text, fSW*0.88, fs1, slot.bold, false);
+    if(lines1.length > 1){
+      const fs2 = minFooterFS;
+      const lines2 = wrapText(slot.text, fSW*0.88, fs2, slot.bold, false);
+      footerElems.push({lines: lines2.slice(0,2), fs: fs2, bold: slot.bold});
+    } else {
+      footerElems.push({lines: lines1, fs: fs1, bold: slot.bold});
+    }
+  });
+
+  const totalFLines = footerElems.reduce((s,e)=>s+e.lines.length, 0);
+  const fLH = totalFLines > 0 ? fUsable / totalFLines : fUsable;
+  let fCurY = botY + fTopPad + fLH * 0.5;
+  const footerRendered = footerElems.map(elem=>{
+    return elem.lines.map(line=>{
+      const fY = Math.min(fCurY, sBot - 2);
+      fCurY += fLH;
+      return`<text x="${cx}" y="${fY.toFixed(1)}" font-family="sans-serif" font-size="${elem.fs.toFixed(2)}" font-weight="${elem.bold?'700':'400'}" fill="${elem.bold?txtCol:mutedCol}" text-anchor="middle" dominant-baseline="middle">${xe(line)}</text>`;
+    }).join('');
   }).join('');
 
   // ── QR CODE (small, bottom-right of label if enabled) ────────
@@ -2711,7 +2750,20 @@ function openWizard(){
   document.getElementById('wiz-overlay').classList.add('open');
   document.getElementById('wiz-panel').classList.add('open');
   document.body.style.overflow='hidden';
-  if(!wizHistory.length) wizGreet();
+  if(!wizHistory.length){
+    // Show a brief "Connecting…" state so user knows something is happening
+    // This covers the edge-function cold-start delay (typically 2–4 s)
+    const sendBtn = document.getElementById('wiz-send');
+    const input = document.getElementById('wiz-input');
+    if(sendBtn) sendBtn.disabled = true;
+    if(input){ input.placeholder = 'Connecting…'; input.disabled = true; }
+    // Short delay to allow panel to animate open before greeting renders
+    setTimeout(()=>{
+      wizGreet();
+      if(sendBtn) sendBtn.disabled = false;
+      if(input){ input.placeholder = 'Tell me what you want to make…'; input.disabled = false; input.focus(); }
+    }, 350);
+  }
 }
 function closeWizard(){
   document.getElementById('wiz-overlay').classList.remove('open');

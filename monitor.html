@@ -176,9 +176,30 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
     return crypto.subtle.digest('SHA-256',new TextEncoder().encode(str))
       .then(function(b){return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');});
   }
+  // Check session storage first (already unlocked this session)
   if(sessionStorage.getItem('clp_auth')==='1'){
     document.getElementById('clp-gate').style.display='none';
   }
+  // Also check Supabase session — if user is logged in AND is admin, auto-unlock
+  // This means admins don't need to re-enter the password on every page load
+  (function trySupabaseAuth(){
+    const sbUrl='https://qvkosdqcryrcfbjtaxic.supabase.co';
+    const sbKey='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
+    if(typeof window.supabase === 'undefined') return; // Supabase not loaded yet, password gate still works
+    try {
+      const _sb = window.supabase.createClient(sbUrl, sbKey);
+      _sb.auth.getSession().then(function(res){
+        const session = res && res.data && res.data.session;
+        if(!session) return; // not logged in — password gate remains
+        // Check admin flag in user metadata or profile
+        const meta = session.user && session.user.user_metadata;
+        if(meta && meta.is_admin === true){
+          sessionStorage.setItem('clp_auth','1');
+          document.getElementById('clp-gate').style.display='none';
+        }
+      });
+    } catch(e){ /* silently ignore — password gate still works */ }
+  })();
   document.getElementById('clp-pwd').addEventListener('keydown',function(e){if(e.key==='Enter')clpCheck();});
   window.clpCheck=function(){
     var inp=document.getElementById('clp-pwd');
