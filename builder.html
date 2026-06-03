@@ -1424,17 +1424,48 @@ async function initAuth(){
     sbClient=createClient(SUPABASE_URL,SUPABASE_KEY);
     const {data:{session}}=await sbClient.auth.getSession();
 
-    // Handle return from Stripe checkout
+    // Handle return from top-up checkout
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('topup') === 'success'){
+    // Remove param from URL cleanly
+    window.history.replaceState({}, '', 'builder.html');
+    // Show success toast after short delay (allow page to render)
+    setTimeout(function(){
+      const toast = document.createElement('div');
+      toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#0D9488;color:white;padding:14px 24px;border-radius:12px;font-size:15px;font-weight:700;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);text-align:center;';
+      toast.innerHTML = '✅ Top-up added! Your extra downloads are ready.';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 5000);
+    }, 800);
+  }
+  if(params.get('topup') === 'cancelled'){
+    window.history.replaceState({}, '', 'builder.html');
+  }
+})();
+
+// Handle return from Stripe checkout
     const params=new URLSearchParams(window.location.search);
     if(params.get('subscribed')==='true'){
-      // Clean URL
       window.history.replaceState({},'',window.location.pathname);
-      // Show success toast
       const toast=document.createElement('div');
       toast.textContent='🎉 Subscription activated! Welcome to CLPeasy.';
       toast.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#0D9488;color:white;padding:14px 24px;border-radius:12px;font-size:15px;font-weight:700;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);';
       document.body.appendChild(toast);
       setTimeout(()=>toast.remove(),5000);
+    }
+    if(params.get('topup')==='success'){
+      window.history.replaceState({},'',window.location.pathname);
+      setTimeout(()=>{
+        const toast=document.createElement('div');
+        toast.innerHTML='✅ Top-up added! Your extra downloads are ready.';
+        toast.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#0D9488;color:white;padding:14px 24px;border-radius:12px;font-size:15px;font-weight:700;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);';
+        document.body.appendChild(toast);
+        setTimeout(()=>toast.remove(),5000);
+      },800);
+    }
+    if(params.get('topup')==='cancelled'){
+      window.history.replaceState({},'',window.location.pathname);
     }
 
     if(session){
@@ -1540,6 +1571,36 @@ function closeDlLimitModal(){
   if(m)m.remove();
 }
 
+// ── TOP-UP CHECKOUT ──────────────────────────────────────────
+// Sandbox price IDs — swap for live IDs on go-live day
+const TOPUP_PRICES = {
+  topup_5:  'price_1TeBHjKF3jvQfgEaX2aPZX6E',
+  topup_10: 'price_1TeBIKKF3jvQfgEaxU4TjPHu',
+};
+const SUPABASE_URL_CHECKOUT = 'https://qvkosdqcryrcfbjtaxic.supabase.co';
+
+async function startTopup(pack){
+  if(!currentUser){ window.location.href='auth.html?redirect=builder.html'; return; }
+  const priceId = TOPUP_PRICES['topup_'+pack];
+  if(!priceId){ alert('Pack not found — please refresh.'); return; }
+  const btn = document.getElementById('topup-btn-'+pack);
+  if(btn){ btn.textContent='Loading…'; btn.style.opacity='0.7'; btn.disabled=true; }
+  try{
+    const res = await fetch(SUPABASE_URL_CHECKOUT+'/functions/v1/create-checkout-session',{
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+SUPABASE_KEY },
+      body:JSON.stringify({ priceId, userEmail:currentUser.email, userId:currentUser.id, mode:'payment' })
+    });
+    const data = await res.json();
+    if(data.url){ window.location.href=data.url; }
+    else{ throw new Error(data.error||'No URL'); }
+  } catch(e){
+    console.error('Top-up checkout error:',e);
+    alert('Something went wrong. Please try again.');
+    if(btn){ btn.textContent=(pack==='5'?'5 downloads — £3.99':'10 downloads — £7.99'); btn.style.opacity='1'; btn.disabled=false; }
+  }
+}
+
 function showDlLimitModal(){
   closeDlLimitModal();
   const btn='display:inline-block;padding:11px 18px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;font-family:\'DM Sans\',sans-serif;margin:6px 4px 0;';
@@ -1547,11 +1608,14 @@ function showDlLimitModal(){
   if(DL.is_pro){
     title='Monthly downloads used up';
     msg='You\u2019ve used all '+DL.limit+' downloads this month. Add a top-up pack to keep going — your allowance refills on your next billing date.';
-    actions='<a href="pricing.html" style="'+btn+'background:#4C9BB0;color:white;">Buy a top-up pack</a>';
+    actions='<button id="topup-btn-5" onclick="startTopup(\'5\')" style="'+btn+'background:#4C9BB0;color:white;border:none;cursor:pointer;">5 downloads &mdash; &pound;3.99</button>'
+    +'<button id="topup-btn-10" onclick="startTopup(\'10\')" style="'+btn+'background:white;color:#111318;border:1.5px solid #E8EAED;cursor:pointer;">10 downloads &mdash; &pound;7.99</button>';
   } else if(DL.plan==='easy_start'){
     title='Monthly downloads used up';
     msg='You\u2019ve used all '+DL.limit+' downloads this month. Upgrade to Easy Pro for 30 downloads a month, or grab a top-up pack.';
-    actions='<a href="pricing.html" style="'+btn+'background:#4C9BB0;color:white;">Upgrade to Easy Pro</a><a href="pricing.html" style="'+btn+'background:#F7F8FA;color:#111318;border:1.5px solid #E8EAED;">Top-up pack</a>';
+    actions='<a href="pricing.html" style="'+btn+'background:#4C9BB0;color:white;">Upgrade to Easy Pro</a>'
+    +'<button id="topup-btn-5" onclick="startTopup(\'5\')" style="'+btn+'background:white;color:#111318;border:1.5px solid #E8EAED;cursor:pointer;">5 downloads &mdash; &pound;3.99</button>'
+    +'<button id="topup-btn-10" onclick="startTopup(\'10\')" style="'+btn+'background:white;color:#111318;border:1.5px solid #E8EAED;cursor:pointer;">10 downloads &mdash; &pound;7.99</button>';
   } else {
     title='Trial downloads used up';
     msg='You\u2019ve used all '+DL.limit+' trial downloads. Subscribe to Easy Start (20/month) or Easy Pro (30/month) to keep downloading.';
