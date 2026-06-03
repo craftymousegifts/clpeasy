@@ -102,8 +102,8 @@
       bannerBg: '#FFFBEB',
       bannerBorder: '#FDE68A',
       bannerEmoji: '🎪',
-      bannerText: 'Craft fair season is open — every product on your table needs a compliant CLP label. Even your testers.',
-      bannerCta: 'Print your label sheet',
+      bannerText: "Craft fair season is in full swing — every product on your stall needs a compliant CLP label. Don't forget your testers and samples too.",
+      bannerCta: 'Print my label sheet',
       bannerCtaUrl: 'builder.html',
     },
     {
@@ -120,8 +120,8 @@
       bannerBg: '#FFFBEB',
       bannerBorder: '#FCD34D',
       bannerEmoji: '☀️',
-      bannerText: 'Summer is perfect for your annual SDS audit — suppliers update hazard data quietly. When did you last check yours?',
-      bannerCta: 'Open my label library',
+      bannerText: "Summer is here — are all your seasonal scent labels ready? It's also the perfect time for your annual SDS audit before new autumn fragrances drop.",
+      bannerCta: 'Review my labels',
       bannerCtaUrl: 'builder.html',
     },
     {
@@ -138,8 +138,8 @@
       bannerBg: '#FFFBEB',
       bannerBorder: '#FCD34D',
       bannerEmoji: '🏖️',
-      bannerText: 'Planning your autumn range? Build your labels now, before you make your first batch. Future you will be grateful.',
-      bannerCta: 'Plan ahead',
+      bannerText: 'Mid-summer check-in — autumn fragrance orders are coming. Get your labels built before your first batch so nothing holds up your launch.',
+      bannerCta: 'Build autumn labels',
       bannerCtaUrl: 'builder.html',
     },
     {
@@ -418,7 +418,13 @@
 
   // ── INIT ───────────────────────────────────────────────────────
   function init() {
-    const month = new Date().getMonth();
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    // Look 14 days ahead — if within 14 days of next month, use next month's theme
+    // This gives makers advance notice to prepare for the coming season
+    const daysInMonth = new Date(now.getFullYear(), currentMonth + 1, 0).getDate();
+    const daysLeft = daysInMonth - now.getDate();
+    const month = daysLeft < 14 ? (currentMonth + 1) % 12 : currentMonth;
     const m = MONTHS[month];
     applyTopStripe(m);
     applyHeroPill(m);
