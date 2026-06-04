@@ -538,7 +538,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="mobile-preview-bar-label">Live Preview</div>
     <div id="mobile-preview-svg"></div>
     <div class="mobile-preview-dims" id="mobile-preview-dims">35 × 35mm</div>
-    <div class="mobile-dl-row">
+    <div class="mobile-dl-row" id="mobile-dl-row" style="display:none;">
       <button class="btn-dl" onclick="downloadPNG()">⬇ PNG</button>
       <button class="btn-dl-svg" onclick="downloadSVG()">⬡ SVG</button>
     </div>
@@ -602,9 +602,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="form-group" style="margin-bottom:12px;">
       <select id="label-lang" onchange="updateLabel()" style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;outline:none;">
         <option value="en">English only</option>
-        <option value="en_fr">English + French</option>
-        <option value="en_de">English + German</option>
-        <option value="en_fr_de">English + French + German</option>
         <option value="fr">French only</option>
         <option value="de">German only</option>
       </select>
@@ -843,7 +840,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </label>
     </div>
     <div style="background:#F8FAFC;border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--muted);line-height:1.6;">
-      <span id="dashed-note-text">✂️ <strong style="color:var(--text);">About the dashed line:</strong> The pale dashed line you see on your label is a <strong>cut guide only</strong> — it will not print. It shows exactly where to cut your label. In cutting machine software it becomes the cut path automatically. When printing at home, simply cut along the dashed line.</span>
+      
     </div>
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
       <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ Download PNG</button>
@@ -859,14 +856,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div style="flex:1;min-width:0;">
         <div style="font-size:14px;font-weight:700;color:var(--teal-dark);">🖨 Print Sheet Composer</div>
         <div style="font-size:12px;color:var(--teal);margin-top:2px;">You've saved labels — arrange them on an A4 sheet for home printing or a print company.</div>
-        <div style="font-size:11px;color:#6B7280;margin-top:3px;">✂️ Cricut tip: each sheet can only contain labels of the same size for Print Then Cut.</div>
+        
       </div>
       <div style="font-size:18px;color:var(--teal);flex-shrink:0;">→</div>
     </a>
 
-    <div id="cricut-tip-box" style="margin-top:10px;background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 14px;font-size:12px;color:#166534;display:none;">
-      💡 <strong>Tip:</strong> Import the SVG into your cutting machine software → resize to your label dimensions → use Print Then Cut for best results.
-    </div>
+    
     <div style="margin-top:20px;display:flex;justify-content:center;">
       <button onclick="prevStep()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;padding:8px;">← Edit label</button>
       <button onclick="startOver()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;padding:8px;">↺ New label</button>
@@ -1147,7 +1142,7 @@ function printToPDF(){
     ctx.restore();
     const pngDataUri=cvs.toDataURL('image/png');
     const win=window.open('','_blank');
-    if(!win){alert('Please allow pop-ups for clpeasy.com to use Print to PDF.');return;}
+    if(!win){alert('To print your label, please allow pop-ups for clpeasy.com in your browser settings, then try again.');return;}
     win.document.write(`<!DOCTYPE html><html><head><title>CLPeasy Label — ${S.scentName||''}</title>
     <style>
       *{margin:0;padding:0;box-sizing:border-box;}
@@ -1905,16 +1900,9 @@ function forceGoToStep(n){
   if(n===5){buildSummary();
     const dlRow=document.getElementById('preview-dl-row');
     if(dlRow)dlRow.style.display='flex';
-    // Show/hide dashed note based on shape
-    const dashedNote = document.getElementById('dashed-note-text');
-    if(dashedNote){
-      const isCircle = (S.shape === 'circle');
-      dashedNote.parentElement.style.display = isCircle ? 'block' : 'none';
-    }
+    
   }
   updateLabel();
-  const ct=document.getElementById('cricut-tip-box');
-  if(ct)ct.style.display=n===5?'block':'none';
   window.scrollTo(0,0);
 }
 
@@ -2177,13 +2165,22 @@ document.addEventListener('keydown', function(e) {
 function goToStep(n){if(n>S.step+1)return;S.step=n;
   // Hide preview download buttons unless on step 5
   const dlRow=document.getElementById('preview-dl-row');
-  if(dlRow)dlRow.style.display=(n===5)?'flex':'none';document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+n).classList.add('active');updateStepsBar();if(n===5)buildSummary();updateLabel();const ct=document.getElementById('cricut-tip-box');if(ct)ct.style.display=n===5?'block':'none';if(n===3){const cb=document.getElementById('hazard-confirm');const btn=document.getElementById('btn-next-step3');if(cb){cb.checked=false;}if(btn){btn.style.opacity='0.4';btn.style.pointerEvents='none';}}}
-function nextStep(){if(S.step<5)goToStep(S.step+1);}
+  if(dlRow)dlRow.style.display=(n===5)?'flex':'none';
+  const mobileDlRow=document.getElementById('mobile-dl-row');
+  if(mobileDlRow)mobileDlRow.style.display=(n===5)?'flex':'none';document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+n).classList.add('active');updateStepsBar();if(n===5)buildSummary();updateLabel();if(n===3){const cb=document.getElementById('hazard-confirm');const btn=document.getElementById('btn-next-step3');if(cb){cb.checked=false;}if(btn){btn.style.opacity='0.4';btn.style.pointerEvents='none';}}}
+function nextStep(){if(S.step<5){goToStep(S.step+1);window.scrollTo({top:0,behavior:'smooth'});}}
 function toggleHazardNext(){
   const cb=document.getElementById('hazard-confirm');
   const btn=document.getElementById('btn-next-step3');
   if(!btn)return;
-  if(cb&&cb.checked){btn.style.opacity='1';btn.style.pointerEvents='auto';}
+  const hasHazard=S.hStatements&&S.hStatements.trim().length>0;
+  if(!hasHazard&&cb&&cb.checked){
+    cb.checked=false;
+    alert('Please extract hazard data from your SDS before confirming.');
+    btn.style.opacity='0.4';btn.style.pointerEvents='none';
+    return;
+  }
+  if(cb&&cb.checked&&hasHazard){btn.style.opacity='1';btn.style.pointerEvents='auto';}
   else{btn.style.opacity='0.4';btn.style.pointerEvents='none';}
 }
 function prevStep(){if(S.step>1)goToStep(S.step-1);}
