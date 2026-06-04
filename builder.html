@@ -65,7 +65,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
   .builder-layout{display:block;padding-top:88px;}
   .wizard-panel{padding:20px 16px 40px;max-width:100%;width:100%;}
   .preview-panel{display:none;}
-  .mobile-preview-bar{display:flex !important;}
+  .mobile-preview-bar{position:sticky;top:0;z-index:50;display:flex !important;background:#1a1f2e;}
   .form-row{grid-template-columns:1fr;}
   body{padding-bottom:20px;}
 }
@@ -274,7 +274,65 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 /* ── WIZARD PANEL ─────────────────────────────────────────── */
 .wizard-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:600;opacity:0;pointer-events:none;transition:opacity .3s;}
 .wizard-overlay.open{opacity:1;pointer-events:auto;}
-}
+.wizard-panel-ai{position:fixed;top:0;right:-480px;width:460px;max-width:100vw;height:100vh;background:#fff;z-index:601;display:flex;flex-direction:column;box-shadow:-4px 0 32px rgba(0,0,0,0.15);transition:right .35s cubic-bezier(.4,0,.2,1);}
+.wizard-panel-ai.open{right:0;}
+.wiz-header{padding:16px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#4C9BB0 0%,#3a7d8f 100%);flex-shrink:0;}
+.wiz-header-left{display:flex;align-items:center;gap:10px;}
+.wiz-header-icon{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:18px;}
+.wiz-header-title{font-family:'DM Serif Display',serif;font-size:18px;color:white;line-height:1.1;}
+.wiz-header-sub{font-size:11px;color:rgba(255,255,255,0.7);margin-top:1px;}
+.wiz-clear-btn{padding:5px 10px;border-radius:8px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.8);font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;flex-shrink:0;}
+.wiz-clear-btn:hover{background:rgba(255,255,255,0.25);color:white;}
+.wiz-close{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.15);border:none;color:white;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;flex-shrink:0;}
+.wiz-close:hover{background:rgba(255,255,255,0.3);}
+.wiz-messages{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth;}
+.wiz-msg{display:flex;gap:10px;animation:wizFadeIn .3s ease;}
+@keyframes wizFadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.wiz-msg.user{flex-direction:row-reverse;}
+.wiz-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px;}
+.wiz-msg.ai .wiz-avatar{background:linear-gradient(135deg,#4C9BB0,#3a7d8f);color:white;}
+.wiz-msg.user .wiz-avatar{background:var(--off);border:1.5px solid var(--border);font-size:16px;}
+.wiz-bubble{max-width:85%;padding:11px 14px;border-radius:14px;font-size:13px;line-height:1.6;color:var(--text);}
+.wiz-msg.ai .wiz-bubble{background:var(--off);border:1px solid var(--border);border-top-left-radius:4px;}
+.wiz-msg.user .wiz-bubble{background:var(--teal);color:white;border-top-right-radius:4px;}
+.wiz-bubble strong{font-weight:700;}
+.wiz-bubble .step-card{background:white;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;margin:8px 0;display:flex;gap:10px;align-items:flex-start;}
+.wiz-bubble .step-num{width:22px;height:22px;border-radius:50%;background:var(--teal);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.wiz-bubble .step-text{font-size:12px;line-height:1.5;color:var(--text);}
+.wiz-bubble .step-text b{color:var(--teal-dark);}
+.wiz-bubble .step-diagram{background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:8px 10px;margin-top:6px;font-size:11px;color:#065F46;font-family:monospace;line-height:1.6;}
+.wiz-confirm-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.wiz-confirm-btn{padding:7px 14px;border-radius:8px;border:1.5px solid var(--teal);background:var(--teal-light);color:var(--teal-dark);font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.wiz-confirm-btn:hover{background:var(--teal);color:white;}
+.wiz-confirm-btn.secondary{background:white;border-color:var(--border);color:var(--muted);}
+.wiz-confirm-btn.secondary:hover{border-color:var(--teal);color:var(--teal);}
+.wiz-style-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px;}
+.wiz-style-card{background:white;border:1.5px solid var(--border);border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;transition:all .2s;}
+.wiz-style-card:hover{border-color:var(--teal);background:var(--teal-light);}
+.wiz-style-card .style-icon{font-size:22px;margin-bottom:4px;}
+.wiz-style-card .style-name{font-size:11px;font-weight:700;color:var(--text);}
+.wiz-style-card .style-desc{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.3;}
+.wiz-autofill-bar{background:linear-gradient(135deg,#4C9BB0,#059669);border-radius:10px;padding:10px 12px;margin-top:8px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:opacity .2s;}
+.wiz-autofill-bar:hover{opacity:0.85;}
+.wiz-autofill-bar span{color:white;font-size:12px;font-weight:600;}
+.wiz-typing{display:flex;gap:4px;align-items:center;padding:4px 0;}
+.wiz-typing span{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:wizDot 1.2s ease-in-out infinite;}
+.wiz-typing span:nth-child(2){animation-delay:.2s;}
+.wiz-typing span:nth-child(3){animation-delay:.4s;}
+@keyframes wizDot{0%,80%,100%{transform:scale(0.7);opacity:0.4;}40%{transform:scale(1);opacity:1;}}
+.wiz-input-area{padding:12px 16px 16px;border-top:1px solid var(--border);background:white;flex-shrink:0;}
+.wiz-input-row{display:flex;gap:8px;align-items:flex-end;}
+.wiz-textarea{flex:1;padding:10px 13px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);resize:none;outline:none;min-height:42px;max-height:120px;line-height:1.5;transition:border-color .2s;}
+.wiz-textarea:focus{border-color:var(--teal);}
+.wiz-send-btn{width:42px;height:42px;border-radius:10px;background:var(--teal);border:none;color:white;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s;}
+.wiz-send-btn:hover{background:var(--teal-dark);}
+.wiz-send-btn:disabled{opacity:0.4;pointer-events:none;}
+.wiz-mic-btn{width:42px;height:42px;border-radius:10px;background:var(--off);border:1.5px solid var(--border);color:var(--muted);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;}
+.wiz-mic-btn:hover{border-color:var(--teal);color:var(--teal);}
+.wiz-mic-btn.listening{background:var(--red);border-color:var(--red);color:white;animation:micPulse 1s ease-in-out infinite;}
+@keyframes micPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
+.wiz-hint{font-size:11px;color:var(--muted);text-align:center;margin-top:6px;}
+@media(max-width:860px){.wizard-panel-ai{width:100vw;right:-100vw;}.wizard-panel-ai.open{right:0;}}
 .compliance-box{background:var(--teal-light);border:1.5px solid var(--teal);border-radius:14px;padding:16px;margin-bottom:20px;}
 .compliance-box p{font-size:13px;color:var(--teal-dark);font-weight:500;line-height:1.6;}
 .summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;color:var(--muted);}
@@ -363,8 +421,31 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 </div>
 
 <!-- WIZARD OVERLAY + PANEL -->
-
-
+<div class="wizard-overlay" id="wiz-overlay" onclick="closeWizard()"></div>
+<div class="wizard-panel-ai" id="wiz-panel">
+  <div class="wiz-header">
+    <div class="wiz-header-left">
+      <div class="wiz-header-icon">✨</div>
+      <div>
+        <div class="wiz-header-title">Label Wizard</div>
+        <div class="wiz-header-sub">Tell me what you need — I'll guide you through it</div>
+      </div>
+    </div>
+    <button class="wiz-clear-btn" id="wiz-clear-btn" onclick="wizClearChat()" title="Clear conversation">🗑 Clear</button>
+    <button class="wiz-close" onclick="closeWizard()">✕</button>
+  </div>
+  <div class="wiz-messages" id="wiz-messages"></div>
+  <div class="wiz-input-area">
+    <div class="wiz-input-row">
+      <textarea class="wiz-textarea" id="wiz-input" placeholder="e.g. I need an A4 sheet of 75mm circles with 2 different scents..." rows="1"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();wizSend();}"
+        oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+      <button class="wiz-mic-btn" id="wiz-mic" onclick="wizToggleMic()" title="Speak your requirement">🎤</button>
+      <button class="wiz-send-btn" id="wiz-send" onclick="wizSend()" title="Send">➤</button>
+    </div>
+    <div class="wiz-hint" id="wiz-hint">Describe what you want to make — I'll figure out the steps</div>
+  </div>
+</div>
 
 <div class="info-note" style="display:none"></div>
 <div class="beta-expired" id="beta-expired" style="display:none;">
@@ -432,7 +513,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="help-step"><div class="help-num">2</div><div class="help-step-text"><strong>Tick the verification checkbox</strong> to confirm you have checked all data against your SDS.</div></div>
       <div class="help-step"><div class="help-num">3</div><div class="help-step-text">Click <strong>Download PNG</strong> for home printing or Canva. Click <strong>Download SVG</strong> for cutting machines.</div></div>
       <div class="help-step"><div class="help-num">4</div><div class="help-step-text">Click <strong>Save to my label library</strong> to save this label to your account for future use.</div></div>
-      <div class="help-warn">The dashed circle is a cut guide only — it will not print. Cut along this line after printing.</div>
+      <div class="help-warn">The dashed line is a cut guide only — it will not print. Cut along this line after printing.</div>
     </div>
 
     <div class="help-section">
@@ -555,11 +636,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <div class="form-group">
       <label>QR safety code <span style="font-size:10px;background:#ECFDF5;color:#166534;padding:1px 6px;border-radius:8px;margin-left:3px;">on label</span></label>
-      <div style="display:flex;gap:8px;margin-top:4px;">
-        <button type="button" id="btn-qr-on" onclick="setQR(true)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Include QR</button>
-        <button type="button" id="btn-qr-off" onclick="setQR(false)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">No QR</button>
-      </div>
-      <div style="margin-top:4px;font-size:11px;color:var(--muted);">Adds a small QR code linking to your label's digital safety sheet at clpeasy.com/safety</div>
+      
+      <div style="margin-top:4px;font-size:11px;color:var(--muted);">QR safety code — coming soon</div>
     </div>
     <div class="step-nav"><div></div><button class="btn-next" onclick="nextStep()">Next: Product details →</button></div>
   </div>
@@ -641,16 +719,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <!-- SUPPLIER SELECTOR -->
     <div class="sdiv" style="margin-top:0">Your fragrance supplier</div>
     <div class="supplier-grid" id="supplier-grid">
-      <div class="supplier-card featured" data-supplier="sfc" onclick="selectSupplier(this,'sfc')">
-        <div class="supplier-name">Supplies for Candles</div>
-        <div class="supplier-region">🇬🇧 UK</div>
-        <div class="supplier-featured-badge">⭐ Featured</div>
-      </div>
-      <div class="supplier-card featured" data-supplier="ni" onclick="selectSupplier(this,'ni')">
-        <div class="supplier-name">NI Candle Supplies</div>
-        <div class="supplier-region">🇬🇧 UK</div>
-        <div class="supplier-featured-badge">⭐ Featured</div>
-      </div>
       <div class="supplier-card" data-supplier="other" onclick="selectSupplier(this,'other')">
         <div class="supplier-name">Other supplier</div>
         <div class="supplier-region">Manual entry</div>
@@ -707,6 +775,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         I confirm the hazard data shown in the Smart Paste section above is correct and matches my fragrance supplier's SDS sheet at my actual fragrance load.
       </label>
     </div>
+    <div style="margin-bottom:10px;background:#FEF3C7;border-left:3px solid #F59E0B;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#92400E;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+      <span>⚠️ Always verify hazard data against your fragrance SDS at your actual fragrance load before downloading.</span>
+      <button type="button" onclick="clearHazardData()" style="background:#EF4444;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">Clear hazard data</button>
+    </div>
+    <div id="hazard-lock-banner" style="display:none;margin-bottom:12px;background:#DCFCE7;border-left:3px solid #22C55E;padding:10px 14px;border-radius:0 8px 8px 0;font-size:12px;color:#15803D;align-items:center;justify-content:space-between;gap:10px;">
+      <span>🔒 Hazard data extracted and locked. Click <strong>Clear hazard data</strong> above to start again with new SDS data.</span>
+    </div>
     <div class="step-nav"><button class="btn-prev" onclick="prevStep()">← Back</button><button class="btn-next" id="btn-next-step3" onclick="nextStep()" style="opacity:0.4;pointer-events:none;">Next: Business details →</button></div>
   </div>
 
@@ -729,14 +804,21 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
     <div class="form-group">
-      <label>UFI Code <span style="font-weight:400;font-size:11px;color:var(--muted);">(Unique Formula Identifier — required on CLP labels)</span></label>
-      <div style="display:flex;gap:8px;">
-        <input type="text" id="ufi-code" placeholder="Click Generate to create your UFI" oninput="updateLabel()" style="flex:1;font-family:monospace;font-size:13px;letter-spacing:1px;">
-        <button type="button" onclick="generateUFI()" style="background:var(--teal);border:none;color:white;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;flex-shrink:0;">Generate ↻</button>
+      <div onclick="document.getElementById('ufi-section').style.display=document.getElementById('ufi-section').style.display==='none'?'block':'none';this.querySelector('.ufi-toggle-arrow').textContent=document.getElementById('ufi-section').style.display==='none'?'▼':'▲';" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#F8FAFC;border:1.5px solid var(--border);border-radius:8px;user-select:none;">
+        <span style="font-size:13px;font-weight:600;color:var(--text);">UFI Code <span style="font-weight:400;color:var(--muted);font-size:12px;">— Advanced / B2B / EU sales only</span></span>
+        <span class="ufi-toggle-arrow" style="color:var(--muted);font-size:12px;">▼</span>
       </div>
-      <div style="margin-top:5px;font-size:11px;color:var(--muted);line-height:1.5;">A unique code for this formulation. For formal B2B / EU sales, also <a href="https://eupcn.echa.europa.eu" target="_blank" style="color:var(--teal);">register at EUPCN</a>.</div>
+      <div id="ufi-section" style="display:none;margin-top:8px;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5;">A Unique Formula Identifier (UFI) is required if you sell to businesses (B2B) or export to the EU. Not required for UK consumer sales only.</div>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="ufi-code" placeholder="Click Generate to create your UFI" oninput="updateLabel()" style="flex:1;font-family:monospace;font-size:13px;letter-spacing:1px;">
+          <button type="button" onclick="generateUFI()" style="background:var(--teal);border:none;color:white;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;flex-shrink:0;">Generate ↻</button>
+        </div>
+        <div id="ufi-warning" style="display:none;background:#FEF3C7;border-left:3px solid #F59E0B;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#92400E;margin-top:6px;">⚠️ Please click <strong>Generate ↻</strong> to create your UFI code. Register at <a href="https://poisoncentres.echa.europa.eu" target="_blank" style="color:#92400E">EUPCN ↗</a></div>
+        <div style="margin-top:5px;font-size:11px;color:var(--muted);line-height:1.5;">For formal B2B / EU sales, <a href="https://eupcn.echa.europa.eu" target="_blank" style="color:var(--teal);">register at EUPCN</a>.</div>
+      </div>
     </div>
-    <div class="step-nav"><button class="btn-prev" onclick="prevStep()">← Back</button><button class="btn-next" onclick="nextStep()">Preview &amp; download →</button></div>
+    <div class="step-nav"><button class="btn-prev" onclick="prevStep()">← Back</button><button class="btn-next" onclick="checkStep4AndNext()">Preview &amp; download →</button></div>
   </div>
 
   <!-- STEP 5 -->
@@ -761,10 +843,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </label>
     </div>
     <div style="background:#F8FAFC;border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--muted);line-height:1.6;">
-      ✂️ <strong style="color:var(--text);">About the dashed line:</strong> The pale dashed circle you see on your label is a <strong>cut guide only</strong> — it will not print. It shows exactly where to cut your label. In cutting machine software it becomes the cut path automatically. When printing at home, simply cut along the dashed line.
+      <span id="dashed-note-text">✂️ <strong style="color:var(--text);">About the dashed line:</strong> The pale dashed line you see on your label is a <strong>cut guide only</strong> — it will not print. It shows exactly where to cut your label. In cutting machine software it becomes the cut path automatically. When printing at home, simply cut along the dashed line.</span>
     </div>
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
-      <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ Download PNG — for printing &amp; Canva</button>
+      <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ Download PNG</button>
       <button id="btn-jpeg" onclick="downloadJPEG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬇ Download JPEG — smaller file size</button>
       <button id="btn-svg" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬡ Download SVG</button>
       <button id="btn-pdf" onclick="printToPDF()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">🖨 Print to PDF</button>
@@ -827,16 +909,16 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="preview-canvas-area" id="preview-canvas-area"><div id="label-svg-container"></div></div>
   <div class="preview-footer">
     <div class="preview-size-info" id="preview-size-info">Print size: 35 × 35mm</div>
-    <div class="dl-row">
+    <div class="dl-row" id="preview-dl-row" style="display:none;">
       <button class="btn-dl" onclick="downloadPNG()">⬇ PNG</button>
       <button class="btn-dl-svg" onclick="downloadSVG()">⬡ SVG</button>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
-      <button class="btn-dl" style="background:#3a7d8f;font-size:11px;padding:9px;" title="Aligned to your Avery label sheet — print at home on sticker paper" onclick="downloadPDFSheet()">🖨 Avery Sheet</button>
-      <button class="btn-dl" style="background:#7C3AED;font-size:11px;padding:9px;" title="300 DPI + 3mm bleed + crop marks — send this to a print company" onclick="downloadPrintReadyPDF()">🏭 Print Shop PDF</button>
+
+
     </div>
     <div style="margin-top:6px;">
-      <button class="btn-dl" style="background:#1D4ED8;font-size:11px;padding:9px;width:100%;" title="Individual PNGs for Cricut Print Then Cut" onclick="downloadCricutPNGs()">✂️ Cricut PNGs</button>
+
     </div>
     <a id="print-sheet-link-preview" href="print.html" style="display:none;align-items:center;justify-content:center;gap:7px;background:rgba(13,148,136,0.12);border:1px solid rgba(13,148,136,0.25);color:#5EEAD4;padding:9px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;transition:all .2s;margin-top:2px;" title="Arrange your saved labels on an A4 sheet. For cutting machines: labels must be the same size on each sheet." onmouseover="this.style.background='rgba(13,148,136,0.22)'" onmouseout="this.style.background='rgba(13,148,136,0.12)'">🖨 Print Sheet Composer →</a>
     <div class="cricut-note" style="display:none;"></div>
@@ -855,11 +937,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button class="btn-dl-svg" onclick="downloadSVG();closeSheet()">⬡ SVG</button>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
-      <button class="btn-dl" style="background:#3a7d8f;font-size:11px;" onclick="downloadPDFSheet();closeSheet()">🖨 Avery Sheet</button>
-      <button class="btn-dl" style="background:#7C3AED;font-size:11px;" onclick="downloadPrintReadyPDF();closeSheet()">🏭 Print Shop</button>
+
+
     </div>
     <div style="margin-top:8px;">
-      <button class="btn-dl" style="background:#1D4ED8;font-size:12px;width:100%;" onclick="downloadCricutPNGs();closeSheet()">✂️ Cricut PNGs (zip)</button>
+
     </div>
     <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.3);text-align:center;">PNG for printing · SVG for cutting machines</div>
     <div style="margin-top:12px;text-align:center;"><button onclick="closeSheet()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:8px;">Close</button></div>
@@ -897,6 +979,14 @@ const SENSITISERS=[
   {name:'Amylcinnamyl Alcohol',cat:'1B',cas:'101-85-9'},
   {name:'Anise Alcohol',cat:'1B',cas:'105-13-5'},
   {name:'Butylphenyl Methylpropional',cat:'1B',cas:'80-54-6'},
+  {name:'Cedramber',cat:'1B',cas:'19870-74-7'},
+  {name:'Methyl Atrarate',cat:'1B',cas:'6963-44-6'},
+  {name:'Helional',cat:'1B',cas:'1205-17-0'},
+  {name:'Linalool',cat:'1B',cas:'78-70-6'},
+  {name:'Limonene',cat:'1B',cas:'5989-27-5'},
+  {name:'Hydroxycitronellal (oxidised)',cat:'1B',cas:'107-75-5'},
+  {name:'2-acetoxy-2,3,8,8-tetramethyloctahydronaphthalene',cat:'1B',cas:'54464-57-2'},
+  {name:'Iso E Super',cat:'1B',cas:'54464-57-2'},
 ];
 const H_LIB=[{code:'H315',desc:'Causes skin irritation'},{code:'H317',desc:'May cause allergic skin reaction'},{code:'H319',desc:'Causes serious eye irritation'},{code:'H361',desc:'Suspected of damaging fertility'},{code:'H400',desc:'Very toxic to aquatic life'},{code:'H410',desc:'Very toxic to aquatic life, long lasting'},{code:'H411',desc:'Toxic to aquatic life, long lasting'},{code:'H412',desc:'Harmful to aquatic life, long lasting'},{code:'H413',desc:'May cause long lasting harmful effects to aquatic life'},{code:'EUH208',desc:'Contains sensitiser — may produce allergic reaction'}];
 const P_LIB=[{code:'P261',desc:'Avoid breathing vapours/dust'},{code:'P264',desc:'Wash hands thoroughly after handling'},{code:'P272',desc:'Contaminated clothing not to leave workplace'},{code:'P273',desc:'Avoid release to environment'},{code:'P280',desc:'Wear protective gloves/eye protection'},{code:'P302+P352',desc:'IF ON SKIN: wash with soap and water'},{code:'P333+P313',desc:'If skin irritation/rash: get medical advice'},{code:'P362',desc:'Take off contaminated clothing'},{code:'P391',desc:'Collect spillage'},{code:'P501',desc:'Dispose of contents/container per regulations'}];
@@ -1575,8 +1665,6 @@ async function signOut(){
   window.location.href='auth.html';
 }
 const SUPPLIERS={
-  sfc:{name:'Supplies for Candles',sdsUrl:'https://www.suppliesforcandles.co.uk',instructions:'Visit Supplies for Candles → find your fragrance oil product page → scroll down to find the SDS PDF → download it → copy Section 2.2 → paste below.'},
-  ni:{name:'NI Candle Supplies',sdsUrl:'https://nicandlesupplies.co.uk',instructions:'Visit NI Candle Supplies → find your fragrance → download the SDS from the product page → copy Section 2.2 → paste below.'},
   csc:{name:'CandleScience',sdsUrl:'https://www.candlescience.com',instructions:'Visit CandleScience → find your fragrance product page → look under Documents for the SDS PDF → copy Section 2 → paste below.'},
   ng:{name:'Natures Garden',sdsUrl:'https://www.naturesgardencandles.com',instructions:'Visit Natures Garden → find your fragrance → download the SDS from the product page → copy Section 2 → paste below.'},
   bb:{name:'Brambleberry',sdsUrl:'https://www.brambleberry.com',instructions:'Visit Brambleberry → find your fragrance product page → look for the SDS document → copy Section 2 → paste below.'},
@@ -1812,7 +1900,16 @@ function forceGoToStep(n){
   document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('step-'+n).classList.add('active');
   updateStepsBar();
-  if(n===5)buildSummary();
+  if(n===5){buildSummary();
+    const dlRow=document.getElementById('preview-dl-row');
+    if(dlRow)dlRow.style.display='flex';
+    // Show/hide dashed note based on shape
+    const dashedNote = document.getElementById('dashed-note-text');
+    if(dashedNote){
+      const isCircle = (S.shape === 'circle');
+      dashedNote.parentElement.style.display = isCircle ? 'block' : 'none';
+    }
+  }
   updateLabel();
   const ct=document.getElementById('cricut-tip-box');
   if(ct)ct.style.display=n===5?'block':'none';
@@ -1850,7 +1947,7 @@ function renderSaved(){
   const psLink=document.getElementById('print-sheet-link');
   const psLinkPreview=document.getElementById('print-sheet-link-preview');
   if(psLink) psLink.style.display=hasSaved?'flex':'none';
-  if(psLinkPreview) psLinkPreview.style.display=hasSaved?'flex':'none';
+  if(psLinkPreview) psLinkPreview.style.display=(hasSaved&&S.step===5)?'flex':'none';
   if(!arr.length){sec.style.display='none';return;}
   sec.style.display='';
   count.textContent='('+arr.length+')';
@@ -1958,6 +2055,10 @@ function init(){
   document.getElementById('custom-w').value=35;
   document.getElementById('custom-h').value=35;
   renderSaved();
+  // Ensure hazard data is always clear on page load — never cached
+  S.signal=''; S.pictograms=[]; S.hSelected=[]; S.pSelected=[]; S.sensitisers=[];
+  S.hStatements=''; S.pStatements='';
+  updateLabel();
 }
 function saveBizDetails(){
   const biz={bizName:document.getElementById('biz-name')?.value||'',bizAddress:document.getElementById('biz-address')?.value||'',bizPhone:document.getElementById('biz-phone')?.value||'',bizWebsite:document.getElementById('biz-website')?.value||''};
@@ -2008,13 +2109,17 @@ function extractSDS(){
   const pM=[...new Set(text.match(/P\d{3}(?:\+P\d{3})*/g)||[])];
   if(pM.length){S.pSelected=[...new Set([...S.pSelected,...pM])];document.getElementById('p-statements').value=S.pSelected.join(', ');pM.forEach(c=>{const ch=document.querySelector(`#p-chips .h-chip[data-code="${c}"]`);if(ch)ch.classList.add('selected');});}
   if(/\bDanger\b/i.test(text))selectSignal('Danger');else if(/\bWarning\b/i.test(text))selectSignal('Warning');
-  if(/GHS02|flammable/i.test(text))addPicto('flame');
-  if(/GHS07|irritant/i.test(text))addPicto('exclamation');
-  if(/GHS08|health hazard/i.test(text))addPicto('health');
-  if(/GHS09|aquatic/i.test(text))addPicto('aquatic');
+  if(/GHS02|SGH02|flammable/i.test(text))addPicto('flame');
+  if(/GHS07|SGH07|irritant/i.test(text))addPicto('exclamation');
+  if(/GHS08|SGH08|health hazard/i.test(text))addPicto('health');
+  if(/GHS09|SGH09|aquatic/i.test(text))addPicto('aquatic');
+  // Also map H codes directly to pictograms
+  const hToPicto={'H400':'aquatic','H410':'aquatic','H411':'aquatic','H412':'aquatic','H413':'aquatic','H224':'flame','H225':'flame','H226':'flame','H228':'flame','H242':'flame','H315':'exclamation','H317':'exclamation','H319':'exclamation','H335':'exclamation','H302':'exclamation','H312':'exclamation','H332':'exclamation','H334':'health','H340':'health','H341':'health','H350':'health','H351':'health','H360':'health','H361':'health','H290':'corrosive','H314':'corrosive','H290':'corrosive'};
+  hM.forEach(h=>{if(hToPicto[h])addPicto(hToPicto[h]);});
   let fs=0;
   SENSITISERS.forEach(s=>{try{const baseName=s.name.split('(')[0].trim();const escaped=baseName.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');const pat=new RegExp(escaped,'i');if(pat.test(text)&&!S.sensitisers.includes(s.name)){S.sensitisers.push(s.name);const c=document.querySelector(`#sensitiser-chips .s-chip[data-name="${s.name}"]`);if(c)c.classList.add('selected');fs++;}}catch(e){}});
   renderTags();updateLabel();
+  lockHazardFields(true);
   alert(`✅ Extracted!\n• ${hM.length} H/EUH statements\n• ${pM.length} P statements\n• ${fs} CLP sensitisers\n\nAlways verify against your SDS before printing.`);
 }
 function addPicto(k){if(!S.pictograms.includes(k)){S.pictograms.push(k);const b=document.querySelector(`.picto-btn[data-picto="${k}"]`);if(b)b.classList.add('selected');}}
@@ -2067,7 +2172,10 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-function goToStep(n){if(n>S.step+1)return;S.step=n;document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+n).classList.add('active');updateStepsBar();if(n===5)buildSummary();updateLabel();const ct=document.getElementById('cricut-tip-box');if(ct)ct.style.display=n===5?'block':'none';if(n===3){const cb=document.getElementById('hazard-confirm');const btn=document.getElementById('btn-next-step3');if(cb){cb.checked=false;}if(btn){btn.style.opacity='0.4';btn.style.pointerEvents='none';}}}
+function goToStep(n){if(n>S.step+1)return;S.step=n;
+  // Hide preview download buttons unless on step 5
+  const dlRow=document.getElementById('preview-dl-row');
+  if(dlRow)dlRow.style.display=(n===5)?'flex':'none';document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+n).classList.add('active');updateStepsBar();if(n===5)buildSummary();updateLabel();const ct=document.getElementById('cricut-tip-box');if(ct)ct.style.display=n===5?'block':'none';if(n===3){const cb=document.getElementById('hazard-confirm');const btn=document.getElementById('btn-next-step3');if(cb){cb.checked=false;}if(btn){btn.style.opacity='0.4';btn.style.pointerEvents='none';}}}
 function nextStep(){if(S.step<5)goToStep(S.step+1);}
 function toggleHazardNext(){
   const cb=document.getElementById('hazard-confirm');
@@ -2077,7 +2185,84 @@ function toggleHazardNext(){
   else{btn.style.opacity='0.4';btn.style.pointerEvents='none';}
 }
 function prevStep(){if(S.step>1)goToStep(S.step-1);}
+function checkStep4AndNext(){
+  const phone=(document.getElementById('biz-phone')?.value||'').trim();
+  if(!phone){
+    document.getElementById('biz-phone').style.border='1.5px solid #EF4444';
+    document.getElementById('biz-phone').focus();
+    alert('⚠️ Phone number is required for CLP compliance. Please enter your phone number before continuing.');
+    return;
+  }
+  document.getElementById('biz-phone').style.border='';
+  nextStep();
+}
+function lockHazardFields(lock){
+  const ids=['smart-paste-input','h-statements','p-statements'];
+  ids.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.readOnly=lock;
+    el.style.opacity=lock?'0.6':'1';
+    el.style.pointerEvents=lock?'none':'auto';
+    el.style.background=lock?'#F8FAFC':'';
+  });
+  // Lock/unlock signal word buttons
+  ['signal-warning','signal-danger'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.style.pointerEvents=lock?'none':'auto';
+    el.style.opacity=lock?'0.6':'1';
+  });
+  // Lock/unlock pictogram cards
+  document.querySelectorAll('.picto-card,.picto-btn').forEach(el=>{
+    el.style.pointerEvents=lock?'none':'auto';
+    el.style.opacity=lock?'0.6':'1';
+  });
+  // Lock/unlock extract button
+  const extractBtn=document.querySelector('.btn-extract');
+  if(extractBtn){
+    extractBtn.disabled=lock;
+    extractBtn.style.opacity=lock?'0.5':'1';
+  }
+  // Show/hide locked banner
+  const banner=document.getElementById('hazard-lock-banner');
+  if(banner)banner.style.display=lock?'flex':'none';
+}
 function startOver(){location.reload();}
+function clearHazardData(){
+  // Clear signal word
+  S.signal='';
+  document.getElementById('signal-warning').className='signal-btn';
+  document.getElementById('signal-danger').className='signal-btn';
+  // Clear H statements
+  const hEl=document.getElementById('h-statements');
+  if(hEl)hEl.value='';
+  S.hStatements='';
+  S.hSelected=[];
+  document.querySelectorAll('#h-chips .h-chip').forEach(c=>c.classList.remove('selected'));
+  // Clear P statements
+  const pEl=document.getElementById('p-statements');
+  if(pEl)pEl.value='';
+  S.pStatements='';
+  S.pSelected=[];
+  document.querySelectorAll('#p-chips .h-chip').forEach(c=>c.classList.remove('selected'));
+  // Clear pictograms
+  S.pictograms=[];
+  document.querySelectorAll('.picto-card').forEach(c=>c.classList.remove('selected'));
+  // Clear sensitisers
+  S.sensitisers=[];
+  renderTags();
+  // Clear smart paste
+  const sp=document.getElementById('smart-paste-input');
+  if(sp)sp.value='';
+  updateLabel();
+  lockHazardFields(false);
+  // Re-lock the download button
+  const verifyBox = document.getElementById('verify-checkbox');
+  if(verifyBox) verifyBox.checked = false;
+  const btns=['btn-png','btn-jpeg','btn-svg','btn-pdf','btn-save'];
+  btns.forEach(id=>{const b=document.getElementById(id);if(b){b.style.opacity='0.4';b.style.pointerEvents='none';}});
+}
 function updateStepsBar(){
   document.querySelectorAll('.step-item').forEach(el=>{const n=parseInt(el.dataset.step);el.classList.remove('active','done','inactive');if(n<S.step){el.classList.add('done');el.querySelector('.step-circle').textContent='✓';}else if(n===S.step)el.classList.add('active');else el.classList.add('inactive');});
   for(let i=1;i<=4;i++){const l=document.getElementById('line-'+i);if(l)l.classList.toggle('done',i<S.step);}
@@ -2115,7 +2300,9 @@ function syncDimFields(){
   if(isRect){hI.disabled=false;hI.style.opacity='1';if(hN)hN.textContent='';}
   else{hI.disabled=true;hI.style.opacity='0.45';if(hN)hN.innerHTML='— <a href="#" onclick="selectShape(\'rectangle\');return false;" style="color:#4C9BB0;font-size:11px;">Use Rectangle for different height</a>';const wv=document.getElementById('custom-w').value;if(wv)hI.value=wv;}
 }
-function selectSignal(s){S.signal=s;document.getElementById('signal-warning').className='signal-btn'+(s==='Warning'?' sel-warn':'');document.getElementById('signal-danger').className='signal-btn'+(s==='Danger'?' sel-danger':'');updateLabel();}
+function selectSignal(s){
+  if(S.signal&&S.signal!==s){const h=(document.getElementById('h-statements')?.value||'').trim();const p=(document.getElementById('p-statements')?.value||'').trim();if((h||p)&&!confirm('⚠️ Signal word changed to '+s+'.\n\nPlease check your H and P statements are still correct.'))return;}
+  S.signal=s;document.getElementById('signal-warning').className='signal-btn'+(s==='Warning'?' sel-warn':'');document.getElementById('signal-danger').className='signal-btn'+(s==='Danger'?' sel-danger':'');updateLabel();}
 function togglePicto(el,key){el.classList.toggle('selected');const i=S.pictograms.indexOf(key);if(i>-1)S.pictograms.splice(i,1);else S.pictograms.push(key);updateLabel();}
 
 // ── READ FORM ─────────────────────────────────────────────────
@@ -2205,7 +2392,7 @@ function buildSVG(forExport=false){
 
   const scent=S.scentName||'Your Scent Name';
   const type=(S.productType||'Scented Candle').toUpperCase();
-  const _rawSig=(S.signal||'WARNING').toUpperCase();
+  const _rawSig=(S.signal||'').toUpperCase();
   const _langs=S.labelLang?S.labelLang.split('_'):['en'];
   // Build multilingual signal word
   const _sigParts=[];
@@ -2215,15 +2402,15 @@ function buildSVG(forExport=false){
   const _containsParts=[];
   _langs.forEach(l=>{const t=l==='fr'?'Contient:':l==='de'?'Enthält:':'Contains:';if(!_containsParts.includes(t))_containsParts.push(t);});
   const _containsPrefix=_containsParts.join(' / ');
-  const hCodes=(S.hStatements||'H317, H411').split(',').map(h=>h.trim()).filter(Boolean);
+  const hCodes=(S.hStatements||'').split(',').map(h=>h.trim()).filter(Boolean);
   const pCodes=(S.pStatements||'').split(',').map(p=>p.trim()).filter(Boolean);
-  const sensArr=S.sensitisers.length?S.sensitisers:['Linalool','Citral'];
+  const sensArr=S.sensitisers.length?S.sensitisers:[];
   const bizName=S.bizName||'Your Brand';
   const webLine=S.bizWebsite||'';
   const addr=S.bizAddress||'';
   const phone=S.bizPhone||'';
-  const detailParts=[S.netWeight,S.burnTime?'Burn time: '+S.burnTime:'',S.batchNum?'Batch: '+S.batchNum:'',S.ufiCode?'UFI: '+S.ufiCode:''].filter(Boolean);
-  const pictos=S.pictograms.length?[...new Set(S.pictograms)].slice(0,6):['exclamation','aquatic'];
+  const detailParts=[S.netWeight].filter(Boolean);
+  const pictos=S.pictograms.length?[...new Set(S.pictograms)].slice(0,6):[];
   const clamp=(v,mn,mx)=>Math.min(Math.max(v,mn),mx);
 
   // ── CLIP & BACKGROUND ────────────────────────────────────────
@@ -2499,8 +2686,8 @@ function updateLabel(){
             // Scale to fill panel (respecting aspect ratio)
             const fitZoom=Math.min(aW/vbW,aH/vbH,2.0);
             // Only auto-set zoom if it's still at default or the label size changed
-            if(previewZoom===0.75||previewZoom<0.3){
-              previewZoom=Math.max(0.3,fitZoom*0.88);
+            if(previewZoom===0.75||previewZoom<1.0){
+              previewZoom=Math.max(1.0,fitZoom*0.88);
               const pct=Math.round(previewZoom*100);
               const fillPct=((previewZoom-0.2)/(2.0-0.2)*100).toFixed(1);
               const zpEl=document.getElementById('zoom-pct');const zfEl=document.getElementById('zoom-fill');const ztEl=document.getElementById('zoom-thumb');
@@ -2700,6 +2887,270 @@ function downloadSVG(){
 
 // ── MOBILE SHEET ──────────────────────────────────────────────
 function openSheet(){document.getElementById('preview-sheet').classList.add('open');document.body.style.overflow='hidden';}
+function wizRetry(text){
+  // Remove last error message and retry
+  const msgs = document.getElementById('wiz-messages');
+  const lastMsg = msgs.lastElementChild;
+  if(lastMsg && lastMsg.classList.contains('ai')) lastMsg.remove();
+  wizHistory.push({role:'user', content:text});
+  wizShowTyping();
+  document.getElementById('wiz-send').disabled = true;
+  wizCallAPI(text).catch(e=>{
+    wizHideTyping();
+    wizAddMsg('ai', `Still can\'t reach the AI — please check your connection and try again.`);
+  }).finally(()=>{ document.getElementById('wiz-send').disabled = false; });
+}
+function wizClearChat(){
+  wizHistory=[];
+  wizParsed=null;
+  document.getElementById('wiz-messages').innerHTML='';
+  wizGreet();
+}
+function closeSheet(e){if(!e||e.target===document.getElementById('preview-sheet')||e===undefined){document.getElementById('preview-sheet').classList.remove('open');document.body.style.overflow='';}}
+
+// ══════════════════════════════════════════════════════════════
+// LABEL WIZARD — AI-powered natural language guide
+// ══════════════════════════════════════════════════════════════
+
+let wizHistory = []; // [{role, content}]
+let wizListening = false;
+let wizSpeech = null;
+let wizParsed = null; // parsed requirements from AI
+
+function openWizard(){
+  document.getElementById('wiz-overlay').classList.add('open');
+  document.getElementById('wiz-panel').classList.add('open');
+  document.body.style.overflow='hidden';
+  if(!wizHistory.length){
+    // Show a brief "Connecting…" state so user knows something is happening
+    // This covers the edge-function cold-start delay (typically 2–4 s)
+    const sendBtn = document.getElementById('wiz-send');
+    const input = document.getElementById('wiz-input');
+    if(sendBtn) sendBtn.disabled = true;
+    if(input){ input.placeholder = 'Connecting…'; input.disabled = true; }
+    // Short delay to allow panel to animate open before greeting renders
+    setTimeout(()=>{
+      wizGreet();
+      if(sendBtn) sendBtn.disabled = false;
+      if(input){ input.placeholder = 'Tell me what you want to make…'; input.disabled = false; input.focus(); }
+    }, 350);
+  }
+}
+function closeWizard(){
+  document.getElementById('wiz-overlay').classList.remove('open');
+  document.getElementById('wiz-panel').classList.remove('open');
+  document.body.style.overflow='';
+  if(wizListening) wizStopMic();
+}
+
+function wizGreet(){
+  wizAddMsg('ai', `<strong>Hi! I'm your Label Wizard 🕯️</strong><br><br>
+Tell me what you want to create — in your own words. For example:<br><br>
+<em>"I need an A4 sheet of 75mm circle labels, 6 labels, all with different scents"</em><br>
+<em>"I want 4 of Sea Breeze and 4 of Coconut on one page"</em><br>
+<em>"Just one label for a 50mm circle wax melt"</em><br><br>
+You can type or use the 🎤 microphone button to speak.`);
+}
+
+function wizAddMsg(role, html, skipHistory=false){
+  const msgs = document.getElementById('wiz-messages');
+  const div = document.createElement('div');
+  div.className = `wiz-msg ${role}`;
+  const avatarContent = role==='ai' ? '✨' : '👤';
+  div.innerHTML = `<div class="wiz-avatar">${avatarContent}</div><div class="wiz-bubble">${html}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  if(!skipHistory && role==='user'){
+    wizHistory.push({role:'user', content: div.querySelector('.wiz-bubble').innerText});
+  }
+  return div;
+}
+
+function wizShowTyping(){
+  const msgs = document.getElementById('wiz-messages');
+  const div = document.createElement('div');
+  div.className = 'wiz-msg ai';
+  div.id = 'wiz-typing-indicator';
+  div.innerHTML = `<div class="wiz-avatar">✨</div><div class="wiz-bubble"><div class="wiz-typing"><span></span><span></span><span></span></div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+function wizHideTyping(){
+  const el = document.getElementById('wiz-typing-indicator');
+  if(el) el.remove();
+}
+
+async function wizSend(){
+  const input = document.getElementById('wiz-input');
+  const text = input.value.trim();
+  if(!text) return;
+  input.value=''; input.style.height='42px';
+  document.getElementById('wiz-send').disabled = true;
+  wizAddMsg('user', text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'));
+  wizHistory.push({role:'user', content:text});
+  wizShowTyping();
+  try {
+    await wizCallAPI(text);
+  } catch(e) {
+    wizHideTyping();
+    console.error('Wizard API error:', e);
+    wizAddMsg('ai', `Sorry, I couldn\'t reach the AI right now. <button onclick="wizRetry(${JSON.stringify(text)})" style="background:var(--teal);color:white;border:none;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;font-family:\'DM Sans\',sans-serif;">↺ Try again</button>`);
+  }
+  document.getElementById('wiz-send').disabled = false;
+}
+
+async function wizCallAPI(userMessage){
+  const systemPrompt = `You are the CLPeasy Label Wizard — a friendly, expert guide embedded in CLPeasy, a CLP label generator for UK candle and wax melt makers.
+
+Your job is to understand what the user wants to make, confirm their requirements, then provide clear step-by-step instructions to achieve it in CLPeasy.
+
+CLPeasy has these features:
+- BUILDER (builder.html): 5-step wizard — Step 1: shape (circle/square/rectangle) & size (preset: 35/40/50/63mm or custom mm) & appearance; Step 2: product details (scent name, product type, weight, fragrance load, burn time); Step 3: hazard data (supplier, Smart Paste SDS, signal word, pictograms, H/P statements, sensitisers); Step 4: business details (name, address, phone, website, batch number); Step 5: download (PNG, SVG, PDF) and save to label library
+- PRINT SHEET (print.html): arrange saved labels on A4, choose sheet template, set quantities per label, download PDF or individual PNGs for Cricut
+- DOWNLOAD OPTIONS (all on builder Step 5 and preview panel):
+  • ⬇ PNG — single label, 300 DPI, for home printing on plain paper or uploading to Canva
+  • ⬡ SVG — vector file for Cricut Design Space (Print Then Cut)
+  • 🖨 Avery Sheet — positions labels exactly on A4 to match real Avery sticker sheets (35mm=35/sheet, 40mm=24/sheet, 51mm=15/sheet, 63mm=12/sheet) — print on Avery blank label sticker paper from Amazon/Ryman/Hobbycraft
+  • 🏭 Print Shop PDF — 300 DPI PNG with 3mm bleed + crop marks — ready to email to a professional print company (Vistaprint, Moo, local printers)
+  • ✂️ Cricut PNGs — individual 300 DPI PNGs, one per label, zipped if multiple — import each into Cricut Design Space for Print Then Cut
+
+CRITICAL RULES:
+1. First message: extract what you can from the user's request. If key info is missing, ask 1-2 focused clarifying questions — NEVER more than 2 at once.
+2. Once you have enough info, present a clear confirmation summary like: "So you want: [X]mm circle labels, [N] labels total, [description of scents/variants] on one A4 sheet — is that right?"
+3. After confirmation, ask which guide style they prefer using this exact format:
+<STYLE_CHOICE>
+4. When they choose a style, generate the steps using that style. Always end steps with a helpful tip.
+
+Key things to know:
+- "radius" in common usage often means the circle size (diameter). Clarify if unsure.
+- Multiple different scents = multiple labels = save each one in the library, then use Print Sheet
+- All labels same scent = build once, set quantity in Print Sheet
+- Cricut users: use ✂️ Cricut PNGs or ⬡ SVG — not the Avery Sheet
+- Sending to a print company: use 🏭 Print Shop PDF — it has bleed and crop marks which is what printers need
+- Printing at home on Avery sticker paper: use 🖨 Avery Sheet — it aligns exactly to real Avery sheets
+- Printing at home on plain paper (cut yourself): use ⬇ PNG
+- Uploading to Canva to add branding first: use ⬇ PNG, then in Canva use "Upload" and overlay brand elements
+- Sizes: 35mm = wax melt, 40mm = small candle, 50mm = standard candle, 63mm = large jar
+- Maximum labels on A4 at 75mm: approximately 6 (3×2 grid with margins)
+
+When generating steps, format them clearly. For WALKTHROUGH style, include visual hints in brackets like [→ Click "Circle" in the shape grid] or [→ Step 1: Label size & shape].
+
+Respond in plain HTML suitable for a chat bubble. Use <strong> for key terms. Use line breaks. Keep responses friendly and concise.`;
+
+  const messages = [
+    ...wizHistory.slice(-8)
+  ];
+
+  // Route through Supabase edge function (same as clp-search) — avoids CORS & keeps API key server-side
+  const response = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/clp-wizard', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SUPABASE_KEY}`
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      system: systemPrompt,
+      messages: messages
+    })
+  });
+
+  if(!response.ok){
+    const errText = await response.text().catch(()=>'');
+    throw new Error('Edge function error '+response.status+': '+errText);
+  }
+  const data = await response.json();
+  wizHideTyping();
+
+  const content = data.content?.[0]?.text || '';
+  wizHistory.push({role:'assistant', content});
+
+  // Check if AI wants to show style choice
+  if(content.includes('<STYLE_CHOICE>')){
+    const beforeChoice = content.replace('<STYLE_CHOICE>','').trim();
+    if(beforeChoice) wizAddMsg('ai', beforeChoice, true);
+    wizShowStyleChoice();
+    return;
+  }
+
+  // Check if content contains auto-fill data
+  if(content.includes('<AUTOFILL>')){
+    const parts = content.split('<AUTOFILL>');
+    if(parts[0]) wizAddMsg('ai', parts[0], true);
+    try {
+      const fillData = JSON.parse(parts[1].split('</AUTOFILL>')[0]);
+      wizAutoFill(fillData);
+      wizAddMsg('ai', `✅ <strong>Done! I've filled in the builder for you.</strong><br>Review each step and make any changes, then click through to complete your label.`, true);
+    } catch(e) { wizAddMsg('ai', content, true); }
+    return;
+  }
+
+  wizAddMsg('ai', content, true);
+}
+
+function wizShowStyleChoice(){
+  const msgs = document.getElementById('wiz-messages');
+  const div = document.createElement('div');
+  div.className = 'wiz-msg ai';
+  div.innerHTML = `<div class="wiz-avatar">✨</div><div class="wiz-bubble">
+    <strong>How would you like me to guide you?</strong>
+    <div class="wiz-style-grid">
+      <div class="wiz-style-card" onclick="wizChooseStyle('walkthrough')">
+        <div class="style-icon">🎯</div>
+        <div class="style-name">Walkthrough</div>
+        <div class="style-desc">Animated steps with visual hints showing exactly where to click</div>
+      </div>
+      <div class="wiz-style-card" onclick="wizChooseStyle('quicklist')">
+        <div class="style-icon">📋</div>
+        <div class="style-name">Quick list</div>
+        <div class="style-desc">Clear numbered steps, fast to read</div>
+      </div>
+      <div class="wiz-style-card" onclick="wizChooseStyle('autofill')">
+        <div class="style-icon">⚡</div>
+        <div class="style-name">Auto-fill</div>
+        <div class="style-desc">I fill in the builder fields for you automatically</div>
+      </div>
+    </div>
+  </div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function wizChooseStyle(style){
+  const styleNames = {walkthrough:'Walkthrough — show me animated steps', quicklist:'Quick list — numbered steps', autofill:'Auto-fill — fill it in for me'};
+  wizAddMsg('user', styleNames[style]);
+  wizHistory.push({role:'user', content:`Please use the ${style} style to guide me through the steps.`});
+  wizShowTyping();
+  try {
+    await wizCallAPI(`Please use the ${style} style to guide me through the steps.`);
+  } catch(e) {
+    wizHideTyping();
+    wizAddMsg('ai','Sorry, something went wrong. Try again?');
+  }
+}
+
+// Auto-fill: takes a parsed data object and sets builder fields
+function wizAutoFill(data){
+  if(!data) return;
+  try {
+    if(data.shape) selectShape(data.shape);
+    if(data.size) selectSize(data.size);
+    if(data.customW){ document.getElementById('custom-w').value=data.customW; S.customW=data.customW; }
+    if(data.customH){ document.getElementById('custom-h').value=data.customH; S.customH=data.customH; }
+    if(data.scentName){ document.getElementById('scent-name').value=data.scentName; S.scentName=data.scentName; }
+    if(data.productType){ document.getElementById('product-type').value=data.productType; }
+    if(data.netWeight){ document.getElementById('net-weight').value=data.netWeight; }
+    if(data.signal) selectSignal(data.signal);
+    if(data.bizName){ document.getElementById('biz-name').value=data.bizName; }
+    if(data.bgColour){ document.getElementById('label-bg-colour').value=data.bgColour; document.getElementById('label-bg-hex').value=data.bgColour; }
+    updateLabel();
+    // Scroll wizard to top of steps
+    goToStep(1);
+    closeWizard();
+    setTimeout(()=>openWizard(),100); // reopen to show success
+  } catch(e){ console.log('Autofill error:',e); }
+}
 
 // ── MICROPHONE ───────────────────────────────────────────────
 let wizSilenceTimer = null;
