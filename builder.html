@@ -1146,7 +1146,7 @@ function printToPDF(){
     <style>*{margin:0;padding:0;box-sizing:border-box;}html,body{width:${mmW}mm;height:${mmH}mm;overflow:hidden;background:white;}img{display:block;width:${mmW}mm;height:${mmH}mm;}@page{size:${mmW}mm ${mmH}mm;margin:0;}@media print{button{display:none;}}
     .pb{position:fixed;bottom:16px;right:16px;background:#0D9488;color:white;border:none;padding:12px 24px;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:sans-serif;}</style></head>
     <body><img src="${pngDataUri}"/><button class="pb" onclick="window.print()">🖨 Print / Save as PDF</button>
-    <script>setTimeout(function(){window.print();},600);<\/script></body></html>`;
+    \u003cscript>setTimeout(function(){window.print();},600);<\/\u003cscript></body></html>`;
     const _blob=new Blob([htmlStr],{type:'text/html'});
     const _blobUrl=URL.createObjectURL(_blob);
     const win=window.open(_blobUrl,'_blank','width=800,height=700');
@@ -2156,6 +2156,15 @@ function goToStep(n){if(n>S.step+1)return;S.step=n;
   if(dlRow)dlRow.style.display=(n===5)?'flex':'none';
   const mobileDlRow=document.getElementById('mobile-dl-row');
   if(mobileDlRow)mobileDlRow.style.display=(n===5)?'flex':'none';
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('step-'+n).classList.add('active');
+  updateStepsBar();
+  if(n===5){
+    buildSummary();
+    const dlRow2=document.getElementById('preview-dl-row');
+    if(dlRow2)dlRow2.style.display='flex';
+  }
+  updateLabel();
 }
 function nextStep(){if(S.step<5){goToStep(S.step+1);window.scrollTo({top:0,behavior:'smooth'});}}
 function toggleHazardNext(){
