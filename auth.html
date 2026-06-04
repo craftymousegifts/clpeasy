@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>CLPeasy — Sign in</title>
   <meta name="description" content="Sign in or create your CLPeasy account. Generate fully compliant CLP labels for candles, wax melts, reed diffusers and fragrance products.">
   <meta property="og:title" content="CLPeasy — Sign In">
@@ -29,7 +29,7 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 24px;height
 main{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 16px;}
 
 /* CARD */
-.auth-card{background:white;border-radius:20px;border:1px solid var(--border);padding:40px;width:100%;max-width:420px;box-shadow:0 4px 24px rgba(0,0,0,0.06);}
+.auth-card{background:white;border-radius:20px;border:1px solid var(--border);padding:40px;width:100%;max-width:420px;box-shadow:0 4px 24px rgba(0,0,0,0.06);box-sizing:border-box;}
 .auth-title{font-family:'DM Serif Display',serif;font-size:28px;margin-bottom:6px;text-align:center;}
 .auth-sub{font-size:14px;color:var(--muted);text-align:center;margin-bottom:28px;}
 
@@ -291,6 +291,10 @@ switchTab(defaultTab);
 </script>
 <style>
   body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; user-select:none; }
+@media(max-width:480px){
+  .auth-card{padding:24px 20px;border-radius:12px;margin:0 12px;}
+  body{padding:20px 0;align-items:flex-start;}
+}
 </style>
 <script>
   document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
