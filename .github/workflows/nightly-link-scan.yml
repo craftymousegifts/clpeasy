@@ -1,0 +1,40 @@
+name: Nightly Link Scan
+
+on:
+  schedule:
+    # Runs every day at midnight UTC (1am BST summer, midnight GMT winter)
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    # Also allows manual trigger from GitHub Actions tab anytime
+
+jobs:
+  link-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run link scan
+        id: scan
+        run: python3 .github/scripts/link_scan.py
+        env:
+          # Pre-launch: scans local HTML files from repo
+          # Post-launch (after 15 Jun): set SCAN_MODE=live in repo variables
+          SCAN_MODE: ${{ vars.SCAN_MODE || 'local' }}
+          SITE_URL: ${{ vars.SITE_URL || 'https://clpeasy.com' }}
+
+      - name: Send email report via Brevo
+        run: python3 .github/scripts/send_report.py
+        env:
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          REPORT_TO: support@clpeasy.com
+          SCAN_MODE: ${{ vars.SCAN_MODE || 'local' }}
