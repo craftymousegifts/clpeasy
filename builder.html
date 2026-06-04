@@ -764,7 +764,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       ✂️ <strong style="color:var(--text);">About the dashed line:</strong> The pale dashed circle you see on your label is a <strong>cut guide only</strong> — it will not print. It shows exactly where to cut your label. In cutting machine software it becomes the cut path automatically. When printing at home, simply cut along the dashed line.
     </div>
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
-      <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ Download PNG — for printing &amp; Canva</button>
+      <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ Download PNG</button>
       <button id="btn-jpeg" onclick="downloadJPEG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬇ Download JPEG — smaller file size</button>
       <button id="btn-svg" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬡ Download SVG</button>
       <button id="btn-pdf" onclick="printToPDF()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">🖨 Print to PDF</button>
@@ -836,13 +836,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button class="btn-dl" onclick="downloadPNG()">⬇ PNG</button>
       <button class="btn-dl-svg" onclick="downloadSVG()">⬡ SVG</button>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
-      <button class="btn-dl" style="background:#3a7d8f;font-size:11px;padding:9px;" title="Aligned to your Avery label sheet — print at home on sticker paper" onclick="downloadPDFSheet()">🖨 Avery Sheet</button>
-      <button class="btn-dl" style="background:#7C3AED;font-size:11px;padding:9px;" title="300 DPI + 3mm bleed + crop marks — send this to a print company" onclick="downloadPrintReadyPDF()">🏭 Print Shop PDF</button>
-    </div>
-    <div style="margin-top:6px;">
-      <button class="btn-dl" style="background:#1D4ED8;font-size:11px;padding:9px;width:100%;" title="Individual PNGs for Cricut Print Then Cut" onclick="downloadCricutPNGs()">✂️ Cricut PNGs</button>
-    </div>
+
     <a id="print-sheet-link-preview" href="print.html" style="display:none;align-items:center;justify-content:center;gap:7px;background:rgba(13,148,136,0.12);border:1px solid rgba(13,148,136,0.25);color:#5EEAD4;padding:9px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;transition:all .2s;margin-top:2px;" title="Arrange your saved labels on an A4 sheet. For cutting machines: labels must be the same size on each sheet." onmouseover="this.style.background='rgba(13,148,136,0.22)'" onmouseout="this.style.background='rgba(13,148,136,0.12)'">🖨 Print Sheet Composer →</a>
     <div class="cricut-note" style="display:none;"></div>
   </div>
@@ -860,7 +854,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button class="btn-dl-svg" onclick="downloadSVG();closeSheet()">⬡ SVG</button>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
-      <button class="btn-dl" style="background:#3a7d8f;font-size:11px;" onclick="downloadPDFSheet();closeSheet()">🖨 Avery Sheet</button>
+
       <button class="btn-dl" style="background:#7C3AED;font-size:11px;" onclick="downloadPrintReadyPDF();closeSheet()">🏭 Print Shop</button>
     </div>
     <div style="margin-top:8px;">
