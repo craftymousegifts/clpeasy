@@ -749,11 +749,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="sdiv">H Statements</div>
     <span class="library-toggle" onclick="toggleLib('h-library',this)">▼ Show H statement library</span>
     <div id="h-library" style="display:none;margin-bottom:8px;"><div class="chip-library" id="h-chips"></div></div>
-    <div class="form-group"><input type="text" id="h-statements" placeholder="e.g. H317, H411, EUH208" oninput="updateLabel()"></div>
+    <div class="form-group"><input type="text" id="h-statements" placeholder="Extracted from Smart Paste" readonly style="background:#F8FAFC;color:#64748B;cursor:not-allowed;"></div>
     <div class="sdiv">P Statements</div>
     <span class="library-toggle" onclick="toggleLib('p-library',this)">▼ Show P statement library</span>
     <div id="p-library" style="display:none;margin-bottom:8px;"><div class="chip-library" id="p-chips"></div></div>
-    <div class="form-group"><input type="text" id="p-statements" placeholder="e.g. P261, P273, P501" oninput="updateLabel()"></div>
+    <div class="form-group"><input type="text" id="p-statements" placeholder="Extracted from Smart Paste" readonly style="background:#F8FAFC;color:#64748B;cursor:not-allowed;"></div>
     <div class="sdiv">EUH208 Sensitisers <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--muted)">— CLP/REACH skin sensitisers only</span></div>
     <div class="info-note">⚠️ Only include sensitisers that appear on your fragrance supplier's SDS. Always verify before printing.</div>
     <div class="sensitiser-legend">
@@ -1339,6 +1339,13 @@ function downloadPrintReadyPDF(){
 .extract-toast-title{font-size:15px;font-weight:700;color:#4ADE80;margin-bottom:8px;}
 .extract-toast-row{font-size:13px;color:rgba(255,255,255,0.85);line-height:1.8;}
 .extract-toast-warn{font-size:11px;color:rgba(255,255,255,0.5);margin-top:10px;border-top:1px solid rgba(255,255,255,0.1);padding-top:8px;}
+
+/* ── MOBILE: hide desktop preview panel, use mobile bar ── */
+@media(max-width:768px){
+  .builder-layout{grid-template-columns:1fr;}
+  .preview-panel{display:none;}
+  .mobile-preview-bar{display:flex !important;}
+}
 </style>
     </head><body>
     <div class="card"><img src="${pngUri}"/></div>
@@ -2512,13 +2519,13 @@ function buildSVG(forExport=false){
   // Reserve vertical slots as fractions of midH:
   // scent: 22%, type: 13%, signal: 16%, pictos: 14%, H-stmts: 13%, sens: 11%, gap: 11%
   const slot = {
-    scent:  midH * 0.21,
-    type:   midH * 0.13,
-    signal: midH * 0.16,
-    picto:  midH * 0.14,
-    h:      midH * 0.12,
+    scent:  midH * 0.20,
+    type:   midH * 0.12,
+    signal: midH * 0.14,
+    picto:  midH * 0.13,
+    h:      midH * 0.11,
     sens:   midH * 0.10,
-    p:      midH * 0.09,
+    p:      midH * 0.15,
     gap:    midH * 0.05,
   };
 
@@ -2593,7 +2600,7 @@ function buildSVG(forExport=false){
   const pText   = pCodes.slice(0,8).join(' · ');
   const pLines  = pText ? wrapText(pText, pSW*0.90, pFS, false, false) : [];
   const pStY    = curY + pLH*0.5;
-  const showP   = pLines.length > 0 && (curY + pLines.length*pLH) < botY - 2;
+  const showP   = pLines.length > 0;
 
   // ── RENDER PICTOGRAMS ─────────────────────────────────────────
   const GHS_TEXT={flame:'GHS02',exclamation:'GHS07',health:'GHS08',aquatic:'GHS09',corrosive:'GHS05',skull:'GHS06',oxidiser:'GHS03',gas:'GHS04',explosion:'GHS01'};
