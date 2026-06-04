@@ -2219,6 +2219,7 @@ document.addEventListener('keydown', function(e) {
 });
 
 function goToStep(n){if(n>S.step+1)return;S.step=n;
+  window.scrollTo({top:0,behavior:'smooth'});
   // Hide preview download buttons unless on step 5
   const dlRow=document.getElementById('preview-dl-row');
   if(dlRow)dlRow.style.display=(n===5)?'flex':'none';
@@ -2230,6 +2231,12 @@ function checkStep2Next(){
   if(!scent){
     alert('Please enter a scent name before continuing.');
     document.getElementById('scent-name')?.focus();
+    return;
+  }
+  const ptype=document.getElementById('product-type')?.value;
+  if(!ptype){
+    alert('Please select a product type before continuing.');
+    document.getElementById('product-type')?.focus();
     return;
   }
   nextStep();
@@ -3326,10 +3333,10 @@ function autoIncrementBatch(){
     el.value=current+'-2';
   } else {
     // Get last used batch from localStorage
-    const last=localStorage.getItem('clpeasy_last_batch')||'LOT-001';
+    const last=localStorage.getItem('clpeasy_last_batch')||'BN-001';
     const m=last.match(/^(.*?)(\d+)$/);
     if(m){const p=m[1];const n=parseInt(m[2]);el.value=p+String(n+1).padStart(m[2].length,'0');}
-    else{el.value='LOT-001';}
+    else{el.value='BN-001';}
   }
   // Save last used
   localStorage.setItem('clpeasy_last_batch',el.value);
