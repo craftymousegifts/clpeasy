@@ -743,16 +743,23 @@ const PRICE_IDS = {
 let billing='monthly';
 let sbClient=null;
 let currentUser=null;
+let sbReady=false;
 
 // Init Supabase and check session
-(async()=>{
+async function initSupabase(){
   const {createClient}=window.supabase;
   sbClient=createClient(SUPABASE_URL,SUPABASE_KEY);
   const {data:{session}}=await sbClient.auth.getSession();
   if(session){currentUser=session.user;}
-})();
+  sbReady=true;
+}
+initSupabase();
 
 async function startCheckout(plan){
+  // Wait for Supabase to initialise if needed
+  if(!sbReady){
+    await initSupabase();
+  }
   // If not logged in, send to auth with redirect back
   if(!currentUser){
     sessionStorage.setItem('checkout_plan',plan);
@@ -776,7 +783,8 @@ async function startCheckout(plan){
       method:'POST',
       headers:{
         'Content-Type':'application/json',
-        'Authorization':`Bearer ${authToken}`
+        'Authorization':`Bearer ${authToken}`,
+        'apikey':SUPABASE_KEY
       },
       body:JSON.stringify({
         priceId,
