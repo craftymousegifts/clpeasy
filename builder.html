@@ -768,7 +768,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button id="btn-jpeg" onclick="downloadJPEG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬇ Download JPEG — smaller file size</button>
       <button id="btn-svg" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬡ Download SVG</button>
       <button id="btn-pdf" onclick="printToPDF()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">🖨 Print to PDF</button>
-      <button id="btn-save" onclick="saveLabel()" style="background:var(--off);color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">💾 Save to my label library</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
+        <button id="btn-avery" onclick="downloadPDFSheet()" style="background:#3a7d8f;color:white;border:none;padding:14px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;" title="Aligned to your Avery label sheet — print at home on sticker paper">🖨 Avery Sheet</button>
+        <button id="btn-printshop" onclick="downloadPrintReadyPDF()" style="background:#7C3AED;color:white;border:none;padding:14px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;" title="300 DPI + 3mm bleed + crop marks — send to a print company">🏭 Print Shop PDF</button>
+      </div>
+      <button id="btn-cricut" onclick="downloadCricutPNGs()" style="background:#1D4ED8;color:white;border:none;padding:14px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;" title="Individual PNGs for Cricut Print Then Cut">✂️ Cricut PNGs (zip)</button>
+            <button id="btn-save" onclick="saveLabel()" style="background:var(--off);color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">💾 Save to my label library</button>
     </div>
 
     <!-- PRINT SHEET COMPOSER LINK -->
@@ -1978,7 +1983,7 @@ function buildSensitiserChips(){
 }
 function toggleDownload(){
   const checked=document.getElementById('verify-checkbox')?.checked;
-  const btns=['btn-png','btn-jpeg','btn-svg','btn-pdf','btn-save'];
+  const btns=['btn-png','btn-jpeg','btn-svg','btn-pdf','btn-avery','btn-printshop','btn-cricut','btn-save'];
   btns.forEach(id=>{
     const btn=document.getElementById(id);
     if(!btn)return;
@@ -2499,8 +2504,8 @@ function updateLabel(){
             // Scale to fill panel (respecting aspect ratio)
             const fitZoom=Math.min(aW/vbW,aH/vbH,2.0);
             // Only auto-set zoom if it's still at default or the label size changed
-            if(previewZoom===0.75||previewZoom<0.3){
-              previewZoom=Math.max(0.3,fitZoom*0.88);
+            if(previewZoom===0.75||previewZoom<1.0){
+              previewZoom=Math.max(1.0,fitZoom*0.88);
               const pct=Math.round(previewZoom*100);
               const fillPct=((previewZoom-0.2)/(2.0-0.2)*100).toFixed(1);
               const zpEl=document.getElementById('zoom-pct');const zfEl=document.getElementById('zoom-fill');const ztEl=document.getElementById('zoom-thumb');
@@ -2582,7 +2587,7 @@ function svgWrapped(lines,x,startY,lineH,sizePx,bold,serif,fill,anchor='middle',
 let previewZoom=0.75;
 
 function setPreviewZoom(z){
-  previewZoom=Math.min(2.0,Math.max(0.2,z));
+  previewZoom=Math.min(2.0,Math.max(0.5,z));
   const pct=Math.round(previewZoom*100);
   const fillPct=((previewZoom-0.2)/(2.0-0.2)*100).toFixed(1);
   const zpEl=document.getElementById('zoom-pct');
