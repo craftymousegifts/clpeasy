@@ -1484,6 +1484,7 @@ async function initAuth(){
           // Hide watermark note if subscribed
           const wmNote=document.querySelector('.watermark-note');
           if(wmNote)wmNote.style.display='none';
+          updateLabel();
           // Re-render label without watermark
           updateLabel();
         }
@@ -2408,7 +2409,7 @@ function buildSVG(forExport=false){
   const webLine=S.bizWebsite||'';
   const addr=S.bizAddress||'';
   const phone=S.bizPhone||'';
-  const detailParts=[S.netWeight].filter(Boolean);
+  const detailParts=[S.netWeight, S.burnTime?'Burn: '+S.burnTime:''].filter(Boolean);
   const pictos=S.pictograms.length?[...new Set(S.pictograms)].slice(0,6):[];
   const clamp=(v,mn,mx)=>Math.min(Math.max(v,mn),mx);
 
@@ -2856,7 +2857,7 @@ function downloadPNG(){
   img.src=svgDataUri;
 }
 
-// ── SVG DOWNLOAD (Cricut Design Space) ────────────────────────
+// ── SVG DOWNLOAD ──────────────────────────────────────────────
 function downloadSVG(){
   try{
     readForm();
@@ -3008,10 +3009,10 @@ CLPeasy has these features:
 - PRINT SHEET (print.html): arrange saved labels on A4, choose sheet template, set quantities per label, download PDF or individual PNGs for Cricut
 - DOWNLOAD OPTIONS (all on builder Step 5 and preview panel):
   • ⬇ PNG — single label, 300 DPI, for home printing on plain paper or uploading to Canva
-  • ⬡ SVG — vector file for Cricut Design Space (Print Then Cut)
+  • ⬡ SVG — vector file for cutting machines and design tools
   • 🖨 Avery Sheet — positions labels exactly on A4 to match real Avery sticker sheets (35mm=35/sheet, 40mm=24/sheet, 51mm=15/sheet, 63mm=12/sheet) — print on Avery blank label sticker paper from Amazon/Ryman/Hobbycraft
   • 🏭 Print Shop PDF — 300 DPI PNG with 3mm bleed + crop marks — ready to email to a professional print company (Vistaprint, Moo, local printers)
-  • ✂️ Cricut PNGs — individual 300 DPI PNGs, one per label, zipped if multiple — import each into Cricut Design Space for Print Then Cut
+  • ✂️ Individual PNGs — individual 300 DPI PNGs, one per label, zipped if multiple
 
 CRITICAL RULES:
 1. First message: extract what you can from the user's request. If key info is missing, ask 1-2 focused clarifying questions — NEVER more than 2 at once.
@@ -3024,7 +3025,7 @@ Key things to know:
 - "radius" in common usage often means the circle size (diameter). Clarify if unsure.
 - Multiple different scents = multiple labels = save each one in the library, then use Print Sheet
 - All labels same scent = build once, set quantity in Print Sheet
-- Cricut users: use ✂️ Cricut PNGs or ⬡ SVG — not the Avery Sheet
+- For cutting machines: use ✂️ Individual PNGs or ⬡ SVG — not the Avery Sheet
 - Sending to a print company: use 🏭 Print Shop PDF — it has bleed and crop marks which is what printers need
 - Printing at home on Avery sticker paper: use 🖨 Avery Sheet — it aligns exactly to real Avery sheets
 - Printing at home on plain paper (cut yourself): use ⬇ PNG
