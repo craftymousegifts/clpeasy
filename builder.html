@@ -1489,6 +1489,8 @@ async function initAuth(){
           // Hide watermark note if subscribed
           const wmNote=document.querySelector('.watermark-note');
           if(wmNote)wmNote.style.display='none';
+          // Re-render label without watermark
+          updateLabel();
         }
       }catch(e){/* no subscription row yet — trial */}
 
