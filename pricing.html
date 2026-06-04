@@ -769,11 +769,14 @@ async function startCheckout(plan){
   if(btn){btn.textContent='Loading…';btn.style.opacity='0.7';btn.disabled=true;}
 
   try{
+    // Get fresh session token for edge function auth
+    const {data:{session:sess}}=await sbClient.auth.getSession();
+    const authToken=sess?.access_token||SUPABASE_KEY;
     const res=await fetch(`${SUPABASE_URL}/functions/v1/create-checkout-session`,{
       method:'POST',
       headers:{
         'Content-Type':'application/json',
-        'Authorization':`Bearer ${SUPABASE_KEY}`
+        'Authorization':`Bearer ${authToken}`
       },
       body:JSON.stringify({
         priceId,
