@@ -151,7 +151,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 /* SIGNAL */
 .signal-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
-.signal-btn{border:2px solid var(--border);border-radius:10px;padding:13px;text-align:center;cursor:pointer;background:white;transition:all .2s;font-weight:700;font-size:15px;-webkit-tap-highlight-color:transparent;}
+.signal-btn{border:2px solid var(--border);border-radius:10px;padding:13px;text-align:center;cursor:pointer;background:white;transition:all .2s;font-weight:700;font-size:15px;-webkit-tap-highlight-color:transparent;cursor:default;user-select:none;}
 .signal-btn.sel-warn{border-color:var(--amber);background:var(--amber-light);color:#92400E;}
 .signal-btn.sel-danger{border-color:var(--red);background:#FEF2F2;color:#991B1B;}
 
@@ -646,6 +646,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="form-group"><label>Fragrance / Scent name</label><input type="text" id="scent-name" placeholder="e.g. Black Plum &amp; Rhubarb" autocomplete="off" oninput="updateLabel()"></div>
     <div class="form-row">
       <div class="form-group"><label>Product type</label><select id="product-type" onchange="onProductTypeChange();updateLabel();saveProdDetails()">
+        <option value="" disabled selected>— Choose product type —</option>
         <optgroup label="Candles">
           <option>Scented Candle</option>
           <option>Soy Candle</option>
@@ -730,20 +731,20 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <div class="sdiv">Signal word</div>
     <div class="signal-row">
-      <div class="signal-btn" id="signal-warning" onclick="selectSignal('Warning')">⚠️ Warning</div>
-      <div class="signal-btn" id="signal-danger" onclick="selectSignal('Danger')">🔴 Danger</div>
+      <div class="signal-btn" id="signal-warning" style="cursor:default;">⚠️ Warning</div>
+      <div class="signal-btn" id="signal-danger" style="cursor:default;">🔴 Danger</div>
     </div>
     <div class="sdiv">Hazard pictograms</div>
     <div class="picto-grid">
-      <div class="picto-btn" data-picto="flame" onclick="togglePicto(this,'flame')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="82" font-size="44" text-anchor="middle">🔥</text></svg></div><div class="picto-name">Flammable</div></div>
-      <div class="picto-btn" data-picto="exclamation" onclick="togglePicto(this,'exclamation')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="82" font-size="52" text-anchor="middle" font-weight="900" fill="#000">!</text></svg></div><div class="picto-name">Irritant</div></div>
-      <div class="picto-btn" data-picto="health" onclick="togglePicto(this,'health')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="40" text-anchor="middle">⚕</text></svg></div><div class="picto-name">Health Hazard</div></div>
-      <div class="picto-btn" data-picto="aquatic" onclick="togglePicto(this,'aquatic')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="36" text-anchor="middle">🐟</text></svg></div><div class="picto-name">Aquatic Toxic</div></div>
-      <div class="picto-btn" data-picto="corrosive" onclick="togglePicto(this,'corrosive')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="36" text-anchor="middle">⚗</text></svg></div><div class="picto-name">Corrosive</div></div>
-      <div class="picto-btn" data-picto="skull" onclick="togglePicto(this,'skull')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="38" text-anchor="middle">☠</text></svg></div><div class="picto-name">Toxic</div></div>
-      <div class="picto-btn" data-picto="oxidiser" onclick="togglePicto(this,'oxidiser')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="38" text-anchor="middle">○</text></svg></div><div class="picto-name">Oxidiser</div></div>
-      <div class="picto-btn" data-picto="gas" onclick="togglePicto(this,'gas')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="36" text-anchor="middle">⊕</text></svg></div><div class="picto-name">Gas Pressure</div></div>
-      <div class="picto-btn" data-picto="explosion" onclick="togglePicto(this,'explosion')"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="36" text-anchor="middle">✸</text></svg></div><div class="picto-name">Explosive</div></div>
+      <div class="picto-btn" data-picto="flame" style="cursor:default;"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="82" font-size="44" text-anchor="middle">🔥</text></svg></div><div class="picto-name">Flammable</div></div>
+      <div class="picto-btn" data-picto="exclamation" style="cursor:default;"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="82" font-size="52" text-anchor="middle" font-weight="900" fill="#000">!</text></svg></div><div class="picto-name">Irritant</div></div>
+      <div class="picto-btn" data-picto="health" style="cursor:default;"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="40" text-anchor="middle">⚕</text></svg></div><div class="picto-name">Health Hazard</div></div>
+      <div class="picto-btn" data-picto="aquatic" style="cursor:default;"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="36" text-anchor="middle">🐟</text></svg></div><div class="picto-name">Aquatic Toxic</div></div>
+      <div class="picto-btn" data-picto="corrosive" style="cursor:default;"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="36" text-anchor="middle">⚗</text></svg></div><div class="picto-name">Corrosive</div></div>
+      <div class="picto-btn" data-picto="skull" style="cursor:default;"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="38" text-anchor="middle">☠</text></svg></div><div class="picto-name">Toxic</div></div>
+      <div class="picto-btn" data-picto="oxidiser" style="cursor:default;"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="38" text-anchor="middle">○</text></svg></div><div class="picto-name">Oxidiser</div></div>
+      <div class="picto-btn" data-picto="gas" style="cursor:default;"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="36" text-anchor="middle">⊕</text></svg></div><div class="picto-name">Gas Pressure</div></div>
+      <div class="picto-btn" data-picto="explosion" style="cursor:default;"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="36" text-anchor="middle">✸</text></svg></div><div class="picto-name">Explosive</div></div>
     </div>
     <div class="sdiv">H Statements</div>
     <span class="library-toggle" onclick="toggleLib('h-library',this)">▼ Show H statement library</span>
@@ -1003,7 +1004,7 @@ function ghsPicto(key,x,y,size){
 }
 
 // ── STATE ─────────────────────────────────────────────────────
-const S={step:1,shape:'circle',size:35,customW:50,customH:50,scentName:'',productType:'Scented Candle',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true};
+const S={step:1,shape:'circle',size:35,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true};
 
 // ── PRODUCT TYPE GUIDANCE ─────────────────────────────────────
 const FRAG_LOAD_TIPS={
@@ -1046,9 +1047,10 @@ function onProductTypeChange(){
     tip.style.padding='';
   }
   // Grey out burn time for product types that don't need it
+  // Empty selection = all fields active
   const burnField=document.getElementById('burn-time');
   const burnGroup=burnField?.closest('.form-group');
-  const needsBurn=BURN_TIME_TYPES.includes(type);
+  const needsBurn=!type||BURN_TIME_TYPES.includes(type);
   if(burnField){
     burnField.disabled=!needsBurn;
     burnField.style.opacity=needsBurn?'1':'0.4';
@@ -1331,7 +1333,13 @@ function downloadPrintReadyPDF(){
     img{display:block;width:${totalWmm}mm;height:${totalHmm}mm;}
     .info{font-size:12px;color:#555;line-height:1.6;max-width:500px;text-align:center;}
     .dl{margin-top:12px;padding:10px 20px;background:#4C9BB0;color:white;border:none;border-radius:6px;font-size:14px;cursor:pointer;font-family:Arial;}
-    @media print{body{background:white;padding:0;}.info,.dl{display:none;}.card{box-shadow:none;padding:0;}}</style>
+    @media print{body{background:white;padding:0;}.info,.dl{display:none;}.card{box-shadow:none;padding:0;}}
+.extract-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1E3A5F;color:white;border-radius:14px;padding:16px 22px;min-width:280px;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,0.25);z-index:9999;opacity:0;transition:all .3s ease;pointer-events:none;font-family:'DM Sans',sans-serif;}
+.extract-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.extract-toast-title{font-size:15px;font-weight:700;color:#4ADE80;margin-bottom:8px;}
+.extract-toast-row{font-size:13px;color:rgba(255,255,255,0.85);line-height:1.8;}
+.extract-toast-warn{font-size:11px;color:rgba(255,255,255,0.5);margin-top:10px;border-top:1px solid rgba(255,255,255,0.1);padding-top:8px;}
+</style>
     </head><body>
     <div class="card"><img src="${pngUri}"/></div>
     <div class="info">
@@ -2053,10 +2061,9 @@ function init(){
   if(biz.bizWebsite){document.getElementById('biz-website').value=biz.bizWebsite;S.bizWebsite=biz.bizWebsite;}
   // Restore saved product details
   const prod=JSON.parse(localStorage.getItem('clpeasy_prod')||'{}');
-  if(prod.productType){const el=document.getElementById('product-type');if(el)el.value=prod.productType;}
-  if(prod.netWeight){const el=document.getElementById('net-weight');if(el)el.value=prod.netWeight;}
-  if(prod.fragLoad){const el=document.getElementById('frag-load');if(el)el.value=prod.fragLoad;}
-  if(prod.burnTime){const el=document.getElementById('burn-time');if(el)el.value=prod.burnTime;}
+  // productType not restored — always starts at placeholder
+  // Clear label-specific fields — always start fresh
+  try{const _p=JSON.parse(localStorage.getItem('clpeasy_prod')||'{}');delete _p.productType;delete _p.netWeight;delete _p.burnTime;delete _p.fragLoad;localStorage.setItem('clpeasy_prod',JSON.stringify(_p));}catch(e){}
   syncDimFields();updateLabel();
   document.getElementById('custom-w').value=35;
   document.getElementById('custom-h').value=35;
@@ -2071,7 +2078,7 @@ function saveBizDetails(){
   localStorage.setItem('clpeasy_biz',JSON.stringify(biz));
 }
 function saveProdDetails(){
-  const prod={productType:document.getElementById('product-type')?.value||'',netWeight:document.getElementById('net-weight')?.value||'',fragLoad:document.getElementById('frag-load')?.value||'',burnTime:document.getElementById('burn-time')?.value||'',labelLang:document.getElementById('label-lang')?.value||'en'};
+  const prod={labelLang:document.getElementById('label-lang')?.value||'en'};
   localStorage.setItem('clpeasy_prod',JSON.stringify(prod));
 }
 
@@ -2110,11 +2117,16 @@ function renderTags(){document.getElementById('allergen-tags').innerHTML=S.sensi
 function extractSDS(){
   const text=document.getElementById('smart-paste-input').value;
   if(!text.trim()){alert('Please paste SDS Section 2.2 text first.');return;}
-  const hM=[...new Set(text.match(/(?:EUH\d+|H\d{3}[A-Z]?)/g)||[])];
+  const hM=[...new Set((text.match(/(?:EUH\d+|H\d{3}[A-Z]?)/g)||[]))].filter(h=>h!=='EUH210');
   if(hM.length){S.hSelected=[...new Set([...S.hSelected,...hM])];document.getElementById('h-statements').value=S.hSelected.join(', ');hM.forEach(c=>{const ch=document.querySelector(`#h-chips .h-chip[data-code="${c}"]`);if(ch)ch.classList.add('selected');});}
   const pM=[...new Set(text.match(/P\d{3}(?:\+P\d{3})*/g)||[])];
   if(pM.length){S.pSelected=[...new Set([...S.pSelected,...pM])];document.getElementById('p-statements').value=S.pSelected.join(', ');pM.forEach(c=>{const ch=document.querySelector(`#p-chips .h-chip[data-code="${c}"]`);if(ch)ch.classList.add('selected');});}
-  if(/\bDanger\b/i.test(text))selectSignal('Danger');else if(/\bWarning\b/i.test(text))selectSignal('Warning');
+  // Handle signal word — check for None before Warning/Danger
+  const _sigNone=/Signal\s*[Ww]ord[:\s]+None/i.test(text);
+  if(!_sigNone){
+    if(/\bDanger\b/i.test(text))selectSignal('Danger');
+    else if(/\bWarning\b/i.test(text))selectSignal('Warning');
+  }
   if(/GHS02|SGH02|flammable/i.test(text))addPicto('flame');
   if(/GHS07|SGH07|irritant/i.test(text))addPicto('exclamation');
   if(/GHS08|SGH08|health hazard/i.test(text))addPicto('health');
@@ -2126,7 +2138,28 @@ function extractSDS(){
   SENSITISERS.forEach(s=>{try{const baseName=s.name.split('(')[0].trim();const escaped=baseName.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');const pat=new RegExp(escaped,'i');if(pat.test(text)&&!S.sensitisers.includes(s.name)){S.sensitisers.push(s.name);const c=document.querySelector(`#sensitiser-chips .s-chip[data-name="${s.name}"]`);if(c)c.classList.add('selected');fs++;}}catch(e){}});
   renderTags();updateLabel();
   lockHazardFields(true);
-  alert(`✅ Extracted!\n• ${hM.length} H/EUH statements\n• ${pM.length} P statements\n• ${fs} CLP sensitisers\n\nAlways verify against your SDS before printing.`);
+  showExtractToast(hM.length, pM.length, fs);
+}
+function showExtractToast(hCount, pCount, sensCount){
+  // Remove any existing toast
+  const existing=document.getElementById('extract-toast');
+  if(existing)existing.remove();
+  const toast=document.createElement('div');
+  toast.id='extract-toast';
+  toast.className='extract-toast';
+  toast.innerHTML=`
+    <div class="extract-toast-title">✅ Hazard data extracted</div>
+    <div class="extract-toast-row">📋 ${hCount} H/EUH statement${hCount!==1?'s':''}</div>
+    <div class="extract-toast-row">⚠️ ${pCount} P statement${pCount!==1?'s':''}</div>
+    <div class="extract-toast-row">🧪 ${sensCount} CLP sensitiser${sensCount!==1?'s':''}</div>
+    <div class="extract-toast-warn">Always verify against your SDS before printing</div>
+  `;
+  document.body.appendChild(toast);
+  requestAnimationFrame(()=>toast.classList.add('show'));
+  setTimeout(()=>{
+    toast.classList.remove('show');
+    setTimeout(()=>toast.remove(),350);
+  },4000);
 }
 function addPicto(k){if(!S.pictograms.includes(k)){S.pictograms.push(k);const b=document.querySelector(`.picto-btn[data-picto="${k}"]`);if(b)b.classList.add('selected');}}
 
@@ -2332,7 +2365,7 @@ function togglePicto(el,key){el.classList.toggle('selected');const i=S.pictogram
 // ── READ FORM ─────────────────────────────────────────────────
 function readForm(){
   S.scentName=document.getElementById('scent-name')?.value||'';
-  S.productType=document.getElementById('product-type')?.value||'Scented Candle';
+  S.productType=document.getElementById('product-type')?.value||'';
   S.netWeight=document.getElementById('net-weight')?.value||'';
   S.fragLoad=document.getElementById('frag-load')?.value||'';
   S.burnTime=document.getElementById('burn-time')?.value||'';
@@ -2415,7 +2448,7 @@ function buildSVG(forExport=false){
   const BASE=sW; // font sizes relative to shape width
 
   const scent=S.scentName||'Your Scent Name';
-  const type=(S.productType||'Scented Candle').toUpperCase();
+  const type=(S.productType||'').toUpperCase();
   const _rawSig=(S.signal||'').toUpperCase();
   const _langs=S.labelLang?S.labelLang.split('_'):['en'];
   // Build multilingual signal word
@@ -2426,7 +2459,9 @@ function buildSVG(forExport=false){
   const _containsParts=[];
   _langs.forEach(l=>{const t=l==='fr'?'Contient:':l==='de'?'Enthält:':'Contains:';if(!_containsParts.includes(t))_containsParts.push(t);});
   const _containsPrefix=_containsParts.join(' / ');
-  const hCodes=(S.hStatements||'').split(',').map(h=>h.trim()).filter(Boolean);
+  const _allCodes=(S.hStatements||'').split(',').map(h=>h.trim()).filter(Boolean);
+  const hasEUH208=_allCodes.includes('EUH208');
+  const hCodes=_allCodes.filter(h=>h!=='EUH208');
   const pCodes=(S.pStatements||'').split(',').map(p=>p.trim()).filter(Boolean);
   const sensArr=S.sensitisers.length?S.sensitisers:[];
   const bizName=S.bizName||'Your Brand';
@@ -2544,8 +2579,10 @@ function buildSVG(forExport=false){
   const sensSW  = chordW(curY + slot.sens*0.5, 0.08);
   const sensFS  = Math.min(slot.sens * 0.52, clamp(BASE*0.034, 2.5, 7));
   const sensLH  = sensFS * 1.25;
-  const sensStr = _containsPrefix+' '+sensArr.slice(0,5).join(', ')+(sensArr.length>5?'...':'');
-  const sensLines = wrapText(sensStr, sensSW*0.90, sensFS, false, false);
+  const _sensBase = sensArr.length>0 ? _containsPrefix+' '+sensArr.slice(0,5).join(', ')+(sensArr.length>5?'...':'') : '';
+  const _euhSuffix = hasEUH208 ? ' May produce an allergic reaction.' : '';
+  const sensStr = (_sensBase || (hasEUH208 ? 'EUH208:' : '')) + _euhSuffix;
+  const sensLines = sensStr ? wrapText(sensStr, sensSW*0.90, sensFS, false, false) : [];
   const sensStY = curY + sensLH*0.5;
   curY += Math.max(slot.sens, sensLines.length*sensLH);
 
@@ -3163,7 +3200,7 @@ function wizAutoFill(data){
     if(data.customW){ document.getElementById('custom-w').value=data.customW; S.customW=data.customW; }
     if(data.customH){ document.getElementById('custom-h').value=data.customH; S.customH=data.customH; }
     if(data.scentName){ document.getElementById('scent-name').value=data.scentName; S.scentName=data.scentName; }
-    if(data.productType){ document.getElementById('product-type').value=data.productType; }
+    if(data.productType){const ptEl=document.getElementById('product-type');if(ptEl){ptEl.value=data.productType;onProductTypeChange();}}
     if(data.netWeight){ document.getElementById('net-weight').value=data.netWeight; }
     if(data.signal) selectSignal(data.signal);
     if(data.bizName){ document.getElementById('biz-name').value=data.bizName; }
@@ -3502,6 +3539,7 @@ const _origSaveLabelEntry=null; // handled via readForm hook above — ufiCode/l
 function initExtensions(){
   initBatchDisplay();
   populateLibraryDropdown();
+  onProductTypeChange();
   // Restore label lang if saved in prod details
   const prod=JSON.parse(localStorage.getItem('clpeasy_prod')||'{}');
   if(prod.labelLang){
