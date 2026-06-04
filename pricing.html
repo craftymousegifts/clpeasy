@@ -199,7 +199,7 @@ footer a{color:#6B7280;text-decoration:none;}
       <div class="card-desc">Everything a growing UK maker needs to stay compliant, organised and print-ready.</div>
       <div class="price-row"><div class="price-amount" id="maker-price">&pound;9.99</div><div class="price-period">/mo</div></div>
       <div class="price-sub" id="maker-sub">or &pound;99/year &mdash; pay monthly it&rsquo;s &pound;119.88 &mdash; save &pound;20.88</div>
-      <button id="btn-easy_start" onclick="window.location.href='auth.html'" class="btn btn-teal">Get started &#8594;</button>
+      <button id="btn-easy_start" onclick="startCheckout('easy_start')" class="btn btn-teal">Get started &#8594;</button>
       <hr class="divider">
       <div class="features-label">What&#39;s included</div>
       <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:#166534;line-height:1.5;">
@@ -226,7 +226,7 @@ footer a{color:#6B7280;text-decoration:none;}
       <div class="card-desc">For serious sellers who need full CLP compliance tools and EU export features.</div>
       <div class="price-row"><div class="price-amount" id="pro-price">&pound;14.99</div><div class="price-period">/mo</div></div>
       <div class="price-sub" id="pro-sub">or &pound;149/year &mdash; pay monthly it&rsquo;s &pound;179.88 &mdash; save &pound;30.88</div>
-      <button id="btn-easy_pro" onclick="window.location.href='auth.html'" class="btn btn-glow">Get started &#8594;</button>
+      <button id="btn-easy_pro" onclick="startCheckout('easy_pro')" class="btn btn-glow">Get started &#8594;</button>
       <hr class="divider">
       <div class="features-label">All Easy Start features, plus</div>
       <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick-gold" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>30 downloads per month<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">30 label downloads per month &mdash; more than the Easy Start allowance. Perfect for makers with larger ranges, seasonal collections and multiple label shapes. Downloads do not roll over. If you accidentally lose a downloaded file, re-downloading the same label within 7 days is free and does not count toward your allowance. Top-up packs available if needed.</div></div>
@@ -732,13 +732,6 @@ footer a{color:#6B7280;text-decoration:none;}
 const SUPABASE_URL='https://qvkosdqcryrcfbjtaxic.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
 
-/* ===== STRIPE DISABLED FOR NOW =====
-   Buttons currently route to auth.html instead of opening Stripe checkout.
-   To re-enable Stripe later: uncomment PRICE_IDS + startCheckout + the load
-   listener below, swap these sandbox price_ IDs for the live ones, and change
-   the two "Get started" buttons back to onclick="startCheckout('easy_start')"
-   and onclick="startCheckout('easy_pro')".
-
 // Sandbox price IDs — replace with live IDs when going live
 const PRICE_IDS = {
   easy_start_monthly: 'price_1Tdd5SKF3jvQfgEaclfSUxn5',
@@ -746,7 +739,6 @@ const PRICE_IDS = {
   easy_pro_monthly:   'price_1Tdd9OKF3jvQfgEaYsCmOwOa',
   easy_pro_annual:    'price_1TddAyKF3jvQfgEaE7Vwbxl6',
 };
-===== END (PRICE_IDS re-enable block) ===== */
 
 let billing='monthly';
 let sbClient=null;
@@ -760,7 +752,6 @@ let currentUser=null;
   if(session){currentUser=session.user;}
 })();
 
-/* ===== STRIPE CHECKOUT DISABLED FOR NOW =====
 async function startCheckout(plan){
   // If not logged in, send to auth with redirect back
   if(!currentUser){
@@ -814,7 +805,7 @@ window.addEventListener('load',()=>{
     startCheckout(plan);
   }
 });
-===== END STRIPE CHECKOUT DISABLED ===== */
+
 
 function setBilling(type,btn){
   billing=type;
