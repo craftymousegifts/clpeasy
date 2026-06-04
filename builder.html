@@ -705,7 +705,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div class="form-group"><label>Burn time <span>(optional)</span></label><input type="text" id="burn-time" placeholder="e.g. 45hrs" oninput="updateLabel();saveProdDetails()"></div>
     </div>
-    <div class="step-nav"><button class="btn-prev" onclick="prevStep()">← Back</button><button class="btn-next" onclick="nextStep()">Next: Hazard data →</button></div>
+    <div class="step-nav"><button class="btn-prev" onclick="prevStep()">← Back</button><button class="btn-next" onclick="checkStep2Next()">Next: Hazard data →</button></div>
   </div>
 
   <!-- STEP 3 -->
@@ -794,7 +794,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="form-group">
         <label>Batch / Lot number <span>(optional)</span></label>
         <div style="display:flex;gap:8px;">
-          <input type="text" id="batch-num" placeholder="e.g. LOT-001" oninput="updateLabel()" style="flex:1;">
+          <input type="text" id="batch-num" placeholder="e.g. LOT-001" oninput="updateLabel()" style="flex:1;"><button type="button" onclick="clearBatchNum()" title="Clear batch number" style="background:white;border:1.5px solid var(--border);color:var(--muted);border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;flex-shrink:0;" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444';" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';">✕</button>
           <button type="button" onclick="autoIncrementBatch()" style="background:var(--teal-light);border:1.5px solid rgba(13,148,136,0.3);color:var(--teal);border-radius:8px;padding:8px 12px;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0;font-family:'DM Sans',sans-serif;">+1</button>
         </div>
         <div style="margin-top:4px;font-size:11px;color:var(--muted);">Last used: <span id="last-batch-display">—</span></div>
@@ -1030,6 +1030,7 @@ const FRAG_LOAD_TIPS={
   'Potpourri':'Check your SDS for fragrance load and hazard classification.'
 };
 
+const BURN_TIME_TYPES=['Scented Candle','Soy Candle','Votive Candle','Tea Light Candle','Pillar Candle','Advent Calendar Candle','Wax Melt','Wax Tart','Snap Bar','Wax Melt Clamshell','Advent Calendar Wax Melt','Wax Melt Bag'];
 function onProductTypeChange(){
   const type=document.getElementById('product-type')?.value||'';
   const tip=document.getElementById('frag-load-tip');
@@ -1043,6 +1044,20 @@ function onProductTypeChange(){
     tip.textContent='';
     tip.style.background='';
     tip.style.padding='';
+  }
+  // Grey out burn time for product types that don't need it
+  const burnField=document.getElementById('burn-time');
+  const burnGroup=burnField?.closest('.form-group');
+  const needsBurn=BURN_TIME_TYPES.includes(type);
+  if(burnField){
+    burnField.disabled=!needsBurn;
+    burnField.style.opacity=needsBurn?'1':'0.4';
+    burnField.style.cursor=needsBurn?'':'not-allowed';
+    burnField.title=needsBurn?'':'Not applicable for this product type';
+    if(!needsBurn){burnField.value='';S.burnTime='';updateLabel();}
+  }
+  if(burnGroup){
+    burnGroup.style.opacity=needsBurn?'1':'0.5';
   }
 }
 function syncColourFromHex(){
@@ -2170,6 +2185,15 @@ function goToStep(n){if(n>S.step+1)return;S.step=n;
   const mobileDlRow=document.getElementById('mobile-dl-row');
   if(mobileDlRow)mobileDlRow.style.display=(n===5)?'flex':'none';document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+n).classList.add('active');updateStepsBar();if(n===5)buildSummary();updateLabel();if(n===3){const cb=document.getElementById('hazard-confirm');const btn=document.getElementById('btn-next-step3');if(cb){cb.checked=false;}if(btn){btn.style.opacity='0.4';btn.style.pointerEvents='none';}}}
 function nextStep(){if(S.step<5){goToStep(S.step+1);window.scrollTo({top:0,behavior:'smooth'});}}
+function checkStep2Next(){
+  const scent=document.getElementById('scent-name')?.value.trim();
+  if(!scent){
+    alert('Please enter a scent name before continuing.');
+    document.getElementById('scent-name')?.focus();
+    return;
+  }
+  nextStep();
+}
 function toggleHazardNext(){
   const cb=document.getElementById('hazard-confirm');
   const btn=document.getElementById('btn-next-step3');
@@ -2409,7 +2433,7 @@ function buildSVG(forExport=false){
   const webLine=S.bizWebsite||'';
   const addr=S.bizAddress||'';
   const phone=S.bizPhone||'';
-  const detailParts=[S.netWeight, S.burnTime?'Burn: '+S.burnTime:''].filter(Boolean);
+  const detailParts=[S.netWeight, S.burnTime?'Burn: '+S.burnTime:'', S.batchNum?'Batch: '+S.batchNum:''].filter(Boolean);
   const pictos=S.pictograms.length?[...new Set(S.pictograms)].slice(0,6):[];
   const clamp=(v,mn,mx)=>Math.min(Math.max(v,mn),mx);
 
@@ -3235,6 +3259,14 @@ function generateUFI(){
 // ══════════════════════════════════════════════════════════════
 // FEATURE: BATCH AUTO-INCREMENT
 // ══════════════════════════════════════════════════════════════
+function clearBatchNum(){
+  const el=document.getElementById('batch-num');
+  if(el){el.value='';S.batchNum='';}
+  localStorage.removeItem('clpeasy_last_batch');
+  const disp=document.getElementById('last-batch-display');
+  if(disp)disp.textContent='';
+  updateLabel();
+}
 function autoIncrementBatch(){
   const el=document.getElementById('batch-num');
   if(!el)return;
