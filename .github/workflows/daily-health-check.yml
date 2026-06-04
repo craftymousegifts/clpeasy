@@ -1,0 +1,41 @@
+name: Daily Service Health Check
+
+on:
+  schedule:
+    # 6am UTC = 7am BST (summer) / 6am GMT (winter)
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    # Manual trigger available anytime from GitHub Actions tab
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run service health checks
+        run: python3 .github/scripts/health_check.py
+        env:
+          SUPABASE_URL:      ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          BREVO_API_KEY:     ${{ secrets.BREVO_API_KEY }}
+          NETLIFY_SITE_ID:   ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_TOKEN:     ${{ secrets.NETLIFY_TOKEN }}
+          SCAN_MODE:         ${{ vars.SCAN_MODE || 'local' }}
+
+      - name: Send health report email via Brevo
+        run: python3 .github/scripts/send_health_report.py
+        env:
+          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          REPORT_TO:     support@clpeasy.com
