@@ -717,10 +717,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <!-- SUPPLIER SELECTOR -->
     <div class="sdiv" style="margin-top:0">Your fragrance supplier</div>
     <div class="supplier-grid" id="supplier-grid">
-      <div class="supplier-card" data-supplier="other" onclick="selectSupplier(this,'other')">
-        <div class="supplier-name">Other supplier</div>
-        <div class="supplier-region">Manual entry</div>
-      </div>
     </div>
     <div id="supplier-sds-link" style="display:none;margin-bottom:16px;"></div>
     <div class="smart-paste-box">
@@ -755,18 +751,20 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div id="p-library" style="display:none;margin-bottom:8px;"><div class="chip-library" id="p-chips"></div></div>
     <div class="form-group"><input type="text" id="p-statements" placeholder="Extracted from Smart Paste" readonly style="background:#F8FAFC;color:#64748B;cursor:not-allowed;"></div>
     <div class="sdiv">EUH208 Sensitisers <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--muted)">— CLP/REACH skin sensitisers only</span></div>
-    <div class="info-note">⚠️ Only include sensitisers that appear on your fragrance supplier's SDS. Always verify before printing.</div>
-    <div class="sensitiser-legend">
-      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Skin Sens. 1A (strong — EUH208 at ≥0.01%)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Skin Sens. 1B (moderate — EUH208 at ≥0.1%)</div>
+    <div id="sens-unlocked-ui">
+      <div class="info-note">⚠️ Only include sensitisers that appear on your fragrance supplier's SDS. Always verify before printing.</div>
+      <div class="sensitiser-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Skin Sens. 1A (strong — EUH208 at ≥0.01%)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Skin Sens. 1B (moderate — EUH208 at ≥0.1%)</div>
+      </div>
+      <span class="library-toggle" onclick="toggleLib('s-library',this)">▼ Show sensitiser library</span>
+      <div id="s-library" style="display:none;margin-bottom:10px;"><div class="sensitiser-grid" id="sensitiser-chips"></div></div>
+      <div style="display:flex;gap:8px;margin-top:6px;">
+        <input type="text" id="allergen-input" placeholder="Type sensitiser name and press Enter..." onkeydown="if(event.key==='Enter'){addManualAllergen();}">
+        <button onclick="addManualAllergen()" style="background:var(--off);border:1.5px solid var(--border);padding:11px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;flex-shrink:0;">+ Add</button>
+      </div>
     </div>
-    <span class="library-toggle" onclick="toggleLib('s-library',this)">▼ Show sensitiser library</span>
-    <div id="s-library" style="display:none;margin-bottom:10px;"><div class="sensitiser-grid" id="sensitiser-chips"></div></div>
     <div class="allergen-tags" id="allergen-tags"></div>
-    <div style="display:flex;gap:8px;">
-      <input type="text" id="allergen-input" placeholder="Type sensitiser name and press Enter..." onkeydown="if(event.key==='Enter'){addManualAllergen();}">
-      <button onclick="addManualAllergen()" style="background:var(--off);border:1.5px solid var(--border);padding:11px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;flex-shrink:0;">+ Add</button>
-    </div>
     <div style="background:#FEF9E7;border:1px solid #F9E27A;border-radius:10px;padding:12px 14px;margin-top:14px;margin-bottom:4px;">
       <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:var(--text);font-weight:500;line-height:1.5;">
         <input type="checkbox" id="hazard-confirm" style="width:18px;height:18px;margin-top:1px;flex-shrink:0;accent-color:var(--teal);" onchange="toggleHazardNext()">
@@ -1139,17 +1137,36 @@ function downloadJPEG(){
 function printToPDF(){
   readForm();
   const{mmW,mmH,pw,ph}=getDims();
-  // Build SVG and embed directly — no canvas/PNG conversion needed for print
   const svgStr=buildSVG(true);
   const clone=new DOMParser().parseFromString(svgStr,'image/svg+xml').documentElement;
-  // Set mm dimensions so browser scales correctly for print
   clone.setAttribute('width',mmW+'mm');
   clone.setAttribute('height',mmH+'mm');
-  clone.setAttribute('viewBox',`0 0 ${pw} ${ph}`);
+  clone.setAttribute('viewBox','0 0 '+pw+' '+ph);
   clone.setAttribute('xmlns','http://www.w3.org/2000/svg');
   const svgData=new XMLSerializer().serializeToString(clone);
-  const win=window.open('','_blank');
+  // Build full HTML using string concatenation — avoids backtick-in-template-literal
+  // breakage when svgData contains backticks from buildSVG template strings
+  const title='CLPeasy Label — '+(S.scentName||'');
+  const css='*{margin:0;padding:0;box-sizing:border-box;}'+
+    'html,body{width:'+mmW+'mm;height:'+mmH+'mm;background:white;overflow:hidden;}'+
+    'svg{display:block;width:'+mmW+'mm;height:'+mmH+'mm;}'+
+    '@page{size:'+mmW+'mm '+mmH+'mm;margin:0;}'+
+    '@media print{html,body{width:'+mmW+'mm;height:'+mmH+'mm;}'+
+    'svg{width:'+mmW+'mm;height:'+mmH+'mm;}.print-btn{display:none;}}'+
+    '.print-btn{position:fixed;bottom:16px;right:16px;background:#0D9488;color:white;border:none;'+
+    'padding:10px 18px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;'+
+    'font-family:sans-serif;box-shadow:0 4px 16px rgba(0,0,0,0.2);}';
+  const html='<!DOCTYPE html><html><head><title>'+title+'</title>'+
+    '<style>'+css+'</style></head>'+
+    '<body>'+svgData+
+    '<button class="print-btn" onclick="window.print()">&#x1F5A8; Print / Save as PDF</button>'+
+    '</body></html>';
+  // Use Blob URL — avoids document.write() quirks and template literal breakage
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const blobUrl=URL.createObjectURL(blob);
+  const win=window.open(blobUrl,'_blank');
   if(!win){
+    URL.revokeObjectURL(blobUrl);
     // Pop-up was blocked — show inline amber warning
     let warn=document.getElementById('print-popup-warn');
     if(!warn){
@@ -1159,38 +1176,20 @@ function printToPDF(){
         'background:#FEF3C7;border:2px solid #F59E0B;border-radius:12px;padding:14px 18px;'+
         'max-width:340px;width:90%;z-index:9999;font-family:sans-serif;font-size:13px;'+
         'color:#92400E;box-shadow:0 4px 20px rgba(0,0,0,0.15);text-align:center;';
-      warn.innerHTML=`<strong>⚠️ Pop-ups blocked</strong><br>To save your label as PDF, please `+
-        `<strong>allow pop-ups for clpeasy.com</strong> in your browser settings, then tap `+
-        `Print to PDF again.<br><br>`+
-        `<button data-dismiss="print-popup-warn" `+
-        `style="background:#F59E0B;border:none;border-radius:8px;padding:6px 16px;`+
-        `color:white;font-weight:700;cursor:pointer;font-size:13px;">Got it</button>`;
-      warn.querySelector('[data-dismiss="print-popup-warn"]').addEventListener('click',()=>warn.remove());
+      warn.innerHTML='<strong>⚠️ Pop-ups blocked</strong><br>To save your label as PDF, please '+
+        '<strong>allow pop-ups for clpeasy.com</strong> in your browser settings, then tap '+
+        'Print to PDF again.<br><br>'+
+        '<button data-dismiss="print-popup-warn" '+
+        'style="background:#F59E0B;border:none;border-radius:8px;padding:6px 16px;'+
+        'color:white;font-weight:700;cursor:pointer;font-size:13px;">Got it</button>';
+      warn.querySelector('[data-dismiss="print-popup-warn"]').addEventListener('click',function(){warn.remove();});
       document.body.appendChild(warn);
-      setTimeout(()=>{if(warn.parentNode)warn.remove();},8000);
+      setTimeout(function(){if(warn.parentNode)warn.remove();},8000);
     }
     return;
   }
-  win.document.write(`<!DOCTYPE html><html><head><title>CLPeasy Label — ${S.scentName||''}</title>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box;}
-    html,body{width:${mmW}mm;height:${mmH}mm;background:white;overflow:hidden;}
-    svg{display:block;width:${mmW}mm;height:${mmH}mm;}
-    @page{size:${mmW}mm ${mmH}mm;margin:0;}
-    @media print{
-      html,body{width:${mmW}mm;height:${mmH}mm;}
-      svg{width:${mmW}mm;height:${mmH}mm;}
-      .print-btn{display:none;}
-    }
-    .print-btn{position:fixed;bottom:16px;right:16px;background:#0D9488;color:white;border:none;
-      padding:10px 18px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;
-      font-family:sans-serif;box-shadow:0 4px 16px rgba(0,0,0,0.2);}
-  </style></head>
-  <body>
-    ${svgData}
-    <button class="print-btn" onclick="window.print()">🖨 Print / Save as PDF</button>
-  </body></html>`);
-  win.document.close();
+  // Revoke blob URL after window has had time to load it
+  setTimeout(function(){URL.revokeObjectURL(blobUrl);},10000);
 }
 
 
@@ -1715,7 +1714,6 @@ const SUPPLIERS={
   csc:{name:'CandleScience',sdsUrl:'https://www.candlescience.com',instructions:'Visit CandleScience → find your fragrance product page → look under Documents for the SDS PDF → copy Section 2 → paste below.'},
   ng:{name:'Natures Garden',sdsUrl:'https://www.naturesgardencandles.com',instructions:'Visit Natures Garden → find your fragrance → download the SDS from the product page → copy Section 2 → paste below.'},
   bb:{name:'Brambleberry',sdsUrl:'https://www.brambleberry.com',instructions:'Visit Brambleberry → find your fragrance product page → look for the SDS document → copy Section 2 → paste below.'},
-  other:{name:'Other supplier',sdsUrl:null,instructions:'Download the SDS PDF from your supplier\'s website — usually found on the individual fragrance product page. Copy Section 2.2 (Label elements / Hazard identification) and paste below.'},
 };
 
 function selectSupplier(el,key){
@@ -2296,6 +2294,9 @@ function lockHazardFields(lock){
     el.style.pointerEvents=lock?'none':'auto';
     el.style.background=lock?'#F8FAFC':'';
   });
+  // Hide sensitiser library/legend/input when locked — show only the extracted chips
+  const sensUI=document.getElementById('sens-unlocked-ui');
+  if(sensUI)sensUI.style.display=lock?'none':'';
   // Lock/unlock signal word buttons
   ['signal-warning','signal-danger'].forEach(id=>{
     const el=document.getElementById(id);
@@ -2464,8 +2465,8 @@ function buildSVG(forExport=false){
   // Top band: biz name + website
   // Bottom band: address, phone, detail
   // Mid band: everything else
-  const topFrac = 0.18;
-  const botFrac = 0.20;
+  const topFrac = 0.17;
+  const botFrac = 0.24;
   const topH = sH * topFrac;
   const botH = sH * botFrac;
   const midH = sH - topH - botH;
@@ -2649,8 +2650,8 @@ function buildSVG(forExport=false){
   // ── FOOTER BAND: wrapped address support ─────────────────────
   // Address is allowed to wrap to 2 lines on narrow labels.
   // Font scales down before wrapping so minimum readable size is preserved.
-  const fTopPad = botH * 0.10;
-  const fBotPad = botH * 0.10;
+  const fTopPad = botH * 0.06;
+  const fBotPad = botH * 0.06;
   const fUsable = botH - fTopPad - fBotPad;
   const maxFooterFS = clamp(BASE*0.036,3,7.5);
   const minFooterFS = clamp(BASE*0.022,2,4.5);

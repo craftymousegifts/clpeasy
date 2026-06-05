@@ -17,21 +17,21 @@
   --red:#dc2626;--red-bg:#fef2f2;--red-border:#fecaca;
   --blue:#2563eb;--blue-bg:#eff6ff;
 }
-body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
 
 /* HEADER */
-.header{background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.08);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;}
+.header{background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.08);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
 .header-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
 .logo-badge{width:38px;height:38px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;letter-spacing:-0.5px;}
 .logo-name{font-size:20px;font-weight:900;color:var(--teal);letter-spacing:-1px;}
 .header-title{font-size:14px;color:rgba(255,255,255,0.5);font-weight:500;}
-.header-right{display:flex;align-items:center;gap:16px;}
+.header-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
 .last-refresh{font-size:12px;color:rgba(255,255,255,0.4);font-family:'DM Mono',monospace;}
 .refresh-btn{background:var(--teal);color:white;border:none;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
 .refresh-btn:hover{background:var(--teal-dark);}
 
 /* MAIN */
-.main{max-width:1200px;margin:0 auto;padding:32px 24px 60px;}
+.main{max-width:1200px;margin:0 auto;padding:32px 24px 60px;}@media(max-width:600px){.header{padding:12px 16px;}.header-title{font-size:13px;}.main{padding:20px 16px 60px;}.header-logo{flex-shrink:0;}}
 
 /* SUMMARY ROW */
 .summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px;}
@@ -118,10 +118,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
 </style>
 </head>
 <body>
-<!-- LOGOUT BUTTON -->
-<div id="logout-btn" style="position:fixed;top:14px;right:18px;z-index:10000;display:none">
-  <button onclick="monitorLogout()" style="background:#EF4444;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(239,68,68,.35);letter-spacing:.02em">🔒 Logout</button>
-</div>
+
 <!-- ========== CLPeasy Monitor Login Gate — paste this at the TOP of your <body> tag ========== -->
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -182,7 +179,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
   }
   // Check session storage first (already unlocked this session)
   if(sessionStorage.getItem('clp_auth')==='1'){
-    document.getElementById('logout-btn').style.display='block';
+    document.getElementById('logout-btn').style.display='inline-flex';
     document.getElementById('clp-gate').style.display='none';
   }
   // Also check Supabase session — if user is logged in AND is admin, auto-unlock
@@ -200,7 +197,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
         const meta = session.user && session.user.user_metadata;
         if(meta && meta.is_admin === true){
           sessionStorage.setItem('clp_auth','1');
-        document.getElementById('logout-btn').style.display='block';
+        document.getElementById('logout-btn').style.display='inline-flex';
           document.getElementById('clp-gate').style.display='none';
         }
       });
@@ -212,7 +209,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
     sha256(inp.value).then(function(d){
       if(d===h){
         sessionStorage.setItem('clp_auth','1');
-        document.getElementById('logout-btn').style.display='block';
+        document.getElementById('logout-btn').style.display='inline-flex';
         document.getElementById('clp-gate').style.display='none';
       } else {
         document.getElementById('clp-msg').textContent='Incorrect password';
@@ -233,6 +230,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
   <div class="header-right">
     <span class="last-refresh" id="lastRefresh">Last refreshed: —</span>
     <button class="refresh-btn" onclick="runAll()">↻ Refresh</button>
+    <button id="logout-btn" onclick="monitorLogout()" style="display:none;background:#EF4444;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(239,68,68,.35);letter-spacing:.02em;white-space:nowrap;">🔒 Logout</button>
   </div>
 </div>
 
