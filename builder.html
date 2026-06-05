@@ -211,7 +211,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .zoom-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:white;box-shadow:0 1px 4px rgba(0,0,0,0.4);cursor:grab;transition:left .15s;}
 .zoom-pct{font-size:11px;color:rgba(255,255,255,0.4);min-width:30px;text-align:right;}
 /* Canvas area — scrollable so zoomed labels don't get clipped */
-.preview-canvas-area{flex:1;display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto;}
+.preview-canvas-area{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow:auto;}
 #label-svg-container{
   -webkit-user-select:none;-moz-user-select:none;user-select:none;
   pointer-events:none;
@@ -795,7 +795,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="form-group">
         <label>Batch / Lot number <span>(optional)</span></label>
         <div style="display:flex;gap:8px;">
-          <input type="text" id="batch-num" placeholder="e.g. LOT-001" oninput="updateLabel()" style="flex:1;"><button type="button" onclick="clearBatchNum()" title="Clear batch number" style="background:white;border:1.5px solid var(--border);color:var(--muted);border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;flex-shrink:0;" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444';" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';">✕</button>
+          <input type="text" id="batch-num" placeholder="e.g. BN-001" oninput="updateLabel()" style="flex:1;"><button type="button" onclick="clearBatchNum()" title="Clear batch number" style="background:white;border:1.5px solid var(--border);color:var(--muted);border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;flex-shrink:0;" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444';" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';">✕</button>
           <button type="button" onclick="autoIncrementBatch()" style="background:var(--teal-light);border:1.5px solid rgba(13,148,136,0.3);color:var(--teal);border-radius:8px;padding:8px 12px;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0;font-family:'DM Sans',sans-serif;">+1</button>
         </div>
         <div style="margin-top:4px;font-size:11px;color:var(--muted);">Last used: <span id="last-batch-display">—</span></div>
@@ -1104,14 +1104,14 @@ function downloadJPEG(){
   const svgData=new XMLSerializer().serializeToString(clone);
   const slug=(S.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
   const fname=`clpeasy-${slug}-${S.size==='custom'?mmW+'x'+mmH:''+S.size}mm.jpg`;
-  const svgDataUri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgData);
+  // Blob URL avoids iOS Safari bug where data URI img.onload never fires
+  const blob=new Blob([svgData],{type:'image/svg+xml;charset=utf-8'});
+  const blobUrl=URL.createObjectURL(blob);
   const img=new Image();
   img.onload=function(){
     const cvs=document.createElement('canvas');cvs.width=eW;cvs.height=eH;
     const ctx=cvs.getContext('2d');
-    // Fill white first (JPEG has no transparency)
     ctx.fillStyle='white';ctx.fillRect(0,0,eW,eH);
-    // Clip to label shape so corners outside circle/square are clean white
     const cx=eW/2,cy=eH/2;
     ctx.save();
     if(S.shape==='circle'){
@@ -1122,66 +1122,75 @@ function downloadJPEG(){
     }
     ctx.drawImage(img,0,0,eW,eH);
     ctx.restore();
-    const a=document.createElement('a');a.href=cvs.toDataURL('image/jpeg',0.92);a.download=fname;
-    document.body.appendChild(a);a.click();
-    setTimeout(()=>document.body.removeChild(a),1000);
+    URL.revokeObjectURL(blobUrl);
+    cvs.toBlob(function(jpgBlob){
+      const dlUrl=URL.createObjectURL(jpgBlob);
+      const a=document.createElement('a');
+      a.href=dlUrl;a.download=fname;
+      document.body.appendChild(a);a.click();
+      setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(dlUrl);},1500);
+    },'image/jpeg',0.92);
   };
-  img.src=svgDataUri;
+  img.onerror=function(){URL.revokeObjectURL(blobUrl);};
+  img.src=blobUrl;
 }
 
 // ── PRINT TO PDF ──────────────────────────────────────────────
 function printToPDF(){
   readForm();
   const{mmW,mmH,pw,ph}=getDims();
-  const DPI=300;const scale=DPI/25.4;
-  const eW=Math.round(mmW*scale);const eH=Math.round(mmH*scale);
+  // Build SVG and embed directly — no canvas/PNG conversion needed for print
   const svgStr=buildSVG(true);
   const clone=new DOMParser().parseFromString(svgStr,'image/svg+xml').documentElement;
-  clone.setAttribute('width',eW);clone.setAttribute('height',eH);
+  // Set mm dimensions so browser scales correctly for print
+  clone.setAttribute('width',mmW+'mm');
+  clone.setAttribute('height',mmH+'mm');
   clone.setAttribute('viewBox',`0 0 ${pw} ${ph}`);
+  clone.setAttribute('xmlns','http://www.w3.org/2000/svg');
   const svgData=new XMLSerializer().serializeToString(clone);
-  const svgDataUri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgData);
-  const img=new Image();
-  img.onload=function(){
-    const cvs=document.createElement('canvas');cvs.width=eW;cvs.height=eH;
-    const ctx=cvs.getContext('2d');
-    ctx.fillStyle='white';ctx.fillRect(0,0,eW,eH);
-    // Clip to label shape
-    const cx=eW/2,cy=eH/2;
-    ctx.save();
-    if(S.shape==='circle'){
-      ctx.beginPath();ctx.arc(cx,cy,Math.min(eW,eH)/2-2,0,Math.PI*2);ctx.clip();
-    } else if(S.shape==='square'){
-      const s=Math.min(eW,eH)-4;
-      ctx.beginPath();ctx.rect(cx-s/2,cy-s/2,s,s);ctx.clip();
+  const win=window.open('','_blank');
+  if(!win){
+    // Pop-up was blocked — show inline amber warning
+    let warn=document.getElementById('print-popup-warn');
+    if(!warn){
+      warn=document.createElement('div');
+      warn.id='print-popup-warn';
+      warn.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);'+
+        'background:#FEF3C7;border:2px solid #F59E0B;border-radius:12px;padding:14px 18px;'+
+        'max-width:340px;width:90%;z-index:9999;font-family:sans-serif;font-size:13px;'+
+        'color:#92400E;box-shadow:0 4px 20px rgba(0,0,0,0.15);text-align:center;';
+      warn.innerHTML=`<strong>⚠️ Pop-ups blocked</strong><br>To save your label as PDF, please `+
+        `<strong>allow pop-ups for clpeasy.com</strong> in your browser settings, then tap `+
+        `Print to PDF again.<br><br>`+
+        `<button data-dismiss="print-popup-warn" `+
+        `style="background:#F59E0B;border:none;border-radius:8px;padding:6px 16px;`+
+        `color:white;font-weight:700;cursor:pointer;font-size:13px;">Got it</button>`;
+      warn.querySelector('[data-dismiss="print-popup-warn"]').addEventListener('click',()=>warn.remove());
+      document.body.appendChild(warn);
+      setTimeout(()=>{if(warn.parentNode)warn.remove();},8000);
     }
-    ctx.drawImage(img,0,0,eW,eH);
-    ctx.restore();
-    const pngDataUri=cvs.toDataURL('image/png');
-    const win=window.open('','_blank');
-    if(!win){alert('To print your label, please allow pop-ups for clpeasy.com in your browser settings, then try again.');return;}
-    win.document.write(`<!DOCTYPE html><html><head><title>CLPeasy Label — ${S.scentName||''}</title>
-    <style>
-      *{margin:0;padding:0;box-sizing:border-box;}
-      html,body{width:${mmW}mm;height:${mmH}mm;overflow:hidden;background:white;}
-      img{display:block;width:${mmW}mm;height:${mmH}mm;}
-      @page{size:${mmW}mm ${mmH}mm;margin:0;}
-      @media print{
-        html,body{width:${mmW}mm;height:${mmH}mm;overflow:hidden;}
-        img{width:${mmW}mm;height:${mmH}mm;page-break-after:avoid;page-break-inside:avoid;}
-        .print-btn{display:none;}
-      }
-      .print-btn{position:fixed;bottom:16px;right:16px;background:#4C9BB0;color:white;border:none;
-        padding:10px 18px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;
-        font-family:sans-serif;box-shadow:0 4px 16px rgba(0,0,0,0.2);}
-    </style></head>
-    <body>
-      <img src="${pngDataUri}"/>
-      <button class="print-btn" onclick="window.print()">🖨 Print / Save as PDF</button>
-    </body></html>`);
-    win.document.close();
-  };
-  img.src=svgDataUri;
+    return;
+  }
+  win.document.write(`<!DOCTYPE html><html><head><title>CLPeasy Label — ${S.scentName||''}</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html,body{width:${mmW}mm;height:${mmH}mm;background:white;overflow:hidden;}
+    svg{display:block;width:${mmW}mm;height:${mmH}mm;}
+    @page{size:${mmW}mm ${mmH}mm;margin:0;}
+    @media print{
+      html,body{width:${mmW}mm;height:${mmH}mm;}
+      svg{width:${mmW}mm;height:${mmH}mm;}
+      .print-btn{display:none;}
+    }
+    .print-btn{position:fixed;bottom:16px;right:16px;background:#0D9488;color:white;border:none;
+      padding:10px 18px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;
+      font-family:sans-serif;box-shadow:0 4px 16px rgba(0,0,0,0.2);}
+  </style></head>
+  <body>
+    ${svgData}
+    <button class="print-btn" onclick="window.print()">🖨 Print / Save as PDF</button>
+  </body></html>`);
+  win.document.close();
 }
 
 
@@ -1220,17 +1229,20 @@ function labelToCanvas(cb){
   clone.setAttribute('width',eW);clone.setAttribute('height',eH);
   clone.setAttribute('viewBox',`0 0 ${pw} ${ph}`);
   const svgData=new XMLSerializer().serializeToString(clone);
-  const svgUri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgData);
+  // Blob URL — fixes iOS Safari bug where data URI img.onload never fires
+  const blob=new Blob([svgData],{type:'image/svg+xml;charset=utf-8'});
+  const blobUrl=URL.createObjectURL(blob);
   const img=new Image();
   img.onload=function(){
     const cvs=document.createElement('canvas');cvs.width=eW;cvs.height=eH;
     const ctx=cvs.getContext('2d');
     ctx.fillStyle='white';ctx.fillRect(0,0,eW,eH);
     ctx.drawImage(img,0,0,eW,eH);
+    URL.revokeObjectURL(blobUrl);
     cb(cvs,eW,eH,mmW,mmH);
   };
-  img.onerror=()=>alert('Could not render label. Please try again.');
-  img.src=svgUri;
+  img.onerror=()=>{URL.revokeObjectURL(blobUrl);alert('Could not render label. Please try again.');};
+  img.src=blobUrl;
 }
 
 // ── PDF SHEET — Avery-aligned home printing ───────────────────
@@ -1298,7 +1310,9 @@ function downloadPrintReadyPDF(){
   clone.setAttribute('width',eW);clone.setAttribute('height',eH);
   clone.setAttribute('viewBox',`0 0 ${pw} ${ph}`);
   const svgData=new XMLSerializer().serializeToString(clone);
-  const svgUri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgData);
+  // Blob URL — fixes iOS Safari bug where data URI img.onload never fires
+  const blob=new Blob([svgData],{type:'image/svg+xml;charset=utf-8'});
+  const svgUri=URL.createObjectURL(blob);
   const img=new Image();
   img.onload=function(){
     const cvs=document.createElement('canvas');cvs.width=totalWpx;cvs.height=totalHpx;
@@ -1365,7 +1379,9 @@ function downloadPrintReadyPDF(){
     ">⬇ Download print-ready PNG</button>
     </body></html>`);
     win.document.close();
+    URL.revokeObjectURL(svgUri);
   };
+  img.onerror=()=>URL.revokeObjectURL(svgUri);
   img.src=svgUri;
 }
 
@@ -1382,7 +1398,9 @@ function downloadCricutPNGs(){
   clone.setAttribute('width',eW);clone.setAttribute('height',eH);
   clone.setAttribute('viewBox',`0 0 ${pw} ${ph}`);
   const svgData=new XMLSerializer().serializeToString(clone);
-  const svgUri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgData);
+  // Blob URL — fixes iOS Safari bug where data URI img.onload never fires
+  const blob=new Blob([svgData],{type:'image/svg+xml;charset=utf-8'});
+  const svgUri=URL.createObjectURL(blob);
   const img=new Image();
   img.onload=function(){
     const cvs=document.createElement('canvas');cvs.width=eW;cvs.height=eH;
@@ -1420,6 +1438,7 @@ function downloadCricutPNGs(){
       }
     }
   };
+  img.onerror=()=>URL.revokeObjectURL(svgUri);
   img.src=svgUri;
 }
 
@@ -2761,8 +2780,9 @@ function updateLabel(){
             // Scale to fill panel (respecting aspect ratio)
             const fitZoom=Math.min(aW/vbW,aH/vbH,2.0);
             // Only auto-set zoom if it's still at default or the label size changed
-            if(previewZoom===0.75||previewZoom<1.0){
-              previewZoom=Math.max(1.0,fitZoom*0.88);
+            if(previewZoom===0.75||previewZoom<0.5||previewZoom>1.8){
+              // fitZoom*0.88 gives a little breathing room; no floor at 1.0
+              previewZoom=Math.min(fitZoom*0.88, 2.0);
               const pct=Math.round(previewZoom*100);
               const fillPct=((previewZoom-0.2)/(2.0-0.2)*100).toFixed(1);
               const zpEl=document.getElementById('zoom-pct');const zfEl=document.getElementById('zoom-fill');const ztEl=document.getElementById('zoom-thumb');
@@ -2911,25 +2931,26 @@ function downloadPNG(){
   const svgData=new XMLSerializer().serializeToString(clone);
   const slug=(S.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
   const fname=`clpeasy-${slug}-${S.size==='custom'?mmW+'x'+mmH:''+S.size}mm.png`;
-  const svgDataUri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgData);
+  // Blob URL avoids iOS Safari bug where data URI img.onload never fires
+  const blob=new Blob([svgData],{type:'image/svg+xml;charset=utf-8'});
+  const blobUrl=URL.createObjectURL(blob);
   const img=new Image();
   img.onload=function(){
     const cvs=document.createElement('canvas');cvs.width=eW;cvs.height=eH;
     const ctx=cvs.getContext('2d');
-    // No white fill — keep transparent so only the label shape is visible
     ctx.clearRect(0,0,eW,eH);
     ctx.drawImage(img,0,0,eW,eH);
-    const pngDataUri=cvs.toDataURL('image/png');
-    const a=document.createElement('a');
-    a.href=pngDataUri;
-    a.download=fname;
-    document.body.appendChild(a);a.click();
-    setTimeout(()=>document.body.removeChild(a),1000);
+    URL.revokeObjectURL(blobUrl);
+    cvs.toBlob(function(pngBlob){
+      const dlUrl=URL.createObjectURL(pngBlob);
+      const a=document.createElement('a');
+      a.href=dlUrl;a.download=fname;
+      document.body.appendChild(a);a.click();
+      setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(dlUrl);},1500);
+    },'image/png');
   };
-  img.onerror=function(){
-    window.open(svgDataUri,'_blank');
-  };
-  img.src=svgDataUri;
+  img.onerror=function(){URL.revokeObjectURL(blobUrl);};
+  img.src=blobUrl;
 }
 
 // ── SVG DOWNLOAD ──────────────────────────────────────────────
@@ -3322,7 +3343,7 @@ function autoIncrementBatch(){
   const el=document.getElementById('batch-num');
   if(!el)return;
   const current=el.value.trim();
-  // Extract trailing number from batch string e.g. LOT-001 → LOT-002
+  // Extract trailing number from batch string e.g. BN-001 → BN-002
   const match=current.match(/^(.*?)(\d+)$/);
   if(match){
     const prefix=match[1];
