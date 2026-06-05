@@ -1480,27 +1480,7 @@ async function initAuth(){
     sbClient=createClient(SUPABASE_URL,SUPABASE_KEY);
     const {data:{session}}=await sbClient.auth.getSession();
 
-    // Handle return from top-up checkout
-(function(){
-  const params = new URLSearchParams(window.location.search);
-  if(params.get('topup') === 'success'){
-    // Remove param from URL cleanly
-    window.history.replaceState({}, '', 'builder.html');
-    // Show success toast after short delay (allow page to render)
-    setTimeout(function(){
-      const toast = document.createElement('div');
-      toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#0D9488;color:white;padding:14px 24px;border-radius:12px;font-size:15px;font-weight:700;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);text-align:center;';
-      toast.innerHTML = '✅ Top-up added! Your extra downloads are ready.';
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 5000);
-    }, 800);
-  }
-  if(params.get('topup') === 'cancelled'){
-    window.history.replaceState({}, '', 'builder.html');
-  }
-})();
-
-// Handle return from Stripe checkout
+    // Handle return from Stripe checkout
     const params=new URLSearchParams(window.location.search);
     if(params.get('subscribed')==='true'){
       window.history.replaceState({},'',window.location.pathname);
