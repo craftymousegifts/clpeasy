@@ -2379,6 +2379,23 @@ function showLabelDoneSplash(actionLabel){
   splash.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;z-index:999999;'+
     'background:rgba(13,17,27,0.75);display:flex;align-items:center;justify-content:center;'+
     'opacity:1;pointer-events:auto;font-family:sans-serif;';
+  // Reset box to white branded style
+  const box=splash.querySelector('.label-done-box');
+  if(box)box.style.cssText='background:#ffffff;border:2px solid #4C9BB0;border-radius:20px;'+
+    'padding:32px 28px 24px;max-width:380px;width:90%;text-align:center;'+
+    'box-shadow:0 20px 60px rgba(0,0,0,0.25);';
+  const title=document.getElementById('splash-title');
+  if(title)title.style.cssText='font-size:22px;font-weight:700;color:#111318;margin-bottom:6px;font-family:serif;';
+  const sub=document.getElementById('splash-sub');
+  if(sub)sub.style.cssText='font-size:13px;color:#6B7280;margin-bottom:20px;';
+  const cd2=document.getElementById('splash-countdown');
+  if(cd2)cd2.style.cssText='margin-top:14px;font-size:12px;color:#9CA3AF;';
+  splash.querySelectorAll('.label-done-btn.primary').forEach(b=>{
+    b.style.cssText='background:#4C9BB0;color:white;border:none;padding:13px 16px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;width:100%;margin-bottom:8px;';
+  });
+  splash.querySelectorAll('.label-done-btn.secondary').forEach(b=>{
+    b.style.cssText='background:#F8FAFC;color:#374151;border:1.5px solid #E5E7EB;padding:13px 16px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;width:100%;margin-bottom:8px;';
+  });
   splash.classList.add('show');
   // Countdown auto-dismiss after 15s
   let secs=15;
