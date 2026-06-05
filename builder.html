@@ -2374,6 +2374,8 @@ function showLabelDoneSplash(actionLabel){
   };
   document.getElementById('splash-title').textContent=titles[actionLabel]||'Label done!';
   splash.classList.add('show');
+  splash.style.opacity='1';
+  splash.style.pointerEvents='auto';
   // Countdown auto-dismiss after 5s
   let secs=15;
   const cd=document.getElementById('splash-countdown');
@@ -2391,7 +2393,11 @@ function showLabelDoneSplash(actionLabel){
 }
 function splashDismiss(){
   const splash=document.getElementById('label-done-splash');
-  if(splash)splash.classList.remove('show');
+  if(splash){
+    splash.classList.remove('show');
+    splash.style.opacity='0';
+    splash.style.pointerEvents='none';
+  }
   if(_splashTimer)clearTimeout(_splashTimer);
 }
 function splashNewLabel(){
