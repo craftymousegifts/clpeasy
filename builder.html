@@ -751,19 +751,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div id="p-library" style="display:none;margin-bottom:8px;"><div class="chip-library" id="p-chips"></div></div>
     <div class="form-group"><input type="text" id="p-statements" placeholder="Extracted from Smart Paste" readonly style="background:#F8FAFC;color:#64748B;cursor:not-allowed;"></div>
     <div class="sdiv">EUH208 Sensitisers <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--muted)">— CLP/REACH skin sensitisers only</span></div>
-    <div id="sens-unlocked-ui">
-      <div class="info-note">⚠️ Only include sensitisers that appear on your fragrance supplier's SDS. Always verify before printing.</div>
-      <div class="sensitiser-legend">
-        <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Skin Sens. 1A (strong — EUH208 at ≥0.01%)</div>
-        <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Skin Sens. 1B (moderate — EUH208 at ≥0.1%)</div>
-      </div>
-      <span class="library-toggle" onclick="toggleLib('s-library',this)">▼ Show sensitiser library</span>
-      <div id="s-library" style="display:none;margin-bottom:10px;"><div class="sensitiser-grid" id="sensitiser-chips"></div></div>
-      <div style="display:flex;gap:8px;margin-top:6px;">
-        <input type="text" id="allergen-input" placeholder="Type sensitiser name and press Enter..." onkeydown="if(event.key==='Enter'){addManualAllergen();}">
-        <button onclick="addManualAllergen()" style="background:var(--off);border:1.5px solid var(--border);padding:11px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;flex-shrink:0;">+ Add</button>
-      </div>
-    </div>
+    <span class="library-toggle" onclick="toggleLib('s-library',this)">▼ Show sensitiser library</span>
+    <div id="s-library" style="display:none;margin-bottom:10px;"><div class="sensitiser-grid" id="sensitiser-chips"></div></div>
     <div class="allergen-tags" id="allergen-tags"></div>
     <div style="background:#FEF9E7;border:1px solid #F9E27A;border-radius:10px;padding:12px 14px;margin-top:14px;margin-bottom:4px;">
       <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:var(--text);font-weight:500;line-height:1.5;">
@@ -1131,6 +1120,7 @@ function downloadJPEG(){
   };
   img.onerror=function(){URL.revokeObjectURL(blobUrl);};
   img.src=blobUrl;
+  setTimeout(()=>showLabelDoneSplash('download'),1200);
 }
 
 // ── PRINT TO PDF ──────────────────────────────────────────────
@@ -1190,6 +1180,7 @@ function printToPDF(){
   }
   // Revoke blob URL after window has had time to load it
   setTimeout(function(){URL.revokeObjectURL(blobUrl);},10000);
+  setTimeout(()=>showLabelDoneSplash('pdf'),800);
 }
 
 
@@ -1347,6 +1338,19 @@ function downloadPrintReadyPDF(){
     .info{font-size:12px;color:#555;line-height:1.6;max-width:500px;text-align:center;}
     .dl{margin-top:12px;padding:10px 20px;background:#4C9BB0;color:white;border:none;border-radius:6px;font-size:14px;cursor:pointer;font-family:Arial;}
     @media print{body{background:white;padding:0;}.info,.dl{display:none;}.card{box-shadow:none;padding:0;}}
+.label-done-splash{position:fixed;inset:0;z-index:10000;background:rgba(13,17,27,0.92);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .35s;pointer-events:none;font-family:'DM Sans',sans-serif;}
+.label-done-splash.show{opacity:1;pointer-events:auto;}
+.label-done-box{background:#1a1f2e;border:1.5px solid rgba(76,155,176,0.4);border-radius:20px;padding:32px 28px 24px;max-width:340px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
+.label-done-icon{font-size:48px;margin-bottom:12px;}
+.label-done-title{font-size:20px;font-weight:700;color:white;margin-bottom:6px;}
+.label-done-sub{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:20px;}
+.label-done-actions{display:flex;flex-direction:column;gap:10px;}
+.label-done-btn{padding:13px 16px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;border:none;transition:all .2s;}
+.label-done-btn.primary{background:var(--teal);color:white;}
+.label-done-btn.primary:hover{background:var(--teal-dark);}
+.label-done-btn.secondary{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);border:1px solid rgba(255,255,255,0.12);}
+.label-done-btn.secondary:hover{background:rgba(255,255,255,0.12);}
+.label-done-dismiss{margin-top:14px;font-size:12px;color:rgba(255,255,255,0.25);cursor:pointer;}
 .extract-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1E3A5F;color:white;border-radius:14px;padding:16px 22px;min-width:280px;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,0.25);z-index:9999;opacity:0;transition:all .3s ease;pointer-events:none;font-family:'DM Sans',sans-serif;}
 .extract-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .extract-toast-title{font-size:15px;font-weight:700;color:#4ADE80;margin-bottom:8px;}
@@ -1384,7 +1388,7 @@ function downloadPrintReadyPDF(){
   img.src=svgUri;
 }
 
-// ── CRICUT INDIVIDUAL PNGs — download as ZIP ─────────────────
+// ── CUTTING MACHINE PNGs — download as ZIP ──────────────────
 function downloadCricutPNGs(){
   readForm();
   const qtyEl=document.getElementById('sheet-qty');
@@ -1410,7 +1414,7 @@ function downloadCricutPNGs(){
     const slug=(S.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
     if(qty===1){
       const a=document.createElement('a');
-      a.href=pngUri;a.download=`clpeasy-${slug}-${mmW}mm-cricut.png`;
+      a.href=pngUri;a.download=`clpeasy-${slug}-${mmW}mm-cutting-machine.png`;
       document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
     } else {
       if(typeof JSZip!=='undefined'){
@@ -1419,7 +1423,7 @@ function downloadCricutPNGs(){
         for(let i=1;i<=qty;i++) zip.file(`clpeasy-${slug}-${mmW}mm-${i}.png`,b64,{base64:true});
         zip.generateAsync({type:'blob'}).then(blob=>{
           const url=URL.createObjectURL(blob);
-          const a=document.createElement('a');a.href=url;a.download=`clpeasy-cricut-${slug}-x${qty}.zip`;
+          const a=document.createElement('a');a.href=url;a.download=`clpeasy-cutting-machine-${slug}-x${qty}.zip`;
           document.body.appendChild(a);a.click();
           setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
         });
@@ -1901,6 +1905,7 @@ function saveLabel(){
   renderSaved();
   const btn=document.getElementById('btn-save');
   if(btn){btn.textContent='✅ Saved!';btn.style.background='#ECFDF5';btn.style.borderColor='var(--teal)';}
+  setTimeout(()=>showLabelDoneSplash('save'),600);
   setTimeout(()=>{if(btn){btn.textContent='💾 Save to my label library';btn.style.background='';btn.style.borderColor='';}},2000);
 }
 
@@ -2111,7 +2116,7 @@ function buildHChips(){document.getElementById('h-chips').innerHTML=H_LIB.map(h=
 function buildPChips(){document.getElementById('p-chips').innerHTML=P_LIB.map(p=>`<div class="h-chip" data-code="${p.code}" onclick="togglePChip(this,'${p.code}')" title="${p.desc}">${p.code}</div>`).join('');}
 function buildSensitiserChips(){
   document.getElementById('sensitiser-chips').innerHTML=SENSITISERS.map(s=>
-    `<div class="s-chip cat${s.cat.toLowerCase().replace(/\./g,'').replace(' ','')} " data-name="${s.name}" onclick="toggleSensitiser(this,'${s.name.replace(/'/g,"\\'")}')"><span class="s-name">${s.name}</span><span class="s-cat">Skin Sens. ${s.cat}</span></div>`
+    `<div class="s-chip cat${s.cat.toLowerCase().replace(/\./g,'').replace(' ','')} " data-name="${s.name}" style="cursor:default;pointer-events:none;opacity:0.75;"><span class="s-name">${s.name}</span><span class="s-cat">Skin Sens. ${s.cat}</span></div>`
   ).join('');
 }
 function toggleDownload(){
@@ -2133,37 +2138,89 @@ function toggleLib(id,tog){
 function toggleHChip(el,code){el.classList.toggle('selected');const i=S.hSelected.indexOf(code);if(i>-1)S.hSelected.splice(i,1);else S.hSelected.push(code);document.getElementById('h-statements').value=S.hSelected.join(', ');updateLabel();}
 function togglePChip(el,code){el.classList.toggle('selected');const i=S.pSelected.indexOf(code);if(i>-1)S.pSelected.splice(i,1);else S.pSelected.push(code);document.getElementById('p-statements').value=S.pSelected.join(', ');updateLabel();}
 function toggleSensitiser(el,name){el.classList.toggle('selected');if(el.classList.contains('selected')){if(!S.sensitisers.includes(name))S.sensitisers.push(name);}else S.sensitisers=S.sensitisers.filter(x=>x!==name);renderTags();updateLabel();}
-function addManualAllergen(){const inp=document.getElementById('allergen-input');const val=inp.value.trim();if(!val)return;val.split(',').forEach(v=>{const t=v.trim();if(t&&!S.sensitisers.includes(t))S.sensitisers.push(t);});inp.value='';renderTags();updateLabel();}
-function removeSensitiser(name){S.sensitisers=S.sensitisers.filter(x=>x!==name);const c=document.querySelector(`#sensitiser-chips .s-chip[data-name="${name}"]`);if(c)c.classList.remove('selected');renderTags();updateLabel();}
-function renderTags(){document.getElementById('allergen-tags').innerHTML=S.sensitisers.map(a=>`<div class="allergen-tag" onclick="removeSensitiser('${a.replace(/'/g,"\\'")}')"><span>${a}</span><span style="color:var(--muted)">×</span></div>`).join('');}
 
-// ── SMART PASTE ───────────────────────────────────────────────
-function extractSDS(){
-  const text=document.getElementById('smart-paste-input').value;
-  if(!text.trim()){alert('Please paste SDS Section 2.2 text first.');return;}
-  const hM=[...new Set((text.match(/(?:EUH\d+|H\d{3}[A-Z]?)/g)||[]))].filter(h=>h!=='EUH210');
-  if(hM.length){S.hSelected=[...new Set([...S.hSelected,...hM])];document.getElementById('h-statements').value=S.hSelected.join(', ');hM.forEach(c=>{const ch=document.querySelector(`#h-chips .h-chip[data-code="${c}"]`);if(ch)ch.classList.add('selected');});}
-  const pM=[...new Set(text.match(/P\d{3}(?:\+P\d{3})*/g)||[])];
-  if(pM.length){S.pSelected=[...new Set([...S.pSelected,...pM])];document.getElementById('p-statements').value=S.pSelected.join(', ');pM.forEach(c=>{const ch=document.querySelector(`#p-chips .h-chip[data-code="${c}"]`);if(ch)ch.classList.add('selected');});}
-  // Handle signal word — check for None before Warning/Danger
-  const _sigNone=/Signal\s*[Ww]ord[:\s]+None/i.test(text);
-  if(!_sigNone){
-    if(/\bDanger\b/i.test(text))selectSignal('Danger');
-    else if(/\bWarning\b/i.test(text))selectSignal('Warning');
+function renderTags(){
+  const tags=document.getElementById('allergen-tags');
+  if(!tags)return;
+  if(S.sensitisers.length===0){
+    tags.innerHTML='<span style="font-size:13px;color:var(--muted);font-style:italic;">None detected — paste SDS data and click Extract</span>';
+  } else {
+    tags.innerHTML=S.sensitisers.map(name=>
+      `<span class="allergen-tag">${name}</span>`
+    ).join('');
   }
-  if(/GHS02|SGH02|flammable/i.test(text))addPicto('flame');
-  if(/GHS07|SGH07|irritant/i.test(text))addPicto('exclamation');
-  if(/GHS08|SGH08|health hazard/i.test(text))addPicto('health');
-  if(/GHS09|SGH09|aquatic/i.test(text))addPicto('aquatic');
-  // Also map H codes directly to pictograms
-  const hToPicto={'H400':'aquatic','H410':'aquatic','H411':'aquatic','H412':'aquatic','H413':'aquatic','H224':'flame','H225':'flame','H226':'flame','H228':'flame','H242':'flame','H315':'exclamation','H317':'exclamation','H319':'exclamation','H335':'exclamation','H302':'exclamation','H312':'exclamation','H332':'exclamation','H334':'health','H340':'health','H341':'health','H350':'health','H351':'health','H360':'health','H361':'health','H290':'corrosive','H314':'corrosive','H290':'corrosive'};
-  hM.forEach(h=>{if(hToPicto[h])addPicto(hToPicto[h]);});
-  let fs=0;
-  SENSITISERS.forEach(s=>{try{const baseName=s.name.split('(')[0].trim();const escaped=baseName.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');const pat=new RegExp(escaped,'i');if(pat.test(text)&&!S.sensitisers.includes(s.name)){S.sensitisers.push(s.name);const c=document.querySelector(`#sensitiser-chips .s-chip[data-name="${s.name}"]`);if(c)c.classList.add('selected');fs++;}}catch(e){}});
-  renderTags();updateLabel();
-  lockHazardFields(true);
-  showExtractToast(hM.length, pM.length, fs);
 }
+function extractSDS(){
+  const text=document.getElementById('smart-paste-input').value.trim();
+  if(!text){alert('Please paste SDS Section 2.2 text first.');return;}
+
+  // ── H STATEMENTS ──────────────────────────────────────────────────────────
+  const hMatches=[...new Set(text.match(/\bH\d{3}\b/g)||[])];
+  const euhMatches=[...new Set(text.match(/\bEUH\d{3}\b/g)||[])];
+  const allH=[...hMatches,...euhMatches];
+
+  // Set H statement field and state
+  const hEl=document.getElementById('h-statements');
+  if(hEl){hEl.value=allH.join(', ');}
+  S.hStatements=allH.join(', ');
+  S.hSelected=allH;
+  // Select matching chips in H library
+  document.querySelectorAll('#h-chips .h-chip').forEach(chip=>{
+    const code=chip.dataset.code||chip.textContent.trim();
+    if(allH.includes(code)){chip.classList.add('selected');}else{chip.classList.remove('selected');}
+  });
+
+  // ── P STATEMENTS ──────────────────────────────────────────────────────────
+  const pRaw=[...new Set(text.match(/\bP\d{3}(?:\+P\d{3})*\b/g)||[])];
+  const pEl=document.getElementById('p-statements');
+  if(pEl){pEl.value=pRaw.join(', ');}
+  S.pStatements=pRaw.join(', ');
+  S.pSelected=pRaw;
+  document.querySelectorAll('#p-chips .h-chip').forEach(chip=>{
+    const code=chip.dataset.code||chip.textContent.trim();
+    if(pRaw.includes(code)){chip.classList.add('selected');}else{chip.classList.remove('selected');}
+  });
+
+  // ── SIGNAL WORD ───────────────────────────────────────────────────────────
+  const dangerH=['H300','H301','H310','H311','H330','H331','H340','H350','H360','H370','H371','H373','H290','H304','H314','H318'];
+  const isDanger=allH.some(h=>dangerH.includes(h));
+  const sig=isDanger?'Danger':'Warning';
+  S.signal=sig;
+  document.getElementById('signal-warning').className='signal-btn'+(sig==='Warning'?' sel-warn':'');
+  document.getElementById('signal-danger').className='signal-btn'+(sig==='Danger'?' sel-danger':'');
+
+  // ── PICTOGRAMS ────────────────────────────────────────────────────────────
+  // Clear existing
+  S.pictograms=[];
+  document.querySelectorAll('.picto-btn').forEach(b=>b.classList.remove('selected'));
+  // Map H codes → pictograms
+  const hPictoMap={
+    exclamation:['H302','H312','H315','H317','H319','H332','H335','H336','H371','H373','EUH066','EUH071'],
+    health:['H340','H341','H350','H351','H360','H361','H362','H370','H372'],
+    aquatic:['H400','H410','H411','H412','H413'],
+    corrosive:['H290','H314','H318'],
+    skull:['H300','H301','H310','H311','H330','H331'],
+    explosion:['H200','H201','H202','H203','H204','H205','H206','H207','H208','H209','H210','H211','H240','H241','H242'],
+    flame:['H220','H221','H222','H223','H224','H225','H226','H228','H232','H250','H251','H252','H260','H261','H270','H271','H272'],
+    oxidiser:['H270','H271','H272'],
+    gas:['H280','H281']
+  };
+  Object.entries(hPictoMap).forEach(([picto,codes])=>{
+    if(allH.some(h=>codes.includes(h)))addPicto(picto);
+  });
+
+  // ── SENSITISERS ───────────────────────────────────────────────────────────
+  const upperText=text.toUpperCase();
+  const matched=SENSITISERS.filter(s=>upperText.includes(s.name.toUpperCase()));
+  S.sensitisers=matched.map(s=>s.name);
+  renderTags();
+
+  // ── LOCK & FINISH ─────────────────────────────────────────────────────────
+  updateLabel();
+  lockHazardFields(true);
+  showExtractToast(allH.length,pRaw.length,matched.length);
+}
+
 function showExtractToast(hCount, pCount, sensCount){
   // Remove any existing toast
   const existing=document.getElementById('extract-toast');
@@ -2294,9 +2351,7 @@ function lockHazardFields(lock){
     el.style.pointerEvents=lock?'none':'auto';
     el.style.background=lock?'#F8FAFC':'';
   });
-  // Hide sensitiser library/legend/input when locked — show only the extracted chips
-  const sensUI=document.getElementById('sens-unlocked-ui');
-  if(sensUI)sensUI.style.display=lock?'none':'';
+
   // Lock/unlock signal word buttons
   ['signal-warning','signal-danger'].forEach(id=>{
     const el=document.getElementById(id);
@@ -2319,6 +2374,61 @@ function lockHazardFields(lock){
   const banner=document.getElementById('hazard-lock-banner');
   if(banner)banner.style.display=lock?'flex':'none';
 }
+
+// ── LABEL DONE SPLASH ─────────────────────────────────────────────────────
+let _splashTimer=null;
+function showLabelDoneSplash(actionLabel){
+  const splash=document.getElementById('label-done-splash');
+  if(!splash)return;
+  // Set icon/title based on action
+  const icons={download:'⬇️',save:'💾',pdf:'🖨️',svg:'✏️'};
+  const icon=icons[actionLabel]||'✅';
+  document.getElementById('splash-icon').textContent=icon;
+  const titles={
+    download:'Label downloaded!',
+    save:'Label saved to library!',
+    pdf:'Print window opened!',
+    svg:'SVG downloaded!'
+  };
+  document.getElementById('splash-title').textContent=titles[actionLabel]||'Label done!';
+  splash.classList.add('show');
+  // Countdown auto-dismiss after 5s
+  let secs=5;
+  const cd=document.getElementById('splash-countdown');
+  const tick=()=>{
+    if(!splash.classList.contains('show'))return;
+    cd.textContent='Auto-closing in '+secs+'s — tap anywhere to dismiss';
+    if(secs<=0){splashDismiss();return;}
+    secs--;
+    _splashTimer=setTimeout(tick,1000);
+  };
+  if(_splashTimer)clearTimeout(_splashTimer);
+  tick();
+  // Tap backdrop to dismiss
+  splash.onclick=function(e){if(e.target===splash)splashDismiss();};
+}
+function splashDismiss(){
+  const splash=document.getElementById('label-done-splash');
+  if(splash)splash.classList.remove('show');
+  if(_splashTimer)clearTimeout(_splashTimer);
+}
+function splashNewLabel(){
+  splashDismiss();
+  // Auto-increment batch number then reset to step 1
+  autoIncrementBatch();
+  goToStep(1);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function splashGoLibrary(){
+  splashDismiss();
+  // Scroll to saved library section in step 5
+  goToStep(5);
+  setTimeout(()=>{
+    const lib=document.getElementById('saved-labels-section')||document.getElementById('saved-list');
+    if(lib)lib.scrollIntoView({behavior:'smooth'});
+  },300);
+}
+
 function startOver(){location.reload();}
 function clearHazardData(){
   // Clear signal word
@@ -2656,29 +2766,38 @@ function buildSVG(forExport=false){
   const maxFooterFS = clamp(BASE*0.036,3,7.5);
   const minFooterFS = clamp(BASE*0.022,2,4.5);
 
+  // Pre-calculate Y positions for each slot so we can measure chord at exact render Y
+  const nSlots = Math.min(footerSlots.length, 3);
+  const slotLH = nSlots > 0 ? fUsable / nSlots : fUsable;
   let footerElems = [];
-  footerSlots.slice(0,3).forEach(slot=>{
-    const fSW = Math.min(chordW(botY + fTopPad, 0.09), sW*0.88);
-    const fs1 = fitFont(slot.text, fSW*0.88, maxFooterFS, minFooterFS, slot.bold, false);
-    const lines1 = wrapText(slot.text, fSW*0.88, fs1, slot.bold, false);
-    if(lines1.length > 1){
-      const fs2 = minFooterFS;
-      const lines2 = wrapText(slot.text, fSW*0.88, fs2, slot.bold, false);
-      footerElems.push({lines: lines2.slice(0,2), fs: fs2, bold: slot.bold});
-    } else {
-      footerElems.push({lines: lines1, fs: fs1, bold: slot.bold});
-    }
+  footerSlots.slice(0, nSlots).forEach((slot, i)=>{
+    // Y position this slot will render at (centre of its line)
+    const slotY = botY + fTopPad + slotLH * (i + 0.5);
+    // Chord width at this exact Y — narrower near the bottom of circle
+    const chordAtY = Math.min(chordW(slotY, 0.09), sW * 0.88);
+    const availW = chordAtY * 0.88;
+    // fitFont: find largest size where text fits on ONE line within availW
+    const fs = fitFont(slot.text, availW, maxFooterFS, Math.max(minFooterFS * 0.5, 1.5), slot.bold, false);
+    footerElems.push({text: slot.text, fs, bold: slot.bold, slotY});
   });
-
-  const totalFLines = footerElems.reduce((s,e)=>s+e.lines.length, 0);
-  const fLH = totalFLines > 0 ? fUsable / totalFLines : fUsable;
-  let fCurY = botY + fTopPad + fLH * 0.5;
+  // Drop bottom slots if their font is unreadably tiny
+  while(footerElems.length > 1 && footerElems[footerElems.length-1].fs < minFooterFS * 0.7){
+    footerElems.pop();
+  }
+  // Recompute Y positions with final slot count
+  const finalSlots = footerElems.length;
+  const finalLH = finalSlots > 0 ? fUsable / finalSlots : fUsable;
+  footerElems = footerElems.map((elem, i)=>({
+    ...elem,
+    slotY: botY + fTopPad + finalLH * (i + 0.5)
+  }));
   const footerRendered = footerElems.map(elem=>{
-    return elem.lines.map(line=>{
-      const fY = Math.min(fCurY, sBot - 2);
-      fCurY += fLH;
-      return`<text x="${cx}" y="${fY.toFixed(1)}" font-family="sans-serif" font-size="${elem.fs.toFixed(2)}" font-weight="${elem.bold?'700':'400'}" fill="${elem.bold?txtCol:mutedCol}" text-anchor="middle" dominant-baseline="middle">${xe(line)}</text>`;
-    }).join('');
+    if(elem.slotY > sBot - 1) return '';
+    const chordAtY = Math.min(chordW(elem.slotY, 0.09), sW * 0.88);
+    const availW = chordAtY * 0.88;
+    // Final fit at actual Y — catches any rounding
+    const fs = fitFont(elem.text, availW, elem.fs, Math.max(minFooterFS * 0.5, 1.5), elem.bold, false);
+    return`<text x="${cx}" y="${elem.slotY.toFixed(1)}" font-family="sans-serif" font-size="${fs.toFixed(2)}" font-weight="${elem.bold?'700':'400'}" fill="${elem.bold?txtCol:mutedCol}" text-anchor="middle" dominant-baseline="middle">${xe(elem.text)}</text>`;
   }).join('');
 
   // ── QR CODE (small, bottom-right of label if enabled) ────────
@@ -2952,6 +3071,7 @@ function downloadPNG(){
   };
   img.onerror=function(){URL.revokeObjectURL(blobUrl);};
   img.src=blobUrl;
+  setTimeout(()=>showLabelDoneSplash('download'),1200);
 }
 
 // ── SVG DOWNLOAD ──────────────────────────────────────────────
@@ -2980,6 +3100,7 @@ function downloadSVG(){
     console.error('SVG download error:',err);
     alert('SVG download failed. Please try again.');
   }
+  setTimeout(()=>showLabelDoneSplash('svg'),500);
 }
 
 // ── MOBILE SHEET ──────────────────────────────────────────────
@@ -3576,6 +3697,7 @@ function initExtensions(){
   initBatchDisplay();
   populateLibraryDropdown();
   onProductTypeChange();
+  renderTags();
   // Restore label lang if saved in prod details
   const prod=JSON.parse(localStorage.getItem('clpeasy_prod')||'{}');
   if(prod.labelLang){
@@ -3595,6 +3717,19 @@ function initExtensions(){
     <div class="fdel-sub" id="fdel-sub"></div>
     <div class="fdel-opts" id="fdel-opts"></div>
     <button class="fdel-cancel" onclick="closeFdelModal()">Cancel</button>
+  </div>
+</div>
+<div class="label-done-splash" id="label-done-splash">
+  <div class="label-done-box">
+    <div class="label-done-icon" id="splash-icon">✅</div>
+    <div class="label-done-title" id="splash-title">Label done!</div>
+    <div class="label-done-sub" id="splash-sub">What would you like to do next?</div>
+    <div class="label-done-actions">
+      <button class="label-done-btn primary" onclick="splashNewLabel()">➕ Make another label</button>
+      <button class="label-done-btn secondary" onclick="splashGoLibrary()">📚 Go to my label library</button>
+      <button class="label-done-btn secondary" onclick="splashDismiss()">✏️ Keep editing this label</button>
+    </div>
+    <div class="label-done-dismiss" id="splash-countdown"></div>
   </div>
 </div>
 </body>

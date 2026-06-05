@@ -242,12 +242,12 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
     </div>
 
     <button class="btn-primary" id="btn-pdf" onclick="downloadPDF()">🖨 Print / Save as PDF</button>
-    <button class="btn-secondary" id="btn-png-all" onclick="openCricutModal()">✂️ Download for Cricut</button>
+    <button class="btn-secondary" id="btn-png-all" onclick="openCricutModal()">✂️ Download for cutting machine</button>
     <a href="builder.html" style="display:block;background:white;color:#111318;font-weight:600;padding:16px 24px;border-radius:10px;text-decoration:none;font-size:15px;border:1.5px solid #E5E7EB;transition:all .2s;cursor:pointer;text-align:center;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='white'">Cancel</a>
 
     <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 12px;font-size:12px;color:#166534;line-height:1.6;margin-top:4px;">
       <strong>🖨 Home printing / print companies:</strong> Use the PDF sheet — print on A4 sticker paper.<br>
-      <strong>✂ Cricut Print Then Cut:</strong> Download individual PNGs and upload each one to Cricut separately. Cricut cannot split a sheet into individual labels.
+      <strong>✂ Cutting machine (Print Then Cut):</strong> Download individual PNGs and upload each one to your cutting machine separately. It cannot split a sheet into individual labels.
     </div>
 
   </div><!-- /left-panel -->
@@ -273,8 +273,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
       </div>
     </div>
     <div class="cricut-tip" id="cricut-tip">
-      <strong>💡 Cricut tip</strong>
-      Use <strong>Download individual PNGs</strong> for Cricut — upload each label separately as a "Print Then Cut" image. Maximum Cricut Print Then Cut size is 171 × 235mm.
+      <strong>💡 Cutting machine tip</strong>
+      Use <strong>Download individual PNGs</strong> for your cutting machine — upload each label separately as a "Print Then Cut" image. Maximum Print Then Cut size is 171 × 235mm.
     </div>
     <div class="preview-footer">
       <span class="preview-info" id="preview-info">A4 · 210 × 297mm</span>
@@ -765,11 +765,11 @@ function buildLabelPNGBlob(item){
           ctx.clearRect(0,0,pxSize,pxSize);
           ctx.drawImage(img,0,0,pxSize,pxSize);
           cvs.toBlob(blob=>finish({blob,fname,error:!blob}),'image/png');
-        }catch(err){ console.error('Cricut PNG render failed:',err); finish({blob:null,fname,error:true}); }
+        }catch(err){ console.error('Cutting machine PNG render failed:',err); finish({blob:null,fname,error:true}); }
       };
-      img.onerror=function(){ console.error('Cricut PNG image load failed for',fname); finish({blob:null,fname,error:true}); };
+      img.onerror=function(){ console.error('Cutting machine PNG image load failed for',fname); finish({blob:null,fname,error:true}); };
       img.src=svgDataUri;
-    }catch(err){ console.error('Cricut PNG build failed:',err); finish({blob:null,fname,error:true}); }
+    }catch(err){ console.error('Cutting machine PNG build failed:',err); finish({blob:null,fname,error:true}); }
   });
 }
 function getFileName(e,mmSize){
@@ -819,11 +819,11 @@ async function cricutDownloadZip(){
   }
   txt.textContent='Creating ZIP...';fill.style.width='95%';
   const zipBlob=await zip.generateAsync({type:'blob'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(zipBlob);a.download='clpeasy-cricut-labels.zip';
+  const a=document.createElement('a');a.href=URL.createObjectURL(zipBlob);a.download='clpeasy-cutting-machine-labels.zip';
   document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(a.href);if(a.parentNode)a.parentNode.removeChild(a);},1000);
   fill.style.width='100%';
-  txt.textContent=`✅ ZIP downloaded — ${made} PNG${made===1?'':'s'}`+(failed?` (${failed} couldn't be generated)`:'')+`. Extract and upload each PNG to Cricut Design Space.`;
+  txt.textContent=`✅ ZIP downloaded — ${made} PNG${made===1?'':'s'}`+(failed?` (${failed} couldn't be generated)`:'')+`. Extract and upload each PNG to your cutting machine software.`;
   setTimeout(()=>closeCricutModal(),2500);
 }
 async function cricutDownloadSequential(){
@@ -877,7 +877,7 @@ init();
 
 <div class="modal-overlay" id="cricutModal">
   <div class="modal-box">
-    <div class="modal-title">✂️ Download for Cricut</div>
+    <div class="modal-title">✂️ Download for cutting machine</div>
     <div class="modal-sub" id="modal-sub">Choose how to save your <span id="modal-count">0</span> label PNG<span id="modal-plural">s</span>.</div>
     <div class="modal-progress" id="modal-progress">
       <div class="modal-progress-bar"><div class="modal-progress-fill" id="modal-progress-fill" style="width:0%"></div></div>
@@ -887,7 +887,7 @@ init();
       <div class="modal-opt" onclick="cricutDownloadZip()">
         <span class="modal-opt-icon">📦</span>
         <div class="modal-opt-title">Download as ZIP</div>
-        <div class="modal-opt-desc">All PNGs in one ZIP — extract and upload each to Cricut Design Space. Cleanest option.</div>
+        <div class="modal-opt-desc">All PNGs in one ZIP — extract and upload each to your cutting machine software. Cleanest option.</div>
       </div>
       <div class="modal-opt" onclick="cricutDownloadSequential()">
         <span class="modal-opt-icon">⬇️</span>
