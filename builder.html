@@ -1120,7 +1120,7 @@ function downloadJPEG(){
   };
   img.onerror=function(){URL.revokeObjectURL(blobUrl);};
   img.src=blobUrl;
-  setTimeout(()=>showLabelDoneSplash('download'),1500);
+  setTimeout(()=>showLabelDoneSplash('download'),300);
 }
 
 // ── PRINT TO PDF ──────────────────────────────────────────────
@@ -1180,7 +1180,7 @@ function printToPDF(){
   }
   // Revoke blob URL after window has had time to load it
   setTimeout(function(){URL.revokeObjectURL(blobUrl);},10000);
-  setTimeout(()=>showLabelDoneSplash('pdf'),1000);
+  setTimeout(()=>showLabelDoneSplash('pdf'),300);
 }
 
 
@@ -1907,7 +1907,7 @@ function saveLabel(){
   renderSaved();
   const btn=document.getElementById('btn-save');
   if(btn){btn.textContent='✅ Saved!';btn.style.background='#ECFDF5';btn.style.borderColor='var(--teal)';}
-  setTimeout(()=>showLabelDoneSplash('save'),600);
+  setTimeout(()=>showLabelDoneSplash('save'),300);
   setTimeout(()=>{if(btn){btn.textContent='💾 Save to my label library';btn.style.background='';btn.style.borderColor='';}},2000);
 }
 
@@ -2395,7 +2395,7 @@ function showLabelDoneSplash(actionLabel){
   document.getElementById('splash-title').textContent=titles[actionLabel]||'Label done!';
   splash.classList.add('show');
   // Countdown auto-dismiss after 5s
-  let secs=5;
+  let secs=15;
   const cd=document.getElementById('splash-countdown');
   const tick=()=>{
     if(!splash.classList.contains('show'))return;
@@ -3073,7 +3073,7 @@ function downloadPNG(){
   };
   img.onerror=function(){URL.revokeObjectURL(blobUrl);};
   img.src=blobUrl;
-  setTimeout(()=>showLabelDoneSplash('download'),1500);
+  setTimeout(()=>showLabelDoneSplash('download'),300);
 }
 
 // ── SVG DOWNLOAD ──────────────────────────────────────────────
@@ -3102,7 +3102,7 @@ function downloadSVG(){
     console.error('SVG download error:',err);
     alert('SVG download failed. Please try again.');
   }
-  setTimeout(()=>showLabelDoneSplash('svg'),600);
+  setTimeout(()=>showLabelDoneSplash('svg'),300);
 }
 
 // ── MOBILE SHEET ──────────────────────────────────────────────
