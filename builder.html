@@ -679,7 +679,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <option>Potpourri</option>
         </optgroup>
       </select></div>
-      <div class="form-group"><label>Net weight <span>(optional)</span></label><input type="text" id="net-weight" placeholder="e.g. 200g" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9.gGkKmMlLoOzZbBlL]/g,'');updateLabel();saveProdDetails()"></div>
+      <div class="form-group"><label>Net weight <span>(optional)</span></label><input type="text" id="net-weight" placeholder="e.g. 200g" inputmode="decimal" oninput="this.value=this.value.replace(/[^0-9.gGkKmMlLoOzZbBlL]/g,'');updateLabel();saveProdDetails()"></div>
     </div>
     <div class="form-row">
       <div class="form-group">
@@ -782,7 +782,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="form-group">
         <label>Batch / Lot number <span>(optional)</span></label>
         <div style="display:flex;gap:8px;">
-          <input type="text" id="batch-num" placeholder="e.g. BN-001" oninput="updateLabel()" style="flex:1;"><button type="button" onclick="clearBatchNum()" title="Clear batch number" style="background:white;border:1.5px solid var(--border);color:var(--muted);border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;flex-shrink:0;" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444';" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';">✕</button>
+          <input type="text" id="batch-num" placeholder="e.g. BN-001" oninput="updateLabel()" style="flex:1;" inputmode="numeric"><button type="button" onclick="clearBatchNum()" title="Clear batch number" style="background:white;border:1.5px solid var(--border);color:var(--muted);border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;flex-shrink:0;" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444';" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';">✕</button>
           <button type="button" onclick="autoIncrementBatch()" style="background:var(--teal-light);border:1.5px solid rgba(13,148,136,0.3);color:var(--teal);border-radius:8px;padding:8px 12px;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0;font-family:'DM Sans',sans-serif;">+1</button>
         </div>
         <div style="margin-top:4px;font-size:11px;color:var(--muted);">Last used: <span id="last-batch-display">—</span></div>
@@ -1120,7 +1120,7 @@ function downloadJPEG(){
   };
   img.onerror=function(){URL.revokeObjectURL(blobUrl);};
   img.src=blobUrl;
-  setTimeout(()=>showLabelDoneSplash('download'),1200);
+  setTimeout(()=>showLabelDoneSplash('download'),1500);
 }
 
 // ── PRINT TO PDF ──────────────────────────────────────────────
@@ -1180,7 +1180,7 @@ function printToPDF(){
   }
   // Revoke blob URL after window has had time to load it
   setTimeout(function(){URL.revokeObjectURL(blobUrl);},10000);
-  setTimeout(()=>showLabelDoneSplash('pdf'),800);
+  setTimeout(()=>showLabelDoneSplash('pdf'),1000);
 }
 
 
@@ -3071,7 +3071,7 @@ function downloadPNG(){
   };
   img.onerror=function(){URL.revokeObjectURL(blobUrl);};
   img.src=blobUrl;
-  setTimeout(()=>showLabelDoneSplash('download'),1200);
+  setTimeout(()=>showLabelDoneSplash('download'),1500);
 }
 
 // ── SVG DOWNLOAD ──────────────────────────────────────────────
@@ -3100,7 +3100,7 @@ function downloadSVG(){
     console.error('SVG download error:',err);
     alert('SVG download failed. Please try again.');
   }
-  setTimeout(()=>showLabelDoneSplash('svg'),500);
+  setTimeout(()=>showLabelDoneSplash('svg'),600);
 }
 
 // ── MOBILE SHEET ──────────────────────────────────────────────
