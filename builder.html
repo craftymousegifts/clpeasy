@@ -1510,7 +1510,7 @@ async function initAuth(){
 
       // ── CHECK SUBSCRIPTION STATUS ──────────────────────────
       try{
-        const {data:sub}=await sbClient.from('subscriptions').select('plan,status').eq('user_id',currentUser.id).single();
+        const {data:sub}=await sbClient.from('subscriptions').select('plan,status').eq('user_id',currentUser.id).maybeSingle();
         if(sub&&sub.status==='active'){
           S.isPro=true;
           // Hide watermark note if subscribed
