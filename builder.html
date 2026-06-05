@@ -1338,7 +1338,7 @@ function downloadPrintReadyPDF(){
     .info{font-size:12px;color:#555;line-height:1.6;max-width:500px;text-align:center;}
     .dl{margin-top:12px;padding:10px 20px;background:#4C9BB0;color:white;border:none;border-radius:6px;font-size:14px;cursor:pointer;font-family:Arial;}
     @media print{body{background:white;padding:0;}.info,.dl{display:none;}.card{box-shadow:none;padding:0;}}
-.label-done-splash{position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;background:rgba(13,17,27,0.92);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .35s;pointer-events:none;font-family:'DM Sans',sans-serif;}
+.label-done-splash{position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;background:rgba(13,17,27,0.92);display:flex;align-items:flex-start;justify-content:center;padding-top:80px;overflow-y:auto;opacity:0;transition:opacity .35s;pointer-events:none;font-family:'DM Sans',sans-serif;}
 .label-done-splash.show{opacity:1;pointer-events:auto;}
 .label-done-box{background:#1a1f2e;border:1.5px solid rgba(76,155,176,0.4);border-radius:20px;padding:32px 28px 24px;max-width:340px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
 .label-done-icon{font-size:48px;margin-bottom:12px;}
@@ -2362,6 +2362,8 @@ let _splashTimer=null;
 function showLabelDoneSplash(actionLabel){
   const splash=document.getElementById('label-done-splash');
   if(!splash)return;
+  // Cancel any existing timer
+  if(_splashTimer){clearTimeout(_splashTimer);_splashTimer=null;}
   // Set icon/title based on action
   const icons={download:'⬇️',save:'💾',pdf:'🖨️',svg:'✏️'};
   const icon=icons[actionLabel]||'✅';
@@ -2373,21 +2375,23 @@ function showLabelDoneSplash(actionLabel){
     svg:'SVG downloaded!'
   };
   document.getElementById('splash-title').textContent=titles[actionLabel]||'Label done!';
+  // Show splash with full cssText override to beat any conflicting styles
+  splash.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;z-index:999999;'+
+    'background:rgba(13,17,27,0.92);display:flex;align-items:center;justify-content:center;'+
+    'opacity:1;pointer-events:auto;font-family:sans-serif;';
   splash.classList.add('show');
-  splash.style.opacity='1';
-  splash.style.pointerEvents='auto';
-  // Countdown auto-dismiss after 5s
+  // Countdown auto-dismiss after 15s
   let secs=15;
   const cd=document.getElementById('splash-countdown');
+  cd.textContent='Auto-closing in 15s — tap anywhere to dismiss';
   const tick=()=>{
     if(!splash.classList.contains('show'))return;
-    cd.textContent='Auto-closing in '+secs+'s — tap anywhere to dismiss';
-    if(secs<=0){splashDismiss();return;}
     secs--;
+    if(secs<=0){splashDismiss();return;}
+    cd.textContent='Auto-closing in '+secs+'s — tap anywhere to dismiss';
     _splashTimer=setTimeout(tick,1000);
   };
-  if(_splashTimer)clearTimeout(_splashTimer);
-  tick();
+  _splashTimer=setTimeout(tick,1000);
   // Tap backdrop to dismiss
   splash.onclick=function(e){if(e.target===splash)splashDismiss();};
 }
