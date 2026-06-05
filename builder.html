@@ -2409,6 +2409,12 @@ function showLabelDoneSplash(actionLabel){
     _splashTimer=setTimeout(tick,1000);
   };
   _splashTimer=setTimeout(tick,1000);
+  // Show/hide library button based on saved label count
+  try{
+    const saved=JSON.parse(localStorage.getItem('clpeasy_labels')||'[]');
+    const libBtn=document.getElementById('splash-library-btn');
+    if(libBtn)libBtn.style.display=saved.length>0?'':'none';
+  }catch(e){}
   // Tap backdrop to dismiss
   splash.onclick=function(e){if(e.target===splash)splashDismiss();};
 }
@@ -3735,7 +3741,7 @@ function initExtensions(){
     <div class="label-done-sub" id="splash-sub">What would you like to do next?</div>
     <div class="label-done-actions">
       <button class="label-done-btn primary" onclick="splashNewLabel()">➕ Make another label</button>
-      <button class="label-done-btn secondary" onclick="splashGoLibrary()">📚 Go to my label library</button>
+      <button class="label-done-btn secondary" id="splash-library-btn" onclick="splashGoLibrary()">📚 Go to my label library</button>
       <button class="label-done-btn secondary" onclick="splashDismiss()">✏️ Keep editing this label</button>
     </div>
     <div class="label-done-dismiss" id="splash-countdown"></div>
