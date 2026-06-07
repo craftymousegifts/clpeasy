@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CLPeasy</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Sans',system-ui,sans-serif;background:#0d1b2a;color:#c8dde8;min-height:100vh;padding-bottom:90px;font-size:14px;}
+
+/* GATE — CSS only, no JS required */
+#gate-wrap{position:fixed;inset:0;background:#0d1b2a;display:flex;align-items:center;justify-content:center;z-index:9999;padding:24px;}
+#gate-unlock{display:none;}
+#gate-unlock:checked ~ #gate-wrap{display:none;}
+#gate-unlock:checked ~ #app{display:block !important;}
+.gate-card{background:#111d2c;border:1px solid #1e3048;border-top:3px solid #4C9BB0;border-radius:16px;padding:36px 24px;width:100%;max-width:360px;text-align:center;}
+.gate-input{width:100%;background:#0d1b2a;border:1.5px solid #1e3048;border-radius:10px;padding:14px 16px;font-size:16px;color:#e8f4f8;font-family:inherit;outline:none;margin-bottom:14px;letter-spacing:2px;}
+.gate-input:focus{border-color:#4C9BB0;}
+.gate-btn{width:100%;background:#4C9BB0;border:none;border-radius:10px;padding:15px;font-size:15px;font-weight:800;color:#fff;cursor:pointer;font-family:inherit;}
+.gate-error{color:#e74c3c;font-size:12px;margin-top:6px;display:none;}
+
+/* HEADER */
+#app{display:none;}
+#gate-unlock:checked ~ #app{display:block !important;}
+.hdr{background:linear-gradient(135deg,#0a1520,#152230);border-bottom:1px solid #1e3048;padding:12px 16px;position:sticky;top:0;z-index:100;}
+.hdr-inner{display:flex;align-items:center;gap:10px;}
+.hdr-logo{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#4C9BB0,#3a7d8f);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:8px;color:#fff;flex-shrink:0;letter-spacing:-0.3px;}
+.hdr-title{font-size:15px;font-weight:900;color:#e8f4f8;}
+.hdr-sub{font-size:10px;color:#4C9BB0;margin-top:1px;}
+
+/* PROGRESS */
+.prog-wrap{padding:12px 16px 0;}
+.prog-card{background:#111d2c;border:1px solid #1e3048;border-radius:12px;padding:14px;}
+.prog-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.prog-top span:first-child{font-size:13px;font-weight:800;color:#e8f4f8;}
+.prog-pct{font-size:22px;font-weight:900;color:#27ae60;}
+.prog-bar{display:flex;height:10px;border-radius:6px;overflow:hidden;gap:1px;margin-bottom:10px;}
+.prog-legend{display:flex;flex-wrap:wrap;gap:10px;}
+.leg{display:flex;align-items:center;gap:5px;font-size:11px;}
+.leg-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
+
+/* NAV TABS */
+.nav-tabs{display:flex;padding:10px 16px 0;gap:6px;overflow-x:auto;}
+.nav-tabs::-webkit-scrollbar{display:none;}
+.ntab{flex-shrink:0;background:#1a2d42;border:none;border-radius:9px;padding:9px 15px;font-size:12px;font-weight:700;color:#7a9fb5;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.2s;}
+.ntab.active{background:#4C9BB0;color:#fff;}
+
+/* CONTENT */
+.content{padding:12px 16px;}
+
+/* SECTION HEADER */
+.sec-hdr{padding:10px 14px;border-radius:10px 10px 0 0;border-top:3px solid #4C9BB0;background:#111d2c;border:1px solid #1e3048;border-top:3px solid #4C9BB0;margin-bottom:0;}
+.sec-name{font-size:12px;font-weight:900;letter-spacing:0.5px;}
+.sec-meta{font-size:10px;color:#7a9fb5;margin-top:2px;font-style:italic;}
+
+/* STORY CARD — main */
+.sc{background:#111d2c;border:1px solid #1e3048;border-left:4px solid #4C9BB0;border-radius:12px;margin-bottom:10px;overflow:hidden;}
+.sc-top{padding:12px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.sc-left{flex:1;min-width:0;}
+.sc-ids{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:5px;align-items:center;}
+.sc-id{font-size:9px;font-weight:800;color:#4C9BB0;}
+.chip{font-size:9px;font-weight:700;border-radius:4px;padding:2px 6px;white-space:nowrap;}
+.sc-title{font-size:14px;font-weight:800;color:#e8f4f8;line-height:1.3;margin-bottom:4px;}
+.sc-story{font-size:11px;color:#7a9fb5;line-height:1.5;margin-bottom:6px;}
+.sc-meta-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;}
+.sc-meta-chip{font-size:10px;color:#4a6580;background:#0d1b2a;border-radius:5px;padding:3px 8px;}
+.sc-right{display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;}
+.pts-badge{font-size:13px;font-weight:900;color:#4C9BB0;}
+.status-btn{border:none;border-radius:6px;padding:5px 9px;font-size:10px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;min-width:72px;text-align:center;}
+.expand-row{padding:0 14px 10px;display:flex;gap:6px;flex-wrap:wrap;}
+.exp-btn{background:#0d1b2a;border:1px solid #1e3048;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:700;color:#4C9BB0;cursor:pointer;font-family:inherit;}
+
+/* DETAIL PANEL */
+.detail-panel{background:#0a1520;border-top:1px solid #1e3048;padding:12px 14px;display:none;}
+.detail-panel.open{display:block;}
+.dp-section{margin-bottom:12px;}
+.dp-label{font-size:9px;font-weight:900;letter-spacing:0.6px;margin-bottom:7px;}
+.dp-item{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;padding:6px 8px;background:#111d2c;border-radius:6px;}
+.dp-num{font-size:10px;font-weight:800;flex-shrink:0;width:18px;color:#4C9BB0;}
+.dp-check{font-size:13px;flex-shrink:0;margin-top:1px;cursor:pointer;}
+.dp-text{font-size:11px;color:#a8c8d8;line-height:1.4;flex:1;}
+.dp-text.struck{text-decoration:line-through;color:#4a6580;}
+.ac-tick{color:#27ae60;font-size:12px;flex-shrink:0;margin-top:1px;}
+
+/* SPRINT KANBAN */
+.sprint-block{margin-bottom:14px;}
+.sprint-hdr{background:#111d2c;border:1px solid #1e3048;border-top:3px solid #4C9BB0;border-radius:12px 12px 0 0;padding:12px 14px;}
+.sprint-hdr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.sprint-name{font-size:12px;font-weight:900;letter-spacing:0.4px;}
+.sprint-kpi{font-size:12px;font-weight:900;}
+.sprint-goal{font-size:10px;color:#7a9fb5;font-style:italic;margin-bottom:2px;}
+.sprint-weeks{font-size:10px;color:#7a9fb5;margin-bottom:6px;}
+.cap-wrap{background:#0d1b2a;border-radius:3px;height:5px;overflow:hidden;}
+.cap-fill{height:100%;border-radius:3px;transition:width 0.4s;}
+.cap-row{display:flex;justify-content:space-between;font-size:9px;margin-top:3px;}
+.lanes{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;background:#111d2c;border:1px solid #1e3048;border-top:none;border-radius:0 0 12px 12px;padding:8px;}
+.lane{background:#0a1520;border-radius:8px;padding:7px 6px;}
+.lane-hdr{display:flex;align-items:center;gap:4px;margin-bottom:6px;}
+.lane-dot{width:7px;height:7px;border-radius:50%;}
+.lane-lbl{font-size:9px;font-weight:900;letter-spacing:0.3px;}
+.lane-ct{margin-left:auto;font-size:9px;color:#4a6580;font-weight:700;}
+.lane-empty{border:1px dashed #1e3048;border-radius:5px;padding:10px 4px;text-align:center;font-size:9px;color:#2d4a5e;}
+.kcard{background:#111d2c;border-left:3px solid #4C9BB0;border-radius:6px;padding:7px 8px;margin-bottom:5px;cursor:pointer;}
+.kcard-id{font-size:8px;font-weight:800;margin-bottom:2px;}
+.kcard-title{font-size:10px;font-weight:700;color:#e8f4f8;line-height:1.3;margin-bottom:4px;}
+.kcard-footer{display:flex;justify-content:space-between;align-items:center;gap:4px;}
+.kcard-pts{font-size:8px;color:#4a6580;}
+
+/* MOVE MODAL */
+.overlay{position:fixed;inset:0;background:#000000aa;z-index:800;display:none;align-items:flex-end;justify-content:center;}
+.overlay.open{display:flex;}
+.sheet{background:#111d2c;border-radius:18px 18px 0 0;padding:20px 16px 36px;width:100%;max-width:500px;}
+.sheet h3{font-size:16px;font-weight:900;color:#e8f4f8;margin-bottom:4px;}
+.sheet p{font-size:11px;color:#7a9fb5;margin-bottom:16px;}
+.sheet-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;}
+.sheet-btn{background:#0d1b2a;border:1.5px solid #1e3048;border-radius:10px;padding:14px 6px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;text-align:center;transition:all 0.15s;}
+.sheet-cancel{width:100%;background:transparent;border:1px solid #1e3048;border-radius:10px;padding:12px;font-size:13px;font-weight:700;color:#7a9fb5;cursor:pointer;font-family:inherit;margin-top:4px;}
+.sheet-sprint-grid{display:grid;grid-template-columns:1fr;gap:6px;margin-bottom:12px;}
+.sheet-sprint-btn{background:#0d1b2a;border:1px solid #1e3048;border-radius:8px;padding:12px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;text-align:left;color:#e8f4f8;}
+
+/* BACKLOG SECTION */
+.bl-section{margin-bottom:16px;}
+.bl-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:10px 14px;background:#111d2c;border-radius:10px;border-left:4px solid #4C9BB0;}
+.bl-pri{font-size:13px;font-weight:900;}
+.bl-badge{font-size:10px;font-weight:700;border-radius:5px;padding:2px 8px;}
+
+/* FILTER BAR */
+.fbar{display:flex;gap:5px;overflow-x:auto;padding-bottom:2px;margin-bottom:10px;}
+.fbar::-webkit-scrollbar{display:none;}
+.fbtn{flex-shrink:0;background:#1a2d42;border:none;border-radius:6px;padding:6px 10px;font-size:10px;font-weight:700;color:#7a9fb5;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.fbtn.active{color:#fff;}
+
+/* TOAST */
+#toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e3048;color:#e8f4f8;border-radius:10px;padding:10px 20px;font-weight:700;font-size:12px;z-index:999;opacity:0;transition:all 0.3s;pointer-events:none;white-space:nowrap;border:1px solid #4C9BB044;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:#111d2c;border-top:1px solid #1e3048;display:flex;padding:8px 0 16px;z-index:200;safe-area-inset-bottom:env(safe-area-inset-bottom);}
+.bnav-btn{flex:1;background:none;border:none;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;}
+.bnav-btn span:first-child{font-size:20px;line-height:1;}
+.bnav-btn span:last-child{font-size:9px;font-weight:700;color:#7a9fb5;}
+.bnav-btn.active span:last-child{color:#4C9BB0;}
+</style>
+</head>
+<body>
+
+<!-- GATE — pure CSS, no JS -->
+<input type="checkbox" id="gate-unlock">
+<div id="gate-wrap">
+  <div class="gate-card">
+    <div style="display:flex;justify-content:center;margin-bottom:20px"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 80" style="width:147px;height:56px;display:block;">
+  <circle cx="40" cy="40" r="38" fill="#4C9BB0"/>
+  <text x="40" y="47" font-family="DM Sans,Arial,sans-serif" font-weight="900" font-size="22" fill="#ffffff" text-anchor="middle" letter-spacing="-0.5">CLP</text>
+  <text x="128" y="52" font-family="DM Sans,Arial,sans-serif" font-weight="400" font-size="38" fill="#4C9BB0" text-anchor="middle" letter-spacing="-1">easy</text>
+</svg></div>
+    <p style="font-size:12px;color:#7a9fb5;margin-bottom:24px;">Admin access only</p>
+    <input class="gate-input" type="password" id="pwInput" placeholder="Password" autocomplete="current-password">
+    <label class="gate-btn" id="gateBtn" onclick="(function(){var v=document.getElementById('pwInput').value;if(v==='CLPeasy2026!'){document.getElementById('gate-unlock').checked=true;document.getElementById('gate-wrap').style.display='none';document.getElementById('app').style.display='block';setTimeout(function(){if(typeof init==='function')init();},100);}else{document.getElementById('gateErr').style.display='block';}})()">Enter</label>
+    <div class="gate-error" id="gateErr" style="display:none">Incorrect password — try again</div>
+  </div>
+</div>
+
+<!-- MOVE MODAL -->
+<div class="overlay" id="moveModal">
+  <div class="sheet">
+    <h3 id="mm-title">Move story</h3>
+    <p id="mm-sub">Choose sprint and lane</p>
+    <div id="mm-body"></div>
+    <button class="sheet-cancel" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="hdr">
+    <div class="hdr-inner" style="gap:12px">
+      <div style="flex-shrink:0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 80" style="width:147px;height:56px;display:block;">
+  <circle cx="40" cy="40" r="38" fill="#4C9BB0"/>
+  <text x="40" y="47" font-family="DM Sans,Arial,sans-serif" font-weight="900" font-size="22" fill="#ffffff" text-anchor="middle" letter-spacing="-0.5">CLP</text>
+  <text x="128" y="52" font-family="DM Sans,Arial,sans-serif" font-weight="400" font-size="38" fill="#4C9BB0" text-anchor="middle" letter-spacing="-1">easy</text>
+</svg></div>
+      <div class="hdr-sub" style="color:#4C9BB0;font-size:10px">15 June 2026 · <span id="daysLeft"></span> days to launch</div>
+    </div>
+  </div>
+
+  <div class="prog-wrap">
+    <div class="prog-card">
+      <div class="prog-top">
+        <span>Project Status — <span id="totalStories"></span> stories</span>
+        <span class="prog-pct" id="pctDone">0%</span>
+      </div>
+      <div class="prog-bar" id="progBar"></div>
+      <div class="prog-legend" id="progLegend"></div>
+    </div>
+  </div>
+
+  <div class="nav-tabs" id="navTabs">
+    <button class="ntab active" onclick="goTab('board')">📋 Board</button>
+    <button class="ntab" onclick="goTab('backlog')">🗂 Backlog</button>
+    <button class="ntab" onclick="goTab('sprint0')">🚀 Pre-Launch</button>
+    <button class="ntab" onclick="goTab('sprint1')">⚡ Sprint 1</button>
+    <button class="ntab" onclick="goTab('sprint2')">🔮 Sprint 2</button>
+  </div>
+
+  <div class="content" id="content"></div>
+</div>
+
+<div id="toast"></div>
+
+<div class="bnav">
+  <button class="bnav-btn active" id="bn-board" onclick="goTab('board')"><span>📋</span><span>Board</span></button>
+  <button class="bnav-btn" id="bn-backlog" onclick="goTab('backlog')"><span>🗂</span><span>Backlog</span></button>
+  <button class="bnav-btn" id="bn-sprint0" onclick="goTab('sprint0')"><span>🚀</span><span>Pre-Launch</span></button>
+  <button class="bnav-btn" id="bn-sprint1" onclick="goTab('sprint1')"><span>⚡</span><span>Sprint 1</span></button>
+  <button class="bnav-btn" id="bn-sprint2" onclick="goTab('sprint2')"><span>🔮</span><span>Sprint 2</span></button>
+</div>
+
+<script>
+
+
+
+// ── CONSTANTS ─────────────────────────────────────────────────────────────────
+const EPIC_C = {Infra:'#4C9BB0',Auth:'#2980b9',Builder:'#8e44ad',Payments:'#27ae60',Legal:'#e67e22',Marketing:'#c0392b',Admin:'#d35400',PostLaunch:'#7f8c8d'};
+const PRI_C = {1:'#e74c3c',2:'#e67e22',3:'#4C9BB0',4:'#7f8c8d'};
+const PRI_L = {1:'P1 · Critical',2:'P2 · High',3:'P3 · Medium',4:'P4 · Low'};
+const STAT_C = {DONE:'#27ae60','IN REVIEW':'#e67e22',BLOCKED:'#e74c3c',TODO:'#4a6580'};
+const STAT_L = {DONE:'✓ Done','IN REVIEW':'⏳ Review',BLOCKED:'⛔ Blocked',TODO:'○ To Do'};
+const SPRINTS = [
+  {id:'S0',name:'Pre-Launch Sprint',goal:'Ship CLPeasy on 15 June 2026',weeks:'May – 14 Jun 2026',cap:85,color:'#4C9BB0'},
+  {id:'S1',name:'Sprint 1 · Post-Launch',goal:'GPSR fixes, library, Cricut, fonts',weeks:'16 – 27 Jun 2026',cap:28,color:'#27ae60'},
+  {id:'S2',name:'Sprint 2',goal:'Admin dashboard, forum, KB search',weeks:'30 Jun – 11 Jul 2026',cap:32,color:'#8e44ad'},
+];
+
+// ── STORY DATA ────────────────────────────────────────────────────────────────
+const STORIES = [
+  {id:'INF-01',epic:'Infra',pri:1,pts:3,status:'DONE',sprint:'S0',
+   title:'Netlify + GitHub Deploy Pipeline',
+   what:'Sets up the automated deployment pipeline so every code change pushed to the main branch on GitHub automatically goes live on clpeasy.com via Netlify — no manual uploads needed.',
+   why:'Without this, every file would need uploading manually. The Dev branch workflow prevents the 326-deploy credit overrun that happened earlier.',
+   story:'As a dev I need a stable deploy pipeline so every push to main goes live without consuming excess credits.',
+   tasks:['Establish Dev branch — all work goes to Dev first, never directly to main','PR Dev → main triggers exactly one Netlify build','Delete stale C:\\Users\\micha\\supabase\\ folder to prevent workdir conflicts','Document deploy rule: cmd only, --no-verify-jwt --use-api from correct project folder','Confirm 326-deploy overrun resolved by Dev branch workflow'],
+   ac:['Pushing to Dev does NOT trigger a Netlify rebuild','Merging Dev → main triggers exactly one Netlify build','No stale Supabase folders present on local machine','Deploy command documented and working']},
+
+  {id:'INF-02',epic:'Infra',pri:1,pts:5,status:'DONE',sprint:'S0',
+   title:'Supabase Project + Tables + RLS',
+   what:'Configures the CLPeasy database — all tables that store user accounts, subscriptions, saved labels, safety sheets, and beta feedback. Row Level Security (RLS) means users can only ever see their own data.',
+   why:'This is the data backbone of the entire product. Without it nothing saves, no subscriptions work, and there is no security.',
+   story:'As a dev I need Supabase fully configured with all tables and row-level security so user data is protected.',
+   tasks:['Confirm project ref qvkosdqcryrcfbjtaxic active and billing OK','Create profiles table: user_id FK, beta_expires, is_pro, display_name columns','Create subscriptions table: user_id, plan, status, stripe_customer_id, stripe_subscription_id, topup_credits','Create safety_sheets table: uid, label_data — NEVER delete on subscription lapse (QR codes stay live)','Create beta_feedback table: user_id, answers JSON, submitted_at','Apply RLS policies: users read/write own rows only','Deploy notify-signup edge function','Deploy clp-wizard edge function (AI Guide Me panel)','Deploy clp-search edge function (knowledge base AI search)'],
+   ac:['All 5 tables exist in Supabase dashboard with correct columns','RLS enabled and confirmed via Supabase policy viewer','User A cannot read User B\'s data — tested','safety_sheets rows persist after subscription cancel — tested','All 3 edge functions show Deployed status in Supabase dashboard']},
+
+  {id:'INF-03',epic:'Infra',pri:1,pts:3,status:'DONE',sprint:'S0',
+   title:'Brevo Email + SMTP via Zoho',
+   what:'Wires up all transactional emails (signup confirmation, password reset, onboarding sequence) to send from noreply@clpeasy.com using Zoho SMTP, delivered via Brevo.',
+   why:'Professional branded emails build trust. Without this, Supabase sends from its own domain with no CLPeasy branding, which looks unprofessional and may land in spam.',
+   story:'As a dev I need all transactional emails to send from the CLPeasy domain reliably.',
+   tasks:['Configure Zoho SMTP in Supabase Auth email settings','Verify noreply@clpeasy.com and support@clpeasy.com deliverability (SPF, DKIM)','Regenerate Brevo API key and store in Supabase secrets as BREVO_API_KEY','Apply branded CLPeasy HTML template to Supabase confirmation email','Apply branded CLPeasy HTML template to Supabase password reset email','Build 7-email onboarding sequence in Brevo: Day 0, 2, 4, 7, 10, 12, 14','Activate automation in Brevo — trigger on contact added to list'],
+   ac:['Confirmation email arrives within 60s with CLPeasy branding not Supabase default','Password reset email arrives within 60s with CLPeasy branding','Day 0 welcome email triggers within 5 mins of signup','Emails land in inbox not spam — tested on Gmail and Outlook','Sender shows as "CLPeasy" not the Supabase project ID']},
+
+  {id:'INF-04',epic:'Infra',pri:1,pts:2,status:'IN REVIEW',sprint:'S0',
+   title:'Wire Supabase new-user → Brevo Automation',
+   what:'Every time someone creates a CLPeasy account, they are automatically added to the Brevo contact list and the 7-email onboarding sequence starts. This needs to be confirmed working end-to-end with a real email.',
+   why:'If this is not wired, new users get no onboarding emails at all and are left confused after signing up.',
+   story:'As a dev I need every new signup auto-added to the Brevo contact list so onboarding emails trigger automatically.',
+   tasks:['Confirm notify-signup edge function is correctly deployed','Trigger function from Supabase Auth on_signup webhook — check webhook URL is set','Function POSTs to Brevo /contacts API with email + first name attributes','Confirm contact added to correct Brevo list ID','End-to-end test: create new account → check Brevo contacts appears within 2 mins','Verify Day 0 welcome email fires after contact is added','Check Supabase edge function logs for any 5xx errors'],
+   ac:['New signup appears in Brevo contacts within 2 minutes','Contact assigned to correct onboarding list','Day 0 welcome email fires automatically with no manual trigger','Test confirmed with real email address not a test account','No errors in Supabase edge function logs']},
+
+  {id:'INF-05',epic:'Infra',pri:2,pts:2,status:'TODO',sprint:null,
+   title:'Link Checker Tool (link-checker.html)',
+   what:'A password-protected admin page that tests every link on the CLPeasy site and reports which ones are broken (404) before launch day.',
+   why:'A broken link on launch day damages trust immediately. This tool catches them all in one run the night before go-live.',
+   story:'As an admin I need a password-gated tool that audits all site links so I can fix 404s before launch.',
+   tasks:['Build link-checker.html as standalone admin page','Password gate on load — reject wrong password','Crawl all internal href values across all 14+ HTML pages','Fetch each URL and report HTTP status: 200 pass / 3xx redirect / 4xx broken','Display results as a clean pass/fail list','Run against production clpeasy.com on 14 June evening'],
+   ac:['Page requires password to access','All internal links tested and status shown','Zero 4xx results confirmed on production site before launch','Report generates within 30 seconds']},
+
+  {id:'INF-06',epic:'Infra',pri:2,pts:1,status:'TODO',sprint:null,
+   title:'Live Sign-Up Count on monitor.html',
+   what:'Adds a real-time user count card to the monitor.html admin page — showing total users, today\'s new signups, and active pro subscribers pulled live from Supabase.',
+   why:'On launch day you need to watch signups happen in real time. Currently the count is static placeholder text.',
+   story:'As an admin I need a live user count on monitor.html so I can watch signups on launch day.',
+   tasks:['Query Supabase profiles table for total row count','Query for rows created today (created_at >= today)','Query subscriptions for is_pro = true count','Display three figures as cards on monitor.html','Auto-refresh all counts every 60 seconds without full page reload'],
+   ac:['Count matches Supabase profiles table row count exactly','Refreshes every 60s without full page reload','Today\'s new signups shown separately from total','Pro subscriber count accurate','Works when accessed from clpeasy.com/monitor.html']},
+
+  {id:'AUTH-01',epic:'Auth',pri:1,pts:5,status:'DONE',sprint:'S0',
+   title:'Email / Password Sign Up & Login',
+   what:'The core login page (auth.html) where users create a CLPeasy account or sign back in with their email and password. On success they are taken straight into the label builder.',
+   why:'This is the entry point to the entire product. If this breaks, no one can use CLPeasy.',
+   story:'As a general user I need to register and log in with email and password to access the CLPeasy label builder.',
+   tasks:['Build auth.html with sign-in / sign-up toggle — single page, no separate register page','Wire Supabase signInWithPassword for login','Wire Supabase signUp for registration','On success redirect immediately to builder.html','Inline error messages for: wrong password, email not confirmed, account locked','Session persistence: user stays logged in across browser tabs and page reloads','Apply CLPeasy branded confirmation email template','Account auto-locks after 5 failed attempts (Supabase default throttle)'],
+   ac:['Valid credentials → redirect to builder.html within 1 second','Invalid credentials → inline error message shown with no full page reload','Unconfirmed email → "Check your inbox" prompt shown','5 failed attempts → account locked with lockout message','Session persists across tabs and refreshes','Confirmation email arrives with CLPeasy branding']},
+
+  {id:'AUTH-02',epic:'Auth',pri:1,pts:3,status:'DONE',sprint:'S0',
+   title:'Password Reset by Email',
+   what:'The forgot password flow — user enters their email, receives a branded CLPeasy reset link, and sets a new password. The old password stops working immediately.',
+   why:'Users forget passwords. Without this, locked-out users have no self-service option and contact support instead.',
+   story:'As a general user I need to reset my password by email so I can regain access if I forget it.',
+   tasks:['Add "Forgot password?" link to auth.html login form','Call Supabase resetPasswordForEmail on submit','Show confirmation: "Check your email for a reset link"','Branded reset email template with CLPeasy header and footer','Reset link redirects to auth.html with token in URL hash','New password form: minimum 8 characters, at least 1 number enforced','On success show "Password updated — please log in" and clear form'],
+   ac:['Reset email arrives within 60 seconds','Reset link expires after 24 hours','New password enforces minimum strength requirement','After reset → redirected to login','Old password no longer works immediately after change','Email displays "CLPeasy" as sender not Supabase']},
+
+  {id:'AUTH-03',epic:'Auth',pri:1,pts:3,status:'DONE',sprint:'S0',
+   title:'Google OAuth Login',
+   what:'Lets users sign in with their existing Google account instead of creating a separate password. The Google account picker shows "CLPeasy" as the app name.',
+   why:'Many makers prefer Google login — it removes a friction barrier at signup and increases conversion.',
+   story:'As a general user I need to sign in with Google so I can access CLPeasy without a separate password.',
+   tasks:['Enable Google provider in Supabase Auth settings','Add "Continue with Google" button to auth.html','Configure OAuth consent screen in Google Cloud Console with CLPeasy name and logo','Publish app to production mode — not test mode (removes unverified warning)','Rotate Google Cloud OAuth secret before public launch','If email matches existing account: link Google to that account not create a duplicate','On first Google login: create row in Supabase profiles table'],
+   ac:['Google button visible and styled on auth.html','OAuth flow completes and redirects to builder.html','Consent screen shows "CLPeasy" app name and logo','Existing email/password account linked correctly on first Google login','No "unverified app" warning shown to users','Profile row created in Supabase profiles table on first login']},
+
+  {id:'AUTH-04',epic:'Auth',pri:2,pts:2,status:'TODO',sprint:'S1',
+   title:'Custom Auth Domain (auth.clpeasy.com)',
+   what:'Changes the Google account picker to show "Sign in to CLPeasy" instead of the Supabase project ID URL. Currently when users sign in with Google it shows an unfamiliar URL in the picker.',
+   why:'The Supabase project ID URL looks suspicious to users and reduces trust. auth.clpeasy.com looks professional and matches the brand.',
+   story:'As a general user I need the Google account picker to show CLPeasy not the Supabase project URL.',
+   tasks:['Enable custom auth domain in Supabase Dashboard → Auth → URL Configuration','Add CNAME DNS record: auth.clpeasy.com → [project-ref].supabase.co','Allow up to 48h for DNS propagation','Verify SSL certificate auto-provisioned by Supabase','Update all redirect URLs in Supabase Auth and Google Cloud Console to use new domain','Test full OAuth flow: sign in with Google → lands on builder.html with no errors'],
+   ac:['Google account chooser shows "Sign in to CLPeasy" not Supabase URL','auth.clpeasy.com resolves with valid HTTPS/SSL','OAuth flow completes correctly end-to-end after domain change','No broken redirects or auth errors after DNS update']},
+
+  {id:'AUTH-05',epic:'Auth',pri:3,pts:2,status:'TODO',sprint:null,
+   title:'Change Password In-App',
+   what:'Lets a logged-in user change their password from their account settings page without having to go through the forgot password email flow.',
+   why:'Basic security hygiene — users should be able to update their password whenever they choose.',
+   story:'As a logged-in user I need to change my password in my account settings so I can keep it secure.',
+   tasks:['Add "Change password" section to account.html','Require current password entry before allowing change','Call Supabase updateUser with new password on submit','Show live strength indicator as user types new password','Force re-login immediately after successful password change','Send "Your CLPeasy password was changed" confirmation email'],
+   ac:['Wrong current password is rejected with clear message','Strength indicator visible and updates in real time','Password change triggers automatic re-login within 2 seconds','Confirmation email sent within 60 seconds','Old password no longer works immediately after change']},
+
+  {id:'BLD-01',epic:'Builder',pri:1,pts:8,status:'DONE',sprint:'S0',
+   title:'Label Builder Core (builder.html)',
+   what:'The main CLPeasy product — a 5-step wizard that guides makers through creating a fully CLP-compliant label for their candles, wax melts, soaps, or reed diffusers. Handles all GHS pictograms, H/P statements, signal words, UFI codes, and fragrance load calculations automatically.',
+   why:'This is the entire product. Everything else exists to support this page.',
+   story:'As a general user I need a 5-step label builder that produces CLP-compliant labels for my fragrance products.',
+   tasks:['Step 1: Scent name + product type — both required before user can advance to Step 2','Step 2: Hazard data — signal word auto-detected, H statements, P statements, EUH statements, GHS pictograms (all read-only display only — never editable by user)','Step 3: SDS Smart Paste — PDF drop zone for Easy Pro users, AI extracts all hazard data automatically via Anthropic API','Step 4: Label details — net weight, batch number (with auto-increment + clear), UFI code generator, fragrance load % (warns at 12%), QR safety code toggle, language selector EN/FR/DE','Step 5: Preview + 4 download formats — PNG/SVG buttons hidden until this step only','GHS pictograms: named placeholders replaced at runtime by ghsPicto() — not hardcoded SVG paths','Label engine v3: no white bar artefacts on circle or oval labels','EUH208 appended to Contains line; EUH210 excluded from label render entirely','Burn time field greyed and non-editable for non-candle product types (BURN_TIME_TYPES array controls this)','Product type always defaults to placeholder — never pre-selects from a cached previous session','Scroll-to-top on every step change via goToStep and nextStep — never leaves user mid-page','goToStep core navigation: step panel activation, updateStepsBar, buildSummary, updateLabel all fire in sequence','Mobile label preview hidden on screens under 768px width','P statement slot allocation set to 15% of label area','Bottom toast replaces old alert() for extract events'],
+   ac:['Cannot advance from Step 1 without scent name AND product type both filled','H/P statement fields are permanently read-only — users cannot type in them','Signal word buttons and pictogram chips are view-only — cannot be clicked or changed','PNG/SVG download buttons absent on Steps 1–4, appear only at Step 5','Scroll returns to very top on every single step navigation','Circle and oval labels render with no white bar or clipping artefacts','EUH208 visible in Contains line; EUH210 completely absent from rendered label','Burn time field greyed and non-editable for wax melt, soap, reed diffuser, bath bomb','Product type never pre-selects from a previous session — always shows placeholder','Builder fully usable on iPhone Safari with no layout breaks']},
+
+  {id:'BLD-02',epic:'Builder',pri:1,pts:5,status:'DONE',sprint:'S0',
+   title:'SDS Smart Paste — AI Hazard Extraction',
+   what:'Easy Pro users can drag and drop their supplier\'s Safety Data Sheet PDF into Step 3 and CLPeasy automatically extracts all the hazard information — signal word, H statements, P statements, EUH statements, and what the label Contains — using the Anthropic AI API.',
+   why:'Reading an SDS and manually copying hazard statements is the most error-prone part of making a CLP label. Smart Paste removes this entirely for Pro users.',
+   story:'As an Easy Pro user I need to drop an SDS PDF and have CLPeasy extract all hazard data automatically.',
+   tasks:['File drop zone in Step 3 — accepts PDF files only, rejects other file types with clear message','Convert uploaded PDF to base64 string','POST base64 PDF to clp-wizard Supabase edge function','Edge function calls claude-haiku-4-5-20251001 via Anthropic API with hazard extraction system prompt','Parse AI response: signal word, H statement codes, P statement codes, EUH codes, ingredient list for Contains field','Populate all builder hazard fields from extracted data — all remain read-only after population','Gate this feature: show drop zone only if user\'s is_pro = true in Supabase profiles','Show styled bottom toast during extraction: "Extracting data from your SDS…"','Hazard confirm tick is blocked — cannot be checked if extraction has not been run and confirmed'],
+   ac:['Drop zone visible only to Easy Pro subscribers — hidden for free and Easy Start plans','PDF extraction completes within 10 seconds for a typical SDS','Extracted H and P statements populate correctly into their read-only display fields','Signal word auto-detected and shown (Danger or Warning)','Confirm tick blocked if Smart Paste has not been completed','Toast displayed during extraction and dismissed on completion','Non-PDF file upload rejected with "Please upload a PDF" message']},
+
+  {id:'BLD-03',epic:'Builder',pri:1,pts:5,status:'DONE',sprint:'S0',
+   title:'Label Download — 4 Formats',
+   what:'Once a label is complete at Step 5, users can download in four formats: a single PNG for home printing, an Avery sheet of 15 labels ready to print, a print-shop-ready PDF with bleed and crop marks, and a Cricut-optimised PNG in a ZIP file.',
+   why:'Different makers use different printing methods. Offering all four formats means CLPeasy works for everyone from a home printer to a professional print shop to a Cricut cutting machine.',
+   story:'As a general user I need multiple download formats so I can print at home, use Cricut, or send to a print shop.',
+   tasks:['PNG single label at 300 DPI — home printing, correct canvas dimensions','Avery Sheet layout: exactly 15 labels per sheet in correct LP15/51R grid spacing','Print Shop PDF: 3mm bleed all sides + crop marks, A4 page at 300 DPI','Cricut PNGs as ZIP: individual label with transparent background, correct mm dimensions','Build print.html as a separate standalone print sheet composer page','Download buttons appear only at Step 5 — completely absent on Steps 1–4','File naming convention: [scent-name]-[product-type]-[date].[ext]'],
+   ac:['PNG downloads at 300 DPI with no pixel aliasing or blurring','Avery Sheet: all 15 labels fit within page margins with no overlap','Print Shop PDF: 3mm bleed and crop marks visible when opened in Acrobat','Cricut ZIP: unzips to single PNG with transparent background at correct dimensions','print.html opens and functions correctly as a standalone page','All download buttons completely absent until Step 5 is reached','File names are human-readable not random UUIDs']},
+
+  {id:'BLD-04',epic:'Builder',pri:1,pts:5,status:'TODO',sprint:'S0',
+   title:'EN 15494 Candle Safety Pictograms ⚠ GPSR',
+   what:'Automatically adds the 5 mandatory candle safety icons to the label footer whenever the product type is set to Candle. These are required by GPSR (General Product Safety Regulation) for all candles sold in the UK and EU. For any other product type, these icons are completely hidden.',
+   why:'Selling candles without these icons after GPSR came into force is a legal compliance failure. This is the last remaining legal blocker before launch.',
+   story:'As a general user I need candle safety pictograms automatically added to my label so I comply with GPSR requirements.',
+   tasks:['Source or create SVG assets for all 5 EN 15494 icons: keep away from children, trim wick before lighting, do not leave candle unattended, burn time indicator, keep away from draughts and heat sources','Add product type detection in buildLabel() render function: if productType === "candle" show pictograms else hide completely','Inject pictogram row into label footer area below the CLP hazard block — not overlapping any text','Scale icons proportionally to fit the label size without overlapping H/P statement text','Test render on all three label shapes: circle, square, rectangle at multiple sizes','Confirm pictograms appear in all 4 download formats: PNG, Avery Sheet, Print Shop PDF, Cricut ZIP'],
+   ac:['All 5 EN 15494 pictograms visible in label footer when product type is Candle','Pictograms completely absent for wax melt, soap, reed diffuser, bath bomb, and all other types','Icons scale correctly on all label sizes without clipping or overflow','Pictograms present and legible in downloaded PNG, Avery, Print Shop PDF, and Cricut ZIP','Icons do not overlap or obscure any H/P statement or CLP text','GPSR requirement satisfied — verified against EN 15494 standard icon set']},
+
+  {id:'BLD-05',epic:'Builder',pri:2,pts:3,status:'TODO',sprint:'S1',
+   title:'Fix Load from Library Button',
+   what:'The "Load from your library" button in the builder currently does nothing after a user logs in or refreshes the page. This fix makes it open a drawer showing all saved labels and lets the user click to reload any of them back into the builder.',
+   why:'Users who save labels need to be able to load them. If this button does nothing, the save feature is effectively broken.',
+   story:'As a logged-in user I need the Load from Library button to populate the builder so I can continue editing saved labels.',
+   tasks:['Query Supabase: SELECT id, label_name, created_at FROM profiles WHERE user_id = auth.uid() ORDER BY created_at DESC LIMIT 20','Display results as a slide-in drawer listing label names and save dates','On label select: parse the stored JSON and repopulate all builder fields in sequence','Before loading: if current session has unsaved data, show "This will replace your current label — continue?" confirmation','Handle empty library gracefully: show "No saved labels yet — complete a label to save it" message','Test loading after login, after page refresh, and after Google OAuth sign-in'],
+   ac:['Library drawer opens and lists all user\'s saved labels with names and dates','Selecting a label repopulates all builder fields correctly and completely','Loading triggers a confirmation if current session has unsaved data','Works correctly after page refresh','Works correctly after re-login and after Google OAuth sign-in','Empty library shows a helpful message not a blank or broken drawer']},
+
+  {id:'BLD-06',epic:'Builder',pri:2,pts:2,status:'TODO',sprint:'S1',
+   title:'Fix Cricut Individual PNG Export',
+   what:'When users download the Cricut individual PNG, the exported file currently includes the full Avery sheet layout instead of just the single label. This fix ensures the individual Cricut download contains only one label with a transparent background.',
+   why:'Cricut users upload this file to Design Space for Print Then Cut. A full sheet layout breaks their workflow completely.',
+   story:'As a user I need individual Cricut PNG exports to be clean without full-sheet layout artefacts.',
+   tasks:['Call setFullSheetMode(false) immediately before triggering individual Cricut PNG download','Restore setFullSheetMode(true) immediately after download completes — do not leave in single mode','Confirm canvas renders at correct single-label pixel dimensions for the selected label size','Verify background is fully transparent (alpha = 0) not white','Test the exported PNG in Cricut Design Space: upload as Flat Graphic, set to Print Then Cut','Display a warning if label size exceeds 171mm × 235mm Cricut Print Then Cut maximum'],
+   ac:['Individual Cricut PNG contains exactly one label with no grid or sheet layout','Background is fully transparent with no white fill','Label dimensions in PNG match the selected label size setting','No full-sheet mode artefacts appear in individual export','Warning shown if label size exceeds Cricut Print Then Cut limit']},
+
+  {id:'BLD-07',epic:'Builder',pri:2,pts:2,status:'TODO',sprint:'S1',
+   title:'Font Embedding in PNG / Cricut Export',
+   what:'When a user selects a Google Font in the builder, that font currently shows correctly in the preview but falls back to a system font in the downloaded PNG. This fix loads the font into the canvas before export so the download matches the preview exactly.',
+   why:'If the download looks different from the preview, users think there is a bug and lose trust in the product.',
+   story:'As a user I need the font I selected in the builder to appear correctly in my downloaded PNG.',
+   tasks:['Detect which Google Font is currently selected before starting canvas capture','Use FontFace API: const font = new FontFace(family, url); await font.load()','Add loaded font to document.fonts set: document.fonts.add(font)','Await document.fonts.ready promise before calling canvas.toDataURL()','Test with at least 3 different Google Fonts across both PNG single and Cricut ZIP export','Confirm no flash of wrong font between live preview and download'],
+   ac:['Selected font appears correctly in downloaded PNG — no fallback to Arial or system font','Font renders correctly in Cricut ZIP individual PNG files','No visual difference between the builder preview and the downloaded file','Tested and confirmed working on Chrome, Safari, and Firefox']},
+
+  {id:'BLD-08',epic:'Builder',pri:2,pts:2,status:'TODO',sprint:'S1',
+   title:'Label Save Toast + Library Badge',
+   what:'Currently when a label saves, the save button text changes for 2 seconds and then reverts — easy to miss. This adds a persistent bottom toast notification and a count badge on the Library button so users always know the save worked.',
+   why:'If users are not sure the save worked they will keep clicking the button or worry their work is lost.',
+   story:'As a user I need clear persistent feedback when a label saves so I know it worked.',
+   tasks:['Replace the 2-second button text change with a styled bottom toast notification','Toast reads: "✓ Label saved to your library"','Toast auto-dismisses after 4 seconds','Add a count badge to the Library button: "Library (3)" updating after each save','Persist the save to Supabase profiles table in the label_data JSON column','Confirm saved label is retrievable from Supabase after page refresh'],
+   ac:['Toast appears within 200ms of save action completing','Toast is readable on mobile — appears at bottom of screen not obscured by keyboard','Toast auto-dismisses after 4 seconds with no action needed','Library button badge count increments correctly after each save','Saved label confirmed retrievable from Supabase profiles table after refresh']},
+
+  {id:'BLD-09',epic:'Builder',pri:3,pts:5,status:'TODO',sprint:null,
+   title:'In-Builder CLP Compliance Checklist',
+   what:'A live sidebar panel inside the builder that shows a checklist of all required CLP label fields and ticks each one green as the user fills it in. Shows an overall % complete score.',
+   why:'New makers do not always know which fields are mandatory. The checklist acts as a real-time guide so nothing gets missed before downloading.',
+   story:'As a user I need a live compliance checklist in the builder so I can see which required fields I have not filled in.',
+   tasks:['Build a collapsible sidebar panel inside builder.html','Checklist items: product name, product type, signal word, GHS pictograms, H statements, P statements, net weight, UFI code, supplier name, fragrance load','Each item shows a grey circle that turns green as the corresponding field is populated','Show overall % complete figure at the top of the checklist panel','Warn user if they attempt to download the Print Shop PDF with an incomplete checklist','On mobile under 768px: collapse sidebar and show % badge on a floating button instead'],
+   ac:['Checklist visible on desktop without obscuring the label preview area','Each checklist item updates in real time as user fills fields — no page reload','Download warning modal appears if Print Shop PDF attempted with incomplete checklist','Mobile: floating badge shows % complete without showing full sidebar','Checklist does not interfere with existing builder navigation or step flow']},
+
+  {id:'BLD-10',epic:'Builder',pri:3,pts:8,status:'TODO',sprint:null,
+   title:'AI Fragrance Profile Auto-Fill',
+   what:'Easy Pro users type a fragrance oil name and CLPeasy pre-fills the likely hazard data based on common SDS patterns for that fragrance type, using the Anthropic AI. Users can accept, edit, or clear the suggestions.',
+   why:'Reduces the time to build a label from 10 minutes to under 2 minutes for users who do not have their SDS to hand.',
+   story:'As an Easy Pro user I need to type a fragrance name and have CLPeasy suggest likely hazard data so I can build labels faster.',
+   tasks:['Add fragrance name search input field in Step 2 — Easy Pro only','POST fragrance name to clp-wizard edge function with auto-fill mode prompt','AI returns JSON: suggested signal word, likely H statement codes, recommended P statement codes based on fragrance category','Display pre-filled values as pale suggestion text with "AI suggested — verify against your SDS" label','User can accept all suggestions with one tap or clear and enter manually','Show confidence indicator: High / Medium / Low based on how specific the fragrance name is','Always display disclaimer: "Always verify against your actual supplier SDS before finalising"'],
+   ac:['Auto-fill input visible only to Easy Pro subscribers','AI response returns within 8 seconds','Pre-filled values clearly marked as suggestions — distinct visual styling from confirmed data','User can clear all suggestions and enter manually with one tap','Disclaimer always visible and cannot be dismissed','Confidence indicator shown alongside each suggestion']},
+
+  {id:'BLD-11',epic:'Builder',pri:3,pts:5,status:'TODO',sprint:null,
+   title:'Label Templates Gallery',
+   what:'A gallery of 10–15 professionally designed label templates covering different aesthetics — minimal, botanical, luxury, rustic, modern, seasonal. Users pick a template and their hazard data and scent name are applied to that design.',
+   why:'Makers who are not designers struggle to make their labels look attractive. Templates give them a professional starting point without any design skill.',
+   story:'As a user I need a gallery of pre-designed label templates so I can start from a professional layout instead of a blank canvas.',
+   tasks:['Design or source 10–15 distinct template styles: minimal, botanical, luxury, rustic, modern, festive, cottagecore, bold, pastel, dark','Build template gallery as a modal or slide-in panel accessible from Step 1','Selecting a template applies colour palette, font, and layout to the current label preview immediately','User\'s own data — scent name, hazard information — is retained when template changes','Store template definitions as JSON not hardcoded HTML per template','Allow template to be changed multiple times without any data loss'],
+   ac:['Gallery shows at least 10 templates as visual thumbnails the user can tap','Selecting a template updates the label preview immediately','Scent name and all hazard data is retained across template changes','Templates are visually distinct — not just colour swaps of the same layout','Template can be changed as many times as the user wants before downloading']},
+
+  {id:'PAY-01',epic:'Payments',pri:1,pts:8,status:'DONE',sprint:'S0',
+   title:'Stripe Sandbox Subscriptions — Full Flow',
+   what:'The complete subscription payment system in test/sandbox mode — users click Subscribe on pricing.html, are taken to Stripe hosted checkout, pay, and immediately get access to their chosen plan. The Supabase database updates automatically via webhook.',
+   why:'This is how CLPeasy makes money. The entire payment flow must be rock-solid before going live.',
+   story:'As a user I need to subscribe to Easy Start or Easy Pro and have my account access updated immediately.',
+   tasks:['4 Stripe products created: Easy Start Monthly £9.99 (price_1Tdd5S...), Easy Start Annual £99 (price_1Tdd7p...), Easy Pro Monthly £14.99 (price_1Tdd9O...), Easy Pro Annual £149 (price_1TddAy...)','Build create-checkout-session Supabase edge function using npm: imports — not esm.sh which crashes Deno','Wire pricing.html Subscribe buttons to call edge function and redirect to Stripe hosted checkout','Build stripe-webhook edge function to handle Stripe events','Handle checkout.session.completed: create subscription row in Supabase','Handle customer.subscription.updated: update plan and status in Supabase','Handle customer.subscription.deleted: set status to cancelled, remove pro access','On isPro = true: call updateLabel() to remove watermark from label preview immediately','Verify webhook signature using STRIPE_WEBHOOK_SECRET stored in Supabase secrets'],
+   ac:['Clicking Subscribe on pricing.html redirects to Stripe hosted checkout within 1 second','Stripe test card 4242 4242 4242 4242 payment succeeds and subscription row created in Supabase','isPro set to true immediately after payment — watermark removed from label preview','Subscription cancellation removes pro access on next login','Webhook signature verified — invalid webhooks rejected','Complete end-to-end flow tested in sandbox without errors']},
+
+  {id:'PAY-02',epic:'Payments',pri:1,pts:3,status:'DONE',sprint:'S0',
+   title:'Stripe Customer Portal — Self-Serve Management',
+   what:'A self-serve billing portal powered by Stripe where users can upgrade their plan, downgrade, update their payment card, or cancel their subscription — all without contacting CLPeasy support.',
+   why:'Self-serve cancellation is a legal requirement under UK consumer law. It also reduces support burden entirely.',
+   story:'As a user I need to manage or cancel my subscription without contacting support.',
+   tasks:['Build create-portal-session Supabase edge function — must use npm: imports not esm.sh (esm.sh caused Deno runtime crash)','Add "Manage billing" button to account.html — visible only to active subscribers','Button calls edge function which returns a Stripe Customer Portal URL','Redirect user to that URL immediately','Portal configured to allow: plan upgrade, plan downgrade, cancel subscription, update payment card','Cancellation in portal triggers customer.subscription.deleted webhook → access reverted on next login'],
+   ac:['Manage billing button visible only to active paying subscribers','Clicking button opens Stripe Customer Portal within 2 seconds','User can cancel subscription from portal with no support needed','After cancellation: pro access reverted on next login','Card update works correctly without cancelling the subscription','Portal URL is not accessible to free or unauthenticated users']},
+
+  {id:'PAY-03',epic:'Payments',pri:2,pts:5,status:'IN REVIEW',sprint:'S0',
+   title:'Top-Up Credits — One-Off Label Downloads',
+   what:'Users on paid plans can buy extra label downloads in bundles that never expire and stack on top of their monthly allowance: 5 downloads for £3.99 or 10 downloads for £7.99. These are one-off payments not subscriptions.',
+   why:'Some months makers need more labels than their plan includes. Top-ups let them pay for exactly what they need without upgrading their whole plan.',
+   story:'As a paying user I need to buy additional label downloads that never expire and stack on my monthly allowance.',
+   tasks:['Create 2 Stripe products: 5 downloads £3.99 one-off, 10 downloads £7.99 one-off','Add topup_credits integer column to Supabase subscriptions table','Add top-up purchase buttons to account.html — visible only on Easy Start and Easy Pro plans','Create Stripe checkout session with mode: "payment" not "subscription"','Handle payment_intent.succeeded webhook: increment topup_credits by 5 or 10','Builder download logic: deduct 1 from topup_credits before deducting from monthly allowance (topups used first)','Display current credits balance on account.html dashboard'],
+   ac:['Top-up buttons visible only to Easy Start and Easy Pro plan subscribers','One-off payment checkout completes without creating a subscription in Stripe','topup_credits incremented correctly in Supabase after successful payment','Credits deducted before monthly allowance — top-ups are consumed first','Credits never expire across billing periods — confirmed in Supabase after plan renewal','Current balance displayed on account page']},
+
+  {id:'PAY-04',epic:'Payments',pri:1,pts:3,status:'BLOCKED',sprint:'S0',
+   title:'🚀 Stripe Go-Live Key Swap — LAUNCH DAY',
+   what:'On launch morning, all Stripe sandbox/test keys are replaced with the real live Stripe credentials so actual money can be taken. This must be the very last step before announcing the launch.',
+   why:'Without this swap, users can enter real card details but no actual money is processed. With test keys live this would be a serious fraud risk.',
+   story:'As a dev I need to switch all Stripe credentials from sandbox to live on launch day so real payments are processed.',
+   tasks:['Replace pk_test_... with pk_live_... in pricing.html','Replace pk_test_... with pk_live_... in builder.html','Update STRIPE_SECRET_KEY to sk_live_... in Supabase secrets dashboard','Update STRIPE_WEBHOOK_SECRET to the live whsec_... in Supabase secrets dashboard','Redeploy create-checkout-session edge function after secrets update','Redeploy stripe-webhook edge function after secrets update','Process one real test charge of £1 with a real card to confirm live payments work before announcing launch','Monitor Stripe dashboard live mode for first 30 minutes after go-live'],
+   ac:['No pk_test_ or sk_test_ keys present in any deployed file or Supabase secret','Real card charge of £1 processes successfully and appears in Stripe live dashboard','Subscription row created in Supabase from the live £1 payment','Webhook event received and processed correctly in live mode','⚠ Do NOT execute until ICO registration is complete and confirmed']},
+
+  {id:'LEG-01',epic:'Legal',pri:1,pts:3,status:'DONE',sprint:'S0',
+   title:'Legal Pages Suite — All 5 Pages',
+   what:'All five legal pages required to operate CLPeasy commercially: Terms of Service, Privacy Policy, Refund Policy, Cookie Policy, and Support page. All reference the CLPeasy trade mark, registered London address, and UK GDPR compliance.',
+   why:'Operating a paid SaaS without these pages is illegal. They also set clear expectations for users and protect CLPeasy in disputes.',
+   story:'As a business I need complete legally compliant pages covering terms, privacy, refund, cookie, and support.',
+   tasks:['terms.html: UK GDPR compliance, 14-day cooling off period for digital goods, CLP compliance disclaimer (CLPeasy generates labels as a tool — user is responsible for accuracy), governing law England and Wales','privacy.html: what data is collected, how it is used, Brevo listed explicitly as data processor, data retention periods','refund.html: top-up credits explicitly non-refundable except for duplicates or technical faults, auto-renewal disclosure, how to cancel','cookie-policy.html: categories of cookies used, how to opt out, third party cookies (Stripe, Google)','support.html: support email address, expected response time SLA','Apply CLPeasy™, trade mark number UK00004395085, registered address 66 Paul Street London EC2A 4NA to all five pages','Add auto-renewal and easy cancellation disclosure adjacent to all Subscribe buttons on pricing.html'],
+   ac:['All 5 legal pages live and linked from the footer on every single CLPeasy page','CLPeasy™ trade mark symbol present on all pages','Registered address 66 Paul Street London EC2A 4NA correct on all pages','Auto-renewal disclosure visible near Subscribe buttons on pricing.html','Refund page clearly states top-up credits are non-refundable','Privacy page explicitly names Brevo as a data processor']},
+
+  {id:'LEG-02',epic:'Legal',pri:1,pts:1,status:'BLOCKED',sprint:'S0',
+   title:'🚀 ICO Registration — LAUNCH DAY',
+   what:'Registering with the Information Commissioner\'s Office (ICO) as a data controller. Currently exempt because CLPeasy is not yet trading. The moment the first paid subscription goes through, registration is legally required.',
+   why:'Processing personal data for commercial purposes without ICO registration is a breach of UK GDPR. Fine risk applies from the first paid subscriber.',
+   story:'As a business I need to register with the ICO the moment paid subscriptions go live.',
+   tasks:['Go to ico.org.uk/for-organisations/data-protection-fee/ on launch morning','Complete the self-assessment: data controller, commercial organisation, fewer than 250 staff','Pay the £40/year registration fee','Receive ICO registration number by email','Add ICO registration number to privacy.html','Set a calendar reminder for annual renewal in June 2027'],
+   ac:['ICO registration completed and registration number received','Registration number added to privacy.html','Completed before the first real paid subscription is processed — do not go live before this is done','Annual renewal reminder set for June 2027']},
+
+  {id:'LEG-03',epic:'Legal',pri:1,pts:1,status:'IN REVIEW',sprint:'S0',
+   title:'Business Insurance Confirmation',
+   what:'Contacting Simply Business to confirm that the existing business insurance policy covers CLPeasy as a SaaS software product. If it does not, additional professional indemnity or product liability cover is needed before launch.',
+   why:'Operating a paid software tool without appropriate insurance is a business risk. CLP label errors could theoretically result in a claim.',
+   story:'As a business I need written confirmation that Simply Business covers CLPeasy SaaS activity before launch.',
+   tasks:['Email Simply Business clearly describing CLPeasy: software tool that helps makers generate CLP compliance labels','Clarify: this is not regulated financial or legal advice — it is a label generation tool','Ask specifically whether professional indemnity and product liability are included','If not covered: request a quote for the additional cover needed','Purchase any additional cover before 15 June','File the written email confirmation in business records'],
+   ac:['Written email confirmation received from Simply Business','CLPeasy SaaS activity explicitly confirmed as covered','If any gap identified: additional policy purchased and documents received before launch day','Confirmation filed in business records']},
+
+  {id:'LEG-04',epic:'Legal',pri:1,pts:1,status:'IN REVIEW',sprint:'S0',
+   title:'EU VAT Decision Before First Sale',
+   what:'EU digital services are subject to VAT from the very first sale — there is no minimum threshold. A decision is needed before launch: either restrict CLPeasy to UK customers only (simplest option) or register for Stripe Tax and the EU VAT OSS scheme (enables EU sales legally).',
+   why:'Taking a payment from an EU customer without charging the correct VAT rate is illegal and creates a retrospective liability.',
+   story:'As a business I need to decide how to handle EU VAT before the first sale so I do not trade illegally.',
+   tasks:['Recommended for launch: Option A — restrict to UK customers only in Stripe checkout','If Option A: add allowed_countries: ["GB"] parameter to create-checkout-session edge function','Add "Currently available to UK customers only" note to pricing.html','Post-launch Option B: register for Stripe Tax (automated VAT calculation) and EU OSS VAT scheme to enable EU sales','Document the decision taken and the date'],
+   ac:['Decision documented: Option A (UK-only) or Option B (EU VAT) chosen and recorded','If Option A chosen: non-UK card attempts declined at Stripe checkout with polite message','pricing.html states UK-only availability at launch','No EU customer charged without correct VAT applied — zero legal exposure at go-live']},
+
+  {id:'MKT-01',epic:'Marketing',pri:1,pts:3,status:'DONE',sprint:'S0',
+   title:'Beta Tester Programme — 3 Makers',
+   what:'Recruiting three real candle and wax melt makers to test CLPeasy before launch and provide feedback. They get free Easy Pro access until 30 June in exchange for completing the beta feedback form.',
+   why:'Real user testing catches bugs and usability issues that internal testing misses. Beta feedback also provides testimonials and launch social proof.',
+   story:'As a business I need beta testers using CLPeasy before launch to validate the product and surface bugs.',
+   tasks:['Select 3 makers from existing network: Roy Rossello, Susan Park, Lisa Solares','Send personal invite emails on 1 June with direct link to clpeasy.com/auth','Set beta_expires = 2026-06-30 and is_pro = true in Supabase profiles table for each tester after they sign up','Confirm beta-feedback.html has 7 questions, is connected to Supabase beta_feedback table, and is set to noindex','Monitor Supabase dashboard for sign-up activity — check profiles table for their email addresses'],
+   ac:['All 3 testers have received personal invite emails','Roy Rossello confirmed signed up — row visible in Supabase profiles','Susan Park and Lisa Solares sign-up confirmed before 15 June','At least 1 completed beta feedback form received and stored in Supabase beta_feedback table','No critical P1 bugs reported that are unresolved before launch']},
+
+  {id:'MKT-02',epic:'Marketing',pri:1,pts:1,status:'IN REVIEW',sprint:'S0',
+   title:'Chase Beta Testers — Susan and Lisa',
+   what:'Following up with Susan Park and Lisa Solares to confirm they have signed up. If they have not, sending them a direct personal email with the auth link and a brief explanation of what to test.',
+   why:'Without at least 2 of 3 beta testers active, the feedback data is too thin to validate the product before launch.',
+   story:'As a business I need Susan and Lisa to confirm sign-up before launch so I have real user testing completed.',
+   tasks:['Check Supabase Authentication → Users for sueshomescents@yahoo.com — has she signed up?','Check Supabase Authentication → Users for lisasolares39@gmail.com — has she signed up?','If either has not signed up: send a personal follow-up email with direct link clpeasy.com/auth and brief instructions','Keep follow-up warm and personal — not a marketing email','If no response from either by 12 June: proceed with Roy\'s feedback only and note in launch review'],
+   ac:['Susan Park login confirmed visible in Supabase OR personal follow-up sent by 8 June','Lisa Solares login confirmed visible in Supabase OR personal follow-up sent by 8 June','At least 2 out of 3 beta testers active before launch day']},
+
+  {id:'MKT-03',epic:'Marketing',pri:1,pts:1,status:'IN REVIEW',sprint:'S0',
+   title:'Supplier Partnership Outreach — Chase',
+   what:'Following up with Supplies for Candles and NI Candle Supplies to confirm the partnership arrangement — a featured listing on their website and an affiliate or discount code for their customers to use on CLPeasy.',
+   why:'A featured listing from a major UK candle supplier would drive highly targeted traffic from their existing customer base on launch day.',
+   story:'As a business I need supplier partnerships confirmed before launch to drive credibility and targeted traffic.',
+   tasks:['Send follow-up email to Supplies for Candles: customerservice@suppliesforcandles.co.uk — reference pre-launch deadline','Send follow-up email to NI Candle Supplies: support@nicandlesupplies.com — reference pre-launch deadline','Mention CLPeasy goes live 15 June and ask for a decision before that date','Ask for: featured listing on their Resources or Tools page, unique discount code for their customers (e.g. SFC15 for 15% off first month)','If no reply by 13 June: proceed with launch without supplier partnership and revisit post-launch'],
+   ac:['Follow-up emails sent to both suppliers before 10 June','If positive response: affiliate code, commission structure, and featured listing agreed in writing','If no response: decision documented and partnership deferred to post-launch backlog']},
+
+  {id:'MKT-04',epic:'Marketing',pri:1,pts:1,status:'DONE',sprint:'S0',
+   title:'Trade Mark UK00004395085 Filed',
+   what:'The CLPeasy trade mark application filed with the UK Intellectual Property Office on 31 May 2026. Class 42 covers software as a service. The CLPeasy™ symbol now appears throughout the website.',
+   why:'The CLPeasy brand is the primary business asset. Without trade mark protection anyone could use the name.',
+   story:'As a business I need the CLPeasy brand trade marked to protect it from copying.',
+   tasks:['Filed UK TM application 31 May 2026 under Class 42 — software services','Reference number: UK00004395085','Renewal due: 31 May 2036 — 10 years','Apply CLPeasy™ symbol to: home.html, pricing.html, builder.html, all legal pages, email footers','Add TM registration card to monitor.html with 10-year countdown to renewal date','Note TM renewal date in business calendar with a reminder set for May 2036'],
+   ac:['TM application confirmed filed — reference number UK00004395085 recorded','CLPeasy™ symbol present on home, pricing, builder, and all legal pages','TM renewal date 31 May 2036 noted in business calendar','monitor.html TM card shows correct days-until-renewal countdown']},
+
+  {id:'MKT-05',epic:'Marketing',pri:1,pts:2,status:'TODO',sprint:'S0',
+   title:'Launch Day Social Media Posts',
+   what:'Writing and scheduling launch announcement posts for Facebook, Instagram, and TikTok to go live at 9am BST on 15 June — the Scotland World Cup special bank holiday. Includes a Scotland tie-in angle.',
+   why:'Launch day posts need to be ready and scheduled the night before so nothing is left to chance on the morning when attention is on the Stripe key swap and ICO registration.',
+   story:'As a business I need launch posts scheduled for 9am BST on 15 June so I maximise launch day momentum.',
+   tasks:['Write Facebook post: headline, builder link, pricing page link, founder story hook, 2–3 relevant hashtags','Write Instagram caption and select or create a hero image for the post — include clpeasy.com/builder in bio','Write TikTok opening hook (must grab attention in first 3 seconds) and outline a 30–60 second script','Include Scotland World Cup bank holiday tie-in angle naturally where relevant','Schedule all posts for exactly 9am BST 15 June using Buffer or Later','Prepare manual backup copies of all posts in case the scheduler fails on the day'],
+   ac:['Posts written, proofread, and reviewed for all 3 platforms','All posts scheduled for 9am BST 15 June — confirmed in scheduler','All links in posts confirmed working and pointing to live pages','Scotland World Cup tie-in included in at least Facebook and Instagram','No typos, broken links, or placeholder text in any post']},
+
+  {id:'MKT-06',epic:'Marketing',pri:2,pts:1,status:'TODO',sprint:'S0',
+   title:'Launch Day Email to Waiting List',
+   what:'A Brevo email campaign to the CLPeasy waiting list scheduled for 9am BST 15 June, announcing that CLPeasy is live and inviting people to try the label builder.',
+   why:'The waiting list is the warmest possible audience. This is the first place launch traffic comes from.',
+   story:'As a business I need a launch announcement email scheduled to send to the waiting list at 9am on 15 June.',
+   tasks:['Draft launch email in Brevo campaign editor — do not use the automation, this is a one-off broadcast campaign','Subject line: "CLPeasy is live — build your first CLP label in minutes"','Body: brief welcome paragraph, prominent "Build my first label" CTA button linking to builder.html, pricing page link, optional limited-time offer if applicable, short founder personal note','Schedule campaign for 9am BST 15 June','Send a test email to support@clpeasy.com and confirm it renders correctly on mobile and desktop','Check all links work and unsubscribe link is present'],
+   ac:['Email renders correctly on mobile and desktop in Brevo preview','All CTA links confirmed working and pointing to correct pages','Campaign scheduled for 9am BST 15 June','Test email received at support@clpeasy.com with no spam flag','Unsubscribe link present and functional in email footer']},
+
+  {id:'MKT-07',epic:'Marketing',pri:2,pts:1,status:'IN REVIEW',sprint:'S0',
+   title:'Submit Anthropic / Netlify Credit Request',
+   what:'Submitting the compiled evidence report to Anthropic support requesting a goodwill credit to recover approximately £206 in costs directly caused by faulty Claude outputs during CLPeasy development — including Claude subscription, top-up credits, and Netlify build overages from 326 deploys caused by incorrect code.',
+   why:'£206 is a significant cost for a pre-revenue business. The PDF evidence report and reply email are both prepared — this just needs to be submitted.',
+   story:'As a business I need to submit the goodwill credit request so I can recover ~£206 in costs caused by Claude output failures.',
+   tasks:['PDF already compiled: CLPeasy-Claude-Support-Report-v2.pdf — review once before sending','Reply email already drafted — finalise and send to Anthropic support before or on launch day','Attach PDF to the support submission','Log the submission date and note any reference number received in reply','Chase if no response within 7 days of submission'],
+   ac:['Submission sent to Anthropic support with PDF report attached','Email confirmation of receipt received from Anthropic','Reference number logged in business records','Follow-up scheduled if no substantive response within 7 days']},
+
+  {id:'MKT-08',epic:'Marketing',pri:3,pts:2,status:'TODO',sprint:'S1',
+   title:'Sara Davies Partnership Outreach',
+   what:'Reaching out to Sara Davies (Dragons\' Den investor, founder of Crafter\'s Companion) via LinkedIn, email, and Instagram DM to propose a CLPeasy partnership or endorsement deal aimed at the UK craft maker community.',
+   why:'A Sara Davies endorsement or partnership would give CLPeasy immediate credibility and reach among the exact target audience.',
+   story:'As a business I need to reach out to Sara Davies for a partnership after CLPeasy is live and credible.',
+   tasks:['Send LinkedIn connection request with personalised note explaining CLPeasy and the partnership proposition','Locate and email the most appropriate Crafter\'s Companion contact address with a business proposal','Send Instagram DM with a link to the live clpeasy.com/builder — do not send before launch day as the product must be live and working','Wait until CLPeasy is live before sending any outreach — credibility requires a working product','Follow up exactly once if no response within 14 days'],
+   ac:['All 3 channels contacted within the first week after launch','Every message includes a working live link to clpeasy.com and a clear partnership proposition','Follow-up sent at day 14 if no response received','No further chasing after the one follow-up']},
+
+  {id:'ADM-01',epic:'Admin',pri:2,pts:5,status:'TODO',sprint:'S2',
+   title:'Admin User Management Dashboard',
+   what:'A secure admin-only page where Michaela can see all CLPeasy user accounts, their plan and status, lock or disable accounts, and send warning emails — all from one interface.',
+   why:'Once CLPeasy has paying users, there needs to be a way to manage accounts, handle abuse, and send notifications without going into Supabase directly every time.',
+   story:'As an admin I need to view all user accounts, lock or disable them, and send warning emails from a secure dashboard.',
+   tasks:['Add is_admin boolean column to Supabase profiles table — set true for Michaela\'s account','Build admin.html — accessible only to users where is_admin = true, redirect others away','User list: paginated 25 per page, search by email or name, filter by status (active / locked / disabled)','Sort options: last login date, plan type, sign-up date','Lock action: set locked = true on profiles row + call Supabase Admin API to disable Auth login immediately','Disable action: set status = disabled in profiles, user cannot log in','Warning email: send Brevo transactional email to user with customisable body text','Create audit_log table in Supabase: log every admin action with admin_id, action type, target_user_id, timestamp'],
+   ac:['admin.html accessible only to users with is_admin = true — all others redirected to home','User list loads within 2 seconds with 25+ users in the database','Search by email works correctly','Lock action prevents user login immediately — confirmed by attempting to log in as that user','Warning email arrives in user inbox within 60 seconds of being sent','Every admin action recorded in audit_log table with correct fields']},
+
+  {id:'ADM-02',epic:'Admin',pri:2,pts:5,status:'TODO',sprint:'S2',
+   title:'Admin Revenue + Activity Reports',
+   what:'Charts and data on the admin dashboard showing MRR (monthly recurring revenue), churn rate, daily active users, and labels built per day — pulled from Supabase and Stripe live data.',
+   why:'To make good product decisions, Michaela needs to see what is happening in the business without manually querying Supabase every time.',
+   story:'As an admin I need charts for MRR, churn, active users, and labels built so I can track business health at a glance.',
+   tasks:['Pull MRR from Supabase subscriptions table: sum price values of all rows with status = active','Calculate churn rate: count subscriptions cancelled this period divided by total active at period start × 100','Daily active users: count distinct user_id values with a label_save event in the last 30 days','Labels built per day: count label_save events grouped by date for the last 30 days','Render 4 charts: MRR trend line, plan split donut, DAU bar chart, labels-built bar chart','Date range filter: last 7 days / 30 days / 90 days — updates all charts simultaneously','CSV export button for each chart dataset'],
+   ac:['MRR figure on screen matches the sum of active subscriptions in Supabase','All 4 charts render with real data within 3 seconds','Date range filter updates all 4 charts simultaneously with no page reload','CSV export generates a correctly formatted downloadable file','Charts are readable on a tablet or laptop screen']},
+
+  {id:'POST-01',epic:'PostLaunch',pri:3,pts:3,status:'TODO',sprint:null,
+   title:'User Feedback Forum (forum.html)',
+   what:'A community page where CLPeasy users can submit feature requests, report issues, and upvote ideas from other users. Posts go through two-stage moderation before becoming public. Michaela receives an email alert for each new submission.',
+   why:'Gives makers a voice in shaping the CLPeasy roadmap and builds a sense of community around the product.',
+   story:'As a user I need a community forum to share ideas and vote on features so my input shapes the product roadmap.',
+   tasks:['Build forum.html with: post list view, submit new post form, upvote button on each post','Create Supabase forum_posts table: id, user_id, title, body, votes, status (pending/published/rejected), created_at','Two-stage moderation: new posts start as pending → admin approves to published or rejects','Display name masking: show first name + last initial only (e.g. Michaela F.) — never full name or email','Send Brevo email alert to support@clpeasy.com on each new submission','Upvote: one vote per user per post, clicking again removes the vote'],
+   ac:['Users can submit posts from forum.html when logged in','New post visible publicly only after admin approval in Supabase dashboard','Display name shows "Michaela F." format — never full name or email address','Admin email alert arrives at support@clpeasy.com within 5 minutes of submission','Upvotes persist across browser sessions and page refreshes']},
+
+  {id:'POST-02',epic:'PostLaunch',pri:3,pts:3,status:'TODO',sprint:null,
+   title:'Knowledge Base Search',
+   what:'A search bar on the CLPeasy knowledge base page that searches across all article titles, headings, and body text instantly as the user types — client-side, no server request needed.',
+   why:'The knowledge base grows over time. Without search, users scroll through every article to find what they need.',
+   story:'As a user I need to search the CLPeasy knowledge base so I can find compliance answers quickly.',
+   tasks:['Index all knowledge base article titles, headings, and body text into a searchable JSON object','Implement client-side search using Fuse.js for fuzzy matching or simple keyword matching','Add search input field to knowledge base page header — prominent and mobile-friendly','Results display: article title, matched sentence excerpt, link to article','Highlight the matched keyword in the result excerpt','If no results found: show "No results for [query] — contact support@clpeasy.com" message'],
+   ac:['Search returns relevant results within 300ms — fully client-side with no server request','Matched keyword highlighted in the result excerpt text','Searching "GHS" returns the GHS pictogram knowledge base article','No-results state shows a helpful support contact link','Search input works correctly on iPhone Safari with mobile keyboard']},
+
+  {id:'POST-03',epic:'PostLaunch',pri:4,pts:2,status:'TODO',sprint:null,
+   title:'Dark Mode + Mobile Label Preview',
+   what:'A dark/light mode toggle for the whole CLPeasy interface, and a scaled-down live label preview visible below the form steps on mobile screens so users can see the label updating as they type.',
+   why:'Dark mode reduces eye strain for evening working sessions. Mobile preview lets makers see the label on their phone without needing a second screen.',
+   story:'As a user I need a dark mode option and a mobile label preview so I can build labels comfortably on my phone.',
+   tasks:['Toggle button to switch between dark and light colour schemes using CSS custom properties','Persist mode preference in localStorage so it survives page reload','Mobile label preview: render scaled-down version of the label canvas below the active step on screens under 768px','Preview updates live as the user fills in fields — same render as the desktop preview but smaller','Test dark mode on all 14+ CLPeasy pages for any white background breaks'],
+   ac:['Dark mode toggle visible in header and functional on first click','Mode preference persists correctly across page reload','Mobile preview visible below step content on iPhone — not hidden or clipped','Preview reflects current label state in real time with no lag','Dark mode does not break any page layout across the full site']},
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let currentTab = 'board';
+let laneStatus = {};   // storyId → 'todo'|'doing'|'done'
+let taskDone   = {};   // storyId+'-'+taskIdx → bool
+let filterEpic = 'ALL';
+let filterStat = 'ALL';
+let modalId    = null;
+let modalMode  = null; // 'lane'|'sprint'
+
+// Init lane from story default
+STORIES.forEach(s => {
+  laneStatus[s.id] = s.sprint ? (s.status === 'DONE' ? 'done' : 'todo') : 'todo';
+});
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const pts = arr => arr.reduce((a,s) => a + s.pts, 0);
+const capPct = (p,c) => Math.round(p/c*100);
+const capCol = pct => pct < 85 ? '#e67e22' : pct > 115 ? '#e74c3c' : '#27ae60';
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+function daysl() {
+  return Math.max(0, Math.round((new Date('2026-06-15') - new Date('2026-06-06')) / 86400000));
+}
+
+
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+function init() {
+  document.getElementById('daysLeft').textContent   = daysl();
+  const activeCount = STORIES.filter(s => s.sprint === 'S0' && (s.status === 'TODO' || s.status === 'IN REVIEW')).length;
+  document.getElementById('totalStories').textContent = activeCount + ' active · pre-launch only';
+  renderProg();
+  renderTab('board');
+}
+
+// ── PROGRESS ──────────────────────────────────────────────────────────────────
+function renderProg() {
+  // Only count active pre-launch items: TODO + IN REVIEW
+  // DONE, BLOCKED (launch day), post-launch all excluded from bar
+  const active = STORIES.filter(s => s.sprint === 'S0' && (s.status === 'TODO' || s.status === 'IN REVIEW'));
+  const todo   = active.filter(s => s.status === 'TODO').length;
+  const review = active.filter(s => s.status === 'IN REVIEW').length;
+  const total  = active.length;
+  const pct    = total === 0 ? 100 : Math.round(review / total * 100);
+
+  const s0done    = STORIES.filter(s => s.sprint === 'S0' && s.status === 'DONE').length;
+  const s0blocked = STORIES.filter(s => s.sprint === 'S0' && s.status === 'BLOCKED').length;
+
+  const pctDone = STORIES.filter(s => s.sprint === 'S0').length === 0 ? 0 :
+    Math.round(STORIES.filter(s => s.sprint === 'S0' && s.status === 'DONE').length /
+               STORIES.filter(s => s.sprint === 'S0').length * 100);
+  document.getElementById('pctDone').textContent = pctDone + '% · ' + total + ' left';
+  document.getElementById('progBar').innerHTML =
+    `<div style="flex:${review};background:#e67e22;min-width:${review>0?'4px':'0'}"></div>` +
+    `<div style="flex:${todo};background:#2d4a5e;min-width:${todo>0?'4px':'0'}"></div>`;
+  document.getElementById('progLegend').innerHTML =
+    [[review,'⏳ In Review','#e67e22'],[todo,'○ To Do','#4a6580']]
+    .map(([n,l,c]) => `<div class="leg"><div class="leg-dot" style="background:${c}"></div><span style="color:#7a9fb5">${l}:</span><span style="color:${c};font-weight:800">${n}</span></div>`).join('') +
+    `<div class="leg"><div class="leg-dot" style="background:#27ae60"></div><span style="color:#7a9fb5">Completed:</span><span style="color:#27ae60;font-weight:800">${s0done} filed</span></div>` +
+    `<div class="leg"><div class="leg-dot" style="background:#e74c3c"></div><span style="color:#7a9fb5">Launch day:</span><span style="color:#e74c3c;font-weight:800">${s0blocked} pending</span></div>`;
+}
+
+// ── TAB NAVIGATION ────────────────────────────────────────────────────────────
+function goTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.ntab').forEach((b,i) => b.classList.toggle('active', ['board','backlog','sprint0','sprint1','sprint2'][i] === tab));
+  document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
+  const bn = document.getElementById('bn-' + tab);
+  if (bn) bn.classList.add('active');
+  renderTab(tab);
+}
+
+function renderTab(tab) {
+  if (tab === 'board')   renderBoard();
+  else if (tab === 'backlog') renderBacklog();
+  else if (tab === 'sprint0') renderSprintDetail('S0');
+  else if (tab === 'sprint1') renderSprintDetail('S1');
+  else if (tab === 'sprint2') renderSprintDetail('S2');
+}
+
+// ── STORY CARD (full detail) ──────────────────────────────────────────────────
+function storyCard(s) {
+  const ec  = EPIC_C[s.epic] || '#4C9BB0';
+  const sc  = STAT_C[s.status] || '#4a6580';
+  const sp  = s.sprint ? SPRINTS.find(x => x.id === s.sprint)?.name : 'Backlog';
+  const ll  = {todo:'To Do',doing:'Doing',done:'Done'};
+  const lane = laneStatus[s.id] || 'todo';
+
+  const tasks = s.tasks.map((t,i) => {
+    const k = s.id + '-' + i;
+    const done = !!taskDone[k];
+    return `<div class="dp-item">
+      <span class="dp-num">${String(i+1).padStart(2,'0')}</span>
+      <span class="dp-check" onclick="toggleTask('${s.id}',${i})">${done ? '✅' : '⬜'}</span>
+      <span class="dp-text ${done ? 'struck' : ''}" id="dt-${k}">${esc(t)}</span>
+    </div>`;
+  }).join('');
+
+  const ac = s.ac.map(a => `<div class="dp-item">
+    <span class="ac-tick">✓</span>
+    <span class="dp-text">${esc(a)}</span>
+  </div>`).join('');
+
+  const doneCount = s.tasks.filter((_,i) => taskDone[s.id+'-'+i]).length;
+  const pct = Math.round(doneCount / s.tasks.length * 100);
+
+  return `<div class="sc" id="sc-${s.id}" style="border-left-color:${ec}">
+    <div class="sc-top">
+      <div class="sc-left">
+        <div class="sc-ids">
+          <span class="sc-id">${esc(s.id)}</span>
+          <span class="chip" style="background:${ec}22;color:${ec}">${esc(s.epic)}</span>
+          <span class="chip" style="background:${PRI_C[s.pri]}22;color:${PRI_C[s.pri]}">${PRI_L[s.pri]}</span>
+        </div>
+        <div class="sc-title">${esc(s.title)}</div>
+        <div class="sc-meta-row">
+          <span class="sc-meta-chip">📍 ${esc(sp)}</span>
+          <span class="sc-meta-chip">🏷 ${ll[lane]}</span>
+          <span class="sc-meta-chip">⭐ ${s.pts}pts</span>
+          <span class="sc-meta-chip">✅ ${doneCount}/${s.tasks.length} tasks</span>
+        </div>
+        ${pct > 0 ? `<div style="background:#0d1b2a;border-radius:3px;height:4px;overflow:hidden;margin-bottom:4px"><div style="width:${pct}%;height:100%;background:${ec};border-radius:3px"></div></div>` : ''}
+      </div>
+      <div class="sc-right">
+        <button class="status-btn" style="background:${sc}22;color:${sc}" onclick="cycleStatus('${s.id}',event)">${STAT_L[s.status]}</button>
+        <button class="status-btn" style="background:#1e3048;color:#7a9fb5;font-size:9px" onclick="openModal('${s.id}',event)">Move ↗</button>
+      </div>
+    </div>
+
+    <!-- WHAT IS THIS / WHY -->
+    <div style="padding:0 14px 10px">
+      <div style="font-size:10px;font-weight:800;color:#4C9BB0;letter-spacing:0.4px;margin-bottom:4px">WHAT IS THIS</div>
+      <div style="font-size:11px;color:#7a9fb5;line-height:1.55;margin-bottom:8px">${esc(s.what)}</div>
+      <div style="font-size:10px;font-weight:800;color:#e67e22;letter-spacing:0.4px;margin-bottom:4px">WHY IT MATTERS</div>
+      <div style="font-size:11px;color:#7a9fb5;line-height:1.55;margin-bottom:8px">${esc(s.why)}</div>
+      <div style="font-size:10px;font-weight:800;color:#7a9fb5;letter-spacing:0.4px;margin-bottom:4px">USER STORY</div>
+      <div style="font-size:11px;color:#4a6580;line-height:1.5;font-style:italic;margin-bottom:10px">"${esc(s.story)}"</div>
+
+      <!-- TASKS -->
+      <div style="font-size:10px;font-weight:800;color:#4C9BB0;letter-spacing:0.4px;margin-bottom:6px">ACTION TASKS — tap ⬜ to tick off (${doneCount}/${s.tasks.length} done)</div>
+      <div id="tasks-${s.id}">${tasks}</div>
+
+      <!-- ACCEPTANCE -->
+      <div style="font-size:10px;font-weight:800;color:#27ae60;letter-spacing:0.4px;margin:10px 0 6px">DONE WHEN</div>
+      ${ac}
+    </div>
+  </div>`;
+}
+
+// ── TASK TICK ─────────────────────────────────────────────────────────────────
+function toggleTask(sid, idx) {
+  const k = sid + '-' + idx;
+  taskDone[k] = !taskDone[k];
+  // Re-render just this card
+  const s = STORIES.find(x => x.id === sid);
+  const el = document.getElementById('sc-' + sid);
+  if (el) el.outerHTML = storyCard(s);
+  toast(taskDone[k] ? '✅ Task marked done' : '⬜ Task unmarked');
+  renderProg();
+}
+
+// ── STATUS CYCLE ──────────────────────────────────────────────────────────────
+function cycleStatus(sid, e) {
+  e.stopPropagation();
+  const s = STORIES.find(x => x.id === sid);
+  const cycle = {TODO:'IN REVIEW','IN REVIEW':'DONE',DONE:'TODO',BLOCKED:'IN REVIEW'};
+  s.status = cycle[s.status] || 'IN REVIEW';
+  if (s.sprint) {
+    if (s.status === 'DONE') laneStatus[sid] = 'done';
+    else if (s.status === 'IN REVIEW') laneStatus[sid] = 'doing';
+    else laneStatus[sid] = 'todo';
+  }
+  const el = document.getElementById('sc-' + sid);
+  if (el) el.outerHTML = storyCard(s);
+  renderProg();
+  toast(sid + ' → ' + s.status);
+}
+
+// ── MOVE MODAL ────────────────────────────────────────────────────────────────
+function openModal(sid, e) {
+  e.stopPropagation();
+  modalId = sid;
+  const s = STORIES.find(x => x.id === sid);
+  document.getElementById('mm-title').textContent = s.title;
+  document.getElementById('mm-sub').textContent   = 'Move to sprint and lane';
+  let html = '<div class="sheet-sprint-grid">';
+  SPRINTS.forEach(sp => {
+    html += `<button class="sheet-sprint-btn" style="border-left:3px solid ${sp.color}" onclick="pickSprint('${sp.id}')">
+      <div style="font-size:11px;font-weight:800;color:${sp.color}">${esc(sp.name)}</div>
+      <div style="font-size:10px;color:#7a9fb5;margin-top:2px">${esc(sp.goal)}</div>
+    </button>`;
+  });
+  html += `<button class="sheet-sprint-btn" style="border-left:3px solid #4a6580" onclick="pickSprint(null)">
+    <div style="font-size:11px;font-weight:800;color:#7a9fb5">Return to Backlog</div>
+  </button>`;
+  html += '</div>';
+  html += '<div style="font-size:10px;font-weight:800;color:#7a9fb5;margin-bottom:6px;letter-spacing:0.4px">THEN SET LANE:</div>';
+  html += '<div class="sheet-grid">';
+  [['todo','○ To Do','#4a6580'],['doing','⟳ Doing','#e67e22'],['done','✓ Done','#27ae60']].forEach(([id,lbl,col]) => {
+    html += `<button class="sheet-btn" style="color:${col};border-color:${col}22" onclick="pickLane('${id}')">${lbl}</button>`;
+  });
+  html += '</div>';
+  document.getElementById('mm-body').innerHTML = html;
+  document.getElementById('moveModal').classList.add('open');
+}
+
+function pickSprint(sprintId) {
+  if (!modalId) return;
+  const s = STORIES.find(x => x.id === modalId);
+  s.sprint = sprintId;
+  if (!sprintId) laneStatus[modalId] = 'todo';
+  toast(sprintId ? `Moved to ${SPRINTS.find(x=>x.id===sprintId)?.name}` : 'Returned to Backlog');
+  renderProg();
+}
+
+function pickLane(laneId) {
+  if (!modalId) return;
+  laneStatus[modalId] = laneId;
+  closeModal();
+  renderTab(currentTab);
+  toast('Lane → ' + {todo:'To Do',doing:'Doing',done:'Done'}[laneId]);
+}
+
+function closeModal() {
+  document.getElementById('moveModal').classList.remove('open');
+  modalId = null;
+}
+
+// ── BOARD TAB ─────────────────────────────────────────────────────────────────
+function renderBoard() {
+  let h = '';
+
+  // Only show TODO and IN REVIEW — the live action items
+  const todo   = STORIES.filter(s => s.sprint === 'S0' && s.status === 'TODO').sort((a,b) => a.pri - b.pri);
+  const review = STORIES.filter(s => s.sprint === 'S0' && s.status === 'IN REVIEW').sort((a,b) => a.pri - b.pri);
+
+  if (!todo.length && !review.length) {
+    h += `<div style="background:#111d2c;border:1px solid #27ae60;border-radius:12px;padding:24px;text-align:center;margin-bottom:12px">
+      <div style="font-size:24px;margin-bottom:8px">🚀</div>
+      <div style="font-size:14px;font-weight:800;color:#27ae60">All active items complete!</div>
+      <div style="font-size:11px;color:#7a9fb5;margin-top:4px">Ready to go live on 15 June 2026.</div>
+    </div>`;
+  }
+
+  if (todo.length) {
+    h += sectionHeader('○ To Do — Action Required', todo.length + ' items need starting', '#4a6580');
+    todo.forEach(s => { h += storyCard(s); });
+  }
+
+  if (review.length) {
+    h += sectionHeader('⏳ In Review — Needs Final Check', review.length + ' items to confirm', '#e67e22');
+    review.forEach(s => { h += storyCard(s); });
+  }
+
+  // Everything else collapsed — done, launch day, post-launch — all filed away
+  const filed = [
+    ...STORIES.filter(s => s.sprint === 'S0' && s.status === 'BLOCKED'),
+    ...STORIES.filter(s => s.sprint === 'S0' && s.status === 'DONE'),
+    ...STORIES.filter(s => s.sprint === 'S1' || s.sprint === 'S2' || !s.sprint),
+  ];
+
+  const filedDone    = STORIES.filter(s => s.sprint === 'S0' && s.status === 'DONE').length;
+  const filedBlocked = STORIES.filter(s => s.sprint === 'S0' && s.status === 'BLOCKED').length;
+  const filedPost    = STORIES.filter(s => s.sprint === 'S1' || s.sprint === 'S2' || !s.sprint).length;
+
+  h += `<div style="margin-top:10px">
+    <button onclick="toggleArchive()"
+      style="width:100%;background:#0a1520;border:1px solid #1e3048;border-radius:10px;
+             padding:12px 16px;font-size:12px;font-weight:800;cursor:pointer;
+             font-family:inherit;display:flex;justify-content:space-between;align-items:center;color:#4a6580;">
+      <div style="text-align:left">
+        <div>📁 All Other Items — Collapsed</div>
+        <div style="font-size:9px;font-weight:600;margin-top:3px;color:#2d4a5e">
+          ✓ ${filedDone} completed · ⛔ ${filedBlocked} launch day · 🔮 ${filedPost} post-launch
+        </div>
+      </div>
+      <span id="archiveChevron" style="font-size:16px;color:#2d4a5e">▸</span>
+    </button>
+    <div id="archiveSection" style="display:none;margin-top:6px">
+
+      ${filedBlocked > 0 ? `<div style="background:#0a1520;border:1px solid #e74c3c33;border-left:4px solid #e74c3c;border-radius:10px;padding:10px 14px;margin-bottom:8px">
+        <div style="font-size:12px;font-weight:900;color:#e74c3c">⛔ Launch Day — Execute on 15 June Only</div>
+        <div style="font-size:10px;color:#7a9fb5;margin-top:2px">Do not touch until launch morning</div>
+      </div>
+      ${STORIES.filter(s => s.sprint === 'S0' && s.status === 'BLOCKED').map(s => storyCard(s)).join('')}` : ''}
+
+      ${filedDone > 0 ? `<div style="background:#0a1520;border:1px solid #27ae6033;border-left:4px solid #27ae60;border-radius:10px;padding:10px 14px;margin-bottom:8px;margin-top:8px">
+        <div style="font-size:12px;font-weight:900;color:#27ae60">✓ Completed Pre-Launch Items</div>
+        <div style="font-size:10px;color:#7a9fb5;margin-top:2px">${filedDone} items done and filed</div>
+      </div>
+      ${STORIES.filter(s => s.sprint === 'S0' && s.status === 'DONE').map(s => storyCard(s)).join('')}` : ''}
+
+      ${filedPost > 0 ? `<div style="background:#0a1520;border:1px dashed #1e3048;border-radius:10px;padding:10px 14px;margin-bottom:8px;margin-top:8px">
+        <div style="font-size:12px;font-weight:900;color:#7f8c8d">🔮 Post-Launch Backlog (Sprint 1 &amp; 2)</div>
+        <div style="font-size:10px;color:#4a6580;margin-top:2px">${filedPost} stories queued for after 15 June</div>
+      </div>
+      ${STORIES.filter(s => s.sprint === 'S1' || s.sprint === 'S2' || !s.sprint).sort((a,b)=>a.pri-b.pri).map(s => storyCard(s)).join('')}` : ''}
+
+    </div>
+  </div>`;
+
+  document.getElementById('content').innerHTML = h;
+}
+
+function sectionHeader(title, sub, color) {
+  return `<div style="background:#111d2c;border:1px solid ${color}33;border-left:4px solid ${color};
+    border-radius:10px;padding:10px 14px;margin-bottom:8px;margin-top:4px">
+    <div style="font-size:12px;font-weight:900;color:${color};letter-spacing:0.4px">${title}</div>
+    <div style="font-size:10px;color:#7a9fb5;margin-top:2px">${sub}</div>
+  </div>`;
+}
+
+function toggleArchive() {
+  const sec  = document.getElementById('archiveSection');
+  const chev = document.getElementById('archiveChevron');
+  const open = sec.style.display !== 'none';
+  sec.style.display = open ? 'none' : 'block';
+  chev.textContent  = open ? '▸' : '▾';
+}
+
+// ── SPRINT DETAIL TAB ─────────────────────────────────────────────────────────
+function renderSprintDetail(sprintId) {
+  const sprint = SPRINTS.find(s => s.id === sprintId);
+  const ss     = STORIES.filter(s => s.sprint === sprintId).sort((a,b) => a.pri - b.pri);
+  const p      = pts(ss);
+  const pct    = capPct(p, sprint.cap);
+  const cc     = capCol(pct);
+
+  let h = `<div class="sprint-hdr" style="border-top-color:${sprint.color};border-radius:12px;margin-bottom:12px">
+    <div class="sprint-hdr-top">
+      <div class="sprint-name" style="color:${sprint.color}">${esc(sprint.name.toUpperCase())}</div>
+      <div class="sprint-kpi" style="color:${cc}">${pct}% capacity</div>
+    </div>
+    <div class="sprint-weeks">${esc(sprint.weeks)}</div>
+    <div class="sprint-goal">${esc(sprint.goal)}</div>
+    <div class="cap-wrap" style="margin-top:6px"><div class="cap-fill" style="width:${Math.min(pct,130)}%;background:${cc}"></div></div>
+    <div class="cap-row"><span style="color:${cc};font-weight:700">${p}/${sprint.cap}pts · ${ss.length} stories</span><span style="color:${pct>=85&&pct<=115?'#27ae60':'#e67e22'};font-weight:700">${pct<85?'Under-loaded':pct>115?'Over-loaded':'✓ Healthy load'}</span></div>
+  </div>`;
+
+  if (ss.length === 0) {
+    h += `<div style="background:#111d2c;border:1px solid #1e3048;border-radius:12px;padding:24px;text-align:center;color:#2d4a5e;font-size:12px">No stories assigned yet — go to Board or Backlog and tap Move ↗</div>`;
+  } else {
+    ss.forEach(s => { h += storyCard(s); });
+  }
+
+  document.getElementById('content').innerHTML = h;
+}
+
+// ── BACKLOG TAB ───────────────────────────────────────────────────────────────
+function renderBacklog() {
+  const allEpics = [...new Set(STORIES.map(s => s.epic))];
+  let h = `<div class="fbar">
+    ${['ALL',...allEpics].map(e => `<button class="fbtn ${filterEpic===e?'active':''}" style="${filterEpic===e?'background:'+(EPIC_C[e]||'#4C9BB0'):''}" onclick="setEpicF('${e}')">${e}</button>`).join('')}
+  </div>
+  <div class="fbar">
+    ${['ALL','DONE','IN REVIEW','BLOCKED','TODO'].map(s => `<button class="fbtn ${filterStat===s?'active':''}" onclick="setStatF('${s}')">${s}</button>`).join('')}
+  </div>`;
+
+  [1,2,3,4].forEach(pri => {
+    const group = STORIES.filter(s => {
+      if (s.pri !== pri) return false;
+      if (filterEpic !== 'ALL' && s.epic !== filterEpic) return false;
+      if (filterStat !== 'ALL' && s.status !== filterStat) return false;
+      return true;
+    });
+    if (!group.length) return;
+    const pc = PRI_C[pri];
+    const dk = group.filter(s => s.status === 'DONE').length;
+    h += `<div class="bl-section">
+      <div class="bl-hdr" style="border-left-color:${pc}">
+        <div>
+          <div class="bl-pri" style="color:${pc}">${PRI_L[pri]}</div>
+          <div style="font-size:10px;color:#7a9fb5;margin-top:2px">${group.length} stories · ${pts(group)}pts · ${dk} done</div>
+        </div>
+      </div>
+      ${group.map(s => storyCard(s)).join('')}
+    </div>`;
+  });
+
+  document.getElementById('content').innerHTML = h;
+}
+
+function setEpicF(e) { filterEpic = e; renderBacklog(); }
+function setStatF(s) { filterStat = s; renderBacklog(); }
+</script>
+
+</body>
+</html>
