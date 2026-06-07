@@ -183,7 +183,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#0d1b2a;color:#c8dde8
       <div class="hdr-sub" style="color:#4C9BB0;font-size:10px">15 June 2026 · <span id="daysLeft"></span> days to launch</div>
       <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
         <span id="save-indicator" style="font-size:10px;color:#27ae60;opacity:0;transition:opacity 0.3s;font-weight:700;">✓ Saved</span>
-        <button onclick="saveTaskDone()" style="background:#1e3048;border:1px solid #4C9BB0;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:700;color:#4C9BB0;cursor:pointer;font-family:inherit;white-space:nowrap;">💾 Save</button>
+        <button onclick="saveTaskDone();saveStoryStatuses();toast('💾 All progress saved')" style="background:#1e3048;border:1px solid #4C9BB0;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:700;color:#4C9BB0;cursor:pointer;font-family:inherit;white-space:nowrap;">💾 Save</button>
       </div>
     </div>
   </div>
@@ -510,7 +510,7 @@ const STORIES = [
    tasks:['Filed UK TM application 31 May 2026 under Class 42 — software services','Reference number: UK00004395085','Renewal due: 31 May 2036 — 10 years','Apply CLPeasy™ symbol to: home.html, pricing.html, builder.html, all legal pages, email footers','Add TM registration card to monitor.html with 10-year countdown to renewal date','Note TM renewal date in business calendar with a reminder set for May 2036'],
    ac:['TM application confirmed filed — reference number UK00004395085 recorded','CLPeasy™ symbol present on home, pricing, builder, and all legal pages','TM renewal date 31 May 2036 noted in business calendar','monitor.html TM card shows correct days-until-renewal countdown']},
 
-  {id:'MKT-05',epic:'Marketing',pri:1,pts:2,status:'TODO',sprint:'S0',
+  {id:'MKT-05',epic:'Marketing',pri:1,pts:2,status:'DONE',sprint:'S0',
    title:'Launch Day Social Media Posts',
    what:'Writing and scheduling launch announcement posts for Facebook, Instagram, and TikTok to go live at 9am BST on 15 June — the Scotland World Cup special bank holiday. Includes a Scotland tie-in angle.',
    why:'Launch day posts need to be ready and scheduled the night before so nothing is left to chance on the morning when attention is on the Stripe key swap and ICO registration.',
@@ -588,6 +588,21 @@ let currentTab = 'board';
 let laneStatus = {};   // storyId → 'todo'|'doing'|'done'
 let taskDone   = {};   // storyId+'-'+taskIdx → bool
 function loadTaskDone(){try{return JSON.parse(localStorage.getItem('clpeasy_scrum_tasks')||'{}');}catch(e){return{};}}
+
+function saveStoryStatuses(){
+  var statuses = {};
+  STORIES.forEach(function(s){ statuses[s.id] = s.status; });
+  try{localStorage.setItem('clpeasy_scrum_statuses', JSON.stringify(statuses));}catch(e){}
+}
+
+function loadStoryStatuses(){
+  try{
+    var saved = JSON.parse(localStorage.getItem('clpeasy_scrum_statuses')||'{}');
+    STORIES.forEach(function(s){
+      if(saved[s.id]) s.status = saved[s.id];
+    });
+  }catch(e){}
+}
 function saveTaskDone(){
   try{
     localStorage.setItem('clpeasy_scrum_tasks',JSON.stringify(taskDone));
@@ -597,6 +612,7 @@ function saveTaskDone(){
   }catch(e){console.warn('Save failed',e);}
 }
 taskDone = loadTaskDone();
+loadStoryStatuses();
 let filterEpic = 'ALL';
 let filterStat = 'ALL';
 let modalId    = null;
@@ -774,9 +790,11 @@ function cycleStatus(sid, e) {
     else if (s.status === 'IN REVIEW') laneStatus[sid] = 'doing';
     else laneStatus[sid] = 'todo';
   }
-  const el = document.getElementById('sc-' + sid);
-  if (el) el.outerHTML = storyCard(s);
+  saveTaskDone();
+  saveStoryStatuses();
   renderProg();
+  // Re-render the whole board so card moves to correct section
+  renderTab(currentTab);
   toast(sid + ' → ' + s.status);
 }
 
