@@ -583,6 +583,9 @@ const STORIES = [
 let currentTab = 'board';
 let laneStatus = {};   // storyId → 'todo'|'doing'|'done'
 let taskDone   = {};   // storyId+'-'+taskIdx → bool
+function loadTaskDone(){try{return JSON.parse(localStorage.getItem('clpeasy_scrum_tasks')||'{}');}catch(e){return{};}}
+function saveTaskDone(){try{localStorage.setItem('clpeasy_scrum_tasks',JSON.stringify(taskDone));}catch(e){}}
+taskDone = loadTaskDone();
 let filterEpic = 'ALL';
 let filterStat = 'ALL';
 let modalId    = null;
@@ -740,6 +743,7 @@ function storyCard(s) {
 function toggleTask(sid, idx) {
   const k = sid + '-' + idx;
   taskDone[k] = !taskDone[k];
+  saveTaskDone(); // persist across sessions
   // Re-render just this card
   const s = STORIES.find(x => x.id === sid);
   const el = document.getElementById('sc-' + sid);
