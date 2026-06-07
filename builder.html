@@ -873,6 +873,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button onclick="prevStep()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;padding:8px;">← Edit label</button>
       <button onclick="startOver()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;padding:8px;">↺ New label</button>
     </div>
+
+    <!-- REPORT ISSUE BUTTON -->
+    <div style="margin-top:14px;text-align:center;">
+      <button onclick="reportIssue()" style="background:none;border:1px solid #e5e7eb;border-radius:8px;padding:8px 16px;font-size:12px;color:#9ca3af;font-family:'DM Sans',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s;" onmouseover="this.style.borderColor='#f87171';this.style.color='#ef4444';" onmouseout="this.style.borderColor='#e5e7eb';this.style.color='#9ca3af';">
+        ⚑ Report a problem with this label
+      </button>
+    </div>
   </div>
 
   <!-- SAVED LABELS LIBRARY -->
@@ -2663,6 +2670,25 @@ function splashGoLibrary(){
   },300);
 }
 
+function reportIssue(){
+  var scent = S.scentName || 'unknown';
+  var type  = S.productType || 'unknown';
+  var size  = S.size === 'custom' ? S.customW+'x'+S.customH+'mm custom' : S.size+'mm';
+  var shape = S.shape || 'unknown';
+  var subject = encodeURIComponent('CLPeasy label issue - '+scent+' ('+type+')');
+  var body = encodeURIComponent(
+    'Hi CLPeasy support,' +
+    '\n\nI found a problem with my label. Details below:' +
+    '\n\nScent name: ' + scent +
+    '\nProduct type: ' + type +
+    '\nLabel shape: ' + shape +
+    '\nLabel size: ' + size +
+    '\n\nIssue description:\n[Please describe what looks wrong]' +
+    '\n\nThank you'
+  );
+  window.location.href = 'mailto:support@clpeasy.com?subject='+subject+'&body='+body;
+}
+
 function startOver(){location.reload();}
 function clearHazardData(){
   // Clear signal word
@@ -2823,9 +2849,9 @@ function buildSVG(forExport=false){
   const isCandle = EN15494_CANDLE_TYPES.includes(S.productType);
   // Bands: top = brand/scent, bottom = footer+icons, mid = hazard content
   // Circle gets more top (arc text), rect gets less top (scent in mid)
-  const topFrac = isCircle ? 0.20 : 0.16;
+  const topFrac = isCircle ? 0.24 : 0.16;  // circle needs more top for arc+biz+web
   // Bottom: candles need room for EN15494 row + footer text
-  const botFrac = isCandle ? (isCircle ? 0.36 : 0.42) : (isCircle ? 0.22 : 0.24);
+  const botFrac = isCandle ? (isCircle ? 0.34 : 0.42) : (isCircle ? 0.20 : 0.24);
   const topH = sH * topFrac;
   const botH = sH * botFrac;
   const midH = sH - topH - botH;
@@ -2889,16 +2915,26 @@ function buildSVG(forExport=false){
   // Give them enough vertical separation so nothing overlaps
   // On circle: biz name sits just below arc text, website below biz
   // Keep both strictly within the top band (topY to midY)
-  const arcScentHeight = isCircle ? arcScentFS * 1.4 : 0;
+  // Top band layout — all content must stay between topY and midY
+  // Circle: arc scent at top, biz name below, website below that
+  // Rect/square: biz name at 38% of top band, website below
+  // Top band has: arc scent (very top) → biz name → website → [midY] → type/signal...
+  // All three must fit cleanly with no overlap
+  const arcScentHeight = isCircle ? arcScentFS * 1.5 : 0;
+  // Fonts: biz name smaller on circle to fit comfortably
+  const _bizTmpSW = Math.min(chordW(sTop + topH * 0.55, 0.10), sW * 0.82);
+  const bizFSmax = isCircle ? clamp(BASE*0.060, 4, 12) : clamp(BASE*0.075, 5, 15);
+  const bizFS  = fitFont(bizName, _bizTmpSW, bizFSmax, clamp(BASE*0.034,3,7), true, true);
+  const webFS  = clamp(BASE*0.032, 2.5, 6.5);
+  // Divide top band into 3 zones: arc(0-40%), biz(40-72%), web(72-90%)
   const bizY = isCircle
-    ? topY + arcScentHeight + (topH - arcScentHeight) * 0.45
+    ? topY + topH * 0.55
     : topY + topH * 0.38;
-  const webFS_line = clamp(BASE*0.038, 3, 8);
-  const webY = Math.min(bizY + bizFS * 1.6 + webFS_line, midY - webFS_line);
+  const webY = isCircle
+    ? Math.min(topY + topH * 0.82, midY - webFS * 1.5)
+    : Math.min(topY + topH * 0.80, midY - webFS * 0.8);
   const bizSW = Math.min(chordW(bizY, 0.10), sW*0.88);
   const webSW = Math.min(chordW(webY, 0.10), sW*0.88);
-  const bizFS = fitFont(bizName, bizSW*0.84, clamp(BASE*0.075,5,15), clamp(BASE*0.034,3,7), true, true);
-  const webFS = webFS_line;
   // Scent name on circle arc — font sized to fit arc
   const arcScentR = isCircle ? r * 0.93 : 0;
 
@@ -3015,8 +3051,10 @@ function buildSVG(forExport=false){
 
   // ── AUTO-SCALE: if content overflows midH, scale everything down ────
   // This ensures all content fits regardless of label size
+  // Reserve space for P statements before scaling — they are legally required
+  const pReserve     = midH * 0.10; // reserve 10% of midH for P statements minimum
   const contentTotal = scentActH + typeH + sigH + pictoActH + hActH + sensActH + gap;
-  const scaleFactor  = contentTotal > midH * 0.96 ? (midH * 0.96) / contentTotal : 1.0;
+  const scaleFactor  = contentTotal > midH * 0.86 ? (midH * 0.86) / contentTotal : 1.0;
   // Apply scale factor to all heights and font sizes
   const _sf = scaleFactor;
   // Recompute curY with scaled heights
@@ -3169,7 +3207,7 @@ function buildSVG(forExport=false){
   ${isCircle
     ? svgArcText(scent, cx, cy, arcScentR, arcScentFS, true, txtCol)
     : svgWrapped(scentLines,cx,_scentY2,_scentLH2,scentFS,true,true,txtCol)}
-  ${svgWrapped([bizName],cx,bizY,_scentLH2||bizFS,bizFS,true,true,txtCol)}
+  ${svgWrapped([bizName],cx,bizY,bizFS*1.2,bizFS,true,true,txtCol)}
   ${webLine?`<text x="${cx}" y="${webY.toFixed(1)}" font-family="sans-serif" font-size="${webFS.toFixed(2)}" fill="${mutedCol}" text-anchor="middle" dominant-baseline="middle">${xe(webLine)}</text>`:''}
 
   <!-- PRODUCT TYPE -->
