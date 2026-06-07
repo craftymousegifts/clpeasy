@@ -482,7 +482,7 @@ const STORIES = [
    tasks:['Select 3 makers from existing network: Roy Rossello, Susan Park, Lisa Solares','Send personal invite emails on 1 June with direct link to clpeasy.com/auth','Set beta_expires = 2026-06-30 and is_pro = true in Supabase profiles table for each tester after they sign up','Confirm beta-feedback.html has 7 questions, is connected to Supabase beta_feedback table, and is set to noindex','Monitor Supabase dashboard for sign-up activity — check profiles table for their email addresses'],
    ac:['All 3 testers have received personal invite emails','Roy Rossello confirmed signed up — row visible in Supabase profiles','Susan Park and Lisa Solares sign-up confirmed before 15 June','At least 1 completed beta feedback form received and stored in Supabase beta_feedback table','No critical P1 bugs reported that are unresolved before launch']},
 
-  {id:'MKT-02',epic:'Marketing',pri:1,pts:1,status:'IN REVIEW',sprint:'S0',
+  {id:'MKT-02',epic:'Marketing',pri:1,pts:1,status:'DONE',sprint:'S0',
    title:'Chase Beta Testers — Susan and Lisa',
    what:'Following up with Susan Park and Lisa Solares to confirm they have signed up. If they have not, sending them a direct personal email with the auth link and a brief explanation of what to test.',
    why:'Without at least 2 of 3 beta testers active, the feedback data is too thin to validate the product before launch.',
@@ -515,10 +515,10 @@ const STORIES = [
    ac:['Posts written, proofread, and reviewed for all 3 platforms','All posts scheduled for 9am BST 15 June — confirmed in scheduler','All links in posts confirmed working and pointing to live pages','Scotland World Cup tie-in included in at least Facebook and Instagram','No typos, broken links, or placeholder text in any post']},
 
   {id:'MKT-06',epic:'Marketing',pri:2,pts:1,status:'TODO',sprint:'S0',
-   title:'Launch Day Email to Waiting List',
-   what:'A Brevo email campaign to the CLPeasy waiting list scheduled for 9am BST 15 June, announcing that CLPeasy is live and inviting people to try the label builder.',
+   title:'Launch Day Email to Brevo List',
+   what:'A Brevo email campaign to the CLPeasy contact list in Brevo, scheduled for 9am BST 15 June, announcing that CLPeasy is live and inviting people to try the label builder.',
    why:'The waiting list is the warmest possible audience. This is the first place launch traffic comes from.',
-   story:'As a business I need a launch announcement email scheduled to send to the waiting list at 9am on 15 June.',
+   story:'As a business I need a launch announcement email scheduled to send to the Brevo contact list at 9am on 15 June.',
    tasks:['Draft launch email in Brevo campaign editor — do not use the automation, this is a one-off broadcast campaign','Subject line: "CLPeasy is live — build your first CLP label in minutes"','Body: brief welcome paragraph, prominent "Build my first label" CTA button linking to builder.html, pricing page link, optional limited-time offer if applicable, short founder personal note','Schedule campaign for 9am BST 15 June','Send a test email to support@clpeasy.com and confirm it renders correctly on mobile and desktop','Check all links work and unsubscribe link is present'],
    ac:['Email renders correctly on mobile and desktop in Brevo preview','All CTA links confirmed working and pointing to correct pages','Campaign scheduled for 9am BST 15 June','Test email received at support@clpeasy.com with no spam flag','Unsubscribe link present and functional in email footer']},
 
