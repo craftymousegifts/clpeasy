@@ -174,13 +174,17 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#0d1b2a;color:#c8dde8
 <!-- APP -->
 <div id="app">
   <div class="hdr">
-    <div class="hdr-inner" style="gap:12px">
+    <div class="hdr-inner" style="gap:12px;width:100%;align-items:center;">
       <div style="flex-shrink:0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 80" style="width:147px;height:56px;display:block;">
   <circle cx="40" cy="40" r="38" fill="#4C9BB0"/>
   <text x="40" y="47" font-family="DM Sans,Arial,sans-serif" font-weight="900" font-size="22" fill="#ffffff" text-anchor="middle" letter-spacing="-0.5">CLP</text>
   <text x="128" y="52" font-family="DM Sans,Arial,sans-serif" font-weight="400" font-size="38" fill="#4C9BB0" text-anchor="middle" letter-spacing="-1">easy</text>
 </svg></div>
       <div class="hdr-sub" style="color:#4C9BB0;font-size:10px">15 June 2026 · <span id="daysLeft"></span> days to launch</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+        <span id="save-indicator" style="font-size:10px;color:#27ae60;opacity:0;transition:opacity 0.3s;font-weight:700;">✓ Saved</span>
+        <button onclick="saveTaskDone()" style="background:#1e3048;border:1px solid #4C9BB0;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:700;color:#4C9BB0;cursor:pointer;font-family:inherit;white-space:nowrap;">💾 Save</button>
+      </div>
     </div>
   </div>
 
@@ -584,7 +588,14 @@ let currentTab = 'board';
 let laneStatus = {};   // storyId → 'todo'|'doing'|'done'
 let taskDone   = {};   // storyId+'-'+taskIdx → bool
 function loadTaskDone(){try{return JSON.parse(localStorage.getItem('clpeasy_scrum_tasks')||'{}');}catch(e){return{};}}
-function saveTaskDone(){try{localStorage.setItem('clpeasy_scrum_tasks',JSON.stringify(taskDone));}catch(e){}}
+function saveTaskDone(){
+  try{
+    localStorage.setItem('clpeasy_scrum_tasks',JSON.stringify(taskDone));
+    // Visual confirmation
+    const ind = document.getElementById('save-indicator');
+    if(ind){ind.style.opacity='1';clearTimeout(ind._t);ind._t=setTimeout(()=>ind.style.opacity='0',1800);}
+  }catch(e){console.warn('Save failed',e);}
+}
 taskDone = loadTaskDone();
 let filterEpic = 'ALL';
 let filterStat = 'ALL';
