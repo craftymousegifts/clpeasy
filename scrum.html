@@ -174,31 +174,42 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#0d1b2a;color:#c8dde8
 <!-- APP -->
 <div id="app">
   <div class="hdr">
-    <div class="hdr-inner" style="gap:12px">
+    <div class="hdr-inner" style="gap:12px;width:100%;align-items:center;">
       <div style="flex-shrink:0"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 80" style="width:147px;height:56px;display:block;">
   <circle cx="40" cy="40" r="38" fill="#4C9BB0"/>
   <text x="40" y="47" font-family="DM Sans,Arial,sans-serif" font-weight="900" font-size="22" fill="#ffffff" text-anchor="middle" letter-spacing="-0.5">CLP</text>
   <text x="128" y="52" font-family="DM Sans,Arial,sans-serif" font-weight="400" font-size="38" fill="#4C9BB0" text-anchor="middle" letter-spacing="-1">easy</text>
 </svg></div>
       <div class="hdr-sub" style="color:#4C9BB0;font-size:10px">15 June 2026 · <span id="daysLeft"></span> days to launch</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
+        <span id="save-indicator" style="font-size:10px;color:#27ae60;opacity:0;transition:opacity 0.3s;font-weight:700;">✓ Saved</span>
+        <button onclick="saveTaskDone();saveStoryStatuses();toast('💾 All progress saved')" style="background:#1e3048;border:1px solid #4C9BB0;border-radius:6px;padding:5px 10px;font-size:10px;font-weight:700;color:#4C9BB0;cursor:pointer;font-family:inherit;white-space:nowrap;">💾 Save</button>
+      </div>
     </div>
   </div>
 
   <div class="prog-wrap">
     <div class="prog-card">
+      <!-- GO/NO GO banner -->
+      <div id="goNoGo" style="border-radius:8px;padding:10px 14px;margin-bottom:10px;text-align:center;font-weight:900;font-size:14px;letter-spacing:0.5px;"></div>
+      <!-- Progress row -->
       <div class="prog-top">
-        <span>Project Status — <span id="totalStories"></span> stories</span>
+        <span style="font-size:11px;">Pre-launch · <span id="totalStories"></span></span>
         <span class="prog-pct" id="pctDone">0%</span>
       </div>
       <div class="prog-bar" id="progBar"></div>
       <div class="prog-legend" id="progLegend"></div>
+      <!-- Urgency + active items -->
+      <div id="urgencyBar" style="margin-top:10px;"></div>
+      <div id="activeList" style="margin-top:8px;"></div>
     </div>
   </div>
 
   <div class="nav-tabs" id="navTabs">
     <button class="ntab active" onclick="goTab('board')">📋 Board</button>
     <button class="ntab" onclick="goTab('backlog')">🗂 Backlog</button>
-    <button class="ntab" onclick="goTab('sprint0')">🚀 Pre-Launch</button>
+    <button class="ntab" onclick="goTab('launchday')">🚀 Launch Day</button>
+    <button class="ntab" onclick="goTab('sprint0')">Pre-Launch</button>
     <button class="ntab" onclick="goTab('sprint1')">⚡ Sprint 1</button>
     <button class="ntab" onclick="goTab('sprint2')">🔮 Sprint 2</button>
   </div>
@@ -211,9 +222,9 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#0d1b2a;color:#c8dde8
 <div class="bnav">
   <button class="bnav-btn active" id="bn-board" onclick="goTab('board')"><span>📋</span><span>Board</span></button>
   <button class="bnav-btn" id="bn-backlog" onclick="goTab('backlog')"><span>🗂</span><span>Backlog</span></button>
-  <button class="bnav-btn" id="bn-sprint0" onclick="goTab('sprint0')"><span>🚀</span><span>Pre-Launch</span></button>
-  <button class="bnav-btn" id="bn-sprint1" onclick="goTab('sprint1')"><span>⚡</span><span>Sprint 1</span></button>
-  <button class="bnav-btn" id="bn-sprint2" onclick="goTab('sprint2')"><span>🔮</span><span>Sprint 2</span></button>
+  <button class="bnav-btn" id="bn-launchday" onclick="goTab('launchday')"><span>🚀</span><span>Launch</span></button>
+  <button class="bnav-btn" id="bn-sprint0" onclick="goTab('sprint0')"><span>📋</span><span>S0</span></button>
+  <button class="bnav-btn" id="bn-sprint1" onclick="goTab('sprint1')"><span>⚡</span><span>S1</span></button>
 </div>
 
 <script>
@@ -482,7 +493,7 @@ const STORIES = [
    tasks:['Select 3 makers from existing network: Roy Rossello, Susan Park, Lisa Solares','Send personal invite emails on 1 June with direct link to clpeasy.com/auth','Set beta_expires = 2026-06-30 and is_pro = true in Supabase profiles table for each tester after they sign up','Confirm beta-feedback.html has 7 questions, is connected to Supabase beta_feedback table, and is set to noindex','Monitor Supabase dashboard for sign-up activity — check profiles table for their email addresses'],
    ac:['All 3 testers have received personal invite emails','Roy Rossello confirmed signed up — row visible in Supabase profiles','Susan Park and Lisa Solares sign-up confirmed before 15 June','At least 1 completed beta feedback form received and stored in Supabase beta_feedback table','No critical P1 bugs reported that are unresolved before launch']},
 
-  {id:'MKT-02',epic:'Marketing',pri:1,pts:1,status:'IN REVIEW',sprint:'S0',
+  {id:'MKT-02',epic:'Marketing',pri:1,pts:1,status:'DONE',sprint:'S0',
    title:'Chase Beta Testers — Susan and Lisa',
    what:'Following up with Susan Park and Lisa Solares to confirm they have signed up. If they have not, sending them a direct personal email with the auth link and a brief explanation of what to test.',
    why:'Without at least 2 of 3 beta testers active, the feedback data is too thin to validate the product before launch.',
@@ -506,7 +517,7 @@ const STORIES = [
    tasks:['Filed UK TM application 31 May 2026 under Class 42 — software services','Reference number: UK00004395085','Renewal due: 31 May 2036 — 10 years','Apply CLPeasy™ symbol to: home.html, pricing.html, builder.html, all legal pages, email footers','Add TM registration card to monitor.html with 10-year countdown to renewal date','Note TM renewal date in business calendar with a reminder set for May 2036'],
    ac:['TM application confirmed filed — reference number UK00004395085 recorded','CLPeasy™ symbol present on home, pricing, builder, and all legal pages','TM renewal date 31 May 2036 noted in business calendar','monitor.html TM card shows correct days-until-renewal countdown']},
 
-  {id:'MKT-05',epic:'Marketing',pri:1,pts:2,status:'TODO',sprint:'S0',
+  {id:'MKT-05',epic:'Marketing',pri:1,pts:2,status:'DONE',sprint:'S0',
    title:'Launch Day Social Media Posts',
    what:'Writing and scheduling launch announcement posts for Facebook, Instagram, and TikTok to go live at 9am BST on 15 June — the Scotland World Cup special bank holiday. Includes a Scotland tie-in angle.',
    why:'Launch day posts need to be ready and scheduled the night before so nothing is left to chance on the morning when attention is on the Stripe key swap and ICO registration.',
@@ -515,10 +526,10 @@ const STORIES = [
    ac:['Posts written, proofread, and reviewed for all 3 platforms','All posts scheduled for 9am BST 15 June — confirmed in scheduler','All links in posts confirmed working and pointing to live pages','Scotland World Cup tie-in included in at least Facebook and Instagram','No typos, broken links, or placeholder text in any post']},
 
   {id:'MKT-06',epic:'Marketing',pri:2,pts:1,status:'TODO',sprint:'S0',
-   title:'Launch Day Email to Waiting List',
-   what:'A Brevo email campaign to the CLPeasy waiting list scheduled for 9am BST 15 June, announcing that CLPeasy is live and inviting people to try the label builder.',
+   title:'Launch Day Email to Brevo List',
+   what:'A Brevo email campaign to the CLPeasy contact list in Brevo, scheduled for 9am BST 15 June, announcing that CLPeasy is live and inviting people to try the label builder.',
    why:'The waiting list is the warmest possible audience. This is the first place launch traffic comes from.',
-   story:'As a business I need a launch announcement email scheduled to send to the waiting list at 9am on 15 June.',
+   story:'As a business I need a launch announcement email scheduled to send to the Brevo contact list at 9am on 15 June.',
    tasks:['Draft launch email in Brevo campaign editor — do not use the automation, this is a one-off broadcast campaign','Subject line: "CLPeasy is live — build your first CLP label in minutes"','Body: brief welcome paragraph, prominent "Build my first label" CTA button linking to builder.html, pricing page link, optional limited-time offer if applicable, short founder personal note','Schedule campaign for 9am BST 15 June','Send a test email to support@clpeasy.com and confirm it renders correctly on mobile and desktop','Check all links work and unsubscribe link is present'],
    ac:['Email renders correctly on mobile and desktop in Brevo preview','All CTA links confirmed working and pointing to correct pages','Campaign scheduled for 9am BST 15 June','Test email received at support@clpeasy.com with no spam flag','Unsubscribe link present and functional in email footer']},
 
@@ -584,8 +595,31 @@ let currentTab = 'board';
 let laneStatus = {};   // storyId → 'todo'|'doing'|'done'
 let taskDone   = {};   // storyId+'-'+taskIdx → bool
 function loadTaskDone(){try{return JSON.parse(localStorage.getItem('clpeasy_scrum_tasks')||'{}');}catch(e){return{};}}
-function saveTaskDone(){try{localStorage.setItem('clpeasy_scrum_tasks',JSON.stringify(taskDone));}catch(e){}}
+
+function saveStoryStatuses(){
+  var statuses = {};
+  STORIES.forEach(function(s){ statuses[s.id] = s.status; });
+  try{localStorage.setItem('clpeasy_scrum_statuses', JSON.stringify(statuses));}catch(e){}
+}
+
+function loadStoryStatuses(){
+  try{
+    var saved = JSON.parse(localStorage.getItem('clpeasy_scrum_statuses')||'{}');
+    STORIES.forEach(function(s){
+      if(saved[s.id]) s.status = saved[s.id];
+    });
+  }catch(e){}
+}
+function saveTaskDone(){
+  try{
+    localStorage.setItem('clpeasy_scrum_tasks',JSON.stringify(taskDone));
+    // Visual confirmation
+    const ind = document.getElementById('save-indicator');
+    if(ind){ind.style.opacity='1';clearTimeout(ind._t);ind._t=setTimeout(()=>ind.style.opacity='0',1800);}
+  }catch(e){console.warn('Save failed',e);}
+}
 taskDone = loadTaskDone();
+loadStoryStatuses();
 let filterEpic = 'ALL';
 let filterStat = 'ALL';
 let modalId    = null;
@@ -655,19 +689,21 @@ function renderProg() {
 // ── TAB NAVIGATION ────────────────────────────────────────────────────────────
 function goTab(tab) {
   currentTab = tab;
-  document.querySelectorAll('.ntab').forEach((b,i) => b.classList.toggle('active', ['board','backlog','sprint0','sprint1','sprint2'][i] === tab));
-  document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
-  const bn = document.getElementById('bn-' + tab);
+  var tabs = ['board','backlog','launchday','sprint0','sprint1','sprint2'];
+  document.querySelectorAll('.ntab').forEach(function(b,i){ b.classList.toggle('active', tabs[i] === tab); });
+  document.querySelectorAll('.bnav-btn').forEach(function(b){ b.classList.remove('active'); });
+  var bn = document.getElementById('bn-' + tab);
   if (bn) bn.classList.add('active');
   renderTab(tab);
 }
 
 function renderTab(tab) {
-  if (tab === 'board')   renderBoard();
-  else if (tab === 'backlog') renderBacklog();
-  else if (tab === 'sprint0') renderSprintDetail('S0');
-  else if (tab === 'sprint1') renderSprintDetail('S1');
-  else if (tab === 'sprint2') renderSprintDetail('S2');
+  if (tab === 'board')       renderBoard();
+  else if (tab === 'backlog')    renderBacklog();
+  else if (tab === 'launchday') renderLaunchDay();
+  else if (tab === 'sprint0')   renderSprintDetail('S0');
+  else if (tab === 'sprint1')   renderSprintDetail('S1');
+  else if (tab === 'sprint2')   renderSprintDetail('S2');
 }
 
 // ── STORY CARD (full detail) ──────────────────────────────────────────────────
@@ -763,9 +799,11 @@ function cycleStatus(sid, e) {
     else if (s.status === 'IN REVIEW') laneStatus[sid] = 'doing';
     else laneStatus[sid] = 'todo';
   }
-  const el = document.getElementById('sc-' + sid);
-  if (el) el.outerHTML = storyCard(s);
+  saveTaskDone();
+  saveStoryStatuses();
   renderProg();
+  // Re-render the whole board so card moves to correct section
+  renderTab(currentTab);
   toast(sid + ' → ' + s.status);
 }
 
@@ -819,13 +857,70 @@ function closeModal() {
   modalId = null;
 }
 
+
+// ── LAUNCH DAY TAB ────────────────────────────────────────────────────────────
+function renderLaunchDay() {
+  var LAUNCH_CHECKS = [
+    { id:'lc01', time:'07:00', cat:'Legal',    title:'Register with ICO',             detail:'Go to ico.org.uk/for-organisations/data-protection-fee/ · Complete self-assessment · Pay £40 · Record your registration number · Add to privacy.html' },
+    { id:'lc02', time:'07:30', cat:'Payments', title:'Swap Stripe sandbox → live keys', detail:'Replace pk_test_ with pk_live_ in pricing.html and builder.html · Update STRIPE_SECRET_KEY to sk_live_ in Supabase secrets · Update STRIPE_WEBHOOK_SECRET to live whsec_ · Redeploy create-checkout-session and stripe-webhook edge functions' },
+    { id:'lc03', time:'08:00', cat:'Payments', title:'Process one real £1 test charge', detail:'Use a real card · Confirm charge appears in Stripe live dashboard · Confirm subscription row created in Supabase · Confirm webhook received and processed' },
+    { id:'lc04', time:'08:30', cat:'Deploy',   title:'Swap index.html to home.html',   detail:'Remove or rename the coming soon index.html · home.html becomes the entry point · Push to main · Confirm clpeasy.com loads the full site' },
+    { id:'lc05', time:'08:45', cat:'Test',     title:'Full site walkthrough on iPhone', detail:'Sign up with a new email · Complete a label · Download PNG · Check EN 15494 icons visible · Check GHS diamonds visible · Confirm batch number saved' },
+    { id:'lc06', time:'09:00', cat:'Marketing', title:'Launch social posts go live',    detail:'Confirm Buffer/Later scheduled posts fire at 9am BST · Check Facebook · Check Instagram · Check TikTok · All links working' },
+    { id:'lc07', time:'09:00', cat:'Marketing', title:'Send launch email to Brevo list', detail:'Go to Brevo campaigns · Confirm scheduled send fires at 9am BST · Check test email received correctly · Monitor open rate' },
+    { id:'lc08', time:'09:15', cat:'Monitor',  title:'Open monitor.html — watch signups', detail:'Open clpeasy.com/monitor.html · Watch live signup count · Monitor Stripe dashboard for first real subscriptions · Check Supabase Auth for new users' },
+    { id:'lc09', time:'10:00', cat:'Legal',    title:'Confirm ICO registration received', detail:'Check email for ICO registration number · Add registration number to privacy.html · Commit and push' },
+    { id:'lc10', time:'All day', cat:'Support', title:'Monitor support@clpeasy.com',   detail:'Check email regularly · Respond to any issues within 2 hours · Log any bugs found for Sprint 1' },
+  ];
+
+  var catColors = { Legal:'#e67e22', Payments:'#27ae60', Deploy:'#4C9BB0', Test:'#8e44ad', Marketing:'#c0392b', Monitor:'#2980b9', Support:'#7f8c8d' };
+
+  var h = '<div style="background:#111d2c;border:1px solid #1e3048;border-top:3px solid #e74c3c;border-radius:12px;padding:14px;margin-bottom:12px;">';
+  h += '<div style="font-size:13px;font-weight:900;color:#e74c3c;margin-bottom:4px;">🚀 15 JUNE 2026 — LAUNCH DAY CHECKLIST</div>';
+  h += '<div style="font-size:10px;color:#7a9fb5;">Execute in order. Do not skip steps. PAY-04 (Stripe go-live) and LEG-02 (ICO) must complete before announcing launch.</div>';
+  h += '</div>';
+
+  LAUNCH_CHECKS.forEach(function(item, idx) {
+    var saved = taskDone['launch-' + item.id];
+    var col = catColors[item.cat] || '#4C9BB0';
+    h += '<div id="lc-'+item.id+'" style="background:#111d2c;border:1px solid #1e3048;border-left:4px solid '+col+';border-radius:10px;margin-bottom:8px;overflow:hidden;">';
+    h += '<div style="padding:12px 14px;display:flex;align-items:flex-start;gap:10px;">';
+    h += '<span style="font-size:20px;cursor:pointer;flex-shrink:0;margin-top:2px;" onclick="toggleLaunchCheck(LAUNCH_CHECKS['+idx+'].id)">'+(saved?'✅':'⬜')+'</span>';
+    h += '<div style="flex:1;">';
+    h += '<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;">';
+    h += '<span style="font-size:9px;font-weight:800;color:'+col+';background:'+col+'22;border-radius:4px;padding:2px 6px;">'+item.cat.toUpperCase()+'</span>';
+    h += '<span style="font-size:9px;color:#4a6580;font-weight:700;">'+item.time+' BST</span>';
+    h += '</div>';
+    h += '<div style="font-size:13px;font-weight:800;color:'+(saved?'#4a6580':'#e8f4f8')+';'+(saved?'text-decoration:line-through;':'')+'">'+item.title+'</div>';
+    h += '<div style="font-size:10px;color:#7a9fb5;margin-top:4px;line-height:1.6;">'+item.detail+'</div>';
+    h += '</div></div></div>';
+  });
+
+  var doneCount = LAUNCH_CHECKS.filter(function(i){ return taskDone['launch-'+i.id]; }).length;
+  h += '<div style="background:#0a1520;border:1px solid #1e3048;border-radius:10px;padding:10px 14px;margin-top:4px;text-align:center;">';
+  h += '<span style="font-size:12px;font-weight:800;color:'+(doneCount===LAUNCH_CHECKS.length?'#27ae60':'#4a6580')+';">'+doneCount+'/'+LAUNCH_CHECKS.length+' launch tasks complete</span>';
+  h += '</div>';
+
+  document.getElementById('content').innerHTML = h;
+}
+
+function toggleLaunchCheck(id) {
+  var key = 'launch-' + id;
+  taskDone[key] = !taskDone[key];
+  saveTaskDone();
+  renderLaunchDay();
+  toast(taskDone[key] ? '✅ Launch task done' : '⬜ Unmarked');
+}
+
 // ── BOARD TAB ─────────────────────────────────────────────────────────────────
 function renderBoard() {
   let h = '';
 
-  // Only show TODO and IN REVIEW — the live action items
-  const todo   = STORIES.filter(s => s.sprint === 'S0' && s.status === 'TODO').sort((a,b) => a.pri - b.pri);
-  const review = STORIES.filter(s => s.sprint === 'S0' && s.status === 'IN REVIEW').sort((a,b) => a.pri - b.pri);
+  const todo     = STORIES.filter(s => s.sprint === 'S0' && s.status === 'TODO').sort((a,b) => a.pri - b.pri);
+  const review   = STORIES.filter(s => s.sprint === 'S0' && s.status === 'IN REVIEW').sort((a,b) => a.pri - b.pri);
+  const done     = STORIES.filter(s => s.sprint === 'S0' && s.status === 'DONE');
+  const blocked  = STORIES.filter(s => s.sprint === 'S0' && s.status === 'BLOCKED');
+  const post     = STORIES.filter(s => s.sprint === 'S1' || s.sprint === 'S2' || !s.sprint);
 
   if (!todo.length && !review.length) {
     h += `<div style="background:#111d2c;border:1px solid #27ae60;border-radius:12px;padding:24px;text-align:center;margin-bottom:12px">
@@ -835,64 +930,72 @@ function renderBoard() {
     </div>`;
   }
 
+  // ── TO DO ──────────────────────────────────────────────────────────────────
   if (todo.length) {
     h += sectionHeader('○ To Do — Action Required', todo.length + ' items need starting', '#4a6580');
     todo.forEach(s => { h += storyCard(s); });
   }
 
+  // ── IN REVIEW ──────────────────────────────────────────────────────────────
   if (review.length) {
     h += sectionHeader('⏳ In Review — Needs Final Check', review.length + ' items to confirm', '#e67e22');
     review.forEach(s => { h += storyCard(s); });
   }
 
-  // Everything else collapsed — done, launch day, post-launch — all filed away
-  const filed = [
-    ...STORIES.filter(s => s.sprint === 'S0' && s.status === 'BLOCKED'),
-    ...STORIES.filter(s => s.sprint === 'S0' && s.status === 'DONE'),
-    ...STORIES.filter(s => s.sprint === 'S1' || s.sprint === 'S2' || !s.sprint),
-  ];
-
-  const filedDone    = STORIES.filter(s => s.sprint === 'S0' && s.status === 'DONE').length;
-  const filedBlocked = STORIES.filter(s => s.sprint === 'S0' && s.status === 'BLOCKED').length;
-  const filedPost    = STORIES.filter(s => s.sprint === 'S1' || s.sprint === 'S2' || !s.sprint).length;
-
-  h += `<div style="margin-top:10px">
-    <button onclick="toggleArchive()"
-      style="width:100%;background:#0a1520;border:1px solid #1e3048;border-radius:10px;
-             padding:12px 16px;font-size:12px;font-weight:800;cursor:pointer;
-             font-family:inherit;display:flex;justify-content:space-between;align-items:center;color:#4a6580;">
-      <div style="text-align:left">
-        <div>📁 All Other Items — Collapsed</div>
-        <div style="font-size:9px;font-weight:600;margin-top:3px;color:#2d4a5e">
-          ✓ ${filedDone} completed · ⛔ ${filedBlocked} launch day · 🔮 ${filedPost} post-launch
-        </div>
-      </div>
-      <span id="archiveChevron" style="font-size:16px;color:#2d4a5e">▸</span>
+  // ── DONE — collapsible ─────────────────────────────────────────────────────
+  h += `<div style="margin-top:12px">
+    <button onclick="toggleSection('doneSection','doneChev')"
+      style="width:100%;background:#0d2218;border:1px solid #27ae6044;border-radius:10px;
+             padding:11px 16px;font-size:12px;font-weight:800;cursor:pointer;
+             font-family:inherit;display:flex;justify-content:space-between;align-items:center;color:#27ae60;">
+      <div>✓ Completed — ${done.length} items done</div>
+      <span id="doneChev">▸</span>
     </button>
-    <div id="archiveSection" style="display:none;margin-top:6px">
+    <div id="doneSection" style="display:none;margin-top:6px">
+      ${done.map(s => storyCard(s)).join('')}
+    </div>
+  </div>`;
 
-      ${filedBlocked > 0 ? `<div style="background:#0a1520;border:1px solid #e74c3c33;border-left:4px solid #e74c3c;border-radius:10px;padding:10px 14px;margin-bottom:8px">
-        <div style="font-size:12px;font-weight:900;color:#e74c3c">⛔ Launch Day — Execute on 15 June Only</div>
-        <div style="font-size:10px;color:#7a9fb5;margin-top:2px">Do not touch until launch morning</div>
+  // ── LAUNCH DAY — collapsible ───────────────────────────────────────────────
+  if (blocked.length) {
+    h += `<div style="margin-top:8px">
+      <button onclick="toggleSection('blockedSection','blockedChev')"
+        style="width:100%;background:#1a0a0a;border:1px solid #e74c3c44;border-radius:10px;
+               padding:11px 16px;font-size:12px;font-weight:800;cursor:pointer;
+               font-family:inherit;display:flex;justify-content:space-between;align-items:center;color:#e74c3c;">
+        <div>⛔ Launch Day Only — ${blocked.length} items · execute 15 June</div>
+        <span id="blockedChev">▸</span>
+      </button>
+      <div id="blockedSection" style="display:none;margin-top:6px">
+        ${blocked.map(s => storyCard(s)).join('')}
       </div>
-      ${STORIES.filter(s => s.sprint === 'S0' && s.status === 'BLOCKED').map(s => storyCard(s)).join('')}` : ''}
+    </div>`;
+  }
 
-      ${filedDone > 0 ? `<div style="background:#0a1520;border:1px solid #27ae6033;border-left:4px solid #27ae60;border-radius:10px;padding:10px 14px;margin-bottom:8px;margin-top:8px">
-        <div style="font-size:12px;font-weight:900;color:#27ae60">✓ Completed Pre-Launch Items</div>
-        <div style="font-size:10px;color:#7a9fb5;margin-top:2px">${filedDone} items done and filed</div>
-      </div>
-      ${STORIES.filter(s => s.sprint === 'S0' && s.status === 'DONE').map(s => storyCard(s)).join('')}` : ''}
-
-      ${filedPost > 0 ? `<div style="background:#0a1520;border:1px dashed #1e3048;border-radius:10px;padding:10px 14px;margin-bottom:8px;margin-top:8px">
-        <div style="font-size:12px;font-weight:900;color:#7f8c8d">🔮 Post-Launch Backlog (Sprint 1 &amp; 2)</div>
-        <div style="font-size:10px;color:#4a6580;margin-top:2px">${filedPost} stories queued for after 15 June</div>
-      </div>
-      ${STORIES.filter(s => s.sprint === 'S1' || s.sprint === 'S2' || !s.sprint).sort((a,b)=>a.pri-b.pri).map(s => storyCard(s)).join('')}` : ''}
-
+  // ── POST-LAUNCH — collapsible ──────────────────────────────────────────────
+  h += `<div style="margin-top:8px;margin-bottom:4px">
+    <button onclick="toggleSection('postSection','postChev')"
+      style="width:100%;background:#0a0a1a;border:1px dashed #1e3048;border-radius:10px;
+             padding:11px 16px;font-size:12px;font-weight:800;cursor:pointer;
+             font-family:inherit;display:flex;justify-content:space-between;align-items:center;color:#4a6580;">
+      <div>🔮 Post-Launch Backlog — ${post.length} items after 15 June</div>
+      <span id="postChev">▸</span>
+    </button>
+    <div id="postSection" style="display:none;margin-top:6px">
+      ${post.sort((a,b)=>a.pri-b.pri).map(s => storyCard(s)).join('')}
     </div>
   </div>`;
 
   document.getElementById('content').innerHTML = h;
+}
+
+function toggleSection(sectionId, chevId) {
+  const sec  = document.getElementById(sectionId);
+  const chev = document.getElementById(chevId);
+  if (!sec) return;
+  const open = sec.style.display !== 'none';
+  sec.style.display = open ? 'none' : 'block';
+  if (chev) chev.textContent = open ? '▸' : '▾';
 }
 
 function sectionHeader(title, sub, color) {
@@ -978,4 +1081,4 @@ function setStatF(s) { filterStat = s; renderBacklog(); }
 </script>
 
 </body>
-</html>
+    h += '<span data-lcid="'+item.id+'" style="font-size:20px;cursor:pointer;flex-shrink:0;margin-top:2px;" onclick="toggleLaunchCheck(this.dataset.lcid)">'+(saved?'\u2705':'\u2B1C')+'</span>';
