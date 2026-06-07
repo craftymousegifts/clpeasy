@@ -592,11 +592,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <div class="sdiv">Preset sizes</div>
     <div class="size-grid">
-      <div class="size-card selected" data-size="35" onclick="selectSize(35)"><div class="sz">35mm</div><div class="sz-label">Wax Melt ⚠</div></div>
+      <div class="size-card" data-size="35" onclick="selectSize(35)"><div class="sz">35mm</div><div class="sz-label">Wax Melt ⚠</div></div>
       <div class="size-card" data-size="40" onclick="selectSize(40)"><div class="sz">40mm</div><div class="sz-label">Small Candle ⚠</div></div>
       <div class="size-card" data-size="50" onclick="selectSize(50)"><div class="sz">50mm</div><div class="sz-label">Standard Candle ⚠</div></div>
       <div class="size-card" data-size="63" onclick="selectSize(63)"><div class="sz">63mm</div><div class="sz-label">Large Jar ✓</div></div>
-      <div class="size-card" data-size="custom" onclick="selectSize('custom')"><div class="sz" style="font-size:14px">Custom</div><div class="sz-label">Your own size</div></div>
+      <div class="size-card selected" data-size="custom" onclick="selectSize('custom')"><div class="sz" style="font-size:14px">Custom</div><div class="sz-label">Your own size</div></div>
     </div>
     <div class="sdiv">Dimensions (mm)</div>
     <div class="custom-dims">
@@ -1100,7 +1100,7 @@ function ghsPicto(key, cx, cy, size) {
 
 
 // ── STATE ─────────────────────────────────────────────────────
-const S={step:1,shape:'circle',size:35,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,libraryLocked:false};
+const S={step:1,shape:'circle',size:'custom',customW:52,customH:52,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,libraryLocked:false};
 
 // ── PRODUCT TYPE GUIDANCE ─────────────────────────────────────
 const FRAG_LOAD_TIPS={
@@ -2278,9 +2278,11 @@ function init(){
   // productType not restored — always starts at placeholder
   // Clear label-specific fields — always start fresh
   try{const _p=JSON.parse(localStorage.getItem('clpeasy_prod')||'{}');delete _p.productType;delete _p.netWeight;delete _p.burnTime;delete _p.fragLoad;localStorage.setItem('clpeasy_prod',JSON.stringify(_p));}catch(e){}
-  syncDimFields();updateLabel();
-  document.getElementById('custom-w').value=35;
-  document.getElementById('custom-h').value=35;
+  selectSize('custom');
+  document.getElementById('custom-w').value=52;
+  document.getElementById('custom-h').value=52;
+  S.customW=52; S.customH=52;
+  syncDimFields();checkCLPSizeWarn();updateLabel();
   renderSaved();
   // Ensure hazard data is always clear on page load — never cached
   S.signal=''; S.pictograms=[]; S.hSelected=[]; S.pSelected=[]; S.sensitisers=[];
