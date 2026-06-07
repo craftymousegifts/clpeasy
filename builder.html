@@ -2978,7 +2978,7 @@ function buildSVG(forExport=false){
 
   // ── Pictogram size — 1cm minimum per CLP ─────────────────────
   const nP         = pictos.length;
-  const minPictoSz = Math.min(Math.max(10 * pxPerMm, 6), midH * 0.18);
+  const minPictoSz = Math.max(10 * pxPerMm, 6); // 10mm hard minimum per CLP
 
   // ── Scent block (rect/square only — circle uses arc) ──────────
   let curY = midY + gap;
@@ -3076,7 +3076,7 @@ function buildSVG(forExport=false){
   curY += _sigH2;
 
   const _pictoActH2 = pictoActH * _sf;
-  const _pictoSz2   = Math.max(pictoSz * _sf, minPictoSz * 0.85); // don't scale below ~8.5mm
+  const _pictoSz2   = Math.max(pictoSz * _sf, minPictoSz); // never scale below 10mm minimum
   const _pictoY2    = curY + _pictoActH2*0.5;
   const _pictoTotW2 = nP*_pictoSz2 + Math.max(0,nP-1)*pictoGap;
   const _pictoSX2   = cx - _pictoTotW2/2 + _pictoSz2/2;
