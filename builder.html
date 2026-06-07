@@ -563,12 +563,18 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       ⚠️ <strong>Important:</strong> CLPeasy generates labels based on the data you enter. You must always verify all hazard information against your fragrance supplier's SDS sheet at your actual fragrance load before printing and selling. You are solely responsible for ensuring your labels are accurate and legally compliant.
     </div>
     <div class="sdiv">Load from your library</div>
+    <div style="background:#fff8e7;border:1px solid #f0c040;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:12px;color:#7a5c00;line-height:1.5;">
+      <strong>⚠ SDS update only.</strong> Load a saved label only if your fragrance supplier's Safety Data Sheet has changed or been updated. Your scent name, product type, and label size will be locked — only the hazard data (Step 3) can be updated. A download credit will be used when you download the amended label.
+    </div>
     <div class="form-group" style="margin-bottom:20px;">
       <select id="load-from-library" onchange="loadFromLibrarySelect(this.value)" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;background:white;cursor:pointer;">
-        <option value="">— Select a saved label to load —</option>
+        <option value="">— Select a saved label to update —</option>
       </select>
     </div>
-    <p class="step-sub">Choose a preset or enter your own dimensions.</p>
+    <div id="lib-lock-banner" style="display:none;background:#fff3cd;border:1px solid #f0ad4e;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#7a5000;line-height:1.5;">
+      🔒 <strong>SDS update mode.</strong> Scent name, product type, and label size are locked. Only hazard data (Step 3) can be changed. <a href="#" onclick="unlockLibraryFields();return false;" style="color:#4C9BB0;font-weight:700;text-decoration:none;">Start a new label instead →</a>
+    </div>
+    <p class="step-sub">Choose a preset or enter your own dimensions. <strong>✓</strong> = meets CLP 52mm minimum · <strong>⚠</strong> = below CLP minimum (still usable for wax melts &amp; small items with fold-out labels)</p>
     <div class="sdiv" style="margin-top:0">Shape</div>
     <div class="shape-grid">
       <div class="shape-card selected" data-shape="circle" onclick="selectShape('circle')">
@@ -586,10 +592,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <div class="sdiv">Preset sizes</div>
     <div class="size-grid">
-      <div class="size-card selected" data-size="35" onclick="selectSize(35)"><div class="sz">35mm</div><div class="sz-label">Wax Melt</div></div>
-      <div class="size-card" data-size="40" onclick="selectSize(40)"><div class="sz">40mm</div><div class="sz-label">Small Candle</div></div>
-      <div class="size-card" data-size="50" onclick="selectSize(50)"><div class="sz">50mm</div><div class="sz-label">Standard Candle</div></div>
-      <div class="size-card" data-size="63" onclick="selectSize(63)"><div class="sz">63mm</div><div class="sz-label">Large Jar</div></div>
+      <div class="size-card selected" data-size="35" onclick="selectSize(35)"><div class="sz">35mm</div><div class="sz-label">Wax Melt ⚠</div></div>
+      <div class="size-card" data-size="40" onclick="selectSize(40)"><div class="sz">40mm</div><div class="sz-label">Small Candle ⚠</div></div>
+      <div class="size-card" data-size="50" onclick="selectSize(50)"><div class="sz">50mm</div><div class="sz-label">Standard Candle ⚠</div></div>
+      <div class="size-card" data-size="63" onclick="selectSize(63)"><div class="sz">63mm</div><div class="sz-label">Large Jar ✓</div></div>
       <div class="size-card" data-size="custom" onclick="selectSize('custom')"><div class="sz" style="font-size:14px">Custom</div><div class="sz-label">Your own size</div></div>
     </div>
     <div class="sdiv">Dimensions (mm)</div>
@@ -597,6 +603,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="form-group"><label>Width (mm)</label><input type="number" id="custom-w" placeholder="e.g. 50" inputmode="numeric" min="10" max="200" oninput="onDimInput()"></div>
       <div class="form-group"><label>Height (mm) <span id="height-note" style="font-weight:400;color:#6B7280;font-size:11px;"></span></label><input type="number" id="custom-h" placeholder="e.g. 40" inputmode="numeric" min="10" max="200" oninput="onDimInput()"></div>
       <div id="custom-size-warn" style="display:none;background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:9px 12px;font-size:12px;color:#92400E;line-height:1.5;grid-column:1/-1;"></div>
+      <div id="clp-size-warn" style="display:none;background:#FEE2E2;border:1px solid #F87171;border-radius:8px;padding:10px 14px;font-size:12px;color:#7F1D1D;line-height:1.5;grid-column:1/-1;">
+        ⚠️ <strong>CLP size warning:</strong> Labels smaller than 52mm × 74mm may not meet the minimum size requirements under CLP Regulation (EC) 1272/2008 for packages up to 3 litres. Your label will still be generated but we recommend using at least <strong>52mm</strong> for full compliance. Consider using a fold-out label for smaller containers.
+      </div>
     </div>
     <div class="sdiv">Label language</div>
     <div class="form-group" style="margin-bottom:12px;">
@@ -783,7 +792,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <label>Batch / Lot number <span>(optional)</span></label>
         <div style="display:flex;gap:8px;">
           <input type="text" id="batch-num" placeholder="e.g. BN-001" oninput="updateLabel()" style="flex:1;" inputmode="numeric"><button type="button" onclick="clearBatchNum()" title="Clear batch number" style="background:white;border:1.5px solid var(--border);color:var(--muted);border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;flex-shrink:0;" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444';" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';">✕</button>
-          <button type="button" onclick="autoIncrementBatch()" style="background:var(--teal-light);border:1.5px solid rgba(13,148,136,0.3);color:var(--teal);border-radius:8px;padding:8px 12px;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0;font-family:'DM Sans',sans-serif;">+1</button>
+          <button type="button" onclick="autoIncrementBatch()" title="Prepare next batch number — will be saved when you download" style="background:var(--teal-light);border:1.5px solid rgba(13,148,136,0.3);color:var(--teal);border-radius:8px;padding:8px 12px;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0;font-family:'DM Sans',sans-serif;">+1</button>
         </div>
         <div style="margin-top:4px;font-size:11px;color:var(--muted);">Last used: <span id="last-batch-display">—</span></div>
       </div>
@@ -810,7 +819,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="step-panel" id="step-5">
     <h2 class="step-heading">Your label is ready!</h2>
     <p class="step-sub">Review your label, then download in your preferred format.</p>
-    <div class="compliance-box"><p>⚠️ <strong>Compliance reminder:</strong> Always verify all hazard data against your fragrance supplier's SDS at your actual fragrance load before printing. You are responsible for final verification.</p></div>
+    <div class="compliance-box"><p>⚠️ <strong>Compliance reminder:</strong> Always verify all hazard data against your fragrance supplier's SDS at your actual fragrance load before printing. You are responsible for final verification. H/P statement mapping compiled from <a href="https://echa.europa.eu/regulations/clp/understanding-clp" target="_blank" rel="noopener" style="color:#4C9BB0;font-weight:600;">ECHA CLP Regulation (EC) No 1272/2008</a>.</p></div>
     <div class="watermark-note">🆓 Free trial — labels include a CLPeasy watermark. <button onclick="window.location.href='pricing.html'" style="background:var(--teal,#4C9BB0);color:white;border:none;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;">Subscribe to remove →</button></div>
     <div style="background:white;border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;">
       <div class="sdiv" style="margin-top:0">Label summary</div>
@@ -825,10 +834,20 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:var(--text);font-weight:500;line-height:1.5;">
         <input type="checkbox" id="verify-checkbox" onchange="toggleDownload()" style="width:18px;height:18px;margin-top:1px;flex-shrink:0;accent-color:var(--teal);">
         I confirm I have verified all hazard data on this label against my fragrance supplier's SDS sheet at my actual fragrance load. I understand I am solely responsible for ensuring this label is accurate and legally compliant before printing and selling.
+        <div style="margin-top:5px;font-size:10px;color:#9ca3af;">Pictogram data: ECHA CLP Regulation (EC) 1272/2008 · EN 15494:2019 · GB CLP (HSE)</div>
       </label>
     </div>
-    <div style="background:#F8FAFC;border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:12px;color:var(--muted);line-height:1.6;">
-      
+    <div style="background:#F0F7FF;border:1px solid #C7DCF0;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:11px;color:#4a6580;line-height:1.7;">
+      <div style="font-weight:700;color:#2d4a6e;margin-bottom:5px;">📋 Data sources &amp; regulatory references</div>
+      CLPeasy generates labels in accordance with the following official regulations and guidance:
+      <ul style="margin:5px 0 5px 16px;padding:0;">
+        <li><strong>CLP Regulation (EC) No 1272/2008</strong> — Classification, Labelling and Packaging of hazardous substances and mixtures. GHS pictogram mapping, signal words, H and P statements. <a href="https://echa.europa.eu/regulations/clp/understanding-clp" target="_blank" rel="noopener" style="color:#4C9BB0;">echa.europa.eu</a></li>
+        <li><strong>GHS Pictograms</strong> — Official hazard symbols as defined by the UN Globally Harmonised System, applied under CLP. <a href="https://echa.europa.eu/regulations/clp/clp-pictograms" target="_blank" rel="noopener" style="color:#4C9BB0;">ECHA CLP Pictograms</a></li>
+        <li><strong>EN 15494:2019</strong> — Candle product safety labels (GPSR pictograms). Mandatory safety symbols sourced from the British Candlemakers Foundation. <a href="https://www.britishcandles.org/?pages_id=23" target="_blank" rel="noopener" style="color:#4C9BB0;">britishcandles.org</a></li>
+        <li><strong>UK CLP (GB)</strong> — GB retained law equivalent of EU CLP, administered by HSE. <a href="https://www.hse.gov.uk/chemical-classification/legal/clp-regulation.htm" target="_blank" rel="noopener" style="color:#4C9BB0;">hse.gov.uk</a></li>
+        <li><strong>UFI codes</strong> — Unique Formula Identifier per CLP Annex VIII (EU/NI). <a href="https://echa.europa.eu/ufi-generator" target="_blank" rel="noopener" style="color:#4C9BB0;">ECHA UFI Generator</a></li>
+      </ul>
+      CLPeasy is a label generation tool. Always verify all hazard data against your supplier's SDS. You remain responsible for the accuracy of your labels.
     </div>
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
       <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ Download PNG</button>
@@ -973,25 +992,115 @@ const SENSITISERS=[
 ];
 const H_LIB=[{code:'H315',desc:'Causes skin irritation'},{code:'H317',desc:'May cause allergic skin reaction'},{code:'H319',desc:'Causes serious eye irritation'},{code:'H361',desc:'Suspected of damaging fertility'},{code:'H400',desc:'Very toxic to aquatic life'},{code:'H410',desc:'Very toxic to aquatic life, long lasting'},{code:'H411',desc:'Toxic to aquatic life, long lasting'},{code:'H412',desc:'Harmful to aquatic life, long lasting'},{code:'H413',desc:'May cause long lasting harmful effects to aquatic life'},{code:'EUH208',desc:'Contains sensitiser — may produce allergic reaction'}];
 const P_LIB=[{code:'P261',desc:'Avoid breathing vapours/dust'},{code:'P264',desc:'Wash hands thoroughly after handling'},{code:'P272',desc:'Contaminated clothing not to leave workplace'},{code:'P273',desc:'Avoid release to environment'},{code:'P280',desc:'Wear protective gloves/eye protection'},{code:'P302+P352',desc:'IF ON SKIN: wash with soap and water'},{code:'P333+P313',desc:'If skin irritation/rash: get medical advice'},{code:'P362',desc:'Take off contaminated clothing'},{code:'P391',desc:'Collect spillage'},{code:'P501',desc:'Dispose of contents/container per regulations'}];
-// GHS pictogram SVG symbols — black and white, diamond shaped, industry standard
-const GHS_SVG={
-  flame:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="10" font-size="13" text-anchor="middle" font-family="sans-serif">\uD83D\uDD25</text></g>',
-  exclamation:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="11" font-size="16" font-weight="900" text-anchor="middle" font-family="sans-serif" fill="#000">!</text></g>',
-  health:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="10" font-size="12" text-anchor="middle" font-family="sans-serif">\u2695</text></g>',
-  aquatic:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="10" font-size="11" text-anchor="middle" font-family="sans-serif">\uD83D\uDC1F</text></g>',
-  corrosive:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="10" font-size="11" text-anchor="middle" font-family="sans-serif">\u2697</text></g>',
-  skull:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="10" font-size="12" text-anchor="middle" font-family="sans-serif">\u2620</text></g>',
-  oxidiser:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="9" font-size="11" text-anchor="middle" font-family="sans-serif">O</text></g>',
-  gas:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="9" font-size="10" text-anchor="middle" font-family="sans-serif">G</text></g>',
-  explosion:'<g transform="translate(__X__,__Y__) scale(__S__)"><polygon points="0,-14 14,14 -14,14" fill="none" stroke="#000" stroke-width="2.5"/><text y="9" font-size="11" text-anchor="middle" font-family="sans-serif">\u2731</text></g>',
-};
-function ghsPicto(key,x,y,size){
-  const sc=(size/28).toFixed(3);
-  return (GHS_SVG[key]||GHS_SVG.exclamation).replace(/__X__/g,x.toFixed(1)).replace(/__Y__/g,y.toFixed(1)).replace(/__S__/g,sc);
+// GHS pictogram SVG symbols — CLP Regulation (EC 1272/2008) compliant
+// Red rotated square border, white fill, black SVG path symbol
+// size = diameter of the diamond in px
+function ghsPicto(key, cx, cy, size) {
+  const h  = size * 0.5;
+  const sw = Math.max(size * 0.06, 1.0).toFixed(2);  // border width
+  const r  = (h * 0.04).toFixed(1);                   // corner radius
+
+  // Red diamond border (square rotated 45°, white fill)
+  const hs = (h * 0.70).toFixed(1);
+  const diamond =
+    '<rect x="' + (cx - parseFloat(hs)).toFixed(1) + '" y="' + (cy - parseFloat(hs)).toFixed(1) + '"' +
+    ' width="' + (parseFloat(hs)*2).toFixed(1) + '" height="' + (parseFloat(hs)*2).toFixed(1) + '"' +
+    ' rx="' + r + '" fill="white" stroke="#cc0000" stroke-width="' + sw + '"' +
+    ' transform="rotate(45,' + cx.toFixed(1) + ',' + cy.toFixed(1) + ')"/>';
+
+  // Symbol drawn in a normalised ±1 unit space, scaled to 42% of size
+  const sc = size * 0.42;  // symbol fits in 42% of full size
+  const p  = (v) => (cx + v * sc).toFixed(2);   // x coordinate
+  const q  = (v) => (cy + v * sc).toFixed(2);   // y coordinate
+  const lw = (size * 0.035).toFixed(2);          // line width
+
+  let sym = '';
+  switch(key) {
+
+    case 'exclamation': // GHS07 — vertical bar + dot
+      sym  = '<rect x="' + p(-0.10) + '" y="' + q(-0.58) + '" width="' + (0.20*sc).toFixed(2) + '" height="' + (0.52*sc).toFixed(2) + '" rx="' + (0.06*sc).toFixed(2) + '" fill="#000"/>';
+      sym += '<circle cx="' + p(0) + '" cy="' + q(0.62) + '" r="' + (0.13*sc).toFixed(2) + '" fill="#000"/>';
+      break;
+
+    case 'flame': // GHS02 — candle flame shape
+      sym  = '<path d="M ' + p(0) + ',' + q(0.65) +
+             ' C ' + p(-0.45) + ',' + q(0.30) + ' ' + p(-0.40) + ',' + q(-0.15) + ' ' + p(-0.12) + ',' + q(-0.38) +
+             ' C ' + p(-0.16) + ',' + q(0.10) + ' ' + p(0.10) + ',' + q(0.05) + ' ' + p(0) + ',' + q(-0.55) +
+             ' C ' + p(0.28) + ',' + q(-0.22) + ' ' + p(0.50) + ',' + q(0.15) + ' ' + p(0.44) + ',' + q(0.45) +
+             ' C ' + p(0.56) + ',' + q(0.18) + ' ' + p(0.44) + ',' + q(-0.10) + ' ' + p(0.32) + ',' + q(-0.25) +
+             ' C ' + p(0.52) + ',' + q(-0.05) + ' ' + p(0.62) + ',' + q(0.25) + ' ' + p(0.44) + ',' + q(0.65) +
+             ' Z" fill="#000"/>';
+      break;
+
+    case 'skull': // GHS06 — skull + crossbones
+      sym  = '<circle cx="' + p(0) + '" cy="' + q(-0.22) + '" r="' + (0.38*sc).toFixed(2) + '" fill="#000"/>';
+      sym += '<circle cx="' + p(0) + '" cy="' + q(-0.22) + '" r="' + (0.24*sc).toFixed(2) + '" fill="white"/>';
+      sym += '<circle cx="' + p(-0.18) + '" cy="' + q(-0.28) + '" r="' + (0.12*sc).toFixed(2) + '" fill="#000"/>';
+      sym += '<circle cx="' + p(0.18) + '" cy="' + q(-0.28) + '" r="' + (0.12*sc).toFixed(2) + '" fill="#000"/>';
+      sym += '<rect x="' + p(-0.26) + '" y="' + q(0.14) + '" width="' + (0.52*sc).toFixed(2) + '" height="' + (0.26*sc).toFixed(2) + '" rx="' + (0.08*sc).toFixed(2) + '" fill="#000"/>';
+      sym += '<rect x="' + p(-0.08) + '" y="' + q(0.16) + '" width="' + (0.16*sc).toFixed(2) + '" height="' + (0.22*sc).toFixed(2) + '" fill="white"/>';
+      sym += '<line x1="' + p(-0.50) + '" y1="' + q(0.54) + '" x2="' + p(0.50) + '" y2="' + q(0.72) + '" stroke="#000" stroke-width="' + (0.14*sc).toFixed(2) + '" stroke-linecap="round"/>';
+      sym += '<line x1="' + p(-0.50) + '" y1="' + q(0.72) + '" x2="' + p(0.50) + '" y2="' + q(0.54) + '" stroke="#000" stroke-width="' + (0.14*sc).toFixed(2) + '" stroke-linecap="round"/>';
+      break;
+
+    case 'aquatic': // GHS09 — dead tree + fish
+      sym  = '<line x1="' + p(-0.14) + '" y1="' + q(0.68) + '" x2="' + p(-0.14) + '" y2="' + q(-0.28) + '" stroke="#000" stroke-width="' + (0.12*sc).toFixed(2) + '" stroke-linecap="round"/>';
+      sym += '<line x1="' + p(-0.14) + '" y1="' + q(0.10) + '" x2="' + p(-0.48) + '" y2="' + q(-0.32) + '" stroke="#000" stroke-width="' + (0.10*sc).toFixed(2) + '" stroke-linecap="round"/>';
+      sym += '<line x1="' + p(-0.14) + '" y1="' + q(-0.12) + '" x2="' + p(0.20) + '" y2="' + q(-0.46) + '" stroke="#000" stroke-width="' + (0.10*sc).toFixed(2) + '" stroke-linecap="round"/>';
+      sym += '<line x1="' + p(-0.14) + '" y1="' + q(-0.28) + '" x2="' + p(-0.42) + '" y2="' + q(-0.60) + '" stroke="#000" stroke-width="' + (0.09*sc).toFixed(2) + '" stroke-linecap="round"/>';
+      sym += '<ellipse cx="' + p(0.44) + '" cy="' + q(0.22) + '" rx="' + (0.22*sc).toFixed(2) + '" ry="' + (0.14*sc).toFixed(2) + '" fill="#000"/>';
+      sym += '<path d="M ' + p(0.66) + ',' + q(0.08) + ' L ' + p(0.80) + ',' + q(-0.05) + ' L ' + p(0.80) + ',' + q(0.49) + ' Z" fill="#000"/>';
+      sym += '<circle cx="' + p(0.34) + '" cy="' + q(0.18) + '" r="' + (0.05*sc).toFixed(2) + '" fill="white"/>';
+      break;
+
+    case 'health': // GHS08 — health hazard (exclamation over body)
+      sym  = '<circle cx="' + p(0) + '" cy="' + q(-0.56) + '" r="' + (0.16*sc).toFixed(2) + '" fill="#000"/>';
+      sym += '<path d="M ' + p(-0.26) + ',' + q(-0.32) + ' Q ' + p(-0.36) + ',' + q(0.08) + ' ' + p(-0.26) + ',' + q(0.68) + ' L ' + p(0.26) + ',' + q(0.68) + ' Q ' + p(0.36) + ',' + q(0.08) + ' ' + p(0.26) + ',' + q(-0.32) + ' Z" fill="#000"/>';
+      sym += '<rect x="' + p(-0.08) + '" y="' + q(-0.18) + '" width="' + (0.16*sc).toFixed(2) + '" height="' + (0.38*sc).toFixed(2) + '" rx="' + (0.05*sc).toFixed(2) + '" fill="white"/>';
+      sym += '<circle cx="' + p(0) + '" cy="' + q(0.40) + '" r="' + (0.08*sc).toFixed(2) + '" fill="white"/>';
+      break;
+
+    case 'corrosive': // GHS05 — drops corroding surface + hand
+      sym  = '<path d="M ' + p(-0.36) + ',' + q(-0.55) + ' Q ' + p(-0.46) + ',' + q(-0.22) + ' ' + p(-0.36) + ',' + q(0.05) + ' Q ' + p(-0.26) + ',' + q(-0.22) + ' ' + p(-0.36) + ',' + q(-0.55) + ' Z" fill="#000"/>';
+      sym += '<path d="M ' + p(0.08) + ',' + q(-0.65) + ' Q ' + p(-0.02) + ',' + q(-0.32) + ' ' + p(0.08) + ',' + q(-0.05) + ' Q ' + p(0.18) + ',' + q(-0.32) + ' ' + p(0.08) + ',' + q(-0.65) + ' Z" fill="#000"/>';
+      sym += '<polyline points="' + p(-0.56) + ',' + q(0.12) + ' ' + p(-0.36) + ',' + q(0.40) + ' ' + p(-0.20) + ',' + q(0.24) + ' ' + p(0) + ',' + q(0.52) + ' ' + p(0.20) + ',' + q(0.32) + ' ' + p(0.36) + ',' + q(0.64) + ' ' + p(0.56) + ',' + q(0.44) + '" fill="none" stroke="#000" stroke-width="' + (0.10*sc).toFixed(2) + '" stroke-linecap="round" stroke-linejoin="round"/>';
+      break;
+
+    case 'oxidiser': // GHS03 — flame over circle
+      sym  = '<circle cx="' + p(0) + '" cy="' + q(0.46) + '" r="' + (0.30*sc).toFixed(2) + '" fill="none" stroke="#000" stroke-width="' + (0.10*sc).toFixed(2) + '"/>';
+      sym += '<path d="M ' + p(0) + ',' + q(0.16) +
+             ' C ' + p(-0.28) + ',' + q(-0.18) + ' ' + p(-0.22) + ',' + q(-0.48) + ' ' + p(-0.06) + ',' + q(-0.58) +
+             ' C ' + p(-0.10) + ',' + q(-0.24) + ' ' + p(0.08) + ',' + q(-0.20) + ' ' + p(0) + ',' + q(-0.68) +
+             ' C ' + p(0.22) + ',' + q(-0.40) + ' ' + p(0.30) + ',' + q(-0.16) + ' ' + p(0.28) + ',' + q(0.16) +
+             ' Z" fill="#000"/>';
+      break;
+
+    case 'explosion': // GHS01 — exploding bomb
+      sym  = '<circle cx="' + p(0.06) + '" cy="' + q(0.34) + '" r="' + (0.38*sc).toFixed(2) + '" fill="#000"/>';
+      sym += '<line x1="' + p(0.06) + '" y1="' + q(-0.06) + '" x2="' + p(0.06) + '" y2="' + q(-0.60) + '" stroke="#000" stroke-width="' + lw + '" stroke-linecap="round"/>';
+      sym += '<line x1="' + p(0.38) + '" y1="' + q(-0.04) + '" x2="' + p(0.62) + '" y2="' + q(-0.42) + '" stroke="#000" stroke-width="' + lw + '" stroke-linecap="round"/>';
+      sym += '<line x1="' + p(-0.26) + '" y1="' + q(-0.04) + '" x2="' + p(-0.50) + '" y2="' + q(-0.42) + '" stroke="#000" stroke-width="' + lw + '" stroke-linecap="round"/>';
+      sym += '<line x1="' + p(0.56) + '" y1="' + q(0.22) + '" x2="' + p(0.80) + '" y2="' + q(0.10) + '" stroke="#000" stroke-width="' + lw + '" stroke-linecap="round"/>';
+      sym += '<line x1="' + p(-0.44) + '" y1="' + q(0.22) + '" x2="' + p(-0.68) + '" y2="' + q(0.10) + '" stroke="#000" stroke-width="' + lw + '" stroke-linecap="round"/>';
+      break;
+
+    case 'gas': // GHS04 — gas cylinder
+      sym  = '<rect x="' + p(-0.26) + '" y="' + q(-0.08) + '" width="' + (0.52*sc).toFixed(2) + '" height="' + (0.70*sc).toFixed(2) + '" rx="' + (0.10*sc).toFixed(2) + '" fill="#000"/>';
+      sym += '<rect x="' + p(-0.18) + '" y="' + q(-0.36) + '" width="' + (0.36*sc).toFixed(2) + '" height="' + (0.28*sc).toFixed(2) + '" rx="' + (0.08*sc).toFixed(2) + '" fill="#000"/>';
+      sym += '<line x1="' + p(0) + '" y1="' + q(-0.36) + '" x2="' + p(0.28) + '" y2="' + q(-0.60) + '" stroke="#000" stroke-width="' + (0.12*sc).toFixed(2) + '" stroke-linecap="round"/>';
+      sym += '<circle cx="' + p(0) + '" cy="' + q(0.28) + '" r="' + (0.16*sc).toFixed(2) + '" fill="white"/>';
+      break;
+
+    default:
+      sym  = '<rect x="' + p(-0.10) + '" y="' + q(-0.58) + '" width="' + (0.20*sc).toFixed(2) + '" height="' + (0.52*sc).toFixed(2) + '" rx="' + (0.06*sc).toFixed(2) + '" fill="#000"/>';
+      sym += '<circle cx="' + p(0) + '" cy="' + q(0.62) + '" r="' + (0.13*sc).toFixed(2) + '" fill="#000"/>';
+  }
+  return '<g>' + diamond + sym + '</g>';
 }
 
+
 // ── STATE ─────────────────────────────────────────────────────
-const S={step:1,shape:'circle',size:35,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true};
+const S={step:1,shape:'circle',size:35,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,libraryLocked:false};
 
 // ── PRODUCT TYPE GUIDANCE ─────────────────────────────────────
 const FRAG_LOAD_TIPS={
@@ -1019,6 +1128,45 @@ const FRAG_LOAD_TIPS={
 };
 
 const BURN_TIME_TYPES=['Scented Candle','Soy Candle','Votive Candle','Tea Light Candle','Pillar Candle','Advent Calendar Candle','Wax Melt','Wax Tart','Snap Bar','Wax Melt Clamshell','Advent Calendar Wax Melt','Wax Melt Bag'];
+
+// EN 15494 candle safety pictogram types — GPSR required for all candle products
+const EN15494_CANDLE_TYPES=['Scented Candle','Soy Candle','Votive Candle','Tea Light Candle','Pillar Candle','Advent Calendar Candle'];
+
+// ── EN 15494 CANDLE SAFETY PICTOGRAMS ────────────────────────────────────────
+// Pure SVG paths — no emoji, no text fallback — renders correctly in canvas export
+// Each icon is drawn in a normalised 100x100 space then scaled to the target radius
+// Based on EN 15494:2019 standard symbol set
+
+function en15494Picto(type, cx, cy, r) {
+  // Official EN 15494:2019 pictograms from British Candlemakers Foundation
+  const imgs = {
+    'unattended': 'data:image/jpeg;base64,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',
+    'catchfire':  'data:image/jpeg;base64,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',
+    'children':   'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD//gA+Q1JFQVRPUjogZ2QtanBlZyB2MS4wICh1c2luZyBJSkcgSlBFRyB2ODApLCBkZWZhdWx0IHF1YWxpdHkK/9sAQwAIBgYHBgUIBwcHCQkICgwUDQwLCwwZEhMPFB0aHx4dGhwcICQuJyAiLCMcHCg3KSwwMTQ0NB8nOT04MjwuMzQy/9sAQwEJCQkMCwwYDQ0YMiEcITIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIy/8AAEQgAZABkAwEiAAIRAQMRAf/EAB8AAAEFAQEBAQEBAAAAAAAAAAABAgMEBQYHCAkKC//EALUQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+v/EAB8BAAMBAQEBAQEBAQEAAAAAAAABAgMEBQYHCAkKC//EALURAAIBAgQEAwQHBQQEAAECdwABAgMRBAUhMQYSQVEHYXETIjKBCBRCkaGxwQkjM1LwFWJy0QoWJDThJfEXGBkaJicoKSo1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoKDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uLj5OXm5+jp6vLz9PX29/j5+v/aAAwDAQACEQMRAD8Ab4X8L3PxeutS13XdXuYoY5zFFbxc7MjOBngAAgdOf59N/wAKA0H/AKC2pf8AkP8A+Jo+AH/Iqan/ANf3/si163QM8k/4UBoP/QW1L/yH/wDE0f8ACgNB/wCgtqX/AJD/APia9bri/DvjRda+IHiPQt6mKxCeQB1JX5ZfyYgUCOY/4UBoP/QW1L/yH/8AE0f8KA0H/oLal/5D/wDia9booA8k/wCFAaD/ANBbUv8AyH/8TVW++CPhPTLc3F/4hu7WEHBknkiRc/UivVtZ1e00HR7nVL6TZbW6b3Pc9gB7kkAfWvlHxl4wv/GWtyX10zJbqcW9tuysS+nufU9/yoGdxN4J+F0EojfxvMWJxlGRx+YQit7Tvgr4R1eyS807xFeXVu3AkieNhn0+719q8HooA+hP+FAaB/0FtS/8h/8AxNMk+AGi+W3kazqCS4+VmVGAPqQAM/mK4z4dfFa98PXMOmazM9zpLsFEjkl7bPcHqV55H5eh+jopUmiSWN1eN1DKynIIPQigD500b4s674QtptCvI01CSzneJZZmJKhTjbnPIBBxn1orgvE3/I16x/1/Tf8AoZooA9w+AH/Iqan/ANf3/si163XknwA/5FTU/wDr+/8AZFr1ugRm+INVXQ/D2oam4BFrA8oB7kDgficCvmL4da/JpfxG0++nlyLqYwzux6+Zxk/8CIP4V9D/ABF0y41jwBrFlaKzzvCHRFGSxVg2APU7cV8t6HpN7qviCz061hlNzJMq4VTlOeSfTHJ/CgaPsyiiigR49+0BeyRaFpFkrMI57h5HAPB2KAM/9915H4W8Ea34xknXSYEZIAPMllfaik9Bnua9W/aCELabopMyCdJpAIt3zFSoy2PQFQM+9WPDGqL4A+BsOtQW8dxczuZSu75S7vtBYj0ULkeoxQM4nVfgxrmkeFJdUkdbm/jlGbO1UviLoTnGSc4OAOma4hvDmuJD5z6NqKxYzvNq4XHrnFfSHgLxlqmvanqWj61DY/bLJI5RNYyb4nVxnHU8jj/I5yvG3xG1jQ/EV5p2lW+neVp1slzcteSbWmDY+WMZHPI9f8QD5x6V9JfBHX5dW8GvYTsWk02XylJ/55kZUfh8w+gFYXxa0+w1n4eaZ4qtrCO3uZWildggDlJF6MR1wdvWmfs9RYi8QS71O5rddueRjzDn6c/oaAPIfE3/ACNesf8AX9N/6GaKPE3/ACNesf8AX9N/6GaKBnuHwA/5FTU/+v7/ANkWu98aapdaJ4O1TUrJlW5t4S8ZZcgHI7VwXwA/5FTU/wDr+/8AZFrzz4oa74pfxbdW+rCWyiCNFBbxvmNoWPXPRs4GT6jtjABG3YePvirqtml5YafJc2z52yxWG5WwcHBA9Qaz9Mm+J2ka1qWrWmhXi3eosGuGawJBIJPAxx1r0n4KaxYXXgW30yG4U3tm0hmhPDKGkZgfcYI5FelUAfPr/Ef4jabq2nW2s2/2NLqZUUTWQQuNwDYz9R+dfQIIPQ9K8I+PWqQDXNChtblDeWSySOq8mMkoVz/3yTj/ABpnwV1HxXea/durvc6RK5e9kuHOBIRwUPdzxkenXtQBqfE++0zRfiPp2pa9pC6lp0mmGGOLg5kEhJOD6Bh+ddD8L9Ahm+Hs8WoWqvYarcy3MdrKAyrC2Aox2+7n8a8y+Od61x4+W3JO21tI0A7ZJLE/qPyre8B+LNW8DeHtPOvWstx4bvV3215CN5tiScqw9MgnHvxnoAD1rw3oGgaDayx6BawQxO/7xon3lmHYsSTxnp2qHXPCfhjXdStptY0+1nvF4iLttZwOcYBG4DPQ5FcFb6NpM9xc33gn4hrpcd05lmtWkWRAx5JCMQV/EfjVqzsfDHhjVV8Q+JvGg1jVIVPkNLMD5YOfuRKSe59vagRpfFq5stL8K6Y93aCfT49ShE1quFDxhXO36cDj2rA+EV7Yar4x8TahpGnCw05obdUtxgbDz2HqVY8Vy/xW8T6z4m021uI9NubLw4s+2F7hQrXMm0kPtPIGM47c9ew2P2efveI/+3b/ANq0DPJfE3/I16x/1/Tf+hmijxN/yNesf9f03/oZooGe4fAD/kVNT/6/v/ZFrovizo1hqXgLULm6t1eeyjM1vL0ZGyM4Poe4/wABXO/AD/kVNT/6/v8A2Ra7H4lf8k513/r2P8xQI+XdJ1PVPDWo2mrWLyW03LxOR8si5II/2lyCD9K9k1X462z+EIpNNgKa7MCjxsuUtyOr5P3gew/PpzxN74n0Vfg9pXh420d3qu+WTef+XQeaxzn1I7ehye2fPyrBAxUhSSA2OCR1/mKAL8KT6trEEt880hvLkLJOxJLsWG7k9T8w/MV9g6RpFjoWmQadp1usFtCuFRf1JPcnua+bNT8RaVrdv4KtdNs1spLCYx3FuoO0MXj+cHvuwTzznOfU/UNAM+dvFPhTU/Hfxi1q209QkMLwrPPIflhURqM475wcAfp1r1hNZ8I+DoLDwfe6jDG626osdyhKupyMs2NoyQeCa3b5tM8PWWp601tFF+7M91JHGA8u1eMkdTgYFec+EfBUXjayfxX4uaS8udRRxBbs21IIcnbtHUHuPrnqTQB1d18MfBWot5kmg23zHdmB3iB/74YCtDSvBHhnRZBJYaJZxSA5Ehj3sPozZIrj9AXU/Afjmx8Jy37XuhalFI9iZyPMt2QZKZ9OMY6cjGOa9PoEeffGbSv7S+Hd1KkTPLZSJcLtHIAO1j9ArE/hWV8CNEksfCt3qsm3/iYzDy8HJ2R5Xn/gRbir3hT4kv4p8W3mgXmlRQ27JK0D7929VYqQwPrg/lXfWGnWelWaWlhaxW1smdsUShVGTk8D3oA+PvE3/I16x/1/Tf8AoZoo8Tf8jXrH/X9N/wChmigo9w+AH/Iqan/1/f8Asi074xePbGw0i58M2u24v7pNs+DxAnXn/aPYfie2cv4PRanP8N9fi0aeKDUWuSIJJVyqtsX/ADnnHoa8ybwd4juF1q+vrWeIacGe7muc/M+fug/xMc5+hz3GQRa8A+Ab7xtqe0boNNhYfaLnHT/ZX1Y/p1Pv9D6j8PvD2o+FovD7WKxWkA/cNHw8Tf3ge5PfPXvWZ8G1A+GGmEAZLzE+/wC9au8oEfInijwvqngTxCkFyAdriW1uAvySgHII9xxkdvyr6B+HXxFtPGlh5E+yDWIV/fQDgOP76e3qO35GuN+O9uLvWPCtszFVmeWMkdQC0Yrk4vhl4u0Px7aWOmMyuG86DUowRGqDqx9CM4K9845BoGfSV1aw3tpNa3MayQTIUdGGQykYIrzLwlp8nhj4pXXhnTtSvrjR4tO89re5k3LC5cYC+2D2HfnPWvUIldYUWRw8gUBmAxuPc47V5r4ya48F+OrTxrHE8ul3US2WphckxjPyv/6D+WOrUCOl8ZeEG8UJp89rqD6dqOnzedbXSxh9p4yCpIyDgflXKahe/ELwPEurarqFrr+kxsPtaR24jliQnG4bQOn4+/HI9QilSaJJYnV43UMrKcgg9CKSaGO4gkgmRZIpFKOjDIYHgg0AfM9tqg8GfEVNYts3Ons7XMTL/wAtbSb091JOR/eB96+lbK8g1CygvLWVZbedBJG69GUjINfO3inw02hatq+jQyfutOhOqab5pJ/cM22WH3HJ/wC+T/eNd98EdWkudB1DSnLFLGZXg3HJEUo3KP0P50DPBvE3/I16x/1/Tf8AoZoo8Tf8jXrH/X9N/wChmigZ7h8AP+RU1P8A6/v/AGRa7jx7ZXOo+BdYtLOB5rma3KxxoMljkcCuF+ADqfC+qIGG4XuSM8gFFx/I/lXrtBJ4J4a1X4oeFtCg0ix8JpJbwFirT2zlzuYsckOB1PpWt/wm3xb/AOhPtv8AwFl/+OV7LRQB89a5F8QvGOt6LPq/hhoEsZwQ1vAyjDMpJO5j/dr6FoooAK5L4l39lY/D/WBeSQqZ7dooklP35CPlCjuQefbGe1dbXF/ErwZceMtAgt7GWKK+tpxNE0xIU8YIOAfUHoelAGt4Khkt/A+hRS/6xbGHP/fArerxnWvAHjzVlvdXn1WGLVVSKO0tdNuXii2jhhlsY45xnqTW7Y6h8UYLOO3/AOEd0zEEaorXF7vkkwMZJDck45PHWgDnPjRpdy/iKw1DeLXTnszb3V1kfdDligB5ZiOgHX6Zrp/hDpNxa6Deavcwm3/tWcTQQE52QgYQflnHtiodI8F6x4k8QnxB47ihJgIFlpkbh4ovVjgkHkdMnPfsK9KACgAAADgAUAfGvib/AJGvWP8Ar+m/9DNFGvn7V4k1WaDMkT3kzK6DIILkg0UFHZ/FDTE8GeMm/sC5urJb2Lz5EhmKAEseBtx8vtzXGf8ACTa//wBBzUv/AALk/wAaKKBB/wAJNr//AEHNS/8AAuT/ABo/4SbX/wDoOal/4Fyf40UUDD/hJtf/AOg5qX/gXJ/jR/wk2v8A/Qc1L/wLk/xoooAP+Em1/wD6Dmpf+Bcn+NH/AAk2v/8AQc1L/wAC5P8AGiigA/4SbX/+g5qX/gXJ/jR/wk2v/wDQc1L/AMC5P8aKKAD/AISbX/8AoOal/wCBcn+NJJ4j1yWNo5NZ1F0YYZWunII9CM0UUAfTHgnwToWleFrREs1naYCd5LgB2LMB7dOBxRRRQSf/2Q==',
+    'draught':    'data:image/jpeg;base64,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',
+    'wick':       'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD//gA+Q1JFQVRPUjogZ2QtanBlZyB2MS4wICh1c2luZyBJSkcgSlBFRyB2ODApLCBkZWZhdWx0IHF1YWxpdHkK/9sAQwAIBgYHBgUIBwcHCQkICgwUDQwLCwwZEhMPFB0aHx4dGhwcICQuJyAiLCMcHCg3KSwwMTQ0NB8nOT04MjwuMzQy/9sAQwEJCQkMCwwYDQ0YMiEcITIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIy/8AAEQgAZABkAwEiAAIRAQMRAf/EAB8AAAEFAQEBAQEBAAAAAAAAAAABAgMEBQYHCAkKC//EALUQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHwJDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+v/EAB8BAAMBAQEBAQEBAQEAAAAAAAABAgMEBQYHCAkKC//EALURAAIBAgQEAwQHBQQEAAECdwABAgMRBAUhMQYSQVEHYXETIjKBCBRCkaGxwQkjM1LwFWJy0QoWJDThJfEXGBkaJicoKSo1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoKDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uLj5OXm5+jp6vLz9PX29/j5+v/aAAwDAQACEQMRAD8Ab4V8LT/F641LXtf1a5jjjm8qGCEg7MgHAzwFAIHA5/n03/CgNB/6C2pf+Q//AImj4Af8ipqf/X9/7Itet0DPJP8AhQGg/wDQW1L/AMh//E0f8KA0H/oLal/5D/8AiaufGHxrrHhaysrXSU8k3gffebclMY+VewY56n8PZvwn+I7+JoTo2ryg6rAm6OU8faEHX/gQ7+o57GgCr/woDQf+gtqX/kP/AOJo/wCFAaD/ANBbUv8AyH/8TXrdFAjyT/hQGg/9BbUv/If/AMTR/wAKA0H/AKC2pf8AkP8A+Jr1uigDyT/hQGg/9BbUv/If/wATR/woDQf+gtqX/kP/AOJr1uigDyT/AIUBoP8A0FtS/wDIf/xNMk+AGi+W3kazqCS4+VmVGAPqQAM/mK9eooA+cdG+LOu+ELabQryNNQks53iWWZiSoU425zyAQcZ9aK4LxN/yNesf9f03/oZooGe4fAD/AJFTU/8Ar+/9kWvW68k+AH/Iqan/ANf3/si163QIy/EOg2XiXRbjS7+MNDMvDY5RuzL6EV8q3trqvw/8aGMPsvdPnDxyAELIvY/7rDt7kV9fV5z8TfhvL41n066sJoLe7hYxTSS5wYjz2HJB6D/aPNA0dn4f1q38Q6BZatan91cxB8Z+6ejKfcEEfhWnXOeC/Ccfg3QF0uK9muxvMheTAAJxkKOw4zjJ5Jro6BDJZY4I/MlkSNMgbnbAyTgc/UgU8c9Kp6ppdlrOmz6fqECT2s67Xjboecj8QQCD6ivKNQtfGfwula50meXW/DKZJtrg7nt19M9QB6jj1FAHsdFcf4Q+JGg+L40jt5vs1+R81nOQH99p6MPpz6gVU+LPim88LeDzLp7GO7u5hbpKOsYIJLD3wCB9c0AbWteOfDPh6fyNT1i3hn7xLmR1+qqCR+NX9F1/S/EVl9s0m9juoM7SyZBU+hBwQfqK860j4beFPCmg/wBr+LpIbu6ZN881y5Masedqr/Efrkk9MVW+C1usureJtV0+2ktdFuJ1S1jY+hY4/AMPzoA8U8Tf8jXrH/X9N/6GaKPE3/I16x/1/Tf+hmigo9w+AH/Iqan/ANf3/si1d+IN58RrfxDEnhKOZtP+zKXKQROPM3Nnlxnptql8AP8AkVNT/wCv7/2Ra9N1jV7PQtJudTv5RHbW6bnPc+gHqSeB9aCTzDwdf/FObxXYx+IopxpRL+eWt4VH3G28qM/ex0qx47vfiZB4nkTwvHM2meUhUpBC43Y+blhmuz8G+L7Hxloa6jaDy3DFJoGOWib0PqCOQayviL4+fwJb2Eqact79rZ1IM3l7doHsc9aBmB4GvvidP4pgTxPHMullH8wtBCoztO3lRnrUXjS++KUPiy9j8ORTtpI8vyCtvCw+4u7lhn726ui+HXxAfx5HqLPpq2X2MxgYm8zdu3ewx939a7igR5f4AvfiRceI2TxXHMuneQxBeCJB5mRjlBnpmvUDjHPSqmq6pZ6LpdxqN/MIbW3TfI57D+pJwMe9eUX1z43+KDmDTIJdC8NucGef5ZJ19cDkg+g+XsSaAOd+KKeCRqYj8OxynxCZQCum/wCq3Z7gfxf7nOetZ+sR67ZRWsvxKt9Xu9Pe3K2aw3CAJLg43/7WPXn1zgivZ/B/w50LwcgltYTcX5XD3cwy/vtHRR9PxJpnxL8JS+MPCUlna4+2wOLi3BOAzAEbc9sgkfXFAzwC1gtrO8tLrxZo3iFtJKgRb5SAV7AFlGRjsCK+mfDN1o15oFpLoHk/2bsxEsK7QvqCOxz1zzXnOkfFbSJtOl0Hx3ZvZ3ka+TciW3Lxy49VAJB/DHcGq3wZnjHijxLaaP5z+Htwkt2kB+Vt2FHPcrn3+UZoA8a8Tf8AI16x/wBf03/oZoo8Tf8AI16x/wBf03/oZooGe4fAD/kVNT/6/v8A2RavfGTw9qOreG5b1dVWHT9PjMzWgiJMz5xktnsDwMetUfgB/wAipqf/AF/f+yLXY/Er/knOu/8AXsf5igR5r8DfDmoYfxFbaosVsZWtbizaLd5oADA7s8EFuOPX1q5+0J/x4aD/ANdZv5JWz8B/+RBuP+whJ/6AlY37Qn/HhoP/AF1m/klAdSP9nr/UeIP963/lJXsOpapY6PZm71G6itrdSAZZWwoJ6ZNePfs9f6jxD/vW/wDKSvWPEg0tvDmoDWtv9neQ32jd/dx29/T3xQJkd94i0CCwtbi91KyW1vMGBpHBWXoRt9e1T6rrulaFbLcapf29nG33TK4UtjsB1P4V88fDw26+NdATX/tH9m7ZG0YT42bzIdpP/Ag3/Atvaul8TfYJfj2kXisxjSFgX7MLlsRYMfGc8Y37uvcc0DPV4fGPh2eyt7xNYtPs1xL5MUjSbQ78fLz35FNtvGvhm8a6EGuWL/ZVLTHzgAqjjOTwRkjketeW/FuLQ28O+H49DFidPfUHBFkymMkgbvu8ZqLxD4U0O2+N/h7SYNNgj0+4tVklt1XCOwMvUf8AAFz64oEeoQDwf47ga5SHTdWWI7C7RKzIfTkZFbtnY2mnW629law20C9I4UCKPwFeS/Dy0g0z4yeLLCyjEFokR2wp90fOmMD8T+dexUAfGnib/ka9Y/6/pv8A0M0UeJv+Rr1j/r+m/wDQzRQUe4fAD/kVNT/6/v8A2Rav/GVfEMXheWbS5w2mshjv7fygzBSeHBxkDsfw965j4V3txp3wm8V3tpJ5dzbmWWJ8A7WEIIODx1rhZvir41uIXhm1rzIpFKujWsJDA8EEbKBHdfAv/hIplmSOZYfD8MrPIpjUtNKVA2hsZwAAT+HrVr9oT/jw0H/rrN/JK8y0v4jeK9F0+Kw03VBb2sWdkaW0WBk5PVcmqWv+MNe8URwJrOoG6WAkxgxIm0nGfugegoA9X/Z6/wBR4g/3rf8AlJXr2q6RYa5YtZalbLcWzEM0bEgEjpnFfJPh/wAX674WW4XRb82ouCplxEj7tucfeB9TW1/wtvxz/wBB1v8AwGh/+IoA+j7zwhoGoWlla3WlwSQ2K7bZeR5Q46EHPYflUmteF9E8RQpHq+nQ3YQEIzghlz6MMEfnXzZ/wtvxz/0HW/8AAaH/AOIr6f0qaS40iynlbdJJAju2MZJUEmgRkL4E8MLptvp/9jwG0t5DLFGSxCuQAWznOeBV+48P6Vda1b6zPZRvqNumyK4OdyLzwP8AvpvzrTooAzLXw/pVjq9zq1tZRx390MTTjO5xwefyFadFFAHxp4m/5GvWP+v6b/0M0UeJv+Rr1j/r+m/9DNFBR6j8Of8Aki/jP/cn/wDRAryrQLaK88R6Za3Cb4ZruKORckblLgEcexr1P4cSIfg340jDAuI5mK55AMPB/Q/lXmXhf/kbdG/6/oP/AEYtAj6U/wCFS+B/+gCn/gRN/wDF0f8ACpfA3/QBT/wIm/8Ai67WigRxX/CpfA3/AEAU/wDAib/4uj/hUvgf/oAp/wCBE3/xddrRQB8WatDHbaxfQRLtjjuJERc5wAxAFfYmif8AIA07/r1i/wDQRXx9rn/Iwal/19S/+hmvsHRP+QBp3/XrF/6CKBsv0UUUCCiikoA+NfE3/I16x/1/Tf8AoZoo18/avEmqzQZkie8mZXQZBBckGigo7L4r6JbeE/FLpo0txbRajEzzxJJhOTyoAx8vsc153HI8UiyRuyOhDKynBBHQg0UUCNL/AISbX/8AoOal/wCBcn+NH/CTa/8A9BzUv/AuT/GiigYf8JNr/wD0HNS/8C5P8aP+Em1//oOal/4Fyf40UUAZju0js7sWZjksTkk+taSeI9djRUTWtRVVGAounAA/OiigBf8AhJtf/wCg5qX/AIFyf40f8JNr/wD0HNS/8C5P8aKKAD/hJtf/AOg5qX/gXJ/jTZPEWtzRPHLrOoPG4KsrXTkMD1BGaKKAPpnwT4J0LSvC1oiWaztMBO8lwA7FmA9unA4ooooJP//Z',
+  };
+  const src = imgs[type];
+  if(!src) return '';
+  const size = (r * 2).toFixed(1);
+  const x = (cx - r).toFixed(1);
+  const y = (cy - r).toFixed(1);
+  return `<image href="${src}" x="${x}" y="${y}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid meet"/>`;
+}
+
+function buildEN15494Row(cx, sTop, sBot, sW, sH, mmW, chordW, isCircle, botY) {
+  const bandH  = sBot - botY;
+  const availW = isCircle ? chordW(botY + bandH*0.35, 0.08) * 0.88 : sW * 0.84;
+  const spacing = availW / 5;
+  const rowOffset = bandH * 0.35;
+  // r derived from three constraints — all naturally keep icons within bottom band
+  const r = Math.min(spacing * 0.44, rowOffset * 0.85, bandH * 0.30);
+  if(r < 2) return '';
+  const rowY   = botY + rowOffset;
+  const startX = cx - spacing * 2;
+  const types  = ['children','wick','unattended','catchfire','draught'];
+  return types.map((t,i) => en15494Picto(t, startX + spacing*i, rowY, r)).join('');
+}
 function onProductTypeChange(){
   const type=document.getElementById('product-type')?.value||'';
   const tip=document.getElementById('frag-load-tip');
@@ -1685,6 +1833,9 @@ function wrapDownloads(){
       if(!dlGate()) return;
       const r=orig.apply(this,arguments);
       dlRecord();
+      // Save batch number only on actual download — prevents gaps from unused +1 clicks
+      const batchEl=document.getElementById('batch-num');
+      if(batchEl&&batchEl.value.trim()) localStorage.setItem('clpeasy_last_batch',batchEl.value.trim());
       return r;
     };
     wrapped.__dlwrapped=true;
@@ -1717,7 +1868,17 @@ function selectSupplier(el,key){
 }
 
 // ── SAVED LABELS LIBRARY ──────────────────────────────────────
-function getSaved(){try{return JSON.parse(localStorage.getItem('clpeasy_labels')||'[]');}catch(e){return[];}}
+function getSaved(){
+  try{
+    const raw=localStorage.getItem('clpeasy_labels')||'[]';
+    // Safety: reject if raw data is suspiciously large (>1MB)
+    if(raw.length > 1048576){console.warn('CLPeasy: library data too large, resetting');localStorage.removeItem('clpeasy_labels');return[];}
+    const arr=JSON.parse(raw);
+    if(!Array.isArray(arr)) return [];
+    // Cap at MAX_LIBRARY_LABELS silently
+    return arr.slice(0, MAX_LIBRARY_LABELS);
+  }catch(e){return[];}
+}
 function persistSaved(arr){localStorage.setItem('clpeasy_labels',JSON.stringify(arr));}
 
 // ── FOLDER DEFINITIONS ─────────────────────────────────────────
@@ -1862,9 +2023,25 @@ document.addEventListener('click',function(e){
 });
 
 // ── SAVE / LOAD / DELETE ───────────────────────────────────────
+const MAX_LIBRARY_LABELS = 50;      // max saved labels
+const MAX_LIBRARY_BYTES  = 512000;  // 500KB cap on total library size
+
 function saveLabel(){
   readForm();
   if(!S.scentName){alert('Please enter a scent name before saving.');return;}
+  // Check library cap
+  const arr=getSaved();
+  const existingIdx=arr.findIndex(e=>e.scentName===S.scentName&&e.productType===S.productType);
+  if(existingIdx < 0 && arr.length >= MAX_LIBRARY_LABELS){
+    alert('Your label library is full ('+MAX_LIBRARY_LABELS+' labels maximum). Please delete some saved labels before adding new ones.');
+    return;
+  }
+  // Check storage size cap
+  const currentSize = JSON.stringify(arr).length;
+  if(currentSize > MAX_LIBRARY_BYTES){
+    alert('Your label library is using too much storage. Please delete some saved labels to free up space.');
+    return;
+  }
   const entry={scentName:S.scentName,productType:S.productType,shape:S.shape,size:S.size,signal:S.signal,
     hStatements:S.hStatements,sensitisers:[...S.sensitisers],bizName:S.bizName,bizAddress:S.bizAddress,
     bizPhone:S.bizPhone,bizWebsite:S.bizWebsite,netWeight:S.netWeight,burnTime:S.burnTime,batchNum:S.batchNum,
@@ -1880,9 +2057,8 @@ function saveLabel(){
   if(!f[folderKey])f[folderKey]={};
   f[folderKey].active=true;
   persistFolders(f);
-  const arr=getSaved();
-  const idx=arr.findIndex(e=>e.scentName===entry.scentName&&e.productType===entry.productType);
-  if(idx>=0)arr[idx]=entry;else arr.push(entry);
+  // reuse arr from cap check above — update or append
+  if(existingIdx>=0)arr[existingIdx]=entry;else arr.push(entry);
   persistSaved(arr);
   renderSaved();
   const btn=document.getElementById('btn-save');
@@ -1891,8 +2067,32 @@ function saveLabel(){
   setTimeout(()=>{if(btn){btn.textContent='💾 Save to my label library';btn.style.background='';btn.style.borderColor='';}},2000);
 }
 
+function lockLibraryFields(){
+  // Lock scent name, product type, shape, size — only hazard data can change
+  const lock=(id)=>{const el=document.getElementById(id);if(el){el.disabled=true;el.style.opacity='0.55';el.style.cursor='not-allowed';}};
+  lock('scent-name');lock('product-type');
+  // Lock shape cards visually
+  document.querySelectorAll('.shape-card').forEach(c=>{c.style.pointerEvents='none';c.style.opacity='0.55';});
+  // Lock size buttons
+  document.querySelectorAll('.size-btn').forEach(b=>{b.style.pointerEvents='none';b.style.opacity='0.55';});
+  // Show locked banner on Step 1 if visible
+  const banner=document.getElementById('lib-lock-banner');
+  if(banner)banner.style.display='block';
+}
+
+function unlockLibraryFields(){
+  const unlock=(id)=>{const el=document.getElementById(id);if(el){el.disabled=false;el.style.opacity='';el.style.cursor='';}};
+  unlock('scent-name');unlock('product-type');
+  document.querySelectorAll('.shape-card').forEach(c=>{c.style.pointerEvents='';c.style.opacity='';});
+  document.querySelectorAll('.size-btn').forEach(b=>{b.style.pointerEvents='';b.style.opacity='';});
+  const banner=document.getElementById('lib-lock-banner');
+  if(banner)banner.style.display='none';
+  S.libraryLocked=false;
+}
+
 function loadLabel(i){
   const arr=getSaved();const e=arr[i];if(!e)return;
+  // Load all data into state
   S.scentName=e.scentName;S.productType=e.productType;S.shape=e.shape;S.size=e.size;
   S.signal=e.signal||'';S.hStatements=e.hStatements||'';S.sensitisers=e.sensitisers||[];
   S.bizName=e.bizName||'';S.bizAddress=e.bizAddress||'';S.bizPhone=e.bizPhone||'';
@@ -1912,14 +2112,16 @@ function loadLabel(i){
   selectShape(e.shape||'circle');selectSize(e.size||35);
   if(e.signal)selectSignal(e.signal);
   renderTags();updateLabel();
-  goToStep(1);
+  // Lock identity fields — route to Step 3 for SDS update
+  S.libraryLocked=true;
+  lockLibraryFields();
+  goToStep(3);
 }
 
 function loadFromLibrarySelect(i){
   if(i==='')return;
-  loadLabel(parseInt(i));
+  loadLabel(parseInt(i)); // loadLabel now routes to Step 3 and locks fields
   document.getElementById('load-from-library').value='';
-  goToStep(5);
 }
 
 function loadLabelAndGotoStep5(i){
@@ -2068,7 +2270,8 @@ function init(){
   const biz=JSON.parse(localStorage.getItem('clpeasy_biz')||'{}');
   if(biz.bizName){document.getElementById('biz-name').value=biz.bizName;S.bizName=biz.bizName;}
   if(biz.bizAddress){document.getElementById('biz-address').value=biz.bizAddress;S.bizAddress=biz.bizAddress;}
-  if(biz.bizPhone){document.getElementById('biz-phone').value=biz.bizPhone;S.bizPhone=biz.bizPhone;}
+  const savedPhone = biz.bizPhone || localStorage.getItem('clpeasy_phone') || '';
+  if(savedPhone){document.getElementById('biz-phone').value=savedPhone;S.bizPhone=savedPhone;}
   if(biz.bizWebsite){document.getElementById('biz-website').value=biz.bizWebsite;S.bizWebsite=biz.bizWebsite;}
   // Restore saved product details
   const prod=JSON.parse(localStorage.getItem('clpeasy_prod')||'{}');
@@ -2085,8 +2288,11 @@ function init(){
   updateLabel();
 }
 function saveBizDetails(){
-  const biz={bizName:document.getElementById('biz-name')?.value||'',bizAddress:document.getElementById('biz-address')?.value||'',bizPhone:document.getElementById('biz-phone')?.value||'',bizWebsite:document.getElementById('biz-website')?.value||''};
+  const phone = document.getElementById('biz-phone')?.value||'';
+  const biz={bizName:document.getElementById('biz-name')?.value||'',bizAddress:document.getElementById('biz-address')?.value||'',bizPhone:phone,bizWebsite:document.getElementById('biz-website')?.value||''};
   localStorage.setItem('clpeasy_biz',JSON.stringify(biz));
+  // Also save phone separately so it always restores even if biz object is stale
+  if(phone) localStorage.setItem('clpeasy_phone',phone);
 }
 function saveProdDetails(){
   const prod={labelLang:document.getElementById('label-lang')?.value||'en'};
@@ -2177,15 +2383,26 @@ function extractSDS(){
   document.querySelectorAll('.picto-btn').forEach(b=>b.classList.remove('selected'));
   // Map H codes → pictograms
   const hPictoMap={
+    // GHS07 — exclamation mark
     exclamation:['H302','H312','H315','H317','H319','H332','H335','H336','H371','H373','EUH066','EUH071'],
-    health:['H340','H341','H350','H351','H360','H361','H362','H370','H372'],
-    aquatic:['H400','H410','H411','H412','H413'],
+    // GHS08 — health hazard (serious long-term effects)
+    // H304 added: aspiration hazard is GHS08 not GHS06
+    // H370 added: STOT single Cat1 = health (CLPeasy already has this)
+    health:['H304','H340','H341','H350','H351','H360','H361','H362','H370','H372'],
+    // GHS09 — environmental hazard
+    aquatic:['H400','H410','H411','H412','H413','H420'],
+    // GHS05 — corrosion
     corrosive:['H290','H314','H318'],
+    // GHS06 — skull and crossbones (acute toxicity Cat 1-3)
     skull:['H300','H301','H310','H311','H330','H331'],
+    // GHS01 — exploding bomb
     explosion:['H200','H201','H202','H203','H204','H205','H206','H207','H208','H209','H210','H211','H240','H241','H242'],
-    flame:['H220','H221','H222','H223','H224','H225','H226','H228','H232','H250','H251','H252','H260','H261','H270','H271','H272'],
+    // GHS02 — flame (flammable — H270/271/272 removed: those are oxidiser GHS03)
+    flame:['H220','H221','H222','H223','H224','H225','H226','H228','H229','H232','H250','H251','H252','H260','H261'],
+    // GHS03 — flame over circle (oxidising)
     oxidiser:['H270','H271','H272'],
-    gas:['H280','H281']
+    // GHS04 — gas cylinder
+    gas:['H280','H281','H282','H283']
   };
   Object.entries(hPictoMap).forEach(([picto,codes])=>{
     if(allH.some(h=>codes.includes(h)))addPicto(picto);
@@ -2486,10 +2703,21 @@ function updateStepsBar(){
 
 // ── SHAPE/SIZE ────────────────────────────────────────────────
 function selectShape(s){S.shape=s;document.querySelectorAll('.shape-card').forEach(c=>c.classList.toggle('selected',c.dataset.shape===s));syncDimFields();updateLabel();}
+function checkCLPSizeWarn(){
+  const w = S.customW || parseInt(document.getElementById('custom-w').value) || 35;
+  const h = S.customH || parseInt(document.getElementById('custom-h').value) || w;
+  const warn = document.getElementById('clp-size-warn');
+  // For rectangles: warn if width < 52mm (height can be less — fold-out handles it)
+  // For circles/squares: warn if diameter < 52mm
+  const isRect = S.shape === 'rectangle';
+  const tooSmall = isRect ? (w < 52) : (w < 52);
+  if(warn) warn.style.display = tooSmall ? 'block' : 'none';
+}
+
 function selectSize(sz){
   S.size=sz;document.querySelectorAll('.size-card').forEach(c=>c.classList.toggle('selected',c.dataset.size==sz));
   if(sz!=='custom'){const mm=parseInt(sz);document.getElementById('custom-w').value=mm;document.getElementById('custom-h').value=(S.shape==='rectangle')?Math.round(mm*0.7):mm;S.customW=mm;S.customH=(S.shape==='rectangle')?Math.round(mm*0.7):mm;}
-  syncDimFields();updateLabel();
+  syncDimFields();checkCLPSizeWarn();updateLabel();
 }
 function onDimInput(){
   S.size='custom';
@@ -2508,7 +2736,7 @@ function onDimInput(){
   }
   S.customW = Math.max(rawW, 10);
   S.customH = Math.max(rawH, 10);
-  updateLabel();
+  checkCLPSizeWarn();updateLabel();
 }
 function syncDimFields(){
   const hI=document.getElementById('custom-h'),hN=document.getElementById('height-note');
@@ -2588,16 +2816,20 @@ function buildSVG(forExport=false){
 
   // ── BAND HEIGHTS (as fraction of sH) ─────────────────────────
   // Top band: biz name + website
-  // Bottom band: address, phone, detail
+  // Bottom band: address, phone, detail + EN 15494 icons for candles
   // Mid band: everything else
-  const topFrac = 0.17;
-  const botFrac = 0.24;
+  const isCandle = EN15494_CANDLE_TYPES.includes(S.productType);
+  // Bands: top = brand/scent, bottom = footer+icons, mid = hazard content
+  // Circle gets more top (arc text), rect gets less top (scent in mid)
+  const topFrac = isCircle ? 0.20 : 0.16;
+  // Bottom: candles need room for EN15494 row + footer text
+  const botFrac = isCandle ? (isCircle ? 0.36 : 0.42) : (isCircle ? 0.22 : 0.24);
   const topH = sH * topFrac;
   const botH = sH * botFrac;
   const midH = sH - topH - botH;
-  const topY  = sTop;                // absolute Y: top of shape
-  const midY  = sTop + topH;        // absolute Y: mid band starts
-  const botY  = sTop + topH + midH; // absolute Y: bottom band starts
+  const topY  = sTop;
+  const midY  = sTop + topH;
+  const botY  = sTop + topH + midH;
 
   // ── GATHER CONTENT ────────────────────────────────────────────
   const bgCol=(document.getElementById('label-bg-colour')?.value)||'#ffffff';
@@ -2648,13 +2880,23 @@ function buildSVG(forExport=false){
   }
 
   // ── HEADER BAND ───────────────────────────────────────────────
-  const bizY = topY + topH*0.40;
-  const webY = topY + topH*0.78;
-  // bizSW must use sW (shape width), not pw, for rect/square to avoid overflow
+  // On circle: scent name curves along top arc, brand name below it horizontal
+  // On square/rect: both horizontal as before
+  const arcTextR = isCircle ? r * 0.82 : 0; // radius for curved text — inside the circle
+  const arcScentFS = isCircle ? clamp(BASE*0.058, 4, 11) : 0;
+
+  // Horizontal positions (used for square/rect, and for brand name on circle)
+  // On circle: arc text sits at top, biz name below it, website below biz
+  // Give them enough vertical separation so nothing overlaps
+  const bizArcClearance = isCircle ? arcScentFS * 1.8 : 0; // clear the arc text height
+  const bizY = topY + topH*(isCircle ? 0.62 : 0.38) + bizArcClearance;
+  const webY = bizY + clamp(BASE*0.040, 3, 9) * 1.8; // one line below bizY
   const bizSW = Math.min(chordW(bizY, 0.10), sW*0.88);
   const webSW = Math.min(chordW(webY, 0.10), sW*0.88);
-  const bizFS = fitFont(bizName, bizSW*0.84, clamp(BASE*0.065,4,13), clamp(BASE*0.030,3,6.5), true, true);
-  const webFS = clamp(BASE*0.038, 2.8, 7);
+  const bizFS = fitFont(bizName, bizSW*0.84, clamp(BASE*0.075,5,15), clamp(BASE*0.034,3,7), true, true);
+  const webFS = clamp(BASE*0.040, 3, 9);
+  // Scent name on circle arc — font sized to fit arc
+  const arcScentR = isCircle ? r * 0.93 : 0;
 
   // ── DIVIDER LINES ─────────────────────────────────────────────
   const divTopY = midY;
@@ -2664,106 +2906,170 @@ function buildSVG(forExport=false){
   const divTop = `<line x1="${(cx-divTopHW).toFixed(1)}" y1="${divTopY.toFixed(1)}" x2="${(cx+divTopHW).toFixed(1)}" y2="${divTopY.toFixed(1)}" stroke="#ddd" stroke-width="0.5"/>`;
   const divBot = `<line x1="${(cx-divBotHW).toFixed(1)}" y1="${divBotY.toFixed(1)}" x2="${(cx+divBotHW).toFixed(1)}" y2="${divBotY.toFixed(1)}" stroke="#ddd" stroke-width="0.5"/>`;
 
-  // ── MID BAND: fixed proportional layout ──────────────────────
-  // Uses fixed fractions of midH so content always fits regardless of measureText accuracy.
-  // Font sizes scale with shape width (BASE=sW) and are capped to ensure they fit vertically.
+  // ── MID BAND: content-first dynamic layout ──────────────────────
+  // Approach: calculate each element's required height, then assign Y positions.
+  // CLP legal minimums enforced. Hard clip to botY — nothing renders below it.
+  // pxPerMm: preview canvas is always 260px wide = mmW mm
+  const pxPerMm = 260 / mmW;
 
-  // Reserve vertical slots as fractions of midH:
-  // scent: 22%, type: 13%, signal: 16%, pictos: 14%, H-stmts: 13%, sens: 11%, gap: 11%
-  const slot = {
-    scent:  midH * 0.20,
-    type:   midH * 0.12,
-    signal: midH * 0.14,
-    picto:  midH * 0.13,
-    h:      midH * 0.11,
-    sens:   midH * 0.10,
-    p:      midH * 0.15,
-    gap:    midH * 0.05,
-  };
+  // ── Font sizes — legal minimums enforced ──────────────────────
+  // CLP Reg: H statement text ≥ 1mm x-height (≈ 2.8pt at 72dpi, but we use px)
+  // In practice "no less than 10mm" refers to pictogram size not text.
+  // ECHA guidance: text must be easily legible. We enforce ≥ 1.4mm x-height.
+  // 1.4mm = 1.4 * pxPerMm px minimum font size on canvas
+  const minLegalFS = Math.max(1.4 * pxPerMm, 3.5); // 1.4mm minimum at print size
 
-  const topGap = slot.gap;
-  let curY = midY + topGap;
+  // Scale fonts with shape width, capped to avoid overflow
+  const scaleFS = (base, min, max) => clamp(BASE * base, Math.max(min, minLegalFS), max);
 
-  // Scent name: font sized to fill its slot height, also width-constrained
-  const scentSW    = chordW(curY + slot.scent*0.5, 0.08);
-  const scentMaxFS = Math.min(slot.scent * 0.72, scentSW * 0.38, clamp(BASE*0.110,6,22));
-  const scentMinFS = clamp(BASE*0.036, 3, 7);
-  let scentFS      = fitFont(scent, scentSW*0.90, scentMaxFS, scentMinFS, true, true);
-  let scentLines   = wrapText(scent, scentSW*0.90, scentFS, true, true);
-  // If wrapping to 2 lines, reduce font size so 2 lines fit in slot
-  if(scentLines.length > 1){
-    const fs2 = Math.min(scentFS, slot.scent * 0.42);
+  // Fixed small elements (type, signal) — short text, fit in 1-2 lines
+  const typeFSmax  = scaleFS(0.060, 4, 14);
+  const sigFSmax   = scaleFS(0.074, 5, 16);
+
+  // Content elements (H, sens, P) — need room to wrap
+  const hFSmax     = scaleFS(0.050, minLegalFS, 10);
+  const sensFSmax  = scaleFS(0.046, minLegalFS, 9.5);
+  const pFSmax     = scaleFS(0.040, minLegalFS, 8.5);
+
+  // ── Fixed height allocations (small/fixed elements) ───────────
+  const gap        = midH * 0.03;
+  const typeH      = midH * (isCircle ? 0.09 : 0.09);
+  const sigH       = midH * (isCircle ? 0.11 : 0.11);
+
+  // ── Pictogram size — 1cm minimum per CLP ─────────────────────
+  const nP         = pictos.length;
+  const minPictoSz = Math.min(Math.max(10 * pxPerMm, 6), midH * 0.18);
+
+  // ── Scent block (rect/square only — circle uses arc) ──────────
+  let curY = midY + gap;
+
+  // SCENT (non-circle)
+  const scentSW    = chordW(curY + midH*0.07, 0.08);
+  const scentFSmax = clamp(BASE*0.110, 6, 22);
+  const scentFSmin = clamp(BASE*0.036, 3, 7);
+  let scentFS      = isCircle ? 0 : fitFont(scent, scentSW*0.90, scentFSmax, scentFSmin, true, true);
+  let scentLines   = isCircle ? [] : wrapText(scent, scentSW*0.90, scentFS, true, true);
+  if(!isCircle && scentLines.length > 1){
+    const fs2 = Math.min(scentFS, midH * 0.065);
     scentLines = wrapText(scent, scentSW*0.90, fs2, true, true);
     scentFS = fs2;
   }
-  const scentLH   = scentFS * 1.15;
-  const scentBlock= scentLines.length * scentLH;
+  const scentLH    = isCircle ? 0 : scentFS * 1.15;
+  const scentBlockH= isCircle ? 0 : scentLines.length * scentLH;
+  const scentActH  = isCircle ? 0 : Math.max(scentBlockH, midH * 0.11);
+  const scentY     = isCircle ? 0 : curY + scentActH*0.5 - scentBlockH*0.5 + scentLH*0.5;
+  curY += scentActH;
 
-  const scentY    = curY + slot.scent*0.5 - scentBlock*0.5 + scentLH*0.5;
-  curY += slot.scent;
+  // PRODUCT TYPE
+  const typeSW     = chordW(curY + typeH*0.5, 0.09);
+  const typeFS     = Math.min(typeH * 0.68, fitFont(type, typeSW*0.88, typeFSmax, 2.5, true, false));
+  const typeY      = curY + typeH*0.5;
+  curY += typeH;
 
-  // Product type
-  const typeSW  = chordW(curY + slot.type*0.5, 0.09);
-  const typeFS  = Math.min(slot.type * 0.68, fitFont(type, typeSW*0.88, clamp(BASE*0.060,4,14), clamp(BASE*0.028,2.5,6), true, false));
-  const typeY   = curY + slot.type*0.5;
-  curY += slot.type;
+  // SIGNAL WORD
+  const sigSW      = chordW(curY + sigH*0.5, 0.09);
+  const sigFS      = Math.min(sigH * 0.68, fitFont(sig, sigSW*0.76, sigFSmax, 3, true, false));
+  const sigY       = curY + sigH*0.5;
+  curY += sigH;
 
-  // Signal word
-  const sigSW   = chordW(curY + slot.signal*0.5, 0.09);
-  const sigFS   = Math.min(slot.signal * 0.68, fitFont(sig, sigSW*0.76, clamp(BASE*0.074,5,16), clamp(BASE*0.032,3,7), true, false));
-  const sigY    = curY + slot.signal*0.5;
-  curY += slot.signal;
+  // GHS PICTOGRAMS — fit within available space
+  const pictoSW    = chordW(curY + midH*0.08, 0.06);
+  // Pictogram height: use up to 20% of midH but respect 1cm minimum
+  const pictoMaxH  = Math.max(midH * 0.20, minPictoSz * 1.1);
+  const pictoGap   = pictoSW * 0.04;
+  const pictoSzFit = nP > 0 ? Math.min(pictoMaxH * 0.90, (pictoSW - pictoGap*(nP+1)) / nP) : 0;
+  const pictoSz    = nP > 0 ? Math.max(Math.min(pictoSzFit, clamp(BASE*0.14,6,28)), minPictoSz) : 0;
+  const pictoActH  = nP > 0 ? pictoSz * 1.1 : 0;
+  const pictoTotW  = nP*pictoSz + Math.max(0,nP-1)*pictoGap;
+  const pictoSX    = cx - pictoTotW/2 + pictoSz/2;
+  const pictoY     = curY + pictoActH*0.5;
+  curY += pictoActH;
 
-  // Pictograms: size to fit within slot height and row width
-  const nP      = pictos.length;
-  const pictoSW = chordW(curY + slot.picto*0.5, 0.06);
-  const pictoMaxH = slot.picto * 0.80;
-  const pictoGap  = pictoSW * 0.04;
-  const pictoSz   = Math.min(pictoMaxH, (pictoSW - pictoGap*(nP+1)) / nP, clamp(BASE*0.10,5,20));
-  const pictoTotW = nP*pictoSz + (nP-1)*pictoGap;
-  const pictoSX   = cx - pictoTotW/2 + pictoSz/2;
-  const pictoY    = curY + slot.picto*0.5;
-  curY += slot.picto;
+  // H STATEMENTS — legally required, always shown, font ≥ minLegalFS
+  const hSW        = chordW(curY + midH*0.08, 0.08);
+  const hFS        = Math.min(midH * 0.13, hFSmax);
+  const hLH        = hFS * 1.3;
+  const hText      = hCodes.slice(0,8).join(' · ') || '';
+  const hLines     = wrapText(hText, hSW*0.92, hFS, false, false);
+  const hBlockH    = hLines.length * hLH;
+  const hActH      = Math.max(hBlockH, midH * 0.12);
+  const hY         = curY + hLH*0.5;
+  curY += hActH;
 
-  // H statements
-  const hSW     = chordW(curY + slot.h*0.5, 0.08);
-  const hFS     = Math.min(slot.h * 0.52, clamp(BASE*0.037, 2.5, 7.5));
-  const hLH     = hFS * 1.25;
-  const hText   = hCodes.slice(0,8).join(' · ') || '';
-  const hLines  = wrapText(hText, hSW*0.92, hFS, false, false);
-  const hY      = curY + hLH*0.5;
-  curY += Math.max(slot.h, hLines.length*hLH);
-
-  // Sensitisers
-  const sensSW  = chordW(curY + slot.sens*0.5, 0.08);
-  const sensFS  = Math.min(slot.sens * 0.52, clamp(BASE*0.034, 2.5, 7));
-  const sensLH  = sensFS * 1.25;
-  const _sensBase = sensArr.length>0 ? _containsPrefix+' '+sensArr.slice(0,5).join(', ')+(sensArr.length>5?'...':'') : '';
+  // CONTAINS / SENSITISERS — always shown if present
+  const sensSW     = chordW(curY + midH*0.08, 0.08);
+  const sensFS     = Math.min(midH * 0.12, sensFSmax);
+  const sensLH     = sensFS * 1.3;
+  const _sensBase  = sensArr.length>0 ? _containsPrefix+' '+sensArr.slice(0,5).join(', ')+(sensArr.length>5?'...':'') : '';
   const _euhSuffix = hasEUH208 ? ' May produce an allergic reaction.' : '';
-  const sensStr = (_sensBase || (hasEUH208 ? 'EUH208:' : '')) + _euhSuffix;
-  const sensLines = sensStr ? wrapText(sensStr, sensSW*0.90, sensFS, false, false) : [];
-  const sensStY = curY + sensLH*0.5;
-  curY += Math.max(slot.sens, sensLines.length*sensLH);
+  const sensStr    = (_sensBase || (hasEUH208 ? 'EUH208:' : '')) + _euhSuffix;
+  const sensLines  = sensStr ? wrapText(sensStr, sensSW*0.90, sensFS, false, false) : [];
+  const sensBlockH = sensLines.length * sensLH;
+  const sensActH   = Math.max(sensBlockH, sensLines.length > 0 ? midH * 0.12 : 0);
+  const sensStY    = curY + sensLH*0.5;
+  curY += sensActH;
 
-  // P statements (only if space remains before footer)
-  const pSW     = chordW(curY + slot.p*0.5, 0.08);
-  const pFS     = Math.min(slot.p * 0.50, clamp(BASE*0.030, 2.5, 6));
-  const pLH     = pFS * 1.25;
-  const pText   = pCodes.slice(0,8).join(' · ');
-  const pLines  = pText ? wrapText(pText, pSW*0.90, pFS, false, false) : [];
-  const pStY    = curY + pLH*0.5;
-  const showP   = pLines.length > 0;
+  // ── AUTO-SCALE: if content overflows midH, scale everything down ────
+  // This ensures all content fits regardless of label size
+  const contentTotal = scentActH + typeH + sigH + pictoActH + hActH + sensActH + gap;
+  const scaleFactor  = contentTotal > midH * 0.96 ? (midH * 0.96) / contentTotal : 1.0;
+  // Apply scale factor to all heights and font sizes
+  const _sf = scaleFactor;
+  // Recompute curY with scaled heights
+  curY = midY + gap * _sf;
+
+  const _scentActH2 = scentActH * _sf;
+  const _scentLH2   = scentLH   * _sf;
+  const _scentY2    = isCircle ? 0 : curY + _scentActH2*0.5 - (scentLines.length*_scentLH2)*0.5 + _scentLH2*0.5;
+  curY += _scentActH2;
+
+  const _typeH2  = typeH  * _sf;
+  const _typeFS2 = typeFS * _sf;
+  const _typeY2  = curY + _typeH2*0.5;
+  curY += _typeH2;
+
+  const _sigH2   = sigH   * _sf;
+  const _sigFS2  = sigFS  * _sf;
+  const _sigY2   = curY + _sigH2*0.5;
+  curY += _sigH2;
+
+  const _pictoActH2 = pictoActH * _sf;
+  const _pictoSz2   = Math.max(pictoSz * _sf, minPictoSz * 0.85); // don't scale below ~8.5mm
+  const _pictoY2    = curY + _pictoActH2*0.5;
+  const _pictoTotW2 = nP*_pictoSz2 + Math.max(0,nP-1)*pictoGap;
+  const _pictoSX2   = cx - _pictoTotW2/2 + _pictoSz2/2;
+  curY += _pictoActH2;
+
+  const _hActH2  = hActH  * _sf;
+  const _hFS2    = Math.max(hFS * _sf, minLegalFS * 0.85);
+  const _hLH2    = _hFS2  * 1.3;
+  const _hY2     = curY + _hLH2*0.5;
+  curY += _hActH2;
+
+  const _sensActH2 = sensActH * _sf;
+  const _sensFS2   = Math.max(sensFS * _sf, minLegalFS * 0.85);
+  const _sensLH2   = _sensFS2 * 1.3;
+  const _sensStY2  = curY + _sensLH2*0.5;
+  curY += _sensActH2;
+
+  // P STATEMENTS — show only if space remains above botY
+  const pRemaining = botY - curY - 4; // px remaining before bottom band
+  const pSW        = chordW(curY + pRemaining*0.5, 0.08);
+  const pFS        = Math.min(pRemaining * 0.45, pFSmax);
+  const pLH        = pFS * 1.3;
+  const pText      = pCodes.slice(0,8).join(' · ');
+  const pLines     = (pText && pRemaining > pLH * 1.5) ? wrapText(pText, pSW*0.90, pFS, false, false) : [];
+  const pFits      = pLines.length > 0 && pRemaining >= pLH * 1.5;
+  const pStY       = curY + pLH*0.5;
+  const showP      = pFits;
 
   // ── RENDER PICTOGRAMS ─────────────────────────────────────────
   const GHS_TEXT={flame:'GHS02',exclamation:'GHS07',health:'GHS08',aquatic:'GHS09',corrosive:'GHS05',skull:'GHS06',oxidiser:'GHS03',gas:'GHS04',explosion:'GHS01'};
   const pictoRow=pictos.map((p,i)=>{
-    const px=pictoSX+i*(pictoSz+pictoGap);
-    const py=pictoY;
-    if(forExport){
-      const hSz=pictoSz*0.48;
-      return`<rect x="${(px-hSz).toFixed(1)}" y="${(py-hSz).toFixed(1)}" width="${(hSz*2).toFixed(1)}" height="${(hSz*2).toFixed(1)}" fill="none" stroke="${txtCol}" stroke-width="1" transform="rotate(45,${px.toFixed(1)},${py.toFixed(1)})"/><text x="${px.toFixed(1)}" y="${py.toFixed(1)}" font-family="sans-serif" font-size="${(pictoSz*0.35).toFixed(1)}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${GHS_TEXT[p]||'!'}</text>`;
-    }
-    return ghsPicto(p, px, py, pictoSz);
+    const px=_pictoSX2+i*(_pictoSz2+pictoGap);
+    const py=_pictoY2;
+    // Use ghsPicto for both preview and export — red diamond SVG paths
+    return ghsPicto(p, px, py, _pictoSz2);
   }).join('');
 
   // ── FOOTER BAND ───────────────────────────────────────────────
@@ -2773,13 +3079,14 @@ function buildSVG(forExport=false){
   if(detailParts.length)footerSlots.push({text:detailParts.join(' · '),bold:false});
 
   // ── FOOTER BAND: wrapped address support ─────────────────────
-  // Address is allowed to wrap to 2 lines on narrow labels.
-  // Font scales down before wrapping so minimum readable size is preserved.
-  const fTopPad = botH * 0.06;
-  const fBotPad = botH * 0.06;
+  // On candle labels EN15494 icons occupy top 50% of bottom band.
+  // Footer text must start BELOW the icon row.
+  const fIconReserve = isCandle ? botH * 0.62 : 0; // reserve space for EN15494 icon row
+  const fTopPad = botH * 0.06 + fIconReserve;
+  const fBotPad = botH * 0.05;
   const fUsable = botH - fTopPad - fBotPad;
-  const maxFooterFS = clamp(BASE*0.036,3,7.5);
-  const minFooterFS = clamp(BASE*0.022,2,4.5);
+  const maxFooterFS = clamp(BASE*0.044,4,9.5);
+  const minFooterFS = clamp(BASE*0.028,2.5,5.5);
 
   // Pre-calculate Y positions for each slot so we can measure chord at exact render Y
   const nSlots = Math.min(footerSlots.length, 3);
@@ -2857,27 +3164,27 @@ function buildSVG(forExport=false){
   ${divTop}
   ${divBot}
 
-  <!-- HEADER -->
-  ${svgWrapped([bizName],cx,bizY,scentLH,bizFS,true,true,txtCol)}
+  <!-- HEADER: arc text on circle, horizontal on square/rect -->
+  ${isCircle
+    ? svgArcText(scent, cx, cy, arcScentR, arcScentFS, true, txtCol)
+    : svgWrapped(scentLines,cx,_scentY2,_scentLH2,scentFS,true,true,txtCol)}
+  ${svgWrapped([bizName],cx,bizY,_scentLH2||bizFS,bizFS,true,true,txtCol)}
   ${webLine?`<text x="${cx}" y="${webY.toFixed(1)}" font-family="sans-serif" font-size="${webFS.toFixed(2)}" fill="${mutedCol}" text-anchor="middle" dominant-baseline="middle">${xe(webLine)}</text>`:''}
 
-  <!-- SCENT NAME -->
-  ${svgWrapped(scentLines,cx,scentY,scentLH,scentFS,true,true,txtCol)}
-
   <!-- PRODUCT TYPE -->
-  <text x="${cx}" y="${typeY.toFixed(1)}" font-family="sans-serif" font-size="${typeFS.toFixed(2)}" font-weight="700" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle" letter-spacing="0.6">${xe(type)}</text>
+  <text x="${cx}" y="${_typeY2.toFixed(1)}" font-family="sans-serif" font-size="${_typeFS2.toFixed(2)}" font-weight="700" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle" letter-spacing="0.6">${xe(type)}</text>
 
   <!-- SIGNAL WORD -->
-  <text x="${cx}" y="${sigY.toFixed(1)}" font-family="sans-serif" font-size="${sigFS.toFixed(2)}" font-weight="800" fill="${sig==='DANGER'?'#cc0000':txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(sig)}</text>
+  <text x="${cx}" y="${_sigY2.toFixed(1)}" font-family="sans-serif" font-size="${_sigFS2.toFixed(2)}" font-weight="800" fill="${sig==='DANGER'?'#cc0000':txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(sig)}</text>
 
   <!-- PICTOGRAMS -->
   ${pictoRow}
 
   <!-- H STATEMENTS -->
-  ${svgWrapped(hLines,cx,hY,hLH,hFS,false,false,txtCol)}
+  ${svgWrapped(hLines,cx,_hY2,_hLH2,_hFS2,false,false,txtCol)}
 
   <!-- SENSITISERS -->
-  ${svgWrapped(sensLines,cx,sensStY,sensLH,sensFS,false,false,mutedCol)}
+  ${svgWrapped(sensLines,cx,_sensStY2,_sensLH2,_sensFS2,false,false,mutedCol)}
 
   <!-- P STATEMENTS -->
   ${showP?`<g font-style="italic">${svgWrapped(pLines,cx,pStY,pLH,pFS,false,false,mutedCol)}</g>`:''}
@@ -2887,6 +3194,9 @@ function buildSVG(forExport=false){
 
   <!-- QR CODE -->
   ${qrEl}
+
+  <!-- EN 15494 CANDLE SAFETY PICTOGRAMS (GPSR) -->
+  ${isCandle ? buildEN15494Row(cx, sTop, sBot, sW, sH, mmW, chordW, isCircle, botY) : ''}
 
   <!-- WATERMARK -->
   ${wm}
@@ -2983,6 +3293,26 @@ function wrapText(txt,maxPx,sizePx,bold=false,serif=false){
 
 // ── HELPER: SVG text escape ────────────────────────────────────
 function xe(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// Curved text along top arc of circle — matches reference label style
+function svgArcText(text, cx, cy, arcR, fsz, bold, col) {
+  const circumference = 2 * Math.PI * arcR;
+  const charEstW = fsz * 0.58;
+  const textLen = text.length * charEstW;
+  const angleDeg = Math.min((textLen / circumference) * 360 * 1.05, 120);
+  const toRad = a => a * Math.PI / 180;
+  const startAngle = -90 - angleDeg/2;
+  const endAngle   = -90 + angleDeg/2;
+  const sx = cx + arcR * Math.cos(toRad(startAngle));
+  const sy = cy + arcR * Math.sin(toRad(startAngle));
+  const ex = cx + arcR * Math.cos(toRad(endAngle));
+  const ey = cy + arcR * Math.sin(toRad(endAngle));
+  const largeArc = angleDeg > 180 ? 1 : 0;
+  const pid = 'ap' + Math.round(cx*10) + Math.round(arcR*10);
+  return '<defs><path id="' + pid + '" d="M ' + sx.toFixed(2) + ',' + sy.toFixed(2) + ' A ' + arcR.toFixed(2) + ',' + arcR.toFixed(2) + ' 0 ' + largeArc + ',1 ' + ex.toFixed(2) + ',' + ey.toFixed(2) + '"/></defs>' +
+    '<text font-family="sans-serif" font-size="' + fsz.toFixed(2) + '" font-weight="' + (bold?'700':'400') + '" fill="' + col + '" text-anchor="middle">' +
+    '<textPath href="#' + pid + '" startOffset="50%">' + xe(text) + '</textPath></text>';
+}
 
 // ── HELPER: render wrapped lines as SVG <text>/<tspan> ────────
 function svgWrapped(lines,x,startY,lineH,sizePx,bold,serif,fill,anchor='middle',letterSpacing=''){
@@ -3496,8 +3826,8 @@ function autoIncrementBatch(){
     if(m){const p=m[1];const n=parseInt(m[2]);el.value=p+String(n+1).padStart(m[2].length,'0');}
     else{el.value='BN-001';}
   }
-  // Save last used
-  localStorage.setItem('clpeasy_last_batch',el.value);
+  // Note: localStorage save happens on actual download, not on +1 click
+  // This prevents gaps in batch numbers from unused increments
   const disp=document.getElementById('last-batch-display');
   if(disp)disp.textContent=el.value;
   updateLabel();
