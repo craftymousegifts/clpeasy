@@ -2870,15 +2870,12 @@ function buildSVG(forExport=false){
   if(isCircle){
     clip=`<clipPath id="lc"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath>`;
     bg=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${bgCol}"/>`;
-    if(showBdr)bg+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#bbb" stroke-width="0.8" stroke-dasharray="3,3"/>`;
   } else if(isSquare){
     clip=`<clipPath id="lc"><rect x="${shapeX}" y="${shapeY}" width="${shapeW}" height="${shapeH}" rx="5"/></clipPath>`;
     bg=`<rect x="${shapeX}" y="${shapeY}" width="${shapeW}" height="${shapeH}" rx="5" fill="${bgCol}"/>`;
-    if(showBdr)bg+=`<rect x="${shapeX}" y="${shapeY}" width="${shapeW}" height="${shapeH}" rx="5" fill="none" stroke="#bbb" stroke-width="0.8" stroke-dasharray="3,3"/>`;
   } else {
     clip=`<clipPath id="lc"><rect x="${shapeX}" y="${shapeY}" width="${shapeW}" height="${shapeH}" rx="4"/></clipPath>`;
     bg=`<rect x="${shapeX}" y="${shapeY}" width="${shapeW}" height="${shapeH}" rx="4" fill="${bgCol}"/>`;
-    if(showBdr)bg+=`<rect x="${shapeX}" y="${shapeY}" width="${shapeW}" height="${shapeH}" rx="4" fill="none" stroke="#bbb" stroke-width="0.8" stroke-dasharray="3,3"/>`;
   }
 
   // ── HEADER BAND ───────────────────────────────────────────────
@@ -2890,13 +2887,18 @@ function buildSVG(forExport=false){
   // Horizontal positions (used for square/rect, and for brand name on circle)
   // On circle: arc text sits at top, biz name below it, website below biz
   // Give them enough vertical separation so nothing overlaps
-  const bizArcClearance = isCircle ? arcScentFS * 1.8 : 0; // clear the arc text height
-  const bizY = topY + topH*(isCircle ? 0.62 : 0.38) + bizArcClearance;
-  const webY = bizY + clamp(BASE*0.040, 3, 9) * 1.8; // one line below bizY
+  // On circle: biz name sits just below arc text, website below biz
+  // Keep both strictly within the top band (topY to midY)
+  const arcScentHeight = isCircle ? arcScentFS * 1.4 : 0;
+  const bizY = isCircle
+    ? topY + arcScentHeight + (topH - arcScentHeight) * 0.45
+    : topY + topH * 0.38;
+  const webFS_line = clamp(BASE*0.038, 3, 8);
+  const webY = Math.min(bizY + bizFS * 1.6 + webFS_line, midY - webFS_line);
   const bizSW = Math.min(chordW(bizY, 0.10), sW*0.88);
   const webSW = Math.min(chordW(webY, 0.10), sW*0.88);
   const bizFS = fitFont(bizName, bizSW*0.84, clamp(BASE*0.075,5,15), clamp(BASE*0.034,3,7), true, true);
-  const webFS = clamp(BASE*0.040, 3, 9);
+  const webFS = webFS_line;
   // Scent name on circle arc — font sized to fit arc
   const arcScentR = isCircle ? r * 0.93 : 0;
 
@@ -3163,9 +3165,6 @@ function buildSVG(forExport=false){
 <defs>${clip}</defs>
 <g clip-path="url(#lc)">
   ${bg}
-  ${divTop}
-  ${divBot}
-
   <!-- HEADER: arc text on circle, horizontal on square/rect -->
   ${isCircle
     ? svgArcText(scent, cx, cy, arcScentR, arcScentFS, true, txtCol)
