@@ -17,7 +17,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#0d1b2a;color:#c8dde8
 .gate-card{background:#111d2c;border:1px solid #1e3048;border-top:3px solid #4C9BB0;border-radius:16px;padding:36px 24px;width:100%;max-width:360px;text-align:center;}
 .gate-input{width:100%;background:#0d1b2a;border:1.5px solid #1e3048;border-radius:10px;padding:14px 16px;font-size:16px;color:#e8f4f8;font-family:inherit;outline:none;margin-bottom:14px;letter-spacing:2px;}
 .gate-input:focus{border-color:#4C9BB0;}
-.gate-btn{width:100%;background:#4C9BB0;border:none;border-radius:10px;padding:15px;font-size:15px;font-weight:800;color:#fff;cursor:pointer;font-family:inherit;}
+.gate-btn{width:100%;background:#4C9BB0;border:none;border-radius:10px;padding:15px;font-size:15px;font-weight:800;color:#fff;cursor:pointer;font-family:inherit;margin-top:10px;display:block;}
 .gate-error{color:#e74c3c;font-size:12px;margin-top:6px;display:none;}
 
 /* HEADER */
@@ -155,7 +155,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#0d1b2a;color:#c8dde8
   <text x="128" y="52" font-family="DM Sans,Arial,sans-serif" font-weight="400" font-size="38" fill="#4C9BB0" text-anchor="middle" letter-spacing="-1">easy</text>
 </svg></div>
     <p style="font-size:12px;color:#7a9fb5;margin-bottom:24px;">Admin access only</p>
-    <input class="gate-input" type="password" id="pwInput" placeholder="Password" autocomplete="current-password">
+    <input class="gate-input" type="password" id="pwInput" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')document.getElementById('gateBtn').click()">
     <label class="gate-btn" id="gateBtn" onclick="(function(){var v=document.getElementById('pwInput').value;if(v==='CLPeasy2026!'){document.getElementById('gate-unlock').checked=true;document.getElementById('gate-wrap').style.display='none';document.getElementById('app').style.display='block';setTimeout(function(){if(typeof init==='function')init();},100);}else{document.getElementById('gateErr').style.display='block';}})()">Enter</label>
     <div class="gate-error" id="gateErr" style="display:none">Incorrect password — try again</div>
   </div>
