@@ -206,12 +206,13 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#0d1b2a;color:#c8dde8
   </div>
 
   <div class="nav-tabs" id="navTabs">
-    <button class="ntab active" onclick="goTab('board')">📋 Board</button>
-    <button class="ntab" onclick="goTab('backlog')">🗂 Backlog</button>
+    <button class="ntab active" onclick="goTab('board')">📋 Active</button>
+    <button class="ntab" onclick="goTab('sprint0')">📌 Pre-Launch</button>
     <button class="ntab" onclick="goTab('launchday')">🚀 Launch Day</button>
-    <button class="ntab" onclick="goTab('sprint0')">Pre-Launch</button>
-    <button class="ntab" onclick="goTab('sprint1')">⚡ Sprint 1</button>
-    <button class="ntab" onclick="goTab('sprint2')">🔮 Sprint 2</button>
+    <button class="ntab" onclick="goTab('done')">✅ Done</button>
+    <button class="ntab" onclick="goTab('backlog')">🗂 All Stories</button>
+    <button class="ntab" onclick="goTab('sprint1')">⚡ Post-Launch S1</button>
+    <button class="ntab" onclick="goTab('sprint2')">🔮 Future S2</button>
   </div>
 
   <div class="content" id="content"></div>
@@ -220,11 +221,11 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#0d1b2a;color:#c8dde8
 <div id="toast"></div>
 
 <div class="bnav">
-  <button class="bnav-btn active" id="bn-board" onclick="goTab('board')"><span>📋</span><span>Board</span></button>
-  <button class="bnav-btn" id="bn-backlog" onclick="goTab('backlog')"><span>🗂</span><span>Backlog</span></button>
-  <button class="bnav-btn" id="bn-launchday" onclick="goTab('launchday')"><span>🚀</span><span>Launch</span></button>
-  <button class="bnav-btn" id="bn-sprint0" onclick="goTab('sprint0')"><span>📋</span><span>S0</span></button>
-  <button class="bnav-btn" id="bn-sprint1" onclick="goTab('sprint1')"><span>⚡</span><span>S1</span></button>
+  <button class="bnav-btn active" id="bn-board" onclick="goTab('board')"><span>📋</span><span>Active</span></button>
+  <button class="bnav-btn" id="bn-sprint0" onclick="goTab('sprint0')"><span>📌</span><span>Pre-Launch</span></button>
+  <button class="bnav-btn" id="bn-launchday" onclick="goTab('launchday')"><span>🚀</span><span>Launch Day</span></button>
+  <button class="bnav-btn" id="bn-done" onclick="goTab('done')"><span>✅</span><span>Done</span></button>
+  <button class="bnav-btn" id="bn-backlog" onclick="goTab('backlog')"><span>🗂</span><span>All Stories</span></button>
 </div>
 
 <script>
@@ -317,7 +318,7 @@ const STORIES = [
    tasks:['Enable Google provider in Supabase Auth settings','Add "Continue with Google" button to auth.html','Configure OAuth consent screen in Google Cloud Console with CLPeasy name and logo','Publish app to production mode — not test mode (removes unverified warning)','Rotate Google Cloud OAuth secret before public launch','If email matches existing account: link Google to that account not create a duplicate','On first Google login: create row in Supabase profiles table'],
    ac:['Google button visible and styled on auth.html','OAuth flow completes and redirects to builder.html','Consent screen shows "CLPeasy" app name and logo','Existing email/password account linked correctly on first Google login','No "unverified app" warning shown to users','Profile row created in Supabase profiles table on first login']},
 
-  {id:'AUTH-04',epic:'Auth',pri:2,pts:2,status:'TODO',sprint:'S1',
+  {id:'AUTH-04',epic:'Auth',pri:2,pts:2,status:'TODO',sprint:'S0',
    title:'Custom Auth Domain (auth.clpeasy.com)',
    what:'Changes the Google account picker to show "Sign in to CLPeasy" instead of the Supabase project ID URL. Currently when users sign in with Google it shows an unfamiliar URL in the picker.',
    why:'The Supabase project ID URL looks suspicious to users and reduces trust. auth.clpeasy.com looks professional and matches the brand.',
@@ -365,7 +366,7 @@ const STORIES = [
    tasks:['Source or create SVG assets for all 5 EN 15494 icons: keep away from children, trim wick before lighting, do not leave candle unattended, burn time indicator, keep away from draughts and heat sources','Add product type detection in buildLabel() render function: if productType === "candle" show pictograms else hide completely','Inject pictogram row into label footer area below the CLP hazard block — not overlapping any text','Scale icons proportionally to fit the label size without overlapping H/P statement text','Test render on all three label shapes: circle, square, rectangle at multiple sizes','Confirm pictograms appear in all 4 download formats: PNG, Avery Sheet, Print Shop PDF, Cricut ZIP'],
    ac:['All 5 EN 15494 pictograms visible in label footer when product type is Candle','Pictograms completely absent for wax melt, soap, reed diffuser, bath bomb, and all other types','Icons scale correctly on all label sizes without clipping or overflow','Pictograms present and legible in downloaded PNG, Avery, Print Shop PDF, and Cricut ZIP','Icons do not overlap or obscure any H/P statement or CLP text','GPSR requirement satisfied — verified against EN 15494 standard icon set']},
 
-  {id:'BLD-05',epic:'Builder',pri:2,pts:3,status:'TODO',sprint:'S1',
+  {id:'BLD-05',epic:'Builder',pri:2,pts:3,status:'DONE',sprint:'S0',
    title:'Fix Load from Library Button',
    what:'The "Load from your library" button in the builder currently does nothing after a user logs in or refreshes the page. This fix makes it open a drawer showing all saved labels and lets the user click to reload any of them back into the builder.',
    why:'Users who save labels need to be able to load them. If this button does nothing, the save feature is effectively broken.',
@@ -389,7 +390,7 @@ const STORIES = [
    tasks:['Detect which Google Font is currently selected before starting canvas capture','Use FontFace API: const font = new FontFace(family, url); await font.load()','Add loaded font to document.fonts set: document.fonts.add(font)','Await document.fonts.ready promise before calling canvas.toDataURL()','Test with at least 3 different Google Fonts across both PNG single and Cricut ZIP export','Confirm no flash of wrong font between live preview and download'],
    ac:['Selected font appears correctly in downloaded PNG — no fallback to Arial or system font','Font renders correctly in Cricut ZIP individual PNG files','No visual difference between the builder preview and the downloaded file','Tested and confirmed working on Chrome, Safari, and Firefox']},
 
-  {id:'BLD-08',epic:'Builder',pri:2,pts:2,status:'TODO',sprint:'S1',
+  {id:'BLD-08',epic:'Builder',pri:2,pts:2,status:'DONE',sprint:'S0',
    title:'Label Save Toast + Library Badge',
    what:'Currently when a label saves, the save button text changes for 2 seconds and then reverts — easy to miss. This adds a persistent bottom toast notification and a count badge on the Library button so users always know the save worked.',
    why:'If users are not sure the save worked they will keep clicking the button or worry their work is lost.',
@@ -625,9 +626,9 @@ let filterStat = 'ALL';
 let modalId    = null;
 let modalMode  = null; // 'lane'|'sprint'
 
-// Init lane from story default
+// Init lane from story status (already updated by loadStoryStatuses above)
 STORIES.forEach(s => {
-  laneStatus[s.id] = s.sprint ? (s.status === 'DONE' ? 'done' : 'todo') : 'todo';
+  laneStatus[s.id] = s.sprint ? (s.status === 'DONE' ? 'done' : s.status === 'IN REVIEW' ? 'doing' : 'todo') : 'todo';
 });
 
 // ── HELPERS ───────────────────────────────────────────────────────────────────
@@ -645,51 +646,95 @@ function toast(msg) {
 }
 
 function daysl() {
-  return Math.max(0, Math.round((new Date('2026-06-15') - new Date('2026-06-06')) / 86400000));
+  return Math.max(0, Math.round((new Date('2026-06-15') - new Date()) / 86400000));
 }
 
 
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 function init() {
-  document.getElementById('daysLeft').textContent   = daysl();
-  const activeCount = STORIES.filter(s => s.sprint === 'S0' && (s.status === 'TODO' || s.status === 'IN REVIEW')).length;
-  document.getElementById('totalStories').textContent = activeCount + ' active · pre-launch only';
+  // Reload saved statuses and task ticks fresh on every login
+  taskDone = loadTaskDone();
+  loadStoryStatuses();
+  // Re-sync laneStatus after loading saved statuses
+  STORIES.forEach(s => {
+    laneStatus[s.id] = s.sprint ? (s.status === 'DONE' ? 'done' : s.status === 'IN REVIEW' ? 'doing' : 'todo') : 'todo';
+  });
+  document.getElementById('daysLeft').textContent = daysl();
   renderProg();
   renderTab('board');
 }
 
 // ── PROGRESS ──────────────────────────────────────────────────────────────────
 function renderProg() {
-  // Only count active pre-launch items: TODO + IN REVIEW
-  // DONE, BLOCKED (launch day), post-launch all excluded from bar
-  const active = STORIES.filter(s => s.sprint === 'S0' && (s.status === 'TODO' || s.status === 'IN REVIEW'));
-  const todo   = active.filter(s => s.status === 'TODO').length;
-  const review = active.filter(s => s.status === 'IN REVIEW').length;
-  const total  = active.length;
-  const pct    = total === 0 ? 100 : Math.round(review / total * 100);
+  var s0        = STORIES.filter(function(s){ return s.sprint === 'S0'; });
+  var s0done    = s0.filter(function(s){ return s.status === 'DONE'; });
+  var s0review  = s0.filter(function(s){ return s.status === 'IN REVIEW'; });
+  var s0todo    = s0.filter(function(s){ return s.status === 'TODO'; });
+  var s0blocked = s0.filter(function(s){ return s.status === 'BLOCKED'; });
+  var activeCount = s0review.length + s0todo.length;
+  var pctDone   = s0.length === 0 ? 0 : Math.round(s0done.length / s0.length * 100);
+  var daysLeft  = daysl();
 
-  const s0done    = STORIES.filter(s => s.sprint === 'S0' && s.status === 'DONE').length;
-  const s0blocked = STORIES.filter(s => s.sprint === 'S0' && s.status === 'BLOCKED').length;
+  // ── GO / NO GO ─────────────────────────────────────────────────────────────
+  var goEl = document.getElementById('goNoGo');
+  if (goEl) {
+    var isGo = activeCount === 0;
+    goEl.style.background = isGo ? '#0d2218' : (activeCount <= 2 ? '#1a1500' : '#1a0a0a');
+    goEl.style.border = '1px solid ' + (isGo ? '#27ae60' : (activeCount <= 2 ? '#f0c040' : '#e74c3c'));
+    goEl.style.color  = isGo ? '#27ae60' : (activeCount <= 2 ? '#f0c040' : '#e74c3c');
+    goEl.innerHTML = isGo
+      ? '✅ GO FOR LAUNCH — All pre-launch items complete'
+      : (activeCount <= 2
+        ? '⚠ ALMOST READY — ' + activeCount + ' item' + (activeCount>1?'s':'') + ' remaining'
+        : '🔴 NOT READY — ' + activeCount + ' items must be completed before 15 June');
+  }
 
-  const pctDone = STORIES.filter(s => s.sprint === 'S0').length === 0 ? 0 :
-    Math.round(STORIES.filter(s => s.sprint === 'S0' && s.status === 'DONE').length /
-               STORIES.filter(s => s.sprint === 'S0').length * 100);
-  document.getElementById('pctDone').textContent = pctDone + '% · ' + total + ' left';
-  document.getElementById('progBar').innerHTML =
-    `<div style="flex:${review};background:#e67e22;min-width:${review>0?'4px':'0'}"></div>` +
-    `<div style="flex:${todo};background:#2d4a5e;min-width:${todo>0?'4px':'0'}"></div>`;
-  document.getElementById('progLegend').innerHTML =
-    [[review,'⏳ In Review','#e67e22'],[todo,'○ To Do','#4a6580']]
-    .map(([n,l,c]) => `<div class="leg"><div class="leg-dot" style="background:${c}"></div><span style="color:#7a9fb5">${l}:</span><span style="color:${c};font-weight:800">${n}</span></div>`).join('') +
-    `<div class="leg"><div class="leg-dot" style="background:#27ae60"></div><span style="color:#7a9fb5">Completed:</span><span style="color:#27ae60;font-weight:800">${s0done} filed</span></div>` +
-    `<div class="leg"><div class="leg-dot" style="background:#e74c3c"></div><span style="color:#7a9fb5">Launch day:</span><span style="color:#e74c3c;font-weight:800">${s0blocked} pending</span></div>`;
+  // ── PROGRESS BAR ───────────────────────────────────────────────────────────
+  var pctEl = document.getElementById('pctDone');
+  if (pctEl) pctEl.textContent = pctDone + '%';
+  var totalEl = document.getElementById('totalStories');
+  if (totalEl) totalEl.textContent = s0done.length + '/' + s0.length + ' done · ' + activeCount + ' active';
+  var barEl = document.getElementById('progBar');
+  if (barEl) barEl.innerHTML =
+    '<div style="flex:'+s0done.length+';background:#27ae60;min-width:'+(s0done.length>0?'4px':'0')+'"></div>' +
+    '<div style="flex:'+s0review.length+';background:#e67e22;min-width:'+(s0review.length>0?'4px':'0')+'"></div>' +
+    '<div style="flex:'+s0todo.length+';background:#2d4a5e;min-width:'+(s0todo.length>0?'4px':'0')+'"></div>';
+  var legEl = document.getElementById('progLegend');
+  if (legEl) legEl.innerHTML =
+    [['Done',s0done.length,'#27ae60'],['In Review',s0review.length,'#e67e22'],['To Do',s0todo.length,'#4a6580'],['Launch Day',s0blocked.length,'#e74c3c']]
+    .map(function(x){ return '<div class="leg"><div class="leg-dot" style="background:'+x[2]+'"></div><span style="color:#7a9fb5">'+x[0]+':</span><span style="color:'+x[2]+';font-weight:800">'+x[1]+'</span></div>'; }).join('');
+
+  // ── URGENCY BAR ────────────────────────────────────────────────────────────
+  var urgEl = document.getElementById('urgencyBar');
+  if (urgEl && activeCount > 0) {
+    var itemsPerDay = (activeCount / Math.max(daysLeft, 1)).toFixed(1);
+    var urgColor = daysLeft <= 3 ? '#e74c3c' : daysLeft <= 5 ? '#f0c040' : '#27ae60';
+    urgEl.innerHTML = '<div style="background:#0a1520;border-radius:6px;padding:8px 10px;font-size:11px;color:'+urgColor+';font-weight:700;">⏱ '+daysLeft+' days to launch · '+activeCount+' items remaining · ~'+itemsPerDay+' per day needed</div>';
+  } else if (urgEl) { urgEl.innerHTML = ''; }
+
+  // ── ACTIVE ITEMS QUICK LIST ─────────────────────────────────────────────────
+  var listEl = document.getElementById('activeList');
+  if (listEl) {
+    var activeItems = s0todo.concat(s0review).sort(function(a,b){ return a.pri-b.pri; });
+    if (activeItems.length === 0) { listEl.innerHTML = ''; return; }
+    var rows = activeItems.map(function(s) {
+      var col = s.status === 'IN REVIEW' ? '#e67e22' : '#4a6580';
+      var icon = s.status === 'IN REVIEW' ? '⏳' : '○';
+      return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #1e3048;">'+
+        '<span style="font-size:11px;color:'+col+';flex-shrink:0;">'+icon+'</span>'+
+        '<span style="font-size:11px;color:#c8dde8;flex:1;">'+s.title+'</span>'+
+        '<span style="font-size:9px;color:'+col+';font-weight:800;flex-shrink:0;">'+s.id+'</span>'+
+        '</div>';
+    }).join('');
+    listEl.innerHTML = '<div style="font-size:9px;font-weight:800;color:#4a6580;letter-spacing:0.5px;margin-bottom:4px;">NEEDS ACTION BEFORE LAUNCH</div>'+rows;
+  }
 }
 
 // ── TAB NAVIGATION ────────────────────────────────────────────────────────────
 function goTab(tab) {
   currentTab = tab;
-  var tabs = ['board','backlog','launchday','sprint0','sprint1','sprint2'];
+  var tabs = ['board','sprint0','launchday','done','backlog','sprint1','sprint2'];
   document.querySelectorAll('.ntab').forEach(function(b,i){ b.classList.toggle('active', tabs[i] === tab); });
   document.querySelectorAll('.bnav-btn').forEach(function(b){ b.classList.remove('active'); });
   var bn = document.getElementById('bn-' + tab);
@@ -701,6 +746,7 @@ function renderTab(tab) {
   if (tab === 'board')       renderBoard();
   else if (tab === 'backlog')    renderBacklog();
   else if (tab === 'launchday') renderLaunchDay();
+  else if (tab === 'done')      renderDone();
   else if (tab === 'sprint0')   renderSprintDetail('S0');
   else if (tab === 'sprint1')   renderSprintDetail('S1');
   else if (tab === 'sprint2')   renderSprintDetail('S2');
@@ -779,13 +825,14 @@ function storyCard(s) {
 function toggleTask(sid, idx) {
   const k = sid + '-' + idx;
   taskDone[k] = !taskDone[k];
-  saveTaskDone(); // persist across sessions
+  saveTaskDone();
+  saveStoryStatuses();
   // Re-render just this card
   const s = STORIES.find(x => x.id === sid);
   const el = document.getElementById('sc-' + sid);
   if (el) el.outerHTML = storyCard(s);
   toast(taskDone[k] ? '✅ Task marked done' : '⬜ Task unmarked');
-  renderProg();
+  renderProg(); // update bar and GO/NO GO immediately
 }
 
 // ── STATUS CYCLE ──────────────────────────────────────────────────────────────
@@ -885,7 +932,7 @@ function renderLaunchDay() {
     var col = catColors[item.cat] || '#4C9BB0';
     h += '<div id="lc-'+item.id+'" style="background:#111d2c;border:1px solid #1e3048;border-left:4px solid '+col+';border-radius:10px;margin-bottom:8px;overflow:hidden;">';
     h += '<div style="padding:12px 14px;display:flex;align-items:flex-start;gap:10px;">';
-    h += '<span style="font-size:20px;cursor:pointer;flex-shrink:0;margin-top:2px;" onclick="toggleLaunchCheck(LAUNCH_CHECKS['+idx+'].id)">'+(saved?'✅':'⬜')+'</span>';
+    h += '<span onclick="toggleLaunchCheck(\'' + item.id + '\')" style="font-size:20px;cursor:pointer;flex-shrink:0;margin-top:2px;">' + (saved ? '✅' : '⬜') + '</span>';
     h += '<div style="flex:1;">';
     h += '<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;">';
     h += '<span style="font-size:9px;font-weight:800;color:'+col+';background:'+col+'22;border-radius:4px;padding:2px 6px;">'+item.cat.toUpperCase()+'</span>';
@@ -910,6 +957,32 @@ function toggleLaunchCheck(id) {
   saveTaskDone();
   renderLaunchDay();
   toast(taskDone[key] ? '✅ Launch task done' : '⬜ Unmarked');
+}
+
+
+// ── DONE TAB — all completed stories across all sprints ──────────────────────
+function renderDone() {
+  const allDone = STORIES.filter(s => s.status === 'DONE').sort((a,b) => a.epic.localeCompare(b.epic) || a.id.localeCompare(b.id));
+  const byEpic  = {};
+  allDone.forEach(s => { if(!byEpic[s.epic]) byEpic[s.epic] = []; byEpic[s.epic].push(s); });
+
+  let h = `<div style="background:#111d2c;border:1px solid #27ae60;border-top:3px solid #27ae60;border-radius:12px;padding:12px 14px;margin-bottom:12px;">
+    <div style="font-size:13px;font-weight:900;color:#27ae60;">✅ Completed — ${allDone.length} stories done</div>
+    <div style="font-size:10px;color:#7a9fb5;margin-top:2px;">All stories marked as done across all sprints. Nothing to action here.</div>
+  </div>`;
+
+  if (allDone.length === 0) {
+    h += `<div style="background:#111d2c;border:1px solid #1e3048;border-radius:12px;padding:24px;text-align:center;color:#4a6580;font-size:12px">No completed stories yet.</div>`;
+  } else {
+    Object.keys(byEpic).forEach(epic => {
+      const ec = EPIC_C[epic] || '#4C9BB0';
+      h += `<div style="background:#111d2c;border:1px solid ${ec}33;border-left:4px solid ${ec};border-radius:10px;padding:10px 14px;margin-bottom:8px;margin-top:4px;">
+        <div style="font-size:11px;font-weight:900;color:${ec};">${epic.toUpperCase()} — ${byEpic[epic].length} done</div>
+      </div>`;
+      byEpic[epic].forEach(s => { h += storyCard(s); });
+    });
+  }
+  document.getElementById('content').innerHTML = h;
 }
 
 // ── BOARD TAB ─────────────────────────────────────────────────────────────────
@@ -942,48 +1015,13 @@ function renderBoard() {
     review.forEach(s => { h += storyCard(s); });
   }
 
-  // ── DONE — collapsible ─────────────────────────────────────────────────────
-  h += `<div style="margin-top:12px">
-    <button onclick="toggleSection('doneSection','doneChev')"
-      style="width:100%;background:#0d2218;border:1px solid #27ae6044;border-radius:10px;
-             padding:11px 16px;font-size:12px;font-weight:800;cursor:pointer;
-             font-family:inherit;display:flex;justify-content:space-between;align-items:center;color:#27ae60;">
-      <div>✓ Completed — ${done.length} items done</div>
-      <span id="doneChev">▸</span>
-    </button>
-    <div id="doneSection" style="display:none;margin-top:6px">
-      ${done.map(s => storyCard(s)).join('')}
-    </div>
-  </div>`;
-
-  // ── LAUNCH DAY — collapsible ───────────────────────────────────────────────
-  if (blocked.length) {
-    h += `<div style="margin-top:8px">
-      <button onclick="toggleSection('blockedSection','blockedChev')"
-        style="width:100%;background:#1a0a0a;border:1px solid #e74c3c44;border-radius:10px;
-               padding:11px 16px;font-size:12px;font-weight:800;cursor:pointer;
-               font-family:inherit;display:flex;justify-content:space-between;align-items:center;color:#e74c3c;">
-        <div>⛔ Launch Day Only — ${blocked.length} items · execute 15 June</div>
-        <span id="blockedChev">▸</span>
-      </button>
-      <div id="blockedSection" style="display:none;margin-top:6px">
-        ${blocked.map(s => storyCard(s)).join('')}
-      </div>
-    </div>`;
-  }
-
-  // ── POST-LAUNCH — collapsible ──────────────────────────────────────────────
-  h += `<div style="margin-top:8px;margin-bottom:4px">
-    <button onclick="toggleSection('postSection','postChev')"
-      style="width:100%;background:#0a0a1a;border:1px dashed #1e3048;border-radius:10px;
-             padding:11px 16px;font-size:12px;font-weight:800;cursor:pointer;
-             font-family:inherit;display:flex;justify-content:space-between;align-items:center;color:#4a6580;">
-      <div>🔮 Post-Launch Backlog — ${post.length} items after 15 June</div>
-      <span id="postChev">▸</span>
-    </button>
-    <div id="postSection" style="display:none;margin-top:6px">
-      ${post.sort((a,b)=>a.pri-b.pri).map(s => storyCard(s)).join('')}
-    </div>
+  // Link to other tabs for reference
+  const allDoneCount = STORIES.filter(s => s.status === 'DONE').length;
+  const postCount    = STORIES.filter(s => s.sprint === 'S1' || s.sprint === 'S2' || !s.sprint).length;
+  h += `<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+    <button onclick="goTab('done')" style="background:#0d2218;border:1px solid #27ae6044;border-radius:8px;padding:9px 14px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;color:#27ae60;">✅ View ${allDoneCount} completed →</button>
+    <button onclick="goTab('launchday')" style="background:#1a0a0a;border:1px solid #e74c3c44;border-radius:8px;padding:9px 14px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;color:#e74c3c;">⛔ Launch Day checklist →</button>
+    <button onclick="goTab('sprint1')" style="background:#0a0a1a;border:1px dashed #1e3048;border-radius:8px;padding:9px 14px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;color:#4a6580;">🔮 ${postCount} post-launch items →</button>
   </div>`;
 
   document.getElementById('content').innerHTML = h;
@@ -1033,10 +1071,30 @@ function renderSprintDetail(sprintId) {
     <div class="cap-row"><span style="color:${cc};font-weight:700">${p}/${sprint.cap}pts · ${ss.length} stories</span><span style="color:${pct>=85&&pct<=115?'#27ae60':'#e67e22'};font-weight:700">${pct<85?'Under-loaded':pct>115?'Over-loaded':'✓ Healthy load'}</span></div>
   </div>`;
 
+  const activeStories = ss.filter(s => s.status !== 'DONE');
+  const doneStories   = ss.filter(s => s.status === 'DONE');
+
   if (ss.length === 0) {
-    h += `<div style="background:#111d2c;border:1px solid #1e3048;border-radius:12px;padding:24px;text-align:center;color:#2d4a5e;font-size:12px">No stories assigned yet — go to Board or Backlog and tap Move ↗</div>`;
+    h += `<div style="background:#111d2c;border:1px solid #1e3048;border-radius:12px;padding:24px;text-align:center;color:#2d4a5e;font-size:12px">No stories assigned yet.</div>`;
+  } else if (activeStories.length === 0) {
+    h += `<div style="background:#111d2c;border:1px solid #27ae60;border-radius:12px;padding:16px;text-align:center;margin-bottom:8px;font-size:13px;font-weight:800;color:#27ae60;">✅ All stories in this sprint are done!</div>`;
   } else {
-    ss.forEach(s => { h += storyCard(s); });
+    activeStories.forEach(s => { h += storyCard(s); });
+  }
+
+  if (doneStories.length > 0) {
+    h += `<div style="margin-top:8px">
+      <button onclick="toggleSection('sprintDone${sprintId}','sprintDoneChev${sprintId}')"
+        style="width:100%;background:#0d2218;border:1px solid #27ae6044;border-radius:10px;padding:10px 16px;
+               font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;
+               display:flex;justify-content:space-between;align-items:center;color:#27ae60;">
+        <div>✓ Done — ${doneStories.length} completed</div>
+        <span id="sprintDoneChev${sprintId}">▸</span>
+      </button>
+      <div id="sprintDone${sprintId}" style="display:none;margin-top:6px">
+        ${doneStories.map(s => storyCard(s)).join('')}
+      </div>
+    </div>`;
   }
 
   document.getElementById('content').innerHTML = h;
@@ -1081,4 +1139,4 @@ function setStatF(s) { filterStat = s; renderBacklog(); }
 </script>
 
 </body>
-    h += '<span data-lcid="'+item.id+'" style="font-size:20px;cursor:pointer;flex-shrink:0;margin-top:2px;" onclick="toggleLaunchCheck(this.dataset.lcid)">'+(saved?'\u2705':'\u2B1C')+'</span>';
+    h += '<span data-lcid="'+item.id+'" style="font-size:20px;cursor:pointer;flex-shrink:0;margin-top:2px;" onclick="toggleLaunchCheck(this.dataset.lcid)">'+(saved?'✅':'⬜')+'</span>';
