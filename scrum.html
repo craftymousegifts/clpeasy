@@ -426,7 +426,7 @@ const STORIES = [
    tasks:['Build create-portal-session Supabase edge function — must use npm: imports not esm.sh (esm.sh caused Deno runtime crash)','Add "Manage billing" button to account.html — visible only to active subscribers','Button calls edge function which returns a Stripe Customer Portal URL','Redirect user to that URL immediately','Portal configured to allow: plan upgrade, plan downgrade, cancel subscription, update payment card','Cancellation in portal triggers customer.subscription.deleted webhook → access reverted on next login'],
    ac:['Manage billing button visible only to active paying subscribers','Clicking button opens Stripe Customer Portal within 2 seconds','User can cancel subscription from portal with no support needed','After cancellation: pro access reverted on next login','Card update works correctly without cancelling the subscription','Portal URL is not accessible to free or unauthenticated users']},
 
-  {id:'PAY-03',epic:'Payments',pri:2,pts:5,status:'IN REVIEW',sprint:'S0',
+  {id:'PAY-03',epic:'Payments',pri:2,pts:5,status:'DONE',sprint:'S0',
    title:'Top-Up Credits — One-Off Label Downloads',
    what:'Users on paid plans can buy extra label downloads in bundles that never expire and stack on top of their monthly allowance: 5 downloads for £3.99 or 10 downloads for £7.99. These are one-off payments not subscriptions.',
    why:'Some months makers need more labels than their plan includes. Top-ups let them pay for exactly what they need without upgrading their whole plan.',
