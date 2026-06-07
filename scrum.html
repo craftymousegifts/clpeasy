@@ -190,19 +190,26 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#0d1b2a;color:#c8dde8
 
   <div class="prog-wrap">
     <div class="prog-card">
+      <!-- GO/NO GO banner -->
+      <div id="goNoGo" style="border-radius:8px;padding:10px 14px;margin-bottom:10px;text-align:center;font-weight:900;font-size:14px;letter-spacing:0.5px;"></div>
+      <!-- Progress row -->
       <div class="prog-top">
-        <span>Project Status — <span id="totalStories"></span> stories</span>
+        <span style="font-size:11px;">Pre-launch · <span id="totalStories"></span></span>
         <span class="prog-pct" id="pctDone">0%</span>
       </div>
       <div class="prog-bar" id="progBar"></div>
       <div class="prog-legend" id="progLegend"></div>
+      <!-- Urgency + active items -->
+      <div id="urgencyBar" style="margin-top:10px;"></div>
+      <div id="activeList" style="margin-top:8px;"></div>
     </div>
   </div>
 
   <div class="nav-tabs" id="navTabs">
     <button class="ntab active" onclick="goTab('board')">📋 Board</button>
     <button class="ntab" onclick="goTab('backlog')">🗂 Backlog</button>
-    <button class="ntab" onclick="goTab('sprint0')">🚀 Pre-Launch</button>
+    <button class="ntab" onclick="goTab('launchday')">🚀 Launch Day</button>
+    <button class="ntab" onclick="goTab('sprint0')">Pre-Launch</button>
     <button class="ntab" onclick="goTab('sprint1')">⚡ Sprint 1</button>
     <button class="ntab" onclick="goTab('sprint2')">🔮 Sprint 2</button>
   </div>
@@ -215,9 +222,9 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:#0d1b2a;color:#c8dde8
 <div class="bnav">
   <button class="bnav-btn active" id="bn-board" onclick="goTab('board')"><span>📋</span><span>Board</span></button>
   <button class="bnav-btn" id="bn-backlog" onclick="goTab('backlog')"><span>🗂</span><span>Backlog</span></button>
-  <button class="bnav-btn" id="bn-sprint0" onclick="goTab('sprint0')"><span>🚀</span><span>Pre-Launch</span></button>
-  <button class="bnav-btn" id="bn-sprint1" onclick="goTab('sprint1')"><span>⚡</span><span>Sprint 1</span></button>
-  <button class="bnav-btn" id="bn-sprint2" onclick="goTab('sprint2')"><span>🔮</span><span>Sprint 2</span></button>
+  <button class="bnav-btn" id="bn-launchday" onclick="goTab('launchday')"><span>🚀</span><span>Launch</span></button>
+  <button class="bnav-btn" id="bn-sprint0" onclick="goTab('sprint0')"><span>📋</span><span>S0</span></button>
+  <button class="bnav-btn" id="bn-sprint1" onclick="goTab('sprint1')"><span>⚡</span><span>S1</span></button>
 </div>
 
 <script>
@@ -682,19 +689,21 @@ function renderProg() {
 // ── TAB NAVIGATION ────────────────────────────────────────────────────────────
 function goTab(tab) {
   currentTab = tab;
-  document.querySelectorAll('.ntab').forEach((b,i) => b.classList.toggle('active', ['board','backlog','sprint0','sprint1','sprint2'][i] === tab));
-  document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('active'));
-  const bn = document.getElementById('bn-' + tab);
+  var tabs = ['board','backlog','launchday','sprint0','sprint1','sprint2'];
+  document.querySelectorAll('.ntab').forEach(function(b,i){ b.classList.toggle('active', tabs[i] === tab); });
+  document.querySelectorAll('.bnav-btn').forEach(function(b){ b.classList.remove('active'); });
+  var bn = document.getElementById('bn-' + tab);
   if (bn) bn.classList.add('active');
   renderTab(tab);
 }
 
 function renderTab(tab) {
-  if (tab === 'board')   renderBoard();
-  else if (tab === 'backlog') renderBacklog();
-  else if (tab === 'sprint0') renderSprintDetail('S0');
-  else if (tab === 'sprint1') renderSprintDetail('S1');
-  else if (tab === 'sprint2') renderSprintDetail('S2');
+  if (tab === 'board')       renderBoard();
+  else if (tab === 'backlog')    renderBacklog();
+  else if (tab === 'launchday') renderLaunchDay();
+  else if (tab === 'sprint0')   renderSprintDetail('S0');
+  else if (tab === 'sprint1')   renderSprintDetail('S1');
+  else if (tab === 'sprint2')   renderSprintDetail('S2');
 }
 
 // ── STORY CARD (full detail) ──────────────────────────────────────────────────
@@ -848,13 +857,70 @@ function closeModal() {
   modalId = null;
 }
 
+
+// ── LAUNCH DAY TAB ────────────────────────────────────────────────────────────
+function renderLaunchDay() {
+  var LAUNCH_CHECKS = [
+    { id:'lc01', time:'07:00', cat:'Legal',    title:'Register with ICO',             detail:'Go to ico.org.uk/for-organisations/data-protection-fee/ · Complete self-assessment · Pay £40 · Record your registration number · Add to privacy.html' },
+    { id:'lc02', time:'07:30', cat:'Payments', title:'Swap Stripe sandbox → live keys', detail:'Replace pk_test_ with pk_live_ in pricing.html and builder.html · Update STRIPE_SECRET_KEY to sk_live_ in Supabase secrets · Update STRIPE_WEBHOOK_SECRET to live whsec_ · Redeploy create-checkout-session and stripe-webhook edge functions' },
+    { id:'lc03', time:'08:00', cat:'Payments', title:'Process one real £1 test charge', detail:'Use a real card · Confirm charge appears in Stripe live dashboard · Confirm subscription row created in Supabase · Confirm webhook received and processed' },
+    { id:'lc04', time:'08:30', cat:'Deploy',   title:'Swap index.html to home.html',   detail:'Remove or rename the coming soon index.html · home.html becomes the entry point · Push to main · Confirm clpeasy.com loads the full site' },
+    { id:'lc05', time:'08:45', cat:'Test',     title:'Full site walkthrough on iPhone', detail:'Sign up with a new email · Complete a label · Download PNG · Check EN 15494 icons visible · Check GHS diamonds visible · Confirm batch number saved' },
+    { id:'lc06', time:'09:00', cat:'Marketing', title:'Launch social posts go live',    detail:'Confirm Buffer/Later scheduled posts fire at 9am BST · Check Facebook · Check Instagram · Check TikTok · All links working' },
+    { id:'lc07', time:'09:00', cat:'Marketing', title:'Send launch email to Brevo list', detail:'Go to Brevo campaigns · Confirm scheduled send fires at 9am BST · Check test email received correctly · Monitor open rate' },
+    { id:'lc08', time:'09:15', cat:'Monitor',  title:'Open monitor.html — watch signups', detail:'Open clpeasy.com/monitor.html · Watch live signup count · Monitor Stripe dashboard for first real subscriptions · Check Supabase Auth for new users' },
+    { id:'lc09', time:'10:00', cat:'Legal',    title:'Confirm ICO registration received', detail:'Check email for ICO registration number · Add registration number to privacy.html · Commit and push' },
+    { id:'lc10', time:'All day', cat:'Support', title:'Monitor support@clpeasy.com',   detail:'Check email regularly · Respond to any issues within 2 hours · Log any bugs found for Sprint 1' },
+  ];
+
+  var catColors = { Legal:'#e67e22', Payments:'#27ae60', Deploy:'#4C9BB0', Test:'#8e44ad', Marketing:'#c0392b', Monitor:'#2980b9', Support:'#7f8c8d' };
+
+  var h = '<div style="background:#111d2c;border:1px solid #1e3048;border-top:3px solid #e74c3c;border-radius:12px;padding:14px;margin-bottom:12px;">';
+  h += '<div style="font-size:13px;font-weight:900;color:#e74c3c;margin-bottom:4px;">🚀 15 JUNE 2026 — LAUNCH DAY CHECKLIST</div>';
+  h += '<div style="font-size:10px;color:#7a9fb5;">Execute in order. Do not skip steps. PAY-04 (Stripe go-live) and LEG-02 (ICO) must complete before announcing launch.</div>';
+  h += '</div>';
+
+  LAUNCH_CHECKS.forEach(function(item, idx) {
+    var saved = taskDone['launch-' + item.id];
+    var col = catColors[item.cat] || '#4C9BB0';
+    h += '<div id="lc-'+item.id+'" style="background:#111d2c;border:1px solid #1e3048;border-left:4px solid '+col+';border-radius:10px;margin-bottom:8px;overflow:hidden;">';
+    h += '<div style="padding:12px 14px;display:flex;align-items:flex-start;gap:10px;">';
+    h += '<span style="font-size:20px;cursor:pointer;flex-shrink:0;margin-top:2px;" onclick="toggleLaunchCheck(LAUNCH_CHECKS['+idx+'].id)">'+(saved?'✅':'⬜')+'</span>';
+    h += '<div style="flex:1;">';
+    h += '<div style="display:flex;gap:6px;align-items:center;margin-bottom:4px;">';
+    h += '<span style="font-size:9px;font-weight:800;color:'+col+';background:'+col+'22;border-radius:4px;padding:2px 6px;">'+item.cat.toUpperCase()+'</span>';
+    h += '<span style="font-size:9px;color:#4a6580;font-weight:700;">'+item.time+' BST</span>';
+    h += '</div>';
+    h += '<div style="font-size:13px;font-weight:800;color:'+(saved?'#4a6580':'#e8f4f8')+';'+(saved?'text-decoration:line-through;':'')+'">'+item.title+'</div>';
+    h += '<div style="font-size:10px;color:#7a9fb5;margin-top:4px;line-height:1.6;">'+item.detail+'</div>';
+    h += '</div></div></div>';
+  });
+
+  var doneCount = LAUNCH_CHECKS.filter(function(i){ return taskDone['launch-'+i.id]; }).length;
+  h += '<div style="background:#0a1520;border:1px solid #1e3048;border-radius:10px;padding:10px 14px;margin-top:4px;text-align:center;">';
+  h += '<span style="font-size:12px;font-weight:800;color:'+(doneCount===LAUNCH_CHECKS.length?'#27ae60':'#4a6580')+';">'+doneCount+'/'+LAUNCH_CHECKS.length+' launch tasks complete</span>';
+  h += '</div>';
+
+  document.getElementById('content').innerHTML = h;
+}
+
+function toggleLaunchCheck(id) {
+  var key = 'launch-' + id;
+  taskDone[key] = !taskDone[key];
+  saveTaskDone();
+  renderLaunchDay();
+  toast(taskDone[key] ? '✅ Launch task done' : '⬜ Unmarked');
+}
+
 // ── BOARD TAB ─────────────────────────────────────────────────────────────────
 function renderBoard() {
   let h = '';
 
-  // Only show TODO and IN REVIEW — the live action items
-  const todo   = STORIES.filter(s => s.sprint === 'S0' && s.status === 'TODO').sort((a,b) => a.pri - b.pri);
-  const review = STORIES.filter(s => s.sprint === 'S0' && s.status === 'IN REVIEW').sort((a,b) => a.pri - b.pri);
+  const todo     = STORIES.filter(s => s.sprint === 'S0' && s.status === 'TODO').sort((a,b) => a.pri - b.pri);
+  const review   = STORIES.filter(s => s.sprint === 'S0' && s.status === 'IN REVIEW').sort((a,b) => a.pri - b.pri);
+  const done     = STORIES.filter(s => s.sprint === 'S0' && s.status === 'DONE');
+  const blocked  = STORIES.filter(s => s.sprint === 'S0' && s.status === 'BLOCKED');
+  const post     = STORIES.filter(s => s.sprint === 'S1' || s.sprint === 'S2' || !s.sprint);
 
   if (!todo.length && !review.length) {
     h += `<div style="background:#111d2c;border:1px solid #27ae60;border-radius:12px;padding:24px;text-align:center;margin-bottom:12px">
@@ -864,64 +930,72 @@ function renderBoard() {
     </div>`;
   }
 
+  // ── TO DO ──────────────────────────────────────────────────────────────────
   if (todo.length) {
     h += sectionHeader('○ To Do — Action Required', todo.length + ' items need starting', '#4a6580');
     todo.forEach(s => { h += storyCard(s); });
   }
 
+  // ── IN REVIEW ──────────────────────────────────────────────────────────────
   if (review.length) {
     h += sectionHeader('⏳ In Review — Needs Final Check', review.length + ' items to confirm', '#e67e22');
     review.forEach(s => { h += storyCard(s); });
   }
 
-  // Everything else collapsed — done, launch day, post-launch — all filed away
-  const filed = [
-    ...STORIES.filter(s => s.sprint === 'S0' && s.status === 'BLOCKED'),
-    ...STORIES.filter(s => s.sprint === 'S0' && s.status === 'DONE'),
-    ...STORIES.filter(s => s.sprint === 'S1' || s.sprint === 'S2' || !s.sprint),
-  ];
-
-  const filedDone    = STORIES.filter(s => s.sprint === 'S0' && s.status === 'DONE').length;
-  const filedBlocked = STORIES.filter(s => s.sprint === 'S0' && s.status === 'BLOCKED').length;
-  const filedPost    = STORIES.filter(s => s.sprint === 'S1' || s.sprint === 'S2' || !s.sprint).length;
-
-  h += `<div style="margin-top:10px">
-    <button onclick="toggleArchive()"
-      style="width:100%;background:#0a1520;border:1px solid #1e3048;border-radius:10px;
-             padding:12px 16px;font-size:12px;font-weight:800;cursor:pointer;
-             font-family:inherit;display:flex;justify-content:space-between;align-items:center;color:#4a6580;">
-      <div style="text-align:left">
-        <div>📁 All Other Items — Collapsed</div>
-        <div style="font-size:9px;font-weight:600;margin-top:3px;color:#2d4a5e">
-          ✓ ${filedDone} completed · ⛔ ${filedBlocked} launch day · 🔮 ${filedPost} post-launch
-        </div>
-      </div>
-      <span id="archiveChevron" style="font-size:16px;color:#2d4a5e">▸</span>
+  // ── DONE — collapsible ─────────────────────────────────────────────────────
+  h += `<div style="margin-top:12px">
+    <button onclick="toggleSection('doneSection','doneChev')"
+      style="width:100%;background:#0d2218;border:1px solid #27ae6044;border-radius:10px;
+             padding:11px 16px;font-size:12px;font-weight:800;cursor:pointer;
+             font-family:inherit;display:flex;justify-content:space-between;align-items:center;color:#27ae60;">
+      <div>✓ Completed — ${done.length} items done</div>
+      <span id="doneChev">▸</span>
     </button>
-    <div id="archiveSection" style="display:none;margin-top:6px">
+    <div id="doneSection" style="display:none;margin-top:6px">
+      ${done.map(s => storyCard(s)).join('')}
+    </div>
+  </div>`;
 
-      ${filedBlocked > 0 ? `<div style="background:#0a1520;border:1px solid #e74c3c33;border-left:4px solid #e74c3c;border-radius:10px;padding:10px 14px;margin-bottom:8px">
-        <div style="font-size:12px;font-weight:900;color:#e74c3c">⛔ Launch Day — Execute on 15 June Only</div>
-        <div style="font-size:10px;color:#7a9fb5;margin-top:2px">Do not touch until launch morning</div>
+  // ── LAUNCH DAY — collapsible ───────────────────────────────────────────────
+  if (blocked.length) {
+    h += `<div style="margin-top:8px">
+      <button onclick="toggleSection('blockedSection','blockedChev')"
+        style="width:100%;background:#1a0a0a;border:1px solid #e74c3c44;border-radius:10px;
+               padding:11px 16px;font-size:12px;font-weight:800;cursor:pointer;
+               font-family:inherit;display:flex;justify-content:space-between;align-items:center;color:#e74c3c;">
+        <div>⛔ Launch Day Only — ${blocked.length} items · execute 15 June</div>
+        <span id="blockedChev">▸</span>
+      </button>
+      <div id="blockedSection" style="display:none;margin-top:6px">
+        ${blocked.map(s => storyCard(s)).join('')}
       </div>
-      ${STORIES.filter(s => s.sprint === 'S0' && s.status === 'BLOCKED').map(s => storyCard(s)).join('')}` : ''}
+    </div>`;
+  }
 
-      ${filedDone > 0 ? `<div style="background:#0a1520;border:1px solid #27ae6033;border-left:4px solid #27ae60;border-radius:10px;padding:10px 14px;margin-bottom:8px;margin-top:8px">
-        <div style="font-size:12px;font-weight:900;color:#27ae60">✓ Completed Pre-Launch Items</div>
-        <div style="font-size:10px;color:#7a9fb5;margin-top:2px">${filedDone} items done and filed</div>
-      </div>
-      ${STORIES.filter(s => s.sprint === 'S0' && s.status === 'DONE').map(s => storyCard(s)).join('')}` : ''}
-
-      ${filedPost > 0 ? `<div style="background:#0a1520;border:1px dashed #1e3048;border-radius:10px;padding:10px 14px;margin-bottom:8px;margin-top:8px">
-        <div style="font-size:12px;font-weight:900;color:#7f8c8d">🔮 Post-Launch Backlog (Sprint 1 &amp; 2)</div>
-        <div style="font-size:10px;color:#4a6580;margin-top:2px">${filedPost} stories queued for after 15 June</div>
-      </div>
-      ${STORIES.filter(s => s.sprint === 'S1' || s.sprint === 'S2' || !s.sprint).sort((a,b)=>a.pri-b.pri).map(s => storyCard(s)).join('')}` : ''}
-
+  // ── POST-LAUNCH — collapsible ──────────────────────────────────────────────
+  h += `<div style="margin-top:8px;margin-bottom:4px">
+    <button onclick="toggleSection('postSection','postChev')"
+      style="width:100%;background:#0a0a1a;border:1px dashed #1e3048;border-radius:10px;
+             padding:11px 16px;font-size:12px;font-weight:800;cursor:pointer;
+             font-family:inherit;display:flex;justify-content:space-between;align-items:center;color:#4a6580;">
+      <div>🔮 Post-Launch Backlog — ${post.length} items after 15 June</div>
+      <span id="postChev">▸</span>
+    </button>
+    <div id="postSection" style="display:none;margin-top:6px">
+      ${post.sort((a,b)=>a.pri-b.pri).map(s => storyCard(s)).join('')}
     </div>
   </div>`;
 
   document.getElementById('content').innerHTML = h;
+}
+
+function toggleSection(sectionId, chevId) {
+  const sec  = document.getElementById(sectionId);
+  const chev = document.getElementById(chevId);
+  if (!sec) return;
+  const open = sec.style.display !== 'none';
+  sec.style.display = open ? 'none' : 'block';
+  if (chev) chev.textContent = open ? '▸' : '▾';
 }
 
 function sectionHeader(title, sub, color) {
@@ -1007,4 +1081,4 @@ function setStatF(s) { filterStat = s; renderBacklog(); }
 </script>
 
 </body>
-</html>
+    h += '<span data-lcid="'+item.id+'" style="font-size:20px;cursor:pointer;flex-shrink:0;margin-top:2px;" onclick="toggleLaunchCheck(this.dataset.lcid)">'+(saved?'\u2705':'\u2B1C')+'</span>';
