@@ -2985,18 +2985,22 @@ function buildSVG(forExport=false){
 
   // SCENT (non-circle)
   const scentSW    = chordW(curY + midH*0.07, 0.08);
-  const scentFSmax = clamp(BASE*0.110, 6, 22);
-  const scentFSmin = clamp(BASE*0.036, 3, 7);
+  // Scent name: cap font so it never bleeds into type/signal rows
+  // scentActH is strictly capped to 15% of midH regardless of font size
+  const scentSlotH = midH * 0.15; // hard height budget for scent name
+  const scentFSmax = Math.min(clamp(BASE*0.085, 5, 16), scentSlotH * 0.82);
+  const scentFSmin = clamp(BASE*0.032, 2.5, 6);
   let scentFS      = isCircle ? 0 : fitFont(scent, scentSW*0.90, scentFSmax, scentFSmin, true, true);
   let scentLines   = isCircle ? [] : wrapText(scent, scentSW*0.90, scentFS, true, true);
+  // If wrapping, reduce font so 2 lines fit within scentSlotH
   if(!isCircle && scentLines.length > 1){
-    const fs2 = Math.min(scentFS, midH * 0.065);
+    const fs2 = Math.min(scentFS, scentSlotH / (2 * 1.20));
     scentLines = wrapText(scent, scentSW*0.90, fs2, true, true);
     scentFS = fs2;
   }
   const scentLH    = isCircle ? 0 : scentFS * 1.15;
   const scentBlockH= isCircle ? 0 : scentLines.length * scentLH;
-  const scentActH  = isCircle ? 0 : Math.max(scentBlockH, midH * 0.11);
+  const scentActH  = isCircle ? 0 : Math.min(Math.max(scentBlockH, midH * 0.10), scentSlotH);
   const scentY     = isCircle ? 0 : curY + scentActH*0.5 - scentBlockH*0.5 + scentLH*0.5;
   curY += scentActH;
 
