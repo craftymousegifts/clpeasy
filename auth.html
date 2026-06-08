@@ -127,6 +127,7 @@ input:focus{border-color:var(--teal);}
         <label>Password</label>
         <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
       </div>
+      <p class="field-hint" id="signup-hint" style="display:none;font-size:13px;color:#6b7280;margin:-8px 0 16px;line-height:1.5;">Enter your email address and choose a password to create your account. You will receive a confirmation email to verify your address.</p>
       <div class="forgot" id="forgot-link">
         <a href="#" onclick="resetPassword()">Forgot password?</a>
       </div>
@@ -170,6 +171,7 @@ function switchTab(tab) {
   document.getElementById('forgot-link').style.display = tab === 'signin' ? '' : 'none';
   document.getElementById('terms-text').style.display = tab === 'signup' ? '' : 'none';
   document.getElementById('password').autocomplete = tab === 'signin' ? 'current-password' : 'new-password';
+  document.getElementById('signup-hint').style.display = tab === 'signup' ? '' : 'none';
   hideMsg();
 }
 

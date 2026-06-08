@@ -129,7 +129,6 @@ Deno.serve(async (req: Request) => {
             price_id: priceId || null,
             plan: "unknown",
             status: "active",
-            updated_at: new Date().toISOString(),
           }, { onConflict: "user_id" });
           console.error("Unknown price ID:", priceId);
           break;
@@ -143,7 +142,6 @@ Deno.serve(async (req: Request) => {
           price_id: priceId,
           plan: planInfo.plan,
           status: "active",
-          updated_at: new Date().toISOString(),
         }, { onConflict: "user_id" });
         console.log("Subscriptions upsert error:", subErr);
 
@@ -157,7 +155,6 @@ Deno.serve(async (req: Request) => {
           downloads_reset_date: new Date(
             new Date().setMonth(new Date().getMonth() + 1)
           ).toISOString(),
-          updated_at: new Date().toISOString(),
         }).eq("id", userId);
         console.log("Profiles update error:", profErr);
 
@@ -192,13 +189,11 @@ Deno.serve(async (req: Request) => {
             downloads_reset_date: new Date(
               new Date().setMonth(new Date().getMonth() + 1)
             ).toISOString(),
-            updated_at: new Date().toISOString(),
           }).eq("id", subRow.user_id);
         }
 
         await supabase.from("subscriptions").update({
           status: "active",
-          updated_at: new Date().toISOString(),
         }).eq("stripe_subscription_id", subscriptionId);
 
         break;
@@ -222,7 +217,6 @@ Deno.serve(async (req: Request) => {
           price_id: priceId || null,
           plan: planInfo?.plan ?? "unknown",
           status: subscription.status,
-          updated_at: new Date().toISOString(),
         }).eq("stripe_subscription_id", subscription.id);
 
         if (planInfo) {
@@ -231,7 +225,6 @@ Deno.serve(async (req: Request) => {
             downloads_limit: planInfo.downloads_limit,
             is_pro: planInfo.is_pro,
             subscription_status: subscription.status,
-            updated_at: new Date().toISOString(),
           }).eq("id", subRow.user_id);
         }
 
@@ -252,7 +245,6 @@ Deno.serve(async (req: Request) => {
 
         await supabase.from("subscriptions").update({
           status: "cancelled",
-          updated_at: new Date().toISOString(),
         }).eq("stripe_subscription_id", subscription.id);
 
         await supabase.from("profiles").update({
@@ -260,7 +252,6 @@ Deno.serve(async (req: Request) => {
           plan: "free",
           downloads_limit: 10,
           is_pro: false,
-          updated_at: new Date().toISOString(),
         }).eq("id", subRow.user_id);
 
         break;
