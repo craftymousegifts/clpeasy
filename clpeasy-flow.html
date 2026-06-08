@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLPeasy – User Journey Flow</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #161b25;
+    --border: #232b38;
+    --accent: #3ee8b5;
+    --accent3: #ffd166;
+    --accent4: #74b0ff;
+    --text: #e8edf5;
+    --muted: #6b7a94;
+    --warning: #ffd166;
+    --error: #ff6b6b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    overflow-x: auto;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .logo {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+  }
+  .logo span { color: var(--accent); }
+  .subtitle {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .legend {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .leg-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.68rem;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    white-space: nowrap;
+  }
+  .leg-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── Canvas (pushed down so content clears floating header) ── */
+  .canvas {
+    padding: 32px 32px 80px;
+    min-width: 900px;
+  }
+
+  /* ── FLOW STRUCTURE ── */
+  .flow-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    position: relative;
+  }
+
+  /* Swimlane label */
+  .lane-label {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    min-width: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 0;
+    border-right: 1px solid var(--border);
+    margin-right: 24px;
+    opacity: 0.6;
+  }
+  .lane-content {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  /* ── NODE CARDS ── */
+  .node {
+    border-radius: 10px;
+    padding: 13px 15px;
+    min-width: 155px;
+    max-width: 205px;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .node:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+  .node-icon { font-size: 1.05rem; margin-bottom: 6px; }
+
+  /* Two-line structure: what page/step + what user sees */
+  .node-title {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.78rem;
+    line-height: 1.2;
+    margin-bottom: 5px;
+  }
+  .node-sees {
+    font-size: 0.67rem;
+    color: var(--accent);
+    font-weight: 700;
+    font-family: 'Nunito', sans-serif;
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+  .node-desc {
+    font-size: 0.66rem;
+    color: var(--muted);
+    line-height: 1.5;
+    font-weight: 400;
+  }
+  .node-badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.56rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-top: 6px;
+    font-weight: 500;
+  }
+
+  /* Colour variants */
+  .node-entry    { border-color: #3ee8b520; }
+  .node-entry .node-icon { color: var(--accent); }
+  .node-entry .node-badge { background: #3ee8b520; color: var(--accent); }
+
+  .node-auth     { border-color: #ffd16635; }
+  .node-auth .node-icon { color: var(--warning); }
+  .node-auth .node-badge { background: #ffd16622; color: var(--warning); }
+
+  .node-plan     { border-color: #74b0ff30; }
+  .node-plan .node-icon { color: var(--accent4); }
+  .node-plan .node-badge { background: #74b0ff20; color: var(--accent4); }
+
+  .node-stripe   { border-color: #a78bfa30; }
+  .node-stripe .node-icon { color: #a78bfa; }
+  .node-stripe .node-badge { background: #a78bfa20; color: #a78bfa; }
+
+  .node-supabase { border-color: #3ee8b530; }
+  .node-supabase .node-icon { color: var(--accent); }
+  .node-supabase .node-badge { background: #3ee8b520; color: var(--accent); }
+
+  .node-brevo    { border-color: #ff6b6b30; }
+  .node-brevo .node-icon { color: var(--error); }
+  .node-brevo .node-badge { background: #ff6b6b20; color: var(--error); }
+
+  .node-success  { border-color: #3ee8b550; background: #0d2e22; }
+  .node-success .node-title { color: var(--accent); }
+
+  .node-error    { border-color: #ff6b6b50; background: #2e0d0d; }
+  .node-error .node-title { color: var(--error); }
+
+  /* Arrow */
+  .arrow {
+    display: flex;
+    align-items: center;
+    align-self: center;
+    color: var(--muted);
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-top: -8px;
+  }
+  .arrow-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.58rem;
+    color: var(--muted);
+    margin: 0 4px;
+    white-space: nowrap;
+  }
+
+  /* Decision diamond */
+  .decision {
+    border-radius: 10px;
+    padding: 13px 15px;
+    min-width: 150px;
+    max-width: 185px;
+    flex-shrink: 0;
+    background: #1a1d28;
+    border: 1px dashed var(--accent3);
+  }
+  .decision-icon { font-size: 1rem; color: var(--accent3); margin-bottom: 6px; }
+  .decision-title {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.76rem;
+    color: var(--accent3);
+    margin-bottom: 4px;
+  }
+  .decision-sees {
+    font-size: 0.66rem;
+    color: var(--accent3);
+    opacity: 0.75;
+    margin-bottom: 4px;
+    font-weight: 700;
+  }
+  .decision-desc { font-size: 0.64rem; color: var(--muted); line-height: 1.5; }
+
+  /* Split paths */
+  .split-container {
+    display: flex;
+    gap: 0;
+    align-items: flex-start;
+    width: 100%;
+  }
+  .split-path {
+    flex: 1;
+    padding: 0 16px;
+  }
+  .split-path:not(:last-child) { border-right: 1px solid var(--border); }
+  .split-header {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 0.73rem;
+    letter-spacing: 0.02em;
+    padding: 7px 12px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .split-header.easy-start { background: #0d2e22; color: var(--accent); border: 1px solid #3ee8b530; }
+  .split-header.easy-pro   { background: #0d1a2e; color: var(--accent4); border: 1px solid #74b0ff30; }
+  .split-header.shared     { background: #1a1d28; color: var(--muted);   border: 1px solid var(--border); }
+
+  .path-nodes { display: flex; flex-direction: column; gap: 10px; }
+  .path-arrow { display: flex; justify-content: center; color: var(--muted); font-size: 1rem; padding: 4px 0; }
+
+  /* Section headers */
+  .section-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 32px 0 16px 52px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+
+  .full-divider { border: none; border-top: 1px solid var(--border); margin: 8px 0 8px 52px; }
+  .full-width-row { margin-left: 52px; }
+
+  /* Warning banner */
+  .warn-banner {
+    margin: 0 52px 24px;
+    background: #1f1500;
+    border: 1px solid var(--warning);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 0.68rem;
+    color: var(--warning);
+    font-family: 'DM Mono', monospace;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  /* Stripe price tags */
+  .price-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.56rem;
+    color: #a78bfa;
+    background: #1a0f2e;
+    padding: 2px 5px;
+    border-radius: 3px;
+    border: 1px solid #a78bfa30;
+    display: block;
+    margin-top: 4px;
+    word-break: break-all;
+  }
+
+  /* System summary grid */
+  .system-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 32px 52px 0;
+  }
+  .system-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .system-name {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.78rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .system-ops { list-style: none; }
+  .system-ops li {
+    font-size: 0.65rem;
+    color: var(--muted);
+    padding: 3px 0;
+    border-bottom: 1px solid var(--border);
+    line-height: 1.4;
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 400;
+  }
+  .system-ops li::before { content: '·'; color: var(--accent); flex-shrink: 0; }
+  .system-ops li:last-child { border: none; }
+</style>
+</head>
+<body>
+
+<!-- ── FLOATING HEADER ── -->
+<header>
+  <div>
+    <div class="logo">CLP<span>easy</span> · User Journey</div>
+    <div class="subtitle">Process Flow Whiteboard · Pre-Launch v2</div>
+  </div>
+  <div class="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:#3ee8b5"></div>User action</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#ffd166"></div>Decision / fork</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#74b0ff"></div>Plan split</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#a78bfa"></div>Stripe</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#ff6b6b"></div>Brevo / email</div>
+    <div class="leg-item"><div class="leg-dot" style="background:#3ee8b560;border:1px dashed #3ee8b5;border-radius:50%"></div>Supabase</div>
+  </div>
+</header>
+
+<div class="canvas">
+
+  <!-- ═══ PHASE 1: ENTRY ═══ -->
+  <div class="section-title">Phase 1 — Entry Point</div>
+
+  <div class="flow-row">
+    <div class="lane-label">User</div>
+    <div class="lane-content">
+
+      <div class="node node-entry">
+        <div class="node-icon">🏠</div>
+        <div class="node-title">Homepage</div>
+        <div class="node-sees">Sees: Hero headline, brand story, feature highlights</div>
+        <div class="node-desc">clpeasy.com — "Stop guessing, start labelling right." Value prop, product showcase, trust signals.</div>
+        <div class="node-badge">home.html</div>
+      </div>
+
+      <div class="arrow">→</div>
+
+      <div class="node node-entry">
+        <div class="node-icon">🚀</div>
+        <div class="node-title">Clicks "Get Started"</div>
+        <div class="node-sees">Sees: Hero CTA button or nav link</div>
+        <div class="node-desc">Big green button takes them directly to the pricing page.</div>
+        <div class="node-badge">CTA click</div>
+      </div>
+
+      <div class="arrow">→</div>
+
+      <div class="node node-plan">
+        <div class="node-icon">💰</div>
+        <div class="node-title">Pricing Page</div>
+        <div class="node-sees">Sees: Easy Start vs Easy Pro cards, monthly/annual toggle, feature comparison</div>
+        <div class="node-desc">"14-day free trial, no commitment" messaging. Both plans shown side by side.</div>
+        <div class="node-badge">pricing.html</div>
+      </div>
+
+      <div class="arrow">→</div>
+
+      <div class="decision">
+        <div class="decision-icon">⚡</div>
+        <div class="decision-title">Clicks "Start Your 14-Day Trial"</div>
+        <div class="decision-sees">Sees: Button under chosen plan card</div>
+        <div class="decision-desc">Picks Easy Start or Easy Pro. Monthly or annual toggle. Continues to sign-up.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ PHASE 2: AUTH ═══ -->
+  <div class="section-title">Phase 2 — Create Account (Supabase Auth)</div>
+
+  <div class="flow-row">
+    <div class="lane-label">Auth</div>
+    <div class="lane-content">
+
+      <div class="node node-auth">
+        <div class="node-icon">🔐</div>
+        <div class="node-title">Sign Up / Log In</div>
+        <div class="node-sees">Sees: Email + password form, or "Continue with Google" button</div>
+        <div class="node-desc">New users create account. Returning users log in. Google OAuth shows CLPeasy branding (TODO: custom auth domain).</div>
+        <div class="node-badge">auth.html</div>
+      </div>
+
+      <div class="arrow">→<div class="arrow-label">new user</div></div>
+
+      <div class="node node-supabase">
+        <div class="node-icon">🗃️</div>
+        <div class="node-title">Account Created</div>
+        <div class="node-sees">Sees: Nothing — instant redirect</div>
+        <div class="node-desc">Supabase creates user record. Profile row inserted with plan = 'trial' and trial start timestamp.</div>
+        <div class="node-badge">DB write</div>
+      </div>
+
+      <div class="arrow">→<div class="arrow-label">returning user</div></div>
+
+      <div class="node node-auth">
+        <div class="node-icon">✅</div>
+        <div class="node-title">Logged In</div>
+        <div class="node-sees">Sees: Brief loading state, then redirected to checkout</div>
+        <div class="node-desc">Session token set. Plan choice carried through to Stripe checkout.</div>
+        <div class="node-badge">Session active</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ PHASE 3: PLAN SPLIT ═══ -->
+  <div class="section-title">Phase 3 — Plan Split: Easy Start vs Easy Pro</div>
+
+  <div class="full-width-row">
+    <div class="split-container">
+
+      <!-- EASY START -->
+      <div class="split-path">
+        <div class="split-header easy-start">🌱 Easy Start — £9.99/mo · £99/yr</div>
+        <div class="path-nodes">
+
+          <div class="node node-stripe">
+            <div class="node-icon">💳</div>
+            <div class="node-title">Stripe Checkout</div>
+            <div class="node-sees">Sees: Stripe-hosted payment page with plan name, price, and trial info</div>
+            <div class="node-desc">Enters card details. Told "You won't be charged until your 14-day trial ends."</div>
+            <div class="price-tag">Monthly: price_1Tdd5SKF3jvQfgEaclfSUxn5</div>
+            <div class="price-tag">Annual:  price_1Tdd7pKF3jvQfgEa8DxgQHEW</div>
+          </div>
+
+          <div class="path-arrow">↓</div>
+
+          <div class="node node-stripe">
+            <div class="node-icon">🧾</div>
+            <div class="node-title">Trial Starts (Day 0)</div>
+            <div class="node-sees">Sees: "Payment successful — your trial has started!" confirmation</div>
+            <div class="node-desc">Card saved but not charged. 14-day countdown begins.</div>
+            <div class="node-badge">trial_start</div>
+          </div>
+
+          <div class="path-arrow">↓</div>
+
+          <div class="node node-supabase">
+            <div class="node-icon">📊</div>
+            <div class="node-title">Subscription Recorded</div>
+            <div class="node-sees">Sees: Nothing — background sync</div>
+            <div class="node-desc">Stripe webhook fires. subscriptions table updated with plan, status = 'trialing', period end date.</div>
+            <div class="node-badge">webhook → DB</div>
+          </div>
+
+          <div class="path-arrow">↓</div>
+
+          <div class="node node-success">
+            <div class="node-icon">🎉</div>
+            <div class="node-title">Label Builder — Easy Start</div>
+            <div class="node-sees">Sees: Welcome splash screen → builder dashboard, up to 10 labels/month</div>
+            <div class="node-desc">Can create candle, wax melt, diffuser labels. GHS pictograms, UFI, batch numbers, QR safety codes.</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- EASY PRO -->
+      <div class="split-path">
+        <div class="split-header easy-pro">⚡ Easy Pro — £14.99/mo · £149/yr</div>
+        <div class="path-nodes">
+
+          <div class="node node-stripe">
+            <div class="node-icon">💳</div>
+            <div class="node-title">Stripe Checkout</div>
+            <div class="node-sees">Sees: Same Stripe-hosted page — plan shows "Easy Pro", trial info visible</div>
+            <div class="node-desc">Enters card details. Same "no charge until day 14" reassurance shown.</div>
+            <div class="price-tag">Monthly: price_1Tdd9OKF3jvQfgEaYsCmOwOa</div>
+            <div class="price-tag">Annual:  price_1TddAyKF3jvQfgEaE7Vwbxl6</div>
+          </div>
+
+          <div class="path-arrow">↓</div>
+
+          <div class="node node-stripe">
+            <div class="node-icon">🧾</div>
+            <div class="node-title">Trial Starts (Day 0)</div>
+            <div class="node-sees">Sees: "Payment successful — your trial has started!" confirmation</div>
+            <div class="node-desc">Card saved but not charged. Unlimited labels unlocked from day one.</div>
+            <div class="node-badge">trial_start</div>
+          </div>
+
+          <div class="path-arrow">↓</div>
+
+          <div class="node node-supabase">
+            <div class="node-icon">📊</div>
+            <div class="node-title">Subscription Recorded</div>
+            <div class="node-sees">Sees: Nothing — background sync</div>
+            <div class="node-desc">Stripe webhook fires. subscriptions table updated with plan='easy_pro', status='trialing'.</div>
+            <div class="node-badge">webhook → DB</div>
+          </div>
+
+          <div class="path-arrow">↓</div>
+
+          <div class="node node-success">
+            <div class="node-icon">🎉</div>
+            <div class="node-title">Label Builder — Easy Pro</div>
+            <div class="node-sees">Sees: Welcome splash → full Pro dashboard. Unlimited labels, all 23 product types, multi-language</div>
+            <div class="node-desc">EN 15494 candle safety pictograms, Avery/Cricut print sheet, fragrance load calc, all formats.</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <hr class="full-divider">
+
+  <!-- ═══ PHASE 4: POST-SIGNUP AUTOMATION ═══ -->
+  <div class="section-title">Phase 4 — Background: Post-Signup Automation (User sees none of this)</div>
+
+  <div class="flow-row">
+    <div class="lane-label">System</div>
+    <div class="lane-content">
+
+      <div class="node node-stripe">
+        <div class="node-icon">🔔</div>
+        <div class="node-title">Stripe Fires Webhook</div>
+        <div class="node-sees">User sees: Nothing</div>
+        <div class="node-desc">customer.subscription.created fires immediately after checkout. Hits stripe-webhook edge function.</div>
+        <div class="node-badge">Event listener</div>
+      </div>
+
+      <div class="arrow">→</div>
+
+      <div class="node node-supabase">
+        <div class="node-icon">✍️</div>
+        <div class="node-title">DB Synced</div>
+        <div class="node-sees">User sees: Nothing</div>
+        <div class="node-desc">subscriptions row written. profiles.plan updated. label_count reset to 0.</div>
+        <div class="node-badge">Supabase write</div>
+      </div>
+
+      <div class="arrow">→</div>
+
+      <div class="node node-brevo">
+        <div class="node-icon">📧</div>
+        <div class="node-title">Day 0 Welcome Email Sent</div>
+        <div class="node-sees">User sees: Email lands in inbox — "Welcome to CLPeasy! Here's how to make your first label"</div>
+        <div class="node-desc">notify-signup edge fn calls Brevo API. Enrols user in 7-email onboarding sequence.</div>
+        <div class="node-badge">Brevo automation</div>
+      </div>
+
+      <div class="arrow">→</div>
+
+      <div class="node node-brevo">
+        <div class="node-icon">📅</div>
+        <div class="node-title">Drip Sequence Begins</div>
+        <div class="node-sees">User sees: Emails at Day 2, 5, 10, 12, then Day 14 conversion nudge</div>
+        <div class="node-desc">Day 2 first label guide · Day 5 tips · Day 10 mid-trial check-in · Day 12 "trial ending soon" · Day 14 subscribe.</div>
+        <div class="node-badge">7-email drip</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ PHASE 5: TRIAL END ═══ -->
+  <div class="section-title">Phase 5 — Trial End (Day 14)</div>
+
+  <div class="full-width-row">
+    <div class="split-container">
+
+      <!-- CONVERTS -->
+      <div class="split-path">
+        <div class="split-header easy-start">✅ Converts — card charged</div>
+        <div class="path-nodes">
+
+          <div class="node node-stripe">
+            <div class="node-icon">💸</div>
+            <div class="node-title">Stripe Charges Card</div>
+            <div class="node-sees">Sees: Email receipt from Stripe — "Thanks for subscribing to CLPeasy"</div>
+            <div class="node-desc">invoice.payment_succeeded fires. Subscription status moves to 'active'.</div>
+          </div>
+
+          <div class="path-arrow">↓</div>
+
+          <div class="node node-supabase">
+            <div class="node-icon">🔄</div>
+            <div class="node-title">Access Renewed</div>
+            <div class="node-sees">Sees: Nothing changes — builder works exactly as before</div>
+            <div class="node-desc">status = 'active', period_end extended. Billing cycle begins (monthly or annual).</div>
+          </div>
+
+          <div class="path-arrow">↓</div>
+
+          <div class="node node-success">
+            <div class="node-icon">🎊</div>
+            <div class="node-title">Full Paid Access</div>
+            <div class="node-sees">Sees: monitor.html shows "Active" badge, next billing date, manage subscription link</div>
+            <div class="node-desc">Continues building labels. Can cancel anytime via self-serve portal.</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- CANCELS / FAILS -->
+      <div class="split-path">
+        <div class="split-header easy-pro" style="background:#2e0d0d;color:#ff6b6b;border-color:#ff6b6b33">❌ Cancels or payment fails</div>
+        <div class="path-nodes">
+
+          <div class="node node-error">
+            <div class="node-icon">⚠️</div>
+            <div class="node-title">Trial Ends / Payment Fails</div>
+            <div class="node-sees">Sees: Email — "Your trial has ended. Reactivate to keep building."</div>
+            <div class="node-desc">Stripe fires subscription.deleted or invoice.payment_failed.</div>
+          </div>
+
+          <div class="path-arrow">↓</div>
+
+          <div class="node node-error">
+            <div class="node-icon">🔒</div>
+            <div class="node-title">Builder Access Blocked</div>
+            <div class="node-sees">Sees: Builder shows "Your trial has ended — choose a plan to continue" upgrade prompt</div>
+            <div class="node-desc">Label creation disabled. Existing labels still visible. QR safety codes on printed labels stay live forever (safety_sheets never deleted).</div>
+            <div class="node-badge">⚠ safety_sheets preserved</div>
+          </div>
+
+          <div class="path-arrow">↓</div>
+
+          <div class="node node-brevo">
+            <div class="node-icon">💌</div>
+            <div class="node-title">Win-Back Email</div>
+            <div class="node-sees">Sees: "We'd love to have you back — here's what you're missing"</div>
+            <div class="node-desc">Brevo sends lapse sequence. User can resubscribe at any time to restore access.</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SELF-SERVE CANCEL -->
+      <div class="split-path">
+        <div class="split-header shared">🔧 Self-serve cancel (anytime)</div>
+        <div class="path-nodes">
+
+          <div class="node node-plan">
+            <div class="node-icon">👤</div>
+            <div class="node-title">My Account / Monitor</div>
+            <div class="node-sees">Sees: monitor.html — subscription status, trial days left, "Manage Subscription" button</div>
+            <div class="node-desc">User decides to cancel before or after trial. Clicks manage subscription.</div>
+          </div>
+
+          <div class="path-arrow">↓</div>
+
+          <div class="node node-stripe">
+            <div class="node-icon">🏦</div>
+            <div class="node-title">Stripe Billing Portal</div>
+            <div class="node-sees">Sees: Stripe-hosted portal — cancel, upgrade, or update payment method</div>
+            <div class="node-desc">Secure Stripe-hosted page. CLPeasy never handles card data directly.</div>
+          </div>
+
+          <div class="path-arrow">↓</div>
+
+          <div class="node node-supabase">
+            <div class="node-icon">🔄</div>
+            <div class="node-title">DB Synced via Webhook</div>
+            <div class="node-sees">Sees: Access ends at period end (not immediately)</div>
+            <div class="node-desc">stripe-webhook updates subscriptions row. Access continues until end of paid period.</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ PRE-LAUNCH WARNINGS ═══ -->
+  <div class="section-title">⚠️ Pre-Launch Blockers — Must complete before 15 June</div>
+
+  <div class="warn-banner">
+    <span>⚠</span>
+    <span>Stripe is in SANDBOX mode. Swap to live keys (pk_live_, sk_live_, whsec_live_) and live price IDs in builder.html, pricing.html, and Supabase secrets before go-live on 15 June. Also: set custom auth domain (auth.clpeasy.com) so Google OAuth shows CLPeasy — not Supabase URL. Hiscox insurance must be purchased by 10 June. ICO registration (£40) required on launch day when first paid subscription goes live.</span>
+  </div>
+
+  <!-- ═══ SYSTEM SUMMARY ═══ -->
+  <div class="section-title">Systems Involved</div>
+
+  <div class="system-grid">
+
+    <div class="system-card">
+      <div class="system-name" style="color:#a78bfa">💳 Stripe</div>
+      <ul class="system-ops">
+        <li>create-checkout-session edge fn</li>
+        <li>stripe-webhook edge fn (syncs DB)</li>
+        <li>14-day trial_period_days on all plans</li>
+        <li>create-portal-session for self-serve cancel</li>
+        <li>⚠ SWAP to live keys pre-launch</li>
+      </ul>
+    </div>
+
+    <div class="system-card">
+      <div class="system-name" style="color:#3ee8b5">🗃️ Supabase</div>
+      <ul class="system-ops">
+        <li>profiles table (user identity + plan)</li>
+        <li>subscriptions table (Stripe state)</li>
+        <li>safety_sheets — NEVER delete on lapse</li>
+        <li>beta_feedback table</li>
+        <li>Edge fns deploy with --no-verify-jwt --use-api</li>
+      </ul>
+    </div>
+
+    <div class="system-card">
+      <div class="system-name" style="color:#ff6b6b">📧 Brevo</div>
+      <ul class="system-ops">
+        <li>notify-signup → Day 0 welcome email</li>
+        <li>7-email onboarding drip (Day 0–14)</li>
+        <li>Trial lapse win-back email</li>
+        <li>From: noreply@clpeasy.com</li>
+      </ul>
+    </div>
+
+    <div class="system-card">
+      <div class="system-name" style="color:#ffd166">🔐 Auth</div>
+      <ul class="system-ops">
+        <li>Email + password signup/login</li>
+        <li>Google OAuth — production published</li>
+        <li>⚠ Set auth.clpeasy.com custom domain pre-launch</li>
+        <li>JWT session gates builder access</li>
+      </ul>
+    </div>
+
+    <div class="system-card">
+      <div class="system-name" style="color:#74b0ff">📄 Key Pages</div>
+      <ul class="system-ops">
+        <li>home.html → hero + Get Started CTA</li>
+        <li>pricing.html → plan cards + Stripe trigger</li>
+        <li>auth.html → signup/login gate</li>
+        <li>plan-picker.html → monthly/annual toggle</li>
+        <li>builder.html → label creation (post-auth)</li>
+        <li>monitor.html → account + subscription status</li>
+      </ul>
+    </div>
+
+    <div class="system-card">
+      <div class="system-name" style="color:#ff6b6b">✅ Legal / Compliance</div>
+      <ul class="system-ops">
+        <li>ICO registration on launch day (£40/yr)</li>
+        <li>Hiscox insurance — purchase by 10 June</li>
+        <li>TM UK00004395085 · Class 42 · filed 31 May 2026</li>
+        <li>VAT: UK only at launch</li>
+        <li>Address: 66 Paul Street, London EC2A 4NA</li>
+      </ul>
+    </div>
+
+  </div>
+
+</div><!-- /canvas -->
+</body>
+</html>
