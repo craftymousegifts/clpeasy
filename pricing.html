@@ -805,16 +805,10 @@ async function startCheckout(plan){
   }
 }
 
-// Check if returning from auth with a pending checkout
+// Clear any stale checkout session storage on load - user should choose plan manually
 window.addEventListener('load',()=>{
-  const plan=sessionStorage.getItem('checkout_plan');
-  const bil=sessionStorage.getItem('checkout_billing');
-  if(plan&&bil&&currentUser){
-    sessionStorage.removeItem('checkout_plan');
-    sessionStorage.removeItem('checkout_billing');
-    billing=bil;
-    startCheckout(plan);
-  }
+  sessionStorage.removeItem('checkout_plan');
+  sessionStorage.removeItem('checkout_billing');
 });
 
 

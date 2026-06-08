@@ -1,215 +1,280 @@
-import Stripe from 'https://esm.sh/stripe@14?target=deno';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2?target=deno';
+// supabase/functions/stripe-webhook/index.ts
+// Handles Stripe webhook events for CLPeasy subscriptions.
+// Uses raw fetch (no npm:stripe) to avoid Deno microtask errors in Supabase edge runtime.
 
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
-  apiVersion: '2024-04-10',
-  httpClient: Stripe.createFetchHttpClient(),
-});
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { crypto } from "https://deno.land/std@0.177.0/crypto/mod.ts";
 
 const supabase = createClient(
-  Deno.env.get('SUPABASE_URL')!,
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  Deno.env.get("SUPABASE_URL") ?? "",
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
 );
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://clpeasy.com',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, stripe-signature',
+// ── Price ID → plan mapping (live price IDs) ─────────────────────────────────
+const PRICE_MAP: Record<string, { plan: string; downloads_limit: number; is_pro: boolean }> = {
+  // Live mode price IDs
+  "price_1TdoEYGZLILz5vqUIqlEsf4X": { plan: "easy_start_monthly", downloads_limit: 20, is_pro: false },
+  "price_1TdoEXGZLILz5vqUQj5n6Zri": { plan: "easy_start_annual",  downloads_limit: 20, is_pro: false },
+  "price_1TdoEXGZLILz5vqUvZKB1RQw": { plan: "easy_pro_monthly",   downloads_limit: 30, is_pro: true  },
+  "price_1TdoEXGZLILz5vqUFgTznTUT": { plan: "easy_pro_annual",    downloads_limit: 30, is_pro: true  },
 };
 
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+// ── Stripe signature verification (manual HMAC-SHA256) ───────────────────────
+async function verifyStripeSignature(payload: string, sigHeader: string, secret: string): Promise<boolean> {
+  try {
+    const parts = sigHeader.split(",").reduce((acc: Record<string, string>, part) => {
+      const [k, v] = part.split("=");
+      acc[k] = v;
+      return acc;
+    }, {});
+
+    const timestamp = parts["t"];
+    const signature = parts["v1"];
+    if (!timestamp || !signature) return false;
+
+    const signedPayload = `${timestamp}.${payload}`;
+    const key = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+    const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(signedPayload));
+    const computed = Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, "0")).join("");
+    return computed === signature;
+  } catch {
+    return false;
+  }
+}
+
+// ── Raw Stripe API call ───────────────────────────────────────────────────────
+async function stripeGet(path: string): Promise<Record<string, unknown>> {
+  const res = await fetch(`https://api.stripe.com/v1/${path}`, {
+    headers: {
+      "Authorization": `Bearer ${Deno.env.get("STRIPE_SECRET_KEY") ?? ""}`,
+    },
+  });
+  return res.json();
+}
+
+function json(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...CORS, "Content-Type": "application/json" },
+  });
+}
+
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: CORS });
   }
 
-  const signature = req.headers.get('stripe-signature');
-  const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
+  const sig = req.headers.get("stripe-signature") ?? "";
+  const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") ?? "";
   const body = await req.text();
 
-  let event: Stripe.Event;
-  try {
-    event = await stripe.webhooks.constructEventAsync(body, signature!, webhookSecret);
-  } catch (err) {
-    console.error('Webhook signature verification failed:', err.message);
-    return new Response(JSON.stringify({ error: 'Invalid signature' }), { status: 400 });
+  const valid = await verifyStripeSignature(body, sig, webhookSecret);
+  if (!valid) {
+    console.error("Invalid Stripe signature");
+    return json({ error: "Invalid signature" }, 400);
   }
 
-  console.log('Stripe event received:', event.type);
+  const event = JSON.parse(body);
+  console.log("Stripe event:", event.type);
 
   try {
     switch (event.type) {
 
-      case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session;
-        const userId   = session.metadata?.userId;
-        const priceId  = session.metadata?.priceId;
-        const type     = session.metadata?.type;        // 'topup' for one-off packs
-        const customerId    = session.customer as string;
-        const subscriptionId = session.subscription as string;
+      // ── Checkout completed → activate subscription ──────────────────────────
+      case "checkout.session.completed": {
+        const session = event.data.object;
+        if (session.mode !== "subscription") break;
 
-        if (!userId) { console.error('No userId in session metadata'); break; }
+        const userId = session.metadata?.userId;
+        const subscriptionId = session.subscription;
+        const customerId = session.customer;
 
-        // ── ONE-OFF TOP-UP PURCHASE ──────────────────────────────
-        if (type === 'topup') {
-          const credits = TOPUP_CREDITS[priceId ?? ''] ?? 0;
-          if (credits === 0) { console.error('Unknown top-up priceId:', priceId); break; }
-
-          // Add credits to downloads_limit (never expire — they stack)
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('downloads_limit')
-            .eq('id', userId)
-            .single();
-
-          const current = profile?.downloads_limit ?? 0;
-          await supabase.from('profiles').update({
-            downloads_limit: current + credits,
-            updated_at: new Date().toISOString(),
-          }).eq('id', userId);
-
-          console.log(`Top-up: +${credits} downloads credited to user ${userId}`);
+        if (!userId || !subscriptionId) {
+          console.error("Missing userId or subscriptionId", { userId, subscriptionId });
           break;
         }
 
-        // ── SUBSCRIPTION PURCHASE ────────────────────────────────
-        const plan = getPlanFromPriceId(priceId!);
-        await supabase.from('subscriptions').upsert({
+        // Retrieve subscription via raw fetch to get price ID
+        const subscription = await stripeGet(`subscriptions/${subscriptionId}`) as Record<string, unknown>;
+        console.log("Subscription retrieved:", JSON.stringify(subscription).slice(0, 300));
+
+        const items = subscription.items as Record<string, unknown>;
+        const itemData = (items?.data as Record<string, unknown>[])?.[0];
+        const price = itemData?.price as Record<string, unknown>;
+        const priceId = price?.id as string ?? "";
+
+        console.log("Price ID found:", priceId);
+
+        const planInfo = PRICE_MAP[priceId];
+        console.log("Plan info:", planInfo ? JSON.stringify(planInfo) : "NOT FOUND in PRICE_MAP");
+
+        if (!planInfo) {
+          // Still update subscriptions with what we have so it's not totally blank
+          await supabase.from("subscriptions").upsert({
+            user_id: userId,
+            stripe_customer_id: customerId,
+            stripe_subscription_id: subscriptionId,
+            price_id: priceId || null,
+            plan: "unknown",
+            status: "active",
+            updated_at: new Date().toISOString(),
+          }, { onConflict: "user_id" });
+          console.error("Unknown price ID:", priceId);
+          break;
+        }
+
+        // Update subscriptions table
+        const { error: subErr } = await supabase.from("subscriptions").upsert({
           user_id: userId,
           stripe_customer_id: customerId,
           stripe_subscription_id: subscriptionId,
           price_id: priceId,
-          plan: plan,
-          status: 'active',
+          plan: planInfo.plan,
+          status: "active",
           updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id' });
+        }, { onConflict: "user_id" });
+        console.log("Subscriptions upsert error:", subErr);
 
-        await applyProfilePlan(userId, priceId!);
-        console.log(`Subscription activated for user ${userId} — plan: ${plan}`);
+        // Update profiles table
+        const { error: profErr } = await supabase.from("profiles").update({
+          subscription_status: "active",
+          plan: planInfo.plan,
+          downloads_limit: planInfo.downloads_limit,
+          downloads_used: 0,
+          is_pro: planInfo.is_pro,
+          downloads_reset_date: new Date(
+            new Date().setMonth(new Date().getMonth() + 1)
+          ).toISOString(),
+          updated_at: new Date().toISOString(),
+        }).eq("id", userId);
+        console.log("Profiles update error:", profErr);
+
         break;
       }
 
-      case 'customer.subscription.updated': {
-        const subscription = event.data.object as Stripe.Subscription;
-        const userId = subscription.metadata?.userId;
-        if (!userId) break;
+      // ── Invoice paid → renew/refill allowance ───────────────────────────────
+      case "invoice.paid": {
+        const invoice = event.data.object;
+        const subscriptionId = invoice.subscription;
+        if (!subscriptionId) break;
 
-        const priceId = subscription.items.data[0]?.price.id;
-        const plan    = getPlanFromPriceId(priceId!);
-        const status  = subscription.status === 'active' ? 'active' : 'inactive';
+        const subscription = await stripeGet(`subscriptions/${subscriptionId}`) as Record<string, unknown>;
+        const items = subscription.items as Record<string, unknown>;
+        const itemData = (items?.data as Record<string, unknown>[])?.[0];
+        const price = itemData?.price as Record<string, unknown>;
+        const priceId = price?.id as string ?? "";
+        const planInfo = PRICE_MAP[priceId];
 
-        await supabase.from('subscriptions').upsert({
-          user_id: userId,
-          stripe_subscription_id: subscription.id,
-          price_id: priceId,
-          plan: plan,
-          status: status,
+        const { data: subRow } = await supabase
+          .from("subscriptions")
+          .select("user_id")
+          .eq("stripe_subscription_id", subscriptionId)
+          .single();
+
+        if (!subRow?.user_id) break;
+
+        if (planInfo) {
+          await supabase.from("profiles").update({
+            downloads_used: 0,
+            downloads_limit: planInfo.downloads_limit,
+            downloads_reset_date: new Date(
+              new Date().setMonth(new Date().getMonth() + 1)
+            ).toISOString(),
+            updated_at: new Date().toISOString(),
+          }).eq("id", subRow.user_id);
+        }
+
+        await supabase.from("subscriptions").update({
+          status: "active",
           updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id' });
+        }).eq("stripe_subscription_id", subscriptionId);
 
-        if (status === 'active') await applyProfilePlan(userId, priceId!);
-        console.log(`Subscription updated for user ${userId} — status: ${status}`);
         break;
       }
 
-      case 'invoice.paid': {
-        const invoice = event.data.object as Stripe.Invoice;
-        const subId   = invoice.subscription as string | null;
-        if (!subId) break;
+      // ── Subscription updated → keep plan in sync ────────────────────────────
+      case "customer.subscription.updated": {
+        const subscription = event.data.object;
+        const priceId = subscription.items?.data?.[0]?.price?.id ?? "";
+        const planInfo = PRICE_MAP[priceId];
 
-        const subscription = await stripe.subscriptions.retrieve(subId);
-        const userId  = subscription.metadata?.userId;
-        const priceId = subscription.items.data[0]?.price.id;
-        if (!userId || !priceId) break;
+        const { data: subRow } = await supabase
+          .from("subscriptions")
+          .select("user_id")
+          .eq("stripe_subscription_id", subscription.id)
+          .single();
 
-        await applyProfilePlan(userId, priceId);
-        console.log(`Allowance refilled for user ${userId}`);
+        if (!subRow?.user_id) break;
+
+        await supabase.from("subscriptions").update({
+          price_id: priceId || null,
+          plan: planInfo?.plan ?? "unknown",
+          status: subscription.status,
+          updated_at: new Date().toISOString(),
+        }).eq("stripe_subscription_id", subscription.id);
+
+        if (planInfo) {
+          await supabase.from("profiles").update({
+            plan: planInfo.plan,
+            downloads_limit: planInfo.downloads_limit,
+            is_pro: planInfo.is_pro,
+            subscription_status: subscription.status,
+            updated_at: new Date().toISOString(),
+          }).eq("id", subRow.user_id);
+        }
+
         break;
       }
 
-      case 'customer.subscription.deleted': {
-        const subscription = event.data.object as Stripe.Subscription;
-        const userId = subscription.metadata?.userId;
-        if (!userId) break;
+      // ── Subscription deleted → cancel and remove access ─────────────────────
+      case "customer.subscription.deleted": {
+        const subscription = event.data.object;
 
-        await supabase.from('subscriptions').upsert({
-          user_id: userId,
-          stripe_subscription_id: subscription.id,
-          status: 'cancelled',
-          plan: 'free',
+        const { data: subRow } = await supabase
+          .from("subscriptions")
+          .select("user_id")
+          .eq("stripe_subscription_id", subscription.id)
+          .single();
+
+        if (!subRow?.user_id) break;
+
+        await supabase.from("subscriptions").update({
+          status: "cancelled",
           updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id' });
+        }).eq("stripe_subscription_id", subscription.id);
 
-        await supabase.from('profiles').update({
-          plan: 'free',
+        await supabase.from("profiles").update({
+          subscription_status: "inactive",
+          plan: "free",
+          downloads_limit: 10,
           is_pro: false,
-          downloads_limit: 0,
-          billing_cycle: 'monthly',
           updated_at: new Date().toISOString(),
-        }).eq('id', userId);
+        }).eq("id", subRow.user_id);
 
-        console.log(`Subscription cancelled for user ${userId}`);
         break;
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        console.log("Unhandled event type:", event.type);
     }
+
+    return json({ received: true });
+
   } catch (err) {
-    console.error('Error processing webhook:', err);
-    return new Response(JSON.stringify({ error: 'Webhook processing failed' }), { status: 500 });
+    const message = err instanceof Error ? err.message : "Unexpected error";
+    console.error("stripe-webhook error:", message);
+    return json({ error: message }, 500);
   }
-
-  return new Response(JSON.stringify({ received: true }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  });
 });
-
-// ── TOP-UP CREDIT MAP ─────────────────────────────────────────
-// Sandbox price IDs — add live IDs here on go-live day
-const TOPUP_CREDITS: Record<string, number> = {
-  'price_1TeBHjKF3jvQfgEaX2aPZX6E': 5,   // 5 downloads £3.99
-  'price_1TeBIKKF3jvQfgEaxU4TjPHu': 10,  // 10 downloads £7.99
-};
-
-// ── HELPERS ───────────────────────────────────────────────────
-function getPlanFromPriceId(priceId: string): string {
-  const map: Record<string, string> = {
-    'price_1Tdd5SKF3jvQfgEaclfSUxn5': 'easy_start_monthly',
-    'price_1Tdd7pKF3jvQfgEa8DxgQHEW': 'easy_start_annual',
-    'price_1Tdd9OKF3jvQfgEaYsCmOwOa': 'easy_pro_monthly',
-    'price_1TddAyKF3jvQfgEaE7Vwbxl6': 'easy_pro_annual',
-  };
-  return map[priceId] ?? 'unknown';
-}
-
-interface ProfilePlan { plan: string; is_pro: boolean; limit: number; cycle: string; }
-function profileInfoFromPriceId(priceId: string): ProfilePlan {
-  const map: Record<string, ProfilePlan> = {
-    'price_1Tdd5SKF3jvQfgEaclfSUxn5': { plan: 'easy_start', is_pro: false, limit: 20, cycle: 'monthly' },
-    'price_1Tdd7pKF3jvQfgEa8DxgQHEW': { plan: 'easy_start', is_pro: false, limit: 20, cycle: 'annual'  },
-    'price_1Tdd9OKF3jvQfgEaYsCmOwOa': { plan: 'easy_pro',   is_pro: true,  limit: 30, cycle: 'monthly' },
-    'price_1TddAyKF3jvQfgEaE7Vwbxl6': { plan: 'easy_pro',   is_pro: true,  limit: 30, cycle: 'annual'  },
-  };
-  return map[priceId] ?? { plan: 'free', is_pro: false, limit: 0, cycle: 'monthly' };
-}
-
-function addOneMonth(from = new Date()): string {
-  const d = new Date(from); d.setMonth(d.getMonth() + 1); return d.toISOString();
-}
-function addOneYear(from = new Date()): string {
-  const d = new Date(from); d.setFullYear(d.getFullYear() + 1); return d.toISOString();
-}
-
-async function applyProfilePlan(userId: string, priceId: string): Promise<void> {
-  const info = profileInfoFromPriceId(priceId);
-  await supabase.from('profiles').update({
-    plan: info.plan,
-    is_pro: info.is_pro,
-    billing_cycle: info.cycle,
-    downloads_limit: info.limit,
-    downloads_used: 0,
-    downloads_reset_date: addOneMonth(),
-    next_payment: info.cycle === 'annual' ? addOneYear() : addOneMonth(),
-    updated_at: new Date().toISOString(),
-  }).eq('id', userId);
-}
