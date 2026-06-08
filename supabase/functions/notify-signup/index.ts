@@ -1,112 +1,142 @@
 // ═══════════════════════════════════════════════════════════════
 // CLPeasy — notify-signup Edge Function
-// 1. Sends alert email to support@clpeasy.com on every new signup
-// 2. Adds new user to Brevo contact list #3
-// 3. Triggers Brevo onboarding automation #1
 // ═══════════════════════════════════════════════════════════════
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 
-const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY") ?? "";
-const ALERT_TO     = "support@clpeasy.com";
-const FROM_EMAIL   = "support@clpeasy.com";
-const FROM_NAME    = "CLPeasy™";
-const BREVO_LIST_ID = 3;
-const BREVO_AUTOMATION_ID = 1;
+const BREVO_API_KEY       = Deno.env.get("BREVO_API_KEY")!;
+const ALERT_TO            = "support@clpeasy.com";
+const FROM_EMAIL          = "support@clpeasy.com";
+const FROM_NAME           = "CLPeasy™";
+const BREVO_AUTOMATION_ID = Deno.env.get("BREVO_AUTOMATION_ID") ?? "";
+const BREVO_LIST_ID       = parseInt(Deno.env.get("BREVO_LIST_ID") ?? "2");
 
-const CORS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+function safeDate(val: unknown): Date {
+  if (!val) return new Date();
+  const d = new Date(val as string);
+  return isNaN(d.getTime()) ? new Date() : d;
+}
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: CORS });
+  if (req.method !== "POST") {
+    return new Response("Method not allowed", { status: 405 });
   }
 
   try {
     const body = await req.json();
-    const email      = body.email      ?? "";
-    const userId     = body.user_id    ?? "";
-    const isBeta     = body.is_beta    ?? false;
-    const trialEnds  = body.trial_ends ?? "";
-    const createdAt  = body.created_at ?? new Date().toISOString();
+    console.log("notify-signup received:", JSON.stringify(body));
+
+    const email      = body.email      ?? body.record?.email ?? "";
+    const user_id    = body.user_id    ?? body.record?.id    ?? "";
+    const is_beta    = body.is_beta    === true;
+    const trial_ends = body.trial_ends ?? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+    const created_at = body.created_at ?? new Date().toISOString();
 
     if (!email) {
-      return new Response(JSON.stringify({ error: "Missing email" }), {
-        status: 400, headers: { ...CORS, "Content-Type": "application/json" },
-      });
+      console.log("No email in payload — skipping");
+      return new Response(JSON.stringify({ skipped: "no email" }), { status: 200 });
     }
 
-    // ── 1. Admin alert email ────────────────────────────────
-    const alertRes = await fetch("https://api.brevo.com/v3/smtp/email", {
+    const trialEndDate = safeDate(trial_ends).toLocaleDateString("en-GB", {
+      day: "numeric", month: "long", year: "numeric"
+    });
+    const signupTime = safeDate(created_at).toLocaleString("en-GB", {
+      timeZone: "Europe/London",
+      day: "numeric", month: "short", year: "numeric",
+      hour: "2-digit", minute: "2-digit"
+    });
+
+    // ── STEP 1: Add contact to Brevo ─────────────────────────
+    const brevoContact = await fetch("https://api.brevo.com/v3/contacts", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": BREVO_API_KEY,
-      },
+      headers: { "Content-Type": "application/json", "api-key": BREVO_API_KEY },
+      body: JSON.stringify({
+        email,
+        updateEnabled: true,
+        listIds: [BREVO_LIST_ID],
+        attributes: {
+          FIRSTNAME: email.split("@")[0],
+          CLPEASY_PLAN: "trial",
+          CLPEASY_BETA: is_beta ? "yes" : "no",
+          CLPEASY_TRIAL_ENDS: trial_ends,
+          CLPEASY_SIGNUP_DATE: created_at,
+          CLPEASY_USER_ID: user_id,
+        }
+      })
+    });
+    const contactResult = await brevoContact.text();
+    console.log("Brevo contact upsert:", brevoContact.status, contactResult);
+
+    // ── STEP 2: Trigger onboarding automation ────────────────
+    let automationResult = "skipped — no BREVO_AUTOMATION_ID set";
+    if (BREVO_AUTOMATION_ID) {
+      const automationResp = await fetch(
+        `https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}/automations`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "api-key": BREVO_API_KEY },
+          body: JSON.stringify({ automationId: parseInt(BREVO_AUTOMATION_ID) })
+        }
+      );
+      automationResult = `status ${automationResp.status}`;
+      console.log("Brevo automation trigger:", automationResult);
+    }
+
+    // ── STEP 3: Admin alert email ─────────────────────────────
+    const subject = is_beta
+      ? `🧪 Beta tester signed up — ${email}`
+      : `🎉 New CLPeasy™ trial signup — ${email}`;
+
+    const htmlContent = `
+      <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
+        <div style="background:${is_beta ? '#F59E0B' : '#0D9488'};padding:16px 24px;border-radius:8px 8px 0 0;">
+          <h2 style="color:white;margin:0;font-size:18px;">
+            ${is_beta ? '🧪 Beta Tester Signup' : '🎉 New Trial Signup'}
+          </h2>
+        </div>
+        <div style="background:#F7F8FA;padding:24px;border-radius:0 0 8px 8px;border:1px solid #E8EAED;">
+          <table style="width:100%;font-size:14px;color:#374151;">
+            <tr><td style="padding:8px 0;font-weight:700;width:120px;">Email</td><td>${email}</td></tr>
+            <tr style="background:white;"><td style="padding:8px 6px;font-weight:700;">User ID</td><td style="font-size:11px;color:#6B7280;">${user_id}</td></tr>
+            <tr><td style="padding:8px 0;font-weight:700;">Signed up</td><td>${signupTime}</td></tr>
+            <tr style="background:white;"><td style="padding:8px 6px;font-weight:700;">Trial ends</td><td>${trialEndDate}</td></tr>
+            <tr><td style="padding:8px 0;font-weight:700;">Beta tester</td><td>${is_beta ? '✅ Yes — 30 day trial' : '❌ No — 14 day trial'}</td></tr>
+            <tr style="background:white;"><td style="padding:8px 6px;font-weight:700;">Brevo contact</td><td>HTTP ${brevoContact.status}</td></tr>
+            <tr><td style="padding:8px 0;font-weight:700;">Automation</td><td>${automationResult}</td></tr>
+          </table>
+          <div style="margin-top:20px;text-align:center;">
+            <a href="https://supabase.com/dashboard/project/qvkosdqcryrcfbjtaxic/auth/users"
+               style="background:#0D9488;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px;">
+              View in Supabase →
+            </a>
+          </div>
+        </div>
+        <p style="text-align:center;font-size:11px;color:#9CA3AF;margin-top:12px;">CLPeasy™ automated alert · clpeasy.com</p>
+      </div>`;
+
+    const alertResp = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "api-key": BREVO_API_KEY },
       body: JSON.stringify({
         sender: { name: FROM_NAME, email: FROM_EMAIL },
-        to: [{ email: ALERT_TO }],
-        subject: `🎉 New CLPeasy signup: ${email}`,
-        htmlContent: `
-          <h2>New CLPeasy Trial Signup</h2>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>User ID:</strong> ${userId}</p>
-          <p><strong>Beta tester:</strong> ${isBeta ? "Yes" : "No"}</p>
-          <p><strong>Trial ends:</strong> ${trialEnds}</p>
-          <p><strong>Signed up:</strong> ${createdAt}</p>
-        `,
+        to: [{ email: ALERT_TO, name: "CLPeasy Admin" }],
+        subject,
+        htmlContent,
       }),
     });
 
-    const alertData = await alertRes.json();
-    console.log("Alert email:", alertRes.status, JSON.stringify(alertData));
+    const alertResult = await alertResp.text();
+    console.log("Admin alert email:", alertResp.status, alertResult);
 
-    // ── 2. Add to Brevo contact list #3 ────────────────────
-    const contactRes = await fetch("https://api.brevo.com/v3/contacts", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "api-key": BREVO_API_KEY,
-      },
-      body: JSON.stringify({
-        email: email,
-        listIds: [BREVO_LIST_ID],
-        updateEnabled: true,
-        attributes: {
-          TRIAL_ENDS: trialEnds,
-          SIGNUP_DATE: createdAt,
-          IS_BETA: isBeta,
-          CLPEASY_USER_ID: userId,
-        },
-      }),
-    });
-
-    const contactData = await contactRes.json();
-    console.log("Brevo contact:", contactRes.status, JSON.stringify(contactData));
-
-    // ── 3. Trigger Brevo automation ────────────────────────
-    if (BREVO_AUTOMATION_ID) {
-      const autoRes = await fetch(`https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}/automations/${BREVO_AUTOMATION_ID}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "api-key": BREVO_API_KEY,
-        },
-        body: JSON.stringify({}),
-      });
-      console.log("Brevo automation:", autoRes.status);
-    }
-
-    return new Response(JSON.stringify({ success: true, email }), {
-      status: 200, headers: { ...CORS, "Content-Type": "application/json" },
-    });
+    return new Response(JSON.stringify({
+      success: true,
+      brevo_contact: brevoContact.status,
+      automation: automationResult,
+      alert: alertResp.status
+    }), { status: 200 });
 
   } catch (err) {
-    console.error("notify-signup error:", err);
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500, headers: { ...CORS, "Content-Type": "application/json" },
-    });
+    console.error("notify-signup error:", String(err));
+    return new Response(JSON.stringify({ error: String(err) }), { status: 500 });
   }
 });
