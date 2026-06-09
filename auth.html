@@ -148,7 +148,11 @@ input:focus{border-color:var(--teal);}
       </button>
 
       <div class="terms" id="terms-text">
-        By creating an account you agree to our <a href="terms.html">Terms of Service</a> and <a href="privacy.html">Privacy Policy</a>.
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;text-align:left;">
+          <input type="checkbox" id="terms-agree" style="margin-top:2px;width:16px;height:16px;flex-shrink:0;accent-color:#4C9BB0;cursor:pointer;">
+          <span style="font-size:13px;color:#374151;line-height:1.5;">I have read and agree to the <a href="terms.html" target="_blank">Terms of Service</a> and <a href="privacy.html" target="_blank">Privacy Policy</a>.</span>
+        </label>
+        <div id="terms-error" style="display:none;font-size:12px;color:#DC2626;margin-top:6px;padding-left:26px;">Please agree to the terms to create your account.</div>
       </div>
     </div>
 
@@ -194,6 +198,18 @@ async function handleSubmit() {
 
   if (!email || !password) { showMsg('Please enter your email and password.', 'error'); return; }
   if (password.length < 6) { showMsg('Password must be at least 6 characters.', 'error'); return; }
+
+  // Terms agreement required for sign-up
+  if (mode === 'signup') {
+    const termsBox = document.getElementById('terms-agree');
+    const termsError = document.getElementById('terms-error');
+    if (termsBox && !termsBox.checked) {
+      if (termsError) termsError.style.display = 'block';
+      termsBox.focus();
+      return;
+    }
+    if (termsError) termsError.style.display = 'none';
+  }
 
   btn.disabled = true;
   btn.textContent = mode === 'signin' ? 'Signing in...' : 'Creating account...';
@@ -268,6 +284,17 @@ if (mode === 'signin') {
 }
 
 async function signInWithGoogle() {
+  // On sign-up tab, require terms agreement before Google OAuth
+  if (mode === 'signup') {
+    const termsBox = document.getElementById('terms-agree');
+    const termsError = document.getElementById('terms-error');
+    if (termsBox && !termsBox.checked) {
+      if (termsError) termsError.style.display = 'block';
+      termsBox.focus();
+      return;
+    }
+    if (termsError) termsError.style.display = 'none';
+  }
   await sb.auth.signInWithOAuth({
     provider: 'google',
     options: { redirectTo: window.location.origin + '/builder.html' }
@@ -318,5 +345,30 @@ switchTab(defaultTab);
     if((e.ctrlKey||e.metaKey) && (e.key==='c'||e.key==='u'||e.key==='s'||e.key==='a'||e.key==='p')) e.preventDefault();
   });
 </script>
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1a1f2e;color:white;padding:16px 24px;z-index:9999;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;box-shadow:0 -4px 20px rgba(0,0,0,0.2);">
+  <div style="flex:1;min-width:200px;">
+    <p style="font-size:13px;line-height:1.6;color:rgba(255,255,255,0.85);margin:0;">We use essential cookies to keep you logged in. No advertising or tracking cookies. <a href="cookie-policy.html" style="color:#5EEAD4;text-decoration:none;">Cookie Policy</a></p>
+  </div>
+  <div style="display:flex;gap:10px;flex-shrink:0;">
+    <button onclick="acceptCookies()" style="background:#4C9BB0;color:white;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">Accept</button>
+    <button onclick="declineCookies()" style="background:none;color:rgba(255,255,255,0.6);border:1.5px solid rgba(255,255,255,0.2);padding:10px 16px;border-radius:8px;font-size:13px;cursor:pointer;">Essential only</button>
+  </div>
+</div>
+<script>
+(function(){
+  if(!localStorage.getItem('clpeasy-cookie-consent')){
+    document.getElementById('cookie-banner').style.display='flex';
+  }
+  window.acceptCookies=function(){
+    localStorage.setItem('clpeasy-cookie-consent','accepted');
+    document.getElementById('cookie-banner').style.display='none';
+  };
+  window.declineCookies=function(){
+    localStorage.setItem('clpeasy-cookie-consent','essential');
+    document.getElementById('cookie-banner').style.display='none';
+  };
+})();
+</script>
+
 </body>
 </html>

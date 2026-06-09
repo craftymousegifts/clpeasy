@@ -338,6 +338,17 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;color:var(--muted);}
 .summary-grid strong{color:var(--text);display:block;font-size:12px;}
 .watermark-note{background:#F3F4F6;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--muted);margin-bottom:16px;text-align:center;}
+.upgrade-banner{background:linear-gradient(135deg,#4C9BB0 0%,#3a7d8f 100%);border-radius:10px;padding:11px 16px;font-size:13px;color:white;margin-bottom:10px;display:none;align-items:center;justify-content:space-between;gap:12px;}
+.upgrade-banner span{line-height:1.4;}
+.upgrade-banner a{background:white;color:#3a7d8f;border:none;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+.upgrade-banner a:hover{background:#f0f9fc;}
+.cancelled-banner{background:#FEF3C7;border:1px solid #FCD34D;border-radius:10px;padding:11px 16px;font-size:13px;color:#92400E;margin-bottom:10px;display:none;align-items:center;justify-content:space-between;gap:12px;}
+.cancelled-banner span{line-height:1.4;}
+.cancelled-banner a{background:#F59E0B;color:white;border:none;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+.cancelled-banner a:hover{background:#D97706;}
+.pro-nudge-banner{background:linear-gradient(135deg,#7C3AED 0%,#5B21B6 100%);border-radius:10px;padding:11px 16px;font-size:13px;color:white;margin-bottom:10px;display:none;align-items:center;justify-content:space-between;gap:12px;}
+.pro-nudge-banner span{line-height:1.4;}
+.pro-nudge-banner a{background:white;color:#5B21B6;border:none;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;white-space:nowrap;}
 
 /* ── LABEL LIBRARY FOLDERS ───────────────────────────────────── */
 .lib-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
@@ -541,6 +552,27 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="mobile-dl-row" id="mobile-dl-row" style="display:none;">
       <button class="btn-dl" onclick="downloadPNG()">⬇ PNG</button>
       <button class="btn-dl-svg" onclick="downloadSVG()">⬡ SVG</button>
+    </div>
+  </div>
+
+  <!-- UPGRADE BANNER — shown to logged-in free/trial users on all steps -->
+  <div class="upgrade-banner" id="upgrade-banner">
+    <span>✨ You're on a free trial — remove the watermark and unlock your full download allowance.</span>
+    <a href="checkout.html">Upgrade now →</a>
+  </div>
+
+  <!-- CANCELLED BANNER — shown when subscription has lapsed -->
+  <div class="cancelled-banner" id="cancelled-banner">
+    <span>⚠️ Your subscription has ended. Labels in your library are available for <strong>30 days</strong> — download them before they expire.</span>
+    <a href="checkout.html">Resubscribe →</a>
+  </div>
+
+  <!-- PRO NUDGE — shown to Easy Start subscribers near or over their download limit -->
+  <div class="pro-nudge-banner" id="pro-nudge-banner" style="display:none;">
+    <span>💡 You're regularly hitting your download limit. Easy Pro gives you 30 downloads/month plus Smart Paste — for just £5 more per month.</span>
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+      <a href="checkout.html?plan=easy_pro">Upgrade to Pro →</a>
+      <button onclick="document.getElementById('pro-nudge-banner').style.display='none';localStorage.setItem('pro_nudge_dismissed','1')" style="background:transparent;border:none;color:rgba(255,255,255,0.7);font-size:18px;cursor:pointer;padding:0 4px;line-height:1;">×</button>
     </div>
   </div>
 
@@ -820,7 +852,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <h2 class="step-heading">Your label is ready!</h2>
     <p class="step-sub">Review your label, then download in your preferred format.</p>
     <div class="compliance-box"><p>⚠️ <strong>Compliance reminder:</strong> Always verify all hazard data against your fragrance supplier's SDS at your actual fragrance load before printing. You are responsible for final verification. H/P statement mapping compiled from <a href="https://echa.europa.eu/regulations/clp/understanding-clp" target="_blank" rel="noopener" style="color:#4C9BB0;font-weight:600;">ECHA CLP Regulation (EC) No 1272/2008</a>.</p></div>
-    <div class="watermark-note">🆓 Free trial — labels include a CLPeasy watermark. <button onclick="window.location.href='pricing.html'" style="background:var(--teal,#4C9BB0);color:white;border:none;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;">Subscribe to remove →</button></div>
+
     <div style="background:white;border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;">
       <div class="sdiv" style="margin-top:0">Label summary</div>
       <div class="summary-grid" id="label-summary"></div>
@@ -1668,14 +1700,32 @@ async function initAuth(){
         const {data:sub}=await sbClient.from('subscriptions').select('plan,status').eq('user_id',currentUser.id).maybeSingle();
         if(sub&&sub.status==='active'){
           S.isPro=true;
-          // Hide watermark note if subscribed
-          const wmNote=document.querySelector('.watermark-note');
-          if(wmNote)wmNote.style.display='none';
+          // Paid subscriber — hide trial banners
+          const upgBanner=document.getElementById('upgrade-banner');
+          const canBanner=document.getElementById('cancelled-banner');
+          if(upgBanner)upgBanner.style.display='none';
+          if(canBanner)canBanner.style.display='none';
           updateLabel();
-          // Re-render label without watermark
+        } else if(sub&&sub.status==='cancelled'){
+          // Cancelled — show cancelled banner only
+          const upgBanner=document.getElementById('upgrade-banner');
+          const canBanner=document.getElementById('cancelled-banner');
+          if(upgBanner)upgBanner.style.display='none';
+          if(canBanner)canBanner.style.display='flex';
+          updateLabel();
+        } else {
+          // Free trial — show upgrade banner
+          const upgBanner=document.getElementById('upgrade-banner');
+          const canBanner=document.getElementById('cancelled-banner');
+          if(upgBanner)upgBanner.style.display='flex';
+          if(canBanner)canBanner.style.display='none';
           updateLabel();
         }
-      }catch(e){/* no subscription row yet — trial */}
+      }catch(e){
+        // No subscription row — show upgrade banner
+        const upgBanner=document.getElementById('upgrade-banner');
+        if(upgBanner)upgBanner.style.display='flex';
+      }
 
       // ── DOWNLOAD ALLOWANCE (profiles table) ────────────────
       await loadDownloadAllowance();
@@ -1702,6 +1752,9 @@ async function initAuth(){
       if(navSignout)navSignout.style.display='';
       if(navSignin)navSignin.style.display='none';
     } else {
+      // Not logged in — show upgrade banner
+      const upgBanner=document.getElementById('upgrade-banner');
+      if(upgBanner)upgBanner.style.display='flex';
       const navSignin=document.getElementById('nav-signin');
       const navSignout=document.getElementById('nav-signout');
       if(navSignin)navSignin.style.display='';
@@ -1744,6 +1797,17 @@ function updateDlCounter(){
   el.style.display='block';
   el.textContent=left+' of '+DL.limit+' downloads left'+(DL.plan==='free'?' on your trial':' this month');
   el.style.color = left===0 ? '#DC2626' : (left<=2 ? '#D97706' : 'var(--muted)');
+
+  // Pro nudge — show for Easy Start subscribers at 80%+ usage, not already dismissed
+  const nudge=document.getElementById('pro-nudge-banner');
+  if(nudge && DL.plan==='easy_start' && !DL.is_pro){
+    const pct = DL.limit > 0 ? (DL.used / DL.limit) : 0;
+    const dismissed = localStorage.getItem('pro_nudge_dismissed')==='1';
+    // Show if at 80%+ usage or limit exceeded, and not dismissed this session
+    if(!dismissed && pct >= 0.8){
+      nudge.style.display='flex';
+    }
+  }
 }
 
 function dlGate(){
@@ -4120,5 +4184,29 @@ function initExtensions(){
     <div class="label-done-dismiss" id="splash-countdown"></div>
   </div>
 </div>
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1a1f2e;color:white;padding:16px 24px;z-index:9999;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;box-shadow:0 -4px 20px rgba(0,0,0,0.2);">
+  <div style="flex:1;min-width:200px;">
+    <p style="font-size:13px;line-height:1.6;color:rgba(255,255,255,0.85);margin:0;">We use essential cookies to keep you logged in. No advertising or tracking cookies. <a href="cookie-policy.html" style="color:#5EEAD4;text-decoration:none;">Cookie Policy</a></p>
+  </div>
+  <div style="display:flex;gap:10px;flex-shrink:0;">
+    <button onclick="acceptCookies()" style="background:#4C9BB0;color:white;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">Accept</button>
+    <button onclick="declineCookies()" style="background:none;color:rgba(255,255,255,0.6);border:1.5px solid rgba(255,255,255,0.2);padding:10px 16px;border-radius:8px;font-size:13px;cursor:pointer;">Essential only</button>
+  </div>
+</div>
+<script>
+(function(){
+  if(!localStorage.getItem('clpeasy-cookie-consent')){
+    document.getElementById('cookie-banner').style.display='flex';
+  }
+  window.acceptCookies=function(){
+    localStorage.setItem('clpeasy-cookie-consent','accepted');
+    document.getElementById('cookie-banner').style.display='none';
+  };
+  window.declineCookies=function(){
+    localStorage.setItem('clpeasy-cookie-consent','essential');
+    document.getElementById('cookie-banner').style.display='none';
+  };
+})();
+</script>
 </body>
 </html>
