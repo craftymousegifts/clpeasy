@@ -2186,7 +2186,7 @@ function loadLabel(i){
   // Lock identity fields — route to Step 3 for SDS update
   S.libraryLocked=true;
   lockLibraryFields();
-  goToStep(3);
+  forceGoToStep(3);
 }
 
 function loadFromLibrarySelect(i){
