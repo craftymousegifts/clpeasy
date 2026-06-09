@@ -755,10 +755,61 @@ async function initSupabase(){
 }
 initSupabase();
 
-function startCheckout(plan){
-  // Redirect to basket/checkout page with plan and billing pre-selected
-  window.location.href = `checkout.html?plan=${plan}&billing=${billing}`;
+async function startCheckout(plan){
+  // Wait for Supabase to initialise if needed
+  if(!sbReady){
+    await initSupabase();
+  }
+  // If not logged in, send to auth with redirect back
+  if(!currentUser){
+    sessionStorage.setItem('checkout_plan',plan);
+    sessionStorage.setItem('checkout_billing',billing);
+    window.location.href='auth.html?redirect=pricing.html';
+    return;
+  }
+
+  const priceKey=`${plan}_${billing}`;
+  const priceId=PRICE_IDS[priceKey];
+  if(!priceId){alert('Plan not found — please refresh and try again.');return;}
+
+  const btn=document.getElementById(`btn-${plan}`);
+  if(btn){btn.textContent='Loading…';btn.style.opacity='0.7';btn.disabled=true;}
+
+  try{
+    // Get fresh session token for edge function auth
+    const {data:{session:sess}}=await sbClient.auth.getSession();
+    const authToken=sess?.access_token||SUPABASE_KEY;
+    const res=await fetch(`${SUPABASE_URL}/functions/v1/create-checkout-session`,{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':`Bearer ${authToken}`,
+        'apikey':SUPABASE_KEY
+      },
+      body:JSON.stringify({
+        priceId,
+        userEmail:currentUser.email,
+        userId:currentUser.id
+      })
+    });
+    const data=await res.json();
+    if(data.url){
+      window.location.href=data.url;
+    } else {
+      throw new Error(data.error||'No checkout URL returned');
+    }
+  } catch(e){
+    console.error('Checkout error:',e);
+    alert('Something went wrong starting checkout. Please try again.');
+    if(btn){btn.textContent='Get started →';btn.style.opacity='1';btn.disabled=false;}
+  }
 }
+
+// Clear any stale checkout session storage on load - user should choose plan manually
+window.addEventListener('load',()=>{
+  sessionStorage.removeItem('checkout_plan');
+  sessionStorage.removeItem('checkout_billing');
+});
 
 
 function setBilling(type,btn){
@@ -812,5 +863,30 @@ function toggleFeature(el){
     if((e.ctrlKey||e.metaKey) && (e.key==='c'||e.key==='u'||e.key==='s'||e.key==='a'||e.key==='p')) e.preventDefault();
   });
 </script>
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1a1f2e;color:white;padding:16px 24px;z-index:9999;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;box-shadow:0 -4px 20px rgba(0,0,0,0.2);">
+  <div style="flex:1;min-width:200px;">
+    <p style="font-size:13px;line-height:1.6;color:rgba(255,255,255,0.85);margin:0;">We use essential cookies to keep you logged in. No advertising or tracking cookies. <a href="cookie-policy.html" style="color:#5EEAD4;text-decoration:none;">Cookie Policy</a></p>
+  </div>
+  <div style="display:flex;gap:10px;flex-shrink:0;">
+    <button onclick="acceptCookies()" style="background:#4C9BB0;color:white;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">Accept</button>
+    <button onclick="declineCookies()" style="background:none;color:rgba(255,255,255,0.6);border:1.5px solid rgba(255,255,255,0.2);padding:10px 16px;border-radius:8px;font-size:13px;cursor:pointer;">Essential only</button>
+  </div>
+</div>
+<script>
+(function(){
+  if(!localStorage.getItem('clpeasy-cookie-consent')){
+    document.getElementById('cookie-banner').style.display='flex';
+  }
+  window.acceptCookies=function(){
+    localStorage.setItem('clpeasy-cookie-consent','accepted');
+    document.getElementById('cookie-banner').style.display='none';
+  };
+  window.declineCookies=function(){
+    localStorage.setItem('clpeasy-cookie-consent','essential');
+    document.getElementById('cookie-banner').style.display='none';
+  };
+})();
+</script>
+
 </body>
 </html>

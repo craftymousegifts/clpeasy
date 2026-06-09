@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLPeasy — Checkout</title>
+<meta name="robots" content="noindex">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --white:#fff;--off:#F7F8FA;--border:#E8EAED;--text:#111318;--muted:#6B7280;
+  --teal:#4C9BB0;--teal-light:#d6eef4;--teal-dark:#3a7d8f;
+  --amber:#F59E0B;--amber-light:#FEF3C7;--green:#10B981;--green-light:#D1FAE5;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);line-height:1.6;-webkit-font-smoothing:antialiased;}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 20px;height:72px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{display:flex;align-items:center;gap:0;text-decoration:none;line-height:1;}
+.nav-badge{width:52px;height:52px;border-radius:50%;background:#4C9BB0;color:white;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;flex-shrink:0;font-family:'DM Sans',sans-serif;letter-spacing:-1px;}
+.nav-easy{font-family:'DM Sans',sans-serif;font-size:28px;font-weight:900;color:#4C9BB0;margin-left:5px;letter-spacing:-2px;line-height:1;}
+.nav-back{font-size:13px;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;}
+.nav-back:hover{color:var(--teal);border-color:var(--teal);}
+
+/* LAYOUT */
+.page{max-width:1040px;margin:0 auto;padding:32px 20px 80px;}
+.page-title{font-family:'DM Serif Display',serif;font-size:32px;margin-bottom:6px;}
+.page-sub{font-size:15px;color:var(--muted);margin-bottom:32px;}
+.checkout-grid{display:grid;grid-template-columns:1fr 380px;gap:28px;align-items:start;}
+@media(max-width:780px){.checkout-grid{grid-template-columns:1fr;}}
+
+/* SECTION CARD */
+.card{background:white;border:1.5px solid var(--border);border-radius:16px;padding:24px;}
+.card+.card{margin-top:20px;}
+.card-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.card-title .step-num{width:26px;height:26px;border-radius:50%;background:var(--teal);color:white;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+/* PLAN CARDS */
+.plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:500px){.plan-grid{grid-template-columns:1fr;}}
+.plan-card{border:2px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:all .2s;position:relative;}
+.plan-card:hover{border-color:var(--teal);background:var(--teal-light);}
+.plan-card.selected{border-color:var(--teal);background:var(--teal-light);}
+.plan-card.selected::after{content:'✓';position:absolute;top:10px;right:12px;width:22px;height:22px;border-radius:50%;background:var(--teal);color:white;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.plan-name{font-size:14px;font-weight:700;margin-bottom:2px;}
+.plan-price{font-size:22px;font-weight:900;color:var(--teal);line-height:1.1;}
+.plan-price span{font-size:13px;font-weight:500;color:var(--muted);}
+.plan-desc{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5;}
+.plan-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;margin-top:6px;}
+.plan-badge.save{background:#D1FAE5;color:#065F46;}
+.plan-badge.popular{background:var(--amber-light);color:#92400E;}
+
+/* BILLING TOGGLE */
+.billing-toggle{display:flex;gap:0;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:20px;width:fit-content;}
+.billing-btn{padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:white;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .2s;}
+.billing-btn.active{background:var(--teal);color:white;}
+
+/* TOPUP CARDS */
+.topup-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.topup-card{border:2px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:all .2s;text-align:center;position:relative;}
+.topup-card:hover{border-color:var(--teal);}
+.topup-card.selected{border-color:var(--teal);background:var(--teal-light);}
+.topup-card.selected::after{content:'✓';position:absolute;top:8px;right:10px;width:20px;height:20px;border-radius:50%;background:var(--teal);color:white;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.topup-none{border:2px dashed var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:all .2s;text-align:center;font-size:13px;color:var(--muted);font-weight:500;}
+.topup-none:hover{border-color:var(--muted);}
+.topup-none.selected{border-color:var(--teal);color:var(--teal);background:var(--teal-light);}
+
+/* ORDER SUMMARY (sticky sidebar) */
+.summary-card{background:white;border:1.5px solid var(--border);border-radius:16px;padding:24px;position:sticky;top:88px;}
+.summary-title{font-size:15px;font-weight:700;margin-bottom:16px;}
+.summary-row{display:flex;justify-content:space-between;align-items:center;font-size:14px;padding:8px 0;border-bottom:1px solid var(--border);}
+.summary-row:last-of-type{border-bottom:none;}
+.summary-row.total{font-weight:700;font-size:16px;padding-top:12px;margin-top:4px;border-top:2px solid var(--border);border-bottom:none;}
+.summary-label{color:var(--muted);}
+.summary-label.plan{color:var(--text);font-weight:600;}
+.summary-amount{font-weight:600;color:var(--text);}
+.summary-amount.free{color:var(--green);font-weight:700;}
+.summary-total-amount{font-size:22px;font-weight:900;color:var(--teal);}
+.summary-note{font-size:11px;color:var(--muted);margin-top:12px;line-height:1.5;text-align:center;}
+.summary-note a{color:var(--teal);}
+.btn-checkout{width:100%;padding:16px;background:var(--teal);color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:16px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-checkout:hover{background:var(--teal-dark);}
+.btn-checkout:disabled{opacity:0.45;cursor:not-allowed;}
+.btn-checkout .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:none;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* FEATURE LIST */
+.feat-list{list-style:none;padding:0;margin:16px 0 0;}
+.feat-list li{font-size:13px;color:var(--text);padding:5px 0;display:flex;align-items:flex-start;gap:8px;line-height:1.4;}
+.feat-list li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0;margin-top:1px;}
+
+/* SECURITY BADGES */
+.security-row{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:14px;flex-wrap:wrap;}
+.security-badge{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;}
+
+/* AUTH STATE */
+.auth-check{background:var(--amber-light);border:1px solid #FCD34D;border-radius:10px;padding:12px 16px;font-size:13px;color:#92400E;margin-bottom:20px;display:none;}
+.auth-check a{color:#92400E;font-weight:700;}
+
+/* LOADING OVERLAY */
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:9999;align-items:center;justify-content:center;flex-direction:column;gap:12px;}
+.loading-overlay.show{display:flex;}
+.loading-spinner{width:44px;height:44px;border:3px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin .8s linear infinite;}
+.loading-text{color:white;font-size:15px;font-weight:600;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="home.html" class="nav-logo">
+    <div class="nav-badge">C</div>
+    <span class="nav-easy">easy</span>
+  </a>
+  <a href="pricing.html" class="nav-back">← Back to pricing</a>
+</nav>
+
+<div id="loading-overlay" class="loading-overlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Taking you to secure checkout…</div>
+</div>
+
+<div class="page">
+  <h1 class="page-title">Checkout</h1>
+  <p class="page-sub">Choose your plan, add a top-up pack if you need it, then head to secure payment.</p>
+
+  <!-- Not logged in warning -->
+  <div class="auth-check" id="auth-check">
+    ⚠️ You're not signed in. <a href="auth.html?mode=signup&redirect=checkout.html">Create a free account</a> or <a href="auth.html?mode=signin&redirect=checkout.html">sign in</a> to continue.
+  </div>
+
+  <div class="checkout-grid">
+
+    <!-- LEFT COLUMN -->
+    <div>
+
+      <!-- STEP 1: PLAN -->
+      <div class="card">
+        <div class="card-title"><div class="step-num">1</div> Choose your plan</div>
+
+        <div class="billing-toggle">
+          <button class="billing-btn active" id="toggle-monthly" onclick="setBilling('monthly')">Monthly</button>
+          <button class="billing-btn" id="toggle-annual" onclick="setBilling('annual')">Annual <span style="font-size:11px;background:#D1FAE5;color:#065F46;padding:1px 6px;border-radius:10px;margin-left:4px;">Save 17%</span></button>
+        </div>
+
+        <div class="plan-grid" id="plan-grid">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+
+      <!-- STEP 2: TOP-UP (optional) -->
+      <div class="card">
+        <div class="card-title"><div class="step-num">2</div> Add a top-up pack <span style="font-size:12px;font-weight:500;color:var(--muted);margin-left:6px;">(optional)</span></div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5;">Top-up credits never expire and stack on top of your monthly allowance. Handy for busy periods.</p>
+        <div class="topup-grid">
+          <div class="topup-card" id="topup-5" onclick="selectTopup('5')">
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px;">+5 downloads</div>
+            <div style="font-size:20px;font-weight:900;color:var(--teal);">£3.99</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">79p per download</div>
+          </div>
+          <div class="topup-card" id="topup-10" onclick="selectTopup('10')">
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px;">+10 downloads</div>
+            <div style="font-size:20px;font-weight:900;color:var(--teal);">£7.99</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">79p per download</div>
+            <div class="plan-badge save" style="margin-top:6px;">Best value</div>
+          </div>
+        </div>
+        <div class="topup-none selected" id="topup-none" onclick="selectTopup('none')" style="margin-top:10px;">
+          No top-up — my monthly allowance is enough
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: ORDER SUMMARY -->
+    <div>
+      <div class="summary-card">
+        <div class="summary-title">📋 Order summary</div>
+
+        <div class="summary-row">
+          <span class="summary-label plan" id="summary-plan-name">Easy Start Monthly</span>
+          <span class="summary-amount" id="summary-plan-price">£9.99/mo</span>
+        </div>
+        <div class="summary-row" id="summary-topup-row" style="display:none;">
+          <span class="summary-label" id="summary-topup-name">Top-up pack</span>
+          <span class="summary-amount" id="summary-topup-price">£3.99</span>
+        </div>
+        <div class="summary-row total">
+          <span>Due today</span>
+          <span class="summary-total-amount" id="summary-total">£9.99</span>
+        </div>
+
+        <ul class="feat-list" id="feat-list">
+          <!-- Filled by JS -->
+        </ul>
+
+        <button class="btn-checkout" id="btn-checkout" onclick="startCheckout()">
+          <span id="checkout-btn-text">Continue to payment →</span>
+          <div class="spinner" id="checkout-spinner"></div>
+        </button>
+
+        <div class="security-row">
+          <div class="security-badge">🔒 Stripe secure</div>
+          <div class="security-badge">🇬🇧 UK business</div>
+          <div class="security-badge">Cancel anytime</div>
+        </div>
+
+        <p class="summary-note">
+          By subscribing you agree to our <a href="terms.html" target="_blank">terms</a> and <a href="refund.html" target="_blank">refund policy</a>. Your subscription auto-renews. Cancel any time from your account dashboard.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://qvkosdqcryrcfbjtaxic.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
+
+// ── LIVE PRICE IDs ────────────────────────────────────────────
+const PRICES = {
+  monthly: {
+    easy_start: { id: 'price_1TdoEYGZLILz5vqUIqlEsf4X', label: 'Easy Start Monthly', price: '£9.99', priceNum: 9.99, monthly: '£9.99/mo' },
+    easy_pro:   { id: 'price_1TdoEXGZLILz5vqUvZKB1RQw', label: 'Easy Pro Monthly',   price: '£14.99', priceNum: 14.99, monthly: '£14.99/mo' },
+  },
+  annual: {
+    easy_start: { id: 'price_1TdoEXGZLILz5vqUQj5n6Zri', label: 'Easy Start Annual', price: '£99', priceNum: 99, monthly: '£8.25/mo' },
+    easy_pro:   { id: 'price_1TdoEXGZLILz5vqUFgTznTUT', label: 'Easy Pro Annual',   price: '£149', priceNum: 149, monthly: '£12.42/mo' },
+  },
+};
+
+const TOPUP_PRICES = {
+  '5':  { id: 'price_1TeBHjKF3jvQfgEaX2aPZX6E', label: '+5 downloads', price: 3.99 },
+  '10': { id: 'price_1TeBIKKF3jvQfgEaxU4TjPHu', label: '+10 downloads', price: 7.99 },
+};
+
+const FEATURES = {
+  easy_start: [
+    '20 label downloads per month',
+    'PNG, JPEG, SVG, PDF formats',
+    'GHS pictograms & H/P statements',
+    'EN 15494 candle safety pictograms',
+    'UFI code generator',
+    'Label library (save & reuse)',
+    'Email support',
+  ],
+  easy_pro: [
+    '40 label downloads per month',
+    'All Easy Start features',
+    'Smart Paste — paste your SDS, auto-extract hazard data',
+    'Priority support',
+    'Early access to new features',
+  ],
+};
+
+let billing = 'monthly';
+let selectedPlan = 'easy_start';
+let selectedTopup = 'none';
+let currentUser = null;
+let sbClient = null;
+
+// ── INIT ──────────────────────────────────────────────────────
+async function init() {
+  const { createClient } = window.supabase;
+  sbClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+  const { data: { session } } = await sbClient.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+  } else {
+    document.getElementById('auth-check').style.display = 'block';
+    document.getElementById('btn-checkout').disabled = true;
+  }
+
+  // Pre-select plan from URL param ?plan=easy_pro or ?plan=easy_start
+  const params = new URLSearchParams(window.location.search);
+  const planParam = params.get('plan');
+  const billingParam = params.get('billing');
+  if (billingParam === 'annual') setBilling('annual');
+  if (planParam === 'easy_pro') selectedPlan = 'easy_pro';
+
+  renderPlans();
+  updateSummary();
+}
+
+// ── BILLING TOGGLE ────────────────────────────────────────────
+function setBilling(mode) {
+  billing = mode;
+  document.getElementById('toggle-monthly').classList.toggle('active', mode === 'monthly');
+  document.getElementById('toggle-annual').classList.toggle('active', mode === 'annual');
+  renderPlans();
+  updateSummary();
+}
+
+// ── RENDER PLAN CARDS ─────────────────────────────────────────
+function renderPlans() {
+  const plans = PRICES[billing];
+  const grid = document.getElementById('plan-grid');
+  grid.innerHTML = `
+    <div class="plan-card ${selectedPlan === 'easy_start' ? 'selected' : ''}" onclick="selectPlan('easy_start')">
+      <div class="plan-name">Easy Start</div>
+      <div class="plan-price">${plans.easy_start.price}<span>${billing === 'monthly' ? '/mo' : '/yr'}</span></div>
+      ${billing === 'monthly' ? '' : '<div style="font-size:11px;color:var(--muted);margin-top:2px;">£8.25/mo billed annually</div>'}
+      <div class="plan-desc">20 downloads/month. Perfect for makers just starting out.</div>
+      ${billing === 'annual' ? '<div class="plan-badge save">Save £20.88/yr</div>' : '<div class="plan-badge popular">Most popular</div>'}
+    </div>
+    <div class="plan-card ${selectedPlan === 'easy_pro' ? 'selected' : ''}" onclick="selectPlan('easy_pro')">
+      <div class="plan-name">Easy Pro</div>
+      <div class="plan-price">${plans.easy_pro.price}<span>${billing === 'monthly' ? '/mo' : '/yr'}</span></div>
+      ${billing === 'monthly' ? '' : '<div style="font-size:11px;color:var(--muted);margin-top:2px;">£12.42/mo billed annually</div>'}
+      <div class="plan-desc">40 downloads/month + Smart Paste SDS automation.</div>
+      ${billing === 'annual' ? '<div class="plan-badge save">Save £30.88/yr</div>' : ''}
+    </div>
+  `;
+}
+
+function selectPlan(plan) {
+  selectedPlan = plan;
+  renderPlans();
+  updateSummary();
+}
+
+// ── TOP-UP SELECTION ──────────────────────────────────────────
+function selectTopup(pack) {
+  selectedTopup = pack;
+  document.getElementById('topup-5').classList.toggle('selected', pack === '5');
+  document.getElementById('topup-10').classList.toggle('selected', pack === '10');
+  document.getElementById('topup-none').classList.toggle('selected', pack === 'none');
+  updateSummary();
+}
+
+// ── UPDATE ORDER SUMMARY ──────────────────────────────────────
+function updateSummary() {
+  const planData = PRICES[billing][selectedPlan];
+  document.getElementById('summary-plan-name').textContent = planData.label;
+  document.getElementById('summary-plan-price').textContent = planData.monthly;
+
+  // Top-up row
+  const topupRow = document.getElementById('summary-topup-row');
+  if (selectedTopup !== 'none') {
+    const t = TOPUP_PRICES[selectedTopup];
+    document.getElementById('summary-topup-name').textContent = t.label;
+    document.getElementById('summary-topup-price').textContent = '£' + t.price.toFixed(2);
+    topupRow.style.display = 'flex';
+  } else {
+    topupRow.style.display = 'none';
+  }
+
+  // Due today = plan price + topup (if selected)
+  let total = planData.priceNum;
+  if (selectedTopup !== 'none') {
+    total += TOPUP_PRICES[selectedTopup].price;
+  }
+  document.getElementById('summary-total').textContent = '£' + total.toFixed(2);
+
+  // Feature list
+  const feats = FEATURES[selectedPlan];
+  document.getElementById('feat-list').innerHTML = feats.map(f => `<li>${f}</li>`).join('');
+}
+
+// ── CHECKOUT ──────────────────────────────────────────────────
+async function startCheckout() {
+  if (!currentUser) {
+    window.location.href = 'auth.html?mode=signup&redirect=checkout.html';
+    return;
+  }
+
+  const btn = document.getElementById('btn-checkout');
+  const btnText = document.getElementById('checkout-btn-text');
+  const spinner = document.getElementById('checkout-spinner');
+  btn.disabled = true;
+  btnText.textContent = 'Loading…';
+  spinner.style.display = 'block';
+  document.getElementById('loading-overlay').classList.add('show');
+
+  const planData = PRICES[billing][selectedPlan];
+
+  try {
+    // If top-up selected, we need two checkout sessions back-to-back.
+    // For simplicity (Stripe doesn't support mixed subscription + one-time in one session),
+    // we do the subscription first, then redirect to top-up checkout after success.
+    // The top-up priceId is stored in sessionStorage so checkout-success can trigger it.
+    if (selectedTopup !== 'none') {
+      sessionStorage.setItem('pending_topup', selectedTopup);
+    } else {
+      sessionStorage.removeItem('pending_topup');
+    }
+
+    const res = await fetch(SUPABASE_URL + '/functions/v1/create-checkout-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+      },
+      body: JSON.stringify({
+        priceId: planData.id,
+        userId: currentUser.id,
+        userEmail: currentUser.email,
+        mode: 'subscription',
+        successUrl: window.location.origin + '/builder.html?subscribed=true' + (selectedTopup !== 'none' ? '&topup_pending=' + selectedTopup : ''),
+        cancelUrl: window.location.origin + '/checkout.html?cancelled=true',
+      }),
+    });
+
+    const data = await res.json();
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
+      throw new Error(data.error || 'No checkout URL returned');
+    }
+  } catch (err) {
+    console.error('Checkout error:', err);
+    document.getElementById('loading-overlay').classList.remove('show');
+    btn.disabled = false;
+    btnText.textContent = 'Continue to payment →';
+    spinner.style.display = 'none';
+    alert('Something went wrong starting checkout. Please try again.');
+  }
+}
+
+// ── CANCELLED RETURN ──────────────────────────────────────────
+const params = new URLSearchParams(window.location.search);
+if (params.get('cancelled') === 'true') {
+  window.history.replaceState({}, '', window.location.pathname + (window.location.search.replace('?cancelled=true','').replace('&cancelled=true','')||''));
+  const toast = document.createElement('div');
+  toast.textContent = 'Checkout cancelled — your basket is still here whenever you\'re ready.';
+  toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#374151;color:white;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);max-width:90vw;text-align:center;';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 5000);
+}
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1a1f2e;color:white;padding:16px 24px;z-index:9999;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;box-shadow:0 -4px 20px rgba(0,0,0,0.2);">
+  <div style="flex:1;min-width:200px;">
+    <p style="font-size:13px;line-height:1.6;color:rgba(255,255,255,0.85);margin:0;">We use essential cookies to keep you logged in. No advertising or tracking cookies. <a href="cookie-policy.html" style="color:#5EEAD4;text-decoration:none;">Cookie Policy</a></p>
+  </div>
+  <div style="display:flex;gap:10px;flex-shrink:0;">
+    <button onclick="acceptCookies()" style="background:#4C9BB0;color:white;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">Accept</button>
+    <button onclick="declineCookies()" style="background:none;color:rgba(255,255,255,0.6);border:1.5px solid rgba(255,255,255,0.2);padding:10px 16px;border-radius:8px;font-size:13px;cursor:pointer;">Essential only</button>
+  </div>
+</div>
+<script>
+(function(){
+  if(!localStorage.getItem('clpeasy-cookie-consent')){
+    document.getElementById('cookie-banner').style.display='flex';
+  }
+  window.acceptCookies=function(){
+    localStorage.setItem('clpeasy-cookie-consent','accepted');
+    document.getElementById('cookie-banner').style.display='none';
+  };
+  window.declineCookies=function(){
+    localStorage.setItem('clpeasy-cookie-consent','essential');
+    document.getElementById('cookie-banner').style.display='none';
+  };
+})();
+</script>
+
+</body>
+</html>
