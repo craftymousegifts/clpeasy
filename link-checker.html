@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLPeasy — Link Checker</title>
+<meta name="robots" content="noindex, nofollow">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--white:#fff;--off:#F7F8FA;--border:#E8EAED;--text:#111318;--muted:#6B7280;--teal:#4C9BB0;--teal-dark:#3a7d8f;--green:#10B981;--green-light:#D1FAE5;--red:#EF4444;--red-light:#FEE2E2;--amber:#F59E0B;--amber-light:#FEF3C7;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);line-height:1.6;-webkit-font-smoothing:antialiased;}
+
+/* LOGIN SCREEN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:white;border:1.5px solid var(--border);border-radius:20px;padding:40px 36px;max-width:380px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.08);}
+.login-icon{font-size:48px;margin-bottom:16px;}
+.login-title{font-size:22px;font-weight:900;margin-bottom:6px;}
+.login-sub{font-size:14px;color:var(--muted);margin-bottom:24px;}
+.login-input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-family:'DM Sans',sans-serif;margin-bottom:12px;outline:none;}
+.login-input:focus{border-color:var(--teal);}
+.login-btn{width:100%;padding:13px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.login-btn:hover{background:var(--teal-dark);}
+.login-error{color:var(--red);font-size:13px;margin-top:8px;display:none;}
+
+/* MAIN APP */
+.app{display:none;min-height:100vh;}
+header{background:white;border-bottom:1.5px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+.header-title{font-size:18px;font-weight:900;display:flex;align-items:center;gap:8px;}
+.header-actions{display:flex;gap:10px;align-items:center;}
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.btn-primary{background:var(--teal);color:white;}
+.btn-primary:hover{background:var(--teal-dark);}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-secondary{background:white;color:var(--text);border:1.5px solid var(--border);}
+.btn-secondary:hover{border-color:var(--teal);color:var(--teal);}
+
+.main{max-width:1200px;margin:0 auto;padding:28px 20px;}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+@media(max-width:600px){.stats-row{grid-template-columns:1fr 1fr;}}
+.stat-card{background:white;border:1.5px solid var(--border);border-radius:12px;padding:16px 18px;}
+.stat-label{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.stat-val{font-size:28px;font-weight:900;line-height:1;}
+.stat-val.ok{color:var(--green);}
+.stat-val.err{color:var(--red);}
+.stat-val.warn{color:var(--amber);}
+.stat-val.neutral{color:var(--text);}
+
+/* PROGRESS */
+.progress-wrap{background:white;border:1.5px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:20px;display:none;}
+.progress-label{font-size:13px;font-weight:600;margin-bottom:8px;display:flex;justify-content:space-between;}
+.progress-bar{height:8px;background:var(--off);border-radius:4px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--teal);border-radius:4px;transition:width .3s;}
+.progress-status{font-size:12px;color:var(--muted);margin-top:6px;}
+
+/* FILTERS */
+.filter-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.filter-btn{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:white;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .2s;}
+.filter-btn.active{background:var(--teal);color:white;border-color:var(--teal);}
+.filter-btn.error-filter.active{background:var(--red);border-color:var(--red);}
+.filter-btn.warn-filter.active{background:var(--amber);border-color:var(--amber);color:white;}
+.search-input{padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;margin-left:auto;}
+.search-input:focus{border-color:var(--teal);}
+
+/* RESULTS TABLE */
+.results-wrap{background:white;border:1.5px solid var(--border);border-radius:14px;overflow:hidden;}
+.results-header{display:grid;grid-template-columns:200px 1fr 90px 80px;gap:12px;padding:10px 16px;background:var(--off);border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
+.result-row{display:grid;grid-template-columns:200px 1fr 90px 80px;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);align-items:start;font-size:13px;transition:background .15s;}
+.result-row:last-child{border-bottom:none;}
+.result-row:hover{background:#fafbfc;}
+.result-row.has-issue{background:#fff8f8;}
+.result-row.has-issue:hover{background:#fef2f2;}
+.page-name{font-weight:700;font-size:12px;color:var(--text);}
+.page-path{font-size:11px;color:var(--muted);}
+.link-url{font-size:12px;color:var(--muted);word-break:break-all;line-height:1.4;}
+.link-url a{color:var(--teal);text-decoration:none;}
+.link-url a:hover{text-decoration:underline;}
+.status-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;width:fit-content;}
+.status-badge.ok{background:var(--green-light);color:#065F46;}
+.status-badge.error{background:var(--red-light);color:#991B1B;}
+.status-badge.warn{background:var(--amber-light);color:#92400E;}
+.status-badge.skip{background:#F3F4F6;color:var(--muted);}
+.fix-col{font-size:11px;}
+.fix-needed{color:var(--red);font-weight:600;line-height:1.4;}
+.fix-ok{color:var(--green);}
+
+/* ISSUE PANEL */
+.issue-detail{grid-column:1/-1;background:#fff8f8;border:1px solid #fecaca;border-radius:8px;padding:12px 14px;margin-top:4px;display:none;}
+.issue-detail.show{display:block;}
+.issue-what{font-size:12px;font-weight:700;color:var(--red);margin-bottom:4px;}
+.issue-fix{font-size:12px;color:var(--text);line-height:1.6;}
+.issue-fix code{background:#F3F4F6;padding:1px 5px;border-radius:4px;font-family:monospace;font-size:11px;}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-state .icon{font-size:48px;margin-bottom:12px;}
+.empty-state p{font-size:14px;}
+
+/* MOBILE */
+@media(max-width:700px){
+  .results-header{display:none;}
+  .result-row{grid-template-columns:1fr;gap:4px;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+}
+
+/* EXPORT */
+.export-row{display:flex;gap:8px;margin-bottom:20px;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-wrap" id="login-screen">
+  <div class="login-card">
+    <div class="login-icon">🔒</div>
+    <div class="login-title">CLPeasy Admin</div>
+    <div class="login-sub">Link Checker — internal use only</div>
+    <input type="password" class="login-input" id="pw-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkPw()">
+    <button class="login-btn" onclick="checkPw()">Enter →</button>
+    <div class="login-error" id="login-error">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app" id="app">
+  <header>
+    <div class="header-title">🔗 CLPeasy Link Checker</div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" onclick="exportCSV()">⬇ Export CSV</button>
+      <button class="btn btn-primary" id="btn-run" onclick="runCheck()">▶ Run Check</button>
+    </div>
+  </header>
+
+  <div class="main">
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Links checked</div><div class="stat-val neutral" id="stat-total">—</div></div>
+      <div class="stat-card"><div class="stat-label">OK (2xx)</div><div class="stat-val ok" id="stat-ok">—</div></div>
+      <div class="stat-card"><div class="stat-label">Broken / Error</div><div class="stat-val err" id="stat-err">—</div></div>
+      <div class="stat-card"><div class="stat-label">Redirect (3xx)</div><div class="stat-val warn" id="stat-warn">—</div></div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-label">
+        <span id="progress-label-text">Checking links…</span>
+        <span id="progress-pct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <div class="progress-status" id="progress-status">Starting…</div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filter-row">
+      <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+      <button class="filter-btn error-filter" onclick="setFilter('error', this)">❌ Broken</button>
+      <button class="filter-btn warn-filter" onclick="setFilter('redirect', this)">↪ Redirects</button>
+      <button class="filter-btn" onclick="setFilter('ok', this)">✓ OK</button>
+      <button class="filter-btn" onclick="setFilter('skip', this)">⏭ Skipped</button>
+      <input type="text" class="search-input" id="search-input" placeholder="Search URL or page…" oninput="applyFilters()">
+    </div>
+
+    <!-- RESULTS -->
+    <div class="results-wrap">
+      <div class="results-header">
+        <div>Page</div>
+        <div>URL</div>
+        <div>Status</div>
+        <div>Fix needed</div>
+      </div>
+      <div id="results-body">
+        <div class="empty-state">
+          <div class="icon">🔍</div>
+          <p>Click <strong>Run Check</strong> to scan all CLPeasy links</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── PASSWORD ──────────────────────────────────────────────────
+// Change this before uploading
+const ADMIN_PASSWORD = 'clpeasy-admin-2026';
+
+function checkPw() {
+  const val = document.getElementById('pw-input').value;
+  if (val === ADMIN_PASSWORD) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  }
+}
+
+// ── LINK INVENTORY ────────────────────────────────────────────
+// All known internal and external links across clpeasy.com
+// Add / remove as pages change
+const LINKS = [
+  // ── INTERNAL PAGES ─────────────────────────────
+  { page: 'Home', path: 'home.html',        url: 'https://clpeasy.com/home.html' },
+  { page: 'Pricing', path: 'pricing.html',  url: 'https://clpeasy.com/pricing.html' },
+  { page: 'Builder', path: 'builder.html',  url: 'https://clpeasy.com/builder.html' },
+  { page: 'Auth', path: 'auth.html',        url: 'https://clpeasy.com/auth.html' },
+  { page: 'Checkout', path: 'checkout.html',url: 'https://clpeasy.com/checkout.html' },
+  { page: 'Support', path: 'support.html',  url: 'https://clpeasy.com/support.html' },
+  { page: 'Safety', path: 'safety.html',    url: 'https://clpeasy.com/safety.html' },
+  { page: 'Terms', path: 'terms.html',      url: 'https://clpeasy.com/terms.html' },
+  { page: 'Privacy', path: 'privacy.html',  url: 'https://clpeasy.com/privacy.html' },
+  { page: 'Refund', path: 'refund.html',    url: 'https://clpeasy.com/refund.html' },
+  { page: 'Cookie Policy', path: 'cookie-policy.html', url: 'https://clpeasy.com/cookie-policy.html' },
+  { page: 'Plan Picker', path: 'plan-picker.html', url: 'https://clpeasy.com/plan-picker.html' },
+  { page: 'Print Sheet', path: 'print.html',url: 'https://clpeasy.com/print.html' },
+  { page: 'Showcase', path: 'showcase.html',url: 'https://clpeasy.com/showcase.html' },
+  { page: 'Monitor', path: 'monitor.html',  url: 'https://clpeasy.com/monitor.html' },
+  { page: 'Coming Soon', path: 'index.html',url: 'https://clpeasy.com/' },
+
+  // ── CRITICAL EXTERNAL: REGULATORY ──────────────
+  { page: 'ECHA — CLP Regulation', path: 'builder.html', url: 'https://echa.europa.eu/regulations/clp/understanding-clp' },
+  { page: 'ECHA — Pictograms', path: 'builder.html',     url: 'https://echa.europa.eu/regulations/clp/clp-pictograms' },
+  { page: 'ECHA — UFI Generator', path: 'builder.html',  url: 'https://eupcn.echa.europa.eu' },
+  { page: 'HSE — UK CLP', path: 'builder.html',          url: 'https://www.hse.gov.uk/chemical-classification/legal/clp-regulation.htm' },
+  { page: 'BCF — EN 15494', path: 'builder.html',        url: 'https://www.britishcandles.org/?pages_id=23' },
+  { page: 'EUPCN Poison Centres', path: 'builder.html',  url: 'https://poisoncentres.echa.europa.eu' },
+  { page: 'ICO — Data Protection', path: 'privacy.html', url: 'https://ico.org.uk/for-organisations/data-protection-fee/' },
+
+  // ── SUPPLIER SDS DIRECTORIES ────────────────────
+  { page: 'Candle Shack SDS', path: 'builder.html',          url: 'https://www.candleshack.co.uk/pages/sds-documents' },
+  { page: 'Supplies for Candles SDS', path: 'builder.html',  url: 'https://www.suppliesforcandles.co.uk/pages/safety-data-sheets' },
+  { page: 'NI Candle Supplies SDS', path: 'builder.html',    url: 'https://www.nicandlesupplies.com/pages/sds-sheets' },
+  { page: 'Nikura SDS', path: 'builder.html',                url: 'https://nikura.com/pages/safety-data-sheets' },
+  { page: 'Pure Scented SDS', path: 'builder.html',          url: 'https://www.purescented.co.uk/pages/sds-sheets' },
+  { page: 'Fragrance Oils Direct SDS', path: 'builder.html', url: 'https://www.fragranceoilsdirect.co.uk/sds' },
+  { page: 'LiveMoor SDS', path: 'builder.html',              url: 'https://www.livemoor.co.uk/pages/safety-data-sheets' },
+
+  // ── SOCIAL / EXTERNAL BRAND ─────────────────────
+  { page: 'CLPeasy email — support', path: 'support.html', url: 'mailto:support@clpeasy.com', skip: true },
+  { page: 'CLPeasy email — noreply', path: 'various',      url: 'mailto:noreply@clpeasy.com', skip: true },
+];
+
+// ── FIX GUIDANCE DATABASE ─────────────────────────────────────
+function getFixGuidance(status, url) {
+  if (!status) return { label: 'Network error', fix: 'Could not reach this URL. Check your internet connection and try again. If the link is external, the site may be temporarily down — verify manually.', severity: 'error' };
+
+  const s = parseInt(status);
+  if (s >= 200 && s < 300) return { label: 'OK', fix: '', severity: 'ok' };
+
+  if (s === 301 || s === 302 || s === 303 || s === 307 || s === 308) {
+    return {
+      label: `${s} Redirect`,
+      fix: `This URL redirects to another location. If it's an internal page link, update the href to point directly to the correct URL to avoid an unnecessary hop. If external, this is usually fine.`,
+      severity: 'warn'
+    };
+  }
+  if (s === 400) return { label: '400 Bad Request', fix: 'The server rejected the request. Check the URL for typos — extra slashes, incorrect query strings, or malformed paths.', severity: 'error' };
+  if (s === 401) return { label: '401 Unauthorized', fix: 'This page requires authentication. If it\'s a protected CLPeasy admin page, this is expected. If it should be public, check Netlify redirect rules or Supabase RLS policies.', severity: 'warn' };
+  if (s === 403) return { label: '403 Forbidden', fix: 'Access denied. Check if this resource requires authentication, or if CORS / Netlify access rules are blocking it. For Supabase functions, verify the JWT policy.', severity: 'error' };
+  if (s === 404) return { label: '404 Not Found', fix: `Page not found. Either: (1) the file hasn't been deployed yet — check Netlify deploy logs, (2) the filename is wrong — check capitalisation and extension, (3) the page was renamed or moved — update all hrefs pointing here. URL: ${url}`, severity: 'error' };
+  if (s === 405) return { label: '405 Method Not Allowed', fix: 'The server doesn\'t allow this request method. For Supabase edge functions, ensure the function handles GET requests if being linked to directly.', severity: 'warn' };
+  if (s === 410) return { label: '410 Gone', fix: 'This resource has been permanently removed. Remove or replace any links pointing here.', severity: 'error' };
+  if (s === 429) return { label: '429 Rate Limited', fix: 'Too many requests. This is likely a temporary issue — re-run the check later. If this is a Supabase function, check rate limit settings.', severity: 'warn' };
+  if (s === 500) return { label: '500 Server Error', fix: 'The server returned an internal error. For CLPeasy Supabase functions, check the function logs in the Supabase dashboard → Edge Functions → Logs.', severity: 'error' };
+  if (s === 502) return { label: '502 Bad Gateway', fix: 'Upstream server issue. If this is Netlify or Supabase, check their status pages: status.netlify.com and status.supabase.com.', severity: 'error' };
+  if (s === 503) return { label: '503 Service Unavailable', fix: 'Server temporarily unavailable. Could be a deploy in progress on Netlify. Wait a few minutes and re-run.', severity: 'error' };
+  if (s === 504) return { label: '504 Gateway Timeout', fix: 'Request timed out. For Supabase edge functions, check if the function is timing out — default limit is 2s for free tier.', severity: 'error' };
+  if (s >= 400) return { label: `${s} Error`, fix: `Unexpected ${s} error. Investigate manually — open the URL in your browser and check browser DevTools (Network tab) for more detail.`, severity: 'error' };
+  return { label: `${s}`, fix: '', severity: 'warn' };
+}
+
+// ── STATE ─────────────────────────────────────────────────────
+let results = [];
+let activeFilter = 'all';
+let isRunning = false;
+
+// ── RUN CHECK ─────────────────────────────────────────────────
+async function runCheck() {
+  if (isRunning) return;
+  isRunning = true;
+  results = [];
+
+  const btn = document.getElementById('btn-run');
+  btn.disabled = true;
+  btn.textContent = '⏳ Checking…';
+
+  const progressWrap = document.getElementById('progress-wrap');
+  progressWrap.style.display = 'block';
+  updateProgress(0, LINKS.length, 'Starting…');
+
+  const toCheck = LINKS.filter(l => !l.skip);
+  let done = 0;
+
+  for (const link of LINKS) {
+    if (link.skip || link.url.startsWith('mailto:')) {
+      results.push({ ...link, status: null, statusCode: 'skip', guidance: { label: 'Skipped', fix: 'Email link — not HTTP checkable. Verify manually that the address is correct.', severity: 'skip' } });
+      done++;
+      updateProgress(done, LINKS.length, `Skipping: ${link.url}`);
+      continue;
+    }
+
+    updateProgress(done, LINKS.length, `Checking: ${link.url.replace('https://', '')}`);
+
+    let statusCode = null;
+    let guidance;
+
+    try {
+      // Use a proxy to avoid CORS — fetch via no-cors to at least detect network errors
+      // For internal pages, we can fetch directly
+      const isInternal = link.url.includes('clpeasy.com');
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
+
+      try {
+        const res = await fetch(link.url, {
+          method: isInternal ? 'GET' : 'HEAD',
+          mode: isInternal ? 'cors' : 'no-cors',
+          signal: controller.signal,
+          redirect: 'manual', // Detect redirects without following
+        });
+        clearTimeout(timeout);
+
+        if (res.type === 'opaque') {
+          // External no-cors — we got a response (not a network error), so mark as reachable
+          statusCode = '200*';
+          guidance = { label: 'Reachable*', fix: '* External link responded but status can\'t be read due to CORS. The link is live — verify manually if needed.', severity: 'ok' };
+        } else {
+          statusCode = res.status;
+          guidance = getFixGuidance(res.status, link.url);
+        }
+      } catch (fetchErr) {
+        clearTimeout(timeout);
+        if (fetchErr.name === 'AbortError') {
+          statusCode = 'TIMEOUT';
+          guidance = { label: 'Timeout', fix: 'Request timed out after 8s. The server may be slow, or the URL may not exist. Try opening it manually in a browser.', severity: 'error' };
+        } else {
+          statusCode = 'NET_ERR';
+          guidance = getFixGuidance(null, link.url);
+        }
+      }
+    } catch (e) {
+      statusCode = 'ERR';
+      guidance = { label: 'Error', fix: 'Unexpected error checking this link. Try running the check again.', severity: 'error' };
+    }
+
+    results.push({ ...link, statusCode, guidance });
+    done++;
+    updateProgress(done, LINKS.length, `Checked: ${link.url.replace('https://', '')}`);
+    renderResults();
+    updateStats();
+
+    // Small delay to avoid hammering servers
+    await new Promise(r => setTimeout(r, 120));
+  }
+
+  progressWrap.style.display = 'none';
+  btn.disabled = false;
+  btn.textContent = '▶ Run Again';
+  isRunning = false;
+  renderResults();
+  updateStats();
+}
+
+function updateProgress(done, total, msg) {
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-pct').textContent = pct + '%';
+  document.getElementById('progress-status').textContent = msg;
+}
+
+// ── STATS ─────────────────────────────────────────────────────
+function updateStats() {
+  const ok   = results.filter(r => r.guidance.severity === 'ok').length;
+  const err  = results.filter(r => r.guidance.severity === 'error').length;
+  const warn = results.filter(r => r.guidance.severity === 'warn').length;
+  document.getElementById('stat-total').textContent = results.length;
+  document.getElementById('stat-ok').textContent = ok;
+  document.getElementById('stat-err').textContent = err;
+  document.getElementById('stat-warn').textContent = warn;
+}
+
+// ── FILTERS ───────────────────────────────────────────────────
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderResults();
+}
+
+function applyFilters() { renderResults(); }
+
+// ── RENDER RESULTS ────────────────────────────────────────────
+function renderResults() {
+  const search = (document.getElementById('search-input')?.value || '').toLowerCase();
+  let filtered = results;
+
+  if (activeFilter !== 'all') {
+    filtered = filtered.filter(r => {
+      if (activeFilter === 'error')    return r.guidance.severity === 'error';
+      if (activeFilter === 'redirect') return r.guidance.severity === 'warn' && String(r.statusCode).startsWith('3');
+      if (activeFilter === 'ok')       return r.guidance.severity === 'ok';
+      if (activeFilter === 'skip')     return r.guidance.severity === 'skip';
+      return true;
+    });
+  }
+
+  if (search) {
+    filtered = filtered.filter(r =>
+      r.url.toLowerCase().includes(search) ||
+      r.page.toLowerCase().includes(search) ||
+      r.path.toLowerCase().includes(search)
+    );
+  }
+
+  const body = document.getElementById('results-body');
+
+  if (filtered.length === 0 && results.length === 0) {
+    body.innerHTML = '<div class="empty-state"><div class="icon">🔍</div><p>Click <strong>Run Check</strong> to scan all CLPeasy links</p></div>';
+    return;
+  }
+  if (filtered.length === 0) {
+    body.innerHTML = '<div class="empty-state"><div class="icon">🔎</div><p>No results match this filter</p></div>';
+    return;
+  }
+
+  body.innerHTML = filtered.map((r, i) => {
+    const hasIssue = r.guidance.severity === 'error' || r.guidance.severity === 'warn';
+    const badgeClass = r.guidance.severity;
+    const needsFix = r.guidance.severity === 'error' ? '⚠ Yes' : r.guidance.severity === 'warn' ? '↪ Maybe' : '';
+
+    return `
+      <div class="result-row ${hasIssue ? 'has-issue' : ''}" id="row-${i}">
+        <div>
+          <div class="page-name">${r.page}</div>
+          <div class="page-path">${r.path}</div>
+        </div>
+        <div class="link-url">
+          <a href="${r.url}" target="_blank" rel="noopener">${r.url}</a>
+        </div>
+        <div>
+          <span class="status-badge ${badgeClass}">${r.guidance.label}</span>
+        </div>
+        <div class="fix-col">
+          ${hasIssue
+            ? `<span class="fix-needed" style="cursor:pointer;" onclick="toggleIssue(${i})">${needsFix} ▾</span>`
+            : `<span class="fix-ok">✓</span>`
+          }
+        </div>
+        ${hasIssue ? `
+          <div class="issue-detail" id="issue-${i}">
+            <div class="issue-what">${r.guidance.label}</div>
+            <div class="issue-fix">${r.guidance.fix}</div>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleIssue(i) {
+  const el = document.getElementById('issue-' + i);
+  if (el) el.classList.toggle('show');
+}
+
+// ── EXPORT CSV ────────────────────────────────────────────────
+function exportCSV() {
+  if (results.length === 0) { alert('Run the check first.'); return; }
+  const rows = [['Page', 'Path', 'URL', 'Status', 'Severity', 'Fix Guidance']];
+  results.forEach(r => {
+    rows.push([
+      `"${r.page}"`,
+      `"${r.path}"`,
+      `"${r.url}"`,
+      `"${r.guidance.label}"`,
+      `"${r.guidance.severity}"`,
+      `"${(r.guidance.fix || '').replace(/"/g, "'")}"`,
+    ]);
+  });
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'clpeasy-link-check-' + new Date().toISOString().slice(0, 10) + '.csv';
+  a.click();
+}
+</script>
+</body>
+</html>

@@ -174,11 +174,6 @@ input[type=text]:focus,input[type=email]:focus{border-color:var(--teal);backgrou
         <div class="q-text">What feature did you find most useful?</div>
         <div class="q-sub">Pick the one that stood out most to you.</div>
         <div class="radio-group" id="rg3">
-          <label class="radio-card" onclick="selectRadio('rg3',this,'Guide Me wizard')">
-            <div class="radio-dot"></div>
-            <span class="radio-emoji">🧙</span>
-            <span class="radio-label">Guide Me wizard — step-by-step help</span>
-          </label>
           <label class="radio-card" onclick="selectRadio('rg3',this,'SDS paste / import')">
             <div class="radio-dot"></div>
             <span class="radio-emoji">📋</span>
@@ -187,12 +182,7 @@ input[type=text]:focus,input[type=email]:focus{border-color:var(--teal);backgrou
           <label class="radio-card" onclick="selectRadio('rg3',this,'Label downloads')">
             <div class="radio-dot"></div>
             <span class="radio-emoji">🖨️</span>
-            <span class="radio-label">Downloading labels (PNG / PDF / Avery)</span>
-          </label>
-          <label class="radio-card" onclick="selectRadio('rg3',this,'QR safety sheet')">
-            <div class="radio-dot"></div>
-            <span class="radio-emoji">📱</span>
-            <span class="radio-label">QR code linking to digital safety sheet</span>
+            <span class="radio-label">Downloading labels (PNG / SVG / PDF)</span>
           </label>
           <label class="radio-card" onclick="selectRadio('rg3',this,'UFI code generation')">
             <div class="radio-dot"></div>
@@ -206,6 +196,13 @@ input[type=text]:focus,input[type=email]:focus{border-color:var(--teal);backgrou
           </label>
         </div>
         <div class="error-msg" id="err3">Please select an option before continuing.</div>
+        <div style="margin-top:16px;">
+          <div class="input-label" style="margin-bottom:6px;">Anything else to add about the features? <span style="font-weight:400;color:var(--muted);">(optional)</span></div>
+          <div class="textarea-wrap">
+            <textarea id="ans3other" placeholder="e.g. I really liked how the label updated as I typed... I'd love to see..." maxlength="500" oninput="updateChar('ans3other','char3other',500)" style="min-height:80px;"></textarea>
+            <div class="char-count"><span id="char3other">0</span>/500</div>
+          </div>
+        </div>
       </div>
 
       <!-- Q4: What was confusing or missing -->
@@ -256,7 +253,7 @@ input[type=text]:focus,input[type=email]:focus{border-color:var(--teal);backgrou
         <div class="q-text">Anything else you'd like to tell us?</div>
         <div class="q-sub">Any other thoughts, suggestions, compliments or complaints — we want to hear it all.</div>
         <div class="textarea-wrap">
-          <textarea id="ans6other" placeholder="e.g. I loved the QR code feature... It would be great if you could... I had a problem when..." maxlength="1000" oninput="updateChar('ans6other','char6other',1000)"></textarea>
+          <textarea id="ans6other" placeholder="e.g. I loved how fast it was... It would be great if you could... I had a problem when..." maxlength="1000" oninput="updateChar('ans6other','char6other',1000)"></textarea>
           <div class="char-count"><span id="char6other">0</span>/1000</div>
         </div>
       </div>
@@ -311,7 +308,7 @@ const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentQ = 1;
 const totalQ = 7;
-const answers = { rating: null, hazard_trust: null, best_feature: null, feedback: '', would_pay: null, other_comments: '', name: '', email: '' };
+const answers = { rating: null, hazard_trust: null, best_feature: null, q3_other: '', feedback: '', would_pay: null, other_comments: '', name: '', email: '' };
 
 function updateProgress() {
   const pct = (currentQ / totalQ) * 100;
@@ -372,6 +369,7 @@ function validate(q) {
 
 function nextQ() {
   if (!validate(currentQ)) return;
+  if (currentQ === 3) { const el = document.getElementById('ans3other'); if(el) answers.q3_other = el.value.trim(); }
   if (currentQ === 4) answers.feedback = document.getElementById('ans4').value.trim();
   if (currentQ === 6) { const el = document.getElementById('ans6other'); if(el) answers.other_comments = el.value.trim(); }
   document.getElementById('q' + currentQ).classList.remove('active');
@@ -406,6 +404,7 @@ async function submitForm() {
       ease_rating: answers.rating,
       hazard_trust: answers.hazard_trust,
       best_feature: answers.best_feature,
+      q3_other: answers.q3_other,
       feedback: answers.feedback,
       would_pay: answers.would_pay,
       other_comments: answers.other_comments,
