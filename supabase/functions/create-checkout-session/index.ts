@@ -29,10 +29,17 @@ serve(async (req) => {
       "line_items[0][price]": priceId,
       "line_items[0][quantity]": "1",
       "mode": checkoutMode,
+      "payment_method_collection": "always",
       "customer_email": userEmail,
       "success_url": "https://clpeasy.com/builder.html?topup=success",
       "cancel_url": "https://clpeasy.com/builder.html?topup=cancelled",
     });
+
+    // Require billing address — enables country verification post-payment
+    // Full UK-only enforcement: add Stripe Radar rule in dashboard (billing_address.country != GB → block)
+    if (checkoutMode === "subscription") {
+      params.set("billing_address_collection", "required");
+    }
 
     // For subscriptions, add metadata and trial
     if (checkoutMode === "subscription") {

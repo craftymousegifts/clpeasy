@@ -414,6 +414,27 @@ async function submitForm() {
     console.error('Supabase error:', e);
   }
 
+  // Send feedback email to support@clpeasy.com — non-blocking
+  try {
+    await fetch(`${SUPABASE_URL}/functions/v1/send-feedback-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: answers.name,
+        email: answers.email,
+        ease_rating: answers.rating,
+        hazard_trust: answers.hazard_trust,
+        best_feature: answers.best_feature,
+        q3_other: answers.q3_other,
+        feedback: answers.feedback,
+        would_pay: answers.would_pay,
+        other_comments: answers.other_comments,
+      })
+    });
+  } catch(e) {
+    console.error('Feedback email error (non-fatal):', e);
+  }
+
   // Show thank you regardless (graceful degradation)
   document.getElementById('formNav').style.display = 'none';
   document.querySelector('.form-body').style.display = 'none';

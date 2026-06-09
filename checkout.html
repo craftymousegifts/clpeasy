@@ -19,7 +19,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 /* NAV */
 nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 20px;height:72px;display:flex;align-items:center;justify-content:space-between;}
 .nav-logo{display:flex;align-items:center;gap:0;text-decoration:none;line-height:1;}
-.nav-badge{width:52px;height:52px;border-radius:50%;background:#4C9BB0;color:white;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;flex-shrink:0;font-family:'DM Sans',sans-serif;letter-spacing:-1px;}
+.nav-badge{width:52px;height:52px;border-radius:50%;background:#4C9BB0;color:white;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;flex-shrink:0;font-family:'DM Sans',sans-serif;letter-spacing:-1px;}
 .nav-easy{font-family:'DM Sans',sans-serif;font-size:28px;font-weight:900;color:#4C9BB0;margin-left:5px;letter-spacing:-2px;line-height:1;}
 .nav-back{font-size:13px;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;}
 .nav-back:hover{color:var(--teal);border-color:var(--teal);}
@@ -110,7 +110,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.97);backdrop
 
 <nav>
   <a href="home.html" class="nav-logo">
-    <div class="nav-badge">C</div>
+    <div class="nav-badge">CLP</div>
     <span class="nav-easy">easy</span>
   </a>
   <a href="pricing.html" class="nav-back">← Back to pricing</a>
@@ -124,6 +124,11 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.97);backdrop
 <div class="page">
   <h1 class="page-title">Checkout</h1>
   <p class="page-sub">Choose your plan, add a top-up pack if you need it, then head to secure payment.</p>
+
+  <!-- UK-only notice -->
+  <div style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:8px;padding:10px 14px;font-size:13px;color:#0369A1;margin-bottom:16px;line-height:1.5;">
+    🇬🇧 CLPeasy is currently available to <strong>UK customers only</strong>. Payments are processed in GBP.
+  </div>
 
   <!-- Not logged in warning -->
   <div class="auth-check" id="auth-check">
@@ -247,7 +252,7 @@ const FEATURES = {
     'Email support',
   ],
   easy_pro: [
-    '40 label downloads per month',
+    '30 label downloads per month',
     'All Easy Start features',
     'Smart Paste — paste your SDS, auto-extract hazard data',
     'Priority support',
@@ -309,7 +314,7 @@ function renderPlans() {
       <div class="plan-name">Easy Pro</div>
       <div class="plan-price">${plans.easy_pro.price}<span>${billing === 'monthly' ? '/mo' : '/yr'}</span></div>
       ${billing === 'monthly' ? '' : '<div style="font-size:11px;color:var(--muted);margin-top:2px;">£12.42/mo billed annually</div>'}
-      <div class="plan-desc">40 downloads/month + Smart Paste SDS automation.</div>
+      <div class="plan-desc">30 downloads/month + Smart Paste SDS automation.</div>
       ${billing === 'annual' ? '<div class="plan-badge save">Save £30.88/yr</div>' : ''}
     </div>
   `;
