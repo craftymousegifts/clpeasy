@@ -338,6 +338,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;color:var(--muted);}
 .summary-grid strong{color:var(--text);display:block;font-size:12px;}
 .watermark-note{background:#F3F4F6;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--muted);margin-bottom:16px;text-align:center;}
+.seasonal-pill{display:none;align-items:center;gap:8px;background:var(--teal-light);border:1px solid var(--teal);border-radius:100px;padding:6px 14px;font-size:12px;color:var(--teal-dark);margin-bottom:12px;flex-wrap:wrap;}
+.seasonal-pill span.s-icon{font-size:14px;}
+.seasonal-pill span.s-text{font-weight:600;}
+.seasonal-pill span.s-scents{color:var(--muted);font-weight:400;}
 .upgrade-banner{background:linear-gradient(135deg,#4C9BB0 0%,#3a7d8f 100%);border-radius:10px;padding:11px 16px;font-size:13px;color:white;margin-bottom:10px;display:none;align-items:center;justify-content:space-between;gap:12px;}
 .upgrade-banner span{line-height:1.4;}
 .upgrade-banner a{background:white;color:#3a7d8f;border:none;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;white-space:nowrap;flex-shrink:0;}
@@ -574,6 +578,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <a href="checkout.html?plan=easy_pro">Upgrade to Pro →</a>
       <button onclick="document.getElementById('pro-nudge-banner').style.display='none';localStorage.setItem('pro_nudge_dismissed','1')" style="background:transparent;border:none;color:rgba(255,255,255,0.7);font-size:18px;cursor:pointer;padding:0 4px;line-height:1;">×</button>
     </div>
+  </div>
+
+  <!-- SEASONAL GREETING — shown to logged-in users -->
+  <div class="seasonal-pill" id="builder-seasonal">
+    <span class="s-icon" id="bs-icon">🌿</span>
+    <span class="s-text" id="bs-label">Summer scents:</span>
+    <span class="s-scents" id="bs-scents">Palo Santo · Sea Breeze · Coconut Lime</span>
   </div>
 
   <div class="steps-bar" id="steps-bar">
@@ -1525,8 +1536,8 @@ function downloadPrintReadyPDF(){
     .info{font-size:12px;color:#555;line-height:1.6;max-width:500px;text-align:center;}
     .dl{margin-top:12px;padding:10px 20px;background:#4C9BB0;color:white;border:none;border-radius:6px;font-size:14px;cursor:pointer;font-family:Arial;}
     @media print{body{background:white;padding:0;}.info,.dl{display:none;}.card{box-shadow:none;padding:0;}}
-.label-done-splash{position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;background:rgba(13,17,27,0.75);display:flex;align-items:center;justify-content:center;overflow-y:auto;opacity:0;transition:opacity .35s;pointer-events:none;font-family:'DM Sans',sans-serif;}
-.label-done-splash.show{opacity:1;pointer-events:auto;}
+.label-done-splash{position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;background:rgba(13,17,27,0.75);display:none;align-items:center;justify-content:center;overflow-y:auto;opacity:0;transition:opacity .35s;pointer-events:none;font-family:'DM Sans',sans-serif;}
+.label-done-splash.show{display:flex;opacity:1;pointer-events:auto;}
 .label-done-box{background:#ffffff;border:2px solid #4C9BB0;border-radius:20px;padding:32px 28px 24px;max-width:380px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.25);}
 .label-done-icon{font-size:48px;margin-bottom:12px;}
 .label-done-title{font-size:22px;font-weight:700;color:#111318;margin-bottom:6px;font-family:'DM Serif Display',serif;}
@@ -1751,6 +1762,38 @@ async function initAuth(){
       if(navUser){navUser.textContent=email;navUser.style.display='';}
       if(navSignout)navSignout.style.display='';
       if(navSignin)navSignin.style.display='none';
+      // ── Seasonal greeting pill ──
+      (function(){
+        var SD=[
+          {label:'Winter scents',icon:'❄️',scents:'Icy Mint · Cashmere Wood · Vanilla Sky'},
+          {label:'Valentine scents',icon:'🌹',scents:'Red Velvet · Rose Petal · Dark Cherry'},
+          {label:'Spring scents',icon:'🌸',scents:'Spring Rain · Neroli Bloom · Fresh Cotton'},
+          {label:'Easter scents',icon:'🐣',scents:'Easter Lily · Lavender Fields · Sweet Pea'},
+          {label:'May scents',icon:'🌿',scents:'Palo Santo · Wild Honeysuckle · Eucalyptus'},
+          {label:'Summer scents',icon:'☀️',scents:'Sea Breeze · Coconut Sorbet · Citrus Burst'},
+          {label:'July scents',icon:'🏖️',scents:'Pineapple Crush · Mojito Lime · Ocean Mist'},
+          {label:'Harvest scents',icon:'🍂',scents:'Blackberry & Bay · Amber & Sandalwood · Warm Vanilla'},
+          {label:'Autumn scents',icon:'🍂',scents:'Pumpkin Spice · Cinnamon Apple · Dark Amber'},
+          {label:'Halloween scents',icon:'🎃',scents:'Dark Musk · Midnight Fig · Black Cherry'},
+          {label:'Christmas scents',icon:'🎄',scents:'Christmas Spice · Frosted Berry · Frankincense'},
+          {label:'Festive scents',icon:'⭐',scents:'Candy Cane · Gingerbread House · Winter Berries'}
+        ];
+        var now=new Date(),mo=now.getMonth();
+        var daysLeft=new Date(now.getFullYear(),mo+1,0).getDate()-now.getDate();
+        var idx=daysLeft<14?(mo+1)%12:mo;
+        var s=SD[idx];
+        var pill=document.getElementById('builder-seasonal');
+        if(pill&&s){
+          var ic=document.getElementById('bs-icon');
+          var lb=document.getElementById('bs-label');
+          var sc=document.getElementById('bs-scents');
+          if(ic)ic.textContent=s.icon;
+          if(lb)lb.textContent=s.label+':';
+          if(sc)sc.textContent=s.scents;
+          pill.style.display='flex';
+        }
+      })();
+
     } else {
       // Not logged in — show upgrade banner
       const upgBanner=document.getElementById('upgrade-banner');
@@ -2712,10 +2755,12 @@ function splashDismiss(){
   const splash=document.getElementById('label-done-splash');
   if(splash){
     splash.classList.remove('show');
+    splash.style.cssText='';
+    splash.style.display='none';
     splash.style.opacity='0';
     splash.style.pointerEvents='none';
   }
-  if(_splashTimer)clearTimeout(_splashTimer);
+  if(_splashTimer){clearTimeout(_splashTimer);_splashTimer=null;}
 }
 function splashNewLabel(){
   splashDismiss();

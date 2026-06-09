@@ -361,11 +361,15 @@
   .hero > *:nth-child(4) { animation-delay: .4s; }
   .hero > *:nth-child(5) { animation-delay: .5s; }
 
+  @media (max-width: 980px) {
+    .nav-hide-md { display: none !important; }
+  }
   @media (max-width: 600px) {
     nav { height: 64px; padding: 0 16px; }
     .nav-badge { width: 52px; height: 52px; font-size: 24px; }
     .nav-easy { font-size: 26px; margin-left: 4px; }
-    .nav-links a:not(:last-child) { display: none; }
+    .nav-links a:not(.btn-nav):not(.nav-signin) { display: none; }
+    .nav-signin { font-size: 13px !important; padding: 6px 10px !important; }
     .btn-nav { padding: 7px 14px; font-size: 13px; }
     nav { justify-content: space-between; gap: 8px; }
     .nav-logo { flex-shrink: 0; }
@@ -404,15 +408,15 @@
     <div class="nav-badge">CLP</div><span class="nav-easy">easy</span><sup style="font-size:9px;font-weight:700;color:#4C9BB0;vertical-align:super;line-height:0;margin-left:1px;">™</sup>
   </a>
   <div class="nav-links">
-    <a href="#features">Features</a>
+    <a href="#features" class="nav-hide-md">Features</a>
     <a href="pricing.html">Pricing</a>
     <a href="#faq">FAQ</a>
-    <a href="#about">Our story</a>
-    <a href="knowledge.html">Knowledge Base</a>
-    <a href="showcase.html">Label Showcase</a>
-    <a href="support.html">Support</a>
-    <a href="auth.html?mode=signin" style="font-size:14px;font-weight:500;color:var(--muted);text-decoration:none;padding:6px 12px;">Sign in</a>
-    <a href="checkout.html" class="btn-nav">Start free trial</a>
+    <a href="#about" class="nav-hide-md">Our story</a>
+    <a href="knowledge.html" class="nav-hide-md">Knowledge Base</a>
+    <a href="showcase.html" class="nav-hide-md">Label Showcase</a>
+    <a href="support.html" class="nav-hide-md">Support</a>
+    <a href="auth.html?mode=signin" class="nav-signin" style="font-size:14px;font-weight:500;color:var(--muted);text-decoration:none;padding:6px 12px;">Sign in</a>
+    <a href="auth.html?mode=signup" class="btn-nav">Start free trial</a>
   </div>
 </nav>
 
@@ -554,7 +558,7 @@
     <h2 class="section-title">Simple, honest pricing</h2>
     <p style="font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:8px;">Start free for 14 days — no card needed. Easy Start from £9.99/mo, Easy Pro from £14.99/mo.</p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px;">
-      <a href="checkout.html" style="background:var(--teal);color:white;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;">Start your 14-day free trial →</a>
+      <a href="auth.html?mode=signup" style="background:var(--teal);color:white;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;">Start your 14-day free trial →</a>
       <a href="pricing.html" style="background:white;color:var(--text);padding:12px 24px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;border:1.5px solid var(--border);">See all plans →</a>
     </div>
   </div>
@@ -846,7 +850,7 @@
       <h3 style="font-family:'DM Serif Display',serif;font-size:26px;color:white;margin-bottom:8px;">Makers gotta make. Learners gotta learn.</h3>
       <p style="color:rgba(255,255,255,0.88);font-size:15px;margin-bottom:12px;max-width:520px;margin-left:auto;margin-right:auto;">Whether you're just starting out, growing a side hustle, or turning your passion into your full-time thing — your time and money belong in your craft. Not in compliance paperwork.</p>
       <p style="color:rgba(255,255,255,0.8);font-size:14px;margin-bottom:24px;max-width:520px;margin-left:auto;margin-right:auto;">CLPeasy handles the compliance so your time, energy and money stay where they belong — in your craft.</p>
-      <a href="checkout.html" style="display:inline-block;background:white;color:var(--teal);font-weight:700;padding:14px 32px;border-radius:10px;text-decoration:none;font-size:15px;transition:opacity .2s;">Try it free — no card needed →</a>
+      <a href="auth.html?mode=signup" style="display:inline-block;background:white;color:var(--teal);font-weight:700;padding:14px 32px;border-radius:10px;text-decoration:none;font-size:15px;transition:opacity .2s;">Try it free — no card needed →</a>
       <p style="color:rgba(255,255,255,0.6);font-size:12px;margin-top:12px;">No card required · Cancel anytime</p>
     </div>
   </div>
@@ -972,7 +976,7 @@
 <section class="cta">
   <h2>Ready to make CLP<br><em style="font-style:italic;color:#5EEAD4">easy</em>?</h2>
   <p>Join makers already using CLPeasy to keep their products compliant.</p>
-  <button class="btn-cta" onclick="window.location.href='checkout.html'">Start your 14-day free trial →</button>
+  <button class="btn-cta" onclick="window.location.href='auth.html?mode=signup'">Start your 14-day free trial →</button>
 
 </section>
 
@@ -1033,7 +1037,7 @@ function toggleFaq(el) {
 const _sb=window.supabase.createClient('https://qvkosdqcryrcfbjtaxic.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw');
 _sb.auth.getSession().then(async ({data:{session}})=>{
   if(session){
-    document.querySelectorAll('a[href="auth.html"], a[href="builder.html"], a[href="checkout.html"]').forEach(a=>{
+    document.querySelectorAll('a[href="auth.html"], a[href="builder.html"], a[href="auth.html?mode=signup"], a[href="checkout.html"]').forEach(a=>{
       const t=a.textContent.trim();
       if(t==='Start free trial'||t==='Get started free'||t==='Start for free'||t.includes('free trial')||t.includes('Start 7')||t.includes('Get Pro')||t.includes('Try it free')){
         a.href='builder.html';
