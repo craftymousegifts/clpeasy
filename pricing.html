@@ -159,6 +159,9 @@ footer a{color:#6B7280;text-decoration:none;}
     <button class="toggle-btn active" onclick="setBilling('monthly',this)">Monthly</button>
     <button class="toggle-btn" onclick="setBilling('annual',this)">Annual <span class="save-badge">SAVE 30%</span></button>
   </div>
+  <div id="annual-savings-bar" style="display:none;margin-top:14px;background:linear-gradient(135deg,#F0FDF4,#d1fae5);border:1.5px solid #22C55E;border-radius:10px;padding:10px 18px;font-size:13px;color:#166534;font-weight:600;text-align:center;">
+    🎉 Annual plan savings: &nbsp;<strong>Save £20.88/year on Easy Start</strong> &nbsp;·&nbsp; <strong>Save £30.88/year on Easy Pro</strong>
+  </div>
 </div>
 
 <!-- CARDS -->
@@ -248,6 +251,55 @@ footer a{color:#6B7280;text-decoration:none;}
 
   </div>
   <div class="trial-strip">The Easy Trial gives you full access to both Easy Start &amp; Easy Pro features for 14 days &nbsp;&middot;&nbsp; No credit card required &nbsp;&middot;&nbsp; UK GDPR compliant<br><span style="display:inline-block;margin-top:8px;font-size:12px;">Paid plans auto-renew (monthly or annually) until cancelled. You can cancel anytime from your account — no notice period — and keep access until the end of your paid period.</span></div>
+</div>
+
+<!-- DESIGNER COMPARISON -->
+<div style="background:#F8FAFC;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:40px 24px;">
+  <div style="max-width:760px;margin:0 auto;">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="display:inline-block;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">The real cost of compliance</div>
+      <h3 style="font-family:'DM Serif Display',serif;font-size:24px;color:var(--text);margin:0;">CLPeasy vs paying a designer</h3>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <!-- Without CLPeasy -->
+      <div style="background:white;border:1.5px solid #FCA5A5;border-radius:14px;padding:24px;">
+        <div style="font-size:13px;font-weight:700;color:#DC2626;margin-bottom:16px;text-align:center;">❌ Without CLPeasy</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <span style="color:var(--muted);">Designer, per label</span><strong style="color:#DC2626;">£40–£60</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <span style="color:var(--muted);">10 fragrances</span><strong style="color:#DC2626;">£400–£600</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <span style="color:var(--muted);">Every SDS update</span><strong style="color:#DC2626;">New charge</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;">
+            <span style="color:var(--muted);">Turnaround time</span><strong style="color:#DC2626;">Days</strong>
+          </div>
+        </div>
+      </div>
+      <!-- With CLPeasy -->
+      <div style="background:white;border:2px solid var(--teal);border-radius:14px;padding:24px;box-shadow:0 4px 16px rgba(76,155,176,0.12);">
+        <div style="font-size:13px;font-weight:700;color:var(--teal-dark);margin-bottom:16px;text-align:center;">✅ With CLPeasy</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <span style="color:var(--muted);">Easy Start, per year</span><strong style="color:var(--teal-dark);">£99</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <span style="color:var(--muted);">Unlimited edits</span><strong style="color:var(--teal-dark);">Included</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+            <span style="color:var(--muted);">SDS updates</span><strong style="color:var(--teal-dark);">Re-download free</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;">
+            <span style="color:var(--muted);">Turnaround time</span><strong style="color:var(--teal-dark);">3 minutes</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p style="text-align:center;font-size:13px;color:var(--muted);margin-top:16px;">Most makers with 10+ fragrances save <strong style="color:var(--text);">£300–£500 in year one alone.</strong> CLPeasy pays for itself on the first label.</p>
+  </div>
 </div>
 
 <!-- EMOTIONAL HOOK -->
@@ -821,7 +873,9 @@ function setBilling(type,btn){
     document.getElementById('maker-sub').textContent='£99/year — pay monthly it\'s £119.88 — save £20.88';
     document.getElementById('pro-price').textContent='£12.49';
     document.getElementById('pro-sub').textContent='£149/year — pay monthly it\'s £179.88 — save £30.88';
+    var sb=document.getElementById('annual-savings-bar');if(sb)sb.style.display='block';
   } else {
+    var sb=document.getElementById('annual-savings-bar');if(sb)sb.style.display='none';
     document.getElementById('maker-price').textContent='£9.99';
     document.getElementById('maker-sub').textContent='or £99/year — pay monthly it\'s £119.88 — save £20.88';
     document.getElementById('pro-price').textContent='£14.99';

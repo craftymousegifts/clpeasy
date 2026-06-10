@@ -9,6 +9,14 @@
   <meta property="og:description" content="Generate fully compliant CLP labels for candles, wax melts, reed diffusers and fragrance products in minutes.">
   <meta property="og:url" content="https://clpeasy.com">
   <meta property="og:type" content="website">
+  <meta property="og:image" content="https://clpeasy.com/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="CLPeasy — CLP label generator for UK fragrance makers">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://clpeasy.com/og-image.png">
+  <meta name="twitter:title" content="CLPeasy — Label Builder for Candle & Wax Melt Makers">
+  <meta name="twitter:description" content="Generate print-ready CLP labels in seconds. Built by a maker, for makers.">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -361,11 +369,15 @@
   .hero > *:nth-child(4) { animation-delay: .4s; }
   .hero > *:nth-child(5) { animation-delay: .5s; }
 
+  @media (max-width: 980px) {
+    .nav-hide-md { display: none !important; }
+  }
   @media (max-width: 600px) {
     nav { height: 64px; padding: 0 16px; }
     .nav-badge { width: 52px; height: 52px; font-size: 24px; }
     .nav-easy { font-size: 26px; margin-left: 4px; }
-    .nav-links a:not(:last-child) { display: none; }
+    .nav-links a:not(.btn-nav):not(.nav-signin) { display: none; }
+    .nav-signin { font-size: 13px !important; padding: 6px 10px !important; }
     .btn-nav { padding: 7px 14px; font-size: 13px; }
     nav { justify-content: space-between; gap: 8px; }
     .nav-logo { flex-shrink: 0; }
@@ -395,6 +407,7 @@
   .pro-card .price-highlight{background:rgba(52,211,153,0.12);color:#34D399;}
 
 </style>
+  <script defer data-domain="clpeasy.com" src="https://plausible.io/js/script.js"></script>
 </head>
 <body>
 
@@ -404,15 +417,15 @@
     <div class="nav-badge">CLP</div><span class="nav-easy">easy</span><sup style="font-size:9px;font-weight:700;color:#4C9BB0;vertical-align:super;line-height:0;margin-left:1px;">™</sup>
   </a>
   <div class="nav-links">
-    <a href="#features">Features</a>
+    <a href="#features" class="nav-hide-md">Features</a>
     <a href="pricing.html">Pricing</a>
     <a href="#faq">FAQ</a>
-    <a href="#about">Our story</a>
-    <a href="knowledge.html">Knowledge Base</a>
-    <a href="showcase.html">Label Showcase</a>
-    <a href="support.html">Support</a>
-    <a href="auth.html?mode=signin" style="font-size:14px;font-weight:500;color:var(--muted);text-decoration:none;padding:6px 12px;">Sign in</a>
-    <a href="checkout.html" class="btn-nav">Start free trial</a>
+    <a href="#about" class="nav-hide-md">Our story</a>
+    <a href="knowledge.html" class="nav-hide-md">Knowledge Base</a>
+    <a href="showcase.html" class="nav-hide-md">Label Showcase</a>
+    <a href="support.html" class="nav-hide-md">Support</a>
+    <a href="auth.html?mode=signin" class="nav-signin" style="font-size:14px;font-weight:500;color:var(--muted);text-decoration:none;padding:6px 12px;">Sign in</a>
+    <a href="auth.html?mode=signup" class="btn-nav">Start free trial</a>
   </div>
 </nav>
 
@@ -546,6 +559,45 @@
 })();
 </script>
 
+<!-- HOW IT WORKS -->
+<div style="background:#F8FAFC;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+<section style="padding:64px 24px;max-width:900px;margin:0 auto;">
+  <div style="text-align:center;margin-bottom:48px;">
+    <div class="section-label">How it works</div>
+    <h2 class="section-title">From SDS to printed label in 3 steps</h2>
+    <p style="font-size:15px;color:var(--muted);max-width:540px;margin:0 auto;line-height:1.7;">No design skills needed. No compliance guesswork. Just your fragrance supplier's safety data sheet and 3 minutes.</p>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;position:relative;">
+    <!-- Step 1 -->
+    <div style="background:white;border-radius:16px;padding:32px 24px;border:1px solid var(--border);text-align:center;position:relative;">
+      <div style="width:52px;height:52px;background:var(--teal-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:24px;">📄</div>
+      <div style="position:absolute;top:20px;right:20px;width:24px;height:24px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;">1</div>
+      <h3 style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:10px;">Get your SDS</h3>
+      <p style="font-size:14px;color:var(--muted);line-height:1.7;">Download the Safety Data Sheet from your fragrance supplier. CLPeasy links you directly to all major UK supplier SDS pages — Candle Shack, Supplies for Candles, NI Candle Supplies and more.</p>
+    </div>
+    <!-- Step 2 -->
+    <div style="background:white;border-radius:16px;padding:32px 24px;border:2px solid var(--teal);text-align:center;position:relative;box-shadow:0 4px 20px rgba(76,155,176,0.12);">
+      <div style="width:52px;height:52px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:24px;">✨</div>
+      <div style="position:absolute;top:20px;right:20px;width:24px;height:24px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;">2</div>
+      <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--teal);color:white;font-size:11px;font-weight:700;padding:3px 12px;border-radius:100px;white-space:nowrap;">Most popular step</div>
+      <h3 style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:10px;">Paste into CLPeasy</h3>
+      <p style="font-size:14px;color:var(--muted);line-height:1.7;">Copy Section 2.2 from your SDS and paste it into Smart Paste. CLPeasy automatically extracts the signal word, GHS pictograms, H statements and allergens — no manual data entry.</p>
+    </div>
+    <!-- Step 3 -->
+    <div style="background:white;border-radius:16px;padding:32px 24px;border:1px solid var(--border);text-align:center;position:relative;">
+      <div style="width:52px;height:52px;background:var(--teal-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:24px;">🖨️</div>
+      <div style="position:absolute;top:20px;right:20px;width:24px;height:24px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;">3</div>
+      <h3 style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:10px;">Download your label</h3>
+      <p style="font-size:14px;color:var(--muted);line-height:1.7;">Preview your label in real time, then download as high-res PNG, SVG for Cricut, or a print-ready PDF. Your label is saved to your library instantly — edit or re-download any time.</p>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:36px;">
+    <a href="auth.html?mode=signup" style="display:inline-block;background:var(--teal);color:white;font-weight:700;padding:14px 32px;border-radius:10px;text-decoration:none;font-size:15px;transition:opacity .2s;">Try it free — no card needed →</a>
+    <p style="font-size:13px;color:var(--muted);margin-top:10px;">✓ Takes 3 minutes &nbsp;·&nbsp; ✓ 14-day free trial &nbsp;·&nbsp; ✓ Cancel anytime</p>
+  </div>
+</section>
+</div>
+
 <!-- PRICING -->
 <div style="background:white;">
 <section class="pricing" id="pricing" style="padding:48px 24px;">
@@ -554,9 +606,10 @@
     <h2 class="section-title">Simple, honest pricing</h2>
     <p style="font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:8px;">Start free for 14 days — no card needed. Easy Start from £9.99/mo, Easy Pro from £14.99/mo.</p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px;">
-      <a href="checkout.html" style="background:var(--teal);color:white;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;">Start your 14-day free trial →</a>
+      <a href="auth.html?mode=signup" style="background:var(--teal);color:white;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;">Start your 14-day free trial →</a>
       <a href="pricing.html" style="background:white;color:var(--text);padding:12px 24px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;border:1.5px solid var(--border);">See all plans →</a>
     </div>
+    <p style="font-size:13px;color:var(--muted);margin-top:12px;">✓ No card needed &nbsp;·&nbsp; ✓ Takes 3 minutes &nbsp;·&nbsp; ✓ Cancel anytime</p>
   </div>
 </section>
 </div>
@@ -846,8 +899,8 @@
       <h3 style="font-family:'DM Serif Display',serif;font-size:26px;color:white;margin-bottom:8px;">Makers gotta make. Learners gotta learn.</h3>
       <p style="color:rgba(255,255,255,0.88);font-size:15px;margin-bottom:12px;max-width:520px;margin-left:auto;margin-right:auto;">Whether you're just starting out, growing a side hustle, or turning your passion into your full-time thing — your time and money belong in your craft. Not in compliance paperwork.</p>
       <p style="color:rgba(255,255,255,0.8);font-size:14px;margin-bottom:24px;max-width:520px;margin-left:auto;margin-right:auto;">CLPeasy handles the compliance so your time, energy and money stay where they belong — in your craft.</p>
-      <a href="checkout.html" style="display:inline-block;background:white;color:var(--teal);font-weight:700;padding:14px 32px;border-radius:10px;text-decoration:none;font-size:15px;transition:opacity .2s;">Try it free — no card needed →</a>
-      <p style="color:rgba(255,255,255,0.6);font-size:12px;margin-top:12px;">No card required · Cancel anytime</p>
+      <a href="auth.html?mode=signup" style="display:inline-block;background:white;color:var(--teal);font-weight:700;padding:14px 32px;border-radius:10px;text-decoration:none;font-size:15px;transition:opacity .2s;">Try it free — no card needed →</a>
+      <p style="color:rgba(255,255,255,0.75);font-size:13px;margin-top:12px;">✓ No card required &nbsp;·&nbsp; ✓ Takes 3 minutes &nbsp;·&nbsp; ✓ Cancel anytime</p>
     </div>
   </div>
 </section>
@@ -972,7 +1025,7 @@
 <section class="cta">
   <h2>Ready to make CLP<br><em style="font-style:italic;color:#5EEAD4">easy</em>?</h2>
   <p>Join makers already using CLPeasy to keep their products compliant.</p>
-  <button class="btn-cta" onclick="window.location.href='checkout.html'">Start your 14-day free trial →</button>
+  <button class="btn-cta" onclick="window.location.href='auth.html?mode=signup'">Start your 14-day free trial →</button>
 
 </section>
 
@@ -1033,7 +1086,7 @@ function toggleFaq(el) {
 const _sb=window.supabase.createClient('https://qvkosdqcryrcfbjtaxic.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw');
 _sb.auth.getSession().then(async ({data:{session}})=>{
   if(session){
-    document.querySelectorAll('a[href="auth.html"], a[href="builder.html"], a[href="checkout.html"]').forEach(a=>{
+    document.querySelectorAll('a[href="auth.html"], a[href="builder.html"], a[href="auth.html?mode=signup"], a[href="checkout.html"]').forEach(a=>{
       const t=a.textContent.trim();
       if(t==='Start free trial'||t==='Get started free'||t==='Start for free'||t.includes('free trial')||t.includes('Start 7')||t.includes('Get Pro')||t.includes('Try it free')){
         a.href='builder.html';
