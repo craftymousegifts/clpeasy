@@ -91,7 +91,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
   font-size:11px;color:rgba(255,255,255,0.35);
 }
 .mobile-dl-row{
-  display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;flex-wrap:wrap;
 }
 
 /* STEPS */
@@ -554,9 +554,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="mobile-preview-bar-label">Live Preview</div>
     <div id="mobile-preview-svg"></div>
     <div class="mobile-preview-dims" id="mobile-preview-dims">35 × 35mm</div>
+    <div id="dl-counter-mobile" style="display:none;font-size:12px;font-weight:600;text-align:center;padding:6px 10px;border-radius:6px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);margin-bottom:8px;width:100%;"></div>
     <div class="mobile-dl-row" id="mobile-dl-row" style="display:none;">
       <button class="btn-dl" onclick="downloadPNG()">⬇ PNG</button>
       <button class="btn-dl-svg" onclick="downloadSVG()">⬡ SVG</button>
+      <button class="btn-dl" onclick="downloadJPEG()" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);">⬇ JPEG</button>
+      <button class="btn-dl-svg" onclick="printToPDF()" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);">🖨 PDF</button>
     </div>
   </div>
 
@@ -607,6 +610,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div style="background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:10px;padding:12px 14px;font-size:12px;color:#92400E;margin-bottom:20px;line-height:1.6;">
       ⚠️ <strong>Important:</strong> CLPeasy generates labels based on the data you enter. You must always verify all hazard information against your fragrance supplier's SDS sheet at your actual fragrance load before printing and selling. You are solely responsible for ensuring your labels are accurate and legally compliant.
     </div>
+    <!-- Downloads counter on step 1 -->
+    <div id="dl-counter-step1" style="display:none;font-size:13px;font-weight:600;text-align:center;padding:8px 14px;border-radius:8px;background:var(--off);border:1px solid var(--border);margin-bottom:16px;color:var(--muted);"></div>
+
     <div class="sdiv">Load from your library</div>
     <div style="background:#fff8e7;border:1px solid #f0c040;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:12px;color:#7a5c00;line-height:1.5;">
       <strong>⚠ SDS update only.</strong> Load a saved label only if your fragrance supplier's Safety Data Sheet has changed or been updated. Your scent name, product type, and label size will be locked — only the hazard data (Step 3) can be updated. A download credit will be used when you download the amended label.
@@ -1836,13 +1842,22 @@ async function loadDownloadAllowance(){
 
 function updateDlCounter(){
   const el=document.getElementById('dl-counter');
-  if(!el) return;
-  if(!DL.loaded){ el.style.display='none'; return; }
+  const el1=document.getElementById('dl-counter-step1');
+  const elm=document.getElementById('dl-counter-mobile');
+  // Hide all if not loaded yet
+  if(!DL.loaded){
+    if(el)el.style.display='none';
+    if(el1)el1.style.display='none';
+    if(elm)elm.style.display='none';
+    return;
+  }
   const left=Math.max(0,DL.limit-DL.used);
-  el.style.display='block';
-  el.textContent=left+' of '+DL.limit+' downloads left'+(DL.plan==='free'?' on your trial':' this month');
-  el.style.color = left===0 ? '#DC2626' : (left<=2 ? '#D97706' : 'var(--muted)');
-
+  const counterText=left+' of '+DL.limit+' downloads left'+(DL.plan==='free'?' on your trial':' this month');
+  const counterColor = left===0 ? '#DC2626' : (left<=2 ? '#D97706' : 'var(--muted)');
+  // Step 5 counter
+  if(el){el.style.display='block';el.textContent=counterText;el.style.color=counterColor;}
+  // Step 1 counter
+  if(el1){el1.style.display='block';el1.textContent=counterText;el1.style.color=counterColor;}
   // Pro nudge — show for Easy Start subscribers at 80%+ usage, not already dismissed
   const nudge=document.getElementById('pro-nudge-banner');
   if(nudge && DL.plan==='easy_start' && !DL.is_pro){
@@ -2614,6 +2629,8 @@ function goToStep(n){if(n>S.step+1)return;S.step=n;
   // Seasonal pill — only visible on step 1
   const sp=document.getElementById('builder-seasonal');
   if(sp)sp.style.display=(n===1)?'flex':'none';
+  // Refresh downloads counter on every step change
+  updateDlCounter();
 
   // Hide preview download buttons unless on step 5
   const dlRow=document.getElementById('preview-dl-row');
