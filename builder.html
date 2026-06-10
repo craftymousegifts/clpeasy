@@ -95,6 +95,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 
 /* STEPS */
 .steps-bar{display:flex;align-items:center;margin-bottom:28px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
+.steps-progress{height:3px;background:var(--teal-light);overflow:hidden;flex-shrink:0;margin:0 0 4px;}
+.steps-progress-bar{height:100%;background:linear-gradient(90deg,var(--teal),#5EEAD4);transition:width .4s ease;}
+.steps-progress-label{font-size:11px;color:var(--muted);text-align:center;padding:2px 16px 6px;flex-shrink:0;font-weight:500;}
 .steps-bar::-webkit-scrollbar{display:none;}
 .step-item{display:flex;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;}
 .step-circle{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:all .2s;}
@@ -598,6 +601,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="step-line" id="line-4"></div>
     <div class="step-item inactive" data-step="5" onclick="goToStep(5)"><div class="step-circle">5</div><div class="step-label">Download</div></div>
   </div>
+  <!-- Progress bar -->
+  <div class="steps-progress" id="steps-progress-track">
+    <div class="steps-progress-bar" id="steps-progress-bar" style="width:20%;"></div>
+  </div>
+  <div class="steps-progress-label" id="steps-progress-label">Step 1 of 5 &nbsp;·&nbsp; 20% complete</div>
 
   <!-- STEP 1 -->
   <div class="step-panel active" id="step-1">
@@ -695,7 +703,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="step-panel" id="step-2">
     <h2 class="step-heading">Product details</h2>
     <p class="step-sub">This information appears directly on your label.</p>
-    <div class="form-group"><label>Fragrance / Scent name</label><input type="text" id="scent-name" placeholder="e.g. Black Plum &amp; Rhubarb" autocomplete="off" oninput="updateLabel()"></div>
+    <div class="form-group"><label>Fragrance / Scent name</label><input type="text" id="scent-name" placeholder="e.g. Summer Bloom, Vanilla &amp; Amber, Black Plum" autocomplete="off" oninput="updateLabel()"></div>
     <div class="form-row">
       <div class="form-group"><label>Product type</label><select id="product-type" onchange="onProductTypeChange();updateLabel();saveProdDetails()">
         <option value="" disabled selected>— Choose product type —</option>
@@ -2609,6 +2617,12 @@ document.addEventListener('keydown', function(e) {
 
 function goToStep(n){if(n>S.step+1)return;S.step=n;
   window.scrollTo({top:0,behavior:'smooth'});
+  // Update progress bar
+  const pct=Math.round((n/5)*100);
+  const pb=document.getElementById('steps-progress-bar');
+  const pl=document.getElementById('steps-progress-label');
+  if(pb)pb.style.width=pct+'%';
+  if(pl)pl.textContent='Step '+n+' of 5  ·  '+pct+'% complete';
   // Hide preview download buttons unless on step 5
   const dlRow=document.getElementById('preview-dl-row');
   if(dlRow)dlRow.style.display=(n===5)?'flex':'none';

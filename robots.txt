@@ -1,5 +1,11 @@
 User-agent: *
 Allow: /
-Disallow: /auth.html
 
+# Block admin and internal tools
+Disallow: /monitor.html
+Disallow: /scrum.html
+Disallow: /link-checker.html
+Disallow: /beta.html
+
+# Sitemap
 Sitemap: https://clpeasy.com/sitemap.xml
