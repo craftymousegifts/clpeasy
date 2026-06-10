@@ -63,7 +63,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 /* MOBILE LAYOUT */
 @media(max-width:860px){
   .builder-layout{display:block;padding-top:88px;}
-  .wizard-panel{padding:20px 16px 40px;max-width:100%;width:100%;}
+  .wizard-panel{padding:20px 16px 40px;max-width:100%;width:100%;overflow-y:visible;overflow-x:visible;}
   .preview-panel{display:none;}
   .mobile-preview-bar{position:sticky;top:0;z-index:50;display:flex !important;background:#1a1f2e;}
   .form-row{grid-template-columns:1fr;}
@@ -2629,8 +2629,20 @@ function goToStep(n){if(n>S.step+1)return;S.step=n;
   // Seasonal pill — only visible on step 1
   const sp=document.getElementById('builder-seasonal');
   if(sp)sp.style.display=(n===1)?'flex':'none';
-  // Refresh downloads counter on every step change
-  updateDlCounter();
+  // Refresh downloads counter — if DL not loaded yet, wait for it
+  if(DL.loaded){
+    updateDlCounter();
+  } else {
+    // Poll until loaded (max 5s) then update
+    let _dlWait=0;
+    const _dlCheck=setInterval(()=>{
+      _dlWait+=200;
+      if(DL.loaded||_dlWait>5000){
+        clearInterval(_dlCheck);
+        if(DL.loaded) updateDlCounter();
+      }
+    },200);
+  }
 
   // Hide preview download buttons unless on step 5
   const dlRow=document.getElementById('preview-dl-row');
