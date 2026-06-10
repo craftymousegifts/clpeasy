@@ -74,9 +74,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 .mobile-preview-bar{
   display:none;
   background:#1a1f2e;
-  border-radius:16px;
-  padding:16px;
-  margin-bottom:24px;
+  border-radius:0 0 16px 16px;
+  padding:20px 16px;
+  margin-bottom:20px;
   flex-direction:column;
   align-items:center;
   gap:10px;
@@ -86,6 +86,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
   letter-spacing:1px;text-transform:uppercase;
   align-self:flex-start;
 }
+#mobile-preview-svg svg{max-width:220px;max-height:220px;}
 .mobile-preview-dims{
   font-size:11px;color:rgba(255,255,255,0.35);
 }
@@ -95,9 +96,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 
 /* STEPS */
 .steps-bar{display:flex;align-items:center;margin-bottom:28px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
-.steps-progress{height:3px;background:var(--teal-light);overflow:hidden;flex-shrink:0;margin:0 0 4px;}
-.steps-progress-bar{height:100%;background:linear-gradient(90deg,var(--teal),#5EEAD4);transition:width .4s ease;}
-.steps-progress-label{font-size:11px;color:var(--muted);text-align:center;padding:2px 16px 6px;flex-shrink:0;font-weight:500;}
 .steps-bar::-webkit-scrollbar{display:none;}
 .step-item{display:flex;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;}
 .step-circle{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:all .2s;}
@@ -586,8 +584,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <!-- SEASONAL GREETING — shown to logged-in users -->
   <div class="seasonal-pill" id="builder-seasonal">
     <span class="s-icon" id="bs-icon">🌿</span>
-    <span class="s-text" id="bs-label">Summer scents:</span>
-    <span class="s-scents" id="bs-scents">Palo Santo · Sea Breeze · Coconut Lime</span>
+    <span class="s-text" id="bs-label">Did you know...</span>
+    <span class="s-scents" id="bs-scents">these are the most popular fragrances this time of year: Sea Breeze · Coconut Sorbet · Citrus Burst</span>
   </div>
 
   <div class="steps-bar" id="steps-bar">
@@ -601,11 +599,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="step-line" id="line-4"></div>
     <div class="step-item inactive" data-step="5" onclick="goToStep(5)"><div class="step-circle">5</div><div class="step-label">Download</div></div>
   </div>
-  <!-- Progress bar -->
-  <div class="steps-progress" id="steps-progress-track">
-    <div class="steps-progress-bar" id="steps-progress-bar" style="width:20%;"></div>
-  </div>
-  <div class="steps-progress-label" id="steps-progress-label">Step 1 of 5 &nbsp;·&nbsp; 20% complete</div>
+
 
   <!-- STEP 1 -->
   <div class="step-panel active" id="step-1">
@@ -901,11 +895,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       CLPeasy is a label generation tool. Always verify all hazard data against your supplier's SDS. You remain responsible for the accuracy of your labels.
     </div>
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
-      <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ Download PNG</button>
-      <button id="btn-jpeg" onclick="downloadJPEG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬇ Download JPEG — smaller file size</button>
-      <button id="btn-svg" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬡ Download SVG</button>
-      <button id="btn-pdf" onclick="printToPDF()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">🖨 Print to PDF</button>
-      <button id="btn-save" onclick="saveLabel()" style="background:var(--off);color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">💾 Save to my label library</button>
+      <a class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" href="javascript:void(0)" onclick="downloadPNG();return false;">⬇ Download PNG</a>
+      <a id="btn-jpeg" href="javascript:void(0)" onclick="downloadJPEG();return false;" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬇ Download JPEG — smaller file size</a>
+      <a id="btn-svg" href="javascript:void(0)" onclick="downloadSVG();return false;" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬡ Download SVG</a>
+      <a id="btn-pdf" href="javascript:void(0)" onclick="printToPDF();return false;" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">🖨 Print to PDF</a>
+      <a id="btn-save" href="javascript:void(0)" onclick="saveLabel();return false;" style="background:var(--off);color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">💾 Save to my label library</a>
     </div>
 
     <!-- PRINT SHEET COMPOSER LINK -->
@@ -1796,8 +1790,8 @@ async function initAuth(){
           var lb=document.getElementById('bs-label');
           var sc=document.getElementById('bs-scents');
           if(ic)ic.textContent=s.icon;
-          if(lb)lb.textContent=s.label+':';
-          if(sc)sc.textContent=s.scents;
+          if(lb)lb.textContent='Did you know...';
+          if(sc)sc.textContent='these are the most popular fragrances this time of year: '+s.scents;
           pill.style.display='flex';
         }
       })();
@@ -2617,12 +2611,10 @@ document.addEventListener('keydown', function(e) {
 
 function goToStep(n){if(n>S.step+1)return;S.step=n;
   window.scrollTo({top:0,behavior:'smooth'});
-  // Update progress bar
-  const pct=Math.round((n/5)*100);
-  const pb=document.getElementById('steps-progress-bar');
-  const pl=document.getElementById('steps-progress-label');
-  if(pb)pb.style.width=pct+'%';
-  if(pl)pl.textContent='Step '+n+' of 5  ·  '+pct+'% complete';
+  // Seasonal pill — only visible on step 1
+  const sp=document.getElementById('builder-seasonal');
+  if(sp)sp.style.display=(n===1)?'flex':'none';
+
   // Hide preview download buttons unless on step 5
   const dlRow=document.getElementById('preview-dl-row');
   if(dlRow)dlRow.style.display=(n===5)?'flex':'none';
