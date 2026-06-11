@@ -492,7 +492,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="help-section">
       <h3>Step 1 — Label size & shape</h3>
       <div class="help-step"><div class="help-num">1</div><div class="help-step-text">Choose your <strong>shape</strong> — Circle, Square or Rectangle.</div></div>
-      <div class="help-step"><div class="help-num">2</div><div class="help-step-text">Choose your <strong>size</strong> — 35mm (wax melt), 40mm (small candle), 50mm (standard candle), 63mm (large jar) or Custom.</div></div>
+      <div class="help-step"><div class="help-num">2</div><div class="help-step-text">Choose your <strong>size</strong> — presets change based on shape. Circle: 35–63mm. Square: 51mm or 60mm. Rectangle: common UK sizes from 64×34mm to 102×153mm. Or enter Custom dimensions.</div></div>
       <div class="help-step"><div class="help-num">3</div><div class="help-step-text">Watch the <strong>live preview</strong> update as you make changes.</div></div>
       <div class="help-warn">Read the disclaimer carefully — you are responsible for verifying all label information against your SDS before selling.</div>
     </div>
@@ -537,7 +537,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <details class="help-faq"><summary>Do I legally need a CLP label?</summary><p>Yes — if you sell scented candles or wax melts in the UK or EU you are legally required to have a CLP label. Trading Standards can issue fines for non-compliance.</p></details>
       <details class="help-faq"><summary>Where do I find my SDS sheet?</summary><p>On your fragrance supplier's website — usually on the individual product page. Look for a Download SDS or Safety Data Sheet link. Contact your supplier if you can't find it.</p></details>
       <details class="help-faq"><summary>What is EUH208?</summary><p>EUH208 means "Contains [substance name] — may produce an allergic reaction." You need it if your fragrance contains certain sensitiser substances above the threshold level. Your SDS Section 2.2 will tell you if it applies.</p></details>
-      <details class="help-faq"><summary>What size label should I use?</summary><p>35mm circle for wax melt clamshells. 50mm circle for standard candle jars. Measure the area where your label will sit and use Custom size if none of the presets fit.</p></details>
+      <details class="help-faq"><summary>What size label should I use?</summary><p>Circle: 35mm for snap bars and clamshells, 40mm for tealights and small tins, 50–60mm for standard candle jars, 63mm for large jar lids. Rectangle: 64×34mm or 70×48mm for room sprays and diffusers, 100×76mm for large jar bodies, 44×118mm for bottle wraps. Square: 51mm or 60mm for tin lids and diffuser fronts. Measure the area where your label sits and use Custom if none of the presets fit.</p></details>
       <details class="help-faq"><summary>Smart Paste didn't extract everything correctly</summary><p>Make sure you copied only Section 2.2 of the SDS. If it still doesn't work, use the H statement chips and sensitiser library to enter the data manually.</p></details>
       <details class="help-faq"><summary>Can I use this on my phone?</summary><p>Yes — CLPeasy works on iPhone and Android. PNG files save to your camera roll and SVG files save to your Files app.</p></details>
       <details class="help-faq"><summary>What's the difference between Pro and Pro Annual?</summary><p>Both give you exactly the same features — unlimited labels, no watermark, Smart Paste and all downloads. Pro Annual costs £59.00 for the whole year, which saves you £24.88 compared to paying monthly at £6.99. If you plan to use CLPeasy regularly, Annual is the better value. Both start with a 14-day free trial.</p></details>
@@ -643,12 +643,35 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
     </div>
     <div class="sdiv">Preset sizes</div>
-    <div class="size-grid">
-      <div class="size-card" data-size="35" onclick="selectSize(35)"><div class="sz">35mm</div><div class="sz-label">Wax Melt ⚠</div></div>
-      <div class="size-card" data-size="40" onclick="selectSize(40)"><div class="sz">40mm</div><div class="sz-label">Small Candle ⚠</div></div>
-      <div class="size-card" data-size="50" onclick="selectSize(50)"><div class="sz">50mm</div><div class="sz-label">Standard Candle ⚠</div></div>
-      <div class="size-card" data-size="63" onclick="selectSize(63)"><div class="sz">63mm</div><div class="sz-label">Large Jar ✓</div></div>
-      <div class="size-card selected" data-size="custom" onclick="selectSize('custom')"><div class="sz" style="font-size:14px">Custom</div><div class="sz-label">Your own size</div></div>
+    <!-- Circle presets -->
+    <div id="presets-circle" class="shape-presets-section">
+      <div class="size-grid">
+        <div class="size-card" data-size="35" onclick="selectSize(35)"><div class="sz">35mm</div><div class="sz-label">Snap Bar / Clamshell ⚠</div></div>
+        <div class="size-card" data-size="40" onclick="selectSize(40)"><div class="sz">40mm</div><div class="sz-label">Tealight / Small Tin ⚠</div></div>
+        <div class="size-card" data-size="50" onclick="selectSize(50)"><div class="sz">50mm</div><div class="sz-label">Standard Candle ⚠</div></div>
+        <div class="size-card" data-size="60" onclick="selectSize(60)"><div class="sz">60mm</div><div class="sz-label">Jar Lid / Large Tin ✓</div></div>
+        <div class="size-card" data-size="63" onclick="selectSize(63)"><div class="sz">63mm</div><div class="sz-label">Large Jar Lid ✓</div></div>
+        <div class="size-card selected" data-size="custom" onclick="selectSize('custom')"><div class="sz" style="font-size:14px">Custom</div><div class="sz-label">Your own size</div></div>
+      </div>
+    </div>
+    <!-- Square presets -->
+    <div id="presets-square" class="shape-presets-section" style="display:none;">
+      <div class="size-grid">
+        <div class="size-card" data-size="51sq" onclick="selectSizeExact(51,51,'51sq')"><div class="sz">51mm</div><div class="sz-label">Small Tin Lid ⚠</div></div>
+        <div class="size-card" data-size="60sq" onclick="selectSizeExact(60,60,'60sq')"><div class="sz">60mm</div><div class="sz-label">Diffuser Bottle Front ✓</div></div>
+        <div class="size-card" data-size="custom" onclick="selectSize('custom')"><div class="sz" style="font-size:14px">Custom</div><div class="sz-label">Your own size</div></div>
+      </div>
+    </div>
+    <!-- Rectangle presets -->
+    <div id="presets-rectangle" class="shape-presets-section" style="display:none;">
+      <div class="size-grid">
+        <div class="size-card" data-size="64x34" onclick="selectSizeExact(64,34,'64x34')"><div class="sz" style="font-size:13px">64×34mm</div><div class="sz-label">Small Room Spray ✓</div></div>
+        <div class="size-card" data-size="70x48" onclick="selectSizeExact(70,48,'70x48')"><div class="sz" style="font-size:13px">70×48mm</div><div class="sz-label">Diffuser / Room Spray ✓</div></div>
+        <div class="size-card" data-size="100x76" onclick="selectSizeExact(100,76,'100x76')"><div class="sz" style="font-size:13px">100×76mm</div><div class="sz-label">Large Jar / Candle Tin ✓</div></div>
+        <div class="size-card" data-size="44x118" onclick="selectSizeExact(44,118,'44x118')"><div class="sz" style="font-size:13px">44×118mm</div><div class="sz-label">Bottle Wrap ✓</div></div>
+        <div class="size-card" data-size="102x153" onclick="selectSizeExact(102,153,'102x153')"><div class="sz" style="font-size:13px">102×153mm</div><div class="sz-label">Diffuser / Gift Box ✓</div></div>
+        <div class="size-card selected" data-size="custom" onclick="selectSize('custom')"><div class="sz" style="font-size:14px">Custom</div><div class="sz-label">Your own size</div></div>
+      </div>
     </div>
     <div class="sdiv">Dimensions (mm)</div>
     <div class="custom-dims">
@@ -716,10 +739,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <option>Plugin Diffuser</option>
         </optgroup>
         <optgroup label="Sprays">
-          <option>Room Spray</option>
-          <option>Car Air Freshener Spray</option>
-          <option>Linen Spray</option>
-        </optgroup>
+  <option>Room Spray (Alcohol Base)</option>
+  <option>Room Spray (Augeo Base)</option>
+  <option>Room Spray (Water Base)</option>
+  <option>Car Air Freshener Spray</option>
+  <option>Linen Spray</option>
+</optgroup>
         <optgroup label="Other">
           <option>Wax Melt Bouquet</option>
           <option>Scented Sachet</option>
@@ -885,26 +910,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         CLPeasy is a label generation tool. Always verify all hazard data against your supplier's SDS. You remain responsible for the accuracy of your labels.
       </div>
     </details>
-    <!-- QR SAFETY CODE TOGGLE — Easy Pro only -->
-    <div id="qr-toggle-block" style="display:none;background:white;border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <div>
-          <div style="font-size:13px;font-weight:600;color:var(--text);">QR safety code <span style="font-size:11px;font-weight:700;background:#CCFBF1;color:#0D9488;padding:2px 8px;border-radius:8px;margin-left:6px;letter-spacing:0.3px;">PRO</span></div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5;">Adds a small QR code linking customers to your digital safety sheet. Stays live permanently — even if you change plan.</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;">
-        <button id="btn-qr-off" onclick="setQR(false)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--teal);background:var(--teal-light);color:var(--teal-dark);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Off</button>
-        <button id="btn-qr-on" onclick="setQR(true)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">On — add QR to label</button>
-      </div>
-    </div>
-    <!-- QR UPSELL — shown to non-Pro users -->
-    <div id="qr-upsell-block" style="display:none;background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:12px;padding:14px 16px;margin-bottom:16px;">
-      <div style="font-size:13px;font-weight:600;color:#166534;margin-bottom:4px;">📲 QR safety codes — Easy Pro</div>
-      <div style="font-size:12px;color:#166534;line-height:1.5;margin-bottom:10px;">Add a QR code that links customers to your suppliers digital safety sheet. Upgrade to Easy Pro to enable this feature.</div>
-      <a href="checkout.html?plan=easy_pro" style="display:inline-block;background:#166534;color:white;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Upgrade to Easy Pro →</a>
-    </div>
-
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
       <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ Download PNG</button>
       <button id="btn-jpeg" onclick="downloadJPEG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬇ Download JPEG — smaller file size</button>
@@ -1282,7 +1287,11 @@ const FRAG_LOAD_TIPS={
   'Electric Diffuser':'Recommended: 15–25%. Check your base — hazardous bases like Augeo must be included in the CLP.',
   'Car Diffuser':'Recommended: 15–25%. Include any hazardous carrier base in your SDS data.',
   'Plugin Diffuser':'Recommended: 15–25%. Non-hazardous plugin bases may not need CLP — check your SDS.',
-  'Room Spray':'Recommended: 5–25%. If using an alcohol base, include flammability data. Non-hazardous bases like Isopropyl Myristate may not need CLP — check your SDS.',
+  'Room Spray (Alcohol Base)':'Recommended: 5–25%. Alcohol-based room sprays typically require flammability classifications and warnings. Always include alcohol SDS data and verify hazard classifications.',
+
+'Room Spray (Augeo Base)':'Recommended: 5–25%. Augeo may contribute to the overall hazard classification. Include both fragrance and base SDS information when determining CLP requirements.',
+
+'Room Spray (Water Base)':'Recommended: 1–10%. Some water-based systems may have reduced hazard classifications, but always verify using the SDS for both fragrance and base.',
   'Car Air Freshener Spray':'Recommended: 5–25%. Alcohol-based sprays require flammability warnings.',
   'Linen Spray':'Recommended: 5–15%. Check your base — alcohol bases require flammability data.',
   'Wax Melt Bouquet':'Recommended: 6–10% per individual melt component.',
@@ -1830,7 +1839,6 @@ async function initAuth(){
           if(upgBanner)upgBanner.style.display='none';
           if(canBanner)canBanner.style.display='none';
           updateLabel();
-          updateQRVisibility();
         } else if(sub&&sub.status==='cancelled'){
           // Cancelled — show cancelled banner only
           const upgBanner=document.getElementById('upgrade-banner');
@@ -1851,7 +1859,6 @@ async function initAuth(){
         const upgBanner=document.getElementById('upgrade-banner');
         if(upgBanner)upgBanner.style.display='flex';
       }
-      updateQRVisibility();
 
       // ── DOWNLOAD ALLOWANCE (profiles table) ────────────────
       await loadDownloadAllowance();
@@ -2128,7 +2135,9 @@ const PRODUCT_FOLDER_MAP={
   'Wax Melt Clamshell':'wax_melts','Advent Calendar Wax Melt':'wax_melts',
   'Reed Diffuser':'diffusers','Electric Diffuser':'diffusers',
   'Car Diffuser':'diffusers','Plugin Diffuser':'diffusers',
-  'Room Spray':'sprays','Car Air Freshener Spray':'sprays','Linen Spray':'sprays',
+  'Room Spray (Alcohol Base)':'sprays',
+'Room Spray (Augeo Base)':'sprays',
+'Room Spray (Water Base)':'sprays','Car Air Freshener Spray':'sprays','Linen Spray':'sprays',
   'Wax Melt Bouquet':'other','Scented Sachet':'other','Potpourri':'other',
 };
 
@@ -3051,7 +3060,18 @@ function updateStepsBar(){
 }
 
 // ── SHAPE/SIZE ────────────────────────────────────────────────
-function selectShape(s){S.shape=s;document.querySelectorAll('.shape-card').forEach(c=>c.classList.toggle('selected',c.dataset.shape===s));syncDimFields();updateLabel();}
+function selectShape(s){
+  S.shape=s;
+  document.querySelectorAll('.shape-card').forEach(c=>c.classList.toggle('selected',c.dataset.shape===s));
+  // Show the right preset section, hide others
+  ['circle','square','rectangle'].forEach(sh=>{
+    const el=document.getElementById('presets-'+sh);
+    if(el)el.style.display=(sh===s)?'block':'none';
+  });
+  // Reset to custom when shape changes so stale preset doesn't apply
+  selectSize('custom');
+  syncDimFields();updateLabel();
+}
 function checkCLPSizeWarn(){
   const w = S.customW || parseInt(document.getElementById('custom-w').value) || 35;
   const h = S.customH || parseInt(document.getElementById('custom-h').value) || w;
@@ -3066,6 +3086,14 @@ function checkCLPSizeWarn(){
 function selectSize(sz){
   S.size=sz;document.querySelectorAll('.size-card').forEach(c=>c.classList.toggle('selected',c.dataset.size==sz));
   if(sz!=='custom'){const mm=parseInt(sz);document.getElementById('custom-w').value=mm;document.getElementById('custom-h').value=(S.shape==='rectangle')?Math.round(mm*0.7):mm;S.customW=mm;S.customH=(S.shape==='rectangle')?Math.round(mm*0.7):mm;}
+  syncDimFields();checkCLPSizeWarn();updateLabel();
+}
+function selectSizeExact(w, h, key){
+  S.size=key;
+  document.querySelectorAll('.size-card').forEach(c=>c.classList.toggle('selected',c.dataset.size===key));
+  document.getElementById('custom-w').value=w;
+  document.getElementById('custom-h').value=h;
+  S.customW=w; S.customH=h;
   syncDimFields();checkCLPSizeWarn();updateLabel();
 }
 function onDimInput(){
@@ -3959,7 +3987,7 @@ Key things to know:
 - Printing at home on Avery sticker paper: use 🖨 Avery Sheet — it aligns exactly to real Avery sheets
 - Printing at home on plain paper (cut yourself): use ⬇ PNG
 - Uploading to Canva to add branding first: use ⬇ PNG, then in Canva use "Upload" and overlay brand elements
-- Sizes: 35mm = wax melt, 40mm = small candle, 50mm = standard candle, 63mm = large jar
+- Sizes: Circle presets: 35mm (snap bar/clamshell), 40mm (tealight/small tin), 50mm (standard candle), 60mm (jar lid/large tin), 63mm (large jar lid). Square presets: 51mm (small tin lid), 60mm (diffuser front). Rectangle presets: 64×34mm (small room spray), 70×48mm (diffuser/room spray), 100×76mm (large jar/candle tin), 44×118mm (bottle wrap), 102×153mm (diffuser/gift box)
 - Maximum labels on A4 at 75mm: approximately 6 (3×2 grid with margins)
 
 When generating steps, format them clearly. For WALKTHROUGH style, include visual hints in brackets like [→ Click "Circle" in the shape grid] or [→ Step 1: Label size & shape].
@@ -4249,13 +4277,6 @@ function applyFragLoad(){
 S.showQR=false;
 
 function setQR(show){
-  if(show&&!S.isPro){return;} // Pro gate
-  // Auto-generate UFI if turning QR on and no UFI exists yet
-  if(show&&!S.ufiCode){
-    const ufiEl=document.getElementById('ufi-code');
-    if(ufiEl&&!ufiEl.value.trim())generateUFI();
-    S.ufiCode=document.getElementById('ufi-code')?.value||'';
-  }
   S.showQR=show;
   const on=document.getElementById('btn-qr-on');
   const off=document.getElementById('btn-qr-off');
@@ -4264,19 +4285,6 @@ function setQR(show){
   if(on)on.style.cssText=show?active:inactive;
   if(off)off.style.cssText=show?inactive:active;
   updateLabel();
-}
-
-function updateQRVisibility(){
-  const toggleBlock=document.getElementById('qr-toggle-block');
-  const upsellBlock=document.getElementById('qr-upsell-block');
-  if(!toggleBlock||!upsellBlock)return;
-  if(S.isPro){
-    toggleBlock.style.display='block';
-    upsellBlock.style.display='none';
-  } else {
-    toggleBlock.style.display='none';
-    upsellBlock.style.display='block';
-  }
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -4291,8 +4299,12 @@ const LANG_SIGNAL={
 const LANG_CONTAINS={en:'Contains:',fr:'Contient:',de:'Enthält:'};
 const LANG_PRODUCT_TYPE_SUFFIX={
   en:{},
-  fr:{'Scented Candle':'Bougie parfumée','Soy Candle':'Bougie au soja','Wax Melt':'Fondant parfumé','Reed Diffuser':'Diffuseur de roseaux','Room Spray':'Spray d\'ambiance','Electric Diffuser':'Diffuseur électrique'},
-  de:{'Scented Candle':'Duftkerze','Soy Candle':'Sojakerze','Wax Melt':'Duftwachs','Reed Diffuser':'Raumduft-Stäbchen','Room Spray':'Raumspray','Electric Diffuser':'Elektrischer Diffuser'},
+  fr:{'Scented Candle':'Bougie parfumée','Soy Candle':'Bougie au soja','Wax Melt':'Fondant parfumé','Reed Diffuser':'Diffuseur de roseaux','Room Spray':'Room Spray (Alcohol Base)':'Spray d\'ambiance',
+  'Room Spray (Augeo Base)':'Spray d\'ambiance',
+  'Room Spray (Water Base)':'Spray d\'ambiance','Electric Diffuser':'Diffuseur électrique'},
+  de:{'Scented Candle':'Duftkerze','Soy Candle':'Sojakerze','Wax Melt':'Duftwachs','Reed Diffuser':'Raumduft-Stäbchen', 'Room Spray (Alcohol Base)':'Raumspray',
+  'Room Spray (Augeo Base)':'Raumspray',
+  'Room Spray (Water Base)':'Raumspray''Electric Diffuser':'Elektrischer Diffuser'},
 };
 
 function getLangSignal(sig,langs){
