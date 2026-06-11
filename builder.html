@@ -606,25 +606,26 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
   <!-- STEP 1 -->
   <div class="step-panel active" id="step-1">
+    <div class="sdiv" style="margin-top:0">Load from your library</div>
+    <div style="background:#fff8e7;border:1px solid #f0c040;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:12px;color:#7a5c00;line-height:1.5;">
+      <strong>⚠ SDS update only.</strong> Load a saved label only if your fragrance supplier's Safety Data Sheet has changed or been updated. Your scent name, product type, and label size will be locked — only the hazard data (Step 3) can be updated. A download credit will be used when you download the amended label.
+    </div>
+    <div class="form-group" style="margin-bottom:20px;">
+      <select id="load-from-library" onchange="loadFromLibrarySelect(this.value)" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;background:white;cursor:pointer;">
+        <option value="">— Select a saved label to load —</option>
+      </select>
+    </div>
+    <div id="lib-lock-banner" style="display:none;background:#fff3cd;border:1px solid #f0ad4e;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#7a5000;line-height:1.5;">
+      🔒 <strong>SDS update mode.</strong> Scent name, product type, and label size are locked. Only hazard data (Step 3) can be changed. <a href="#" onclick="unlockLibraryFields();return false;" style="color:#4C9BB0;font-weight:700;text-decoration:none;">Start a new label instead →</a>
+    </div>
+    <!-- Hidden label-lang select kept for JS backward compatibility — language selection coming soon -->
+    <select id="label-lang" style="display:none;" onchange="updateLabel()"><option value="en" selected>English only</option><option value="fr">French only</option><option value="de">German only</option></select>
     <h2 class="step-heading">Label size &amp; shape</h2>
     <div style="background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:10px;padding:12px 14px;font-size:12px;color:#92400E;margin-bottom:20px;line-height:1.6;">
       ⚠️ <strong>Important:</strong> CLPeasy generates labels based on the data you enter. You must always verify all hazard information against your fragrance supplier's SDS sheet at your actual fragrance load before printing and selling. You are solely responsible for ensuring your labels are accurate and legally compliant.
     </div>
     <!-- Downloads counter on step 1 -->
     <div id="dl-counter-step1" style="display:none;font-size:13px;font-weight:600;text-align:center;padding:8px 14px;border-radius:8px;background:var(--off);border:1px solid var(--border);margin-bottom:16px;color:var(--muted);"></div>
-
-    <div class="sdiv">Load from your library</div>
-    <div style="background:#fff8e7;border:1px solid #f0c040;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:12px;color:#7a5c00;line-height:1.5;">
-      <strong>⚠ SDS update only.</strong> Load a saved label only if your fragrance supplier's Safety Data Sheet has changed or been updated. Your scent name, product type, and label size will be locked — only the hazard data (Step 3) can be updated. A download credit will be used when you download the amended label.
-    </div>
-    <div class="form-group" style="margin-bottom:20px;">
-      <select id="load-from-library" onchange="loadFromLibrarySelect(this.value)" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;background:white;cursor:pointer;">
-        <option value="">— Select a saved label to update —</option>
-      </select>
-    </div>
-    <div id="lib-lock-banner" style="display:none;background:#fff3cd;border:1px solid #f0ad4e;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#7a5000;line-height:1.5;">
-      🔒 <strong>SDS update mode.</strong> Scent name, product type, and label size are locked. Only hazard data (Step 3) can be changed. <a href="#" onclick="unlockLibraryFields();return false;" style="color:#4C9BB0;font-weight:700;text-decoration:none;">Start a new label instead →</a>
-    </div>
     <p class="step-sub">Choose a preset or enter your own dimensions. <strong>✓</strong> = meets CLP 52mm minimum · <strong>⚠</strong> = below CLP minimum (still usable for wax melts &amp; small items with fold-out labels)</p>
     <div class="sdiv" style="margin-top:0">Shape</div>
     <div class="shape-grid">
@@ -658,15 +659,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         ⚠️ <strong>CLP size warning:</strong> Labels smaller than 52mm × 74mm may not meet the minimum size requirements under CLP Regulation (EC) 1272/2008 for packages up to 3 litres. Your label will still be generated but we recommend using at least <strong>52mm</strong> for full compliance. Consider using a fold-out label for smaller containers.
       </div>
     </div>
-    <div class="sdiv">Label language</div>
-    <div class="form-group" style="margin-bottom:12px;">
-      <select id="label-lang" onchange="updateLabel()" style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;outline:none;">
-        <option value="en">English only</option>
-        <option value="fr">French only</option>
-        <option value="de">German only</option>
-      </select>
-      <div style="margin-top:5px;font-size:11px;color:var(--muted);">Signal word and hazard text appear in the selected language(s). Required when selling into EU markets.</div>
-    </div>
     <div class="sdiv">Label appearance</div>
     <div class="form-row">
       <div class="form-group">
@@ -690,11 +682,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <button id="border-on" onclick="setBorder(true)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--teal);background:var(--teal-light);color:var(--teal-dark);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Show border</button>
         <button id="border-off" onclick="setBorder(false)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Hide border</button>
       </div>
-    </div>
-    <div class="form-group">
-      <label>QR safety code <span style="font-size:10px;background:#ECFDF5;color:#166534;padding:1px 6px;border-radius:8px;margin-left:3px;">on label</span></label>
-      
-      <div style="margin-top:4px;font-size:11px;color:var(--muted);">QR safety code — coming soon</div>
     </div>
     <div class="step-nav"><div></div><button class="btn-next" onclick="nextStep()">Next: Product details →</button></div>
   </div>
@@ -791,16 +778,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="signal-btn" id="signal-danger" style="cursor:default;">🔴 Danger</div>
     </div>
     <div class="sdiv">Hazard pictograms</div>
-    <div class="picto-grid">
-      <div class="picto-btn" data-picto="flame" style="cursor:default;"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="82" font-size="44" text-anchor="middle">🔥</text></svg></div><div class="picto-name">Flammable</div></div>
-      <div class="picto-btn" data-picto="exclamation" style="cursor:default;"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="82" font-size="52" text-anchor="middle" font-weight="900" fill="#000">!</text></svg></div><div class="picto-name">Irritant</div></div>
-      <div class="picto-btn" data-picto="health" style="cursor:default;"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="40" text-anchor="middle">⚕</text></svg></div><div class="picto-name">Health Hazard</div></div>
-      <div class="picto-btn" data-picto="aquatic" style="cursor:default;"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="36" text-anchor="middle">🐟</text></svg></div><div class="picto-name">Aquatic Toxic</div></div>
-      <div class="picto-btn" data-picto="corrosive" style="cursor:default;"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="36" text-anchor="middle">⚗</text></svg></div><div class="picto-name">Corrosive</div></div>
-      <div class="picto-btn" data-picto="skull" style="cursor:default;"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="38" text-anchor="middle">☠</text></svg></div><div class="picto-name">Toxic</div></div>
-      <div class="picto-btn" data-picto="oxidiser" style="cursor:default;"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="38" text-anchor="middle">○</text></svg></div><div class="picto-name">Oxidiser</div></div>
-      <div class="picto-btn" data-picto="gas" style="cursor:default;"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="36" text-anchor="middle">⊕</text></svg></div><div class="picto-name">Gas Pressure</div></div>
-      <div class="picto-btn" data-picto="explosion" style="cursor:default;"><div class="picto-icon"><svg viewBox="0 0 100 100" width="28" height="28"><polygon points="50,2 98,98 2,98" fill="none" stroke="#000" stroke-width="5"/><text x="50" y="80" font-size="36" text-anchor="middle">✸</text></svg></div><div class="picto-name">Explosive</div></div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.6;">Pictograms are set automatically from your H statements. They are shown here for reference — the correct pictograms will appear on your label based on your hazard classification.</p>
+    <div class="picto-grid" id="picto-grid">
+      <!-- Populated by buildPictoGrid() once GHS_IMG_UI is loaded -->
     </div>
     <div class="sdiv">H Statements</div>
     <span class="library-toggle" onclick="toggleLib('h-library',this)">▼ Show H statement library</span>
@@ -888,24 +868,49 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div style="margin-top:5px;font-size:10px;color:#9ca3af;">Pictogram data: ECHA CLP Regulation (EC) 1272/2008 · EN 15494:2019 · GB CLP (HSE)</div>
       </label>
     </div>
-    <div style="background:#F0F7FF;border:1px solid #C7DCF0;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:11px;color:#4a6580;line-height:1.7;">
-      <div style="font-weight:700;color:#2d4a6e;margin-bottom:5px;">📋 Data sources &amp; regulatory references</div>
-      CLPeasy generates labels in accordance with the following official regulations and guidance:
-      <ul style="margin:5px 0 5px 16px;padding:0;">
-        <li><strong>CLP Regulation (EC) No 1272/2008</strong> — Classification, Labelling and Packaging of hazardous substances and mixtures. GHS pictogram mapping, signal words, H and P statements. <a href="https://echa.europa.eu/regulations/clp/understanding-clp" target="_blank" rel="noopener" style="color:#4C9BB0;">echa.europa.eu</a></li>
-        <li><strong>GHS Pictograms</strong> — Official hazard symbols as defined by the UN Globally Harmonised System, applied under CLP. <a href="https://echa.europa.eu/regulations/clp/clp-pictograms" target="_blank" rel="noopener" style="color:#4C9BB0;">ECHA CLP Pictograms</a></li>
-        <li><strong>EN 15494:2019</strong> — Candle product safety labels (GPSR pictograms). Mandatory safety symbols sourced from the British Candlemakers Foundation. <a href="https://www.britishcandles.org/?pages_id=23" target="_blank" rel="noopener" style="color:#4C9BB0;">britishcandles.org</a></li>
-        <li><strong>UK CLP (GB)</strong> — GB retained law equivalent of EU CLP, administered by HSE. <a href="https://www.hse.gov.uk/chemical-classification/legal/clp-regulation.htm" target="_blank" rel="noopener" style="color:#4C9BB0;">hse.gov.uk</a></li>
-        <li><strong>UFI codes</strong> — Unique Formula Identifier per CLP Annex VIII (EU/NI). <a href="https://echa.europa.eu/ufi-generator" target="_blank" rel="noopener" style="color:#4C9BB0;">ECHA UFI Generator</a></li>
-      </ul>
-      CLPeasy is a label generation tool. Always verify all hazard data against your supplier's SDS. You remain responsible for the accuracy of your labels.
+    <details style="background:#F0F7FF;border:1px solid #C7DCF0;border-radius:10px;margin-bottom:14px;font-size:11px;color:#4a6580;line-height:1.7;">
+      <summary style="font-weight:700;color:#2d4a6e;padding:12px 14px;cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;user-select:none;-webkit-tap-highlight-color:transparent;" onclick="this.parentElement.querySelector('.dsrc-chevron').style.transform=this.parentElement.open?'rotate(0deg)':'rotate(180deg)'">
+        <span>📋 Data sources &amp; regulatory references</span>
+        <span class="dsrc-chevron" style="font-size:10px;color:#4a6580;transition:transform .2s;display:inline-block;">▼</span>
+      </summary>
+      <div style="padding:0 14px 12px;">
+        CLPeasy generates labels in accordance with the following official regulations and guidance:
+        <ul style="margin:5px 0 5px 16px;padding:0;">
+          <li><strong>CLP Regulation (EC) No 1272/2008</strong> — Classification, Labelling and Packaging of hazardous substances and mixtures. GHS pictogram mapping, signal words, H and P statements. <a href="https://echa.europa.eu/regulations/clp/understanding-clp" target="_blank" rel="noopener" style="color:#4C9BB0;">echa.europa.eu</a></li>
+          <li><strong>GHS Pictograms</strong> — Official hazard symbols as defined by the UN Globally Harmonised System, applied under CLP. <a href="https://echa.europa.eu/regulations/clp/clp-pictograms" target="_blank" rel="noopener" style="color:#4C9BB0;">ECHA CLP Pictograms</a></li>
+          <li><strong>EN 15494:2019</strong> — Candle product safety labels (GPSR pictograms). Mandatory safety symbols sourced from the British Candlemakers Foundation. <a href="https://www.britishcandles.org/?pages_id=23" target="_blank" rel="noopener" style="color:#4C9BB0;">britishcandles.org</a></li>
+          <li><strong>UK CLP (GB)</strong> — GB retained law equivalent of EU CLP, administered by HSE. <a href="https://www.hse.gov.uk/chemical-classification/legal/clp-regulation.htm" target="_blank" rel="noopener" style="color:#4C9BB0;">hse.gov.uk</a></li>
+          <li><strong>UFI codes</strong> — Unique Formula Identifier per CLP Annex VIII (EU/NI). <a href="https://echa.europa.eu/ufi-generator" target="_blank" rel="noopener" style="color:#4C9BB0;">ECHA UFI Generator</a></li>
+        </ul>
+        CLPeasy is a label generation tool. Always verify all hazard data against your supplier's SDS. You remain responsible for the accuracy of your labels.
+      </div>
+    </details>
+    <!-- QR SAFETY CODE TOGGLE — Easy Pro only -->
+    <div id="qr-toggle-block" style="display:none;background:white;border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);">QR safety code <span style="font-size:11px;font-weight:700;background:#CCFBF1;color:#0D9488;padding:2px 8px;border-radius:8px;margin-left:6px;letter-spacing:0.3px;">PRO</span></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5;">Adds a small QR code linking customers to your digital safety sheet. Stays live permanently — even if you change plan.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button id="btn-qr-off" onclick="setQR(false)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--teal);background:var(--teal-light);color:var(--teal-dark);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Off</button>
+        <button id="btn-qr-on" onclick="setQR(true)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">On — add QR to label</button>
+      </div>
     </div>
+    <!-- QR UPSELL — shown to non-Pro users -->
+    <div id="qr-upsell-block" style="display:none;background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:12px;padding:14px 16px;margin-bottom:16px;">
+      <div style="font-size:13px;font-weight:600;color:#166534;margin-bottom:4px;">📲 QR safety codes — Easy Pro</div>
+      <div style="font-size:12px;color:#166534;line-height:1.5;margin-bottom:10px;">Add a QR code that links customers to your suppliers digital safety sheet. Upgrade to Easy Pro to enable this feature.</div>
+      <a href="checkout.html?plan=easy_pro" style="display:inline-block;background:#166534;color:white;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Upgrade to Easy Pro →</a>
+    </div>
+
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
-      <a class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" href="javascript:void(0)" onclick="downloadPNG();return false;">⬇ Download PNG</a>
-      <a id="btn-jpeg" href="javascript:void(0)" onclick="downloadJPEG();return false;" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬇ Download JPEG — smaller file size</a>
-      <a id="btn-svg" href="javascript:void(0)" onclick="downloadSVG();return false;" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬡ Download SVG</a>
-      <a id="btn-pdf" href="javascript:void(0)" onclick="printToPDF();return false;" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">🖨 Print to PDF</a>
-      <a id="btn-save" href="javascript:void(0)" onclick="saveLabel();return false;" style="background:var(--off);color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">💾 Save to my label library</a>
+      <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ Download PNG</button>
+      <button id="btn-jpeg" onclick="downloadJPEG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬇ Download JPEG — smaller file size</button>
+      <button id="btn-svg" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬡ Download SVG</button>
+      <button id="btn-pdf" onclick="printToPDF()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">🖨 Print to PDF</button>
+      <button id="btn-save" onclick="saveLabel()" style="background:var(--off);color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">💾 Save to my label library</button>
     </div>
 
     <!-- PRINT SHEET COMPOSER LINK -->
@@ -1054,104 +1059,204 @@ const P_LIB=[{code:'P261',desc:'Avoid breathing vapours/dust'},{code:'P264',desc
 // Red rotated square border, white fill, black SVG path symbol
 // size = diameter of the diamond in px
 function ghsPicto(key, cx, cy, size) {
-  const h  = size * 0.5;
-  const sw = Math.max(size * 0.06, 1.0).toFixed(2);  // border width
-  const r  = (h * 0.04).toFixed(1);                   // corner radius
-
-  // Red diamond border (square rotated 45°, white fill)
-  const hs = (h * 0.70).toFixed(1);
+  // If a real uploaded image is available, use it embedded as <image> tag
+  // This ensures the live preview and downloaded label both show the official pictogram
+  if (typeof GHS_IMG_UI !== 'undefined' && GHS_IMG_UI[key]) {
+    const h  = size * 0.5;
+    const hs = (h * 0.68).toFixed(1);
+    const sw = Math.max(size * 0.055, 0.9).toFixed(2);
+    const r  = (parseFloat(hs) * 0.06).toFixed(1);
+    const diamond =
+      '<rect x="'  + (cx - parseFloat(hs)).toFixed(1) + '" y="' + (cy - parseFloat(hs)).toFixed(1) + '"' +
+      ' width="'   + (parseFloat(hs)*2).toFixed(1) + '" height="' + (parseFloat(hs)*2).toFixed(1) + '"' +
+      ' rx="' + r + '" fill="white" stroke="#cc0000" stroke-width="' + sw + '"' +
+      ' transform="rotate(45,' + cx.toFixed(1) + ',' + cy.toFixed(1) + ')"/>';
+    // Image sized to fit inside the diamond (inner square = hs*√2 * 0.80)
+    const imgSz = (parseFloat(hs) * 1.414 * 0.78).toFixed(1);
+    const imgX  = (cx - parseFloat(imgSz)/2).toFixed(1);
+    const imgY  = (cy - parseFloat(imgSz)/2).toFixed(1);
+    const img = '<image href="' + GHS_IMG_UI[key] + '" x="' + imgX + '" y="' + imgY +
+                '" width="' + imgSz + '" height="' + imgSz +
+                '" preserveAspectRatio="xMidYMid meet" clip-path="url(#dp-' + key + '-' + Math.round(cx) + ')"/>';
+    // Clip path so image stays inside the diamond
+    const clip = '<clipPath id="dp-' + key + '-' + Math.round(cx) + '">' +
+                 '<rect x="' + imgX + '" y="' + imgY + '" width="' + imgSz + '" height="' + imgSz + '" rx="' + r + '"/>' +
+                 '</clipPath>';
+    return '<defs>' + clip + '</defs><g>' + diamond + img + '</g>';
+  }
+  // SVG fallback — drawn paths for pictograms without uploaded images
+  const h   = size * 0.5;
+  const hs  = (h * 0.68).toFixed(1);
+  const sw  = Math.max(size * 0.055, 0.9).toFixed(2);
+  const r   = (parseFloat(hs) * 0.06).toFixed(1);
   const diamond =
-    '<rect x="' + (cx - parseFloat(hs)).toFixed(1) + '" y="' + (cy - parseFloat(hs)).toFixed(1) + '"' +
-    ' width="' + (parseFloat(hs)*2).toFixed(1) + '" height="' + (parseFloat(hs)*2).toFixed(1) + '"' +
+    '<rect x="'  + (cx - parseFloat(hs)).toFixed(1) + '" y="' + (cy - parseFloat(hs)).toFixed(1) + '"' +
+    ' width="'   + (parseFloat(hs)*2).toFixed(1) + '" height="' + (parseFloat(hs)*2).toFixed(1) + '"' +
     ' rx="' + r + '" fill="white" stroke="#cc0000" stroke-width="' + sw + '"' +
     ' transform="rotate(45,' + cx.toFixed(1) + ',' + cy.toFixed(1) + ')"/>';
 
-  // Symbol drawn in a normalised ±1 unit space, scaled to 42% of size
-  const sc = size * 0.42;  // symbol fits in 42% of full size
-  const p  = (v) => (cx + v * sc).toFixed(2);   // x coordinate
-  const q  = (v) => (cy + v * sc).toFixed(2);   // y coordinate
-  const lw = (size * 0.035).toFixed(2);          // line width
+  // Symbol space: sc = half the inner diamond diagonal × 0.55 so symbol fits inside
+  const sc = size * 0.36;
+  const p  = (v) => (cx + v * sc).toFixed(2);
+  const q  = (v) => (cy + v * sc).toFixed(2);
+  const lw = (size * 0.040).toFixed(2);
 
   let sym = '';
   switch(key) {
 
-    case 'exclamation': // GHS07 — vertical bar + dot
-      sym  = '<rect x="' + p(-0.10) + '" y="' + q(-0.58) + '" width="' + (0.20*sc).toFixed(2) + '" height="' + (0.52*sc).toFixed(2) + '" rx="' + (0.06*sc).toFixed(2) + '" fill="#000"/>';
-      sym += '<circle cx="' + p(0) + '" cy="' + q(0.62) + '" r="' + (0.13*sc).toFixed(2) + '" fill="#000"/>';
+    case 'exclamation': // GHS07 — thick vertical bar, round dot below centre
+      sym  = '<rect x="' + (cx - sc*0.13).toFixed(2) + '" y="' + (cy - sc*0.72).toFixed(2) + '"' +
+             ' width="' + (sc*0.26).toFixed(2) + '" height="' + (sc*0.62).toFixed(2) + '"' +
+             ' rx="' + (sc*0.08).toFixed(2) + '" fill="#111"/>';
+      sym += '<circle cx="' + cx.toFixed(2) + '" cy="' + (cy + sc*0.55).toFixed(2) + '"' +
+             ' r="' + (sc*0.16).toFixed(2) + '" fill="#111"/>';
       break;
 
-    case 'flame': // GHS02 — candle flame shape
-      sym  = '<path d="M ' + p(0) + ',' + q(0.65) +
-             ' C ' + p(-0.45) + ',' + q(0.30) + ' ' + p(-0.40) + ',' + q(-0.15) + ' ' + p(-0.12) + ',' + q(-0.38) +
-             ' C ' + p(-0.16) + ',' + q(0.10) + ' ' + p(0.10) + ',' + q(0.05) + ' ' + p(0) + ',' + q(-0.55) +
-             ' C ' + p(0.28) + ',' + q(-0.22) + ' ' + p(0.50) + ',' + q(0.15) + ' ' + p(0.44) + ',' + q(0.45) +
-             ' C ' + p(0.56) + ',' + q(0.18) + ' ' + p(0.44) + ',' + q(-0.10) + ' ' + p(0.32) + ',' + q(-0.25) +
-             ' C ' + p(0.52) + ',' + q(-0.05) + ' ' + p(0.62) + ',' + q(0.25) + ' ' + p(0.44) + ',' + q(0.65) +
-             ' Z" fill="#000"/>';
+    case 'flame': // GHS02 — teardrop flame
+      sym  = '<path d="M ' + cx.toFixed(2) + ',' + (cy + sc*0.72).toFixed(2) +
+             ' C ' + p(-0.50) + ',' + q(0.30) + ' ' + p(-0.42) + ',' + q(-0.18) + ' ' + p(-0.10) + ',' + q(-0.40) +
+             ' C ' + p(-0.14) + ',' + q(0.08) + ' ' + p(0.12) + ',' + q(0.04) + ' ' + p(0) + ',' + q(-0.72) +
+             ' C ' + p(0.30) + ',' + q(-0.24) + ' ' + p(0.52) + ',' + q(0.12) + ' ' + p(0.46) + ',' + q(0.44) +
+             ' C ' + p(0.58) + ',' + q(0.18) + ' ' + p(0.46) + ',' + q(-0.08) + ' ' + p(0.34) + ',' + q(-0.22) +
+             ' C ' + p(0.54) + ',' + q(-0.02) + ' ' + p(0.64) + ',' + q(0.24) + ' ' + p(0.48) + ',' + q(0.72) +
+             ' Z" fill="#111"/>';
       break;
 
     case 'skull': // GHS06 — skull + crossbones
-      sym  = '<circle cx="' + p(0) + '" cy="' + q(-0.22) + '" r="' + (0.38*sc).toFixed(2) + '" fill="#000"/>';
-      sym += '<circle cx="' + p(0) + '" cy="' + q(-0.22) + '" r="' + (0.24*sc).toFixed(2) + '" fill="white"/>';
-      sym += '<circle cx="' + p(-0.18) + '" cy="' + q(-0.28) + '" r="' + (0.12*sc).toFixed(2) + '" fill="#000"/>';
-      sym += '<circle cx="' + p(0.18) + '" cy="' + q(-0.28) + '" r="' + (0.12*sc).toFixed(2) + '" fill="#000"/>';
-      sym += '<rect x="' + p(-0.26) + '" y="' + q(0.14) + '" width="' + (0.52*sc).toFixed(2) + '" height="' + (0.26*sc).toFixed(2) + '" rx="' + (0.08*sc).toFixed(2) + '" fill="#000"/>';
-      sym += '<rect x="' + p(-0.08) + '" y="' + q(0.16) + '" width="' + (0.16*sc).toFixed(2) + '" height="' + (0.22*sc).toFixed(2) + '" fill="white"/>';
-      sym += '<line x1="' + p(-0.50) + '" y1="' + q(0.54) + '" x2="' + p(0.50) + '" y2="' + q(0.72) + '" stroke="#000" stroke-width="' + (0.14*sc).toFixed(2) + '" stroke-linecap="round"/>';
-      sym += '<line x1="' + p(-0.50) + '" y1="' + q(0.72) + '" x2="' + p(0.50) + '" y2="' + q(0.54) + '" stroke="#000" stroke-width="' + (0.14*sc).toFixed(2) + '" stroke-linecap="round"/>';
+      sym  = '<circle cx="' + cx.toFixed(2) + '" cy="' + (cy - sc*0.24).toFixed(2) + '"' +
+             ' r="' + (sc*0.44).toFixed(2) + '" fill="#111"/>';
+      sym += '<circle cx="' + (cx - sc*0.18).toFixed(2) + '" cy="' + (cy - sc*0.34).toFixed(2) + '"' +
+             ' r="' + (sc*0.14).toFixed(2) + '" fill="white"/>';
+      sym += '<circle cx="' + (cx + sc*0.18).toFixed(2) + '" cy="' + (cy - sc*0.34).toFixed(2) + '"' +
+             ' r="' + (sc*0.14).toFixed(2) + '" fill="white"/>';
+      sym += '<rect x="' + (cx - sc*0.28).toFixed(2) + '" y="' + (cy + sc*0.08).toFixed(2) + '"' +
+             ' width="' + (sc*0.56).toFixed(2) + '" height="' + (sc*0.22).toFixed(2) + '"' +
+             ' rx="' + (sc*0.06).toFixed(2) + '" fill="#111"/>';
+      sym += '<rect x="' + (cx - sc*0.08).toFixed(2) + '" y="' + (cy + sc*0.10).toFixed(2) + '"' +
+             ' width="' + (sc*0.16).toFixed(2) + '" height="' + (sc*0.18).toFixed(2) + '" fill="white"/>';
+      // Crossbones
+      sym += '<line x1="' + p(-0.56) + '" y1="' + q(0.46) + '" x2="' + p(0.56) + '" y2="' + q(0.76) + '"' +
+             ' stroke="#111" stroke-width="' + (sc*0.18).toFixed(2) + '" stroke-linecap="round"/>';
+      sym += '<line x1="' + p(-0.56) + '" y1="' + q(0.76) + '" x2="' + p(0.56) + '" y2="' + q(0.46) + '"' +
+             ' stroke="#111" stroke-width="' + (sc*0.18).toFixed(2) + '" stroke-linecap="round"/>';
       break;
 
-    case 'aquatic': // GHS09 — dead tree + fish
-      sym  = '<line x1="' + p(-0.14) + '" y1="' + q(0.68) + '" x2="' + p(-0.14) + '" y2="' + q(-0.28) + '" stroke="#000" stroke-width="' + (0.12*sc).toFixed(2) + '" stroke-linecap="round"/>';
-      sym += '<line x1="' + p(-0.14) + '" y1="' + q(0.10) + '" x2="' + p(-0.48) + '" y2="' + q(-0.32) + '" stroke="#000" stroke-width="' + (0.10*sc).toFixed(2) + '" stroke-linecap="round"/>';
-      sym += '<line x1="' + p(-0.14) + '" y1="' + q(-0.12) + '" x2="' + p(0.20) + '" y2="' + q(-0.46) + '" stroke="#000" stroke-width="' + (0.10*sc).toFixed(2) + '" stroke-linecap="round"/>';
-      sym += '<line x1="' + p(-0.14) + '" y1="' + q(-0.28) + '" x2="' + p(-0.42) + '" y2="' + q(-0.60) + '" stroke="#000" stroke-width="' + (0.09*sc).toFixed(2) + '" stroke-linecap="round"/>';
-      sym += '<ellipse cx="' + p(0.44) + '" cy="' + q(0.22) + '" rx="' + (0.22*sc).toFixed(2) + '" ry="' + (0.14*sc).toFixed(2) + '" fill="#000"/>';
-      sym += '<path d="M ' + p(0.66) + ',' + q(0.08) + ' L ' + p(0.80) + ',' + q(-0.05) + ' L ' + p(0.80) + ',' + q(0.49) + ' Z" fill="#000"/>';
-      sym += '<circle cx="' + p(0.34) + '" cy="' + q(0.18) + '" r="' + (0.05*sc).toFixed(2) + '" fill="white"/>';
+    case 'aquatic': // GHS09 — dead tree left, fish right
+      // Tree trunk
+      sym  = '<line x1="' + p(-0.30) + '" y1="' + q(0.72) + '" x2="' + p(-0.30) + '" y2="' + q(-0.44) + '"' +
+             ' stroke="#111" stroke-width="' + (sc*0.14).toFixed(2) + '" stroke-linecap="round"/>';
+      // Tree branches (3, drooping right)
+      sym += '<line x1="' + p(-0.30) + '" y1="' + q(-0.44) + '" x2="' + p(-0.64) + '" y2="' + q(-0.72) + '"' +
+             ' stroke="#111" stroke-width="' + (sc*0.10).toFixed(2) + '" stroke-linecap="round"/>';
+      sym += '<line x1="' + p(-0.30) + '" y1="' + q(-0.10) + '" x2="' + p(0.04) + '" y2="' + q(-0.44) + '"' +
+             ' stroke="#111" stroke-width="' + (sc*0.10).toFixed(2) + '" stroke-linecap="round"/>';
+      sym += '<line x1="' + p(-0.30) + '" y1="' + q(0.22) + '" x2="' + p(-0.58) + '" y2="' + q(-0.04) + '"' +
+             ' stroke="#111" stroke-width="' + (sc*0.09).toFixed(2) + '" stroke-linecap="round"/>';
+      // Fish body (ellipse, right side)
+      sym += '<ellipse cx="' + (cx + sc*0.44).toFixed(2) + '" cy="' + (cy + sc*0.20).toFixed(2) + '"' +
+             ' rx="' + (sc*0.26).toFixed(2) + '" ry="' + (sc*0.16).toFixed(2) + '" fill="#111"/>';
+      // Fish tail
+      sym += '<path d="M ' + p(0.70) + ',' + q(0.04) + ' L ' + p(0.88) + ',' + q(-0.08) +
+             ' L ' + p(0.88) + ',' + q(0.48) + ' Z" fill="#111"/>';
+      // Fish eye
+      sym += '<circle cx="' + (cx + sc*0.28).toFixed(2) + '" cy="' + (cy + sc*0.16).toFixed(2) + '"' +
+             ' r="' + (sc*0.06).toFixed(2) + '" fill="white"/>';
       break;
 
-    case 'health': // GHS08 — health hazard (exclamation over body)
-      sym  = '<circle cx="' + p(0) + '" cy="' + q(-0.56) + '" r="' + (0.16*sc).toFixed(2) + '" fill="#000"/>';
-      sym += '<path d="M ' + p(-0.26) + ',' + q(-0.32) + ' Q ' + p(-0.36) + ',' + q(0.08) + ' ' + p(-0.26) + ',' + q(0.68) + ' L ' + p(0.26) + ',' + q(0.68) + ' Q ' + p(0.36) + ',' + q(0.08) + ' ' + p(0.26) + ',' + q(-0.32) + ' Z" fill="#000"/>';
-      sym += '<rect x="' + p(-0.08) + '" y="' + q(-0.18) + '" width="' + (0.16*sc).toFixed(2) + '" height="' + (0.38*sc).toFixed(2) + '" rx="' + (0.05*sc).toFixed(2) + '" fill="white"/>';
-      sym += '<circle cx="' + p(0) + '" cy="' + q(0.40) + '" r="' + (0.08*sc).toFixed(2) + '" fill="white"/>';
+    case 'health': // GHS08 — person silhouette with exclamation
+      // Head
+      sym  = '<circle cx="' + cx.toFixed(2) + '" cy="' + (cy - sc*0.62).toFixed(2) + '"' +
+             ' r="' + (sc*0.18).toFixed(2) + '" fill="#111"/>';
+      // Body (tapered trapezoid)
+      sym += '<path d="M ' + p(-0.28) + ',' + q(-0.38) +
+             ' Q ' + p(-0.38) + ',' + q(0.10) + ' ' + p(-0.28) + ',' + q(0.72) +
+             ' L ' + p(0.28) + ',' + q(0.72) +
+             ' Q ' + p(0.38) + ',' + q(0.10) + ' ' + p(0.28) + ',' + q(-0.38) + ' Z" fill="#111"/>';
+      // Exclamation on chest (white)
+      sym += '<rect x="' + (cx - sc*0.07).toFixed(2) + '" y="' + (cy - sc*0.24).toFixed(2) + '"' +
+             ' width="' + (sc*0.14).toFixed(2) + '" height="' + (sc*0.36).toFixed(2) + '"' +
+             ' rx="' + (sc*0.04).toFixed(2) + '" fill="white"/>';
+      sym += '<circle cx="' + cx.toFixed(2) + '" cy="' + (cy + sc*0.46).toFixed(2) + '"' +
+             ' r="' + (sc*0.08).toFixed(2) + '" fill="white"/>';
       break;
 
-    case 'corrosive': // GHS05 — drops corroding surface + hand
-      sym  = '<path d="M ' + p(-0.36) + ',' + q(-0.55) + ' Q ' + p(-0.46) + ',' + q(-0.22) + ' ' + p(-0.36) + ',' + q(0.05) + ' Q ' + p(-0.26) + ',' + q(-0.22) + ' ' + p(-0.36) + ',' + q(-0.55) + ' Z" fill="#000"/>';
-      sym += '<path d="M ' + p(0.08) + ',' + q(-0.65) + ' Q ' + p(-0.02) + ',' + q(-0.32) + ' ' + p(0.08) + ',' + q(-0.05) + ' Q ' + p(0.18) + ',' + q(-0.32) + ' ' + p(0.08) + ',' + q(-0.65) + ' Z" fill="#000"/>';
-      sym += '<polyline points="' + p(-0.56) + ',' + q(0.12) + ' ' + p(-0.36) + ',' + q(0.40) + ' ' + p(-0.20) + ',' + q(0.24) + ' ' + p(0) + ',' + q(0.52) + ' ' + p(0.20) + ',' + q(0.32) + ' ' + p(0.36) + ',' + q(0.64) + ' ' + p(0.56) + ',' + q(0.44) + '" fill="none" stroke="#000" stroke-width="' + (0.10*sc).toFixed(2) + '" stroke-linecap="round" stroke-linejoin="round"/>';
+    case 'corrosive': // GHS05 — two drops eating into a surface + hand
+      // Left drop eating surface
+      sym  = '<path d="M ' + p(-0.52) + ',' + q(-0.62) +
+             ' Q ' + p(-0.62) + ',' + q(-0.28) + ' ' + p(-0.52) + ',' + q(0.04) +
+             ' Q ' + p(-0.42) + ',' + q(-0.28) + ' ' + p(-0.52) + ',' + q(-0.62) + ' Z" fill="#111"/>';
+      // Right drop
+      sym += '<path d="M ' + p(0.08) + ',' + q(-0.72) +
+             ' Q ' + p(-0.02) + ',' + q(-0.36) + ' ' + p(0.08) + ',' + q(-0.04) +
+             ' Q ' + p(0.18) + ',' + q(-0.36) + ' ' + p(0.08) + ',' + q(-0.72) + ' Z" fill="#111"/>';
+      // Damaged surface (jagged line)
+      sym += '<polyline points="' +
+             p(-0.68) + ',' + q(0.14) + ' ' +
+             p(-0.44) + ',' + q(0.44) + ' ' +
+             p(-0.22) + ',' + q(0.26) + ' ' +
+             p(0) + ',' + q(0.54) + ' ' +
+             p(0.22) + ',' + q(0.32) + ' ' +
+             p(0.42) + ',' + q(0.66) + ' ' +
+             p(0.64) + ',' + q(0.44) + '"' +
+             ' fill="none" stroke="#111" stroke-width="' + (sc*0.12).toFixed(2) + '"' +
+             ' stroke-linecap="round" stroke-linejoin="round"/>';
       break;
 
-    case 'oxidiser': // GHS03 — flame over circle
-      sym  = '<circle cx="' + p(0) + '" cy="' + q(0.46) + '" r="' + (0.30*sc).toFixed(2) + '" fill="none" stroke="#000" stroke-width="' + (0.10*sc).toFixed(2) + '"/>';
-      sym += '<path d="M ' + p(0) + ',' + q(0.16) +
-             ' C ' + p(-0.28) + ',' + q(-0.18) + ' ' + p(-0.22) + ',' + q(-0.48) + ' ' + p(-0.06) + ',' + q(-0.58) +
-             ' C ' + p(-0.10) + ',' + q(-0.24) + ' ' + p(0.08) + ',' + q(-0.20) + ' ' + p(0) + ',' + q(-0.68) +
-             ' C ' + p(0.22) + ',' + q(-0.40) + ' ' + p(0.30) + ',' + q(-0.16) + ' ' + p(0.28) + ',' + q(0.16) +
-             ' Z" fill="#000"/>';
+    case 'oxidiser': // GHS03 — flame over circle (O)
+      // Circle (oxidiser ring)
+      sym  = '<circle cx="' + cx.toFixed(2) + '" cy="' + (cy + sc*0.48).toFixed(2) + '"' +
+             ' r="' + (sc*0.32).toFixed(2) + '" fill="none" stroke="#111"' +
+             ' stroke-width="' + (sc*0.12).toFixed(2) + '"/>';
+      // Flame above
+      sym += '<path d="M ' + cx.toFixed(2) + ',' + (cy + sc*0.16).toFixed(2) +
+             ' C ' + p(-0.30) + ',' + q(-0.18) + ' ' + p(-0.24) + ',' + q(-0.52) + ' ' + p(-0.06) + ',' + q(-0.62) +
+             ' C ' + p(-0.10) + ',' + q(-0.26) + ' ' + p(0.10) + ',' + q(-0.22) + ' ' + p(0) + ',' + q(-0.72) +
+             ' C ' + p(0.24) + ',' + q(-0.42) + ' ' + p(0.32) + ',' + q(-0.16) + ' ' + p(0.30) + ',' + q(0.16) +
+             ' Z" fill="#111"/>';
       break;
 
-    case 'explosion': // GHS01 — exploding bomb
-      sym  = '<circle cx="' + p(0.06) + '" cy="' + q(0.34) + '" r="' + (0.38*sc).toFixed(2) + '" fill="#000"/>';
-      sym += '<line x1="' + p(0.06) + '" y1="' + q(-0.06) + '" x2="' + p(0.06) + '" y2="' + q(-0.60) + '" stroke="#000" stroke-width="' + lw + '" stroke-linecap="round"/>';
-      sym += '<line x1="' + p(0.38) + '" y1="' + q(-0.04) + '" x2="' + p(0.62) + '" y2="' + q(-0.42) + '" stroke="#000" stroke-width="' + lw + '" stroke-linecap="round"/>';
-      sym += '<line x1="' + p(-0.26) + '" y1="' + q(-0.04) + '" x2="' + p(-0.50) + '" y2="' + q(-0.42) + '" stroke="#000" stroke-width="' + lw + '" stroke-linecap="round"/>';
-      sym += '<line x1="' + p(0.56) + '" y1="' + q(0.22) + '" x2="' + p(0.80) + '" y2="' + q(0.10) + '" stroke="#000" stroke-width="' + lw + '" stroke-linecap="round"/>';
-      sym += '<line x1="' + p(-0.44) + '" y1="' + q(0.22) + '" x2="' + p(-0.68) + '" y2="' + q(0.10) + '" stroke="#000" stroke-width="' + lw + '" stroke-linecap="round"/>';
+    case 'explosion': // GHS01 — exploding bomb with rays
+      // Bomb body
+      sym  = '<circle cx="' + (cx + sc*0.06).toFixed(2) + '" cy="' + (cy + sc*0.36).toFixed(2) + '"' +
+             ' r="' + (sc*0.38).toFixed(2) + '" fill="#111"/>';
+      // Fuse line going up-right
+      sym += '<line x1="' + (cx + sc*0.06).toFixed(2) + '" y1="' + (cy - sc*0.02).toFixed(2) + '"' +
+             ' x2="' + (cx + sc*0.28).toFixed(2) + '" y2="' + (cy - sc*0.52).toFixed(2) + '"' +
+             ' stroke="#111" stroke-width="' + lw + '" stroke-linecap="round"/>';
+      // Explosion rays (4 short lines radiating from fuse tip)
+      sym += '<line x1="' + p(0.28) + '" y1="' + q(-0.52) + '" x2="' + p(0.50) + '" y2="' + q(-0.72) + '"' +
+             ' stroke="#111" stroke-width="' + lw + '" stroke-linecap="round"/>';
+      sym += '<line x1="' + p(0.28) + '" y1="' + q(-0.52) + '" x2="' + p(0.58) + '" y2="' + q(-0.38) + '"' +
+             ' stroke="#111" stroke-width="' + lw + '" stroke-linecap="round"/>';
+      sym += '<line x1="' + p(0.28) + '" y1="' + q(-0.52) + '" x2="' + p(0.14) + '" y2="' + q(-0.76) + '"' +
+             ' stroke="#111" stroke-width="' + lw + '" stroke-linecap="round"/>';
       break;
 
-    case 'gas': // GHS04 — gas cylinder
-      sym  = '<rect x="' + p(-0.26) + '" y="' + q(-0.08) + '" width="' + (0.52*sc).toFixed(2) + '" height="' + (0.70*sc).toFixed(2) + '" rx="' + (0.10*sc).toFixed(2) + '" fill="#000"/>';
-      sym += '<rect x="' + p(-0.18) + '" y="' + q(-0.36) + '" width="' + (0.36*sc).toFixed(2) + '" height="' + (0.28*sc).toFixed(2) + '" rx="' + (0.08*sc).toFixed(2) + '" fill="#000"/>';
-      sym += '<line x1="' + p(0) + '" y1="' + q(-0.36) + '" x2="' + p(0.28) + '" y2="' + q(-0.60) + '" stroke="#000" stroke-width="' + (0.12*sc).toFixed(2) + '" stroke-linecap="round"/>';
-      sym += '<circle cx="' + p(0) + '" cy="' + q(0.28) + '" r="' + (0.16*sc).toFixed(2) + '" fill="white"/>';
+    case 'gas': // GHS04 — cylinder with valve on top
+      // Cylinder body
+      sym  = '<rect x="' + (cx - sc*0.28).toFixed(2) + '" y="' + (cy - sc*0.12).toFixed(2) + '"' +
+             ' width="' + (sc*0.56).toFixed(2) + '" height="' + (sc*0.76).toFixed(2) + '"' +
+             ' rx="' + (sc*0.12).toFixed(2) + '" fill="#111"/>';
+      // Cylinder neck
+      sym += '<rect x="' + (cx - sc*0.18).toFixed(2) + '" y="' + (cy - sc*0.40).toFixed(2) + '"' +
+             ' width="' + (sc*0.36).toFixed(2) + '" height="' + (sc*0.28).toFixed(2) + '"' +
+             ' rx="' + (sc*0.08).toFixed(2) + '" fill="#111"/>';
+      // Valve pipe (angled right)
+      sym += '<line x1="' + (cx + sc*0.04).toFixed(2) + '" y1="' + (cy - sc*0.40).toFixed(2) + '"' +
+             ' x2="' + (cx + sc*0.36).toFixed(2) + '" y2="' + (cy - sc*0.68).toFixed(2) + '"' +
+             ' stroke="#111" stroke-width="' + (sc*0.14).toFixed(2) + '" stroke-linecap="round"/>';
+      // White label rect on body
+      sym += '<rect x="' + (cx - sc*0.18).toFixed(2) + '" y="' + (cy + sc*0.08).toFixed(2) + '"' +
+             ' width="' + (sc*0.36).toFixed(2) + '" height="' + (sc*0.30).toFixed(2) + '"' +
+             ' rx="' + (sc*0.04).toFixed(2) + '" fill="white"/>';
       break;
 
     default:
-      sym  = '<rect x="' + p(-0.10) + '" y="' + q(-0.58) + '" width="' + (0.20*sc).toFixed(2) + '" height="' + (0.52*sc).toFixed(2) + '" rx="' + (0.06*sc).toFixed(2) + '" fill="#000"/>';
-      sym += '<circle cx="' + p(0) + '" cy="' + q(0.62) + '" r="' + (0.13*sc).toFixed(2) + '" fill="#000"/>';
+      sym  = '<rect x="' + (cx - sc*0.12).toFixed(2) + '" y="' + (cy - sc*0.72).toFixed(2) + '"' +
+             ' width="' + (sc*0.24).toFixed(2) + '" height="' + (sc*0.60).toFixed(2) + '"' +
+             ' rx="' + (sc*0.06).toFixed(2) + '" fill="#111"/>';
+      sym += '<circle cx="' + cx.toFixed(2) + '" cy="' + (cy + sc*0.56).toFixed(2) + '"' +
+             ' r="' + (sc*0.14).toFixed(2) + '" fill="#111"/>';
   }
   return '<g>' + diamond + sym + '</g>';
 }
@@ -1725,6 +1830,7 @@ async function initAuth(){
           if(upgBanner)upgBanner.style.display='none';
           if(canBanner)canBanner.style.display='none';
           updateLabel();
+          updateQRVisibility();
         } else if(sub&&sub.status==='cancelled'){
           // Cancelled — show cancelled banner only
           const upgBanner=document.getElementById('upgrade-banner');
@@ -1745,6 +1851,7 @@ async function initAuth(){
         const upgBanner=document.getElementById('upgrade-banner');
         if(upgBanner)upgBanner.style.display='flex';
       }
+      updateQRVisibility();
 
       // ── DOWNLOAD ALLOWANCE (profiles table) ────────────────
       await loadDownloadAllowance();
@@ -2242,6 +2349,19 @@ function loadLabel(i){
   if(e.bgColour){const bc=document.getElementById('label-bg-colour');const bh=document.getElementById('label-bg-hex');if(bc)bc.value=e.bgColour;if(bh)bh.value=e.bgColour;}
   selectShape(e.shape||'circle');selectSize(e.size||35);
   if(e.signal)selectSignal(e.signal);
+  // Restore H chips and sync pictograms from stored H statements
+  if(e.hSelected&&e.hSelected.length){
+    S.hSelected=e.hSelected;
+    document.querySelectorAll('#h-chips .h-chip').forEach(c=>{
+      if(e.hSelected.includes(c.dataset.code))c.classList.add('selected');
+    });
+    syncPictogramsFromH(e.hSelected);
+  } else if(e.hStatements){
+    // Fall back to parsing the text string
+    const parsed=e.hStatements.split(',').map(h=>h.trim()).filter(Boolean);
+    S.hSelected=parsed;
+    syncPictogramsFromH(parsed);
+  }
   renderTags();updateLabel();
   // Lock identity fields — route to Step 3 for SDS update
   S.libraryLocked=true;
@@ -2396,6 +2516,7 @@ function init(){
   initAuth();
   wrapDownloads();
   buildHChips();buildPChips();buildSensitiserChips();
+  // buildPictoGrid called below after all functions defined
   initExtensions();
   // Restore saved business details
   const biz=JSON.parse(localStorage.getItem('clpeasy_biz')||'{}');
@@ -2456,7 +2577,15 @@ function toggleLib(id,tog){
   el.style.display=vis?'none':'block';
   tog.textContent=(vis?'▼ Show':'▲ Hide')+tog.textContent.slice(tog.textContent.indexOf(' ',2));
 }
-function toggleHChip(el,code){el.classList.toggle('selected');const i=S.hSelected.indexOf(code);if(i>-1)S.hSelected.splice(i,1);else S.hSelected.push(code);document.getElementById('h-statements').value=S.hSelected.join(', ');updateLabel();}
+function toggleHChip(el,code){
+  el.classList.toggle('selected');
+  const i=S.hSelected.indexOf(code);
+  if(i>-1) S.hSelected.splice(i,1);
+  else S.hSelected.push(code);
+  document.getElementById('h-statements').value=S.hSelected.join(', ');
+  syncPictogramsFromH(S.hSelected);
+  updateLabel();
+}
 function togglePChip(el,code){el.classList.toggle('selected');const i=S.pSelected.indexOf(code);if(i>-1)S.pSelected.splice(i,1);else S.pSelected.push(code);document.getElementById('p-statements').value=S.pSelected.join(', ');updateLabel();}
 function toggleSensitiser(el,name){el.classList.toggle('selected');if(el.classList.contains('selected')){if(!S.sensitisers.includes(name))S.sensitisers.push(name);}else S.sensitisers=S.sensitisers.filter(x=>x!==name);renderTags();updateLabel();}
 
@@ -2511,35 +2640,7 @@ function extractSDS(){
   document.getElementById('signal-danger').className='signal-btn'+(sig==='Danger'?' sel-danger':'');
 
   // ── PICTOGRAMS ────────────────────────────────────────────────────────────
-  // Clear existing
-  S.pictograms=[];
-  document.querySelectorAll('.picto-btn').forEach(b=>b.classList.remove('selected'));
-  // Map H codes → pictograms
-  const hPictoMap={
-    // GHS07 — exclamation mark
-    exclamation:['H302','H312','H315','H317','H319','H332','H335','H336','H371','H373','EUH066','EUH071'],
-    // GHS08 — health hazard (serious long-term effects)
-    // H304 added: aspiration hazard is GHS08 not GHS06
-    // H370 added: STOT single Cat1 = health (CLPeasy already has this)
-    health:['H304','H340','H341','H350','H351','H360','H361','H362','H370','H372'],
-    // GHS09 — environmental hazard
-    aquatic:['H400','H410','H411','H412','H413','H420'],
-    // GHS05 — corrosion
-    corrosive:['H290','H314','H318'],
-    // GHS06 — skull and crossbones (acute toxicity Cat 1-3)
-    skull:['H300','H301','H310','H311','H330','H331'],
-    // GHS01 — exploding bomb
-    explosion:['H200','H201','H202','H203','H204','H205','H206','H207','H208','H209','H210','H211','H240','H241','H242'],
-    // GHS02 — flame (flammable — H270/271/272 removed: those are oxidiser GHS03)
-    flame:['H220','H221','H222','H223','H224','H225','H226','H228','H229','H232','H250','H251','H252','H260','H261'],
-    // GHS03 — flame over circle (oxidising)
-    oxidiser:['H270','H271','H272'],
-    // GHS04 — gas cylinder
-    gas:['H280','H281','H282','H283']
-  };
-  Object.entries(hPictoMap).forEach(([picto,codes])=>{
-    if(allH.some(h=>codes.includes(h)))addPicto(picto);
-  });
+  syncPictogramsFromH(allH);
 
   // ── SENSITISERS ───────────────────────────────────────────────────────────
   const upperText=text.toUpperCase();
@@ -2574,6 +2675,82 @@ function showExtractToast(hCount, pCount, sensCount){
     setTimeout(()=>toast.remove(),350);
   },4000);
 }
+
+const GHS_IMG_UI={
+  flame:"data:image/jpeg;base64,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",
+  exclamation:"data:image/jpeg;base64,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",
+  aquatic:"data:image/jpeg;base64,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",
+  explosion:"data:image/jpeg;base64,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",
+  oxidiser:"data:image/jpeg;base64,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",
+  gas:"data:image/jpeg;base64,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",
+};
+
+// ── H CODE → PICTOGRAM AUTO-MAPPING ──────────────────────────
+// Official UK/GB CLP Regulation pictogram mapping.
+// Called both by Smart Paste extraction and by manual H chip selection.
+const H_PICTO_MAP = {
+  // GHS07 — Exclamation Mark (irritant, sensitiser, harmful)
+  exclamation: ['H302','H312','H315','H317','H319','H332','H335','H336','H371','H373','EUH066','EUH071'],
+  // GHS08 — Health Hazard (serious/long-term)
+  health:      ['H304','H334','H340','H341','H350','H351','H360','H361','H362','H370','H372'],
+  // GHS09 — Environment (aquatic toxicity)
+  aquatic:     ['H400','H401','H410','H411','H412','H413','H420'],
+  // GHS05 — Corrosion (skin/eye corrosion, metal corrosive)
+  corrosive:   ['H290','H314','H318'],
+  // GHS06 — Skull & Crossbones (acute toxicity Cat 1–3)
+  skull:       ['H300','H301','H310','H311','H330','H331'],
+  // GHS01 — Exploding Bomb (explosives, self-reactive, organic peroxides)
+  explosion:   ['H200','H201','H202','H203','H204','H205','H206','H207','H208','H209','H210','H211','H240','H241','H242'],
+  // GHS02 — Flame (flammables)
+  flame:       ['H220','H221','H222','H223','H224','H225','H226','H228','H229','H232','H250','H251','H252','H260','H261'],
+  // GHS03 — Flame Over Circle (oxidisers)
+  oxidiser:    ['H270','H271','H272'],
+  // GHS04 — Gas Cylinder (gases under pressure)
+  gas:         ['H280','H281','H282','H283']
+};
+
+function buildPictoGrid(){
+  const PICTOS=[
+    {key:'flame',     name:'GHS02 · Flammable'},
+    {key:'exclamation',name:'GHS07 · Irritant'},
+    {key:'health',    name:'GHS08 · Health Hazard'},
+    {key:'aquatic',   name:'GHS09 · Environment'},
+    {key:'corrosive', name:'GHS05 · Corrosive'},
+    {key:'skull',     name:'GHS06 · Toxic'},
+    {key:'oxidiser',  name:'GHS03 · Oxidiser'},
+    {key:'gas',       name:'GHS04 · Gas'},
+    {key:'explosion', name:'GHS01 · Explosive'},
+  ];
+  const grid=document.getElementById('picto-grid');
+  if(!grid)return;
+  grid.innerHTML=PICTOS.map(({key,name})=>{
+    // Use real image if available, fallback to inline SVG from ghsPicto
+    const img=GHS_IMG_UI[key]
+      ?`<img src="${GHS_IMG_UI[key]}" width="44" height="44" style="display:block;" alt="${name}">`
+      :`<svg viewBox="0 0 100 100" width="44" height="44">${buildPictoSVGInner(key,50,50,100)}</svg>`;
+    return`<div class="picto-btn" data-picto="${key}" style="cursor:default;">
+      <div class="picto-icon" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;">${img}</div>
+      <div class="picto-name" style="font-size:10px;margin-top:3px;">${name}</div>
+    </div>`;
+  }).join('');
+}
+
+function buildPictoSVGInner(key,cx,cy,size){
+  // Returns just the inner SVG content (diamond + symbol) without outer <svg> tag
+  // Used for fallback when no image available
+  return ghsPicto(key,cx,cy,size);
+}
+
+function syncPictogramsFromH(hCodes) {
+  // Clear current pictogram state and UI
+  S.pictograms = [];
+  document.querySelectorAll('.picto-btn').forEach(b => b.classList.remove('selected'));
+  // Add pictograms for every matched H code
+  Object.entries(H_PICTO_MAP).forEach(([picto, codes]) => {
+    if (hCodes.some(h => codes.includes(h))) addPicto(picto);
+  });
+}
+
 function addPicto(k){if(!S.pictograms.includes(k)){S.pictograms.push(k);const b=document.querySelector(`.picto-btn[data-picto="${k}"]`);if(b)b.classList.add('selected');}}
 
 // ── NAVIGATION ────────────────────────────────────────────────
@@ -2993,9 +3170,10 @@ function buildSVG(forExport=false){
   const isCandle = EN15494_CANDLE_TYPES.includes(S.productType);
   // Bands: top = brand/scent, bottom = footer+icons, mid = hazard content
   // Circle gets more top (arc text), rect gets less top (scent in mid)
-  const topFrac = isCircle ? 0.24 : 0.16;  // circle needs more top for arc+biz+web
+  const topFrac = isCircle ? 0.22 : 0.16;  // circle needs more top for arc+biz+web
   // Bottom: candles need room for EN15494 row + footer text
-  const botFrac = isCandle ? (isCircle ? 0.34 : 0.42) : (isCircle ? 0.20 : 0.24);
+  // Reduced from 0.34→0.28 for candle circles so mid band has room for pictos+P statements
+  const botFrac = isCandle ? (isCircle ? 0.28 : 0.38) : (isCircle ? 0.20 : 0.24);
   const topH = sH * topFrac;
   const botH = sH * botFrac;
   const midH = sH - topH - botH;
@@ -3198,11 +3376,12 @@ function buildSVG(forExport=false){
   curY += sensActH;
 
   // ── AUTO-SCALE: if content overflows midH, scale everything down ────
-  // This ensures all content fits regardless of label size
-  // Reserve space for P statements before scaling — they are legally required
-  const pReserve     = midH * 0.10; // reserve 10% of midH for P statements minimum
-  const contentTotal = scentActH + typeH + sigH + pictoActH + hActH + sensActH + gap;
-  const scaleFactor  = contentTotal > midH * 0.86 ? (midH * 0.86) / contentTotal : 1.0;
+  // Reserve space for pictograms (legally required, 10mm min) and P statements
+  const pReserve     = midH * 0.12; // guarantee 12% of midH for P statements
+  const pictoReserve = nP > 0 ? Math.max(minPictoSz * 1.15, midH * 0.18) : 0; // guarantee picto space
+  const availForScale = midH - pReserve - pictoReserve;
+  const contentWithoutPictoP = scentActH + typeH + sigH + hActH + sensActH + gap;
+  const scaleFactor  = contentWithoutPictoP > availForScale * 0.92 ? (availForScale * 0.92) / contentWithoutPictoP : 1.0;
   // Apply scale factor to all heights and font sizes
   const _sf = scaleFactor;
   // Recompute curY with scaled heights
@@ -3223,8 +3402,8 @@ function buildSVG(forExport=false){
   const _sigY2   = curY + _sigH2*0.5;
   curY += _sigH2;
 
-  const _pictoActH2 = pictoActH * _sf;
-  const _pictoSz2   = Math.max(pictoSz * _sf, minPictoSz); // never scale below 10mm minimum
+  const _pictoActH2 = nP > 0 ? Math.max(pictoActH * _sf, pictoReserve) : 0;
+  const _pictoSz2   = nP > 0 ? Math.max(_pictoActH2 * 0.88, minPictoSz) : 0;
   const _pictoY2    = curY + _pictoActH2*0.5;
   const _pictoTotW2 = nP*_pictoSz2 + Math.max(0,nP-1)*pictoGap;
   const _pictoSX2   = cx - _pictoTotW2/2 + _pictoSz2/2;
@@ -3956,6 +4135,7 @@ function wizStopMic(){
 
 // ── BOOT ──────────────────────────────────────────────────────
 init();
+buildPictoGrid();
 
 // ══════════════════════════════════════════════════════════════
 // FEATURE: UFI GENERATOR
@@ -4069,6 +4249,13 @@ function applyFragLoad(){
 S.showQR=false;
 
 function setQR(show){
+  if(show&&!S.isPro){return;} // Pro gate
+  // Auto-generate UFI if turning QR on and no UFI exists yet
+  if(show&&!S.ufiCode){
+    const ufiEl=document.getElementById('ufi-code');
+    if(ufiEl&&!ufiEl.value.trim())generateUFI();
+    S.ufiCode=document.getElementById('ufi-code')?.value||'';
+  }
   S.showQR=show;
   const on=document.getElementById('btn-qr-on');
   const off=document.getElementById('btn-qr-off');
@@ -4077,6 +4264,19 @@ function setQR(show){
   if(on)on.style.cssText=show?active:inactive;
   if(off)off.style.cssText=show?inactive:active;
   updateLabel();
+}
+
+function updateQRVisibility(){
+  const toggleBlock=document.getElementById('qr-toggle-block');
+  const upsellBlock=document.getElementById('qr-upsell-block');
+  if(!toggleBlock||!upsellBlock)return;
+  if(S.isPro){
+    toggleBlock.style.display='block';
+    upsellBlock.style.display='none';
+  } else {
+    toggleBlock.style.display='none';
+    upsellBlock.style.display='block';
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
