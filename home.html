@@ -614,7 +614,7 @@
       <div style="width:52px;height:52px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:24px;">✨</div>
       <div style="position:absolute;top:20px;right:20px;width:24px;height:24px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;">2</div>
       <h3 style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:10px;">Paste into CLPeasy</h3>
-      <p style="font-size:14px;color:var(--muted);line-height:1.7;">Copy Section 2.2 from your SDS and paste it into Smart Paste. CLPeasy automatically extracts the signal word, GHS pictograms, H statements and allergens — no manual data entry.</p>
+      <p style="font-size:14px;color:var(--muted);line-height:1.7;">Paste your complete SDS document into Smart Paste — or just Section 2.2 if you prefer. CLPeasy automatically finds the hazard classification section and extracts the signal word, GHS pictograms, H statements and allergens. No manual data entry. Always your own current document.</p>
     </div>
     <!-- Step 3 -->
     <div style="background:white;border-radius:16px;padding:32px 24px;border:1px solid var(--border);text-align:center;position:relative;">
@@ -654,12 +654,12 @@
     <div class="feature-card">
       <div class="feature-icon">⚡</div>
       <h3>Supplier library</h3>
-      <p>Select your fragrance supplier and CLPeasy guides you directly to their SDS page. Works with all major UK suppliers, or use Smart Paste with any supplier's SDS PDF.</p>
+      <p>Select your fragrance supplier and CLPeasy guides you directly to their SDS page. Works with all major UK suppliers — or use Smart Paste with any supplier's SDS PDF worldwide.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon">✨</div>
       <h3>Smart Paste</h3>
-      <p>Using a supplier we don't have yet? Copy Section 2.2 from any SDS PDF and paste it — CLPeasy reads and extracts all the data instantly.</p>
+      <p>Paste your complete SDS document — CLPeasy automatically finds Section 2.2 and extracts all hazard data instantly. Works with any supplier's SDS, any fragrance, any update. Your label is always built from your own current document, not a stored database.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon">💾</div>
@@ -844,7 +844,7 @@
   var steps = {
     1:{t:"New scent idea",d:"Before you make a single batch to sell, a compliant CLP label is a legal requirement — regardless of where or how you sell.",c:"#22C55E"},
     2:{t:"Get your SDS",d:"Download the Safety Data Sheet from your supplier. CLPeasy™ links you directly to their supplier page where you can find and download your SDS — no hunting around.",c:"#4C9BB0"},
-    3:{t:"Import hazard data",d:"Paste Section 2.2 or drop in the full PDF on Easy Pro. CLPeasy™ extracts signal word, H statements and pictograms automatically.",c:"#4C9BB0"},
+    3:{t:"Import hazard data",d:"Paste your complete SDS document into Smart Paste. CLPeasy™ automatically finds Section 2.2 and extracts signal word, H statements, P statements and pictograms — your label is always built from your own current document.",c:"#4C9BB0"},
     4:{t:"Build your label",d:"CLPeasy™ composes your full compliant label — right size, right format, every required element in the right place.",c:"#4C9BB0"},
     5:{t:"Download & print",d:"PNG, SVG, Avery sheet, Print shop PDF with bleed marks or Cricut ZIP. Saved in your library forever — reprint any time.",c:"#4C9BB0"},
     6:{t:"Sell your product",d:"Your product is correctly labelled and compliant at the point of sale ✓ — but the lifecycle doesn't end here.",c:"#4C9BB0"},
@@ -963,7 +963,7 @@
         </div>
         <div style="display:flex;gap:12px;align-items:flex-start;">
           <div style="width:20px;height:20px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:2px;">✓</div>
-          <div><strong style="font-size:14px;">Works with any supplier</strong><div style="font-size:13px;color:var(--muted);margin-top:2px;">Not tied to one brand — use Smart Paste with any SDS from any supplier worldwide</div></div>
+          <div><strong style="font-size:14px;">Works with any supplier</strong><div style="font-size:13px;color:var(--muted);margin-top:2px;">Not tied to one brand or database — paste any SDS from any UK or international supplier and CLPeasy extracts the data automatically</div></div>
         </div>
         <div style="display:flex;gap:12px;align-items:flex-start;">
           <div style="width:20px;height:20px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:2px;">✓</div>
@@ -1008,15 +1008,15 @@
     </div>
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">What is an SDS sheet and where do I find mine?</div>
-      <div class="faq-a">An SDS (Safety Data Sheet) is a document provided by your fragrance supplier that contains all the hazard information for their fragrance oil. You should find it on your supplier's website — usually in a dedicated SDS or safety section. The section you need for CLP labelling is Section 2.2 (Label elements). If you can't find it, contact your supplier directly and ask for the SDS at 10% fragrance load.</div>
+      <div class="faq-a">An SDS (Safety Data Sheet) is a document provided by your fragrance supplier that contains all the hazard information for their fragrance oil. You should find it on your supplier's website — usually in a dedicated SDS or safety section. Section 2.2 (Label elements) is the part CLPeasy reads. You can paste the complete SDS document into Smart Paste and CLPeasy will find Section 2.2 automatically — you don't need to locate it yourself. If you can't find your SDS, contact your supplier directly and ask for the SDS at 10% fragrance load.</div>
     </div>
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">How does Smart Paste work?</div>
-      <div class="faq-a">Open your SDS PDF, find Section 2.2 (Label elements), select all the text in that section and copy it. Then paste it into the Smart Paste box in CLPeasy. The tool automatically reads and extracts the H statements, P statements, signal word, pictograms and allergens — filling everything in for you. Always review what it has extracted before downloading your label.</div>
+      <div class="faq-a">Open your fragrance supplier's SDS PDF and copy all the text — you don't need to find Section 2.2 yourself. Paste the complete document into the Smart Paste box in CLPeasy. The tool automatically locates Section 2.2, reads only the hazard classification data from it, and fills in the H statements, P statements, signal word, pictograms and allergens for you. Your label is always built from your own current SDS — not from a stored database that may not reflect the latest update to your fragrance. Always review what has been extracted before downloading your label.</div>
     </div>
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">My supplier isn't in the library — can I still use CLPeasy?</div>
-      <div class="faq-a">Yes! CLPeasy works with any fragrance supplier. Use Smart Paste — copy Section 2.2 from your supplier's SDS PDF and paste it into CLPeasy. It extracts all the hazard data automatically. You can also enter everything manually using the H statement and P statement libraries built into the tool.</div>
+      <div class="faq-a">Yes — CLPeasy works with any fragrance supplier, anywhere in the world. Paste your complete SDS document into Smart Paste and CLPeasy extracts all hazard data automatically. You can also enter everything manually using the H statement and P statement libraries. Because CLPeasy reads your own SDS directly rather than looking data up from a stored list, there's no limit on supplier coverage and your data is always current.</div>
     </div>
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">What size labels does CLPeasy generate?</div>
