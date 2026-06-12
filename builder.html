@@ -885,26 +885,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         CLPeasy is a label generation tool. Always verify all hazard data against your supplier's SDS. You remain responsible for the accuracy of your labels.
       </div>
     </details>
-    <!-- QR SAFETY CODE TOGGLE — Easy Pro only -->
-    <div id="qr-toggle-block" style="display:none;background:white;border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <div>
-          <div style="font-size:13px;font-weight:600;color:var(--text);">QR safety code <span style="font-size:11px;font-weight:700;background:#CCFBF1;color:#0D9488;padding:2px 8px;border-radius:8px;margin-left:6px;letter-spacing:0.3px;">PRO</span></div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.5;">Adds a small QR code linking customers to your digital safety sheet. Stays live permanently — even if you change plan.</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:8px;">
-        <button id="btn-qr-off" onclick="setQR(false)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--teal);background:var(--teal-light);color:var(--teal-dark);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Off</button>
-        <button id="btn-qr-on" onclick="setQR(true)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">On — add QR to label</button>
-      </div>
-    </div>
-    <!-- QR UPSELL — shown to non-Pro users -->
-    <div id="qr-upsell-block" style="display:none;background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:12px;padding:14px 16px;margin-bottom:16px;">
-      <div style="font-size:13px;font-weight:600;color:#166534;margin-bottom:4px;">📲 QR safety codes — Easy Pro</div>
-      <div style="font-size:12px;color:#166534;line-height:1.5;margin-bottom:10px;">Add a QR code that links customers to your suppliers digital safety sheet. Upgrade to Easy Pro to enable this feature.</div>
-      <a href="checkout.html?plan=easy_pro" style="display:inline-block;background:#166534;color:white;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;">Upgrade to Easy Pro →</a>
-    </div>
-
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
       <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ Download PNG</button>
       <button id="btn-jpeg" onclick="downloadJPEG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬇ Download JPEG — smaller file size</button>
@@ -1062,27 +1042,14 @@ function ghsPicto(key, cx, cy, size) {
   // If a real uploaded image is available, use it embedded as <image> tag
   // This ensures the live preview and downloaded label both show the official pictogram
   if (typeof GHS_IMG_UI !== 'undefined' && GHS_IMG_UI[key]) {
-    const h  = size * 0.5;
-    const hs = (h * 0.68).toFixed(1);
-    const sw = Math.max(size * 0.055, 0.9).toFixed(2);
-    const r  = (parseFloat(hs) * 0.06).toFixed(1);
-    const diamond =
-      '<rect x="'  + (cx - parseFloat(hs)).toFixed(1) + '" y="' + (cy - parseFloat(hs)).toFixed(1) + '"' +
-      ' width="'   + (parseFloat(hs)*2).toFixed(1) + '" height="' + (parseFloat(hs)*2).toFixed(1) + '"' +
-      ' rx="' + r + '" fill="white" stroke="#cc0000" stroke-width="' + sw + '"' +
-      ' transform="rotate(45,' + cx.toFixed(1) + ',' + cy.toFixed(1) + ')"/>';
-    // Image sized to fit inside the diamond (inner square = hs*√2 * 0.80)
-    const imgSz = (parseFloat(hs) * 1.414 * 0.78).toFixed(1);
-    const imgX  = (cx - parseFloat(imgSz)/2).toFixed(1);
-    const imgY  = (cy - parseFloat(imgSz)/2).toFixed(1);
-    const img = '<image href="' + GHS_IMG_UI[key] + '" x="' + imgX + '" y="' + imgY +
-                '" width="' + imgSz + '" height="' + imgSz +
-                '" preserveAspectRatio="xMidYMid meet" clip-path="url(#dp-' + key + '-' + Math.round(cx) + ')"/>';
-    // Clip path so image stays inside the diamond
-    const clip = '<clipPath id="dp-' + key + '-' + Math.round(cx) + '">' +
-                 '<rect x="' + imgX + '" y="' + imgY + '" width="' + imgSz + '" height="' + imgSz + '" rx="' + r + '"/>' +
-                 '</clipPath>';
-    return '<defs>' + clip + '</defs><g>' + diamond + img + '</g>';
+    // The JPEG already contains the red diamond border — just render the image at full size.
+    // Do NOT draw an extra SVG diamond or it creates a double outline.
+    const imgX = (cx - size * 0.5).toFixed(1);
+    const imgY = (cy - size * 0.5).toFixed(1);
+    const imgSz = size.toFixed(1);
+    return '<image href="' + GHS_IMG_UI[key] + '" x="' + imgX + '" y="' + imgY +
+           '" width="' + imgSz + '" height="' + imgSz +
+           '" preserveAspectRatio="xMidYMid meet"/>';
   }
   // SVG fallback — drawn paths for pictograms without uploaded images
   const h   = size * 0.5;
@@ -1830,7 +1797,6 @@ async function initAuth(){
           if(upgBanner)upgBanner.style.display='none';
           if(canBanner)canBanner.style.display='none';
           updateLabel();
-          updateQRVisibility();
         } else if(sub&&sub.status==='cancelled'){
           // Cancelled — show cancelled banner only
           const upgBanner=document.getElementById('upgrade-banner');
@@ -1851,7 +1817,6 @@ async function initAuth(){
         const upgBanner=document.getElementById('upgrade-banner');
         if(upgBanner)upgBanner.style.display='flex';
       }
-      updateQRVisibility();
 
       // ── DOWNLOAD ALLOWANCE (profiles table) ────────────────
       await loadDownloadAllowance();
@@ -3444,7 +3409,7 @@ function buildSVG(forExport=false){
   // ── FOOTER BAND ───────────────────────────────────────────────
   const footerSlots=[];
   if(addr)footerSlots.push({text:addr,bold:false});
-  if(phone)footerSlots.push({text:phone,bold:true});
+  if(phone)footerSlots.push({text:phone,bold:false});
   if(detailParts.length)footerSlots.push({text:detailParts.join(' · '),bold:false});
 
   // ── FOOTER BAND: wrapped address support ─────────────────────
@@ -3468,7 +3433,10 @@ function buildSVG(forExport=false){
     const chordAtY = Math.min(chordW(slotY, 0.09), sW * 0.88);
     const availW = chordAtY * 0.88;
     // fitFont: find largest size where text fits on ONE line within availW
-    const fs = fitFont(slot.text, availW, maxFooterFS, Math.max(minFooterFS * 0.5, 1.5), slot.bold, false);
+    // Phone (i===1) is capped to the address font size so it doesn't dwarf the other lines
+    const _addrFS = footerElems.length > 0 ? footerElems[0].fs : maxFooterFS;
+    const _slotMax = (i === 1 && footerElems.length > 0) ? _addrFS : maxFooterFS;
+    const fs = fitFont(slot.text, availW, _slotMax, Math.max(minFooterFS * 0.5, 1.5), slot.bold, false);
     footerElems.push({text: slot.text, fs, bold: slot.bold, slotY});
   });
   // Drop bottom slots if their font is unreadably tiny
@@ -4249,13 +4217,6 @@ function applyFragLoad(){
 S.showQR=false;
 
 function setQR(show){
-  if(show&&!S.isPro){return;} // Pro gate
-  // Auto-generate UFI if turning QR on and no UFI exists yet
-  if(show&&!S.ufiCode){
-    const ufiEl=document.getElementById('ufi-code');
-    if(ufiEl&&!ufiEl.value.trim())generateUFI();
-    S.ufiCode=document.getElementById('ufi-code')?.value||'';
-  }
   S.showQR=show;
   const on=document.getElementById('btn-qr-on');
   const off=document.getElementById('btn-qr-off');
@@ -4264,19 +4225,6 @@ function setQR(show){
   if(on)on.style.cssText=show?active:inactive;
   if(off)off.style.cssText=show?inactive:active;
   updateLabel();
-}
-
-function updateQRVisibility(){
-  const toggleBlock=document.getElementById('qr-toggle-block');
-  const upsellBlock=document.getElementById('qr-upsell-block');
-  if(!toggleBlock||!upsellBlock)return;
-  if(S.isPro){
-    toggleBlock.style.display='block';
-    upsellBlock.style.display='none';
-  } else {
-    toggleBlock.style.display='none';
-    upsellBlock.style.display='block';
-  }
 }
 
 // ══════════════════════════════════════════════════════════════
