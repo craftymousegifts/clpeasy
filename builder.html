@@ -1897,7 +1897,7 @@ function saveLabel(){
   readForm();
   if(!S.scentName){alert('Please enter a scent name before saving.');return;}
   const entry={scentName:S.scentName,productType:S.productType,shape:S.shape,size:S.size,signal:S.signal,
-    hStatements:S.hStatements,sensitisers:[...S.sensitisers],bizName:S.bizName,bizAddress:S.bizAddress,
+    hStatements:S.hStatements,pictograms:[...S.pictograms],sensitisers:[...S.sensitisers],bizName:S.bizName,bizAddress:S.bizAddress,
     bizPhone:S.bizPhone,bizWebsite:S.bizWebsite,netWeight:S.netWeight,burnTime:S.burnTime,batchNum:S.batchNum,
     bgColour:(document.getElementById('label-bg-colour')?.value)||'#ffffff',
     pStatements:S.pStatements||'',textColour:S.textColour||'dark',showBorder:S.showBorder!==false,
@@ -1942,6 +1942,14 @@ function loadLabel(i){
   if(e.bgColour){const bc=document.getElementById('label-bg-colour');const bh=document.getElementById('label-bg-hex');if(bc)bc.value=e.bgColour;if(bh)bh.value=e.bgColour;}
   selectShape(e.shape||'circle');selectSize(e.size||35);
   if(e.signal)selectSignal(e.signal);
+  // Restore pictograms — clear first, then re-select from saved array or fall back to H-code sync
+  S.pictograms=[];
+  document.querySelectorAll('.picto-btn').forEach(b=>b.classList.remove('selected'));
+  if(e.pictograms&&e.pictograms.length){
+    e.pictograms.forEach(k=>{S.pictograms.push(k);const b=document.querySelector(`.picto-btn[data-picto="${k}"]`);if(b)b.classList.add('selected');});
+  } else {
+    syncPictogramsFromH();
+  }
   renderTags();updateLabel();
   goToStep(1);
 }
@@ -2809,19 +2817,21 @@ function buildSVG(forExport=false){
 
   // Sensitisers
   const sensSW  = chordW(curY + slot.sens*0.5, 0.08);
-  const _sensMult = mmW > 50 ? 1.55 * (50/mmW) : 1.55;
+  const _sensMult = 1.55 * Math.min(1, mmW / 50);
   const sensFS  = Math.min(slot.sens * 0.68 * _sensMult, clamp(BASE*0.050*_sensMult, 3, 11*_sensMult));
   const sensLH  = sensFS * 1.25;
   const _sensBase = sensArr.length>0 ? _containsPrefix+' '+sensArr.slice(0,5).map(s=>{const _mc=mmW<=50?18:26;return s.length>_mc?s.slice(0,_mc-2)+'…':s;}).join(', ')+(sensArr.length>5?'...':'') : '';
-  const _euhSuffix = hasEUH208 ? ' May produce an allergic reaction.' : '';
-  const sensStr = (_sensBase || (hasEUH208 ? 'EUH208:' : '')) + _euhSuffix;
-  const sensLines = sensStr ? wrapText(sensStr, sensSW*0.82, sensFS, false, false) : [];
+  const _euhSuffix = hasEUH208 ? 'May produce an allergic reaction.' : '';
+  // Allergen list and EUH suffix on separate lines — never run together
+  const sensLines = _sensBase ? wrapText(_sensBase, sensSW*0.82, sensFS, false, false) : [];
+  const euhLines  = _euhSuffix ? wrapText(_euhSuffix, sensSW*0.82, sensFS, false, false) : [];
+  const allSensLines = [...sensLines, ...euhLines];
   const sensStY = curY + sensLH*0.5 + midH*0.15*(0.4-1);
-  curY += Math.max(slot.sens, sensLines.length*sensLH);
+  curY += Math.max(slot.sens, allSensLines.length*sensLH);
 
   // P statements (only if space remains before footer)
   const pSW     = chordW(curY + slot.p*0.5, 0.08);
-  const _pMult = mmW > 50 ? 1.45 * (50/mmW) : 1.45;
+  const _pMult = 1.45 * Math.min(1, mmW / 50);
   const pFS     = Math.min(slot.p * 0.62 * _pMult, clamp(BASE*0.044*_pMult, 3, 9*_pMult));
   const pLH     = pFS * 1.25;
   const pText   = pCodes.slice(0,8).join(' · ');
@@ -2862,7 +2872,7 @@ function buildSVG(forExport=false){
     // Each slot has its own independent Y offset via _tm
     const _yKey   = i===0 ? 'addrH' : (slot.isPhone ? 'phoneH' : 'detailsH');
     const _fsKey  = i===0 ? 'addrFS' : (slot.isPhone ? 'phoneFS' : 'detailsFS');
-    const _fsMax  = maxFooterFS * (_fsKey==='addrFS'?0.85:_fsKey==='phoneFS'?1.05:1.40);
+    const _fsMax  = maxFooterFS * (_fsKey==='addrFS'?1.05:_fsKey==='phoneFS'?1.05:1.40);
     const slotY   = botY + fTopPad + slotLH * (i + 0.5) + slotLH * 0.5 * ((_yKey==='addrH'?2.85:_yKey==='phoneH'?2.10:1.20) - 1);
     const chordAtY = Math.min(chordW(slotY, 0.09), sW * 0.88);
     const availW  = chordAtY * 0.88;
@@ -2946,7 +2956,7 @@ function buildSVG(forExport=false){
   ${svgWrapped(hLines,cx,hY,hLH,hFS,false,false,txtCol)}
 
   <!-- SENSITISERS -->
-  ${svgWrapped(sensLines,cx,sensStY,sensLH,sensFS,false,false,mutedCol)}
+  ${svgWrapped(allSensLines,cx,sensStY,sensLH,sensFS,false,false,mutedCol)}
 
   <!-- P STATEMENTS -->
   ${showP?`<g font-style="italic">${svgWrapped(pLines,cx,pStY,pLH,pFS,false,false,mutedCol)}</g>`:''}
