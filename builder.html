@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><!-- CLPeasy builder v1.1.1 -->
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>CLPeasy — Label Builder</title>
   <meta name="description" content="Build and download fully compliant CLP labels for candles, wax melts, reed diffusers and fragrance products. GHS pictograms, H&P statements, UFI codes — all included.">
@@ -2577,7 +2577,7 @@ function readForm(){
   S.fragLoad=document.getElementById('frag-load')?.value||'';
   S.burnTime=document.getElementById('burn-time')?.value||'';
   S.hStatements=document.getElementById('h-statements')?.value||'';
-  const _pDom=document.getElementById('p-statements')?.value||''; if(_pDom)S.pStatements=_pDom; // only overwrite if DOM has a value
+  const _pDom=document.getElementById('p-statements')?.value||''; if(_pDom)S.pStatements=_pDom;
   S.bizName=document.getElementById('biz-name')?.value||'';
   S.bizAddress=document.getElementById('biz-address')?.value||'';
   S.bizPhone=document.getElementById('biz-phone')?.value||'';
@@ -2813,7 +2813,7 @@ function buildSVG(forExport=false){
   const hText   = hCodes.slice(0,8).join(' · ') || '';
   const hLines  = wrapText(hText, hSW*0.92, hFS, false, false);
   const hY      = curY + hLH*0.5 + midH*0.15*(0.4-1);
-  curY += Math.min(Math.max(slot.h, hLines.length*hLH), slot.h * 2.5); // cap overflow
+  curY += Math.max(slot.h, hLines.length*hLH);
 
   // Sensitisers
   const sensSW  = chordW(curY + slot.sens*0.5, 0.08);
@@ -2827,22 +2827,16 @@ function buildSVG(forExport=false){
   const euhLines  = _euhSuffix ? wrapText(_euhSuffix, sensSW*0.82, sensFS, false, false) : [];
   const allSensLines = [...sensLines, ...euhLines];
   const sensStY = curY + sensLH*0.5 + midH*0.15*(0.4-1);
-  curY += Math.min(Math.max(slot.sens, allSensLines.length*sensLH), slot.sens * 3.0); // cap overflow
+  curY += Math.max(slot.sens, allSensLines.length*sensLH);
 
-  // P statements — anchored from botY so they always appear just above the footer
-  // regardless of how much space H/sens consumed above
+  // P statements (only if space remains before footer)
+  const pSW     = chordW(curY + slot.p*0.5, 0.08);
   const _pMult = 1.45 * Math.min(1, mmW / 50);
   const pFS     = Math.min(slot.p * 0.62 * _pMult, clamp(BASE*0.044*_pMult, 3, 9*_pMult));
   const pLH     = pFS * 1.25;
   const pText   = pCodes.slice(0,8).join(' · ');
-  // Calculate P width at the position we'll render it (just above footer)
-  const _pAnchorY = botY - slot.p * 0.6; // anchor point: 60% of slot.p above footer
-  const pSW     = chordW(_pAnchorY, 0.08);
   const pLines  = pText ? wrapText(pText, pSW*0.90, pFS, false, false) : [];
-  const _pBlockH = pLines.length * pLH;
-  // Position so block sits just above footer with small padding
-  const pStY    = botY - _pBlockH * 0.5 - pLH * 0.3;
-  // Show P if we have text and it doesn't overlap with the sens block
+  const pStY    = curY + pLH*0.5 + midH*0.15*(0.4-1);
   const showP   = pLines.length > 0;
 
   // ── RENDER PICTOGRAMS ─────────────────────────────────────────
