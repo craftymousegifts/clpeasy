@@ -603,21 +603,21 @@
   </div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;position:relative;">
     <!-- Step 1 -->
-    <div style="background:white;border-radius:16px;padding:32px 24px;border:1px solid var(--border);text-align:center;position:relative;">
+    <div style="background:white;border-radius:16px;padding:32px 24px;border:1px solid var(--border);text-align:center;position:relative;transition:border-color .2s,box-shadow .2s;" onmouseover="this.style.borderColor='#4C9BB0';this.style.boxShadow='0 4px 20px rgba(76,155,176,0.12)'" onmouseout="this.style.borderColor='';this.style.boxShadow=''">
       <div style="width:52px;height:52px;background:var(--teal-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:24px;">📄</div>
       <div style="position:absolute;top:20px;right:20px;width:24px;height:24px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;">1</div>
       <h3 style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:10px;">Get your SDS</h3>
       <p style="font-size:14px;color:var(--muted);line-height:1.7;">Download the Safety Data Sheet (SDS) from your fragrance supplier. Every fragrance supplier provides one — it contains all the hazard data needed to build your compliant CLP label.</p>
     </div>
     <!-- Step 2 -->
-    <div style="background:white;border-radius:16px;padding:32px 24px;border:2px solid var(--teal);text-align:center;position:relative;box-shadow:0 4px 20px rgba(76,155,176,0.12);">
-      <div style="width:52px;height:52px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:24px;">✨</div>
+    <div style="background:white;border-radius:16px;padding:32px 24px;border:1px solid var(--border);text-align:center;position:relative;transition:border-color .2s,box-shadow .2s;" onmouseover="this.style.borderColor='#4C9BB0';this.style.boxShadow='0 4px 20px rgba(76,155,176,0.12)'" onmouseout="this.style.borderColor='';this.style.boxShadow=''">
+      <div style="width:52px;height:52px;background:var(--teal-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:24px;">✨</div>
       <div style="position:absolute;top:20px;right:20px;width:24px;height:24px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;">2</div>
       <h3 style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:10px;">Paste into CLPeasy</h3>
       <p style="font-size:14px;color:var(--muted);line-height:1.7;">Paste your complete SDS document into Smart Paste — or just Section 2.2 if you prefer. CLPeasy automatically finds the hazard classification section and extracts the signal word, GHS pictograms, H statements and allergens. No manual data entry. Always your own current document.</p>
     </div>
     <!-- Step 3 -->
-    <div style="background:white;border-radius:16px;padding:32px 24px;border:1px solid var(--border);text-align:center;position:relative;">
+    <div style="background:white;border-radius:16px;padding:32px 24px;border:1px solid var(--border);text-align:center;position:relative;transition:border-color .2s,box-shadow .2s;" onmouseover="this.style.borderColor='#4C9BB0';this.style.boxShadow='0 4px 20px rgba(76,155,176,0.12)'" onmouseout="this.style.borderColor='';this.style.boxShadow=''">
       <div style="width:52px;height:52px;background:var(--teal-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:24px;">🖨️</div>
       <div style="position:absolute;top:20px;right:20px;width:24px;height:24px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;">3</div>
       <h3 style="font-size:17px;font-weight:700;color:var(--text);margin-bottom:10px;">Download your label</h3>
@@ -653,8 +653,8 @@
   <div class="features-grid">
     <div class="feature-card">
       <div class="feature-icon">⚡</div>
-      <h3>Supplier library</h3>
-      <p>Select your fragrance supplier and CLPeasy guides you directly to their SDS page. Works with all major UK suppliers — or use Smart Paste with any supplier's SDS PDF worldwide.</p>
+      <h3>Supplier library <span style="display:inline-block;background:#FEF3C7;color:#92400E;font-size:10px;font-weight:700;padding:1px 7px;border-radius:4px;margin-left:4px;vertical-align:middle;">COMING SOON</span></h3>
+      <p>Select your fragrance supplier and CLPeasy will guide you directly to their SDS page — no hunting around. In the meantime, use Smart Paste with any supplier's SDS PDF from anywhere in the world.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon">✨</div>
@@ -975,7 +975,7 @@
         </div>
         <div style="display:flex;gap:12px;align-items:flex-start;">
           <div style="width:20px;height:20px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:2px;">✓</div>
-          <div><strong style="font-size:14px;">Built by a maker with IT expertise</strong><div style="font-size:13px;color:var(--muted);margin-top:2px;">Not a tech company guessing what makers need, but an actual candle and wax melt maker with 25+ years of IT experience, so you get a tool that truly understands your craft with the technology to back it up</div></div>
+          <div><strong style="font-size:14px;">Built by a maker with IT expertise</strong><div style="font-size:13px;color:var(--muted);margin-top:2px;">Not a tech company guessing what makers need, but an actual candle and wax melt maker with IT experience, so you get a tool that truly understands your craft with the technology to back it up</div></div>
         </div>
         <div style="display:flex;gap:12px;align-items:flex-start;">
           <div style="width:20px;height:20px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:2px;">✓</div>
