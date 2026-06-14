@@ -2835,7 +2835,7 @@ function buildSVG(forExport=false){
   // P statements — anchored from botY so they always appear just above the footer
   // regardless of how much space H/sens consumed above
   const _pMult = 1.15 * Math.min(1, mmW / 50);
-  const pFS     = Math.min(slot.p * 0.50 * _pMult, clamp(BASE*0.035*_pMult, 2.5, 7*_pMult));
+  const pFS     = Math.min(slot.p * 0.50 * _pMult, clamp(BASE*0.030*_pMult, 2.5, 6*_pMult));
   const pLH     = pFS * 1.15;
   const pText   = pCodes.slice(0,8).join(' · ');
   // Calculate P width at the position we'll render it (just above footer)
