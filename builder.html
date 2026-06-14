@@ -2820,14 +2820,14 @@ function buildSVG(forExport=false){
   const _sensMult = 1.55 * Math.min(1, mmW / 50);
   const sensFS  = Math.min(slot.sens * 0.68 * _sensMult, clamp(BASE*0.050*_sensMult, 3, 11*_sensMult));
   const sensLH  = sensFS * 1.25;
-  const _sensBase = sensArr.length>0 ? _containsPrefix+' '+sensArr.slice(0,5).map(s=>{const _mc=mmW<=50?18:26;return s.length>_mc?s.slice(0,_mc-2)+'…':s;}).join(', ')+(sensArr.length>5?'...':'') : '';
+  const _sensBase = sensArr.length>0 ? _containsPrefix+' '+sensArr.slice(0,3).map(s=>{const _mc=mmW<=50?18:26;return s.length>_mc?s.slice(0,_mc-2)+'…':s;}).join(', ')+(sensArr.length>5?'...':'') : '';
   const _euhSuffix = hasEUH208 ? 'May produce an allergic reaction.' : '';
   // Allergen list and EUH suffix on separate lines — never run together
   const sensLines = _sensBase ? wrapText(_sensBase, sensSW*0.82, sensFS, false, false) : [];
   const euhLines  = _euhSuffix ? wrapText(_euhSuffix, sensSW*0.82, sensFS, false, false) : [];
   const allSensLines = [...sensLines, ...euhLines];
   const sensStY = curY + sensLH*0.5 + midH*0.15*(0.4-1);
-  curY += Math.min(Math.max(slot.sens, allSensLines.length*sensLH), slot.sens * 3.0); // cap overflow
+  curY += Math.min(Math.max(slot.sens, allSensLines.length*sensLH), slot.sens * 1.4); // cap overflow
 
   // P statements — anchored from botY so they always appear just above the footer
   // regardless of how much space H/sens consumed above
