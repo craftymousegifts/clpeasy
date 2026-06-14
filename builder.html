@@ -2835,9 +2835,12 @@ function buildSVG(forExport=false){
   const pFS     = Math.min(slot.p * 0.62 * _pMult, clamp(BASE*0.044*_pMult, 3, 9*_pMult));
   const pLH     = pFS * 1.25;
   const pText   = pCodes.slice(0,8).join(' · ');
-  const pLines  = pText ? wrapText(pText, pSW*0.90, pFS, false, false) : [];
   const pStY    = curY + pLH*0.5 + midH*0.15*(0.4-1);
-  const showP   = pLines.length > 0;
+  // Only render P if it fits above the footer — cap lines that overflow
+  const _pMaxLines = Math.max(1, Math.floor((botY - pStY - pLH*0.5) / pLH));
+  const pAllLines  = pText ? wrapText(pText, pSW*0.90, pFS, false, false) : [];
+  const pLines     = pAllLines.slice(0, _pMaxLines);
+  const showP      = pLines.length > 0 && pStY < botY - pLH;
 
   // ── RENDER PICTOGRAMS ─────────────────────────────────────────
   const GHS_TEXT={flame:'GHS02',exclamation:'GHS07',health:'GHS08',aquatic:'GHS09',corrosive:'GHS05',skull:'GHS06',oxidiser:'GHS03',gas:'GHS04',explosion:'GHS01'};
