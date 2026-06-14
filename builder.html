@@ -2813,7 +2813,7 @@ function buildSVG(forExport=false){
   const hText   = hCodes.slice(0,8).join(' · ') || '';
   const hLines  = wrapText(hText, hSW*0.92, hFS, false, false);
   const hY      = curY + hLH*0.5 + midH*0.15*(0.4-1);
-  curY += Math.max(slot.h, hLines.length*hLH);
+  curY += Math.min(Math.max(slot.h, hLines.length*hLH), slot.h * 2.5); // cap overflow
 
   // Sensitisers
   const sensSW  = chordW(curY + slot.sens*0.5, 0.08);
@@ -2827,7 +2827,7 @@ function buildSVG(forExport=false){
   const euhLines  = _euhSuffix ? wrapText(_euhSuffix, sensSW*0.82, sensFS, false, false) : [];
   const allSensLines = [...sensLines, ...euhLines];
   const sensStY = curY + sensLH*0.5 + midH*0.15*(0.4-1);
-  curY += Math.max(slot.sens, allSensLines.length*sensLH);
+  curY += Math.min(Math.max(slot.sens, allSensLines.length*sensLH), slot.sens * 3.0); // cap overflow
 
   // P statements (only if space remains before footer)
   const pSW     = chordW(curY + slot.p*0.5, 0.08);
@@ -2837,7 +2837,8 @@ function buildSVG(forExport=false){
   const pText   = pCodes.slice(0,8).join(' · ');
   const pLines  = pText ? wrapText(pText, pSW*0.90, pFS, false, false) : [];
   const pStY    = curY + pLH*0.5 + midH*0.15*(0.4-1);
-  const showP   = pLines.length > 0;
+  // Only show P statements if they fit within the mid band (above footer)
+  const showP   = pLines.length > 0 && pStY < botY - pLH;
 
   // ── RENDER PICTOGRAMS ─────────────────────────────────────────
   const GHS_TEXT={flame:'GHS02',exclamation:'GHS07',health:'GHS08',aquatic:'GHS09',corrosive:'GHS05',skull:'GHS06',oxidiser:'GHS03',gas:'GHS04',explosion:'GHS01'};
@@ -3128,7 +3129,7 @@ setTimeout(()=>{
 },300);
 function buildSummary(){
   readForm();const{mmW,mmH}=getDims();
-  const items=[['Shape',S.shape.charAt(0).toUpperCase()+S.shape.slice(1)],['Size',`${mmW} × ${mmH}mm`],['Scent',S.scentName||'—'],['Type',S.productType],['Signal word',S.signal||'—'],['H statements',S.hStatements||'—'],['Sensitisers',S.sensitisers.slice(0,3).join(', ')+(S.sensitisers.length>3?'...':'')||'—'],['Business',S.bizName||'—']];
+  const items=[['Shape',S.shape.charAt(0).toUpperCase()+S.shape.slice(1)],['Size',`${mmW} × ${mmH}mm`],['Scent',S.scentName||'—'],['Type',S.productType],['Signal word',S.signal||'—'],['H statements',S.hStatements||'—'],['P statements',S.pStatements||'—'],['Sensitisers',S.sensitisers.slice(0,3).join(', ')+(S.sensitisers.length>3?'...':'')||'—'],['Business',S.bizName||'—']];
   document.getElementById('label-summary').innerHTML=items.map(([k,v])=>`<div><strong>${k}</strong>${v}</div>`).join('');
 }
 
