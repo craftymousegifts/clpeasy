@@ -7,7 +7,7 @@
   <meta name="description" content="Sign in or create your CLPeasy account. Generate fully compliant CLP labels for candles, wax melts, reed diffusers and fragrance products.">
   <meta property="og:title" content="CLPeasy — Sign In">
   <meta property="og:description" content="Sign in or create your CLPeasy account. Generate fully compliant CLP labels for candles, wax melts, reed diffusers and fragrance products.">
-  <meta property="og:url" content="https://clpeasy.com/auth.html">
+  <meta property="og:url" content="https://clpeasy.com/auth">
   <meta property="og:type" content="website">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -80,10 +80,10 @@ input:focus{border-color:var(--teal);}
 <body>
 
 <nav>
-  <a href="home.html" class="nav-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span></a>
+  <a href="/home" class="nav-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span></a>
   <div style="display:flex;gap:8px;align-items:center;">
-    <a href="support.html" style="font-size:13px;color:var(--muted);text-decoration:none;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;" onmouseover="this.style.color='#4C9BB0';this.style.borderColor='#4C9BB0'" onmouseout="this.style.color='';this.style.borderColor=''">Support</a>
-    <a href="home.html" class="nav-back">← Home</a>
+    <a href="/support" style="font-size:13px;color:var(--muted);text-decoration:none;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;" onmouseover="this.style.color='#4C9BB0';this.style.borderColor='#4C9BB0'" onmouseout="this.style.color='';this.style.borderColor=''">Support</a>
+    <a href="/home" class="nav-back">← Home</a>
   </div>
 </nav>
 
@@ -101,7 +101,7 @@ input:focus{border-color:var(--teal);}
       <div class="verify-title">Check your email</div>
       <div class="verify-sub" id="verify-sub">We've sent a verification link to your email address. Click the link to activate your CLPeasy account.</div>
       <br>
-      <a href="home.html" style="color:var(--teal);font-size:14px;font-weight:600;">← Back to home</a>
+      <a href="/home" style="color:var(--teal);font-size:14px;font-weight:600;">← Back to home</a>
     </div>
 
     <!-- AUTH FORM -->
@@ -150,7 +150,7 @@ input:focus{border-color:var(--teal);}
       <div class="terms" id="terms-text">
         <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;text-align:left;">
           <input type="checkbox" id="terms-agree" style="margin-top:2px;width:16px;height:16px;flex-shrink:0;accent-color:#4C9BB0;cursor:pointer;">
-          <span style="font-size:13px;color:#374151;line-height:1.5;">I have read and agree to the <a href="terms.html" target="_blank">Terms of Service</a> and <a href="privacy.html" target="_blank">Privacy Policy</a>.</span>
+          <span style="font-size:13px;color:#374151;line-height:1.5;">I have read and agree to the <a href="/terms" target="_blank">Terms of Service</a> and <a href="/privacy" target="_blank">Privacy Policy</a>.</span>
         </label>
         <div id="terms-error" style="display:none;font-size:12px;color:#DC2626;margin-top:6px;padding-left:26px;">Please agree to the terms to create your account.</div>
       </div>
@@ -233,8 +233,6 @@ if (mode === 'signin') {
     const { data: { user } } = await sb.auth.getUser();
 
     // ── ENSURE USER EXISTS IN PUBLIC.USERS ─────────────
-    // Insert-only: seed defaults for brand-new users, never overwrite an
-    // existing row (otherwise a returning paid user would be reset to free).
     if (user) {
       await sb
         .from('users')
@@ -253,7 +251,7 @@ if (mode === 'signin') {
     }
 
     // ── GO TO BUILDER ───────────────────────────────────
-    window.location.href = 'builder.html';
+    window.location.href = '/builder';
   }
   } else {
     const { data: signUpData, error } = await sb.auth.signUp({ email, password });
@@ -297,7 +295,7 @@ async function signInWithGoogle() {
   }
   await sb.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.origin + '/builder.html' }
+    options: { redirectTo: window.location.origin + '/builder' }
   });
 }
 
@@ -305,7 +303,7 @@ async function resetPassword() {
   const email = document.getElementById('email').value.trim();
   if (!email) { showMsg('Enter your email address first, then click Forgot password.', 'error'); return; }
   const { error } = await sb.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + '/auth.html'
+    redirectTo: window.location.origin + '/auth'
   });
   if (error) { showMsg(error.message, 'error'); }
   else { showMsg('Password reset email sent — check your inbox.', 'success'); }
@@ -321,12 +319,12 @@ const defaultTab=urlParams.get('mode')==='signup'?'signup':'signin';
 // Check if already logged in or handle redirect from email verification
 sb.auth.onAuthStateChange((event, session) => {
   if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-    window.location.href = 'builder.html';
+    window.location.href = '/builder';
   }
 });
 
 sb.auth.getSession().then(({ data: { session } }) => {
-  if (session) window.location.href = 'builder.html';
+  if (session) window.location.href = '/builder';
 });
 
 // Set initial state
@@ -347,7 +345,7 @@ switchTab(defaultTab);
 </script>
 <div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1a1f2e;color:white;padding:16px 24px;z-index:9999;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;box-shadow:0 -4px 20px rgba(0,0,0,0.2);">
   <div style="flex:1;min-width:200px;">
-    <p style="font-size:13px;line-height:1.6;color:rgba(255,255,255,0.85);margin:0;">We use essential cookies to keep you logged in. No advertising or tracking cookies. <a href="cookie-policy.html" style="color:#5EEAD4;text-decoration:none;">Cookie Policy</a></p>
+    <p style="font-size:13px;line-height:1.6;color:rgba(255,255,255,0.85);margin:0;">We use essential cookies to keep you logged in. No advertising or tracking cookies. <a href="/cookie-policy" style="color:#5EEAD4;text-decoration:none;">Cookie Policy</a></p>
   </div>
   <div style="display:flex;gap:10px;flex-shrink:0;">
     <button onclick="acceptCookies()" style="background:#4C9BB0;color:white;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">Accept</button>
