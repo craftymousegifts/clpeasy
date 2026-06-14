@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8"><!-- CLPeasy builder v1.1.1 -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>CLPeasy — Label Builder</title>
   <meta name="description" content="Build and download fully compliant CLP labels for candles, wax melts, reed diffusers and fragrance products. GHS pictograms, H&P statements, UFI codes — all included.">
@@ -1935,7 +1935,7 @@ function loadLabel(i){
   if(e.labelLang){S.labelLang=e.labelLang;const lel=document.getElementById('label-lang');if(lel)lel.value=e.labelLang;}
   if(e.showQR!==undefined){S.showQR=e.showQR;setQR(e.showQR);}
   const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};
-  set('scent-name',e.scentName);set('product-type',e.productType);set('h-statements',e.hStatements||'');
+  set('scent-name',e.scentName);set('product-type',e.productType);set('h-statements',e.hStatements||'');set('p-statements',e.pStatements||'');
   set('biz-name',e.bizName||'');set('biz-address',e.bizAddress||'');set('biz-phone',e.bizPhone||'');
   set('biz-website',e.bizWebsite||'');set('net-weight',e.netWeight||'');set('burn-time',e.burnTime||'');
   set('batch-num',e.batchNum||'');
@@ -2577,7 +2577,7 @@ function readForm(){
   S.fragLoad=document.getElementById('frag-load')?.value||'';
   S.burnTime=document.getElementById('burn-time')?.value||'';
   S.hStatements=document.getElementById('h-statements')?.value||'';
-  S.pStatements=document.getElementById('p-statements')?.value||'';
+  const _pDom=document.getElementById('p-statements')?.value||''; if(_pDom)S.pStatements=_pDom; // only overwrite if DOM has a value
   S.bizName=document.getElementById('biz-name')?.value||'';
   S.bizAddress=document.getElementById('biz-address')?.value||'';
   S.bizPhone=document.getElementById('biz-phone')?.value||'';
@@ -2843,7 +2843,7 @@ function buildSVG(forExport=false){
   // Position so block sits just above footer with small padding
   const pStY    = botY - _pBlockH * 0.5 - pLH * 0.3;
   // Show P if we have text and it doesn't overlap with the sens block
-  const showP   = pLines.length > 0 && pStY > curY + sensLH;
+  const showP   = pLines.length > 0;
 
   // ── RENDER PICTOGRAMS ─────────────────────────────────────────
   const GHS_TEXT={flame:'GHS02',exclamation:'GHS07',health:'GHS08',aquatic:'GHS09',corrosive:'GHS05',skull:'GHS06',oxidiser:'GHS03',gas:'GHS04',explosion:'GHS01'};
