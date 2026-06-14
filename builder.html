@@ -2829,16 +2829,21 @@ function buildSVG(forExport=false){
   const sensStY = curY + sensLH*0.5 + midH*0.15*(0.4-1);
   curY += Math.min(Math.max(slot.sens, allSensLines.length*sensLH), slot.sens * 3.0); // cap overflow
 
-  // P statements (only if space remains before footer)
-  const pSW     = chordW(curY + slot.p*0.5, 0.08);
+  // P statements — anchored from botY so they always appear just above the footer
+  // regardless of how much space H/sens consumed above
   const _pMult = 1.45 * Math.min(1, mmW / 50);
   const pFS     = Math.min(slot.p * 0.62 * _pMult, clamp(BASE*0.044*_pMult, 3, 9*_pMult));
   const pLH     = pFS * 1.25;
   const pText   = pCodes.slice(0,8).join(' · ');
+  // Calculate P width at the position we'll render it (just above footer)
+  const _pAnchorY = botY - slot.p * 0.6; // anchor point: 60% of slot.p above footer
+  const pSW     = chordW(_pAnchorY, 0.08);
   const pLines  = pText ? wrapText(pText, pSW*0.90, pFS, false, false) : [];
-  const pStY    = curY + pLH*0.5 + midH*0.15*(0.4-1);
-  // Only show P statements if they fit within the mid band (above footer)
-  const showP   = pLines.length > 0 && pStY < botY - pLH;
+  const _pBlockH = pLines.length * pLH;
+  // Position so block sits just above footer with small padding
+  const pStY    = botY - _pBlockH * 0.5 - pLH * 0.3;
+  // Show P if we have text and it doesn't overlap with the sens block
+  const showP   = pLines.length > 0 && pStY > curY + sensLH;
 
   // ── RENDER PICTOGRAMS ─────────────────────────────────────────
   const GHS_TEXT={flame:'GHS02',exclamation:'GHS07',health:'GHS08',aquatic:'GHS09',corrosive:'GHS05',skull:'GHS06',oxidiser:'GHS03',gas:'GHS04',explosion:'GHS01'};
