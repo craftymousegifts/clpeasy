@@ -885,7 +885,7 @@ function activateInlineEdits() {
   });
 }
 
-
+function saveDomain() {
   const d = document.getElementById('domain-date-input').value;
   localStorage.setItem('monitor_domain_date', d);
   updateDays('domain', d);
