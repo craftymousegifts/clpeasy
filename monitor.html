@@ -19,7 +19,7 @@
 }
 body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;}
 
- /* HEADER */
+/* HEADER */
 .header{background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.08);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
 .header-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
 .logo-badge{width:38px;height:38px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;letter-spacing:-0.5px;}
@@ -122,6 +122,12 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
 .inline-edit-input{background:rgba(255,255,255,0.1);border:1px solid var(--teal);color:white;padding:2px 8px;border-radius:5px;font-size:12px;font-weight:600;font-family:'DM Mono',monospace;width:100%;max-width:260px;outline:none;}
 .action-priority.low[style],.action-priority.done{background:rgba(74,222,128,0.2);color:#4ade80;}
 </style>
+<!-- Privacy-friendly analytics by Plausible -->
+<script async src="https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"></script>
+<script>
+  window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+  plausible.init()
+</script>
 </head>
 <body>
 
@@ -182,6 +188,61 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
   <div class="svc-card">
     <div class="svc-intro">Something not working? Answer the questions and this will point you to the likely cause, the fix, and exactly where to look. Covers payments, sign-in, downloads, hosting and email.</div>
     <div id="svc-check"></div>
+  </div>
+
+  <div class="section-title">📊 Live Traffic — CLPeasy</div>
+  <div class="service-grid" style="margin-bottom:28px;">
+    <div class="service-card status-info" id="card-plausible">
+      <div class="card-header">
+        <div class="card-header-left">
+          <span class="service-icon">📈</span>
+          <div>
+            <div class="service-name">Plausible Analytics</div>
+            <div class="service-plan">clpeasy.com · Privacy-friendly</div>
+          </div>
+        </div>
+        <span class="status-badge loading" id="plausible-badge"><span class="spin"></span>Loading</span>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;">
+          <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:24px;font-weight:800;color:#4ade80;" id="pl-realtime">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Live visitors</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:24px;font-weight:800;color:var(--teal-light);" id="pl-visitors">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Visitors today</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:24px;font-weight:800;color:var(--teal-light);" id="pl-pageviews">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Pageviews today</div>
+          </div>
+        </div>
+        <div class="usage-item">
+          <div class="usage-row">
+            <span class="usage-label">Bounce rate</span>
+            <span class="usage-value" id="pl-bounce">—</span>
+          </div>
+        </div>
+        <div class="usage-item">
+          <div class="usage-row">
+            <span class="usage-label">Avg visit duration</span>
+            <span class="usage-value" id="pl-duration">—</span>
+          </div>
+        </div>
+        <div style="margin-top:12px;">
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Top pages today</div>
+          <div id="pl-pages" style="font-size:12px;color:rgba(255,255,255,0.7);line-height:1.8;">—</div>
+        </div>
+        <div style="margin-top:12px;">
+          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Top sources today</div>
+          <div id="pl-sources" style="font-size:12px;color:rgba(255,255,255,0.7);line-height:1.8;">—</div>
+        </div>
+        <div style="margin-top:12px;text-align:right;">
+          <a href="https://plausible.io/clpeasy.com" target="_blank" style="font-size:12px;color:var(--teal-light);text-decoration:none;">Open full dashboard ↗</a>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="section-title">Live Services</div>
@@ -975,8 +1036,72 @@ function updateSummary() {
   else daysEl.style.color = '#4ade80';
 }
 
+
+const PLAUSIBLE_API_KEY = 'hejAa6p7Cz6cESKYnFwxhk7FZOL9dF0iPjpiD7QLGg9VtIas5Xh-8hIPWMz-XRYl';
+const PLAUSIBLE_SITE = 'clpeasy.com';
+
+async function checkPlausible() {
+  try {
+    const headers = { 'Authorization': 'Bearer ' + PLAUSIBLE_API_KEY };
+    const base = 'https://plausible.io/api/v1/stats/';
+    const site = '?site_id=' + PLAUSIBLE_SITE;
+
+    // Realtime visitors
+    const rt = await fetch(base + 'realtime/visitors' + site, { headers });
+    const rtData = await rt.json();
+    document.getElementById('pl-realtime').textContent = rtData || '0';
+
+    // Today's aggregate stats
+    const agg = await fetch(base + 'aggregate' + site + '&period=day&metrics=visitors,pageviews,bounce_rate,visit_duration', { headers });
+    const aggData = await agg.json();
+    if (aggData.results) {
+      document.getElementById('pl-visitors').textContent = (aggData.results.visitors?.value ?? '—').toLocaleString();
+      document.getElementById('pl-pageviews').textContent = (aggData.results.pageviews?.value ?? '—').toLocaleString();
+      const bounce = aggData.results.bounce_rate?.value;
+      document.getElementById('pl-bounce').textContent = bounce != null ? bounce + '%' : '—';
+      const dur = aggData.results.visit_duration?.value;
+      if (dur != null) {
+        const mins = Math.floor(dur / 60);
+        const secs = dur % 60;
+        document.getElementById('pl-duration').textContent = mins > 0 ? mins + 'm ' + secs + 's' : secs + 's';
+      }
+    }
+
+    // Top pages
+    const pages = await fetch(base + 'breakdown' + site + '&period=day&property=event:page&limit=5', { headers });
+    const pagesData = await pages.json();
+    if (pagesData.results?.length) {
+      document.getElementById('pl-pages').innerHTML = pagesData.results
+        .map(p => '<div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.05);padding:3px 0;"><span>' + p.page + '</span><span style="color:var(--teal-light);font-family:'DM Mono',monospace;">' + p.visitors + '</span></div>')
+        .join('');
+    } else {
+      document.getElementById('pl-pages').textContent = 'No data yet today';
+    }
+
+    // Top sources
+    const sources = await fetch(base + 'breakdown' + site + '&period=day&property=visit:source&limit=5', { headers });
+    const sourcesData = await sources.json();
+    if (sourcesData.results?.length) {
+      document.getElementById('pl-sources').innerHTML = sourcesData.results
+        .map(s => '<div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.05);padding:3px 0;"><span>' + (s.source || 'Direct / None') + '</span><span style="color:var(--teal-light);font-family:'DM Mono',monospace;">' + s.visitors + '</span></div>')
+        .join('');
+    } else {
+      document.getElementById('pl-sources').textContent = 'No referral data yet';
+    }
+
+    document.getElementById('plausible-badge').className = 'status-badge ok';
+    document.getElementById('plausible-badge').textContent = '✓ Live';
+
+  } catch(e) {
+    document.getElementById('plausible-badge').className = 'status-badge warn';
+    document.getElementById('plausible-badge').textContent = '⚠ Error';
+    console.error('Plausible fetch error:', e);
+  }
+}
+
 async function runAll() {
   document.getElementById('lastRefresh').textContent = 'Refreshing...';
+  try { await checkPlausible(); } catch (e) { console.error('checkPlausible', e); }
   try { checkSupabase(); } catch (e) { console.error('checkSupabase', e); }
   try { checkBrevo(); } catch (e) { console.error('checkBrevo', e); }
   try { loadDates(); } catch (e) { console.error('loadDates', e); }
@@ -990,6 +1115,9 @@ document.addEventListener('contextmenu', e => e.preventDefault());
 // Init
 loadDates();
 runAll();
+
+// Auto-refresh Plausible every 60 seconds
+setInterval(async () => { try { await checkPlausible(); } catch(e){} }, 60000);
 </script>
 <script>
 (function(){
