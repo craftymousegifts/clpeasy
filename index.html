@@ -1337,7 +1337,7 @@ _sb.auth.getSession().then(async ({data:{session}})=>{
 </div>
 
 <script>
-function openGuide(){
+function openGuide(){plausible('How It Works Guide Opened');
   document.getElementById('setup-guide-overlay').classList.add('open');
   document.getElementById('setup-guide-panel').classList.add('open');
   document.body.style.overflow='hidden';

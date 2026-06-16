@@ -192,54 +192,89 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
 
   <div class="section-title">📊 Live Traffic — CLPeasy</div>
   <div class="service-grid" style="margin-bottom:28px;">
-    <div class="service-card status-info" id="card-plausible">
+    <div class="service-card status-info" id="card-plausible" style="grid-column:1/-1;">
       <div class="card-header">
         <div class="card-header-left">
           <span class="service-icon">📈</span>
           <div>
-            <div class="service-name">Plausible Analytics</div>
-            <div class="service-plan">clpeasy.com · Privacy-friendly</div>
+            <div class="service-name">Plausible Analytics — CLPeasy</div>
+            <div class="service-plan">clpeasy.com · Privacy-friendly · auto-refreshes every 60s</div>
           </div>
         </div>
         <span class="status-badge loading" id="plausible-badge"><span class="spin"></span>Loading</span>
       </div>
       <div class="card-body">
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;">
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;">
           <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
-            <div style="font-size:24px;font-weight:800;color:#4ade80;" id="pl-realtime">—</div>
-            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Live visitors</div>
+            <div style="font-size:26px;font-weight:800;color:#4ade80;" id="pl-realtime">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Live now</div>
           </div>
           <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
-            <div style="font-size:24px;font-weight:800;color:var(--teal-light);" id="pl-visitors">—</div>
+            <div style="font-size:26px;font-weight:800;color:var(--teal-light);" id="pl-visitors">—</div>
             <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Visitors today</div>
           </div>
           <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
-            <div style="font-size:24px;font-weight:800;color:var(--teal-light);" id="pl-pageviews">—</div>
-            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Pageviews today</div>
+            <div style="font-size:26px;font-weight:800;color:var(--teal-light);" id="pl-pageviews">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Pageviews</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:26px;font-weight:800;color:var(--teal-light);" id="pl-bounce">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Bounce rate</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:26px;font-weight:800;color:var(--teal-light);" id="pl-duration">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Avg duration</div>
           </div>
         </div>
-        <div class="usage-item">
-          <div class="usage-row">
-            <span class="usage-label">Bounce rate</span>
-            <span class="usage-value" id="pl-bounce">—</span>
+        <!-- Row 1: Pages + Sources + Devices/Countries -->
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Pages today</div>
+            <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:2px 12px;font-size:11px;color:rgba(255,255,255,0.3);padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;">
+              <span>Page</span><span>Visitors</span><span>Views</span><span>Avg time</span>
+            </div>
+            <div id="pl-pages" style="font-size:12px;color:rgba(255,255,255,0.75);">—</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Sources</div>
+            <div style="display:grid;grid-template-columns:1fr auto;gap:2px 12px;font-size:11px;color:rgba(255,255,255,0.3);padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;">
+              <span>Source</span><span>Visitors</span>
+            </div>
+            <div id="pl-sources" style="font-size:12px;color:rgba(255,255,255,0.75);">—</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Devices</div>
+            <div id="pl-devices" style="font-size:12px;color:rgba(255,255,255,0.75);margin-bottom:14px;">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Countries</div>
+            <div id="pl-countries" style="font-size:12px;color:rgba(255,255,255,0.75);">—</div>
           </div>
         </div>
-        <div class="usage-item">
-          <div class="usage-row">
-            <span class="usage-label">Avg visit duration</span>
-            <span class="usage-value" id="pl-duration">—</span>
+        <!-- Row 2: Entry pages + Exit pages + Custom events -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);">
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">🚪 Entry pages</div>
+            <div style="display:grid;grid-template-columns:1fr auto;gap:2px 12px;font-size:11px;color:rgba(255,255,255,0.3);padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;">
+              <span>Page</span><span>Visitors</span>
+            </div>
+            <div id="pl-entry" style="font-size:12px;color:rgba(255,255,255,0.75);">—</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">🚪 Exit pages</div>
+            <div style="display:grid;grid-template-columns:1fr auto;gap:2px 12px;font-size:11px;color:rgba(255,255,255,0.3);padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;">
+              <span>Page</span><span>Visitors</span>
+            </div>
+            <div id="pl-exit" style="font-size:12px;color:rgba(255,255,255,0.75);">—</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">⚡ Custom events today</div>
+            <div style="display:grid;grid-template-columns:1fr auto;gap:2px 12px;font-size:11px;color:rgba(255,255,255,0.3);padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;">
+              <span>Event</span><span>Count</span>
+            </div>
+            <div id="pl-events" style="font-size:12px;color:rgba(255,255,255,0.75);">Tracking active — events will appear here once triggered</div>
           </div>
         </div>
-        <div style="margin-top:12px;">
-          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Top pages today</div>
-          <div id="pl-pages" style="font-size:12px;color:rgba(255,255,255,0.7);line-height:1.8;">—</div>
-        </div>
-        <div style="margin-top:12px;">
-          <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:8px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Top sources today</div>
-          <div id="pl-sources" style="font-size:12px;color:rgba(255,255,255,0.7);line-height:1.8;">—</div>
-        </div>
-        <div style="margin-top:12px;text-align:right;">
-          <a href="https://plausible.io/clpeasy.com" target="_blank" style="font-size:12px;color:var(--teal-light);text-decoration:none;">Open full dashboard ↗</a>
+        <div style="margin-top:14px;text-align:right;">
+          <a href="https://plausible.io/clpeasy.com" target="_blank" style="font-size:12px;color:var(--teal-light);text-decoration:none;">Open full Plausible dashboard ↗</a>
         </div>
       </div>
     </div>
@@ -1037,46 +1072,95 @@ function updateSummary() {
 }
 
 
+function fmtDur(secs) {
+  if (secs == null) return '—';
+  const m = Math.floor(secs / 60), s = secs % 60;
+  return m > 0 ? m + 'm ' + s + 's' : s + 's';
+}
+function fmtRow(cols, values, mono) {
+  const grid = 'display:grid;grid-template-columns:' + cols + ';gap:2px 12px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.05);';
+  const valStyle = mono ? 'color:var(--teal-light);font-family:\'DM Mono\',monospace;text-align:right;' : '';
+  return '<div style="' + grid + '">' + values.map((v,i) => '<span style="' + (i>0 ? valStyle : '') + '">' + v + '</span>').join('') + '</div>';
+}
+
 async function checkPlausible() {
   try {
-    const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/plausible-proxy');
+    const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/plausible-proxy?site=clpeasy.com');
     const data = await res.json();
     if (data.error) throw new Error(data.error);
 
-    // Realtime
     document.getElementById('pl-realtime').textContent = data.realtime ?? '0';
 
-    // Aggregate
     const agg = data.aggregate?.results;
     if (agg) {
       document.getElementById('pl-visitors').textContent = (agg.visitors?.value ?? '—').toLocaleString();
       document.getElementById('pl-pageviews').textContent = (agg.pageviews?.value ?? '—').toLocaleString();
-      const bounce = agg.bounce_rate?.value;
-      document.getElementById('pl-bounce').textContent = bounce != null ? bounce + '%' : '—';
-      const dur = agg.visit_duration?.value;
-      if (dur != null) {
-        const mins = Math.floor(dur / 60);
-        const secs = dur % 60;
-        document.getElementById('pl-duration').textContent = mins > 0 ? mins + 'm ' + secs + 's' : secs + 's';
-      }
+      document.getElementById('pl-bounce').textContent = agg.bounce_rate?.value != null ? agg.bounce_rate.value + '%' : '—';
+      document.getElementById('pl-duration').textContent = fmtDur(agg.visit_duration?.value);
     }
 
-    // Top pages
+    // Pages with granular data
     if (data.pages?.results?.length) {
       document.getElementById('pl-pages').innerHTML = data.pages.results
-        .map(p => '<div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.05);padding:3px 0;"><span>' + p.page + '</span><span style="color:var(--teal-light);font-family:\'DM Mono\',monospace;">' + p.visitors + '</span></div>')
+        .map(p => fmtRow('1fr auto auto auto', [p.page, p.visitors, p.pageviews ?? '—', fmtDur(p.visit_duration)], true))
         .join('');
     } else {
       document.getElementById('pl-pages').textContent = 'No data yet today';
     }
 
-    // Top sources
+    // Sources
     if (data.sources?.results?.length) {
       document.getElementById('pl-sources').innerHTML = data.sources.results
-        .map(s => '<div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.05);padding:3px 0;"><span>' + (s.source || 'Direct / None') + '</span><span style="color:var(--teal-light);font-family:\'DM Mono\',monospace;">' + s.visitors + '</span></div>')
+        .map(s => fmtRow('1fr auto', [s.source || 'Direct / None', s.visitors], true))
         .join('');
     } else {
       document.getElementById('pl-sources').textContent = 'No referral data yet';
+    }
+
+    // Devices
+    if (data.devices?.results?.length) {
+      document.getElementById('pl-devices').innerHTML = data.devices.results
+        .map(d => fmtRow('1fr auto', [d.device || 'Unknown', d.visitors], true))
+        .join('');
+    } else {
+      document.getElementById('pl-devices').textContent = '—';
+    }
+
+    // Countries
+    if (data.countries?.results?.length) {
+      document.getElementById('pl-countries').innerHTML = data.countries.results
+        .map(c => fmtRow('1fr auto', [c.country || 'Unknown', c.visitors], true))
+        .join('');
+    } else {
+      document.getElementById('pl-countries').textContent = '—';
+    }
+
+    // Entry pages
+    if (data.entry?.results?.length) {
+      document.getElementById('pl-entry').innerHTML = data.entry.results
+        .map(e => fmtRow('1fr auto', [e.entry_page || e.page || '—', e.visitors], true))
+        .join('');
+    } else {
+      document.getElementById('pl-entry').textContent = 'No data yet';
+    }
+
+    // Exit pages
+    if (data.exit?.results?.length) {
+      document.getElementById('pl-exit').innerHTML = data.exit.results
+        .map(e => fmtRow('1fr auto', [e.exit_page || e.page || '—', e.visitors], true))
+        .join('');
+    } else {
+      document.getElementById('pl-exit').textContent = 'No data yet';
+    }
+
+    // Custom events
+    if (data.events?.results?.length) {
+      document.getElementById('pl-events').innerHTML = data.events.results
+        .filter(e => e.name !== 'pageview')
+        .map(e => fmtRow('1fr auto', [e.name, e.visitors], true))
+        .join('') || 'No custom events yet today';
+    } else {
+      document.getElementById('pl-events').textContent = 'Tracking active — events will appear once triggered';
     }
 
     document.getElementById('plausible-badge').className = 'status-badge ok';

@@ -1090,7 +1090,7 @@ function setBorder(show){
 }
 
 // ── JPEG DOWNLOAD ─────────────────────────────────────────────
-async function downloadJPEG(){
+async function downloadJPEG(){plausible('Label Downloaded',{props:{format:'JPEG'}});
   await ensureFontsLoaded(); // wait for DM Sans before rasterising
   readForm();
   const{mmW,mmH,pw,ph}=getDims();
@@ -1250,7 +1250,7 @@ function labelToCanvas(cb){
 }
 
 // ── PDF SHEET — Avery-aligned home printing ───────────────────
-async function downloadPDFSheet(){
+async function downloadPDFSheet(){plausible('Label Downloaded',{props:{format:'PDF Sheet'}});
   await ensureFontsLoaded(); // wait for DM Sans before rasterising
   readForm();
   const{mmW}=getDims();
@@ -1302,7 +1302,7 @@ async function downloadPDFSheet(){
 // ── PRINT-READY PDF — for professional print companies ────────
 // Exports a single label with 3mm bleed on all sides + crop marks
 // Print shops accept this directly — 300 DPI, bleed included
-async function downloadPrintReadyPDF(){
+async function downloadPrintReadyPDF(){plausible('Label Downloaded',{props:{format:'Print-Ready PDF'}});
   await ensureFontsLoaded(); // wait for DM Sans before rasterising
   readForm();
   const{mmW,mmH,pw,ph}=getDims();
@@ -1406,7 +1406,7 @@ async function downloadPrintReadyPDF(){
 }
 
 // ── CUTTING MACHINE PNGs — download as ZIP ──────────────────
-function downloadCricutPNGs(){
+function downloadCricutPNGs(){plausible('Label Downloaded',{props:{format:'Cricut PNGs'}});
   readForm();
   const qtyEl=document.getElementById('sheet-qty');
   const qty=qtyEl ? (parseInt(qtyEl.value)||1) : 1;
@@ -1899,7 +1899,7 @@ document.addEventListener('click',function(e){
 });
 
 // ── SAVE / LOAD / DELETE ───────────────────────────────────────
-function saveLabel(){
+function saveLabel(){plausible('Label Saved to Library');
   readForm();
   if(!S.scentName){alert('Please enter a scent name before saving.');return;}
   const entry={scentName:S.scentName,productType:S.productType,shape:S.shape,size:S.size,signal:S.signal,
@@ -2368,7 +2368,7 @@ function goToStep(n){if(n>S.step+1)return;S.step=n;
   if(dlRow)dlRow.style.display=(n===5)?'flex':'none';
   const mobileDlRow=document.getElementById('mobile-dl-row');
   if(mobileDlRow)mobileDlRow.style.display=(n===5)?'flex':'none';document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+n).classList.add('active');updateStepsBar();if(n===5)buildSummary();updateLabel();if(n===3){const cb=document.getElementById('hazard-confirm');const btn=document.getElementById('btn-next-step3');if(cb){cb.checked=false;}if(btn){btn.style.opacity='0.4';btn.style.pointerEvents='none';}}}
-function nextStep(){if(S.step<5){goToStep(S.step+1);window.scrollTo({top:0,behavior:'smooth'});}}
+function nextStep(){if(S.step<5){plausible('Builder: Step '+(S.step+1),{props:{from_step:String(S.step)}});goToStep(S.step+1);window.scrollTo({top:0,behavior:'smooth'});}}
 function checkStep2Next(){
   const scent=document.getElementById('scent-name')?.value.trim();
   if(!scent){
@@ -3160,7 +3160,7 @@ async function ensureFontsLoaded(){
   }catch(e){}
 }
 
-async function downloadPNG(){
+async function downloadPNG(){plausible('Label Downloaded',{props:{format:'PNG'}});
   await ensureFontsLoaded(); // wait for DM Sans before rasterising
   readForm();
   const{mmW,mmH,pw,ph}=getDims();
@@ -3199,7 +3199,7 @@ async function downloadPNG(){
 }
 
 // ── SVG DOWNLOAD ──────────────────────────────────────────────
-function downloadSVG(){
+function downloadSVG(){plausible('Label Downloaded',{props:{format:'SVG'}});
   try{
     readForm();
     const{mmW,mmH,pw,ph}=getDims();
@@ -3554,7 +3554,7 @@ init();
 // Generates a unique formatted UFI: XXXX-XXXX-XXXX-XXXX
 // Using a simple hash of user email + scent + product type
 // ══════════════════════════════════════════════════════════════
-function generateUFI(){
+function generateUFI(){plausible('UFI Generated');
   const email=currentUser?.email||'guest';
   const scent=document.getElementById('scent-name')?.value||S.scentName||'label';
   const product=document.getElementById('product-type')?.value||S.productType||'candle';
