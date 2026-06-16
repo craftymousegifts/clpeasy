@@ -298,6 +298,81 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
     </div>
   </div>
 
+  <div class="section-title">📊 Live Traffic — Crafty Mouse Gifts</div>
+  <div class="service-grid" style="margin-bottom:28px;">
+    <div class="service-card status-info" id="card-plausible-cmg" style="grid-column:1/-1;">
+      <div class="card-header">
+        <div class="card-header-left">
+          <span class="service-icon">🐭</span>
+          <div>
+            <div class="service-name">Plausible Analytics — Crafty Mouse Gifts</div>
+            <div class="service-plan">craftymousegifts.com · Privacy-friendly · auto-refreshes every 60s</div>
+          </div>
+        </div>
+        <span class="status-badge loading" id="plausible-cmg-badge"><span class="spin"></span>Loading</span>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;">
+          <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:26px;font-weight:800;color:#4ade80;" id="cmg-realtime">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Live now</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:26px;font-weight:800;color:#f3a8b4;" id="cmg-visitors">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Visitors today</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:26px;font-weight:800;color:#f3a8b4;" id="cmg-pageviews">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Pageviews</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:26px;font-weight:800;color:#f3a8b4;" id="cmg-bounce">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Bounce rate</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:26px;font-weight:800;color:#f3a8b4;" id="cmg-duration">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Avg duration</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Pages today</div>
+            <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:2px 12px;font-size:11px;color:rgba(255,255,255,0.3);padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;"><span>Page</span><span>Visitors</span><span>Views</span><span>Avg time</span></div>
+            <div id="cmg-pages" style="font-size:12px;color:rgba(255,255,255,0.75);">—</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Sources</div>
+            <div style="display:grid;grid-template-columns:1fr auto;gap:2px 12px;font-size:11px;color:rgba(255,255,255,0.3);padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;"><span>Source</span><span>Visitors</span></div>
+            <div id="cmg-sources" style="font-size:12px;color:rgba(255,255,255,0.75);">—</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Devices</div>
+            <div id="cmg-devices" style="font-size:12px;color:rgba(255,255,255,0.75);margin-bottom:14px;">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Countries</div>
+            <div id="cmg-countries" style="font-size:12px;color:rgba(255,255,255,0.75);">—</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);">
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">🚪 Entry pages</div>
+            <div id="cmg-entry" style="font-size:12px;color:rgba(255,255,255,0.75);">—</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">🚪 Exit pages</div>
+            <div id="cmg-exit" style="font-size:12px;color:rgba(255,255,255,0.75);">—</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">⚡ Custom events today</div>
+            <div id="cmg-events" style="font-size:12px;color:rgba(255,255,255,0.75);">Tracking active — events will appear once triggered</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;text-align:right;">
+          <a href="https://plausible.io/craftymousegifts.com" target="_blank" style="font-size:12px;color:#f3a8b4;text-decoration:none;">Open full Plausible dashboard ↗</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="section-title">Live Services</div>
   <div class="service-grid" id="liveGrid">
     <!-- Supabase -->
@@ -1199,9 +1274,54 @@ async function checkPlausible() {
   }
 }
 
+
+async function checkPlausibleCMG() {
+  try {
+    const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/plausible-proxy?site=craftymousegifts.com');
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    document.getElementById('cmg-realtime').textContent = data.rt ?? '0';
+    const agg = data.aggregate?.results;
+    if (agg) {
+      document.getElementById('cmg-visitors').textContent = (agg.visitors?.value ?? '—').toLocaleString();
+      document.getElementById('cmg-pageviews').textContent = (agg.pageviews?.value ?? '—').toLocaleString();
+      document.getElementById('cmg-bounce').textContent = agg.bounce_rate?.value != null ? agg.bounce_rate.value + '%' : '—';
+      document.getElementById('cmg-duration').textContent = fmtDur(agg.visit_duration?.value);
+    }
+    if (data.pages?.results?.length) {
+      document.getElementById('cmg-pages').innerHTML = data.pages.results.map(p => fmtRow('1fr auto auto auto',[p.page,p.visitors,p.pageviews??'—',fmtDur(p.visit_duration)],true)).join('');
+    } else { document.getElementById('cmg-pages').textContent = 'No data yet today'; }
+    if (data.sources?.results?.length) {
+      document.getElementById('cmg-sources').innerHTML = data.sources.results.map(s => fmtRow('1fr auto',[s.source||'Direct / None',s.visitors],true)).join('');
+    } else { document.getElementById('cmg-sources').textContent = 'No referral data yet'; }
+    if (data.devices?.results?.length) {
+      document.getElementById('cmg-devices').innerHTML = data.devices.results.map(d => fmtRow('1fr auto',[d.device||'Unknown',d.visitors],true)).join('');
+    }
+    if (data.countries?.results?.length) {
+      document.getElementById('cmg-countries').innerHTML = data.countries.results.map(c => fmtRow('1fr auto',[c.country||'Unknown',c.visitors],true)).join('');
+    }
+    if (data.entry?.results?.length) {
+      document.getElementById('cmg-entry').innerHTML = data.entry.results.map(e => fmtRow('1fr auto',[e.entry_page||e.page||'—',e.visitors],true)).join('');
+    }
+    if (data.exit?.results?.length) {
+      document.getElementById('cmg-exit').innerHTML = data.exit.results.map(e => fmtRow('1fr auto',[e.exit_page||e.page||'—',e.visitors],true)).join('');
+    }
+    if (data.events?.results?.length) {
+      const evts = data.events.results.filter(e => e.name !== 'pageview');
+      document.getElementById('cmg-events').innerHTML = evts.length ? evts.map(e => fmtRow('1fr auto',[e.name,e.visitors],true)).join('') : 'No custom events yet today';
+    }
+    document.getElementById('plausible-cmg-badge').className = 'status-badge ok';
+    document.getElementById('plausible-cmg-badge').textContent = '✓ Live';
+  } catch(e) {
+    document.getElementById('plausible-cmg-badge').className = 'status-badge warn';
+    document.getElementById('plausible-cmg-badge').textContent = '⚠ Error';
+  }
+}
 async function runAll() {
   document.getElementById('lastRefresh').textContent = 'Refreshing...';
   try { await checkPlausible(); } catch (e) { console.error('checkPlausible', e); }
+  try { await checkPlausibleCMG(); } catch (e) { console.error('checkPlausibleCMG', e); }
   try { checkSupabase(); } catch (e) { console.error('checkSupabase', e); }
   try { checkBrevo(); } catch (e) { console.error('checkBrevo', e); }
   try { loadDates(); } catch (e) { console.error('loadDates', e); }
@@ -1366,7 +1486,7 @@ runAll();
 initActionItems();
 
 // Auto-refresh Plausible every 60 seconds
-setInterval(async () => { try { await checkPlausible(); } catch(e){} }, 60000);
+setInterval(async () => { try { await checkPlausible(); } catch(e){} try { await checkPlausibleCMG(); } catch(e){} }, 60000);
 </script>
 <script>
 (function(){
