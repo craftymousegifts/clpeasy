@@ -19,7 +19,7 @@
 }
 body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;}
 
-/* HEADER */
+ /* HEADER */
 .header{background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.08);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
 .header-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
 .logo-badge{width:38px;height:38px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;letter-spacing:-0.5px;}
@@ -115,122 +115,27 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);m
 .action-text strong{color:white;}
 
 footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2);font-family:'DM Mono',monospace;}
+
+/* Inline editing */
+.editable-hint{cursor:pointer;border-bottom:1px dashed rgba(255,255,255,0.2);transition:border-color .15s;}
+.editable-hint:hover{border-bottom-color:var(--teal);}
+.inline-edit-input{background:rgba(255,255,255,0.1);border:1px solid var(--teal);color:white;padding:2px 8px;border-radius:5px;font-size:12px;font-weight:600;font-family:'DM Mono',monospace;width:100%;max-width:260px;outline:none;}
+.action-priority.low[style],.action-priority.done{background:rgba(74,222,128,0.2);color:#4ade80;}
 </style>
 </head>
 <body>
 
-<!-- ========== CLPeasy Monitor Login Gate — paste this at the TOP of your <body> tag ========== -->
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  #clp-gate {
-    position: fixed; inset: 0; z-index: 9999;
-    background: #0f1117;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'DM Sans', sans-serif;
-  }
-  #clp-gate .box {
-    background: #181c27;
-    border: 1px solid #2a2f3e;
-    border-radius: 14px;
-    padding: 2rem 1.5rem 1.75rem;
-    width: min(340px, 90vw);
-    text-align: center;
-  }
-  #clp-gate .logo { font-size: 1.1rem; font-weight: 600; letter-spacing: 0.08em; color: #7b8cde; margin-bottom: 0.25rem; }
-  #clp-gate h1 { font-size: 1rem; font-weight: 400; color: #8b94a8; margin: 0 0 1.75rem; }
-  #clp-gate input[type=password] {
-    width: 100%; box-sizing: border-box;
-    padding: 0.65rem 1rem; border-radius: 8px;
-    border: 1px solid #2a2f3e; background: #0f1117;
-    color: #e8ecf2; font-size: 1rem; font-family: inherit;
-    outline: none; transition: border-color 0.2s; margin-bottom: 0.75rem;
-  }
-  #clp-gate input[type=password]:focus { border-color: #7b8cde; }
-  #clp-gate input[type=password].err { border-color: #e24b4a; animation: shake 0.3s; }
-  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
-  #clp-gate button {
-    width: 100%; padding: 0.65rem; border-radius: 8px;
-    border: none; background: #7b8cde; color: #fff;
-    font-size: 0.95rem; font-weight: 500; font-family: inherit;
-    cursor: pointer; transition: background 0.2s;
-  }
-  #clp-gate button:hover { background: #6070c4; }
-  #clp-gate .msg { font-size: 0.8rem; color: #e24b4a; margin-top: 0.6rem; min-height: 1.1rem; }
-  #clp-gate .lock-icon { font-size: 2rem; margin-bottom: 0.75rem; opacity: 0.5; }
-</style>
- 
-<div id="clp-gate">
-  <div class="box">
-    <div class="lock-icon">&#x1F512;</div>
-    <div class="logo">CLPeasy</div>
-    <h1>Monitor Dashboard</h1>
-    <input type="password" id="clp-pwd" placeholder="Enter password" autocomplete="current-password" />
-    <button onclick="clpCheck()">Unlock</button>
-    <div class="msg" id="clp-msg"></div>
-  </div>
-</div>
 
-<script>
-(function(){
-  var h='aea3763183efe526e2fd24d28b5552d8ba9c1d3053fb53b22a35a50a3b9a16ad';
-  function sha256(str){
-    return crypto.subtle.digest('SHA-256',new TextEncoder().encode(str))
-      .then(function(b){return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');});
-  }
-  // Check session storage first (already unlocked this session)
-  if(sessionStorage.getItem('clp_auth')==='1'){
-    document.getElementById('logout-btn').style.display='inline-flex';
-    document.getElementById('clp-gate').style.display='none';
-  }
-  // Also check Supabase session — if user is logged in AND is admin, auto-unlock
-  // This means admins don't need to re-enter the password on every page load
-  (function trySupabaseAuth(){
-    const sbUrl='https://qvkosdqcryrcfbjtaxic.supabase.co';
-    const sbKey='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
-    if(typeof window.supabase === 'undefined') return; // Supabase not loaded yet, password gate still works
-    try {
-      const _sb = window.supabase.createClient(sbUrl, sbKey);
-      _sb.auth.getSession().then(function(res){
-        const session = res && res.data && res.data.session;
-        if(!session) return; // not logged in — password gate remains
-        // Check admin flag in user metadata or profile
-        const meta = session.user && session.user.user_metadata;
-        if(meta && meta.is_admin === true){
-          sessionStorage.setItem('clp_auth','1');
-        document.getElementById('logout-btn').style.display='inline-flex';
-          document.getElementById('clp-gate').style.display='none';
-        }
-      });
-    } catch(e){ /* silently ignore — password gate still works */ }
-  })();
-  document.getElementById('clp-pwd').addEventListener('keydown',function(e){if(e.key==='Enter')clpCheck();});
-  window.clpCheck=function(){
-    var inp=document.getElementById('clp-pwd');
-    sha256(inp.value).then(function(d){
-      if(d===h){
-        sessionStorage.setItem('clp_auth','1');
-        document.getElementById('logout-btn').style.display='inline-flex';
-        document.getElementById('clp-gate').style.display='none';
-      } else {
-        document.getElementById('clp-msg').textContent='Incorrect password';
-        inp.value=''; inp.classList.add('err');
-        setTimeout(function(){inp.classList.remove('err');},400);
-      }
-    });
-  };
-})();
-</script>
-<!-- ========== End Login Gate ========== -->
 <div class="header">
   <a href="home.html" class="header-logo">
     <div class="logo-badge">CLP</div>
     <span class="logo-name">easy</span>
   </a>
-  <div class="header-title">⚙️ Service Monitor — Internal Dashboard</div>
+  <div class="header-title">⚙️ Service Monitor — Internal Dashboard &nbsp;<span style="font-size:11px;opacity:0.5;">· double-click any value to edit</span></div>
   <div class="header-right">
     <span class="last-refresh" id="lastRefresh">Last refreshed: —</span>
     <button class="refresh-btn" onclick="runAll()">↻ Refresh</button>
-    <button id="logout-btn" onclick="monitorLogout()" style="display:none;background:#EF4444;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(239,68,68,.35);letter-spacing:.02em;white-space:nowrap;">🔒 Logout</button>
+
   </div>
 </div>
 
@@ -364,11 +269,11 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
         </div>
         <div class="info-row">
           <span class="info-key">Onboarding automation</span>
-          <span class="info-val highlight">Active ✓</span>
+          <span class="info-val highlight editable-hint" id="brevo-automation-val" title="Double-click to edit">Active ✓</span>
         </div>
         <div class="info-row">
           <span class="info-key">Sender domain</span>
-          <span class="info-val highlight">clpeasy.com DKIM ✓</span>
+          <span class="info-val highlight editable-hint" id="brevo-dkim-val" title="Double-click to edit">clpeasy.com DKIM ✓</span>
         </div>
         <div class="info-row">
           <span class="info-key">Monthly limit</span>
@@ -415,7 +320,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
         </div>
         <div class="info-row">
           <span class="info-key">Deploy</span>
-          <span class="info-val highlight">Auto on push to main ✓</span>
+          <span class="info-val highlight editable-hint" id="netlify-deploy-val" title="Double-click to edit">Auto on push to main ✓</span>
         </div>
         <div class="info-row">
           <span class="info-key">Cost</span>
@@ -487,11 +392,11 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
         </div>
         <div class="info-row">
           <span class="info-key">SMTP</span>
-          <span class="info-val highlight">smtp.zoho.eu:587 ✓</span>
+          <span class="info-val highlight editable-hint" id="zoho-smtp-val" title="Double-click to edit">smtp.zoho.eu:587 ✓</span>
         </div>
         <div class="info-row">
           <span class="info-key">DKIM/SPF</span>
-          <span class="info-val highlight">Configured ✓</span>
+          <span class="info-val highlight editable-hint" id="zoho-dkim-val" title="Double-click to edit">Configured ✓</span>
         </div>
         <div class="info-row">
           <span class="info-key">Renewal date</span>
@@ -527,7 +432,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
       <div class="card-body">
         <div class="info-row">
           <span class="info-key">Status</span>
-          <span class="info-val ok">In production ✓</span>
+          <span class="info-val ok editable-hint" id="oauth-status-val" title="Double-click to edit">In production ✓</span>
         </div>
         <div class="info-row">
           <span class="info-key">App name</span>
@@ -553,37 +458,56 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
     </div>
 
     <!-- ICO Registration -->
-    <div class="service-card status-alert">
+    <div class="service-card status-ok" id="card-ico">
       <div class="card-header">
         <div class="card-header-left">
           <span class="service-icon">🏛️</span>
           <div>
             <div class="service-name">ICO Registration</div>
-            <div class="service-plan">UK GDPR · Required at launch</div>
+            <div class="service-plan">UK GDPR · Data Protection Fee</div>
           </div>
         </div>
-        <span class="status-badge alert">⚠ Required</span>
+        <span class="status-badge ok" id="ico-badge">✓ Registered</span>
       </div>
       <div class="card-body">
         <div class="info-row">
           <span class="info-key">Status</span>
-          <span class="info-val alert">NOT REGISTERED — action required</span>
+          <span class="info-val ok" id="ico-status">Registered ✓ — direct debit ref c1959917</span>
         </div>
         <div class="info-row">
-          <span class="info-key">When required</span>
-          <span class="info-val warn">On launch day / first paid subscriber</span>
+          <span class="info-key">Applied on</span>
+          <span class="info-val" id="ico-applied-val" ondblclick="makeEditable(this,'ico-applied')" title="Double-click to edit">15 Jun 2026</span>
         </div>
         <div class="info-row">
+          <span class="info-key">Registration number</span>
+          <span class="info-val warn" id="ico-regno-val" ondblclick="makeEditable(this,'ico-regno')" title="Double-click to edit">Pending — add when received</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Renewal date</span>
+          <span class="info-val warn" id="ico-expiry">Set below ↓</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Days remaining</span>
+          <span class="info-val" id="ico-days">—</span>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+          <label style="font-size:12px;color:rgba(255,255,255,0.45);">Set renewal date:</label>
+          <input type="date" id="ico-date-input" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:white;padding:5px 10px;border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;" onchange="saveICO()">
+        </div>
+        <div class="info-row" style="margin-top:8px;">
           <span class="info-key">Annual cost</span>
           <span class="info-val">£40/year (Tier 1)</span>
         </div>
         <div class="info-row">
-          <span class="info-key">Where to register</span>
+          <span class="info-key">ICO portal</span>
           <span class="info-val"><a href="https://ico.org.uk/for-organisations/data-protection-fee/" target="_blank" style="color:var(--teal-light);text-decoration:none;">ico.org.uk ↗</a></span>
         </div>
-        <div class="renewal-alert" style="margin-top:10px;">
-          <span class="renewal-alert-icon">🚨</span>
-          <span class="renewal-alert-text">Register on launch day before accepting paying subscribers. Add ICO registration number to your Privacy Policy once registered.</span>
+        <div class="renewal-alert" style="margin-top:10px;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.25);">
+          <span class="renewal-alert-icon">✓</span>
+          <span class="renewal-alert-text">Registered via direct debit (ref c1959917, £40/year). Once you receive your registration number by post/email, double-click "Pending" above to update it, then add it to your Privacy Policy.</span>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+          <button onclick="markICORegistered()" style="background:var(--teal);color:white;border:none;padding:5px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">✓ Mark Registered</button>
         </div>
       </div>
     </div>
@@ -598,12 +522,12 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
             <div class="service-plan">Built · Test mode · Pay as you go</div>
           </div>
         </div>
-        <span class="status-badge warn">⚙ Test mode</span>
+        <span class="status-badge warn" id="stripe-mode-val">⚙ Test mode</span>
       </div>
       <div class="card-body">
         <div class="info-row">
           <span class="info-key">Status</span>
-          <span class="info-val warn">Built — not taking live payments yet</span>
+          <span class="info-val warn editable-hint" id="stripe-status-val" title="Double-click to edit">Built — not taking live payments yet</span>
         </div>
         <div class="info-row">
           <span class="info-key">Easy Start</span>
@@ -655,7 +579,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
         </div>
         <div class="info-row">
           <span class="info-key">Status</span>
-          <span class="info-val warn">Under examination — allow ~4 months</span>
+          <span class="info-val warn editable-hint" id="tm-status-val" title="Double-click to edit">Under examination — allow ~4 months</span>
         </div>
         <div class="info-row">
           <span class="info-key">Symbol permitted now</span>
@@ -699,7 +623,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
       <div class="card-body">
         <div class="info-row">
           <span class="info-key">Status</span>
-          <span class="info-val warn" id="hm-status">Verification in progress</span>
+          <span class="info-val warn editable-hint" id="hm-status" title="Double-click to edit">Verification in progress</span>
         </div>
         <div class="info-row">
           <span class="info-key">Address</span>
@@ -745,8 +669,8 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
     </div>
 
     <div class="action-item">
-      <span class="action-priority high">HIGH</span>
-      <span class="action-text"><strong>ICO registration</strong> — register at ico.org.uk on launch day before accepting any paid subscribers. Cost: £40/year.</span>
+      <span class="action-priority" style="background:rgba(74,222,128,0.2);color:#4ade80;">DONE</span>
+      <span class="action-text"><strong>ICO registration</strong> — application submitted 15 Jun 2026 ✓. Awaiting registration number. Once received, add it to your Privacy Policy and update the ICO card above.</span>
     </div>
     <div class="action-item">
       <span class="action-priority med">MED</span>
@@ -805,10 +729,102 @@ function loadDates() {
     if (domainDate) { const el = document.getElementById('domain-date-input'); if (el) el.value = domainDate; updateDays('domain', domainDate); }
     if (zohoDate) { const el = document.getElementById('zoho-date-input'); if (el) el.value = zohoDate; updateDays('zoho', zohoDate); }
     loadHM();
+    loadICO();
+    activateInlineEdits();
   } catch (e) { /* storage unavailable — dates just won't pre-fill */ }
 }
 
-function saveDomain() {
+function saveICO() {
+  const d = document.getElementById('ico-date-input').value;
+  localStorage.setItem('monitor_ico_date', d);
+  updateDays('ico', d);
+}
+
+function markICORegistered() {
+  localStorage.setItem('monitor_ico_registered', 'true');
+  document.getElementById('ico-badge').textContent = '✓ Registered';
+  document.getElementById('ico-badge').className = 'status-badge ok';
+  document.getElementById('ico-status').textContent = 'Registered ✓';
+  document.getElementById('ico-status').className = 'info-val ok';
+  document.getElementById('card-ico').className = 'service-card status-ok';
+}
+
+function loadICO() {
+  const d = localStorage.getItem('monitor_ico_date');
+  const reg = localStorage.getItem('monitor_ico_registered');
+  const applied = localStorage.getItem('monitor_ico_applied');
+  const regno = localStorage.getItem('monitor_ico_regno');
+  if (d) { document.getElementById('ico-date-input').value = d; updateDays('ico', d); }
+  if (reg) { markICORegistered(); }
+  if (applied) { document.getElementById('ico-applied-val').textContent = applied; }
+  if (regno) { document.getElementById('ico-regno-val').textContent = regno; document.getElementById('ico-regno-val').className = 'info-val ok'; }
+}
+
+// ── Generic inline edit ──────────────────────────────────────────────────────
+function makeEditable(el, key) {
+  const current = el.textContent;
+  const input = document.createElement('input');
+  input.className = 'inline-edit-input';
+  input.value = current;
+  el.replaceWith(input);
+  input.focus();
+  input.select();
+  function save() {
+    const val = input.value.trim() || current;
+    localStorage.setItem('monitor_edit_' + key, val);
+    const span = document.createElement('span');
+    span.className = el.className + ' editable-hint';
+    span.id = el.id;
+    span.title = 'Double-click to edit';
+    span.textContent = val;
+    span.ondblclick = function(){ makeEditable(span, key); };
+    // Special case: ICO regno gets green class when not pending
+    if (key === 'ico-regno' && !val.toLowerCase().includes('pending')) {
+      span.className = 'info-val ok editable-hint';
+      localStorage.setItem('monitor_ico_registered', 'true');
+    }
+    input.replaceWith(span);
+  }
+  input.addEventListener('blur', save);
+  input.addEventListener('keydown', function(e){ if(e.key==='Enter') input.blur(); if(e.key==='Escape'){ input.value=current; input.blur(); } });
+}
+
+// Activate double-click editing on all static info-val fields
+function activateInlineEdits() {
+  const editables = [
+    // ICO
+    {id:'ico-applied-val',   key:'ico-applied'},
+    {id:'ico-regno-val',     key:'ico-regno'},
+    // Stripe
+    {id:'stripe-status-val', key:'stripe-status'},
+    {id:'stripe-mode-val',   key:'stripe-mode'},
+    // Horton Mix
+    {id:'hm-status',         key:'hm-status'},
+    // Netlify
+    {id:'netlify-deploy-val',key:'netlify-deploy'},
+    // Brevo
+    {id:'brevo-automation-val', key:'brevo-automation'},
+    {id:'brevo-dkim-val',    key:'brevo-dkim'},
+    // Zoho
+    {id:'zoho-smtp-val',     key:'zoho-smtp'},
+    {id:'zoho-dkim-val',     key:'zoho-dkim'},
+    // OAuth
+    {id:'oauth-status-val',  key:'oauth-status'},
+    // Trade mark
+    {id:'tm-status-val',     key:'tm-status'},
+  ];
+  editables.forEach(function(e){
+    const el = document.getElementById(e.id);
+    if (!el) return;
+    el.classList.add('editable-hint');
+    el.title = 'Double-click to edit';
+    el.ondblclick = function(){ makeEditable(el, e.key); };
+    const saved = localStorage.getItem('monitor_edit_' + e.key);
+    if (saved) { el.textContent = saved; }
+  });
+}
+
+
   const d = document.getElementById('domain-date-input').value;
   localStorage.setItem('monitor_domain_date', d);
   updateDays('domain', d);
@@ -1129,11 +1145,7 @@ runAll();
   path = []; render('start');
 })();
 
-// ── Monitor logout ──────────────────────────────────────────────────────────
-function monitorLogout() {
-  sessionStorage.removeItem('clp_auth');
-  window.location.reload();
-}
+
 </script>
 </body>
 </html>
