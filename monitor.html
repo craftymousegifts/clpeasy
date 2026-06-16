@@ -1037,29 +1037,23 @@ function updateSummary() {
 }
 
 
-const PLAUSIBLE_API_KEY = 'hejAa6p7Cz6cESKYnFwxhk7FZOL9dF0iPjpiD7QLGg9VtIas5Xh-8hIPWMz-XRYl';
-const PLAUSIBLE_SITE = 'clpeasy.com';
-
 async function checkPlausible() {
   try {
-    const headers = { 'Authorization': 'Bearer ' + PLAUSIBLE_API_KEY };
-    const base = 'https://plausible.io/api/v1/stats/';
-    const site = '?site_id=' + PLAUSIBLE_SITE;
+    const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/plausible-proxy');
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
 
-    // Realtime visitors
-    const rt = await fetch(base + 'realtime/visitors' + site, { headers });
-    const rtData = await rt.json();
-    document.getElementById('pl-realtime').textContent = rtData || '0';
+    // Realtime
+    document.getElementById('pl-realtime').textContent = data.realtime ?? '0';
 
-    // Today's aggregate stats
-    const agg = await fetch(base + 'aggregate' + site + '&period=day&metrics=visitors,pageviews,bounce_rate,visit_duration', { headers });
-    const aggData = await agg.json();
-    if (aggData.results) {
-      document.getElementById('pl-visitors').textContent = (aggData.results.visitors?.value ?? '—').toLocaleString();
-      document.getElementById('pl-pageviews').textContent = (aggData.results.pageviews?.value ?? '—').toLocaleString();
-      const bounce = aggData.results.bounce_rate?.value;
+    // Aggregate
+    const agg = data.aggregate?.results;
+    if (agg) {
+      document.getElementById('pl-visitors').textContent = (agg.visitors?.value ?? '—').toLocaleString();
+      document.getElementById('pl-pageviews').textContent = (agg.pageviews?.value ?? '—').toLocaleString();
+      const bounce = agg.bounce_rate?.value;
       document.getElementById('pl-bounce').textContent = bounce != null ? bounce + '%' : '—';
-      const dur = aggData.results.visit_duration?.value;
+      const dur = agg.visit_duration?.value;
       if (dur != null) {
         const mins = Math.floor(dur / 60);
         const secs = dur % 60;
@@ -1068,22 +1062,18 @@ async function checkPlausible() {
     }
 
     // Top pages
-    const pages = await fetch(base + 'breakdown' + site + '&period=day&property=event:page&limit=5', { headers });
-    const pagesData = await pages.json();
-    if (pagesData.results?.length) {
-      document.getElementById('pl-pages').innerHTML = pagesData.results
-        .map(p => '<div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.05);padding:3px 0;"><span>' + p.page + '</span><span style="color:var(--teal-light);font-family:'DM Mono',monospace;">' + p.visitors + '</span></div>')
+    if (data.pages?.results?.length) {
+      document.getElementById('pl-pages').innerHTML = data.pages.results
+        .map(p => '<div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.05);padding:3px 0;"><span>' + p.page + '</span><span style="color:var(--teal-light);font-family:\'DM Mono\',monospace;">' + p.visitors + '</span></div>')
         .join('');
     } else {
       document.getElementById('pl-pages').textContent = 'No data yet today';
     }
 
     // Top sources
-    const sources = await fetch(base + 'breakdown' + site + '&period=day&property=visit:source&limit=5', { headers });
-    const sourcesData = await sources.json();
-    if (sourcesData.results?.length) {
-      document.getElementById('pl-sources').innerHTML = sourcesData.results
-        .map(s => '<div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.05);padding:3px 0;"><span>' + (s.source || 'Direct / None') + '</span><span style="color:var(--teal-light);font-family:'DM Mono',monospace;">' + s.visitors + '</span></div>')
+    if (data.sources?.results?.length) {
+      document.getElementById('pl-sources').innerHTML = data.sources.results
+        .map(s => '<div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.05);padding:3px 0;"><span>' + (s.source || 'Direct / None') + '</span><span style="color:var(--teal-light);font-family:\'DM Mono\',monospace;">' + s.visitors + '</span></div>')
         .join('');
     } else {
       document.getElementById('pl-sources').textContent = 'No referral data yet';
