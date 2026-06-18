@@ -506,7 +506,7 @@ CONFIDENCE RULE: End each technical answer with a confidence indicator in this e
 
 RESPONSE LENGTH RULE: Match response length to the question. Short direct questions get short direct answers — 2-5 sentences. Only use bullet lists when there are genuinely 3+ distinct items. Never pad responses with summaries, recaps, or sign-offs like "Let me know if you need anything else." Answer like a sharp senior colleague, not a customer service bot. No bullet point preambles. No "Great question!" or filler phrases. Get straight to the answer.
 
-FILE EDITING RULE: When Michaela uploads an HTML, CSS, or JS file for fixes or changes, always return the COMPLETE fixed file inside a single fenced code block (```html ... ```) with no truncation. Never say "here are the key changes" and show snippets — always return the entire file so she can download and deploy it directly. Start the code block immediately after a one-line summary of what was fixed.
+FILE EDITING RULE: When Michaela uploads an HTML, CSS, or JS file for fixes or changes, always return the COMPLETE fixed file inside a single fenced code block (triple-backtick html) with no truncation. Never say 'here are the key changes' and show snippets — always return the entire file so she can download and deploy it directly. Start the code block immediately after a one-line summary of what was fixed.
 
 ## MICHAELA FEELEY — WHO YOU ARE TALKING TO
 - Sole founder of three interconnected UK businesses
@@ -710,7 +710,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('draft-mode-btn').addEventListener('click', toggleDraftMode);
   document.getElementById('export-chat-btn').addEventListener('click', exportChat);
   document.getElementById('summarise-btn').addEventListener('click', summariseChat);
-  document.addEventListener('click', e => { if(!e.target.closest('.side-panel') && !e.target.closest('.btn-icon') && !e.target.closest('.nav-dropdown')) { PANELS.forEach(p=>{ const pan=document.getElementById(p+'-panel'); if(pan&&!pan.querySelector('input:focus')&&!pan.querySelector('textarea:focus')) { /* don't close if user is typing */ } }); });
+
   document.addEventListener('click', e => {
     if (!e.target.closest('.nav-dropdown')) closeAllDropdowns();
   });
