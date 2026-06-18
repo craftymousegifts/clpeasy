@@ -647,12 +647,14 @@ let conversationHistory = [];
 // ── SUPABASE CHAT PERSISTENCE ─────────────────────────────────────────────
 const SUPA_URL = 'https://qvkosdqcryrcfbjtaxic.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY0MDYzMzcsImV4cCI6MjAzMTk4MjMzN30.kQRuSKQvpJMNJLRMRGEHKfkMFj1aAbLHEKH0m5Yj_vM';
-const supabase = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+let supabase = null;
+try { supabase = window.supabase?.createClient(SUPA_URL, SUPA_KEY); } catch(e) { console.log('Supabase init failed:', e.message); }
 
 let currentSessionId = null;
 let saveTimeout = null;
 
 async function loadLastSession() {
+  if (!supabase) return;
   try {
     const { data, error } = await supabase
       .from('finn_chats')
@@ -678,7 +680,7 @@ async function loadLastSession() {
 }
 
 async function saveSession() {
-  if (!conversationHistory.length) return;
+  if (!supabase || !conversationHistory.length) return;
   try {
     const payload = {
       history: JSON.stringify(conversationHistory),
@@ -699,15 +701,11 @@ function scheduleSave() {
   saveTimeout = setTimeout(saveSession, 1500);
 }
 
-async function startNewSession() {
+function startNewSession() {
   currentSessionId = null;
   conversationHistory = [];
   const msgs = document.getElementById('messages');
-  msgs.innerHTML = '';
-  const w = document.createElement('div');
-  w.className = 'welcome'; w.id = 'welcome-screen';
-  w.innerHTML = `<span class="welcome-icon">👋</span><h2>Hi, I'm Finn. What do you need help with?</h2><p>I know your full stack across all three businesses. Ask me anything technical or strategic.</p>`;
-  msgs.appendChild(w);
+  if (msgs) msgs.innerHTML = '';
 }
 let isThinking = false;
 let apiKey = localStorage.getItem('finn_gemini_key') || '';
