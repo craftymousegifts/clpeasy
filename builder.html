@@ -3171,57 +3171,59 @@ async function downloadPNG(){plausible('Label Downloaded',{props:{format:'PNG'}}
   const slug=(S.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
   const fname=`clpeasy-${slug}-${S.size==='custom'?mmW+'x'+mmH:''+S.size}mm.png`;
 
-  function extractGHSOverlay(svgStr,cW,cH){
-    const parser=new DOMParser();
-    const doc=parser.parseFromString(svgStr,'image/svg+xml');
+  // Extract GHS pictogram positions before stripping (browser blocks base64 JPEG inside SVG blob)
+  function extractGHSOverlay(svg,cW,cH){
+    const doc=new DOMParser().parseFromString(svg,'image/svg+xml');
     const svgEl=doc.documentElement;
-    const vb=svgEl.getAttribute('viewBox')||'';
-    const parts=vb.split(/\s+/);
-    const vbW=parseFloat(parts[2])||cW;
-    const vbH=parseFloat(parts[3])||cH;
-    const scaleX=cW/vbW,scaleY=cH/vbH;
-    const overlays=[];
-    svgEl.querySelectorAll('image').forEach(function(el){
-      const href=el.getAttribute('href')||el.getAttribute('xlink:href')||'';
+    const vb=(svgEl.getAttribute('viewBox')||'').split(/\s+/);
+    const vbW=parseFloat(vb[2])||cW, vbH=parseFloat(vb[3])||cH;
+    const sx=cW/vbW, sy=cH/vbH;
+    const out=[];
+    doc.querySelectorAll('image').forEach(function(el){
+      const href=el.getAttribute('href')||'';
       if(!href.startsWith('data:image/jpeg'))return;
-      const x=parseFloat(el.getAttribute('x')||0)*scaleX;
-      const y=parseFloat(el.getAttribute('y')||0)*scaleY;
-      const w=parseFloat(el.getAttribute('width')||0)*scaleX;
-      const h=parseFloat(el.getAttribute('height')||0)*scaleY;
-      overlays.push({href,x,y,w,h});
+      out.push({
+        href,
+        x:parseFloat(el.getAttribute('x')||0)*sx,
+        y:parseFloat(el.getAttribute('y')||0)*sy,
+        w:parseFloat(el.getAttribute('width')||0)*sx,
+        h:parseFloat(el.getAttribute('height')||0)*sy
+      });
     });
-    return overlays;
-  }
-
-  function stripJPEGImages(str){
-    return str.replace(/<image [^>]*href="data:image\/jpeg[^"]*"[^>]*>/g,'');
+    return out;
   }
 
   const overlays=extractGHSOverlay(svgStr,eW,eH);
-  const cleanSvg=stripJPEGImages(svgStr);
+
+  // Strip all JPEG image tags so SVG renders cleanly as blob
+  const cleanSvg=svgStr.replace(/<image href="data:image\/jpeg[^"]*"[^/]*\/>/g,'');
+
   const clone=new DOMParser().parseFromString(cleanSvg,'image/svg+xml').documentElement;
-  clone.setAttribute('width',eW);clone.setAttribute('height',eH);
+  clone.setAttribute('width',eW); clone.setAttribute('height',eH);
   const svgData=new XMLSerializer().serializeToString(clone);
   const blob=new Blob([svgData],{type:'image/svg+xml;charset=utf-8'});
   const blobUrl=URL.createObjectURL(blob);
   const img=new Image();
   img.onload=function(){
-    const cvs=document.createElement('canvas');cvs.width=eW;cvs.height=eH;
+    const cvs=document.createElement('canvas'); cvs.width=eW; cvs.height=eH;
     const ctx=cvs.getContext('2d');
-    ctx.imageSmoothingEnabled=true;
-    ctx.imageSmoothingQuality='high';
+    ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
     ctx.clearRect(0,0,eW,eH);
     ctx.drawImage(img,0,0,eW,eH);
     URL.revokeObjectURL(blobUrl);
     if(!overlays.length){
-      cvs.toBlob(function(b){dlBlob(b,fname);},'image/png');
-      return;
+      cvs.toBlob(b=>dlBlob(b,fname),'image/png'); return;
     }
     let done=0;
     overlays.forEach(function(o){
       const pi=new Image();
-      pi.onload=function(){ctx.drawImage(pi,o.x,o.y,o.w,o.h);if(++done===overlays.length)cvs.toBlob(function(b){dlBlob(b,fname);},'image/png');};
-      pi.onerror=function(){if(++done===overlays.length)cvs.toBlob(function(b){dlBlob(b,fname);},'image/png');};
+      pi.onload=function(){
+        ctx.drawImage(pi,o.x,o.y,o.w,o.h);
+        if(++done===overlays.length) cvs.toBlob(b=>dlBlob(b,fname),'image/png');
+      };
+      pi.onerror=function(){
+        if(++done===overlays.length) cvs.toBlob(b=>dlBlob(b,fname),'image/png');
+      };
       pi.src=o.href;
     });
   };
@@ -3230,11 +3232,10 @@ async function downloadPNG(){plausible('Label Downloaded',{props:{format:'PNG'}}
   setTimeout(()=>showLabelDoneSplash('download'),1500);
 }
 function dlBlob(pngBlob,fname){
-  const dlUrl=URL.createObjectURL(pngBlob);
-  const a=document.createElement('a');
-  a.href=dlUrl;a.download=fname;
-  document.body.appendChild(a);a.click();
-  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(dlUrl);},1500);
+  const u=URL.createObjectURL(pngBlob);
+  const a=document.createElement('a'); a.href=u; a.download=fname;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(u);},1500);
 }
 
 // ── SVG DOWNLOAD ──────────────────────────────────────────────
