@@ -1982,9 +1982,8 @@ function loadLabel(i){
 
 function loadFromLibrarySelect(i){
   if(i==='')return;
-  loadLabel(parseInt(i));
+  loadLabelAndGotoStep5(parseInt(i));
   document.getElementById('load-from-library').value='';
-  goToStep(5);
 }
 
 function loadLabelAndGotoStep5(i){
@@ -2706,7 +2705,7 @@ function buildSVG(forExport=false){
   // Mid band: everything else
   const topFrac = 0.28;  // scent + biz + web all in top band
   // For candles: reserve 7% of shape height at bottom for EN 15494 pictogram row
-  const botFrac = _isCandle ? 0.17 : 0.24;
+  const botFrac = (_isCandle && mmW >= 52 && mmH >= 52) ? 0.22 : 0.24;
   const topH = sH * topFrac;
   const botH = sH * botFrac;
   const midH = sH - topH - botH;
@@ -2959,10 +2958,13 @@ function buildSVG(forExport=false){
   // botFrac is already reduced from 0.24 to 0.17 for candles, giving
   // a 7% strip at the top of the footer band for these icons.
   let bcfRow = '';
-    if(_isCandle && !S.hideEN15494){
+    if(_isCandle && !S.hideEN15494 && mmW >= 52 && mmH >= 52){
     const _bcfKeys=['burn_within_sight','keep_from_fire','keep_from_children','no_draught','trim_wick'];
     const _nBcf = _bcfKeys.length;
-    const _bcfMaxSz = Math.min(sW * 0.07, 8 * _pxPerMm);
+    // Size icons based on the shorter label dimension to prevent overflow
+    const _bcfMinDim = Math.min(mmW, mmH);
+    const _bcfMmCap = _bcfMinDim <= 35 ? 4 : _bcfMinDim <= 50 ? 5.5 : 8;
+    const _bcfMaxSz = Math.min(sW * 0.07, _bcfMmCap * _pxPerMm);
     const _bcfGap   = _bcfMaxSz * 0.25;
     const _bcfTotW  = _nBcf * _bcfMaxSz + (_nBcf - 1) * _bcfGap;
     if(_bcfTotW <= sW * 0.82){
@@ -2974,7 +2976,9 @@ function buildSVG(forExport=false){
         const by = _bcfY - _bcfMaxSz / 2;
         return `<image href="${BCF_IMG[key]}" x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${_bcfMaxSz.toFixed(1)}" height="${_bcfMaxSz.toFixed(1)}" preserveAspectRatio="xMidYMid meet"/>`;
       }).join('');
-      _bcfRowH = _bcfMaxSz * 1.2; // total height consumed including padding
+      // Cap BCF row to max 45% of footer band so address always has room
+      const _bcfRowHRaw = _bcfMaxSz * 1.5;
+      _bcfRowH = Math.min(_bcfRowHRaw, botH * 0.45);
     }
   }
 
