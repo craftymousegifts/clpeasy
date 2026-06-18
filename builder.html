@@ -3162,19 +3162,49 @@ async function ensureFontsLoaded(){
 }
 
 async function downloadPNG(){plausible('Label Downloaded',{props:{format:'PNG'}});
-  await ensureFontsLoaded(); // wait for DM Sans before rasterising
+  await ensureFontsLoaded();
   readForm();
   const{mmW,mmH,pw,ph}=getDims();
-  const DPI=600,MPI=25.4; // 600 DPI for print-quality rasterisation
+  const DPI=600,MPI=25.4;
   const eW=Math.round(mmW/MPI*DPI),eH=Math.round(mmH/MPI*DPI);
-  const svgStr=buildSVG(true); // use export mode for full-res viewBox
-  const clone=new DOMParser().parseFromString(svgStr,'image/svg+xml').documentElement;
-  clone.setAttribute('width',eW);clone.setAttribute('height',eH);
-  // viewBox already correct from buildSVG(true) — do not override
-  const svgData=new XMLSerializer().serializeToString(clone);
+  const svgStr=buildSVG(true);
   const slug=(S.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
   const fname=`clpeasy-${slug}-${S.size==='custom'?mmW+'x'+mmH:''+S.size}mm.png`;
-  // Blob URL avoids iOS Safari bug where data URI img.onload never fires
+
+  // Extract GHS pictogram positions before stripping them from SVG
+  function extractGHSOverlay(svgStr,cW,cH){
+    const parser=new DOMParser();
+    const doc=parser.parseFromString(svgStr,'image/svg+xml');
+    const svgEl=doc.documentElement;
+    const vb=svgEl.getAttribute('viewBox')||'';
+    const parts=vb.split(/\s+/);
+    const vbW=parseFloat(parts[2])||cW;
+    const vbH=parseFloat(parts[3])||cH;
+    const scaleX=cW/vbW, scaleY=cH/vbH;
+    const overlays=[];
+    svgEl.querySelectorAll('image').forEach(function(el){
+      const href=el.getAttribute('href')||el.getAttribute('xlink:href')||'';
+      if(!href.startsWith('data:image/jpeg'))return;
+      const x=parseFloat(el.getAttribute('x')||0)*scaleX;
+      const y=parseFloat(el.getAttribute('y')||0)*scaleY;
+      const w=parseFloat(el.getAttribute('width')||0)*scaleX;
+      const h=parseFloat(el.getAttribute('height')||0)*scaleY;
+      overlays.push({href,x,y,w,h});
+    });
+    return overlays;
+  }
+
+  // Strip <image> tags from SVG so it renders cleanly without blocked resources
+  function stripJPEGImages(svgStr){
+    return svgStr.replace(/<image[^>]*href="data:image\/jpeg[^"]*"[^>]*(?:\/?>|>[^<]*<\/image>)/g,'');
+  }
+
+  const overlays=extractGHSOverlay(svgStr,eW,eH);
+  const cleanSvg=stripJPEGImages(svgStr);
+
+  const clone=new DOMParser().parseFromString(cleanSvg,'image/svg+xml').documentElement;
+  clone.setAttribute('width',eW);clone.setAttribute('height',eH);
+  const svgData=new XMLSerializer().serializeToString(clone);
   const blob=new Blob([svgData],{type:'image/svg+xml;charset=utf-8'});
   const blobUrl=URL.createObjectURL(blob);
   const img=new Image();
@@ -3186,17 +3216,41 @@ async function downloadPNG(){plausible('Label Downloaded',{props:{format:'PNG'}}
     ctx.clearRect(0,0,eW,eH);
     ctx.drawImage(img,0,0,eW,eH);
     URL.revokeObjectURL(blobUrl);
-    cvs.toBlob(function(pngBlob){
-      const dlUrl=URL.createObjectURL(pngBlob);
-      const a=document.createElement('a');
-      a.href=dlUrl;a.download=fname;
-      document.body.appendChild(a);a.click();
-      setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(dlUrl);},1500);
-    },'image/png');
+    // Overlay GHS pictograms directly onto canvas — bypasses SVG image security restriction
+    if(overlays.length===0){
+      cvs.toBlob(function(pngBlob){dlBlob(pngBlob,fname);},'image/png');
+      return;
+    }
+    let loaded=0;
+    overlays.forEach(function(o){
+      const pi=new Image();
+      pi.onload=function(){
+        ctx.drawImage(pi,o.x,o.y,o.w,o.h);
+        loaded++;
+        if(loaded===overlays.length){
+          cvs.toBlob(function(pngBlob){dlBlob(pngBlob,fname);},'image/png');
+        }
+      };
+      pi.onerror=function(){
+        loaded++;
+        if(loaded===overlays.length){
+          cvs.toBlob(function(pngBlob){dlBlob(pngBlob,fname);},'image/png');
+        }
+      };
+      pi.src=o.href;
+    });
   };
   img.onerror=function(){URL.revokeObjectURL(blobUrl);};
   img.src=blobUrl;
   setTimeout(()=>showLabelDoneSplash('download'),1500);
+}
+
+function dlBlob(pngBlob,fname){
+  const dlUrl=URL.createObjectURL(pngBlob);
+  const a=document.createElement('a');
+  a.href=dlUrl;a.download=fname;
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(dlUrl);},1500);
 }
 
 // ── SVG DOWNLOAD ──────────────────────────────────────────────
