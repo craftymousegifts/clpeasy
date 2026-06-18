@@ -2916,7 +2916,10 @@ function buildSVG(forExport=false){
 
 
   // ── FOOTER BAND: wrapped address support ─────────────────────
-  const fTopPad = botH * 0.06 + _bcfRowH; // push footer text below BCF icons if present
+  // _bcfRowH is calculated later in the EN15494 section; initialise to 0 here
+  // and it will be updated before rendering (both sections are in same scope)
+  let _bcfRowH = 0;
+  const fTopPad = botH * 0.06; // will be offset by _bcfRowH after BCF section
   const fBotPad = botH * 0.06;
   const fUsable = botH - fTopPad - fBotPad;
   const maxFooterFS  = clamp(BASE*0.036, 3, 7.5);
@@ -2931,7 +2934,7 @@ function buildSVG(forExport=false){
     const _yKey   = i===0 ? 'addrH' : (slot.isPhone ? 'phoneH' : 'detailsH');
     const _fsKey  = i===0 ? 'addrFS' : (slot.isPhone ? 'phoneFS' : 'detailsFS');
     const _fsMax  = maxFooterFS * (_fsKey==='addrFS'?1.05:_fsKey==='phoneFS'?1.05:1.40);
-    const slotY   = botY + fTopPad + slotLH * (i + 0.5) + slotLH * 0.5 * ((_yKey==='addrH'?2.85:_yKey==='phoneH'?2.10:1.20) - 1);
+    const slotY   = botY + fTopPad + _bcfRowH + slotLH * (i + 0.5) + slotLH * 0.5 * ((_yKey==='addrH'?2.85:_yKey==='phoneH'?2.10:1.20) - 1);
     const chordAtY = Math.min(chordW(slotY, 0.09), sW * 0.88);
     const availW  = chordAtY * 0.88;
     const fs = fitFont(slot.text, availW, _fsMax, Math.max(minFooterFS * 0.5, 1.5), slot.bold, false);
@@ -2956,8 +2959,7 @@ function buildSVG(forExport=false){
   // botFrac is already reduced from 0.24 to 0.17 for candles, giving
   // a 7% strip at the top of the footer band for these icons.
   let bcfRow = '';
-  let _bcfRowH = 0; // how much vertical space the BCF row uses in footer band
-  if(_isCandle && !S.hideEN15494){
+    if(_isCandle && !S.hideEN15494){
     const _bcfKeys=['burn_within_sight','keep_from_fire','keep_from_children','no_draught','trim_wick'];
     const _nBcf = _bcfKeys.length;
     const _bcfMaxSz = Math.min(sW * 0.07, 8 * _pxPerMm);
