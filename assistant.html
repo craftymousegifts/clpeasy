@@ -1,4 +1,4 @@
-<!DOCTYPE html>   
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -105,7 +105,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 .msg-error{background:rgba(224,92,92,.1);border:1px solid rgba(224,92,92,.3);color:#f09090;border-radius:var(--radius-sm);padding:9px 12px;font-size:13px;}
 
 /* INPUT */
-#input-area{padding:12px 16px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+#input-area{padding:12px 16px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;position:sticky;bottom:0;z-index:10;}
 .input-wrap{display:flex;gap:8px;align-items:flex-end;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:9px 10px;transition:border-color .15s;}
 .input-wrap:focus-within{border-color:var(--teal-line);}
 #user-input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:inherit;font-size:13.5px;line-height:1.5;resize:none;max-height:140px;min-height:22px;overflow-y:auto;}
@@ -991,12 +991,10 @@ function geminiHistoryToClaude(history) {
 
 async function callClaude(signal) {
   const sysprompt = buildSystemPrompt() + (draftModeActive ? '\n\nDRAFT MODE ACTIVE: Write in Michaela Feeley\'s voice — direct, warm, personal, founder-led. First person. Confident, approachable. No corporate language.' : '');
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/finn-chat', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 8192,
       system: sysprompt,
       messages: geminiHistoryToClaude(conversationHistory),
       temperature: draftModeActive ? 0.7 : 0.35
