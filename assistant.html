@@ -13,7 +13,7 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;overflow:hidden;}
-#app{display:flex;flex-direction:column;height:100vh;max-width:960px;margin:0 auto;}
+#app{display:flex;flex-direction:column;height:100vh;max-width:960px;margin:0 auto;overflow:visible;}
 
 /* HEADER */
 header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;gap:10px;}
@@ -31,7 +31,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
 
 /* NAV BAR - 3 business dropdowns */
-.nav-bar{display:flex;gap:4px;padding:6px 16px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;overflow-x:auto;}
+.nav-bar{display:flex;gap:4px;padding:6px 16px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;overflow:visible;}
 .nav-bar::-webkit-scrollbar{height:2px;}
 .nav-bar::-webkit-scrollbar-thumb{background:var(--surface3);}
 .nav-dropdown{position:relative;}
