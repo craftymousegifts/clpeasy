@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compliance & Transparency — CLPeasy</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  :root {
+    --teal: #2a9d8f;
+    --teal-dark: #1f7d72;
+    --teal-light: #e8f5f3;
+    --teal-mid: #c8eae6;
+    --text: #1a1a1a;
+    --text-mid: #4a5568;
+    --text-light: #718096;
+    --border: #e2e8f0;
+    --bg: #f8fafb;
+    --white: #ffffff;
+    --radius: 12px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--teal);
+    letter-spacing: -0.3px;
+  }
+  .nav-logo svg { width: 28px; height: 28px; }
+  .nav-links { display: flex; gap: 24px; }
+  .nav-links a {
+    text-decoration: none;
+    color: var(--text-mid);
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.15s;
+  }
+  .nav-links a:hover { color: var(--teal); }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #1a3a36 0%, #2a9d8f 100%);
+    color: white;
+    padding: 64px 24px 56px;
+    text-align: center;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(26px, 5vw, 38px);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 14px;
+    line-height: 1.2;
+  }
+  .hero p {
+    font-size: 16px;
+    opacity: 0.85;
+    max-width: 580px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* MAIN */
+  main {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* SECTION */
+  .section {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--teal-light);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .section-header-text h2 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.2px;
+    margin-bottom: 3px;
+  }
+  .section-header-text p {
+    font-size: 13px;
+    color: var(--text-light);
+  }
+
+  .section p {
+    color: var(--text-mid);
+    font-size: 14.5px;
+    line-height: 1.75;
+    margin-bottom: 14px;
+  }
+  .section p:last-child { margin-bottom: 0; }
+
+  /* HIGHLIGHT BOX */
+  .highlight {
+    background: var(--teal-light);
+    border: 1px solid var(--teal-mid);
+    border-left: 4px solid var(--teal);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin: 16px 0;
+  }
+  .highlight p {
+    color: #1a3a36 !important;
+    font-size: 14px !important;
+    margin-bottom: 0 !important;
+  }
+  .highlight strong { color: var(--teal-dark); }
+
+  /* REGULATORY POSITION */
+  .reg-statement {
+    background: #f0faf8;
+    border: 1px solid var(--teal-mid);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    margin: 16px 0;
+    font-size: 14px;
+    color: #1a3a36;
+    line-height: 1.8;
+    font-style: italic;
+  }
+
+  /* KEY FACTS GRID */
+  .facts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+  }
+  .fact-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .fact-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-light);
+    margin-bottom: 5px;
+  }
+  .fact-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .fact-sub {
+    font-size: 12px;
+    color: var(--text-light);
+    margin-top: 2px;
+  }
+
+  /* CHECKLIST */
+  .checklist {
+    list-style: none;
+    margin-top: 12px;
+  }
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    color: var(--text-mid);
+    line-height: 1.6;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .check-icon {
+    width: 20px;
+    height: 20px;
+    background: var(--teal);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  /* COSMETIC NOTE */
+  .note-box {
+    background: #fff8f0;
+    border: 1px solid #f4d8b0;
+    border-left: 4px solid #f4a261;
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin: 16px 0;
+  }
+  .note-box .note-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #c05621;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 8px;
+  }
+  .note-box p {
+    color: #744210 !important;
+    font-size: 14px !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* TM */
+  .tm-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--teal-light);
+    border: 1px solid var(--teal-mid);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 13px;
+    color: var(--teal-dark);
+    font-weight: 500;
+    margin-top: 12px;
+  }
+
+  /* FOOTER */
+  footer {
+    background: var(--white);
+    border-top: 1px solid var(--border);
+    padding: 28px 24px;
+    text-align: center;
+  }
+  footer p {
+    font-size: 13px;
+    color: var(--text-light);
+    line-height: 1.6;
+  }
+  footer a { color: var(--teal); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  @media (max-width: 600px) {
+    .section { padding: 22px 18px; }
+    .hero { padding: 44px 20px 40px; }
+    .nav-links { display: none; }
+    .facts-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="home.html">
+    <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="28" height="28" rx="7" fill="#2a9d8f"/>
+      <text x="5" y="20" font-family="Inter,sans-serif" font-size="14" font-weight="700" fill="white">CLP</text>
+    </svg>
+    CLPeasy
+  </a>
+  <div class="nav-links">
+    <a href="home.html">Home</a>
+    <a href="pricing.html">Pricing</a>
+    <a href="faq.html">FAQ</a>
+    <a href="terms.html">Terms</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">📋 Transparency</div>
+  <h1>Compliance &amp; Transparency</h1>
+  <p>How CLPeasy operates within GB CLP Regulation, what we have done to ensure responsible operation, and what it means for you as a maker.</p>
+</div>
+
+<main>
+
+  <!-- HSE ENGAGEMENT -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🏛️</div>
+      <div class="section-header-text">
+        <h2>Our Engagement with HSE</h2>
+        <p>Proactive contact with the UK's Health and Safety Executive</p>
+      </div>
+    </div>
+    <p>Before CLPeasy launched, we proactively contacted the <strong>HSE CLP Helpdesk</strong> to introduce the tool and ask whether there were any specific regulatory obligations, considerations, or guidance applicable to a software service of this nature operating under GB CLP Regulation.</p>
+    <p>We provided HSE with a full description of how CLPeasy works, including that it assists users in applying hazard classifications already provided by their fragrance supplier's Safety Data Sheet, that users are advised throughout that they remain the responsible person, and that the tool does not independently classify substances.</p>
+    <div class="highlight">
+      <p><strong>HSE's response confirmed that no specific regulatory obligations apply to software tools of this nature.</strong> Responsibility for CLP label accuracy and compliance with GB CLP Regulation sits with the user as the responsible person — which CLPeasy clearly communicates at every stage of the label-building process.</p>
+    </div>
+    <p>We believe this level of proactive engagement is the right approach for a tool operating in the compliance space. We are committed to ensuring CLPeasy supports rather than undermines compliance with GB CLP requirements.</p>
+  </div>
+
+  <!-- REGULATORY POSITION -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">⚖️</div>
+      <div class="section-header-text">
+        <h2>Our Regulatory Position</h2>
+        <p>CLPeasy's formal statement on GB CLP compliance</p>
+      </div>
+    </div>
+    <div class="reg-statement">
+      "CLPeasy has proactively engaged with the HSE CLP Helpdesk regarding its operation as a GB CLP label assistance tool. HSE has not identified any specific regulatory obligations applicable to software tools of this nature. Responsibility for ensuring CLP label accuracy and compliance with GB CLP Regulation remains at all times with the user as the responsible person. CLPeasy assists users in applying hazard classifications already provided by their fragrance supplier's Safety Data Sheet — it does not independently classify substances."
+    </div>
+    <p>This statement is reproduced in full in our <a href="terms.html" style="color:var(--teal);font-weight:500;">Terms of Service</a> under the Regulatory Position clause.</p>
+  </div>
+
+  <!-- HOW CLPEASY WORKS -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🔧</div>
+      <div class="section-header-text">
+        <h2>How CLPeasy Works</h2>
+        <p>What the tool does — and what it does not do</p>
+      </div>
+    </div>
+    <ul class="checklist">
+      <li>
+        <div class="check-icon">✓</div>
+        <span>Users enter their product details, fragrance load percentage, and hazard classification data sourced from their fragrance supplier's Safety Data Sheet (Section 2.2)</span>
+      </li>
+      <li>
+        <div class="check-icon">✓</div>
+        <span>CLPeasy generates a CLP-compliant label incorporating the correct hazard statements, pictograms, signal word, UFI code field, and responsible person details</span>
+      </li>
+      <li>
+        <div class="check-icon">✓</div>
+        <span>Users are clearly advised throughout the tool that they remain the responsible person under GB CLP Regulation and that it is their duty to verify all hazard information against their supplier's current SDS at their actual fragrance load percentage</span>
+      </li>
+      <li>
+        <div class="check-icon">✓</div>
+        <span><strong>CLPeasy does not classify substances</strong> — it assists users in applying classifications already provided by their fragrance supplier</span>
+      </li>
+      <li>
+        <div class="check-icon">✓</div>
+        <span>EN 15494 candle safety pictograms are included and gated by candle product type, in line with industry standards</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- COSMETIC PRODUCTS NOTE -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">🛁</div>
+      <div class="section-header-text">
+        <h2>A Note on Cosmetic Products</h2>
+        <p>Bath bombs, soaps, and products governed by UK Cosmetics Regulation</p>
+      </div>
+    </div>
+    <p>CLPeasy handles the <strong>CLP hazard label</strong> requirement for fragranced products. For certain product types — including bath bombs and soaps — there is an important distinction makers should be aware of:</p>
+    <div class="note-box">
+      <div class="note-title">⚠ Two separate legal requirements may apply</div>
+      <p>Bath bombs, soaps, and other leave-on or rinse-off products applied to the body are governed by <strong>UK Cosmetics Regulation</strong> in addition to GB CLP Regulation. This requires a separate <strong>Cosmetic Product Safety Report (CPSR)</strong> completed by a qualified cosmetic safety assessor, plus a cosmetic product label (INCI list, responsible person, batch number, etc.). CLPeasy covers the CLP hazard label requirement only. If you make cosmetic products, you may legally need both.</p>
+    </div>
+    <p>If you are unsure whether your product requires a CPSR, we recommend consulting the <a href="https://www.gov.uk/guidance/cosmetic-products-how-to-comply-with-the-law" target="_blank" style="color:var(--teal);font-weight:500;">OPSS guidance on cosmetic products</a> or speaking with a qualified cosmetic safety assessor.</p>
+  </div>
+
+  <!-- KEY FACTS -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">📌</div>
+      <div class="section-header-text">
+        <h2>Key Facts</h2>
+        <p>CLPeasy at a glance</p>
+      </div>
+    </div>
+    <div class="facts-grid">
+      <div class="fact-card">
+        <div class="fact-label">Launched</div>
+        <div class="fact-value">15 June 2026</div>
+        <div class="fact-sub">Scottish Borders, UK</div>
+      </div>
+      <div class="fact-card">
+        <div class="fact-label">Regulation covered</div>
+        <div class="fact-value">GB CLP</div>
+        <div class="fact-sub">UK retained law</div>
+      </div>
+      <div class="fact-card">
+        <div class="fact-label">HSE engagement</div>
+        <div class="fact-value">Pre-launch</div>
+        <div class="fact-sub">CLP Helpdesk contacted</div>
+      </div>
+      <div class="fact-card">
+        <div class="fact-label">ICO Registration</div>
+        <div class="fact-value">Registered</div>
+        <div class="fact-sub">Ref: c1959917</div>
+      </div>
+      <div class="fact-card">
+        <div class="fact-label">Trade Mark</div>
+        <div class="fact-value">UK00004395085</div>
+        <div class="fact-sub">Class 42 — filed May 2026</div>
+      </div>
+      <div class="fact-card">
+        <div class="fact-label">Data hosting</div>
+        <div class="fact-value">AWS eu-west-2</div>
+        <div class="fact-sub">UK region via Supabase</div>
+      </div>
+    </div>
+    <div class="tm-badge">
+      ™ CLPeasy is a trade mark of Michaela Feeley. UK Trade Mark UK00004395085, Class 42, filed 31 May 2026. Accepted for publication 9 June 2026.
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon">✉️</div>
+      <div class="section-header-text">
+        <h2>Questions About Compliance</h2>
+        <p>Get in touch if you have questions about how CLPeasy handles regulatory matters</p>
+      </div>
+    </div>
+    <p>If you have questions about CLPeasy's compliance approach, regulatory position, or how the tool applies to your specific products, please contact us at <a href="mailto:support@clpeasy.com" style="color:var(--teal);font-weight:500;">support@clpeasy.com</a>.</p>
+    <p>CLPeasy is operated by Michaela Feeley, CLPeasy, 66 Paul Street, London, EC2A 4NA.</p>
+  </div>
+
+</main>
+
+<footer>
+  <p>CLPeasy™ · 66 Paul Street, London, EC2A 4NA · <a href="mailto:support@clpeasy.com">support@clpeasy.com</a></p>
+  <p style="margin-top:6px;">© 2026 Michaela Feeley · <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a> · <a href="compliance.html">Compliance</a></p>
+</footer>
+
+</body>
+</html>

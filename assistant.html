@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finn — Maker Suite Assistant</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+:root {
+  --teal:#2a9d8f;--teal-dark:#1f7d72;--teal-dim:#1a6b62;--teal-glow:rgba(42,157,143,0.15);--teal-line:rgba(42,157,143,0.25);
+  --bg:#0f1214;--surface:#171c1f;--surface2:#1e2428;--surface3:#252c30;--border:rgba(255,255,255,0.07);
+  --text:#e8edef;--text-dim:#8a9aa0;--text-faint:#4a5a60;--user-bg:#1a2f2d;--error:#e05c5c;--radius:12px;--radius-sm:8px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;overflow:hidden;}
+#app{display:flex;flex-direction:column;height:100vh;max-width:960px;margin:0 auto;}
+
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;gap:10px;}
+.header-left{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.logo-mark{width:30px;height:30px;background:var(--teal);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;color:#fff;flex-shrink:0;}
+.header-title{font-size:14px;font-weight:600;color:var(--text);letter-spacing:-0.2px;}
+.header-sub{font-size:10px;color:var(--text-dim);}
+.header-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.btn-icon{background:var(--surface3);border:1px solid var(--border);color:var(--text-dim);border-radius:var(--radius-sm);padding:5px 9px;font-size:11px;cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap;}
+.btn-icon:hover{background:var(--surface2);color:var(--text);border-color:var(--teal-line);}
+.btn-icon.active{background:var(--teal-glow);color:var(--teal);border-color:var(--teal-line);}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--text-faint);flex-shrink:0;transition:background .3s;}
+.status-dot.ready{background:var(--teal);box-shadow:0 0 6px var(--teal);}
+.status-dot.thinking{background:#f4a261;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+/* NAV BAR - 3 business dropdowns */
+.nav-bar{display:flex;gap:4px;padding:6px 16px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;overflow-x:auto;}
+.nav-bar::-webkit-scrollbar{height:2px;}
+.nav-bar::-webkit-scrollbar-thumb{background:var(--surface3);}
+.nav-dropdown{position:relative;}
+.nav-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);border-radius:var(--radius-sm);padding:5px 11px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;display:flex;align-items:center;gap:5px;transition:all .15s;letter-spacing:0.2px;}
+.nav-btn:hover,.nav-btn.open{background:var(--surface3);color:var(--text);border-color:var(--teal-line);}
+.nav-btn .chevron{font-size:9px;transition:transform .15s;}
+.nav-btn.open .chevron{transform:rotate(180deg);}
+.nav-btn.clpeasy{border-left:3px solid var(--teal);}
+.nav-btn.cmg{border-left:3px solid #e46d69;}
+.nav-btn.aw{border-left:3px solid #9b8bb4;}
+.dropdown-menu{position:absolute;top:calc(100% + 4px);left:0;background:var(--surface);border:1px solid var(--teal-line);border-radius:var(--radius);padding:6px;min-width:220px;z-index:200;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+.dropdown-menu.open{display:block;}
+.dropdown-section{font-size:10px;font-weight:700;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.6px;padding:6px 8px 3px;}
+.dropdown-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;text-decoration:none;color:var(--text-dim);font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.dropdown-item:hover{background:var(--surface2);color:var(--text);}
+.dropdown-item .di-icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.dropdown-item .di-label{flex:1;}
+.dropdown-item .di-url{font-size:10px;color:var(--text-faint);font-family:'JetBrains Mono',monospace;}
+.dropdown-divider{height:1px;background:var(--border);margin:4px 0;}
+
+/* MESSAGES */
+#messages{flex:1;overflow-y:auto;padding:20px 16px;display:flex;flex-direction:column;gap:18px;scroll-behavior:smooth;}
+#messages::-webkit-scrollbar{width:3px;}
+#messages::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px;}
+.welcome{text-align:center;padding:32px 16px;color:var(--text-dim);}
+.welcome-icon{font-size:32px;margin-bottom:12px;display:block;}
+.welcome h2{font-size:17px;font-weight:600;color:var(--text);margin-bottom:6px;letter-spacing:-.3px;}
+.welcome p{font-size:13px;max-width:440px;margin:0 auto 16px;line-height:1.7;}
+.quick-prompts{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;}
+.quick-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);border-radius:var(--radius-sm);padding:6px 12px;font-size:11.5px;cursor:pointer;transition:all .15s;font-family:inherit;}
+.quick-btn:hover{background:var(--surface3);color:var(--text);border-color:var(--teal-line);}
+.msg{display:flex;gap:10px;max-width:100%;}
+.msg-avatar{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;margin-top:2px;font-family:'JetBrains Mono',monospace;}
+.msg.user{flex-direction:row-reverse;}
+.msg.user .msg-avatar{background:var(--teal-dim);color:#fff;}
+.msg.assistant .msg-avatar{background:var(--surface3);color:var(--teal);border:1px solid var(--teal-line);}
+.msg-body{flex:1;min-width:0;}
+.msg.user .msg-body{display:flex;justify-content:flex-end;}
+.msg-bubble{padding:10px 14px;border-radius:var(--radius);font-size:13.5px;line-height:1.65;max-width:100%;}
+.msg.user .msg-bubble{background:var(--user-bg);border:1px solid var(--teal-line);color:var(--text);border-radius:var(--radius) 4px var(--radius) var(--radius);max-width:80%;}
+.msg.assistant .msg-bubble{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:4px var(--radius) var(--radius) var(--radius);}
+.msg-bubble p{margin-bottom:9px;}.msg-bubble p:last-child{margin-bottom:0;}
+.msg-bubble strong{color:var(--text);font-weight:600;}
+.msg-bubble code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--surface3);padding:1px 5px;border-radius:4px;color:var(--teal);border:1px solid var(--border);}
+.msg-bubble pre{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;overflow-x:auto;margin:9px 0;position:relative;}
+.msg-bubble pre code{background:none;border:none;padding:0;color:#a8d8d4;font-size:12px;line-height:1.6;}
+.copy-code-btn{position:absolute;top:7px;right:7px;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer;font-family:inherit;opacity:0;transition:opacity .15s;}
+.msg-bubble pre:hover .copy-code-btn{opacity:1;}
+.msg-bubble ul,.msg-bubble ol{padding-left:18px;margin:7px 0;}
+.msg-bubble li{margin-bottom:3px;}
+.msg-bubble h1,.msg-bubble h2,.msg-bubble h3{color:var(--text);font-weight:600;margin:12px 0 5px;letter-spacing:-.2px;}
+.msg-bubble h1{font-size:15px;}.msg-bubble h2{font-size:14px;}.msg-bubble h3{font-size:13px;color:var(--teal);}
+.msg-bubble table{width:100%;border-collapse:collapse;margin:9px 0;font-size:12px;}
+.msg-bubble th{background:var(--surface3);padding:6px 9px;text-align:left;font-weight:600;border:1px solid var(--border);color:var(--teal);}
+.msg-bubble td{padding:5px 9px;border:1px solid var(--border);vertical-align:top;}
+.msg-bubble tr:nth-child(even) td{background:rgba(255,255,255,.02);}
+.msg-bubble blockquote{border-left:3px solid var(--teal);padding-left:10px;margin:7px 0;color:var(--text-dim);font-style:italic;}
+.msg-bubble hr{border:none;border-top:1px solid var(--border);margin:10px 0;}
+.confidence-bar{display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+.confidence-label{font-size:10px;color:var(--text-faint);}
+.confidence-dots{display:flex;gap:3px;}
+.confidence-dot{width:6px;height:6px;border-radius:50%;background:var(--surface3);}
+.confidence-dot.filled.high{background:var(--teal);}
+.confidence-dot.filled.medium{background:#f4a261;}
+.confidence-dot.filled.low{background:var(--error);}
+.thinking-dots{display:flex;gap:4px;padding:4px 2px;align-items:center;}
+.thinking-dots span{width:6px;height:6px;background:var(--teal);border-radius:50%;animation:bounce 1.2s infinite;opacity:.6;}
+.thinking-dots span:nth-child(2){animation-delay:.2s;}
+.thinking-dots span:nth-child(3){animation-delay:.4s;}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+.msg-error{background:rgba(224,92,92,.1);border:1px solid rgba(224,92,92,.3);color:#f09090;border-radius:var(--radius-sm);padding:9px 12px;font-size:13px;}
+
+/* INPUT */
+#input-area{padding:12px 16px 16px;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+.input-wrap{display:flex;gap:8px;align-items:flex-end;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:9px 10px;transition:border-color .15s;}
+.input-wrap:focus-within{border-color:var(--teal-line);}
+#user-input{flex:1;background:none;border:none;outline:none;color:var(--text);font-family:inherit;font-size:13.5px;line-height:1.5;resize:none;max-height:140px;min-height:22px;overflow-y:auto;}
+#user-input::placeholder{color:var(--text-faint);}
+#send-btn{background:var(--teal);border:none;color:#fff;width:32px;height:32px;border-radius:var(--radius-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s;font-size:15px;}
+#send-btn:hover{background:var(--teal-dark);}
+#send-btn:disabled{background:var(--surface3);cursor:not-allowed;color:var(--text-faint);}
+.input-hint{font-size:10px;color:var(--text-faint);margin-top:5px;text-align:center;}
+
+/* MEMORY PANEL */
+#memory-panel{position:fixed;top:0;right:0;bottom:0;width:300px;background:var(--surface);border-left:1px solid var(--teal-line);z-index:150;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s;}
+#memory-panel.open{transform:translateX(0);}
+.memory-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.memory-header h3{font-size:13px;font-weight:600;color:var(--text);}
+.memory-close{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:16px;padding:2px 6px;}
+.memory-tabs{display:flex;border-bottom:1px solid var(--border);}
+.memory-tab{flex:1;padding:9px;font-size:11px;font-weight:600;text-align:center;cursor:pointer;color:var(--text-dim);border-bottom:2px solid transparent;transition:all .15s;font-family:inherit;background:none;border-top:none;border-left:none;border-right:none;}
+.memory-tab.active{color:var(--teal);border-bottom-color:var(--teal);}
+.memory-body{flex:1;overflow-y:auto;padding:12px;}
+.memory-body::-webkit-scrollbar{width:3px;}
+.memory-body::-webkit-scrollbar-thumb{background:var(--surface3);}
+.memory-section{margin-bottom:16px;}
+.memory-section-title{font-size:10px;font-weight:700;color:var(--text-faint);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;}
+.memory-note{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;margin-bottom:6px;display:flex;align-items:flex-start;gap:8px;}
+.memory-note-text{flex:1;font-size:12px;color:var(--text-dim);line-height:1.5;}
+.memory-note-del{background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:13px;padding:0 2px;flex-shrink:0;}
+.memory-note-del:hover{color:var(--error);}
+.memory-add{display:flex;gap:6px;margin-top:8px;}
+.memory-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-family:inherit;font-size:12px;outline:none;}
+.memory-input:focus{border-color:var(--teal-line);}
+.memory-add-btn{background:var(--teal);border:none;color:#fff;border-radius:6px;padding:7px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.copy-val{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.copy-val-label{font-size:11px;color:var(--text-dim);}
+.copy-val-val{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--teal);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.copy-btn{background:var(--surface3);border:1px solid var(--border);color:var(--text-faint);border-radius:4px;padding:3px 7px;font-size:10px;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
+.copy-btn:hover{color:var(--text);}
+
+/* MODALS */
+#api-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:300;padding:20px;backdrop-filter:blur(4px);}
+#api-modal.hidden{display:none;}
+#settings-panel{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:300;padding:20px;backdrop-filter:blur(4px);}
+#settings-panel.hidden{display:none;}
+.modal-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:440px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.5);}
+.modal-card h2{font-size:18px;font-weight:600;color:var(--text);letter-spacing:-.3px;margin-bottom:6px;}
+.modal-card p{font-size:13px;color:var(--text-dim);line-height:1.6;margin-bottom:16px;}
+.modal-card a{color:var(--teal);text-decoration:none;}
+.field-label{font-size:10px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;}
+.api-input-wrap{display:flex;gap:7px;margin-bottom:7px;}
+#api-key-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;transition:border-color .15s;}
+#api-key-input:focus{border-color:var(--teal-line);}
+#api-key-input::placeholder{color:var(--text-faint);}
+.modal-note{font-size:11px;color:var(--text-faint);margin-bottom:18px;padding:9px 11px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);line-height:1.6;}
+#save-key-btn{width:100%;background:var(--teal);border:none;color:#fff;padding:11px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;transition:background .15s;}
+#save-key-btn:hover{background:var(--teal-dark);}
+.modal-error{font-size:11px;color:var(--error);margin-top:7px;display:none;}
+.settings-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+.settings-row:last-of-type{border-bottom:none;}
+.settings-label{font-size:13px;color:var(--text-dim);}
+.settings-val{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--teal);}
+.settings-actions{display:flex;gap:7px;margin-top:18px;flex-wrap:wrap;}
+.btn-danger{background:rgba(224,92,92,.15);border:1px solid rgba(224,92,92,.3);color:#f09090;border-radius:var(--radius-sm);padding:8px 14px;font-size:12px;cursor:pointer;font-family:inherit;transition:all .15s;}
+.btn-danger:hover{background:rgba(224,92,92,.25);}
+.btn-primary{background:var(--teal);border:none;color:#fff;border-radius:var(--radius-sm);padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s;}
+.btn-primary:hover{background:var(--teal-dark);}
+</style>
+</head>
+<body>
+
+<!-- API KEY MODAL -->
+<div id="api-modal">
+  <div class="modal-card">
+    <div style="display:flex;align-items:center;gap:9px;margin-bottom:20px;">
+      <div class="logo-mark" style="width:36px;height:36px;font-size:14px;">Fi</div>
+      <div><div style="font-size:15px;font-weight:600;color:var(--teal);">Finn</div><div style="font-size:11px;color:var(--text-dim);">One-time setup</div></div>
+    </div>
+    <h2>Set up Finn</h2>
+    <p>Finn runs on the free Gemini API — 1,500 requests/day, no cost. Paste your Google AI Studio key below. It saves permanently in this browser.</p>
+    <div class="field-label">API Key</div>
+    <div class="api-input-wrap">
+      <input type="password" id="api-key-input" placeholder="Paste your API key here..." autocomplete="off" spellcheck="false"/>
+    </div>
+    <div class="modal-note">🔑 Get your free key at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a> — sign in with Google → Create API key → copy and paste here.</div>
+    <button id="save-key-btn">Start talking to Finn →</button>
+    <div class="modal-error" id="modal-error">Key too short — please paste your full API key</div>
+  </div>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div id="settings-panel" class="hidden">
+  <div class="modal-card">
+    <h2>⚙️ Settings</h2>
+    <div class="settings-row"><span class="settings-label">API key</span><span class="settings-val" id="key-status-display">—</span></div>
+    <div class="settings-row"><span class="settings-label">Model</span><span class="settings-val">gemini-2.0-flash</span></div>
+    <div class="settings-row"><span class="settings-label">Context</span><span class="settings-val">CLPeasy · CMG · ArtisansWeb</span></div>
+    <div class="settings-row"><span class="settings-label">Session memory</span><span class="settings-val">Full conversation</span></div>
+    <div class="settings-row"><span class="settings-label">Persistent memory</span><span class="settings-val" id="memory-count-display">0 notes</span></div>
+    <div class="settings-actions">
+      <button class="btn-danger" id="clear-key-btn">Remove API key</button>
+      <button class="btn-danger" id="clear-chat-btn">Clear chat</button>
+      <button class="btn-danger" id="clear-memory-btn">Clear memory</button>
+      <button class="btn-primary" id="close-settings-btn">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <header>
+    <div class="header-left">
+      <div class="logo-mark">Fi</div>
+      <div>
+        <div class="header-title">Finn</div>
+        <div class="header-sub">Maker Suite Assistant</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="status-dot" id="status-dot"></div>
+      <button class="btn-icon" id="memory-btn">🧠 Memory</button>
+      <button class="btn-icon" id="summarise-btn">📋 Summarise</button>
+      <button class="btn-icon" id="settings-btn">⚙</button>
+    </div>
+  </header>
+
+  <!-- 3 BUSINESS NAV DROPDOWNS -->
+  <div class="nav-bar">
+
+    <div class="nav-dropdown">
+      <button class="nav-btn clpeasy" onclick="toggleDropdown('dd-clp',this)">🟢 CLPeasy <span class="chevron">▼</span></button>
+      <div class="dropdown-menu" id="dd-clp">
+        <div class="dropdown-section">Hosting & Code</div>
+        <a class="dropdown-item" href="https://app.netlify.com" target="_blank"><span class="di-icon">🌐</span><span class="di-label">Netlify</span><span class="di-url">app.netlify.com</span></a>
+        <a class="dropdown-item" href="https://github.com/craftymousegifts/clpeasy" target="_blank"><span class="di-icon">🐙</span><span class="di-label">GitHub repo</span><span class="di-url">craftymousegifts/clpeasy</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section">Backend & Payments</div>
+        <a class="dropdown-item" href="https://supabase.com/dashboard/project/qvkosdqcryrcfbjtaxic" target="_blank"><span class="di-icon">⚡</span><span class="di-label">Supabase</span><span class="di-url">qvkosdqcryrcfbjtaxic</span></a>
+        <a class="dropdown-item" href="https://dashboard.stripe.com" target="_blank"><span class="di-icon">💳</span><span class="di-label">Stripe (Live)</span><span class="di-url">dashboard.stripe.com</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section">Email & Analytics</div>
+        <a class="dropdown-item" href="https://app.brevo.com" target="_blank"><span class="di-icon">📧</span><span class="di-label">Brevo</span><span class="di-url">app.brevo.com</span></a>
+        <a class="dropdown-item" href="https://plausible.io" target="_blank"><span class="di-icon">📊</span><span class="di-label">Plausible Analytics</span><span class="di-url">plausible.io</span></a>
+        <a class="dropdown-item" href="https://mail.zoho.eu" target="_blank"><span class="di-icon">📨</span><span class="di-label">Zoho Mail</span><span class="di-url">mail.zoho.eu</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section">Legal & Identity</div>
+        <a class="dropdown-item" href="https://ico.org.uk" target="_blank"><span class="di-icon">🔒</span><span class="di-label">ICO (c1959917)</span><span class="di-url">ico.org.uk</span></a>
+        <a class="dropdown-item" href="https://www.ipo.gov.uk" target="_blank"><span class="di-icon">™️</span><span class="di-label">Trade Mark UK00004395085</span><span class="di-url">ipo.gov.uk</span></a>
+        <a class="dropdown-item" href="https://clpeasy.com" target="_blank"><span class="di-icon">🌍</span><span class="di-label">clpeasy.com (live)</span><span class="di-url">clpeasy.com</span></a>
+      </div>
+    </div>
+
+    <div class="nav-dropdown">
+      <button class="nav-btn cmg" onclick="toggleDropdown('dd-cmg',this)">🐭 Crafty Mouse <span class="chevron">▼</span></button>
+      <div class="dropdown-menu" id="dd-cmg">
+        <div class="dropdown-section">Hosting & Code</div>
+        <a class="dropdown-item" href="https://app.netlify.com" target="_blank"><span class="di-icon">🌐</span><span class="di-label">Netlify</span><span class="di-url">app.netlify.com</span></a>
+        <a class="dropdown-item" href="https://github.com/craftymousegifts" target="_blank"><span class="di-icon">🐙</span><span class="di-label">GitHub</span><span class="di-url">craftymousegifts</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section">Payments & Backend</div>
+        <a class="dropdown-item" href="https://dashboard.stripe.com" target="_blank"><span class="di-icon">💳</span><span class="di-label">Stripe (46 products)</span><span class="di-url">dashboard.stripe.com</span></a>
+        <a class="dropdown-item" href="https://supabase.com/dashboard" target="_blank"><span class="di-icon">⚡</span><span class="di-label">Supabase (cmg-checkout)</span><span class="di-url">supabase.com</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section">Analytics & Social</div>
+        <a class="dropdown-item" href="https://plausible.io" target="_blank"><span class="di-icon">📊</span><span class="di-label">Plausible Analytics</span><span class="di-url">plausible.io</span></a>
+        <a class="dropdown-item" href="https://facebook.com" target="_blank"><span class="di-icon">👍</span><span class="di-label">Facebook Page</span><span class="di-url">facebook.com</span></a>
+        <a class="dropdown-item" href="https://instagram.com" target="_blank"><span class="di-icon">📸</span><span class="di-label">Instagram</span><span class="di-url">instagram.com</span></a>
+        <a class="dropdown-item" href="https://tiktok.com" target="_blank"><span class="di-icon">🎵</span><span class="di-label">TikTok</span><span class="di-url">tiktok.com</span></a>
+        <a class="dropdown-item" href="https://youtube.com" target="_blank"><span class="di-icon">▶️</span><span class="di-label">YouTube</span><span class="di-url">youtube.com</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section">Site</div>
+        <a class="dropdown-item" href="https://craftymousegifts.com" target="_blank"><span class="di-icon">🌍</span><span class="di-label">craftymousegifts.com</span><span class="di-url">live site</span></a>
+      </div>
+    </div>
+
+    <div class="nav-dropdown">
+      <button class="nav-btn aw" onclick="toggleDropdown('dd-aw',this)">🕸️ ArtisansWeb <span class="chevron">▼</span></button>
+      <div class="dropdown-menu" id="dd-aw">
+        <div class="dropdown-section">Domain & Code</div>
+        <a class="dropdown-item" href="https://porkbun.com" target="_blank"><span class="di-icon">🐷</span><span class="di-label">Porkbun (domain)</span><span class="di-url">artisansweb.co.uk</span></a>
+        <a class="dropdown-item" href="https://github.com" target="_blank"><span class="di-icon">🐙</span><span class="di-label">GitHub repo</span><span class="di-url">artisans-web</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section">Planned Infrastructure</div>
+        <a class="dropdown-item" href="https://app.netlify.com" target="_blank"><span class="di-icon">🌐</span><span class="di-label">Netlify (3 projects)</span><span class="di-url">marketing/dashboard/renderer</span></a>
+        <a class="dropdown-item" href="https://supabase.com/dashboard" target="_blank"><span class="di-icon">⚡</span><span class="di-label">Supabase (planned)</span><span class="di-url">supabase.com</span></a>
+        <a class="dropdown-item" href="https://dashboard.stripe.com" target="_blank"><span class="di-icon">💳</span><span class="di-label">Stripe Connect (planned)</span><span class="di-url">dashboard.stripe.com</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section">Site</div>
+        <a class="dropdown-item" href="https://artisansweb.co.uk" target="_blank"><span class="di-icon">🌍</span><span class="di-label">artisansweb.co.uk</span><span class="di-url">in development</span></a>
+      </div>
+    </div>
+
+    <div class="nav-dropdown">
+      <button class="nav-btn" style="border-left:3px solid #f4a261;" onclick="toggleDropdown('dd-shared',this)">🔗 Shared Tools <span class="chevron">▼</span></button>
+      <div class="dropdown-menu" id="dd-shared">
+        <div class="dropdown-section">Content & Media</div>
+        <a class="dropdown-item" href="https://elevenlabs.io" target="_blank"><span class="di-icon">🎙️</span><span class="di-label">ElevenLabs</span><span class="di-url">credits reset 17 Jul</span></a>
+        <a class="dropdown-item" href="https://canva.com" target="_blank"><span class="di-icon">🎨</span><span class="di-label">Canva</span><span class="di-url">canva.com</span></a>
+        <a class="dropdown-item" href="https://obsproject.com" target="_blank"><span class="di-icon">🎬</span><span class="di-label">OBS Studio</span><span class="di-url">screen recording</span></a>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-section">Business</div>
+        <a class="dropdown-item" href="https://businessgateway.org.uk" target="_blank"><span class="di-icon">🏢</span><span class="di-label">Business Gateway</span><span class="di-url">Scottish Borders</span></a>
+        <a class="dropdown-item" href="https://www.gov.uk/log-in-file-self-assessment-tax-return" target="_blank"><span class="di-icon">📋</span><span class="di-label">HMRC Self Assessment</span><span class="di-url">sole trader</span></a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MESSAGES -->
+  <div id="messages">
+    <div class="welcome" id="welcome-screen">
+      <span class="welcome-icon">👋</span>
+      <h2>Hi, I'm Finn. What do you need help with?</h2>
+      <p>I know your full stack across all three businesses. Ask me anything technical or strategic — use the dropdowns above to jump straight to any service.</p>
+      <div class="quick-prompts">
+        <button class="quick-btn" onclick="quickPrompt(this)">Debug a Supabase edge function</button>
+        <button class="quick-btn" onclick="quickPrompt(this)">Fix a CSS issue in builder.html</button>
+        <button class="quick-btn" onclick="quickPrompt(this)">Deploy to Netlify from GitHub Desktop</button>
+        <button class="quick-btn" onclick="quickPrompt(this)">Write a Brevo email sequence step</button>
+        <button class="quick-btn" onclick="quickPrompt(this)">Explain a Stripe webhook error</button>
+        <button class="quick-btn" onclick="quickPrompt(this)">What's on my post-launch todo list?</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="input-area">
+    <div class="input-wrap">
+      <textarea id="user-input" rows="1" placeholder="Ask Finn anything about your stack…" autocomplete="off" spellcheck="true"></textarea>
+      <button id="send-btn" title="Send (Enter)">↑</button>
+    </div>
+    <div class="input-hint">Enter to send · Shift+Enter for new line · Finn remembers this session · 🧠 Memory panel saves facts permanently</div>
+  </div>
+</div>
+
+<!-- MEMORY PANEL -->
+<div id="memory-panel">
+  <div class="memory-header">
+    <h3>🧠 Finn's Memory</h3>
+    <button class="memory-close" onclick="closeMemory()">✕</button>
+  </div>
+  <div class="memory-tabs">
+    <button class="memory-tab active" onclick="switchMemoryTab('notes',this)">Saved Notes</button>
+    <button class="memory-tab" onclick="switchMemoryTab('values',this)">Quick Copy</button>
+  </div>
+  <div class="memory-body" id="memory-notes-tab">
+    <div class="memory-section">
+      <div class="memory-section-title">Facts saved across sessions</div>
+      <div id="notes-list"></div>
+      <div class="memory-add">
+        <input class="memory-input" id="new-note-input" placeholder="e.g. builder.html is now v28" />
+        <button class="memory-add-btn" onclick="addNote()">+ Save</button>
+      </div>
+    </div>
+  </div>
+  <div class="memory-body" id="memory-values-tab" style="display:none;">
+    <div class="memory-section">
+      <div class="memory-section-title">CLPeasy</div>
+      <div class="copy-val"><span class="copy-val-label">Supabase ref</span><span class="copy-val-val">qvkosdqcryrcfbjtaxic</span><button class="copy-btn" onclick="copyVal('qvkosdqcryrcfbjtaxic',this)">Copy</button></div>
+      <div class="copy-val"><span class="copy-val-label">Address</span><span class="copy-val-val">66 Paul Street EC2A 4NA</span><button class="copy-btn" onclick="copyVal('CLPeasy, 66 Paul Street, London, EC2A 4NA',this)">Copy</button></div>
+      <div class="copy-val"><span class="copy-val-label">Support email</span><span class="copy-val-val">support@clpeasy.com</span><button class="copy-btn" onclick="copyVal('support@clpeasy.com',this)">Copy</button></div>
+      <div class="copy-val"><span class="copy-val-label">Trade mark</span><span class="copy-val-val">UK00004395085</span><button class="copy-btn" onclick="copyVal('UK00004395085',this)">Copy</button></div>
+      <div class="copy-val"><span class="copy-val-label">ICO ref</span><span class="copy-val-val">c1959917</span><button class="copy-btn" onclick="copyVal('c1959917',this)">Copy</button></div>
+      <div class="copy-val"><span class="copy-val-label">Teal colour</span><span class="copy-val-val">#2a9d8f</span><button class="copy-btn" onclick="copyVal('#2a9d8f',this)">Copy</button></div>
+      <div class="copy-val"><span class="copy-val-label">Deploy cmd</span><span class="copy-val-val">supabase functions deploy...</span><button class="copy-btn" onclick="copyVal('supabase functions deploy [function] --project-ref qvkosdqcryrcfbjtaxic --no-verify-jwt --use-api',this)">Copy</button></div>
+    </div>
+    <div class="memory-section">
+      <div class="memory-section-title">Crafty Mouse Gifts</div>
+      <div class="copy-val"><span class="copy-val-label">Coral colour</span><span class="copy-val-val">#e46d69</span><button class="copy-btn" onclick="copyVal('#e46d69',this)">Copy</button></div>
+      <div class="copy-val"><span class="copy-val-label">Blush colour</span><span class="copy-val-val">#f3e8e6</span><button class="copy-btn" onclick="copyVal('#f3e8e6',this)">Copy</button></div>
+      <div class="copy-val"><span class="copy-val-label">Near-black</span><span class="copy-val-val">#1e1e1e</span><button class="copy-btn" onclick="copyVal('#1e1e1e',this)">Copy</button></div>
+    </div>
+    <div class="memory-section">
+      <div class="memory-section-title">ArtisansWeb</div>
+      <div class="copy-val"><span class="copy-val-label">Domain</span><span class="copy-val-val">artisansweb.co.uk</span><button class="copy-btn" onclick="copyVal('artisansweb.co.uk',this)">Copy</button></div>
+      <div class="copy-val"><span class="copy-val-label">Local repo</span><span class="copy-val-val">C:\Users\micha\...\artisans-web</span><button class="copy-btn" onclick="copyVal('C:\\Users\\micha\\Documents\\GitHub\\artisans-web',this)">Copy</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── SYSTEM PROMPT ─────────────────────────────────────────────────────────
+const BASE_SYSTEM_PROMPT = `Your name is Finn. You are the dedicated personal technical and strategic assistant for Michaela Feeley, a solo founder based in the Scottish Borders, UK. You have a warm but direct personality — knowledgeable, calm, and straight to the point. You feel like a trusted colleague who genuinely knows Michaela's businesses inside out. You refer to yourself as Finn when it feels natural. You never say you are an AI or a language model — you are Finn, Michaela's assistant. Always give technically precise, actionable answers. Never be vague. When writing code, write complete working snippets. When debugging, give specific causes and fixes first.
+
+SELF-CHECKING RULE: Before answering any question you have already addressed in this conversation, explicitly check your previous answer and either confirm it was correct or correct it. State clearly if you are revising a previous answer.
+
+UNCERTAINTY RULE: If you are not certain about a specific value, version, or fact, explicitly say "I'm not certain about this — you should verify:" before giving your best answer. Never guess and present it as fact.
+
+CLARIFICATION RULE: For complex or ambiguous requests (anything involving multiple files, a full feature build, or unclear scope), ask one clarifying question before proceeding.
+
+CONFIDENCE RULE: End each technical answer with a confidence indicator in this exact format on a new line: [CONFIDENCE: HIGH] or [CONFIDENCE: MEDIUM — verify X] or [CONFIDENCE: LOW — please check]
+
+## MICHAELA FEELEY — WHO YOU ARE TALKING TO
+- Sole founder of three interconnected UK businesses
+- 25+ years enterprise IT background (previously at AirWatch and VMware UK)
+- Builds all three platforms solo using AI-assisted coding
+- Candle and wax melt maker herself — directly informs CLPeasy's "built by a maker, for makers" positioning
+- Supported by Business Gateway in the Scottish Borders
+- Sells at craft fairs; retail presence through Hair by Hannah salon in Duns
+- Business registered as sole trader with HMRC; not VAT registered
+- Always use full name: Michaela Feeley (never Sherrington)
+
+---
+
+## BUSINESS 1: CLPeasy (clpeasy.com)
+
+### Overview
+- SaaS CLP label compliance tool for UK fragrance product makers (candles, wax melts, reed diffusers, soaps, bath bombs)
+- Tagline: "Built by a maker, for makers"
+- Launched: 15 June 2026
+- Inspiration: Joy Mangano
+
+### Pricing
+- Easy Start: £9.99/month or £99/year
+- Easy Pro: £14.99/month or £149/year
+- 14-day free trial (no credit card required)
+- Top-up packs: 5 downloads £3.99 / 10 downloads £7.99
+- Year 1 projection: ~£2,100 net gross revenue, ~55 active paying subscribers at Month 12
+- Primary customers: multi-product makers hitting 25–35 labels/month, driving Pro tier adoption
+
+### Legal & Identity
+- Address: CLPeasy, 66 Paul Street, London, EC2A 4NA (Hoxton Mix virtual address)
+- Trade mark: UK00004395085, Class 42, filed 31 May 2026, ref CLPeasyTM — accepted for publication 9 June 2026 — use ™ only until certificate (expected mid-August 2026). Do NOT use ® until registered.
+- ICO registration: Completed, direct debit ref c1959917, £40/year — status: registered/active
+- Do NOT add any "CLP approved/compliant" badge until official verification obtained
+- NI Candle Supplies and Supplies for Candles contacted re live SDS dropdown — no reply yet
+
+### Regulatory Position
+- CLPeasy proactively contacted HSE CLP Helpdesk before launch
+- HSE confirmed no specific regulatory obligations apply to software tools of this nature
+- Responsibility for label accuracy sits with the user as responsible person
+- CLPeasy does not classify substances — assists users applying classifications from supplier SDS
+- Compliance pages created: compliance.html, updated faq.html, updated terms.html (Clause 5: Cosmetic Products Notice)
+- Cosmetic products (bath bombs, soaps) may need BOTH a CLP label AND cosmetic label under UK Cosmetics Regulation (CPSR required) — CLPeasy covers CLP only
+
+### Tech Stack
+- Frontend: Vanilla HTML/CSS/JS, hosted on Netlify
+- Repo: GitHub — craftymousegifts/clpeasy (Dev branch → main → Netlify rebuild)
+- Backend: Supabase, project ref: qvkosdqcryrcfbjtaxic, region: AWS eu-west-2
+- Supabase tables: profiles, subscriptions, safety_sheets, beta_feedback
+- Supabase edge functions: create-checkout-session, stripe-webhook, notify-signup, plausible-proxy
+- Deploy command (CMD not PowerShell): supabase functions deploy [function] --project-ref qvkosdqcryrcfbjtaxic --no-verify-jwt --use-api — run from C:\Users\micha\Documents\GitHub\clpeasy
+- Payments: Stripe LIVE. Four live price IDs in Supabase secrets. pk_live_ in pricing.html + builder.html.
+- Stripe checklist: Replace pk_test_ → pk_live_ in pricing.html + builder.html; update four price IDs; set STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET to live values; redeploy create-checkout-session and stripe-webhook
+- Email: Brevo — support@clpeasy.com and noreply@clpeasy.com via Zoho Mail
+- Brevo sequences: Free trial Days 2/5/10/12/14; Paid Days 0/7/30; Annual renewal workflow #3 active
+- Day 7 paid email: feedback ask — "reply to this email" approach. Day 30 paid email: one-month check-in + referral ask
+- Auth: Supabase Auth with Google OAuth. Todo: auth.clpeasy.com custom domain
+- Analytics: Plausible, proxied via plausible-proxy edge function. Custom events across all pages.
+- monitor.html: internal dashboard, Plausible analytics cards (teal), editable action items, legal checklist, ICO card. Password gate removed.
+
+### Key File Rules
+- CRITICAL: Home page = home.html NEVER index.html. index.html = Coming Soon page only.
+- builder.html: core label tool v27+. EN 15494 pictograms (BCF JPEG, candle-type gated), GHS PNG export (iOS/Safari workaround), narrow label font scaling, EUH208, P statement overflow, address font sizing, pictogram library saving
+- monitor.html: internal dashboard
+- pricing.html: Stripe live price IDs
+- GitHub: Commit Dev → merge to main → push. Batch pushes to conserve Netlify build credits.
+
+### Post-Launch Todos
+- Fix "Load from Library" button in builder.html
+- Build link-checker.html (password-gated)
+- Browser/device compatibility testing
+- Set up auth.clpeasy.com
+- Chase beta testers: Susan Park and Lisa Solares
+- Chase NI Candle Supplies and Supplies for Candles re SDS dropdown
+- Upload compliance.html, updated faq.html, updated terms.html
+- Add Compliance link to nav across all pages
+
+### Contacts
+- Beta testers: Roy (rossellobate@gmail.com), Susan Park, Lisa Solares
+- Business Gateway: Michael Gardner (AI prompting), Lesley Landels at Love Scottish (potential user)
+- Branding: teal #2a9d8f
+
+---
+
+## BUSINESS 2: Crafty Mouse Gifts (craftymousegifts.com)
+
+### Overview
+- Handmade candles, wax melts, resin gifts brand, Scottish Borders
+- Products: soy candles, wax melts, resin gifts, chakra candles, keyrings, fridge magnets, Tartan Roar limited edition wax melt (Scotland World Cup 2026)
+- Retail: Hair by Hannah salon in Duns. Craft fairs.
+- Channels: Facebook, Instagram, TikTok, YouTube
+- Revenue goal: £300–£1,500/month first six months
+
+### Tech Stack
+- Migrated from Create.net (£40/month) to Netlify/GitHub mid-June 2026
+- Multi-page: home, shop, scent-finder, wellness, about, contact
+- 46 Stripe products from CSV
+- Custom cart: cmg-cart.js (Stripe cart drawer, replaced Snipcart)
+- Checkout: cmg-checkout Supabase edge function
+- Scent variant dropdowns on chakra candle cards
+- Analytics: Plausible
+- netlify.toml with Create.net URL redirects
+- Logo transparency fixed with Python/Pillow
+- Branding: blush #f3e8e6, coral #e46d69, near-black #1e1e1e
+
+---
+
+## BUSINESS 3: ArtisansWeb (artisansweb.co.uk)
+
+### Overview
+- Digital storefront platform for indie craft businesses — early development
+- Strategic moat: CLPeasy cross-sell — "Maker Suite" bundle concept
+- Domain: artisansweb.co.uk on Porkbun (expires 2027-06-16)
+- Local repo: C:\Users\micha\Documents\GitHub\artisans-web
+
+### Architecture (locked)
+- Vanilla HTML/JS + Supabase (mirrors CLPeasy)
+- Stripe Connect from day one
+- Three Netlify projects: marketing site, seller dashboard, storefront renderer
+- Wildcard subdomains for Starter; CNAME for Growth custom domains
+
+---
+
+## CROSS-CUTTING RULES
+- All businesses: Netlify hosting, Supabase backend, Stripe payments, GitHub Desktop
+- Documents: always PDF, never .docx
+- CLPeasy address: CLPeasy, 66 Paul Street, London, EC2A 4NA
+- Full name: Michaela Feeley (never Sherrington)
+- AI-assisted coding is primary dev method
+
+## MARKETING & CONTENT
+- YouTube tutorial for CLPeasy in progress: ElevenLabs (free, resets 17 July 2026), Canva + OBS + CapCut
+- Business Gateway: Michael Gardner, Lesley Landels at Love Scottish`;
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let conversationHistory = [];
+let isThinking = false;
+let apiKey = localStorage.getItem('finn_gemini_key') || '';
+let savedNotes = JSON.parse(localStorage.getItem('finn_notes') || '[]');
+
+function buildSystemPrompt() {
+  let prompt = BASE_SYSTEM_PROMPT;
+  if (savedNotes.length > 0) {
+    prompt += '\n\n## MICHAELA\'S SAVED MEMORY NOTES (user-added facts, treat as current truth)\n';
+    savedNotes.forEach((n,i) => { prompt += `${i+1}. ${n}\n`; });
+  }
+  return prompt;
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (apiKey) { document.getElementById('api-modal').classList.add('hidden'); setStatus('ready'); }
+  renderNotes();
+  const ta = document.getElementById('user-input');
+  ta.addEventListener('input', () => { ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,140)+'px'; });
+  ta.addEventListener('keydown', e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} });
+  document.getElementById('send-btn').addEventListener('click', sendMessage);
+  document.getElementById('save-key-btn').addEventListener('click', saveApiKey);
+  document.getElementById('api-key-input').addEventListener('keydown', e => { if(e.key==='Enter') saveApiKey(); });
+  document.getElementById('settings-btn').addEventListener('click', openSettings);
+  document.getElementById('close-settings-btn').addEventListener('click', closeSettings);
+  document.getElementById('clear-key-btn').addEventListener('click', clearKey);
+  document.getElementById('clear-chat-btn').addEventListener('click', clearChat);
+  document.getElementById('clear-memory-btn').addEventListener('click', clearMemory);
+  document.getElementById('memory-btn').addEventListener('click', toggleMemory);
+  document.getElementById('summarise-btn').addEventListener('click', summariseChat);
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.nav-dropdown')) closeAllDropdowns();
+  });
+});
+
+// ── DROPDOWNS ─────────────────────────────────────────────────────────────
+function toggleDropdown(id, btn) {
+  const menu = document.getElementById(id);
+  const isOpen = menu.classList.contains('open');
+  closeAllDropdowns();
+  if (!isOpen) { menu.classList.add('open'); btn.classList.add('open'); }
+}
+function closeAllDropdowns() {
+  document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('open'));
+}
+
+// ── MEMORY PANEL ──────────────────────────────────────────────────────────
+function toggleMemory() {
+  const panel = document.getElementById('memory-panel');
+  const btn = document.getElementById('memory-btn');
+  panel.classList.toggle('open');
+  btn.classList.toggle('active');
+}
+function closeMemory() {
+  document.getElementById('memory-panel').classList.remove('open');
+  document.getElementById('memory-btn').classList.remove('active');
+}
+function switchMemoryTab(tab, el) {
+  document.querySelectorAll('.memory-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('memory-notes-tab').style.display = tab==='notes' ? 'block' : 'none';
+  document.getElementById('memory-values-tab').style.display = tab==='values' ? 'block' : 'none';
+}
+function renderNotes() {
+  const list = document.getElementById('notes-list');
+  if (!list) return;
+  list.innerHTML = '';
+  if (savedNotes.length === 0) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--text-faint);padding:8px 0;">No saved notes yet. Add facts Finn should always remember.</div>';
+  } else {
+    savedNotes.forEach((note, i) => {
+      const el = document.createElement('div');
+      el.className = 'memory-note';
+      el.innerHTML = `<span class="memory-note-text">${note}</span><button class="memory-note-del" onclick="deleteNote(${i})">✕</button>`;
+      list.appendChild(el);
+    });
+  }
+  const countEl = document.getElementById('memory-count-display');
+  if (countEl) countEl.textContent = savedNotes.length + ' notes';
+}
+function addNote() {
+  const input = document.getElementById('new-note-input');
+  const val = input.value.trim();
+  if (!val) return;
+  savedNotes.push(val);
+  localStorage.setItem('finn_notes', JSON.stringify(savedNotes));
+  input.value = '';
+  renderNotes();
+}
+function deleteNote(i) {
+  savedNotes.splice(i, 1);
+  localStorage.setItem('finn_notes', JSON.stringify(savedNotes));
+  renderNotes();
+}
+function clearMemory() {
+  savedNotes = [];
+  localStorage.removeItem('finn_notes');
+  renderNotes();
+  closeSettings();
+}
+function copyVal(val, btn) {
+  navigator.clipboard.writeText(val).then(() => {
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 1500);
+  });
+}
+document.getElementById('new-note-input') && document.getElementById('new-note-input').addEventListener('keydown', e => { if(e.key==='Enter') addNote(); });
+
+// ── API KEY ───────────────────────────────────────────────────────────────
+function saveApiKey() {
+  const input = document.getElementById('api-key-input').value.trim();
+  if (input.length < 20) { document.getElementById('modal-error').style.display='block'; return; }
+  apiKey = input;
+  localStorage.setItem('finn_gemini_key', apiKey);
+  document.getElementById('api-modal').classList.add('hidden');
+  setStatus('ready');
+}
+function clearKey() {
+  localStorage.removeItem('finn_gemini_key'); apiKey=''; conversationHistory=[];
+  closeSettings(); document.getElementById('api-modal').classList.remove('hidden'); setStatus('off');
+}
+function openSettings() {
+  const d = document.getElementById('key-status-display');
+  d.textContent = apiKey ? '✓ saved ('+apiKey.slice(0,8)+'…)' : 'not set';
+  const c = document.getElementById('memory-count-display');
+  if(c) c.textContent = savedNotes.length+' notes';
+  document.getElementById('settings-panel').classList.remove('hidden');
+}
+function closeSettings() { document.getElementById('settings-panel').classList.add('hidden'); }
+
+// ── STATUS ────────────────────────────────────────────────────────────────
+function setStatus(s) {
+  const dot = document.getElementById('status-dot');
+  dot.className='status-dot';
+  if(s==='ready') dot.classList.add('ready');
+  if(s==='thinking') dot.classList.add('thinking');
+}
+
+// ── QUICK PROMPTS ─────────────────────────────────────────────────────────
+function quickPrompt(btn) {
+  const ta = document.getElementById('user-input');
+  ta.value = btn.textContent; ta.focus(); ta.dispatchEvent(new Event('input'));
+}
+
+// ── SUMMARISE ─────────────────────────────────────────────────────────────
+async function summariseChat() {
+  if (conversationHistory.length === 0) { appendError('No conversation to summarise yet.'); return; }
+  const welcome = document.getElementById('welcome-screen'); if(welcome) welcome.remove();
+  const summary_req = 'Please summarise our conversation so far — key topics covered, decisions made, and any open items or todos that came up.';
+  appendMessage('user', '📋 Summarise our conversation');
+  conversationHistory.push({role:'user', parts:[{text:summary_req}]});
+  isThinking=true; setStatus('thinking'); document.getElementById('send-btn').disabled=true;
+  const thinkEl = appendThinking();
+  try {
+    const resp = await callGemini();
+    thinkEl.remove();
+    if(resp.error) { appendError(resp.error.message||'API error'); }
+    else {
+      const reply = resp.candidates?.[0]?.content?.parts?.[0]?.text||'No response.';
+      appendMessage('assistant', reply);
+      conversationHistory.push({role:'model', parts:[{text:reply}]});
+    }
+  } catch(err) { thinkEl.remove(); appendError('Network error: '+err.message); }
+  isThinking=false; setStatus('ready'); document.getElementById('send-btn').disabled=false;
+}
+
+// ── SEND MESSAGE ──────────────────────────────────────────────────────────
+async function sendMessage() {
+  const ta = document.getElementById('user-input');
+  const text = ta.value.trim();
+  if(!text||isThinking) return;
+  if(!apiKey) { document.getElementById('api-modal').classList.remove('hidden'); return; }
+  const welcome = document.getElementById('welcome-screen'); if(welcome) welcome.remove();
+  appendMessage('user', text);
+  conversationHistory.push({role:'user', parts:[{text}]});
+  ta.value=''; ta.style.height='auto';
+  isThinking=true; setStatus('thinking'); document.getElementById('send-btn').disabled=true;
+  const thinkEl = appendThinking();
+  try {
+    const resp = await callGemini();
+    thinkEl.remove();
+    if(resp.error) { appendError(resp.error.message||'API error — check key in Settings.'); }
+    else {
+      const reply = resp.candidates?.[0]?.content?.parts?.[0]?.text||'No response received.';
+      appendMessage('assistant', reply);
+      conversationHistory.push({role:'model', parts:[{text:reply}]});
+    }
+  } catch(err) { thinkEl.remove(); appendError('Network error: '+err.message); }
+  isThinking=false; setStatus('ready'); document.getElementById('send-btn').disabled=false;
+  ta.focus();
+}
+
+// ── GEMINI API ────────────────────────────────────────────────────────────
+async function callGemini() {
+  const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+  const body={
+    system_instruction:{parts:[{text:buildSystemPrompt()}]},
+    contents:conversationHistory,
+    generationConfig:{temperature:0.35,maxOutputTokens:8192}
+  };
+  const res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  return res.json();
+}
+
+// ── CLEAR CHAT ────────────────────────────────────────────────────────────
+function clearChat() {
+  conversationHistory=[];
+  const msgs=document.getElementById('messages'); msgs.innerHTML='';
+  const w=document.createElement('div'); w.className='welcome'; w.id='welcome-screen';
+  w.innerHTML=`<span class="welcome-icon">👋</span><h2>Hi, I'm Finn. What do you need help with?</h2><p>I know your full stack across all three businesses. Ask me anything technical or strategic.</p><div class="quick-prompts"><button class="quick-btn" onclick="quickPrompt(this)">Debug a Supabase edge function</button><button class="quick-btn" onclick="quickPrompt(this)">Fix a CSS issue in builder.html</button><button class="quick-btn" onclick="quickPrompt(this)">Deploy to Netlify from GitHub Desktop</button><button class="quick-btn" onclick="quickPrompt(this)">Write a Brevo email sequence step</button><button class="quick-btn" onclick="quickPrompt(this)">Explain a Stripe webhook error</button><button class="quick-btn" onclick="quickPrompt(this)">What's on my post-launch todo list?</button></div>`;
+  msgs.appendChild(w); closeSettings();
+}
+
+// ── DOM HELPERS ───────────────────────────────────────────────────────────
+function appendMessage(role, text) {
+  const msgs=document.getElementById('messages');
+  const msg=document.createElement('div'); msg.className=`msg ${role}`;
+  const av=document.createElement('div'); av.className='msg-avatar'; av.textContent=role==='user'?'MF':'Fi';
+  const body=document.createElement('div'); body.className='msg-body';
+  const bubble=document.createElement('div'); bubble.className='msg-bubble';
+
+  // Parse confidence indicator
+  let displayText = text;
+  let confidence = null;
+  const confMatch = text.match(/\[CONFIDENCE:\s*(HIGH|MEDIUM[^\]]*|LOW[^\]]*)\]/i);
+  if (confMatch) {
+    confidence = confMatch[1].toUpperCase();
+    displayText = text.replace(confMatch[0], '').trim();
+  }
+
+  bubble.innerHTML = renderMarkdown(displayText);
+
+  // Add confidence bar
+  if (confidence && role === 'assistant') {
+    const level = confidence.startsWith('HIGH') ? 'high' : confidence.startsWith('MEDIUM') ? 'medium' : 'low';
+    const label = confidence.startsWith('HIGH') ? 'High confidence' : confidence.startsWith('MEDIUM') ? confidence.replace('MEDIUM','Medium confidence') : confidence.replace('LOW','Low confidence');
+    const dots = [1,2,3].map(d => `<div class="confidence-dot filled ${d<=( level==='high'?3:level==='medium'?2:1)?level:''}"></div>`).join('');
+    const bar = document.createElement('div'); bar.className='confidence-bar';
+    bar.innerHTML=`<span class="confidence-label">${label}</span><div class="confidence-dots">${dots}</div>`;
+    bubble.appendChild(bar);
+  }
+
+  // Copy buttons for code blocks
+  bubble.querySelectorAll('pre').forEach(pre => {
+    const btn=document.createElement('button'); btn.className='copy-code-btn'; btn.textContent='Copy';
+    btn.addEventListener('click',()=>{
+      navigator.clipboard.writeText(pre.querySelector('code')?.textContent||pre.textContent).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500);});
+    });
+    pre.appendChild(btn);
+  });
+
+  body.appendChild(bubble); msg.appendChild(av); msg.appendChild(body);
+  msgs.appendChild(msg); msgs.scrollTop=msgs.scrollHeight;
+  return msg;
+}
+
+function appendThinking() {
+  const msgs=document.getElementById('messages');
+  const msg=document.createElement('div'); msg.className='msg assistant';
+  const av=document.createElement('div'); av.className='msg-avatar'; av.textContent='Fi';
+  const body=document.createElement('div'); body.className='msg-body';
+  const bubble=document.createElement('div'); bubble.className='msg-bubble';
+  bubble.innerHTML='<div class="thinking-dots"><span></span><span></span><span></span></div>';
+  body.appendChild(bubble); msg.appendChild(av); msg.appendChild(body);
+  msgs.appendChild(msg); msgs.scrollTop=msgs.scrollHeight;
+  return msg;
+}
+
+function appendError(text) {
+  const msgs=document.getElementById('messages');
+  const err=document.createElement('div'); err.className='msg-error'; err.textContent='⚠ '+text;
+  msgs.appendChild(err); msgs.scrollTop=msgs.scrollHeight;
+}
+
+// ── MARKDOWN ──────────────────────────────────────────────────────────────
+function renderMarkdown(text) {
+  let html=text;
+  const codeBlocks=[]; const inlineCodes=[];
+  html=html.replace(/```(\w*)\n?([\s\S]*?)```/g,(_,lang,code)=>{
+    const i=codeBlocks.length;
+    codeBlocks.push(`<pre><code class="language-${lang}">${escapeHtml(code.trim())}</code></pre>`);
+    return `\x00CODE${i}\x00`;
+  });
+  html=html.replace(/`([^`]+)`/g,(_,code)=>{
+    const i=inlineCodes.length; inlineCodes.push(`<code>${escapeHtml(code)}</code>`); return `\x00INLINE${i}\x00`;
+  });
+  html=html.replace(/^### (.+)$/gm,'<h3>$1</h3>');
+  html=html.replace(/^## (.+)$/gm,'<h2>$1</h2>');
+  html=html.replace(/^# (.+)$/gm,'<h1>$1</h1>');
+  html=html.replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>');
+  html=html.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  html=html.replace(/\*(.+?)\*/g,'<em>$1</em>');
+  html=html.replace(/^---$/gm,'<hr>');
+  html=html.replace(/\|(.+)\|\n\|[-| :]+\|\n((?:\|.+\|\n?)+)/g,match=>{
+    const lines=match.trim().split('\n');
+    const headers=lines[0].split('|').filter(c=>c.trim()).map(c=>`<th>${c.trim()}</th>`).join('');
+    const rows=lines.slice(2).map(row=>{const cells=row.split('|').filter(c=>c.trim()).map(c=>`<td>${c.trim()}</td>`).join('');return`<tr>${cells}</tr>`;}).join('');
+    return`<table><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table>`;
+  });
+  html=html.replace(/((?:^[-*] .+\n?)+)/gm,match=>{
+    const items=match.trim().split('\n').map(l=>`<li>${l.replace(/^[-*] /,'')}</li>`).join('');
+    return`<ul>${items}</ul>`;
+  });
+  html=html.replace(/((?:^\d+\. .+\n?)+)/gm,match=>{
+    const items=match.trim().split('\n').map(l=>`<li>${l.replace(/^\d+\. /,'')}</li>`).join('');
+    return`<ol>${items}</ol>`;
+  });
+  html=html.replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>');
+  html=html.replace(/^(?!<[houbtpdhro]|$|\x00)(.+)$/gm,'<p>$1</p>');
+  html=html.replace(/\x00CODE(\d+)\x00/g,(_,i)=>codeBlocks[i]);
+  html=html.replace(/\x00INLINE(\d+)\x00/g,(_,i)=>inlineCodes[i]);
+  return html;
+}
+function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+</script>
+</body>
+</html>
