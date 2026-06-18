@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -114,6 +114,20 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 #send-btn:hover{background:var(--teal-dark);}
 #send-btn:disabled{background:var(--surface3);cursor:not-allowed;color:var(--text-faint);}
 .input-hint{font-size:10px;color:var(--text-faint);margin-top:5px;text-align:center;}
+/* FILE UPLOAD & STOP & EXPORT */
+#file-input{display:none;}
+.attach-btn{background:var(--surface3);border:1px solid var(--border);color:var(--text-dim);border-radius:var(--radius-sm);width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;flex-shrink:0;transition:all .15s;}
+.attach-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--teal-line);}
+#stop-btn{background:#c0392b;border:none;color:#fff;width:32px;height:32px;border-radius:var(--radius-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;transition:background .15s;display:none;}
+#stop-btn:hover{background:#e74c3c;}
+#stop-btn.visible{display:flex;}
+.file-preview{display:flex;flex-wrap:wrap;gap:6px;padding:6px 10px 0;}
+.file-chip{display:flex;align-items:center;gap:5px;background:var(--surface3);border:1px solid var(--teal-line);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--teal);}
+.file-chip-remove{background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:12px;padding:0;line-height:1;}
+.file-chip-remove:hover{color:var(--error);}
+.export-btn{background:var(--surface3);border:1px solid var(--border);color:var(--text-dim);border-radius:4px;padding:2px 7px;font-size:10px;cursor:pointer;font-family:inherit;margin-top:6px;transition:all .15s;}
+.export-btn:hover{color:var(--text);border-color:var(--teal-line);}
+
 
 /* MEMORY PANEL */
 #memory-panel{position:fixed;top:0;right:0;bottom:0;width:300px;background:var(--surface);border-left:1px solid var(--teal-line);z-index:150;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s;}
@@ -170,9 +184,96 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 .btn-danger:hover{background:rgba(224,92,92,.25);}
 .btn-primary{background:var(--teal);border:none;color:#fff;border-radius:var(--radius-sm);padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s;}
 .btn-primary:hover{background:var(--teal-dark);}
+
+/* SIDE PANEL SHARED */
+.side-panel{position:fixed;top:0;right:0;bottom:0;width:320px;background:var(--surface);border-left:1px solid var(--teal-line);z-index:150;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s;}
+.side-panel.open{transform:translateX(0);}
+.panel-header{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.panel-header h3{font-size:13px;font-weight:600;color:var(--text);}
+.panel-close{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:16px;padding:2px 6px;}
+.panel-tabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;}
+.panel-tab{flex:1;padding:8px;font-size:11px;font-weight:600;text-align:center;cursor:pointer;color:var(--text-dim);border-bottom:2px solid transparent;transition:all .15s;font-family:inherit;background:none;border-top:none;border-left:none;border-right:none;}
+.panel-tab.active{color:var(--teal);border-bottom-color:var(--teal);}
+.panel-body{flex:1;overflow-y:auto;padding:12px;}
+.panel-body::-webkit-scrollbar{width:3px;}
+.panel-body::-webkit-scrollbar-thumb{background:var(--surface3);}
+.panel-section-title{font-size:10px;font-weight:700;color:var(--text-faint);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;}
+.panel-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-family:inherit;font-size:12px;outline:none;margin-bottom:6px;}
+.panel-input:focus{border-color:var(--teal-line);}
+.panel-btn{background:var(--teal);border:none;color:#fff;border-radius:6px;padding:7px 12px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.panel-btn-sm{background:var(--surface3);border:1px solid var(--border);color:var(--text-dim);border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer;font-family:inherit;}
+.panel-btn-sm:hover{color:var(--text);border-color:var(--teal-line);}
+.panel-btn-danger{background:rgba(224,92,92,.15);border:1px solid rgba(224,92,92,.3);color:#f09090;}
+.panel-row{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;margin-bottom:6px;display:flex;align-items:flex-start;gap:8px;}
+.panel-row-text{flex:1;font-size:12px;color:var(--text-dim);line-height:1.5;}
+.panel-row-del{background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:12px;padding:0 2px;flex-shrink:0;}
+.panel-row-del:hover{color:var(--error);}
+.panel-add-row{display:flex;gap:6px;margin-top:8px;}
+.panel-empty{font-size:12px;color:var(--text-faint);padding:8px 0;line-height:1.6;}
+
+/* TODO */
+.todo-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;margin-bottom:5px;display:flex;align-items:flex-start;gap:8px;cursor:pointer;transition:all .15s;}
+.todo-item:hover{border-color:var(--teal-line);}
+.todo-item.done{opacity:.5;}
+.todo-check{width:16px;height:16px;border:2px solid var(--text-faint);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:10px;transition:all .15s;}
+.todo-item.done .todo-check{background:var(--teal);border-color:var(--teal);color:#fff;}
+.todo-text{flex:1;font-size:12px;color:var(--text-dim);line-height:1.5;}
+.todo-item.done .todo-text{text-decoration:line-through;}
+.todo-del{background:none;border:none;color:transparent;cursor:pointer;font-size:11px;padding:0 2px;flex-shrink:0;}
+.todo-item:hover .todo-del{color:var(--text-faint);}
+.todo-del:hover{color:var(--error)!important;}
+.todo-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:1px 6px;border-radius:8px;flex-shrink:0;margin-top:2px;}
+.todo-tag.clpeasy{background:rgba(42,157,143,.15);color:var(--teal);}
+.todo-tag.cmg{background:rgba(228,109,105,.15);color:#e46d69;}
+.todo-tag.aw{background:rgba(155,139,180,.15);color:#9b8bb4;}
+.todo-tag.general{background:var(--surface3);color:var(--text-faint);}
+
+/* SNIPPETS */
+.snippet-item{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 11px;margin-bottom:6px;}
+.snippet-name{font-size:11px;font-weight:600;color:var(--text);margin-bottom:4px;}
+.snippet-preview{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--teal);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px;}
+.snippet-actions{display:flex;gap:5px;}
+
+/* DRAFT MODE */
+.draft-toggle{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:10px;cursor:pointer;transition:all .15s;}
+.draft-toggle:hover{border-color:var(--teal-line);}
+.draft-toggle.active{background:var(--teal-glow);border-color:var(--teal-line);}
+.draft-label{font-size:12px;color:var(--text-dim);flex:1;}
+.draft-toggle.active .draft-label{color:var(--teal);}
+.draft-dot{width:8px;height:8px;border-radius:50%;background:var(--text-faint);}
+.draft-toggle.active .draft-dot{background:var(--teal);}
+
+/* EMAIL COMPOSER */
+.email-field{margin-bottom:10px;}
+.email-field label{font-size:10px;font-weight:700;color:var(--text-faint);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;}
+.email-field input,.email-field textarea,.email-field select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-family:inherit;font-size:12px;outline:none;}
+.email-field input:focus,.email-field textarea:focus,.email-field select:focus{border-color:var(--teal-line);}
+.email-field textarea{resize:vertical;min-height:60px;}
+.email-field select option{background:var(--surface);}
+
+/* WEB SEARCH INDICATOR */
+.search-indicator{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:var(--text-faint);background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:2px 8px;margin-bottom:6px;}
 </style>
 </head>
 <body>
+
+<!-- PASSWORD MODAL -->
+<div id="pw-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:400;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+  <div style="background:#171c1f;border:1px solid rgba(42,157,143,.25);border-radius:16px;padding:32px;max-width:360px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.6);">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+      <div style="width:36px;height:36px;background:#2a9d8f;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:14px;font-weight:600;color:#fff;">Fi</div>
+      <div style="font-size:15px;font-weight:600;color:#2a9d8f;">Finn</div>
+    </div>
+    <div style="font-size:16px;font-weight:600;color:#e8edef;margin-bottom:6px;">Enter password</div>
+    <div style="font-size:13px;color:#8a9aa0;margin-bottom:18px;">This tool is private. Enter your password to continue.</div>
+    <input id="pw-input" type="password" placeholder="Password..." autocomplete="off"
+      style="width:100%;background:#1e2428;border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:10px 13px;color:#e8edef;font-family:inherit;font-size:13px;outline:none;margin-bottom:8px;"
+      onkeydown="if(event.key==='Enter')submitPassword()"
+      onfocus="this.style.borderColor='rgba(42,157,143,.4)'" onblur="this.style.borderColor='rgba(255,255,255,.07)'"/>
+    <div id="pw-error" style="display:none;font-size:11px;color:#e05c5c;margin-bottom:8px;">Incorrect password — try again.</div>
+    <button onclick="submitPassword()" style="width:100%;background:#2a9d8f;border:none;color:#fff;padding:11px;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;">Unlock Finn →</button>
+  </div>
+</div>
 
 <!-- API KEY MODAL -->
 <div id="api-modal">
@@ -198,7 +299,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
   <div class="modal-card">
     <h2>⚙️ Settings</h2>
     <div class="settings-row"><span class="settings-label">API key</span><span class="settings-val" id="key-status-display">—</span></div>
-    <div class="settings-row"><span class="settings-label">Model</span><span class="settings-val">gemini-2.5-flash</span></div>
+    <div class="settings-row"><span class="settings-label">Model</span><span class="settings-val">gemini-2.0-flash-lite</span></div>
     <div class="settings-row"><span class="settings-label">Context</span><span class="settings-val">CLPeasy · CMG · ArtisansWeb</span></div>
     <div class="settings-row"><span class="settings-label">Session memory</span><span class="settings-val">Full conversation</span></div>
     <div class="settings-row"><span class="settings-label">Persistent memory</span><span class="settings-val" id="memory-count-display">0 notes</span></div>
@@ -223,8 +324,13 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
     </div>
     <div class="header-actions">
       <div class="status-dot" id="status-dot"></div>
-      <button class="btn-icon" id="memory-btn">🧠 Memory</button>
-      <button class="btn-icon" id="summarise-btn">📋 Summarise</button>
+      <button class="btn-icon" id="draft-mode-btn" title="Draft mode — write in Michaela's voice">✍️</button>
+      <button class="btn-icon" id="todo-btn" title="Todo tracker">✅</button>
+      <button class="btn-icon" id="snippets-btn" title="Snippet library">{ }</button>
+      <button class="btn-icon" id="email-btn" title="Email composer">📧</button>
+      <button class="btn-icon" id="memory-btn">🧠</button>
+      <button class="btn-icon" id="summarise-btn">📋</button>
+      <button class="btn-icon" id="export-chat-btn" title="Export full chat">💾</button>
       <button class="btn-icon" id="settings-btn">⚙</button>
     </div>
   </header>
@@ -329,11 +435,15 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
   </div>
 
   <div id="input-area">
+    <div id="file-preview" class="file-preview"></div>
     <div class="input-wrap">
+      <label class="attach-btn" for="file-input" title="Attach file">📎</label>
+      <input type="file" id="file-input" accept=".html,.txt,.csv,.json,.pdf,.png,.jpg,.jpeg,.gif,.webp" multiple/>
       <textarea id="user-input" rows="1" placeholder="Ask Finn anything about your stack…" autocomplete="off" spellcheck="true"></textarea>
+      <button id="stop-btn" title="Stop">⏹</button>
       <button id="send-btn" title="Send (Enter)">↑</button>
     </div>
-    <div class="input-hint">Enter to send · Shift+Enter for new line · Finn remembers this session · 🧠 Memory panel saves facts permanently</div>
+    <div class="input-hint">Enter to send · Shift+Enter for new line · 📎 attach files · Finn remembers this session</div>
   </div>
 </div>
 
@@ -393,6 +503,10 @@ UNCERTAINTY RULE: If you are not certain about a specific value, version, or fac
 CLARIFICATION RULE: For complex or ambiguous requests (anything involving multiple files, a full feature build, or unclear scope), ask one clarifying question before proceeding.
 
 CONFIDENCE RULE: End each technical answer with a confidence indicator in this exact format on a new line: [CONFIDENCE: HIGH] or [CONFIDENCE: MEDIUM — verify X] or [CONFIDENCE: LOW — please check]
+
+RESPONSE LENGTH RULE: Match response length to the question. Short direct questions get short direct answers — 2-5 sentences. Only use bullet lists when there are genuinely 3+ distinct items. Never pad responses with summaries, recaps, or sign-offs like "Let me know if you need anything else." Answer like a sharp senior colleague, not a customer service bot. No bullet point preambles. No "Great question!" or filler phrases. Get straight to the answer.
+
+FILE EDITING RULE: When Michaela uploads an HTML, CSS, or JS file for fixes or changes, always return the COMPLETE fixed file inside a single fenced code block (```html ... ```) with no truncation. Never say "here are the key changes" and show snippets — always return the entire file so she can download and deploy it directly. Start the code block immediately after a one-line summary of what was fixed.
 
 ## MICHAELA FEELEY — WHO YOU ARE TALKING TO
 - Sole founder of three interconnected UK businesses
@@ -532,6 +646,12 @@ let conversationHistory = [];
 let isThinking = false;
 let apiKey = localStorage.getItem('finn_gemini_key') || '';
 let savedNotes = JSON.parse(localStorage.getItem('finn_notes') || '[]');
+let attachedFiles = [];
+let abortController = null;
+let draftModeActive = false;
+let todoFilter = 'all';
+let todos = JSON.parse(localStorage.getItem('finn_todos') || '[]');
+let snippets = JSON.parse(localStorage.getItem('finn_snippets') || '[]');
 
 function buildSystemPrompt() {
   let prompt = BASE_SYSTEM_PROMPT;
@@ -546,11 +666,23 @@ function buildSystemPrompt() {
 const FINN_PASSWORD = 'crafty2026';
 function checkPassword() {
   const stored = sessionStorage.getItem('finn_auth');
-  if (stored === FINN_PASSWORD) return true;
-  const entered = prompt('🔒 Finn — Enter password:');
-  if (entered === FINN_PASSWORD) { sessionStorage.setItem('finn_auth', FINN_PASSWORD); return true; }
-  document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f1214;color:#8a9aa0;font-family:Inter,sans-serif;font-size:14px;">Access denied. Refresh to try again.</div>';
+  if (stored === FINN_PASSWORD) { return true; }
+  document.getElementById('pw-modal').style.display='flex';
   return false;
+}
+function submitPassword() {
+  const val = document.getElementById('pw-input').value;
+  if (val === FINN_PASSWORD) {
+    sessionStorage.setItem('finn_auth', FINN_PASSWORD);
+    document.getElementById('pw-modal').style.display='none';
+    document.getElementById('api-modal').classList.remove('hidden');
+    if (apiKey) { document.getElementById('api-modal').classList.add('hidden'); setStatus('ready'); }
+    renderNotes();
+  } else {
+    document.getElementById('pw-error').style.display='block';
+    document.getElementById('pw-input').value='';
+    document.getElementById('pw-input').focus();
+  }
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────
@@ -562,6 +694,8 @@ document.addEventListener('DOMContentLoaded', () => {
   ta.addEventListener('input', () => { ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,140)+'px'; });
   ta.addEventListener('keydown', e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} });
   document.getElementById('send-btn').addEventListener('click', sendMessage);
+  document.getElementById('stop-btn').addEventListener('click', stopGeneration);
+  document.getElementById('file-input').addEventListener('change', handleFileAttach);
   document.getElementById('save-key-btn').addEventListener('click', saveApiKey);
   document.getElementById('api-key-input').addEventListener('keydown', e => { if(e.key==='Enter') saveApiKey(); });
   document.getElementById('settings-btn').addEventListener('click', openSettings);
@@ -569,8 +703,14 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('clear-key-btn').addEventListener('click', clearKey);
   document.getElementById('clear-chat-btn').addEventListener('click', clearChat);
   document.getElementById('clear-memory-btn').addEventListener('click', clearMemory);
-  document.getElementById('memory-btn').addEventListener('click', toggleMemory);
+  document.getElementById('memory-btn').addEventListener('click', () => togglePanel('memory'));
+  document.getElementById('todo-btn').addEventListener('click', () => togglePanel('todo'));
+  document.getElementById('snippets-btn').addEventListener('click', () => togglePanel('snippets'));
+  document.getElementById('email-btn').addEventListener('click', () => togglePanel('email'));
+  document.getElementById('draft-mode-btn').addEventListener('click', toggleDraftMode);
+  document.getElementById('export-chat-btn').addEventListener('click', exportChat);
   document.getElementById('summarise-btn').addEventListener('click', summariseChat);
+  document.addEventListener('click', e => { if(!e.target.closest('.side-panel') && !e.target.closest('.btn-icon') && !e.target.closest('.nav-dropdown')) { PANELS.forEach(p=>{ const pan=document.getElementById(p+'-panel'); if(pan&&!pan.querySelector('input:focus')&&!pan.querySelector('textarea:focus')) { /* don't close if user is typing */ } }); });
   document.addEventListener('click', e => {
     if (!e.target.closest('.nav-dropdown')) closeAllDropdowns();
   });
@@ -589,12 +729,7 @@ function closeAllDropdowns() {
 }
 
 // ── MEMORY PANEL ──────────────────────────────────────────────────────────
-function toggleMemory() {
-  const panel = document.getElementById('memory-panel');
-  const btn = document.getElementById('memory-btn');
-  panel.classList.toggle('open');
-  btn.classList.toggle('active');
-}
+function toggleMemory() { togglePanel('memory'); }
 function closeMemory() {
   document.getElementById('memory-panel').classList.remove('open');
   document.getElementById('memory-btn').classList.remove('active');
@@ -708,20 +843,104 @@ async function summariseChat() {
   isThinking=false; setStatus('ready'); document.getElementById('send-btn').disabled=false;
 }
 
+// ── STOP GENERATION ──────────────────────────────────────────────────────
+function stopGeneration() {
+  if (abortController) { abortController.abort(); }
+}
+
+// ── FILE ATTACH ───────────────────────────────────────────────────────────
+function handleFileAttach(e) {
+  const files = Array.from(e.target.files);
+  files.forEach(file => {
+    if (!attachedFiles.find(f => f.name === file.name)) {
+      attachedFiles.push(file);
+    }
+  });
+  e.target.value = '';
+  renderFilePreview();
+}
+
+function renderFilePreview() {
+  const preview = document.getElementById('file-preview');
+  preview.innerHTML = '';
+  attachedFiles.forEach((file, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'file-chip';
+    chip.innerHTML = `<span>${file.name}</span><button class="file-chip-remove" onclick="removeFile(${i})">✕</button>`;
+    preview.appendChild(chip);
+  });
+}
+
+function removeFile(i) {
+  attachedFiles.splice(i, 1);
+  renderFilePreview();
+}
+
+async function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function readFileAsText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsText(file);
+  });
+}
+
 // ── SEND MESSAGE ──────────────────────────────────────────────────────────
 async function sendMessage() {
   const ta = document.getElementById('user-input');
   const text = ta.value.trim();
-  if(!text||isThinking) return;
+  if((!text && attachedFiles.length===0)||isThinking) return;
   if(!apiKey) { document.getElementById('api-modal').classList.remove('hidden'); return; }
   const welcome = document.getElementById('welcome-screen'); if(welcome) welcome.remove();
-  appendMessage('user', text);
-  conversationHistory.push({role:'user', parts:[{text}]});
+
+  // Build user message parts with files
+  const userParts = [];
+  const fileNames = [];
+  for (const file of attachedFiles) {
+    fileNames.push(file.name);
+    const isImage = file.type.startsWith('image/');
+    const isPdf = file.type === 'application/pdf';
+    if (isImage) {
+      const b64 = await readFileAsBase64(file);
+      userParts.push({inline_data:{mime_type:file.type,data:b64}});
+    } else if (isPdf) {
+      const b64 = await readFileAsBase64(file);
+      userParts.push({inline_data:{mime_type:'application/pdf',data:b64}});
+    } else {
+      const txt = await readFileAsText(file);
+      userParts.push({text:`[File: ${file.name}]
+${txt}`});
+    }
+  }
+  if (text) userParts.push({text});
+
+  const displayText = (fileNames.length ? `📎 ${fileNames.join(', ')}
+
+` : '') + (text||'');
+  appendMessage('user', displayText);
+  conversationHistory.push({role:'user', parts:userParts});
+
+  // Clear files and input
+  attachedFiles = []; renderFilePreview();
   ta.value=''; ta.style.height='auto';
-  isThinking=true; setStatus('thinking'); document.getElementById('send-btn').disabled=true;
+
+  isThinking=true; setStatus('thinking');
+  document.getElementById('send-btn').disabled=true;
+  document.getElementById('stop-btn').classList.add('visible');
   const thinkEl = appendThinking();
+
   try {
-    const resp = await callGemini();
+    abortController = new AbortController();
+    const resp = await callGemini(abortController.signal);
     thinkEl.remove();
     if(resp.error) { appendError(resp.error.message||'API error — check key in Settings.'); }
     else {
@@ -729,20 +948,39 @@ async function sendMessage() {
       appendMessage('assistant', reply);
       conversationHistory.push({role:'model', parts:[{text:reply}]});
     }
-  } catch(err) { thinkEl.remove(); appendError('Network error: '+err.message); }
-  isThinking=false; setStatus('ready'); document.getElementById('send-btn').disabled=false;
+  } catch(err) {
+    thinkEl.remove();
+    if(err.name==='AbortError') { appendError('Response stopped.'); }
+    else { appendError('Network error: '+err.message); }
+  }
+  isThinking=false; setStatus('ready');
+  document.getElementById('send-btn').disabled=false;
+  document.getElementById('stop-btn').classList.remove('visible');
+  abortController=null;
   ta.focus();
 }
 
 // ── GEMINI API ────────────────────────────────────────────────────────────
-async function callGemini() {
-  const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-  const body={
-    system_instruction:{parts:[{text:buildSystemPrompt()}]},
+function buildCallBody(useSearch) {
+  const sysprompt = buildSystemPrompt() + (draftModeActive ? '\n\nDRAFT MODE ACTIVE: Write in Michaela Feeley\'s voice — direct, warm, personal, founder-led. First person. Confident, approachable. No corporate language.' : '');
+  const body = {
+    system_instruction:{parts:[{text:sysprompt}]},
     contents:conversationHistory,
-    generationConfig:{temperature:0.35,maxOutputTokens:8192}
+    generationConfig:{temperature: draftModeActive ? 0.7 : 0.35, maxOutputTokens:8192}
   };
-  const res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(useSearch) body.tools = [{google_search:{}}];
+  return body;
+}
+
+async function callGemini(signal) {
+  const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  // Detect if search intent in last message
+  const lastMsg = conversationHistory[conversationHistory.length-1];
+  const lastText = lastMsg?.parts?.map(p=>p.text||'').join(' ').toLowerCase()||'';
+  const searchKeywords = ['latest','current','today','now','recent','price','news','what is','who is','check','look up','search','find out','released','available'];
+  const useSearch = searchKeywords.some(k=>lastText.includes(k));
+  const body = buildCallBody(useSearch);
+  const res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal});
   return res.json();
 }
 
@@ -782,6 +1020,73 @@ function appendMessage(role, text) {
     const bar = document.createElement('div'); bar.className='confidence-bar';
     bar.innerHTML=`<span class="confidence-label">${label}</span><div class="confidence-dots">${dots}</div>`;
     bubble.appendChild(bar);
+  }
+
+  // Export / download buttons on assistant messages
+  if (role === 'assistant') {
+    // Check if response contains a full HTML file
+    const htmlMatch = displayText.match(/```html\n([\s\S]*?)```/);
+    const jsMatch = displayText.match(/```javascript\n([\s\S]*?)```/) || displayText.match(/```js\n([\s\S]*?)```/);
+    const cssMatch = displayText.match(/```css\n([\s\S]*?)```/);
+
+    const btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;';
+
+    if (htmlMatch && htmlMatch[1].includes('<!DOCTYPE')) {
+      // Full HTML file detected — offer named download
+      const lastUpload = attachedFiles.length > 0 ? attachedFiles[attachedFiles.length-1].name : null;
+      const fname = lastUpload && lastUpload.endsWith('.html') ? lastUpload : 'fixed-file-'+Date.now()+'.html';
+      const dlBtn = document.createElement('button');
+      dlBtn.className = 'export-btn';
+      dlBtn.style.cssText += 'background:rgba(42,157,143,.15);border-color:rgba(42,157,143,.3);color:#2a9d8f;font-weight:600;';
+      dlBtn.textContent = '⬇ Download ' + fname;
+      dlBtn.addEventListener('click', () => {
+        const blob = new Blob([htmlMatch[1]], {type:'text/html'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href=url; a.download=fname;
+        a.click(); URL.revokeObjectURL(url);
+      });
+      btnRow.appendChild(dlBtn);
+    }
+
+    if (jsMatch) {
+      const dlBtn = document.createElement('button');
+      dlBtn.className = 'export-btn';
+      dlBtn.textContent = '⬇ Download .js';
+      dlBtn.addEventListener('click', () => {
+        const blob = new Blob([jsMatch[1]], {type:'text/javascript'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href=url; a.download='finn-fix-'+Date.now()+'.js';
+        a.click(); URL.revokeObjectURL(url);
+      });
+      btnRow.appendChild(dlBtn);
+    }
+
+    if (cssMatch) {
+      const dlBtn = document.createElement('button');
+      dlBtn.className = 'export-btn';
+      dlBtn.textContent = '⬇ Download .css';
+      dlBtn.addEventListener('click', () => {
+        const blob = new Blob([cssMatch[1]], {type:'text/css'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href=url; a.download='finn-fix-'+Date.now()+'.css';
+        a.click(); URL.revokeObjectURL(url);
+      });
+      btnRow.appendChild(dlBtn);
+    }
+
+    // Always offer plain text export
+    const exportBtn = document.createElement('button');
+    exportBtn.className = 'export-btn';
+    exportBtn.textContent = '⬇ Export response';
+    exportBtn.addEventListener('click', () => {
+      const blob = new Blob([displayText], {type:'text/plain'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='finn-response-'+Date.now()+'.txt';
+      a.click(); URL.revokeObjectURL(url);
+    });
+    btnRow.appendChild(exportBtn);
+    bubble.appendChild(btnRow);
   }
 
   // Copy buttons for code blocks
@@ -855,7 +1160,255 @@ function renderMarkdown(text) {
   html=html.replace(/\x00INLINE(\d+)\x00/g,(_,i)=>inlineCodes[i]);
   return html;
 }
-function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;');}
+
+// ── PANEL MANAGEMENT ─────────────────────────────────────────────────────
+const PANELS = ['memory','todo','snippets','email'];
+function togglePanel(name) {
+  const panel = document.getElementById(name+'-panel');
+  const btn = document.getElementById(name+'-btn');
+  const isOpen = panel.classList.contains('open');
+  PANELS.forEach(p => {
+    document.getElementById(p+'-panel').classList.remove('open');
+    const b = document.getElementById(p+'-btn');
+    if(b) b.classList.remove('active');
+  });
+  if(!isOpen) {
+    panel.classList.add('open');
+    if(btn) btn.classList.add('active');
+    if(name==='todo') renderTodos();
+    if(name==='snippets') renderSnippets();
+    if(name==='memory') renderNotes();
+  }
+}
+function closePanel(name) {
+  document.getElementById(name+'-panel').classList.remove('open');
+  const btn = document.getElementById(name+'-btn');
+  if(btn) btn.classList.remove('active');
+}
+
+// ── DRAFT MODE ────────────────────────────────────────────────────────────
+function toggleDraftMode() {
+  draftModeActive = !draftModeActive;
+  const btn = document.getElementById('draft-mode-btn');
+  if(draftModeActive) {
+    btn.classList.add('active');
+    document.getElementById('user-input').placeholder = '✍️ Draft mode ON — describe what you need written...';
+  } else {
+    btn.classList.remove('active');
+    document.getElementById('user-input').placeholder = 'Ask Finn anything about your stack…';
+  }
+}
+
+// ── TODO TRACKER ──────────────────────────────────────────────────────────
+function saveTodos() { localStorage.setItem('finn_todos', JSON.stringify(todos)); }
+function addTodo() {
+  const input = document.getElementById('todo-input');
+  const tag = document.getElementById('todo-tag-select').value;
+  const text = input.value.trim();
+  if(!text) return;
+  todos.unshift({id:Date.now(), text, tag, done:false});
+  saveTodos(); input.value=''; renderTodos();
+}
+function toggleTodo(id) {
+  const t = todos.find(t=>t.id===id);
+  if(t) { t.done=!t.done; saveTodos(); renderTodos(); }
+}
+function deleteTodo(id) {
+  todos = todos.filter(t=>t.id!==id);
+  saveTodos(); renderTodos();
+}
+function switchTodoFilter(filter, el) {
+  todoFilter = filter;
+  document.querySelectorAll('#todo-panel .panel-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderTodos();
+}
+function renderTodos() {
+  const list = document.getElementById('todo-list');
+  if(!list) return;
+  const filtered = todoFilter==='all' ? todos : todos.filter(t=>t.tag===todoFilter);
+  const open = filtered.filter(t=>!t.done);
+  const done = filtered.filter(t=>t.done);
+  const all = [...open,...done];
+  if(all.length===0) { list.innerHTML='<div class="panel-empty">No tasks. Add below.</div>'; return; }
+  list.innerHTML = all.map(t=>`
+    <div class="todo-item ${t.done?'done':''}" onclick="toggleTodo(${t.id})">
+      <div class="todo-check">${t.done?'✓':''}</div>
+      <div class="todo-text">${t.text}</div>
+      <div class="todo-tag ${t.tag}">${t.tag==='clpeasy'?'CLP':t.tag==='cmg'?'CMG':t.tag==='aw'?'AW':'—'}</div>
+      <button class="todo-del" onclick="event.stopPropagation();deleteTodo(${t.id})">✕</button>
+    </div>`).join('');
+}
+
+// ── SNIPPET LIBRARY ───────────────────────────────────────────────────────
+function saveSnippets() { localStorage.setItem('finn_snippets', JSON.stringify(snippets)); }
+function addSnippet() {
+  const name = document.getElementById('snippet-name-input').value.trim();
+  const body = document.getElementById('snippet-body-input').value.trim();
+  if(!name||!body) return;
+  snippets.unshift({id:Date.now(), name, body});
+  saveSnippets();
+  document.getElementById('snippet-name-input').value='';
+  document.getElementById('snippet-body-input').value='';
+  renderSnippets();
+}
+function deleteSnippet(id) {
+  snippets = snippets.filter(s=>s.id!==id);
+  saveSnippets(); renderSnippets();
+}
+function copySnippet(id) {
+  const s = snippets.find(s=>s.id===id);
+  if(s) navigator.clipboard.writeText(s.body).then(()=>{
+    const btn = document.getElementById('snip-copy-'+id);
+    if(btn){btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500);}
+  });
+}
+function sendSnippetToChat(id) {
+  const s = snippets.find(s=>s.id===id);
+  if(s) { document.getElementById('user-input').value=s.body; document.getElementById('user-input').focus(); closePanel('snippets'); }
+}
+function renderSnippets() {
+  const list = document.getElementById('snippets-list');
+  if(!list) return;
+  if(snippets.length===0) { list.innerHTML='<div class="panel-empty">No snippets. Save reusable code, Supabase boilerplate, Stripe patterns, email templates.</div>'; return; }
+  list.innerHTML = snippets.map(s=>`
+    <div class="snippet-item">
+      <div class="snippet-name">${s.name}</div>
+      <div class="snippet-preview">${s.body.slice(0,80).replace(/</g,'&lt;')}${s.body.length>80?'...':''}</div>
+      <div class="snippet-actions">
+        <button id="snip-copy-${s.id}" class="panel-btn-sm" onclick="copySnippet(${s.id})">Copy</button>
+        <button class="panel-btn-sm" onclick="sendSnippetToChat(${s.id})">→ Chat</button>
+        <button class="panel-btn-sm panel-btn-danger" onclick="deleteSnippet(${s.id})">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+// ── EMAIL COMPOSER ────────────────────────────────────────────────────────
+function switchEmailTab(tab, el) {
+  document.querySelectorAll('#email-panel .panel-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('email-compose-tab').style.display = tab==='compose'?'block':'none';
+  document.getElementById('email-brevo-tab').style.display = tab==='brevo'?'block':'none';
+}
+function generateEmail() {
+  const type = document.getElementById('email-type').value;
+  const to = document.getElementById('email-to').value.trim();
+  const subject = document.getElementById('email-subject').value.trim();
+  const notes = document.getElementById('email-notes').value.trim();
+  if(!subject) return;
+  const typeLabels = {support:'support reply',brevo:'Brevo sequence email',outreach:'business outreach email',bg:'Business Gateway email',supplier:'supplier contact email',social:'social media post'};
+  const prompt = `Write a ${typeLabels[type]}${to?' to '+to:''}. Subject/topic: ${subject}.${notes?' Key points: '+notes:''} Write in Michaela Feeley's voice — direct, warm, personal, founder-led. No filler phrases.`;
+  document.getElementById('user-input').value = prompt;
+  closePanel('email');
+  sendMessage();
+}
+
+// ── EXPORT FULL CHAT ──────────────────────────────────────────────────────
+function exportChat() {
+  if(conversationHistory.length===0) { appendError('No conversation to export yet.'); return; }
+  let text = 'FINN — MAKER SUITE ASSISTANT\nExported: '+new Date().toLocaleString('en-GB')+'\n\n';
+  text += '='.repeat(50)+'\n\n';
+  conversationHistory.forEach(msg => {
+    const role = msg.role==='user'?'MICHAELA':'FINN';
+    const content = msg.parts.map(p=>p.text||'[file]').join(' ');
+    text += role+':\n'+content+'\n\n'+'-'.repeat(40)+'\n\n';
+  });
+  const blob = new Blob([text],{type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='finn-chat-'+new Date().toISOString().slice(0,10)+'.txt';
+  a.click(); URL.revokeObjectURL(url);
+}
 </script>
+
+<!-- TODO PANEL -->
+<div id="todo-panel" class="side-panel">
+  <div class="panel-header">
+    <h3>✅ Todo Tracker</h3>
+    <button class="panel-close" onclick="closePanel('todo')">✕</button>
+  </div>
+  <div class="panel-tabs">
+    <button class="panel-tab active" onclick="switchTodoFilter('all',this)">All</button>
+    <button class="panel-tab" onclick="switchTodoFilter('clpeasy',this)">CLPeasy</button>
+    <button class="panel-tab" onclick="switchTodoFilter('cmg',this)">CMG</button>
+    <button class="panel-tab" onclick="switchTodoFilter('aw',this)">AW</button>
+  </div>
+  <div class="panel-body">
+    <div id="todo-list"></div>
+    <div class="panel-add-row" style="flex-wrap:wrap;gap:5px;margin-top:10px;">
+      <input class="panel-input" id="todo-input" placeholder="Add task..." style="margin-bottom:0;flex:1;min-width:120px;"/>
+      <select id="todo-tag-select" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 8px;color:var(--text-dim);font-family:inherit;font-size:11px;outline:none;">
+        <option value="clpeasy">CLPeasy</option>
+        <option value="cmg">CMG</option>
+        <option value="aw">AW</option>
+        <option value="general">General</option>
+      </select>
+      <button class="panel-btn" onclick="addTodo()">+ Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- SNIPPETS PANEL -->
+<div id="snippets-panel" class="side-panel">
+  <div class="panel-header">
+    <h3>{ } Snippet Library</h3>
+    <button class="panel-close" onclick="closePanel('snippets')">✕</button>
+  </div>
+  <div class="panel-body">
+    <div id="snippets-list"></div>
+    <div style="margin-top:10px;">
+      <input class="panel-input" id="snippet-name-input" placeholder="Snippet name (e.g. Supabase edge boilerplate)"/>
+      <textarea class="panel-input" id="snippet-body-input" placeholder="Paste code or text..." style="min-height:80px;resize:vertical;"></textarea>
+      <button class="panel-btn" onclick="addSnippet()" style="width:100%;">+ Save snippet</button>
+    </div>
+  </div>
+</div>
+
+<!-- EMAIL COMPOSER PANEL -->
+<div id="email-panel" class="side-panel">
+  <div class="panel-header">
+    <h3>📧 Email Composer</h3>
+    <button class="panel-close" onclick="closePanel('email')">✕</button>
+  </div>
+  <div class="panel-tabs">
+    <button class="panel-tab active" onclick="switchEmailTab('compose',this)">Compose</button>
+    <button class="panel-tab" onclick="switchEmailTab('brevo',this)">Brevo</button>
+  </div>
+  <div class="panel-body" id="email-compose-tab">
+    <div class="email-field">
+      <label>Type</label>
+      <select id="email-type">
+        <option value="support">Support reply</option>
+        <option value="brevo">Brevo sequence email</option>
+        <option value="outreach">Business outreach</option>
+        <option value="bg">Business Gateway</option>
+        <option value="supplier">Supplier contact</option>
+        <option value="social">Social post</option>
+      </select>
+    </div>
+    <div class="email-field">
+      <label>To / Audience</label>
+      <input id="email-to" placeholder="e.g. CLPeasy subscriber, Lesley at Love Scottish"/>
+    </div>
+    <div class="email-field">
+      <label>Subject / Topic</label>
+      <input id="email-subject" placeholder="e.g. Day 7 trial feedback ask"/>
+    </div>
+    <div class="email-field">
+      <label>Key points to include</label>
+      <textarea id="email-notes" placeholder="e.g. Ask for feedback, mention load from library fix coming soon"></textarea>
+    </div>
+    <button class="panel-btn" onclick="generateEmail()" style="width:100%;">✍️ Draft with Finn</button>
+  </div>
+  <div class="panel-body" id="email-brevo-tab" style="display:none;">
+    <div class="panel-section-title">Brevo sequences</div>
+    <div class="panel-row"><span class="panel-row-text"><strong>Free trial</strong> — Days 2, 5, 10, 12, 14</span></div>
+    <div class="panel-row"><span class="panel-row-text"><strong>Paid subscriber</strong> — Days 0, 7, 30</span></div>
+    <div class="panel-row"><span class="panel-row-text"><strong>Annual renewal</strong> — workflow #3, 358-day wait</span></div>
+    <div style="margin-top:10px;font-size:11px;color:var(--text-faint);">Day 7 and Day 30 copy is ready — paste into Brevo paid subscriber automation.</div>
+  </div>
+</div>
+
 </body>
 </html>
