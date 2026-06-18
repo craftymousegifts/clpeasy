@@ -675,9 +675,7 @@ function submitPassword() {
   if (val === FINN_PASSWORD) {
     sessionStorage.setItem('finn_auth', FINN_PASSWORD);
     document.getElementById('pw-modal').style.display='none';
-    document.getElementById('api-modal').classList.remove('hidden');
-    if (apiKey) { document.getElementById('api-modal').classList.add('hidden'); setStatus('ready'); }
-    renderNotes();
+    initApp();
   } else {
     document.getElementById('pw-error').style.display='block';
     document.getElementById('pw-input').value='';
@@ -685,11 +683,22 @@ function submitPassword() {
   }
 }
 
-// ── INIT ──────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  if (!checkPassword()) return;
+function initApp() {
   if (apiKey) { document.getElementById('api-modal').classList.add('hidden'); setStatus('ready'); }
   renderNotes();
+  renderTodos();
+  renderSnippets();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+// Close dropdowns on outside click — runs always regardless of auth
+document.addEventListener('click', e => {
+  if (!e.target.closest('.nav-dropdown')) closeAllDropdowns();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!checkPassword()) return;
+  initApp();
   const ta = document.getElementById('user-input');
   ta.addEventListener('input', () => { ta.style.height='auto'; ta.style.height=Math.min(ta.scrollHeight,140)+'px'; });
   ta.addEventListener('keydown', e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} });
@@ -711,9 +720,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('export-chat-btn').addEventListener('click', exportChat);
   document.getElementById('summarise-btn').addEventListener('click', summariseChat);
 
-  document.addEventListener('click', e => {
-    if (!e.target.closest('.nav-dropdown')) closeAllDropdowns();
-  });
+
 });
 
 // ── DROPDOWNS ─────────────────────────────────────────────────────────────
