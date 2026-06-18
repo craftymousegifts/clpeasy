@@ -2860,10 +2860,6 @@ function buildSVG(forExport=false){
   const pictoRow=pictos.map((p,i)=>{
     const px=pictoSX+i*(pictoSz+pictoGap);
     const py=pictoY;
-    if(forExport){
-      const hSz=pictoSz*0.48;
-      return`<rect x="${(px-hSz).toFixed(1)}" y="${(py-hSz).toFixed(1)}" width="${(hSz*2).toFixed(1)}" height="${(hSz*2).toFixed(1)}" fill="none" stroke="${txtCol}" stroke-width="1" transform="rotate(45,${px.toFixed(1)},${py.toFixed(1)})"/><text x="${px.toFixed(1)}" y="${py.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${(pictoSz*0.35).toFixed(1)}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${GHS_TEXT[p]||'!'}</text>`;
-    }
     return ghsPicto(p, px, py, pictoSz);
   }).join('');
 
@@ -3171,39 +3167,40 @@ async function downloadPNG(){plausible('Label Downloaded',{props:{format:'PNG'}}
   const slug=(S.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
   const fname=`clpeasy-${slug}-${S.size==='custom'?mmW+'x'+mmH:''+S.size}mm.png`;
 
-  // Extract GHS pictogram positions from parsed SVG DOM
-  function extractGHSOverlay(svg,cW,cH){
-    const doc=new DOMParser().parseFromString(svg,'image/svg+xml');
-    const svgEl=doc.documentElement;
-    const vb=(svgEl.getAttribute('viewBox')||'').split(/\s+/);
-    const vbW=parseFloat(vb[2])||cW, vbH=parseFloat(vb[3])||cH;
-    const sx=cW/vbW, sy=cH/vbH;
-    const out=[];
-    // querySelectorAll with namespace fallback
-    const imgs=doc.querySelectorAll('image');
-    imgs.forEach(function(el){
-      const href=el.getAttribute('href')||el.getAttributeNS('http://www.w3.org/1999/xlink','href')||'';
-      if(href.indexOf('data:image/jpeg')<0)return;
-      out.push({
-        href:href,
-        x:parseFloat(el.getAttribute('x')||0)*sx,
-        y:parseFloat(el.getAttribute('y')||0)*sy,
-        w:parseFloat(el.getAttribute('width')||0)*sx,
-        h:parseFloat(el.getAttribute('height')||0)*sy
-      });
+  // Convert each JPEG data URI in the SVG to a PNG data URI via canvas
+  // This bypasses the browser's "no external resources in SVG blob" restriction
+  function jpegToPng(jpegDataUri){
+    return new Promise(function(resolve){
+      const img=new Image();
+      img.onload=function(){
+        const c=document.createElement('canvas');
+        c.width=img.naturalWidth||img.width;
+        c.height=img.naturalHeight||img.height;
+        c.getContext('2d').drawImage(img,0,0);
+        resolve(c.toDataURL('image/png'));
+      };
+      img.onerror=function(){resolve(jpegDataUri);};
+      img.src=jpegDataUri;
     });
-    return out;
   }
 
-  console.log('SVG image tags:', svgStr.match(/<[^>]*image[^>]*>/gi));
-  console.log('SVG snippet:', svgStr.substring(0,500));
-  const overlays=extractGHSOverlay(svgStr,eW,eH);
-  console.log('Overlays found:', overlays.length);
+  // Find all unique JPEG data URIs in the SVG and replace with PNG
+  async function convertJpegsInSvg(svg){
+    const matches=svg.match(/data:image\/jpeg;base64,[A-Za-z0-9+/=]+/g);
+    if(!matches||!matches.length)return svg;
+    const unique=[...new Set(matches)];
+    const map={};
+    await Promise.all(unique.map(async function(uri){
+      map[uri]=await jpegToPng(uri);
+    }));
+    unique.forEach(function(uri){
+      svg=svg.split(uri).join(map[uri]);
+    });
+    return svg;
+  }
 
-  // Strip ALL <image> tags that contain jpeg data — permissive regex handles namespace variants
-  const cleanSvg=svgStr.replace(/<[a-z:]*image[^>]*data:image\/jpeg[^>]*>/gi,'');
-
-  const clone=new DOMParser().parseFromString(cleanSvg,'image/svg+xml').documentElement;
+  const convertedSvg=await convertJpegsInSvg(svgStr);
+  const clone=new DOMParser().parseFromString(convertedSvg,'image/svg+xml').documentElement;
   clone.setAttribute('width',eW); clone.setAttribute('height',eH);
   const svgData=new XMLSerializer().serializeToString(clone);
   const blob=new Blob([svgData],{type:'image/svg+xml;charset=utf-8'});
@@ -3213,34 +3210,18 @@ async function downloadPNG(){plausible('Label Downloaded',{props:{format:'PNG'}}
     const cvs=document.createElement('canvas'); cvs.width=eW; cvs.height=eH;
     const ctx=cvs.getContext('2d');
     ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
-    ctx.clearRect(0,0,eW,eH);
     ctx.drawImage(img,0,0,eW,eH);
     URL.revokeObjectURL(blobUrl);
-    if(!overlays.length){
-      cvs.toBlob(function(b){_dlBlob(b,fname);},'image/png'); return;
-    }
-    let done=0;
-    overlays.forEach(function(o){
-      const pi=new Image();
-      pi.onload=function(){
-        ctx.drawImage(pi,o.x,o.y,o.w,o.h);
-        if(++done===overlays.length) cvs.toBlob(function(b){_dlBlob(b,fname);},'image/png');
-      };
-      pi.onerror=function(){
-        if(++done===overlays.length) cvs.toBlob(function(b){_dlBlob(b,fname);},'image/png');
-      };
-      pi.src=o.href;
-    });
+    cvs.toBlob(function(b){
+      const u=URL.createObjectURL(b);
+      const a=document.createElement('a'); a.href=u; a.download=fname;
+      document.body.appendChild(a); a.click();
+      setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(u);},1500);
+    },'image/png');
   };
   img.onerror=function(){URL.revokeObjectURL(blobUrl);};
   img.src=blobUrl;
   setTimeout(()=>showLabelDoneSplash('download'),1500);
-}
-function _dlBlob(pngBlob,fname){
-  const u=URL.createObjectURL(pngBlob);
-  const a=document.createElement('a'); a.href=u; a.download=fname;
-  document.body.appendChild(a); a.click();
-  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(u);},1500);
 }
 
 // ── SVG DOWNLOAD ──────────────────────────────────────────────
