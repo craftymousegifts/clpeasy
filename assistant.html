@@ -158,10 +158,10 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 .copy-btn:hover{color:var(--text);}
 
 /* MODALS */
-#api-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:300;padding:20px;backdrop-filter:blur(4px);}
-#api-modal.hidden{display:none;}
-#settings-panel{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:300;padding:20px;backdrop-filter:blur(4px);}
-#settings-panel.hidden{display:none;}
+#api-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:300;padding:20px;}
+#api-modal.hidden{visibility:hidden;pointer-events:none;}
+#settings-panel{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:300;padding:20px;}
+#settings-panel.hidden{visibility:hidden;pointer-events:none;}
 .modal-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;max-width:440px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.5);}
 .modal-card h2{font-size:18px;font-weight:600;color:var(--text);letter-spacing:-.3px;margin-bottom:6px;}
 .modal-card p{font-size:13px;color:var(--text-dim);line-height:1.6;margin-bottom:16px;}
@@ -258,7 +258,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 <body>
 
 <!-- PASSWORD MODAL -->
-<div id="pw-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:400;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
+<div id="pw-modal" style="display:flex;visibility:hidden;pointer-events:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:400;align-items:center;justify-content:center;">
   <div style="background:#171c1f;border:1px solid rgba(42,157,143,.25);border-radius:16px;padding:32px;max-width:360px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.6);">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
       <div style="width:36px;height:36px;background:#2a9d8f;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:14px;font-weight:600;color:#fff;">Fi</div>
@@ -667,14 +667,14 @@ const FINN_PASSWORD = 'crafty2026';
 function checkPassword() {
   const stored = sessionStorage.getItem('finn_auth');
   if (stored === FINN_PASSWORD) { return true; }
-  document.getElementById('pw-modal').style.display='flex';
+  document.getElementById('pw-modal').style.visibility='visible'; document.getElementById('pw-modal').style.pointerEvents='all';
   return false;
 }
 function submitPassword() {
   const val = document.getElementById('pw-input').value;
   if (val === FINN_PASSWORD) {
     sessionStorage.setItem('finn_auth', FINN_PASSWORD);
-    document.getElementById('pw-modal').style.display='none';
+    document.getElementById('pw-modal').style.visibility='hidden'; document.getElementById('pw-modal').style.pointerEvents='none';
     initApp();
   } else {
     document.getElementById('pw-error').style.display='block';
