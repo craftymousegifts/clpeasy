@@ -198,7 +198,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
   <div class="modal-card">
     <h2>⚙️ Settings</h2>
     <div class="settings-row"><span class="settings-label">API key</span><span class="settings-val" id="key-status-display">—</span></div>
-    <div class="settings-row"><span class="settings-label">Model</span><span class="settings-val">gemini-2.5-flash</span></div>
+    <div class="settings-row"><span class="settings-label">Model</span><span class="settings-val">gemini-2.0-flash-lite</span></div>
     <div class="settings-row"><span class="settings-label">Context</span><span class="settings-val">CLPeasy · CMG · ArtisansWeb</span></div>
     <div class="settings-row"><span class="settings-label">Session memory</span><span class="settings-val">Full conversation</span></div>
     <div class="settings-row"><span class="settings-label">Persistent memory</span><span class="settings-val" id="memory-count-display">0 notes</span></div>
@@ -736,7 +736,7 @@ async function sendMessage() {
 
 // ── GEMINI API ────────────────────────────────────────────────────────────
 async function callGemini() {
-  const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`;
   const body={
     system_instruction:{parts:[{text:buildSystemPrompt()}]},
     contents:conversationHistory,
