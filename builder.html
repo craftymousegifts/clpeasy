@@ -1077,8 +1077,8 @@ function onProductTypeChange(){
   if(burnGroup){
     burnGroup.style.opacity=needsBurn?'1':'0.5';
   }
-  // Re-evaluate EN 15494 warning when product type changes
-  syncDimFields();
+  // Re-evaluate size/EN15494 warnings when product type changes
+  updateSizeWarnings();
 }
 function syncColourFromHex(){
   const hex=document.getElementById('label-bg-hex')?.value;
@@ -2563,14 +2563,11 @@ function selectShape(s){S.shape=s;document.querySelectorAll('.shape-card').forEa
 function selectSize(sz){
   S.size=sz;document.querySelectorAll('.size-card').forEach(c=>c.classList.toggle('selected',c.dataset.size==sz));
   if(sz!=='custom'){const mm=parseInt(sz);document.getElementById('custom-w').value=mm;document.getElementById('custom-h').value=(S.shape==='rectangle')?Math.round(mm*0.7):mm;S.customW=mm;S.customH=(S.shape==='rectangle')?Math.round(mm*0.7):mm;}
-  syncDimFields();updateLabel();
+  syncDimFields();updateSizeWarnings();updateLabel();
 }
-function onDimInput(){
-  S.size='custom';
-  document.querySelectorAll('.size-card').forEach(c=>c.classList.toggle('selected',c.dataset.size==='custom'));
+function updateSizeWarnings(){
   const rawW = parseInt(document.getElementById('custom-w').value)||50;
   const rawH = parseInt(document.getElementById('custom-h').value)||50;
-  // Warn but don't block — let the user type freely; only show warning
   const warn = document.getElementById('custom-size-warn');
   if(warn){
     const _isSmallForCLP = rawW < 52 || rawH < 40;
@@ -2584,7 +2581,6 @@ function onDimInput(){
     } else {
       warn.style.display='none';
     }
-    // EN 15494 warning: show for candle types on labels under 52mm
     const _en15494Warn = document.getElementById('en15494-warn');
     if(_en15494Warn){
       const _isCandle = ['Scented Candle','Soy Candle','Votive Candle','Tea Light Candle','Pillar Candle','Advent Calendar Candle'].indexOf(S.productType||'') >= 0;
@@ -2597,8 +2593,15 @@ function onDimInput(){
       }
     }
   }
+}
+function onDimInput(){
+  S.size='custom';
+  document.querySelectorAll('.size-card').forEach(c=>c.classList.toggle('selected',c.dataset.size==='custom'));
+  const rawW = parseInt(document.getElementById('custom-w').value)||50;
+  const rawH = parseInt(document.getElementById('custom-h').value)||50;
   S.customW = Math.max(rawW, 10);
   S.customH = Math.max(rawH, 10);
+  updateSizeWarnings();
   updateLabel();
 }
 function syncDimFields(){
@@ -2913,7 +2916,7 @@ function buildSVG(forExport=false){
 
 
   // ── FOOTER BAND: wrapped address support ─────────────────────
-  const fTopPad = botH * 0.06;
+  const fTopPad = botH * 0.06 + _bcfRowH; // push footer text below BCF icons if present
   const fBotPad = botH * 0.06;
   const fUsable = botH - fTopPad - fBotPad;
   const maxFooterFS  = clamp(BASE*0.036, 3, 7.5);
@@ -2949,28 +2952,27 @@ function buildSVG(forExport=false){
   }).join('');
 
   // ── EN 15494:2019 CANDLE SAFETY PICTOGRAMS ────────────────────
-  // Only for candle product types. Rendered as a small row at the
-  // very bottom of the label, inside the footer band.
-  // Size: 7% of shape width each, never exceeding 8mm equivalent.
+  // Rendered at the TOP of the footer band (above address/phone/detail).
+  // botFrac is already reduced from 0.24 to 0.17 for candles, giving
+  // a 7% strip at the top of the footer band for these icons.
   let bcfRow = '';
+  let _bcfRowH = 0; // how much vertical space the BCF row uses in footer band
   if(_isCandle && !S.hideEN15494){
     const _bcfKeys=['burn_within_sight','keep_from_fire','keep_from_children','no_draught','trim_wick'];
     const _nBcf = _bcfKeys.length;
-    // Size: each icon is small — max 7% of shape width, capped at 8mm
     const _bcfMaxSz = Math.min(sW * 0.07, 8 * _pxPerMm);
     const _bcfGap   = _bcfMaxSz * 0.25;
     const _bcfTotW  = _nBcf * _bcfMaxSz + (_nBcf - 1) * _bcfGap;
-    // Only render if there's room — total width must fit within 80% of shape width
     if(_bcfTotW <= sW * 0.82){
-      // Position: centred in the reserved bottom strip
-      const _bcfReserveH = sH * 0.07;
-      const _bcfY = sBot - _bcfReserveH * 0.5;
+      // Position at top of footer band with small padding
+      const _bcfY = botY + _bcfMaxSz * 0.6;
       const _bcfStartX = cx - _bcfTotW / 2;
       bcfRow = _bcfKeys.map((key, i) => {
         const bx = _bcfStartX + i * (_bcfMaxSz + _bcfGap);
         const by = _bcfY - _bcfMaxSz / 2;
         return `<image href="${BCF_IMG[key]}" x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${_bcfMaxSz.toFixed(1)}" height="${_bcfMaxSz.toFixed(1)}" preserveAspectRatio="xMidYMid meet"/>`;
       }).join('');
+      _bcfRowH = _bcfMaxSz * 1.2; // total height consumed including padding
     }
   }
 
