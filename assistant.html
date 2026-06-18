@@ -42,8 +42,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 .nav-btn.clpeasy{border-left:3px solid var(--teal);}
 .nav-btn.cmg{border-left:3px solid #e46d69;}
 .nav-btn.aw{border-left:3px solid #9b8bb4;}
-.dropdown-menu{position:absolute;top:calc(100% + 4px);left:0;background:var(--surface);border:1px solid var(--teal-line);border-radius:var(--radius);padding:6px;min-width:220px;z-index:200;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4);}
-.dropdown-menu.open{display:block;}
+.dropdown-menu{position:absolute;top:calc(100% + 4px);left:0;background:var(--surface);border:1px solid var(--teal-line);border-radius:var(--radius);padding:6px;min-width:220px;z-index:9999;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4);}
 .dropdown-section{font-size:10px;font-weight:700;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.6px;padding:6px 8px 3px;}
 .dropdown-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;text-decoration:none;color:var(--text-dim);font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap;}
 .dropdown-item:hover{background:var(--surface2);color:var(--text);}
@@ -340,7 +339,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 
     <div class="nav-dropdown">
       <button class="nav-btn clpeasy" onclick="toggleDropdown('dd-clp',this)">🟢 CLPeasy <span class="chevron">▼</span></button>
-      <div class="dropdown-menu" id="dd-clp">
+      <div class="dropdown-menu" id="dd-clp" style="display:none;">
         <div class="dropdown-section">Hosting & Code</div>
         <a class="dropdown-item" href="https://app.netlify.com" target="_blank"><span class="di-icon">🌐</span><span class="di-label">Netlify</span><span class="di-url">app.netlify.com</span></a>
         <a class="dropdown-item" href="https://github.com/craftymousegifts/clpeasy" target="_blank"><span class="di-icon">🐙</span><span class="di-label">GitHub repo</span><span class="di-url">craftymousegifts/clpeasy</span></a>
@@ -363,7 +362,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 
     <div class="nav-dropdown">
       <button class="nav-btn cmg" onclick="toggleDropdown('dd-cmg',this)">🐭 Crafty Mouse <span class="chevron">▼</span></button>
-      <div class="dropdown-menu" id="dd-cmg">
+      <div class="dropdown-menu" id="dd-cmg" style="display:none;">
         <div class="dropdown-section">Hosting & Code</div>
         <a class="dropdown-item" href="https://app.netlify.com" target="_blank"><span class="di-icon">🌐</span><span class="di-label">Netlify</span><span class="di-url">app.netlify.com</span></a>
         <a class="dropdown-item" href="https://github.com/craftymousegifts" target="_blank"><span class="di-icon">🐙</span><span class="di-label">GitHub</span><span class="di-url">craftymousegifts</span></a>
@@ -386,7 +385,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 
     <div class="nav-dropdown">
       <button class="nav-btn aw" onclick="toggleDropdown('dd-aw',this)">🕸️ ArtisansWeb <span class="chevron">▼</span></button>
-      <div class="dropdown-menu" id="dd-aw">
+      <div class="dropdown-menu" id="dd-aw" style="display:none;">
         <div class="dropdown-section">Domain & Code</div>
         <a class="dropdown-item" href="https://porkbun.com" target="_blank"><span class="di-icon">🐷</span><span class="di-label">Porkbun (domain)</span><span class="di-url">artisansweb.co.uk</span></a>
         <a class="dropdown-item" href="https://github.com" target="_blank"><span class="di-icon">🐙</span><span class="di-label">GitHub repo</span><span class="di-url">artisans-web</span></a>
@@ -403,7 +402,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 
     <div class="nav-dropdown">
       <button class="nav-btn" style="border-left:3px solid #f4a261;" onclick="toggleDropdown('dd-shared',this)">🔗 Shared Tools <span class="chevron">▼</span></button>
-      <div class="dropdown-menu" id="dd-shared">
+      <div class="dropdown-menu" id="dd-shared" style="display:none;">
         <div class="dropdown-section">Content & Media</div>
         <a class="dropdown-item" href="https://elevenlabs.io" target="_blank"><span class="di-icon">🎙️</span><span class="di-label">ElevenLabs</span><span class="di-url">credits reset 17 Jul</span></a>
         <a class="dropdown-item" href="https://canva.com" target="_blank"><span class="di-icon">🎨</span><span class="di-label">Canva</span><span class="di-url">canva.com</span></a>
@@ -726,13 +725,23 @@ document.addEventListener('DOMContentLoaded', () => {
 // ── DROPDOWNS ─────────────────────────────────────────────────────────────
 function toggleDropdown(id, btn) {
   const menu = document.getElementById(id);
-  const isOpen = menu.classList.contains('open');
+  const isOpen = menu.style.display === 'block';
   closeAllDropdowns();
-  if (!isOpen) { menu.classList.add('open'); btn.classList.add('open'); }
+  if (!isOpen) {
+    menu.style.display = 'block';
+    btn.style.borderColor = 'rgba(42,157,143,0.4)';
+    btn.style.color = '#e8edef';
+  }
 }
 function closeAllDropdowns() {
-  document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.remove('open'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('open'));
+  ['dd-clp','dd-cmg','dd-aw','dd-shared'].forEach(id => {
+    const m = document.getElementById(id);
+    if(m) m.style.display = 'none';
+  });
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.style.borderColor = '';
+    b.style.color = '';
+  });
 }
 
 // ── MEMORY PANEL ──────────────────────────────────────────────────────────
