@@ -3171,7 +3171,7 @@ async function downloadPNG(){plausible('Label Downloaded',{props:{format:'PNG'}}
   const slug=(S.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
   const fname=`clpeasy-${slug}-${S.size==='custom'?mmW+'x'+mmH:''+S.size}mm.png`;
 
-  // Extract GHS pictogram positions before stripping (browser blocks base64 JPEG inside SVG blob)
+  // Extract GHS pictogram positions from parsed SVG DOM
   function extractGHSOverlay(svg,cW,cH){
     const doc=new DOMParser().parseFromString(svg,'image/svg+xml');
     const svgEl=doc.documentElement;
@@ -3179,11 +3179,13 @@ async function downloadPNG(){plausible('Label Downloaded',{props:{format:'PNG'}}
     const vbW=parseFloat(vb[2])||cW, vbH=parseFloat(vb[3])||cH;
     const sx=cW/vbW, sy=cH/vbH;
     const out=[];
-    doc.querySelectorAll('image').forEach(function(el){
-      const href=el.getAttribute('href')||'';
-      if(!href.startsWith('data:image/jpeg'))return;
+    // querySelectorAll with namespace fallback
+    const imgs=doc.querySelectorAll('image');
+    imgs.forEach(function(el){
+      const href=el.getAttribute('href')||el.getAttributeNS('http://www.w3.org/1999/xlink','href')||'';
+      if(href.indexOf('data:image/jpeg')<0)return;
       out.push({
-        href,
+        href:href,
         x:parseFloat(el.getAttribute('x')||0)*sx,
         y:parseFloat(el.getAttribute('y')||0)*sy,
         w:parseFloat(el.getAttribute('width')||0)*sx,
@@ -3193,10 +3195,13 @@ async function downloadPNG(){plausible('Label Downloaded',{props:{format:'PNG'}}
     return out;
   }
 
+  console.log('SVG image tags:', svgStr.match(/<[^>]*image[^>]*>/gi));
+  console.log('SVG snippet:', svgStr.substring(0,500));
   const overlays=extractGHSOverlay(svgStr,eW,eH);
+  console.log('Overlays found:', overlays.length);
 
-  // Strip all JPEG image tags so SVG renders cleanly as blob
-  const cleanSvg=svgStr.replace(/<image href="data:image\/jpeg[^"]*"[^/]*\/>/g,'');
+  // Strip ALL <image> tags that contain jpeg data — permissive regex handles namespace variants
+  const cleanSvg=svgStr.replace(/<[a-z:]*image[^>]*data:image\/jpeg[^>]*>/gi,'');
 
   const clone=new DOMParser().parseFromString(cleanSvg,'image/svg+xml').documentElement;
   clone.setAttribute('width',eW); clone.setAttribute('height',eH);
@@ -3212,17 +3217,17 @@ async function downloadPNG(){plausible('Label Downloaded',{props:{format:'PNG'}}
     ctx.drawImage(img,0,0,eW,eH);
     URL.revokeObjectURL(blobUrl);
     if(!overlays.length){
-      cvs.toBlob(b=>dlBlob(b,fname),'image/png'); return;
+      cvs.toBlob(function(b){_dlBlob(b,fname);},'image/png'); return;
     }
     let done=0;
     overlays.forEach(function(o){
       const pi=new Image();
       pi.onload=function(){
         ctx.drawImage(pi,o.x,o.y,o.w,o.h);
-        if(++done===overlays.length) cvs.toBlob(b=>dlBlob(b,fname),'image/png');
+        if(++done===overlays.length) cvs.toBlob(function(b){_dlBlob(b,fname);},'image/png');
       };
       pi.onerror=function(){
-        if(++done===overlays.length) cvs.toBlob(b=>dlBlob(b,fname),'image/png');
+        if(++done===overlays.length) cvs.toBlob(function(b){_dlBlob(b,fname);},'image/png');
       };
       pi.src=o.href;
     });
@@ -3231,7 +3236,7 @@ async function downloadPNG(){plausible('Label Downloaded',{props:{format:'PNG'}}
   img.src=blobUrl;
   setTimeout(()=>showLabelDoneSplash('download'),1500);
 }
-function dlBlob(pngBlob,fname){
+function _dlBlob(pngBlob,fname){
   const u=URL.createObjectURL(pngBlob);
   const a=document.createElement('a'); a.href=u; a.download=fname;
   document.body.appendChild(a); a.click();
