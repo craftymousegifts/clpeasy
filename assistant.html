@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Finn — Maker Suite Assistant</title>
 <style>
@@ -275,14 +276,14 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
 </div>
 
 <!-- API KEY MODAL -->
-<div id="api-modal">
+<div id="api-modal" class="hidden">
   <div class="modal-card">
     <div style="display:flex;align-items:center;gap:9px;margin-bottom:20px;">
       <div class="logo-mark" style="width:36px;height:36px;font-size:14px;">Fi</div>
       <div><div style="font-size:15px;font-weight:600;color:var(--teal);">Finn</div><div style="font-size:11px;color:var(--text-dim);">One-time setup</div></div>
     </div>
     <h2>Set up Finn</h2>
-    <p>Finn runs on the free Gemini API — 1,500 requests/day, no cost. Paste your Google AI Studio key below. It saves permanently in this browser.</p>
+    <p>Finn runs on Claude (Anthropic). No API key needed — works on all devices including iOS. It saves permanently in this browser.</p>
     <div class="field-label">API Key</div>
     <div class="api-input-wrap">
       <input type="password" id="api-key-input" placeholder="Paste your API key here..." autocomplete="off" spellcheck="false"/>
@@ -298,7 +299,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:10p
   <div class="modal-card">
     <h2>⚙️ Settings</h2>
     <div class="settings-row"><span class="settings-label">API key</span><span class="settings-val" id="key-status-display">—</span></div>
-    <div class="settings-row"><span class="settings-label">Model</span><span class="settings-val">gemini-2.0-flash-lite</span></div>
+    <div class="settings-row"><span class="settings-label">Model</span><span class="settings-val">claude-sonnet-4-6</span></div>
     <div class="settings-row"><span class="settings-label">Context</span><span class="settings-val">CLPeasy · CMG · ArtisansWeb</span></div>
     <div class="settings-row"><span class="settings-label">Session memory</span><span class="settings-val">Full conversation</span></div>
     <div class="settings-row"><span class="settings-label">Persistent memory</span><span class="settings-val" id="memory-count-display">0 notes</span></div>
@@ -683,10 +684,12 @@ function submitPassword() {
 }
 
 function initApp() {
-  if (apiKey) { document.getElementById('api-modal').classList.add('hidden'); setStatus('ready'); }
+  document.getElementById('api-modal').classList.add('hidden');
+  setStatus('ready');
   renderNotes();
   renderTodos();
   renderSnippets();
+  loadLastSession();
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────
@@ -847,13 +850,14 @@ async function summariseChat() {
   isThinking=true; setStatus('thinking'); document.getElementById('send-btn').disabled=true;
   const thinkEl = appendThinking();
   try {
-    const resp = await callGemini();
+    const resp = await callClaude();
     thinkEl.remove();
     if(resp.error) { appendError(resp.error.message||'API error'); }
     else {
-      const reply = resp.candidates?.[0]?.content?.parts?.[0]?.text||'No response.';
+      const reply = resp.content?.[0]?.text || resp.error?.message || 'No response.';
       appendMessage('assistant', reply);
       conversationHistory.push({role:'model', parts:[{text:reply}]});
+      scheduleSave();
     }
   } catch(err) { thinkEl.remove(); appendError('Network error: '+err.message); }
   isThinking=false; setStatus('ready'); document.getElementById('send-btn').disabled=false;
@@ -915,7 +919,7 @@ async function sendMessage() {
   const ta = document.getElementById('user-input');
   const text = ta.value.trim();
   if((!text && attachedFiles.length===0)||isThinking) return;
-  if(!apiKey) { document.getElementById('api-modal').classList.remove('hidden'); return; }
+  // No API key needed — Claude handles auth
   const welcome = document.getElementById('welcome-screen'); if(welcome) welcome.remove();
 
   // Build user message parts with files
@@ -956,13 +960,14 @@ ${txt}`});
 
   try {
     abortController = new AbortController();
-    const resp = await callGemini(abortController.signal);
+    const resp = await callClaude(abortController.signal);
     thinkEl.remove();
     if(resp.error) { appendError(resp.error.message||'API error — check key in Settings.'); }
     else {
       const reply = resp.candidates?.[0]?.content?.parts?.[0]?.text||'No response received.';
       appendMessage('assistant', reply);
       conversationHistory.push({role:'model', parts:[{text:reply}]});
+      scheduleSave();
     }
   } catch(err) {
     thinkEl.remove();
@@ -976,28 +981,85 @@ ${txt}`});
   ta.focus();
 }
 
-// ── GEMINI API ────────────────────────────────────────────────────────────
-function buildCallBody(useSearch) {
-  const sysprompt = buildSystemPrompt() + (draftModeActive ? '\n\nDRAFT MODE ACTIVE: Write in Michaela Feeley\'s voice — direct, warm, personal, founder-led. First person. Confident, approachable. No corporate language.' : '');
-  const body = {
-    system_instruction:{parts:[{text:sysprompt}]},
-    contents:conversationHistory,
-    generationConfig:{temperature: draftModeActive ? 0.7 : 0.35, maxOutputTokens:8192}
-  };
-  if(useSearch) body.tools = [{google_search:{}}];
-  return body;
+// ── CLAUDE API ───────────────────────────────────────────────────────────
+function geminiHistoryToClaude(history) {
+  return history.map(m => ({
+    role: m.role === 'model' ? 'assistant' : 'user',
+    content: m.parts?.map(p => p.text || '').join('') || ''
+  })).filter(m => m.content.trim());
 }
 
-async function callGemini(signal) {
-  const url=`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-  // Detect if search intent in last message
-  const lastMsg = conversationHistory[conversationHistory.length-1];
-  const lastText = lastMsg?.parts?.map(p=>p.text||'').join(' ').toLowerCase()||'';
-  const searchKeywords = ['latest','current','today','now','recent','price','news','what is','who is','check','look up','search','find out','released','available'];
-  const useSearch = searchKeywords.some(k=>lastText.includes(k));
-  const body = buildCallBody(useSearch);
-  const res = await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal});
+async function callClaude(signal) {
+  const sysprompt = buildSystemPrompt() + (draftModeActive ? '\n\nDRAFT MODE ACTIVE: Write in Michaela Feeley\'s voice — direct, warm, personal, founder-led. First person. Confident, approachable. No corporate language.' : '');
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 8192,
+      system: sysprompt,
+      messages: geminiHistoryToClaude(conversationHistory),
+      temperature: draftModeActive ? 0.7 : 0.35
+    }),
+    signal
+  });
   return res.json();
+}
+
+// ── SUPABASE CHAT PERSISTENCE ─────────────────────────────────────────────
+let _supabase = null;
+try {
+  if (window.supabase) {
+    _supabase = window.supabase.createClient(
+      'https://qvkosdqcryrcfbjtaxic.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTY0MDYzMzcsImV4cCI6MjAzMTk4MjMzN30.kQRuSKQvpJMNJLRMRGEHKfkMFj1aAbLHEKH0m5Yj_vM'
+    );
+  }
+} catch(e) { console.log('Supabase init error:', e.message); }
+
+let _sessionId = null;
+let _saveTimer = null;
+
+function scheduleSave() {
+  if (!_supabase) return;
+  if (_saveTimer) clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(async () => {
+    try {
+      const payload = {
+        history: JSON.stringify(conversationHistory),
+        updated_at: new Date().toISOString(),
+        title: conversationHistory[0]?.parts?.[0]?.text?.slice(0,60) || 'Finn Chat'
+      };
+      if (_sessionId) {
+        await _supabase.from('finn_chats').update(payload).eq('id', _sessionId);
+      } else {
+        const { data } = await _supabase.from('finn_chats').insert(payload).select().single();
+        if (data) _sessionId = data.id;
+      }
+    } catch(e) { console.log('Save error:', e.message); }
+  }, 1500);
+}
+
+async function loadLastSession() {
+  if (!_supabase) return;
+  try {
+    const { data } = await _supabase
+      .from('finn_chats').select('*')
+      .order('updated_at', { ascending: false }).limit(1).single();
+    if (!data) return;
+    _sessionId = data.id;
+    const history = JSON.parse(data.history || '[]');
+    if (!history.length) return;
+    conversationHistory = history;
+    const msgs = document.getElementById('messages');
+    const welcome = document.getElementById('welcome-screen');
+    if (welcome) welcome.remove();
+    history.forEach(m => {
+      const role = m.role === 'model' ? 'assistant' : 'user';
+      const text = m.parts?.[0]?.text || '';
+      if (text) appendMessage(role, text);
+    });
+  } catch(e) { console.log('No previous session:', e.message); }
 }
 
 // ── CLEAR CHAT ────────────────────────────────────────────────────────────
