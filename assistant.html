@@ -964,7 +964,7 @@ ${txt}`});
     thinkEl.remove();
     if(resp.error) { appendError(resp.error.message||'API error — check key in Settings.'); }
     else {
-      const reply = resp.candidates?.[0]?.content?.parts?.[0]?.text||'No response received.';
+      const reply = resp.content?.[0]?.text || resp.error?.message || 'No response.';
       appendMessage('assistant', reply);
       conversationHistory.push({role:'model', parts:[{text:reply}]});
       scheduleSave();
