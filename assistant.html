@@ -542,8 +542,20 @@ function buildSystemPrompt() {
   return prompt;
 }
 
+// ── PASSWORD GATE ─────────────────────────────────────────────────────────
+const FINN_PASSWORD = 'crafty2026';
+function checkPassword() {
+  const stored = sessionStorage.getItem('finn_auth');
+  if (stored === FINN_PASSWORD) return true;
+  const entered = prompt('🔒 Finn — Enter password:');
+  if (entered === FINN_PASSWORD) { sessionStorage.setItem('finn_auth', FINN_PASSWORD); return true; }
+  document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0f1214;color:#8a9aa0;font-family:Inter,sans-serif;font-size:14px;">Access denied. Refresh to try again.</div>';
+  return false;
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  if (!checkPassword()) return;
   if (apiKey) { document.getElementById('api-modal').classList.add('hidden'); setStatus('ready'); }
   renderNotes();
   const ta = document.getElementById('user-input');
