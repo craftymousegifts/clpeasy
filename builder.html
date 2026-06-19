@@ -2794,15 +2794,23 @@ function buildSVG(forExport=false){
   const _pictoSlot    = Math.max(_naturalPicto, _minPictoSlot);
   // Remaining mid-band space shared between type, signal, H, sens, P, gap
   const _remaining = Math.max(midH - _pictoSlot, midH * 0.40);
+  // Fixed slots for type, signal, sens, gap — these don't change with content
+  const _slotType   = _remaining * 0.13;
+  const _slotSignal = _remaining * 0.17;
+  const _slotSens   = _remaining * 0.11;
+  const _slotGap    = _remaining * 0.012;
+  // H and P share everything left — H gets 45%, P gets 55% of that pool
+  const _fixedUsed  = _slotType + _slotSignal + _slotSens + _slotGap;
+  const _hpPool     = Math.max(_remaining - _fixedUsed, _remaining * 0.45);
   const slot = {
-    scent:  0,                     // in top band
-    type:   _remaining * 0.14,
-    signal: _remaining * 0.18,
+    scent:  0,
+    type:   _slotType,
+    signal: _slotSignal,
     picto:  _pictoSlot,
-    h:      _remaining * 0.22,    // more room for full H statement text
-    sens:   _remaining * 0.12,
-    p:      _remaining * 0.26,    // more room for full P statement text
-    gap:    _remaining * 0.06 * 0.2,
+    h:      _hpPool * 0.42,   // strict budget: 42% of H+P pool
+    sens:   _slotSens,
+    p:      _hpPool * 0.58,   // strict budget: 58% of H+P pool
+    gap:    _slotGap,
   };
 
   const topGap = slot.gap;
@@ -2856,17 +2864,15 @@ function buildSVG(forExport=false){
   const pictoY    = curY + slot.picto*0.5 + midH*0.15*(0.5-1);
   curY += slot.picto;
 
-  // H statements — full text, auto-sized to fit
+  // H statements — full text, fitted strictly within slot.h budget
   const hSW     = chordW(curY + slot.h*0.5, 0.08);
   const hText   = hCodes.slice(0,8).map(c=>{const e=H_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(hCodes.length>0?'.':'') || '';
-  // Font: start small enough for full sentences, shrink further if needed
-  const hFSMax  = Math.min(slot.h * 0.38, clamp(BASE*0.032, 2.5, 7.5));
-  const hFSMin  = clamp(BASE*0.020, 1.8, 4.5);
-  const hFS     = hText ? fitFont(hText, hSW*0.90, hFSMax, hFSMin, false, false) : hFSMax;
-  const hLH     = hFS * 1.35;
-  const hLines  = wrapText(hText, hSW*0.90, hFS, false, false);
-  const hY      = curY + hLH*0.5 + midH*0.15*(0.4-1);
-  curY += Math.min(Math.max(slot.h, hLines.length*hLH), slot.h * 4.0); // allow more lines for full text
+  const hFSMax  = clamp(BASE*0.038, 2.5, 9.0);
+  const hFSMin  = clamp(BASE*0.013, 1.2, 3.0);
+  const _hFit   = fitFontToBox(hText, hSW*0.90, slot.h, hFSMax, hFSMin, false, false);
+  const hFS=_hFit.fs, hLines=_hFit.lines, hLH=_hFit.lh;
+  const hY      = curY + hLH*0.5;
+  curY += slot.h; // always advance exactly slot.h — no overflow
 
   // Sensitisers
   const sensSW  = chordW(curY + slot.sens*0.5, 0.08);
@@ -2885,21 +2891,18 @@ function buildSVG(forExport=false){
   const sensStY = curY + sensLH*0.5 + midH*0.15*(0.4-1);
   curY += Math.min(Math.max(slot.sens, allSensLines.length*sensLH), slot.sens * 1.4); // cap overflow
 
-  // P statements — anchored from botY so they always appear just above the footer
-  // regardless of how much space H/sens consumed above
-  const _pAnchorY = botY - slot.p * 0.6;
+  // P statements — fitted strictly within slot.p budget
+  const _pAnchorY = curY + slot.p * 0.5;
   const pSW     = chordW(_pAnchorY, 0.08);
   const pText   = pCodes.slice(0,8).map(c=>{const e=P_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(pCodes.length>0?'.':'');
-  // Font: smaller than H, auto-sized to fit full sentences
-  const pFSMax  = Math.min(slot.p * 0.32, clamp(BASE*0.026, 2.0, 6.0));
-  const pFSMin  = clamp(BASE*0.016, 1.5, 3.5);
-  const pFS     = pText ? fitFont(pText, pSW*0.88, pFSMax, pFSMin, false, false) : pFSMax;
-  const pLH     = pFS * 1.30;
-  const pLines  = pText ? wrapText(pText, pSW*0.88, pFS, false, false) : [];
+  const pFSMax  = clamp(BASE*0.030, 2.0, 7.0);
+  const pFSMin  = clamp(BASE*0.011, 1.0, 2.5);
+  const _pFit   = fitFontToBox(pText, pSW*0.88, slot.p, pFSMax, pFSMin, false, false);
+  const pFS=_pFit.fs, pLines=_pFit.lines, pLH=_pFit.lh;
   const _pBlockH = pLines.length * pLH;
-  // Position so block sits just above footer with small padding
-  const pStY    = botY - _pBlockH * 0.5 - pLH * 0.3;
-  // Show P if we have text and it doesn't overlap with the sens block
+  // Centre block within its slot
+  const pStY    = curY + (slot.p - _pBlockH)*0.5 + pLH*0.5;
+  // Show P if we have text
   const showP   = pLines.length > 0;
 
   // ── RENDER PICTOGRAMS ─────────────────────────────────────────
@@ -3142,7 +3145,34 @@ function fitFont(txt,maxPx,startPx,minPx,bold=true,serif=false,step=0.5){
   return Math.max(sz,minPx);
 }
 
-// ── HELPER: wrap text into lines that fit maxPx ───────────────
+// ── HELPER: fit font so wrapped text fills maxW x maxH box ───────
+// Returns {fs, lines, lh} - font size, wrapped lines, line height
+function fitFontToBox(txt,maxW,maxH,startPx,minPx,bold=false,serif=false){
+  if(!txt)return{fs:startPx,lines:[],lh:startPx*1.3};
+  let fs=startPx;
+  while(fs>minPx){
+    const lines=[];const words=txt.split(/\s+/);let cur='';
+    for(const w of words){
+      const test=cur?cur+' '+w:w;
+      if(measureText(test,fs,bold,serif)<=maxW){cur=test;}
+      else{if(cur)lines.push(cur);cur=w;}
+    }
+    if(cur)lines.push(cur);
+    const lh=fs*1.3;
+    if(lines.length*lh<=maxH)return{fs,lines,lh};
+    fs=Math.max(fs-0.4,minPx);
+  }
+  const lines=[];const words=txt.split(/\s+/);let cur='';
+  for(const w of words){
+    const test=cur?cur+' '+w:w;
+    if(measureText(test,fs,bold,serif)<=maxW){cur=test;}
+    else{if(cur)lines.push(cur);cur=w;}
+  }
+  if(cur)lines.push(cur);
+  return{fs,lines,lh:fs*1.3};
+}
+
+/ ── HELPER: wrap text into lines that fit maxPx ───────────────
 function wrapText(txt,maxPx,sizePx,bold=false,serif=false){
   if(!txt)return[];
   const words=txt.split(/\s+/);
