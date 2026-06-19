@@ -2858,7 +2858,7 @@ function buildSVG(forExport=false){
 
   // H statements
   const hSW     = chordW(curY + slot.h*0.5, 0.08);
-  const hFS     = Math.min(slot.h * 0.68 * 1.55, clamp(BASE*0.050*1.55, 3, 11*1.55));
+  const hFS     = Math.min(slot.h * 0.68 * 0.55, clamp(BASE*0.050*0.55, 2, 5.5));
   const hLH     = hFS * 1.25;
   const hText   = hCodes.slice(0,8).map(c=>{const e=H_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(hCodes.length>0?'.':'') || '';
   const hLines  = wrapText(hText, hSW*0.92, hFS, false, false);
@@ -2885,7 +2885,7 @@ function buildSVG(forExport=false){
   // P statements — anchored from botY so they always appear just above the footer
   // regardless of how much space H/sens consumed above
   const _pMult = 1.15 * Math.min(1, mmW / 50);
-  const pFS     = Math.min(slot.p * 0.50 * _pMult, clamp(BASE*0.030*_pMult, 2.5, 6*_pMult));
+  const pFS     = Math.min(slot.p * 0.50 * 0.45, clamp(BASE*0.030*0.45, 1.5, 4.5));
   const pLH     = pFS * 1.15;
   const pText   = pCodes.slice(0,8).map(c=>{const e=P_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(pCodes.length>0?'.':'');
   // Calculate P width at the position we'll render it (just above footer)
