@@ -2796,12 +2796,12 @@ function buildSVG(forExport=false){
   const _remaining = Math.max(midH - _pictoSlot, midH * 0.40);
   const slot = {
     scent:  0,                     // in top band
-    type:   _remaining * 0.18,
-    signal: _remaining * 0.22,
+    type:   _remaining * 0.14,
+    signal: _remaining * 0.18,
     picto:  _pictoSlot,
-    h:      _remaining * 0.16,
+    h:      _remaining * 0.22,    // more room for full H statement text
     sens:   _remaining * 0.12,
-    p:      _remaining * 0.19,
+    p:      _remaining * 0.26,    // more room for full P statement text
     gap:    _remaining * 0.06 * 0.2,
   };
 
@@ -2856,14 +2856,17 @@ function buildSVG(forExport=false){
   const pictoY    = curY + slot.picto*0.5 + midH*0.15*(0.5-1);
   curY += slot.picto;
 
-  // H statements
+  // H statements — full text, auto-sized to fit
   const hSW     = chordW(curY + slot.h*0.5, 0.08);
-  const hFS     = Math.min(slot.h * 0.68 * 1.55, clamp(BASE*0.050*1.55, 3, 11*1.55));
-  const hLH     = hFS * 1.25;
   const hText   = hCodes.slice(0,8).map(c=>{const e=H_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(hCodes.length>0?'.':'') || '';
-  const hLines  = wrapText(hText, hSW*0.92, hFS, false, false);
+  // Font: start small enough for full sentences, shrink further if needed
+  const hFSMax  = Math.min(slot.h * 0.38, clamp(BASE*0.032, 2.5, 7.5));
+  const hFSMin  = clamp(BASE*0.020, 1.8, 4.5);
+  const hFS     = hText ? fitFont(hText, hSW*0.90, hFSMax, hFSMin, false, false) : hFSMax;
+  const hLH     = hFS * 1.35;
+  const hLines  = wrapText(hText, hSW*0.90, hFS, false, false);
   const hY      = curY + hLH*0.5 + midH*0.15*(0.4-1);
-  curY += Math.min(Math.max(slot.h, hLines.length*hLH), slot.h * 2.5); // cap overflow
+  curY += Math.min(Math.max(slot.h, hLines.length*hLH), slot.h * 4.0); // allow more lines for full text
 
   // Sensitisers
   const sensSW  = chordW(curY + slot.sens*0.5, 0.08);
@@ -2884,14 +2887,15 @@ function buildSVG(forExport=false){
 
   // P statements — anchored from botY so they always appear just above the footer
   // regardless of how much space H/sens consumed above
-  const _pMult = 1.15 * Math.min(1, mmW / 50);
-  const pFS     = Math.min(slot.p * 0.50 * _pMult, clamp(BASE*0.030*_pMult, 2.5, 6*_pMult));
-  const pLH     = pFS * 1.15;
-  const pText   = pCodes.slice(0,8).map(c=>{const e=P_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(pCodes.length>0?'.':'');
-  // Calculate P width at the position we'll render it (just above footer)
-  const _pAnchorY = botY - slot.p * 0.6; // anchor point: 60% of slot.p above footer
+  const _pAnchorY = botY - slot.p * 0.6;
   const pSW     = chordW(_pAnchorY, 0.08);
-  const pLines  = pText ? wrapText(pText, pSW*0.90, pFS, false, false) : [];
+  const pText   = pCodes.slice(0,8).map(c=>{const e=P_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(pCodes.length>0?'.':'');
+  // Font: smaller than H, auto-sized to fit full sentences
+  const pFSMax  = Math.min(slot.p * 0.32, clamp(BASE*0.026, 2.0, 6.0));
+  const pFSMin  = clamp(BASE*0.016, 1.5, 3.5);
+  const pFS     = pText ? fitFont(pText, pSW*0.88, pFSMax, pFSMin, false, false) : pFSMax;
+  const pLH     = pFS * 1.30;
+  const pLines  = pText ? wrapText(pText, pSW*0.88, pFS, false, false) : [];
   const _pBlockH = pLines.length * pLH;
   // Position so block sits just above footer with small padding
   const pStY    = botY - _pBlockH * 0.5 - pLH * 0.3;
