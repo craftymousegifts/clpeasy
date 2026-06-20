@@ -2901,7 +2901,7 @@ function buildSVG(forExport=false){
   const _pAvail = Math.max(botY - curY, _pAlloc * 0.5);
   // Normalise P codes: try exact match first, then try joining adjacent pair codes
   const _pNorm=[];
-  const _pRaw=pCodes.slice(0,8);
+  const _pRaw=pCodes;
   for(let _i=0;_i<_pRaw.length;_i++){
     const _c=_pRaw[_i];
     // Try combined with next code first (e.g. P302+P352)
