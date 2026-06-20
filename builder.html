@@ -2174,9 +2174,9 @@ const H_PICTO_MAP = {
   H304:'health', H334:'health', H340:'health', H341:'health', H350:'health',
   H351:'health', H360:'health', H361:'health', H362:'health', H370:'health',
   H372:'health',
-  // Aquatic/environmental
-  H400:'aquatic', H401:'aquatic', H402:'aquatic', H410:'aquatic',
-  H411:'aquatic', H412:'aquatic', H413:'aquatic',
+  // Aquatic/environmental — pictogram required ONLY for Acute 1 (H400) and Chronic 1/2 (H410, H411).
+  // H401, H402 (Acute 2/3) and H412, H413 (Chronic 3/4) require the statement but NOT the pictogram per GHS.
+  H400:'aquatic', H410:'aquatic', H411:'aquatic',
   // Corrosive
   H290:'corrosive', H314:'corrosive', H318:'corrosive',
   // Skull (acute toxic)
@@ -2285,7 +2285,7 @@ function extractSDS(){
   const hPictoMap={
     exclamation:['H302','H312','H315','H317','H319','H332','H335','H336','H371','H373','EUH066','EUH071'],
     health:['H340','H341','H350','H351','H360','H361','H362','H370','H372'],
-    aquatic:['H400','H410','H411','H412','H413'],
+    aquatic:['H400','H410','H411'],
     corrosive:['H290','H314','H318'],
     skull:['H300','H301','H310','H311','H330','H331'],
     explosion:['H200','H201','H202','H203','H204','H205','H206','H207','H208','H209','H210','H211','H240','H241','H242'],
@@ -2865,7 +2865,7 @@ function buildSVG(forExport=false){
   const _pAlloc  = _hpSensAvail * 0.45;
 
   // H statements — sized to fit within _hAlloc
-  const hText   = hCodes.slice(0,8).map(c=>{const e=H_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(hCodes.length>0?'.':'') || '';
+  const hText   = hCodes.map(c=>{const e=H_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(hCodes.length>0?'.':'') || '';
   const hSW     = chordW(curY + _hAlloc*0.5, 0.08);
   const hFSMax  = Math.min(_hAlloc * 0.68, clamp(BASE*0.050, 2, 9));
   const hFSMin  = clamp(BASE*0.016, 1.2, 3.5);
