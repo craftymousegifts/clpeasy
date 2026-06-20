@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAQ Updates — CLPeasy</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  :root {
+    --teal: #2a9d8f;
+    --teal-dark: #1f7d72;
+    --teal-light: #e8f5f3;
+    --teal-mid: #c8eae6;
+    --text: #1a1a1a;
+    --text-mid: #4a5568;
+    --text-light: #718096;
+    --border: #e2e8f0;
+    --bg: #f8fafb;
+    --white: #ffffff;
+    --radius: 12px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.7; }
+
+  nav {
+    background: var(--white); border-bottom: 1px solid var(--border);
+    padding: 0 24px; display: flex; align-items: center;
+    justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 50;
+  }
+  .nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 700; font-size: 17px; color: var(--teal); letter-spacing: -0.3px; }
+  .nav-links { display: flex; gap: 24px; }
+  .nav-links a { text-decoration: none; color: var(--text-mid); font-size: 14px; font-weight: 500; transition: color 0.15s; }
+  .nav-links a:hover { color: var(--teal); }
+
+  .hero { background: linear-gradient(135deg, #1a3a36 0%, #2a9d8f 100%); color: white; padding: 56px 24px 48px; text-align: center; }
+  .hero h1 { font-size: clamp(24px, 4vw, 34px); font-weight: 700; letter-spacing: -0.4px; margin-bottom: 12px; }
+  .hero p { font-size: 15px; opacity: 0.85; max-width: 520px; margin: 0 auto; }
+
+  main { max-width: 760px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  .faq-section-title {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.8px; color: var(--teal); margin: 40px 0 16px;
+    padding-bottom: 8px; border-bottom: 2px solid var(--teal-mid);
+  }
+  .faq-section-title:first-child { margin-top: 0; }
+
+  .faq-item {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); margin-bottom: 10px; overflow: hidden;
+  }
+
+  .faq-q {
+    padding: 18px 22px; font-size: 14.5px; font-weight: 600;
+    color: var(--text); cursor: pointer; display: flex;
+    justify-content: space-between; align-items: center; gap: 12px;
+    user-select: none; transition: background 0.15s;
+  }
+  .faq-q:hover { background: var(--bg); }
+  .faq-q.open { color: var(--teal); }
+
+  .faq-chevron { font-size: 12px; color: var(--text-light); transition: transform 0.2s; flex-shrink: 0; }
+  .faq-q.open .faq-chevron { transform: rotate(180deg); color: var(--teal); }
+
+  .faq-a {
+    display: none; padding: 0 22px 20px;
+    font-size: 14px; color: var(--text-mid); line-height: 1.75;
+    border-top: 1px solid var(--border);
+  }
+  .faq-a.open { display: block; }
+  .faq-a p { margin-top: 14px; }
+  .faq-a p:first-child { margin-top: 14px; }
+
+  .faq-a .highlight {
+    background: var(--teal-light); border: 1px solid var(--teal-mid);
+    border-left: 4px solid var(--teal); border-radius: 8px;
+    padding: 14px 16px; margin-top: 14px; font-size: 13.5px; color: #1a3a36;
+  }
+  .faq-a .note {
+    background: #fff8f0; border: 1px solid #f4d8b0;
+    border-left: 4px solid #f4a261; border-radius: 8px;
+    padding: 14px 16px; margin-top: 14px; font-size: 13.5px; color: #744210;
+  }
+  .faq-a a { color: var(--teal); font-weight: 500; }
+
+  .new-badge {
+    display: inline-block; background: var(--teal); color: white;
+    font-size: 10px; font-weight: 700; padding: 2px 7px;
+    border-radius: 10px; text-transform: uppercase; letter-spacing: 0.4px;
+    margin-left: 8px; vertical-align: middle;
+  }
+
+  footer { background: var(--white); border-top: 1px solid var(--border); padding: 28px 24px; text-align: center; }
+  footer p { font-size: 13px; color: var(--text-light); line-height: 1.6; }
+  footer a { color: var(--teal); text-decoration: none; }
+
+  @media(max-width:600px) { .nav-links { display:none; } main { padding: 32px 16px 60px; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="home.html">
+    <svg viewBox="0 0 28 28" fill="none" width="28" height="28"><rect width="28" height="28" rx="7" fill="#2a9d8f"/><text x="5" y="20" font-family="Inter,sans-serif" font-size="14" font-weight="700" fill="white">CLP</text></svg>
+    CLPeasy
+  </a>
+  <div class="nav-links">
+    <a href="home.html">Home</a>
+    <a href="pricing.html">Pricing</a>
+    <a href="faq.html">FAQ</a>
+    <a href="compliance.html">Compliance</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>Frequently Asked Questions</h1>
+  <p>Everything you need to know about CLP labels, CLPeasy, and staying compliant as a UK maker.</p>
+</div>
+
+<main>
+
+  <div class="faq-section-title">Getting Started</div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggle(this)">What is a CLP label and do I need one? <span class="faq-chevron">▼</span></div>
+    <div class="faq-a">
+      <p>CLP stands for Classification, Labelling and Packaging. Under GB CLP Regulation (the UK's retained version of EU CLP), you must apply a hazard label to any product you supply that contains substances classified as hazardous — including fragrance oils above certain concentration thresholds.</p>
+      <p>For most candle, wax melt, and reed diffuser makers using fragrance oils, a CLP label is a legal requirement before you can sell your products.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggle(this)">What products does CLPeasy support? <span class="faq-chevron">▼</span></div>
+    <div class="faq-a">
+      <p>CLPeasy supports CLP label generation for fragranced products including candles, wax melts, reed diffusers, room sprays, and other fragrance or essential oil-based products where a CLP hazard label is required.</p>
+      <div class="note">
+        <strong>Bath bombs, soaps &amp; cosmetic products:</strong> These products may require a CLP hazard label <em>and</em> a separate cosmetic product label under UK Cosmetics Regulation. CLPeasy covers the CLP label requirement only. See the question below for more detail.
+      </div>
+    </div>
+  </div>
+
+  <div class="faq-section-title">Compliance &amp; Regulation</div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggle(this)">Is CLPeasy recognised or approved by HSE? <span class="faq-chevron">▼</span></div>
+    <div class="faq-a">
+      <div class="highlight">
+        <strong>CLPeasy proactively contacted the HSE CLP Helpdesk before launch</strong> to ensure responsible operation. HSE confirmed that no specific regulatory obligations apply to software tools of this nature — responsibility for label accuracy and compliance with GB CLP Regulation sits with the maker as the responsible person, which CLPeasy clearly communicates throughout the tool.
+      </div>
+      <p>We built CLPeasy to support compliance, not replace professional judgement. You can read our full regulatory position on our <a href="compliance.html">Compliance &amp; Transparency page</a>.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggle(this)">Who is the "responsible person" under GB CLP? <span class="faq-chevron">▼</span></div>
+    <div class="faq-a">
+      <p>Under GB CLP Regulation, the <strong>responsible person</strong> is the manufacturer, importer, or downstream user who places the product on the market. As a maker selling your candles or wax melts, that is <strong>you</strong>.</p>
+      <p>CLPeasy assists you in generating your CLP label — but you remain legally responsible for ensuring the hazard information on your label is accurate, up to date, and reflects your actual product at your actual fragrance load percentage. Always verify against your supplier's current SDS.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggle(this)">I make bath bombs and soaps — do I need a CLP label? <span class="faq-chevron">▼</span></div>
+    <div class="faq-a">
+      <p>Possibly yes — and there is an important distinction to understand here.</p>
+      <p>Bath bombs and soaps can require a <strong>CLP hazard label</strong> if the fragrance components in your recipe meet classification thresholds under GB CLP Regulation. This is separate to the cosmetic product label.</p>
+      <div class="note">
+        <strong>Two separate requirements may apply:</strong><br><br>
+        1. <strong>CLP hazard label</strong> — required if fragrance components meet classification thresholds. CLPeasy covers this.<br><br>
+        2. <strong>Cosmetic product label</strong> — governed by UK Cosmetics Regulation. Requires a Cosmetic Product Safety Report (CPSR) completed by a qualified cosmetic safety assessor, plus an INCI ingredient list, responsible person details, batch number, and other mandatory elements. CLPeasy does not cover this.
+      </div>
+      <p>If you are unsure, consult the <a href="https://www.gov.uk/guidance/submit-a-cosmetic-product-notification" target="_blank">OPSS guidance on cosmetic products</a> or speak with a qualified cosmetic safety assessor.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggle(this)">Does CLPeasy classify my fragrance for me? <span class="faq-chevron">▼</span></div>
+    <div class="faq-a">
+      <p>No — and this is an important distinction. CLPeasy <strong>does not independently classify substances</strong>. It assists you in applying the hazard classifications already provided by your fragrance supplier in their Safety Data Sheet (Section 2.2).</p>
+      <p>Your fragrance supplier is responsible for classifying their fragrance oil. Your SDS contains that classification data. CLPeasy takes that data and renders the <strong>full written hazard statements and precautionary statements</strong> on your label — not codes alone — formatted correctly at your specific fragrance load percentage.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggle(this)">What is a UFI code and do I need one? <span class="faq-chevron">▼</span></div>
+    <div class="faq-a">
+      <p>A UFI (Unique Formula Identifier) is a 16-character code that links your product label to the formula information submitted to the GB Poison Centre Notification portal. For products classified as hazardous mixtures supplied to consumers or professional users in Great Britain, UFI notification is required.</p>
+      <p>CLPeasy includes a UFI code field on your label. You generate your UFI via the <a href="https://ufi.echa.europa.eu/" target="_blank">ECHA UFI generator</a> and submit your product details via the GB PCN portal. Your CLPeasy label includes the correct UFI format (UFI: XXXX-XXXX-XXXX-XXXX).</p>
+    </div>
+  </div>
+
+  <div class="faq-section-title">Using CLPeasy</div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggle(this)">Where do I find the hazard classification data for my fragrance? <span class="faq-chevron">▼</span></div>
+    <div class="faq-a">
+      <p>Your fragrance supplier is required to provide a Safety Data Sheet (SDS) for every fragrance oil they sell. The hazard classification information you need is in <strong>Section 2.2</strong> of that SDS — it lists the hazard statements (H-statements), precautionary statements (P-statements), signal word (Warning or Danger), and GHS pictograms.</p>
+      <p>If your supplier does not provide an SDS, ask for one — they are legally required to supply it. CLPeasy's Smart Paste feature lets you paste your SDS Section 2.2 text and extracts the classification data automatically, rendering the full written statements on your label.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggle(this)">Can I save and reuse my labels? <span class="faq-chevron">▼</span></div>
+    <div class="faq-a">
+      <p>Yes. CLPeasy lets you save your safety sheets to your library and reload them any time. This means once you have set up a product, generating a new label or reprinting an existing one takes seconds.</p>
+      <p>We recommend reviewing your saved labels whenever your fragrance supplier updates their SDS, as hazard classifications can change between batches or supplier reformulations.</p>
+    </div>
+  </div>
+
+  <div class="faq-section-title">Account &amp; Pricing</div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggle(this)">What is included in the free trial? <span class="faq-chevron">▼</span></div>
+    <div class="faq-a">
+      <p>Your 14-day free trial gives you full access to CLPeasy — build labels, save to your library, and download print-ready PDFs. No credit card required to start. At the end of your trial you can choose an Easy Start or Easy Pro plan to continue.</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggle(this)">What is the difference between Easy Start and Easy Pro? <span class="faq-chevron">▼</span></div>
+    <div class="faq-a">
+      <p><strong>Easy Start</strong> (£9.99/month or £99/year) is designed for makers building up their product range — ideal if you have a smaller number of products or are just getting started with CLP compliance.</p>
+      <p><strong>Easy Pro</strong> (£14.99/month or £149/year) is for established makers with a larger product range who need more downloads per month. It includes everything in Easy Start plus priority support.</p>
+      <p>Top-up packs are also available if you need extra downloads in any month: 5 downloads for £3.99 or 10 downloads for £7.99.</p>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>CLPeasy™ · 66 Paul Street, London, EC2A 4NA · <a href="mailto:support@clpeasy.com">support@clpeasy.com</a></p>
+  <p style="margin-top:6px;">© 2026 Michaela Feeley · <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a> · <a href="compliance.html">Compliance &amp; Transparency</a></p>
+</footer>
+
+<script>
+function toggle(el) {
+  el.classList.toggle('open');
+  const answer = el.nextElementSibling;
+  answer.classList.toggle('open');
+}
+</script>
+</body>
+</html>

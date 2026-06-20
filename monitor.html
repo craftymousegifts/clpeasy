@@ -115,122 +115,52 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);m
 .action-text strong{color:white;}
 
 footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2);font-family:'DM Mono',monospace;}
+
+/* Inline editing */
+.editable-hint{cursor:pointer;border-bottom:1px dashed rgba(255,255,255,0.2);transition:border-color .15s;}
+.editable-hint:hover{border-bottom-color:var(--teal);}
+.inline-edit-input{background:rgba(255,255,255,0.1);border:1px solid var(--teal);color:white;padding:2px 8px;border-radius:5px;font-size:12px;font-weight:600;font-family:'DM Mono',monospace;width:100%;max-width:260px;outline:none;}
+.action-priority.low[style],.action-priority.done{background:rgba(74,222,128,0.2);color:#4ade80;}
+
+/* Action item controls */
+.action-item { position: relative; }
+.action-item:hover .action-controls { opacity: 1; }
+.action-controls { opacity: 0; transition: opacity .2s; display: flex; gap: 6px; align-items: center; margin-left: auto; flex-shrink: 0; }
+.action-btn { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 5px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .15s; }
+.action-btn-done { background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.3); }
+.action-btn-done:hover { background: rgba(74,222,128,0.3); }
+.action-btn-edit { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.15); }
+.action-btn-edit:hover { background: rgba(255,255,255,0.15); color: white; }
+.action-btn-del { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+.action-btn-del:hover { background: rgba(239,68,68,0.25); }
+.action-item.done-item { opacity: 0.5; }
+.action-item.done-item .action-priority { background: rgba(74,222,128,0.2) !important; color: #4ade80 !important; }
+.action-edit-area { width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 8px; padding: 8px 10px; font-size: 13px; font-family: 'DM Sans', sans-serif; line-height: 1.6; resize: vertical; margin-top: 6px; }
+.add-action-btn { background: rgba(76,155,176,0.15); color: var(--teal-light); border: 1.5px dashed rgba(76,155,176,0.4); border-radius: 10px; padding: 10px 18px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; width: 100%; margin-top: 8px; transition: all .2s; }
+.add-action-btn:hover { background: rgba(76,155,176,0.25); }
+
 </style>
+<!-- Privacy-friendly analytics by Plausible -->
+<script async src="https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"></script>
+<script>
+  window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+  plausible.init()
+</script>
 </head>
 <body>
 
-<!-- ========== CLPeasy Monitor Login Gate — paste this at the TOP of your <body> tag ========== -->
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  #clp-gate {
-    position: fixed; inset: 0; z-index: 9999;
-    background: #0f1117;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'DM Sans', sans-serif;
-  }
-  #clp-gate .box {
-    background: #181c27;
-    border: 1px solid #2a2f3e;
-    border-radius: 14px;
-    padding: 2rem 1.5rem 1.75rem;
-    width: min(340px, 90vw);
-    text-align: center;
-  }
-  #clp-gate .logo { font-size: 1.1rem; font-weight: 600; letter-spacing: 0.08em; color: #7b8cde; margin-bottom: 0.25rem; }
-  #clp-gate h1 { font-size: 1rem; font-weight: 400; color: #8b94a8; margin: 0 0 1.75rem; }
-  #clp-gate input[type=password] {
-    width: 100%; box-sizing: border-box;
-    padding: 0.65rem 1rem; border-radius: 8px;
-    border: 1px solid #2a2f3e; background: #0f1117;
-    color: #e8ecf2; font-size: 1rem; font-family: inherit;
-    outline: none; transition: border-color 0.2s; margin-bottom: 0.75rem;
-  }
-  #clp-gate input[type=password]:focus { border-color: #7b8cde; }
-  #clp-gate input[type=password].err { border-color: #e24b4a; animation: shake 0.3s; }
-  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
-  #clp-gate button {
-    width: 100%; padding: 0.65rem; border-radius: 8px;
-    border: none; background: #7b8cde; color: #fff;
-    font-size: 0.95rem; font-weight: 500; font-family: inherit;
-    cursor: pointer; transition: background 0.2s;
-  }
-  #clp-gate button:hover { background: #6070c4; }
-  #clp-gate .msg { font-size: 0.8rem; color: #e24b4a; margin-top: 0.6rem; min-height: 1.1rem; }
-  #clp-gate .lock-icon { font-size: 2rem; margin-bottom: 0.75rem; opacity: 0.5; }
-</style>
- 
-<div id="clp-gate">
-  <div class="box">
-    <div class="lock-icon">&#x1F512;</div>
-    <div class="logo">CLPeasy</div>
-    <h1>Monitor Dashboard</h1>
-    <input type="password" id="clp-pwd" placeholder="Enter password" autocomplete="current-password" />
-    <button onclick="clpCheck()">Unlock</button>
-    <div class="msg" id="clp-msg"></div>
-  </div>
-</div>
 
-<script>
-(function(){
-  var h='aea3763183efe526e2fd24d28b5552d8ba9c1d3053fb53b22a35a50a3b9a16ad';
-  function sha256(str){
-    return crypto.subtle.digest('SHA-256',new TextEncoder().encode(str))
-      .then(function(b){return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');});
-  }
-  // Check session storage first (already unlocked this session)
-  if(sessionStorage.getItem('clp_auth')==='1'){
-    document.getElementById('logout-btn').style.display='inline-flex';
-    document.getElementById('clp-gate').style.display='none';
-  }
-  // Also check Supabase session — if user is logged in AND is admin, auto-unlock
-  // This means admins don't need to re-enter the password on every page load
-  (function trySupabaseAuth(){
-    const sbUrl='https://qvkosdqcryrcfbjtaxic.supabase.co';
-    const sbKey='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
-    if(typeof window.supabase === 'undefined') return; // Supabase not loaded yet, password gate still works
-    try {
-      const _sb = window.supabase.createClient(sbUrl, sbKey);
-      _sb.auth.getSession().then(function(res){
-        const session = res && res.data && res.data.session;
-        if(!session) return; // not logged in — password gate remains
-        // Check admin flag in user metadata or profile
-        const meta = session.user && session.user.user_metadata;
-        if(meta && meta.is_admin === true){
-          sessionStorage.setItem('clp_auth','1');
-        document.getElementById('logout-btn').style.display='inline-flex';
-          document.getElementById('clp-gate').style.display='none';
-        }
-      });
-    } catch(e){ /* silently ignore — password gate still works */ }
-  })();
-  document.getElementById('clp-pwd').addEventListener('keydown',function(e){if(e.key==='Enter')clpCheck();});
-  window.clpCheck=function(){
-    var inp=document.getElementById('clp-pwd');
-    sha256(inp.value).then(function(d){
-      if(d===h){
-        sessionStorage.setItem('clp_auth','1');
-        document.getElementById('logout-btn').style.display='inline-flex';
-        document.getElementById('clp-gate').style.display='none';
-      } else {
-        document.getElementById('clp-msg').textContent='Incorrect password';
-        inp.value=''; inp.classList.add('err');
-        setTimeout(function(){inp.classList.remove('err');},400);
-      }
-    });
-  };
-})();
-</script>
-<!-- ========== End Login Gate ========== -->
 <div class="header">
   <a href="home.html" class="header-logo">
     <div class="logo-badge">CLP</div>
     <span class="logo-name">easy</span>
   </a>
-  <div class="header-title">⚙️ Service Monitor — Internal Dashboard</div>
+  <div class="header-title">⚙️ Service Monitor — Internal Dashboard &nbsp;<span style="font-size:11px;opacity:0.5;">· double-click any value to edit</span></div>
   <div class="header-right">
     <span class="last-refresh" id="lastRefresh">Last refreshed: —</span>
+    <a href="compliance.html" style="font-size:12px;color:rgba(255,255,255,0.5);text-decoration:none;padding:5px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);transition:all .2s;" onmouseover="this.style.color='#2a9d8f';this.style.borderColor='#2a9d8f'" onmouseout="this.style.color='rgba(255,255,255,0.5)';this.style.borderColor='rgba(255,255,255,0.15)'">Compliance</a>
     <button class="refresh-btn" onclick="runAll()">↻ Refresh</button>
-    <button id="logout-btn" onclick="monitorLogout()" style="display:none;background:#EF4444;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(239,68,68,.35);letter-spacing:.02em;white-space:nowrap;">🔒 Logout</button>
+
   </div>
 </div>
 
@@ -277,6 +207,171 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
   <div class="svc-card">
     <div class="svc-intro">Something not working? Answer the questions and this will point you to the likely cause, the fix, and exactly where to look. Covers payments, sign-in, downloads, hosting and email.</div>
     <div id="svc-check"></div>
+  </div>
+
+  <div class="section-title">📊 Live Traffic — CLPeasy</div>
+  <div class="service-grid" style="margin-bottom:28px;">
+    <div class="service-card status-info" id="card-plausible" style="grid-column:1/-1;">
+      <div class="card-header">
+        <div class="card-header-left">
+          <span class="service-icon">📈</span>
+          <div>
+            <div class="service-name">Plausible Analytics — CLPeasy</div>
+            <div class="service-plan">clpeasy.com · Privacy-friendly · auto-refreshes every 60s</div>
+          </div>
+        </div>
+        <span class="status-badge loading" id="plausible-badge"><span class="spin"></span>Loading</span>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;">
+          <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:26px;font-weight:800;color:#4ade80;" id="pl-realtime">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Live now</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:26px;font-weight:800;color:var(--teal-light);" id="pl-visitors">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Visitors today</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:26px;font-weight:800;color:var(--teal-light);" id="pl-pageviews">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Pageviews</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:26px;font-weight:800;color:var(--teal-light);" id="pl-bounce">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Bounce rate</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:26px;font-weight:800;color:var(--teal-light);" id="pl-duration">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Avg duration</div>
+          </div>
+        </div>
+        <!-- Row 1: Pages + Sources + Devices/Countries -->
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Pages today</div>
+            <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:2px 12px;font-size:11px;color:rgba(255,255,255,0.3);padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;">
+              <span>Page</span><span>Visitors</span><span>Views</span><span>Avg time</span>
+            </div>
+            <div id="pl-pages" style="font-size:12px;color:rgba(255,255,255,0.75);">—</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Sources</div>
+            <div style="display:grid;grid-template-columns:1fr auto;gap:2px 12px;font-size:11px;color:rgba(255,255,255,0.3);padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;">
+              <span>Source</span><span>Visitors</span>
+            </div>
+            <div id="pl-sources" style="font-size:12px;color:rgba(255,255,255,0.75);">—</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Devices</div>
+            <div id="pl-devices" style="font-size:12px;color:rgba(255,255,255,0.75);margin-bottom:14px;">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Countries</div>
+            <div id="pl-countries" style="font-size:12px;color:rgba(255,255,255,0.75);">—</div>
+          </div>
+        </div>
+        <!-- Row 2: Entry pages + Exit pages + Custom events -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);">
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">🚪 Entry pages</div>
+            <div style="display:grid;grid-template-columns:1fr auto;gap:2px 12px;font-size:11px;color:rgba(255,255,255,0.3);padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;">
+              <span>Page</span><span>Visitors</span>
+            </div>
+            <div id="pl-entry" style="font-size:12px;color:rgba(255,255,255,0.75);">—</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">🚪 Exit pages</div>
+            <div style="display:grid;grid-template-columns:1fr auto;gap:2px 12px;font-size:11px;color:rgba(255,255,255,0.3);padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;">
+              <span>Page</span><span>Visitors</span>
+            </div>
+            <div id="pl-exit" style="font-size:12px;color:rgba(255,255,255,0.75);">—</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">⚡ Custom events today</div>
+            <div style="display:grid;grid-template-columns:1fr auto;gap:2px 12px;font-size:11px;color:rgba(255,255,255,0.3);padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;">
+              <span>Event</span><span>Count</span>
+            </div>
+            <div id="pl-events" style="font-size:12px;color:rgba(255,255,255,0.75);">Tracking active — events will appear here once triggered</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;text-align:right;">
+          <a href="https://plausible.io/clpeasy.com" target="_blank" style="font-size:12px;color:var(--teal-light);text-decoration:none;">Open full Plausible dashboard ↗</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">📊 Live Traffic — Crafty Mouse Gifts</div>
+  <div class="service-grid" style="margin-bottom:28px;">
+    <div class="service-card" id="card-plausible-cmg" style="grid-column:1/-1;border-color:#e46d69;box-shadow:0 0 0 1px rgba(228,109,105,0.3);">
+      <div class="card-header">
+        <div class="card-header-left">
+          <span class="service-icon">🐭</span>
+          <div>
+            <div class="service-name">Plausible Analytics — Crafty Mouse Gifts</div>
+            <div class="service-plan">craftymousegifts.com · Privacy-friendly · auto-refreshes every 60s</div>
+          </div>
+        </div>
+        <span class="status-badge loading" id="plausible-cmg-badge"><span class="spin"></span>Loading</span>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;">
+          <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:26px;font-weight:800;color:#4ade80;" id="cmg-realtime">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Live now</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:26px;font-weight:800;color:#f3a8b4;" id="cmg-visitors">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Visitors today</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:26px;font-weight:800;color:#f3a8b4;" id="cmg-pageviews">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Pageviews</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:26px;font-weight:800;color:#f3a8b4;" id="cmg-bounce">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Bounce rate</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:26px;font-weight:800;color:#f3a8b4;" id="cmg-duration">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:4px;">Avg duration</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Pages today</div>
+            <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:2px 12px;font-size:11px;color:rgba(255,255,255,0.3);padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;"><span>Page</span><span>Visitors</span><span>Views</span><span>Avg time</span></div>
+            <div id="cmg-pages" style="font-size:12px;color:rgba(255,255,255,0.75);">—</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Sources</div>
+            <div style="display:grid;grid-template-columns:1fr auto;gap:2px 12px;font-size:11px;color:rgba(255,255,255,0.3);padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:4px;"><span>Source</span><span>Visitors</span></div>
+            <div id="cmg-sources" style="font-size:12px;color:rgba(255,255,255,0.75);">—</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Devices</div>
+            <div id="cmg-devices" style="font-size:12px;color:rgba(255,255,255,0.75);margin-bottom:14px;">—</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">Countries</div>
+            <div id="cmg-countries" style="font-size:12px;color:rgba(255,255,255,0.75);">—</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 2fr;gap:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);">
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">🚪 Entry pages</div>
+            <div id="cmg-entry" style="font-size:12px;color:rgba(255,255,255,0.75);">—</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">🚪 Exit pages</div>
+            <div id="cmg-exit" style="font-size:12px;color:rgba(255,255,255,0.75);">—</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">⚡ Custom events today</div>
+            <div id="cmg-events" style="font-size:12px;color:rgba(255,255,255,0.75);">Tracking active — events will appear once triggered</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;text-align:right;">
+          <a href="https://plausible.io/craftymousegifts.com" target="_blank" style="font-size:12px;color:#f3a8b4;text-decoration:none;">Open full Plausible dashboard ↗</a>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="section-title">Live Services</div>
@@ -364,11 +459,11 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
         </div>
         <div class="info-row">
           <span class="info-key">Onboarding automation</span>
-          <span class="info-val highlight">Active ✓</span>
+          <span class="info-val highlight editable-hint" id="brevo-automation-val" title="Double-click to edit">Active ✓</span>
         </div>
         <div class="info-row">
           <span class="info-key">Sender domain</span>
-          <span class="info-val highlight">clpeasy.com DKIM ✓</span>
+          <span class="info-val highlight editable-hint" id="brevo-dkim-val" title="Double-click to edit">clpeasy.com DKIM ✓</span>
         </div>
         <div class="info-row">
           <span class="info-key">Monthly limit</span>
@@ -415,7 +510,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
         </div>
         <div class="info-row">
           <span class="info-key">Deploy</span>
-          <span class="info-val highlight">Auto on push to main ✓</span>
+          <span class="info-val highlight editable-hint" id="netlify-deploy-val" title="Double-click to edit">Auto on push to main ✓</span>
         </div>
         <div class="info-row">
           <span class="info-key">Cost</span>
@@ -487,11 +582,11 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
         </div>
         <div class="info-row">
           <span class="info-key">SMTP</span>
-          <span class="info-val highlight">smtp.zoho.eu:587 ✓</span>
+          <span class="info-val highlight editable-hint" id="zoho-smtp-val" title="Double-click to edit">smtp.zoho.eu:587 ✓</span>
         </div>
         <div class="info-row">
           <span class="info-key">DKIM/SPF</span>
-          <span class="info-val highlight">Configured ✓</span>
+          <span class="info-val highlight editable-hint" id="zoho-dkim-val" title="Double-click to edit">Configured ✓</span>
         </div>
         <div class="info-row">
           <span class="info-key">Renewal date</span>
@@ -527,7 +622,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
       <div class="card-body">
         <div class="info-row">
           <span class="info-key">Status</span>
-          <span class="info-val ok">In production ✓</span>
+          <span class="info-val ok editable-hint" id="oauth-status-val" title="Double-click to edit">In production ✓</span>
         </div>
         <div class="info-row">
           <span class="info-key">App name</span>
@@ -553,37 +648,56 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
     </div>
 
     <!-- ICO Registration -->
-    <div class="service-card status-alert">
+    <div class="service-card status-ok" id="card-ico">
       <div class="card-header">
         <div class="card-header-left">
           <span class="service-icon">🏛️</span>
           <div>
             <div class="service-name">ICO Registration</div>
-            <div class="service-plan">UK GDPR · Required at launch</div>
+            <div class="service-plan">UK GDPR · Data Protection Fee</div>
           </div>
         </div>
-        <span class="status-badge alert">⚠ Required</span>
+        <span class="status-badge ok" id="ico-badge">✓ Registered</span>
       </div>
       <div class="card-body">
         <div class="info-row">
           <span class="info-key">Status</span>
-          <span class="info-val alert">NOT REGISTERED — action required</span>
+          <span class="info-val ok" id="ico-status">Registered ✓ — direct debit ref c1959917</span>
         </div>
         <div class="info-row">
-          <span class="info-key">When required</span>
-          <span class="info-val warn">On launch day / first paid subscriber</span>
+          <span class="info-key">Applied on</span>
+          <span class="info-val" id="ico-applied-val" ondblclick="makeEditable(this,'ico-applied')" title="Double-click to edit">15 Jun 2026</span>
         </div>
         <div class="info-row">
+          <span class="info-key">Registration number</span>
+          <span class="info-val warn" id="ico-regno-val" ondblclick="makeEditable(this,'ico-regno')" title="Double-click to edit">Pending — add when received</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Renewal date</span>
+          <span class="info-val warn" id="ico-expiry">Set below ↓</span>
+        </div>
+        <div class="info-row">
+          <span class="info-key">Days remaining</span>
+          <span class="info-val" id="ico-days">—</span>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+          <label style="font-size:12px;color:rgba(255,255,255,0.45);">Set renewal date:</label>
+          <input type="date" id="ico-date-input" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:white;padding:5px 10px;border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;" onchange="saveICO()">
+        </div>
+        <div class="info-row" style="margin-top:8px;">
           <span class="info-key">Annual cost</span>
           <span class="info-val">£40/year (Tier 1)</span>
         </div>
         <div class="info-row">
-          <span class="info-key">Where to register</span>
+          <span class="info-key">ICO portal</span>
           <span class="info-val"><a href="https://ico.org.uk/for-organisations/data-protection-fee/" target="_blank" style="color:var(--teal-light);text-decoration:none;">ico.org.uk ↗</a></span>
         </div>
-        <div class="renewal-alert" style="margin-top:10px;">
-          <span class="renewal-alert-icon">🚨</span>
-          <span class="renewal-alert-text">Register on launch day before accepting paying subscribers. Add ICO registration number to your Privacy Policy once registered.</span>
+        <div class="renewal-alert" style="margin-top:10px;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.25);">
+          <span class="renewal-alert-icon">✓</span>
+          <span class="renewal-alert-text">Registered via direct debit (ref c1959917, £40/year). Once you receive your registration number by post/email, double-click "Pending" above to update it, then add it to your Privacy Policy.</span>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+          <button onclick="markICORegistered()" style="background:var(--teal);color:white;border:none;padding:5px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">✓ Mark Registered</button>
         </div>
       </div>
     </div>
@@ -598,12 +712,12 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
             <div class="service-plan">Built · Test mode · Pay as you go</div>
           </div>
         </div>
-        <span class="status-badge warn">⚙ Test mode</span>
+        <span class="status-badge warn" id="stripe-mode-val">⚙ Test mode</span>
       </div>
       <div class="card-body">
         <div class="info-row">
           <span class="info-key">Status</span>
-          <span class="info-val warn">Built — not taking live payments yet</span>
+          <span class="info-val warn editable-hint" id="stripe-status-val" title="Double-click to edit">Built — not taking live payments yet</span>
         </div>
         <div class="info-row">
           <span class="info-key">Easy Start</span>
@@ -655,7 +769,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
         </div>
         <div class="info-row">
           <span class="info-key">Status</span>
-          <span class="info-val warn">Under examination — allow ~4 months</span>
+          <span class="info-val warn editable-hint" id="tm-status-val" title="Double-click to edit">Under examination — allow ~4 months</span>
         </div>
         <div class="info-row">
           <span class="info-key">Symbol permitted now</span>
@@ -699,7 +813,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
       <div class="card-body">
         <div class="info-row">
           <span class="info-key">Status</span>
-          <span class="info-val warn" id="hm-status">Verification in progress</span>
+          <span class="info-val warn editable-hint" id="hm-status" title="Double-click to edit">Verification in progress</span>
         </div>
         <div class="info-row">
           <span class="info-key">Address</span>
@@ -745,8 +859,8 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
     </div>
 
     <div class="action-item">
-      <span class="action-priority high">HIGH</span>
-      <span class="action-text"><strong>ICO registration</strong> — register at ico.org.uk on launch day before accepting any paid subscribers. Cost: £40/year.</span>
+      <span class="action-priority" style="background:rgba(74,222,128,0.2);color:#4ade80;">DONE</span>
+      <span class="action-text"><strong>ICO registration</strong> — registered 16 Jun 2026 ✓. Direct debit set up (ref c1959917, £40/year). Awaiting registration number by post — once received, double-click "Pending" on the ICO card above and add it to your Privacy Policy.</span>
     </div>
     <div class="action-item">
       <span class="action-priority med">MED</span>
@@ -783,12 +897,20 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
       <span class="action-text"><strong>VAT</strong> — UK: register once turnover tops £90k/12 months (not yet). EU: digital sales have NO threshold — decide before launch whether to restrict sign-ups to the UK or enable Stripe Tax / OSS.</span>
     </div>
     <div class="action-item">
-      <span class="action-priority med">MED</span>
-      <span class="action-text"><strong>Business insurance</strong> — confirm the Simply Business policy covers the CLPeasy SaaS, not just Crafty Mouse Gifts.</span>
+      <span class="action-priority high">HIGH</span>
+      <span class="action-text"><strong>Business insurance</strong> — <strong>Hiscox selected</strong> (PI £100k, PL £1m, cyber £25k — £289.92/year) but NOT yet purchased. Must be bought before first paid subscription goes live (~29 June). Purchase at hiscox.co.uk before enabling live Stripe payments.</span>
     </div>
     <div class="action-item">
-      <span class="action-priority low">LOW</span>
-      <span class="action-text"><strong>Cookie consent &amp; UK GDPR</strong> — UK GDPR lawful basis is documented in the privacy policy ✓. Still to do: add a cookie consent banner and confirm <em>cookie-policy.html</em> exists (it's linked from footers).</span>
+      <span class="action-priority" style="background:rgba(74,222,128,0.2);color:#4ade80;">DONE</span>
+      <span class="action-text"><strong>Cookie consent &amp; UK GDPR</strong> — cookie consent banner live ✓. UK GDPR lawful basis documented in privacy policy ✓. ICO registered ✓. cookie-policy.html exists and linked from footers ✓.</span>
+    </div>
+    <div class="action-item">
+      <span class="action-priority" style="background:rgba(74,222,128,0.2);color:#4ade80;">DONE</span>
+      <span class="action-text"><strong>Analytics</strong> — Plausible privacy-friendly analytics live across all CLPeasy pages ✓. No cookie banner required (no personal data collected). Custom event tracking active on builder, pricing, auth, account and support pages.</span>
+    </div>
+    <div class="action-item">
+      <span class="action-priority" style="background:rgba(74,222,128,0.2);color:#4ade80;">DONE</span>
+      <span class="action-text"><strong>Trade mark</strong> — UK00004395085 filed 31 May 2026, Class 42 ✓. Use TM symbol only until registration certificate (~mid-August 2026). Do not use ® until confirmed registered.</span>
     </div>
   </div>
 
@@ -805,7 +927,99 @@ function loadDates() {
     if (domainDate) { const el = document.getElementById('domain-date-input'); if (el) el.value = domainDate; updateDays('domain', domainDate); }
     if (zohoDate) { const el = document.getElementById('zoho-date-input'); if (el) el.value = zohoDate; updateDays('zoho', zohoDate); }
     loadHM();
+    loadICO();
+    activateInlineEdits();
   } catch (e) { /* storage unavailable — dates just won't pre-fill */ }
+}
+
+function saveICO() {
+  const d = document.getElementById('ico-date-input').value;
+  localStorage.setItem('monitor_ico_date', d);
+  updateDays('ico', d);
+}
+
+function markICORegistered() {
+  localStorage.setItem('monitor_ico_registered', 'true');
+  document.getElementById('ico-badge').textContent = '✓ Registered';
+  document.getElementById('ico-badge').className = 'status-badge ok';
+  document.getElementById('ico-status').textContent = 'Registered ✓';
+  document.getElementById('ico-status').className = 'info-val ok';
+  document.getElementById('card-ico').className = 'service-card status-ok';
+}
+
+function loadICO() {
+  const d = localStorage.getItem('monitor_ico_date');
+  const reg = localStorage.getItem('monitor_ico_registered');
+  const applied = localStorage.getItem('monitor_ico_applied');
+  const regno = localStorage.getItem('monitor_ico_regno');
+  if (d) { document.getElementById('ico-date-input').value = d; updateDays('ico', d); }
+  if (reg) { markICORegistered(); }
+  if (applied) { document.getElementById('ico-applied-val').textContent = applied; }
+  if (regno) { document.getElementById('ico-regno-val').textContent = regno; document.getElementById('ico-regno-val').className = 'info-val ok'; }
+}
+
+// ── Generic inline edit ──────────────────────────────────────────────────────
+function makeEditable(el, key) {
+  const current = el.textContent;
+  const input = document.createElement('input');
+  input.className = 'inline-edit-input';
+  input.value = current;
+  el.replaceWith(input);
+  input.focus();
+  input.select();
+  function save() {
+    const val = input.value.trim() || current;
+    localStorage.setItem('monitor_edit_' + key, val);
+    const span = document.createElement('span');
+    span.className = el.className + ' editable-hint';
+    span.id = el.id;
+    span.title = 'Double-click to edit';
+    span.textContent = val;
+    span.ondblclick = function(){ makeEditable(span, key); };
+    // Special case: ICO regno gets green class when not pending
+    if (key === 'ico-regno' && !val.toLowerCase().includes('pending')) {
+      span.className = 'info-val ok editable-hint';
+      localStorage.setItem('monitor_ico_registered', 'true');
+    }
+    input.replaceWith(span);
+  }
+  input.addEventListener('blur', save);
+  input.addEventListener('keydown', function(e){ if(e.key==='Enter') input.blur(); if(e.key==='Escape'){ input.value=current; input.blur(); } });
+}
+
+// Activate double-click editing on all static info-val fields
+function activateInlineEdits() {
+  const editables = [
+    // ICO
+    {id:'ico-applied-val',   key:'ico-applied'},
+    {id:'ico-regno-val',     key:'ico-regno'},
+    // Stripe
+    {id:'stripe-status-val', key:'stripe-status'},
+    {id:'stripe-mode-val',   key:'stripe-mode'},
+    // Horton Mix
+    {id:'hm-status',         key:'hm-status'},
+    // Netlify
+    {id:'netlify-deploy-val',key:'netlify-deploy'},
+    // Brevo
+    {id:'brevo-automation-val', key:'brevo-automation'},
+    {id:'brevo-dkim-val',    key:'brevo-dkim'},
+    // Zoho
+    {id:'zoho-smtp-val',     key:'zoho-smtp'},
+    {id:'zoho-dkim-val',     key:'zoho-dkim'},
+    // OAuth
+    {id:'oauth-status-val',  key:'oauth-status'},
+    // Trade mark
+    {id:'tm-status-val',     key:'tm-status'},
+  ];
+  editables.forEach(function(e){
+    const el = document.getElementById(e.id);
+    if (!el) return;
+    el.classList.add('editable-hint');
+    el.title = 'Double-click to edit';
+    el.ondblclick = function(){ makeEditable(el, e.key); };
+    const saved = localStorage.getItem('monitor_edit_' + e.key);
+    if (saved) { el.textContent = saved; }
+  });
 }
 
 function saveDomain() {
@@ -959,8 +1173,156 @@ function updateSummary() {
   else daysEl.style.color = '#4ade80';
 }
 
+
+function fmtDur(secs) {
+  if (secs == null) return '—';
+  const m = Math.floor(secs / 60), s = secs % 60;
+  return m > 0 ? m + 'm ' + s + 's' : s + 's';
+}
+function fmtRow(cols, values, mono) {
+  const grid = 'display:grid;grid-template-columns:' + cols + ';gap:2px 12px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.05);';
+  const valStyle = mono ? 'color:var(--teal-light);font-family:\'DM Mono\',monospace;text-align:right;' : '';
+  return '<div style="' + grid + '">' + values.map((v,i) => '<span style="' + (i>0 ? valStyle : '') + '">' + v + '</span>').join('') + '</div>';
+}
+
+async function checkPlausible() {
+  try {
+    const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/plausible-proxy?site=clpeasy.com');
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    document.getElementById('pl-realtime').textContent = data.realtime ?? '0';
+
+    const agg = data.aggregate?.results;
+    if (agg) {
+      document.getElementById('pl-visitors').textContent = (agg.visitors?.value ?? '—').toLocaleString();
+      document.getElementById('pl-pageviews').textContent = (agg.pageviews?.value ?? '—').toLocaleString();
+      document.getElementById('pl-bounce').textContent = agg.bounce_rate?.value != null ? agg.bounce_rate.value + '%' : '—';
+      document.getElementById('pl-duration').textContent = fmtDur(agg.visit_duration?.value);
+    }
+
+    // Pages with granular data
+    if (data.pages?.results?.length) {
+      document.getElementById('pl-pages').innerHTML = data.pages.results
+        .map(p => fmtRow('1fr auto auto auto', [p.page, p.visitors, p.pageviews ?? '—', fmtDur(p.visit_duration)], true))
+        .join('');
+    } else {
+      document.getElementById('pl-pages').textContent = 'No data yet today';
+    }
+
+    // Sources
+    if (data.sources?.results?.length) {
+      document.getElementById('pl-sources').innerHTML = data.sources.results
+        .map(s => fmtRow('1fr auto', [s.source || 'Direct / None', s.visitors], true))
+        .join('');
+    } else {
+      document.getElementById('pl-sources').textContent = 'No referral data yet';
+    }
+
+    // Devices
+    if (data.devices?.results?.length) {
+      document.getElementById('pl-devices').innerHTML = data.devices.results
+        .map(d => fmtRow('1fr auto', [d.device || 'Unknown', d.visitors], true))
+        .join('');
+    } else {
+      document.getElementById('pl-devices').textContent = '—';
+    }
+
+    // Countries
+    if (data.countries?.results?.length) {
+      document.getElementById('pl-countries').innerHTML = data.countries.results
+        .map(c => fmtRow('1fr auto', [c.country || 'Unknown', c.visitors], true))
+        .join('');
+    } else {
+      document.getElementById('pl-countries').textContent = '—';
+    }
+
+    // Entry pages
+    if (data.entry?.results?.length) {
+      document.getElementById('pl-entry').innerHTML = data.entry.results
+        .map(e => fmtRow('1fr auto', [e.entry_page || e.page || '—', e.visitors], true))
+        .join('');
+    } else {
+      document.getElementById('pl-entry').textContent = 'No data yet';
+    }
+
+    // Exit pages
+    if (data.exit?.results?.length) {
+      document.getElementById('pl-exit').innerHTML = data.exit.results
+        .map(e => fmtRow('1fr auto', [e.exit_page || e.page || '—', e.visitors], true))
+        .join('');
+    } else {
+      document.getElementById('pl-exit').textContent = 'No data yet';
+    }
+
+    // Custom events
+    if (data.events?.results?.length) {
+      document.getElementById('pl-events').innerHTML = data.events.results
+        .filter(e => e.name !== 'pageview')
+        .map(e => fmtRow('1fr auto', [e.name, e.visitors], true))
+        .join('') || 'No custom events yet today';
+    } else {
+      document.getElementById('pl-events').textContent = 'Tracking active — events will appear once triggered';
+    }
+
+    document.getElementById('plausible-badge').className = 'status-badge ok';
+    document.getElementById('plausible-badge').textContent = '✓ Live';
+
+  } catch(e) {
+    document.getElementById('plausible-badge').className = 'status-badge warn';
+    document.getElementById('plausible-badge').textContent = '⚠ Error';
+    console.error('Plausible fetch error:', e);
+  }
+}
+
+
+async function checkPlausibleCMG() {
+  try {
+    const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/plausible-proxy?site=craftymousegifts.com');
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    document.getElementById('cmg-realtime').textContent = data.rt ?? '0';
+    const agg = data.aggregate?.results;
+    if (agg) {
+      document.getElementById('cmg-visitors').textContent = (agg.visitors?.value ?? '—').toLocaleString();
+      document.getElementById('cmg-pageviews').textContent = (agg.pageviews?.value ?? '—').toLocaleString();
+      document.getElementById('cmg-bounce').textContent = agg.bounce_rate?.value != null ? agg.bounce_rate.value + '%' : '—';
+      document.getElementById('cmg-duration').textContent = fmtDur(agg.visit_duration?.value);
+    }
+    if (data.pages?.results?.length) {
+      document.getElementById('cmg-pages').innerHTML = data.pages.results.map(p => fmtRow('1fr auto auto auto',[p.page,p.visitors,p.pageviews??'—',fmtDur(p.visit_duration)],true)).join('');
+    } else { document.getElementById('cmg-pages').textContent = 'No data yet today'; }
+    if (data.sources?.results?.length) {
+      document.getElementById('cmg-sources').innerHTML = data.sources.results.map(s => fmtRow('1fr auto',[s.source||'Direct / None',s.visitors],true)).join('');
+    } else { document.getElementById('cmg-sources').textContent = 'No referral data yet'; }
+    if (data.devices?.results?.length) {
+      document.getElementById('cmg-devices').innerHTML = data.devices.results.map(d => fmtRow('1fr auto',[d.device||'Unknown',d.visitors],true)).join('');
+    }
+    if (data.countries?.results?.length) {
+      document.getElementById('cmg-countries').innerHTML = data.countries.results.map(c => fmtRow('1fr auto',[c.country||'Unknown',c.visitors],true)).join('');
+    }
+    if (data.entry?.results?.length) {
+      document.getElementById('cmg-entry').innerHTML = data.entry.results.map(e => fmtRow('1fr auto',[e.entry_page||e.page||'—',e.visitors],true)).join('');
+    }
+    if (data.exit?.results?.length) {
+      document.getElementById('cmg-exit').innerHTML = data.exit.results.map(e => fmtRow('1fr auto',[e.exit_page||e.page||'—',e.visitors],true)).join('');
+    }
+    if (data.events?.results?.length) {
+      const evts = data.events.results.filter(e => e.name !== 'pageview');
+      document.getElementById('cmg-events').innerHTML = evts.length ? evts.map(e => fmtRow('1fr auto',[e.name,e.visitors],true)).join('') : 'No custom events yet today';
+    }
+    document.getElementById('plausible-cmg-badge').className = 'status-badge ok';
+    document.getElementById('plausible-cmg-badge').textContent = '✓ Live';
+  } catch(e) {
+    document.getElementById('plausible-cmg-badge').className = 'status-badge warn';
+    document.getElementById('plausible-cmg-badge').textContent = '⚠ Error';
+  }
+}
 async function runAll() {
   document.getElementById('lastRefresh').textContent = 'Refreshing...';
+  try { await checkPlausible(); } catch (e) { console.error('checkPlausible', e); }
+  try { await checkPlausibleCMG(); } catch (e) { console.error('checkPlausibleCMG', e); }
   try { checkSupabase(); } catch (e) { console.error('checkSupabase', e); }
   try { checkBrevo(); } catch (e) { console.error('checkBrevo', e); }
   try { loadDates(); } catch (e) { console.error('loadDates', e); }
@@ -971,9 +1333,161 @@ async function runAll() {
 // Disable right click
 document.addEventListener('contextmenu', e => e.preventDefault());
 
+
+// ── Action Item Management ──────────────────────────────────────────
+function initActionItems() {
+  document.querySelectorAll('.action-list').forEach((list, li) => {
+    // Load saved state
+    const saved = JSON.parse(localStorage.getItem('monitor_actions_' + li) || '[]');
+    
+    // Add controls to each existing item
+    list.querySelectorAll('.action-item').forEach((item, i) => {
+      const id = 'action_' + li + '_' + i;
+      item.dataset.id = id;
+      
+      // Check if deleted
+      if (saved.find(s => s.id === id && s.deleted)) {
+        item.remove();
+        return;
+      }
+      // Check if marked done
+      if (saved.find(s => s.id === id && s.done)) {
+        markItemDone(item, false);
+      }
+      // Check if text edited
+      const editedText = saved.find(s => s.id === id && s.text);
+      if (editedText) {
+        item.querySelector('.action-text').innerHTML = editedText.text;
+      }
+      
+      addControls(item, li);
+    });
+
+    // Add "Add item" button
+    const addBtn = document.createElement('button');
+    addBtn.className = 'add-action-btn';
+    addBtn.textContent = '+ Add action item';
+    addBtn.onclick = () => addActionItem(list, li);
+    list.appendChild(addBtn);
+  });
+}
+
+function addControls(item, listIdx) {
+  if (item.querySelector('.action-controls')) return;
+  const controls = document.createElement('div');
+  controls.className = 'action-controls';
+  controls.innerHTML = 
+    '<button class="action-btn action-btn-done" onclick="toggleDone(this)">✓ Done</button>' +
+    '<button class="action-btn action-btn-edit" onclick="editItem(this)">✏ Edit</button>' +
+    '<button class="action-btn action-btn-del" onclick="deleteItem(this)">✕</button>';
+  controls.dataset.list = listIdx;
+  item.appendChild(controls);
+}
+
+function saveActionState(listIdx, id, state) {
+  const key = 'monitor_actions_' + listIdx;
+  const saved = JSON.parse(localStorage.getItem(key) || '[]');
+  const existing = saved.find(s => s.id === id);
+  if (existing) Object.assign(existing, state);
+  else saved.push({ id, ...state });
+  localStorage.setItem(key, JSON.stringify(saved));
+}
+
+function toggleDone(btn) {
+  const item = btn.closest('.action-item');
+  const listIdx = btn.closest('.action-controls').dataset.list;
+  const isDone = item.classList.contains('done-item');
+  if (isDone) {
+    item.classList.remove('done-item');
+    btn.textContent = '✓ Done';
+    saveActionState(listIdx, item.dataset.id, { done: false });
+  } else {
+    markItemDone(item, true);
+    saveActionState(listIdx, item.dataset.id, { done: true });
+  }
+}
+
+function markItemDone(item, animate) {
+  item.classList.add('done-item');
+  const priorityEl = item.querySelector('.action-priority');
+  if (priorityEl) { priorityEl.textContent = 'DONE'; priorityEl.style.cssText = 'background:rgba(74,222,128,0.2);color:#4ade80;'; }
+  const doneBtn = item.querySelector('.action-btn-done');
+  if (doneBtn) doneBtn.textContent = '↩ Undo';
+}
+
+function editItem(btn) {
+  const item = btn.closest('.action-item');
+  const listIdx = btn.closest('.action-controls').dataset.list;
+  const textEl = item.querySelector('.action-text');
+  const currentText = textEl.innerHTML;
+  
+  if (btn.textContent === '✏ Edit') {
+    // Open edit mode
+    const ta = document.createElement('textarea');
+    ta.className = 'action-edit-area';
+    ta.value = textEl.innerText;
+    ta.rows = 3;
+    textEl.style.display = 'none';
+    item.insertBefore(ta, item.querySelector('.action-controls'));
+    btn.textContent = '💾 Save';
+    ta.focus();
+  } else {
+    // Save edit
+    const ta = item.querySelector('.action-edit-area');
+    textEl.textContent = ta.value;
+    textEl.style.display = '';
+    ta.remove();
+    btn.textContent = '✏ Edit';
+    saveActionState(listIdx, item.dataset.id, { text: textEl.innerHTML });
+  }
+}
+
+function deleteItem(btn) {
+  const item = btn.closest('.action-item');
+  const listIdx = btn.closest('.action-controls').dataset.list;
+  if (!confirm('Delete this action item?')) return;
+  saveActionState(listIdx, item.dataset.id, { deleted: true });
+  item.style.transition = 'opacity .3s, max-height .3s';
+  item.style.opacity = '0';
+  item.style.maxHeight = '0';
+  item.style.overflow = 'hidden';
+  setTimeout(() => item.remove(), 300);
+}
+
+function addActionItem(list, listIdx) {
+  const text = prompt('New action item text:');
+  if (!text) return;
+  const priority = prompt('Priority? HIGH / MED / LOW / DONE', 'MED');
+  if (!priority) return;
+
+  const id = 'action_' + listIdx + '_custom_' + Date.now();
+  const item = document.createElement('div');
+  item.className = 'action-item';
+  item.dataset.id = id;
+  
+  const priorityClass = priority.toLowerCase() === 'high' ? 'high' : priority.toLowerCase() === 'low' ? 'low' : priority.toLowerCase() === 'done' ? '' : 'med';
+  const priorityStyle = priority.toUpperCase() === 'DONE' ? 'style="background:rgba(74,222,128,0.2);color:#4ade80;"' : '';
+  
+  item.innerHTML = '<span class="action-priority ' + priorityClass + '" ' + priorityStyle + '>' + priority.toUpperCase() + '</span>' +
+    '<span class="action-text">' + text + '</span>';
+  
+  list.insertBefore(item, list.querySelector('.add-action-btn'));
+  addControls(item, listIdx);
+  
+  // Save new item
+  const key = 'monitor_actions_' + listIdx;
+  const saved = JSON.parse(localStorage.getItem(key) || '[]');
+  saved.push({ id, custom: true, text, priority: priority.toUpperCase() });
+  localStorage.setItem(key, JSON.stringify(saved));
+}
+
 // Init
 loadDates();
 runAll();
+initActionItems();
+
+// Auto-refresh Plausible every 60 seconds
+setInterval(async () => { try { await checkPlausible(); } catch(e){} try { await checkPlausibleCMG(); } catch(e){} }, 60000);
 </script>
 <script>
 (function(){
@@ -1129,11 +1643,7 @@ runAll();
   path = []; render('start');
 })();
 
-// ── Monitor logout ──────────────────────────────────────────────────────────
-function monitorLogout() {
-  sessionStorage.removeItem('clp_auth');
-  window.location.reload();
-}
+
 </script>
 </body>
 </html>
