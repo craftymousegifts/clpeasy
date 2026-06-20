@@ -776,6 +776,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         I confirm the hazard data shown in the Smart Paste section above is correct and matches my fragrance supplier's SDS sheet at my actual fragrance load.
       </label>
     </div>
+    <div id="legibility-warn" style="display:none;margin-bottom:10px;background:#FEF2F2;border-left:3px solid #EF4444;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#991B1B;line-height:1.5;"></div>
     <div style="margin-bottom:10px;background:#FEF3C7;border-left:3px solid #F59E0B;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#92400E;display:flex;align-items:center;justify-content:space-between;gap:10px;">
       <span>⚠️ Always verify hazard data against your fragrance SDS at your actual fragrance load before downloading.</span>
       <button type="button" onclick="clearHazardData()" style="background:#EF4444;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">Clear hazard data</button>
@@ -2859,10 +2860,11 @@ function buildSVG(forExport=false){
   // ── H + SENS + P: flow layout, shared remaining space ──────────
   // Total space available from here to footer, split between H, sens and P
   const _hpSensAvail = botY - curY;
-  // H gets 42%, sens 13%, P gets 45% of available space
-  const _hAlloc  = _hpSensAvail * 0.42;
-  const _sAlloc  = _hpSensAvail * 0.13;
-  const _pAlloc  = _hpSensAvail * 0.45;
+  // H gets 39%, sens 19%, P gets 42% of available space
+  // (sens was 13% — too small for an allergen disclosure line; rebalanced 13->19, trimmed from H/P)
+  const _hAlloc  = _hpSensAvail * 0.39;
+  const _sAlloc  = _hpSensAvail * 0.19;
+  const _pAlloc  = _hpSensAvail * 0.42;
 
   // H statements — sized to fit within _hAlloc
   const hText   = hCodes.map(c=>{const e=H_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(hCodes.length>0?'.':'') || '';
@@ -2886,7 +2888,7 @@ function buildSVG(forExport=false){
   // Sensitisers — sized to fit within _sAlloc
   const sensSW  = chordW(curY + _sAlloc*0.5, 0.08);
   const _sensMult = 1.0 * Math.min(1, mmW / 50);
-  const sensFS  = Math.min(_sAlloc * 0.55 * _sensMult, clamp(BASE*0.030*_sensMult, 2, 6));
+  const sensFS  = Math.min(_sAlloc * 0.65 * _sensMult, clamp(BASE*0.034*_sensMult, 2.5, 6.5));
   const sensLH  = sensFS * 1.25;
   const _sensBase = sensArr.length>0 ? _containsPrefix+' '+sensArr.slice(0,3).map(s=>{const _mc=mmW<=50?18:26;return s.length>_mc?s.slice(0,_mc-2)+'…':s;}).join(', ')+(sensArr.length>5?'...':'') : '';
   const _euhSuffix = hasEUH208 ? 'May produce an allergic reaction.' : '';
@@ -2923,6 +2925,8 @@ function buildSVG(forExport=false){
     }
     if(!pLines.length)pLines=wrapText(pText,pSW*0.90,pFS,false,false);
   }
+  // Flag for UI warning: true if H or P text bottomed out at its minimum legible size
+  window._labelLegibilityWarn = (!!hText && hFS<=hFSMin+0.05) || (!!pText && pFS<=pFSMin+0.05);
   const _pBlockH = pLines.length * pLH;
   const pStY    = curY + pLH*0.5;
   const showP   = pLines.length > 0;
@@ -3098,6 +3102,15 @@ function updateLabel(){
   readForm();
   const{mmW,mmH}=getDims();
   const svgHtml=buildSVG(false);
+  const _legWarnEl=document.getElementById('legibility-warn');
+  if(_legWarnEl){
+    if(window._labelLegibilityWarn){
+      _legWarnEl.style.display='block';
+      _legWarnEl.textContent='⚠️ Your hazard/precautionary text is very small at this label size and may not be clearly legible when printed. Consider choosing a larger label size in Step 1.';
+    } else {
+      _legWarnEl.style.display='none';
+    }
+  }
   // Desktop preview
   const dc=document.getElementById('label-svg-container');
   if(dc){
