@@ -2957,6 +2957,20 @@ function buildSVG(forExport=false){
       pFS=tryFS; pLines=tryLines; pLH=pFS*1.15;
     }
   }
+  // ── EQUALISE H and P font sizes ──────────────────────────────
+  // Use the smaller of the two so both blocks render at the same size.
+  // H re-wraps at the reduced size if needed; P expands into freed space.
+  if(hText && pText && hFS !== pFS){
+    const _eqFS = Math.min(hFS, pFS);
+    if(_eqFS !== hFS){
+      hFS = _eqFS; hLH = hFS*1.25;
+      hLines = wrapText(hText, hSW*0.92, hFS, false, false);
+    }
+    if(_eqFS !== pFS){
+      pFS = _eqFS; pLH = pFS*1.15;
+      pLines = wrapText(pText, pSW*0.90, pFS, false, false);
+    }
+  }
   // Flag for UI warning: true if H or P text bottomed out at its minimum legible size
   window._labelLegibilityWarn = (!!hText && hFS<=hFSMin+0.05) || (!!pText && pFS<=pFSMin+0.05) || (!!pText && pLines.length*pLH>_pAvail*1.02) || (!!hText && hLines.length*hLH>_hAlloc*1.02);
   const _pBlockH = pLines.length * pLH;
