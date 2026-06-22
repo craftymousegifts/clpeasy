@@ -2711,7 +2711,7 @@ function buildSVG(forExport=false){
   // Mid band: everything else
   const topFrac = 0.28;  // scent + biz + web all in top band
   // For candles: reserve 7% of shape height at bottom for EN 15494 pictogram row
-  const _showBCF = _isCandle && !S.hideEN15494 && mmW >= 52 && mmH >= 52;
+  const _showBCF = _isCandle && !S.hideEN15494 && mmW >= 40 && mmH >= 40;
   const botFrac = _showBCF ? 0.22 : 0.17; // smaller footer when no EN 15494 row needed
   const topH = sH * topFrac;
   const botH = sH * botFrac;
