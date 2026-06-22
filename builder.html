@@ -2925,10 +2925,17 @@ function buildSVG(forExport=false){
   const _sActual = allSensLines.length * sensLH;
   curY += _sActual + (allSensLines.length ? sensLH*0.2 : 0);
 
-  const _pAvail = Math.max(botY - curY - pFS*0.5, 2); // hard cap at footer, never overflow into EN15494 row
+  // P-text space: hard cap at footer with a full line of breathing room
+  const _pAvail = Math.max(botY - curY - pLH, 2);
   const pSW = chordW(curY + _pAvail*0.5, 0.08);
   if(pText){
     pLines = wrapText(pText, pSW*0.90, pFS, false, false);
+    // Shrink further if block still overflows the hard cap
+    while(pLines.length * pLH > _pAvail && pFS > pFSMin){
+      pFS = Math.max(pFS - 0.3, pFSMin);
+      pLH = pFS * 1.15;
+      pLines = wrapText(pText, pSW*0.90, pFS, false, false);
+    }
   }
 
   // Flag for UI warning: true if H or P text bottomed out at its minimum legible size
