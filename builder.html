@@ -211,12 +211,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .zoom-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:white;box-shadow:0 1px 4px rgba(0,0,0,0.4);cursor:grab;transition:left .15s;}
 .zoom-pct{font-size:11px;color:rgba(255,255,255,0.4);min-width:30px;text-align:right;}
 /* Canvas area — scrollable so zoomed labels don't get clipped */
-.preview-canvas-area{display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto;}
+.preview-canvas-area{display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto;flex:1;min-height:0;}
 #label-svg-container{
   -webkit-user-select:none;-moz-user-select:none;user-select:none;
   pointer-events:none;
   display:flex;align-items:center;justify-content:center;
   /* Size set by JS zoom */
+  flex-shrink:0;
 }
 #label-svg-container svg{
   pointer-events:none;
@@ -601,7 +602,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <div class="sdiv">Dimensions (mm)</div>
     <div class="custom-dims">
-      <div class="form-group"><label>Width (mm)</label><input type="number" id="custom-w" placeholder="e.g. 50" inputmode="numeric" min="10" max="200" oninput="onDimInput()"></div>
+      <div class="form-group"><label>Width (mm)</label><input type="number" id="custom-w" placeholder="e.g. 50" inputmode="numeric" min="10" max="150" oninput="onDimInput()"></div>
       <div class="form-group"><label>Height (mm) <span id="height-note" style="font-weight:400;color:#6B7280;font-size:11px;"></span></label><input type="number" id="custom-h" placeholder="e.g. 40" inputmode="numeric" min="10" max="200" oninput="onDimInput()"></div>
       <div id="custom-size-warn" style="display:none;background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:9px 12px;font-size:12px;color:#92400E;line-height:1.5;grid-column:1/-1;"></div>
     <div id="en15494-warn" style="display:none;background:#FEF2F2;border:1.5px solid #FCA5A5;border-radius:10px;padding:12px 14px;font-size:12px;color:#991B1B;line-height:1.6;grid-column:1/-1;margin-top:8px;">
@@ -2593,8 +2594,8 @@ function onDimInput(){
   document.querySelectorAll('.size-card').forEach(c=>c.classList.toggle('selected',c.dataset.size==='custom'));
   const rawW = parseInt(document.getElementById('custom-w').value)||50;
   const rawH = parseInt(document.getElementById('custom-h').value)||50;
-  S.customW = Math.max(rawW, 10);
-  S.customH = Math.max(rawH, 10);
+  S.customW = Math.min(Math.max(rawW, 10), 150);
+  S.customH = Math.min(Math.max(rawH, 10), 150);
   updateSizeWarnings();
   updateLabel();
 }
@@ -2623,13 +2624,16 @@ function readForm(){
   S.bizPhone=document.getElementById('biz-phone')?.value||'';
   S.bizWebsite=document.getElementById('biz-website')?.value||'';
   S.batchNum=document.getElementById('batch-num')?.value||'';
-  S.customW=parseInt(document.getElementById('custom-w')?.value)||50;
-  S.customH=(S.shape==='rectangle')?(parseInt(document.getElementById('custom-h')?.value)||40):S.customW;
+  S.customW=Math.min(parseInt(document.getElementById('custom-w')?.value)||50, 150);
+  S.customH=(S.shape==='rectangle')?Math.min(parseInt(document.getElementById('custom-h')?.value)||40, 150):S.customW;
 }
 function getDims(){
   let mmW,mmH;
   if(S.size==='custom'){mmW=S.customW||50;mmH=(S.shape==='rectangle')?(S.customH||40):mmW;}
   else{mmW=parseInt(S.size)||50;mmH=(S.shape==='rectangle')?Math.round(mmW*0.7):mmW;}
+  // Hard clamp — prevent any runaway values from corrupting the layout
+  mmW=Math.min(Math.max(isFinite(mmW)?mmW:50, 10), 150);
+  mmH=Math.min(Math.max(isFinite(mmH)?mmH:50, 10), 150);
   // Preview canvas is always 260px wide — keeps preview crisp at all sizes
   const scale=260/mmW;
   return{mmW,mmH,pw:Math.round(mmW*scale),ph:Math.round(mmH*scale)};
@@ -2877,7 +2881,7 @@ function buildSVG(forExport=false){
   const hText   = hCodes.map(c=>{const e=H_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(hCodes.length>0?'.':'') || '';
   const hSW     = chordW(curY + _hAlloc*0.5, 0.08);
   const hFSMax  = Math.min(_hAlloc * 0.68, clamp(BASE*0.050, 2, 9));
-  const hFSMin  = clamp(BASE*0.042, 6.0, 14.0); // ~6pt CLP minimum
+  const hFSMin  = clamp(BASE*0.016, 1.2, 3.5);
   let hFS=hFSMax, hLines=[], hLH=hFSMax*1.25;
   if(hText){
     while(hFS>hFSMin){
@@ -2921,7 +2925,7 @@ function buildSVG(forExport=false){
   const pText   = _pNorm.map(c=>{const e=P_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(pCodes.length>0?'.':'');
   const pSW     = chordW(curY + _pAvail*0.5, 0.08);
   const pFSMax  = Math.min(_pAvail * 0.50, clamp(BASE*0.030, 1.5, 7));
-  const pFSMin  = clamp(BASE*0.042, 6.0, 14.0); // ~6pt CLP minimum
+  const pFSMin  = clamp(BASE*0.012, 1.0, 2.5);
   let pFS=pFSMax, pLines=[], pLH=pFSMax*1.15;
   if(pText){
     while(pFS>pFSMin){
@@ -2933,7 +2937,7 @@ function buildSVG(forExport=false){
     if(!pLines.length)pLines=wrapText(pText,pSW*0.90,pFS,false,false);
   }
   // Flag for UI warning: true if H or P text bottomed out at its minimum legible size
-  window._labelLegibilityWarn = (!!hText && hFS<=hFSMin+0.05) || (!!pText && pFS<=pFSMin+0.05);
+  window._labelLegibilityWarn = (!!hText && hFS<=hFSMin+0.05) || (!!pText && pFS<=pFSMin+0.05) || (!!pText && pLines.length*pLH>_pAvail*1.02) || (!!hText && hLines.length*hLH>_hAlloc*1.02);
   const _pBlockH = pLines.length * pLH;
   const pStY    = curY + pLH*0.5;
   const showP   = pLines.length > 0;
