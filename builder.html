@@ -2909,7 +2909,7 @@ function buildSVG(forExport=false){
   // Sensitisers — sized to fit within _sAlloc
   const sensSW  = chordW(curY + _sAlloc*0.5, 0.08);
   const _sensMult = 1.0 * Math.min(1, mmW / 50);
-  const sensFS  = Math.min(_sAlloc * 0.65 * _sensMult, clamp(BASE*0.034*_sensMult, 2.5, 6.5));
+  let sensFS  = Math.min(_sAlloc * 0.65 * _sensMult, clamp(BASE*0.034*_sensMult, 2.5, 6.5));
   const sensLH  = sensFS * 1.25;
   const _sensBase = sensArr.length>0 ? _containsPrefix+' '+sensArr.slice(0,3).map(s=>{const _mc=mmW<=50?18:26;return s.length>_mc?s.slice(0,_mc-2)+'…':s;}).join(', ')+(sensArr.length>3?'...':'') : (hasEUH208 ? _containsPrefix+' sensitising substance' : '');
   const _euhSuffix = hasEUH208 ? 'May produce an allergic reaction.' : '';
@@ -2957,16 +2957,28 @@ function buildSVG(forExport=false){
       pFS=tryFS; pLines=tryLines; pLH=pFS*1.15;
     }
   }
-  // ── EQUALISE H and P font sizes ──────────────────────────────
-  // Use the smaller of the two so both blocks render at the same size.
-  // H re-wraps at the reduced size if needed; P expands into freed space.
-  if(hText && pText && hFS !== pFS){
-    const _eqFS = Math.min(hFS, pFS);
-    if(_eqFS !== hFS){
+  // ── EQUALISE H, sensitiser and P font sizes ─────────────────
+  // Use the smallest of the three so all hazard text renders at the same size.
+  {
+    const _eqFS = Math.min(
+      hText ? hFS : 999,
+      pText ? pFS : 999,
+      allSensLines.length ? sensFS : 999
+    );
+    if(hText && hFS !== _eqFS){
       hFS = _eqFS; hLH = hFS*1.25;
       hLines = wrapText(hText, hSW*0.92, hFS, false, false);
     }
-    if(_eqFS !== pFS){
+    if(allSensLines.length && sensFS !== _eqFS){
+      sensFS = _eqFS;
+      // Re-wrap sensitiser lines at equalised size
+      const _newSensLines = _sensBase ? wrapText(_sensBase, sensSW*0.82, _eqFS, false, false) : [];
+      const _newEuhLines  = _euhSuffix ? wrapText(_euhSuffix, sensSW*0.82, _eqFS, false, false) : [];
+      allSensLines.length = 0;
+      _newSensLines.forEach(l=>allSensLines.push(l));
+      _newEuhLines.forEach(l=>allSensLines.push(l));
+    }
+    if(pText && pFS !== _eqFS){
       pFS = _eqFS; pLH = pFS*1.15;
       pLines = wrapText(pText, pSW*0.90, pFS, false, false);
     }
