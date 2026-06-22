@@ -211,7 +211,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .zoom-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:white;box-shadow:0 1px 4px rgba(0,0,0,0.4);cursor:grab;transition:left .15s;}
 .zoom-pct{font-size:11px;color:rgba(255,255,255,0.4);min-width:30px;text-align:right;}
 /* Canvas area — scrollable so zoomed labels don't get clipped */
-.preview-canvas-area{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow:auto;}
+.preview-canvas-area{flex:1;display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto;}
 #label-svg-container{
   -webkit-user-select:none;-moz-user-select:none;user-select:none;
   pointer-events:none;
@@ -765,8 +765,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         I confirm the hazard data shown in the Smart Paste section above is correct and matches my fragrance supplier's SDS sheet at my actual fragrance load.
       </label>
     </div>
-    <div id="legibility-warn" style="display:none;margin-bottom:10px;background:#FEF2F2;border-left:3px solid #EF4444;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#991B1B;line-height:1.5;"></div>
-    <div id="pcount-warn" style="display:none;margin-bottom:10px;background:#FFF7ED;border-left:3px solid #F59E0B;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#92400E;line-height:1.5;"></div>
+    <div id="label-warn" style="display:none;margin-bottom:10px;background:#FFF7ED;border-left:3px solid #F59E0B;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#92400E;line-height:1.5;"></div>
     <div style="margin-bottom:10px;background:#FEF3C7;border-left:3px solid #F59E0B;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#92400E;display:flex;align-items:center;justify-content:space-between;gap:10px;">
       <span>⚠️ Always verify hazard data against your fragrance SDS at your actual fragrance load before downloading.</span>
       <button type="button" onclick="clearHazardData()" style="background:#EF4444;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">Clear hazard data</button>
@@ -2878,7 +2877,7 @@ function buildSVG(forExport=false){
   const hText   = hCodes.map(c=>{const e=H_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(hCodes.length>0?'.':'') || '';
   const hSW     = chordW(curY + _hAlloc*0.5, 0.08);
   const hFSMax  = Math.min(_hAlloc * 0.68, clamp(BASE*0.050, 2, 9));
-  const hFSMin  = clamp(BASE*0.016, 1.2, 3.5);
+  const hFSMin  = clamp(BASE*0.042, 6.0, 14.0); // ~6pt CLP minimum
   let hFS=hFSMax, hLines=[], hLH=hFSMax*1.25;
   if(hText){
     while(hFS>hFSMin){
@@ -2922,7 +2921,7 @@ function buildSVG(forExport=false){
   const pText   = _pNorm.map(c=>{const e=P_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(pCodes.length>0?'.':'');
   const pSW     = chordW(curY + _pAvail*0.5, 0.08);
   const pFSMax  = Math.min(_pAvail * 0.50, clamp(BASE*0.030, 1.5, 7));
-  const pFSMin  = clamp(BASE*0.012, 1.0, 2.5);
+  const pFSMin  = clamp(BASE*0.042, 6.0, 14.0); // ~6pt CLP minimum
   let pFS=pFSMax, pLines=[], pLH=pFSMax*1.15;
   if(pText){
     while(pFS>pFSMin){
@@ -3120,26 +3119,13 @@ function updateLabel(){
   }
   const{mmW,mmH}=getDims();
   const svgHtml=buildSVG(false);
-  const _legWarnEl=document.getElementById('legibility-warn');
-  if(_legWarnEl){
+  const _labelWarnEl=document.getElementById('label-warn');
+  if(_labelWarnEl){
     if(window._labelLegibilityWarn){
-      _legWarnEl.style.display='block';
-      _legWarnEl.textContent='⚠️ Your hazard/precautionary text is very small at this label size and may not be clearly legible when printed. Consider choosing a larger label size in Step 1.';
+      _labelWarnEl.style.display='block';
+      _labelWarnEl.textContent='⚠️ The volume of hazard and precautionary statements for this fragrance will render the text too small to read at the label size you have selected. If your product allows, try a larger label size in Step 1, or attach a fold-out leaflet to carry the full hazard information.';
     } else {
-      _legWarnEl.style.display='none';
-    }
-  }
-  // Advisory only — not a compliance error. GB CLP / ECHA guidance notes that more than
-  // 6 P-statements on one label tends to crowd the layout; supplementary leaflets are
-  // permitted where space is limited (CLP Art. 29 / ECHA guidance), so this never blocks the build.
-  const _pcWarnEl=document.getElementById('pcount-warn');
-  if(_pcWarnEl){
-    const _pCount=(S.pStatements||'').split(',').map(s=>s.trim()).filter(Boolean).length;
-    if(_pCount>6){
-      _pcWarnEl.style.display='block';
-      _pcWarnEl.textContent=`⚠️ ${_pCount} P statements selected. GB CLP guidance recommends no more than 6 unless hazard severity requires more — consider whether all are needed, or use a larger label / fold-out leaflet for the rest.`;
-    } else {
-      _pcWarnEl.style.display='none';
+      _labelWarnEl.style.display='none';
     }
   }
   // Desktop preview
