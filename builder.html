@@ -614,15 +614,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </label>
     </div>
     </div>
-    <div class="sdiv">Label language</div>
-    <div class="form-group" style="margin-bottom:12px;">
-      <select id="label-lang" onchange="updateLabel()" style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;outline:none;">
-        <option value="en">English only</option>
-        <option value="fr">French only</option>
-        <option value="de">German only</option>
-      </select>
-      <div style="margin-top:5px;font-size:11px;color:var(--muted);">Signal word and hazard text appear in the selected language(s). Required when selling into EU markets.</div>
-    </div>
+    <!-- Label language selector removed — GB CLP (English only) for now -->
+    <input type="hidden" id="label-lang" value="en">
     <div class="sdiv">Label appearance</div>
     <div class="form-row">
       <div class="form-group">
@@ -647,11 +640,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <button id="border-off" onclick="setBorder(false)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Hide border</button>
       </div>
     </div>
-    <div class="form-group">
-      <label>QR safety code <span style="font-size:10px;background:#ECFDF5;color:#166534;padding:1px 6px;border-radius:8px;margin-left:3px;">on label</span></label>
-      
-      <div style="margin-top:4px;font-size:11px;color:var(--muted);">QR safety code — coming soon</div>
-    </div>
+    <!-- QR safety code toggle removed until feature is ready -->
     <div class="step-nav"><div></div><button class="btn-next" onclick="nextStep()">Next: Product details →</button></div>
   </div>
 
@@ -2539,7 +2528,7 @@ function clearHazardData(){
   document.querySelectorAll('#p-chips .h-chip').forEach(c=>c.classList.remove('selected'));
   // Clear pictograms
   S.pictograms=[];
-  document.querySelectorAll('.picto-card').forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll('.picto-btn').forEach(c=>c.classList.remove('selected'));
   // Clear sensitisers
   S.sensitisers=[];
   renderTags();
