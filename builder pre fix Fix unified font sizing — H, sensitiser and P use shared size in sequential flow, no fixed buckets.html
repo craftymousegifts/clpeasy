@@ -2877,73 +2877,110 @@ function buildSVG(forExport=false){
   curY += slot.picto;
 
   // ── H + SENS + P: flow layout, shared remaining space ──────────
-  // ── H + SENSITISER + P: unified font sizing ──────────────────
-  // All three blocks use ONE shared font size — the largest that fits
-  // H + sensitiser + P combined into _hpSensAvail. Sequential flow, no fixed buckets.
+  // Total space available from here to footer, split between H, sens and P
   const _hpSensAvail = botY - curY;
-  const _hAlloc  = _hpSensAvail * 0.39; // kept for legibility warn check only
-  const _sAlloc  = _hpSensAvail * 0.19; // kept for legibility warn check only
-  const _pAlloc  = _hpSensAvail * 0.42; // kept for legibility warn check only
+  // H gets 39%, sens 19%, P gets 42% of available space
+  // (sens was 13% — too small for an allergen disclosure line; rebalanced 13->19, trimmed from H/P)
+  const _hAlloc  = _hpSensAvail * 0.39;
+  const _sAlloc  = _hpSensAvail * 0.19;
+  const _pAlloc  = _hpSensAvail * 0.42;
 
-  // Build text content
+  // H statements — sized to fit within _hAlloc
   const hText   = hCodes.map(c=>{const e=H_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(hCodes.length>0?'.':'') || '';
-  // Normalise P codes
-  const _pNorm=[];
-  const _pRaw=pCodes;
-  for(let _i=0;_i<_pRaw.length;_i++){
-    const _c=_pRaw[_i];
-    const _comb=_i<_pRaw.length-1?_c+'+'+_pRaw[_i+1]:null;
-    if(_comb&&P_LIB.find(x=>x.code===_comb)){_pNorm.push(_comb);_i++;}
-    else _pNorm.push(_c);
+  const hSW     = chordW(curY + _hAlloc*0.5, 0.08);
+  // Shared starting font size based on combined H+P space so both blocks start equal
+  const _sharedFSMax = Math.min(_hpSensAvail * 0.30, clamp(BASE*0.050, 2, 9));
+  const hFSMax  = _sharedFSMax;
+  const hFSMin  = clamp(BASE*0.016, 1.2, 3.5);
+  let hFS=hFSMax, hLines=[], hLH=hFSMax*1.25;
+  if(hText){
+    while(hFS>hFSMin){
+      hLines=wrapText(hText,hSW*0.92,hFS,false,false);
+      hLH=hFS*1.25;
+      if(hLines.length*hLH<=_hAlloc)break;
+      hFS=Math.max(hFS-0.3,hFSMin);
+    }
+    if(!hLines.length)hLines=wrapText(hText,hSW*0.92,hFS,false,false);
   }
-  const pText = _pNorm.map(c=>{const e=P_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(pCodes.length>0?'.':'');
+  const hY      = curY + hLH*0.5;
+  const _hActual = Math.max(hLines.length*hLH, _hAlloc*0.5);
+  curY += _hActual;
+
+  // Sensitisers — sized to fit within _sAlloc
+  const sensSW  = chordW(curY + _sAlloc*0.5, 0.08);
+  const _sensMult = 1.0 * Math.min(1, mmW / 50);
+  let sensFS  = Math.min(_sAlloc * 0.65 * _sensMult, clamp(BASE*0.034*_sensMult, 2.5, 6.5));
+  const sensLH  = sensFS * 1.25;
   const _sensBase = sensArr.length>0 ? _containsPrefix+' '+sensArr.slice(0,3).map(s=>{const _mc=mmW<=50?18:26;return s.length>_mc?s.slice(0,_mc-2)+'…':s;}).join(', ')+(sensArr.length>3?'...':'') : (hasEUH208 ? _containsPrefix+' sensitising substance' : '');
   const _euhSuffix = hasEUH208 ? 'May produce an allergic reaction.' : '';
-  const sensText = [_sensBase, _euhSuffix].filter(Boolean).join(' ');
-
-  // Find shared font size: largest F where H+sens+P combined fit in _hpSensAvail
-  const _sharedFSMax = Math.min(_hpSensAvail * 0.30, clamp(BASE*0.050, 2, 9));
-  const _sharedFSMin = clamp(BASE*0.012, 1.0, 2.5);
-  const hFSMin = clamp(BASE*0.016, 1.2, 3.5);
-  const pFSMin = _sharedFSMin;
-  // Use midpoint chord width for fitting estimate
-  const _midSW = chordW(curY + _hpSensAvail*0.5, 0.08);
-  let _sharedFS = _sharedFSMax;
-  while(_sharedFS > _sharedFSMin){
-    const _hH  = hText   ? wrapText(hText,   _midSW*0.92, _sharedFS, false, false).length * _sharedFS*1.25 : 0;
-    const _sH  = sensText? wrapText(sensText, _midSW*0.82, _sharedFS, false, false).length * _sharedFS*1.25 : 0;
-    const _pH  = pText   ? wrapText(pText,    _midSW*0.90, _sharedFS, false, false).length * _sharedFS*1.15 : 0;
-    if(_hH + _sH + _pH <= _hpSensAvail * 0.97) break;
-    _sharedFS = Math.max(_sharedFS - 0.3, _sharedFSMin);
-  }
-
-  // Apply shared font size and flow sequentially
-  let hFS = _sharedFS, hLH = hFS*1.25, hLines = [];
-  let sensFS = _sharedFS, sensLH = sensFS*1.25;
-  let pFS = _sharedFS, pLH = pFS*1.15, pLines = [];
-
-  const hSW = chordW(curY + _hpSensAvail*0.20, 0.08);
-  if(hText){
-    hLines = wrapText(hText, hSW*0.92, hFS, false, false);
-  }
-  const hY = curY + hLH*0.5;
-  const _hActual = hLines.length * hLH;
-  curY += _hActual + hLH*0.3; // small gap after H block
-
-  const sensSW = chordW(curY + _hpSensAvail*0.10, 0.08);
   const sensLines = _sensBase ? wrapText(_sensBase, sensSW*0.82, sensFS, false, false) : [];
   const euhLines  = _euhSuffix ? wrapText(_euhSuffix, sensSW*0.82, sensFS, false, false) : [];
   const allSensLines = [...sensLines, ...euhLines];
   const sensStY = curY + sensLH*0.5;
-  const _sActual = allSensLines.length * sensLH;
-  curY += _sActual + (allSensLines.length ? sensLH*0.2 : 0);
+  const _sActual = Math.max(allSensLines.length*sensLH, _sAlloc*0.5);
+  curY += _sActual;
 
-  const _pAvail = Math.max(botY - curY, _pAlloc * 0.3);
-  const pSW = chordW(curY + _pAvail*0.5, 0.08);
-  if(pText){
-    pLines = wrapText(pText, pSW*0.90, pFS, false, false);
+  // P statements — sized to fit within remaining space to footer
+  const _pAvail = Math.max(botY - curY, _pAlloc * 0.5);
+  // Normalise P codes: try exact match first, then try joining adjacent pair codes
+  const _pNorm=[];
+  const _pRaw=pCodes;
+  for(let _i=0;_i<_pRaw.length;_i++){
+    const _c=_pRaw[_i];
+    // Try combined with next code first (e.g. P302+P352)
+    const _comb=_i<_pRaw.length-1?_c+'+'+_pRaw[_i+1]:null;
+    if(_comb&&P_LIB.find(x=>x.code===_comb)){_pNorm.push(_comb);_i++;}
+    else _pNorm.push(_c);
   }
-
+  const pText   = _pNorm.map(c=>{const e=P_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(pCodes.length>0?'.':'');
+  const pSW     = chordW(curY + _pAvail*0.5, 0.08);
+  // P font starts from same shared size as H so both blocks are visually consistent
+  const pFSMax  = _sharedFSMax;
+  const pFSMin  = clamp(BASE*0.012, 1.0, 2.5);
+  let pFS=pFSMax, pLines=[], pLH=pFSMax*1.15;
+  if(pText){
+    // Shrink to fit
+    while(pFS>pFSMin){
+      pLines=wrapText(pText,pSW*0.90,pFS,false,false);
+      pLH=pFS*1.15;
+      if(pLines.length*pLH<=_pAvail)break;
+      pFS=Math.max(pFS-0.3,pFSMin);
+    }
+    if(!pLines.length)pLines=wrapText(pText,pSW*0.90,pFS,false,false);
+    // Expand to fill — push up to 98% of available space
+    const pFSCap = clamp(BASE*0.055, 3.0, 14.0);
+    while(pFS+0.3<=pFSCap){
+      const tryFS=pFS+0.3;
+      const tryLines=wrapText(pText,pSW*0.90,tryFS,false,false);
+      const tryH=tryLines.length*tryFS*1.15;
+      if(tryH>_pAvail*0.98) break;
+      pFS=tryFS; pLines=tryLines; pLH=pFS*1.15;
+    }
+  }
+  // ── EQUALISE H, sensitiser and P font sizes ─────────────────
+  // Find the LARGEST shared font size where all three blocks fit their space.
+  {
+    const _eqFSMax = _sharedFSMax; // start from shared max, not from individual block results
+    const _eqFSMin = clamp(BASE*0.012, 1.0, 2.5);
+    let _eqFS = _eqFSMax;
+    // Step down until all three fit
+    while(_eqFS > _eqFSMin){
+      const _hFit  = !hText  || wrapText(hText,  hSW*0.92, _eqFS, false, false).length * _eqFS*1.25 <= _hAlloc;
+      const _sFit  = !allSensLines.length || wrapText((_sensBase||'')+' '+(_euhSuffix||''), sensSW*0.82, _eqFS, false, false).length * _eqFS*1.25 <= _sAlloc*1.5;
+      const _pFit  = !pText  || wrapText(pText,  pSW*0.90, _eqFS, false, false).length * _eqFS*1.15 <= _pAvail;
+      if(_hFit && _sFit && _pFit) break;
+      _eqFS = Math.max(_eqFS - 0.3, _eqFSMin);
+    }
+    // Apply shared size to all three blocks
+    if(hText){ hFS=_eqFS; hLH=hFS*1.25; hLines=wrapText(hText,hSW*0.92,hFS,false,false); }
+    if(allSensLines.length){
+      sensFS=_eqFS;
+      const _ns=_sensBase?wrapText(_sensBase,sensSW*0.82,_eqFS,false,false):[];
+      const _ne=_euhSuffix?wrapText(_euhSuffix,sensSW*0.82,_eqFS,false,false):[];
+      allSensLines.length=0; _ns.forEach(l=>allSensLines.push(l)); _ne.forEach(l=>allSensLines.push(l));
+    }
+    if(pText){ pFS=_eqFS; pLH=pFS*1.15; pLines=wrapText(pText,pSW*0.90,pFS,false,false); }
+  }
   // Flag for UI warning: true if H or P text bottomed out at its minimum legible size
   window._labelLegibilityWarn = (!!hText && hFS<=hFSMin+0.05) || (!!pText && pFS<=pFSMin+0.05) || (!!pText && pLines.length*pLH>_pAvail*1.02) || (!!hText && hLines.length*hLH>_hAlloc*1.02);
   const _pBlockH = pLines.length * pLH;
