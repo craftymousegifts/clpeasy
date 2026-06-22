@@ -3115,6 +3115,15 @@ function buildSVG(forExport=false){
 // ── UPDATE PREVIEW ────────────────────────────────────────────
 function updateLabel(){
   readForm();
+  // Auto-set signal word from selected H-codes (mirrors extractSDS logic so manual chip clicks work too)
+  const _autoH=(S.hStatements||'').split(',').map(h=>h.trim()).filter(Boolean);
+  if(_autoH.length>0){
+    const _dangerH=['H300','H301','H310','H311','H330','H331','H340','H350','H360','H370','H372','H290','H304','H314','H318','H225','H224'];
+    const _sig=_autoH.some(h=>_dangerH.includes(h))?'Danger':'Warning';
+    S.signal=_sig;
+    document.getElementById('signal-warning').className='signal-btn'+(_sig==='Warning'?' sel-warn':'');
+    document.getElementById('signal-danger').className='signal-btn'+(_sig==='Danger'?' sel-danger':'');
+  }
   const{mmW,mmH}=getDims();
   const svgHtml=buildSVG(false);
   const _legWarnEl=document.getElementById('legibility-warn');
