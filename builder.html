@@ -2952,6 +2952,20 @@ function buildSVG(forExport=false){
   }
 
   // Apply shared font size and flow sequentially
+  // Vertical centering: distribute slack evenly above and below the text block
+  // so the text fills the zone rather than sitting at the top with a gap at the bottom.
+  {
+    const _hHf = hText    ? wrapText(hText,    _hSW*0.92, _sharedFS, false, false).length * _sharedFS*1.25 : 0;
+    const _sHf = sensText ? wrapText(sensText,  _sSW*0.82, _sharedFS, false, false).length * _sharedFS*1.25 : 0;
+    const _pHf = pText    ? wrapText(pText,     _pSW*0.90, _sharedFS, false, false).length * _sharedFS*1.15 : 0;
+    const _gHSf = (_hHf>0&&(_sHf>0||_pHf>0)) ? _sharedFS*1.25*0.3 : 0;
+    const _gSPf = (_sHf>0&&_pHf>0)           ? _sharedFS*1.25*0.2 : 0;
+    const _gHPf = (_hHf>0&&_pHf>0&&_sHf===0) ? _sharedFS*1.25*0.3 : 0;
+    const _totalBlockH = _hHf + _sHf + _pHf + _gHSf + _gSPf + _gHPf;
+    const _slack = _hpSensAvail - _totalBlockH;
+    // Push curY down by half the slack to centre vertically (min 0, max half avail)
+    curY += Math.max(0, Math.min(_slack * 0.5, _hpSensAvail * 0.25));
+  }
   let hFS = _sharedFS, hLH = hFS*1.25, hLines = [];
   let sensFS = _sharedFS, sensLH = sensFS*1.25;
   let pFS = _sharedFS, pLH = pFS*1.15, pLines = [];
