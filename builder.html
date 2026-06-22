@@ -2958,30 +2958,28 @@ function buildSVG(forExport=false){
     }
   }
   // ── EQUALISE H, sensitiser and P font sizes ─────────────────
-  // Use the smallest of the three so all hazard text renders at the same size.
+  // Find the LARGEST shared font size where all three blocks fit their space.
   {
-    const _eqFS = Math.min(
-      hText ? hFS : 999,
-      pText ? pFS : 999,
-      allSensLines.length ? sensFS : 999
-    );
-    if(hText && hFS !== _eqFS){
-      hFS = _eqFS; hLH = hFS*1.25;
-      hLines = wrapText(hText, hSW*0.92, hFS, false, false);
+    const _eqFSMax = _sharedFSMax; // start from shared max, not from individual block results
+    const _eqFSMin = clamp(BASE*0.012, 1.0, 2.5);
+    let _eqFS = _eqFSMax;
+    // Step down until all three fit
+    while(_eqFS > _eqFSMin){
+      const _hFit  = !hText  || wrapText(hText,  hSW*0.92, _eqFS, false, false).length * _eqFS*1.25 <= _hAlloc;
+      const _sFit  = !allSensLines.length || wrapText((_sensBase||'')+' '+(_euhSuffix||''), sensSW*0.82, _eqFS, false, false).length * _eqFS*1.25 <= _sAlloc*1.5;
+      const _pFit  = !pText  || wrapText(pText,  pSW*0.90, _eqFS, false, false).length * _eqFS*1.15 <= _pAvail;
+      if(_hFit && _sFit && _pFit) break;
+      _eqFS = Math.max(_eqFS - 0.3, _eqFSMin);
     }
-    if(allSensLines.length && sensFS !== _eqFS){
-      sensFS = _eqFS;
-      // Re-wrap sensitiser lines at equalised size
-      const _newSensLines = _sensBase ? wrapText(_sensBase, sensSW*0.82, _eqFS, false, false) : [];
-      const _newEuhLines  = _euhSuffix ? wrapText(_euhSuffix, sensSW*0.82, _eqFS, false, false) : [];
-      allSensLines.length = 0;
-      _newSensLines.forEach(l=>allSensLines.push(l));
-      _newEuhLines.forEach(l=>allSensLines.push(l));
+    // Apply shared size to all three blocks
+    if(hText){ hFS=_eqFS; hLH=hFS*1.25; hLines=wrapText(hText,hSW*0.92,hFS,false,false); }
+    if(allSensLines.length){
+      sensFS=_eqFS;
+      const _ns=_sensBase?wrapText(_sensBase,sensSW*0.82,_eqFS,false,false):[];
+      const _ne=_euhSuffix?wrapText(_euhSuffix,sensSW*0.82,_eqFS,false,false):[];
+      allSensLines.length=0; _ns.forEach(l=>allSensLines.push(l)); _ne.forEach(l=>allSensLines.push(l));
     }
-    if(pText && pFS !== _eqFS){
-      pFS = _eqFS; pLH = pFS*1.15;
-      pLines = wrapText(pText, pSW*0.90, pFS, false, false);
-    }
+    if(pText){ pFS=_eqFS; pLH=pFS*1.15; pLines=wrapText(pText,pSW*0.90,pFS,false,false); }
   }
   // Flag for UI warning: true if H or P text bottomed out at its minimum legible size
   window._labelLegibilityWarn = (!!hText && hFS<=hFSMin+0.05) || (!!pText && pFS<=pFSMin+0.05) || (!!pText && pLines.length*pLH>_pAvail*1.02) || (!!hText && hLines.length*hLH>_hAlloc*1.02);
