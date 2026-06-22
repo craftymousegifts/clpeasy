@@ -2899,19 +2899,25 @@ function buildSVG(forExport=false){
   const sensText = [_sensBase, _euhSuffix].filter(Boolean).join(' ');
 
   // Find shared font size: largest F where H+sens+P combined fit in _hpSensAvail
+  // Uses per-block chord widths (same as the expand loop) for consistency.
   const _sharedFSMax = Math.min(_hpSensAvail * 0.32, clamp(BASE*0.055, 2, 10));
   const _sharedFSMin = clamp(BASE*0.012, 1.0, 2.5);
   const hFSMin = clamp(BASE*0.016, 1.2, 3.5);
   const pFSMin = _sharedFSMin;
-  // Use midpoint chord width for fitting estimate
-  const _midSW = chordW(curY + _hpSensAvail*0.5, 0.08);
+  // Per-block chord widths: estimation anchors for shrink loop and expand loop.
+  // Note: the flow-layout section re-declares hSW/sensSW/pSW at actual curY positions
+  // after each block is placed — those are used for rendering. These _est variants are
+  // for the pre-layout shrink/expand size-finding pass only.
+  const _hSWest  = chordW(curY + _hpSensAvail*0.20, 0.08);
+  const _sSWest  = chordW(curY + _hpSensAvail*0.50, 0.08);
+  const _pSWest  = chordW(curY + _hpSensAvail*0.80, 0.08);
   let _sharedFS = _sharedFSMax;
   while(_sharedFS > _sharedFSMin){
-    const _hH  = hText   ? wrapText(hText,   _midSW*0.92, _sharedFS, false, false).length * _sharedFS*1.25 : 0;
-    const _sH  = sensText? wrapText(sensText, _midSW*0.82, _sharedFS, false, false).length * _sharedFS*1.25 : 0;
-    const _pH  = pText   ? wrapText(pText,    _midSW*0.90, _sharedFS, false, false).length * _sharedFS*1.15 : 0;
+    const _hH  = hText   ? wrapText(hText,    _hSWest*0.92, _sharedFS, false, false).length * _sharedFS*1.25 : 0;
+    const _sH  = sensText? wrapText(sensText, _sSWest*0.82, _sharedFS, false, false).length * _sharedFS*1.25 : 0;
+    const _pH  = pText   ? wrapText(pText,    _pSWest*0.90, _sharedFS, false, false).length * _sharedFS*1.15 : 0;
     if(_hH + _sH + _pH <= _hpSensAvail * 0.97) break;
-    _sharedFS = Math.max(_sharedFS - 0.3, _sharedFSMin);
+    _sharedFS = Math.max(_sharedFS - 0.1, _sharedFSMin); // 0.1pt steps: finer landing, less wasted space
   }
 
   // Apply shared font size and flow sequentially
@@ -2959,26 +2965,34 @@ function buildSVG(forExport=false){
     }
   }
 
-  // ── EXPAND TO FILL — step font up if gap above EN15494 row is > 2mm ────────
-  // 2mm at scale = 2 * (260/mmW) px
-  const _gapThreshold = 2 * (BASE/mmW);
-  const _expandCap = _sharedFSMax * 1.3;
+  // ── EXPAND TO FILL — grow font until total block fills to within one line-height of botY ──
+  // Budget: _hpSensAvail (from curY-at-start-of-text-zone to botY).
+  // Stop condition: total height of H + gaps + sens + gaps + P > _hpSensAvail - 1 line-height.
+  // No artificial cap — let it grow as far as the space genuinely allows.
+  // Gaps: hLH*0.3 after H block, sensLH*0.2 after sens block (same ratios as flow above).
+  const _expandCap = _sharedFSMax * 5; // generous ceiling — space geometry is the real constraint
   let _expanding = true;
-  while(_expanding && _sharedFS + 0.3 <= _expandCap){
-    const _tryFS = _sharedFS + 0.3;
-    const _tryLH = _tryFS * 1.15;
-    // Re-estimate total block height at larger size
-    const _hTry = hText  ? wrapText(hText,  hSW*0.92,  _tryFS, false, false).length * _tryFS*1.25 : 0;
-    const _sTry = sensText ? wrapText(sensText, sensSW*0.82, _tryFS, false, false).length * _tryFS*1.25 : 0;
-    const _pTry = pText  ? wrapText(pText,  pSW*0.90,  _tryFS, false, false).length * _tryLH : 0;
-    const _gaps = _tryFS * 0.3 * 2;
-    const _totalTry = _hTry + _sTry + _pTry + _gaps;
-    // Check P block still fits within botY
-    const _pTryLines = pText ? wrapText(pText, pSW*0.90, _tryFS, false, false).length : 0;
-    const _pTryH = _pTryLines * _tryLH;
-    const _curYAfterSens = curY; // approximate — sens already placed
-    if(_totalTry > _hpSensAvail * 0.96 || _pTryH > _pAvail) { _expanding = false; break; }
-    // Apply larger size
+  while(_expanding){
+    const _tryFS = _sharedFS + 0.1; // 0.1pt steps: matches shrink resolution, maximises fill
+    if(_tryFS > _expandCap){ _expanding = false; break; }
+    const _tryHLH = _tryFS * 1.25;
+    const _trySLH = _tryFS * 1.25;
+    const _tryPLH = _tryFS * 1.15;
+    // Recompute block heights at trial size
+    const _hTryLines = hText    ? wrapText(hText,    hSW*0.92,   _tryFS, false, false).length : 0;
+    const _sTryLines = sensText ? wrapText(sensText, sensSW*0.82, _tryFS, false, false).length : 0;
+    const _pTryLines = pText    ? wrapText(pText,    pSW*0.90,   _tryFS, false, false).length : 0;
+    const _hTry = _hTryLines * _tryHLH;
+    const _sTry = _sTryLines * _trySLH;
+    const _pTry = _pTryLines * _tryPLH;
+    // Gaps between blocks (same ratios as sequential flow above)
+    const _gapHS = hText    && sensText ? _tryHLH * 0.3 : 0;
+    const _gapSP = sensText && pText    ? _trySLH * 0.2 : 0;
+    const _gapHP = hText    && pText && !sensText ? _tryHLH * 0.3 : 0;
+    const _totalTry = _hTry + _sTry + _pTry + _gapHS + _gapSP + _gapHP;
+    // Hard stop: must leave at least one P line-height of breathing room before botY
+    if(_totalTry > _hpSensAvail - _tryPLH){ _expanding = false; break; }
+    // Accept this larger size
     _sharedFS = _tryFS;
     hFS = _sharedFS; hLH = hFS*1.25;
     sensFS = _sharedFS;
