@@ -2185,8 +2185,13 @@ const H_PICTO_MAP = {
 // Sync pictograms from current hSelected — called after H chips change
 function syncPictogramsFromH(){
   const needed = [...new Set(S.hSelected.map(h => H_PICTO_MAP[h]).filter(Boolean))];
-  // Add any needed pictos not already selected
+  // Add needed pictograms not already selected
   needed.forEach(k => { if(!S.pictograms.includes(k)) addPicto(k); });
+  // Remove pictograms no longer needed by any selected H-code
+  S.pictograms = S.pictograms.filter(k => needed.includes(k));
+  document.querySelectorAll('.picto-btn').forEach(b => {
+    if(!needed.includes(b.dataset.picto)) b.classList.remove('selected');
+  });
   updateLabel();
 }
 
@@ -3106,9 +3111,9 @@ function updateLabel(){
   readForm();
   // Auto-set signal word from selected H-codes (mirrors extractSDS logic so manual chip clicks work too)
   const _autoH=(S.hStatements||'').split(',').map(h=>h.trim()).filter(Boolean);
-  if(_autoH.length>0){
+  {
     const _dangerH=['H300','H301','H310','H311','H330','H331','H340','H350','H360','H370','H372','H290','H304','H314','H318','H225','H224'];
-    const _sig=_autoH.some(h=>_dangerH.includes(h))?'Danger':'Warning';
+    const _sig=_autoH.length>0?(_autoH.some(h=>_dangerH.includes(h))?'Danger':'Warning'):'';
     S.signal=_sig;
     document.getElementById('signal-warning').className='signal-btn'+(_sig==='Warning'?' sel-warn':'');
     document.getElementById('signal-danger').className='signal-btn'+(_sig==='Danger'?' sel-danger':'');
