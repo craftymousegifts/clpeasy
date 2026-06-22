@@ -211,7 +211,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .zoom-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:white;box-shadow:0 1px 4px rgba(0,0,0,0.4);cursor:grab;transition:left .15s;}
 .zoom-pct{font-size:11px;color:rgba(255,255,255,0.4);min-width:30px;text-align:right;}
 /* Canvas area — scrollable so zoomed labels don't get clipped */
-.preview-canvas-area{flex:1;display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto;}
+.preview-canvas-area{display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto;}
 #label-svg-container{
   -webkit-user-select:none;-moz-user-select:none;user-select:none;
   pointer-events:none;
@@ -765,7 +765,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         I confirm the hazard data shown in the Smart Paste section above is correct and matches my fragrance supplier's SDS sheet at my actual fragrance load.
       </label>
     </div>
-    <div id="label-warn" style="display:none;margin-bottom:10px;background:#FFF7ED;border-left:3px solid #F59E0B;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#92400E;line-height:1.5;"></div>
+    <div id="label-warn" style="display:none;margin-bottom:10px;background:#FEF2F2;border-left:3px solid #EF4444;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#991B1B;line-height:1.5;"></div>
     <div style="margin-bottom:10px;background:#FEF3C7;border-left:3px solid #F59E0B;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#92400E;display:flex;align-items:center;justify-content:space-between;gap:10px;">
       <span>⚠️ Always verify hazard data against your fragrance SDS at your actual fragrance load before downloading.</span>
       <button type="button" onclick="clearHazardData()" style="background:#EF4444;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">Clear hazard data</button>
@@ -3262,6 +3262,8 @@ function applyZoomToSVG(){
   const h=Math.round(vbH*previewZoom);
   svg.setAttribute('width',w);
   svg.setAttribute('height',h);
+  container.style.width=w+'px';
+  container.style.height=h+'px';
 }
 
 function onZoomTrackMouseDown(e){
