@@ -2915,11 +2915,14 @@ function buildSVG(forExport=false){
   const hFSMin = clamp(BASE*0.016, 1.2, 3.5);
   const pFSMin = _sharedFSMin;
 
-  // Step 1 — count lines at a stable reference size to establish ratios
-  const _refFS = clamp(BASE*0.030, 2.5, 7);
-  const _hRefN  = hText    ? wrapText(hText,    _hSW*0.92, _refFS, false, false).length : 0;
-  const _sRefN  = sensText ? wrapText(sensText,  _sSW*0.82, _refFS, false, false).length : 0;
-  const _pRefN  = pText    ? wrapText(pText,     _pSW*0.90, _refFS, false, false).length : 0;
+  // Step 1 — count lines at TWO reference sizes and use the higher line count.
+  // Using two sizes guards against the case where _refFS is too large and wraps
+  // fewer lines than the ideal size would, causing idealFS to be underestimated.
+  const _refFS  = clamp(BASE*0.020, 2.0, 4.5); // conservative reference: more lines = lower idealFS = larger text
+  const _refFS2 = clamp(BASE*0.030, 2.5, 7.0); // second reference for comparison
+  const _hRefN  = hText    ? Math.max(wrapText(hText,    _hSW*0.92, _refFS, false, false).length, wrapText(hText,    _hSW*0.92, _refFS2, false, false).length) : 0;
+  const _sRefN  = sensText ? Math.max(wrapText(sensText,  _sSW*0.82, _refFS, false, false).length, wrapText(sensText,  _sSW*0.82, _refFS2, false, false).length) : 0;
+  const _pRefN  = pText    ? Math.max(wrapText(pText,     _pSW*0.90, _refFS, false, false).length, wrapText(pText,     _pSW*0.90, _refFS2, false, false).length) : 0;
 
   // Step 2 — back-calculate ideal font size
   // Total height = hLines*hLH + gap + sLines*sLH + gap + pLines*pLH
@@ -2932,7 +2935,7 @@ function buildSVG(forExport=false){
   const _totalFSMultiple = _hRefN*1.25 + _sRefN*1.25 + _pRefN*1.15 + _gapH + _gapS + _gapHP;
   // Ideal fs: fill to within one pLH (fs*1.15) of botY for breathing room
   const _idealFS = _totalFSMultiple > 0
-    ? (_hpSensAvail - 0) / (_totalFSMultiple + 1.15) // +1.15 = one line breathing room
+    ? _hpSensAvail / (_totalFSMultiple + 1.15) // +1.15 = one line breathing room
     : clamp(BASE*0.040, 3, 10);
 
   // Step 3 — start at ideal (clamped to a sensible max) and step down 0.1pt until fits
