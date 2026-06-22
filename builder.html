@@ -2898,20 +2898,57 @@ function buildSVG(forExport=false){
   const _euhSuffix = hasEUH208 ? 'May produce an allergic reaction.' : '';
   const sensText = [_sensBase, _euhSuffix].filter(Boolean).join(' ');
 
-  // Find shared font size: largest F where H+sens+P combined fit in _hpSensAvail
-  const _sharedFSMax = Math.min(_hpSensAvail * 0.32, clamp(BASE*0.055, 2, 10));
+  // ── UNIFIED FILL SIZING ──────────────────────────────────────────────────────
+  // Strategy: back-calculate font size from available height and total line count.
+  // 1. Estimate line counts at a reference size to get the line-count ratio.
+  // 2. Derive ideal font size from: availableH / (totalLines * lineSpacing + gaps).
+  // 3. Step down in 0.1pt increments until the content genuinely fits.
+  // 4. Never expand beyond what fits — the geometry is the only constraint.
+  //
+  // Per-block chord widths at estimated zone positions (circles narrow toward edges;
+  // rectangles/squares return constant sW via the chordW branch for non-circle shapes).
+  const _hSW  = chordW(curY + _hpSensAvail*0.15, 0.08);
+  const _sSW  = chordW(curY + _hpSensAvail*0.55, 0.08);
+  const _pSW  = chordW(curY + _hpSensAvail*0.80, 0.08);
+
   const _sharedFSMin = clamp(BASE*0.012, 1.0, 2.5);
   const hFSMin = clamp(BASE*0.016, 1.2, 3.5);
   const pFSMin = _sharedFSMin;
-  // Use midpoint chord width for fitting estimate
-  const _midSW = chordW(curY + _hpSensAvail*0.5, 0.08);
+
+  // Step 1 — count lines at a stable reference size to establish ratios
+  const _refFS = clamp(BASE*0.030, 2.5, 7);
+  const _hRefN  = hText    ? wrapText(hText,    _hSW*0.92, _refFS, false, false).length : 0;
+  const _sRefN  = sensText ? wrapText(sensText,  _sSW*0.82, _refFS, false, false).length : 0;
+  const _pRefN  = pText    ? wrapText(pText,     _pSW*0.90, _refFS, false, false).length : 0;
+
+  // Step 2 — back-calculate ideal font size
+  // Total height = hLines*hLH + gap + sLines*sLH + gap + pLines*pLH
+  // hLH = fs*1.25, sLH = fs*1.25, pLH = fs*1.15
+  // gaps: hLH*0.3 after H (if H exists and something follows),
+  //       sLH*0.2 after sens (if sens exists and P follows)
+  const _gapH  = (_hRefN>0 && (_sRefN>0||_pRefN>0)) ? 0.3*1.25 : 0; // gap as multiple of fs
+  const _gapS  = (_sRefN>0 && _pRefN>0)              ? 0.2*1.25 : 0;
+  const _gapHP = (_hRefN>0 && _pRefN>0 && _sRefN===0)? 0.3*1.25 : 0;
+  const _totalFSMultiple = _hRefN*1.25 + _sRefN*1.25 + _pRefN*1.15 + _gapH + _gapS + _gapHP;
+  // Ideal fs: fill to within one pLH (fs*1.15) of botY for breathing room
+  const _idealFS = _totalFSMultiple > 0
+    ? (_hpSensAvail - 0) / (_totalFSMultiple + 1.15) // +1.15 = one line breathing room
+    : clamp(BASE*0.040, 3, 10);
+
+  // Step 3 — start at ideal (clamped to a sensible max) and step down 0.1pt until fits
+  const _sharedFSMax = clamp(_idealFS, _sharedFSMin, clamp(BASE*0.13, 4, 22));
   let _sharedFS = _sharedFSMax;
   while(_sharedFS > _sharedFSMin){
-    const _hH  = hText   ? wrapText(hText,   _midSW*0.92, _sharedFS, false, false).length * _sharedFS*1.25 : 0;
-    const _sH  = sensText? wrapText(sensText, _midSW*0.82, _sharedFS, false, false).length * _sharedFS*1.25 : 0;
-    const _pH  = pText   ? wrapText(pText,    _midSW*0.90, _sharedFS, false, false).length * _sharedFS*1.15 : 0;
-    if(_hH + _sH + _pH <= _hpSensAvail * 0.97) break;
-    _sharedFS = Math.max(_sharedFS - 0.3, _sharedFSMin);
+    const _hH = hText    ? wrapText(hText,    _hSW*0.92, _sharedFS, false, false).length * _sharedFS*1.25 : 0;
+    const _sH = sensText ? wrapText(sensText,  _sSW*0.82, _sharedFS, false, false).length * _sharedFS*1.25 : 0;
+    const _pH = pText    ? wrapText(pText,     _pSW*0.90, _sharedFS, false, false).length * _sharedFS*1.15 : 0;
+    const _gHS = (_hH>0&&(_sH>0||_pH>0)) ? _sharedFS*1.25*0.3 : 0;
+    const _gSP = (_sH>0&&_pH>0)          ? _sharedFS*1.25*0.2 : 0;
+    const _gHP = (_hH>0&&_pH>0&&_sH===0) ? _sharedFS*1.25*0.3 : 0;
+    const _total = _hH + _sH + _pH + _gHS + _gSP + _gHP;
+    // Must fit within available space leaving one P-line-height of breathing room
+    if(_total <= _hpSensAvail - _sharedFS*1.15) break;
+    _sharedFS = Math.max(_sharedFS - 0.1, _sharedFSMin);
   }
 
   // Apply shared font size and flow sequentially
@@ -2919,13 +2956,13 @@ function buildSVG(forExport=false){
   let sensFS = _sharedFS, sensLH = sensFS*1.25;
   let pFS = _sharedFS, pLH = pFS*1.15, pLines = [];
 
-  const hSW = chordW(curY + _hpSensAvail*0.20, 0.08);
+  const hSW = chordW(curY + _hpSensAvail*0.15, 0.08);
   if(hText){
     hLines = wrapText(hText, hSW*0.92, hFS, false, false);
   }
   const hY = curY + hLH*0.5;
   const _hActual = hLines.length * hLH;
-  curY += _hActual + hLH*0.3; // small gap after H block
+  curY += _hActual + (hLines.length>0 && (sensText||pText) ? hLH*0.3 : 0);
 
   const sensSW = chordW(curY + _hpSensAvail*0.10, 0.08);
   const sensLines = _sensBase ? wrapText(_sensBase, sensSW*0.82, sensFS, false, false) : [];
@@ -2933,63 +2970,29 @@ function buildSVG(forExport=false){
   const allSensLines = [...sensLines, ...euhLines];
   const sensStY = curY + sensLH*0.5;
   const _sActual = allSensLines.length * sensLH;
-  curY += _sActual + (allSensLines.length ? sensLH*0.2 : 0);
+  curY += _sActual + (allSensLines.length>0 && pText ? sensLH*0.2 : 0);
 
-  // P-text space: hard cap at footer with a full line of breathing room
   const _pAvail = Math.max(botY - curY - pLH, 2);
   const pSW = chordW(curY + _pAvail*0.5, 0.08);
   if(pText){
     pLines = wrapText(pText, pSW*0.90, pFS, false, false);
-    // Shrink further if block still overflows the hard cap
+    // Safety net: shrink P only if it genuinely overflows after the fill pass
     while(pLines.length * pLH > _pAvail && pFS > pFSMin){
-      pFS = Math.max(pFS - 0.3, pFSMin);
+      pFS = Math.max(pFS - 0.1, pFSMin);
       pLH = pFS * 1.15;
       pLines = wrapText(pText, pSW*0.90, pFS, false, false);
     }
-    // Re-equalise H and sensitiser to match P if P was shrunk
+    // Re-equalise H and sensitiser if P safety net fired
     if(pFS < hFS){
       hFS = pFS; hLH = hFS*1.25;
       if(hText) hLines = wrapText(hText, hSW*0.92, hFS, false, false);
-      sensFS = pFS;
+      sensFS = pFS; sensLH = sensFS*1.25;
       if(sensText){
         const _ns2=_sensBase?wrapText(_sensBase,sensSW*0.82,sensFS,false,false):[];
         const _ne2=_euhSuffix?wrapText(_euhSuffix,sensSW*0.82,sensFS,false,false):[];
         allSensLines.length=0;_ns2.forEach(l=>allSensLines.push(l));_ne2.forEach(l=>allSensLines.push(l));
       }
     }
-  }
-
-  // ── EXPAND TO FILL — step font up if gap above EN15494 row is > 2mm ────────
-  // 2mm at scale = 2 * (260/mmW) px
-  const _gapThreshold = 2 * (BASE/mmW);
-  const _expandCap = _sharedFSMax * 1.3;
-  let _expanding = true;
-  while(_expanding && _sharedFS + 0.3 <= _expandCap){
-    const _tryFS = _sharedFS + 0.3;
-    const _tryLH = _tryFS * 1.15;
-    // Re-estimate total block height at larger size
-    const _hTry = hText  ? wrapText(hText,  hSW*0.92,  _tryFS, false, false).length * _tryFS*1.25 : 0;
-    const _sTry = sensText ? wrapText(sensText, sensSW*0.82, _tryFS, false, false).length * _tryFS*1.25 : 0;
-    const _pTry = pText  ? wrapText(pText,  pSW*0.90,  _tryFS, false, false).length * _tryLH : 0;
-    const _gaps = _tryFS * 0.3 * 2;
-    const _totalTry = _hTry + _sTry + _pTry + _gaps;
-    // Check P block still fits within botY
-    const _pTryLines = pText ? wrapText(pText, pSW*0.90, _tryFS, false, false).length : 0;
-    const _pTryH = _pTryLines * _tryLH;
-    const _curYAfterSens = curY; // approximate — sens already placed
-    if(_totalTry > _hpSensAvail * 0.96 || _pTryH > _pAvail) { _expanding = false; break; }
-    // Apply larger size
-    _sharedFS = _tryFS;
-    hFS = _sharedFS; hLH = hFS*1.25;
-    sensFS = _sharedFS;
-    pFS = _sharedFS; pLH = pFS*1.15;
-    if(hText) hLines = wrapText(hText, hSW*0.92, hFS, false, false);
-    if(sensText){
-      const _ns=_sensBase?wrapText(_sensBase,sensSW*0.82,sensFS,false,false):[];
-      const _ne=_euhSuffix?wrapText(_euhSuffix,sensSW*0.82,sensFS,false,false):[];
-      allSensLines.length=0;_ns.forEach(l=>allSensLines.push(l));_ne.forEach(l=>allSensLines.push(l));
-    }
-    if(pText) pLines = wrapText(pText, pSW*0.90, pFS, false, false);
   }
 
   // Flag for UI warning: true if H or P text bottomed out at its minimum legible size
