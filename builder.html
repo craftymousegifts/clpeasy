@@ -2932,7 +2932,8 @@ function buildSVG(forExport=false){
   }
   const pText   = _pNorm.map(c=>{const e=P_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(pCodes.length>0?'.':'');
   const pSW     = chordW(curY + _pAvail*0.5, 0.08);
-  const pFSMax  = Math.min(_pAvail * 0.50, clamp(BASE*0.030, 1.5, 7));
+  // P font unified with H sizing — same cap, same min
+  const pFSMax  = Math.min(_pAvail * 0.68, clamp(BASE*0.050, 2, 9));
   const pFSMin  = clamp(BASE*0.012, 1.0, 2.5);
   let pFS=pFSMax, pLines=[], pLH=pFSMax*1.15;
   if(pText){
@@ -2944,13 +2945,13 @@ function buildSVG(forExport=false){
       pFS=Math.max(pFS-0.3,pFSMin);
     }
     if(!pLines.length)pLines=wrapText(pText,pSW*0.90,pFS,false,false);
-    // Expand to fill — step font up while text still fits in available space
-    const pFSCap = clamp(BASE*0.055, 3.0, 14.0); // generous upper cap for expand
+    // Expand to fill — push up to 98% of available space
+    const pFSCap = clamp(BASE*0.055, 3.0, 14.0);
     while(pFS+0.3<=pFSCap){
       const tryFS=pFS+0.3;
       const tryLines=wrapText(pText,pSW*0.90,tryFS,false,false);
       const tryH=tryLines.length*tryFS*1.15;
-      if(tryH>_pAvail*0.97) break; // would overflow — stop
+      if(tryH>_pAvail*0.98) break;
       pFS=tryFS; pLines=tryLines; pLH=pFS*1.15;
     }
   }
