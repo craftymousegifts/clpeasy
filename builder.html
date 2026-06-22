@@ -2888,7 +2888,9 @@ function buildSVG(forExport=false){
   // H statements — sized to fit within _hAlloc
   const hText   = hCodes.map(c=>{const e=H_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(hCodes.length>0?'.':'') || '';
   const hSW     = chordW(curY + _hAlloc*0.5, 0.08);
-  const hFSMax  = Math.min(_hAlloc * 0.68, clamp(BASE*0.050, 2, 9));
+  // Shared starting font size based on combined H+P space so both blocks start equal
+  const _sharedFSMax = Math.min(_hpSensAvail * 0.30, clamp(BASE*0.050, 2, 9));
+  const hFSMax  = _sharedFSMax;
   const hFSMin  = clamp(BASE*0.016, 1.2, 3.5);
   let hFS=hFSMax, hLines=[], hLH=hFSMax*1.25;
   if(hText){
@@ -2932,8 +2934,8 @@ function buildSVG(forExport=false){
   }
   const pText   = _pNorm.map(c=>{const e=P_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(pCodes.length>0?'.':'');
   const pSW     = chordW(curY + _pAvail*0.5, 0.08);
-  // P font unified with H sizing — same cap, same min
-  const pFSMax  = Math.min(_pAvail * 0.68, clamp(BASE*0.050, 2, 9));
+  // P font starts from same shared size as H so both blocks are visually consistent
+  const pFSMax  = _sharedFSMax;
   const pFSMin  = clamp(BASE*0.012, 1.0, 2.5);
   let pFS=pFSMax, pLines=[], pLH=pFSMax*1.15;
   if(pText){
