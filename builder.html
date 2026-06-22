@@ -795,21 +795,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div style="margin-top:4px;font-size:11px;color:var(--muted);">Last used: <span id="last-batch-display">—</span></div>
       </div>
     </div>
-    <div class="form-group">
-      <div onclick="document.getElementById('ufi-section').style.display=document.getElementById('ufi-section').style.display==='none'?'block':'none';this.querySelector('.ufi-toggle-arrow').textContent=document.getElementById('ufi-section').style.display==='none'?'▼':'▲';" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#F8FAFC;border:1.5px solid var(--border);border-radius:8px;user-select:none;">
-        <span style="font-size:13px;font-weight:600;color:var(--text);">UFI Code <span style="font-weight:400;color:var(--muted);font-size:12px;">— Advanced / B2B / EU sales only</span></span>
-        <span class="ufi-toggle-arrow" style="color:var(--muted);font-size:12px;">▼</span>
-      </div>
-      <div id="ufi-section" style="display:none;margin-top:8px;">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5;">A Unique Formula Identifier (UFI) is required if you sell to businesses (B2B) or export to the EU. Not required for UK consumer sales only.</div>
-        <div style="display:flex;gap:8px;">
-          <input type="text" id="ufi-code" placeholder="Click Generate to create your UFI" oninput="updateLabel()" style="flex:1;font-family:monospace;font-size:13px;letter-spacing:1px;">
-          <button type="button" onclick="generateUFI()" style="background:var(--teal);border:none;color:white;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;flex-shrink:0;">Generate ↻</button>
-        </div>
-        <div id="ufi-warning" style="display:none;background:#FEF3C7;border-left:3px solid #F59E0B;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#92400E;margin-top:6px;">⚠️ Please click <strong>Generate ↻</strong> to create your UFI code. Register at <a href="https://poisoncentres.echa.europa.eu" target="_blank" style="color:#92400E">EUPCN ↗</a></div>
-        <div style="margin-top:5px;font-size:11px;color:var(--muted);line-height:1.5;">For formal B2B / EU sales, <a href="https://eupcn.echa.europa.eu" target="_blank" style="color:var(--teal);">register at EUPCN</a>.</div>
-      </div>
-    </div>
+    <!-- UFI Code section hidden — not required for UK consumer sales -->
+    <input type="hidden" id="ufi-code" value="">
     <div class="step-nav"><button class="btn-prev" onclick="prevStep()">← Back</button><button class="btn-next" onclick="checkStep4AndNext()">Preview &amp; download →</button></div>
   </div>
 
@@ -2902,7 +2889,7 @@ function buildSVG(forExport=false){
   const sensText = [_sensBase, _euhSuffix].filter(Boolean).join(' ');
 
   // Find shared font size: largest F where H+sens+P combined fit in _hpSensAvail
-  const _sharedFSMax = Math.min(_hpSensAvail * 0.30, clamp(BASE*0.050, 2, 9));
+  const _sharedFSMax = Math.min(_hpSensAvail * 0.32, clamp(BASE*0.055, 2, 10));
   const _sharedFSMin = clamp(BASE*0.012, 1.0, 2.5);
   const hFSMin = clamp(BASE*0.016, 1.2, 3.5);
   const pFSMin = _sharedFSMin;
@@ -3098,10 +3085,10 @@ function buildSVG(forExport=false){
   ${svgWrapped(hLines,cx,hY,hLH,hFS,false,false,txtCol)}
 
   <!-- SENSITISERS -->
-  ${svgWrapped(allSensLines,cx,sensStY,sensLH,sensFS,false,false,mutedCol)}
+  ${svgWrapped(allSensLines,cx,sensStY,sensLH,sensFS,false,false,txtCol)}
 
   <!-- P STATEMENTS -->
-  ${showP?`<g font-style="italic">${svgWrapped(pLines,cx,pStY,pLH,pFS,false,false,mutedCol)}</g>`:''}
+  ${showP?svgWrapped(pLines,cx,pStY,pLH,pFS,false,false,txtCol):''}
 
   <!-- FOOTER -->
   ${footerRendered}
