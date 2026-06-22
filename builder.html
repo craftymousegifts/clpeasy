@@ -2711,7 +2711,8 @@ function buildSVG(forExport=false){
   // Mid band: everything else
   const topFrac = 0.28;  // scent + biz + web all in top band
   // For candles: reserve 7% of shape height at bottom for EN 15494 pictogram row
-  const botFrac = (_isCandle && mmW >= 52 && mmH >= 52) ? 0.22 : 0.24;
+  const _showBCF = _isCandle && !S.hideEN15494 && mmW >= 52 && mmH >= 52;
+  const botFrac = _showBCF ? 0.22 : 0.17; // smaller footer when no EN 15494 row needed
   const topH = sH * topFrac;
   const botH = sH * botFrac;
   const midH = sH - topH - botH;
@@ -3020,7 +3021,7 @@ function buildSVG(forExport=false){
   // botFrac is already reduced from 0.24 to 0.17 for candles, giving
   // a 7% strip at the top of the footer band for these icons.
   let bcfRow = '';
-    if(_isCandle && !S.hideEN15494 && mmW >= 52 && mmH >= 52){
+    if(_showBCF){
     const _bcfKeys=['burn_within_sight','keep_from_fire','keep_from_children','no_draught','trim_wick'];
     const _nBcf = _bcfKeys.length;
     // Size icons based on the shorter label dimension to prevent overflow
