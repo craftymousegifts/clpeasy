@@ -2962,13 +2962,20 @@ function buildSVG(forExport=false){
   //    height can never diverge from what is drawn.
   // 3. Vertical centring: distribute unused space equally above and below.
   // 4. The legibility warning fires ONLY when the content cannot fit even at
-  //    the minimum legible size (≈1mm); below that, P is hard-clipped to botY
-  //    so it can never spill into the pictogram / footer zone beneath.
+  //    the minimum legible size; below that, P is hard-clipped to botY so it
+  //    can never spill into the pictogram / footer zone beneath.
 
   const _curY0 = curY;
   const _hardBot = botY;                       // text must never cross this
-  // Minimum legible font ≈ 1mm physical height (pxPerMm = pw/mmW in this view).
-  const _minLegibleFS = Math.max(0.95 * _pxPerMm, 3.2);
+  // Minimum legible font size, derived from a printed x-height floor.
+  // CLP Delegated Regulation (EU) 2024/2865 requires a lowercase x-height of at
+  // least 1.2 mm for packaging up to 3 L (candles/wax melts). DM Sans' x-height
+  // is ~0.51 of its em, so the floor font size = 1.2 / 0.51 ≈ 2.35 mm. Font
+  // sizes here are in viewBox user units where 1 mm = _pxPerMm units, so the
+  // floor scales correctly to the same physical size at any print DPI.
+  const _MIN_XHEIGHT_MM = 1.2;                 // CLP 2024/2865 minimum
+  const _XHEIGHT_RATIO  = 0.51;                // DM Sans lowercase x-height / em
+  const _minLegibleFS = (_MIN_XHEIGHT_MM / _XHEIGHT_RATIO) * _pxPerMm;
 
   // Single source of truth — lay the three blocks out exactly as they render.
   // Returns each block's lines, its first-line centre Y, and the Y after the
@@ -3014,8 +3021,9 @@ function buildSVG(forExport=false){
   const _fitMargin=(fs)=> fs*0.3;
   const _fits=(fs)=> _layoutHazard(fs,_curY0).endY <= _hardBot - _fitMargin(fs);
 
-  // Binary search for the largest fitting font size.
-  let _bsLo=_minLegibleFS, _bsHi=clamp(BASE*0.13,8,28);
+  // Binary search for the largest fitting font size. The ceiling can never be
+  // below the legible floor (matters on tiny labels where the floor is large).
+  let _bsLo=_minLegibleFS, _bsHi=Math.max(clamp(BASE*0.13,8,28), _minLegibleFS);
   const _fitsAtMin=_fits(_minLegibleFS);
   if(!_fitsAtMin){
     _bsLo=_bsHi=_minLegibleFS;                 // cannot fit even at the floor
@@ -3047,9 +3055,9 @@ function buildSVG(forExport=false){
   const hFS=_sharedFS, hLH=_L.hLH;
   const sensFS=_sharedFS, sensLH=_L.sLH;
   const pFS=_sharedFS, pLH=_L.pLH;
-  const hLines=_L.hLines;
+  let hLines=_L.hLines;
   const hY=_L.hStartY;
-  const allSensLines=_L.allS;
+  let allSensLines=_L.allS;
   const sensStY=_L.sStartY;
   let pLines=_L.pLines;
   const pStY=_L.pStartY;
@@ -3075,8 +3083,23 @@ function buildSVG(forExport=false){
     }
   }
 
+  // Hard botY clip for the WHOLE stack. With the legible font floor the block
+  // can be taller than the space available on small labels; drop any line whose
+  // box would cross botY. Blocks render top-down (H, then sensitiser, then P),
+  // so this drops bottom-up — P first, then sensitiser, keeping H longest — and
+  // guarantees nothing overflows into the pictogram / footer / EN15494 zone.
+  const _clipToBot=(lines,startY,lh)=>{
+    const keep=Math.max(0,Math.floor((_hardBot - startY + lh*0.5)/lh));
+    return lines.length>keep ? lines.slice(0,keep) : lines;
+  };
+  const _hKept=_clipToBot(hLines,hY,hLH);
+  const _sKept=_clipToBot(allSensLines,sensStY,sensLH);
+  const _pKept=_clipToBot(pLines,pStY,pLH);
+  if(_hKept.length<hLines.length||_sKept.length<allSensLines.length||_pKept.length<pLines.length) _pClipped=true;
+  hLines=_hKept; allSensLines=_sKept; pLines=_pKept;
+
   // Finalise the legibility warning: too small to fit at the legible floor, or
-  // one or more P statements were clipped.
+  // any hazard/sensitiser/P content had to be clipped.
   window._labelLegibilityWarn = !_fitsAtMin || _pClipped;
 
   const showP   = pLines.length > 0;
