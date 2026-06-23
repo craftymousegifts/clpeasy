@@ -3011,8 +3011,10 @@ function buildSVG(forExport=false){
   }
   const _sharedFS=_bsLo;
 
-  // Legibility warning: ONLY when content cannot fit at the minimum legible size.
-  window._labelLegibilityWarn = !_fitsAtMin;
+  // Legibility warning is finalised after P truncation below: it must fire
+  // whenever content can't fit at the minimum legible size OR any P statement
+  // had to be clipped to fit.
+  let _pClipped = false;
 
   // Vertical centring: re-lay from a Y offset by half the leftover slack.
   const _topLayout=_layoutHazard(_sharedFS,_curY0);
@@ -3047,10 +3049,16 @@ function buildSVG(forExport=false){
         const _try=wrapText(_parts.slice(0,_n).join(' ')+' …',_pW,pFS,false,false);
         if(_try.length<=_pMaxLines) _fit=_try;
       }
-      // Last resort (even a single sentence overflows): hard line-clip.
+      // Last resort (even a single sentence overflows): hard line-clip. Note
+      // wrapText breaks only on whitespace, so this never splits a word.
       pLines = _fit || pLines.slice(0,_pMaxLines);
+      _pClipped = true;
     }
   }
+
+  // Finalise the legibility warning: too small to fit at the legible floor, or
+  // one or more P statements were clipped.
+  window._labelLegibilityWarn = !_fitsAtMin || _pClipped;
 
   const showP   = pLines.length > 0;
 
