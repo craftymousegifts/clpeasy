@@ -3144,38 +3144,45 @@ function buildSVG(forExport=false){
   const maxFooterFS  = clamp(BASE*0.036, 3, 7.5);
   const minFooterFS  = clamp(BASE*0.022, 2, 4.5);
 
-  // Distribute the slots evenly across the usable footer height. Each slot is
-  // centred in its own row; the font is capped to the row height so adjacent
-  // lines can never overlap vertically. The EN15494 row occupies the reserved
-  // strip above (_footerBase), so the text always sits clear of the icons.
-  const nSlots = Math.min(footerSlots.length, 3);
-  const slotLH = nSlots > 0 ? fUsable / nSlots : fUsable;
-  const _footerBase = botY + fTopPad + _bcfRowH; // top of footer text zone (below EN row)
-  const _slotFSCap  = slotLH * 0.82;             // hard vertical cap per row
-  let footerElems = [];
-  footerSlots.slice(0, nSlots).forEach((slot, i)=>{
+  // ── FOOTER TEXT — legible flow layout ────────────────────────
+  // Supplier text must also meet the printed legibility floor (>= 0.9mm
+  // x-height, same CLP basis as the hazard text). Use a font no smaller than
+  // that floor; wrap each slot to the available width; flow the slots down from
+  // below the EN15494 row and clip at the shape bottom — dropping detail first,
+  // then phone, keeping the address longest. Raise the legibility warning if
+  // any line has to be dropped. (All footer text is solid black, not muted.)
+  const _FOOTER_MIN_XHEIGHT_MM = 0.9;
+  const _footerMinFS = (_FOOTER_MIN_XHEIGHT_MM / _XHEIGHT_RATIO) * _pxPerMm;
+  const _footerTop = botY + fTopPad + _bcfRowH; // below the EN15494 row
+  const _footerBot = sBot - fBotPad;
+  let _fy = _footerTop, _footerClipped = false;
+  const _footerEls = [];
+  for(let i=0; i<footerSlots.length && i<3 && !_footerClipped; i++){
+    const slot = footerSlots[i];
     const _isDetail = !slot.isPhone && i>0;
-    const _fsMax  = Math.min(maxFooterFS * (slot.isPhone?1.05:_isDetail?1.15:1.0), _slotFSCap);
-    const slotY   = _footerBase + slotLH * (i + 0.5);
-    const chordAtY = Math.min(chordW(slotY, 0.09), sW * 0.88);
-    const availW  = chordAtY * 0.88;
-    const fs = fitFont(slot.text, availW, _fsMax, Math.max(minFooterFS * 0.5, 1.5), slot.bold, false);
-    footerElems.push({text: slot.text, fs, bold: slot.bold, isPhone: slot.isPhone||false, slotY});
-  });
-  // Drop bottom slots if their font is unreadably tiny
-  while(footerElems.length > 1 && footerElems[footerElems.length-1].fs < minFooterFS * 0.4){
-    footerElems.pop();
-  }
-  // Y positions already set per-slot — no global recompute needed
-  const footerRendered = footerElems.map(elem=>{
-    if(elem.slotY > sBot - 1) return '';
-    const chordAtY = Math.min(chordW(elem.slotY, 0.09), sW * 0.88);
+    const _fsMax = maxFooterFS * (slot.isPhone?1.05:_isDetail?1.15:1.0);
+    // Width measured a little below the slot top so wrapped lines clear the
+    // narrowing circle chord; never let the font drop below the legible floor.
+    const chordAtY = Math.min(chordW(_fy + _footerMinFS, 0.09), sW*0.88);
     const availW = chordAtY * 0.88;
-    // Final fit at actual Y — catches any rounding
-    const fs = fitFont(elem.text, availW, elem.fs, Math.max(minFooterFS * 0.5, 1.5), elem.bold, false);
-    // CLP compliance: all supplier/footer text must be solid black, not muted.
-    return`<text x="${cx}" y="${elem.slotY.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${fs.toFixed(2)}" font-weight="${elem.isPhone?'600':'400'}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(elem.text)}</text>`;
-  }).join('');
+    let fs = fitFont(slot.text, availW, _fsMax, _footerMinFS, slot.bold, false);
+    let lines = [slot.text];
+    if(measureText(slot.text, fs, slot.bold, false) > availW){
+      fs = _footerMinFS;
+      lines = wrapText(slot.text, availW, fs, slot.bold, false);
+    }
+    const lh = fs * 1.25;
+    for(const ln of lines){
+      const yc = _fy + lh*0.5;
+      if(yc + lh*0.5 > _footerBot){ _footerClipped = true; break; }
+      _footerEls.push({text: ln, fs, isPhone: slot.isPhone||false, y: yc});
+      _fy += lh;
+    }
+  }
+  if(_footerClipped) window._labelLegibilityWarn = true;
+  const footerRendered = _footerEls.map(el=>
+    `<text x="${cx}" y="${el.y.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${el.fs.toFixed(2)}" font-weight="${el.isPhone?'600':'400'}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(el.text)}</text>`
+  ).join('');
 
   // ── EN 15494:2019 CANDLE SAFETY PICTOGRAMS ────────────────────
   // Rendered at the TOP of the footer band (above address/phone/detail).
