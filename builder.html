@@ -3011,8 +3011,10 @@ function buildSVG(forExport=false){
   }
   const _sharedFS=_bsLo;
 
-  // Legibility warning: ONLY when content cannot fit at the minimum legible size.
-  window._labelLegibilityWarn = !_fitsAtMin;
+  // Legibility warning is finalised after P truncation below: it must fire
+  // whenever content can't fit at the minimum legible size OR any P statement
+  // had to be clipped to fit.
+  let _pClipped = false;
 
   // Vertical centring: re-lay from a Y offset by half the leftover slack.
   const _topLayout=_layoutHazard(_sharedFS,_curY0);
@@ -3034,11 +3036,29 @@ function buildSVG(forExport=false){
   const pStY=_L.pStartY;
 
   // Hard botY boundary for P: never let a P line render past botY, even on the
-  // warning path where the font is pinned to the legible floor.
+  // warning path where the font is pinned to the legible floor. When the full
+  // set won't fit, truncate at a complete SENTENCE boundary (P statements are
+  // '. '-joined) rather than mid-word, and flag the omission with an ellipsis.
   if(pLines.length){
-    const _pMaxLines=Math.floor((_hardBot - pStY + pLH*0.5)/pLH);
-    if(pLines.length>_pMaxLines) pLines=pLines.slice(0,Math.max(1,_pMaxLines));
+    const _pMaxLines=Math.max(1,Math.floor((_hardBot - pStY + pLH*0.5)/pLH));
+    if(pLines.length>_pMaxLines){
+      const _pW=chordW(pStY,0.08)*0.90;
+      const _parts=pText.split('. ').map((s,i,a)=>i<a.length-1?s+'.':s).filter(Boolean);
+      let _fit=null;
+      for(let _n=_parts.length-1;_n>=1 && !_fit;_n--){
+        const _try=wrapText(_parts.slice(0,_n).join(' ')+' …',_pW,pFS,false,false);
+        if(_try.length<=_pMaxLines) _fit=_try;
+      }
+      // Last resort (even a single sentence overflows): hard line-clip. Note
+      // wrapText breaks only on whitespace, so this never splits a word.
+      pLines = _fit || pLines.slice(0,_pMaxLines);
+      _pClipped = true;
+    }
   }
+
+  // Finalise the legibility warning: too small to fit at the legible floor, or
+  // one or more P statements were clipped.
+  window._labelLegibilityWarn = !_fitsAtMin || _pClipped;
 
   const showP   = pLines.length > 0;
 
@@ -3111,7 +3131,8 @@ function buildSVG(forExport=false){
     const availW = chordAtY * 0.88;
     // Final fit at actual Y — catches any rounding
     const fs = fitFont(elem.text, availW, elem.fs, Math.max(minFooterFS * 0.5, 1.5), elem.bold, false);
-    return`<text x="${cx}" y="${elem.slotY.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${fs.toFixed(2)}" font-weight="${elem.isPhone?'600':'400'}" fill="${elem.isPhone?txtCol:mutedCol}" text-anchor="middle" dominant-baseline="middle">${xe(elem.text)}</text>`;
+    // CLP compliance: all supplier/footer text must be solid black, not muted.
+    return`<text x="${cx}" y="${elem.slotY.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${fs.toFixed(2)}" font-weight="${elem.isPhone?'600':'400'}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(elem.text)}</text>`;
   }).join('');
 
   // ── EN 15494:2019 CANDLE SAFETY PICTOGRAMS ────────────────────
@@ -3191,7 +3212,7 @@ function buildSVG(forExport=false){
     ? svgArcText(scent, cx, cy, Math.min(pw,ph)/2, scentFS, txtCol, Math.min(1.1, 38/mmW))
     : svgWrapped(scentLines,cx,scentTopY,scentLH,scentFS,true,true,txtCol)}
   ${svgWrapped([bizName],cx,_bizYf,_bizFSf*1.2,_bizFSf,true,true,txtCol)}
-  ${webLine?`<text x="${cx}" y="${_webYf.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${_webFSf.toFixed(2)}" fill="${mutedCol}" text-anchor="middle" dominant-baseline="middle">${xe(webLine)}</text>`:''}
+  ${webLine?`<text x="${cx}" y="${_webYf.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${_webFSf.toFixed(2)}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(webLine)}</text>`:''}
 
   <!-- PRODUCT TYPE -->
   <text x="${cx}" y="${typeY.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${typeFS.toFixed(2)}" font-weight="700" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle" letter-spacing="0.6">${xe(type)}</text>
