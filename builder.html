@@ -2898,124 +2898,89 @@ function buildSVG(forExport=false){
   const _euhSuffix = hasEUH208 ? 'May produce an allergic reaction.' : '';
   const sensText = [_sensBase, _euhSuffix].filter(Boolean).join(' ');
 
-  // ── UNIFIED FILL SIZING ──────────────────────────────────────────────────────
-  // Strategy: back-calculate font size from available height and total line count.
-  // 1. Estimate line counts at a reference size to get the line-count ratio.
-  // 2. Derive ideal font size from: availableH / (totalLines * lineSpacing + gaps).
-  // 3. Step down in 0.1pt increments until the content genuinely fits.
-  // 4. Never expand beyond what fits — the geometry is the only constraint.
+  // ── HAZARD TEXT AUTO-SIZING ──────────────────────────────────────────────
+  // Spec: CLPeasy SVG Hazard Label Auto-Sizing Requirements
   //
-  // Per-block chord widths at estimated zone positions (circles narrow toward edges;
-  // rectangles/squares return constant sW via the chordW branch for non-circle shapes).
-  const _hSW  = chordW(curY + _hpSensAvail*0.15, 0.08);
-  const _sSW  = chordW(curY + _hpSensAvail*0.55, 0.08);
-  const _pSW  = chordW(curY + _hpSensAvail*0.80, 0.08);
+  // 1. Binary search for largest font size fitting all three blocks within
+  //    _hpSensAvail with one line-height breathing room beneath.
+  // 2. Per-line chord width on circles; constant width for rect/square.
+  // 3. Vertical centring: distribute unused space equally above and below.
+  // 4. Hard minimum 6px — warn user if content cannot fit legibly.
 
-  const _sharedFSMin = clamp(BASE*0.012, 1.0, 2.5);
-  const hFSMin = clamp(BASE*0.016, 1.2, 3.5);
-  const pFSMin = _sharedFSMin;
+  const _minLegibleFS = 6;
+  const hFSMin = _minLegibleFS;
+  const pFSMin = _minLegibleFS;
 
-  // Step 1 — count lines at TWO reference sizes and use the higher line count.
-  // Using two sizes guards against the case where _refFS is too large and wraps
-  // fewer lines than the ideal size would, causing idealFS to be underestimated.
-  const _refFS  = clamp(BASE*0.020, 2.0, 4.5); // conservative reference: more lines = lower idealFS = larger text
-  const _refFS2 = clamp(BASE*0.030, 2.5, 7.0); // second reference for comparison
-  const _hRefN  = hText    ? Math.max(wrapText(hText,    _hSW*0.92, _refFS, false, false).length, wrapText(hText,    _hSW*0.92, _refFS2, false, false).length) : 0;
-  const _sRefN  = sensText ? Math.max(wrapText(sensText,  _sSW*0.82, _refFS, false, false).length, wrapText(sensText,  _sSW*0.82, _refFS2, false, false).length) : 0;
-  const _pRefN  = pText    ? Math.max(wrapText(pText,     _pSW*0.90, _refFS, false, false).length, wrapText(pText,     _pSW*0.90, _refFS2, false, false).length) : 0;
-
-  // Step 2 — back-calculate ideal font size
-  // Total height = hLines*hLH + gap + sLines*sLH + gap + pLines*pLH
-  // hLH = fs*1.25, sLH = fs*1.25, pLH = fs*1.15
-  // gaps: hLH*0.3 after H (if H exists and something follows),
-  //       sLH*0.2 after sens (if sens exists and P follows)
-  const _gapH  = (_hRefN>0 && (_sRefN>0||_pRefN>0)) ? 0.3*1.25 : 0; // gap as multiple of fs
-  const _gapS  = (_sRefN>0 && _pRefN>0)              ? 0.2*1.25 : 0;
-  const _gapHP = (_hRefN>0 && _pRefN>0 && _sRefN===0)? 0.3*1.25 : 0;
-  const _totalFSMultiple = _hRefN*1.25 + _sRefN*1.25 + _pRefN*1.15 + _gapH + _gapS + _gapHP;
-  // Ideal fs: fill to within one pLH (fs*1.15) of botY for breathing room
-  const _idealFS = _totalFSMultiple > 0
-    ? _hpSensAvail / (_totalFSMultiple + 1.15) // +1.15 = one line breathing room
-    : clamp(BASE*0.040, 3, 10);
-
-  // Step 3 — start at ideal (clamped to a sensible max) and step down 0.1pt until fits
-  const _sharedFSMax = clamp(_idealFS, _sharedFSMin, clamp(BASE*0.13, 4, 22));
-  let _sharedFS = _sharedFSMax;
-  while(_sharedFS > _sharedFSMin){
-    const _hH = hText    ? wrapText(hText,    _hSW*0.92, _sharedFS, false, false).length * _sharedFS*1.25 : 0;
-    const _sH = sensText ? wrapText(sensText,  _sSW*0.82, _sharedFS, false, false).length * _sharedFS*1.25 : 0;
-    const _pH = pText    ? wrapText(pText,     _pSW*0.90, _sharedFS, false, false).length * _sharedFS*1.15 : 0;
-    const _gHS = (_hH>0&&(_sH>0||_pH>0)) ? _sharedFS*1.25*0.3 : 0;
-    const _gSP = (_sH>0&&_pH>0)          ? _sharedFS*1.25*0.2 : 0;
-    const _gHP = (_hH>0&&_pH>0&&_sH===0) ? _sharedFS*1.25*0.3 : 0;
-    const _total = _hH + _sH + _pH + _gHS + _gSP + _gHP;
-    // Must fit within available space leaving one P-line-height of breathing room
-    if(_total <= _hpSensAvail - _sharedFS*1.15) break;
-    _sharedFS = Math.max(_sharedFS - 0.1, _sharedFSMin);
-  }
-
-  // Apply shared font size and flow sequentially
-  // Vertical centering: distribute slack evenly above and below the text block
-  // so the text fills the zone rather than sitting at the top with a gap at the bottom.
-  {
-    const _hHf = hText    ? wrapText(hText,    _hSW*0.92, _sharedFS, false, false).length * _sharedFS*1.25 : 0;
-    const _sHf = sensText ? wrapText(sensText,  _sSW*0.82, _sharedFS, false, false).length * _sharedFS*1.25 : 0;
-    const _pHf = pText    ? wrapText(pText,     _pSW*0.90, _sharedFS, false, false).length * _sharedFS*1.15 : 0;
-    const _gHSf = (_hHf>0&&(_sHf>0||_pHf>0)) ? _sharedFS*1.25*0.3 : 0;
-    const _gSPf = (_sHf>0&&_pHf>0)           ? _sharedFS*1.25*0.2 : 0;
-    const _gHPf = (_hHf>0&&_pHf>0&&_sHf===0) ? _sharedFS*1.25*0.3 : 0;
-    const _totalBlockH = _hHf + _sHf + _pHf + _gHSf + _gSPf + _gHPf;
-    const _slack = _hpSensAvail - _totalBlockH;
-    // Push curY down by half the slack to centre vertically (min 0, max half avail)
-    curY += Math.max(0, Math.min(_slack * 0.5, _hpSensAvail * 0.25));
-  }
-  let hFS = _sharedFS, hLH = hFS*1.25, hLines = [];
-  let sensFS = _sharedFS, sensLH = sensFS*1.25;
-  let pFS = _sharedFS, pLH = pFS*1.15, pLines = [];
-
-  const hSW = chordW(curY + _hpSensAvail*0.15, 0.08);
-  if(hText){
-    hLines = wrapText(hText, hSW*0.92, hFS, false, false);
-  }
-  const hY = curY + hLH*0.5;
-  const _hActual = hLines.length * hLH;
-  curY += _hActual + (hLines.length>0 && (sensText||pText) ? hLH*0.3 : 0);
-
-  const sensSW = chordW(curY + _hpSensAvail*0.10, 0.08);
-  const sensLines = _sensBase ? wrapText(_sensBase, sensSW*0.82, sensFS, false, false) : [];
-  const euhLines  = _euhSuffix ? wrapText(_euhSuffix, sensSW*0.82, sensFS, false, false) : [];
-  const allSensLines = [...sensLines, ...euhLines];
-  const sensStY = curY + sensLH*0.5;
-  const _sActual = allSensLines.length * sensLH;
-  curY += _sActual + (allSensLines.length>0 && pText ? sensLH*0.2 : 0);
-
-  const _pAvail = Math.max(botY - curY - pLH, 2);
-  const pSW = chordW(curY + _pAvail*0.5, 0.08);
-  if(pText){
-    pLines = wrapText(pText, pSW*0.90, pFS, false, false);
-    // Safety net: shrink P only if it genuinely overflows after the fill pass
-    while(pLines.length * pLH > _pAvail && pFS > pFSMin){
-      pFS = Math.max(pFS - 0.1, pFSMin);
-      pLH = pFS * 1.15;
-      pLines = wrapText(pText, pSW*0.90, pFS, false, false);
+  // Helper: total rendered height of all three blocks at font size fs.
+  // Tracks Y position to use accurate per-line chord width on circles.
+  function _blockH(fs, y0) {
+    const hLH = fs*1.25, sLH = fs*1.25, pLH = fs*1.15;
+    let h=0, y=y0;
+    if(hText){
+      const sw=chordW(y+hLH*0.5,0.08)*0.92;
+      const n=wrapText(hText,sw,fs,false,false).length;
+      h+=n*hLH; y+=n*hLH;
+      if(sensText||pText){h+=hLH*0.3;y+=hLH*0.3;}
     }
-    // Re-equalise H and sensitiser if P safety net fired
-    if(pFS < hFS){
-      hFS = pFS; hLH = hFS*1.25;
-      if(hText) hLines = wrapText(hText, hSW*0.92, hFS, false, false);
-      sensFS = pFS; sensLH = sensFS*1.25;
-      if(sensText){
-        const _ns2=_sensBase?wrapText(_sensBase,sensSW*0.82,sensFS,false,false):[];
-        const _ne2=_euhSuffix?wrapText(_euhSuffix,sensSW*0.82,sensFS,false,false):[];
-        allSensLines.length=0;_ns2.forEach(l=>allSensLines.push(l));_ne2.forEach(l=>allSensLines.push(l));
-      }
+    if(sensText){
+      const sw=chordW(y+sLH*0.5,0.08)*0.82;
+      const nb=_sensBase?wrapText(_sensBase,sw,fs,false,false).length:0;
+      const ne=_euhSuffix?wrapText(_euhSuffix,sw,fs,false,false).length:0;
+      h+=(nb+ne)*sLH; y+=(nb+ne)*sLH;
+      if(pText){h+=sLH*0.2;y+=sLH*0.2;}
     }
+    if(pText){
+      const sw=chordW(y+pLH*0.5,0.08)*0.90;
+      h+=wrapText(pText,sw,fs,false,false).length*pLH;
+    }
+    return h;
   }
 
-  // Flag for UI warning: true if H or P text bottomed out at its minimum legible size
-  window._labelLegibilityWarn = (!!hText && hFS<=hFSMin+0.05) || (!!pText && pFS<=pFSMin+0.05);
-  const _pBlockH = pLines.length * pLH;
-  const pStY    = curY + pLH*0.5;
+  // Binary search: fit rule = blockH(fs) + fs*1.15 <= _hpSensAvail
+  const _curY0 = curY;
+  let _bsLo=_minLegibleFS, _bsHi=clamp(BASE*0.13,8,28);
+  while(_bsHi>_bsLo && _blockH(_bsHi,_curY0)+_bsHi*1.15>_hpSensAvail) _bsHi-=1;
+  for(let _i=0;_i<30;_i++){
+    const _mid=(_bsLo+_bsHi)/2;
+    if(_blockH(_mid,_curY0)+_mid*1.15<=_hpSensAvail) _bsLo=_mid; else _bsHi=_mid;
+    if(_bsHi-_bsLo<0.05) break;
+  }
+  const _sharedFS=_bsLo;
+
+  // Vertical centring: push curY down by half the remaining slack
+  const _finalBlockH=_blockH(_sharedFS,_curY0);
+  const _vSlack=_hpSensAvail-_finalBlockH-_sharedFS*1.15;
+  curY=_curY0+Math.max(0,_vSlack*0.5);
+
+  // Render each block sequentially at shared font size
+  let hFS=_sharedFS, hLH=hFS*1.25, hLines=[];
+  let sensFS=_sharedFS, sensLH=sensFS*1.25;
+  let pFS=_sharedFS, pLH=pFS*1.15, pLines=[];
+
+  const hSW=chordW(curY+hLH*0.5,0.08);
+  if(hText) hLines=wrapText(hText,hSW*0.92,hFS,false,false);
+  const hY=curY+hLH*0.5;
+  const _hActual=hLines.length*hLH;
+  curY+=_hActual+(hLines.length>0&&(sensText||pText)?hLH*0.3:0);
+
+  const sensSW=chordW(curY+sensLH*0.5,0.08);
+  const sensLines=_sensBase?wrapText(_sensBase,sensSW*0.82,sensFS,false,false):[];
+  const euhLines=_euhSuffix?wrapText(_euhSuffix,sensSW*0.82,sensFS,false,false):[];
+  const allSensLines=[...sensLines,...euhLines];
+  const sensStY=curY+sensLH*0.5;
+  const _sActual=allSensLines.length*sensLH;
+  curY+=_sActual+(allSensLines.length>0&&pText?sensLH*0.2:0);
+
+  const _pAvail=Math.max(botY-curY-pLH,2);
+  const pSW=chordW(curY+pLH*0.5,0.08);
+  if(pText) pLines=wrapText(pText,pSW*0.90,pFS,false,false);
+
+  // Legibility warning
+  window._labelLegibilityWarn=_sharedFS<_minLegibleFS+0.05;
+  const _pBlockH=pLines.length*pLH;
+  const pStY=curY+pLH*0.5;
+
+
   const showP   = pLines.length > 0;
 
   // ── RENDER PICTOGRAMS — wraps into rows, each row centered, never below 10mm ──
@@ -3038,10 +3003,20 @@ function buildSVG(forExport=false){
   // ── FOOTER BAND: wrapped address support ─────────────────────
   // _bcfRowH is calculated later in the EN15494 section; initialise to 0 here
   // and it will be updated before rendering (both sections are in same scope)
+  // Pre-calculate _bcfRowH so footer slots sit correctly below EN15494 row
   let _bcfRowH = 0;
-  const fTopPad = botH * 0.06; // will be offset by _bcfRowH after BCF section
+  if(!S.hideEN15494){
+    const _bcfMinDimPre = Math.min(mmW, mmH);
+    const _bcfMmCapPre  = _bcfMinDimPre <= 35 ? 4 : _bcfMinDimPre <= 50 ? 5.5 : 8;
+    const _bcfMaxSzPre  = Math.min(sW * 0.07, _bcfMmCapPre * pxPerMm);
+    const _bcfTotWPre   = 5 * _bcfMaxSzPre + 4 * (_bcfMaxSzPre * 0.25);
+    if(_bcfTotWPre <= sW * 0.82){
+      _bcfRowH = Math.min(_bcfMaxSzPre * 1.5, botH * 0.45);
+    }
+  }
+  const fTopPad = botH * 0.06;
   const fBotPad = botH * 0.06;
-  const fUsable = botH - fTopPad - fBotPad;
+  const fUsable = botH - fTopPad - fBotPad - _bcfRowH; // EN15494 row reserved
   const maxFooterFS  = clamp(BASE*0.036, 3, 7.5);
   const minFooterFS  = clamp(BASE*0.022, 2, 4.5);
 
