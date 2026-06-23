@@ -8,3 +8,7 @@ Backups/Advertising Campaign/Supplier targeting/Featured supplier opportunity.tx
 files.zip
 Test/builder.html
 Test/pricing.html
+
+# Puppeteer test deps & artifacts
+node_modules/
+test-*.png
