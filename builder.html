@@ -2947,10 +2947,11 @@ function buildSVG(forExport=false){
   }
   const _sharedFS=_bsLo;
 
-  // Vertical centring: push curY down by half the remaining slack
+  // Vertical centring: distribute slack evenly, capped to prevent
+  // text encroaching on the pictogram zone above.
   const _finalBlockH=_blockH(_sharedFS,_curY0);
-  const _vSlack=_hpSensAvail-_finalBlockH-_sharedFS*1.15;
-  curY=_curY0+Math.max(0,_vSlack*0.5);
+  const _vSlack=Math.max(0,_hpSensAvail-_finalBlockH-_sharedFS*1.15);
+  curY=_curY0+_vSlack*0.5; // centre: half slack above, half below
 
   // Render each block sequentially at shared font size
   let hFS=_sharedFS, hLH=hFS*1.25, hLines=[];
@@ -2971,9 +2972,15 @@ function buildSVG(forExport=false){
   const _sActual=allSensLines.length*sensLH;
   curY+=_sActual+(allSensLines.length>0&&pText?sensLH*0.2:0);
 
+  // P block: hard cap at botY minus one breathing line-height
   const _pAvail=Math.max(botY-curY-pLH,2);
-  const pSW=chordW(curY+pLH*0.5,0.08);
-  if(pText) pLines=wrapText(pText,pSW*0.90,pFS,false,false);
+  const pSW=chordW(Math.min(curY+_pAvail*0.5,botY-pLH),0.08);
+  if(pText){
+    pLines=wrapText(pText,pSW*0.90,pFS,false,false);
+    // Hard enforce: truncate P lines to never exceed botY
+    const _pMaxLines=Math.max(1,Math.floor(_pAvail/pLH));
+    if(pLines.length>_pMaxLines) pLines=pLines.slice(0,_pMaxLines);
+  }
 
   // Legibility warning
   window._labelLegibilityWarn=_sharedFS<_minLegibleFS+0.05;
