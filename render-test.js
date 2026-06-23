@@ -63,7 +63,23 @@ const CASES = [
     const el = await page.$('svg');
     const out = path.resolve(__dirname, `test-${c.name}.png`);
     await el.screenshot({ path: out });
-    console.log(`${c.name}: legibilityWarn=${result.warn}  -> ${out}`);
+
+    // Measure the vertical gap between the website URL (header) and the
+    // product type ("SCENTED CANDLE") line beneath it.
+    const svg = result.svg;
+    const textBox = (frag) => {
+      const i = svg.indexOf('>' + frag + '<');
+      if (i < 0) return null;
+      const tagStart = svg.lastIndexOf('<text', i);
+      const tag = svg.slice(tagStart, i);
+      const y = parseFloat((tag.match(/y="([\d.]+)"/) || [])[1]);
+      const fs = parseFloat((tag.match(/font-size="([\d.]+)"/) || [])[1]);
+      return { top: y - fs / 2, bottom: y + fs / 2, y, fs };
+    };
+    const web = textBox('craftymousegifts.co.uk');
+    const type = textBox('SCENTED CANDLE');
+    const gap = web && type ? (type.top - web.bottom).toFixed(1) : '?';
+    console.log(`${c.name}: legibilityWarn=${result.warn}  urlBottom=${web?web.bottom.toFixed(1):'?'}  typeTop=${type?type.top.toFixed(1):'?'}  gap=${gap}px  -> ${out}`);
   }
 
   await browser.close();
