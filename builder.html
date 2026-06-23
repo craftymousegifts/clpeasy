@@ -2865,6 +2865,21 @@ function buildSVG(forExport=false){
     }
   }
 
+  // ── HEADER → MID-BAND BREATHING ──────────────────────────────
+  // The product type slot is nudged upward; combined with the website sitting
+  // low in the header band, the URL and the product type can end up almost
+  // touching (esp. circles). Push the whole mid-band down by just enough to
+  // open a clear gap below the header. Everything below derives from curY, so
+  // internal spacing is preserved — only the slack-rich H/sens/P region shrinks.
+  {
+    const _hdrBottom  = webLine ? _webYf + _webFSf*0.5 : _bizYf + _bizFSf*0.5;
+    const _typeFSest  = Math.min(slot.type*0.68*1.5, clamp(BASE*0.060*1.5,4,21));
+    const _typeTopNat = curY + slot.type*0.5 + midH*0.15*(0.6-1) - _typeFSest*0.5;
+    const _wantGap    = Math.max(midH*0.07, topH*0.08);
+    const _pad        = Math.max(0, Math.min((_hdrBottom + _wantGap) - _typeTopNat, midH*0.12));
+    curY += _pad;
+  }
+
   // Product type
   const typeSW  = chordW(curY + slot.type*0.5, 0.09);
   const typeFS  = Math.min(slot.type * 0.68 * 1.5, fitFont(type, typeSW*0.88, clamp(BASE*0.060*1.5,4,14*1.5), clamp(BASE*0.028,2.5,6), true, false));
