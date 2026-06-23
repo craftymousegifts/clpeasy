@@ -2665,6 +2665,7 @@ function buildSVG(forExport=false){
   const cx=pw/2,cy=ph/2;
   const isCircle=S.shape==='circle';
   const isSquare=S.shape==='square';
+  const _isRect=!isCircle&&!isSquare;
 
   // ── SHAPE GEOMETRY ───────────────────────────────────────────
   // Circle: radius, inset boundary for text
@@ -2706,7 +2707,9 @@ function buildSVG(forExport=false){
   // Top band: biz name + website
   // Bottom band: address, phone, detail
   // Mid band: everything else
-  const topFrac = 0.28;  // scent + biz + web all in top band
+  // Rectangles are wide+short: their mid-band is proportionally tight, so give
+  // the header a smaller share there to free room for the mandatory hazard text.
+  const topFrac = _isRect ? 0.24 : 0.28;  // scent + biz + web all in top band
   // For candles: reserve 7% of shape height at bottom for EN 15494 pictogram row
   const _showBCF = _isCandle && !S.hideEN15494 && mmW >= 40 && mmH >= 40;
   const botFrac = _showBCF ? 0.22 : 0.17; // smaller footer when no EN 15494 row needed
@@ -2875,8 +2878,11 @@ function buildSVG(forExport=false){
     const _hdrBottom  = webLine ? _webYf + _webFSf*0.5 : _bizYf + _bizFSf*0.5;
     const _typeFSest  = Math.min(slot.type*0.68*1.5, clamp(BASE*0.060*1.5,4,21));
     const _typeTopNat = curY + slot.type*0.5 + midH*0.15*(0.6-1) - _typeFSest*0.5;
-    const _wantGap    = Math.max(midH*0.07, topH*0.08);
-    const _pad        = Math.max(0, Math.min((_hdrBottom + _wantGap) - _typeTopNat, midH*0.12));
+    // On the tight rectangle mid-band, cap the breathing pad smaller so it
+    // doesn't steal room the mandatory hazard text needs (still a visible gap).
+    const _wantGap    = _isRect ? Math.max(midH*0.05, topH*0.06) : Math.max(midH*0.07, topH*0.08);
+    const _padCap     = _isRect ? midH*0.06 : midH*0.12;
+    const _pad        = Math.max(0, Math.min((_hdrBottom + _wantGap) - _typeTopNat, _padCap));
     curY += _pad;
   }
 
@@ -2991,9 +2997,12 @@ function buildSVG(forExport=false){
     return {fs,hLH,sLH,pLH,hLines,hStartY,allS,sStartY,pLines,pStartY,endY:y};
   }
 
-  // Fit = block laid from the top of the avail zone ends at/above botY minus
-  // half a line-height of breathing room.
-  const _fits=(fs)=> _layoutHazard(fs,_curY0).endY <= _hardBot - fs*0.5;
+  // Fit = block laid from the top of the avail zone ends at/above botY minus a
+  // small breathing margin. (The P block is also hard-clipped to botY below, so
+  // this margin only governs aesthetics/warning, not overflow — keep it modest
+  // so a block that genuinely fits doesn't trip a false legibility warning.)
+  const _fitMargin=(fs)=> fs*0.3;
+  const _fits=(fs)=> _layoutHazard(fs,_curY0).endY <= _hardBot - _fitMargin(fs);
 
   // Binary search for the largest fitting font size.
   let _bsLo=_minLegibleFS, _bsHi=clamp(BASE*0.13,8,28);
@@ -3018,7 +3027,7 @@ function buildSVG(forExport=false){
 
   // Vertical centring: re-lay from a Y offset by half the leftover slack.
   const _topLayout=_layoutHazard(_sharedFS,_curY0);
-  const _slack=Math.max(0,(_hardBot - _sharedFS*0.5) - _topLayout.endY);
+  const _slack=Math.max(0,(_hardBot - _fitMargin(_sharedFS)) - _topLayout.endY);
   let _L=_layoutHazard(_sharedFS,_curY0+_slack*0.5);
   // Safety: if centring shifted line-wrapping enough to cross botY (possible on
   // circles as chord width changes), fall back to the top-aligned layout.
