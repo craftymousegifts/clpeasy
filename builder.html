@@ -892,8 +892,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="preview-footer">
     <div class="preview-size-info" id="preview-size-info">Print size: 35 × 35mm</div>
     <div class="dl-row" id="preview-dl-row" style="display:none;">
-      <button class="btn-dl" onclick="downloadPNG()">⬇ PNG</button>
-      <button class="btn-dl-svg" onclick="downloadSVG()">⬡ SVG</button>
+      <button class="btn-dl" id="btn-dl-png" style="opacity:0.4;pointer-events:none;cursor:not-allowed;" aria-disabled="true" onclick="downloadPNG()">⬇ PNG</button>
+      <button class="btn-dl-svg" id="btn-dl-svg" style="opacity:0.4;pointer-events:none;cursor:not-allowed;" aria-disabled="true" onclick="downloadSVG()">⬡ SVG</button>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
 
@@ -915,8 +915,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="preview-sheet-label" id="sheet-label-container"></div>
     <div style="font-size:12px;color:rgba(255,255,255,0.4);text-align:center;margin-bottom:4px;" id="sheet-size-info"></div>
     <div class="preview-sheet-actions">
-      <button class="btn-dl" onclick="downloadPNG();closeSheet()">⬇ PNG (single)</button>
-      <button class="btn-dl-svg" onclick="downloadSVG();closeSheet()">⬡ SVG</button>
+      <button class="btn-dl" id="btn-sheet-png" style="opacity:0.4;pointer-events:none;cursor:not-allowed;" aria-disabled="true" onclick="downloadPNG();closeSheet()">⬇ PNG (single)</button>
+      <button class="btn-dl-svg" id="btn-sheet-svg" style="opacity:0.4;pointer-events:none;cursor:not-allowed;" aria-disabled="true" onclick="downloadSVG();closeSheet()">⬡ SVG</button>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
 
@@ -1093,7 +1093,7 @@ function setBorder(show){
 }
 
 // ── JPEG DOWNLOAD ─────────────────────────────────────────────
-async function downloadJPEG(){plausible('Label Downloaded',{props:{format:'JPEG'}});
+async function downloadJPEG(){if(!_downloadAllowed())return;plausible('Label Downloaded',{props:{format:'JPEG'}});
   await ensureFontsLoaded(); // wait for DM Sans before rasterising
   readForm();
   const{mmW,mmH,pw,ph}=getDims();
@@ -1982,7 +1982,7 @@ function forceGoToStep(n){
   if(n===5){buildSummary();
     const dlRow=document.getElementById('preview-dl-row');
     if(dlRow)dlRow.style.display='flex';
-    
+    toggleDownload(); // sync button enabled/greyed state with the compliance checkbox
   }
   updateLabel();
   window.scrollTo(0,0);
@@ -2194,15 +2194,26 @@ function buildSensitiserChips(){
     `<div class="s-chip cat${s.cat.toLowerCase().replace(/\./g,'').replace(' ','')} " data-name="${s.name}" style="cursor:default;pointer-events:none;opacity:0.75;"><span class="s-name">${s.name}</span><span class="s-cat">Skin Sens. ${s.cat}</span></div>`
   ).join('');
 }
+// All download/output buttons gated behind the compliance confirmation checkbox.
+const _DOWNLOAD_BTN_IDS=['btn-png','btn-jpeg','btn-svg','btn-pdf','btn-save','btn-dl-png','btn-dl-svg','btn-sheet-png','btn-sheet-svg'];
 function toggleDownload(){
-  const checked=document.getElementById('verify-checkbox')?.checked;
-  const btns=['btn-png','btn-jpeg','btn-svg','btn-pdf','btn-save'];
-  btns.forEach(id=>{
+  const checked=!!document.getElementById('verify-checkbox')?.checked;
+  _DOWNLOAD_BTN_IDS.forEach(id=>{
     const btn=document.getElementById(id);
     if(!btn)return;
     btn.style.opacity=checked?'1':'0.4';
     btn.style.pointerEvents=checked?'auto':'none';
+    btn.style.cursor=checked?'pointer':'not-allowed';
+    if(checked)btn.removeAttribute('aria-disabled');else btn.setAttribute('aria-disabled','true');
   });
+}
+// Defensive guard: block every download entry point until the box is ticked,
+// even if a button is reached some other way. Returns true if allowed.
+function _downloadAllowed(){
+  if(document.getElementById('verify-checkbox')?.checked)return true;
+  toggleDownload(); // keep button states in sync
+  alert('⚠️ Please tick the compliance confirmation checkbox to confirm you have verified your hazard data before downloading.');
+  return false;
 }
 function toggleLib(id,tog){
   const el=document.getElementById(id);
@@ -2386,7 +2397,7 @@ function goToStep(n){if(n>S.step+1)return;S.step=n;
   const dlRow=document.getElementById('preview-dl-row');
   if(dlRow)dlRow.style.display=(n===5)?'flex':'none';
   const mobileDlRow=document.getElementById('mobile-dl-row');
-  if(mobileDlRow)mobileDlRow.style.display=(n===5)?'flex':'none';document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+n).classList.add('active');updateStepsBar();if(n===5)buildSummary();updateLabel();if(n===3){const cb=document.getElementById('hazard-confirm');const btn=document.getElementById('btn-next-step3');if(cb){cb.checked=false;}if(btn){btn.style.opacity='0.4';btn.style.pointerEvents='none';}}}
+  if(mobileDlRow)mobileDlRow.style.display=(n===5)?'flex':'none';document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+n).classList.add('active');updateStepsBar();if(n===5){buildSummary();toggleDownload();}updateLabel();if(n===3){const cb=document.getElementById('hazard-confirm');const btn=document.getElementById('btn-next-step3');if(cb){cb.checked=false;}if(btn){btn.style.opacity='0.4';btn.style.pointerEvents='none';}}}
 function nextStep(){if(S.step<5){plausible('Builder: Step '+(S.step+1),{props:{from_step:String(S.step)}});goToStep(S.step+1);window.scrollTo({top:0,behavior:'smooth'});}}
 function checkStep2Next(){
   const scent=document.getElementById('scent-name')?.value.trim();
@@ -2549,8 +2560,7 @@ function clearHazardData(){
   // Re-lock the download button
   const verifyBox = document.getElementById('verify-checkbox');
   if(verifyBox) verifyBox.checked = false;
-  const btns=['btn-png','btn-jpeg','btn-svg','btn-pdf','btn-save'];
-  btns.forEach(id=>{const b=document.getElementById(id);if(b){b.style.opacity='0.4';b.style.pointerEvents='none';}});
+  toggleDownload(); // re-lock all download buttons (greyed) until re-confirmed
 }
 function updateStepsBar(){
   document.querySelectorAll('.step-item').forEach(el=>{const n=parseInt(el.dataset.step);el.classList.remove('active','done','inactive');if(n<S.step){el.classList.add('done');el.querySelector('.step-circle').textContent='✓';}else if(n===S.step)el.classList.add('active');else el.classList.add('inactive');});
@@ -3466,7 +3476,7 @@ async function ensureFontsLoaded(){
   }catch(e){}
 }
 
-async function downloadPNG(){plausible('Label Downloaded',{props:{format:'PNG'}});
+async function downloadPNG(){if(!_downloadAllowed())return;plausible('Label Downloaded',{props:{format:'PNG'}});
   await ensureFontsLoaded();
   readForm();
   const{mmW,mmH,pw,ph}=getDims();
@@ -3534,7 +3544,7 @@ async function downloadPNG(){plausible('Label Downloaded',{props:{format:'PNG'}}
 }
 
 // ── SVG DOWNLOAD ──────────────────────────────────────────────
-function downloadSVG(){plausible('Label Downloaded',{props:{format:'SVG'}});
+function downloadSVG(){if(!_downloadAllowed())return;plausible('Label Downloaded',{props:{format:'SVG'}});
   try{
     readForm();
     const{mmW,mmH,pw,ph}=getDims();
