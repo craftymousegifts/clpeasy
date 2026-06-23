@@ -2952,30 +2952,28 @@ function buildSVG(forExport=false){
   const sensText = [_sensBase, _euhSuffix].filter(Boolean).join(' ');
 
   // ── HAZARD TEXT AUTO-SIZING ──────────────────────────────────────────────
-  // Spec: CLPeasy SVG Hazard Label Auto-Sizing Requirements
+  // Mandatory hazard content (H + sensitiser + P) is ALWAYS rendered in full and
+  // is NEVER dropped or truncated — a GB CLP label must carry every hazard and
+  // precautionary statement. The font is shrunk as needed so the whole block
+  // fits between curY (below the pictograms) and botY, however small.
   //
-  // 1. Binary search for the largest font size at which H + sensitiser + P all
-  //    fit between curY (below the pictograms) and the hard botY boundary,
-  //    with one line-height of breathing room beneath.
-  // 2. Per-line chord width on circles; constant width for rect/square — the
-  //    same layout pass is used for measuring AND rendering, so the measured
-  //    height can never diverge from what is drawn.
-  // 3. Vertical centring: distribute unused space equally above and below.
-  // 4. The legibility warning fires ONLY when the content cannot fit even at
-  //    the minimum legible size; below that, P is hard-clipped to botY so it
-  //    can never spill into the pictogram / footer zone beneath.
+  // The 1.2mm x-height (CLP Delegated Regulation (EU) 2024/2865, packaging ≤3 L)
+  // is a LEGIBILITY-WARNING threshold, not a render floor: if the fitted text is
+  // smaller than that, everything is still drawn and the warning is raised so the
+  // maker can choose a larger label or add a fold-out leaflet.
+  //
+  // The same layout pass is used for measuring and rendering (per-line chord
+  // width on circles, constant width on rect/square) so measured == drawn.
 
   const _curY0 = curY;
   const _hardBot = botY;                       // text must never cross this
-  // Minimum legible font size, derived from a printed x-height floor.
-  // CLP Delegated Regulation (EU) 2024/2865 requires a lowercase x-height of at
-  // least 1.2 mm for packaging up to 3 L (candles/wax melts). DM Sans' x-height
-  // is ~0.51 of its em, so the floor font size = 1.2 / 0.51 ≈ 2.35 mm. Font
-  // sizes here are in viewBox user units where 1 mm = _pxPerMm units, so the
-  // floor scales correctly to the same physical size at any print DPI.
-  const _MIN_XHEIGHT_MM = 1.2;                 // CLP 2024/2865 minimum
   const _XHEIGHT_RATIO  = 0.51;                // DM Sans lowercase x-height / em
-  const _minLegibleFS = (_MIN_XHEIGHT_MM / _XHEIGHT_RATIO) * _pxPerMm;
+  const _MIN_XHEIGHT_MM = 1.2;                 // CLP 2024/2865 legibility minimum
+  // Font size whose x-height equals the legibility threshold; warn below this.
+  const _legibleFS = (_MIN_XHEIGHT_MM / _XHEIGHT_RATIO) * _pxPerMm;
+  // Render floor: deliberately tiny so the full block always fits and nothing is
+  // ever dropped. Needing a font this small is itself the trigger for the warning.
+  const _renderFloorFS = 0.5;
 
   // Single source of truth — lay the three blocks out exactly as they render.
   // Returns each block's lines, its first-line centre Y, and the Y after the
@@ -3021,27 +3019,19 @@ function buildSVG(forExport=false){
   const _fitMargin=(fs)=> fs*0.3;
   const _fits=(fs)=> _layoutHazard(fs,_curY0).endY <= _hardBot - _fitMargin(fs);
 
-  // Binary search for the largest fitting font size. The ceiling can never be
-  // below the legible floor (matters on tiny labels where the floor is large).
-  let _bsLo=_minLegibleFS, _bsHi=Math.max(clamp(BASE*0.13,8,28), _minLegibleFS);
-  const _fitsAtMin=_fits(_minLegibleFS);
-  if(!_fitsAtMin){
-    _bsLo=_bsHi=_minLegibleFS;                 // cannot fit even at the floor
-  } else if(_fits(_bsHi)){
+  // Binary search for the LARGEST font that fits the full block, down to the
+  // tiny render floor so all mandatory content is always shown.
+  let _bsLo=_renderFloorFS, _bsHi=Math.max(clamp(BASE*0.13,8,28), _renderFloorFS);
+  if(_fits(_bsHi)){
     _bsLo=_bsHi;                               // even the ceiling fits
-  } else {
+  } else if(_fits(_bsLo)){
     for(let _i=0;_i<40;_i++){
       const _mid=(_bsLo+_bsHi)/2;
       if(_fits(_mid)) _bsLo=_mid; else _bsHi=_mid;
       if(_bsHi-_bsLo<0.05) break;
     }
-  }
+  } // else: even the tiny floor overflows (pathological) — render at the floor.
   const _sharedFS=_bsLo;
-
-  // Legibility warning is finalised after P truncation below: it must fire
-  // whenever content can't fit at the minimum legible size OR any P statement
-  // had to be clipped to fit.
-  let _pClipped = false;
 
   // Vertical centring: re-lay from a Y offset by half the leftover slack.
   const _topLayout=_layoutHazard(_sharedFS,_curY0);
@@ -3051,56 +3041,21 @@ function buildSVG(forExport=false){
   // circles as chord width changes), fall back to the top-aligned layout.
   if(_L.endY > _hardBot) _L=_topLayout;
 
-  // Derive render variables from the chosen layout.
+  // Derive render variables from the chosen layout. ALL content is rendered in
+  // full — no truncation, no clipping — so every mandatory statement is present.
   const hFS=_sharedFS, hLH=_L.hLH;
   const sensFS=_sharedFS, sensLH=_L.sLH;
   const pFS=_sharedFS, pLH=_L.pLH;
-  let hLines=_L.hLines;
+  const hLines=_L.hLines;
   const hY=_L.hStartY;
-  let allSensLines=_L.allS;
+  const allSensLines=_L.allS;
   const sensStY=_L.sStartY;
-  let pLines=_L.pLines;
+  const pLines=_L.pLines;
   const pStY=_L.pStartY;
 
-  // Hard botY boundary for P: never let a P line render past botY, even on the
-  // warning path where the font is pinned to the legible floor. When the full
-  // set won't fit, truncate at a complete SENTENCE boundary (P statements are
-  // '. '-joined) rather than mid-word, and flag the omission with an ellipsis.
-  if(pLines.length){
-    const _pMaxLines=Math.max(1,Math.floor((_hardBot - pStY + pLH*0.5)/pLH));
-    if(pLines.length>_pMaxLines){
-      const _pW=chordW(pStY,0.08)*0.90;
-      const _parts=pText.split('. ').map((s,i,a)=>i<a.length-1?s+'.':s).filter(Boolean);
-      let _fit=null;
-      for(let _n=_parts.length-1;_n>=1 && !_fit;_n--){
-        const _try=wrapText(_parts.slice(0,_n).join(' ')+' …',_pW,pFS,false,false);
-        if(_try.length<=_pMaxLines) _fit=_try;
-      }
-      // Last resort (even a single sentence overflows): hard line-clip. Note
-      // wrapText breaks only on whitespace, so this never splits a word.
-      pLines = _fit || pLines.slice(0,_pMaxLines);
-      _pClipped = true;
-    }
-  }
-
-  // Hard botY clip for the WHOLE stack. With the legible font floor the block
-  // can be taller than the space available on small labels; drop any line whose
-  // box would cross botY. Blocks render top-down (H, then sensitiser, then P),
-  // so this drops bottom-up — P first, then sensitiser, keeping H longest — and
-  // guarantees nothing overflows into the pictogram / footer / EN15494 zone.
-  const _clipToBot=(lines,startY,lh)=>{
-    const keep=Math.max(0,Math.floor((_hardBot - startY + lh*0.5)/lh));
-    return lines.length>keep ? lines.slice(0,keep) : lines;
-  };
-  const _hKept=_clipToBot(hLines,hY,hLH);
-  const _sKept=_clipToBot(allSensLines,sensStY,sensLH);
-  const _pKept=_clipToBot(pLines,pStY,pLH);
-  if(_hKept.length<hLines.length||_sKept.length<allSensLines.length||_pKept.length<pLines.length) _pClipped=true;
-  hLines=_hKept; allSensLines=_sKept; pLines=_pKept;
-
-  // Finalise the legibility warning: too small to fit at the legible floor, or
-  // any hazard/sensitiser/P content had to be clipped.
-  window._labelLegibilityWarn = !_fitsAtMin || _pClipped;
+  // Legibility warning: the full text is always drawn, but if it had to shrink
+  // below the 1.2mm x-height threshold to fit, flag it as hard to read in print.
+  window._labelLegibilityWarn = _sharedFS < _legibleFS - 0.01;
 
   const showP   = pLines.length > 0;
 
@@ -3144,44 +3099,33 @@ function buildSVG(forExport=false){
   const maxFooterFS  = clamp(BASE*0.036, 3, 7.5);
   const minFooterFS  = clamp(BASE*0.022, 2, 4.5);
 
-  // ── FOOTER TEXT — legible flow layout ────────────────────────
-  // Supplier text must also meet the printed legibility floor (>= 0.9mm
-  // x-height, same CLP basis as the hazard text). Use a font no smaller than
-  // that floor; wrap each slot to the available width; flow the slots down from
-  // below the EN15494 row and clip at the shape bottom — dropping detail first,
-  // then phone, keeping the address longest. Raise the legibility warning if
-  // any line has to be dropped. (All footer text is solid black, not muted.)
-  const _FOOTER_MIN_XHEIGHT_MM = 0.9;
-  const _footerMinFS = (_FOOTER_MIN_XHEIGHT_MM / _XHEIGHT_RATIO) * _pxPerMm;
-  const _footerTop = botY + fTopPad + _bcfRowH; // below the EN15494 row
-  const _footerBot = sBot - fBotPad;
-  let _fy = _footerTop, _footerClipped = false;
-  const _footerEls = [];
-  for(let i=0; i<footerSlots.length && i<3 && !_footerClipped; i++){
-    const slot = footerSlots[i];
+  // ── FOOTER TEXT ──────────────────────────────────────────────
+  // Supplier text (address, phone, weight/burn/batch) is ALWAYS shown in full —
+  // never dropped — shrunk to fit each slot's width and height. If any line ends
+  // up below the 0.9mm printed x-height it is still drawn, and the legibility
+  // warning is raised. (All footer text is solid black, not muted.)
+  const _FOOTER_WARN_XHEIGHT_MM = 0.9;
+  const _footerWarnFS = (_FOOTER_WARN_XHEIGHT_MM / _XHEIGHT_RATIO) * _pxPerMm;
+  const nSlots = Math.min(footerSlots.length, 3);
+  const slotLH = nSlots > 0 ? fUsable / nSlots : fUsable;
+  const _footerBase = botY + fTopPad + _bcfRowH; // top of footer text zone (below EN row)
+  const _slotFSCap  = slotLH * 0.82;             // per-row vertical cap (no overlap)
+  const footerElems = [];
+  footerSlots.slice(0, nSlots).forEach((slot, i)=>{
     const _isDetail = !slot.isPhone && i>0;
-    const _fsMax = maxFooterFS * (slot.isPhone?1.05:_isDetail?1.15:1.0);
-    // Width measured a little below the slot top so wrapped lines clear the
-    // narrowing circle chord; never let the font drop below the legible floor.
-    const chordAtY = Math.min(chordW(_fy + _footerMinFS, 0.09), sW*0.88);
-    const availW = chordAtY * 0.88;
-    let fs = fitFont(slot.text, availW, _fsMax, _footerMinFS, slot.bold, false);
-    let lines = [slot.text];
-    if(measureText(slot.text, fs, slot.bold, false) > availW){
-      fs = _footerMinFS;
-      lines = wrapText(slot.text, availW, fs, slot.bold, false);
-    }
-    const lh = fs * 1.25;
-    for(const ln of lines){
-      const yc = _fy + lh*0.5;
-      if(yc + lh*0.5 > _footerBot){ _footerClipped = true; break; }
-      _footerEls.push({text: ln, fs, isPhone: slot.isPhone||false, y: yc});
-      _fy += lh;
-    }
-  }
-  if(_footerClipped) window._labelLegibilityWarn = true;
-  const footerRendered = _footerEls.map(el=>
-    `<text x="${cx}" y="${el.y.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${el.fs.toFixed(2)}" font-weight="${el.isPhone?'600':'400'}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(el.text)}</text>`
+    const _fsMax  = Math.min(maxFooterFS * (slot.isPhone?1.05:_isDetail?1.15:1.0), _slotFSCap);
+    const slotY   = _footerBase + slotLH * (i + 0.5);
+    const chordAtY = Math.min(chordW(slotY, 0.09), sW * 0.88);
+    const availW  = chordAtY * 0.88;
+    // Shrink to fit the width; keep down to ~1.5uu so the line is always shown.
+    const fs = fitFont(slot.text, availW, _fsMax, Math.max(minFooterFS * 0.5, 1.5), slot.bold, false);
+    footerElems.push({text: slot.text, fs, isPhone: slot.isPhone||false, slotY});
+  });
+  // All slots rendered (never dropped). Warn if any footer line is below the
+  // printed legibility threshold.
+  if(footerElems.some(e=>e.fs < _footerWarnFS - 0.01)) window._labelLegibilityWarn = true;
+  const footerRendered = footerElems.map(el=>
+    `<text x="${cx}" y="${el.slotY.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${el.fs.toFixed(2)}" font-weight="${el.isPhone?'600':'400'}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(el.text)}</text>`
   ).join('');
 
   // ── EN 15494:2019 CANDLE SAFETY PICTOGRAMS ────────────────────
