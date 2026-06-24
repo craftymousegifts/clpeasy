@@ -227,6 +227,18 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 }
 .preview-footer{padding:10px 16px 14px;border-top:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:8px;}
 .preview-size-info{font-size:11px;color:rgba(255,255,255,0.3);text-align:center;}
+/* NUDGE BANNER — shown above canvas on step 5 only */
+.nudge-banner{background:rgba(76,155,176,0.15);border-bottom:1px solid rgba(76,155,176,0.3);padding:14px 20px 16px;flex-shrink:0;text-align:center;}
+.nudge-banner-title{font-size:13px;font-weight:700;color:#5EEAD4;letter-spacing:0.5px;margin-bottom:4px;}
+.nudge-banner-hint{font-size:11px;color:rgba(255,255,255,0.45);margin-bottom:12px;line-height:1.5;}
+.nudge-banner-rows{display:flex;flex-direction:column;gap:8px;align-items:center;}
+.nudge-row{display:flex;align-items:center;gap:8px;justify-content:center;}
+.nudge-label{font-size:11px;color:rgba(255,255,255,0.55);width:90px;text-align:right;flex-shrink:0;}
+.nudge-btn{width:32px;height:32px;border-radius:7px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:'DM Sans',sans-serif;line-height:1;padding:0;flex-shrink:0;}
+.nudge-btn:hover{background:rgba(76,155,176,0.4);border-color:#5EEAD4;}
+.nudge-val{font-size:12px;color:white;min-width:40px;text-align:center;font-weight:700;}
+.nudge-reset{font-size:11px;color:rgba(76,155,176,0.8);background:none;border:1px solid rgba(76,155,176,0.4);cursor:pointer;font-family:'DM Sans',sans-serif;padding:4px 10px;border-radius:6px;transition:all .2s;margin-left:6px;}
+.nudge-reset:hover{color:#5EEAD4;border-color:#5EEAD4;}
 
 /* DOWNLOAD BUTTONS */
 .dl-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
@@ -812,6 +824,26 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <!-- MOBILE PREVIEW IN STEP 5 -->
     <div style="background:#1a1f2e;border-radius:16px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:20px;" id="mobile-preview-container">
+      <!-- NUDGE CONTROLS: inline in step 5 panel -->
+      <div style="width:100%;background:rgba(76,155,176,0.15);border-radius:10px;padding:12px 16px;text-align:center;">
+        <div style="font-size:13px;font-weight:700;color:#5EEAD4;margin-bottom:3px;">⚙ Fine-tune hazard text</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:10px;line-height:1.4;">Adjust position and font size of hazard statements only.<br>Fragrance name and footer are not affected.</div>
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:center;">
+          <div style="display:flex;align-items:center;gap:8px;justify-content:center;">
+            <span style="font-size:11px;color:rgba(255,255,255,0.5);width:90px;text-align:right;">Text position</span>
+            <button onclick="nudgeText(-0.5)" style="width:32px;height:32px;border-radius:7px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;font-size:16px;cursor:pointer;font-family:'DM Sans',sans-serif;">↑</button>
+            <span id="nudge-offset-val2" style="font-size:12px;color:white;min-width:40px;text-align:center;font-weight:700;">0mm</span>
+            <button onclick="nudgeText(0.5)" style="width:32px;height:32px;border-radius:7px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;font-size:16px;cursor:pointer;font-family:'DM Sans',sans-serif;">↓</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;justify-content:center;">
+            <span style="font-size:11px;color:rgba(255,255,255,0.5);width:90px;text-align:right;">Font size</span>
+            <button onclick="nudgeFont(-0.2)" style="width:32px;height:32px;border-radius:7px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;font-size:16px;cursor:pointer;font-family:'DM Sans',sans-serif;">−</button>
+            <span id="nudge-font-val2" style="font-size:12px;color:white;min-width:40px;text-align:center;font-weight:700;">0pt</span>
+            <button onclick="nudgeFont(0.2)" style="width:32px;height:32px;border-radius:7px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:white;font-size:16px;cursor:pointer;font-family:'DM Sans',sans-serif;">+</button>
+            <button onclick="nudgeReset()" style="font-size:11px;color:rgba(76,155,176,0.8);background:none;border:1px solid rgba(76,155,176,0.4);cursor:pointer;font-family:'DM Sans',sans-serif;padding:4px 10px;border-radius:6px;margin-left:4px;">Reset</button>
+          </div>
+        </div>
+      </div>
       <div style="overflow:auto;width:100%;max-height:420px;display:flex;align-items:flex-start;justify-content:center;padding:8px 0;" id="mobile-label-scroll">
         <div id="mobile-label-preview" style="flex-shrink:0;"></div>
       </div>
@@ -888,12 +920,32 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="preview-badge" id="preview-badge">35mm · Circle</div>
     </div>
   </div>
+  <!-- NUDGE BANNER: shown on step 5 only, sits between header and canvas -->
+  <div class="nudge-banner" id="nudge-banner" style="display:none;">
+    <div class="nudge-banner-title">⚙ Fine-tune hazard text</div>
+    <div class="nudge-banner-hint">Adjust position and size of hazard statements only. Fragrance name and footer are not affected.</div>
+    <div class="nudge-banner-rows">
+      <div class="nudge-row">
+        <span class="nudge-label">Text position</span>
+        <button class="nudge-btn" onclick="nudgeText(-0.5)" title="Move text up">↑</button>
+        <span class="nudge-val" id="nudge-offset-val">0mm</span>
+        <button class="nudge-btn" onclick="nudgeText(0.5)" title="Move text down">↓</button>
+      </div>
+      <div class="nudge-row">
+        <span class="nudge-label">Font size</span>
+        <button class="nudge-btn" onclick="nudgeFont(-0.2)" title="Decrease font size">−</button>
+        <span class="nudge-val" id="nudge-font-val">0pt</span>
+        <button class="nudge-btn" onclick="nudgeFont(0.2)" title="Increase font size">+</button>
+        <button class="nudge-reset" onclick="nudgeReset()">Reset</button>
+      </div>
+    </div>
+  </div>
   <div class="preview-canvas-area" id="preview-canvas-area"><div id="label-svg-container"></div></div>
   <div class="preview-footer">
     <div class="preview-size-info" id="preview-size-info">Print size: 35 × 35mm</div>
     <div class="dl-row" id="preview-dl-row" style="display:none;">
-      <button class="btn-dl" onclick="downloadPNG()">⬇ PNG</button>
-      <button class="btn-dl-svg" onclick="downloadSVG()">⬡ SVG</button>
+      <button class="btn-dl" id="btn-dl-png" style="opacity:0.4;pointer-events:none;cursor:not-allowed;" aria-disabled="true" onclick="downloadPNG()">⬇ PNG</button>
+      <button class="btn-dl-svg" id="btn-dl-svg" style="opacity:0.4;pointer-events:none;cursor:not-allowed;" aria-disabled="true" onclick="downloadSVG()">⬡ SVG</button>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
 
@@ -915,8 +967,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="preview-sheet-label" id="sheet-label-container"></div>
     <div style="font-size:12px;color:rgba(255,255,255,0.4);text-align:center;margin-bottom:4px;" id="sheet-size-info"></div>
     <div class="preview-sheet-actions">
-      <button class="btn-dl" onclick="downloadPNG();closeSheet()">⬇ PNG (single)</button>
-      <button class="btn-dl-svg" onclick="downloadSVG();closeSheet()">⬡ SVG</button>
+      <button class="btn-dl" id="btn-sheet-png" style="opacity:0.4;pointer-events:none;cursor:not-allowed;" aria-disabled="true" onclick="downloadPNG();closeSheet()">⬇ PNG (single)</button>
+      <button class="btn-dl-svg" id="btn-sheet-svg" style="opacity:0.4;pointer-events:none;cursor:not-allowed;" aria-disabled="true" onclick="downloadSVG();closeSheet()">⬡ SVG</button>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
 
@@ -1003,7 +1055,7 @@ function ghsPicto(key,cx,cy,size){
 }
 
 // ── STATE ─────────────────────────────────────────────────────
-const S={step:1,shape:'circle',size:35,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true};
+const S={step:1,shape:'circle',size:35,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,textOffsetY:0,fontSizeAdj:0};
 
 // ── PRODUCT TYPE GUIDANCE ─────────────────────────────────────
 const FRAG_LOAD_TIPS={
@@ -1093,7 +1145,7 @@ function setBorder(show){
 }
 
 // ── JPEG DOWNLOAD ─────────────────────────────────────────────
-async function downloadJPEG(){plausible('Label Downloaded',{props:{format:'JPEG'}});
+async function downloadJPEG(){if(!_downloadAllowed())return;plausible('Label Downloaded',{props:{format:'JPEG'}});
   await ensureFontsLoaded(); // wait for DM Sans before rasterising
   readForm();
   const{mmW,mmH,pw,ph}=getDims();
@@ -1982,7 +2034,7 @@ function forceGoToStep(n){
   if(n===5){buildSummary();
     const dlRow=document.getElementById('preview-dl-row');
     if(dlRow)dlRow.style.display='flex';
-    
+    toggleDownload(); // sync button enabled/greyed state with the compliance checkbox
   }
   updateLabel();
   window.scrollTo(0,0);
@@ -2194,15 +2246,26 @@ function buildSensitiserChips(){
     `<div class="s-chip cat${s.cat.toLowerCase().replace(/\./g,'').replace(' ','')} " data-name="${s.name}" style="cursor:default;pointer-events:none;opacity:0.75;"><span class="s-name">${s.name}</span><span class="s-cat">Skin Sens. ${s.cat}</span></div>`
   ).join('');
 }
+// All download/output buttons gated behind the compliance confirmation checkbox.
+const _DOWNLOAD_BTN_IDS=['btn-png','btn-jpeg','btn-svg','btn-pdf','btn-save','btn-dl-png','btn-dl-svg','btn-sheet-png','btn-sheet-svg'];
 function toggleDownload(){
-  const checked=document.getElementById('verify-checkbox')?.checked;
-  const btns=['btn-png','btn-jpeg','btn-svg','btn-pdf','btn-save'];
-  btns.forEach(id=>{
+  const checked=!!document.getElementById('verify-checkbox')?.checked;
+  _DOWNLOAD_BTN_IDS.forEach(id=>{
     const btn=document.getElementById(id);
     if(!btn)return;
     btn.style.opacity=checked?'1':'0.4';
     btn.style.pointerEvents=checked?'auto':'none';
+    btn.style.cursor=checked?'pointer':'not-allowed';
+    if(checked)btn.removeAttribute('aria-disabled');else btn.setAttribute('aria-disabled','true');
   });
+}
+// Defensive guard: block every download entry point until the box is ticked,
+// even if a button is reached some other way. Returns true if allowed.
+function _downloadAllowed(){
+  if(document.getElementById('verify-checkbox')?.checked)return true;
+  toggleDownload(); // keep button states in sync
+  alert('⚠️ Please tick the compliance confirmation checkbox to confirm you have verified your hazard data before downloading.');
+  return false;
 }
 function toggleLib(id,tog){
   const el=document.getElementById(id);
@@ -2386,7 +2449,39 @@ function goToStep(n){if(n>S.step+1)return;S.step=n;
   const dlRow=document.getElementById('preview-dl-row');
   if(dlRow)dlRow.style.display=(n===5)?'flex':'none';
   const mobileDlRow=document.getElementById('mobile-dl-row');
-  if(mobileDlRow)mobileDlRow.style.display=(n===5)?'flex':'none';document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+n).classList.add('active');updateStepsBar();if(n===5)buildSummary();updateLabel();if(n===3){const cb=document.getElementById('hazard-confirm');const btn=document.getElementById('btn-next-step3');if(cb){cb.checked=false;}if(btn){btn.style.opacity='0.4';btn.style.pointerEvents='none';}}}
+  if(mobileDlRow)mobileDlRow.style.display=(n===5)?'flex':'none';
+  // Show nudge controls on step 5 only
+  const nudgeBar=document.getElementById('nudge-banner');
+  if(nudgeBar)nudgeBar.style.display=(n===5)?'block':'none';
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+n).classList.add('active');updateStepsBar();if(n===5){buildSummary();toggleDownload();}updateLabel();if(n===3){const cb=document.getElementById('hazard-confirm');const btn=document.getElementById('btn-next-step3');if(cb){cb.checked=false;}if(btn){btn.style.opacity='0.4';btn.style.pointerEvents='none';}}}
+
+function _nudgeUpdateDisplay(){
+  const ov1=document.getElementById('nudge-offset-val');
+  const ov2=document.getElementById('nudge-offset-val2');
+  const fv1=document.getElementById('nudge-font-val');
+  const fv2=document.getElementById('nudge-font-val2');
+  const oStr=(S.textOffsetY>=0?'+':'')+S.textOffsetY+'mm';
+  const fStr=(S.fontSizeAdj>=0?'+':'')+S.fontSizeAdj+'pt';
+  if(ov1)ov1.textContent=oStr; if(ov2)ov2.textContent=oStr;
+  if(fv1)fv1.textContent=fStr; if(fv2)fv2.textContent=fStr;
+}
+function nudgeText(deltaMm){
+  S.textOffsetY=parseFloat(((S.textOffsetY||0)+deltaMm).toFixed(1));
+  S.textOffsetY=Math.max(-5,Math.min(5,S.textOffsetY));
+  _nudgeUpdateDisplay();
+  updateLabel();
+}
+function nudgeFont(deltaPt){
+  S.fontSizeAdj=parseFloat(((S.fontSizeAdj||0)+deltaPt).toFixed(1));
+  S.fontSizeAdj=Math.max(-3,Math.min(3,S.fontSizeAdj));
+  _nudgeUpdateDisplay();
+  updateLabel();
+}
+function nudgeReset(){
+  S.textOffsetY=0;S.fontSizeAdj=0;
+  _nudgeUpdateDisplay();
+  updateLabel();
+}
 function nextStep(){if(S.step<5){plausible('Builder: Step '+(S.step+1),{props:{from_step:String(S.step)}});goToStep(S.step+1);window.scrollTo({top:0,behavior:'smooth'});}}
 function checkStep2Next(){
   const scent=document.getElementById('scent-name')?.value.trim();
@@ -2549,8 +2644,7 @@ function clearHazardData(){
   // Re-lock the download button
   const verifyBox = document.getElementById('verify-checkbox');
   if(verifyBox) verifyBox.checked = false;
-  const btns=['btn-png','btn-jpeg','btn-svg','btn-pdf','btn-save'];
-  btns.forEach(id=>{const b=document.getElementById(id);if(b){b.style.opacity='0.4';b.style.pointerEvents='none';}});
+  toggleDownload(); // re-lock all download buttons (greyed) until re-confirmed
 }
 function updateStepsBar(){
   document.querySelectorAll('.step-item').forEach(el=>{const n=parseInt(el.dataset.step);el.classList.remove('active','done','inactive');if(n<S.step){el.classList.add('done');el.querySelector('.step-circle').textContent='✓';}else if(n===S.step)el.classList.add('active');else el.classList.add('inactive');});
@@ -2942,23 +3036,40 @@ function buildSVG(forExport=false){
   const sensText = [_sensBase, _euhSuffix].filter(Boolean).join(' ');
 
   // ── HAZARD TEXT AUTO-SIZING ──────────────────────────────────────────────
-  // Spec: CLPeasy SVG Hazard Label Auto-Sizing Requirements
+  // Mandatory hazard content (H + sensitiser + P) is ALWAYS rendered in full and
+  // is NEVER dropped or truncated — a GB CLP label must carry every hazard and
+  // precautionary statement. The font is shrunk as needed so the whole block
+  // fits between curY (below the pictograms) and botY, however small.
   //
-  // 1. Binary search for the largest font size at which H + sensitiser + P all
-  //    fit between curY (below the pictograms) and the hard botY boundary,
-  //    with one line-height of breathing room beneath.
-  // 2. Per-line chord width on circles; constant width for rect/square — the
-  //    same layout pass is used for measuring AND rendering, so the measured
-  //    height can never diverge from what is drawn.
-  // 3. Vertical centring: distribute unused space equally above and below.
-  // 4. The legibility warning fires ONLY when the content cannot fit even at
-  //    the minimum legible size (≈1mm); below that, P is hard-clipped to botY
-  //    so it can never spill into the pictogram / footer zone beneath.
+  // The 1.2mm x-height (CLP Delegated Regulation (EU) 2024/2865, packaging ≤3 L)
+  // is a LEGIBILITY-WARNING threshold, not a render floor: if the fitted text is
+  // smaller than that, everything is still drawn and the warning is raised so the
+  // maker can choose a larger label or add a fold-out leaflet.
+  //
+  // The same layout pass is used for measuring and rendering (per-line chord
+  // width on circles, constant width on rect/square) so measured == drawn.
 
-  const _curY0 = curY;
-  const _hardBot = botY;                       // text must never cross this
-  // Minimum legible font ≈ 1mm physical height (pxPerMm = pw/mmW in this view).
-  const _minLegibleFS = Math.max(0.95 * _pxPerMm, 3.2);
+  // ── NUDGE CONTROLS: text position and font size adjust ──────────
+  // Only applied to the H/sens/P hazard text block.
+  // Fragrance name, type, signal, footer, EN15494 are all unaffected.
+  // IMPORTANT: textOffsetY shifts position only — it does NOT change the
+  // available height used for font sizing (font sizing always uses the
+  // full curY→botY zone so the two controls are fully independent).
+  const _nudgeOffsetPx = (S.textOffsetY||0) * _pxPerMm; // mm → px
+  const _nudgeClampedOffset = Math.max(
+    -(curY - midY) * 0.8,  // can't push so far up it enters pictogram zone
+    Math.min(_nudgeOffsetPx, (botY - curY) * 0.4) // can't push so far down it hits footer
+  );
+  const _curY0 = curY + _nudgeClampedOffset; // position-shifted start (for rendering)
+  const _curY0ForSizing = curY;              // ALWAYS use unshifted Y for font sizing
+  const _hardBot = botY;                     // text must never cross this
+  const _XHEIGHT_RATIO  = 0.51;                // DM Sans lowercase x-height / em
+  const _MIN_XHEIGHT_MM = 1.2;                 // CLP 2024/2865 legibility minimum
+  // Font size whose x-height equals the legibility threshold; warn below this.
+  const _legibleFS = (_MIN_XHEIGHT_MM / _XHEIGHT_RATIO) * _pxPerMm;
+  // Render floor: deliberately tiny so the full block always fits and nothing is
+  // ever dropped. Needing a font this small is itself the trigger for the warning.
+  const _renderFloorFS = 0.5;
 
   // Single source of truth — lay the three blocks out exactly as they render.
   // Returns each block's lines, its first-line centre Y, and the Y after the
@@ -2997,43 +3108,41 @@ function buildSVG(forExport=false){
     return {fs,hLH,sLH,pLH,hLines,hStartY,allS,sStartY,pLines,pStartY,endY:y};
   }
 
-  // Fit = block laid from the top of the avail zone ends at/above botY minus a
-  // small breathing margin. (The P block is also hard-clipped to botY below, so
-  // this margin only governs aesthetics/warning, not overflow — keep it modest
-  // so a block that genuinely fits doesn't trip a false legibility warning.)
   const _fitMargin=(fs)=> fs*0.3;
-  const _fits=(fs)=> _layoutHazard(fs,_curY0).endY <= _hardBot - _fitMargin(fs);
+  const _fits=(fs)=> _layoutHazard(fs,_curY0ForSizing).endY <= _hardBot - _fitMargin(fs);
 
-  // Binary search for the largest fitting font size.
-  let _bsLo=_minLegibleFS, _bsHi=clamp(BASE*0.13,8,28);
-  const _fitsAtMin=_fits(_minLegibleFS);
-  if(!_fitsAtMin){
-    _bsLo=_bsHi=_minLegibleFS;                 // cannot fit even at the floor
-  } else if(_fits(_bsHi)){
+  // Binary search for the LARGEST font that fits the full block, down to the
+  // tiny render floor so all mandatory content is always shown.
+  let _bsLo=_renderFloorFS, _bsHi=Math.max(clamp(BASE*0.13,8,28), _renderFloorFS);
+  if(_fits(_bsHi)){
     _bsLo=_bsHi;                               // even the ceiling fits
-  } else {
+  } else if(_fits(_bsLo)){
     for(let _i=0;_i<40;_i++){
       const _mid=(_bsLo+_bsHi)/2;
       if(_fits(_mid)) _bsLo=_mid; else _bsHi=_mid;
       if(_bsHi-_bsLo<0.05) break;
     }
-  }
-  const _sharedFS=_bsLo;
-
-  // Legibility warning is finalised after P truncation below: it must fire
-  // whenever content can't fit at the minimum legible size OR any P statement
-  // had to be clipped to fit.
-  let _pClipped = false;
+  } // else: even the tiny floor overflows (pathological) — render at the floor.
+  
+  // fontSizeAdj: direct delta applied AFTER binary search.
+  // Positive = bigger text (may cause overflow, user's choice).
+  // Negative = smaller text (always fits).
+  // Clamped to ±6px absolute range.
+  const _fontAdjClamped = Math.max(-6, Math.min(S.fontSizeAdj||0, 6));
+  const _sharedFS = Math.max(_renderFloorFS, _bsLo + _fontAdjClamped);
 
   // Vertical centring: re-lay from a Y offset by half the leftover slack.
-  const _topLayout=_layoutHazard(_sharedFS,_curY0);
+  // Sizing pass uses _curY0ForSizing (unshifted); render pass uses _curY0 (position-nudged).
+  const _topLayout=_layoutHazard(_sharedFS,_curY0ForSizing);
   const _slack=Math.max(0,(_hardBot - _fitMargin(_sharedFS)) - _topLayout.endY);
+  // Apply both the centering slack AND the position nudge for the final render
   let _L=_layoutHazard(_sharedFS,_curY0+_slack*0.5);
-  // Safety: if centring shifted line-wrapping enough to cross botY (possible on
-  // circles as chord width changes), fall back to the top-aligned layout.
+  // Safety: if position nudge + centering shifted lines past botY, fall back to nudge-only
+  if(_L.endY > _hardBot) _L=_layoutHazard(_sharedFS,_curY0);
   if(_L.endY > _hardBot) _L=_topLayout;
 
-  // Derive render variables from the chosen layout.
+  // Derive render variables from the chosen layout. ALL content is rendered in
+  // full — no truncation, no clipping — so every mandatory statement is present.
   const hFS=_sharedFS, hLH=_L.hLH;
   const sensFS=_sharedFS, sensLH=_L.sLH;
   const pFS=_sharedFS, pLH=_L.pLH;
@@ -3041,33 +3150,12 @@ function buildSVG(forExport=false){
   const hY=_L.hStartY;
   const allSensLines=_L.allS;
   const sensStY=_L.sStartY;
-  let pLines=_L.pLines;
+  const pLines=_L.pLines;
   const pStY=_L.pStartY;
 
-  // Hard botY boundary for P: never let a P line render past botY, even on the
-  // warning path where the font is pinned to the legible floor. When the full
-  // set won't fit, truncate at a complete SENTENCE boundary (P statements are
-  // '. '-joined) rather than mid-word, and flag the omission with an ellipsis.
-  if(pLines.length){
-    const _pMaxLines=Math.max(1,Math.floor((_hardBot - pStY + pLH*0.5)/pLH));
-    if(pLines.length>_pMaxLines){
-      const _pW=chordW(pStY,0.08)*0.90;
-      const _parts=pText.split('. ').map((s,i,a)=>i<a.length-1?s+'.':s).filter(Boolean);
-      let _fit=null;
-      for(let _n=_parts.length-1;_n>=1 && !_fit;_n--){
-        const _try=wrapText(_parts.slice(0,_n).join(' ')+' …',_pW,pFS,false,false);
-        if(_try.length<=_pMaxLines) _fit=_try;
-      }
-      // Last resort (even a single sentence overflows): hard line-clip. Note
-      // wrapText breaks only on whitespace, so this never splits a word.
-      pLines = _fit || pLines.slice(0,_pMaxLines);
-      _pClipped = true;
-    }
-  }
-
-  // Finalise the legibility warning: too small to fit at the legible floor, or
-  // one or more P statements were clipped.
-  window._labelLegibilityWarn = !_fitsAtMin || _pClipped;
+  // Legibility warning: the full text is always drawn, but if it had to shrink
+  // below the 1.2mm x-height threshold to fit, flag it as hard to read in print.
+  window._labelLegibilityWarn = _sharedFS < _legibleFS - 0.01;
 
   const showP   = pLines.length > 0;
 
@@ -3111,38 +3199,34 @@ function buildSVG(forExport=false){
   const maxFooterFS  = clamp(BASE*0.036, 3, 7.5);
   const minFooterFS  = clamp(BASE*0.022, 2, 4.5);
 
-  // Distribute the slots evenly across the usable footer height. Each slot is
-  // centred in its own row; the font is capped to the row height so adjacent
-  // lines can never overlap vertically. The EN15494 row occupies the reserved
-  // strip above (_footerBase), so the text always sits clear of the icons.
+  // ── FOOTER TEXT ──────────────────────────────────────────────
+  // Supplier text (address, phone, weight/burn/batch) is ALWAYS shown in full —
+  // never dropped — shrunk to fit each slot's width and height. If any line ends
+  // up below the 0.9mm printed x-height it is still drawn, and the legibility
+  // warning is raised. (All footer text is solid black, not muted.)
+  const _FOOTER_WARN_XHEIGHT_MM = 0.9;
+  const _footerWarnFS = (_FOOTER_WARN_XHEIGHT_MM / _XHEIGHT_RATIO) * _pxPerMm;
   const nSlots = Math.min(footerSlots.length, 3);
   const slotLH = nSlots > 0 ? fUsable / nSlots : fUsable;
   const _footerBase = botY + fTopPad + _bcfRowH; // top of footer text zone (below EN row)
-  const _slotFSCap  = slotLH * 0.82;             // hard vertical cap per row
-  let footerElems = [];
+  const _slotFSCap  = slotLH * 0.82;             // per-row vertical cap (no overlap)
+  const footerElems = [];
   footerSlots.slice(0, nSlots).forEach((slot, i)=>{
     const _isDetail = !slot.isPhone && i>0;
     const _fsMax  = Math.min(maxFooterFS * (slot.isPhone?1.05:_isDetail?1.15:1.0), _slotFSCap);
     const slotY   = _footerBase + slotLH * (i + 0.5);
     const chordAtY = Math.min(chordW(slotY, 0.09), sW * 0.88);
     const availW  = chordAtY * 0.88;
+    // Shrink to fit the width; keep down to ~1.5uu so the line is always shown.
     const fs = fitFont(slot.text, availW, _fsMax, Math.max(minFooterFS * 0.5, 1.5), slot.bold, false);
-    footerElems.push({text: slot.text, fs, bold: slot.bold, isPhone: slot.isPhone||false, slotY});
+    footerElems.push({text: slot.text, fs, isPhone: slot.isPhone||false, slotY});
   });
-  // Drop bottom slots if their font is unreadably tiny
-  while(footerElems.length > 1 && footerElems[footerElems.length-1].fs < minFooterFS * 0.4){
-    footerElems.pop();
-  }
-  // Y positions already set per-slot — no global recompute needed
-  const footerRendered = footerElems.map(elem=>{
-    if(elem.slotY > sBot - 1) return '';
-    const chordAtY = Math.min(chordW(elem.slotY, 0.09), sW * 0.88);
-    const availW = chordAtY * 0.88;
-    // Final fit at actual Y — catches any rounding
-    const fs = fitFont(elem.text, availW, elem.fs, Math.max(minFooterFS * 0.5, 1.5), elem.bold, false);
-    // CLP compliance: all supplier/footer text must be solid black, not muted.
-    return`<text x="${cx}" y="${elem.slotY.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${fs.toFixed(2)}" font-weight="${elem.isPhone?'600':'400'}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(elem.text)}</text>`;
-  }).join('');
+  // All slots rendered (never dropped). Warn if any footer line is below the
+  // printed legibility threshold.
+  if(footerElems.some(e=>e.fs < _footerWarnFS - 0.01)) window._labelLegibilityWarn = true;
+  const footerRendered = footerElems.map(el=>
+    `<text x="${cx}" y="${el.slotY.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${el.fs.toFixed(2)}" font-weight="${el.isPhone?'600':'400'}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(el.text)}</text>`
+  ).join('');
 
   // ── EN 15494:2019 CANDLE SAFETY PICTOGRAMS ────────────────────
   // Rendered at the TOP of the footer band (above address/phone/detail).
@@ -3466,7 +3550,7 @@ async function ensureFontsLoaded(){
   }catch(e){}
 }
 
-async function downloadPNG(){plausible('Label Downloaded',{props:{format:'PNG'}});
+async function downloadPNG(){if(!_downloadAllowed())return;plausible('Label Downloaded',{props:{format:'PNG'}});
   await ensureFontsLoaded();
   readForm();
   const{mmW,mmH,pw,ph}=getDims();
@@ -3534,7 +3618,7 @@ async function downloadPNG(){plausible('Label Downloaded',{props:{format:'PNG'}}
 }
 
 // ── SVG DOWNLOAD ──────────────────────────────────────────────
-function downloadSVG(){plausible('Label Downloaded',{props:{format:'SVG'}});
+function downloadSVG(){if(!_downloadAllowed())return;plausible('Label Downloaded',{props:{format:'SVG'}});
   try{
     readForm();
     const{mmW,mmH,pw,ph}=getDims();
