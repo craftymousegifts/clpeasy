@@ -227,6 +227,16 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 }
 .preview-footer{padding:10px 16px 14px;border-top:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:8px;}
 .preview-size-info{font-size:11px;color:rgba(255,255,255,0.3);text-align:center;}
+/* NUDGE CONTROLS — shown only on step 5 */
+.nudge-bar{display:none;flex-direction:column;gap:6px;padding:8px 0 2px;}
+.nudge-bar.visible{display:flex;}
+.nudge-row{display:flex;align-items:center;gap:6px;}
+.nudge-label{font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:0.5px;width:70px;flex-shrink:0;}
+.nudge-btn{width:26px;height:26px;border-radius:5px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:'DM Sans',sans-serif;line-height:1;padding:0;flex-shrink:0;}
+.nudge-btn:hover{background:rgba(255,255,255,0.18);color:white;}
+.nudge-val{font-size:10px;color:rgba(255,255,255,0.4);min-width:28px;text-align:center;}
+.nudge-reset{font-size:10px;color:rgba(76,155,176,0.7);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:2px 6px;border-radius:4px;transition:all .2s;}
+.nudge-reset:hover{color:#5EEAD4;}
 
 /* DOWNLOAD BUTTONS */
 .dl-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
@@ -891,6 +901,22 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="preview-canvas-area" id="preview-canvas-area"><div id="label-svg-container"></div></div>
   <div class="preview-footer">
     <div class="preview-size-info" id="preview-size-info">Print size: 35 × 35mm</div>
+    <!-- NUDGE CONTROLS: text position + font size, step 5 only -->
+    <div class="nudge-bar" id="nudge-bar">
+      <div class="nudge-row">
+        <span class="nudge-label">Text pos</span>
+        <button class="nudge-btn" onclick="nudgeText(-0.5)" title="Move text up">↑</button>
+        <span class="nudge-val" id="nudge-offset-val">0mm</span>
+        <button class="nudge-btn" onclick="nudgeText(0.5)" title="Move text down">↓</button>
+      </div>
+      <div class="nudge-row">
+        <span class="nudge-label">Font size</span>
+        <button class="nudge-btn" onclick="nudgeFont(-0.2)" title="Decrease font size">−</button>
+        <span class="nudge-val" id="nudge-font-val">0pt</span>
+        <button class="nudge-btn" onclick="nudgeFont(0.2)" title="Increase font size">+</button>
+        <button class="nudge-reset" onclick="nudgeReset()" title="Reset nudges">Reset</button>
+      </div>
+    </div>
     <div class="dl-row" id="preview-dl-row" style="display:none;">
       <button class="btn-dl" id="btn-dl-png" style="opacity:0.4;pointer-events:none;cursor:not-allowed;" aria-disabled="true" onclick="downloadPNG()">⬇ PNG</button>
       <button class="btn-dl-svg" id="btn-dl-svg" style="opacity:0.4;pointer-events:none;cursor:not-allowed;" aria-disabled="true" onclick="downloadSVG()">⬡ SVG</button>
@@ -1003,7 +1029,7 @@ function ghsPicto(key,cx,cy,size){
 }
 
 // ── STATE ─────────────────────────────────────────────────────
-const S={step:1,shape:'circle',size:35,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true};
+const S={step:1,shape:'circle',size:35,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,textOffsetY:0,fontSizeAdj:0};
 
 // ── PRODUCT TYPE GUIDANCE ─────────────────────────────────────
 const FRAG_LOAD_TIPS={
@@ -2397,7 +2423,39 @@ function goToStep(n){if(n>S.step+1)return;S.step=n;
   const dlRow=document.getElementById('preview-dl-row');
   if(dlRow)dlRow.style.display=(n===5)?'flex':'none';
   const mobileDlRow=document.getElementById('mobile-dl-row');
-  if(mobileDlRow)mobileDlRow.style.display=(n===5)?'flex':'none';document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+n).classList.add('active');updateStepsBar();if(n===5){buildSummary();toggleDownload();}updateLabel();if(n===3){const cb=document.getElementById('hazard-confirm');const btn=document.getElementById('btn-next-step3');if(cb){cb.checked=false;}if(btn){btn.style.opacity='0.4';btn.style.pointerEvents='none';}}}
+  if(mobileDlRow)mobileDlRow.style.display=(n===5)?'flex':'none';
+  // Show nudge controls on step 5 only
+  const nudgeBar=document.getElementById('nudge-bar');
+  if(nudgeBar)nudgeBar.classList.toggle('visible',n===5);
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+n).classList.add('active');updateStepsBar();if(n===5){buildSummary();toggleDownload();}updateLabel();if(n===3){const cb=document.getElementById('hazard-confirm');const btn=document.getElementById('btn-next-step3');if(cb){cb.checked=false;}if(btn){btn.style.opacity='0.4';btn.style.pointerEvents='none';}}}
+
+// ── NUDGE CONTROLS ────────────────────────────────────────────
+// Adjust hazard text block position (mm) and font size (pt delta).
+// Fragrance name, signal word, footer are NOT affected.
+function nudgeText(deltaMm){
+  S.textOffsetY=parseFloat(((S.textOffsetY||0)+deltaMm).toFixed(1));
+  // Clamp to ±5mm
+  S.textOffsetY=Math.max(-5,Math.min(5,S.textOffsetY));
+  const el=document.getElementById('nudge-offset-val');
+  if(el)el.textContent=(S.textOffsetY>=0?'+':'')+S.textOffsetY+'mm';
+  updateLabel();
+}
+function nudgeFont(deltaPt){
+  S.fontSizeAdj=parseFloat(((S.fontSizeAdj||0)+deltaPt).toFixed(1));
+  // Clamp to ±3pt
+  S.fontSizeAdj=Math.max(-3,Math.min(3,S.fontSizeAdj));
+  const el=document.getElementById('nudge-font-val');
+  if(el)el.textContent=(S.fontSizeAdj>=0?'+':'')+S.fontSizeAdj+'pt';
+  updateLabel();
+}
+function nudgeReset(){
+  S.textOffsetY=0;S.fontSizeAdj=0;
+  const ov=document.getElementById('nudge-offset-val');
+  const fv=document.getElementById('nudge-font-val');
+  if(ov)ov.textContent='0mm';
+  if(fv)fv.textContent='0pt';
+  updateLabel();
+}
 function nextStep(){if(S.step<5){plausible('Builder: Step '+(S.step+1),{props:{from_step:String(S.step)}});goToStep(S.step+1);window.scrollTo({top:0,behavior:'smooth'});}}
 function checkStep2Next(){
   const scent=document.getElementById('scent-name')?.value.trim();
@@ -2965,7 +3023,15 @@ function buildSVG(forExport=false){
   // The same layout pass is used for measuring and rendering (per-line chord
   // width on circles, constant width on rect/square) so measured == drawn.
 
-  const _curY0 = curY;
+  // ── NUDGE CONTROLS: text position and font size adjust ──────────
+  // Only applied to the H/sens/P hazard text block.
+  // Fragrance name, type, signal, footer, EN15494 are all unaffected.
+  const _nudgeOffsetPx = (S.textOffsetY||0) * _pxPerMm; // mm → px
+  const _nudgeClampedOffset = Math.max(
+    -(curY - midY) * 0.8,  // can't push so far up it enters pictogram zone
+    Math.min(_nudgeOffsetPx, (botY - curY) * 0.5) // can't push so far down it hits footer
+  );
+  const _curY0 = curY + _nudgeClampedOffset;
   const _hardBot = botY;                       // text must never cross this
   const _XHEIGHT_RATIO  = 0.51;                // DM Sans lowercase x-height / em
   const _MIN_XHEIGHT_MM = 1.2;                 // CLP 2024/2865 legibility minimum
@@ -3021,7 +3087,9 @@ function buildSVG(forExport=false){
 
   // Binary search for the LARGEST font that fits the full block, down to the
   // tiny render floor so all mandatory content is always shown.
-  let _bsLo=_renderFloorFS, _bsHi=Math.max(clamp(BASE*0.13,8,28), _renderFloorFS);
+  // fontSizeAdj is a px delta applied only to hazard text, clamped to ±6px
+  const _fontAdjClamped = Math.max(-6, Math.min(S.fontSizeAdj||0, 6));
+  let _bsLo=_renderFloorFS, _bsHi=Math.max(clamp(BASE*0.13,8,28) + _fontAdjClamped, _renderFloorFS);
   if(_fits(_bsHi)){
     _bsLo=_bsHi;                               // even the ceiling fits
   } else if(_fits(_bsLo)){
