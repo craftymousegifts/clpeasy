@@ -227,16 +227,18 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 }
 .preview-footer{padding:10px 16px 14px;border-top:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:8px;}
 .preview-size-info{font-size:11px;color:rgba(255,255,255,0.3);text-align:center;}
-/* NUDGE CONTROLS — shown only on step 5 */
-.nudge-bar{display:none;flex-direction:column;gap:6px;padding:8px 0 2px;}
-.nudge-bar.visible{display:flex;}
-.nudge-row{display:flex;align-items:center;gap:6px;}
-.nudge-label{font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:0.5px;width:70px;flex-shrink:0;}
-.nudge-btn{width:26px;height:26px;border-radius:5px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:'DM Sans',sans-serif;line-height:1;padding:0;flex-shrink:0;}
-.nudge-btn:hover{background:rgba(255,255,255,0.18);color:white;}
-.nudge-val{font-size:10px;color:rgba(255,255,255,0.4);min-width:28px;text-align:center;}
-.nudge-reset{font-size:10px;color:rgba(76,155,176,0.7);background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:2px 6px;border-radius:4px;transition:all .2s;}
-.nudge-reset:hover{color:#5EEAD4;}
+/* NUDGE BANNER — shown above canvas on step 5 only */
+.nudge-banner{background:rgba(76,155,176,0.12);border-bottom:1px solid rgba(76,155,176,0.25);padding:10px 16px 12px;flex-shrink:0;}
+.nudge-banner-title{font-size:11px;font-weight:700;color:#5EEAD4;letter-spacing:0.5px;margin-bottom:3px;}
+.nudge-banner-hint{font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:10px;line-height:1.4;}
+.nudge-banner-rows{display:flex;flex-direction:column;gap:7px;}
+.nudge-row{display:flex;align-items:center;gap:7px;}
+.nudge-label{font-size:10px;color:rgba(255,255,255,0.45);width:80px;flex-shrink:0;}
+.nudge-btn{width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:'DM Sans',sans-serif;line-height:1;padding:0;flex-shrink:0;}
+.nudge-btn:hover{background:rgba(76,155,176,0.35);border-color:#5EEAD4;color:white;}
+.nudge-val{font-size:11px;color:rgba(255,255,255,0.6);min-width:32px;text-align:center;font-weight:600;}
+.nudge-reset{font-size:10px;color:rgba(76,155,176,0.7);background:none;border:1px solid rgba(76,155,176,0.3);cursor:pointer;font-family:'DM Sans',sans-serif;padding:3px 8px;border-radius:5px;transition:all .2s;margin-left:4px;}
+.nudge-reset:hover{color:#5EEAD4;border-color:#5EEAD4;}
 
 /* DOWNLOAD BUTTONS */
 .dl-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
@@ -898,13 +900,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="preview-badge" id="preview-badge">35mm · Circle</div>
     </div>
   </div>
-  <div class="preview-canvas-area" id="preview-canvas-area"><div id="label-svg-container"></div></div>
-  <div class="preview-footer">
-    <div class="preview-size-info" id="preview-size-info">Print size: 35 × 35mm</div>
-    <!-- NUDGE CONTROLS: text position + font size, step 5 only -->
-    <div class="nudge-bar" id="nudge-bar">
+  <!-- NUDGE BANNER: shown on step 5 only, sits between header and canvas -->
+  <div class="nudge-banner" id="nudge-banner" style="display:none;">
+    <div class="nudge-banner-title">⚙ Fine-tune hazard text</div>
+    <div class="nudge-banner-hint">Adjust position and size of hazard statements only. Fragrance name and footer are not affected.</div>
+    <div class="nudge-banner-rows">
       <div class="nudge-row">
-        <span class="nudge-label">Text pos</span>
+        <span class="nudge-label">Text position</span>
         <button class="nudge-btn" onclick="nudgeText(-0.5)" title="Move text up">↑</button>
         <span class="nudge-val" id="nudge-offset-val">0mm</span>
         <button class="nudge-btn" onclick="nudgeText(0.5)" title="Move text down">↓</button>
@@ -914,9 +916,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <button class="nudge-btn" onclick="nudgeFont(-0.2)" title="Decrease font size">−</button>
         <span class="nudge-val" id="nudge-font-val">0pt</span>
         <button class="nudge-btn" onclick="nudgeFont(0.2)" title="Increase font size">+</button>
-        <button class="nudge-reset" onclick="nudgeReset()" title="Reset nudges">Reset</button>
+        <button class="nudge-reset" onclick="nudgeReset()">Reset</button>
       </div>
     </div>
+  </div>
+  <div class="preview-canvas-area" id="preview-canvas-area"><div id="label-svg-container"></div></div>
+  <div class="preview-footer">
+    <div class="preview-size-info" id="preview-size-info">Print size: 35 × 35mm</div>
     <div class="dl-row" id="preview-dl-row" style="display:none;">
       <button class="btn-dl" id="btn-dl-png" style="opacity:0.4;pointer-events:none;cursor:not-allowed;" aria-disabled="true" onclick="downloadPNG()">⬇ PNG</button>
       <button class="btn-dl-svg" id="btn-dl-svg" style="opacity:0.4;pointer-events:none;cursor:not-allowed;" aria-disabled="true" onclick="downloadSVG()">⬡ SVG</button>
@@ -2425,8 +2431,8 @@ function goToStep(n){if(n>S.step+1)return;S.step=n;
   const mobileDlRow=document.getElementById('mobile-dl-row');
   if(mobileDlRow)mobileDlRow.style.display=(n===5)?'flex':'none';
   // Show nudge controls on step 5 only
-  const nudgeBar=document.getElementById('nudge-bar');
-  if(nudgeBar)nudgeBar.classList.toggle('visible',n===5);
+  const nudgeBar=document.getElementById('nudge-banner');
+  if(nudgeBar)nudgeBar.style.display=(n===5)?'block':'none';
   document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+n).classList.add('active');updateStepsBar();if(n===5){buildSummary();toggleDownload();}updateLabel();if(n===3){const cb=document.getElementById('hazard-confirm');const btn=document.getElementById('btn-next-step3');if(cb){cb.checked=false;}if(btn){btn.style.opacity='0.4';btn.style.pointerEvents='none';}}}
 
 // ── NUDGE CONTROLS ────────────────────────────────────────────
@@ -3026,13 +3032,17 @@ function buildSVG(forExport=false){
   // ── NUDGE CONTROLS: text position and font size adjust ──────────
   // Only applied to the H/sens/P hazard text block.
   // Fragrance name, type, signal, footer, EN15494 are all unaffected.
+  // IMPORTANT: textOffsetY shifts position only — it does NOT change the
+  // available height used for font sizing (font sizing always uses the
+  // full curY→botY zone so the two controls are fully independent).
   const _nudgeOffsetPx = (S.textOffsetY||0) * _pxPerMm; // mm → px
   const _nudgeClampedOffset = Math.max(
     -(curY - midY) * 0.8,  // can't push so far up it enters pictogram zone
-    Math.min(_nudgeOffsetPx, (botY - curY) * 0.5) // can't push so far down it hits footer
+    Math.min(_nudgeOffsetPx, (botY - curY) * 0.4) // can't push so far down it hits footer
   );
-  const _curY0 = curY + _nudgeClampedOffset;
-  const _hardBot = botY;                       // text must never cross this
+  const _curY0 = curY + _nudgeClampedOffset; // position-shifted start (for rendering)
+  const _curY0ForSizing = curY;              // ALWAYS use unshifted Y for font sizing
+  const _hardBot = botY;                     // text must never cross this
   const _XHEIGHT_RATIO  = 0.51;                // DM Sans lowercase x-height / em
   const _MIN_XHEIGHT_MM = 1.2;                 // CLP 2024/2865 legibility minimum
   // Font size whose x-height equals the legibility threshold; warn below this.
@@ -3078,18 +3088,12 @@ function buildSVG(forExport=false){
     return {fs,hLH,sLH,pLH,hLines,hStartY,allS,sStartY,pLines,pStartY,endY:y};
   }
 
-  // Fit = block laid from the top of the avail zone ends at/above botY minus a
-  // small breathing margin. (The P block is also hard-clipped to botY below, so
-  // this margin only governs aesthetics/warning, not overflow — keep it modest
-  // so a block that genuinely fits doesn't trip a false legibility warning.)
   const _fitMargin=(fs)=> fs*0.3;
-  const _fits=(fs)=> _layoutHazard(fs,_curY0).endY <= _hardBot - _fitMargin(fs);
+  const _fits=(fs)=> _layoutHazard(fs,_curY0ForSizing).endY <= _hardBot - _fitMargin(fs);
 
   // Binary search for the LARGEST font that fits the full block, down to the
   // tiny render floor so all mandatory content is always shown.
-  // fontSizeAdj is a px delta applied only to hazard text, clamped to ±6px
-  const _fontAdjClamped = Math.max(-6, Math.min(S.fontSizeAdj||0, 6));
-  let _bsLo=_renderFloorFS, _bsHi=Math.max(clamp(BASE*0.13,8,28) + _fontAdjClamped, _renderFloorFS);
+  let _bsLo=_renderFloorFS, _bsHi=Math.max(clamp(BASE*0.13,8,28), _renderFloorFS);
   if(_fits(_bsHi)){
     _bsLo=_bsHi;                               // even the ceiling fits
   } else if(_fits(_bsLo)){
@@ -3099,14 +3103,22 @@ function buildSVG(forExport=false){
       if(_bsHi-_bsLo<0.05) break;
     }
   } // else: even the tiny floor overflows (pathological) — render at the floor.
-  const _sharedFS=_bsLo;
+  
+  // fontSizeAdj: direct delta applied AFTER binary search.
+  // Clamped so it can't push font above what fits or below the render floor.
+  const _fontAdjClamped = Math.max(-6, Math.min(S.fontSizeAdj||0, 6));
+  const _adjustedFS = Math.max(_renderFloorFS, _bsLo + _fontAdjClamped);
+  // If user nudged UP beyond what fits, cap back to the auto-fit size (prevents overflow)
+  const _sharedFS = _fontAdjClamped > 0 ? Math.min(_adjustedFS, _bsLo) : _adjustedFS;
 
   // Vertical centring: re-lay from a Y offset by half the leftover slack.
-  const _topLayout=_layoutHazard(_sharedFS,_curY0);
+  // Sizing pass uses _curY0ForSizing (unshifted); render pass uses _curY0 (position-nudged).
+  const _topLayout=_layoutHazard(_sharedFS,_curY0ForSizing);
   const _slack=Math.max(0,(_hardBot - _fitMargin(_sharedFS)) - _topLayout.endY);
+  // Apply both the centering slack AND the position nudge for the final render
   let _L=_layoutHazard(_sharedFS,_curY0+_slack*0.5);
-  // Safety: if centring shifted line-wrapping enough to cross botY (possible on
-  // circles as chord width changes), fall back to the top-aligned layout.
+  // Safety: if position nudge + centering shifted lines past botY, fall back to nudge-only
+  if(_L.endY > _hardBot) _L=_layoutHazard(_sharedFS,_curY0);
   if(_L.endY > _hardBot) _L=_topLayout;
 
   // Derive render variables from the chosen layout. ALL content is rendered in
