@@ -58,7 +58,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 /* DESKTOP LAYOUT */
 .builder-layout{display:grid;grid-template-columns:1fr 360px;min-height:100vh;padding-top:88px;}
 .wizard-panel{padding:28px 32px 80px;min-width:0;overflow-y:auto;}
-.preview-panel{background:#1a1f2e;-webkit-user-select:none;-moz-user-select:none;user-select:none;position:sticky;top:88px;height:calc(100vh - 88px);max-height:560px;max-width:640px;margin:0 auto;display:flex;flex-direction:column;overflow:hidden;align-self:start;}
+.preview-panel{background:#1a1f2e;-webkit-user-select:none;-moz-user-select:none;user-select:none;position:sticky;top:88px;height:calc(100vh - 88px);max-height:560px;max-width:640px;margin:0 auto 40px auto;display:flex;flex-direction:column;overflow:hidden;align-self:start;}
 
 /* MOBILE LAYOUT */
 @media(max-width:860px){
@@ -3326,13 +3326,14 @@ function updateLabel(){
         if(vb){
           const[,, vbW, vbH]=vb.split(' ').map(Number);
           if(vbW>0&&vbH>0){
-            // Max zoom = whatever fits the panel without overflow.
+            // Max zoom = full box fill, no breathing room.
             const fitZoom=Math.min(aW/vbW,aH/vbH);
-            _previewMaxZoom=Math.max(1.0,fitZoom);
-            // Default: fill most of the panel (88% of the fit size), never overflowing it.
+            _previewMaxZoom=fitZoom;
+            // Default fill (88% of full fit) is the "100%" reference point shown to the user.
+            _previewFitZoom=fitZoom*0.88;
             if(previewZoom===0.75||previewZoom<0.5||previewZoom>1.8){
-              previewZoom=fitZoom*0.88;
-              const pct=Math.round(previewZoom*100);
+              previewZoom=_previewFitZoom;
+              const pct=100;
               const fillPct=(_previewMaxZoom>0.2?((previewZoom-0.2)/(_previewMaxZoom-0.2)*100):0).toFixed(1);
               const zpEl=document.getElementById('zoom-pct');const zfEl=document.getElementById('zoom-fill');const ztEl=document.getElementById('zoom-thumb');
               if(zpEl)zpEl.textContent=pct+'%';
@@ -3445,10 +3446,11 @@ function mobileZoomAdj(delta){
 }
 let previewZoom=0.75;
 let _previewMaxZoom=2.0;
+let _previewFitZoom=1.0;
 
 function setPreviewZoom(z){
   previewZoom=Math.min(_previewMaxZoom,Math.max(0.2,z));
-  const pct=Math.round(previewZoom*100);
+  const pct=Math.round(_previewFitZoom>0?(previewZoom/_previewFitZoom*100):100);
   const fillPct=(_previewMaxZoom>0.2?((previewZoom-0.2)/(_previewMaxZoom-0.2)*100):0).toFixed(1);
   const zpEl=document.getElementById('zoom-pct');
   const zfEl=document.getElementById('zoom-fill');
