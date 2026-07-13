@@ -825,10 +825,28 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </div>
       <div style="background:white;border:1.5px solid var(--border);border-radius:16px;padding:16px 18px;flex:0 1 260px;min-width:230px;">
         <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;">Fine-tune your label</div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.4;">Within the compliant range. Pictograms stay locked at 10mm.</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.4;">Within the compliant range. Pictograms stay locked at 10mm. H-statements, P-statements and sensitisers move together as one block.</div>
 
         <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
-          <span style="font-size:12px;font-weight:600;color:var(--text);">Hazard size</span>
+          <span style="font-size:12px;font-weight:600;color:var(--text);">Product type</span>
+          <div style="display:flex;align-items:center;gap:5px;">
+            <button onclick="nudgeTypeFS(-1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">−</button>
+            <span id="type-fs-pct" style="font-size:11px;color:var(--muted);min-width:32px;text-align:center;font-weight:600;">100%</span>
+            <button onclick="nudgeTypeFS(1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">+</button>
+          </div>
+        </div>
+        <div style="text-align:right;"><span id="type-fs-reset" onclick="resetTypeFS()" style="font-size:10px;color:var(--teal);font-weight:600;cursor:pointer;display:none;">Reset</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
+          <span style="font-size:12px;font-weight:600;color:var(--text);">Signal word</span>
+          <div style="display:flex;align-items:center;gap:5px;">
+            <button onclick="nudgeSigFS(-1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">−</button>
+            <span id="sig-fs-pct" style="font-size:11px;color:var(--muted);min-width:32px;text-align:center;font-weight:600;">100%</span>
+            <button onclick="nudgeSigFS(1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">+</button>
+          </div>
+        </div>
+        <div style="text-align:right;"><span id="sig-fs-reset" onclick="resetSigFS()" style="font-size:10px;color:var(--teal);font-weight:600;cursor:pointer;display:none;">Reset</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
+          <span style="font-size:12px;font-weight:600;color:var(--text);">Hazard size <span style="font-weight:400;color:var(--muted);">(H/P/sensitiser)</span></span>
           <div style="display:flex;align-items:center;gap:5px;">
             <button onclick="nudgeHazardFS(-1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">−</button>
             <span id="hazard-fs-pct" style="font-size:11px;color:var(--muted);min-width:32px;text-align:center;font-weight:600;">100%</span>
@@ -1050,7 +1068,7 @@ function ghsPicto(key,cx,cy,size){
 }
 
 // ── STATE ─────────────────────────────────────────────────────
-const S={step:1,shape:'circle',size:35,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,hazardFSOverride:null,scentFSOverride:null,bizNameFSOverride:null,hazardYOffset:null};
+const S={step:1,shape:'circle',size:35,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,hazardFSOverride:null,scentFSOverride:null,bizNameFSOverride:null,hazardYOffset:null,typeFSOverride:null,sigFSOverride:null};
 
 // ── PRODUCT TYPE GUIDANCE ─────────────────────────────────────
 const FRAG_LOAD_TIPS={
@@ -1962,6 +1980,7 @@ function saveLabel(){plausible('Label Saved to Library');
     showQR:S.showQR||false,
     hazardFSOverride:S.hazardFSOverride,scentFSOverride:S.scentFSOverride,
     bizNameFSOverride:S.bizNameFSOverride,hazardYOffset:S.hazardYOffset,
+    typeFSOverride:S.typeFSOverride,sigFSOverride:S.sigFSOverride,
     savedAt:new Date().toLocaleDateString('en-GB')};
   // Auto-activate folder for this product type
   const folderKey=getLabelFolder(entry.productType);
@@ -1996,6 +2015,8 @@ function loadLabel(i){
   S.scentFSOverride=e.scentFSOverride!==undefined?e.scentFSOverride:null;
   S.bizNameFSOverride=e.bizNameFSOverride!==undefined?e.bizNameFSOverride:null;
   S.hazardYOffset=e.hazardYOffset!==undefined?e.hazardYOffset:null;
+  S.typeFSOverride=e.typeFSOverride!==undefined?e.typeFSOverride:null;
+  S.sigFSOverride=e.sigFSOverride!==undefined?e.sigFSOverride:null;
   const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};
   set('scent-name',e.scentName);set('product-type',e.productType);set('h-statements',e.hStatements||'');set('p-statements',e.pStatements||'');
   set('biz-name',e.bizName||'');set('biz-address',e.bizAddress||'');set('biz-phone',e.bizPhone||'');
@@ -2957,13 +2978,27 @@ function buildSVG(forExport=false){
 
   // Product type
   const typeSW  = chordW(curY + slot.type*0.5, 0.09);
-  const typeFS  = Math.min(slot.type * 0.68 * 1.5, fitFont(type, typeSW*0.88, clamp(BASE*0.060*1.5,4,14*1.5), clamp(BASE*0.028,2.5,6), true, false));
+  const typeFSMax = Math.min(slot.type * 0.68 * 1.5, clamp(BASE*0.060*1.5,4,14*1.5));
+  const typeFSMin = clamp(BASE*0.028,2.5,6);
+  let typeFS = fitFont(type, typeSW*0.88, typeFSMax, typeFSMin, true, false);
+  const _typeFSAuto = typeFS;
+  if(S.typeFSOverride!=null){
+    typeFS = Math.min(Math.max(S.typeFSOverride, typeFSMin), typeFSMax);
+  }
+  window._typeFSBounds={min:typeFSMin,max:typeFSMax,auto:_typeFSAuto};
   const typeY   = curY + slot.type*0.5 + midH*0.15*(0.6-1);
   curY += slot.type;
 
   // Signal word
   const sigSW   = chordW(curY + slot.signal*0.5, 0.09);
-  const sigFS   = Math.min(slot.signal * 0.68 * 1.4, fitFont(sig, sigSW*0.76, clamp(BASE*0.074*1.4,5,16*1.4), clamp(BASE*0.032,3,7), true, false));
+  const sigFSMax = Math.min(slot.signal * 0.68 * 1.4, clamp(BASE*0.074*1.4,5,16*1.4));
+  const sigFSMin = clamp(BASE*0.032,3,7);
+  let sigFS = fitFont(sig, sigSW*0.76, sigFSMax, sigFSMin, true, false);
+  const _sigFSAuto = sigFS;
+  if(S.sigFSOverride!=null){
+    sigFS = Math.min(Math.max(S.sigFSOverride, sigFSMin), sigFSMax);
+  }
+  window._sigFSBounds={min:sigFSMin,max:sigFSMax,auto:_sigFSAuto};
   const sigY    = curY + slot.signal*0.5 + midH*0.15*(0.55-1);
   curY += slot.signal;
 
@@ -3338,16 +3373,35 @@ function _fsPct(override,bounds){
 }
 function syncAdjustPanel(){
   const hb=window._hazardFSBounds, sb=window._scentFSBounds, bb=window._bizNameFSBounds;
+  const tb=window._typeFSBounds, gb=window._sigFSBounds;
   const hEl=document.getElementById('hazard-fs-pct'); if(hEl)hEl.textContent=_fsPct(S.hazardFSOverride,hb)+'%';
   const sEl=document.getElementById('scent-fs-pct'); if(sEl)sEl.textContent=_fsPct(S.scentFSOverride,sb)+'%';
   const zEl=document.getElementById('bizname-fs-pct'); if(zEl)zEl.textContent=_fsPct(S.bizNameFSOverride,bb)+'%';
+  const tEl=document.getElementById('type-fs-pct'); if(tEl)tEl.textContent=_fsPct(S.typeFSOverride,tb)+'%';
+  const gEl=document.getElementById('sig-fs-pct'); if(gEl)gEl.textContent=_fsPct(S.sigFSOverride,gb)+'%';
   const yPct=Math.round((S.hazardYOffset!=null?S.hazardYOffset:0.5)*100);
   const yEl=document.getElementById('hazard-y-pct'); if(yEl)yEl.textContent=yPct+'%';
   const hR=document.getElementById('hazard-fs-reset'); if(hR)hR.style.display=S.hazardFSOverride!=null?'inline':'none';
   const sR=document.getElementById('scent-fs-reset'); if(sR)sR.style.display=S.scentFSOverride!=null?'inline':'none';
   const zR=document.getElementById('bizname-fs-reset'); if(zR)zR.style.display=S.bizNameFSOverride!=null?'inline':'none';
+  const tR=document.getElementById('type-fs-reset'); if(tR)tR.style.display=S.typeFSOverride!=null?'inline':'none';
+  const gR=document.getElementById('sig-fs-reset'); if(gR)gR.style.display=S.sigFSOverride!=null?'inline':'none';
   const yR=document.getElementById('hazard-y-reset'); if(yR)yR.style.display=S.hazardYOffset!=null?'inline':'none';
 }
+function nudgeTypeFS(delta){
+  const b=window._typeFSBounds; if(!b)return;
+  const cur=S.typeFSOverride!=null?S.typeFSOverride:b.auto;
+  S.typeFSOverride=Math.min(Math.max(cur+delta*(b.max-b.min)*0.08,b.min),b.max);
+  updateLabel();
+}
+function resetTypeFS(){S.typeFSOverride=null;updateLabel();}
+function nudgeSigFS(delta){
+  const b=window._sigFSBounds; if(!b)return;
+  const cur=S.sigFSOverride!=null?S.sigFSOverride:b.auto;
+  S.sigFSOverride=Math.min(Math.max(cur+delta*(b.max-b.min)*0.08,b.min),b.max);
+  updateLabel();
+}
+function resetSigFS(){S.sigFSOverride=null;updateLabel();}
 function nudgeHazardFS(delta){
   const b=window._hazardFSBounds; if(!b)return;
   const cur=S.hazardFSOverride!=null?S.hazardFSOverride:b.auto;
