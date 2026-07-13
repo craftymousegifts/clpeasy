@@ -3271,7 +3271,8 @@ function syncHazardFSSlider(){
   const rs=document.getElementById('hazard-fs-reset');
   const b=window._hazardFSBounds;
   if(!sl||!b)return;
-  const pct=b.max>b.min?Math.round(((S.hazardFSOverride!=null?clamp(S.hazardFSOverride,b.min,b.max):b.auto)-b.min)/(b.max-b.min)*100):100;
+  const _ov=S.hazardFSOverride!=null?Math.min(Math.max(S.hazardFSOverride,b.min),b.max):b.auto;
+  const pct=b.max>b.min?Math.round((_ov-b.min)/(b.max-b.min)*100):100;
   sl.value=pct;
   if(rs)rs.style.display=S.hazardFSOverride!=null?'inline':'none';
 }
