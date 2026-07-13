@@ -760,6 +760,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <span class="library-toggle" onclick="toggleLib('s-library',this)">▼ Show sensitiser library</span>
     <div id="s-library" style="display:none;margin-bottom:10px;"><div class="sensitiser-grid" id="sensitiser-chips"></div></div>
     <div class="allergen-tags" id="allergen-tags"></div>
+    <div class="sdiv" style="margin-top:14px;">Hazard text size <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--muted)">— adjust within the compliant range</span></div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <input type="range" id="hazard-fs-slider" min="0" max="100" value="100" step="1" style="flex:1;accent-color:var(--teal);" oninput="onHazardFSInput(this.value)">
+      <span id="hazard-fs-reset" onclick="resetHazardFS()" style="font-size:12px;color:var(--teal);font-weight:600;cursor:pointer;white-space:nowrap;display:none;">Reset to auto</span>
+    </div>
     <div style="background:#FEF9E7;border:1px solid #F9E27A;border-radius:10px;padding:12px 14px;margin-top:14px;margin-bottom:4px;">
       <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:var(--text);font-weight:500;line-height:1.5;">
         <input type="checkbox" id="hazard-confirm" style="width:18px;height:18px;margin-top:1px;flex-shrink:0;accent-color:var(--teal);" onchange="toggleHazardNext()">
@@ -1003,7 +1008,7 @@ function ghsPicto(key,cx,cy,size){
 }
 
 // ── STATE ─────────────────────────────────────────────────────
-const S={step:1,shape:'circle',size:35,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true};
+const S={step:1,shape:'circle',size:35,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,hazardFSOverride:null};
 
 // ── PRODUCT TYPE GUIDANCE ─────────────────────────────────────
 const FRAG_LOAD_TIPS={
@@ -3019,7 +3024,11 @@ function buildSVG(forExport=false){
       if(_bsHi-_bsLo<0.05) break;
     }
   }
-  const _sharedFS=_bsLo;
+  let _sharedFS=_bsLo;
+  if(S.hazardFSOverride!=null){
+    _sharedFS=clamp(S.hazardFSOverride,_minLegibleFS,_bsHi);
+  }
+  window._hazardFSBounds={min:_minLegibleFS,max:_bsHi,auto:_bsLo};
 
   // Legibility warning is finalised after P truncation below: it must fire
   // whenever content can't fit at the minimum legible size OR any P statement
@@ -3257,6 +3266,25 @@ function buildSVG(forExport=false){
 }
 
 // ── UPDATE PREVIEW ────────────────────────────────────────────
+function syncHazardFSSlider(){
+  const sl=document.getElementById('hazard-fs-slider');
+  const rs=document.getElementById('hazard-fs-reset');
+  const b=window._hazardFSBounds;
+  if(!sl||!b)return;
+  const pct=b.max>b.min?Math.round(((S.hazardFSOverride!=null?clamp(S.hazardFSOverride,b.min,b.max):b.auto)-b.min)/(b.max-b.min)*100):100;
+  sl.value=pct;
+  if(rs)rs.style.display=S.hazardFSOverride!=null?'inline':'none';
+}
+function onHazardFSInput(pct){
+  const b=window._hazardFSBounds;
+  if(!b)return;
+  S.hazardFSOverride=b.min+(b.max-b.min)*(pct/100);
+  updateLabel();
+}
+function resetHazardFS(){
+  S.hazardFSOverride=null;
+  updateLabel();
+}
 function updateLabel(){
   readForm();
   // Auto-set signal word from selected H-codes (mirrors extractSDS logic so manual chip clicks work too)
@@ -3270,6 +3298,7 @@ function updateLabel(){
   }
   const{mmW,mmH}=getDims();
   const svgHtml=buildSVG(false);
+  syncHazardFSSlider();
   const _labelWarnEl=document.getElementById('label-warn');
   if(_labelWarnEl){
     if(window._labelLegibilityWarn){
