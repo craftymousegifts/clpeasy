@@ -88,6 +88,31 @@
   }
   .btn-nav:hover { background: var(--teal-dark) !important; color: #ffffff !important; }
 
+  .nav-dropdown { position: relative; }
+  .nav-dropdown-trigger {
+    font-size: 15px; font-weight: 600; color: #374151;
+    text-decoration: none; padding: 7px 14px; border-radius: 6px;
+    transition: color .2s, background .2s;
+    display: inline-flex; align-items: center; gap: 4px;
+    cursor: pointer; background: none; border: none; font-family: inherit;
+  }
+  .nav-dropdown-trigger:hover, .nav-dropdown.open .nav-dropdown-trigger { color: var(--teal); background: var(--teal-light); }
+  .nav-dropdown-chevron { font-size: 10px; transition: transform .2s; }
+  .nav-dropdown.open .nav-dropdown-chevron { transform: rotate(180deg); }
+  .nav-dropdown-menu {
+    position: absolute; top: calc(100% + 6px); left: 0;
+    background: #fff; border: 1px solid var(--border); border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.10); padding: 6px;
+    min-width: 190px; z-index: 60;
+    display: none;
+  }
+  .nav-dropdown.open .nav-dropdown-menu { display: block; }
+  .nav-dropdown-menu a {
+    display: block; padding: 9px 12px; font-size: 14px; font-weight: 500;
+    color: var(--text); text-decoration: none; border-radius: 6px; white-space: nowrap;
+  }
+  .nav-dropdown-menu a:hover { background: var(--teal-light); color: var(--teal); }
+
   /* HERO */
   .hero {
     padding: 120px 24px 48px;
@@ -417,19 +442,35 @@
     <div class="nav-badge">CLP</div><span class="nav-easy">easy</span><sup style="font-size:9px;font-weight:700;color:#4C9BB0;vertical-align:super;line-height:0;margin-left:1px;">™</sup>
   </a>
   <div class="nav-links">
-    <a href="#features" class="nav-hide-md">Features</a>
+    <a href="#features">Features</a>
     <a href="pricing.html">Pricing</a>
     <a href="#faq">FAQ</a>
-    <a href="#about" class="nav-hide-md">Our story</a>
-    <a href="knowledge.html" class="nav-hide-md">Knowledge Base</a>
-    <a href="compliance.html" class="nav-hide-md">Compliance</a>
-    <a href="showcase.html" class="nav-hide-md">Label Showcase</a>
-    <a href="support.html" class="nav-hide-md">Support</a>
-    <a href="#" class="nav-hide-md" onclick="openGuide();return false;" style="font-size:15px;font-weight:600;color:#374151;text-decoration:none;padding:7px 14px;border-radius:6px;transition:color .2s,background .2s;" onmouseover="this.style.color='#4C9BB0';this.style.background='#d6eef4'" onmouseout="this.style.color='#374151';this.style.background=''">Setup Guide</a>
+    <div class="nav-dropdown" id="nav-resources">
+      <button type="button" class="nav-dropdown-trigger" onclick="toggleNavResources(event)">Resources <span class="nav-dropdown-chevron">▾</span></button>
+      <div class="nav-dropdown-menu">
+        <a href="#about">Our story</a>
+        <a href="knowledge.html">Knowledge Base</a>
+        <a href="compliance.html">Compliance</a>
+        <a href="showcase.html">Label Showcase</a>
+        <a href="support.html">Support</a>
+        <a href="#" onclick="openGuide();return false;">Setup Guide</a>
+      </div>
+    </div>
     <a href="auth.html?mode=signin" class="nav-signin" style="font-size:14px;font-weight:500;color:var(--muted);text-decoration:none;padding:6px 12px;">Sign in</a>
     <a href="auth.html?mode=signup" class="btn-nav">Start free trial</a>
   </div>
 </nav>
+
+<script>
+function toggleNavResources(e){
+  e.stopPropagation();
+  document.getElementById('nav-resources').classList.toggle('open');
+}
+document.addEventListener('click', function(e){
+  const d = document.getElementById('nav-resources');
+  if(d && !d.contains(e.target)) d.classList.remove('open');
+});
+</script>
 
 <!-- LAPSED USER WIN-BACK BANNER (shown only when logged in + cancelled/lapsed) -->
 <div id="lapsed-banner" style="display:none;background:linear-gradient(90deg,#0f2236,#1a3a50);padding:12px 24px;text-align:center;position:relative;">
