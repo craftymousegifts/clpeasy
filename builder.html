@@ -58,14 +58,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 /* DESKTOP LAYOUT */
 .builder-layout{display:grid;grid-template-columns:1fr 360px;min-height:100vh;padding-top:88px;}
 .wizard-panel{padding:28px 32px 80px;min-width:0;overflow-y:auto;}
-.preview-panel{background:#1a1f2e;-webkit-user-select:none;-moz-user-select:none;user-select:none;position:sticky;top:88px;height:calc(100vh - 88px);max-height:560px;max-width:640px;margin:0 auto 40px auto;display:flex;flex-direction:column;overflow:hidden;align-self:start;}
+.preview-panel{background:var(--off);-webkit-user-select:none;-moz-user-select:none;user-select:none;position:sticky;top:88px;height:calc(100vh - 88px);max-height:560px;max-width:640px;margin:0 auto 40px auto;display:flex;flex-direction:column;overflow:hidden;align-self:start;border:1.5px solid var(--border);border-radius:16px;}
 
 /* MOBILE LAYOUT */
 @media(max-width:860px){
   .builder-layout{display:block;padding-top:88px;}
   .wizard-panel{padding:20px 16px 40px;max-width:100%;width:100%;}
   .preview-panel{display:none;}
-  .mobile-preview-bar{position:sticky;top:0;z-index:50;display:flex !important;background:#1a1f2e;}
+  .mobile-preview-bar{position:sticky;top:0;z-index:50;display:flex !important;background:var(--off);}
   .form-row{grid-template-columns:1fr;}
   body{padding-bottom:20px;}
 }
@@ -73,7 +73,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 /* MOBILE PREVIEW BAR - shown at top of each step on mobile */
 .mobile-preview-bar{
   display:none;
-  background:#1a1f2e;
+  background:var(--off);
+  border:1.5px solid var(--border);
   border-radius:16px;
   padding:16px;
   margin-bottom:24px;
@@ -82,12 +83,12 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
   gap:10px;
 }
 .mobile-preview-bar-label{
-  font-size:11px;color:rgba(255,255,255,0.4);
+  font-size:11px;color:var(--muted);font-weight:700;
   letter-spacing:1px;text-transform:uppercase;
   align-self:flex-start;
 }
 .mobile-preview-dims{
-  font-size:11px;color:rgba(255,255,255,0.35);
+  font-size:11px;color:var(--muted);
 }
 .mobile-dl-row{
   display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;
@@ -198,18 +199,18 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .btn-next:active,.btn-next:hover{background:var(--teal-dark);}
 
 /* PREVIEW PANEL DESKTOP */
-.preview-header{padding:12px 16px 10px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
-.preview-header h3{font-size:11px;font-weight:600;color:rgba(255,255,255,0.45);letter-spacing:1px;white-space:nowrap;}
+.preview-header{padding:12px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+.preview-header h3{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;white-space:nowrap;}
 .preview-header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
-.preview-badge{font-size:11px;background:rgba(13,148,136,0.2);color:#5EEAD4;padding:3px 10px;border-radius:100px;font-weight:600;white-space:nowrap;}
+.preview-badge{font-size:11px;background:var(--teal-light);color:var(--teal-dark);padding:3px 10px;border-radius:100px;font-weight:600;white-space:nowrap;}
 /* Zoom bar */
 .zoom-bar{display:flex;align-items:center;gap:6px;}
-.zoom-btn{width:24px;height:24px;border-radius:5px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.55);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:'DM Sans',sans-serif;line-height:1;padding:0;}
-.zoom-btn:hover{background:rgba(255,255,255,0.15);}
-.zoom-track{position:relative;width:72px;height:4px;background:rgba(255,255,255,0.12);border-radius:2px;cursor:pointer;}
+.zoom-btn{width:24px;height:24px;border-radius:5px;background:white;border:1.5px solid var(--border);color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:'DM Sans',sans-serif;line-height:1;padding:0;}
+.zoom-btn:hover{background:var(--off);}
+.zoom-track{position:relative;width:72px;height:4px;background:var(--border);border-radius:2px;cursor:pointer;}
 .zoom-fill{height:100%;background:var(--teal);border-radius:2px;transition:width .15s;}
-.zoom-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:white;box-shadow:0 1px 4px rgba(0,0,0,0.4);cursor:grab;transition:left .15s;}
-.zoom-pct{font-size:11px;color:rgba(255,255,255,0.4);min-width:30px;text-align:right;}
+.zoom-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:var(--teal-dark);box-shadow:0 1px 4px rgba(0,0,0,0.2);cursor:grab;transition:left .15s;}
+.zoom-pct{font-size:11px;color:var(--muted);min-width:30px;text-align:right;font-weight:600;}
 /* Canvas area — scrollable so zoomed labels don't get clipped */
 .preview-canvas-area{display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto;flex:1;min-height:0;}
 #label-svg-container{
@@ -225,16 +226,16 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   filter:drop-shadow(0 6px 20px rgba(0,0,0,0.4));
   /* Width/height driven by JS transform-origin scale */
 }
-.preview-footer{padding:10px 16px 14px;border-top:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:8px;}
-.preview-size-info{font-size:11px;color:rgba(255,255,255,0.3);text-align:center;}
+.preview-footer{padding:10px 16px 14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;}
+.preview-size-info{font-size:11px;color:var(--muted);text-align:center;}
 
 /* DOWNLOAD BUTTONS */
 .dl-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .btn-dl{background:var(--teal);color:white;border:none;padding:11px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;width:100%;-webkit-tap-highlight-color:transparent;}
 .btn-dl:active,.btn-dl:hover{background:var(--teal-dark);}
-.btn-dl-svg{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.8);border:1.5px solid rgba(255,255,255,0.15);padding:11px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;width:100%;}
-.btn-dl-svg:active,.btn-dl-svg:hover{background:rgba(255,255,255,0.15);}
-.cricut-note{font-size:11px;color:rgba(255,255,255,0.3);text-align:center;}
+.btn-dl-svg{background:white;color:var(--text);border:1.5px solid var(--border);padding:11px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;width:100%;}
+.btn-dl-svg:active,.btn-dl-svg:hover{background:var(--off);}
+.cricut-note{font-size:11px;color:var(--muted);text-align:center;}
 
 /* MOBILE PREVIEW SHEET */
 .mobile-preview-btn{display:none;background:rgba(13,148,136,0.15);color:#5EEAD4;border:1.5px solid rgba(13,148,136,0.3);padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
@@ -806,66 +807,67 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <p class="step-sub">Review your label, then download in your preferred format.</p>
     <div class="compliance-box"><p>⚠️ <strong>Compliance reminder:</strong> Always verify all hazard data against your fragrance supplier's SDS at your actual fragrance load before printing. You are responsible for final verification.</p></div>
     <div class="watermark-note">🆓 Free trial — labels include a CLPeasy watermark. <button onclick="window.location.href='pricing.html'" style="background:var(--teal,#4C9BB0);color:white;border:none;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;">Subscribe to remove →</button></div>
+    <!-- STEP 5 PREVIEW + FINE-TUNE (side by side) -->
+    <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:20px;">
+      <div style="background:var(--off);border:1.5px solid var(--border);border-radius:16px;padding:20px;flex:1 1 420px;min-width:300px;" id="mobile-preview-container">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);">Live Preview</span>
+          <span id="mobile-size-info" style="font-size:12px;color:var(--muted);font-weight:600;">Print size: 35 × 35mm</span>
+        </div>
+        <div style="background:white;border:1px solid var(--border);border-radius:12px;overflow:auto;max-height:520px;display:flex;align-items:flex-start;justify-content:center;padding:16px 0;" id="mobile-label-scroll">
+          <div id="mobile-label-preview" style="flex-shrink:0;"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;justify-content:center;margin-top:14px;">
+          <button onclick="mobileZoomAdj(-0.15)" style="background:white;border:1.5px solid var(--border);color:var(--text);border-radius:8px;width:30px;height:30px;font-size:16px;cursor:pointer;font-family:'DM Sans',sans-serif;">−</button>
+          <span id="mobile-zoom-pct" style="font-size:12px;color:var(--muted);min-width:38px;text-align:center;font-weight:600;">100%</span>
+          <button onclick="mobileZoomAdj(0.15)" style="background:white;border:1.5px solid var(--border);color:var(--text);border-radius:8px;width:30px;height:30px;font-size:16px;cursor:pointer;font-family:'DM Sans',sans-serif;">+</button>
+        </div>
+      </div>
+      <div style="background:white;border:1.5px solid var(--border);border-radius:16px;padding:16px 18px;flex:0 1 260px;min-width:230px;">
+        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;">Fine-tune your label</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.4;">Within the compliant range. Pictograms stay locked at 10mm.</div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
+          <span style="font-size:12px;font-weight:600;color:var(--text);">Hazard size</span>
+          <div style="display:flex;align-items:center;gap:5px;">
+            <button onclick="nudgeHazardFS(-1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">−</button>
+            <span id="hazard-fs-pct" style="font-size:11px;color:var(--muted);min-width:32px;text-align:center;font-weight:600;">100%</span>
+            <button onclick="nudgeHazardFS(1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">+</button>
+          </div>
+        </div>
+        <div style="text-align:right;"><span id="hazard-fs-reset" onclick="resetHazardFS()" style="font-size:10px;color:var(--teal);font-weight:600;cursor:pointer;display:none;">Reset</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
+          <span style="font-size:12px;font-weight:600;color:var(--text);">Hazard position</span>
+          <div style="display:flex;align-items:center;gap:5px;">
+            <button onclick="nudgeHazardY(-1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">↑</button>
+            <span id="hazard-y-pct" style="font-size:11px;color:var(--muted);min-width:32px;text-align:center;font-weight:600;">50%</span>
+            <button onclick="nudgeHazardY(1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">↓</button>
+          </div>
+        </div>
+        <div style="text-align:right;"><span id="hazard-y-reset" onclick="resetHazardY()" style="font-size:10px;color:var(--teal);font-weight:600;cursor:pointer;display:none;">Reset</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
+          <span style="font-size:12px;font-weight:600;color:var(--text);">Scent name</span>
+          <div style="display:flex;align-items:center;gap:5px;">
+            <button onclick="nudgeScentFS(-1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">−</button>
+            <span id="scent-fs-pct" style="font-size:11px;color:var(--muted);min-width:32px;text-align:center;font-weight:600;">100%</span>
+            <button onclick="nudgeScentFS(1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">+</button>
+          </div>
+        </div>
+        <div style="text-align:right;"><span id="scent-fs-reset" onclick="resetScentFS()" style="font-size:10px;color:var(--teal);font-weight:600;cursor:pointer;display:none;">Reset</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;">
+          <span style="font-size:12px;font-weight:600;color:var(--text);">Business name</span>
+          <div style="display:flex;align-items:center;gap:5px;">
+            <button onclick="nudgeBizNameFS(-1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">−</button>
+            <span id="bizname-fs-pct" style="font-size:11px;color:var(--muted);min-width:32px;text-align:center;font-weight:600;">100%</span>
+            <button onclick="nudgeBizNameFS(1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">+</button>
+          </div>
+        </div>
+        <div style="text-align:right;"><span id="bizname-fs-reset" onclick="resetBizNameFS()" style="font-size:10px;color:var(--teal);font-weight:600;cursor:pointer;display:none;">Reset</span></div>
+      </div>
+    </div>
     <div style="background:white;border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;">
       <div class="sdiv" style="margin-top:0">Label summary</div>
       <div class="summary-grid" id="label-summary"></div>
-    </div>
-    <!-- STEP 5 PREVIEW -->
-    <div style="background:var(--off);border:1.5px solid var(--border);border-radius:16px;padding:22px;margin:0 auto 20px auto;max-width:480px;" id="mobile-preview-container">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);">Live Preview</span>
-        <span id="mobile-size-info" style="font-size:12px;color:var(--muted);font-weight:600;">Print size: 35 × 35mm</span>
-      </div>
-      <div style="background:white;border:1px solid var(--border);border-radius:12px;overflow:auto;max-height:400px;display:flex;align-items:flex-start;justify-content:center;padding:16px 0;" id="mobile-label-scroll">
-        <div id="mobile-label-preview" style="flex-shrink:0;"></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;justify-content:center;margin-top:14px;">
-        <button onclick="mobileZoomAdj(-0.15)" style="background:white;border:1.5px solid var(--border);color:var(--text);border-radius:8px;width:30px;height:30px;font-size:16px;cursor:pointer;font-family:'DM Sans',sans-serif;">−</button>
-        <span id="mobile-zoom-pct" style="font-size:12px;color:var(--muted);min-width:38px;text-align:center;font-weight:600;">100%</span>
-        <button onclick="mobileZoomAdj(0.15)" style="background:white;border:1.5px solid var(--border);color:var(--text);border-radius:8px;width:30px;height:30px;font-size:16px;cursor:pointer;font-family:'DM Sans',sans-serif;">+</button>
-      </div>
-    </div>
-    <!-- STEP 5 FINE-TUNE PANEL -->
-    <div style="background:white;border:1.5px solid var(--border);border-radius:16px;padding:20px 22px;margin-bottom:20px;">
-      <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">Fine-tune your label</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5;">Adjust text size and position within the compliant range. Pictograms always stay locked at the legal 10mm minimum.</div>
-
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:13px;font-weight:600;color:var(--text);">Hazard text size</span>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <button onclick="nudgeHazardFS(-1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:6px;width:26px;height:26px;font-size:14px;cursor:pointer;">−</button>
-          <span id="hazard-fs-pct" style="font-size:12px;color:var(--muted);min-width:36px;text-align:center;font-weight:600;">100%</span>
-          <button onclick="nudgeHazardFS(1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:6px;width:26px;height:26px;font-size:14px;cursor:pointer;">+</button>
-          <span id="hazard-fs-reset" onclick="resetHazardFS()" style="font-size:11px;color:var(--teal);font-weight:600;cursor:pointer;margin-left:4px;white-space:nowrap;display:none;">Reset</span>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:13px;font-weight:600;color:var(--text);">Hazard text position</span>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <button onclick="nudgeHazardY(-1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:6px;width:26px;height:26px;font-size:14px;cursor:pointer;">↑</button>
-          <span id="hazard-y-pct" style="font-size:12px;color:var(--muted);min-width:36px;text-align:center;font-weight:600;">50%</span>
-          <button onclick="nudgeHazardY(1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:6px;width:26px;height:26px;font-size:14px;cursor:pointer;">↓</button>
-          <span id="hazard-y-reset" onclick="resetHazardY()" style="font-size:11px;color:var(--teal);font-weight:600;cursor:pointer;margin-left:4px;white-space:nowrap;display:none;">Reset</span>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border);">
-        <span style="font-size:13px;font-weight:600;color:var(--text);">Scent name size</span>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <button onclick="nudgeScentFS(-1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:6px;width:26px;height:26px;font-size:14px;cursor:pointer;">−</button>
-          <span id="scent-fs-pct" style="font-size:12px;color:var(--muted);min-width:36px;text-align:center;font-weight:600;">100%</span>
-          <button onclick="nudgeScentFS(1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:6px;width:26px;height:26px;font-size:14px;cursor:pointer;">+</button>
-          <span id="scent-fs-reset" onclick="resetScentFS()" style="font-size:11px;color:var(--teal);font-weight:600;cursor:pointer;margin-left:4px;white-space:nowrap;display:none;">Reset</span>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;">
-        <span style="font-size:13px;font-weight:600;color:var(--text);">Business name size</span>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <button onclick="nudgeBizNameFS(-1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:6px;width:26px;height:26px;font-size:14px;cursor:pointer;">−</button>
-          <span id="bizname-fs-pct" style="font-size:12px;color:var(--muted);min-width:36px;text-align:center;font-weight:600;">100%</span>
-          <button onclick="nudgeBizNameFS(1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:6px;width:26px;height:26px;font-size:14px;cursor:pointer;">+</button>
-          <span id="bizname-fs-reset" onclick="resetBizNameFS()" style="font-size:11px;color:var(--teal);font-weight:600;cursor:pointer;margin-left:4px;white-space:nowrap;display:none;">Reset</span>
-        </div>
-      </div>
     </div>
     <div style="background:#F8FAFC;border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;">
       <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:var(--text);font-weight:500;line-height:1.5;">
@@ -947,7 +949,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div style="margin-top:6px;">
 
     </div>
-    <a id="print-sheet-link-preview" href="print.html" style="display:none;align-items:center;justify-content:center;gap:7px;background:rgba(13,148,136,0.12);border:1px solid rgba(13,148,136,0.25);color:#5EEAD4;padding:9px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;transition:all .2s;margin-top:2px;" title="Arrange your saved labels on an A4 sheet. For cutting machines: labels must be the same size on each sheet." onmouseover="this.style.background='rgba(13,148,136,0.22)'" onmouseout="this.style.background='rgba(13,148,136,0.12)'">🖨 Print Sheet Composer →</a>
+    <a id="print-sheet-link-preview" href="print.html" style="display:none;align-items:center;justify-content:center;gap:7px;background:var(--teal-light);border:1px solid var(--teal);color:var(--teal-dark);padding:9px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;transition:all .2s;margin-top:2px;" title="Arrange your saved labels on an A4 sheet. For cutting machines: labels must be the same size on each sheet." onmouseover="this.style.background='#c5e6ee'" onmouseout="this.style.background='var(--teal-light)'">🖨 Print Sheet Composer →</a>
     <div class="cricut-note" style="display:none;"></div>
   </div>
 </div>
@@ -1958,6 +1960,8 @@ function saveLabel(){plausible('Label Saved to Library');
     ufiCode:document.getElementById('ufi-code')?.value||'',
     labelLang:document.getElementById('label-lang')?.value||'en',
     showQR:S.showQR||false,
+    hazardFSOverride:S.hazardFSOverride,scentFSOverride:S.scentFSOverride,
+    bizNameFSOverride:S.bizNameFSOverride,hazardYOffset:S.hazardYOffset,
     savedAt:new Date().toLocaleDateString('en-GB')};
   // Auto-activate folder for this product type
   const folderKey=getLabelFolder(entry.productType);
@@ -1988,6 +1992,10 @@ function loadLabel(i){
   if(e.ufiCode!==undefined){S.ufiCode=e.ufiCode;const uel=document.getElementById('ufi-code');if(uel)uel.value=e.ufiCode||'';}
   if(e.labelLang){S.labelLang=e.labelLang;const lel=document.getElementById('label-lang');if(lel)lel.value=e.labelLang;}
   if(e.showQR!==undefined){S.showQR=e.showQR;setQR(e.showQR);}
+  S.hazardFSOverride=e.hazardFSOverride!==undefined?e.hazardFSOverride:null;
+  S.scentFSOverride=e.scentFSOverride!==undefined?e.scentFSOverride:null;
+  S.bizNameFSOverride=e.bizNameFSOverride!==undefined?e.bizNameFSOverride:null;
+  S.hazardYOffset=e.hazardYOffset!==undefined?e.hazardYOffset:null;
   const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};
   set('scent-name',e.scentName);set('product-type',e.productType);set('h-statements',e.hStatements||'');set('p-statements',e.pStatements||'');
   set('biz-name',e.bizName||'');set('biz-address',e.bizAddress||'');set('biz-phone',e.bizPhone||'');
@@ -3442,8 +3450,13 @@ function updateLabel(){
       if(vb){
         const[,, vbW, vbH]=vb.split(' ').map(Number);
         if(vbW>0&&vbH>0){
-          const mW=mScroll.clientWidth-16,mH=420-16;
+          const mW=mScroll.clientWidth-16,mH=520-16;
           _mobileMaxZoom=Math.max(1.0,Math.min(mW/vbW,mH/vbH));
+          _mobileZoom=Math.min(_mobileZoom,_mobileMaxZoom);
+          mSvg.setAttribute('width', Math.round(vbW*_mobileZoom));
+          mSvg.setAttribute('height', Math.round(vbH*_mobileZoom));
+          const pctEl=document.getElementById('mobile-zoom-pct');
+          if(pctEl)pctEl.textContent=Math.round(_mobileZoom*100)+'%';
         }
       }
     }
