@@ -485,7 +485,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="help-section">
       <h3>Step 1 — Label size & shape</h3>
       <div class="help-step"><div class="help-num">1</div><div class="help-step-text">Choose your <strong>shape</strong> — Circle, Square or Rectangle.</div></div>
-      <div class="help-step"><div class="help-num">2</div><div class="help-step-text">Choose your <strong>size</strong> — 35mm (wax melt), 40mm (small candle), 50mm (standard candle), 63mm (large jar) or Custom.</div></div>
+      <div class="help-step"><div class="help-num">2</div><div class="help-step-text">Choose your <strong>size</strong> — 52mm (standard candle, the CLP minimum), 63mm (large jar) or Custom.</div></div>
       <div class="help-step"><div class="help-num">3</div><div class="help-step-text">Watch the <strong>live preview</strong> update as you make changes.</div></div>
       <div class="help-warn">Read the disclaimer carefully — you are responsible for verifying all label information against your SDS before selling.</div>
     </div>
@@ -530,7 +530,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <details class="help-faq"><summary>Do I legally need a CLP label?</summary><p>Yes — if you sell scented candles or wax melts in the UK or EU you are legally required to have a CLP label. Trading Standards can issue fines for non-compliance.</p></details>
       <details class="help-faq"><summary>Where do I find my SDS sheet?</summary><p>On your fragrance supplier's website — usually on the individual product page. Look for a Download SDS or Safety Data Sheet link. Contact your supplier if you can't find it.</p></details>
       <details class="help-faq"><summary>What is EUH208?</summary><p>EUH208 means "Contains [substance name] — may produce an allergic reaction." You need it if your fragrance contains certain sensitiser substances above the threshold level. Your SDS Section 2.2 will tell you if it applies.</p></details>
-      <details class="help-faq"><summary>What size label should I use?</summary><p>35mm circle for wax melt clamshells. 50mm circle for standard candle jars. Measure the area where your label will sit and use Custom size if none of the presets fit.</p></details>
+      <details class="help-faq"><summary>What size label should I use?</summary><p>52mm circle is the CLP minimum and suits most standard candle jars. 63mm for larger jars. For wax melt clamshells or other small formats below 52mm, use Custom size and check the compliance warning that appears — your CLP text may need a larger label or a fold-out leaflet to stay legible.</p></details>
       <details class="help-faq"><summary>Smart Paste didn't extract everything correctly</summary><p>Make sure you copied only Section 2.2 of the SDS. If it still doesn't work, use the H statement chips and sensitiser library to enter the data manually.</p></details>
       <details class="help-faq"><summary>Can I use this on my phone?</summary><p>Yes — CLPeasy works on iPhone and Android. PNG files save to your camera roll and SVG files save to your Files app.</p></details>
       <details class="help-faq"><summary>What's the difference between Easy Start and Easy Pro?</summary><p>Easy Start (£9.99/mo or £99/year) gives you 20 downloads a month, no watermark, the full label builder, and A4 print sheets. Easy Pro (£14.99/mo or £149/year) adds 30 downloads a month plus Smart Paste, UFI generator, and QR digital safety sheets. Both plans start with a 14-day free trial — no card needed.</p></details>
@@ -595,8 +595,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <div class="sdiv">Preset sizes</div>
     <div class="size-grid">
-      <div class="size-card" data-size="35" onclick="selectSize(35)"><div class="sz">35mm</div><div class="sz-label">Wax Melt</div></div>
-      <div class="size-card" data-size="40" onclick="selectSize(40)"><div class="sz">40mm</div><div class="sz-label">Small Candle</div></div>
       <div class="size-card selected" data-size="52" onclick="selectSize(52)"><div class="sz">52mm</div><div class="sz-label">Standard Candle</div></div>
       <div class="size-card" data-size="63" onclick="selectSize(63)"><div class="sz">63mm</div><div class="sz-label">Large Jar</div></div>
       <div class="size-card" data-size="custom" onclick="selectSize('custom')"><div class="sz" style="font-size:14px">Custom</div><div class="sz-label">Your own size</div></div>
@@ -2188,8 +2186,8 @@ function init(){
   // Clear label-specific fields — always start fresh
   try{const _p=JSON.parse(localStorage.getItem('clpeasy_prod')||'{}');delete _p.productType;delete _p.netWeight;delete _p.burnTime;delete _p.fragLoad;localStorage.setItem('clpeasy_prod',JSON.stringify(_p));}catch(e){}
   syncDimFields();updateLabel();
-  document.getElementById('custom-w').value=35;
-  document.getElementById('custom-h').value=35;
+  document.getElementById('custom-w').value=52;
+  document.getElementById('custom-h').value=52;
   renderSaved();
   // Ensure hazard data is always clear on page load — never cached
   S.signal=''; S.pictograms=[]; S.hSelected=[]; S.pSelected=[]; S.sensitisers=[];
@@ -3921,7 +3919,7 @@ Key things to know:
 - Printing at home on Avery sticker paper: use 🖨 Avery Sheet — it aligns exactly to real Avery sheets
 - Printing at home on plain paper (cut yourself): use ⬇ PNG
 - Uploading to Canva to add branding first: use ⬇ PNG, then in Canva use "Upload" and overlay brand elements
-- Sizes: 35mm = wax melt, 40mm = small candle, 50mm = standard candle, 63mm = large jar
+- Sizes: 52mm = standard candle (CLP minimum), 63mm = large jar, Custom = any other size including wax melts (below 52mm triggers a compliance warning)
 - Maximum labels on A4 at 75mm: approximately 6 (3×2 grid with margins)
 
 When generating steps, format them clearly. For WALKTHROUGH style, include visual hints in brackets like [→ Click "Circle" in the shape grid] or [→ Step 1: Label size & shape].
