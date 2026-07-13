@@ -3116,18 +3116,19 @@ function buildSVG(forExport=false){
     }
   }
   let _sharedFS=_bsLo;
-  // Manual override gets its own, more generous ceiling — the actual largest
-  // size that still physically fits, not auto-fit's conservative shared cap.
+  // Manual override gets its own ceiling using zero breathing margin — right up
+  // to the label boundary itself, not auto-fit's cautious buffer.
+  const _fitsExact=(fs)=> _layoutHazard(fs,_curY0).endY <= _hardBot;
   let _manualHi=_bsHi;
   if(_fitsAtMin){
     let _mLo=_bsHi, _mHi=clamp(BASE*0.30,8,60);
-    if(_fits(_mHi)){
+    if(_fitsExact(_mHi)){
       _manualHi=_mHi;
     } else {
       for(let _i=0;_i<40;_i++){
         const _mid=(_mLo+_mHi)/2;
-        if(_fits(_mid)) _mLo=_mid; else _mHi=_mid;
-        if(_mHi-_mLo<0.05) break;
+        if(_fitsExact(_mid)) _mLo=_mid; else _mHi=_mid;
+        if(_mHi-_mLo<0.02) break;
       }
       _manualHi=_mLo;
     }
