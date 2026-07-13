@@ -816,7 +816,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="summary-grid" id="label-summary"></div>
     </div>
     <!-- MOBILE PREVIEW IN STEP 5 -->
-    <div style="background:#1a1f2e;border-radius:16px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:20px;" id="mobile-preview-container">
+    <div style="background:#1a1f2e;border-radius:16px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:12px;margin:0 auto 20px auto;max-width:440px;" id="mobile-preview-container">
       <div style="overflow:auto;width:100%;max-height:420px;display:flex;align-items:flex-start;justify-content:center;padding:8px 0;" id="mobile-label-scroll">
         <div id="mobile-label-preview" style="flex-shrink:0;"></div>
       </div>
@@ -2392,6 +2392,7 @@ function goToStep(n){if(n>S.step+1)return;S.step=n;
   if(dlRow)dlRow.style.display=(n===5)?'flex':'none';
   const _pp=document.querySelector('.preview-panel');
   if(_pp)_pp.style.display=(n===5)?'none':'flex';
+  if(n===5)mobileZoomAdj(1.0-_mobileZoom);
   const mobileDlRow=document.getElementById('mobile-dl-row');
   if(mobileDlRow)mobileDlRow.style.display=(n===5)?'flex':'none';document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+n).classList.add('active');updateStepsBar();if(n===5)buildSummary();updateLabel();if(n===3){const cb=document.getElementById('hazard-confirm');const btn=document.getElementById('btn-next-step3');if(cb){cb.checked=false;}if(btn){btn.style.opacity='0.4';btn.style.pointerEvents='none';}}}
 function nextStep(){if(S.step<5){plausible('Builder: Step '+(S.step+1),{props:{from_step:String(S.step)}});goToStep(S.step+1);window.scrollTo({top:0,behavior:'smooth'});}}
@@ -3325,14 +3326,14 @@ function updateLabel(){
         if(vb){
           const[,, vbW, vbH]=vb.split(' ').map(Number);
           if(vbW>0&&vbH>0){
-            // Scale to fill panel (respecting aspect ratio)
-            const fitZoom=Math.min(aW/vbW,aH/vbH,2.0);
-            // Only auto-set zoom if it's still at default or the label size changed
+            // Max zoom = whatever fits the panel without overflow; never below 100%.
+            const fitZoom=Math.min(aW/vbW,aH/vbH);
+            _previewMaxZoom=Math.max(1.0,fitZoom);
+            // Always default to 100% (or smaller, if the panel can't even fit 100%) — never auto-zoom past 100%.
             if(previewZoom===0.75||previewZoom<0.5||previewZoom>1.8){
-              // fitZoom*0.88 gives a little breathing room; no floor at 1.0
-              previewZoom=Math.min(fitZoom*0.88, 2.0);
+              previewZoom=Math.min(1.0, fitZoom);
               const pct=Math.round(previewZoom*100);
-              const fillPct=((previewZoom-0.2)/(2.0-0.2)*100).toFixed(1);
+              const fillPct=(_previewMaxZoom>0.2?((previewZoom-0.2)/(_previewMaxZoom-0.2)*100):0).toFixed(1);
               const zpEl=document.getElementById('zoom-pct');const zfEl=document.getElementById('zoom-fill');const ztEl=document.getElementById('zoom-thumb');
               if(zpEl)zpEl.textContent=pct+'%';
               if(zfEl)zfEl.style.width=fillPct+'%';
@@ -3354,6 +3355,20 @@ function updateLabel(){
   if(mc)mc.innerHTML=svgHtml;
   const mi=document.getElementById('mobile-size-info');
   if(mi)mi.textContent=`Print size: ${mmW} × ${mmH}mm`;
+  {
+    const mScroll=document.getElementById('mobile-label-scroll');
+    const mSvg=mc?mc.querySelector('svg'):null;
+    if(mScroll&&mSvg){
+      const vb=mSvg.getAttribute('viewBox');
+      if(vb){
+        const[,, vbW, vbH]=vb.split(' ').map(Number);
+        if(vbW>0&&vbH>0){
+          const mW=mScroll.clientWidth-16,mH=420-16;
+          _mobileMaxZoom=Math.max(1.0,Math.min(mW/vbW,mH/vbH));
+        }
+      }
+    }
+  }
   // Sheet preview
   const sc=document.getElementById('sheet-label-container');
   if(sc)sc.innerHTML=svgHtml;
@@ -3410,8 +3425,9 @@ function svgWrapped(lines,x,startY,lineH,sizePx,bold,serif,fill,anchor='middle',
 
 // ── PREVIEW ZOOM ──────────────────────────────────────────────
 let _mobileZoom=1.0;
+let _mobileMaxZoom=3.0;
 function mobileZoomAdj(delta){
-  _mobileZoom=Math.min(3.0,Math.max(0.3,_mobileZoom+delta));
+  _mobileZoom=Math.min(_mobileMaxZoom,Math.max(0.3,_mobileZoom+delta));
   const el=document.getElementById('mobile-label-preview');
   if(el){
     const svg=el.querySelector('svg');
@@ -3428,11 +3444,12 @@ function mobileZoomAdj(delta){
   if(pct)pct.textContent=Math.round(_mobileZoom*100)+'%';
 }
 let previewZoom=0.75;
+let _previewMaxZoom=2.0;
 
 function setPreviewZoom(z){
-  previewZoom=Math.min(2.0,Math.max(0.2,z));
+  previewZoom=Math.min(_previewMaxZoom,Math.max(0.2,z));
   const pct=Math.round(previewZoom*100);
-  const fillPct=((previewZoom-0.2)/(2.0-0.2)*100).toFixed(1);
+  const fillPct=(_previewMaxZoom>0.2?((previewZoom-0.2)/(_previewMaxZoom-0.2)*100):0).toFixed(1);
   const zpEl=document.getElementById('zoom-pct');
   const zfEl=document.getElementById('zoom-fill');
   const ztEl=document.getElementById('zoom-thumb');
@@ -3447,7 +3464,7 @@ function onZoomTrackClick(e){
   if(!track)return;
   const rect=track.getBoundingClientRect();
   const frac=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
-  setPreviewZoom(0.2+frac*(2.0-0.2));
+  setPreviewZoom(0.2+frac*(_previewMaxZoom-0.2));
 }
 
 function applyZoomToSVG(){
