@@ -2600,6 +2600,7 @@ function onDimInput(){
   const rawH = parseInt(document.getElementById('custom-h').value)||50;
   S.customW = Math.min(Math.max(rawW, 10), 150);
   S.customH = Math.min(Math.max(rawH, 10), 150);
+  syncDimFields();
   updateSizeWarnings();
   updateLabel();
 }
@@ -2957,8 +2958,8 @@ function buildSVG(forExport=false){
 
   const _curY0 = curY;
   const _hardBot = botY;                       // text must never cross this
-  // Minimum legible font ≈ 1mm physical height (pxPerMm = pw/mmW in this view).
-  const _minLegibleFS = Math.max(0.95 * _pxPerMm, 3.2);
+  // Minimum legible font = 1.2mm physical x-height, the working CLP legibility standard (pxPerMm = pw/mmW in this view).
+  const _minLegibleFS = Math.max(1.2 * _pxPerMm, 3.2);
 
   // Single source of truth — lay the three blocks out exactly as they render.
   // Returns each block's lines, its first-line centre Y, and the Y after the
