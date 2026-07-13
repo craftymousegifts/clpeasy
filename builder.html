@@ -650,6 +650,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <h2 class="step-heading">Product details</h2>
     <p class="step-sub">This information appears directly on your label.</p>
     <div class="form-group"><label>Fragrance / Scent name</label><input type="text" id="scent-name" placeholder="e.g. Black Plum &amp; Rhubarb" autocomplete="off" oninput="updateLabel()"></div>
+    <div class="sdiv" style="margin-top:4px;">Scent name text size <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--muted)">— adjust within the compliant range</span></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <input type="range" id="scent-fs-slider" min="0" max="100" value="100" step="1" style="flex:1;accent-color:var(--teal);" oninput="onScentFSInput(this.value)">
+      <span id="scent-fs-reset" onclick="resetScentFS()" style="font-size:12px;color:var(--teal);font-weight:600;cursor:pointer;white-space:nowrap;display:none;">Reset to auto</span>
+    </div>
     <div class="form-row">
       <div class="form-group"><label>Product type</label><select id="product-type" onchange="onProductTypeChange();updateLabel();saveProdDetails()">
         <option value="" disabled selected>— Choose product type —</option>
@@ -787,6 +792,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <h2 class="step-heading">Your business details</h2>
     <p class="step-sub">Required on CLP labels — your name and address as the responsible person.</p>
     <div class="form-group"><label>Business / Brand name</label><input type="text" id="biz-name" placeholder="As you want it to appear on the label" oninput="updateLabel();saveBizDetails()"></div>
+    <div class="sdiv" style="margin-top:4px;">Business name text size <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--muted)">— adjust within the compliant range</span></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <input type="range" id="bizname-fs-slider" min="0" max="100" value="100" step="1" style="flex:1;accent-color:var(--teal);" oninput="onBizNameFSInput(this.value)">
+      <span id="bizname-fs-reset" onclick="resetBizNameFS()" style="font-size:12px;color:var(--teal);font-weight:600;cursor:pointer;white-space:nowrap;display:none;">Reset to auto</span>
+    </div>
     <div class="form-group"><label>Address <span>(town, county or full address)</span></label><input type="text" id="biz-address" placeholder="e.g. Scottish Borders, Scotland" oninput="updateLabel();saveBizDetails()"></div>
     <div class="form-group"><label>Phone number <span>(required for CLP compliance)</span></label><input type="tel" id="biz-phone" placeholder="e.g. 07700 900000" oninput="updateLabel();saveBizDetails()"></div>
     <div class="form-row">
@@ -1008,7 +1018,7 @@ function ghsPicto(key,cx,cy,size){
 }
 
 // ── STATE ─────────────────────────────────────────────────────
-const S={step:1,shape:'circle',size:35,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,hazardFSOverride:null};
+const S={step:1,shape:'circle',size:35,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,hazardFSOverride:null,scentFSOverride:null,bizNameFSOverride:null};
 
 // ── PRODUCT TYPE GUIDANCE ─────────────────────────────────────
 const FRAG_LOAD_TIPS={
@@ -2785,7 +2795,14 @@ function buildSVG(forExport=false){
   // bizSW must use sW (shape width), not pw, for rect/square to avoid overflow
   const bizSW = Math.min(chordW(bizY, 0.10), sW*0.88);
   const webSW = Math.min(chordW(webY, 0.10), sW*0.88);
-  const bizFS = fitFont(bizName, bizSW*0.84, clamp(BASE*0.065*1.0,4,13*1.0), clamp(BASE*0.030,3,6.5), true, true);
+  const bizFSMax = clamp(BASE*0.065*1.0,4,13*1.0);
+  const bizFSMin = clamp(BASE*0.030,3,6.5);
+  let bizFS = fitFont(bizName, bizSW*0.84, bizFSMax, bizFSMin, true, true);
+  const _bizFSAuto = bizFS;
+  if(S.bizNameFSOverride!=null){
+    bizFS = Math.min(Math.max(S.bizNameFSOverride, bizFSMin), bizFSMax);
+  }
+  window._bizNameFSBounds={min:bizFSMin,max:bizFSMax,auto:_bizFSAuto};
   const webFS = clamp(BASE*0.038*1.35, 2.8, 7*1.35);
 
   // ── DIVIDER LINES ─────────────────────────────────────────────
@@ -2837,6 +2854,11 @@ function buildSVG(forExport=false){
   const scentMaxFS = Math.min(topH * 0.30 * 0.9, scentSW * 0.38, clamp(BASE*0.110*0.9,6,22*0.9));
   const scentMinFS = clamp(BASE*0.036, 3, 7);
   let scentFS      = fitFont(scent, scentSW*0.90, scentMaxFS, scentMinFS, true, true);
+  const _scentFSAuto = scentFS;
+  if(S.scentFSOverride!=null){
+    scentFS = Math.min(Math.max(S.scentFSOverride, scentMinFS), scentMaxFS);
+  }
+  window._scentFSBounds={min:scentMinFS,max:scentMaxFS,auto:_scentFSAuto};
   let scentLines   = wrapText(scent, scentSW*0.90, scentFS, true, true);
   // If wrapping to 2 lines, reduce font size so 2 lines fit in slot
   if(scentLines.length > 1){
@@ -3269,6 +3291,46 @@ function buildSVG(forExport=false){
 }
 
 // ── UPDATE PREVIEW ────────────────────────────────────────────
+function syncScentFSSlider(){
+  const sl=document.getElementById('scent-fs-slider');
+  const rs=document.getElementById('scent-fs-reset');
+  const b=window._scentFSBounds;
+  if(!sl||!b)return;
+  const _ov=S.scentFSOverride!=null?Math.min(Math.max(S.scentFSOverride,b.min),b.max):b.auto;
+  const pct=b.max>b.min?Math.round((_ov-b.min)/(b.max-b.min)*100):100;
+  sl.value=pct;
+  if(rs)rs.style.display=S.scentFSOverride!=null?'inline':'none';
+}
+function onScentFSInput(pct){
+  const b=window._scentFSBounds;
+  if(!b)return;
+  S.scentFSOverride=b.min+(b.max-b.min)*(pct/100);
+  updateLabel();
+}
+function resetScentFS(){
+  S.scentFSOverride=null;
+  updateLabel();
+}
+function syncBizNameFSSlider(){
+  const sl=document.getElementById('bizname-fs-slider');
+  const rs=document.getElementById('bizname-fs-reset');
+  const b=window._bizNameFSBounds;
+  if(!sl||!b)return;
+  const _ov=S.bizNameFSOverride!=null?Math.min(Math.max(S.bizNameFSOverride,b.min),b.max):b.auto;
+  const pct=b.max>b.min?Math.round((_ov-b.min)/(b.max-b.min)*100):100;
+  sl.value=pct;
+  if(rs)rs.style.display=S.bizNameFSOverride!=null?'inline':'none';
+}
+function onBizNameFSInput(pct){
+  const b=window._bizNameFSBounds;
+  if(!b)return;
+  S.bizNameFSOverride=b.min+(b.max-b.min)*(pct/100);
+  updateLabel();
+}
+function resetBizNameFS(){
+  S.bizNameFSOverride=null;
+  updateLabel();
+}
 function syncHazardFSSlider(){
   const sl=document.getElementById('hazard-fs-slider');
   const rs=document.getElementById('hazard-fs-reset');
@@ -3303,6 +3365,8 @@ function updateLabel(){
   const{mmW,mmH}=getDims();
   const svgHtml=buildSVG(false);
   syncHazardFSSlider();
+  syncScentFSSlider();
+  syncBizNameFSSlider();
   const _labelWarnEl=document.getElementById('label-warn');
   if(_labelWarnEl){
     if(window._labelLegibilityWarn){
