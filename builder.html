@@ -3123,10 +3123,26 @@ function buildSVG(forExport=false){
     }
   }
   let _sharedFS=_bsLo;
-  if(S.hazardFSOverride!=null){
-    _sharedFS=clamp(S.hazardFSOverride,_minLegibleFS,_bsHi);
+  // Manual override gets its own, more generous ceiling — the actual largest
+  // size that still physically fits, not auto-fit's conservative shared cap.
+  let _manualHi=_bsHi;
+  if(_fitsAtMin){
+    let _mLo=_bsHi, _mHi=clamp(BASE*0.30,8,60);
+    if(_fits(_mHi)){
+      _manualHi=_mHi;
+    } else {
+      for(let _i=0;_i<40;_i++){
+        const _mid=(_mLo+_mHi)/2;
+        if(_fits(_mid)) _mLo=_mid; else _mHi=_mid;
+        if(_mHi-_mLo<0.05) break;
+      }
+      _manualHi=_mLo;
+    }
   }
-  window._hazardFSBounds={min:_minLegibleFS,max:_bsHi,auto:_bsLo};
+  if(S.hazardFSOverride!=null){
+    _sharedFS=clamp(S.hazardFSOverride,_minLegibleFS,_manualHi);
+  }
+  window._hazardFSBounds={min:_minLegibleFS,max:_manualHi,auto:_bsLo};
 
   // Legibility warning is finalised after P truncation below: it must fire
   // whenever content can't fit at the minimum legible size OR any P statement
@@ -3136,11 +3152,19 @@ function buildSVG(forExport=false){
   // Vertical centring: re-lay from a Y offset by half the leftover slack.
   const _topLayout=_layoutHazard(_sharedFS,_curY0);
   const _slack=Math.max(0,(_hardBot - _fitMargin(_sharedFS)) - _topLayout.endY);
-  const _yFrac=(S.hazardYOffset!=null?Math.min(Math.max(S.hazardYOffset,0),1):0.5);
+  let _yFrac=(S.hazardYOffset!=null?Math.min(Math.max(S.hazardYOffset,0),1):0.5);
   let _L=_layoutHazard(_sharedFS,_curY0+_slack*_yFrac);
   window._hazardYSlack=_slack;
-  // Safety: if centring shifted line-wrapping enough to cross botY (possible on
-  // circles as chord width changes), fall back to the top-aligned layout.
+  // On circles, chord width narrows away from the vertical centre, so a
+  // requested offset can cause more wrapping than at the top and overflow.
+  // Step the offset back toward 0 until it fits, rather than snapping the
+  // whole way to top-aligned — keeps the control visibly responsive.
+  let _yTries=0;
+  while(_L.endY > _hardBot && _yFrac>0 && _yTries<20){
+    _yFrac=Math.max(0,_yFrac-0.05);
+    _L=_layoutHazard(_sharedFS,_curY0+_slack*_yFrac);
+    _yTries++;
+  }
   if(_L.endY > _hardBot) _L=_topLayout;
 
   // Derive render variables from the chosen layout.
