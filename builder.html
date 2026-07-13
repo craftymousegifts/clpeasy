@@ -3060,10 +3060,11 @@ function buildSVG(forExport=false){
   // whole block. Used for both the fit test and the final render.
   function _layoutHazard(fs, y0){
     const hLH=fs*1.25, sLH=fs*1.25, pLH=fs*1.15;
+    const _edgeMargin=2*pxPerMm; // fixed 2mm from the label edge, both sides
     let y=y0;
     let hLines=[];
     if(hText){
-      const sw=chordW(y+hLH*0.5,0.08)*0.92;
+      const sw=Math.max(fs*3, chordW(y+hLH*0.5,0)-_edgeMargin*2);
       hLines=wrapText(hText,sw,fs,false,false);
     }
     const hStartY=y+hLH*0.5;
@@ -3072,7 +3073,7 @@ function buildSVG(forExport=false){
 
     let sLines=[],eLines=[];
     if(sensText){
-      const sw=chordW(y+sLH*0.5,0.08)*0.82;
+      const sw=Math.max(fs*3, chordW(y+sLH*0.5,0)-_edgeMargin*2);
       sLines=_sensBase?wrapText(_sensBase,sw,fs,false,false):[];
       eLines=_euhSuffix?wrapText(_euhSuffix,sw,fs,false,false):[];
     }
@@ -3083,7 +3084,7 @@ function buildSVG(forExport=false){
 
     let pLines=[];
     if(pText){
-      const sw=chordW(y+pLH*0.5,0.08)*0.90;
+      const sw=Math.max(fs*3, chordW(y+pLH*0.5,0)-_edgeMargin*2);
       pLines=wrapText(pText,sw,fs,false,false);
     }
     const pStartY=y+pLH*0.5;
