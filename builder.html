@@ -846,7 +846,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
         <div style="text-align:right;"><span id="sig-fs-reset" onclick="resetSigFS()" style="font-size:10px;color:var(--teal);font-weight:600;cursor:pointer;display:none;">Reset</span></div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
-          <span style="font-size:12px;font-weight:600;color:var(--text);">Hazard size <span style="font-weight:400;color:var(--muted);">(H/P/sensitiser)</span></span>
+          <span style="font-size:12px;font-weight:600;color:var(--text);">Hazard font size <span style="font-weight:400;color:var(--muted);">(H/P/sensitiser)</span></span>
           <div style="display:flex;align-items:center;gap:5px;">
             <button onclick="nudgeHazardFS(-1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">−</button>
             <span id="hazard-fs-pct" style="font-size:11px;color:var(--muted);min-width:32px;text-align:center;font-weight:600;">100%</span>
@@ -854,6 +854,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </div>
         </div>
         <div style="text-align:right;"><span id="hazard-fs-reset" onclick="resetHazardFS()" style="font-size:10px;color:var(--teal);font-weight:600;cursor:pointer;display:none;">Reset</span></div>
+        <div id="hazard-fs-debug" style="font-size:10px;color:var(--muted);text-align:right;font-family:monospace;">—</div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
           <span style="font-size:12px;font-weight:600;color:var(--text);">Scent name</span>
           <div style="display:flex;align-items:center;gap:5px;">
@@ -3135,6 +3136,7 @@ function buildSVG(forExport=false){
     _sharedFS=clamp(S.hazardFSOverride,_minLegibleFS,_manualHi);
   }
   window._hazardFSBounds={min:_minLegibleFS,max:_manualHi,auto:_bsLo};
+  window._hazardFSDebugMm={min:(_minLegibleFS/_pxPerMm).toFixed(2),max:(_manualHi/_pxPerMm).toFixed(2),auto:(_bsLo/_pxPerMm).toFixed(2),availPx:(_hardBot-_curY0).toFixed(1)};
 
   // Legibility warning is finalised after P truncation below: it must fire
   // whenever content can't fit at the minimum legible size OR any P statement
@@ -3391,6 +3393,11 @@ function syncAdjustPanel(){
   const hb=window._hazardFSBounds, sb=window._scentFSBounds, bb=window._bizNameFSBounds;
   const tb=window._typeFSBounds, gb=window._sigFSBounds;
   const hEl=document.getElementById('hazard-fs-pct'); if(hEl)hEl.textContent=_fsPct(S.hazardFSOverride,hb)+'%';
+  const hDbg=document.getElementById('hazard-fs-debug');
+  if(hDbg&&window._hazardFSDebugMm){
+    const d=window._hazardFSDebugMm;
+    hDbg.textContent=`floor ${d.min}mm · auto ${d.auto}mm · ceiling ${d.max}mm · space ${d.availPx}px`;
+  }
   const sEl=document.getElementById('scent-fs-pct'); if(sEl)sEl.textContent=_fsPct(S.scentFSOverride,sb)+'%';
   const zEl=document.getElementById('bizname-fs-pct'); if(zEl)zEl.textContent=_fsPct(S.bizNameFSOverride,bb)+'%';
   const tEl=document.getElementById('type-fs-pct'); if(tEl)tEl.textContent=_fsPct(S.typeFSOverride,tb)+'%';
