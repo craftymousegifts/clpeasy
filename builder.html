@@ -55,32 +55,30 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 .help-faq summary{font-size:13px;font-weight:600;cursor:pointer;padding:8px 0;color:var(--text);}
 .help-faq p{font-size:13px;color:var(--muted);padding:8px 0 4px;line-height:1.6;}
 
-/* DESKTOP LAYOUT */
-.builder-layout{display:grid;grid-template-columns:1fr 360px;min-height:100vh;padding-top:88px;}
-.wizard-panel{padding:28px 32px 80px;min-width:0;overflow-y:auto;}
-.preview-panel{background:var(--off);-webkit-user-select:none;-moz-user-select:none;user-select:none;position:sticky;top:88px;max-height:calc(100vh - 108px);max-width:420px;margin:0 auto 20px auto;display:flex;flex-direction:column;overflow:hidden;align-self:start;border:1.5px solid var(--border);border-radius:16px;}
+/* LAYOUT — single column, preview bar at top of content on every screen size */
+.builder-layout{display:block;padding-top:88px;max-width:900px;margin:0 auto;}
+.wizard-panel{padding:20px 24px 60px;min-width:0;}
+.preview-panel{display:none;}
 
-/* MOBILE LAYOUT */
+.mobile-preview-bar{position:sticky;top:88px;z-index:40;display:flex !important;}
+
 @media(max-width:860px){
-  .builder-layout{display:block;padding-top:88px;}
-  .wizard-panel{padding:20px 16px 40px;max-width:100%;width:100%;}
-  .preview-panel{display:none;}
-  .mobile-preview-bar{position:sticky;top:0;z-index:50;display:flex !important;background:var(--off);}
+  .wizard-panel{padding:16px 16px 40px;max-width:100%;width:100%;}
+  .mobile-preview-bar{top:0;}
   .form-row{grid-template-columns:1fr;}
   body{padding-bottom:20px;}
 }
 
-/* MOBILE PREVIEW BAR - shown at top of each step on mobile */
+/* PREVIEW BAR - shown at top of each step, all screen sizes */
 .mobile-preview-bar{
-  display:none;
   background:var(--off);
   border:1.5px solid var(--border);
   border-radius:16px;
-  padding:16px;
-  margin-bottom:24px;
+  padding:14px 16px;
+  margin-bottom:18px;
   flex-direction:column;
   align-items:center;
-  gap:10px;
+  gap:8px;
 }
 .mobile-preview-bar-label{
   font-size:11px;color:var(--muted);font-weight:700;
@@ -2185,9 +2183,7 @@ function init(){
   // productType not restored — always starts at placeholder
   // Clear label-specific fields — always start fresh
   try{const _p=JSON.parse(localStorage.getItem('clpeasy_prod')||'{}');delete _p.productType;delete _p.netWeight;delete _p.burnTime;delete _p.fragLoad;localStorage.setItem('clpeasy_prod',JSON.stringify(_p));}catch(e){}
-  syncDimFields();updateLabel();
-  document.getElementById('custom-w').value=52;
-  document.getElementById('custom-h').value=52;
+  applySize(52);
   renderSaved();
   // Ensure hazard data is always clear on page load — never cached
   S.signal=''; S.pictograms=[]; S.hSelected=[]; S.pSelected=[]; S.sensitisers=[];
@@ -2625,11 +2621,19 @@ function updateStepsBar(){
 
 // ── SHAPE/SIZE ────────────────────────────────────────────────
 function selectShape(s){S.shape=s;document.querySelectorAll('.shape-card').forEach(c=>c.classList.toggle('selected',c.dataset.shape===s));syncDimFields();updateLabel();}
-function selectSize(sz){
-  S.size=sz;document.querySelectorAll('.size-card').forEach(c=>c.classList.toggle('selected',c.dataset.size==sz));
-  if(sz!=='custom'){const mm=parseInt(sz);document.getElementById('custom-w').value=mm;document.getElementById('custom-h').value=(S.shape==='rectangle')?Math.round(mm*0.7):mm;S.customW=mm;S.customH=(S.shape==='rectangle')?Math.round(mm*0.7):mm;}
+function applySize(sz){
+  S.size=sz;
+  document.querySelectorAll('.size-card').forEach(c=>c.classList.toggle('selected',c.dataset.size==sz));
+  if(sz!=='custom'){
+    const mm=parseInt(sz);
+    document.getElementById('custom-w').value=mm;
+    document.getElementById('custom-h').value=(S.shape==='rectangle')?Math.round(mm*0.7):mm;
+    S.customW=mm;
+    S.customH=(S.shape==='rectangle')?Math.round(mm*0.7):mm;
+  }
   syncDimFields();updateSizeWarnings();updateLabel();
 }
+function selectSize(sz){applySize(sz);}
 function updateSizeWarnings(){
   const rawW = parseInt(document.getElementById('custom-w').value)||50;
   const rawH = parseInt(document.getElementById('custom-h').value)||50;
