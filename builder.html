@@ -1796,19 +1796,6 @@ const SUPPLIERS={
   bb:{name:'Brambleberry',sdsUrl:'https://www.brambleberry.com',instructions:'Visit Brambleberry → find your fragrance product page → look for the SDS document → copy Section 2 → paste below.'},
 };
 
-function selectSupplier(el,key){
-  document.querySelectorAll('.supplier-card').forEach(c=>c.classList.remove('selected'));
-  el.classList.add('selected');
-  S.supplier=key;
-  const s=SUPPLIERS[key];
-  const box=document.getElementById('supplier-sds-link');
-  if(s.sdsUrl){
-    box.innerHTML=`<div class="sds-link-box">📄 <strong>${s.name} SDS:</strong> ${s.instructions}<br><br><a href="${s.sdsUrl}" target="_blank" rel="noopener">Open ${s.name} SDS page →</a></div>`;
-  } else {
-    box.innerHTML=`<div class="sds-link-box">📄 ${s.instructions}</div>`;
-  }
-  box.style.display='';
-}
 
 // ── SAVED LABELS LIBRARY ──────────────────────────────────────
 function getSaved(){try{return JSON.parse(localStorage.getItem('clpeasy_labels')||'[]');}catch(e){return[];}}
@@ -2273,7 +2260,6 @@ function toggleLib(id,tog){
 }
 function toggleHChip(el,code){el.classList.toggle('selected');const i=S.hSelected.indexOf(code);if(i>-1)S.hSelected.splice(i,1);else S.hSelected.push(code);document.getElementById('h-statements').value=S.hSelected.join(', ');syncPictogramsFromH();}
 function togglePChip(el,code){el.classList.toggle('selected');const i=S.pSelected.indexOf(code);if(i>-1)S.pSelected.splice(i,1);else S.pSelected.push(code);document.getElementById('p-statements').value=S.pSelected.join(', ');updateLabel();}
-function toggleSensitiser(el,name){el.classList.toggle('selected');if(el.classList.contains('selected')){if(!S.sensitisers.includes(name))S.sensitisers.push(name);}else S.sensitisers=S.sensitisers.filter(x=>x!==name);renderTags();updateLabel();}
 
 function renderTags(){
   const tags=document.getElementById('allergen-tags');
@@ -2685,7 +2671,6 @@ function syncDimFields(){
 function selectSignal(s){
   if(S.signal&&S.signal!==s){const h=(document.getElementById('h-statements')?.value||'').trim();const p=(document.getElementById('p-statements')?.value||'').trim();if((h||p)&&!confirm('⚠️ Signal word changed to '+s+'.\n\nPlease check your H and P statements are still correct.'))return;}
   S.signal=s;document.getElementById('signal-warning').className='signal-btn'+(s==='Warning'?' sel-warn':'');document.getElementById('signal-danger').className='signal-btn'+(s==='Danger'?' sel-danger':'');updateLabel();}
-function togglePicto(el,key){el.classList.toggle('selected');const i=S.pictograms.indexOf(key);if(i>-1)S.pictograms.splice(i,1);else S.pictograms.push(key);updateLabel();}
 
 // ── READ FORM ─────────────────────────────────────────────────
 function readForm(){
@@ -3430,12 +3415,6 @@ function nudgeHazardFS(delta){
   updateLabel();
 }
 function resetHazardFS(){S.hazardFSOverride=null;updateLabel();}
-function nudgeHazardY(delta){
-  const cur=S.hazardYOffset!=null?S.hazardYOffset:0.5;
-  S.hazardYOffset=Math.min(Math.max(cur+delta*0.15,0),1);
-  updateLabel();
-}
-function resetHazardY(){S.hazardYOffset=null;updateLabel();}
 function nudgeScentFS(delta){
   const b=window._scentFSBounds; if(!b)return;
   const cur=S.scentFSOverride!=null?S.scentFSOverride:b.auto;
@@ -3473,9 +3452,9 @@ function updateLabel(){
       _labelWarnEl.style.display='none';
     }
   }
-  // Desktop preview
+  // Desktop preview — panel is retired (replaced by the top preview bar), skip entirely.
   const dc=document.getElementById('label-svg-container');
-  if(dc){
+  if(dc && dc.offsetParent!==null){
     dc.innerHTML=svgHtml;
     // Auto-fit zoom to fill available panel on first render, then apply current zoom
     const area=document.getElementById('preview-canvas-area');
@@ -3637,7 +3616,7 @@ function onZoomTrackClick(e){
 
 function applyZoomToSVG(){
   const container=document.getElementById('label-svg-container');
-  if(!container)return;
+  if(!container||container.offsetParent===null)return;
   const svg=container.querySelector('svg');
   if(!svg)return;
   // Get intrinsic SVG size from viewBox
@@ -3781,7 +3760,6 @@ function downloadSVG(){plausible('Label Downloaded',{props:{format:'SVG'}});
 }
 
 // ── MOBILE SHEET ──────────────────────────────────────────────
-function openSheet(){document.getElementById('preview-sheet').classList.add('open');document.body.style.overflow='hidden';}
 function wizRetry(text){
   // Remove last error message and retry
   const msgs = document.getElementById('wiz-messages');
@@ -4239,23 +4217,6 @@ const LANG_PRODUCT_TYPE_SUFFIX={
   fr:{'Scented Candle':'Bougie parfumée','Soy Candle':'Bougie au soja','Wax Melt':'Fondant parfumé','Reed Diffuser':'Diffuseur de roseaux','Room Spray':'Spray d\'ambiance','Electric Diffuser':'Diffuseur électrique'},
   de:{'Scented Candle':'Duftkerze','Soy Candle':'Sojakerze','Wax Melt':'Duftwachs','Reed Diffuser':'Raumduft-Stäbchen','Room Spray':'Raumspray','Electric Diffuser':'Elektrischer Diffuser'},
 };
-
-function getLangSignal(sig,langs){
-  const parts=[];
-  langs.forEach(l=>{const t=LANG_SIGNAL[l]?.[sig]||sig;if(t&&!parts.includes(t))parts.push(t);});
-  return parts.join(' / ');
-}
-
-function getLangContains(langs){
-  const parts=[];
-  langs.forEach(l=>{const t=LANG_CONTAINS[l]||'Contains:';if(!parts.includes(t))parts.push(t);});
-  return parts.join(' / ');
-}
-
-function getActiveLangs(){
-  const v=document.getElementById('label-lang')?.value||'en';
-  return v.split('_');
-}
 
 // ══════════════════════════════════════════════════════════════
 // FEATURE: LABEL HISTORY / VERSION CONTROL
