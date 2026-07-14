@@ -56,7 +56,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 .help-faq p{font-size:13px;color:var(--muted);padding:8px 0 4px;line-height:1.6;}
 
 /* LAYOUT — single column, preview bar at top of content on every screen size */
-.builder-layout{display:block;padding-top:88px;max-width:900px;margin:0 auto;}
+.builder-layout{display:grid;grid-template-columns:1fr 340px;gap:32px;padding-top:88px;max-width:1280px;margin:0 auto;align-items:start;}
+@media(max-width:860px){.builder-layout{display:block;}}
 .wizard-panel{padding:20px 24px 60px;min-width:0;}
 .preview-panel{display:none;}
 
@@ -126,12 +127,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 /* SHAPE/SIZE CARDS */
 .shape-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
-.shape-card{border:1.5px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;background:white;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:7px;-webkit-tap-highlight-color:transparent;}
+.shape-card{border:1.5px solid var(--border);border-radius:10px;padding:9px 6px;text-align:center;cursor:pointer;background:white;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:5px;-webkit-tap-highlight-color:transparent;}
 .shape-card:active,.shape-card:hover{border-color:var(--teal);}
 .shape-card.selected{border-color:var(--teal);background:var(--teal-light);}
 .shape-label{font-size:12px;font-weight:600;}
 .size-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
-.size-card{border:1.5px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;background:white;transition:all .2s;-webkit-tap-highlight-color:transparent;}
+.size-card{border:1.5px solid var(--border);border-radius:10px;padding:9px 6px;text-align:center;cursor:pointer;background:white;transition:all .2s;-webkit-tap-highlight-color:transparent;}
 .size-card:active,.size-card:hover{border-color:var(--teal);}
 .size-card.selected{border-color:var(--teal);background:var(--teal-light);}
 .size-card .sz{font-size:17px;font-weight:700;font-family:'DM Serif Display',serif;color:var(--teal);}
@@ -150,7 +151,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 /* SIGNAL */
 .signal-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
-.signal-btn{border:2px solid var(--border);border-radius:10px;padding:13px;text-align:center;cursor:pointer;background:white;transition:all .2s;font-weight:700;font-size:15px;-webkit-tap-highlight-color:transparent;cursor:default;user-select:none;}
+.signal-btn{border:2px solid var(--border);border-radius:9px;padding:10px;text-align:center;cursor:pointer;background:white;transition:all .2s;font-weight:700;font-size:14px;-webkit-tap-highlight-color:transparent;cursor:default;user-select:none;}
 .signal-btn.sel-warn{border-color:var(--amber);background:var(--amber-light);color:#92400E;}
 .signal-btn.sel-danger{border-color:var(--red);background:#FEF2F2;color:#991B1B;}
 
@@ -258,9 +259,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .supplier-card.featured.selected{border-color:var(--teal);background:var(--teal-light);}
 .sds-link-box{background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:10px;padding:12px 14px;font-size:13px;color:#166534;line-height:1.6;}
 .sds-link-box a{color:var(--teal-dark);font-weight:600;}
-.saved-section{margin-top:32px;padding-top:24px;border-top:1px solid var(--border);}
+.saved-section{background:white;border:1.5px solid var(--border);border-radius:16px;padding:18px;}
+@media(min-width:861px){.saved-section{position:sticky;top:88px;max-height:calc(100vh - 108px);overflow-y:auto;}}
+@media(max-width:860px){.saved-section{margin-top:24px;}}
 .saved-section h3{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
-@media(min-width:861px){.saved-section{position:sticky;bottom:0;background:var(--off);padding-bottom:16px;z-index:10;box-shadow:0 -8px 16px rgba(247,248,250,0.9);}}
 .saved-count{font-size:12px;color:var(--muted);font-weight:400;}
 .saved-item{display:flex;align-items:center;justify-content:space-between;background:white;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:8px;gap:10px;}
 .saved-item-info{flex:1;min-width:0;}
@@ -907,20 +909,20 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
   </div>
 
-  <!-- SAVED LABELS LIBRARY -->
-  <div class="saved-section" id="saved-section" style="display:none;">
-    <div class="lib-header">
-      <div class="lib-title">📁 Your label library <span class="saved-count" id="saved-count"></span></div>
-      <button class="lib-manage-btn" onclick="toggleFolderPanel()">⚙ Folders</button>
-    </div>
-    <!-- Folder toggle panel -->
-    <div class="folder-toggle-panel" id="folder-toggle-panel">
-      <div class="folder-toggle-title">Activate folders to organise your labels</div>
-      <div class="folder-toggle-list" id="folder-toggle-list"></div>
-    </div>
-    <div id="saved-list"></div>
-  </div>
+</div>
 
+<!-- SAVED LABELS LIBRARY — sticky right column -->
+<div class="saved-section" id="saved-section" style="display:none;">
+  <div class="lib-header">
+    <div class="lib-title">📁 Your label library <span class="saved-count" id="saved-count"></span></div>
+    <button class="lib-manage-btn" onclick="toggleFolderPanel()">⚙ Folders</button>
+  </div>
+  <!-- Folder toggle panel -->
+  <div class="folder-toggle-panel" id="folder-toggle-panel">
+    <div class="folder-toggle-title">Activate folders to organise your labels</div>
+    <div class="folder-toggle-list" id="folder-toggle-list"></div>
+  </div>
+  <div id="saved-list"></div>
 </div>
 
 <!-- DESKTOP PREVIEW PANEL -->
