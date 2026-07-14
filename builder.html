@@ -55,41 +55,18 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 .help-faq summary{font-size:13px;font-weight:600;cursor:pointer;padding:8px 0;color:var(--text);}
 .help-faq p{font-size:13px;color:var(--muted);padding:8px 0 4px;line-height:1.6;}
 
-/* LAYOUT — single column, preview bar at top of content on every screen size */
-.builder-layout{display:grid;grid-template-columns:1fr 340px;gap:32px;padding-top:88px;max-width:1280px;margin:0 auto;align-items:start;}
+/* LAYOUT — two columns: form + sticky right column (preview + library) */
+.builder-layout{display:grid;grid-template-columns:1fr 360px;gap:24px;padding-top:88px;max-width:1280px;margin:0 auto;align-items:start;}
 @media(max-width:860px){.builder-layout{display:block;}}
 .wizard-panel{padding:20px 24px 60px;min-width:0;}
-.preview-panel{display:none;}
-
-.mobile-preview-bar{display:flex !important;}
+.right-column{display:flex;flex-direction:column;gap:16px;}
+@media(min-width:861px){.right-column{position:sticky;top:88px;max-height:calc(100vh - 108px);overflow-y:auto;}}
+.preview-panel{background:var(--off);border:1.5px solid var(--border);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;}
 
 @media(max-width:860px){
   .wizard-panel{padding:16px 16px 40px;max-width:100%;width:100%;}
   .form-row{grid-template-columns:1fr;}
   body{padding-bottom:20px;}
-}
-
-/* PREVIEW BAR - shown at top of each step, all screen sizes */
-.mobile-preview-bar{
-  background:var(--off);
-  border:1.5px solid var(--border);
-  border-radius:16px;
-  padding:14px 16px;
-  margin-bottom:18px;
-  flex-direction:column;
-  align-items:center;
-  gap:8px;
-}
-.mobile-preview-bar-label{
-  font-size:11px;color:var(--muted);font-weight:700;
-  letter-spacing:1px;text-transform:uppercase;
-  align-self:flex-start;
-}
-.mobile-preview-dims{
-  font-size:11px;color:var(--muted);
-}
-.mobile-dl-row{
-  display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;
 }
 
 /* STEPS */
@@ -259,8 +236,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .sds-link-box{background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:10px;padding:12px 14px;font-size:13px;color:#166534;line-height:1.6;}
 .sds-link-box a{color:var(--teal-dark);font-weight:600;}
 .saved-section{background:white;border:1.5px solid var(--border);border-radius:16px;padding:18px;}
-@media(min-width:861px){.saved-section{position:sticky;top:88px;max-height:calc(100vh - 108px);overflow-y:auto;}}
-@media(max-width:860px){.saved-section{margin-top:24px;}}
 .saved-section h3{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
 .saved-count{font-size:12px;color:var(--muted);font-weight:400;}
 .saved-item{display:flex;align-items:center;justify-content:space-between;background:white;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:8px;gap:10px;}
@@ -541,17 +516,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <div class="builder-layout">
 <!-- WIZARD -->
 <div class="wizard-panel">
-  <!-- MOBILE PREVIEW BAR -->
-  <div class="mobile-preview-bar" id="mobile-preview-bar">
-    <div class="mobile-preview-bar-label">Live Preview</div>
-    <div id="mobile-preview-svg"></div>
-    <div class="mobile-preview-dims" id="mobile-preview-dims">35 × 35mm</div>
-    <div class="mobile-dl-row" id="mobile-dl-row" style="display:none;">
-      <button class="btn-dl" onclick="downloadPNG()">⬇ PNG</button>
-      <button class="btn-dl-svg" onclick="downloadSVG()">⬡ SVG</button>
-    </div>
-  </div>
-
   <div class="steps-bar" id="steps-bar">
     <div class="step-item active" data-step="1" onclick="goToStep(1)"><div class="step-circle">1</div><div class="step-label">Label</div></div>
     <div class="step-line" id="line-1"></div>
@@ -804,23 +768,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <p class="step-sub">Review your label, then download in your preferred format.</p>
     <div class="compliance-box"><p>⚠️ <strong>Compliance reminder:</strong> Always verify all hazard data against your fragrance supplier's SDS at your actual fragrance load before printing. You are responsible for final verification.</p></div>
     <div class="watermark-note">🆓 Free trial — labels include a CLPeasy watermark. <button onclick="window.location.href='pricing.html'" style="background:var(--teal,#4C9BB0);color:white;border:none;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;">Subscribe to remove →</button></div>
-    <!-- STEP 5 PREVIEW + FINE-TUNE (side by side) -->
+    <!-- STEP 5 FINE-TUNE -->
     <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:20px;">
-      <div style="background:var(--off);border:1.5px solid var(--border);border-radius:16px;padding:20px;flex:1 1 420px;min-width:300px;" id="mobile-preview-container">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);">Live Preview</span>
-          <span id="mobile-size-info" style="font-size:12px;color:var(--muted);font-weight:600;">Print size: 35 × 35mm</span>
-        </div>
-        <div style="background:white;border:1px solid var(--border);border-radius:12px;overflow:auto;max-height:520px;display:flex;align-items:flex-start;justify-content:center;padding:16px 0;" id="mobile-label-scroll">
-          <div id="mobile-label-preview" style="flex-shrink:0;"></div>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;justify-content:center;margin-top:14px;">
-          <button onclick="mobileZoomAdj(-0.15)" style="background:white;border:1.5px solid var(--border);color:var(--text);border-radius:8px;width:30px;height:30px;font-size:16px;cursor:pointer;font-family:'DM Sans',sans-serif;">−</button>
-          <span id="mobile-zoom-pct" style="font-size:12px;color:var(--muted);min-width:38px;text-align:center;font-weight:600;">100%</span>
-          <button onclick="mobileZoomAdj(0.15)" style="background:white;border:1.5px solid var(--border);color:var(--text);border-radius:8px;width:30px;height:30px;font-size:16px;cursor:pointer;font-family:'DM Sans',sans-serif;">+</button>
-        </div>
-      </div>
-      <div style="background:white;border:1.5px solid var(--border);border-radius:16px;padding:16px 18px;flex:0 1 260px;min-width:230px;">
+      <div style="background:white;border:1.5px solid var(--border);border-radius:16px;padding:16px 18px;flex:1 1 100%;">
         <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;">Fine-tune your label</div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.4;">Within the compliant range. Pictograms stay locked at 10mm. H-statements, P-statements and sensitisers move together as one block.</div>
 
@@ -910,20 +860,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 </div>
 
-<!-- SAVED LABELS LIBRARY — sticky right column -->
-<div class="saved-section" id="saved-section" style="display:none;">
-  <div class="lib-header">
-    <div class="lib-title">📁 Your label library <span class="saved-count" id="saved-count"></span></div>
-    <button class="lib-manage-btn" onclick="toggleFolderPanel()">⚙ Folders</button>
-  </div>
-  <!-- Folder toggle panel -->
-  <div class="folder-toggle-panel" id="folder-toggle-panel">
-    <div class="folder-toggle-title">Activate folders to organise your labels</div>
-    <div class="folder-toggle-list" id="folder-toggle-list"></div>
-  </div>
-  <div id="saved-list"></div>
-</div>
-
+<!-- RIGHT COLUMN: live preview + label library, sticky together -->
+<div class="right-column">
 <!-- DESKTOP PREVIEW PANEL -->
 <div class="preview-panel">
   <div class="preview-header">
@@ -958,6 +896,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <a id="print-sheet-link-preview" href="print.html" style="display:none;align-items:center;justify-content:center;gap:7px;background:var(--teal-light);border:1px solid var(--teal);color:var(--teal-dark);padding:9px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;transition:all .2s;margin-top:2px;" title="Arrange your saved labels on an A4 sheet. For cutting machines: labels must be the same size on each sheet." onmouseover="this.style.background='#c5e6ee'" onmouseout="this.style.background='var(--teal-light)'">🖨 Print Sheet Composer →</a>
     <div class="cricut-note" style="display:none;"></div>
   </div>
+</div>
+
+<!-- SAVED LABELS LIBRARY -->
+<div class="saved-section" id="saved-section" style="display:none;">
+  <div class="lib-header">
+    <div class="lib-title">📁 Your label library <span class="saved-count" id="saved-count"></span></div>
+    <button class="lib-manage-btn" onclick="toggleFolderPanel()">⚙ Folders</button>
+  </div>
+  <div class="folder-toggle-panel" id="folder-toggle-panel">
+    <div class="folder-toggle-title">Activate folders to organise your labels</div>
+    <div class="folder-toggle-list" id="folder-toggle-list"></div>
+  </div>
+  <div id="saved-list"></div>
 </div>
 </div>
 
@@ -2431,9 +2382,6 @@ function goToStep(n){if(n>S.step+1)return;S.step=n;
   // Hide preview download buttons unless on step 5
   const dlRow=document.getElementById('preview-dl-row');
   if(dlRow)dlRow.style.display=(n===5)?'flex':'none';
-  const _pp=document.querySelector('.preview-panel');
-  if(_pp)_pp.style.display=(n===5)?'none':'flex';
-  if(n===5)mobileZoomAdj(1.0-_mobileZoom);
   const mobileDlRow=document.getElementById('mobile-dl-row');
   if(mobileDlRow)mobileDlRow.style.display=(n===5)?'flex':'none';document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+n).classList.add('active');updateStepsBar();if(n===5)buildSummary();updateLabel();if(n===3){const cb=document.getElementById('hazard-confirm');const btn=document.getElementById('btn-next-step3');if(cb){cb.checked=false;}if(btn){btn.style.opacity='0.4';btn.style.pointerEvents='none';}}}
 function nextStep(){if(S.step<5){plausible('Builder: Step '+(S.step+1),{props:{from_step:String(S.step)}});goToStep(S.step+1);window.scrollTo({top:0,behavior:'smooth'});}}
@@ -3485,35 +3433,6 @@ function updateLabel(){
       }
     }
   }
-  // Mobile top bar preview
-  const mb=document.getElementById('mobile-preview-svg');
-  if(mb)mb.innerHTML=svgHtml;
-  const md=document.getElementById('mobile-preview-dims');
-  if(md)md.textContent=`Print size: ${mmW} × ${mmH}mm`;
-  // Mobile step 5 preview
-  const mc=document.getElementById('mobile-label-preview');
-  if(mc)mc.innerHTML=svgHtml;
-  const mi=document.getElementById('mobile-size-info');
-  if(mi)mi.textContent=`Print size: ${mmW} × ${mmH}mm`;
-  {
-    const mScroll=document.getElementById('mobile-label-scroll');
-    const mSvg=mc?mc.querySelector('svg'):null;
-    if(mScroll&&mSvg){
-      const vb=mSvg.getAttribute('viewBox');
-      if(vb){
-        const[,, vbW, vbH]=vb.split(' ').map(Number);
-        if(vbW>0&&vbH>0){
-          const mW=mScroll.clientWidth-16,mH=520-16;
-          _mobileMaxZoom=Math.max(1.0,Math.min(mW/vbW,mH/vbH));
-          _mobileZoom=Math.min(_mobileZoom,_mobileMaxZoom);
-          mSvg.setAttribute('width', Math.round(vbW*_mobileZoom));
-          mSvg.setAttribute('height', Math.round(vbH*_mobileZoom));
-          const pctEl=document.getElementById('mobile-zoom-pct');
-          if(pctEl)pctEl.textContent=Math.round(_mobileZoom*100)+'%';
-        }
-      }
-    }
-  }
   // Sheet preview
   const sc=document.getElementById('sheet-label-container');
   if(sc)sc.innerHTML=svgHtml;
@@ -3569,25 +3488,6 @@ function svgWrapped(lines,x,startY,lineH,sizePx,bold,serif,fill,anchor='middle',
 }
 
 // ── PREVIEW ZOOM ──────────────────────────────────────────────
-let _mobileZoom=1.0;
-let _mobileMaxZoom=3.0;
-function mobileZoomAdj(delta){
-  _mobileZoom=Math.min(_mobileMaxZoom,Math.max(0.3,_mobileZoom+delta));
-  const el=document.getElementById('mobile-label-preview');
-  if(el){
-    const svg=el.querySelector('svg');
-    if(svg){
-      const vb=svg.getAttribute('viewBox');
-      if(vb){
-        const[,, vbW, vbH]=vb.split(' ').map(Number);
-        svg.setAttribute('width', Math.round(vbW*_mobileZoom));
-        svg.setAttribute('height', Math.round(vbH*_mobileZoom));
-      }
-    }
-  }
-  const pct=document.getElementById('mobile-zoom-pct');
-  if(pct)pct.textContent=Math.round(_mobileZoom*100)+'%';
-}
 let previewZoom=0.75;
 let _previewMaxZoom=2.0;
 let _previewFitZoom=1.0;
