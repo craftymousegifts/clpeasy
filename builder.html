@@ -766,7 +766,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="step-panel" id="step-5">
     <h2 class="step-heading">Your label is ready!</h2>
     <p class="step-sub">Review your label, then download in your preferred format.</p>
-    <div class="compliance-box"><p>⚠️ <strong>Compliance reminder:</strong> Always verify all hazard data against your fragrance supplier's SDS at your actual fragrance load before printing. You are responsible for final verification.</p></div>
     <div class="watermark-note">🆓 Free trial — labels include a CLPeasy watermark. <button onclick="window.location.href='pricing.html'" style="background:var(--teal,#4C9BB0);color:white;border:none;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;">Subscribe to remove →</button></div>
     <!-- STEP 5: preview moves here (from right column), fine-tune moves to right column -->
     <div id="step5-preview-slot" style="margin-bottom:20px;"></div>
@@ -1984,7 +1983,7 @@ function layoutForStep(n){
   if(!preview||!finetune||!rightCol||!step5Slot||!step5Panel)return;
   if(n===5){
     step5Slot.appendChild(preview);
-    rightCol.insertBefore(finetune,rightCol.firstChild);
+    rightCol.appendChild(finetune);
   } else {
     rightCol.insertBefore(preview,rightCol.firstChild);
     step5Slot.insertAdjacentElement('afterend',finetune);
