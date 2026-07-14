@@ -187,7 +187,17 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .zoom-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:var(--teal-dark);box-shadow:0 1px 4px rgba(0,0,0,0.2);cursor:grab;transition:left .15s;}
 .zoom-pct{font-size:11px;color:var(--muted);min-width:30px;text-align:right;font-weight:600;}
 /* Canvas area — scrollable so zoomed labels don't get clipped */
-.preview-canvas-area{display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto;min-height:400px;}
+.preview-canvas-area{display:flex;align-items:flex-start;justify-content:center;gap:20px;padding:16px;overflow:auto;min-height:400px;}
+.preview-canvas-area>#label-svg-container{flex:1;display:flex;align-items:center;justify-content:center;min-width:0;}
+.preview-legend{flex:0 0 220px;background:white;border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:12px;align-self:stretch;overflow-y:auto;max-height:100%;}
+.preview-legend .fine-tune-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.preview-legend .fine-tune-sub{font-size:10.5px;color:var(--muted);margin-bottom:10px;line-height:1.35;}
+.preview-legend .ft-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);}
+.preview-legend .ft-row span{font-size:11.5px;font-weight:600;color:var(--text);}
+.preview-legend .ft-controls{display:flex;align-items:center;gap:4px;}
+.preview-legend .ft-btn{background:var(--off);border:1px solid var(--border);color:var(--text);border-radius:4px;width:19px;height:19px;font-size:11px;cursor:pointer;line-height:1;padding:0;}
+.preview-legend .ft-pct{font-size:10.5px;color:var(--muted);min-width:28px;text-align:center;font-weight:600;}
+.preview-legend .ft-reset{font-size:9.5px;color:var(--teal);font-weight:600;cursor:pointer;display:none;text-align:right;padding:2px 0 4px;}
 #label-svg-container{
   -webkit-user-select:none;-moz-user-select:none;user-select:none;
   pointer-events:none;
@@ -769,55 +779,55 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="watermark-note">🆓 Free trial — labels include a CLPeasy watermark. <button onclick="window.location.href='pricing.html'" style="background:var(--teal,#4C9BB0);color:white;border:none;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;">Subscribe to remove →</button></div>
     <!-- STEP 5: preview moves here (from right column), fine-tune moves to right column -->
     <div id="step5-preview-slot" style="margin-bottom:20px;"></div>
-    <div id="finetune-panel-el" style="background:white;border:1.5px solid var(--border);border-radius:16px;padding:16px 18px;margin-bottom:20px;">
-        <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;">Fine-tune your label</div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.4;">Within the compliant range. Pictograms stay locked at 10mm. H-statements, P-statements and sensitisers move together as one block.</div>
+    <div id="finetune-panel-el" class="preview-legend">
+        <div class="fine-tune-title">Fine-tune your label</div>
+        <div class="fine-tune-sub">Within the compliant range. Pictograms locked at 10mm. H/P/sensitisers move as one block.</div>
 
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
-          <span style="font-size:12px;font-weight:600;color:var(--text);">Product type</span>
-          <div style="display:flex;align-items:center;gap:5px;">
-            <button onclick="nudgeTypeFS(-1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">−</button>
-            <span id="type-fs-pct" style="font-size:11px;color:var(--muted);min-width:32px;text-align:center;font-weight:600;">100%</span>
-            <button onclick="nudgeTypeFS(1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">+</button>
+        <div class="ft-row">
+          <span>Product type</span>
+          <div class="ft-controls">
+            <button class="ft-btn" onclick="nudgeTypeFS(-1)">−</button>
+            <span id="type-fs-pct" class="ft-pct">100%</span>
+            <button class="ft-btn" onclick="nudgeTypeFS(1)">+</button>
           </div>
         </div>
-        <div style="text-align:right;"><span id="type-fs-reset" onclick="resetTypeFS()" style="font-size:10px;color:var(--teal);font-weight:600;cursor:pointer;display:none;">Reset</span></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
-          <span style="font-size:12px;font-weight:600;color:var(--text);">Signal word</span>
-          <div style="display:flex;align-items:center;gap:5px;">
-            <button onclick="nudgeSigFS(-1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">−</button>
-            <span id="sig-fs-pct" style="font-size:11px;color:var(--muted);min-width:32px;text-align:center;font-weight:600;">100%</span>
-            <button onclick="nudgeSigFS(1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">+</button>
+        <div class="ft-reset" id="type-fs-reset" onclick="resetTypeFS()">Reset</div>
+        <div class="ft-row">
+          <span>Signal word</span>
+          <div class="ft-controls">
+            <button class="ft-btn" onclick="nudgeSigFS(-1)">−</button>
+            <span id="sig-fs-pct" class="ft-pct">100%</span>
+            <button class="ft-btn" onclick="nudgeSigFS(1)">+</button>
           </div>
         </div>
-        <div style="text-align:right;"><span id="sig-fs-reset" onclick="resetSigFS()" style="font-size:10px;color:var(--teal);font-weight:600;cursor:pointer;display:none;">Reset</span></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
-          <span style="font-size:12px;font-weight:600;color:var(--text);">Hazard font size <span style="font-weight:400;color:var(--muted);">(H/P/sensitiser)</span></span>
-          <div style="display:flex;align-items:center;gap:5px;">
-            <button onclick="nudgeHazardFS(-1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">−</button>
-            <span id="hazard-fs-pct" style="font-size:11px;color:var(--muted);min-width:32px;text-align:center;font-weight:600;">100%</span>
-            <button onclick="nudgeHazardFS(1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">+</button>
+        <div class="ft-reset" id="sig-fs-reset" onclick="resetSigFS()">Reset</div>
+        <div class="ft-row">
+          <span>Hazard font <span style="font-weight:400;color:var(--muted);">(H/P/sens.)</span></span>
+          <div class="ft-controls">
+            <button class="ft-btn" onclick="nudgeHazardFS(-1)">−</button>
+            <span id="hazard-fs-pct" class="ft-pct">100%</span>
+            <button class="ft-btn" onclick="nudgeHazardFS(1)">+</button>
           </div>
         </div>
-        <div style="text-align:right;"><span id="hazard-fs-reset" onclick="resetHazardFS()" style="font-size:10px;color:var(--teal);font-weight:600;cursor:pointer;display:none;">Reset</span></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
-          <span style="font-size:12px;font-weight:600;color:var(--text);">Scent name</span>
-          <div style="display:flex;align-items:center;gap:5px;">
-            <button onclick="nudgeScentFS(-1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">−</button>
-            <span id="scent-fs-pct" style="font-size:11px;color:var(--muted);min-width:32px;text-align:center;font-weight:600;">100%</span>
-            <button onclick="nudgeScentFS(1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">+</button>
+        <div class="ft-reset" id="hazard-fs-reset" onclick="resetHazardFS()">Reset</div>
+        <div class="ft-row">
+          <span>Scent name</span>
+          <div class="ft-controls">
+            <button class="ft-btn" onclick="nudgeScentFS(-1)">−</button>
+            <span id="scent-fs-pct" class="ft-pct">100%</span>
+            <button class="ft-btn" onclick="nudgeScentFS(1)">+</button>
           </div>
         </div>
-        <div style="text-align:right;"><span id="scent-fs-reset" onclick="resetScentFS()" style="font-size:10px;color:var(--teal);font-weight:600;cursor:pointer;display:none;">Reset</span></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;">
-          <span style="font-size:12px;font-weight:600;color:var(--text);">Business name</span>
-          <div style="display:flex;align-items:center;gap:5px;">
-            <button onclick="nudgeBizNameFS(-1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">−</button>
-            <span id="bizname-fs-pct" style="font-size:11px;color:var(--muted);min-width:32px;text-align:center;font-weight:600;">100%</span>
-            <button onclick="nudgeBizNameFS(1)" style="background:var(--off);border:1.5px solid var(--border);color:var(--text);border-radius:5px;width:22px;height:22px;font-size:13px;cursor:pointer;line-height:1;">+</button>
+        <div class="ft-reset" id="scent-fs-reset" onclick="resetScentFS()">Reset</div>
+        <div class="ft-row" style="border-bottom:none;">
+          <span>Business name</span>
+          <div class="ft-controls">
+            <button class="ft-btn" onclick="nudgeBizNameFS(-1)">−</button>
+            <span id="bizname-fs-pct" class="ft-pct">100%</span>
+            <button class="ft-btn" onclick="nudgeBizNameFS(1)">+</button>
           </div>
         </div>
-        <div style="text-align:right;"><span id="bizname-fs-reset" onclick="resetBizNameFS()" style="font-size:10px;color:var(--teal);font-weight:600;cursor:pointer;display:none;">Reset</span></div>
+        <div class="ft-reset" id="bizname-fs-reset" onclick="resetBizNameFS()">Reset</div>
     </div>
     <div style="background:white;border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;">
       <div class="sdiv" style="margin-top:0">Label summary</div>
@@ -1980,10 +1990,11 @@ function layoutForStep(n){
   const rightCol=document.querySelector('.right-column');
   const step5Slot=document.getElementById('step5-preview-slot');
   const step5Panel=document.getElementById('step-5');
-  if(!preview||!finetune||!rightCol||!step5Slot||!step5Panel)return;
+  const canvasArea=document.getElementById('preview-canvas-area');
+  if(!preview||!finetune||!rightCol||!step5Slot||!step5Panel||!canvasArea)return;
   if(n===5){
     step5Slot.appendChild(preview);
-    rightCol.appendChild(finetune);
+    canvasArea.appendChild(finetune);
   } else {
     rightCol.insertBefore(preview,rightCol.firstChild);
     step5Slot.insertAdjacentElement('afterend',finetune);
@@ -3351,11 +3362,11 @@ function syncAdjustPanel(){
   const gEl=document.getElementById('sig-fs-pct'); if(gEl)gEl.textContent=_fsPct(S.sigFSOverride,gb)+'%';
   const yPct=Math.round((S.hazardYOffset!=null?S.hazardYOffset:0.5)*100);
   const yEl=document.getElementById('hazard-y-pct'); if(yEl)yEl.textContent=yPct+'%';
-  const hR=document.getElementById('hazard-fs-reset'); if(hR)hR.style.display=S.hazardFSOverride!=null?'inline':'none';
-  const sR=document.getElementById('scent-fs-reset'); if(sR)sR.style.display=S.scentFSOverride!=null?'inline':'none';
-  const zR=document.getElementById('bizname-fs-reset'); if(zR)zR.style.display=S.bizNameFSOverride!=null?'inline':'none';
-  const tR=document.getElementById('type-fs-reset'); if(tR)tR.style.display=S.typeFSOverride!=null?'inline':'none';
-  const gR=document.getElementById('sig-fs-reset'); if(gR)gR.style.display=S.sigFSOverride!=null?'inline':'none';
+  const hR=document.getElementById('hazard-fs-reset'); if(hR)hR.style.display=S.hazardFSOverride!=null?'block':'none';
+  const sR=document.getElementById('scent-fs-reset'); if(sR)sR.style.display=S.scentFSOverride!=null?'block':'none';
+  const zR=document.getElementById('bizname-fs-reset'); if(zR)zR.style.display=S.bizNameFSOverride!=null?'block':'none';
+  const tR=document.getElementById('type-fs-reset'); if(tR)tR.style.display=S.typeFSOverride!=null?'block':'none';
+  const gR=document.getElementById('sig-fs-reset'); if(gR)gR.style.display=S.sigFSOverride!=null?'block':'none';
   const yR=document.getElementById('hazard-y-reset'); if(yR)yR.style.display=S.hazardYOffset!=null?'inline':'none';
 }
 function nudgeTypeFS(delta){
