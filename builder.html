@@ -56,12 +56,12 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 .help-faq p{font-size:13px;color:var(--muted);padding:8px 0 4px;line-height:1.6;}
 
 /* LAYOUT — two columns: form + sticky right column (preview + library) */
-.builder-layout{display:grid;grid-template-columns:1fr 360px;gap:24px;padding-top:88px;max-width:1280px;margin:0 auto;align-items:start;}
+.builder-layout{display:grid;grid-template-columns:1fr 420px;gap:24px;padding-top:88px;max-width:1280px;margin:0 auto;align-items:start;}
 @media(max-width:860px){.builder-layout{display:block;}}
 .wizard-panel{padding:20px 24px 60px;min-width:0;}
 .right-column{display:flex;flex-direction:column;gap:16px;}
 @media(min-width:861px){.right-column{position:sticky;top:88px;max-height:calc(100vh - 108px);overflow-y:auto;}}
-.preview-panel{background:var(--off);border:1.5px solid var(--border);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;}
+.preview-panel{background:var(--off);border:1.5px solid var(--border);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
 
 @media(max-width:860px){
   .wizard-panel{padding:16px 16px 40px;max-width:100%;width:100%;}
@@ -187,7 +187,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .zoom-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:var(--teal-dark);box-shadow:0 1px 4px rgba(0,0,0,0.2);cursor:grab;transition:left .15s;}
 .zoom-pct{font-size:11px;color:var(--muted);min-width:30px;text-align:right;font-weight:600;}
 /* Canvas area — scrollable so zoomed labels don't get clipped */
-.preview-canvas-area{display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto;}
+.preview-canvas-area{display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto;min-height:400px;}
 #label-svg-container{
   -webkit-user-select:none;-moz-user-select:none;user-select:none;
   pointer-events:none;
@@ -768,9 +768,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <p class="step-sub">Review your label, then download in your preferred format.</p>
     <div class="compliance-box"><p>⚠️ <strong>Compliance reminder:</strong> Always verify all hazard data against your fragrance supplier's SDS at your actual fragrance load before printing. You are responsible for final verification.</p></div>
     <div class="watermark-note">🆓 Free trial — labels include a CLPeasy watermark. <button onclick="window.location.href='pricing.html'" style="background:var(--teal,#4C9BB0);color:white;border:none;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;">Subscribe to remove →</button></div>
-    <!-- STEP 5 FINE-TUNE -->
-    <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:20px;">
-      <div style="background:white;border:1.5px solid var(--border);border-radius:16px;padding:16px 18px;flex:1 1 100%;">
+    <!-- STEP 5: preview moves here (from right column), fine-tune moves to right column -->
+    <div id="step5-preview-slot" style="margin-bottom:20px;"></div>
+    <div id="finetune-panel-el" style="background:white;border:1.5px solid var(--border);border-radius:16px;padding:16px 18px;margin-bottom:20px;">
         <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;">Fine-tune your label</div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.4;">Within the compliant range. Pictograms stay locked at 10mm. H-statements, P-statements and sensitisers move together as one block.</div>
 
@@ -819,7 +819,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           </div>
         </div>
         <div style="text-align:right;"><span id="bizname-fs-reset" onclick="resetBizNameFS()" style="font-size:10px;color:var(--teal);font-weight:600;cursor:pointer;display:none;">Reset</span></div>
-      </div>
     </div>
     <div style="background:white;border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;">
       <div class="sdiv" style="margin-top:0">Label summary</div>
@@ -861,7 +860,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <!-- RIGHT COLUMN: live preview + label library, sticky together -->
 <div class="right-column">
 <!-- DESKTOP PREVIEW PANEL -->
-<div class="preview-panel">
+<div class="preview-panel" id="preview-panel-el">
   <div class="preview-header">
     <h3>LIVE PREVIEW</h3>
     <div class="preview-header-right">
@@ -1972,8 +1971,28 @@ function loadLabelAndGotoStep5(i){
   forceGoToStep(5);
 }
 
+// Moves the single preview panel and fine-tune panel between their
+// Step 1-4 positions (preview in right column) and Step 5 positions
+// (preview large in main column, fine-tune compact in right column).
+// Same DOM nodes throughout — never duplicated, just relocated.
+function layoutForStep(n){
+  const preview=document.getElementById('preview-panel-el');
+  const finetune=document.getElementById('finetune-panel-el');
+  const rightCol=document.querySelector('.right-column');
+  const step5Slot=document.getElementById('step5-preview-slot');
+  const step5Panel=document.getElementById('step-5');
+  if(!preview||!finetune||!rightCol||!step5Slot||!step5Panel)return;
+  if(n===5){
+    step5Slot.appendChild(preview);
+    rightCol.insertBefore(finetune,rightCol.firstChild);
+  } else {
+    rightCol.insertBefore(preview,rightCol.firstChild);
+    step5Slot.insertAdjacentElement('afterend',finetune);
+  }
+}
 function forceGoToStep(n){
   S.step=n;
+  layoutForStep(n);
   document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('step-'+n).classList.add('active');
   updateStepsBar();
@@ -2376,6 +2395,7 @@ document.addEventListener('keydown', function(e) {
 });
 
 function goToStep(n){if(n>S.step+1)return;S.step=n;
+  layoutForStep(n);
   window.scrollTo({top:0,behavior:'smooth'});
   // Hide preview download buttons unless on step 5
   const dlRow=document.getElementById('preview-dl-row');
@@ -3418,7 +3438,14 @@ function updateLabel(){
             _previewFitZoom=fitZoom*0.88;
             if(previewZoom===0.75||previewZoom<0.5||previewZoom>1.8){
               previewZoom=_previewFitZoom;
-              const pct=100;
+            }
+            // Always keep previewZoom within the current bounds — the container
+            // can resize between renders, so a value valid last time may no
+            // longer fit now. Without this, zooming in can appear to shrink
+            // the label if it snaps down to a lower ceiling than expected.
+            previewZoom=Math.min(Math.max(previewZoom,0.2),_previewMaxZoom);
+            {
+              const pct=Math.round(_previewFitZoom>0?(previewZoom/_previewFitZoom*100):100);
               const fillPct=(_previewMaxZoom>0.2?((previewZoom-0.2)/(_previewMaxZoom-0.2)*100):0).toFixed(1);
               const zpEl=document.getElementById('zoom-pct');const zfEl=document.getElementById('zoom-fill');const ztEl=document.getElementById('zoom-thumb');
               if(zpEl)zpEl.textContent=pct+'%';
