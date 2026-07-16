@@ -75,6 +75,11 @@ input:focus{border-color:var(--teal);}
 .verify-icon{font-size:48px;margin-bottom:16px;}
 .verify-title{font-family:'DM Serif Display',serif;font-size:24px;margin-bottom:8px;}
 .verify-sub{font-size:14px;color:var(--muted);line-height:1.6;}
+@media(max-width:480px){
+  nav{padding:0 16px;height:64px;}
+  .nav-badge{width:44px;height:44px;font-size:20px;}
+  .nav-easy{font-size:22px;}
+}
 </style>
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"></script>
@@ -86,10 +91,10 @@ input:focus{border-color:var(--teal);}
 <body>
 
 <nav>
-  <a href="home.html" class="nav-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span></a>
+  <a href="index.html" class="nav-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span></a>
   <div style="display:flex;gap:8px;align-items:center;">
     <a href="support.html" style="font-size:13px;color:var(--muted);text-decoration:none;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;" onmouseover="this.style.color='#4C9BB0';this.style.borderColor='#4C9BB0'" onmouseout="this.style.color='';this.style.borderColor=''">Support</a>
-    <a href="home.html" class="nav-back">← Home</a>
+    <a href="index.html" class="nav-back">← Home</a>
   </div>
 </nav>
 
@@ -107,7 +112,7 @@ input:focus{border-color:var(--teal);}
       <div class="verify-title">Check your email</div>
       <div class="verify-sub" id="verify-sub">We've sent a verification link to your email address. Click the link to activate your CLPeasy account.</div>
       <br>
-      <a href="home.html" style="color:var(--teal);font-size:14px;font-weight:600;">← Back to home</a>
+      <a href="index.html" style="color:var(--teal);font-size:14px;font-weight:600;">← Back to home</a>
     </div>
 
     <!-- AUTH FORM -->
