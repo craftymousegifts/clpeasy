@@ -162,7 +162,7 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
 <body>
 
 <nav>
-  <a href="home.html" class="nav-logo">
+  <a href="index.html" class="nav-logo">
     <div class="nav-badge">CLP</div><span class="nav-easy">easy™</span>
   </a>
   <div class="nav-right">
@@ -408,11 +408,11 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
     <div class="modal-title">Buy more downloads</div>
     <div class="modal-sub">Top-up packs add to your allowance for the current month. Downloads don't roll over to next month.</div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
-      <div class="survey-opt" onclick="selectTopup(5,1.49,this)" style="justify-content:space-between;">
-        <span>5 extra downloads</span><strong>£1.49</strong>
+      <div class="survey-opt" onclick="selectTopup(5,3.99,this)" style="justify-content:space-between;">
+        <span>5 extra downloads</span><strong>£3.99</strong>
       </div>
-      <div class="survey-opt" onclick="selectTopup(15,3.49,this)" style="justify-content:space-between;">
-        <span>15 extra downloads</span><strong>£3.49</strong>
+      <div class="survey-opt" onclick="selectTopup(10,7.99,this)" style="justify-content:space-between;">
+        <span>10 extra downloads</span><strong>£7.99</strong>
       </div>
     </div>
     <div style="background:var(--teal-light);border-radius:10px;padding:12px 16px;font-size:12px;color:var(--teal-dark);line-height:1.6;margin-bottom:20px;" id="topup-upgrade-nudge" style="display:none;">
@@ -761,10 +761,36 @@ function selectTopup(qty, price, el) {
   btn.disabled = false; btn.style.opacity = '1';
   btn.textContent = `Pay £${price} via Stripe →`;
 }
-function confirmTopup() {
-  // TODO: create Stripe payment intent for top-up
-  alert(`Top-up of ${selectedTopupQty} downloads (£${selectedTopupPrice}) — Stripe checkout will open here when wired.`);
-  closeModal('modal-topup');
+const TOPUP_PRICES = {
+  5:  'price_1Tdpd7GZLILz5vqUAiSw9udI',
+  10: 'price_1TdpdzGZLILz5vqUYEjn6TZ2',
+};
+const PLAN_PRICES = {
+  start: 'price_1TdoEYGZLILz5vqUIqlEsf4X',
+  pro:   'price_1TdoEXGZLILz5vqUvZKB1RQw',
+};
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
+
+async function confirmTopup() {
+  const priceId = TOPUP_PRICES[selectedTopupQty];
+  const btn = document.getElementById('topup-confirm-btn');
+  const originalText = btn.textContent;
+  if (!priceId || !currentUser) { alert('Something went wrong — please refresh and try again.'); return; }
+  btn.textContent = 'Loading…'; btn.disabled = true; btn.style.opacity = '0.7';
+  try {
+    const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+      body: JSON.stringify({ priceId, userEmail: currentUser.email, userId: currentUser.id, mode: 'payment' })
+    });
+    const data = await res.json();
+    if (data.url) { window.location.href = data.url; }
+    else { throw new Error(data.error || 'No checkout URL returned'); }
+  } catch (e) {
+    console.error('Top-up checkout error:', e);
+    alert('Something went wrong starting checkout. Please try again.');
+    btn.textContent = originalText; btn.disabled = false; btn.style.opacity = '1';
+  }
 }
 
 // ── RESUBSCRIBE ───────────────────────────────────────────────────
@@ -777,20 +803,49 @@ function selectResub(plan) {
   const btn = document.getElementById('resub-confirm-btn');
   btn.disabled = false; btn.style.opacity = '1';
 }
-function confirmResub() {
-  // TODO: create Stripe subscription, update Supabase
-  alert(`Reactivation for Easy ${selectedResub === 'pro' ? 'Pro' : 'Start'} — Stripe checkout will open here when wired.`);
-  closeModal('modal-resubscribe');
+async function confirmResub() {
+  const priceId = PLAN_PRICES[selectedResub];
+  const btn = document.getElementById('resub-confirm-btn');
+  const originalText = btn.textContent;
+  if (!priceId || !currentUser) { alert('Something went wrong — please refresh and try again.'); return; }
+  btn.textContent = 'Loading…'; btn.disabled = true; btn.style.opacity = '0.7';
+  try {
+    const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
+      body: JSON.stringify({ priceId, userEmail: currentUser.email, userId: currentUser.id, mode: 'subscription' })
+    });
+    const data = await res.json();
+    if (data.url) { window.location.href = data.url; }
+    else { throw new Error(data.error || 'No checkout URL returned'); }
+  } catch (e) {
+    console.error('Resubscribe checkout error:', e);
+    alert('Something went wrong starting checkout. Please try again.');
+    btn.textContent = originalText; btn.disabled = false; btn.style.opacity = '1';
+  }
 }
 
 // ── OTHER ─────────────────────────────────────────────────────────
-function openStripePortal() {
-  // TODO: generate Stripe customer portal session URL via edge function
-  alert('Stripe customer portal will open here when wired.');
+async function openStripePortal() {
+  try {
+    const { data: { session } } = await _sb.auth.getSession();
+    if (!session) { alert('Please sign in again to manage billing.'); return; }
+    const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/create-portal-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+      body: JSON.stringify({ userId: currentUser.id })
+    });
+    const data = await res.json();
+    if (data.url) { window.location.href = data.url; }
+    else { throw new Error(data.error || 'No portal URL returned'); }
+  } catch (e) {
+    console.error('Stripe portal error:', e);
+    alert('Something went wrong opening billing. Please try again.');
+  }
 }
 async function signOut() {
   await _sb.auth.signOut();
-  window.location.href = 'home.html';
+  window.location.href = 'index.html';
 }
 </script>
 </body>
