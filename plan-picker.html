@@ -87,12 +87,16 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 24px;height
 /* BOTH GOOD RESULT */
 .both-card{background:white;border:1.5px solid var(--border);border-radius:20px;padding:36px 28px;display:none;animation:fadeUp .4s ease;}
 .both-card.show{display:block;}
+@media(max-width:400px){
+  nav{padding:0 14px;}
+  .nav-link{display:none;}
+}
 </style>
 </head>
 <body>
 
 <nav>
-  <a href="home.html" class="nav-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span></a>
+  <a href="index.html" class="nav-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span></a>
   <a href="pricing.html" class="nav-link">See all plans →</a>
   <a href="support.html" style="font-size:13px;color:var(--muted);text-decoration:none;padding:7px 14px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;" onmouseover="this.style.color='#4C9BB0';this.style.borderColor='#4C9BB0'" onmouseout="this.style.color='';this.style.borderColor=''">Support</a>
 </nav>
