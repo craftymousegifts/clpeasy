@@ -184,10 +184,11 @@ tr:hover td{background:var(--surface2);}
   <div class="auth-box">
     <div class="auth-logo">CLPeasy Admin</div>
     <h2>Package Monitor</h2>
-    <p>Enter your admin password to continue.</p>
-    <input type="password" class="auth-input" id="pw-input" placeholder="Admin password" onkeydown="if(event.key==='Enter')checkAuth()">
-    <button class="auth-btn" onclick="checkAuth()">Unlock →</button>
-    <div class="auth-err" id="auth-err">Incorrect password</div>
+    <p>Sign in with your CLPeasy admin account to continue.</p>
+    <input type="email" class="auth-input" id="email-input" placeholder="Email" autocomplete="username" style="margin-bottom:10px;">
+    <input type="password" class="auth-input" id="pw-input" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')checkAuth()">
+    <button class="auth-btn" onclick="checkAuth()">Sign in →</button>
+    <div class="auth-err" id="auth-err">Sign-in failed — check your email and password.</div>
   </div>
 </div>
 
@@ -343,52 +344,68 @@ tr:hover td{background:var(--surface2);}
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ── ADMIN PASSWORD ─────────────────────────────────────────────
-// Change this to your real password before deploying
-const ADMIN_PASSWORD = 'clpeasy-admin-2026';
+// ── AUTH ──────────────────────────────────────────────────────
+// Real sign-in via Supabase Auth. Authorization (which account is allowed to
+// see this data) is enforced server-side in the admin-package-monitor edge
+// function — this client-side gate is just the UI, not the security boundary.
+const _sb = window.supabase.createClient(
+  'https://qvkosdqcryrcfbjtaxic.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw'
+);
 
-function checkAuth(){
+async function checkAuth(){
+  const email = document.getElementById('email-input').value.trim();
   const pw = document.getElementById('pw-input').value;
-  if(pw === ADMIN_PASSWORD){
+  const errEl = document.getElementById('auth-err');
+  errEl.style.display = 'none';
+  try {
+    const { data, error } = await _sb.auth.signInWithPassword({ email, password: pw });
+    if (error || !data.session) { errEl.textContent = 'Sign-in failed — check your email and password.'; errEl.style.display = 'block'; return; }
+    const ok = await loadData(data.session.access_token);
+    if (!ok) {
+      errEl.textContent = 'This account isn\'t authorized to view Package Monitor.';
+      errEl.style.display = 'block';
+      await _sb.auth.signOut();
+      return;
+    }
     document.getElementById('auth-gate').style.display = 'none';
     document.getElementById('dashboard').style.display = 'block';
-    loadData();
-  } else {
-    document.getElementById('auth-err').style.display = 'block';
+  } catch (e) {
+    console.error('Sign-in error:', e);
+    errEl.textContent = 'Something went wrong. Please try again.';
+    errEl.style.display = 'block';
   }
 }
 
-// ── MOCK DATA (replace with Supabase queries when wired) ───────
-// Structure mirrors what you'll pull from Supabase:
-// SELECT id, email, display_name, plan, status, downloads_used, 
-//        billing_period_end, topup_months_consecutive 
-// FROM users JOIN download_usage ON ...
-
-const MOCK_USERS = [
-  {id:1, name:'Sarah M.', email:'sarah@example.com', plan:'start', status:'active', used:18, limit:20, topups:0, periodEnd:3},
-  {id:2, name:'Claire B.', email:'claire@example.com', plan:'start', status:'active', used:20, limit:20, topups:2, periodEnd:8},
-  {id:3, name:'Jenny K.', email:'jenny@example.com', plan:'pro', status:'active', used:12, limit:40, topups:0, periodEnd:14},
-  {id:4, name:'Rachel T.', email:'rachel@example.com', plan:'trial', status:'trial', used:7, limit:999, topups:0, periodEnd:5},
-  {id:5, name:'Fiona W.', email:'fiona@example.com', plan:'start', status:'active', used:9, limit:20, topups:0, periodEnd:21},
-  {id:6, name:'Amy D.', email:'amy@example.com', plan:'pro', status:'active', used:38, limit:40, topups:1, periodEnd:2},
-  {id:7, name:'Laura P.', email:'laura@example.com', plan:'start', status:'paused', used:0, limit:20, topups:0, periodEnd:0},
-  {id:8, name:'Emma S.', email:'emma@example.com', plan:'trial', status:'trial', used:3, limit:999, topups:0, periodEnd:11},
-  {id:9, name:'Nicola H.', email:'nicola@example.com', plan:'start', status:'active', used:19, limit:20, topups:3, periodEnd:6},
-  {id:10, name:'Kat O.', email:'kat@example.com', plan:'pro', status:'active', used:8, limit:40, topups:0, periodEnd:18},
-];
+// ── LIVE DATA (from Supabase, via admin-package-monitor edge function) ──
+let USERS = [];
 
 let thresholds = { start: 50, pro: 50 };
 let currentFilter = 'all';
 
-function loadData(){
-  // ── When Supabase is wired, replace MOCK_USERS with:
-  // const { data } = await supabase.from('download_usage_view').select('*');
-  renderStats();
-  renderPlanOverview();
-  renderTable(MOCK_USERS);
-  checkAlerts();
-  updateRefreshTime();
+async function loadData(accessToken){
+  try {
+    const token = accessToken || (await _sb.auth.getSession()).data.session?.access_token;
+    if (!token) return false;
+    const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/admin-package-monitor', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.status === 403 || res.status === 401) return false;
+    const data = await res.json();
+    if (data.error) { console.error('Package monitor load error:', data.error); return false; }
+    USERS = data.users || [];
+    renderStats();
+    renderPlanOverview();
+    renderTable(USERS);
+    checkAlerts();
+    updateRefreshTime();
+    return true;
+  } catch (e) {
+    console.error('Package monitor load error:', e);
+    return false;
+  }
 }
 
 function refreshData(){
@@ -396,10 +413,10 @@ function refreshData(){
 }
 
 function renderStats(){
-  const total = MOCK_USERS.filter(u => u.status !== 'trial').length;
-  const starts = MOCK_USERS.filter(u => u.plan === 'start').length;
-  const pros = MOCK_USERS.filter(u => u.plan === 'pro').length;
-  const trials = MOCK_USERS.filter(u => u.status === 'trial').length;
+  const total = USERS.filter(u => u.status !== 'trial').length;
+  const starts = USERS.filter(u => u.plan === 'start').length;
+  const pros = USERS.filter(u => u.plan === 'pro').length;
+  const trials = USERS.filter(u => u.status === 'trial').length;
   document.getElementById('stat-total').textContent = total;
   document.getElementById('stat-start').textContent = starts;
   document.getElementById('stat-pro').textContent = pros;
@@ -413,7 +430,7 @@ function renderStats(){
 function renderPlanOverview(){
   ['start','pro'].forEach(plan => {
     const lim = plan === 'start' ? 20 : 40;
-    const users = MOCK_USERS.filter(u => u.plan === plan && u.status === 'active');
+    const users = USERS.filter(u => u.plan === plan && u.status === 'active');
     const total = users.length || 1;
     const buckets = [0,0,0,0,0]; // 0-25, 25-50, 50-75, 75-99, 100
     users.forEach(u => {
@@ -439,7 +456,7 @@ function renderPlanOverview(){
 function checkAlerts(){
   ['start','pro'].forEach(plan => {
     const lim = plan === 'start' ? 20 : 40;
-    const users = MOCK_USERS.filter(u => u.plan === plan && u.status === 'active');
+    const users = USERS.filter(u => u.plan === plan && u.status === 'active');
     const total = users.length;
     const heavy = users.filter(u => u.used / lim >= 0.8).length;
     const pct = total > 0 ? Math.round(heavy/total*100) : 0;
@@ -500,23 +517,23 @@ function filterTable(type, btn){
   currentFilter = type;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  let filtered = MOCK_USERS;
-  if(type === 'trial') filtered = MOCK_USERS.filter(u => u.status === 'trial');
-  else if(type === 'start') filtered = MOCK_USERS.filter(u => u.plan === 'start');
-  else if(type === 'pro') filtered = MOCK_USERS.filter(u => u.plan === 'pro');
-  else if(type === 'alert') filtered = MOCK_USERS.filter(u => u.limit < 999 && u.used/u.limit >= 1);
+  let filtered = USERS;
+  if(type === 'trial') filtered = USERS.filter(u => u.status === 'trial');
+  else if(type === 'start') filtered = USERS.filter(u => u.plan === 'start');
+  else if(type === 'pro') filtered = USERS.filter(u => u.plan === 'pro');
+  else if(type === 'alert') filtered = USERS.filter(u => u.limit < 999 && u.used/u.limit >= 1);
   renderTable(filtered);
 }
 
 function nudgeUpgrade(userId){
-  const user = MOCK_USERS.find(u => u.id === userId);
+  const user = USERS.find(u => u.id === userId);
   if(!user) return;
   alert(`Upgrade nudge email queued for ${user.email}\n\nWhen Brevo is wired, this will send:\n"You're regularly using your full download allowance — upgrading to Easy Pro doubles it to 40/month for just £5 more."`);
 }
 
 function showAnnounceModal(){
-  const startHeavy = MOCK_USERS.filter(u => u.plan==='start' && u.used/u.limit >= 0.8).length;
-  const proHeavy = MOCK_USERS.filter(u => u.plan==='pro' && u.used/u.limit >= 0.8).length;
+  const startHeavy = USERS.filter(u => u.plan==='start' && u.used/u.limit >= 0.8).length;
+  const proHeavy = USERS.filter(u => u.plan==='pro' && u.used/u.limit >= 0.8).length;
   document.getElementById('modal-preview').textContent =
 `Subject: Good news — your CLPeasy download allowance just got bigger 🎉
 
