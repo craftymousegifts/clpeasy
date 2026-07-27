@@ -1673,7 +1673,12 @@ function closeDlLimitModal(){
 }
 
 // ── TOP-UP CHECKOUT ──────────────────────────────────────────
-// Sandbox price IDs — swap for live IDs on go-live day
+// RESOLVED (2026-07-28, AUDIT_AND_FIX_LOG.md BLOCKER-2): confirmed by
+// Michaela directly against the CLPeasy Stripe dashboard — these ARE the
+// correct, canonical top-up Price IDs. checkout.html and stripe-webhook have
+// been updated to match this file (they previously referenced a different,
+// incorrect pair, price_1TeBHj.../price_1TeBIK..., which is no longer used
+// anywhere in active logic).
 const TOPUP_PRICES = {
   topup_5:  'price_1Tdpd7GZLILz5vqUAiSw9udI',
   topup_10: 'price_1TdpdzGZLILz5vqUYEjn6TZ2',

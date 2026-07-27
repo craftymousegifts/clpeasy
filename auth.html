@@ -240,28 +240,13 @@ if (mode === 'signin') {
     btn.textContent = 'Sign in';
   } else {
 
-    // ── GET LOGGED IN USER ─────────────────────────────
-    const { data: { user } } = await sb.auth.getUser();
-
-    // ── ENSURE USER EXISTS IN PUBLIC.USERS ─────────────
-    // Insert-only: seed defaults for brand-new users, never overwrite an
-    // existing row (otherwise a returning paid user would be reset to free).
-    if (user) {
-      await sb
-        .from('users')
-        .upsert(
-          [
-            {
-              id: user.id,
-              email: user.email,
-              plan: 'free',
-              credits: 10,
-              subscription_status: 'inactive'
-            }
-          ],
-          { onConflict: 'id', ignoreDuplicates: true }
-        );
-    }
+    // REMOVED (2026-07-27, AUDIT_AND_FIX_LOG.md Phase 12): this used to upsert
+    // into a `public.users` table on every sign-in. That table was dropped from
+    // production via the `drop_unused_users_table` migration and nothing reads
+    // from it — the row it wrote was dead data, and the write itself was a
+    // failing no-op on every login. Signup/profile seeding is already handled
+    // by the `handle_new_user()` trigger on auth.users, which inserts into
+    // `public.profiles` (the authoritative table) automatically.
 
     // ── GO TO BUILDER ───────────────────────────────────
     window.location.href = 'builder.html';

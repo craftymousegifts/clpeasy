@@ -154,8 +154,16 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.97);backdrop
         </div>
       </div>
 
-      <!-- STEP 2: TOP-UP (optional) -->
-      <div class="card">
+      <!-- STEP 2: TOP-UP (optional) —
+           TEMPORARILY DISABLED 2026-07-27 (AUDIT_AND_FIX_LOG.md, Phase 7):
+           bundling a top-up with a new subscription here only ever created a
+           single-line-item Stripe Checkout Session for the subscription price —
+           the top-up was displayed in the total but never actually charged or
+           credited. Hidden until it's wired up as a real second line item (or a
+           real second Checkout Session) AND the top-up Price ID mismatch
+           (BLOCKER-2 in the log) is resolved. selectedTopup is forced to 'none'
+           below so startCheckout() can never send a top-up through this page. -->
+      <div class="card" style="display:none;">
         <div class="card-title"><div class="step-num">2</div> Add a top-up pack <span style="font-size:12px;font-weight:500;color:var(--muted);margin-left:6px;">(optional)</span></div>
         <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5;">Top-up credits never expire and stack on top of your monthly allowance. Handy for busy periods.</p>
         <div class="topup-grid">
@@ -236,9 +244,18 @@ const PRICES = {
   },
 };
 
+// FIX (2026-07-28, AUDIT_AND_FIX_LOG.md BLOCKER-2, resolved): this used to
+// reference a different, incorrect pair of top-up Price IDs
+// (price_1TeBHj.../price_1TeBIK...) than builder.html/account.html. Michaela
+// confirmed directly against the CLPeasy Stripe dashboard that the IDs below
+// (matching builder.html/account.html) are the correct, canonical ones — the
+// old pair has been removed from active logic, not just added alongside.
+// NOTE: the Step 2 top-up card that uses this map is still hidden (see the
+// comment above it) — the underlying single-line-item bundling issue (Phase 7)
+// is a separate, still-unresolved problem from the Price ID mismatch.
 const TOPUP_PRICES = {
-  '5':  { id: 'price_1TeBHjKF3jvQfgEaX2aPZX6E', label: '+5 downloads', price: 3.99 },
-  '10': { id: 'price_1TeBIKKF3jvQfgEaxU4TjPHu', label: '+10 downloads', price: 7.99 },
+  '5':  { id: 'price_1Tdpd7GZLILz5vqUAiSw9udI', label: '+5 downloads', price: 3.99 },
+  '10': { id: 'price_1TdpdzGZLILz5vqUYEjn6TZ2', label: '+10 downloads', price: 7.99 },
 };
 
 const FEATURES = {
