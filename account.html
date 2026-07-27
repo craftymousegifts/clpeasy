@@ -187,7 +187,7 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
       <p>Your account is currently inactive but your label library is safe for <strong id="winback-days">30</strong> more days. A lot has changed since you left — we've increased download allowances across all plans.</p>
       <div class="winback-pills">
         <span class="winback-pill">✓ Easy Start now 20 downloads/month</span>
-        <span class="winback-pill">✓ Easy Pro now 40 downloads/month</span>
+        <span class="winback-pill">✓ Easy Pro now 30 downloads/month</span>
         <span class="winback-pill">✓ 7-day re-download grace</span>
       </div>
       <button class="winback-btn" onclick="openModal('resubscribe')">Reactivate my account →</button>
@@ -395,7 +395,7 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
           <div style="font-size:15px;font-weight:700;">Easy Pro</div>
           <div style="font-size:15px;font-weight:800;">£14.99<span style="font-size:12px;font-weight:400;color:var(--muted);">/mo</span></div>
         </div>
-        <div style="font-size:12px;color:var(--muted);">40 downloads/month · SDS Smart Import · UFI · QR codes</div>
+        <div style="font-size:12px;color:var(--muted);">30 downloads/month · SDS Smart Import · UFI · QR codes</div>
       </div>
     </div>
     <div class="modal-actions">
@@ -419,7 +419,7 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
       </div>
     </div>
     <div style="background:var(--teal-light);border-radius:10px;padding:12px 16px;font-size:12px;color:var(--teal-dark);line-height:1.6;margin-bottom:20px;" id="topup-upgrade-nudge" style="display:none;">
-      💡 You've bought top-ups before. Upgrading to Easy Pro gives you 40 downloads/month — double your current allowance — for £5 more per month. <a href="pricing.html" style="color:var(--teal);font-weight:600;">Compare plans →</a>
+      💡 You've bought top-ups before. Upgrading to Easy Pro gives you 30 downloads/month — 50% more than Easy Start — for £5 more per month. <a href="pricing.html" style="color:var(--teal);font-weight:600;">Compare plans →</a>
     </div>
     <div class="modal-actions">
       <button class="modal-btn ghost" onclick="closeModal('modal-topup')">Cancel</button>
@@ -470,7 +470,12 @@ async function fetchProfile(userId) {
       : null,
     card_last4: data.card_last4 || null,
     downloads_used: data.downloads_used || 0,
-    downloads_limit: data.is_pro ? 40 : 20,
+    // FIX (2026-07-27): this previously hardcoded 40 for Pro / 20 for Start,
+    // discarding the real downloads_limit value already fetched above (the
+    // Stripe webhook sets 20/30, not 20/40 — see AUDIT_AND_FIX_LOG.md Phase 10).
+    // Always trust the stored value; fall back to the correct plan default only
+    // if the column is somehow null (e.g. a very old row).
+    downloads_limit: data.downloads_limit ?? (data.is_pro ? 30 : 20),
     topup_months: data.topup_months || 0,
     trial_ends: trialDaysLeft ? `${trialDaysLeft} days` : null,
     cancelled_days_remaining: cancelledDaysRemaining,
@@ -643,19 +648,35 @@ async function confirmPause() {
   const otherText = document.getElementById('pause-other').value || '';
   const pauseReason = reason.value === 'other' ? otherText : reason.value;
 
-  // Update Supabase profile
-  const { error } = await _sb.from('profiles').update({
-    subscription_status: 'paused',
-    pause_reason: pauseReason,
-    paused_at: new Date().toISOString(),
-  }).eq('id', currentUser.id);
+  // FIX (2026-07-27, AUDIT_AND_FIX_LOG.md Phase 8): this used to only write
+  // subscription_status to Supabase — the real Stripe subscription kept
+  // renewing and charging untouched. manage-subscription now actually pauses
+  // billing in Stripe first, and only updates the profile once Stripe
+  // confirms the change.
+  const { data: { session } } = await _sb.auth.getSession();
+  if (!session) { alert('Please sign in again and retry.'); return; }
+  let data;
+  try {
+    const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/manage-subscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+      body: JSON.stringify({ action: 'pause', reason: pauseReason }),
+    });
+    data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || 'Pause failed');
+  } catch (e) {
+    console.error('Pause subscription error:', e);
+    alert((data && data.error) || 'Something went wrong — please try again or contact support@clpeasy.com');
+    return;
+  }
 
-  if (error) { alert('Something went wrong — please try again or contact support@clpeasy.com'); return; }
-
-  // Notify via Supabase edge function → Brevo
+  // Notify via Supabase edge function → Brevo (non-blocking — email failure
+  // shouldn't block the UI). The function now derives the account from this
+  // same signed-in session, so it can no longer be pointed at another user's
+  // email address.
   await _sb.functions.invoke('clp-account-events', {
-    body: { event: 'subscription_paused', userId: currentUser.id, email: currentUser.email, reason: pauseReason }
-  }).catch(() => {}); // non-blocking — email failure shouldn't block UI
+    body: { event: 'subscription_paused', reason: pauseReason }
+  }).catch(() => {});
 
   userProfile.status = 'paused';
   document.getElementById('pause-step-1').style.display = 'none';
@@ -663,6 +684,16 @@ async function confirmPause() {
 }
 
 // ── CANCEL FLOW ───────────────────────────────────────────────────
+// BLOCKER-3 (AUDIT_AND_FIX_LOG.md): the save-offer coupon does not exist yet
+// in Stripe (STRIPE_SAVE_OFFER_COUPON_ID is unset). Until it is configured and
+// clp-account-events is redeployed, every "Yes — apply the discount" click
+// would fail with the honest error in acceptSaveOffer() below — showing a
+// retention offer that then reliably fails is worse than not showing one, so
+// the save-offer screen is temporarily disabled (same treatment as the
+// bundled top-up card in checkout.html). Set SAVE_OFFER_ENABLED = true once
+// the coupon is live and clp-account-events is deployed with it.
+const SAVE_OFFER_ENABLED = false;
+
 function handleCancelReason() {
   const radio = document.querySelector('input[name="cancel-reason"]:checked');
   if (!radio) { alert('Please select a reason to continue.'); return; }
@@ -671,7 +702,7 @@ function handleCancelReason() {
   document.getElementById('cancel-step-1').style.display = 'none';
 
   // Price or download limit objection → show save offer
-  if (cancelReason === 'price' || cancelReason === 'downloads') {
+  if (SAVE_OFFER_ENABLED && (cancelReason === 'price' || cancelReason === 'downloads')) {
     const isPro = userProfile.plan === 'pro';
     const fullPrice = isPro ? '£14.99/mo' : '£9.99/mo';
     const halfPrice = isPro ? '£7.49' : '£4.99';
@@ -695,26 +726,33 @@ function handleCancelReason() {
 }
 
 async function acceptSaveOffer() {
-  // Update Supabase — mark discount active
-  const discountEnds = new Date(Date.now() + 90*24*60*60*1000).toISOString();
-  await _sb.from('profiles').update({
-    discount_active: true,
-    discount_ends: discountEnds,
-  }).eq('id', currentUser.id).catch(() => {});
+  // FIX (2026-07-27, AUDIT_AND_FIX_LOG.md Phase 2/8): this used to write
+  // discount_active/discount_ends straight to profiles from the browser, and
+  // clp-account-events never actually applied any discount in Stripe — a
+  // customer could end up marked as "discount active" while still being
+  // charged full price. clp-account-events now applies the real Stripe coupon
+  // (once configured — see BLOCKER-3 in the log) and updates profiles itself,
+  // server-side, only if that succeeds.
+  const { data, error } = await _sb.functions.invoke('clp-account-events', {
+    body: { event: 'save_offer_accepted' }
+  });
+  if (error || !data?.success) {
+    alert('Something went wrong applying your discount — please try again or contact support@clpeasy.com');
+    return;
+  }
 
-  // Notify edge function (Stripe coupon + Brevo confirmation)
-  await _sb.functions.invoke('clp-account-events', {
-    body: {
-      event: 'save_offer_accepted',
-      userId: currentUser.id,
-      email: currentUser.email,
-      plan: userProfile.plan,
-      discountEnds: discountEnds,
-    }
-  }).catch(() => {});
-
-  document.getElementById('cancel-step-save').style.display = 'none';
-  document.getElementById('cancel-step-saved').style.display = 'block';
+  // PRE-DEPLOYMENT REVIEW FINDING (2026-07-28): `data.success` only ever meant
+  // "the request was processed" — it does NOT mean a real Stripe discount was
+  // applied (that depends on STRIPE_SAVE_OFFER_COUPON_ID being configured,
+  // see AUDIT_AND_FIX_LOG.md BLOCKER-3). Only show the "discount applied"
+  // success screen if the server confirms it actually happened in Stripe;
+  // otherwise be honest with the customer instead of silently over-promising.
+  if (data.discountApplied) {
+    document.getElementById('cancel-step-save').style.display = 'none';
+    document.getElementById('cancel-step-saved').style.display = 'block';
+  } else {
+    alert('We’ve noted your request, but couldn’t apply the automatic discount right now. Please contact support@clpeasy.com and we’ll sort it out manually.');
+  }
 }
 
 function showCancelConfirm() {
@@ -723,27 +761,34 @@ function showCancelConfirm() {
 }
 
 async function confirmCancel() {
-  const deletionDate = new Date(Date.now() + 30*24*60*60*1000).toISOString();
+  // FIX (2026-07-27, AUDIT_AND_FIX_LOG.md Phase 8): this used to only write
+  // subscription_status to Supabase (with a hard-coded 30-day guess for the
+  // deletion date) — the real Stripe subscription kept renewing and charging
+  // untouched. manage-subscription now actually schedules the cancellation in
+  // Stripe (cancel_at_period_end) first; the deletion date shown to the
+  // customer is set from Stripe's real current period end, not guessed.
+  const { data: { session } } = await _sb.auth.getSession();
+  if (!session) { alert('Please sign in again and retry.'); return; }
+  let data;
+  try {
+    const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/manage-subscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+      body: JSON.stringify({ action: 'cancel', reason: cancelReason }),
+    });
+    data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || 'Cancel failed');
+  } catch (e) {
+    console.error('Cancel subscription error:', e);
+    alert((data && data.error) || 'Something went wrong — please try again or contact support@clpeasy.com');
+    return;
+  }
 
-  // Update Supabase profile
-  const { error } = await _sb.from('profiles').update({
-    subscription_status: 'cancelled',
-    cancel_reason: cancelReason,
-    deletion_date: deletionDate,
-  }).eq('id', currentUser.id);
-
-  if (error) { alert('Something went wrong — please try again or contact support@clpeasy.com'); return; }
-
-  // Notify via Supabase edge function → Brevo
+  // Notify via Supabase edge function → Brevo (non-blocking). The function
+  // derives the account and deletion date from Supabase/Stripe server-side now.
   await _sb.functions.invoke('clp-account-events', {
-    body: {
-      event: 'subscription_cancelled',
-      userId: currentUser.id,
-      email: currentUser.email,
-      reason: cancelReason,
-      deletionDate: deletionDate,
-    }
-  }).catch(() => {}); // non-blocking
+    body: { event: 'subscription_cancelled', reason: cancelReason }
+  }).catch(() => {});
 
   userProfile.status = 'cancelled';
   document.getElementById('cancel-step-confirm').style.display = 'none';
@@ -764,6 +809,11 @@ function selectTopup(qty, price, el) {
   btn.disabled = false; btn.style.opacity = '1';
   btn.textContent = `Pay £${price} via Stripe →`;
 }
+// RESOLVED (2026-07-28, AUDIT_AND_FIX_LOG.md BLOCKER-2): confirmed by
+// Michaela directly against the CLPeasy Stripe dashboard — these ARE the
+// correct, canonical top-up Price IDs, matching builder.html. checkout.html
+// and stripe-webhook have been updated to match (they previously referenced a
+// different, incorrect pair, which is no longer used anywhere in active logic).
 const TOPUP_PRICES = {
   5:  'price_1Tdpd7GZLILz5vqUAiSw9udI',
   10: 'price_1TdpdzGZLILz5vqUYEjn6TZ2',
@@ -812,6 +862,32 @@ async function confirmResub() {
   const originalText = btn.textContent;
   if (!priceId || !currentUser) { alert('Something went wrong — please refresh and try again.'); return; }
   btn.textContent = 'Loading…'; btn.disabled = true; btn.style.opacity = '0.7';
+
+  // FIX (2026-07-27, AUDIT_AND_FIX_LOG.md Phase 9): previously this always
+  // created a brand-new Stripe subscription, even if the account's original
+  // subscription had only been paused or scheduled to cancel (and was never
+  // actually cancelled in Stripe) — risking two active subscriptions and a
+  // double charge. Try resuming the SAME Stripe subscription first; only start
+  // a new one if there is nothing to resume.
+  try {
+    const { data: { session } } = await _sb.auth.getSession();
+    if (session) {
+      const reactivateRes = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/manage-subscription', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+        body: JSON.stringify({ action: 'reactivate' }),
+      });
+      const reactivateData = await reactivateRes.json();
+      if (reactivateRes.ok && reactivateData.success) {
+        window.location.href = 'account.html?reactivated=true';
+        return;
+      }
+      // NO_SUBSCRIPTION or FULLY_ENDED → nothing to resume, fall through below.
+    }
+  } catch (e) {
+    console.warn('Reactivate-existing-subscription check failed, falling back to new checkout:', e);
+  }
+
   try {
     const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/create-checkout-session', {
       method: 'POST',
@@ -820,6 +896,10 @@ async function confirmResub() {
     });
     const data = await res.json();
     if (data.url) { window.location.href = data.url; }
+    else if (data.code === 'ALREADY_SUBSCRIBED') {
+      alert(data.error);
+      btn.textContent = originalText; btn.disabled = false; btn.style.opacity = '1';
+    }
     else { throw new Error(data.error || 'No checkout URL returned'); }
   } catch (e) {
     console.error('Resubscribe checkout error:', e);
