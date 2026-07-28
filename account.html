@@ -41,7 +41,7 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
 .plan-name{font-size:22px;font-weight:800;letter-spacing:-0.5px;}
 .plan-badge{font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;text-transform:uppercase;letter-spacing:0.5px;}
 .plan-badge.active{background:var(--green-light);color:#15803D;}
-.plan-badge.trial{background:var(--amber-light);color:#92400E;}
+.plan-badge.trial,.plan-badge.trialing{background:var(--amber-light);color:#92400E;}
 .plan-badge.paused{background:var(--off);color:var(--muted);border:1px solid var(--border);}
 .plan-badge.lapsed{background:var(--red-light);color:var(--red);}
 .renewal-line{font-size:13px;color:var(--muted);margin-bottom:20px;}
@@ -455,7 +455,7 @@ async function fetchProfile(userId) {
   const now = new Date();
   const trialEnd = data.trial_end ? new Date(data.trial_end) : null;
   const deletionDate = data.deletion_date ? new Date(data.deletion_date) : null;
-  const isOnTrial = data.subscription_status === 'trial' && trialEnd && trialEnd > now;
+  const isOnTrial = data.subscription_status === 'trialing' && trialEnd && trialEnd > now;
   const trialDaysLeft = isOnTrial ? Math.ceil((trialEnd - now) / (1000*60*60*24)) : null;
   const cancelledDaysRemaining = deletionDate
     ? Math.max(0, Math.ceil((deletionDate - now) / (1000*60*60*24)))
@@ -503,7 +503,7 @@ _sb.auth.getSession().then(async ({ data: { session } }) => {
       id: session.user.id,
       email: session.user.email,
       full_name: session.user.user_metadata?.full_name || '',
-      subscription_status: 'trial',
+      subscription_status: 'trialing',
       trial_end: new Date(Date.now() + 14*24*60*60*1000).toISOString(),
     });
     userProfile = await fetchProfile(session.user.id);
@@ -528,17 +528,17 @@ function renderAccount() {
   document.getElementById('plan-name').textContent =
     u.status === 'cancelled' ? planLabel + ' (Cancelled)' :
     u.status === 'paused' ? planLabel + ' (Paused)' :
-    u.status === 'trial' ? 'Easy Trial' : planLabel;
+    u.status === 'trialing' ? 'Easy Trial' : planLabel;
 
   const badge = document.getElementById('plan-badge');
-  badge.textContent = u.status === 'trial' ? 'Free trial' :
+  badge.textContent = u.status === 'trialing' ? 'Free trial' :
     u.status === 'active' ? 'Active' :
     u.status === 'paused' ? 'Paused' : 'Cancelled';
   badge.className = 'plan-badge ' + u.status;
 
   // Renewal line
   const renewLine = document.getElementById('renewal-line');
-  if (u.status === 'trial') {
+  if (u.status === 'trialing') {
     renewLine.innerHTML = `Trial ends <strong>${u.trial_ends || 'in 14 days'}</strong>. No card required until you choose a plan.`;
   } else if (u.status === 'active') {
     renewLine.innerHTML = u.discount_active
@@ -557,14 +557,14 @@ function renderAccount() {
   }
 
   // Download bar
-  if (u.status === 'active' || u.status === 'trial') {
-    const pct = u.status === 'trial' ? 0 : Math.min(Math.round(u.downloads_used / u.downloads_limit * 100), 100);
+  if (u.status === 'active' || u.status === 'trialing') {
+    const pct = u.status === 'trialing' ? 0 : Math.min(Math.round(u.downloads_used / u.downloads_limit * 100), 100);
     const bar = document.getElementById('dl-bar');
-    bar.style.width = (u.status === 'trial' ? 0 : pct) + '%';
+    bar.style.width = (u.status === 'trialing' ? 0 : pct) + '%';
     bar.className = 'dl-bar ' + (pct >= 100 ? 'full' : pct >= 75 ? 'warn' : 'ok');
     document.getElementById('dl-count').textContent =
-      u.status === 'trial' ? 'Unlimited during trial' : `${u.downloads_used} / ${u.downloads_limit}`;
-    if (pct >= 80 && u.status !== 'trial') {
+      u.status === 'trialing' ? 'Unlimited during trial' : `${u.downloads_used} / ${u.downloads_limit}`;
+    if (pct >= 80 && u.status !== 'trialing') {
       document.getElementById('topup-btn').style.display = 'inline-block';
     }
     if (pct >= 100) {
@@ -587,7 +587,7 @@ function renderAccount() {
 
 function renderActionRow(status) {
   const row = document.getElementById('action-row');
-  if (status === 'active' || status === 'trial') {
+  if (status === 'active' || status === 'trialing') {
     row.innerHTML = `
       <a href="pricing.html" class="btn btn-teal">Upgrade plan</a>
       <button class="btn btn-pause" onclick="openModal('pause')">Pause subscription</button>

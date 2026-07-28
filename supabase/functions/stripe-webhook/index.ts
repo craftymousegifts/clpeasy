@@ -80,7 +80,11 @@ function getPlanLabel(priceId: string): string {
     'price_1TdoEXGZLILz5vqUQj5n6Zri': 'Easy Start Annual',
     'price_1TdoEXGZLILz5vqUvZKB1RQw': 'Easy Pro Monthly',
     'price_1TdoEXGZLILz5vqUFgTznTUT': 'Easy Pro Annual',
-    // Sandbox price IDs (kept for safety during transition)
+    // Legacy/sandbox price IDs — NOT used by any live checkout entry point
+    // (confirmed 2026-07-28, AUDIT_AND_FIX_LOG.md: pricing.html/checkout.html/
+    // account.html all exclusively send the "Live price IDs" above). Retained
+    // here deliberately for backwards compatibility in case any already-issued
+    // Stripe object still references one of these — not archived, not removed.
     'price_1Tdd5SKF3jvQfgEaclfSUxn5': 'Easy Start Monthly',
     'price_1Tdd7pKF3jvQfgEa8DxgQHEW': 'Easy Start Annual',
     'price_1Tdd9OKF3jvQfgEaYsCmOwOa': 'Easy Pro Monthly',
@@ -154,6 +158,7 @@ Deno.serve(async (req) => {
         }, { onConflict: 'user_id' });
 
         await applyProfilePlan(userId, priceId!);
+        await supabase.from('profiles').update({ subscription_status: 'active' }).eq('id', userId);
         console.log(`Subscription activated for user ${userId} — plan: ${plan}`);
 
         // ── ADD TO BREVO PAID LIST ───────────────────────────────
@@ -167,6 +172,12 @@ Deno.serve(async (req) => {
 
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
+        // Only the changed fields, with their PRIOR values — the one
+        // reliable signal for telling a genuine reactivation apart from an
+        // ordinary update, since subscription.status alone stays 'active'
+        // throughout a pause, a scheduled cancellation, and after
+        // reactivation alike.
+        const prev = (event.data as any).previous_attributes as Partial<Stripe.Subscription> | undefined;
         const userId  = subscription.metadata?.userId;
         if (!userId) break;
 
@@ -183,7 +194,58 @@ Deno.serve(async (req) => {
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' });
 
-        if (status === 'active') {
+        // ── Terminal state can arrive via 'updated' instead of 'deleted' in
+        // some flows (e.g. exhausted payment retries). Treat it as a real
+        // termination so the account can never be stuck showing 'cancelled'
+        // while still retaining paid access if 'deleted' never arrives.
+        if (subscription.status === 'canceled') {
+          await downgradeToFree(userId);
+          console.log(`Subscription reached 'canceled' via updated event for user ${userId} — downgraded to free`);
+          break;
+        }
+
+        const isPaused          = !!subscription.pause_collection;
+        const isCancelScheduled = !!subscription.cancel_at_period_end;
+
+        // cancel_at_period_end wins over pause_collection: the only
+        // reachable compound state via account.html today is "paused, then
+        // Cancel instead", and the customer's last real action was to
+        // cancel.
+        const profileStatus =
+          isCancelScheduled ? 'cancelled' :
+          isPaused ? 'paused' :
+          subscription.status === 'active' ? 'active' :
+          null; // past_due / unpaid / incomplete / incomplete_expired — no
+                // mapped account.html state; leave subscription_status as-is.
+
+        if (profileStatus) {
+          await supabase.from('profiles').update({ subscription_status: profileStatus }).eq('id', userId);
+        }
+
+        // ── Only refresh plan/downloads/next_payment for a GENUINE
+        // reactivation OR a genuine price/plan change — never for an
+        // ordinary update, and never while paused/cancel-scheduled.
+        const pauseJustChanged  = !!prev && Object.prototype.hasOwnProperty.call(prev, 'pause_collection');
+        const cancelJustChanged = !!prev && Object.prototype.hasOwnProperty.call(prev, 'cancel_at_period_end');
+        const cameOutOfPause    = pauseJustChanged && !!(prev as any).pause_collection && !subscription.pause_collection;
+        const cameOutOfCancel   = cancelJustChanged && (prev as any).cancel_at_period_end === true && !subscription.cancel_at_period_end;
+        const isGenuineReactivation =
+          (cameOutOfPause || cameOutOfCancel) && !isPaused && !isCancelScheduled && subscription.status === 'active';
+
+        // A legitimate in-place plan/price change (e.g. via the Stripe
+        // Billing Portal) also fires this event with subscription.status
+        // staying 'active' and neither pause_collection nor
+        // cancel_at_period_end changing — previous_attributes.items is the
+        // signal that the line items (price) actually changed, distinct
+        // from an ordinary update (payment method, metadata, etc.) that
+        // should NOT reset the allowance/cycle.
+        const priceJustChanged = !!prev && Object.prototype.hasOwnProperty.call(prev, 'items');
+
+        const shouldRefreshPlan =
+          !isPaused && !isCancelScheduled && subscription.status === 'active' &&
+          (isGenuineReactivation || priceJustChanged);
+
+        if (shouldRefreshPlan) {
           await applyProfilePlan(userId, priceId!);
 
           // Add to Brevo paid list on reactivation / plan change
@@ -200,7 +262,7 @@ Deno.serve(async (req) => {
           } catch (e) { console.warn('Could not retrieve customer for Brevo:', e); }
         }
 
-        console.log(`Subscription updated for user ${userId} — status: ${status}`);
+        console.log(`Subscription updated for user ${userId} — status: ${status}, profile status: ${profileStatus ?? 'unchanged'}, reactivation: ${isGenuineReactivation}, priceChanged: ${priceJustChanged}, planRefreshed: ${shouldRefreshPlan}`);
         break;
       }
 
@@ -215,6 +277,15 @@ Deno.serve(async (req) => {
         if (!userId || !priceId) break;
 
         await applyProfilePlan(userId, priceId);
+
+        // Don't flip subscription_status back to 'active' if a deliberate
+        // pause/cancel-scheduled state is in effect for this same period —
+        // a subscription with cancel_at_period_end=true still generates one
+        // real final invoice.
+        if (!subscription.pause_collection && !subscription.cancel_at_period_end) {
+          await supabase.from('profiles').update({ subscription_status: 'active' }).eq('id', userId);
+        }
+
         console.log(`Allowance refilled for user ${userId}`);
         break;
       }
@@ -232,12 +303,7 @@ Deno.serve(async (req) => {
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' });
 
-        await supabase.from('profiles').update({
-          plan: 'free',
-          is_pro: false,
-          downloads_limit: 0,
-          billing_cycle: 'monthly',
-        }).eq('id', userId);
+        await downgradeToFree(userId);
 
         console.log(`Subscription cancelled for user ${userId}`);
         break;
@@ -258,10 +324,17 @@ Deno.serve(async (req) => {
 });
 
 // ── TOP-UP CREDIT MAP ─────────────────────────────────────────
-// Sandbox IDs kept alongside live IDs for safe transition
+// FIX (2026-07-28, AUDIT_AND_FIX_LOG.md BLOCKER-2, resolved): this map
+// previously recognised price_1TeBHj.../price_1TeBIK..., which builder.html
+// and account.html never actually sent — those purchases were charged by
+// Stripe and silently zero-credited. Michaela confirmed directly against the
+// CLPeasy Stripe dashboard that price_1Tdpd7.../price_1TdpdzG... (matching
+// builder.html/account.html/checkout.html) are the correct, canonical top-up
+// Price IDs. The old pair has been removed, not left alongside these, so
+// there is exactly one recognised mapping.
 const TOPUP_CREDITS: Record<string, number> = {
-  'price_1TeBHjKF3jvQfgEaX2aPZX6E': 5,   // 5 downloads £3.99
-  'price_1TeBIKKF3jvQfgEaxU4TjPHu': 10,  // 10 downloads £7.99
+  'price_1Tdpd7GZLILz5vqUAiSw9udI': 5,   // 5 downloads £3.99
+  'price_1TdpdzGZLILz5vqUYEjn6TZ2': 10,  // 10 downloads £7.99
 };
 
 // ── HELPERS ───────────────────────────────────────────────────
@@ -316,5 +389,21 @@ async function applyProfilePlan(userId: string, priceId: string): Promise<void> 
     downloads_used: 0,
     downloads_reset_date: addOneMonth(),
     next_payment: info.cycle === 'annual' ? addOneYear() : addOneMonth(),
+  }).eq('id', userId);
+}
+
+// ── FULL DOWNGRADE TO FREE — the only place paid access is actually removed.
+// Called when a subscription genuinely ends: customer.subscription.deleted,
+// or the rare case where Stripe reports status: 'canceled' via an 'updated'
+// event instead. Never called for a pause or a scheduled cancellation —
+// those only change subscription_status, retaining the paid plan/allowance
+// until the subscription genuinely ends.
+async function downgradeToFree(userId: string): Promise<void> {
+  await supabase.from('profiles').update({
+    plan: 'free',
+    is_pro: false,
+    downloads_limit: 0,
+    billing_cycle: 'monthly',
+    subscription_status: 'cancelled',
   }).eq('id', userId);
 }
