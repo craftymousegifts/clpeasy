@@ -1741,15 +1741,83 @@ function showDlLimitModal(){
   document.body.appendChild(m);
 }
 
-// Wrap every export function so it checks the allowance, then counts. saveLabel is NOT wrapped (saving is unlimited).
+// ── 7-DAY RE-DOWNLOAD GRACE ───────────────────────────────────
+// A user's first download of a given label consumes 1 credit. Re-downloading
+// the SAME label within 7 days of its last download is free (0 credits) —
+// re-downloading it again after 7 days consumes another credit. Tracked
+// server-side in Supabase (label_downloads table) so it works across
+// browsers/devices, not just localStorage.
+//
+// "Same label" uses the same identity the app already relies on elsewhere
+// (see the saveLabel → history-matching hook below: `e.scentName===S.scentName
+// && e.productType===S.productType`) — scent name + product type, normalised.
+// This is a stable key: it doesn't change just because the user tweaks size,
+// wording, or batch number on what is still conceptually the same label.
+const REDOWNLOAD_GRACE_DAYS = 7;
+
+function computeLabelKey(){
+  const scent=(S.scentName||'').trim().toLowerCase();
+  const type=(S.productType||'').trim().toLowerCase();
+  if(!scent || !type) return null; // no stable identity yet — meter normally
+  return scent+'::'+type;
+}
+
+// True if this label_key was already downloaded by this user within the
+// last REDOWNLOAD_GRACE_DAYS — i.e. this download should be free.
+async function isWithinRedownloadGrace(labelKey){
+  if(!sbClient || !currentUser || !labelKey) return false;
+  try{
+    const {data,error}=await sbClient.from('label_downloads')
+      .select('last_downloaded_at')
+      .eq('user_id',currentUser.id)
+      .eq('label_key',labelKey)
+      .maybeSingle();
+    if(error || !data || !data.last_downloaded_at) return false;
+    const lastMs=new Date(data.last_downloaded_at).getTime();
+    const graceMs=REDOWNLOAD_GRACE_DAYS*24*60*60*1000;
+    return (Date.now()-lastMs) < graceMs;
+  }catch(e){
+    console.error('isWithinRedownloadGrace check failed:',e);
+    return false; // fail safe: meter normally rather than silently granting free downloads
+  }
+}
+
+// Records/refreshes "last downloaded" for this label_key — always called on
+// a successful download (free or charged) so the 7-day window rolls forward
+// from the most recent download, not just the first.
+async function recordLabelDownload(labelKey){
+  if(!sbClient || !currentUser || !labelKey) return;
+  try{
+    await sbClient.from('label_downloads').upsert({
+      user_id:currentUser.id,
+      label_key:labelKey,
+      last_downloaded_at:new Date().toISOString()
+    },{onConflict:'user_id,label_key'});
+  }catch(e){
+    console.error('recordLabelDownload upsert failed:',e);
+  }
+}
+
+// Wrap every export function so it checks the allowance, then counts — unless
+// this exact label was already downloaded within the last 7 days, in which
+// case it's free. saveLabel is NOT wrapped (saving is unlimited).
 function wrapDownloads(){
   ['downloadPNG','downloadJPEG','downloadSVG','downloadPDFSheet','downloadPrintReadyPDF','downloadCricutPNGs','printToPDF'].forEach(function(fn){
     const orig=window[fn];
     if(typeof orig!=='function' || orig.__dlwrapped) return;
-    const wrapped=function(){
-      if(!dlGate()) return;
+    const wrapped=async function(){
+      const labelKey=computeLabelKey();
+      const freeRedownload = labelKey ? await isWithinRedownloadGrace(labelKey) : false;
+      if(!freeRedownload){
+        if(!dlGate()) return;
+      }
       const r=orig.apply(this,arguments);
-      dlRecord();
+      if(!freeRedownload){
+        dlRecord();
+      }
+      if(labelKey){
+        recordLabelDownload(labelKey);
+      }
       return r;
     };
     wrapped.__dlwrapped=true;
