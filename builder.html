@@ -398,6 +398,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <button onclick="openSupport()" style="font-size:13px;color:var(--muted);background:none;text-decoration:none;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;white-space:nowrap;cursor:pointer;font-family:'DM Sans',sans-serif;" onmouseover="this.style.borderColor='var(--teal)';this.style.color='var(--teal)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Support</button>
     <button class="btn-help" onclick="openHelp()" title="Help guide">?</button>
     <span id="nav-user" style="font-size:13px;color:var(--muted);display:none;"></span>
+    <a href="account.html" id="nav-account" class="nav-back" style="display:none;">My Account</a>
     <a href="auth.html" id="nav-signin" class="nav-back" style="display:none;">Sign in</a>
     <button id="nav-signout" onclick="signOut()" style="display:none;font-size:13px;color:var(--muted);background:none;border:1.5px solid var(--border);padding:7px 12px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;" onmouseover="this.style.borderColor='var(--teal)';this.style.color='var(--teal)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Sign out</button>
   </div>
@@ -1606,11 +1607,15 @@ async function initAuth(){
       if(navUser){navUser.textContent=email;navUser.style.display='';}
       if(navSignout)navSignout.style.display='';
       if(navSignin)navSignin.style.display='none';
+      const navAccount=document.getElementById('nav-account');
+      if(navAccount)navAccount.style.display='';
     } else {
       const navSignin=document.getElementById('nav-signin');
       const navSignout=document.getElementById('nav-signout');
       if(navSignin)navSignin.style.display='';
       if(navSignout)navSignout.style.display='none';
+      const navAccount=document.getElementById('nav-account');
+      if(navAccount)navAccount.style.display='none';
     }
   }catch(e){console.log('Auth init error:',e);}
 }
