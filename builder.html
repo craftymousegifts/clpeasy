@@ -1609,6 +1609,12 @@ async function initAuth(){
       if(navSignin)navSignin.style.display='none';
       const navAccount=document.getElementById('nav-account');
       if(navAccount)navAccount.style.display='';
+
+      // Auth resolves after init() has already called renderSaved() once
+      // (using the pre-auth 'guest' namespace) — re-render now that
+      // currentUser is known so the panel shows this account's own library,
+      // never whatever was rendered before sign-in resolved.
+      try{ renderSaved(); }catch(e){}
     } else {
       const navSignin=document.getElementById('nav-signin');
       const navSignout=document.getElementById('nav-signout');
@@ -1842,8 +1848,18 @@ const SUPPLIERS={
 
 
 // ── SAVED LABELS LIBRARY ──────────────────────────────────────
-function getSaved(){try{return JSON.parse(localStorage.getItem('clpeasy_labels')||'[]');}catch(e){return[];}}
-function persistSaved(arr){localStorage.setItem('clpeasy_labels',JSON.stringify(arr));}
+// SECURITY FIX: library data is namespaced per signed-in account
+// (currentUser.id) so that signing out of one account and into another on
+// the same browser can never show — or let one user overwrite — another
+// user's saved labels/folders. Previously these all lived under one
+// unscoped 'clpeasy_labels'/'clpeasy_folders' key shared by every account
+// that had ever used that browser. Any older data under those unscoped
+// keys is left exactly as-is (not deleted, not auto-migrated to any
+// account's new namespaced key) — flagged separately for review.
+function libNS(){ return (currentUser && currentUser.id) ? currentUser.id : 'guest'; }
+function libKey(base){ return base + '__u_' + libNS(); }
+function getSaved(){try{return JSON.parse(localStorage.getItem(libKey('clpeasy_labels'))||'[]');}catch(e){return[];}}
+function persistSaved(arr){localStorage.setItem(libKey('clpeasy_labels'),JSON.stringify(arr));}
 
 // ── FOLDER DEFINITIONS ─────────────────────────────────────────
 // Map every product type to a canonical folder key
@@ -1866,8 +1882,8 @@ const FOLDER_DEFS=[
   {key:'other',     label:'Other',         icon:'✨'},
 ];
 
-function getFolders(){try{return JSON.parse(localStorage.getItem('clpeasy_folders')||'{}');}catch(e){return{};}}
-function persistFolders(obj){localStorage.setItem('clpeasy_folders',JSON.stringify(obj));}
+function getFolders(){try{return JSON.parse(localStorage.getItem(libKey('clpeasy_folders'))||'{}');}catch(e){return{};}}
+function persistFolders(obj){localStorage.setItem(libKey('clpeasy_folders'),JSON.stringify(obj));}
 
 function isFolderActive(key){
   const f=getFolders();

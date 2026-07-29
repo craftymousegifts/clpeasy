@@ -310,6 +310,11 @@ async function initAuth(){
       const ns=document.getElementById('nav-signout');
       if(nu){nu.textContent=session.user.email;nu.style.display='';}
       if(ns)ns.style.display='';
+
+      // Auth resolves after init() has already called renderSavedList() once
+      // (using the pre-auth 'guest' namespace) — re-render now that
+      // currentUser is known so this shows this account's own labels.
+      try{ renderSavedList(); }catch(e){}
     }
     updateProGate();
   }catch(e){console.log('Auth init:',e);}
@@ -346,7 +351,13 @@ let sheetItems=[]; // [{labelData, qty}]
 let zoom=0.75;
 
 // ── SAVED LABELS ──────────────────────────────────────────────
-function getSaved(){try{return JSON.parse(localStorage.getItem('clpeasy_labels')||'[]');}catch(e){return[];}}
+// SECURITY FIX: read from the same per-account namespaced key builder.html
+// now writes to, so this page can never show one signed-in account's saved
+// labels to a different account signed in later on the same browser. See
+// builder.html's getSaved()/persistSaved() for the full explanation.
+function libNS(){ return (currentUser && currentUser.id) ? currentUser.id : 'guest'; }
+function libKey(base){ return base + '__u_' + libNS(); }
+function getSaved(){try{return JSON.parse(localStorage.getItem(libKey('clpeasy_labels'))||'[]');}catch(e){return[];}}
 
 function getLockedSizeMM(){
   if(!sheetItems.length) return null;

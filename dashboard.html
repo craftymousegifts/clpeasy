@@ -47,6 +47,8 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 24px;height
 .badge.active{background:#F0FDF4;color:#166534;border:1px solid #BBF7D0;}
 .badge.inactive{background:var(--gold-light);color:#92400E;border:1px solid #FDE68A;}
 .badge.trialing{background:var(--teal-light);color:var(--teal-dark);border:1px solid #B6DDE8;}
+.badge.paused{background:var(--off);color:var(--muted);border:1px solid var(--border);}
+.badge.cancelled{background:#FEF2F2;color:var(--red);border:1px solid #FECACA;}
 .plan-price{font-size:14px;color:var(--muted);margin-bottom:18px;}
 
 /* TRIAL STRIP */
@@ -235,7 +237,12 @@ function render(row){
   // Status badge
   const badge = document.getElementById('status-badge');
   badge.textContent = status.replace(/_/g,' ');
-  badge.className = 'badge ' + (status === 'active' ? 'active' : status === 'trialing' ? 'trialing' : 'inactive');
+  const badgeCls = status === 'active' ? 'active'
+    : status === 'trialing' ? 'trialing'
+    : status === 'paused' ? 'paused'
+    : status === 'cancelled' ? 'cancelled'
+    : 'inactive';
+  badge.className = 'badge ' + badgeCls;
 
   // Trial countdown (free plan, computed from created_at)
   const strip = document.getElementById('trial-strip');
@@ -299,43 +306,40 @@ async function loadDashboard(){
   }
   const user = session.user;
 
-  // Account + downloads live in `profiles` (created by the signup trigger,
-  // download counts kept in step by the builder + stripe-webhook).
+  // Account, plan and billing status all live in `profiles` — the signup
+  // trigger seeds it and stripe-webhook/manage-subscription keep
+  // plan/subscription_status/downloads in step across the full lifecycle
+  // (active/paused/cancelled/reactivated).
+  //
+  // FIX (dashboard billing-display bug): this page previously derived its
+  // displayed status from the coarse `subscriptions.status` column instead,
+  // which Stripe (and this app's webhook) keeps as 'active' throughout a
+  // pause_collection pause AND a cancel_at_period_end scheduled
+  // cancellation — so the dashboard kept showing "Active" right up until
+  // the subscription was fully terminated. profiles.subscription_status is
+  // the real application-level state (it's what account.html already reads
+  // directly); read it the same way here instead of re-deriving a coarser
+  // approximation from `subscriptions`.
   let { data: prof } = await sb
     .from('profiles')
-    .select('email, plan, is_pro, downloads_used, downloads_limit, created_at')
+    .select('email, plan, is_pro, subscription_status, billing_cycle, downloads_used, downloads_limit, created_at')
     .eq('id', user.id)
     .maybeSingle();
 
-  // Billing state (plan + active status) lives in `subscriptions`, written by
-  // the stripe-webhook. RLS lets a user read only their own row.
-  let effectivePlan = 'free';
-  let effectiveStatus = 'inactive';
-  let cycle = null;
-  try {
-    const { data: sub } = await sb
-      .from('subscriptions')
-      .select('plan, status, price_id, updated_at')
-      .eq('user_id', user.id)
-      .maybeSingle();
-    if(sub && sub.status === 'active' && sub.plan && sub.plan !== 'free'){
-      effectivePlan = normalisePlan(sub.plan);
-      effectiveStatus = 'active';
-      cycle = billingCycle(sub.plan);
-    }
-  } catch(e){
-    console.error('subscriptions read failed:', e);
-    // Fall back to trial display; don't block the page.
-  }
+  // profiles.plan holds 'easy_start' / 'easy_pro' once subscribed, but
+  // 'trial' (not 'free') while on the free trial — normalise to the
+  // PLAN_CONFIG/trial-strip key ('free') used throughout this page.
+  const rawPlan = prof && prof.plan;
+  const displayPlan = (rawPlan === 'easy_start' || rawPlan === 'easy_pro') ? rawPlan : 'free';
 
   render({
     email: (prof && prof.email) || user.email,
-    plan: effectivePlan,
-    subscription_status: effectiveStatus,
+    plan: displayPlan,
+    subscription_status: (prof && prof.subscription_status) || 'inactive',
     downloadsUsed: prof ? prof.downloads_used : undefined,
     downloadsLimit: prof ? prof.downloads_limit : undefined,
     created_at: (prof && prof.created_at) || user.created_at,
-    billingCycle: cycle
+    billingCycle: prof ? prof.billing_cycle : null
   });
 }
 
