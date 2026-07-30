@@ -519,6 +519,9 @@ function renderAccount() {
   const u = userProfile;
   const planLabel = u.plan === 'pro' ? 'Easy Pro' : 'Easy Start';
   const planPrice = u.plan === 'pro' ? '£14.99' : '£9.99';
+  const annualPrice = u.plan === 'pro' ? '£149' : '£99';
+  const billingPrice = u.billing_cycle === 'annual' ? annualPrice : planPrice;
+  const billingPeriod = u.billing_cycle === 'annual' ? '/year' : '/mo';
 
   document.getElementById('nav-email').textContent = currentUser.email;
   document.getElementById('acct-email').textContent = currentUser.email;
@@ -543,7 +546,7 @@ function renderAccount() {
   } else if (u.status === 'active') {
     renewLine.innerHTML = u.discount_active
       ? `Next payment: <strong>${planPrice === '£9.99' ? '£4.99' : '£7.49'}/mo</strong> (discount active until ${u.discount_ends}) · then ${planPrice}/mo`
-      : `Next payment: <strong>${planPrice}/mo</strong> on ${u.next_payment}`;
+      : `Next payment: <strong>${billingPrice}${billingPeriod}</strong> on ${u.next_payment}`;
   } else if (u.status === 'paused') {
     renewLine.innerHTML = `Subscription paused · Your library is safe · <a href="#" onclick="openModal('resubscribe');return false;" style="color:var(--teal);">Reactivate →</a>`;
   } else if (u.status === 'cancelled') {
