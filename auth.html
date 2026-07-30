@@ -253,7 +253,10 @@ if (mode === 'signin') {
     window.location.href = 'builder.html';
   }
   } else {
-    const { data: signUpData, error } = await sb.auth.signUp({ email, password });
+    const { data: signUpData, error } = await sb.auth.signUp({
+      email, password,
+      options: { emailRedirectTo: window.location.origin + '/auth.html' }
+    });
     if (error) {
       showMsg(error.message, 'error');
       btn.disabled = false;
