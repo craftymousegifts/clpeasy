@@ -587,11 +587,20 @@ function renderAccount() {
 
 function renderActionRow(status) {
   const row = document.getElementById('action-row');
-  if (status === 'active' || status === 'trialing') {
+  if (status === 'active') {
     row.innerHTML = `
       <a href="pricing.html" class="btn btn-teal">Upgrade plan</a>
       <button class="btn btn-pause" onclick="openModal('pause')">Pause subscription</button>
       <button class="btn btn-cancel" onclick="openModal('cancel')">Cancel subscription</button>
+    `;
+  } else if (status === 'trialing') {
+    // FIX (2026-07-30): trialing users have no real Stripe subscription yet
+    // (no stripe_subscription_id), so Pause/Cancel here call manage-subscription
+    // and fail with "No Stripe subscription found". No separate trial-cancellation
+    // UX exists in the app today, so the only valid action during a trial is
+    // choosing a plan. Active-subscriber behavior above is untouched.
+    row.innerHTML = `
+      <a href="pricing.html" class="btn btn-teal">Choose a plan</a>
     `;
   } else if (status === 'paused') {
     row.innerHTML = `
