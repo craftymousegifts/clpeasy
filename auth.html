@@ -216,6 +216,7 @@ async function handleSubmit() {
     const termsError = document.getElementById('terms-error');
     if (termsBox && !termsBox.checked) {
       if (termsError) termsError.style.display = 'block';
+      showMsg('Please agree to the terms to continue.', 'error');
       termsBox.focus();
       return;
     }
