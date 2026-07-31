@@ -115,6 +115,23 @@ input:focus{border-color:var(--teal);}
       <a href="index.html" style="color:var(--teal);font-size:14px;font-weight:600;">← Back to home</a>
     </div>
 
+    <!-- PASSWORD RECOVERY SCREEN -->
+    <div class="verify-screen" id="recovery-screen">
+      <div class="verify-icon">🔒</div>
+      <div class="verify-title">Set a new password</div>
+      <div class="verify-sub">Choose a new password for your CLPeasy account.</div>
+      <div class="msg" id="recovery-msg" style="text-align:left;"></div>
+      <div class="form-group" style="text-align:left;margin-top:20px;">
+        <label>New password</label>
+        <input type="password" id="recovery-password" placeholder="••••••••" autocomplete="new-password">
+      </div>
+      <div class="form-group" style="text-align:left;">
+        <label>Confirm new password</label>
+        <input type="password" id="recovery-password-confirm" placeholder="••••••••" autocomplete="new-password">
+      </div>
+      <button type="button" class="btn-primary" id="recovery-submit-btn" onclick="updatePassword()">Update password</button>
+    </div>
+
     <!-- AUTH FORM -->
     <div id="auth-form">
       <h1 class="auth-title" id="auth-title">Welcome back</h1>
@@ -192,6 +209,20 @@ function switchTab(tab) {
 
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── PASSWORD RECOVERY ──────────────────────────
+// A password-reset link redirects here from Supabase's /auth/v1/verify
+// endpoint with the session tokens appended as a URL hash fragment
+// (#access_token=...&type=recovery&...). Checked synchronously, before
+// supabase-js's own async URL-session processing has a chance to strip the
+// hash, so this is reliable even if the PASSWORD_RECOVERY event below fires
+// late or is ever missed. While this flag is true, the SIGNED_IN/USER_UPDATED
+// auto-redirect below is suppressed — without this, a recovery session would
+// be indistinguishable from a normal sign-in and the user would be sent
+// straight to builder.html, never getting a chance to actually set a new
+// password (the bug this fixes).
+let isRecoveryFlow = /type=recovery/.test(window.location.hash);
+if (isRecoveryFlow) showRecoveryScreen();
 
 function showMsg(text, type) {
   const el = document.getElementById('msg');
@@ -311,22 +342,87 @@ async function resetPassword() {
   else { showMsg('Password reset email sent — check your inbox.', 'success'); }
 }
 
-// Allow Enter key to submit
-document.addEventListener('keydown', e => { if (e.key === 'Enter') handleSubmit(); });
+function showRecoveryScreen() {
+  document.getElementById('auth-form').style.display = 'none';
+  document.getElementById('verify-screen').style.display = 'none';
+  document.getElementById('recovery-screen').style.display = 'block';
+}
+
+function showRecoveryMsg(text, type) {
+  const el = document.getElementById('recovery-msg');
+  el.textContent = text;
+  el.className = 'msg ' + type + ' show';
+}
+function hideRecoveryMsg() {
+  document.getElementById('recovery-msg').className = 'msg';
+}
+
+// Completes the password-recovery flow: sets the new password on the
+// already-established recovery session via Supabase's updateUser(), then
+// takes the user to the Builder — the step that was previously missing
+// entirely, leaving "Forgot password" a dead end.
+async function updatePassword() {
+  const pw1 = document.getElementById('recovery-password').value;
+  const pw2 = document.getElementById('recovery-password-confirm').value;
+  const btn = document.getElementById('recovery-submit-btn');
+  hideRecoveryMsg();
+
+  if (!pw1 || !pw2) { showRecoveryMsg('Please enter and confirm your new password.', 'error'); return; }
+  if (pw1.length < 6) { showRecoveryMsg('Password must be at least 6 characters.', 'error'); return; }
+  if (pw1 !== pw2) { showRecoveryMsg('Passwords do not match.', 'error'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Updating password...';
+
+  const { error } = await sb.auth.updateUser({ password: pw1 });
+
+  if (error) {
+    showRecoveryMsg(error.message || 'Something went wrong — please try again.', 'error');
+    btn.disabled = false;
+    btn.textContent = 'Update password';
+    return;
+  }
+
+  showRecoveryMsg('Password updated — taking you to the Builder…', 'success');
+  // Recovery is complete — clear the flag and hand off to the normal
+  // post-auth redirect (after a short pause so the success message is
+  // actually visible) rather than the generic SIGNED_IN/USER_UPDATED
+  // listener firing mid-update and jumping away before this shows.
+  isRecoveryFlow = false;
+  setTimeout(() => { window.location.href = 'builder.html'; }, 1200);
+}
+
+// Allow Enter key to submit — the recovery form when that screen is showing,
+// the normal sign-in/sign-up form otherwise.
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (document.getElementById('recovery-screen').style.display === 'block') updatePassword();
+  else handleSubmit();
+});
 
 // Check URL params to determine which tab to show
 const urlParams=new URLSearchParams(window.location.search);
 const defaultTab=urlParams.get('mode')==='signup'?'signup':'signin';
 
-// Check if already logged in or handle redirect from email verification
+// Check if already logged in or handle redirect from email verification.
+// PASSWORD_RECOVERY is its own event (distinct from SIGNED_IN) — confirms
+// the isRecoveryFlow detection above and shows the same screen if the URL
+// check somehow missed it. Either way, a recovery session must never hit
+// the auto-redirect below, or "Forgot password" silently signs the user
+// back in with their OLD password instead of letting them set a new one.
 sb.auth.onAuthStateChange((event, session) => {
-  if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+  if (event === 'PASSWORD_RECOVERY') {
+    isRecoveryFlow = true;
+    showRecoveryScreen();
+    return;
+  }
+  if (!isRecoveryFlow && (event === 'SIGNED_IN' || event === 'USER_UPDATED')) {
     window.location.href = 'builder.html';
   }
 });
 
 sb.auth.getSession().then(({ data: { session } }) => {
-  if (session) window.location.href = 'builder.html';
+  if (session && !isRecoveryFlow) window.location.href = 'builder.html';
 });
 
 // Set initial state
