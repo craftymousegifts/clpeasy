@@ -1513,7 +1513,7 @@ const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI
 let sbClient=null;
 let currentUser=null;
 // Download allowance (from profiles table). loaded=false means don't block.
-let DL={ used:0, limit:10, plan:'free', is_pro:false, loaded:false };
+let DL={ used:0, limit:10, plan:'free', is_pro:false, credits:0, loaded:false };
 
 async function initAuth(){
   try{
@@ -1633,14 +1633,15 @@ async function loadDownloadAllowance(){
   if(!sbClient||!currentUser) return;
   try{
     const {data:prof}=await sbClient.from('profiles')
-      .select('downloads_used,downloads_limit,plan,is_pro,downloads_reset_date')
+      .select('downloads_used,downloads_limit,plan,is_pro,downloads_reset_date,topup_credits')
       .eq('id',currentUser.id).single();
     if(prof){
-      DL.used  = prof.downloads_used||0;
-      DL.limit = (prof.downloads_limit==null?10:prof.downloads_limit);
-      DL.plan  = prof.plan||'free';
-      DL.is_pro= !!prof.is_pro;
-      DL.loaded= true;
+      DL.used   = prof.downloads_used||0;
+      DL.limit  = (prof.downloads_limit==null?10:prof.downloads_limit);
+      DL.plan   = prof.plan||'free';
+      DL.is_pro = !!prof.is_pro;
+      DL.credits= prof.topup_credits||0;
+      DL.loaded = true;
       // Monthly refill: if past the reset date, zero the counter (covers annual plans too)
       if(prof.downloads_reset_date && new Date(prof.downloads_reset_date) < new Date()){
         DL.used=0;
@@ -1658,24 +1659,64 @@ function updateDlCounter(){
   if(!DL.loaded){ el.style.display='none'; return; }
   const left=Math.max(0,DL.limit-DL.used);
   el.style.display='block';
-  el.textContent=left+' of '+DL.limit+' downloads left'+(DL.plan==='free'?' on your trial':' this month');
-  el.style.color = left===0 ? '#DC2626' : (left<=2 ? '#D97706' : 'var(--muted)');
+  el.textContent=left+' of '+DL.limit+' downloads left'+(DL.plan==='free'?' on your trial':' this month')
+    +(DL.credits>0 ? ' · '+DL.credits+' purchased credit'+(DL.credits===1?'':'s')+' available' : '');
+  el.style.color = (left===0 && DL.credits===0) ? '#DC2626' : (left<=2 ? '#D97706' : 'var(--muted)');
 }
 
 function dlGate(){
   if(!DL.loaded) return true;          // not logged in / no data — don't block
-  if(DL.used < DL.limit) return true;
+  if(DL.used < DL.limit || DL.credits > 0) return true;
   showDlLimitModal();
   return false;
 }
 
+// Consumes monthly allowance first, then purchased top-up credits. Returns
+// true if the download may proceed, false if it must NOT proceed — the
+// caller (wrapDownloads) must not generate/download the file when this
+// returns false. topup_credits is a server-protected column (only the
+// Stripe webhook can write it directly — see the protect_profile_billing_
+// columns trigger), so spending one goes through the auth.uid()-scoped
+// consume_topup_credit() RPC rather than a client-side table update.
+//
+// Per explicit product decision: never assume the credit was spent. If the
+// RPC errors, or reports nothing left to spend (a race against another tab/
+// device, or a stale local balance), the credit is NOT decremented locally
+// and the download does not proceed — showing a false "success" would let
+// the displayed balance drift from the real one.
 async function dlRecord(){
-  if(!DL.loaded) return;
-  DL.used=Math.min(DL.limit,DL.used+1);
-  updateDlCounter();
-  try{
-    await sbClient.from('profiles').update({downloads_used:DL.used}).eq('id',currentUser.id);
-  }catch(e){ console.error('dlRecord write failed:',e); }
+  if(!DL.loaded) return true; // not logged in / no data — don't block
+
+  if(DL.used < DL.limit){
+    DL.used=DL.used+1;
+    updateDlCounter();
+    try{
+      await sbClient.from('profiles').update({downloads_used:DL.used}).eq('id',currentUser.id);
+    }catch(e){ console.error('dlRecord write failed:',e); }
+    return true;
+  }
+
+  if(DL.credits > 0){
+    try{
+      const {data,error} = await sbClient.rpc('consume_topup_credit');
+      if(error || typeof data !== 'number' || data < 0){
+        console.error('consume_topup_credit failed:', error || 'no credit available (data='+data+')');
+        alert('Something went wrong recording your download credit. Please try again — you have not been charged a credit.');
+        return false;
+      }
+      DL.credits = data;
+      updateDlCounter();
+      return true;
+    }catch(e){
+      console.error('consume_topup_credit failed:', e);
+      alert('Something went wrong recording your download credit. Please try again — you have not been charged a credit.');
+      return false;
+    }
+  }
+
+  // Neither allowance nor credits available — dlGate() should already have
+  // blocked this, but fail safe rather than silently allow a free download.
+  return false;
 }
 
 function closeDlLimitModal(){
@@ -1822,10 +1863,15 @@ function wrapDownloads(){
       if(!freeRedownload){
         if(!dlGate()) return;
       }
-      const r=orig.apply(this,arguments);
+      // dlRecord() must be awaited and checked BEFORE generating the file —
+      // if it consumes a top-up credit and that fails, the download must
+      // not happen, or the user would get a free download while the UI
+      // (correctly) still shows the credit as unspent.
       if(!freeRedownload){
-        dlRecord();
+        const ok = await dlRecord();
+        if(!ok) return;
       }
+      const r=orig.apply(this,arguments);
       if(labelKey){
         recordLabelDownload(labelKey);
       }

@@ -215,6 +215,9 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
         <div class="dl-note" id="dl-note">Resets on your next billing date. Re-downloading the same label within 7 days is free.</div>
         <button class="topup-btn" id="topup-btn" style="display:none;" onclick="buyTopup()">+ Buy more downloads</button>
       </div>
+      <div id="topup-credits-section" style="display:none;margin-top:10px;font-size:13px;color:var(--teal-dark);font-weight:600;">
+        <span id="topup-credits-count"></span> purchased top-up credits available — never expire, used after your monthly allowance.
+      </div>
 
       <div class="action-row" id="action-row">
         <!-- Populated by JS based on plan state -->
@@ -477,6 +480,7 @@ async function fetchProfile(userId) {
     // if the column is somehow null (e.g. a very old row).
     downloads_limit: data.downloads_limit ?? (data.is_pro ? 30 : 20),
     topup_months: data.topup_months || 0,
+    topup_credits: data.topup_credits || 0,
     trial_ends: trialDaysLeft ? `${trialDaysLeft} days` : null,
     cancelled_days_remaining: cancelledDaysRemaining,
     created_at: new Date(data.created_at).toLocaleDateString('en-GB', {month:'long',year:'numeric'}),
@@ -571,11 +575,23 @@ function renderAccount() {
       document.getElementById('topup-btn').style.display = 'inline-block';
     }
     if (pct >= 100) {
-      document.getElementById('dl-note').textContent =
-        "You've reached your monthly limit. Buy a top-up pack or wait until your allowance resets next billing date.";
+      document.getElementById('dl-note').textContent = u.topup_credits > 0
+        ? `You've reached your monthly limit — now drawing from your ${u.topup_credits} purchased credit(s).`
+        : "You've reached your monthly limit. Buy a top-up pack or wait until your allowance resets next billing date.";
     }
   } else {
     document.getElementById('dl-section').style.display = 'none';
+  }
+
+  // Purchased top-up credits survive cancellation/pause/downgrade, so shown
+  // independent of the active/trialing gate above — a cancelled or free
+  // user with a remaining balance can still see and use it.
+  const creditsSection = document.getElementById('topup-credits-section');
+  if (u.topup_credits > 0) {
+    creditsSection.style.display = 'block';
+    document.getElementById('topup-credits-count').textContent = u.topup_credits;
+  } else {
+    creditsSection.style.display = 'none';
   }
 
   // Billing details
