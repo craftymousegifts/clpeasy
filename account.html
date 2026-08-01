@@ -857,12 +857,14 @@ async function confirmTopup() {
   const btn = document.getElementById('topup-confirm-btn');
   const originalText = btn.textContent;
   if (!priceId || !currentUser) { alert('Something went wrong — please refresh and try again.'); return; }
+  const { data: { session } } = await _sb.auth.getSession();
+  if (!session) { alert('Please sign in again and retry.'); return; }
   btn.textContent = 'Loading…'; btn.disabled = true; btn.style.opacity = '0.7';
   try {
     const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/create-checkout-session', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
-      body: JSON.stringify({ priceId, userEmail: currentUser.email, userId: currentUser.id, mode: 'payment' })
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+      body: JSON.stringify({ priceId, mode: 'payment' })
     });
     const data = await res.json();
     if (data.url) { window.location.href = data.url; }
@@ -891,6 +893,13 @@ async function confirmResub() {
   if (!priceId || !currentUser) { alert('Something went wrong — please refresh and try again.'); return; }
   btn.textContent = 'Loading…'; btn.disabled = true; btn.style.opacity = '0.7';
 
+  const { data: { session } } = await _sb.auth.getSession();
+  if (!session) {
+    alert('Please sign in again and retry.');
+    btn.textContent = originalText; btn.disabled = false; btn.style.opacity = '1';
+    return;
+  }
+
   // FIX (2026-07-27, AUDIT_AND_FIX_LOG.md Phase 9): previously this always
   // created a brand-new Stripe subscription, even if the account's original
   // subscription had only been paused or scheduled to cancel (and was never
@@ -898,20 +907,17 @@ async function confirmResub() {
   // double charge. Try resuming the SAME Stripe subscription first; only start
   // a new one if there is nothing to resume.
   try {
-    const { data: { session } } = await _sb.auth.getSession();
-    if (session) {
-      const reactivateRes = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/manage-subscription', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
-        body: JSON.stringify({ action: 'reactivate' }),
-      });
-      const reactivateData = await reactivateRes.json();
-      if (reactivateRes.ok && reactivateData.success) {
-        window.location.href = 'account.html?reactivated=true';
-        return;
-      }
-      // NO_SUBSCRIPTION or FULLY_ENDED → nothing to resume, fall through below.
+    const reactivateRes = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/manage-subscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+      body: JSON.stringify({ action: 'reactivate' }),
+    });
+    const reactivateData = await reactivateRes.json();
+    if (reactivateRes.ok && reactivateData.success) {
+      window.location.href = 'account.html?reactivated=true';
+      return;
     }
+    // NO_SUBSCRIPTION or FULLY_ENDED → nothing to resume, fall through below.
   } catch (e) {
     console.warn('Reactivate-existing-subscription check failed, falling back to new checkout:', e);
   }
@@ -919,8 +925,8 @@ async function confirmResub() {
   try {
     const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/create-checkout-session', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY },
-      body: JSON.stringify({ priceId, userEmail: currentUser.email, userId: currentUser.id, mode: 'subscription' })
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+      body: JSON.stringify({ priceId, mode: 'subscription' })
     });
     const data = await res.json();
     if (data.url) { window.location.href = data.url; }

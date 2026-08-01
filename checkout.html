@@ -388,6 +388,12 @@ async function startCheckout() {
     return;
   }
 
+  const { data: { session } } = await sbClient.auth.getSession();
+  if (!session) {
+    window.location.href = 'auth.html?mode=signin&redirect=checkout.html';
+    return;
+  }
+
   const btn = document.getElementById('btn-checkout');
   const btnText = document.getElementById('checkout-btn-text');
   const spinner = document.getElementById('checkout-spinner');
@@ -413,12 +419,10 @@ async function startCheckout() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Authorization': 'Bearer ' + session.access_token,
       },
       body: JSON.stringify({
         priceId: planData.id,
-        userId: currentUser.id,
-        userEmail: currentUser.email,
         mode: 'subscription',
         successUrl: window.location.origin + '/builder.html?subscribed=true' + (selectedTopup !== 'none' ? '&topup_pending=' + selectedTopup : ''),
         cancelUrl: window.location.origin + '/checkout.html?cancelled=true',
