@@ -23,12 +23,13 @@ const corsHeaders = {
 async function addToBrevoPayList(email: string, firstName: string, planLabel: string): Promise<void> {
   const apiKey = Deno.env.get('BREVO_API_KEY');
   const listId = Deno.env.get('BREVO_PAID_LIST_ID');
+
   if (!apiKey || !listId) {
     console.warn('Brevo paid list config missing — skipping Brevo upsert');
     return;
   }
+
   try {
-    // Upsert contact with plan attribute
     const upsertRes = await fetch('https://api.brevo.com/v3/contacts', {
       method: 'POST',
       headers: {
@@ -45,29 +46,15 @@ async function addToBrevoPayList(email: string, firstName: string, planLabel: st
         updateEnabled: true,
       }),
     });
-    const upsertStatus = upsertRes.status;
-    console.log(`Brevo paid contact upsert HTTP ${upsertStatus} for ${email}`);
 
-    // Trigger paid Day 0 automation if ID is set
-    const automationId = Deno.env.get('BREVO_PAID_AUTOMATION_ID');
-    if (automationId) {
-      const triggerRes = await fetch('https://api.brevo.com/v3/automations/trigger', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'api-key': apiKey,
-        },
-        body: JSON.stringify({
-          event: 'paid_subscription_activated',
-          email,
-          properties: { plan: planLabel },
-          workflowId: parseInt(automationId, 10),
-        }),
-      });
-      console.log(`Brevo paid automation trigger HTTP ${triggerRes.status} for ${email}`);
+    console.log(`Brevo paid contact upsert HTTP ${upsertRes.status} for ${email}`);
+
+    if (!upsertRes.ok) {
+      const errorText = await upsertRes.text();
+      console.error(`Brevo paid contact upsert failed: ${errorText}`);
     }
   } catch (err) {
-    // Non-fatal — log and continue
+    // Non-fatal — Stripe subscription processing continues
     console.error('Brevo paid list error (non-fatal):', err);
   }
 }
@@ -80,6 +67,7 @@ function getPlanLabel(priceId: string): string {
     'price_1TdoEXGZLILz5vqUQj5n6Zri': 'Easy Start Annual',
     'price_1TdoEXGZLILz5vqUvZKB1RQw': 'Easy Pro Monthly',
     'price_1TdoEXGZLILz5vqUFgTznTUT': 'Easy Pro Annual',
+
     // Legacy/sandbox price IDs — NOT used by any live checkout entry point
     // (confirmed 2026-07-28, AUDIT_AND_FIX_LOG.md: pricing.html/checkout.html/
     // account.html all exclusively send the "Live price IDs" above). Retained
@@ -89,6 +77,12 @@ function getPlanLabel(priceId: string): string {
     'price_1Tdd7pKF3jvQfgEa8DxgQHEW': 'Easy Start Annual',
     'price_1Tdd9OKF3jvQfgEaYsCmOwOa': 'Easy Pro Monthly',
     'price_1TddAyKF3jvQfgEaE7Vwbxl6': 'Easy Pro Annual',
+
+    // Test Mode price IDs
+    'price_1TyDuRGZLILz5vqU3RIuVFJD': 'Easy Start Monthly',
+    'price_1TyDxBGZLILz5vqUEKx7d2jp': 'Easy Pro Monthly',
+    'price_1TyrwjGZLILz5vqUjYaiQtfL': 'Easy Start Annual',
+    'price_1TyryIGZLILz5vqU5OaMB0jG': 'Easy Pro Annual',
   };
   return map[priceId] ?? 'Unknown Plan';
 }
@@ -112,6 +106,36 @@ Deno.serve(async (req) => {
 
   console.log('Stripe event received:', event.type);
 
+  // ── IDEMPOTENCY GUARD ───────────────────────────────────────────
+  // Stripe may redeliver the same event (timeouts, ambiguous responses,
+  // manual resends) — without this, a redelivered checkout.session.completed
+  // for a top-up would double-credit downloads/topup_months, since those
+  // paths do non-idempotent increments rather than idempotent absolute-value
+  // writes like the other handlers below. Same atomic-unique-constraint
+  // pattern already used for checkout_locks: claim event.id first: a second
+  // insert for the same id fails outright rather than racing, so only one
+  // invocation ever proceeds past this point.
+  const { error: dedupeError } = await supabase
+    .from('stripe_processed_events')
+    .insert({ event_id: event.id, event_type: event.type });
+
+  if (dedupeError) {
+    if (dedupeError.code === '23505') {
+      // Genuine duplicate delivery of an already-processed event — skip all
+      // side effects, but still return 200 so Stripe does not keep retrying.
+      console.log(`Duplicate event ${event.id} (${event.type}) — already processed, skipping.`);
+      return new Response(JSON.stringify({ received: true, duplicate: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    // Any other error claiming the dedupe marker (e.g. a transient DB issue)
+    // — don't risk silently dropping a legitimate event. Log and fall
+    // through to process normally; worst case is a rare double-process
+    // rather than a silently skipped webhook.
+    console.error('stripe_processed_events insert error (non-duplicate):', dedupeError);
+  }
+
   try {
     switch (event.type) {
 
@@ -126,22 +150,36 @@ Deno.serve(async (req) => {
         if (!userId) { console.error('No userId in session metadata'); break; }
 
         // ── ONE-OFF TOP-UP PURCHASE ──────────────────────────────
+        // FIX (2026-07-30, top-up credits separation): previously wrote
+        // downloads_limit: current + credits, blending the purchased credit
+        // into the same field applyProfilePlan() unconditionally overwrites
+        // to the plan base on every invoice.paid — silently wiping any
+        // unused top-up at the customer's next renewal despite "Credits
+        // never expire" being shown throughout the marketing copy. Now
+        // written to the dedicated, protected topup_credits column instead,
+        // which no other handler in this file ever touches. topup_months is
+        // incremented in the same update so the existing (previously dead —
+        // nothing incremented it) Easy Pro upgrade nudge on account.html
+        // starts working; both writes are covered by the idempotency guard
+        // above, so a redelivered event cannot double-credit either field.
         if (type === 'topup') {
           const credits = TOPUP_CREDITS[priceId ?? ''] ?? 0;
           if (credits === 0) { console.error('Unknown top-up priceId:', priceId); break; }
 
           const { data: profile } = await supabase
             .from('profiles')
-            .select('downloads_limit')
+            .select('topup_credits, topup_months')
             .eq('id', userId)
             .single();
 
-          const current = profile?.downloads_limit ?? 0;
+          const currentCredits = profile?.topup_credits ?? 0;
+          const currentTopupMonths = profile?.topup_months ?? 0;
           await supabase.from('profiles').update({
-            downloads_limit: current + credits,
+            topup_credits: currentCredits + credits,
+            topup_months: currentTopupMonths + 1,
           }).eq('id', userId);
 
-          console.log(`Top-up: +${credits} downloads credited to user ${userId}`);
+          console.log(`Top-up: +${credits} credits (balance ${currentCredits + credits}) for user ${userId}; topup_months now ${currentTopupMonths + 1}`);
           break;
         }
 
@@ -207,20 +245,25 @@ Deno.serve(async (req) => {
         const isPaused          = !!subscription.pause_collection;
         const isCancelScheduled = !!subscription.cancel_at_period_end;
 
-        // cancel_at_period_end wins over pause_collection: the only
-        // reachable compound state via account.html today is "paused, then
-        // Cancel instead", and the customer's last real action was to
-        // cancel.
-        const profileStatus =
-          isCancelScheduled ? 'cancelled' :
-          isPaused ? 'paused' :
-          subscription.status === 'active' ? 'active' :
-          null; // past_due / unpaid / incomplete / incomplete_expired — no
-                // mapped account.html state; leave subscription_status as-is.
+const profileStatus =
+  isCancelScheduled ? 'cancelled' :
+  isPaused ? 'paused' :
+  subscription.status === 'active' ? 'active' :
+  null; // past_due / unpaid / incomplete / incomplete_expired — no
+        // mapped account.html state; leave subscription_status as-is.
 
-        if (profileStatus) {
-          await supabase.from('profiles').update({ subscription_status: profileStatus }).eq('id', userId);
-        }
+if (profileStatus) {
+  await supabase
+    .from('profiles')
+    .update({
+      subscription_status: profileStatus,
+      deletion_date: isCancelScheduled && subscription.cancel_at
+        ? new Date(subscription.cancel_at * 1000).toISOString()
+        : null,
+      cancel_reason: isCancelScheduled ? 'other' : null,
+    })
+    .eq('id', userId);
+}
 
         // ── Only refresh plan/downloads/next_payment for a GENUINE
         // reactivation OR a genuine price/plan change — never for an
@@ -332,9 +375,21 @@ Deno.serve(async (req) => {
 // builder.html/account.html/checkout.html) are the correct, canonical top-up
 // Price IDs. The old pair has been removed, not left alongside these, so
 // there is exactly one recognised mapping.
+//
+// UPDATE (2026-07-30): price_1Tdpd7.../price_1TdpdzG... above were then
+// discovered to be the old Live-mode price IDs, which do not exist in the
+// Test Mode environment CLPeasy actually runs in (acct_1TdczNGZLILz5vqU).
+// checkout.html/account.html now send the new Test Mode top-up prices below.
+// The old pair is kept mapped here only for backwards compatibility with
+// any already-issued Stripe object — not removed, per the established
+// pattern in this file of never deleting historical price ID mappings.
 const TOPUP_CREDITS: Record<string, number> = {
-  'price_1Tdpd7GZLILz5vqUAiSw9udI': 5,   // 5 downloads £3.99
-  'price_1TdpdzGZLILz5vqUYEjn6TZ2': 10,  // 10 downloads £7.99
+  'price_1Tdpd7GZLILz5vqUAiSw9udI': 5,   // 5 downloads £3.99 (old Live-mode ID — retained for backward compatibility)
+  'price_1TdpdzGZLILz5vqUYEjn6TZ2': 10,  // 10 downloads £7.99 (old Live-mode ID — retained for backward compatibility)
+
+  // Test Mode price IDs (correct, currently active)
+  'price_1Tys3JGZLILz5vqUXA6L9jxc': 5,   // 5 downloads £3.99
+  'price_1Tys3qGZLILz5vqUnNlRAF6Q': 10,  // 10 downloads £7.99
 };
 
 // ── HELPERS ───────────────────────────────────────────────────
@@ -345,11 +400,17 @@ function getPlanFromPriceId(priceId: string): string {
     'price_1TdoEXGZLILz5vqUQj5n6Zri': 'easy_start_annual',
     'price_1TdoEXGZLILz5vqUvZKB1RQw': 'easy_pro_monthly',
     'price_1TdoEXGZLILz5vqUFgTznTUT': 'easy_pro_annual',
-    // Sandbox price IDs (kept for safe transition)
+    // Sandbox price IDs
     'price_1Tdd5SKF3jvQfgEaclfSUxn5': 'easy_start_monthly',
     'price_1Tdd7pKF3jvQfgEa8DxgQHEW': 'easy_start_annual',
     'price_1Tdd9OKF3jvQfgEaYsCmOwOa': 'easy_pro_monthly',
     'price_1TddAyKF3jvQfgEaE7Vwbxl6': 'easy_pro_annual',
+
+    // Test Mode price IDs
+    'price_1TyDuRGZLILz5vqU3RIuVFJD': 'easy_start_monthly',
+    'price_1TyDxBGZLILz5vqUEKx7d2jp': 'easy_pro_monthly',
+    'price_1TyrwjGZLILz5vqUjYaiQtfL': 'easy_start_annual',
+    'price_1TyryIGZLILz5vqU5OaMB0jG': 'easy_pro_annual',
   };
   return map[priceId] ?? 'unknown';
 }
@@ -362,11 +423,18 @@ function profileInfoFromPriceId(priceId: string): ProfilePlan {
     'price_1TdoEXGZLILz5vqUQj5n6Zri': { plan: 'easy_start', is_pro: false, limit: 20, cycle: 'annual'  },
     'price_1TdoEXGZLILz5vqUvZKB1RQw': { plan: 'easy_pro',   is_pro: true,  limit: 30, cycle: 'monthly' },
     'price_1TdoEXGZLILz5vqUFgTznTUT': { plan: 'easy_pro',   is_pro: true,  limit: 30, cycle: 'annual'  },
+
     // Sandbox price IDs
     'price_1Tdd5SKF3jvQfgEaclfSUxn5': { plan: 'easy_start', is_pro: false, limit: 20, cycle: 'monthly' },
     'price_1Tdd7pKF3jvQfgEa8DxgQHEW': { plan: 'easy_start', is_pro: false, limit: 20, cycle: 'annual'  },
     'price_1Tdd9OKF3jvQfgEaYsCmOwOa': { plan: 'easy_pro',   is_pro: true,  limit: 30, cycle: 'monthly' },
     'price_1TddAyKF3jvQfgEaE7Vwbxl6': { plan: 'easy_pro',   is_pro: true,  limit: 30, cycle: 'annual'  },
+
+    // Test Mode price IDs
+    'price_1TyDuRGZLILz5vqU3RIuVFJD': { plan: 'easy_start', is_pro: false, limit: 20, cycle: 'monthly' },
+    'price_1TyDxBGZLILz5vqUEKx7d2jp': { plan: 'easy_pro',   is_pro: true,  limit: 30, cycle: 'monthly' },
+    'price_1TyrwjGZLILz5vqUjYaiQtfL': { plan: 'easy_start', is_pro: false, limit: 20, cycle: 'annual'  },
+    'price_1TyryIGZLILz5vqU5OaMB0jG': { plan: 'easy_pro',   is_pro: true,  limit: 30, cycle: 'annual'  },
   };
   return map[priceId] ?? { plan: 'free', is_pro: false, limit: 0, cycle: 'monthly' };
 }
@@ -380,16 +448,45 @@ function addOneYear(from = new Date()): string {
 
 async function applyProfilePlan(userId: string, priceId: string): Promise<void> {
   const info = profileInfoFromPriceId(priceId);
-  // Note: profiles table has no updated_at column — do not include it
-  await supabase.from('profiles').update({
+
+  console.log('Applying profile plan:', {
+    userId,
+    priceId,
     plan: info.plan,
     is_pro: info.is_pro,
-    billing_cycle: info.cycle,
     downloads_limit: info.limit,
-    downloads_used: 0,
-    downloads_reset_date: addOneMonth(),
-    next_payment: info.cycle === 'annual' ? addOneYear() : addOneMonth(),
-  }).eq('id', userId);
+    billing_cycle: info.cycle,
+  });
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({
+      plan: info.plan,
+      is_pro: info.is_pro,
+      billing_cycle: info.cycle,
+      downloads_limit: info.limit,
+      downloads_used: 0,
+      downloads_reset_date: addOneMonth(),
+      next_payment: info.cycle === 'annual' ? addOneYear() : addOneMonth(),
+    })
+    .eq('id', userId)
+    .select('id, plan, is_pro, downloads_limit, billing_cycle, next_payment')
+    .single();
+
+  if (error) {
+    console.error('❌ applyProfilePlan FAILED:', {
+      userId,
+      priceId,
+      error: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+    });
+
+    throw new Error(`Failed to update profile plan: ${error.message}`);
+  }
+
+  console.log('✅ applyProfilePlan SUCCESS:', data);
 }
 
 // ── FULL DOWNGRADE TO FREE — the only place paid access is actually removed.
@@ -397,7 +494,10 @@ async function applyProfilePlan(userId: string, priceId: string): Promise<void> 
 // or the rare case where Stripe reports status: 'canceled' via an 'updated'
 // event instead. Never called for a pause or a scheduled cancellation —
 // those only change subscription_status, retaining the paid plan/allowance
-// until the subscription genuinely ends.
+// until the subscription genuinely ends. Deliberately does NOT touch
+// topup_credits — purchased credits are a one-off, non-subscription
+// purchase and survive cancellation per "Credits never expire" (see
+// checkout.html, index.html, refund.html).
 async function downgradeToFree(userId: string): Promise<void> {
   await supabase.from('profiles').update({
     plan: 'free',
