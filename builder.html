@@ -2472,13 +2472,13 @@ function renderTags(){
   }
 }
 function extractSDS(){
-  // Revenue-leakage fix (2026-08-02, reviewed smart-paste-pro-gating): Smart
-  // Paste is marketed as an Easy Pro-exclusive feature (see the Easy Start
-  // vs Easy Pro FAQ above) but had no plan check anywhere in this function —
-  // any user on any plan could use it for free. Logic-only gate, per
-  // Michaela's explicit decision: no new visible UI element anywhere on the
-  // page: non-Pro users see nothing different until they click Extract.
-  if(!S.isPro){alert('Smart Paste SDS extraction is an Easy Pro feature. Upgrade to Easy Pro to use it — see pricing.html for plans.');return;}
+  // NOTE (2026-08-02, reversal — see smart-paste-pro-gating / reverify):
+  // A plan gate was added here believing Smart Paste was Easy-Pro-exclusive.
+  // Michaela confirmed this was based on an incorrect premise: Smart Paste
+  // is available on all plans, including signed-out, Free, and free-trial
+  // use — it is not an Easy Pro-exclusive feature. Gate removed; restored
+  // to unconditional behaviour. Do not re-add a plan check here without a
+  // fresh, explicit product-rules confirmation.
   const text=document.getElementById('smart-paste-input').value.trim();
   if(!text){alert('Please paste SDS Section 2.2 text first.');return;}
 
