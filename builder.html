@@ -1025,6 +1025,11 @@ function ghsPicto(key,cx,cy,size){
 
 // ── STATE ─────────────────────────────────────────────────────
 const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,hazardFSOverride:null,scentFSOverride:null,bizNameFSOverride:null,hazardYOffset:null,typeFSOverride:null,sigFSOverride:null};
+// QR digital-safety-sheet fix (2026-08-02, reviewed qr-safety-sheet-disable):
+// declared here (before first use in buildSVG(), which init() calls
+// synchronously below) rather than down near the QR TOGGLE section, to
+// avoid a temporal-dead-zone ReferenceError on page load.
+const QR_FEATURE_ENABLED=false;
 
 // ── PRODUCT TYPE GUIDANCE ─────────────────────────────────────
 const FRAG_LOAD_TIPS={
@@ -1624,6 +1629,12 @@ async function initAuth(){
       // currentUser is known so the panel shows this account's own library,
       // never whatever was rendered before sign-in resolved.
       try{ renderSaved(); }catch(e){}
+      // Same race, same fix, for saved business details (clpeasy_biz fix,
+      // reviewed bizdetails-cross-account-scoping): init() already called
+      // restoreBizDetails() once pre-auth ('guest'-scoped); re-call now that
+      // currentUser is known so this account's own saved business details
+      // load, not whatever 'guest' had.
+      try{ restoreBizDetails(); }catch(e){}
     } else {
       const navSignin=document.getElementById('nav-signin');
       const navSignout=document.getElementById('nav-signout');
@@ -2303,12 +2314,27 @@ function init(){
   wrapDownloads();
   buildHChips();buildPChips();buildSensitiserChips();
   initExtensions();
-  // Restore saved business details
-  const biz=JSON.parse(localStorage.getItem('clpeasy_biz')||'{}');
-  if(biz.bizName){document.getElementById('biz-name').value=biz.bizName;S.bizName=biz.bizName;}
-  if(biz.bizAddress){document.getElementById('biz-address').value=biz.bizAddress;S.bizAddress=biz.bizAddress;}
-  if(biz.bizPhone){document.getElementById('biz-phone').value=biz.bizPhone;S.bizPhone=biz.bizPhone;}
-  if(biz.bizWebsite){document.getElementById('biz-website').value=biz.bizWebsite;S.bizWebsite=biz.bizWebsite;}
+  // I4 fix (2026-08-01, reviewed history-cross-account-scoping): one-time
+  // purge of the old global, non-account-scoped label-history key. History
+  // is now stored per-account under libKey('clpeasy_history') instead (see
+  // getLabelHistory/pushLabelHistory) — this only ever removes the literal
+  // legacy 'clpeasy_history' key, never a namespaced one, and is a no-op
+  // once already purged. Per Michaela's explicit approval: closes the
+  // residual devtools-level exposure of a prior account's business data on
+  // shared/reused browsers, at the cost of permanently deleting any label
+  // version history saved before this fix shipped.
+  localStorage.removeItem('clpeasy_history');
+  // clpeasy_biz fix (2026-08-01, reviewed bizdetails-cross-account-scoping):
+  // same purge, same reasoning, for the legacy global business-details key
+  // — only ever removes the literal 'clpeasy_biz' string, never a
+  // libKey()-namespaced one (see restoreBizDetails()/saveBizDetails()
+  // below). Per Michaela's explicit approval.
+  localStorage.removeItem('clpeasy_biz');
+  // Restore saved business details (see restoreBizDetails() below — also
+  // re-called from initAuth() once currentUser resolves, matching the
+  // renderSaved() double-call pattern this file already uses for the same
+  // init()-vs-async-auth race)
+  restoreBizDetails();
   // Restore saved product details
   const prod=JSON.parse(localStorage.getItem('clpeasy_prod')||'{}');
   // productType not restored — always starts at placeholder
@@ -2322,9 +2348,26 @@ function init(){
   lockHazardFields(false);
   updateLabel();
 }
+// clpeasy_biz fix (2026-08-01, reviewed bizdetails-cross-account-scoping):
+// previously a single global, unscoped key — same root cause as the
+// clpeasy_history leak, now namespaced the same way via libKey()/libNS().
+// Split into its own function (was inline in init()) so it can be called
+// twice, matching the renderSaved() double-call pattern used elsewhere in
+// this file: once synchronously in init() (pre-auth, 'guest'-scoped, so
+// guests still see today's behaviour), and again from initAuth() once
+// currentUser is known, so a logged-in account's own saved details load
+// correctly rather than staying on whatever 'guest' had. Legacy unscoped
+// key is deliberately NOT purged here — that is a separate decision.
+function restoreBizDetails(){
+  const biz=JSON.parse(localStorage.getItem(libKey('clpeasy_biz'))||'{}');
+  if(biz.bizName){document.getElementById('biz-name').value=biz.bizName;S.bizName=biz.bizName;}
+  if(biz.bizAddress){document.getElementById('biz-address').value=biz.bizAddress;S.bizAddress=biz.bizAddress;}
+  if(biz.bizPhone){document.getElementById('biz-phone').value=biz.bizPhone;S.bizPhone=biz.bizPhone;}
+  if(biz.bizWebsite){document.getElementById('biz-website').value=biz.bizWebsite;S.bizWebsite=biz.bizWebsite;}
+}
 function saveBizDetails(){
   const biz={bizName:document.getElementById('biz-name')?.value||'',bizAddress:document.getElementById('biz-address')?.value||'',bizPhone:document.getElementById('biz-phone')?.value||'',bizWebsite:document.getElementById('biz-website')?.value||''};
-  localStorage.setItem('clpeasy_biz',JSON.stringify(biz));
+  localStorage.setItem(libKey('clpeasy_biz'),JSON.stringify(biz));
 }
 function saveProdDetails(){
   const prod={labelLang:document.getElementById('label-lang')?.value||'en'};
@@ -2429,6 +2472,13 @@ function renderTags(){
   }
 }
 function extractSDS(){
+  // Revenue-leakage fix (2026-08-02, reviewed smart-paste-pro-gating): Smart
+  // Paste is marketed as an Easy Pro-exclusive feature (see the Easy Start
+  // vs Easy Pro FAQ above) but had no plan check anywhere in this function —
+  // any user on any plan could use it for free. Logic-only gate, per
+  // Michaela's explicit decision: no new visible UI element anywhere on the
+  // page: non-Pro users see nothing different until they click Extract.
+  if(!S.isPro){alert('Smart Paste SDS extraction is an Easy Pro feature. Upgrade to Easy Pro to use it — see pricing.html for plans.');return;}
   const text=document.getElementById('smart-paste-input').value.trim();
   if(!text){alert('Please paste SDS Section 2.2 text first.');return;}
 
@@ -2501,8 +2551,46 @@ function extractSDS(){
   });
 
   // ── SENSITISERS ───────────────────────────────────────────────────────────
+  // I2 fix (2026-08-02, reviewed sensitiser-word-boundary-matching): plain
+  // substring .includes() over-disclosed sensitisers whose listed name is
+  // fused into or embedded inside a different, longer listed name — e.g.
+  // 'Eugenol' is a substring of 'Isoeugenol'; 'Cinnamal' is a substring of
+  // 'Hexyl Cinnamal', 'Amyl Cinnamal' and 'Alpha-Methyl Cinnamal'. Confirmed
+  // in CLPeasy_Pre-Change_Review_and_Validation_Report.docx (table,
+  // 'Sensitiser display'). Fix: boundary-anchored matching (rules out
+  // mid-word fusions like Isoeugenol/Eugenol) plus longest-name-first span
+  // claiming (rules out a shorter name that only occurs as part of a
+  // longer, different listed name's phrase, like Cinnamal inside Hexyl
+  // Cinnamal). Uses explicit (?<![A-Z0-9])/(?![A-Z0-9]) lookaround rather
+  // than \b, because \b silently fails to anchor at a name that itself ends
+  // in punctuation — e.g. 'Linalool (oxidised)' followed by a space is not
+  // a \b transition (')' and ' ' are both non-word chars), which caused a
+  // first-draft \b-only version to wrongly fall through to the shorter
+  // plain 'Linalool' — caught by the targeted test suite before shipping.
+  // Every occurrence of every name is still tested independently by
+  // position, so a name genuinely also present on its own elsewhere in the
+  // same text is still detected — nothing is under-disclosed, this only
+  // suppresses a match at a text span a longer, more specific name has
+  // already claimed.
   const upperText=text.toUpperCase();
-  const matched=SENSITISERS.filter(s=>upperText.includes(s.name.toUpperCase()));
+  const matched=(()=>{
+    const bySpecificity=[...SENSITISERS].sort((a,b)=>b.name.length-a.name.length);
+    const claimed=[]; // [start,end) text spans already matched by a longer name
+    const hits=[];
+    bySpecificity.forEach(s=>{
+      const re=new RegExp('(?<![A-Z0-9])'+s.name.toUpperCase().replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![A-Z0-9])','g');
+      let m;
+      while((m=re.exec(upperText))){
+        const start=m.index, end=start+m[0].length;
+        if(!claimed.some(([cs,ce])=>start<ce && end>cs)){
+          claimed.push([start,end]);
+          hits.push(s);
+          break;
+        }
+      }
+    });
+    return SENSITISERS.filter(s=>hits.includes(s)); // restore original list order
+  })();
   S.sensitisers=matched.map(s=>s.name);
   renderTags();
 
@@ -3453,7 +3541,7 @@ function buildSVG(forExport=false){
 
   // ── QR CODE (small, bottom-right of label if enabled) ────────
   let qrEl='';
-  if(S.showQR&&S.ufiCode){
+  if(QR_FEATURE_ENABLED&&S.showQR&&S.ufiCode){
     const uid=S.ufiCode.replace(/-/g,'').toLowerCase().substring(0,8);
     const qrUrl=`clpeasy.com/s/${uid}`;
     const qrSz=Math.min(sW*0.10,10);
@@ -4328,6 +4416,20 @@ function applyFragLoad(){
 // ══════════════════════════════════════════════════════════════
 // FEATURE: QR CODE TOGGLE
 // ══════════════════════════════════════════════════════════════
+// QR digital-safety-sheet fix (2026-08-02, reviewed qr-safety-sheet-disable):
+// disabled, matching the existing SAVE_OFFER_ENABLED pattern. The QR image
+// was never a real encoding (static placeholder squares, never scans), its
+// /s/{uid} URL has no matching _redirects route, and its backing Supabase
+// safety_sheets table doesn't exist. The customer-facing toggle UI was
+// already removed previously (see "QR safety code toggle removed until
+// feature is ready" above); this constant additionally stops a legacy saved
+// label that still has showQR:true (and an old ufiCode, from before the UFI
+// fix) from rendering the broken output on reload/re-export, and stops
+// syncSafetySheet() from attempting a write to a table that doesn't exist.
+// Per Michaela's explicit decision: hide the non-functional feature now;
+// building a real QR/safety-sheet system is a separate, deferred item.
+// (QR_FEATURE_ENABLED itself is declared near the top of the script,
+// before buildSVG()'s first use of it — see comment there.)
 S.showQR=false;
 
 function setQR(show){
@@ -4360,9 +4462,16 @@ const LANG_PRODUCT_TYPE_SUFFIX={
 // ══════════════════════════════════════════════════════════════
 // FEATURE: LABEL HISTORY / VERSION CONTROL
 // ══════════════════════════════════════════════════════════════
+// I4 fix (2026-08-01, reviewed history-cross-account-scoping): history was
+// previously stored under a single global 'clpeasy_history' key, shared by
+// every account that ever used this browser — same root cause already fixed
+// for the main label library via libKey()/libNS() (see getSaved/persistSaved
+// above). Now namespaced the same way, per-user. The old global key is
+// purged once in init() (see below) so previously-exposed data left in a
+// shared browser's localStorage is also removed, not just no longer read.
 function getLabelHistory(scentName,productType){
   try{
-    const all=JSON.parse(localStorage.getItem('clpeasy_history')||'{}');
+    const all=JSON.parse(localStorage.getItem(libKey('clpeasy_history'))||'{}');
     const key=scentName+'|'+productType;
     return all[key]||[];
   }catch(e){return[];}
@@ -4370,7 +4479,7 @@ function getLabelHistory(scentName,productType){
 
 function pushLabelHistory(entry){
   try{
-    const all=JSON.parse(localStorage.getItem('clpeasy_history')||'{}');
+    const all=JSON.parse(localStorage.getItem(libKey('clpeasy_history'))||'{}');
     const key=entry.scentName+'|'+entry.productType;
     if(!all[key])all[key]=[];
     // Don't add duplicate (same savedAt)
@@ -4379,7 +4488,7 @@ function pushLabelHistory(entry){
       // Keep max 10 versions
       if(all[key].length>10)all[key]=all[key].slice(0,10);
     }
-    localStorage.setItem('clpeasy_history',JSON.stringify(all));
+    localStorage.setItem(libKey('clpeasy_history'),JSON.stringify(all));
   }catch(e){}
 }
 
@@ -4411,9 +4520,6 @@ function showLabelHistory(encodedScent,encodedProduct){
 // ══════════════════════════════════════════════════════════════
 const _origSaveLabel=saveLabel;
 saveLabel=function(){
-  // Auto-generate UFI if not set
-  const ufiEl=document.getElementById('ufi-code');
-  if(ufiEl&&!ufiEl.value.trim())generateUFI();
   // Call original saveLabel
   _origSaveLabel();
   // Push to history
@@ -4435,6 +4541,7 @@ saveLabel=function(){
 // to current data.
 // ══════════════════════════════════════════════════════════════
 async function syncSafetySheet(entry){
+  if(!QR_FEATURE_ENABLED)return; // feature disabled, 2026-08-02 — see QR_FEATURE_ENABLED comment
   if(!sbClient||!currentUser)return; // not logged in
   if(!entry.ufiCode)return; // no UFI = no QR
   // Generate a stable UID from the UFI code (strip dashes, lowercase)
