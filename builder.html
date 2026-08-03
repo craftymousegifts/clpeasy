@@ -3707,10 +3707,13 @@ function updateLabel(){
   // this is CLPeasy intentionally declining to produce the file — not a broken button —
   // and avoid asserting outright legal non-compliance (we can only say content doesn't
   // fit at the legibility threshold CLPeasy enforces, not rule on the regulations directly).
-  const _blockHeading = '⚠️ Download unavailable — label size too small for required information';
+  // Wording (updated 3 Aug 2026, round 2 — per Michaela's CLP-labelling-focused
+  // request): name the CLP labelling requirement specifically rather than
+  // "required information" generically.
+  const _blockHeading = '⚠️ Download unavailable — label size too small for CLP labelling requirements';
   const _blockBody = window._footerLegibilityClipped
-    ? 'Your business/supplier details cannot fit on this label at the minimum legibility requirements used by CLPeasy, so some required information would be left off.<br><br>To create a downloadable label, try selecting a larger label size in Step 1, or shorten your business details.<br><br><strong>CLPeasy has blocked the download to help prevent you from producing a label that may not meet the required labelling requirements.</strong>'
-    : 'The required hazard and precautionary information cannot fit on this label at the minimum legibility requirements used by CLPeasy.<br><br>To create a downloadable label, try selecting a larger label size in Step 1. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.<br><br><strong>CLPeasy has blocked the download to help prevent you from producing a label that may not meet the required labelling requirements.</strong>';
+    ? 'Your business/supplier details cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling, so some required information would be left off.<br><br>To create a downloadable label, try selecting a larger label size in Step 1, or shorten your business details.<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
+    : 'The required hazard and precautionary information cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, try selecting a larger label size in Step 1. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>';
   [document.getElementById('label-warn'), document.getElementById('label-warn-step5')].forEach(_labelWarnEl=>{
     if(!_labelWarnEl)return;
     if(window._labelBlockDownload){
