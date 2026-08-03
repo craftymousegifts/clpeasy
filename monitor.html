@@ -25,16 +25,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);m
 .logo-badge{width:38px;height:38px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;letter-spacing:-0.5px;}
 .logo-name{font-size:20px;font-weight:900;color:var(--teal);letter-spacing:-1px;}
 .header-title{font-size:14px;color:rgba(255,255,255,0.5);font-weight:500;}
-.header-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;}
 .last-refresh{font-size:12px;color:rgba(255,255,255,0.4);font-family:'DM Mono',monospace;}
 .refresh-btn{background:var(--teal);color:white;border:none;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
 .refresh-btn:hover{background:var(--teal-dark);}
 
 /* MAIN */
-.main{max-width:1200px;margin:0 auto;padding:32px 24px 60px;}@media(max-width:600px){.header{padding:12px 16px;}.header-title{font-size:13px;}.main{padding:20px 16px 60px;}.header-logo{flex-shrink:0;}}
+.main{max-width:1200px;margin:0 auto;padding:32px 24px 60px;}@media(max-width:600px){.header{padding:12px 16px;}.header-title{font-size:13px;}.main{padding:20px 16px 60px;}.header-logo{flex-shrink:0;}.summary-row{grid-template-columns:repeat(2,minmax(0,1fr));}}
 
 /* SUMMARY ROW */
-.summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px;}
+.summary-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:32px;}
 .summary-card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px;text-align:center;}
 .summary-num{font-size:32px;font-weight:800;color:white;line-height:1;}
 .summary-num.green{color:#4ade80;}
@@ -111,7 +111,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);m
 .action-priority.high{background:rgba(248,113,113,0.2);color:#f87171;}
 .action-priority.med{background:rgba(251,191,36,0.2);color:#fbbf24;}
 .action-priority.low{background:rgba(76,155,176,0.2);color:var(--teal-light);}
-.action-text{font-size:13px;color:rgba(255,255,255,0.75);line-height:1.5;}
+.action-text{font-size:13px;color:rgba(255,255,255,0.75);line-height:1.5;flex:1;min-width:0;}
 .action-text strong{color:white;}
 
 footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2);font-family:'DM Mono',monospace;}
@@ -149,6 +149,110 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
 </head>
 <body>
 
+<!-- ========== CLPeasy Monitor Login Gate — restored 3 Aug 2026, accidentally stripped in commit 5eeee27 (16 June 2026) ========== -->
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  #clp-gate {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #0f1117;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Sans', sans-serif;
+  }
+  #clp-gate .box {
+    background: #181c27;
+    border: 1px solid #2a2f3e;
+    border-radius: 14px;
+    padding: 2rem 1.5rem 1.75rem;
+    width: min(340px, 90vw);
+    text-align: center;
+  }
+  #clp-gate .logo { font-size: 1.1rem; font-weight: 600; letter-spacing: 0.08em; color: #7b8cde; margin-bottom: 0.25rem; }
+  #clp-gate h1 { font-size: 1rem; font-weight: 400; color: #8b94a8; margin: 0 0 1.75rem; }
+  #clp-gate input[type=password] {
+    width: 100%; box-sizing: border-box;
+    padding: 0.65rem 1rem; border-radius: 8px;
+    border: 1px solid #2a2f3e; background: #0f1117;
+    color: #e8ecf2; font-size: 1rem; font-family: inherit;
+    outline: none; transition: border-color 0.2s; margin-bottom: 0.75rem;
+  }
+  #clp-gate input[type=password]:focus { border-color: #7b8cde; }
+  #clp-gate input[type=password].err { border-color: #e24b4a; animation: shake 0.3s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  #clp-gate button {
+    width: 100%; padding: 0.65rem; border-radius: 8px;
+    border: none; background: #7b8cde; color: #fff;
+    font-size: 0.95rem; font-weight: 500; font-family: inherit;
+    cursor: pointer; transition: background 0.2s;
+  }
+  #clp-gate button:hover { background: #6070c4; }
+  #clp-gate .msg { font-size: 0.8rem; color: #e24b4a; margin-top: 0.6rem; min-height: 1.1rem; }
+  #clp-gate .lock-icon { font-size: 2rem; margin-bottom: 0.75rem; opacity: 0.5; }
+</style>
+
+<div id="clp-gate">
+  <div class="box">
+    <div class="lock-icon">&#x1F512;</div>
+    <div class="logo">CLPeasy</div>
+    <h1>Monitor Dashboard</h1>
+    <input type="password" id="clp-pwd" placeholder="Enter password" autocomplete="current-password" />
+    <button onclick="clpCheck()">Unlock</button>
+    <div class="msg" id="clp-msg"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var h='aea3763183efe526e2fd24d28b5552d8ba9c1d3053fb53b22a35a50a3b9a16ad';
+  function sha256(str){
+    return crypto.subtle.digest('SHA-256',new TextEncoder().encode(str))
+      .then(function(b){return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');});
+  }
+  // Check session storage first (already unlocked this session)
+  if(sessionStorage.getItem('clp_auth')==='1'){
+    var lb=document.getElementById('logout-btn'); if(lb) lb.style.display='inline-flex';
+    document.getElementById('clp-gate').style.display='none';
+  }
+  // Also check Supabase session — if user is logged in AND is admin, auto-unlock
+  (function trySupabaseAuth(){
+    const sbUrl='https://qvkosdqcryrcfbjtaxic.supabase.co';
+    const sbKey='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
+    if(typeof window.supabase === 'undefined') return;
+    try {
+      const _sb = window.supabase.createClient(sbUrl, sbKey);
+      _sb.auth.getSession().then(function(res){
+        const session = res && res.data && res.data.session;
+        if(!session) return;
+        const meta = session.user && session.user.user_metadata;
+        if(meta && meta.is_admin === true){
+          sessionStorage.setItem('clp_auth','1');
+          var lb=document.getElementById('logout-btn'); if(lb) lb.style.display='inline-flex';
+          document.getElementById('clp-gate').style.display='none';
+        }
+      });
+    } catch(e){ /* silently ignore — password gate still works */ }
+  })();
+  document.getElementById('clp-pwd').addEventListener('keydown',function(e){if(e.key==='Enter')clpCheck();});
+  window.clpCheck=function(){
+    var inp=document.getElementById('clp-pwd');
+    sha256(inp.value).then(function(d){
+      if(d===h){
+        sessionStorage.setItem('clp_auth','1');
+        var lb=document.getElementById('logout-btn'); if(lb) lb.style.display='inline-flex';
+        document.getElementById('clp-gate').style.display='none';
+      } else {
+        document.getElementById('clp-msg').textContent='Incorrect password';
+        inp.value=''; inp.classList.add('err');
+        setTimeout(function(){inp.classList.remove('err');},400);
+      }
+    });
+  };
+  window.clpLogout=function(){
+    sessionStorage.removeItem('clp_auth');
+    location.reload();
+  };
+})();
+</script>
+<!-- ========== End Login Gate ========== -->
 
 <div class="header">
   <a href="index.html" class="header-logo">
@@ -160,6 +264,7 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
     <span class="last-refresh" id="lastRefresh">Last refreshed: —</span>
     <a href="compliance.html" style="font-size:12px;color:rgba(255,255,255,0.5);text-decoration:none;padding:5px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);transition:all .2s;" onmouseover="this.style.color='#2a9d8f';this.style.borderColor='#2a9d8f'" onmouseout="this.style.color='rgba(255,255,255,0.5)';this.style.borderColor='rgba(255,255,255,0.15)'">Compliance</a>
     <button class="refresh-btn" onclick="runAll()">↻ Refresh</button>
+    <button id="logout-btn" class="refresh-btn" style="display:none;background:rgba(255,255,255,0.1);" onclick="clpLogout()">Log out</button>
 
   </div>
 </div>
