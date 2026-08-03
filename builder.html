@@ -850,6 +850,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         I confirm I have verified all hazard data on this label against my fragrance supplier's SDS sheet at my actual fragrance load. I understand I am solely responsible for ensuring this label is accurate and legally compliant before printing and selling.
       </label>
     </div>
+    <!-- Visible on Step 5 (unlike #label-warn, which lives in Step 3's hidden panel) so the
+         download-block reason is shown right next to the disabled buttons it explains. -->
+    <div id="label-warn-step5" style="display:none;margin-bottom:16px;background:#FEF2F2;border:1.5px solid #EF4444;border-radius:10px;padding:12px 14px;font-size:13px;color:#991B1B;line-height:1.6;"></div>
 
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
       <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ Download PNG</button>
@@ -3700,17 +3703,23 @@ function updateLabel(){
   // be exportable until the maker shortens the content or picks a larger
   // label size — it is never silently exported incomplete.
   window._labelBlockDownload = !!(window._labelLegibilityWarn || window._footerLegibilityClipped);
-  const _labelWarnEl=document.getElementById('label-warn');
-  if(_labelWarnEl){
+  // Wording (updated 3 Aug 2026, per Michaela's UX-clarity request): make explicit that
+  // this is CLPeasy intentionally declining to produce the file — not a broken button —
+  // and avoid asserting outright legal non-compliance (we can only say content doesn't
+  // fit at the legibility threshold CLPeasy enforces, not rule on the regulations directly).
+  const _blockHeading = '⚠️ Download unavailable — label size too small for required information';
+  const _blockBody = window._footerLegibilityClipped
+    ? 'Your business/supplier details cannot fit on this label at the minimum legibility requirements used by CLPeasy, so some required information would be left off.<br><br>To create a downloadable label, try selecting a larger label size in Step 1, or shorten your business details.<br><br><strong>CLPeasy has blocked the download to help prevent you from producing a label that may not meet the required labelling requirements.</strong>'
+    : 'The required hazard and precautionary information cannot fit on this label at the minimum legibility requirements used by CLPeasy.<br><br>To create a downloadable label, try selecting a larger label size in Step 1. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.<br><br><strong>CLPeasy has blocked the download to help prevent you from producing a label that may not meet the required labelling requirements.</strong>';
+  [document.getElementById('label-warn'), document.getElementById('label-warn-step5')].forEach(_labelWarnEl=>{
+    if(!_labelWarnEl)return;
     if(window._labelBlockDownload){
       _labelWarnEl.style.display='block';
-      _labelWarnEl.textContent = window._footerLegibilityClipped
-        ? '⚠️ Your business/supplier details don\'t fit at a readable size on this label, so some information would be left off. Downloads are disabled until you shorten your business details, choose fewer footer items, or pick a larger label size in Step 1.'
-        : '⚠️ The volume of hazard and precautionary statements for this fragrance is too much to fit at a readable size on this label, so downloads are disabled. If your product allows, try a larger label size in Step 1, or attach a fold-out leaflet to carry the full hazard information.';
+      _labelWarnEl.innerHTML = '<strong>'+_blockHeading+'</strong><br><br>'+_blockBody;
     } else {
       _labelWarnEl.style.display='none';
     }
-  }
+  });
   // Refresh download-button enabled/disabled state every time content
   // changes (not just on checkbox click) — U2/U3/U4 fix, so a label that
   // becomes unfittable mid-edit is blocked immediately, and re-enables
