@@ -713,6 +713,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <p>Copy Section 2.2 from your fragrance supplier's SDS PDF and paste it here. CLPeasy extracts all hazard data automatically.</p>
       <textarea id="smart-paste-input" placeholder="Paste SDS Section 2.2 text here..."></textarea>
       <br><br><button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
+      <a href="#" id="hazard-clear-link" onclick="clearHazardData();return false;" style="display:none;margin-left:14px;font-size:12px;color:var(--teal-dark);text-decoration:underline;">✓ Data extracted — clear and start over</a>
     </div>
     <div class="sdiv">Signal word</div>
     <div class="signal-row">
@@ -749,22 +750,16 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         I confirm the hazard data shown in the Smart Paste section above is correct and matches my fragrance supplier's SDS sheet at my actual fragrance load.
       </label>
     </div>
-    <div id="label-warn" style="display:none;margin-bottom:10px;background:#FEF2F2;border-left:3px solid #EF4444;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#991B1B;line-height:1.5;"></div>
-    <!-- Shown instead of hazard-confirm-block/verify-bar when the label can't currently be
-         downloaded at this size — per Michaela's 3 Aug UX request, the workflow shouldn't
-         invite the maker to confirm/continue on a label already known to be blocked. -->
-    <div id="hazard-blocked-cta" style="display:none;margin-bottom:10px;background:#FEF2F2;border:1.5px solid #EF4444;border-radius:10px;padding:12px 14px;font-size:13px;color:#991B1B;line-height:1.6;">
-      <strong>This label can't proceed at its current size.</strong> Go back to <a href="#" onclick="goToStep(1);return false;" style="color:#991B1B;text-decoration:underline;font-weight:700;">Step 1</a> and choose a larger label size, or consider a permitted supplementary label (e.g. a fold-out leaflet), before continuing.
-      <div style="margin-top:8px;">
-        <button type="button" onclick="clearHazardData()" style="background:white;color:#991B1B;border:1.5px solid #EF4444;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;">Clear hazard data and start again</button>
+    <!-- Single blocked-state message (3 Aug 2026, UX simplification — per Michaela's
+         request, exactly one state shows at a time: this box OR hazard-confirm-block
+         above, never both). Contains its own heading/explanation/restart action, so
+         no separate warning bar or lock banner is needed alongside it. -->
+    <div id="hazard-blocked-cta" style="display:none;margin-bottom:10px;background:#FEF2F2;border:1.5px solid #EF4444;border-radius:10px;padding:14px 16px;font-size:13px;color:#991B1B;line-height:1.6;">
+      <strong>⚠️ Download unavailable — label size too small for CLP labelling requirements.</strong><br><br>
+      This label can't proceed at its current size. Go back to <a href="#" onclick="goToStep(1);return false;" style="color:#991B1B;text-decoration:underline;font-weight:700;">Step 1</a> and choose a larger label size, or use an alternative labelling method permitted for your product, before continuing.
+      <div style="margin-top:10px;">
+        <button type="button" onclick="clearHazardData()" style="background:white;color:#991B1B;border:1.5px solid #EF4444;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;">Clear hazard data and start again</button>
       </div>
-    </div>
-    <div id="hazard-verify-bar" style="margin-bottom:10px;background:#FEF3C7;border-left:3px solid #F59E0B;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#92400E;display:flex;align-items:center;justify-content:space-between;gap:10px;">
-      <span>⚠️ Always verify hazard data against your fragrance SDS at your actual fragrance load before downloading.</span>
-      <button type="button" onclick="clearHazardData()" style="background:#EF4444;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">Clear hazard data</button>
-    </div>
-    <div id="hazard-lock-banner" style="display:none;margin-bottom:12px;background:#DCFCE7;border-left:3px solid #22C55E;padding:10px 14px;border-radius:0 8px 8px 0;font-size:12px;color:#15803D;align-items:center;justify-content:space-between;gap:10px;">
-      <span>🔒 Hazard data extracted and locked. Click <strong>Clear hazard data</strong> above to start again with new SDS data.</span>
     </div>
     <div class="step-nav"><button class="btn-prev" onclick="prevStep()">← Back</button><button class="btn-next" id="btn-next-step3" onclick="nextStep()" style="opacity:0.4;pointer-events:none;">Next: Business details →</button></div>
   </div>
@@ -2713,7 +2708,7 @@ function toggleHazardNext(){
   if(!btn)return;
   // Hard override (3 Aug 2026, per Michaela's workflow-gate request): if the label
   // currently can't be downloaded at this size, never let Step 3 progress regardless
-  // of checkbox/hazard state — the confirm UI is hidden in this state anyway (see
+  // of checkbox/hazard state — Next is hidden entirely in this state anyway (see
   // _applyHazardBlockGate), this is just belt-and-braces.
   if(window._labelBlockDownload){
     if(cb)cb.checked=false;
@@ -2730,19 +2725,24 @@ function toggleHazardNext(){
   if(cb&&cb.checked&&hasHazard){btn.style.opacity='1';btn.style.pointerEvents='auto';}
   else{btn.style.opacity='0.4';btn.style.pointerEvents='none';}
 }
-// U5 fix (2026-08-03, per Michaela's workflow-gate request): when the label can't
-// currently be downloaded at this size, Step 3 shouldn't offer a confirm-and-continue
-// path — swap the confirm checkbox + "verify before downloading" bar for a single
-// resolution CTA, and hard-disable Next. Restores normal Step 3 behaviour (delegating
-// to toggleHazardNext for the real checkbox/hazard-data gating) once unblocked.
+// U6 fix (2026-08-03, UX simplification round 2 — per Michaela's request): show
+// exactly one state at a time on Step 3. Blocked: single red CTA only, Next hidden
+// entirely (not just disabled). Valid: single confirm checkbox only, "always verify"
+// bar and "extracted and locked" banner removed in favour of a small unobtrusive
+// clear/restart link inside the Smart Paste box itself (see lockHazardFields).
 function _applyHazardBlockGate(){
   const blocked=!!window._labelBlockDownload;
   const confirmBlock=document.getElementById('hazard-confirm-block');
-  const verifyBar=document.getElementById('hazard-verify-bar');
   const blockedCta=document.getElementById('hazard-blocked-cta');
+  const nextBtn=document.getElementById('btn-next-step3');
   if(confirmBlock)confirmBlock.style.display=blocked?'none':'block';
-  if(verifyBar)verifyBar.style.display=blocked?'none':'flex';
   if(blockedCta)blockedCta.style.display=blocked?'block':'none';
+  if(nextBtn)nextBtn.style.display=blocked?'none':'inline-block';
+  // A blocked label can't have "extracted and locked" data implying readiness —
+  // suppress the subtle clear-link too, since the blocked CTA already has its own.
+  const clearLink=document.getElementById('hazard-clear-link');
+  if(clearLink&&blocked)clearLink.style.display='none';
+  else if(clearLink&&document.getElementById('smart-paste-input')?.readOnly)clearLink.style.display='inline';
   if(typeof toggleHazardNext==='function')toggleHazardNext();
 }
 function prevStep(){if(S.step>1)goToStep(S.step-1);}
@@ -2786,9 +2786,10 @@ function lockHazardFields(lock){
     extractBtn.disabled=lock;
     extractBtn.style.opacity=lock?'0.5':'1';
   }
-  // Show/hide locked banner
-  const banner=document.getElementById('hazard-lock-banner');
-  if(banner)banner.style.display=lock?'flex':'none';
+  // Show/hide the subtle "data extracted — clear and start over" link.
+  // Suppressed while blocked (the blocked CTA already has its own Clear action).
+  const clearLink=document.getElementById('hazard-clear-link');
+  if(clearLink)clearLink.style.display=(lock&&!window._labelBlockDownload)?'inline':'none';
 }
 
 // ── LABEL DONE SPLASH ─────────────────────────────────────────────────────
