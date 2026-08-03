@@ -743,14 +743,23 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <span class="library-toggle" onclick="toggleLib('s-library',this)">▼ Show sensitiser library</span>
     <div id="s-library" style="display:none;margin-bottom:10px;"><div class="sensitiser-grid" id="sensitiser-chips"></div></div>
     <div class="allergen-tags" id="allergen-tags"></div>
-    <div style="background:#FEF9E7;border:1px solid #F9E27A;border-radius:10px;padding:12px 14px;margin-top:14px;margin-bottom:4px;">
+    <div id="hazard-confirm-block" style="background:#FEF9E7;border:1px solid #F9E27A;border-radius:10px;padding:12px 14px;margin-top:14px;margin-bottom:4px;">
       <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:var(--text);font-weight:500;line-height:1.5;">
         <input type="checkbox" id="hazard-confirm" style="width:18px;height:18px;margin-top:1px;flex-shrink:0;accent-color:var(--teal);" onchange="toggleHazardNext()">
         I confirm the hazard data shown in the Smart Paste section above is correct and matches my fragrance supplier's SDS sheet at my actual fragrance load.
       </label>
     </div>
     <div id="label-warn" style="display:none;margin-bottom:10px;background:#FEF2F2;border-left:3px solid #EF4444;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#991B1B;line-height:1.5;"></div>
-    <div style="margin-bottom:10px;background:#FEF3C7;border-left:3px solid #F59E0B;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#92400E;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+    <!-- Shown instead of hazard-confirm-block/verify-bar when the label can't currently be
+         downloaded at this size — per Michaela's 3 Aug UX request, the workflow shouldn't
+         invite the maker to confirm/continue on a label already known to be blocked. -->
+    <div id="hazard-blocked-cta" style="display:none;margin-bottom:10px;background:#FEF2F2;border:1.5px solid #EF4444;border-radius:10px;padding:12px 14px;font-size:13px;color:#991B1B;line-height:1.6;">
+      <strong>This label can't proceed at its current size.</strong> Go back to <a href="#" onclick="goToStep(1);return false;" style="color:#991B1B;text-decoration:underline;font-weight:700;">Step 1</a> and choose a larger label size, or consider a permitted supplementary label (e.g. a fold-out leaflet), before continuing.
+      <div style="margin-top:8px;">
+        <button type="button" onclick="clearHazardData()" style="background:white;color:#991B1B;border:1.5px solid #EF4444;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;">Clear hazard data and start again</button>
+      </div>
+    </div>
+    <div id="hazard-verify-bar" style="margin-bottom:10px;background:#FEF3C7;border-left:3px solid #F59E0B;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#92400E;display:flex;align-items:center;justify-content:space-between;gap:10px;">
       <span>⚠️ Always verify hazard data against your fragrance SDS at your actual fragrance load before downloading.</span>
       <button type="button" onclick="clearHazardData()" style="background:#EF4444;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">Clear hazard data</button>
     </div>
@@ -2702,6 +2711,15 @@ function toggleHazardNext(){
   const cb=document.getElementById('hazard-confirm');
   const btn=document.getElementById('btn-next-step3');
   if(!btn)return;
+  // Hard override (3 Aug 2026, per Michaela's workflow-gate request): if the label
+  // currently can't be downloaded at this size, never let Step 3 progress regardless
+  // of checkbox/hazard state — the confirm UI is hidden in this state anyway (see
+  // _applyHazardBlockGate), this is just belt-and-braces.
+  if(window._labelBlockDownload){
+    if(cb)cb.checked=false;
+    btn.style.opacity='0.4';btn.style.pointerEvents='none';
+    return;
+  }
   const hasHazard=S.hStatements&&S.hStatements.trim().length>0;
   if(!hasHazard&&cb&&cb.checked){
     cb.checked=false;
@@ -2711,6 +2729,21 @@ function toggleHazardNext(){
   }
   if(cb&&cb.checked&&hasHazard){btn.style.opacity='1';btn.style.pointerEvents='auto';}
   else{btn.style.opacity='0.4';btn.style.pointerEvents='none';}
+}
+// U5 fix (2026-08-03, per Michaela's workflow-gate request): when the label can't
+// currently be downloaded at this size, Step 3 shouldn't offer a confirm-and-continue
+// path — swap the confirm checkbox + "verify before downloading" bar for a single
+// resolution CTA, and hard-disable Next. Restores normal Step 3 behaviour (delegating
+// to toggleHazardNext for the real checkbox/hazard-data gating) once unblocked.
+function _applyHazardBlockGate(){
+  const blocked=!!window._labelBlockDownload;
+  const confirmBlock=document.getElementById('hazard-confirm-block');
+  const verifyBar=document.getElementById('hazard-verify-bar');
+  const blockedCta=document.getElementById('hazard-blocked-cta');
+  if(confirmBlock)confirmBlock.style.display=blocked?'none':'block';
+  if(verifyBar)verifyBar.style.display=blocked?'none':'flex';
+  if(blockedCta)blockedCta.style.display=blocked?'block':'none';
+  if(typeof toggleHazardNext==='function')toggleHazardNext();
 }
 function prevStep(){if(S.step>1)goToStep(S.step-1);}
 function checkStep4AndNext(){
@@ -3703,14 +3736,13 @@ function updateLabel(){
   // be exportable until the maker shortens the content or picks a larger
   // label size — it is never silently exported incomplete.
   window._labelBlockDownload = !!(window._labelLegibilityWarn || window._footerLegibilityClipped);
-  // Wording (updated 3 Aug 2026, per Michaela's UX-clarity request): make explicit that
-  // this is CLPeasy intentionally declining to produce the file — not a broken button —
-  // and avoid asserting outright legal non-compliance (we can only say content doesn't
-  // fit at the legibility threshold CLPeasy enforces, not rule on the regulations directly).
-  const _blockHeading = '⚠️ Download unavailable — label size too small for required information';
+  // Wording (updated 3 Aug 2026, round 2 — per Michaela's CLP-labelling-focused
+  // request): name the CLP labelling requirement specifically rather than
+  // "required information" generically.
+  const _blockHeading = '⚠️ Download unavailable — label size too small for CLP labelling requirements';
   const _blockBody = window._footerLegibilityClipped
-    ? 'Your business/supplier details cannot fit on this label at the minimum legibility requirements used by CLPeasy, so some required information would be left off.<br><br>To create a downloadable label, try selecting a larger label size in Step 1, or shorten your business details.<br><br><strong>CLPeasy has blocked the download to help prevent you from producing a label that may not meet the required labelling requirements.</strong>'
-    : 'The required hazard and precautionary information cannot fit on this label at the minimum legibility requirements used by CLPeasy.<br><br>To create a downloadable label, try selecting a larger label size in Step 1. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.<br><br><strong>CLPeasy has blocked the download to help prevent you from producing a label that may not meet the required labelling requirements.</strong>';
+    ? 'Your business/supplier details cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling, so some required information would be left off.<br><br>To create a downloadable label, try selecting a larger label size in Step 1, or shorten your business details.<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
+    : 'The required hazard and precautionary information cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, try selecting a larger label size in Step 1. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>';
   [document.getElementById('label-warn'), document.getElementById('label-warn-step5')].forEach(_labelWarnEl=>{
     if(!_labelWarnEl)return;
     if(window._labelBlockDownload){
@@ -3720,6 +3752,9 @@ function updateLabel(){
       _labelWarnEl.style.display='none';
     }
   });
+  // U5 fix (2026-08-03): Step 3 shouldn't offer a confirm-and-continue path when
+  // the label is already known to be undownloadable at this size.
+  if(typeof _applyHazardBlockGate==='function')_applyHazardBlockGate();
   // Refresh download-button enabled/disabled state every time content
   // changes (not just on checkbox click) — U2/U3/U4 fix, so a label that
   // becomes unfittable mid-edit is blocked immediately, and re-enables
