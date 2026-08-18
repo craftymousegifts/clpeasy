@@ -16,6 +16,67 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html,body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);-webkit-font-smoothing:antialiased;min-height:100%;}
 
+/* ============================================================
+   APP SHELL — Phase 2 prototype (3 Aug 2026)
+   Design tokens for the shared shell, intended to be reused
+   verbatim across pages once this prototype is proven.
+   ============================================================ */
+:root{
+  --shell-sidebar-w:240px;
+  --shell-topbar-h:56px;
+  --shell-radius-card:16px;
+  --shell-radius-control:10px;
+  --shell-space-1:4px;--shell-space-2:8px;--shell-space-3:12px;
+  --shell-space-4:16px;--shell-space-5:24px;--shell-space-6:32px;
+}
+.app-shell{display:flex;min-height:100vh;}
+
+.sidebar{
+  width:var(--shell-sidebar-w);flex-shrink:0;background:white;
+  border-right:1.5px solid var(--border);display:flex;flex-direction:column;
+  padding:var(--shell-space-4) var(--shell-space-3);
+  position:fixed;top:0;left:0;bottom:0;z-index:300;
+  transition:transform .25s ease;
+}
+.sidebar-logo{display:flex;align-items:center;gap:8px;text-decoration:none;padding:var(--shell-space-2) var(--shell-space-2) var(--shell-space-5);}
+.sidebar-nav{display:flex;flex-direction:column;gap:2px;flex:1;}
+.sidebar-nav-item{
+  display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:var(--shell-radius-control);
+  color:var(--text);text-decoration:none;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;
+  border:none;background:none;cursor:pointer;text-align:left;width:100%;min-height:44px;
+  transition:background .15s ease,color .15s ease;
+}
+.sidebar-nav-item:hover{background:var(--off);}
+.sidebar-nav-item.active{background:var(--teal);color:white;}
+.snav-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
+.sidebar-logout{color:var(--muted);margin-top:auto;border-top:1px solid var(--border);padding-top:14px;}
+.sidebar-logout:hover{background:var(--off);color:var(--red);}
+
+.shell-main{flex:1;margin-left:var(--shell-sidebar-w);min-width:0;}
+.shell-topbar{
+  display:none;align-items:center;gap:12px;height:var(--shell-topbar-h);
+  padding:0 var(--shell-space-4);background:white;border-bottom:1.5px solid var(--border);
+  position:sticky;top:0;z-index:150;
+}
+.shell-topbar-title{font-weight:700;font-size:15px;}
+
+.sidebar-toggle,.sidebar-toggle-inline{
+  display:none;flex-direction:column;justify-content:center;gap:4px;
+  width:44px;height:44px;border:1.5px solid var(--border);border-radius:10px;background:white;
+  cursor:pointer;flex-shrink:0;
+}
+.sidebar-toggle span,.sidebar-toggle-inline span{display:block;height:2px;background:var(--text);border-radius:1px;margin:0 9px;}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(17,19,24,0.4);z-index:290;opacity:0;transition:opacity .2s ease;}
+
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);box-shadow:8px 0 24px rgba(0,0,0,0.08);}
+  .sidebar.open{transform:translateX(0);}
+  .shell-main{margin-left:0;}
+  .shell-topbar{display:flex;}
+  .sidebar-toggle-inline{display:flex;}
+  .sidebar-overlay.open{display:block;opacity:1;}
+}
+
 /* NAV */
 nav{background:white;border-bottom:1px solid var(--border);padding:0 24px;height:72px;display:flex;align-items:center;justify-content:space-between;}
 .nav-logo{display:flex;align-items:center;text-decoration:none;}
@@ -30,19 +91,19 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 24px;height
 /* LAYOUT */
 .wrap{max-width:920px;margin:0 auto;padding:40px 24px 64px;}
 .page-head{margin-bottom:28px;}
-.page-head h1{font-family:'DM Serif Display',serif;font-size:clamp(26px,4vw,36px);margin-bottom:4px;}
+.page-head h1{font-family:'DM Sans',sans-serif;font-weight:800;letter-spacing:-0.01em;font-size:clamp(24px,3.6vw,32px);margin-bottom:4px;}
 .page-head p{font-size:14px;color:var(--muted);}
 .grid{display:grid;grid-template-columns:1.4fr 1fr;gap:20px;align-items:start;}
 @media(max-width:760px){.grid{grid-template-columns:1fr;}}
 
 .card{background:white;border:1.5px solid var(--border);border-radius:18px;padding:26px;}
 .card.accent{border-color:var(--teal);box-shadow:0 6px 24px rgba(76,155,176,0.12);}
-.card h2{font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:14px;}
+.card h2{font-family:'DM Sans',sans-serif;font-weight:700;font-size:18px;letter-spacing:-0.005em;margin-bottom:14px;}
 .card h3{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:12px;}
 
 /* PLAN HEADER */
 .plan-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px;flex-wrap:wrap;}
-.plan-name{font-family:'DM Serif Display',serif;font-size:28px;}
+.plan-name{font-family:'DM Sans',sans-serif;font-weight:800;letter-spacing:-0.01em;font-size:26px;}
 .badge{font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;letter-spacing:0.4px;text-transform:capitalize;white-space:nowrap;}
 .badge.active{background:#F0FDF4;color:#166534;border:1px solid #BBF7D0;}
 .badge.inactive{background:var(--gold-light);color:#92400E;border:1px solid #FDE68A;}
@@ -106,14 +167,41 @@ footer a{color:#6B7280;text-decoration:none;}
 </head>
 <body>
 
-<nav>
-  <a href="index.html" class="nav-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span><sup style="font-size:9px;font-weight:700;color:#4C9BB0;vertical-align:super;line-height:0;margin-left:1px;">™</sup></a>
-  <div class="nav-right">
-    <a href="builder.html" class="nav-link">Builder</a>
-    <a href="support.html" class="nav-link">Support</a>
-    <button class="nav-link" onclick="signOut()">Sign out</button>
-  </div>
-</nav>
+<!-- ============================================================
+     APP SHELL — Phase 2 prototype (3 Aug 2026). Persistent sidebar
+     nav on desktop, off-canvas drawer on mobile, per the reference
+     design direction. Nav items map to CLPeasy's ACTUAL existing
+     pages only (no "My Products"/"Templates" — those don't exist
+     yet in CLPeasy, so they're deliberately omitted rather than
+     blindly copied from the reference). Everything inside .wrap
+     below is the pre-existing dashboard content, untouched.
+     ============================================================ -->
+<div class="app-shell">
+
+  <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidebar">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <a href="index.html" class="sidebar-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span></a>
+    <nav class="sidebar-nav" aria-label="Main navigation">
+      <a href="dashboard.html" class="sidebar-nav-item active"><span class="snav-icon">🏠</span>Dashboard</a>
+      <a href="builder.html" class="sidebar-nav-item"><span class="snav-icon">✏️</span>Create Label</a>
+      <a href="knowledge.html" class="sidebar-nav-item"><span class="snav-icon">📖</span>Knowledge Base</a>
+      <a href="account.html" class="sidebar-nav-item"><span class="snav-icon">👤</span>Account</a>
+      <a href="support.html" class="sidebar-nav-item"><span class="snav-icon">💬</span>Support</a>
+    </nav>
+    <button class="sidebar-nav-item sidebar-logout" onclick="signOut()"><span class="snav-icon">↩</span>Log out</button>
+  </aside>
+
+  <div class="shell-main">
+    <header class="shell-topbar">
+      <button class="sidebar-toggle-inline" id="sidebar-toggle-inline" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <span class="shell-topbar-title">Dashboard</span>
+    </header>
 
 <div class="wrap">
   <div id="loading">Loading your account…</div>
@@ -396,6 +484,9 @@ sb.auth.onAuthStateChange((event) => {
 loadDashboard();
 </script>
 
+  </div><!-- /.shell-main -->
+</div><!-- /.app-shell -->
+
 <style>
   body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; user-select:none; }
 </style>
@@ -404,6 +495,31 @@ loadDashboard();
   document.addEventListener('keydown', function(e){
     if((e.ctrlKey||e.metaKey) && (e.key==='c'||e.key==='u'||e.key==='s'||e.key==='a'||e.key==='p')) e.preventDefault();
   });
+</script>
+<script>
+  // Sidebar mobile toggle (Phase 2 shell prototype)
+  (function(){
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const toggles = [document.getElementById('sidebar-toggle'), document.getElementById('sidebar-toggle-inline')].filter(Boolean);
+    function openSidebar(){
+      sidebar.classList.add('open');
+      overlay.classList.add('open');
+      toggles.forEach(t=>t.setAttribute('aria-expanded','true'));
+      document.body.style.overflow='hidden';
+    }
+    function closeSidebar(){
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+      toggles.forEach(t=>t.setAttribute('aria-expanded','false'));
+      document.body.style.overflow='';
+    }
+    toggles.forEach(t=>t.addEventListener('click', ()=>{
+      sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+    }));
+    overlay.addEventListener('click', closeSidebar);
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeSidebar(); });
+  })();
 </script>
 </body>
 </html>
