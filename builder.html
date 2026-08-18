@@ -498,7 +498,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
   <div style="display:flex;align-items:center;gap:8px;background:#F0FDF4;border-radius:10px;padding:12px 14px;margin-bottom:20px;">
     <div style="font-size:18px;">✓</div>
-    <div style="font-size:13px;color:#166534;line-height:1.5;">Before emailing, check our <strong>Help guide</strong> (the ? button) — most questions are answered there.</div>
+    <div style="font-size:13px;color:#166534;line-height:1.5;">Before emailing, check our <a href="#" onclick="closeSupport();openHelp();return false;" style="color:#166534;font-weight:700;text-decoration:underline;cursor:pointer;">Help guide</a> — most questions are answered there.</div>
   </div>
   <button onclick="closeSupport()" style="width:100%;padding:13px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">Got it</button>
 </div>
@@ -547,6 +547,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="help-header">
     <h2>How to use CLPeasy</h2>
     <button class="help-close" onclick="closeHelp()">✕</button>
+  </div>
+  <div style="padding:14px 20px 0;position:sticky;top:0;background:white;z-index:2;">
+    <div style="position:relative;">
+      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--muted);pointer-events:none;">🔍</span>
+      <input type="text" id="help-search" placeholder="Search for help — e.g. 'download', 'SDS', 'pictogram'..." oninput="filterHelp(this.value)" style="width:100%;padding:10px 14px 10px 34px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'">
+    </div>
+    <div id="help-no-results" style="display:none;text-align:center;padding:16px 0 4px;font-size:13px;color:var(--muted);">No results — try a different search term, or <a href="mailto:support@clpeasy.com" style="color:var(--teal);">email support</a>.</div>
   </div>
   <div class="help-body">
 
@@ -943,7 +950,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button id="btn-svg" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬡ Download SVG</button>
       <button id="btn-pdf" onclick="printToPDF()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">🖨 Print to PDF</button>
       <button id="btn-save" onclick="saveLabel()" style="background:var(--off);color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">💾 Save to my label library</button>
-    </div>
+
 
     <!-- PRINT SHEET COMPOSER LINK -->
     <a id="print-sheet-link" href="print.html" style="display:none;align-items:center;gap:14px;background:linear-gradient(135deg,#F0FDF4,#ECFDF5);border:1.5px solid var(--teal);border-radius:12px;padding:14px 16px;text-decoration:none;margin-top:14px;transition:all .2s;" onmouseover="this.style.background='linear-gradient(135deg,#d6eef4,#D1FAE5)'" onmouseout="this.style.background='linear-gradient(135deg,#F0FDF4,#ECFDF5)'">
@@ -962,6 +969,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button onclick="startOver()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;padding:8px;">↺ New label</button>
     </div>
   </div>
+  </div><!-- /.wizard-panel -->
 
 <!-- RIGHT COLUMN: live preview + label library, sticky together -->
 <div class="right-column">
@@ -1077,7 +1085,7 @@ const SENSITISERS=[
   {name:'2-acetoxy-2,3,8,8-tetramethyloctahydronaphthalene',cat:'1B',cas:'54464-57-2'},
   {name:'Iso E Super',cat:'1B',cas:'54464-57-2'},
 ];
-const H_LIB=[{code:'H225',desc:'Highly flammable liquid and vapour'},{code:'H226',desc:'Flammable liquid and vapour'},{code:'H228',desc:'Flammable solid'},{code:'H301',desc:'Toxic if swallowed'},{code:'H302',desc:'Harmful if swallowed'},{code:'H304',desc:'May be fatal if swallowed and enters airways'},{code:'H311',desc:'Toxic in contact with skin'},{code:'H312',desc:'Harmful in contact with skin'},{code:'H314',desc:'Causes severe skin burns and eye damage'},{code:'H315',desc:'Causes skin irritation'},{code:'H317',desc:'May cause an allergic skin reaction'},{code:'H318',desc:'Causes serious eye damage'},{code:'H319',desc:'Causes serious eye irritation'},{code:'H331',desc:'Toxic if inhaled'},{code:'H332',desc:'Harmful if inhaled'},{code:'H334',desc:'May cause allergy or asthma symptoms if inhaled'},{code:'H335',desc:'May cause respiratory irritation'},{code:'H336',desc:'May cause drowsiness or dizziness'},{code:'H361',desc:'Suspected of damaging fertility or the unborn child'},{code:'H371',desc:'May cause damage to organs'},{code:'H373',desc:'May cause damage to organs through prolonged or repeated exposure'},{code:'H400',desc:'Very toxic to aquatic life'},{code:'H401',desc:'Toxic to aquatic life'},{code:'H410',desc:'Very toxic to aquatic life with long lasting effects'},{code:'H411',desc:'Toxic to aquatic life with long lasting effects'},{code:'H412',desc:'Harmful to aquatic life with long lasting effects'},{code:'H413',desc:'May cause long lasting harmful effects to aquatic life'},{code:'EUH066',desc:'Repeated exposure may cause skin dryness or cracking'},{code:'EUH208',desc:'Contains sensitiser — may produce an allergic reaction'},{code:'EUH071',desc:'Corrosive to the respiratory tract'},{code:'H200',desc:'Unstable explosive'},{code:'H201',desc:'Explosive; mass explosion hazard'},{code:'H202',desc:'Explosive; severe projection hazard'},{code:'H203',desc:'Explosive; fire, blast or projection hazard'},{code:'H204',desc:'Fire or projection hazard'},{code:'H205',desc:'May mass explode in fire'},{code:'H223',desc:'Flammable aerosol'},{code:'H224',desc:'Extremely flammable liquid and vapour'},{code:'H240',desc:'Heating may cause an explosion'},{code:'H241',desc:'Heating may cause a fire or explosion'},{code:'H242',desc:'Heating may cause a fire'},{code:'H250',desc:'Catches fire spontaneously if exposed to air'},{code:'H251',desc:'Self-heating; may catch fire'},{code:'H252',desc:'Self-heating in large quantities; may catch fire'},{code:'H260',desc:'In contact with water releases flammable gases which may ignite spontaneously'},{code:'H261',desc:'In contact with water releases flammable gas'},{code:'H270',desc:'May cause or intensify fire; oxidiser'},{code:'H271',desc:'May cause fire or explosion; strong oxidiser'},{code:'H272',desc:'May intensify fire; oxidiser'},{code:'H280',desc:'Contains gas under pressure; may explode if heated'},{code:'H281',desc:'Contains refrigerated gas; may cause cryogenic burns or injury'},{code:'H282',desc:'Extremely flammable chemical under pressure: may explode if heated'},{code:'H283',desc:'Flammable chemical under pressure: may explode if heated'},{code:'H284',desc:'Chemical under pressure: may explode if heated'},{code:'H290',desc:'May be corrosive to metals'},{code:'H300',desc:'Fatal if swallowed'},{code:'H310',desc:'Fatal in contact with skin'},{code:'H316',desc:'Causes mild skin irritation'},{code:'H330',desc:'Fatal if inhaled'},{code:'H340',desc:'May cause genetic defects'},{code:'H341',desc:'Suspected of causing genetic defects'},{code:'H350',desc:'May cause cancer'},{code:'H351',desc:'Suspected of causing cancer'},{code:'H360',desc:'May damage fertility or the unborn child'},{code:'H362',desc:'May cause harm to breast-fed children'},{code:'H370',desc:'Causes damage to organs'},{code:'H372',desc:'Causes damage to organs through prolonged or repeated exposure'}];
+const H_LIB=[{code:'H225',desc:'Highly flammable liquid and vapour'},{code:'H226',desc:'Flammable liquid and vapour'},{code:'H228',desc:'Flammable solid'},{code:'H301',desc:'Toxic if swallowed'},{code:'H302',desc:'Harmful if swallowed'},{code:'H304',desc:'May be fatal if swallowed and enters airways'},{code:'H311',desc:'Toxic in contact with skin'},{code:'H312',desc:'Harmful in contact with skin'},{code:'H314',desc:'Causes severe skin burns and eye damage'},{code:'H315',desc:'Causes skin irritation'},{code:'H317',desc:'May cause an allergic skin reaction'},{code:'H318',desc:'Causes serious eye damage'},{code:'H319',desc:'Causes serious eye irritation'},{code:'H331',desc:'Toxic if inhaled'},{code:'H332',desc:'Harmful if inhaled'},{code:'H334',desc:'May cause allergy or asthma symptoms if inhaled'},{code:'H335',desc:'May cause respiratory irritation'},{code:'H336',desc:'May cause drowsiness or dizziness'},{code:'H361',desc:'Suspected of damaging fertility or the unborn child'},{code:'H371',desc:'May cause damage to organs'},{code:'H373',desc:'May cause damage to organs through prolonged or repeated exposure'},{code:'H400',desc:'Very toxic to aquatic life'},{code:'H401',desc:'Toxic to aquatic life'},{code:'H410',desc:'Very toxic to aquatic life with long lasting effects'},{code:'H411',desc:'Toxic to aquatic life with long lasting effects'},{code:'H412',desc:'Harmful to aquatic life with long lasting effects'},{code:'H413',desc:'May cause long lasting harmful effects to aquatic life'},{code:'EUH066',desc:'Repeated exposure may cause skin dryness or cracking'},{code:'EUH208',desc:'Contains sensitiser — may produce an allergic reaction'},{code:'EUH071',desc:'Corrosive to the respiratory tract'},{code:'EUH210',desc:'Safety data sheet available on request'},{code:'H200',desc:'Unstable explosive'},{code:'H201',desc:'Explosive; mass explosion hazard'},{code:'H202',desc:'Explosive; severe projection hazard'},{code:'H203',desc:'Explosive; fire, blast or projection hazard'},{code:'H204',desc:'Fire or projection hazard'},{code:'H205',desc:'May mass explode in fire'},{code:'H223',desc:'Flammable aerosol'},{code:'H224',desc:'Extremely flammable liquid and vapour'},{code:'H240',desc:'Heating may cause an explosion'},{code:'H241',desc:'Heating may cause a fire or explosion'},{code:'H242',desc:'Heating may cause a fire'},{code:'H250',desc:'Catches fire spontaneously if exposed to air'},{code:'H251',desc:'Self-heating; may catch fire'},{code:'H252',desc:'Self-heating in large quantities; may catch fire'},{code:'H260',desc:'In contact with water releases flammable gases which may ignite spontaneously'},{code:'H261',desc:'In contact with water releases flammable gas'},{code:'H270',desc:'May cause or intensify fire; oxidiser'},{code:'H271',desc:'May cause fire or explosion; strong oxidiser'},{code:'H272',desc:'May intensify fire; oxidiser'},{code:'H280',desc:'Contains gas under pressure; may explode if heated'},{code:'H281',desc:'Contains refrigerated gas; may cause cryogenic burns or injury'},{code:'H282',desc:'Extremely flammable chemical under pressure: may explode if heated'},{code:'H283',desc:'Flammable chemical under pressure: may explode if heated'},{code:'H284',desc:'Chemical under pressure: may explode if heated'},{code:'H290',desc:'May be corrosive to metals'},{code:'H300',desc:'Fatal if swallowed'},{code:'H310',desc:'Fatal in contact with skin'},{code:'H316',desc:'Causes mild skin irritation'},{code:'H330',desc:'Fatal if inhaled'},{code:'H340',desc:'May cause genetic defects'},{code:'H341',desc:'Suspected of causing genetic defects'},{code:'H350',desc:'May cause cancer'},{code:'H351',desc:'Suspected of causing cancer'},{code:'H360',desc:'May damage fertility or the unborn child'},{code:'H362',desc:'May cause harm to breast-fed children'},{code:'H370',desc:'Causes damage to organs'},{code:'H372',desc:'Causes damage to organs through prolonged or repeated exposure'}];
 const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product container or label at hand'},{code:'P102',desc:'Keep out of reach of children'},{code:'P103',desc:'Read label before use'},{code:'P210',desc:'Keep away from heat and ignition sources. No smoking'},{code:'P233',desc:'Keep container tightly closed'},{code:'P260',desc:'Do not breathe vapours or dust'},{code:'P261',desc:'Avoid breathing vapours and dust'},{code:'P271',desc:'Use only outdoors or in a well-ventilated area'},{code:'P273',desc:'Avoid release to the environment'},{code:'P301+P310',desc:'IF SWALLOWED: immediately call a POISON CENTRE or doctor'},{code:'P301+P312',desc:'IF SWALLOWED: call a POISON CENTRE or doctor if unwell'},{code:'P302+P352',desc:'IF ON SKIN: wash with plenty of water'},{code:'P304+P340',desc:'IF INHALED: remove to fresh air and keep comfortable for breathing'},{code:'P305+P351+P338',desc:'IF IN EYES: rinse cautiously with water for several minutes'},{code:'P312',desc:'Call a POISON CENTRE or doctor if you feel unwell'},{code:'P313',desc:'Get medical advice/attention'},{code:'P314',desc:'Get medical advice if you feel unwell'},{code:'P321',desc:'Specific treatment: see label'},{code:'P330',desc:'Rinse mouth'},{code:'P331',desc:'Do NOT induce vomiting'},{code:'P332+P313',desc:'If skin irritation occurs: get medical advice/attention'},{code:'P333+P313',desc:'If skin irritation or rash occurs: get medical advice'},{code:'P337+P313',desc:'If eye irritation persists: get medical advice'},{code:'P370+P378',desc:'In case of fire: use appropriate media for extinction'},{code:'P391',desc:'Collect spillage'},{code:'P403+P233',desc:'Store in a well-ventilated place. Keep container tightly closed'},{code:'P211',desc:'Do not spray on an open flame or other ignition source'},{code:'P501',desc:'Dispose of contents and container in accordance with local regulations'}];
 // GHS pictogram SVG symbols — black and white, diamond shaped, industry standard
 const GHS_IMG={
@@ -1602,11 +1610,44 @@ function openHelp(){
   document.getElementById('help-panel').classList.add('open');
   document.getElementById('help-overlay').classList.add('open');
   document.body.style.overflow='hidden';
+  const search=document.getElementById('help-search');
+  if(search){search.value='';filterHelp('');search.focus();}
 }
 function closeHelp(){
   document.getElementById('help-panel').classList.remove('open');
   document.getElementById('help-overlay').classList.remove('open');
   document.body.style.overflow='';
+}
+// Filters the Help guide by search term. Matches against each section's
+// full text (heading + steps + tips); within the FAQ section, filters
+// individual <details> entries so a broad section isn't hidden/shown as
+// one block when only some of its FAQs match.
+function filterHelp(query){
+  const q=query.trim().toLowerCase();
+  const sections=document.querySelectorAll('.help-body > .help-section');
+  let anyVisible=false;
+  sections.forEach(section=>{
+    const faqs=section.querySelectorAll('.help-faq');
+    if(faqs.length){
+      let sectionHasMatch=false;
+      faqs.forEach(faq=>{
+        const match=!q||faq.textContent.toLowerCase().includes(q);
+        faq.style.display=match?'':'none';
+        if(match)sectionHasMatch=true;
+      });
+      const heading=section.querySelector('h3');
+      const headingMatch=!q||(heading&&heading.textContent.toLowerCase().includes(q));
+      const show=sectionHasMatch||headingMatch;
+      section.style.display=show?'':'none';
+      if(show){anyVisible=true; faqs.forEach(faq=>{if(headingMatch&&!q)faq.style.display='';});}
+    } else {
+      const match=!q||section.textContent.toLowerCase().includes(q);
+      section.style.display=match?'':'none';
+      if(match)anyVisible=true;
+    }
+  });
+  const noResults=document.getElementById('help-no-results');
+  if(noResults)noResults.style.display=(q&&!anyVisible)?'block':'none';
 }
 const SUPABASE_URL='https://qvkosdqcryrcfbjtaxic.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
@@ -3368,7 +3409,15 @@ function buildSVG(forExport=false){
   // sensitiser + P sequentially between curY and the hard botY boundary.
 
   // Build text content
-  const hText   = hCodes.map(c=>{const e=H_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(hCodes.length>0?'.':'') || '';
+  // U7 fix (18 Aug 2026): unrecognized H/EUH/P codes must never print their raw
+  // code text on the label (e.g. "EUH210" appearing literally) -- that's not a
+  // real hazard/precautionary statement and isn't safe consumer-facing text.
+  // Unknown codes are excluded from the printed text and collected here so
+  // updateLabel() can block the download and explain exactly which code(s)
+  // need attention, consistent with the existing "block, don't silently drop"
+  // compliance pattern used elsewhere on this page.
+  window._unrecognizedCodes = [];
+  const hText   = hCodes.map(c=>{const e=H_LIB.find(x=>x.code===c);if(!e)window._unrecognizedCodes.push(c);return e?e.desc:'';}).filter(Boolean).join('. ')+(hCodes.filter(c=>H_LIB.find(x=>x.code===c)).length>0?'.':'') || '';
   // Normalise P codes
   const _pNorm=[];
   const _pRaw=pCodes;
@@ -3378,7 +3427,7 @@ function buildSVG(forExport=false){
     if(_comb&&P_LIB.find(x=>x.code===_comb)){_pNorm.push(_comb);_i++;}
     else _pNorm.push(_c);
   }
-  const pText = _pNorm.map(c=>{const e=P_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(pCodes.length>0?'.':'');
+  const pText = _pNorm.map(c=>{const e=P_LIB.find(x=>x.code===c);if(!e)window._unrecognizedCodes.push(c);return e?e.desc:'';}).filter(Boolean).join('. ')+(_pNorm.filter(c=>P_LIB.find(x=>x.code===c)).length>0?'.':'');
   const _sensBase = sensArr.length>0 ? _containsPrefix+' '+sensArr.slice(0,3).map(s=>{const _mc=mmW<=50?18:26;return s.length>_mc?s.slice(0,_mc-2)+'…':s;}).join(', ')+(sensArr.length>3?'...':'') : (hasEUH208 ? _containsPrefix+' sensitising substance' : '');
   const _euhSuffix = hasEUH208 ? 'May produce an allergic reaction.' : '';
   const sensText = [_sensBase, _euhSuffix].filter(Boolean).join(' ');
@@ -3815,12 +3864,21 @@ function updateLabel(){
   // legally required content had to be clipped to fit, the label must not
   // be exportable until the maker shortens the content or picks a larger
   // label size — it is never silently exported incomplete.
-  window._labelBlockDownload = !!(window._labelLegibilityWarn || window._footerLegibilityClipped);
+  // U7 fix (18 Aug 2026): a code that isn't in H_LIB/P_LIB (e.g. EUH210 was
+  // previously missing) must never appear as raw text on the label. Treat
+  // it the same way as clipped content -- block download and explain,
+  // rather than silently print an internal code or silently drop it.
+  const _hasUnrecognizedCodes = window._unrecognizedCodes && window._unrecognizedCodes.length>0;
+  window._labelBlockDownload = !!(window._labelLegibilityWarn || window._footerLegibilityClipped || _hasUnrecognizedCodes);
   // Wording (updated 3 Aug 2026, round 2 — per Michaela's CLP-labelling-focused
   // request): name the CLP labelling requirement specifically rather than
   // "required information" generically.
-  const _blockHeading = '⚠️ Download unavailable — label size too small for CLP labelling requirements';
-  const _blockBody = window._footerLegibilityClipped
+  const _blockHeading = _hasUnrecognizedCodes
+    ? '⚠️ Download unavailable — unrecognised hazard/precautionary code'
+    : '⚠️ Download unavailable — label size too small for CLP labelling requirements';
+  const _blockBody = _hasUnrecognizedCodes
+    ? 'CLPeasy doesn\'t recognise the code'+(window._unrecognizedCodes.length>1?'s':'')+' <strong>'+window._unrecognizedCodes.join(', ')+'</strong> and will not print it directly on your label, since that would show an internal code rather than the required statement text.<br><br>Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
+    : window._footerLegibilityClipped
     ? 'Your business/supplier details cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling, so some required information would be left off.<br><br>To create a downloadable label, try selecting a larger label size in Step 1, or shorten your business details.<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
     : 'The required hazard and precautionary information cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, try selecting a larger label size in Step 1. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>';
   [document.getElementById('label-warn'), document.getElementById('label-warn-step5')].forEach(_labelWarnEl=>{
