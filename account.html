@@ -292,7 +292,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
         <div class="su-label">Downloads remaining</div>
         <div class="su-count" id="su-count">—</div>
         <div class="su-bar"><span id="su-fill" style="width:0%"></span></div>
-        <a href="pricing.html" class="su-topup">Buy Top-Up →</a>
+        <a href="pricing.html" target="_blank" rel="noopener" class="su-topup">Buy Top-Up →</a>
       </div>
       <div class="sidebar-profile">
         <button type="button" class="sidebar-user" id="sidebar-user" style="display:none;" aria-haspopup="true" aria-expanded="false">
@@ -572,7 +572,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
       </div>
     </div>
     <div style="background:var(--teal-light);border-radius:10px;padding:12px 16px;font-size:12px;color:var(--teal-dark);line-height:1.6;margin-bottom:20px;" id="topup-upgrade-nudge" style="display:none;">
-      💡 You've bought top-ups before. Upgrading to Easy Pro gives you 30 downloads/month — 50% more than Easy Start — for £5 more per month. <a href="pricing.html" style="color:var(--teal);font-weight:600;">Compare plans →</a>
+      💡 You've bought top-ups before. Upgrading to Easy Pro gives you 30 downloads/month — 50% more than Easy Start — for £5 more per month. <a href="pricing.html" target="_blank" rel="noopener" style="color:var(--teal);font-weight:600;">Compare plans →</a>
     </div>
     <div class="modal-actions">
       <button class="modal-btn ghost" onclick="closeModal('modal-topup')">Cancel</button>
@@ -782,7 +782,7 @@ function renderActionRow(status) {
   const row = document.getElementById('action-row');
   if (status === 'active') {
     row.innerHTML = `
-      <a href="pricing.html" class="btn btn-teal">Upgrade plan</a>
+      <a href="pricing.html" target="_blank" rel="noopener" class="btn btn-teal">Upgrade plan</a>
       <button class="btn btn-pause" onclick="openModal('pause')">Pause subscription</button>
       <button class="btn btn-cancel" onclick="openModal('cancel')">Cancel subscription</button>
     `;
@@ -793,7 +793,7 @@ function renderActionRow(status) {
     // UX exists in the app today, so the only valid action during a trial is
     // choosing a plan. Active-subscriber behavior above is untouched.
     row.innerHTML = `
-      <a href="pricing.html" class="btn btn-teal">Choose a plan</a>
+      <a href="pricing.html" target="_blank" rel="noopener" class="btn btn-teal">Choose a plan</a>
     `;
   } else if (status === 'paused') {
     row.innerHTML = `
@@ -1031,6 +1031,9 @@ async function confirmTopup() {
   const btn = document.getElementById('topup-confirm-btn');
   const originalText = btn.textContent;
   if (!priceId || !currentUser) { alert('Something went wrong — please refresh and try again.'); return; }
+  const checkoutTab = window.open('about:blank', '_blank');
+  if (!checkoutTab) { alert('Please allow pop-ups for CLPeasy so checkout can open without closing your account page.'); return; }
+  checkoutTab.opener = null;
   const { data: { session } } = await _sb.auth.getSession();
   if (!session) { alert('Please sign in again and retry.'); return; }
   btn.textContent = 'Loading…'; btn.disabled = true; btn.style.opacity = '0.7';
@@ -1041,9 +1044,10 @@ async function confirmTopup() {
       body: JSON.stringify({ priceId, mode: 'payment' })
     });
     const data = await res.json();
-    if (data.url) { window.location.href = data.url; }
+    if (data.url) { checkoutTab.location.href = data.url; }
     else { throw new Error(data.error || 'No checkout URL returned'); }
   } catch (e) {
+    try { checkoutTab.close(); } catch (_error) {}
     console.error('Top-up checkout error:', e);
     alert('Something went wrong starting checkout. Please try again.');
     btn.textContent = originalText; btn.disabled = false; btn.style.opacity = '1';
