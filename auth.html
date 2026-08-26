@@ -210,6 +210,41 @@ function switchTab(tab) {
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// Only permit authenticated returns to known CLPeasy account pages. Keeping
+// this as a fixed allow-list prevents `next=` from becoming an open redirect.
+const SAFE_AUTH_DESTINATIONS = new Set([
+  'builder.html',
+  'dashboard.html',
+  'my-labels.html',
+  'account.html'
+]);
+
+function getSafeNextDestination() {
+  const requested = new URLSearchParams(window.location.search).get('next');
+  if (!requested) return 'builder.html';
+
+  try {
+    const resolved = new URL(requested, window.location.origin + '/');
+    const filename = resolved.pathname.replace(/^\/+/, '');
+    if (
+      resolved.origin === window.location.origin &&
+      !resolved.search &&
+      !resolved.hash &&
+      SAFE_AUTH_DESTINATIONS.has(filename)
+    ) return filename;
+  } catch (_) {}
+
+  return 'builder.html';
+}
+
+const postAuthDestination = getSafeNextDestination();
+
+function getAuthCallbackUrl() {
+  const callback = new URL('/auth.html', window.location.origin);
+  callback.searchParams.set('next', postAuthDestination);
+  return callback.toString();
+}
+
 // ── PASSWORD RECOVERY ──────────────────────────
 // A password-reset link redirects here from Supabase's /auth/v1/verify
 // endpoint with the session tokens appended as a URL hash fragment
@@ -280,13 +315,12 @@ if (mode === 'signin') {
     // by the `handle_new_user()` trigger on auth.users, which inserts into
     // `public.profiles` (the authoritative table) automatically.
 
-    // ── GO TO BUILDER ───────────────────────────────────
-    window.location.href = 'builder.html';
+    window.location.href = postAuthDestination;
   }
   } else {
     const { data: signUpData, error } = await sb.auth.signUp({
       email, password,
-      options: { emailRedirectTo: window.location.origin + '/auth.html' }
+      options: { emailRedirectTo: getAuthCallbackUrl() }
     });
     if (error) {
       showMsg(error.message, 'error');
@@ -328,7 +362,7 @@ async function signInWithGoogle() {
   }
   await sb.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.origin + '/builder.html' }
+    options: { redirectTo: getAuthCallbackUrl() }
   });
 }
 
@@ -336,7 +370,7 @@ async function resetPassword() {
   const email = document.getElementById('email').value.trim();
   if (!email) { showMsg('Enter your email address first, then click Forgot password.', 'error'); return; }
   const { error } = await sb.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + '/auth.html'
+    redirectTo: getAuthCallbackUrl()
   });
   if (error) { showMsg(error.message, 'error'); }
   else { showMsg('Password reset email sent — check your inbox.', 'success'); }
@@ -383,13 +417,13 @@ async function updatePassword() {
     return;
   }
 
-  showRecoveryMsg('Password updated — taking you to the Builder…', 'success');
+  showRecoveryMsg('Password updated — signing you in…', 'success');
   // Recovery is complete — clear the flag and hand off to the normal
   // post-auth redirect (after a short pause so the success message is
   // actually visible) rather than the generic SIGNED_IN/USER_UPDATED
   // listener firing mid-update and jumping away before this shows.
   isRecoveryFlow = false;
-  setTimeout(() => { window.location.href = 'builder.html'; }, 1200);
+  setTimeout(() => { window.location.href = postAuthDestination; }, 1200);
 }
 
 // Allow Enter key to submit — the recovery form when that screen is showing,
@@ -417,12 +451,12 @@ sb.auth.onAuthStateChange((event, session) => {
     return;
   }
   if (!isRecoveryFlow && (event === 'SIGNED_IN' || event === 'USER_UPDATED')) {
-    window.location.href = 'builder.html';
+    window.location.href = postAuthDestination;
   }
 });
 
 sb.auth.getSession().then(({ data: { session } }) => {
-  if (session && !isRecoveryFlow) window.location.href = 'builder.html';
+  if (session && !isRecoveryFlow) window.location.href = postAuthDestination;
 });
 
 // Set initial state
