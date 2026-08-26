@@ -755,7 +755,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="help-step"><div class="help-num">1</div><div class="help-step-text">Review your label in the preview carefully.</div></div>
       <div class="help-step"><div class="help-num">2</div><div class="help-step-text"><strong>Tick the verification checkbox</strong> to confirm you have checked all data against your SDS.</div></div>
       <div class="help-step"><div class="help-num">3</div><div class="help-step-text">Download PNG, PDF or SVG only when the complete label passes the fit check.</div></div>
-      <div class="help-step"><div class="help-num">4</div><div class="help-step-text">Click <strong>Save to my label library</strong> to save this label to your account for future use.</div></div>
+      <div class="help-step"><div class="help-num">4</div><div class="help-step-text">Click <strong>Save to my label library</strong> to save this label in your current browser for future use on this device.</div></div>
       <div class="help-warn">The dashed line is a cut guide only — it will not print. Cut along this line after printing.</div>
     </div>
 
@@ -3037,8 +3037,31 @@ function classificationReviewHTML(){
   const list=v=>v.length?v.map(escapeBuilderText).join('<br>'):'—';
   return `<div class="classification-review"><strong>AI Review &amp; Classification</strong><div class="classification-status ${ready?'ready':''}">${ready?'Classification data is ready for your review.':'Add hazard data or resolve unrecognised codes before finalising.'}</div><div class="classification-grid"><div class="classification-item"><strong>Signal word</strong>${escapeBuilderText(S.signal||'—')}</div><div class="classification-item"><strong>Pictograms</strong>${list(S.pictograms)}</div><div class="classification-item full"><strong>Hazard statements</strong>${list(hFull)}</div><div class="classification-item full"><strong>Precautionary statements</strong>${list(pFull)}</div><div class="classification-item full"><strong>Sensitisers</strong>${list(S.sensitisers)}</div>${unknown.length?`<div class="classification-item full"><strong>Needs attention</strong>${list(unknown)}</div>`:''}</div><div>Always verify this result against your supplier’s SDS at the fragrance load used.</div><button type="button" class="rail-btn" onclick="openWizard()">Guide Me AI →</button></div>`;
 }
+function canLeaveApprovedBuilderStep(step){
+  if(step===1){
+    const name=(document.getElementById('scent-name')?.value||'').trim();
+    const type=document.getElementById('product-type')?.value||'';
+    if(!name){alert('Please enter a product name before continuing.');document.getElementById('scent-name')?.focus();return false;}
+    if(!type){alert('Please select a product type before continuing.');document.getElementById('product-type')?.focus();return false;}
+  }
+  if(step===2){
+    readForm();
+    const confirmed=!!document.getElementById('hazard-confirm')?.checked;
+    if(!(S.hStatements||'').trim()){alert('Please extract and review the hazard data from your supplier SDS before continuing.');return false;}
+    if(!confirmed){alert('Please confirm that the extracted hazard data matches your supplier SDS before continuing.');document.getElementById('hazard-confirm')?.focus();return false;}
+  }
+  if(step===4){
+    const phone=(document.getElementById('biz-phone')?.value||'').trim();
+    if(!phone){alert('Please enter the required business phone number before final review.');document.getElementById('biz-phone')?.focus();return false;}
+  }
+  return true;
+}
 function setApprovedBuilderStep(n){
   n=Math.max(1,Math.min(5,Number(n)||1));
+  if(n>approvedBuilderStep){
+    if(n>approvedBuilderStep+1){alert('Please complete each stage in order before continuing.');return;}
+    if(!canLeaveApprovedBuilderStep(approvedBuilderStep))return;
+  }
   readForm();
   approvedBuilderStep=n;
   S.step=APPROVED_TO_LEGACY[n];
@@ -4986,7 +5009,7 @@ function initExtensions(){
 
   
   <section class="shell-trust">
-    <div class="shell-trust-item"><span class="shell-trust-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span><span class="shell-trust-copy"><b>Secure</b><small>Your account and label data are protected</small></span></div>
+    <div class="shell-trust-item"><span class="shell-trust-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span><span class="shell-trust-copy"><b>Secure</b><small>Your account access is protected</small></span></div>
     <div class="shell-trust-item"><span class="shell-trust-icon shell-clp-ready-badge"><img src="assets/clp-ready.png" alt="CLP Ready" width="58" height="73" style="width:58px;height:73px;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(12,137,155,0.3));"></span><span class="shell-trust-copy"><b>CLP Ready</b><small>Built for UK label creation</small></span></div>
     <div class="shell-trust-item"><span class="shell-trust-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 5.7a5.4 5.4 0 0 0-7.6 0L12 6.9l-1.2-1.2a5.4 5.4 0 1 0-7.6 7.6L12 22l8.8-8.7a5.4 5.4 0 0 0 0-7.6Z"/></svg></span><span class="shell-trust-copy"><b>By makers, for makers</b><small>Practical tools for small businesses</small></span></div>
     <div class="shell-trust-item"><span class="shell-trust-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H8l-4 4Z"/></svg></span><span class="shell-trust-copy"><b>We're here to help</b><small>support@clpeasy.com</small></span></div>

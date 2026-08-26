@@ -691,7 +691,7 @@ document.addEventListener('click', function(e){
 <div style="background:white;">
 <section class="features" id="features">
   <div class="section-label">Features</div>
-  <h2 class="section-title">Everything you need to stay compliant</h2>
+  <h2 class="section-title">Everything you need to build CLP labels</h2>
   <p class="section-sub">Built specifically for UK makers who need a legitimate, compliant CLP label on any product they make and sell publicly — not generic label software.</p>
   <div class="features-grid">
     <div class="feature-card">
@@ -707,7 +707,7 @@ document.addEventListener('click', function(e){
     <div class="feature-card">
       <div class="feature-icon">💾</div>
       <h3>Your label library</h3>
-      <p>Every label you create is saved to your account. Access your full library from any device, any time. Never re-enter data twice.</p>
+      <p>Save labels in your current browser and reopen them for later edits. Browser-stored labels remain on that device unless its site data is cleared.</p>
     </div>
     <div class="feature-card">
       <div class="feature-icon">🖨️</div>
@@ -893,7 +893,7 @@ document.addEventListener('click', function(e){
     6:{t:"Sell your product",d:"Your product is correctly labelled and compliant at the point of sale ✓ — but the lifecycle doesn't end here.",c:"#4C9BB0"},
     7:{t:"Things change",d:"Supplier updates their SDS. A regulation changes. You tweak your formula. Any of these mean your label may need updating.",c:"#F59E0B"},
     8:{t:"CLPeasy™ alerts you",d:"SDS review reminders at 11 months, plus automatic regulation change alerts on Easy Pro — so you never sell with outdated data.",c:"#4C9BB0"},
-    9:{t:"Update & reprint",d:"Open your saved label, update the data, re-download. Version history preserved. Always current, always covered.",c:"#22C55E"}
+    9:{t:"Update & reprint",d:"Open a label saved in this browser, update the data and download it again. Always verify it against the current supplier SDS.",c:"#22C55E"}
   };
 
   var tip = document.getElementById('lc-tip');
@@ -999,7 +999,7 @@ document.addEventListener('click', function(e){
     <div style="background:var(--off);border-radius:20px;padding:32px;border:1px solid var(--border);">
       
       <h3 style="font-family:'DM Serif Display',serif;font-size:22px;margin-bottom:12px;">Why CLPeasy is different</h3>
-      <p style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);">After searching for a single tool that could handle CLP compliance from start to finish, I quickly discovered that nothing like this existed. CLPeasy is the only service in the global market built specifically to help fragrance product makers stay legally compliant — with confidence that they are meeting every rule and regulation. We understand the effort, skill, creativity and dedication that goes into creating your products and building your brand. Your labels are the final detail that completes that picture. The smallest things make the biggest impact, and your products deserve to look as professional as they are.</p>
+      <p style="font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);">I built CLPeasy to give fragrance-product makers one practical place to turn their own supplier SDS information into clear, print-ready CLP labels. We understand the effort, skill, creativity and dedication that goes into creating your products and building your brand. Your labels are the final detail that completes that picture. You remain responsible for verifying every label against the current SDS and applicable official guidance before use.</p>
       <div style="display:flex;flex-direction:column;gap:12px;">
         <div style="display:flex;gap:12px;align-items:flex-start;">
           <div style="width:20px;height:20px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:2px;">✓</div>
@@ -1011,7 +1011,7 @@ document.addEventListener('click', function(e){
         </div>
         <div style="display:flex;gap:12px;align-items:flex-start;">
           <div style="width:20px;height:20px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:2px;">✓</div>
-          <div><strong style="font-size:14px;">Multiple download formats</strong><div style="font-size:13px;color:var(--muted);margin-top:2px;">PNG, JPEG, SVG for Cricut, or print to PDF — whatever works for you</div></div>
+          <div><strong style="font-size:14px;">Multiple download formats</strong><div style="font-size:13px;color:var(--muted);margin-top:2px;">PNG, SVG for Cricut, or PDF — whatever works for you</div></div>
         </div>
         <div style="display:flex;gap:12px;align-items:flex-start;">
           <div style="width:20px;height:20px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:2px;">✓</div>
@@ -1080,7 +1080,7 @@ document.addEventListener('click', function(e){
     </div>
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">Can I cancel my subscription at any time?</div>
-      <div class="faq-a">Yes — cancel anytime with no questions asked. Your labels remain saved in your account and you keep full Pro access until the end of your current billing period.</div>
+      <div class="faq-a">Yes — cancel anytime with no questions asked. You keep paid access until the end of your current billing period. Labels saved in your browser remain there unless its site data is cleared.</div>
     </div>
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">What's the difference between Easy Trial, Easy Start and Easy Pro?</div>
@@ -1300,7 +1300,7 @@ _sb.auth.getSession().then(async ({data:{session}})=>{
       </div>
       <div class="sg-step">
         <span class="sg-step-num">5</span><span class="sg-step-title">Preview and download</span>
-        <div class="sg-step-desc">Step 5 shows your finished label in real time. Trial labels include a small CLPeasy watermark. Download as PNG, SVG, JPEG or PDF. Your label is saved to your library automatically.</div>
+        <div class="sg-step-desc">Step 5 shows your finished label in real time. Trial labels include a small CLPeasy watermark. Download as PNG, SVG or PDF, and choose whether to save it in this browser.</div>
         <div class="sg-img-placeholder"><span>&#x1F4F8; Step 5 &#x2014; label preview &amp; download<br>screenshot coming soon</span></div>
         <div class="sg-tip">&#x1F4A1; Subscribe at any time to remove the watermark. Your library and all saved labels carry over immediately.</div>
       </div>
@@ -1330,7 +1330,7 @@ _sb.auth.getSession().then(async ({data:{session}})=>{
       </div>
       <div class="sg-step">
         <span class="sg-step-num">4</span><span class="sg-step-title">Download in any format</span>
-        <div class="sg-step-desc">Easy Start unlocks all download formats &#x2014; high-res <strong>PNG</strong> for home printing, <strong>SVG</strong> for Cricut Design Space, <strong>JPEG</strong>, and <strong>PDF print sheets</strong> with multiple labels per A4.</div>
+        <div class="sg-step-desc">Easy Start unlocks high-resolution <strong>PNG</strong> for home printing, <strong>SVG</strong> for Cricut Design Space and <strong>PDF print sheets</strong> with multiple labels per A4.</div>
         <div class="sg-tip">&#x1F4A1; For Cricut: download SVG &#x2192; upload to Cricut Design Space &#x2192; resize to your label dimensions &#x2192; use Print Then Cut.</div>
       </div>
       <div class="sg-step">

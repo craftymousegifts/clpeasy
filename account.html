@@ -325,7 +325,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
     <!-- WIN-BACK BANNER (shown only when lapsed/cancelled) -->
     <div class="winback-banner" id="winback-banner" style="display:none;">
       <h3>👋 Welcome back — your labels are still here</h3>
-      <p>Your account is currently inactive but your label library is safe for <strong id="winback-days">30</strong> more days. A lot has changed since you left — we've increased download allowances across all plans.</p>
+      <p>Your account is currently inactive. Labels saved in this browser remain available unless its site data is cleared. A lot has changed since you left — we've increased download allowances across all plans.</p>
       <div class="winback-pills">
         <span class="winback-pill">✓ Easy Start now 20 downloads/month</span>
         <span class="winback-pill">✓ Easy Pro now 30 downloads/month</span>
@@ -391,7 +391,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
 </div><!-- /main -->
   
   <section class="shell-trust">
-    <div class="shell-trust-item"><span class="shell-trust-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span><span class="shell-trust-copy"><b>Secure</b><small>Your account and label data are protected</small></span></div>
+    <div class="shell-trust-item"><span class="shell-trust-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span><span class="shell-trust-copy"><b>Secure</b><small>Your account access is protected</small></span></div>
     <div class="shell-trust-item"><span class="shell-trust-icon shell-clp-ready-badge"><img src="assets/clp-ready.png" alt="CLP Ready" width="58" height="73" style="width:58px;height:73px;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(12,137,155,0.3));"></span><span class="shell-trust-copy"><b>CLP Ready</b><small>Built for UK label creation</small></span></div>
     <div class="shell-trust-item"><span class="shell-trust-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 5.7a5.4 5.4 0 0 0-7.6 0L12 6.9l-1.2-1.2a5.4 5.4 0 1 0-7.6 7.6L12 22l8.8-8.7a5.4 5.4 0 0 0 0-7.6Z"/></svg></span><span class="shell-trust-copy"><b>By makers, for makers</b><small>Practical tools for small businesses</small></span></div>
     <div class="shell-trust-item"><span class="shell-trust-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H8l-4 4Z"/></svg></span><span class="shell-trust-copy"><b>We're here to help</b><small>support@clpeasy.com</small></span></div>
@@ -408,7 +408,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
   <div class="modal">
     <div id="pause-step-1">
       <div class="modal-title">Pause your subscription</div>
-      <div class="modal-sub">Your label library stays safe while paused. Everything picks up exactly where you left off when you return — labels, folders, version history, all of it.</div>
+      <div class="modal-sub">Pausing stops subscription downloads. Labels saved in this browser remain available unless its site data is cleared.</div>
       <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;">Before you go — what's the reason?</div>
       <div class="survey-options" id="pause-survey">
         <label class="survey-opt"><input type="radio" name="pause-reason" value="break"> Just taking a break</label>
@@ -420,7 +420,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
       <textarea class="other-input" id="pause-other" placeholder="Tell us more…" rows="3"></textarea>
       <div class="pause-confirm-box">
         <h4>While paused:</h4>
-        <p>Your library is preserved · Downloads are paused · You can reactivate any time · Pauses last up to 3 months</p>
+        <p>Downloads are paused · You can reactivate any time · Pauses last up to 3 months</p>
       </div>
       <div class="modal-actions">
         <button class="modal-btn ghost" onclick="closeModal('modal-pause')">Keep my subscription</button>
@@ -431,7 +431,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
       <div class="success-msg">
         <div class="success-icon">⏸️</div>
         <h3>Subscription paused</h3>
-        <p>Your label library is safe. You can reactivate any time from this page. We'll send you a reminder before your 3-month pause window closes.</p>
+        <p>You can reactivate any time from this page. Labels stored in this browser are unaffected by the pause unless browser data is cleared.</p>
       </div>
       <div class="modal-actions" style="justify-content:center;">
         <button class="modal-btn primary" onclick="location.reload()">Done</button>
@@ -494,7 +494,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
         <p>Your label library will be deleted 30 days after your billing period ends · Downloaded files on your device are yours to keep</p>
       </div>
       <div style="background:var(--teal-light);border:1px solid #c5e4ed;border-radius:10px;padding:14px 16px;margin-bottom:20px;font-size:13px;color:var(--teal-dark);line-height:1.6;">
-        💡 <strong>Consider pausing instead.</strong> Pausing keeps your library safe and lets you return without starting over — no data lost.
+        💡 <strong>Consider pausing instead.</strong> Pausing lets you reactivate your subscription later without choosing a new account.
       </div>
       <div class="modal-actions">
         <button class="modal-btn ghost" onclick="closeModal('modal-cancel')">Keep my subscription</button>
@@ -727,7 +727,7 @@ function renderAccount() {
       ? `Next payment: <strong>${planPrice === '£9.99' ? '£4.99' : '£7.49'}/mo</strong> (discount active until ${u.discount_ends}) · then ${planPrice}/mo`
       : `Next payment: <strong>${billingPrice}${billingPeriod}</strong> on ${u.next_payment}`;
   } else if (u.status === 'paused') {
-    renewLine.innerHTML = `Subscription paused · Your library is safe · <a href="#" onclick="openModal('resubscribe');return false;" style="color:var(--teal);">Reactivate →</a>`;
+    renewLine.innerHTML = `Subscription paused · <a href="#" onclick="openModal('resubscribe');return false;" style="color:var(--teal);">Reactivate →</a>`;
   } else if (u.status === 'cancelled') {
     renewLine.innerHTML = `Cancelled · Library deleted in <strong>${u.cancelled_days_remaining || 30} days</strong> · <a href="#" onclick="openModal('resubscribe');return false;" style="color:var(--teal);">Reactivate to keep it →</a>`;
   }
