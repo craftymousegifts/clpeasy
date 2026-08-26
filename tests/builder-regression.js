@@ -48,7 +48,8 @@ const document = window.document;
 
 setTimeout(() => {
   try {
-    assert(document.querySelector('[onclick="openHelp()"]'), 'visible Help Guide control missing');
+    assert(document.querySelector('.builder-utility-actions [onclick="openHelp()"]'), 'visible Help Guide control missing');
+    assert(document.querySelector('.mobile-preview-btn[onclick="openPreviewSheet()"]'), 'mobile preview control missing');
     assert.strictEqual(window.eval('approvedBuilderStep'), 1, 'Builder did not initialise at Stage 1');
     assert(document.querySelector('.builder-accordion-section.active #step-1'), 'size panel is not in Stage 1');
     assert(document.querySelector('.builder-accordion-section.active #step-2'), 'product panel is not in Stage 1');
