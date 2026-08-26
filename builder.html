@@ -83,17 +83,21 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 .su-plan{font-size:11.5px;color:var(--teal-dark);}
 .sidebar-logout{color:var(--muted);border-top:1px solid var(--border);padding-top:14px;}
 .sidebar-logout:hover{background:var(--off);color:var(--red);}
-.shell-main{flex:1;margin-left:var(--shell-sidebar-w);min-width:0;}
+.shell-main{flex:1;margin-left:var(--shell-sidebar-w);min-width:0;position:relative;isolation:isolate;overflow:hidden;}
 /* CLP SHARED BACKGROUND SHELL — same treatment reused verbatim on Dashboard,
    Create Label, My Labels and Account. Sidebar stays plain white; this
    background sits only on the main content area. */
 .shell-main{
   background-color:#fbfdfe;
-  background-image:url('assets/clpeasy-region-top.png'), url('assets/clpeasy-region-bottom.png');
-  background-repeat:no-repeat, no-repeat;
-  background-position:top right, bottom center;
-  background-size:38% auto, 100% auto;
+  background-image:none;
 }
+.shell-main::before,.shell-main::after{content:'';position:absolute;pointer-events:none;z-index:-1;background-repeat:no-repeat;}
+/* The supplied region assets are full wallpaper canvases, not transparent
+   corner crops. Mask the top copy so its pale rectangular canvas blends into
+   the page instead of appearing as a block. */
+.shell-main::before{top:0;right:0;width:min(620px,52vw);height:310px;background-image:url('assets/clpeasy-region-top.png');background-size:900px auto;background-position:top right;opacity:.55;-webkit-mask-image:linear-gradient(225deg,#000 0 42%,transparent 82%);mask-image:linear-gradient(225deg,#000 0 42%,transparent 82%);}
+.shell-main::after{left:0;right:0;bottom:0;height:240px;background-image:url('assets/clpeasy-region-bottom.png');background-size:100% auto;background-position:bottom center;}
+.shell-main>*{position:relative;z-index:1;}
 .shell-topbar{
   display:none;align-items:center;gap:12px;height:var(--shell-topbar-h);
   padding:0 16px;background:white;border-bottom:1.5px solid var(--border);
@@ -189,7 +193,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 .builder-accordion-body{padding:2px 0 12px;}.builder-accordion-body .step-heading{display:none;}.builder-accordion-body .step-sub{margin-top:0;}
 .builder-accordion-body .step-nav{display:none!important;}
 .wizard-panel>.step-panel{display:none!important;}.builder-accordion-body>.step-panel{display:block!important;}
-.classification-review{padding:14px;border:1px solid var(--border);border-radius:10px;background:var(--off);font-size:13px;line-height:1.6;color:var(--muted);}.classification-review strong{color:var(--text);}.classification-review button{margin-top:12px;}
+.classification-review{padding:14px;border:1px solid var(--border);border-radius:10px;background:var(--off);font-size:13px;line-height:1.6;color:var(--muted);}.classification-review strong{color:var(--text);}.classification-review button{margin-top:12px;}.classification-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.classification-item{padding:10px;border:1px solid var(--border);border-radius:8px;background:white;overflow-wrap:anywhere}.classification-item strong{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--teal-dark);margin-bottom:3px}.classification-item.full{grid-column:1/-1}.classification-status{padding:10px 12px;border-radius:8px;background:#fff7d6;color:#7c4a03}.classification-status.ready{background:#e9f8ee;color:#166534}@media(max-width:480px){.classification-grid{grid-template-columns:1fr}.classification-item.full{grid-column:auto}}
 .builder-accordion-actions{display:grid;grid-template-columns:1fr .72fr;gap:10px;padding-top:16px;}.builder-accordion-actions button{padding:11px;border-radius:9px;font:700 12px 'DM Sans',sans-serif;cursor:pointer;}.builder-save-progress{border:0;background:var(--teal);color:white}.builder-reset{border:1.5px solid var(--border);background:white;color:var(--text)}
 .wizard-panel>.steps-bar,.wizard-panel>div[style*="justify-content:flex-end"]{display:none!important;}
 .builder-side-rail{display:flex;flex-direction:column;gap:18px;}
@@ -604,10 +608,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <a href="dashboard.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg></span>Dashboard</a>
       <a href="builder.html" class="sidebar-nav-item active"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>Create Label</a>
       <a href="my-labels.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5a1 1 0 0 1 1-1h4.7l2 2.2h8.3a1 1 0 0 1 1 1V18a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1Z"/></svg></span>My Labels</a>
-      <a href="knowledge.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5c-1.6-1.3-4-2-6.5-2A2 2 0 0 0 3.5 6.5V17c2.6 0 5 .7 6.5 2 1.5-1.3 3.9-2 6.5-2s2-.9 2-.9V6.5c0-1.1-.9-2-2-2-2.5 0-4.9.7-6.5 2Z"/><path d="M12 6.5V19"/></svg></span>Knowledge Base</a>
-      <a href="account.html" id="nav-account" class="sidebar-nav-item" style="display:none;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.4-3.6 4.3-5.5 7.5-5.5s6.1 1.9 7.5 5.5"/></svg></span>Account</a>
+      <a href="knowledge.html" target="_blank" rel="noopener" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5c-1.6-1.3-4-2-6.5-2A2 2 0 0 0 3.5 6.5V17c2.6 0 5 .7 6.5 2 1.5-1.3 3.9-2 6.5-2s2-.9 2-.9V6.5c0-1.1-.9-2-2-2-2.5 0-4.9.7-6.5 2Z"/><path d="M12 6.5V19"/></svg></span>Knowledge Base</a>
+      <a href="account.html" target="_blank" rel="noopener" id="nav-account" class="sidebar-nav-item" style="display:none;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.4-3.6 4.3-5.5 7.5-5.5s6.1 1.9 7.5 5.5"/></svg></span>Account</a>
       <a href="auth.html?next=builder.html" id="nav-signin" class="sidebar-nav-item" style="display:none;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4h5a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-5"/><path d="M3 12h11.5"/><path d="M11 8l4 4-4 4"/></svg></span>Sign in</a>
-      <button class="sidebar-nav-item" onclick="openSupport()" style="width:100%;text-align:left;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 1 3.3 6.4L4 20l1.3-3.6A7.96 7.96 0 0 1 4 12Z"/></svg></span>Support</button>
+      <a href="support.html" target="_blank" rel="noopener" class="sidebar-nav-item" style="width:100%;text-align:left;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 1 3.3 6.4L4 20l1.3-3.6A7.96 7.96 0 0 1 4 12Z"/></svg></span>Support</a>
     </div>
     <div class="sidebar-bottom">
       <div class="sidebar-usage" id="sidebar-usage" style="display:none;">
@@ -720,44 +724,37 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
 
     <div class="help-section">
-      <h3>Step 1 — Label size & shape</h3>
-      <div class="help-step"><div class="help-num">1</div><div class="help-step-text">Choose your <strong>shape</strong> — Circle, Square or Rectangle.</div></div>
-      <div class="help-step"><div class="help-num">2</div><div class="help-step-text">Choose your <strong>size</strong> — 52mm (standard candle, the CLP minimum), 63mm (large jar) or Custom.</div></div>
-      <div class="help-step"><div class="help-num">3</div><div class="help-step-text">Watch the <strong>live preview</strong> update as you make changes.</div></div>
-      <div class="help-warn">Read the disclaimer carefully — you are responsible for verifying all label information against your SDS before selling.</div>
+      <h3>Stage 1 — Product Details</h3>
+      <div class="help-step"><div class="help-num">1</div><div class="help-step-text">Enter the product name and select the product type.</div></div>
+      <div class="help-step"><div class="help-num">2</div><div class="help-step-text">Choose the intended use and add optional product details.</div></div>
     </div>
 
     <div class="help-section">
-      <h3>Step 2 — Product details</h3>
-      <div class="help-step"><div class="help-num">1</div><div class="help-step-text">Enter your <strong>scent name</strong> — this appears large in the centre of the label.</div></div>
-      <div class="help-step"><div class="help-num">2</div><div class="help-step-text">Select your <strong>product type</strong> — Scented Candle, Wax Melt etc.</div></div>
-      <div class="help-step"><div class="help-num">3</div><div class="help-step-text">Enter <strong>net weight</strong> (e.g. 200g), <strong>fragrance load %</strong> and <strong>burn time</strong> if applicable.</div></div>
-      <div class="help-tip">These fields are saved automatically — you won't need to retype them next time.</div>
+      <h3>Stage 2 — Ingredients</h3>
+      <div class="help-step"><div class="help-num">1</div><div class="help-step-text">Select your fragrance supplier and open the current SDS.</div></div>
+      <div class="help-step"><div class="help-num">2</div><div class="help-step-text">Paste <strong>Section 2.2 — Label elements</strong> into Smart Paste.</div></div>
+      <div class="help-step"><div class="help-num">3</div><div class="help-step-text">Check every extracted code, pictogram and sensitiser against the SDS.</div></div>
+      <div class="help-tip">Fit is assessed later, after you select dimensions in Label Content.</div>
     </div>
 
     <div class="help-section">
-      <h3>Step 3 — Hazard data</h3>
-      <div class="help-step"><div class="help-num">1</div><div class="help-step-text">Select your <strong>fragrance supplier</strong> from the list — CLPeasy will show you a link to their SDS page.</div></div>
-      <div class="help-step"><div class="help-num">2</div><div class="help-step-text">Open your SDS PDF and find <strong>Section 2.2 — Label elements</strong>.</div></div>
-      <div class="help-step"><div class="help-num">3</div><div class="help-step-text">Select all the text in Section 2.2, copy it, then <strong>paste it into the Smart Paste box</strong>.</div></div>
-      <div class="help-step"><div class="help-num">4</div><div class="help-step-text">Click <strong>Extract hazard data</strong> — CLPeasy fills in the signal word, pictograms, H statements and allergens automatically.</div></div>
-      <div class="help-step"><div class="help-num">5</div><div class="help-step-text">Review everything carefully against your SDS before moving on.</div></div>
-      <div class="help-tip">If Smart Paste doesn't work with your SDS format, use the H statement chips and sensitiser library to enter data manually.</div>
+      <h3>Stage 3 — AI Review &amp; Classification</h3>
+      <div class="help-step"><div class="help-num">1</div><div class="help-step-text">Review the full signal word, H/EUH statements, P statements, pictograms and sensitisers.</div></div>
+      <div class="help-step"><div class="help-num">2</div><div class="help-step-text">Resolve any unrecognised or missing codes and verify the result against the SDS.</div></div>
     </div>
 
     <div class="help-section">
-      <h3>Step 4 — Business details</h3>
-      <div class="help-step"><div class="help-num">1</div><div class="help-step-text">Enter your <strong>business name</strong> — appears at the top and bottom of the label.</div></div>
-      <div class="help-step"><div class="help-num">2</div><div class="help-step-text">Enter your <strong>address</strong> on one line, separated by commas. e.g. 1 High Street, Edinburgh, EH1 1AB</div></div>
-      <div class="help-step"><div class="help-num">3</div><div class="help-step-text">Enter your <strong>website</strong> (optional) and <strong>batch number</strong> (optional).</div></div>
-      <div class="help-tip">Business details are saved automatically for next time.</div>
+      <h3>Stage 4 — Label Content</h3>
+      <div class="help-step"><div class="help-num">1</div><div class="help-step-text">Choose the shape, preset or custom dimensions and appearance.</div></div>
+      <div class="help-step"><div class="help-num">2</div><div class="help-step-text">Enter the required business/contact details.</div></div>
+      <div class="help-step"><div class="help-num">3</div><div class="help-step-text">If complete content does not fit, choose a larger label. Required text is never shortened with dots.</div></div>
     </div>
 
     <div class="help-section">
-      <h3>Step 5 — Download</h3>
+      <h3>Stage 5 — Review &amp; Finalise</h3>
       <div class="help-step"><div class="help-num">1</div><div class="help-step-text">Review your label in the preview carefully.</div></div>
       <div class="help-step"><div class="help-num">2</div><div class="help-step-text"><strong>Tick the verification checkbox</strong> to confirm you have checked all data against your SDS.</div></div>
-      <div class="help-step"><div class="help-num">3</div><div class="help-step-text">Click <strong>Download PNG</strong> for home printing or Canva. Click <strong>Download SVG</strong> for cutting machines.</div></div>
+      <div class="help-step"><div class="help-num">3</div><div class="help-step-text">Download PNG, PDF or SVG only when the complete label passes the fit check.</div></div>
       <div class="help-step"><div class="help-num">4</div><div class="help-step-text">Click <strong>Save to my label library</strong> to save this label to your account for future use.</div></div>
       <div class="help-warn">The dashed line is a cut guide only — it will not print. Cut along this line after printing.</div>
     </div>
@@ -884,6 +881,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <button id="border-off" onclick="setBorder(false)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Hide border</button>
       </div>
     </div>
+    <div id="label-warn-stage4" class="field-alert field-alert-danger" style="display:none;margin-top:14px;font-size:13px;"></div>
     <div class="step-nav"><div></div><button class="btn-next" onclick="nextStep()">Next: Product details →</button></div>
   </div>
 
@@ -892,7 +890,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <h2 class="step-heading">Product details</h2>
     <p class="step-sub">This information appears directly on your label.</p>
     <div class="form-group"><label>Product Name</label><input type="text" id="scent-name" placeholder="e.g. Lemongrass &amp; Lime Candle" autocomplete="off" oninput="updateLabel()"></div>
-    <div class="form-group"><label>Intended Use</label><select id="intended-use"><option>For burning</option><option>For melting in a suitable wax warmer</option><option>For fragrancing a room</option><option>For use as supplied</option></select></div>
+    <div class="form-group"><label>Intended Use</label><select id="intended-use" onchange="readForm();updateLabel()"><option>For burning</option><option>For melting in a suitable wax warmer</option><option>For fragrancing a room</option><option>For use as supplied</option></select></div>
     <div class="form-row">
       <div class="form-group"><label>Product type</label><select id="product-type" onchange="onProductTypeChange();updateLabel();saveProdDetails()">
         <option value="" disabled selected>— Choose product type —</option>
@@ -1015,8 +1013,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
          above, never both). Contains its own heading/explanation/restart action, so
          no separate warning bar or lock banner is needed alongside it. -->
     <div id="hazard-blocked-cta" class="field-alert field-alert-danger" style="display:none;margin-bottom:10px;padding:14px 16px;font-size:13px;">
-      <strong>⚠️ Download unavailable — label size too small for CLP labelling requirements.</strong><br><br>
-      This label can't proceed at its current size. Go back to <a href="#" onclick="goToStep(1);return false;" style="color:#991B1B;text-decoration:underline;font-weight:700;">Step 1</a> and choose a larger label size, or use an alternative labelling method permitted for your product, before continuing.
+      <strong>Label fit will be checked in Label Content.</strong><br><br>
+      Continue entering the complete information from your SDS. In Stage 4 you can choose the label shape and dimensions and CLPeasy will check whether every required item fits.
       <div style="margin-top:10px;">
         <button type="button" onclick="clearHazardData()" style="background:white;color:#991B1B;border:1.5px solid #EF4444;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;">Clear hazard data and start again</button>
       </div>
@@ -1118,9 +1116,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
       <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ Download PNG</button>
-      <button id="btn-jpeg" onclick="downloadJPEG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬇ Download JPEG — smaller file size</button>
       <button id="btn-svg" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬡ Download SVG</button>
-      <button id="btn-pdf" onclick="printToPDF()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">🖨 Print to PDF</button>
+      <button id="btn-pdf" onclick="printToPDF()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">▣ Download PDF</button>
       <button id="btn-save" onclick="saveLabel()" style="background:var(--off);color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">💾 Save to my label library</button>
 
 
@@ -1167,6 +1164,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="preview-size-info" id="preview-size-info">Print size: 35 × 35mm</div>
     <div class="dl-row" id="preview-dl-row" style="display:none;">
       <button class="btn-dl" onclick="downloadPNG()">⬇ PNG</button>
+      <button class="btn-dl" onclick="printToPDF()">▣ PDF</button>
       <button class="btn-dl-svg" onclick="downloadSVG()">⬡ SVG</button>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
@@ -1314,7 +1312,7 @@ function ghsPicto(key,cx,cy,size){
 }
 
 // ── STATE ─────────────────────────────────────────────────────
-const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,hazardFSOverride:null,scentFSOverride:null,bizNameFSOverride:null,hazardYOffset:null,typeFSOverride:null,sigFSOverride:null};
+const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',productType:'',intendedUse:'For burning',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,hazardFSOverride:null,scentFSOverride:null,bizNameFSOverride:null,hazardYOffset:null,typeFSOverride:null,sigFSOverride:null};
 // ── PRODUCT TYPE GUIDANCE ─────────────────────────────────────
 const FRAG_LOAD_TIPS={
   'Scented Candle':'Recommended: 6–10%. Your CLP must be for the actual % used — you can overestimate but never underestimate.',
@@ -2436,7 +2434,7 @@ document.addEventListener('click',function(e){
 function saveLabel(){plausible('Label Saved to Library');
   readForm();
   if(!S.scentName){alert('Please enter a scent name before saving.');return;}
-  const entry={scentName:S.scentName,productType:S.productType,shape:S.shape,size:S.size,signal:S.signal,
+  const entry={scentName:S.scentName,productType:S.productType,intendedUse:S.intendedUse,shape:S.shape,size:S.size,customW:S.customW,customH:S.customH,signal:S.signal,
     hStatements:S.hStatements,pictograms:[...S.pictograms],sensitisers:[...S.sensitisers],bizName:S.bizName,bizAddress:S.bizAddress,
     bizPhone:S.bizPhone,bizWebsite:S.bizWebsite,netWeight:S.netWeight,burnTime:S.burnTime,batchNum:S.batchNum,
     bgColour:(document.getElementById('label-bg-colour')?.value)||'#ffffff',
@@ -2465,7 +2463,7 @@ function saveLabel(){plausible('Label Saved to Library');
 
 function loadLabel(i){
   const arr=getSaved();const e=arr[i];if(!e)return;
-  S.scentName=e.scentName;S.productType=e.productType;S.shape=e.shape;S.size=e.size;
+  S.scentName=e.scentName;S.productType=e.productType;S.intendedUse=e.intendedUse||'For burning';S.shape=e.shape;S.size=e.size;S.customW=e.customW||S.customW;S.customH=e.customH||S.customH;
   S.signal=e.signal||'';S.hStatements=e.hStatements||'';S.sensitisers=e.sensitisers||[];
   S.bizName=e.bizName||'';S.bizAddress=e.bizAddress||'';S.bizPhone=e.bizPhone||'';
   S.bizWebsite=e.bizWebsite||'';S.netWeight=e.netWeight||'';S.burnTime=e.burnTime||'';S.batchNum=e.batchNum||'';
@@ -2480,10 +2478,10 @@ function loadLabel(i){
   S.typeFSOverride=e.typeFSOverride!==undefined?e.typeFSOverride:null;
   S.sigFSOverride=e.sigFSOverride!==undefined?e.sigFSOverride:null;
   const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};
-  set('scent-name',e.scentName);set('product-type',e.productType);set('h-statements',e.hStatements||'');set('p-statements',e.pStatements||'');
+  set('scent-name',e.scentName);set('product-type',e.productType);set('intended-use',e.intendedUse||'For burning');set('h-statements',e.hStatements||'');set('p-statements',e.pStatements||'');
   set('biz-name',e.bizName||'');set('biz-address',e.bizAddress||'');set('biz-phone',e.bizPhone||'');
   set('biz-website',e.bizWebsite||'');set('net-weight',e.netWeight||'');set('burn-time',e.burnTime||'');
-  set('batch-num',e.batchNum||'');
+  set('batch-num',e.batchNum||'');set('custom-w',e.customW||'');set('custom-h',e.customH||'');
   if(e.bgColour){const bc=document.getElementById('label-bg-colour');const bh=document.getElementById('label-bg-hex');if(bc)bc.value=e.bgColour;if(bh)bh.value=e.bgColour;}
   selectShape(e.shape||'circle');selectSize(e.size||35);
   if(e.signal)selectSignal(e.signal);
@@ -2532,6 +2530,7 @@ function layoutForStep(n){
 }
 function forceGoToStep(n){
   S.step=n;
+  const legacyToApproved={1:4,2:1,3:2,4:4,5:5};approvedBuilderStep=legacyToApproved[n]||approvedBuilderStep;
   layoutForStep(n);
   document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('step-'+n).classList.add('active');
@@ -2542,6 +2541,7 @@ function forceGoToStep(n){
     
   }
   updateLabel();
+  renderBuilderAccordion();
   window.scrollTo(0,0);
 }
 
@@ -3024,6 +3024,30 @@ document.addEventListener('keydown', function(e) {
 
 const BUILDER_STEP_LABELS=['Product Details','Ingredients','AI Review & Classification','Label Content','Review & Finalise'];
 let approvedBuilderStep=1;
+const APPROVED_TO_LEGACY={1:2,2:3,3:3,4:1,5:5};
+function escapeBuilderText(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function classificationReviewHTML(){
+  readForm();
+  const hCodes=(S.hStatements||'').split(',').map(v=>v.trim()).filter(Boolean);
+  const pCodes=(S.pStatements||'').split(',').map(v=>v.trim()).filter(Boolean);
+  const hFull=hCodes.map(code=>{const hit=H_LIB.find(x=>x.code===code);return hit?`${code} — ${hit.desc}`:`${code} — Unrecognised code`;});
+  const pFull=pCodes.map(code=>{const hit=P_LIB.find(x=>x.code===code);return hit?`${code} — ${hit.desc}`:`${code} — Unrecognised code`;});
+  const unknown=[...hCodes.filter(code=>!H_LIB.find(x=>x.code===code)),...pCodes.filter(code=>!P_LIB.find(x=>x.code===code))];
+  const ready=hCodes.length>0&&!unknown.length;
+  const list=v=>v.length?v.map(escapeBuilderText).join('<br>'):'—';
+  return `<div class="classification-review"><strong>AI Review &amp; Classification</strong><div class="classification-status ${ready?'ready':''}">${ready?'Classification data is ready for your review.':'Add hazard data or resolve unrecognised codes before finalising.'}</div><div class="classification-grid"><div class="classification-item"><strong>Signal word</strong>${escapeBuilderText(S.signal||'—')}</div><div class="classification-item"><strong>Pictograms</strong>${list(S.pictograms)}</div><div class="classification-item full"><strong>Hazard statements</strong>${list(hFull)}</div><div class="classification-item full"><strong>Precautionary statements</strong>${list(pFull)}</div><div class="classification-item full"><strong>Sensitisers</strong>${list(S.sensitisers)}</div>${unknown.length?`<div class="classification-item full"><strong>Needs attention</strong>${list(unknown)}</div>`:''}</div><div>Always verify this result against your supplier’s SDS at the fragrance load used.</div><button type="button" class="rail-btn" onclick="openWizard()">Guide Me AI →</button></div>`;
+}
+function setApprovedBuilderStep(n){
+  n=Math.max(1,Math.min(5,Number(n)||1));
+  readForm();
+  approvedBuilderStep=n;
+  S.step=APPROVED_TO_LEGACY[n];
+  layoutForStep(n===5?5:1);
+  renderBuilderAccordion();
+  if(n===5)buildSummary();
+  updateLabel();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 function renderBuilderAccordion(){
   const panel=document.querySelector('.wizard-panel');
   if(!panel)return;
@@ -3041,12 +3065,12 @@ function renderBuilderAccordion(){
     const trigger=document.createElement('button');
     trigger.type='button';trigger.className='builder-accordion-trigger';
     trigger.innerHTML=`<span class="acc-num">${n}</span><span>${label}</span><span>${n===approvedBuilderStep?'⌃':'›'}</span>`;
-    trigger.onclick=()=>{approvedBuilderStep=n;renderBuilderAccordion();if(n===5)buildSummary();};
+    trigger.onclick=()=>setApprovedBuilderStep(n);
     section.appendChild(trigger);
     if(n===approvedBuilderStep){
       const body=document.createElement('div');body.className='builder-accordion-body';
       panelMap[n].forEach(source=>{const step=panel.querySelector('#step-'+source);if(step){step.classList.add('active');body.appendChild(step);}});
-      if(n===3){body.innerHTML='<div class="classification-review"><strong>AI Review &amp; Classification</strong><br>Use the AI Assistant to review the ingredient and hazard information entered in the previous stage. Always verify the result against your supplier’s SDS.<br><button type="button" class="rail-btn" onclick="openWizard()">Guide Me AI →</button></div>';}
+      if(n===3){body.innerHTML=classificationReviewHTML();}
       section.appendChild(body);
     }
     accordion.appendChild(section);
@@ -3059,11 +3083,12 @@ function renderBuilderAccordion(){
     const step=Number(row.dataset.railStep),status=row.querySelector('.rail-status');
     row.classList.toggle('active',step===approvedBuilderStep);
     if(status)status.textContent=step<approvedBuilderStep?'Complete':(step===approvedBuilderStep?'In progress':'Not started');
-    row.onclick=()=>{approvedBuilderStep=step;renderBuilderAccordion();if(step===5)buildSummary();};
+    row.onclick=()=>setApprovedBuilderStep(step);
   });
 }
 
 function goToStep(n){if(n>S.step+1)return;S.step=n;
+  const legacyToApproved={1:4,2:1,3:2,4:4,5:5};approvedBuilderStep=legacyToApproved[n]||approvedBuilderStep;
   layoutForStep(n);
   document.querySelectorAll('[data-rail-step]').forEach(row=>{
     const step=Number(row.dataset.railStep);
@@ -3098,11 +3123,9 @@ function toggleHazardNext(){
   const cb=document.getElementById('hazard-confirm');
   const btn=document.getElementById('btn-next-step3');
   if(!btn)return;
-  // Hard override (3 Aug 2026, per Michaela's workflow-gate request): if the label
-  // currently can't be downloaded at this size, never let Step 3 progress regardless
-  // of checkbox/hazard state — Next is hidden entirely in this state anyway (see
-  // _applyHazardBlockGate), this is just belt-and-braces.
-  if(window._labelBlockDownload){
+  // Fit is not a progression gate until the user has reached Label Content,
+  // where shape and dimensions can actually be changed.
+  if(window._labelBlockDownload&&approvedBuilderStep>=4){
     if(cb)cb.checked=false;
     btn.style.opacity='0.4';btn.style.pointerEvents='none';
     return;
@@ -3123,12 +3146,12 @@ function toggleHazardNext(){
 // bar and "extracted and locked" banner removed in favour of a small unobtrusive
 // clear/restart link inside the Smart Paste box itself (see lockHazardFields).
 function _applyHazardBlockGate(){
-  const blocked=!!window._labelBlockDownload;
+  const blocked=!!window._labelBlockDownload&&approvedBuilderStep>=4;
   const confirmBlock=document.getElementById('hazard-confirm-block');
   const blockedCta=document.getElementById('hazard-blocked-cta');
   const nextBtn=document.getElementById('btn-next-step3');
   if(confirmBlock)confirmBlock.style.display=blocked?'none':'block';
-  if(blockedCta)blockedCta.style.display=blocked?'block':'none';
+  if(blockedCta)blockedCta.style.display='none';
   if(nextBtn)nextBtn.style.display=blocked?'none':'inline-block';
   // A blocked label can't have "extracted and locked" data implying readiness —
   // suppress the subtle clear-link too, since the blocked CTA already has its own.
@@ -3347,6 +3370,7 @@ function selectSignal(s){
 function readForm(){
   S.scentName=document.getElementById('scent-name')?.value||'';
   S.productType=document.getElementById('product-type')?.value||'';
+  S.intendedUse=document.getElementById('intended-use')?.value||'For burning';
   S.netWeight=document.getElementById('net-weight')?.value||'';
   S.fragLoad=document.getElementById('frag-load')?.value||'';
   S.burnTime=document.getElementById('burn-time')?.value||'';
@@ -3824,10 +3848,7 @@ function buildSVG(forExport=false){
   }
   window._hazardFSBounds={min:_minLegibleFS,max:_manualHi,auto:_bsLo};
 
-  // Legibility warning is finalised after P truncation below: it must fire
-  // whenever content can't fit at the minimum legible size OR any P statement
-  // had to be clipped to fit.
-  let _pClipped = false;
+  // Mandatory content is never shortened to make a label appear to fit.
 
   // Vertical centring: re-lay from a Y offset by half the leftover slack.
   const _topLayout=_layoutHazard(_sharedFS,_curY0);
@@ -3858,30 +3879,11 @@ function buildSVG(forExport=false){
   let pLines=_L.pLines;
   const pStY=_L.pStartY;
 
-  // Hard botY boundary for P: never let a P line render past botY, even on the
-  // warning path where the font is pinned to the legible floor. When the full
-  // set won't fit, truncate at a complete SENTENCE boundary (P statements are
-  // '. '-joined) rather than mid-word, and flag the omission with an ellipsis.
-  if(pLines.length){
-    const _pMaxLines=Math.max(1,Math.floor((_hardBot - pStY + pLH*0.5)/pLH));
-    if(pLines.length>_pMaxLines){
-      const _pW=chordW(pStY,0.08)*0.90;
-      const _parts=pText.split('. ').map((s,i,a)=>i<a.length-1?s+'.':s).filter(Boolean);
-      let _fit=null;
-      for(let _n=_parts.length-1;_n>=1 && !_fit;_n--){
-        const _try=wrapText(_parts.slice(0,_n).join(' ')+' …',_pW,pFS,false,false);
-        if(_try.length<=_pMaxLines) _fit=_try;
-      }
-      // Last resort (even a single sentence overflows): hard line-clip. Note
-      // wrapText breaks only on whitespace, so this never splits a word.
-      pLines = _fit || pLines.slice(0,_pMaxLines);
-      _pClipped = true;
-    }
-  }
-
-  // Finalise the legibility warning: too small to fit at the legible floor, or
-  // one or more P statements were clipped.
-  window._labelLegibilityWarn = !_fitsAtMin || _pClipped;
+  // If the full layout exceeds the available area, block it. The preview shows
+  // an unmistakable non-exportable state instead of replacing mandatory text
+  // with dots or silently omitting statements.
+  window._labelLegibilityWarn = !_fitsAtMin || _L.endY>_hardBot;
+  const overflowOverlay=window._labelLegibilityWarn?`<g class="clp-fit-block"><rect x="${(pw*.08).toFixed(1)}" y="${(ph*.34).toFixed(1)}" width="${(pw*.84).toFixed(1)}" height="${(ph*.32).toFixed(1)}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${(ph*.46).toFixed(1)}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${Math.max(8,pw*.035).toFixed(1)}" font-weight="800" fill="#991b1b">FULL CONTENT DOES NOT FIT</text><text x="${cx}" y="${(ph*.55).toFixed(1)}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${Math.max(6,pw*.025).toFixed(1)}" fill="#991b1b">Select a larger size in Label Content</text></g>`:'';
 
   const showP   = pLines.length > 0;
 
@@ -4048,6 +4050,7 @@ function buildSVG(forExport=false){
 
   <!-- WATERMARK -->
   ${wm}
+  ${overflowOverlay}
 </g></svg>`;
 }
 
@@ -4144,9 +4147,9 @@ function updateLabel(){
   const _blockBody = _hasUnrecognizedCodes
     ? 'CLPeasy doesn\'t recognise the code'+(window._unrecognizedCodes.length>1?'s':'')+' <strong>'+window._unrecognizedCodes.join(', ')+'</strong> and will not print it directly on your label, since that would show an internal code rather than the required statement text.<br><br>Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
     : window._footerLegibilityClipped
-    ? 'Your business/supplier details cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling, so some required information would be left off.<br><br>To create a downloadable label, try selecting a larger label size in Step 1, or shorten your business details.<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
-    : 'The required hazard and precautionary information cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, try selecting a larger label size in Step 1. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>';
-  [document.getElementById('label-warn'), document.getElementById('label-warn-step5')].forEach(_labelWarnEl=>{
+    ? 'Your business/supplier details cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling, so some required information would be left off.<br><br>To create a downloadable label, try selecting a larger label size in Stage 4 — Label Content, or shorten your business details.<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
+    : 'The required hazard and precautionary information cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, try selecting a larger label size in Stage 4 — Label Content. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>';
+  [document.getElementById('label-warn-stage4'), document.getElementById('label-warn-step5')].forEach(_labelWarnEl=>{
     if(!_labelWarnEl)return;
     if(window._labelBlockDownload){
       _labelWarnEl.style.display='block';
@@ -4316,8 +4319,9 @@ setTimeout(()=>{
 },300);
 function buildSummary(){
   readForm();const{mmW,mmH}=getDims();
-  const items=[['Shape',S.shape.charAt(0).toUpperCase()+S.shape.slice(1)],['Size',`${mmW} × ${mmH}mm`],['Scent',S.scentName||'—'],['Type',S.productType],['Signal word',S.signal||'—'],['H statements',S.hStatements||'—'],['P statements',S.pStatements||'—'],['Sensitisers',S.sensitisers.slice(0,3).join(', ')+(S.sensitisers.length>3?'...':'')||'—'],['Business',S.bizName||'—']];
-  document.getElementById('label-summary').innerHTML=items.map(([k,v])=>`<div><strong>${k}</strong>${v}</div>`).join('');
+  const fullCodes=(raw,lib)=>(raw||'').split(',').map(v=>v.trim()).filter(Boolean).map(code=>{const hit=lib.find(x=>x.code===code);return hit?`${code} — ${hit.desc}`:code;}).join('; ')||'—';
+  const items=[['Shape',S.shape.charAt(0).toUpperCase()+S.shape.slice(1)],['Size',`${mmW} × ${mmH}mm`],['Product',S.scentName||'—'],['Type',S.productType||'—'],['Intended use',S.intendedUse||'—'],['Signal word',S.signal||'—'],['H/EUH statements',fullCodes(S.hStatements,H_LIB)],['P statements',fullCodes(S.pStatements,P_LIB)],['Sensitisers',S.sensitisers.join(', ')||'—'],['Business',S.bizName||'—']];
+  document.getElementById('label-summary').innerHTML=items.map(([k,v])=>`<div><strong>${escapeBuilderText(k)}</strong>${escapeBuilderText(v)}</div>`).join('');
 }
 
 // ── PNG DOWNLOAD (works on iPhone Safari) ─────────────────────
@@ -4552,7 +4556,7 @@ async function wizCallAPI(userMessage){
 Your job is to understand what the user wants to make, confirm their requirements, then provide clear step-by-step instructions to achieve it in CLPeasy.
 
 CLPeasy has these features:
-- BUILDER (builder.html): 5-step wizard — Step 1: shape (circle/square/rectangle) & size (preset: 35/40/50/63mm or custom mm) & appearance; Step 2: product details (scent name, product type, weight, fragrance load, burn time); Step 3: hazard data (supplier, Smart Paste SDS, signal word, pictograms, H/P statements, sensitisers); Step 4: business details (name, address, phone, website, batch number); Step 5: download (PNG, SVG, PDF) and save to label library
+- BUILDER (builder.html): 5-stage workflow — Stage 1 Product Details; Stage 2 Ingredients and SDS Section 2.2 extraction; Stage 3 AI Review & Classification showing full signal word, H/EUH statements, P statements, pictograms and sensitisers; Stage 4 Label Content including shape, dimensions, appearance and business details; Stage 5 Review & Finalise with PNG, PDF and SVG downloads. Label fit is assessed after dimensions are chosen in Stage 4.
 - PRINT SHEET (print.html): arrange saved labels on A4, choose sheet template, set quantities per label, download PDF or individual PNGs for Cricut
 - DOWNLOAD OPTIONS (all on builder Step 5 and preview panel):
   • ⬇ PNG — single label, 300 DPI, for home printing on plain paper or uploading to Canva
@@ -4580,7 +4584,7 @@ Key things to know:
 - Sizes: 52mm = standard candle (CLP minimum), 63mm = large jar, Custom = any other size including wax melts (below 52mm triggers a compliance warning)
 - Maximum labels on A4 at 75mm: approximately 6 (3×2 grid with margins)
 
-When generating steps, format them clearly. For WALKTHROUGH style, include visual hints in brackets like [→ Click "Circle" in the shape grid] or [→ Step 1: Label size & shape].
+When generating steps, format them clearly. For WALKTHROUGH style, include visual hints in brackets like [→ Click "Circle" in the shape grid] or [→ Stage 4: Label Content].
 
 Respond in plain HTML suitable for a chat bubble. Use <strong> for key terms. Use line breaks. Keep responses friendly and concise.`;
 
