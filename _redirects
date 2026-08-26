@@ -1,5 +1,3 @@
-/safety/*  /safety.html  200
-
 # Reverse proxy: auth.clpeasy.com → Supabase auth endpoint
 # Makes Google OAuth show "auth.clpeasy.com" instead of Supabase project URL
 https://auth.clpeasy.com/*  https://qvkosdqcryrcfbjtaxic.supabase.co/:splat  200!

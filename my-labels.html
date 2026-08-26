@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Labels — CLPeasy™</title>
+<meta name="description" content="View, manage and reuse your saved CLP labels.">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --teal:#4C9BB0;--teal-dark:#3a7d8f;--teal-light:#d6eef4;
+  --gold:#D97706;--gold-light:#FEF3C7;
+  --border:#E8EAED;--text:#111318;--muted:#6B7280;--off:#F7F8FA;--red:#EF4444;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);-webkit-font-smoothing:antialiased;min-height:100%;}
+
+/* ============================================================
+   APP SHELL — CANONICAL SHARED SHELL. dashboard.html is the single
+   source of truth for this block; account.html, builder.html and
+   my-labels.html must keep it byte-identical (or, where a file's
+   pre-existing literal values already compute to the same result,
+   effectively identical — documented at each such exception).
+   (24 Aug 2026, GUI integration pass.)
+   ============================================================ */
+:root{
+  --shell-sidebar-w:260px;--shell-topbar-h:56px;
+  --shell-radius-card:16px;--shell-radius-control:10px;
+  --shell-space-1:4px;--shell-space-2:8px;--shell-space-3:12px;
+  --shell-space-4:16px;--shell-space-5:24px;--shell-space-6:32px;
+}
+.app-shell{display:flex;min-height:100vh;}
+.sidebar{
+  width:var(--shell-sidebar-w);flex-shrink:0;background:white;
+  border-right:1.5px solid var(--border);display:flex;flex-direction:column;
+  padding:var(--shell-space-4) var(--shell-space-3);
+  position:fixed;top:0;left:0;bottom:0;z-index:300;
+  transition:transform .25s ease;
+}
+.sidebar-logo{display:flex;align-items:center;gap:8px;text-decoration:none;padding:var(--shell-space-2) var(--shell-space-2) var(--shell-space-5);}
+.sidebar-logo .nav-badge{width:40px;height:40px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;letter-spacing:-1px;flex-shrink:0;}
+.sidebar-logo .nav-easy{font-size:22px;font-weight:900;color:var(--teal);margin-left:6px;letter-spacing:-1px;}
+.sidebar-nav{display:flex;flex-direction:column;gap:2px;flex:1;}
+.sidebar-nav-item{
+  display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:var(--shell-radius-control);
+  color:var(--text);text-decoration:none;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;
+  border:none;background:none;cursor:pointer;text-align:left;width:100%;min-height:44px;
+  transition:background .15s ease,color .15s ease;
+}
+.sidebar-nav-item:hover{background:var(--off);}
+.sidebar-nav-item.active{background:var(--teal-light);color:var(--text);position:relative;}
+.sidebar-nav-item.active::before{content:'';position:absolute;left:2px;top:8px;bottom:8px;width:4px;border-radius:3px;background:var(--teal);}
+.sidebar-nav .snav-icon{color:var(--teal);}
+.snav-icon{width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.snav-icon svg{width:18px;height:18px;display:block;}
+/* Standardised sidebar bottom block (24 Aug 2026, GUI redesign — reused
+   verbatim across Dashboard, Create Label, My Labels and Account). My Labels
+   didn't previously fetch profile/usage data at all; this adds one small,
+   read-only select on the same table/columns dashboard.html already uses,
+   guarded the same guest-friendly way this page already handles auth. */
+.sidebar-bottom{margin-top:auto;display:flex;flex-direction:column;gap:10px;}
+.sidebar-usage{border:1px solid var(--border);border-radius:12px;padding:12px;}
+.su-label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-bottom:4px;}
+.su-count{font-size:19px;font-weight:800;color:var(--text);margin-bottom:8px;}
+.su-bar{height:6px;border-radius:999px;background:var(--off);overflow:hidden;margin-bottom:9px;}
+.su-bar span{display:block;height:100%;background:var(--teal);border-radius:999px;}
+.su-topup{display:block;text-align:center;font-size:12px;font-weight:700;color:var(--teal-dark);text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:7px;}
+.su-topup:hover{background:var(--off);}
+.sidebar-profile{position:relative;}
+.sidebar-user{width:100%;display:flex;align-items:center;gap:10px;padding:10px;border:1px solid transparent;border-radius:10px;background:white;cursor:pointer;text-align:left;font-family:inherit;}
+.sidebar-user:hover,.sidebar-profile.open .sidebar-user{border-color:var(--border);box-shadow:0 4px 14px rgba(15,23,42,.08);}
+.sidebar-user-chevron{margin-left:auto;width:16px;height:16px;transition:transform .18s;color:var(--muted);}
+.sidebar-profile.open .sidebar-user-chevron{transform:rotate(180deg);}
+.sidebar-user-menu{display:none;position:absolute;left:0;right:0;bottom:calc(100% + 6px);padding:6px;background:white;border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 28px rgba(15,23,42,.14);z-index:20;}
+.sidebar-profile.open .sidebar-user-menu{display:block;}
+.sidebar-user-menu button{width:100%;display:flex;align-items:center;gap:9px;padding:9px 10px;border:0;border-radius:7px;background:white;color:var(--text);font:600 12px 'DM Sans',sans-serif;cursor:pointer;}
+.sidebar-user-menu button:hover{background:var(--off);color:var(--red);}
+.su-avatar{width:36px;height:36px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;}
+.su-info{min-width:0;}
+.su-name{font-size:13px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.su-plan{font-size:11.5px;color:var(--teal-dark);}
+.sidebar-logout{color:var(--muted);border-top:1px solid var(--border);padding-top:14px;}
+.sidebar-logout:hover{background:var(--off);color:var(--red);}
+.nav-email{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;padding:8px 10px 4px;}
+
+.shell-main{flex:1;margin-left:var(--shell-sidebar-w);min-width:0;}
+.shell-main{
+  background-color:#fbfdfe;
+  background-image:url('assets/clpeasy-region-top.png'), url('assets/clpeasy-region-bottom.png');
+  background-repeat:no-repeat, no-repeat;
+  background-position:top right, bottom center;
+  background-size:38% auto, 100% auto;
+}
+.shell-topbar{
+  display:none;align-items:center;gap:12px;height:var(--shell-topbar-h);
+  padding:0 var(--shell-space-4);background:white;border-bottom:1.5px solid var(--border);
+  position:sticky;top:0;z-index:150;
+}
+.shell-topbar-title{font-weight:700;font-size:15px;}
+.sidebar-toggle,.sidebar-toggle-inline{
+  display:none;flex-direction:column;justify-content:center;gap:4px;
+  width:44px;height:44px;border:1.5px solid var(--border);border-radius:10px;background:white;
+  cursor:pointer;flex-shrink:0;
+}
+.sidebar-toggle span,.sidebar-toggle-inline span{display:block;height:2px;background:var(--text);border-radius:1px;margin:0 9px;}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(17,19,24,0.4);z-index:290;opacity:0;transition:opacity .2s ease;}
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);box-shadow:8px 0 24px rgba(0,0,0,0.08);}
+  .sidebar.open{transform:translateX(0);}
+  .shell-main{margin-left:0;}
+  .shell-topbar{display:flex;}
+  .sidebar-toggle-inline{display:flex;}
+  .sidebar-overlay.open{display:block;opacity:1;}
+  .wrap{padding:24px 24px 48px;}
+}
+
+/* ── PAGE CONTENT ─────────────────────────────────────────────── */
+.wrap{max-width:1180px;margin:0 auto;padding:40px 40px 60px;}
+.crumb{font-size:12px;color:var(--muted);margin-bottom:10px;}
+.crumb a{color:var(--muted);text-decoration:none;}
+.crumb a:hover{color:var(--teal);}
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px;}
+.page-title{font-family:'DM Serif Display',serif;font-size:32px;margin-bottom:4px;}
+.page-sub{color:var(--muted);font-size:14px;}
+.btn{font-size:13px;font-weight:700;padding:11px 18px;border-radius:10px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--teal);color:white;}
+.btn-primary:hover{background:var(--teal-dark);}
+.btn-outline{background:white;color:var(--text);border:1.5px solid var(--border);}
+.btn-outline:hover{border-color:var(--teal);color:var(--teal);}
+.btn-sm{font-size:12px;padding:8px 12px;}
+
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
+.search-input{flex:1;min-width:220px;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;background:white;}
+.search-input:focus{outline:none;border-color:var(--teal);}
+select.sel{padding:10px 30px 10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;background:white;cursor:pointer;color:var(--text);}
+
+.folder-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.folder-tab{display:flex;align-items:center;gap:6px;padding:9px 14px;border-radius:10px;border:1.5px solid var(--border);background:white;font-size:13px;font-weight:600;cursor:pointer;color:var(--text);}
+.folder-tab .cnt{background:var(--off);border-radius:999px;padding:1px 7px;font-size:11px;color:var(--muted);}
+.folder-tab.active{background:var(--teal);border-color:var(--teal);color:white;}
+.folder-tab.active .cnt{background:rgba(255,255,255,.25);color:white;}
+
+.label-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+@media(max-width:1000px){.label-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:640px){.label-grid{grid-template-columns:1fr;}}
+.label-card{background:white;border:1px solid var(--border);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px;}
+.label-thumb{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;font-size:16px;flex-shrink:0;}
+.label-card-top{display:flex;align-items:flex-start;gap:12px;}
+.label-name{font-size:15px;font-weight:700;line-height:1.3;}
+.label-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.tag{font-size:11px;font-weight:600;background:var(--off);border:1px solid var(--border);border-radius:999px;padding:3px 9px;color:var(--muted);}
+.label-updated{font-size:12px;color:var(--muted);}
+.label-btns{display:flex;gap:8px;margin-top:2px;}
+.label-btns .btn-outline{padding:8px 10px;}
+.icon-btn{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+.icon-btn.danger:hover{border-color:var(--red);color:var(--red);}
+
+.empty-state{background:white;border:1.5px dashed var(--border);border-radius:16px;padding:60px 24px;text-align:center;color:var(--muted);}
+.empty-state .btn{margin-top:14px;}
+
+.pagination{display:flex;align-items:center;justify-content:space-between;margin-top:22px;flex-wrap:wrap;gap:12px;}
+.pagination-info{font-size:13px;color:var(--muted);}
+.pagination-btns{display:flex;gap:6px;align-items:center;}
+.page-btn{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--border);background:white;font-size:13px;font-weight:600;cursor:pointer;}
+.page-btn.active{background:var(--teal);border-color:var(--teal);color:white;}
+.page-btn:disabled{opacity:.4;cursor:not-allowed;}
+
+.trust-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:32px;background:white;border:1px solid var(--border);border-radius:16px;padding:20px;}
+@media(max-width:760px){.trust-strip{grid-template-columns:1fr 1fr;}}
+.trust-item{display:flex;align-items:center;gap:10px;font-size:12px;}
+.trust-item b{display:block;font-size:13px;}
+.trust-icon{width:36px;height:36px;border-radius:50%;background:var(--teal-light);color:var(--teal-dark);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.trust-icon svg{width:17px;height:17px;display:block;}
+a.trust-item{color:inherit;text-decoration:none;}
+a.trust-item:hover .trust-icon{background:var(--teal);color:white;}
+
+/* SHARED TRUST FOOTER — same across Dashboard, Create Label, My Labels, Account */
+.shell-trust{display:grid;grid-template-columns:1.05fr 1fr 0.95fr 1fr;gap:0;padding:0;border-top:3px solid var(--teal);background:#fff;border:1px solid var(--border);border-radius:16px;margin:24px 0;overflow:hidden;position:relative;z-index:1;}
+.shell-trust-item{display:flex;align-items:center;gap:10px;padding:26px 15px;border-left:1px solid var(--border);}
+.shell-trust-item:first-child{border-left:none;}
+.shell-trust-icon{width:38px;height:38px;border-radius:10px;background:#edf8fa;color:var(--teal);display:grid;place-items:center;flex:0 0 auto;box-shadow:0 0 0 1px rgba(12,137,155,0.12) inset;}
+.shell-trust-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.shell-clp-ready-badge{background:none;box-shadow:none;width:58px;height:73px;border-radius:0;}
+.shell-trust-copy{display:flex;flex-direction:column;min-width:0;}
+.shell-trust-copy b{font-size:13px;}
+.shell-trust-copy small{font-size:11.5px;color:var(--muted);}
+@media(max-width:1100px){.shell-trust{grid-template-columns:1fr 1fr;}.shell-trust-item:nth-child(3){border-left:0;border-top:1px solid var(--border);}.shell-trust-item:nth-child(4){border-top:1px solid var(--border);}}
+@media(max-width:760px){.shell-trust{grid-template-columns:1fr;}.shell-trust-item{border-left:0 !important;border-top:1px solid var(--border);}.shell-trust-item:first-child{border-top:none;}}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidebar">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <a href="index.html" class="sidebar-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span></a>
+    <nav class="sidebar-nav" aria-label="Main navigation">
+      <a href="dashboard.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg></span>Dashboard</a>
+      <a href="builder.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>Create Label</a>
+      <a href="my-labels.html" class="sidebar-nav-item active"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5a1 1 0 0 1 1-1h4.7l2 2.2h8.3a1 1 0 0 1 1 1V18a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1Z"/></svg></span>My Labels</a>
+      <a href="knowledge.html" target="_blank" rel="noopener" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5c-1.6-1.3-4-2-6.5-2A2 2 0 0 0 3.5 6.5V17c2.6 0 5 .7 6.5 2 1.5-1.3 3.9-2 6.5-2s2-.9 2-.9V6.5c0-1.1-.9-2-2-2-2.5 0-4.9.7-6.5 2Z"/><path d="M12 6.5V19"/></svg></span>Knowledge Base</a>
+      <a href="account.html" target="_blank" rel="noopener" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.4-3.6 4.3-5.5 7.5-5.5s6.1 1.9 7.5 5.5"/></svg></span>Account</a>
+      <a href="support.html" target="_blank" rel="noopener" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 1 3.3 6.4L4 20l1.3-3.6A7.96 7.96 0 0 1 4 12Z"/></svg></span>Support</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-usage" id="sidebar-usage" style="display:none;">
+        <div class="su-label">Downloads remaining</div>
+        <div class="su-count" id="su-count">—</div>
+        <div class="su-bar"><span id="su-fill" style="width:0%"></span></div>
+        <a href="pricing.html" class="su-topup">Buy Top-Up →</a>
+      </div>
+      <div class="sidebar-profile">
+        <button type="button" class="sidebar-user" id="sidebar-user" style="display:none;" aria-haspopup="true" aria-expanded="false">
+          <div class="su-avatar" id="su-avatar">—</div>
+          <div class="su-info"><div class="su-name" id="su-name">—</div><div class="su-plan" id="su-plan">—</div></div>
+          <svg class="sidebar-user-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m8 10 4 4 4-4"/></svg>
+        </button>
+        <div class="sidebar-user-menu" role="menu"><button type="button" onclick="signOut()" role="menuitem"><span aria-hidden="true">↪</span> Log out</button></div>
+      </div>
+      <!-- nav-email kept as a hidden data sink: existing code below writes to it -->
+      <span class="nav-email" id="nav-email" style="display:none;"></span>
+    </div>
+  </aside>
+
+  <div class="shell-main">
+    <header class="shell-topbar">
+      <button class="sidebar-toggle-inline" id="sidebar-toggle-inline" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <span class="shell-topbar-title">My Labels</span>
+    </header>
+
+    <div class="wrap">
+      <div class="crumb"><a href="dashboard.html">Dashboard</a> &nbsp;›&nbsp; My Labels</div>
+      <div class="page-head">
+        <div>
+          <div class="page-title">My Labels</div>
+          <div class="page-sub">View, manage and reuse labels saved in this browser on this device. Clearing site data will remove them.</div>
+        </div>
+        <a href="builder.html" class="btn btn-primary" id="header-create-btn">+ Create New Label</a>
+      </div>
+
+      <div class="toolbar">
+        <input type="text" class="search-input" id="ml-search" placeholder="Search labels by product name, scent, type…" oninput="renderGrid()">
+        <select class="sel" id="ml-sort" onchange="renderGrid()">
+          <option value="recent">Recently Updated</option>
+          <option value="az">Name (A–Z)</option>
+        </select>
+      </div>
+
+      <div class="folder-tabs" id="folder-tabs"></div>
+
+      <div id="grid-area"></div>
+
+      
+
+  <section class="shell-trust">
+    <div class="shell-trust-item"><span class="shell-trust-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span><span class="shell-trust-copy"><b>Secure</b><small>Your account access is protected</small></span></div>
+    <div class="shell-trust-item"><span class="shell-trust-icon shell-clp-ready-badge"><img src="assets/clp-ready.png" alt="CLP Ready" width="58" height="73" style="width:58px;height:73px;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(12,137,155,0.3));"></span><span class="shell-trust-copy"><b>CLP Ready</b><small>Built for UK label creation</small></span></div>
+    <div class="shell-trust-item"><span class="shell-trust-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 5.7a5.4 5.4 0 0 0-7.6 0L12 6.9l-1.2-1.2a5.4 5.4 0 1 0-7.6 7.6L12 22l8.8-8.7a5.4 5.4 0 0 0 0-7.6Z"/></svg></span><span class="shell-trust-copy"><b>By makers, for makers</b><small>Practical tools for small businesses</small></span></div>
+    <div class="shell-trust-item"><span class="shell-trust-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H8l-4 4Z"/></svg></span><span class="shell-trust-copy"><b>We're here to help</b><small>support@clpeasy.com</small></span></div>
+  </section>
+
+
+<script>
+const SUPABASE_URL = 'https://qvkosdqcryrcfbjtaxic.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+let currentUser = null;
+
+// ── Same per-account library storage used by builder.html's label
+// library panel — read-only reuse here (My Labels never writes labels
+// itself except duplicate/delete, both of which reuse the identical
+// storage shape builder.html already produces via saveLabel()). ──
+function libNS(){ return (currentUser && currentUser.id) ? currentUser.id : 'guest'; }
+function libKey(base){ return base + '__u_' + libNS(); }
+function getSaved(){try{return JSON.parse(localStorage.getItem(libKey('clpeasy_labels'))||'[]');}catch(e){return[];}}
+function persistSaved(arr){localStorage.setItem(libKey('clpeasy_labels'),JSON.stringify(arr));}
+function getFolders(){try{return JSON.parse(localStorage.getItem(libKey('clpeasy_folders'))||'{}');}catch(e){return{};}}
+
+const PRODUCT_FOLDER_MAP={
+  'Scented Candle':'candles','Soy Candle':'candles','Votive Candle':'candles',
+  'Tea Light Candle':'candles','Pillar Candle':'candles','Advent Calendar Candle':'candles',
+  'Wax Melt':'wax_melts','Wax Tart':'wax_melts','Snap Bar':'wax_melts',
+  'Wax Melt Clamshell':'wax_melts','Advent Calendar Wax Melt':'wax_melts',
+  'Reed Diffuser':'diffusers','Electric Diffuser':'diffusers',
+  'Car Diffuser':'diffusers','Plugin Diffuser':'diffusers',
+  'Room Spray':'sprays','Car Air Freshener Spray':'sprays','Linen Spray':'sprays',
+  'Wax Melt Bouquet':'other','Scented Sachet':'other','Potpourri':'other',
+};
+const FOLDER_DEFS=[
+  {key:'candles',   label:'Candles',       icon:'🕯️', color:'#B08BD6'},
+  {key:'wax_melts', label:'Wax Melts',     icon:'🌸', color:'#E8A0BF'},
+  {key:'diffusers', label:'Diffusers',     icon:'🌿', color:'#6BB7A8'},
+  {key:'sprays',    label:'Room Sprays',   icon:'💨', color:'#6FB1D9'},
+  {key:'other',     label:'Other',         icon:'✨', color:'#D9A85C'},
+];
+function getLabelFolder(productType){ return PRODUCT_FOLDER_MAP[productType]||'other'; }
+function isFolderActive(key){ const f=getFolders(); return !!(f[key]&&f[key].active); }
+function folderColor(key){ const fd=FOLDER_DEFS.find(f=>f.key===key); return fd?fd.color:'#4C9BB0'; }
+function folderLabel(key){ const fd=FOLDER_DEFS.find(f=>f.key===key); return fd?fd.label:'Other'; }
+
+let activeFilter='all'; // 'all' | folder key | '_uncat'
+let currentPage=1;
+const PAGE_SIZE=6;
+
+function parseSavedAt(s){
+  // savedAt is stored as en-GB locale string (DD/MM/YYYY) by builder.html's saveLabel()
+  if(!s)return 0;
+  const parts=s.split('/');
+  if(parts.length!==3)return 0;
+  return new Date(parts[2],parts[1]-1,parts[0]).getTime();
+}
+
+function renderFolderTabs(){
+  const arr=getSaved();
+  const activeFolders=FOLDER_DEFS.filter(fd=>isFolderActive(fd.key));
+  const uncatCount=arr.filter(e=>!isFolderActive(getLabelFolder(e.productType))).length;
+  let html=`<button class="folder-tab ${activeFilter==='all'?'active':''}" onclick="setFilter('all')">📋 All Labels <span class="cnt">${arr.length}</span></button>`;
+  activeFolders.forEach(fd=>{
+    const count=arr.filter(e=>getLabelFolder(e.productType)===fd.key).length;
+    if(!count)return;
+    html+=`<button class="folder-tab ${activeFilter===fd.key?'active':''}" onclick="setFilter('${fd.key}')">${fd.icon} ${fd.label} <span class="cnt">${count}</span></button>`;
+  });
+  if(uncatCount){
+    html+=`<button class="folder-tab ${activeFilter==='_uncat'?'active':''}" onclick="setFilter('_uncat')">📁 Uncategorised <span class="cnt">${uncatCount}</span></button>`;
+  }
+  document.getElementById('folder-tabs').innerHTML=html;
+}
+
+function setFilter(key){ activeFilter=key; currentPage=1; renderFolderTabs(); renderGrid(); }
+
+function labelThumb(e){
+  const key=getLabelFolder(e.productType);
+  const color=folderColor(key);
+  const initial=(e.scentName||'?').charAt(0).toUpperCase();
+  return `<div class="label-thumb" style="background:${color}">${initial}</div>`;
+}
+
+function getFilteredSorted(){
+  let arr=getSaved().map((e,i)=>({e,i}));
+  if(activeFilter==='_uncat') arr=arr.filter(({e})=>!isFolderActive(getLabelFolder(e.productType)));
+  else if(activeFilter!=='all') arr=arr.filter(({e})=>getLabelFolder(e.productType)===activeFilter);
+  const q=(document.getElementById('ml-search').value||'').trim().toLowerCase();
+  if(q) arr=arr.filter(({e})=>(e.scentName||'').toLowerCase().includes(q)||(e.productType||'').toLowerCase().includes(q));
+  const sort=document.getElementById('ml-sort').value;
+  if(sort==='az') arr.sort((a,b)=>(a.e.scentName||'').localeCompare(b.e.scentName||''));
+  else arr.sort((a,b)=>parseSavedAt(b.e.savedAt)-parseSavedAt(a.e.savedAt));
+  return arr;
+}
+
+function renderGrid(){
+  const all=getFilteredSorted();
+  const area=document.getElementById('grid-area');
+  // 24 Aug 2026 (GUI correction): the empty-state below already renders its
+  // own "+ Create New Label" CTA when the library has no saved labels at
+  // all -- showing the header CTA at the same time duplicated it. The header
+  // CTA is only hidden for a genuinely empty library; a no-results search
+  // (library has labels, current filter just matches none) keeps it visible.
+  const headerBtn=document.getElementById('header-create-btn');
+  if(headerBtn) headerBtn.style.display=getSaved().length?'':'none';
+  if(!all.length){
+    area.innerHTML=`<div class="empty-state">
+      <div style="font-size:32px;">📁</div>
+      <div style="font-weight:700;margin-top:8px;">No labels found</div>
+      <div style="font-size:13px;margin-top:4px;">${getSaved().length?'Try a different search or folder.':'Create your first label to see it here.'}</div>
+      <a href="builder.html" class="btn btn-primary">+ Create New Label</a>
+    </div>`;
+    document.querySelector('.pagination')?.remove();
+    return;
+  }
+  const totalPages=Math.max(1,Math.ceil(all.length/PAGE_SIZE));
+  if(currentPage>totalPages)currentPage=totalPages;
+  const start=(currentPage-1)*PAGE_SIZE;
+  const pageItems=all.slice(start,start+PAGE_SIZE);
+
+  area.innerHTML=`<div class="label-grid">${pageItems.map(({e,i})=>`
+    <div class="label-card">
+      <div class="label-card-top">
+        ${labelThumb(e)}
+        <div style="min-width:0;">
+          <div class="label-name">${escapeHtml(e.scentName||'Untitled')}</div>
+          <div class="label-tags">
+            <span class="tag">${escapeHtml(e.productType||'—')}</span>
+            <span class="tag">${escapeHtml(String(e.size||''))}${e.size?'mm ':''}${escapeHtml(e.shape||'')}</span>
+          </div>
+        </div>
+      </div>
+      <div class="label-updated">Updated ${escapeHtml(e.savedAt||'—')}</div>
+      <div class="label-btns">
+        <a href="builder.html?open=${i}" class="btn btn-outline btn-sm" style="flex:1;justify-content:center;">Open</a>
+        <button class="btn btn-outline icon-btn" title="Duplicate" onclick="duplicateLabel(${i})">⧉</button>
+        <button class="btn btn-outline icon-btn danger" title="Delete" onclick="deleteLabel(${i})">🗑</button>
+      </div>
+    </div>`).join('')}</div>`;
+
+  let pag=document.querySelector('.pagination');
+  if(!pag){ pag=document.createElement('div'); pag.className='pagination'; area.after(pag); }
+  const from=start+1, to=Math.min(start+PAGE_SIZE,all.length);
+  let btns=`<button class="page-btn" ${currentPage===1?'disabled':''} onclick="goPage(${currentPage-1})">‹</button>`;
+  for(let p=1;p<=totalPages;p++){
+    btns+=`<button class="page-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+  }
+  btns+=`<button class="page-btn" ${currentPage===totalPages?'disabled':''} onclick="goPage(${currentPage+1})">›</button>`;
+  pag.innerHTML=`<div class="pagination-info">Showing ${from} to ${to} of ${all.length} labels</div><div class="pagination-btns">${btns}</div>`;
+}
+
+function goPage(p){ currentPage=p; renderGrid(); }
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// Delete reuses the exact same array shape/index builder.html's Label
+// Library panel deletes from — same confirm(), same splice+persist.
+function deleteLabel(i){
+  if(!confirm('Delete this saved label?'))return;
+  const arr=getSaved();arr.splice(i,1);persistSaved(arr);
+  renderFolderTabs();renderGrid();
+}
+
+// NEW — duplicateLabel() did not exist before (builder.html's library
+// panel only ever had Load/Delete). Clones the entry, appends a
+// "(Copy)" suffix so it never collides with saveLabel()'s
+// scentName+productType dedupe match, and appends to the same array.
+function duplicateLabel(i){
+  const arr=getSaved();
+  const src=arr[i];
+  if(!src)return;
+  const copy=JSON.parse(JSON.stringify(src));
+  let baseName=copy.scentName||'Untitled';
+  baseName=baseName.replace(/ \(Copy( \d+)?\)$/,'');
+  let n=1, newName=baseName+' (Copy)';
+  const existingNames=new Set(arr.map(e=>e.scentName));
+  while(existingNames.has(newName)){ n++; newName=baseName+' (Copy '+n+')'; }
+  copy.scentName=newName;
+  copy.savedAt=new Date().toLocaleDateString('en-GB');
+  arr.push(copy);
+  persistSaved(arr);
+  renderFolderTabs();renderGrid();
+}
+
+async function signOut(){
+  await sb.auth.signOut();
+  window.location.href='index.html';
+}
+
+async function initPage(){
+  try{
+    const { data:{ session } } = await sb.auth.getSession();
+    if(!session){
+      window.location.href='auth.html?mode=signin&next=my-labels.html';
+      return;
+    }
+    if(session){
+      currentUser=session.user;
+      const navEmail=document.getElementById('nav-email');
+      if(navEmail)navEmail.textContent=currentUser.email;
+
+      // Sidebar bottom block (24 Aug 2026, GUI redesign) — this page didn't
+      // previously fetch profile/usage data; one small read-only select,
+      // same table/columns dashboard.html already uses. Guest-friendly: any
+      // failure here just leaves the sidebar card hidden, same as the
+      // library-loading try/catch above already does for guests.
+      try{
+        const { data:prof } = await sb.from('profiles')
+          .select('full_name, plan, is_pro, downloads_used, downloads_limit')
+          .eq('id', currentUser.id).maybeSingle();
+        const suUsage=document.getElementById('sidebar-usage');
+        if(suUsage && prof && Number.isFinite(prof.downloads_limit) && prof.downloads_limit>0){
+          suUsage.style.display='block';
+          const suLeft=Math.max(0,prof.downloads_limit-(prof.downloads_used||0));
+          document.getElementById('su-count').textContent=suLeft+' of '+prof.downloads_limit;
+          document.getElementById('su-fill').style.width=Math.min(100,Math.round((suLeft/prof.downloads_limit)*100))+'%';
+        }
+        const suUser=document.getElementById('sidebar-user');
+        if(suUser){
+          suUser.style.display='flex';
+          const suDisplayName=(prof&&prof.full_name)||currentUser.email||'Account';
+          document.getElementById('su-avatar').textContent=((prof&&prof.full_name)||currentUser.email||'?').charAt(0).toUpperCase();
+          document.getElementById('su-name').textContent=suDisplayName;
+          document.getElementById('su-plan').textContent=(prof&&prof.is_pro)?'Easy Pro':(prof&&prof.plan==='easy_start'?'Easy Start':'Easy Trial');
+        }
+      }catch(e){ /* sidebar card stays hidden — non-blocking */ }
+    }
+  }catch(e){
+    window.location.href='auth.html?mode=signin&next=my-labels.html';
+    return;
+  }
+  renderFolderTabs();
+  renderGrid();
+}
+initPage();
+</script>
+<script>
+  // Sidebar mobile toggle (same shell script used verbatim on Dashboard/Create Label/Account)
+  (function(){
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const toggles = [document.getElementById('sidebar-toggle'), document.getElementById('sidebar-toggle-inline')].filter(Boolean);
+    function openSidebar(){
+      sidebar.classList.add('open');
+      overlay.classList.add('open');
+      toggles.forEach(t=>t.setAttribute('aria-expanded','true'));
+      document.body.style.overflow='hidden';
+    }
+    function closeSidebar(){
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+      toggles.forEach(t=>t.setAttribute('aria-expanded','false'));
+      document.body.style.overflow='';
+    }
+    toggles.forEach(t=>t.addEventListener('click', ()=>{
+      sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+    }));
+    overlay.addEventListener('click', closeSidebar);
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeSidebar(); });
+  })();
++  (function(){
+    const profile=document.querySelector('.sidebar-profile');
+    const trigger=document.getElementById('sidebar-user');
+    if(!profile||!trigger)return;
+    function closeProfileMenu(){
+      profile.classList.remove('open');
+      trigger.setAttribute('aria-expanded','false');
+    }
+    trigger.addEventListener('click',event=>{
+      event.stopPropagation();
+      const open=profile.classList.toggle('open');
+      trigger.setAttribute('aria-expanded',String(open));
+    });
+    profile.addEventListener('click',event=>event.stopPropagation());
+    document.addEventListener('click',closeProfileMenu);
+    document.addEventListener('keydown',event=>{if(event.key==='Escape')closeProfileMenu();});
+  })();
+</script>
+</body>
+</html>
