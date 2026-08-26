@@ -13,8 +13,8 @@ body{font-family:'DM Sans',sans-serif;background:white;color:var(--text);min-hei
 
 nav{background:white;border-bottom:1px solid var(--border);padding:0 24px;height:64px;display:flex;align-items:center;justify-content:space-between;}
 .nav-logo{display:flex;align-items:center;text-decoration:none;}
-.nav-badge{width:40px;height:40px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;}
-.nav-easy{font-size:20px;font-weight:900;color:var(--teal);margin-left:5px;letter-spacing:-1px;}
+.nav-badge{width:52px;height:52px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;letter-spacing:-1px;flex-shrink:0;}
+.nav-easy{font-size:26px;font-weight:900;color:var(--teal);margin-left:4px;letter-spacing:-1px;}
 .nav-link{font-size:13px;color:var(--muted);text-decoration:none;}
 .nav-link:hover{color:var(--teal);}
 
@@ -87,12 +87,16 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 24px;height
 /* BOTH GOOD RESULT */
 .both-card{background:white;border:1.5px solid var(--border);border-radius:20px;padding:36px 28px;display:none;animation:fadeUp .4s ease;}
 .both-card.show{display:block;}
+@media(max-width:400px){
+  nav{padding:0 14px;}
+  .nav-link{display:none;}
+}
 </style>
 </head>
 <body>
 
 <nav>
-  <a href="home.html" class="nav-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span></a>
+  <a href="index.html" class="nav-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span></a>
   <a href="pricing.html" class="nav-link">See all plans →</a>
   <a href="support.html" style="font-size:13px;color:var(--muted);text-decoration:none;padding:7px 14px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;" onmouseover="this.style.color='#4C9BB0';this.style.borderColor='#4C9BB0'" onmouseout="this.style.color='';this.style.borderColor=''">Support</a>
 </nav>
@@ -269,7 +273,7 @@ const PRO_REASONS = {
   q3: '🛍️ Selling across multiple channels increases compliance scrutiny — Easy Pro keeps your audit trail, version history and regulation alerts in one place.',
   q4_happened: '😬 You\'ve had SDS updates catch you out before — regulation alerts and SDS review reminders will make sure it never happens again.',
   q4_didnt_know: '🤔 SDS data changes regularly — Easy Pro\'s regulation alerts and review reminders will keep you automatically informed.',
-  q5: '😰 Easy Pro\'s compliance checker, full audit trail and regulation alerts will give you the confidence you need.',
+  q5: '😰 Easy Pro\'s full audit trail and regulation alerts will give you the confidence you need.',
 };
 
 const START_REASONS = {

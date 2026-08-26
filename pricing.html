@@ -18,8 +18,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--text);-w
 /* NAV */
 nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height:72px;display:flex;align-items:center;justify-content:space-between;}
 .nav-logo{display:flex;align-items:center;text-decoration:none;}
-.nav-badge{width:44px;height:44px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;flex-shrink:0;}
-.nav-easy{font-size:22px;font-weight:900;color:var(--teal);margin-left:5px;letter-spacing:-1px;}
+.nav-badge{width:52px;height:52px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;letter-spacing:-1px;flex-shrink:0;}
+.nav-easy{font-size:26px;font-weight:900;color:var(--teal);margin-left:4px;letter-spacing:-1px;}
 .nav-cta{background:var(--teal);color:white;border:none;padding:9px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;}
 
 /* HERO */
@@ -139,6 +139,11 @@ footer a{color:#6B7280;text-decoration:none;}
   .cards{grid-template-columns:1fr;max-width:420px;margin:0 auto 16px;}
   .legend-grid{grid-template-columns:1fr;}
 }
+@media(max-width:600px){
+  nav{padding:0 16px;}
+  nav a:not(.nav-logo):not(.nav-cta){display:none;}
+  .nav-cta{padding:8px 14px;font-size:13px;}
+}
 </style>
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"></script>
@@ -150,7 +155,7 @@ footer a{color:#6B7280;text-decoration:none;}
 <body>
 
 <nav>
-  <a href="home.html" class="nav-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span><sup style="font-size:9px;font-weight:700;color:#4C9BB0;vertical-align:super;line-height:0;margin-left:1px;">™</sup></a>
+  <a href="index.html" class="nav-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span><sup style="font-size:9px;font-weight:700;color:#4C9BB0;vertical-align:super;line-height:0;margin-left:1px;">™</sup></a>
   <a href="compliance.html" style="font-size:13px;color:var(--muted);text-decoration:none;padding:7px 14px;border-radius:8px;border:1.5px solid var(--border);margin-right:8px;transition:all .2s;" onmouseover="this.style.color='#4C9BB0';this.style.borderColor='#4C9BB0'" onmouseout="this.style.color='';this.style.borderColor=''">Compliance</a>
   <a href="support.html" style="font-size:13px;color:var(--muted);text-decoration:none;padding:7px 14px;border-radius:8px;border:1.5px solid var(--border);margin-right:8px;transition:all .2s;" onmouseover="this.style.color='#4C9BB0';this.style.borderColor='#4C9BB0'" onmouseout="this.style.color='';this.style.borderColor=''">Support</a>
   <a href="auth.html" class="nav-cta">Start free trial</a>
@@ -242,15 +247,15 @@ footer a{color:#6B7280;text-decoration:none;}
       <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick-gold" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>30 downloads per month<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">30 label downloads per month &mdash; more than the Easy Start allowance. Perfect for makers with larger ranges, seasonal collections and multiple label shapes. Downloads do not roll over. If you accidentally lose a downloaded file, re-downloading the same label within 7 days is free and does not count toward your allowance. Top-up packs available if needed.</div></div>
 <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick-gold" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Digital safety sheets (hosted)<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Every label with a QR code gets its own permanently hosted safety page at clpeasy.com/safety. Creating new QR codes requires Easy Pro &mdash; but pages already live stay accessible forever.</div></div>
 <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick-gold" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Smart Paste — hazard data from your own SDS, always current &#9889;<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Paste Section 2.2 from your fragrance supplier's SDS and CLPeasy™ extracts all the relevant hazard data automatically &mdash; signal word, H statements, sensitisers and GHS pictograms. Because you're working from your own document, your labels are always built from your actual, current SDS &mdash; not a pre-held database that may not reflect your supplier's latest update. Easy Pro also supports dropping in your complete SDS PDF for hands-free extraction.</div></div>
-<div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick-gold" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>EU &amp; NI ready — UFI codes included<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">A UFI (Unique Formula Identifier) is a 16-character code required on CLP labels for products sold in the EU and Northern Ireland. It is not currently required for Great Britain (England, Scotland, Wales) sales only — but is best practice to include if you sell anywhere online. CLPeasy™ generates one for each of your formulations automatically.</div></div>
+
 <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick-gold" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Live QR safety info, always current<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">A small QR code links customers to a digital safety page hosted by CLPeasy™. When you update your formula the page updates automatically &mdash; no need to reprint. Safety sheets for labels already on products stay live permanently, even if you change plan.</div></div>
 <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick-gold" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Priority support<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Get to the front of the queue. Questions answered within 1 working day.</div></div>
 <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick-gold" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>SDS review reminders, never sell stale data<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">CLPeasy™ emails you 11 months after saving a label to check your supplier's SDS is still current before reordering stock.</div></div>
 <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg width="14" height="14" viewBox="0 0 14 14" style="flex-shrink:0;"><circle cx="7" cy="7" r="6" fill="#F59E0B" opacity="0.2"/><text x="7" y="10" text-anchor="middle" font-size="8" fill="#92400E" font-weight="700">✦</text></svg>Automatic regulation change alerts<span style="font-size:9px;font-weight:700;background:#FEF3C7;color:#92400E;padding:1px 7px;border-radius:10px;margin-left:6px;letter-spacing:0.3px;">COMING SOON</span><span class="feature-chevron">&#9660;</span></button><div class="feature-desc">When ECHA updates CLP annexes affecting ingredients in your saved labels, CLPeasy™ emails you &mdash; so you never accidentally use an out of date label on your products.</div></div>
-<div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg width="14" height="14" viewBox="0 0 14 14" style="flex-shrink:0;"><circle cx="7" cy="7" r="6" fill="#F59E0B" opacity="0.2"/><text x="7" y="10" text-anchor="middle" font-size="8" fill="#92400E" font-weight="700">✦</text></svg>GPSR safety report, done in seconds<span style="font-size:9px;font-weight:700;background:#FEF3C7;color:#92400E;padding:1px 7px;border-radius:10px;margin-left:6px;letter-spacing:0.3px;">COMING SOON</span><span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Businesses selling online need a Product Safety Report under GPSR. CLPeasy™ generates one from your label data &mdash; saving hours of paperwork.</div></div>
+
 <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg width="14" height="14" viewBox="0 0 14 14" style="flex-shrink:0;"><circle cx="7" cy="7" r="6" fill="#F59E0B" opacity="0.2"/><text x="7" y="10" text-anchor="middle" font-size="8" fill="#92400E" font-weight="700">✦</text></svg>📱 Mobile app — coming soon<span style="font-size:9px;font-weight:700;background:#FEF3C7;color:#92400E;padding:1px 7px;border-radius:10px;margin-left:6px;letter-spacing:0.3px;">COMING SOON</span><span class="feature-chevron">&#9660;</span></button><div class="feature-desc">A dedicated CLPeasy™ app for iOS and Android is in development. On a plane, a train, or an automobile — build your labels wherever life takes you and save them straight to your library. When you're ready to send an order to print, the hard work is already done. In this day and age, every spare moment spent productively is a diamond power-up — boosting your health bar when it matters most. I even built parts of CLPeasy™ itself on my mobile — when an idea or an important detail came to me, I wasn't going to let it disappear. And while CLPeasy™ already works beautifully in your mobile browser, a dedicated app is optimised for an even smoother experience on the go. Available to all Easy Start and Easy Pro subscribers at no extra charge.</div></div>
 <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg width="14" height="14" viewBox="0 0 14 14" style="flex-shrink:0;"><circle cx="7" cy="7" r="6" fill="#F59E0B" opacity="0.2"/><text x="7" y="10" text-anchor="middle" font-size="8" fill="#92400E" font-weight="700">✦</text></svg>Sell to Europe — multilingual labels<span style="font-size:9px;font-weight:700;background:#FEF3C7;color:#92400E;padding:1px 7px;border-radius:10px;margin-left:6px;letter-spacing:0.3px;">COMING SOON</span><span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Generate CLP labels in English, French, German, Spanish, Italian, Dutch and more — on the same label or as a separate export. Required under EU CLP regulation when selling into EU markets. No other UK candle or fragrance label tool offers multi-language output — CLPeasy™ is the only option for makers selling abroad.</div></div>
-<div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg width="14" height="14" viewBox="0 0 14 14" style="flex-shrink:0;"><circle cx="7" cy="7" r="6" fill="#F59E0B" opacity="0.2"/><text x="7" y="10" text-anchor="middle" font-size="8" fill="#92400E" font-weight="700">✦</text></svg>Spot label errors before they cost you<span style="font-size:9px;font-weight:700;background:#FEF3C7;color:#92400E;padding:1px 7px;border-radius:10px;margin-left:6px;letter-spacing:0.3px;">COMING SOON</span><span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Upload a photo of an existing label and CLPeasy™ flags anything missing or incorrect against UK CLP regulation.</div></div>
+
 
 
     
@@ -357,14 +362,8 @@ footer a{color:#6B7280;text-decoration:none;}
           <button class="table-row-trigger" onclick="this.classList.toggle('open')">Drop entire SDS PDF in — hands-free hazard data extraction<span class="table-row-chevron">&#9660;</span></button>
           <div class="table-row-desc">Easy Pro only. Drop your complete SDS PDF directly into CLPeasy™ — no copying, no manual section finding. CLPeasy™ reads your whole document and extracts all relevant hazard data automatically. Like Smart Paste, it works from your own supplier's current document &mdash; so your label data is always accurate to the SDS you actually have.</div>
         </td><td style="padding:12px 18px;text-align:center;border-bottom:1px solid var(--border);color:var(--muted);">—</td><td style="padding:12px 18px;text-align:center;border-bottom:1px solid var(--border);background:#f3f8f9;color:var(--teal);font-weight:700;">✓ Pro only</td></tr>
-        <tr><td style="padding:12px 18px;border-bottom:1px solid var(--border);font-weight:600;color:var(--text);">
-          <button class="table-row-trigger" onclick="this.classList.toggle('open')">UFI code generator<span class="table-row-chevron">&#9660;</span></button>
-          <div class="table-row-desc">A UFI (Unique Formula Identifier) is a 16-character code required on labels for products sold in the EU and Northern Ireland. CLPeasy™ generates one for each of your formulas automatically. Best practice even for GB-only sellers.</div>
-        </td><td style="padding:12px 18px;text-align:center;border-bottom:1px solid var(--border);color:var(--muted);">—</td><td style="padding:12px 18px;text-align:center;border-bottom:1px solid var(--border);background:#f8fbfc;color:var(--teal);font-weight:700;">✓</td></tr>
-        <tr style="background:var(--off);"><td style="padding:12px 18px;border-bottom:1px solid var(--border);font-weight:600;color:var(--text);">
-          <button class="table-row-trigger" onclick="this.classList.toggle('open')">QR safety codes + digital safety sheets<span class="table-row-chevron">&#9660;</span></button>
-          <div class="table-row-desc">A QR code on your label links to a hosted digital safety page. When you update your formula the page updates automatically. Safety sheets for labels already on products stay live permanently — even if you change plan.</div>
-        </td><td style="padding:12px 18px;text-align:center;border-bottom:1px solid var(--border);color:var(--muted);">—</td><td style="padding:12px 18px;text-align:center;border-bottom:1px solid var(--border);background:#f3f8f9;color:var(--teal);font-weight:700;">✓</td></tr>
+        
+        
         <tr><td style="padding:12px 18px;border-bottom:1px solid var(--border);font-weight:600;color:var(--text);">
           <button class="table-row-trigger" onclick="this.classList.toggle('open')">Print Sheet Composer + Cricut ZIP<span class="table-row-chevron">&#9660;</span></button>
           <div class="table-row-desc">Compose a full A4 sheet of up to 15 labels for home printing using Avery LP15/51R templates. Or export a Cricut ZIP for Print Then Cut. Both included on Easy Start and Pro.</div>
@@ -386,8 +385,8 @@ footer a{color:#6B7280;text-decoration:none;}
           <div class="table-row-desc">iOS and Android app in development. Build, save and download labels on the go. Included on both plans at no extra charge.</div>
         </td><td style="padding:12px 18px;text-align:center;border-bottom:1px solid var(--border);color:#F59E0B;font-weight:700;">Soon</td><td style="padding:12px 18px;text-align:center;border-bottom:1px solid var(--border);background:#f8fbfc;color:#F59E0B;font-weight:700;">Soon</td></tr>
         <tr><td style="padding:12px 18px;font-weight:600;color:var(--text);">
-          <button class="table-row-trigger" onclick="this.classList.toggle('open')">Regulation alerts + GPSR reports<span class="table-row-chevron">&#9660;</span></button>
-          <div class="table-row-desc">Coming soon — Easy Pro. Automatic email alerts when ECHA updates CLP annexes affecting ingredients in your saved labels. Plus auto-generation of your Product Safety Report for GPSR compliance.</div>
+          <button class="table-row-trigger" onclick="this.classList.toggle('open')">Regulation change alerts<span class="table-row-chevron">&#9660;</span></button>
+          <div class="table-row-desc">Coming soon — Easy Pro. Automatic email alerts when ECHA updates CLP annexes affecting ingredients in your saved labels.</div>
         </td><td style="padding:12px 18px;text-align:center;color:var(--muted);">—</td><td style="padding:12px 18px;text-align:center;background:#f8fbfc;color:var(--teal);font-weight:700;">✓</td></tr>
       </tbody>
     </table>
@@ -426,6 +425,11 @@ footer a{color:#6B7280;text-decoration:none;}
             <td style="padding:12px 14px;border:1px solid var(--border);vertical-align:top;color:var(--muted);">Static PDF — requires a PDF editor to add your details. Paid software like Adobe Acrobat can cost £15–20/month (free alternatives exist but vary in quality). No library, no updates, no version history.</td>
           </tr>
           <tr>
+            <td style="padding:12px 14px;border:1px solid var(--border);font-weight:600;vertical-align:top;">Free generic templates</td>
+            <td style="padding:12px 14px;border:1px solid var(--border);vertical-align:top;white-space:nowrap;color:var(--muted);font-weight:700;">Free</td>
+            <td style="padding:12px 14px;border:1px solid var(--border);vertical-align:top;color:var(--muted);">Free templates exist from some suppliers and label companies. But you're manually copying data from your SDS into a static document every time — no automatic extraction, no error-checking, no library, and it's on you to re-check and update it whenever your fragrance load or supplier data changes.</td>
+          </tr>
+          <tr>
             <td style="padding:12px 14px;border:1px solid var(--border);font-weight:600;vertical-align:top;">Supplier-tied free tool</td>
             <td style="padding:12px 14px;border:1px solid var(--border);vertical-align:top;white-space:nowrap;color:var(--muted);font-weight:700;">Free</td>
             <td style="padding:12px 14px;border:1px solid var(--border);vertical-align:top;color:var(--muted);">Only works with that supplier's fragrances. The moment you buy from a different supplier — or blend fragrances — you're on your own.</td>
@@ -438,7 +442,7 @@ footer a{color:#6B7280;text-decoration:none;}
           <tr style="background:#FEF3C7;">
             <td style="padding:12px 14px;border:1.5px solid #F59E0B;font-weight:700;vertical-align:top;color:#92400E;">CLPeasy™ Easy Pro</td>
             <td style="padding:12px 14px;border:1.5px solid #F59E0B;vertical-align:top;white-space:nowrap;color:#92400E;font-weight:700;">£14.99/month</td>
-            <td style="padding:12px 14px;border:1.5px solid #F59E0B;vertical-align:top;color:#92400E;">Everything above plus SDS Smart Import, UFI generator, QR safety codes, compliance checker and regulation update alerts.</td>
+            <td style="padding:12px 14px;border:1.5px solid #F59E0B;vertical-align:top;color:#92400E;">Everything above plus SDS Smart Import and regulation update alerts.</td>
           </tr>
         </tbody>
           <tr style="background:var(--off);">
@@ -462,7 +466,7 @@ footer a{color:#6B7280;text-decoration:none;}
           <tr style="background:#FEF3C7;">
             <td style="padding:12px 14px;border:1.5px solid #F59E0B;font-weight:700;vertical-align:top;color:#92400E;">CLPeasy™ Easy Pro — full year</td>
             <td style="padding:12px 14px;border:1.5px solid #F59E0B;vertical-align:top;color:#92400E;font-weight:700;">£179.88/year monthly<br><span style="font-size:15px;color:#92400E;font-weight:900;">or £149/year annual</span><br><span style="font-size:11px;font-weight:600;background:#FEF3C7;color:#92400E;padding:2px 7px;border-radius:8px;border:1px solid #FDE68A;display:inline-block;margin-top:3px;">2 months free</span></td>
-            <td style="padding:12px 14px;border:1.5px solid #F59E0B;vertical-align:top;color:#92400E;">Everything in Easy Start plus SDS Smart Import, UFI generator, QR safety codes, compliance checker and regulation alerts — the full compliance suite for serious sellers.</td>
+            <td style="padding:12px 14px;border:1.5px solid #F59E0B;vertical-align:top;color:#92400E;">Everything in Easy Start plus SDS Smart Import and regulation alerts — the full compliance suite for serious sellers.</td>
           </tr>
         </table>
       <div style="font-size:11px;color:var(--muted);margin-top:8px;">* Based on publicly available pricing from UK CLP authoring services — prices vary by provider.</div>
@@ -478,7 +482,7 @@ footer a{color:#6B7280;text-decoration:none;}
 
           <div style="background:white;border-radius:10px;padding:13px 16px;border:1px solid #BBF7D0;">
             <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;">🚀 Established — 20+ fragrances</div>
-            <div style="font-size:13px;color:var(--text);line-height:1.5;">At 20+ scents with regular updates, professional authoring costs can exceed <strong style="color:#DC2626;">£1,000–£2,000 a year.</strong> CLPeasy™ Easy Pro at <strong style="color:var(--teal);">£14.99/month</strong> replaces all of that — including SDS Smart Import, UFI codes and compliance alerts.</div>
+            <div style="font-size:13px;color:var(--text);line-height:1.5;">At 20+ scents with regular updates, professional authoring costs can exceed <strong style="color:#DC2626;">£1,000–£2,000 a year.</strong> CLPeasy™ Easy Pro at <strong style="color:var(--teal);">£14.99/month</strong> replaces all of that — including SDS Smart Import and compliance alerts.</div>
           </div>
         </div>
         <div style="text-align:center;margin-top:14px;font-size:12px;color:#166534;font-weight:600;">On average, CLPeasy™ saves UK makers <span style="font-size:16px;font-weight:900;">£200–£1,500</span> a year depending on their range and current process.</div>
@@ -504,7 +508,7 @@ footer a{color:#6B7280;text-decoration:none;}
       <div style="background:white;border-radius:16px;padding:28px;border:1px solid var(--border);box-shadow:0 2px 12px rgba(0,0,0,0.05);">
         <div style="font-size:28px;margin-bottom:12px;">🌸</div>
         <h3 style="font-size:16px;font-weight:700;color:#0f2236;margin-bottom:8px;">New scents = new labels</h3>
-        <p style="font-size:13px;color:var(--muted);line-height:1.7;">Every time you add a new fragrance to your range, you need a compliant CLP label for it. Most makers add several new scents every season &mdash; each one needs its own hazard classification, H statements and UFI code.</p>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7;">Every time you add a new fragrance to your range, you need a compliant CLP label for it. Most makers add several new scents every season &mdash; each one needs its own hazard classification and H statements.</p>
       </div>
 
       <div style="background:white;border-radius:16px;padding:28px;border:1px solid var(--border);box-shadow:0 2px 12px rgba(0,0,0,0.05);">
@@ -553,21 +557,13 @@ footer a{color:#6B7280;text-decoration:none;}
           <div style="font-size:13px;font-weight:700;color:white;margin-bottom:4px;">Multilingual labels</div>
           <div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;">Generate CLP labels in French, German, Spanish and more — for makers selling into EU markets.</div>
         </div>
-        <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px 16px;">
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#F59E0B;margin-bottom:6px;">Easy Pro</div>
-          <div style="font-size:13px;font-weight:700;color:white;margin-bottom:4px;">GPSR safety report</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;">Auto-generate your Product Safety Report for GPSR compliance — built from your existing label data.</div>
-        </div>
+        
         <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px 16px;">
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#F59E0B;margin-bottom:6px;">Easy Pro</div>
           <div style="font-size:13px;font-weight:700;color:white;margin-bottom:4px;">Regulation change alerts</div>
           <div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;">Automatic email alerts when ECHA updates CLP annexes affecting ingredients in your saved labels.</div>
         </div>
-        <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px 16px;">
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#F59E0B;margin-bottom:6px;">Easy Pro</div>
-          <div style="font-size:13px;font-weight:700;color:white;margin-bottom:4px;">Label compliance checker</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.5;">Upload a photo of an existing label and CLPeasy™ flags anything missing or incorrect against current UK CLP regulation.</div>
-        </div>
+        
         <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px 16px;">
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#4C9BB0;margin-bottom:6px;">Easy Start &amp; Pro</div>
           <div style="font-size:13px;font-weight:700;color:white;margin-bottom:4px;">Material &amp; ingredient list</div>
@@ -641,7 +637,7 @@ footer a{color:#6B7280;text-decoration:none;}
           <h4>What&#39;s the difference between Easy Start and Easy Pro?</h4>
           <span class="faq-chevron">&#9660;</span>
         </button>
-        <div class="faq-body"><p><strong>Easy Start</strong> includes the full label builder, Smart Paste (paste Section 2.2 from your supplier's SDS and CLPeasy™ extracts your hazard data automatically), 20 downloads/month, unlimited saved labels, folders, version history, batch records, print sheet composer and Cricut download.</p><p><strong>Easy Pro</strong> gives you 30 downloads/month and adds the full compliance suite &mdash; SDS Smart Import (drop in your complete SDS PDF for hands-free extraction), UFI code generator, QR safety codes with hosted digital safety sheets, multi-language labels, compliance checker, Product Safety Report generator, regulation update alerts and SDS review reminder emails.</p><p>Both plans work from your own supplier's SDS &mdash; so your labels are always based on your actual, current document, not a database held by CLPeasy™.</p><p>Not sure which suits you? <a href="plan-picker.html" style="color:var(--teal);">Try our 5-question plan finder &rarr;</a></p></div>
+        <div class="faq-body"><p><strong>Easy Start</strong> includes the full label builder, Smart Paste (paste Section 2.2 from your supplier's SDS and CLPeasy™ extracts your hazard data automatically), 20 downloads/month, unlimited saved labels, folders, version history, batch records, print sheet composer and Cricut download.</p><p><strong>Easy Pro</strong> gives you 30 downloads/month and adds the full compliance suite &mdash; SDS Smart Import (drop in your complete SDS PDF for hands-free extraction), multi-language labels, regulation update alerts and SDS review reminder emails.</p><p>Both plans work from your own supplier's SDS &mdash; so your labels are always based on your actual, current document, not a database held by CLPeasy™.</p><p>Not sure which suits you? <a href="plan-picker.html" style="color:var(--teal);">Try our 5-question plan finder &rarr;</a></p></div>
       </div>
       <div class="faq-item">
         <button class="faq-trigger" onclick="toggleFAQ(this)">
@@ -676,7 +672,7 @@ footer a{color:#6B7280;text-decoration:none;}
           <h4>Can I change plans later?</h4>
           <span class="faq-chevron">&#9660;</span>
         </button>
-        <div class="faq-body"><p>Yes, any time from your account settings.</p><p><strong>Upgrading</strong> &mdash; takes effect immediately. You&#39;re only charged the difference for the remaining days in your billing period. All Easy Pro features unlock straight away.</p><p><strong>Downgrading</strong> &mdash; takes effect at the end of your current billing period. You keep full access until then. Your labels, folders and history stay safe &mdash; you just lose access to Easy Pro features like SDS Smart Import, UFI generator and QR codes on new labels.</p></div>
+        <div class="faq-body"><p>Yes, any time from your account settings.</p><p><strong>Upgrading</strong> &mdash; takes effect immediately. You&#39;re only charged the difference for the remaining days in your billing period. All Easy Pro features unlock straight away.</p><p><strong>Downgrading</strong> &mdash; takes effect at the end of your current billing period. You keep full access until then. Your labels, folders and history stay safe &mdash; you just lose access to Easy Pro features like SDS Smart Import on new labels.</p></div>
       </div>
       <div class="faq-item">
         <button class="faq-trigger" onclick="toggleFAQ(this)">
@@ -762,27 +758,14 @@ footer a{color:#6B7280;text-decoration:none;}
         </button>
         <div class="faq-body"><p>An out of date CLP label can be a legal issue if Trading Standards inspect your products. Staying subscribed means your labels stay maintained, your version history is preserved as an audit trail, and you get alerted when regulations change. A downloaded PNG from 18 months ago with no version history is a much harder thing to defend.</p></div>
       </div>
-      <div class="faq-item">
-        <button class="faq-trigger" onclick="toggleFAQ(this)">
-          <h4>Do I need a UFI if I&#39;m only selling in Great Britain?</h4>
-          <span class="faq-chevron">&#9660;</span>
-        </button>
-        <div class="faq-body"><p>No — a UFI (Unique Formula Identifier) is not currently a legal requirement for products sold only in Great Britain (England, Scotland and Wales). It is required for products sold in the EU and in Northern Ireland, which follows EU CLP regulation under the Northern Ireland Protocol.</p><p>However, if you sell online — on Etsy, Not On The High Street, your own website, or anywhere that could reach EU or NI customers — it is best practice to include a UFI on all your labels. It costs nothing to generate one in CLPeasy™, and it means you&#39;re covered if your reach extends beyond GB.</p><p>UFI generation is available on Easy Pro.</p></div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-trigger" onclick="toggleFAQ(this)">
-          <h4>Are UFIs required in other countries, and why?</h4>
-          <span class="faq-chevron">&#9660;</span>
-        </button>
-        <div class="faq-body"><p>Yes — UFIs are required across all EU member states and Northern Ireland for any mixture classified as hazardous under CLP regulation. This includes all 27 EU countries: France, Germany, Spain, Italy, the Netherlands, Belgium, Poland, Portugal, Sweden, Denmark, Finland, Austria, Ireland, and the rest.</p><p>The UFI links your product to a dossier submitted to national poison centres (in the UK, that&#39;s the National Poisons Information Service). In a medical emergency, this code allows healthcare professionals to identify exactly what is in your product and respond appropriately. This is why it&#39;s a legal requirement — it&#39;s a safety mechanism, not just an admin exercise.</p><p>Outside the EU, requirements vary. Australia, Canada and the US have their own chemical labelling systems and do not currently require a UFI in the CLP sense — but if you are selling internationally, always check the specific regulations for each market.</p></div>
-      </div>
+      
       </div>
       </div>
   </div>
 </div>
 
 <footer>
-  <p><a href="home.html">Home</a> &nbsp;·&nbsp; <a href="privacy.html">Privacy</a> &nbsp;·&nbsp; <a href="terms.html">Terms</a> &nbsp;·&nbsp; <a href="refund.html">Refunds</a> &nbsp;·&nbsp; <a href="mailto:support@clpeasy.com">support@clpeasy.com</a></p>
+  <p><a href="index.html">Home</a> &nbsp;·&nbsp; <a href="privacy.html">Privacy</a> &nbsp;·&nbsp; <a href="terms.html">Terms</a> &nbsp;·&nbsp; <a href="refund.html">Refunds</a> &nbsp;·&nbsp; <a href="mailto:support@clpeasy.com">support@clpeasy.com</a></p>
   <p style="margin-top:8px;">&copy; 2026 CLPeasy™ &nbsp;·&nbsp; Crafty Mouse Gifts</p>
 </footer>
 
@@ -791,7 +774,11 @@ footer a{color:#6B7280;text-decoration:none;}
 const SUPABASE_URL='https://qvkosdqcryrcfbjtaxic.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
 
-// Sandbox price IDs — replace with live IDs when going live
+// CORRECTED (2026-07-28, AUDIT_AND_FIX_LOG.md): these are the canonical LIVE
+// subscription Price IDs — confirmed by Michaela against the CLPeasy Stripe
+// dashboard, and consistent with checkout.html/account.html/stripe-webhook.
+// This comment previously (incorrectly) called them "Sandbox" — they were
+// never test-mode IDs, that label was just never updated after go-live.
 const PRICE_IDS = {
   easy_start_monthly: 'price_1TdoEYGZLILz5vqUIqlEsf4X',
   easy_start_annual:  'price_1TdoEXGZLILz5vqUQj5n6Zri',

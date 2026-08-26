@@ -9,30 +9,126 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --teal:#4C9BB0;--teal-light:#EBF6F9;--teal-dark:#2d7a8f;
+  --teal:#4C9BB0;--teal-light:#d6eef4;--teal-dark:#3a7d8f;
   --border:#E8EAED;--text:#111318;--muted:#6B7280;--off:#F7F8FA;
   --red:#EF4444;--red-light:#FEF2F2;--amber:#F59E0B;--amber-light:#FFFBEB;
   --green:#22C55E;--green-light:#F0FDF4;
 }
 body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-webkit-font-smoothing:antialiased;min-height:100vh;}
 
-/* NAV */
-nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height:72px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+/* Stale top-navbar rule removed (24 Aug 2026, GUI redesign correction): the
+   bare `nav{...}` tag selector previously here was dead code left over from
+   an old top-navbar layout that no longer exists in this file's markup, but
+   it was still matching the new <nav class="sidebar-nav"> and silently
+   forcing justify-content:space-between + height:72px onto it, spreading
+   the sidebar links apart with large gaps not present in the approved
+   reference. Deleted rather than overridden since nothing else in this file
+   uses a bare <nav> tag. .nav-logo below is dead CSS too (no matching
+   markup) but left in place as harmless. */
 .nav-logo{display:flex;align-items:center;text-decoration:none;}
-.nav-badge{width:40px;height:40px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;}
-.nav-easy{font-size:20px;font-weight:900;color:var(--teal);margin-left:5px;letter-spacing:-1px;}
-.nav-right{display:flex;align-items:center;gap:12px;}
+.nav-badge{width:52px;height:52px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;letter-spacing:-1px;flex-shrink:0;}
+.nav-easy{font-size:26px;font-weight:900;color:var(--teal);margin-left:4px;letter-spacing:-1px;}
+/* .nav-right/.nav-signout removed (24 Aug 2026, GUI integration pass): dead
+   CSS from the old top-navbar, no matching markup anywhere in this file.
+   .nav-email kept — #nav-email is a real (intentionally hidden) data-sink
+   element used elsewhere in this file's JS. */
 .nav-email{font-size:13px;color:var(--muted);}
-.nav-signout{font-size:13px;color:var(--muted);text-decoration:none;padding:6px 14px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;background:white;cursor:pointer;font-family:'DM Sans',sans-serif;}
-.nav-signout:hover{border-color:var(--teal);color:var(--teal);}
+
+/* ============================================================
+   APP SHELL — CANONICAL SHARED SHELL. dashboard.html is the single
+   source of truth for this block; account.html, builder.html and
+   my-labels.html must keep it byte-identical (or, where a file's
+   pre-existing literal values already compute to the same result,
+   effectively identical — documented at each such exception).
+   (24 Aug 2026, GUI integration pass.)
+   ============================================================ */
+:root{
+  --shell-sidebar-w:260px;
+  --shell-topbar-h:56px;
+  --shell-radius-card:16px;
+  --shell-radius-control:10px;
+  --shell-space-1:4px;--shell-space-2:8px;--shell-space-3:12px;
+  --shell-space-4:16px;--shell-space-5:24px;--shell-space-6:32px;
+}
+.app-shell{display:flex;min-height:100vh;}
+.sidebar{
+  width:var(--shell-sidebar-w);flex-shrink:0;background:white;
+  border-right:1.5px solid var(--border);display:flex;flex-direction:column;
+  padding:var(--shell-space-4) var(--shell-space-3);
+  position:fixed;top:0;left:0;bottom:0;z-index:300;
+  transition:transform .25s ease;
+}
+.sidebar-logo{display:flex;align-items:center;gap:8px;text-decoration:none;padding:var(--shell-space-2) var(--shell-space-2) var(--shell-space-5);}
+.sidebar-nav{display:flex;flex-direction:column;gap:2px;flex:1;}
+.sidebar-nav-item{
+  display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:var(--shell-radius-control);
+  color:var(--text);text-decoration:none;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;
+  border:none;background:none;cursor:pointer;text-align:left;width:100%;min-height:44px;
+  transition:background .15s ease,color .15s ease;
+}
+.sidebar-nav-item:hover{background:var(--off);}
+.sidebar-nav-item.active{background:var(--teal-light);color:var(--text);position:relative;}
+.sidebar-nav-item.active::before{content:'';position:absolute;left:2px;top:8px;bottom:8px;width:4px;border-radius:3px;background:var(--teal);}
+.sidebar-nav .snav-icon{color:var(--teal);}
+.snav-icon{width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.snav-icon svg{width:18px;height:18px;display:block;}
+/* Standardised sidebar bottom block (24 Aug 2026, GUI redesign — reused
+   verbatim across Dashboard, Create Label, My Labels and Account): downloads
+   card + user identity block, both driven by data each page already fetches
+   for its own purposes — no new backend calls added for this. */
+.sidebar-bottom{margin-top:auto;display:flex;flex-direction:column;gap:10px;}
+.sidebar-usage{border:1px solid var(--border);border-radius:12px;padding:12px;}
+.su-label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-bottom:4px;}
+.su-count{font-size:19px;font-weight:800;color:var(--text);margin-bottom:8px;}
+.su-bar{height:6px;border-radius:999px;background:var(--off);overflow:hidden;margin-bottom:9px;}
+.su-bar span{display:block;height:100%;background:var(--teal);border-radius:999px;}
+.su-topup{display:block;text-align:center;font-size:12px;font-weight:700;color:var(--teal-dark);text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:7px;}
+.su-topup:hover{background:var(--off);}
+.sidebar-profile{position:relative;}
+.sidebar-user{width:100%;display:flex;align-items:center;gap:10px;padding:10px;border:1px solid transparent;border-radius:10px;background:white;cursor:pointer;text-align:left;font-family:inherit;}
+.sidebar-user:hover,.sidebar-profile.open .sidebar-user{border-color:var(--border);box-shadow:0 4px 14px rgba(15,23,42,.08);}
+.sidebar-user-chevron{margin-left:auto;width:16px;height:16px;transition:transform .18s;color:var(--muted);}
+.sidebar-profile.open .sidebar-user-chevron{transform:rotate(180deg);}
+.sidebar-user-menu{display:none;position:absolute;left:0;right:0;bottom:calc(100% + 6px);padding:6px;background:white;border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 28px rgba(15,23,42,.14);z-index:20;}
+.sidebar-profile.open .sidebar-user-menu{display:block;}
+.sidebar-user-menu button{width:100%;display:flex;align-items:center;gap:9px;padding:9px 10px;border:0;border-radius:7px;background:white;color:var(--text);font:600 12px 'DM Sans',sans-serif;cursor:pointer;}
+.sidebar-user-menu button:hover{background:var(--off);color:var(--red);}
+.su-avatar{width:36px;height:36px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;}
+.su-info{min-width:0;}
+.su-name{font-size:13px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.su-plan{font-size:11.5px;color:var(--teal-dark);}
+.sidebar-logout{color:var(--muted);border-top:1px solid var(--border);padding-top:14px;}
+.sidebar-logout:hover{background:var(--off);color:var(--red);}
+.shell-main{flex:1;margin-left:var(--shell-sidebar-w);min-width:0;}
+.shell-main{
+  background-color:#fbfdfe;
+  background-image:url('assets/clpeasy-region-top.png'), url('assets/clpeasy-region-bottom.png');
+  background-repeat:no-repeat, no-repeat;
+  background-position:top right, bottom center;
+  background-size:38% auto, 100% auto;
+}
+.shell-topbar{display:none;align-items:center;gap:12px;height:var(--shell-topbar-h);padding:0 var(--shell-space-4);background:white;border-bottom:1.5px solid var(--border);position:sticky;top:0;z-index:150;}
+.shell-topbar-title{font-weight:700;font-size:15px;}
+.sidebar-toggle,.sidebar-toggle-inline{display:none;flex-direction:column;justify-content:center;gap:4px;width:44px;height:44px;border:1.5px solid var(--border);border-radius:10px;background:white;cursor:pointer;flex-shrink:0;}
+.sidebar-toggle span,.sidebar-toggle-inline span{display:block;height:2px;background:var(--text);border-radius:1px;margin:0 9px;}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(17,19,24,0.4);z-index:290;opacity:0;transition:opacity .2s ease;}
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);box-shadow:8px 0 24px rgba(0,0,0,0.08);transition:transform .25s ease;}
+  .sidebar.open{transform:translateX(0);}
+  .shell-main{margin-left:0;}
+  .shell-topbar{display:flex;}
+  .sidebar-toggle-inline{display:flex;}
+  .sidebar-overlay.open{display:block;opacity:1;}
+  .main{padding:24px 24px 60px;}
+}
 
 /* LAYOUT */
-.main{max-width:720px;margin:0 auto;padding:40px 24px 80px;}
+.main{max-width:1180px;margin:0 auto;padding:40px 40px 80px;}
 .page-title{font-family:'DM Serif Display',serif;font-size:32px;margin-bottom:4px;}
 .page-sub{font-size:14px;color:var(--muted);margin-bottom:36px;}
 
 /* CARDS */
-.card{background:white;border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:20px;}
+.card{background:white;border:1.5px solid var(--border);border-radius:18px;padding:26px;margin-bottom:20px;}
 .card-title{font-size:15px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:8px;}
 .card-title span{font-size:18px;}
 
@@ -41,7 +137,7 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
 .plan-name{font-size:22px;font-weight:800;letter-spacing:-0.5px;}
 .plan-badge{font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;text-transform:uppercase;letter-spacing:0.5px;}
 .plan-badge.active{background:var(--green-light);color:#15803D;}
-.plan-badge.trial{background:var(--amber-light);color:#92400E;}
+.plan-badge.trial,.plan-badge.trialing{background:var(--amber-light);color:#92400E;}
 .plan-badge.paused{background:var(--off);color:var(--muted);border:1px solid var(--border);}
 .plan-badge.lapsed{background:var(--red-light);color:var(--red);}
 .renewal-line{font-size:13px;color:var(--muted);margin-bottom:20px;}
@@ -148,9 +244,22 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
   .action-row{flex-direction:column;}
   .btn{text-align:center;}
   .plan-row{flex-direction:column;align-items:flex-start;}
-  nav{padding:0 16px;}
+  #nav-email{display:none !important;}
   .main{padding:24px 14px 60px;}
 }
+
+/* SHARED TRUST FOOTER — same across Dashboard, Create Label, My Labels, Account */
+.shell-trust{display:grid;grid-template-columns:1.05fr 1fr 0.95fr 1fr;gap:0;padding:0;border-top:3px solid var(--teal);background:#fff;border:1px solid var(--border);border-radius:16px;margin:24px 0;overflow:hidden;position:relative;z-index:1;}
+.shell-trust-item{display:flex;align-items:center;gap:10px;padding:26px 15px;border-left:1px solid var(--border);}
+.shell-trust-item:first-child{border-left:none;}
+.shell-trust-icon{width:38px;height:38px;border-radius:10px;background:#edf8fa;color:var(--teal);display:grid;place-items:center;flex:0 0 auto;box-shadow:0 0 0 1px rgba(12,137,155,0.12) inset;}
+.shell-trust-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.shell-clp-ready-badge{background:none;box-shadow:none;width:58px;height:73px;border-radius:0;}
+.shell-trust-copy{display:flex;flex-direction:column;min-width:0;}
+.shell-trust-copy b{font-size:13px;}
+.shell-trust-copy small{font-size:11.5px;color:var(--muted);}
+@media(max-width:1100px){.shell-trust{grid-template-columns:1fr 1fr;}.shell-trust-item:nth-child(3){border-left:0;border-top:1px solid var(--border);}.shell-trust-item:nth-child(4){border-top:1px solid var(--border);}}
+@media(max-width:760px){.shell-trust{grid-template-columns:1fr;}.shell-trust-item{border-left:0 !important;border-top:1px solid var(--border);}.shell-trust-item:first-child{border-top:none;}}
 </style>
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"></script>
@@ -161,15 +270,50 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
 </head>
 <body>
 
-<nav>
-  <a href="home.html" class="nav-logo">
-    <div class="nav-badge">CLP</div><span class="nav-easy">easy™</span>
-  </a>
-  <div class="nav-right">
-    <span class="nav-email" id="nav-email"></span>
-    <button class="nav-signout" onclick="signOut()">Sign out</button>
-  </div>
-</nav>
+<div class="app-shell">
+
+  <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidebar">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <a href="index.html" class="sidebar-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span></a>
+    <nav class="sidebar-nav" aria-label="Main navigation">
+      <a href="dashboard.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg></span>Dashboard</a>
+      <a href="builder.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>Create Label</a>
+      <a href="my-labels.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5a1 1 0 0 1 1-1h4.7l2 2.2h8.3a1 1 0 0 1 1 1V18a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1Z"/></svg></span>My Labels</a>
+      <a href="knowledge.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5c-1.6-1.3-4-2-6.5-2A2 2 0 0 0 3.5 6.5V17c2.6 0 5 .7 6.5 2 1.5-1.3 3.9-2 6.5-2s2-.9 2-.9V6.5c0-1.1-.9-2-2-2-2.5 0-4.9.7-6.5 2Z"/><path d="M12 6.5V19"/></svg></span>Knowledge Base</a>
+      <a href="account.html" class="sidebar-nav-item active"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.4-3.6 4.3-5.5 7.5-5.5s6.1 1.9 7.5 5.5"/></svg></span>Account</a>
+      <a href="support.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 1 3.3 6.4L4 20l1.3-3.6A7.96 7.96 0 0 1 4 12Z"/></svg></span>Support</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-usage" id="sidebar-usage" style="display:none;">
+        <div class="su-label">Downloads remaining</div>
+        <div class="su-count" id="su-count">—</div>
+        <div class="su-bar"><span id="su-fill" style="width:0%"></span></div>
+        <a href="pricing.html" class="su-topup">Buy Top-Up →</a>
+      </div>
+      <div class="sidebar-profile">
+        <button type="button" class="sidebar-user" id="sidebar-user" style="display:none;" aria-haspopup="true" aria-expanded="false">
+          <div class="su-avatar" id="su-avatar">—</div>
+          <div class="su-info"><div class="su-name" id="su-name">—</div><div class="su-plan" id="su-plan">—</div></div>
+          <svg class="sidebar-user-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m8 10 4 4 4-4"/></svg>
+        </button>
+        <div class="sidebar-user-menu" role="menu"><button type="button" onclick="signOut()" role="menuitem"><span aria-hidden="true">↪</span> Log out</button></div>
+      </div>
+      <!-- nav-email kept as a hidden data sink: existing renderAccount() writes to it -->
+      <span class="nav-email" id="nav-email" style="display:none;"></span>
+    </div>
+  </aside>
+
+  <div class="shell-main">
+    <header class="shell-topbar">
+      <button class="sidebar-toggle-inline" id="sidebar-toggle-inline" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <span class="shell-topbar-title">Account</span>
+    </header>
 
 <div class="main">
   <div id="loading">Loading your account…</div>
@@ -184,7 +328,7 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
       <p>Your account is currently inactive but your label library is safe for <strong id="winback-days">30</strong> more days. A lot has changed since you left — we've increased download allowances across all plans.</p>
       <div class="winback-pills">
         <span class="winback-pill">✓ Easy Start now 20 downloads/month</span>
-        <span class="winback-pill">✓ Easy Pro now 40 downloads/month</span>
+        <span class="winback-pill">✓ Easy Pro now 30 downloads/month</span>
         <span class="winback-pill">✓ 7-day re-download grace</span>
       </div>
       <button class="winback-btn" onclick="openModal('resubscribe')">Reactivate my account →</button>
@@ -211,6 +355,9 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
         </div>
         <div class="dl-note" id="dl-note">Resets on your next billing date. Re-downloading the same label within 7 days is free.</div>
         <button class="topup-btn" id="topup-btn" style="display:none;" onclick="buyTopup()">+ Buy more downloads</button>
+      </div>
+      <div id="topup-credits-section" style="display:none;margin-top:10px;font-size:13px;color:var(--teal-dark);font-weight:600;">
+        <span id="topup-credits-count"></span> purchased top-up credits available — never expire, used after your monthly allowance.
       </div>
 
       <div class="action-row" id="action-row">
@@ -242,6 +389,15 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
 
   </div><!-- /account-content -->
 </div><!-- /main -->
+  
+  <section class="shell-trust">
+    <div class="shell-trust-item"><span class="shell-trust-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span><span class="shell-trust-copy"><b>Secure</b><small>Your account and label data are protected</small></span></div>
+    <div class="shell-trust-item"><span class="shell-trust-icon shell-clp-ready-badge"><img src="assets/clp-ready.png" alt="CLP Ready" width="58" height="73" style="width:58px;height:73px;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(12,137,155,0.3));"></span><span class="shell-trust-copy"><b>CLP Ready</b><small>Built for UK label creation</small></span></div>
+    <div class="shell-trust-item"><span class="shell-trust-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 5.7a5.4 5.4 0 0 0-7.6 0L12 6.9l-1.2-1.2a5.4 5.4 0 1 0-7.6 7.6L12 22l8.8-8.7a5.4 5.4 0 0 0 0-7.6Z"/></svg></span><span class="shell-trust-copy"><b>By makers, for makers</b><small>Practical tools for small businesses</small></span></div>
+    <div class="shell-trust-item"><span class="shell-trust-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H8l-4 4Z"/></svg></span><span class="shell-trust-copy"><b>We're here to help</b><small>support@clpeasy.com</small></span></div>
+  </section>
+</div><!-- /shell-main -->
+</div><!-- /app-shell -->
 
 <!-- ═══════════════════════════════════════════════════════════════
      MODAL SYSTEM
@@ -335,7 +491,7 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
       <div class="modal-sub">Are you sure? Here's what happens when you cancel:</div>
       <div class="confirm-cancel-box">
         <h4>⚠️ What you'll lose</h4>
-        <p>Your label library will be deleted 30 days after your billing period ends · Downloaded files on your device are yours to keep · QR safety codes already printed on products stay live permanently</p>
+        <p>Your label library will be deleted 30 days after your billing period ends · Downloaded files on your device are yours to keep</p>
       </div>
       <div style="background:var(--teal-light);border:1px solid #c5e4ed;border-radius:10px;padding:14px 16px;margin-bottom:20px;font-size:13px;color:var(--teal-dark);line-height:1.6;">
         💡 <strong>Consider pausing instead.</strong> Pausing keeps your library safe and lets you return without starting over — no data lost.
@@ -392,7 +548,7 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
           <div style="font-size:15px;font-weight:700;">Easy Pro</div>
           <div style="font-size:15px;font-weight:800;">£14.99<span style="font-size:12px;font-weight:400;color:var(--muted);">/mo</span></div>
         </div>
-        <div style="font-size:12px;color:var(--muted);">40 downloads/month · SDS Smart Import · UFI · QR codes</div>
+        <div style="font-size:12px;color:var(--muted);">30 downloads/month · SDS Smart Import</div>
       </div>
     </div>
     <div class="modal-actions">
@@ -408,15 +564,15 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
     <div class="modal-title">Buy more downloads</div>
     <div class="modal-sub">Top-up packs add to your allowance for the current month. Downloads don't roll over to next month.</div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
-      <div class="survey-opt" onclick="selectTopup(5,1.49,this)" style="justify-content:space-between;">
-        <span>5 extra downloads</span><strong>£1.49</strong>
+      <div class="survey-opt" onclick="selectTopup(5,3.99,this)" style="justify-content:space-between;">
+        <span>5 extra downloads</span><strong>£3.99</strong>
       </div>
-      <div class="survey-opt" onclick="selectTopup(15,3.49,this)" style="justify-content:space-between;">
-        <span>15 extra downloads</span><strong>£3.49</strong>
+      <div class="survey-opt" onclick="selectTopup(10,7.99,this)" style="justify-content:space-between;">
+        <span>10 extra downloads</span><strong>£7.99</strong>
       </div>
     </div>
     <div style="background:var(--teal-light);border-radius:10px;padding:12px 16px;font-size:12px;color:var(--teal-dark);line-height:1.6;margin-bottom:20px;" id="topup-upgrade-nudge" style="display:none;">
-      💡 You've bought top-ups before. Upgrading to Easy Pro gives you 40 downloads/month — double your current allowance — for £5 more per month. <a href="pricing.html" style="color:var(--teal);font-weight:600;">Compare plans →</a>
+      💡 You've bought top-ups before. Upgrading to Easy Pro gives you 30 downloads/month — 50% more than Easy Start — for £5 more per month. <a href="pricing.html" style="color:var(--teal);font-weight:600;">Compare plans →</a>
     </div>
     <div class="modal-actions">
       <button class="modal-btn ghost" onclick="closeModal('modal-topup')">Cancel</button>
@@ -452,7 +608,7 @@ async function fetchProfile(userId) {
   const now = new Date();
   const trialEnd = data.trial_end ? new Date(data.trial_end) : null;
   const deletionDate = data.deletion_date ? new Date(data.deletion_date) : null;
-  const isOnTrial = data.subscription_status === 'trial' && trialEnd && trialEnd > now;
+  const isOnTrial = data.subscription_status === 'trialing' && trialEnd && trialEnd > now;
   const trialDaysLeft = isOnTrial ? Math.ceil((trialEnd - now) / (1000*60*60*24)) : null;
   const cancelledDaysRemaining = deletionDate
     ? Math.max(0, Math.ceil((deletionDate - now) / (1000*60*60*24)))
@@ -467,8 +623,14 @@ async function fetchProfile(userId) {
       : null,
     card_last4: data.card_last4 || null,
     downloads_used: data.downloads_used || 0,
-    downloads_limit: data.is_pro ? 40 : 20,
+    // FIX (2026-07-27): this previously hardcoded 40 for Pro / 20 for Start,
+    // discarding the real downloads_limit value already fetched above (the
+    // Stripe webhook sets 20/30, not 20/40 — see AUDIT_AND_FIX_LOG.md Phase 10).
+    // Always trust the stored value; fall back to the correct plan default only
+    // if the column is somehow null (e.g. a very old row).
+    downloads_limit: data.downloads_limit ?? (data.is_pro ? 30 : 20),
     topup_months: data.topup_months || 0,
+    topup_credits: data.topup_credits || 0,
     trial_ends: trialDaysLeft ? `${trialDaysLeft} days` : null,
     cancelled_days_remaining: cancelledDaysRemaining,
     created_at: new Date(data.created_at).toLocaleDateString('en-GB', {month:'long',year:'numeric'}),
@@ -495,7 +657,7 @@ _sb.auth.getSession().then(async ({ data: { session } }) => {
       id: session.user.id,
       email: session.user.email,
       full_name: session.user.user_metadata?.full_name || '',
-      subscription_status: 'trial',
+      subscription_status: 'trialing',
       trial_end: new Date(Date.now() + 14*24*60*60*1000).toISOString(),
     });
     userProfile = await fetchProfile(session.user.id);
@@ -511,31 +673,61 @@ function renderAccount() {
   const u = userProfile;
   const planLabel = u.plan === 'pro' ? 'Easy Pro' : 'Easy Start';
   const planPrice = u.plan === 'pro' ? '£14.99' : '£9.99';
+  const annualPrice = u.plan === 'pro' ? '£149' : '£99';
+  const billingPrice = u.billing_cycle === 'annual' ? annualPrice : planPrice;
+  const billingPeriod = u.billing_cycle === 'annual' ? '/year' : '/mo';
 
   document.getElementById('nav-email').textContent = currentUser.email;
   document.getElementById('acct-email').textContent = currentUser.email;
   document.getElementById('acct-since').textContent = u.created_at;
 
+  // Sidebar bottom block (24 Aug 2026, GUI redesign) — reuses the same
+  // userProfile/currentUser values already fetched above; no new fetch.
+  const suUsage=document.getElementById('sidebar-usage');
+  if(suUsage){
+    if(u.status==='trialing'){
+      suUsage.style.display='none'; // trial = unlimited, matches Subscription card's own "Unlimited during trial"
+    } else if(!Number.isFinite(u.downloads_limit) || u.downloads_limit<=0){
+      suUsage.style.display='none';
+    } else {
+      suUsage.style.display='block';
+      const suLeft=Math.max(0,u.downloads_limit-u.downloads_used);
+      document.getElementById('su-count').textContent=suLeft+' of '+u.downloads_limit;
+      document.getElementById('su-fill').style.width=Math.min(100,Math.round((suLeft/u.downloads_limit)*100))+'%';
+    }
+  }
+  const suUser=document.getElementById('sidebar-user');
+  if(suUser){
+    suUser.style.display='flex';
+    const suDisplayName=u.full_name || currentUser.email || 'Account';
+    document.getElementById('su-avatar').textContent=(u.full_name||currentUser.email||'?').charAt(0).toUpperCase();
+    document.getElementById('su-name').textContent=suDisplayName;
+    document.getElementById('su-plan').textContent=
+      u.status==='cancelled' ? planLabel+' (Cancelled)' :
+      u.status==='paused' ? planLabel+' (Paused)' :
+      u.status==='trialing' ? 'Easy Trial' : planLabel;
+  }
+
   // Plan name & badge
   document.getElementById('plan-name').textContent =
     u.status === 'cancelled' ? planLabel + ' (Cancelled)' :
     u.status === 'paused' ? planLabel + ' (Paused)' :
-    u.status === 'trial' ? 'Easy Trial' : planLabel;
+    u.status === 'trialing' ? 'Easy Trial' : planLabel;
 
   const badge = document.getElementById('plan-badge');
-  badge.textContent = u.status === 'trial' ? 'Free trial' :
+  badge.textContent = u.status === 'trialing' ? 'Free trial' :
     u.status === 'active' ? 'Active' :
     u.status === 'paused' ? 'Paused' : 'Cancelled';
   badge.className = 'plan-badge ' + u.status;
 
   // Renewal line
   const renewLine = document.getElementById('renewal-line');
-  if (u.status === 'trial') {
+  if (u.status === 'trialing') {
     renewLine.innerHTML = `Trial ends <strong>${u.trial_ends || 'in 14 days'}</strong>. No card required until you choose a plan.`;
   } else if (u.status === 'active') {
     renewLine.innerHTML = u.discount_active
       ? `Next payment: <strong>${planPrice === '£9.99' ? '£4.99' : '£7.49'}/mo</strong> (discount active until ${u.discount_ends}) · then ${planPrice}/mo`
-      : `Next payment: <strong>${planPrice}/mo</strong> on ${u.next_payment}`;
+      : `Next payment: <strong>${billingPrice}${billingPeriod}</strong> on ${u.next_payment}`;
   } else if (u.status === 'paused') {
     renewLine.innerHTML = `Subscription paused · Your library is safe · <a href="#" onclick="openModal('resubscribe');return false;" style="color:var(--teal);">Reactivate →</a>`;
   } else if (u.status === 'cancelled') {
@@ -549,22 +741,34 @@ function renderAccount() {
   }
 
   // Download bar
-  if (u.status === 'active' || u.status === 'trial') {
-    const pct = u.status === 'trial' ? 0 : Math.min(Math.round(u.downloads_used / u.downloads_limit * 100), 100);
+  if (u.status === 'active' || u.status === 'trialing') {
+    const pct = u.status === 'trialing' ? 0 : Math.min(Math.round(u.downloads_used / u.downloads_limit * 100), 100);
     const bar = document.getElementById('dl-bar');
-    bar.style.width = (u.status === 'trial' ? 0 : pct) + '%';
+    bar.style.width = (u.status === 'trialing' ? 0 : pct) + '%';
     bar.className = 'dl-bar ' + (pct >= 100 ? 'full' : pct >= 75 ? 'warn' : 'ok');
     document.getElementById('dl-count').textContent =
-      u.status === 'trial' ? 'Unlimited during trial' : `${u.downloads_used} / ${u.downloads_limit}`;
-    if (pct >= 80 && u.status !== 'trial') {
+      u.status === 'trialing' ? 'Unlimited during trial' : `${u.downloads_used} / ${u.downloads_limit}`;
+    if (pct >= 80 && u.status !== 'trialing') {
       document.getElementById('topup-btn').style.display = 'inline-block';
     }
     if (pct >= 100) {
-      document.getElementById('dl-note').textContent =
-        "You've reached your monthly limit. Buy a top-up pack or wait until your allowance resets next billing date.";
+      document.getElementById('dl-note').textContent = u.topup_credits > 0
+        ? `You've reached your monthly limit — now drawing from your ${u.topup_credits} purchased credit(s).`
+        : "You've reached your monthly limit. Buy a top-up pack or wait until your allowance resets next billing date.";
     }
   } else {
     document.getElementById('dl-section').style.display = 'none';
+  }
+
+  // Purchased top-up credits survive cancellation/pause/downgrade, so shown
+  // independent of the active/trialing gate above — a cancelled or free
+  // user with a remaining balance can still see and use it.
+  const creditsSection = document.getElementById('topup-credits-section');
+  if (u.topup_credits > 0) {
+    creditsSection.style.display = 'block';
+    document.getElementById('topup-credits-count').textContent = u.topup_credits;
+  } else {
+    creditsSection.style.display = 'none';
   }
 
   // Billing details
@@ -579,11 +783,20 @@ function renderAccount() {
 
 function renderActionRow(status) {
   const row = document.getElementById('action-row');
-  if (status === 'active' || status === 'trial') {
+  if (status === 'active') {
     row.innerHTML = `
       <a href="pricing.html" class="btn btn-teal">Upgrade plan</a>
       <button class="btn btn-pause" onclick="openModal('pause')">Pause subscription</button>
       <button class="btn btn-cancel" onclick="openModal('cancel')">Cancel subscription</button>
+    `;
+  } else if (status === 'trialing') {
+    // FIX (2026-07-30): trialing users have no real Stripe subscription yet
+    // (no stripe_subscription_id), so Pause/Cancel here call manage-subscription
+    // and fail with "No Stripe subscription found". No separate trial-cancellation
+    // UX exists in the app today, so the only valid action during a trial is
+    // choosing a plan. Active-subscriber behavior above is untouched.
+    row.innerHTML = `
+      <a href="pricing.html" class="btn btn-teal">Choose a plan</a>
     `;
   } else if (status === 'paused') {
     row.innerHTML = `
@@ -640,19 +853,35 @@ async function confirmPause() {
   const otherText = document.getElementById('pause-other').value || '';
   const pauseReason = reason.value === 'other' ? otherText : reason.value;
 
-  // Update Supabase profile
-  const { error } = await _sb.from('profiles').update({
-    subscription_status: 'paused',
-    pause_reason: pauseReason,
-    paused_at: new Date().toISOString(),
-  }).eq('id', currentUser.id);
+  // FIX (2026-07-27, AUDIT_AND_FIX_LOG.md Phase 8): this used to only write
+  // subscription_status to Supabase — the real Stripe subscription kept
+  // renewing and charging untouched. manage-subscription now actually pauses
+  // billing in Stripe first, and only updates the profile once Stripe
+  // confirms the change.
+  const { data: { session } } = await _sb.auth.getSession();
+  if (!session) { alert('Please sign in again and retry.'); return; }
+  let data;
+  try {
+    const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/manage-subscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+      body: JSON.stringify({ action: 'pause', reason: pauseReason }),
+    });
+    data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || 'Pause failed');
+  } catch (e) {
+    console.error('Pause subscription error:', e);
+    alert((data && data.error) || 'Something went wrong — please try again or contact support@clpeasy.com');
+    return;
+  }
 
-  if (error) { alert('Something went wrong — please try again or contact support@clpeasy.com'); return; }
-
-  // Notify via Supabase edge function → Brevo
+  // Notify via Supabase edge function → Brevo (non-blocking — email failure
+  // shouldn't block the UI). The function now derives the account from this
+  // same signed-in session, so it can no longer be pointed at another user's
+  // email address.
   await _sb.functions.invoke('clp-account-events', {
-    body: { event: 'subscription_paused', userId: currentUser.id, email: currentUser.email, reason: pauseReason }
-  }).catch(() => {}); // non-blocking — email failure shouldn't block UI
+    body: { event: 'subscription_paused', reason: pauseReason }
+  }).catch(() => {});
 
   userProfile.status = 'paused';
   document.getElementById('pause-step-1').style.display = 'none';
@@ -660,6 +889,16 @@ async function confirmPause() {
 }
 
 // ── CANCEL FLOW ───────────────────────────────────────────────────
+// BLOCKER-3 (AUDIT_AND_FIX_LOG.md): the save-offer coupon does not exist yet
+// in Stripe (STRIPE_SAVE_OFFER_COUPON_ID is unset). Until it is configured and
+// clp-account-events is redeployed, every "Yes — apply the discount" click
+// would fail with the honest error in acceptSaveOffer() below — showing a
+// retention offer that then reliably fails is worse than not showing one, so
+// the save-offer screen is temporarily disabled (same treatment as the
+// bundled top-up card in checkout.html). Set SAVE_OFFER_ENABLED = true once
+// the coupon is live and clp-account-events is deployed with it.
+const SAVE_OFFER_ENABLED = false;
+
 function handleCancelReason() {
   const radio = document.querySelector('input[name="cancel-reason"]:checked');
   if (!radio) { alert('Please select a reason to continue.'); return; }
@@ -668,7 +907,7 @@ function handleCancelReason() {
   document.getElementById('cancel-step-1').style.display = 'none';
 
   // Price or download limit objection → show save offer
-  if (cancelReason === 'price' || cancelReason === 'downloads') {
+  if (SAVE_OFFER_ENABLED && (cancelReason === 'price' || cancelReason === 'downloads')) {
     const isPro = userProfile.plan === 'pro';
     const fullPrice = isPro ? '£14.99/mo' : '£9.99/mo';
     const halfPrice = isPro ? '£7.49' : '£4.99';
@@ -692,26 +931,33 @@ function handleCancelReason() {
 }
 
 async function acceptSaveOffer() {
-  // Update Supabase — mark discount active
-  const discountEnds = new Date(Date.now() + 90*24*60*60*1000).toISOString();
-  await _sb.from('profiles').update({
-    discount_active: true,
-    discount_ends: discountEnds,
-  }).eq('id', currentUser.id).catch(() => {});
+  // FIX (2026-07-27, AUDIT_AND_FIX_LOG.md Phase 2/8): this used to write
+  // discount_active/discount_ends straight to profiles from the browser, and
+  // clp-account-events never actually applied any discount in Stripe — a
+  // customer could end up marked as "discount active" while still being
+  // charged full price. clp-account-events now applies the real Stripe coupon
+  // (once configured — see BLOCKER-3 in the log) and updates profiles itself,
+  // server-side, only if that succeeds.
+  const { data, error } = await _sb.functions.invoke('clp-account-events', {
+    body: { event: 'save_offer_accepted' }
+  });
+  if (error || !data?.success) {
+    alert('Something went wrong applying your discount — please try again or contact support@clpeasy.com');
+    return;
+  }
 
-  // Notify edge function (Stripe coupon + Brevo confirmation)
-  await _sb.functions.invoke('clp-account-events', {
-    body: {
-      event: 'save_offer_accepted',
-      userId: currentUser.id,
-      email: currentUser.email,
-      plan: userProfile.plan,
-      discountEnds: discountEnds,
-    }
-  }).catch(() => {});
-
-  document.getElementById('cancel-step-save').style.display = 'none';
-  document.getElementById('cancel-step-saved').style.display = 'block';
+  // PRE-DEPLOYMENT REVIEW FINDING (2026-07-28): `data.success` only ever meant
+  // "the request was processed" — it does NOT mean a real Stripe discount was
+  // applied (that depends on STRIPE_SAVE_OFFER_COUPON_ID being configured,
+  // see AUDIT_AND_FIX_LOG.md BLOCKER-3). Only show the "discount applied"
+  // success screen if the server confirms it actually happened in Stripe;
+  // otherwise be honest with the customer instead of silently over-promising.
+  if (data.discountApplied) {
+    document.getElementById('cancel-step-save').style.display = 'none';
+    document.getElementById('cancel-step-saved').style.display = 'block';
+  } else {
+    alert('We’ve noted your request, but couldn’t apply the automatic discount right now. Please contact support@clpeasy.com and we’ll sort it out manually.');
+  }
 }
 
 function showCancelConfirm() {
@@ -720,27 +966,34 @@ function showCancelConfirm() {
 }
 
 async function confirmCancel() {
-  const deletionDate = new Date(Date.now() + 30*24*60*60*1000).toISOString();
+  // FIX (2026-07-27, AUDIT_AND_FIX_LOG.md Phase 8): this used to only write
+  // subscription_status to Supabase (with a hard-coded 30-day guess for the
+  // deletion date) — the real Stripe subscription kept renewing and charging
+  // untouched. manage-subscription now actually schedules the cancellation in
+  // Stripe (cancel_at_period_end) first; the deletion date shown to the
+  // customer is set from Stripe's real current period end, not guessed.
+  const { data: { session } } = await _sb.auth.getSession();
+  if (!session) { alert('Please sign in again and retry.'); return; }
+  let data;
+  try {
+    const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/manage-subscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+      body: JSON.stringify({ action: 'cancel', reason: cancelReason }),
+    });
+    data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || 'Cancel failed');
+  } catch (e) {
+    console.error('Cancel subscription error:', e);
+    alert((data && data.error) || 'Something went wrong — please try again or contact support@clpeasy.com');
+    return;
+  }
 
-  // Update Supabase profile
-  const { error } = await _sb.from('profiles').update({
-    subscription_status: 'cancelled',
-    cancel_reason: cancelReason,
-    deletion_date: deletionDate,
-  }).eq('id', currentUser.id);
-
-  if (error) { alert('Something went wrong — please try again or contact support@clpeasy.com'); return; }
-
-  // Notify via Supabase edge function → Brevo
+  // Notify via Supabase edge function → Brevo (non-blocking). The function
+  // derives the account and deletion date from Supabase/Stripe server-side now.
   await _sb.functions.invoke('clp-account-events', {
-    body: {
-      event: 'subscription_cancelled',
-      userId: currentUser.id,
-      email: currentUser.email,
-      reason: cancelReason,
-      deletionDate: deletionDate,
-    }
-  }).catch(() => {}); // non-blocking
+    body: { event: 'subscription_cancelled', reason: cancelReason }
+  }).catch(() => {});
 
   userProfile.status = 'cancelled';
   document.getElementById('cancel-step-confirm').style.display = 'none';
@@ -761,10 +1014,43 @@ function selectTopup(qty, price, el) {
   btn.disabled = false; btn.style.opacity = '1';
   btn.textContent = `Pay £${price} via Stripe →`;
 }
-function confirmTopup() {
-  // TODO: create Stripe payment intent for top-up
-  alert(`Top-up of ${selectedTopupQty} downloads (£${selectedTopupPrice}) — Stripe checkout will open here when wired.`);
-  closeModal('modal-topup');
+// RESOLVED (2026-07-28, AUDIT_AND_FIX_LOG.md BLOCKER-2): confirmed by
+// Michaela directly against the CLPeasy Stripe dashboard — these ARE the
+// correct, canonical top-up Price IDs, matching builder.html. checkout.html
+// and stripe-webhook have been updated to match (they previously referenced a
+// different, incorrect pair, which is no longer used anywhere in active logic).
+const TOPUP_PRICES = {
+  5:  'price_1Tdpd7GZLILz5vqUAiSw9udI',
+  10: 'price_1TdpdzGZLILz5vqUYEjn6TZ2',
+};
+const PLAN_PRICES = {
+  start: 'price_1TdoEYGZLILz5vqUIqlEsf4X',
+  pro:   'price_1TdoEXGZLILz5vqUvZKB1RQw',
+};
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
+
+async function confirmTopup() {
+  const priceId = TOPUP_PRICES[selectedTopupQty];
+  const btn = document.getElementById('topup-confirm-btn');
+  const originalText = btn.textContent;
+  if (!priceId || !currentUser) { alert('Something went wrong — please refresh and try again.'); return; }
+  const { data: { session } } = await _sb.auth.getSession();
+  if (!session) { alert('Please sign in again and retry.'); return; }
+  btn.textContent = 'Loading…'; btn.disabled = true; btn.style.opacity = '0.7';
+  try {
+    const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+      body: JSON.stringify({ priceId, mode: 'payment' })
+    });
+    const data = await res.json();
+    if (data.url) { window.location.href = data.url; }
+    else { throw new Error(data.error || 'No checkout URL returned'); }
+  } catch (e) {
+    console.error('Top-up checkout error:', e);
+    alert('Something went wrong starting checkout. Please try again.');
+    btn.textContent = originalText; btn.disabled = false; btn.style.opacity = '1';
+  }
 }
 
 // ── RESUBSCRIBE ───────────────────────────────────────────────────
@@ -777,21 +1063,126 @@ function selectResub(plan) {
   const btn = document.getElementById('resub-confirm-btn');
   btn.disabled = false; btn.style.opacity = '1';
 }
-function confirmResub() {
-  // TODO: create Stripe subscription, update Supabase
-  alert(`Reactivation for Easy ${selectedResub === 'pro' ? 'Pro' : 'Start'} — Stripe checkout will open here when wired.`);
-  closeModal('modal-resubscribe');
+async function confirmResub() {
+  const priceId = PLAN_PRICES[selectedResub];
+  const btn = document.getElementById('resub-confirm-btn');
+  const originalText = btn.textContent;
+  if (!priceId || !currentUser) { alert('Something went wrong — please refresh and try again.'); return; }
+  btn.textContent = 'Loading…'; btn.disabled = true; btn.style.opacity = '0.7';
+
+  const { data: { session } } = await _sb.auth.getSession();
+  if (!session) {
+    alert('Please sign in again and retry.');
+    btn.textContent = originalText; btn.disabled = false; btn.style.opacity = '1';
+    return;
+  }
+
+  // FIX (2026-07-27, AUDIT_AND_FIX_LOG.md Phase 9): previously this always
+  // created a brand-new Stripe subscription, even if the account's original
+  // subscription had only been paused or scheduled to cancel (and was never
+  // actually cancelled in Stripe) — risking two active subscriptions and a
+  // double charge. Try resuming the SAME Stripe subscription first; only start
+  // a new one if there is nothing to resume.
+  try {
+    const reactivateRes = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/manage-subscription', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+      body: JSON.stringify({ action: 'reactivate' }),
+    });
+    const reactivateData = await reactivateRes.json();
+    if (reactivateRes.ok && reactivateData.success) {
+      window.location.href = 'account.html?reactivated=true';
+      return;
+    }
+    // NO_SUBSCRIPTION or FULLY_ENDED → nothing to resume, fall through below.
+  } catch (e) {
+    console.warn('Reactivate-existing-subscription check failed, falling back to new checkout:', e);
+  }
+
+  try {
+    const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+      body: JSON.stringify({ priceId, mode: 'subscription' })
+    });
+    const data = await res.json();
+    if (data.url) { window.location.href = data.url; }
+    else if (data.code === 'ALREADY_SUBSCRIBED') {
+      alert(data.error);
+      btn.textContent = originalText; btn.disabled = false; btn.style.opacity = '1';
+    }
+    else { throw new Error(data.error || 'No checkout URL returned'); }
+  } catch (e) {
+    console.error('Resubscribe checkout error:', e);
+    alert('Something went wrong starting checkout. Please try again.');
+    btn.textContent = originalText; btn.disabled = false; btn.style.opacity = '1';
+  }
 }
 
 // ── OTHER ─────────────────────────────────────────────────────────
-function openStripePortal() {
-  // TODO: generate Stripe customer portal session URL via edge function
-  alert('Stripe customer portal will open here when wired.');
+async function openStripePortal() {
+  try {
+    const { data: { session } } = await _sb.auth.getSession();
+    if (!session) { alert('Please sign in again to manage billing.'); return; }
+    const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/create-portal-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+      body: JSON.stringify({ userId: currentUser.id })
+    });
+    const data = await res.json();
+    if (data.url) { window.location.href = data.url; }
+    else { throw new Error(data.error || 'No portal URL returned'); }
+  } catch (e) {
+    console.error('Stripe portal error:', e);
+    alert('Something went wrong opening billing. Please try again.');
+  }
 }
 async function signOut() {
   await _sb.auth.signOut();
-  window.location.href = 'home.html';
+  window.location.href = 'index.html';
 }
+</script>
+<script>
+  // Sidebar mobile toggle (same shell script used verbatim on Dashboard/Create Label)
+  (function(){
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const toggles = [document.getElementById('sidebar-toggle'), document.getElementById('sidebar-toggle-inline')].filter(Boolean);
+    function openSidebar(){
+      sidebar.classList.add('open');
+      overlay.classList.add('open');
+      toggles.forEach(t=>t.setAttribute('aria-expanded','true'));
+      document.body.style.overflow='hidden';
+    }
+    function closeSidebar(){
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+      toggles.forEach(t=>t.setAttribute('aria-expanded','false'));
+      document.body.style.overflow='';
+    }
+    toggles.forEach(t=>t.addEventListener('click', ()=>{
+      sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+    }));
+    overlay.addEventListener('click', closeSidebar);
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeSidebar(); });
+  })();
++  (function(){
+    const profile=document.querySelector('.sidebar-profile');
+    const trigger=document.getElementById('sidebar-user');
+    if(!profile||!trigger)return;
+    function closeProfileMenu(){
+      profile.classList.remove('open');
+      trigger.setAttribute('aria-expanded','false');
+    }
+    trigger.addEventListener('click',event=>{
+      event.stopPropagation();
+      const open=profile.classList.toggle('open');
+      trigger.setAttribute('aria-expanded',String(open));
+    });
+    profile.addEventListener('click',event=>event.stopPropagation());
+    document.addEventListener('click',closeProfileMenu);
+    document.addEventListener('keydown',event=>{if(event.key==='Escape')closeProfileMenu();});
+  })();
 </script>
 </body>
 </html>

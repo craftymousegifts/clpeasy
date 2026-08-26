@@ -4,7 +4,7 @@
 <meta charset="UTF-8"><!-- CLPeasy builder v1.1.1 -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>CLPeasy — Label Builder</title>
-  <meta name="description" content="Build and download fully compliant CLP labels for candles, wax melts, reed diffusers and fragrance products. GHS pictograms, H&P statements, UFI codes — all included.">
+  <meta name="description" content="Build and download fully compliant CLP labels for candles, wax melts, reed diffusers and fragrance products. GHS pictograms, H&P statements — all included.">
   <meta property="og:title" content="CLPeasy — Label Builder">
   <meta property="og:description" content="Create print-ready CLP labels in minutes. Covers candles, wax melts, reed diffusers and all fragrance products.">
   <meta property="og:url" content="https://clpeasy.com/builder.html">
@@ -12,35 +12,148 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root{--white:#fff;--off:#F7F8FA;--border:#E8EAED;--text:#111318;--muted:#6B7280;--teal:#4C9BB0;--teal-light:#d6eef4;--teal-dark:#3a7d8f;--amber:#F59E0B;--amber-light:#FEF3C7;--red:#EF4444;}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html{-webkit-text-size-adjust:100%;}
+html{-webkit-text-size-adjust:100%;overflow-x:hidden;}
 body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
 
 /* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,0.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 20px;height:88px;display:flex;align-items:center;justify-content:space-between;}
+/* ============================================================
+   APP SHELL — same canonical shared shell as dashboard.html (the
+   single source of truth). This block is EFFECTIVELY identical to
+   dashboard.html's, not byte-identical: it was written before the
+   shared shell was formalised as CSS custom properties, so it uses
+   builder.html's own pre-existing literal values (16px 12px, 10px,
+   8px 8px 24px, etc.) that resolve to the exact same computed
+   pixels as dashboard.html's --shell-space-N / --shell-radius-control
+   tokens. Left as literals rather than rewritten to reduce risk in
+   this file (24 Aug 2026 GUI integration pass — see report).
+   ============================================================ */
+:root{
+  --shell-sidebar-w:260px;
+  --shell-topbar-h:56px;
+}
+.app-shell{display:flex;min-height:100vh;}
+.sidebar{
+  width:var(--shell-sidebar-w);flex-shrink:0;background:white;
+  border-right:1.5px solid var(--border);display:flex;flex-direction:column;
+  padding:16px 12px;position:fixed;top:0;left:0;bottom:0;z-index:300;
+  transition:transform .25s ease;
+}
+.sidebar-logo{display:flex;align-items:center;gap:8px;text-decoration:none;padding:8px 8px 24px;}
+.sidebar-nav{display:flex;flex-direction:column;gap:2px;flex:1;}
+.sidebar-nav-item{
+  display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;
+  color:var(--text);text-decoration:none;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;
+  border:none;background:none;cursor:pointer;text-align:left;width:100%;min-height:44px;
+  transition:background .15s ease,color .15s ease;
+}
+.sidebar-nav-item:hover{background:var(--off);}
+.sidebar-nav-item.active{background:var(--teal-light);color:var(--text);position:relative;}
+.sidebar-nav-item.active::before{content:'';position:absolute;left:2px;top:8px;bottom:8px;width:4px;border-radius:3px;background:var(--teal);}
+.sidebar-nav .snav-icon{color:var(--teal);}
+.snav-icon{width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.snav-icon svg{width:18px;height:18px;display:block;}
+#nav-user{display:none!important;}
+/* Standardised sidebar bottom block (24 Aug 2026, GUI redesign — reused
+   verbatim across Dashboard, Create Label, My Labels and Account): downloads
+   card + user identity block, both driven by data each page already fetches
+   for its own purposes — no new backend calls added for this. */
+.sidebar-bottom{margin-top:auto;display:flex;flex-direction:column;gap:10px;}
+.sidebar-usage{border:1px solid var(--border);border-radius:12px;padding:12px;}
+.su-label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-bottom:4px;}
+.su-count{font-size:19px;font-weight:800;color:var(--text);margin-bottom:8px;}
+.su-bar{height:6px;border-radius:999px;background:var(--off);overflow:hidden;margin-bottom:9px;}
+.su-bar span{display:block;height:100%;background:var(--teal);border-radius:999px;}
+.su-topup{display:block;text-align:center;font-size:12px;font-weight:700;color:var(--teal-dark);text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:7px;}
+.su-topup:hover{background:var(--off);}
+.sidebar-profile{position:relative;}
+.sidebar-user{width:100%;display:flex;align-items:center;gap:10px;padding:10px;border:1px solid transparent;border-radius:10px;background:white;cursor:pointer;text-align:left;font-family:inherit;}
+.sidebar-user:hover,.sidebar-profile.open .sidebar-user{border-color:var(--border);box-shadow:0 4px 14px rgba(15,23,42,.08);}
+.sidebar-user-chevron{margin-left:auto;width:16px;height:16px;transition:transform .18s;color:var(--muted);}
+.sidebar-profile.open .sidebar-user-chevron{transform:rotate(180deg);}
+.sidebar-user-menu{display:none;position:absolute;left:0;right:0;bottom:calc(100% + 6px);padding:6px;background:white;border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 28px rgba(15,23,42,.14);z-index:20;}
+.sidebar-profile.open .sidebar-user-menu{display:block;}
+.sidebar-user-menu button{width:100%;display:flex;align-items:center;gap:9px;padding:9px 10px;border:0;border-radius:7px;background:white;color:var(--text);font:600 12px 'DM Sans',sans-serif;cursor:pointer;}
+.sidebar-user-menu button:hover{background:var(--off);color:var(--red);}
+.su-avatar{width:36px;height:36px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;}
+.su-info{min-width:0;}
+.su-name{font-size:13px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.su-plan{font-size:11.5px;color:var(--teal-dark);}
+.sidebar-logout{color:var(--muted);border-top:1px solid var(--border);padding-top:14px;}
+.sidebar-logout:hover{background:var(--off);color:var(--red);}
+.shell-main{flex:1;margin-left:var(--shell-sidebar-w);min-width:0;}
+/* CLP SHARED BACKGROUND SHELL — same treatment reused verbatim on Dashboard,
+   Create Label, My Labels and Account. Sidebar stays plain white; this
+   background sits only on the main content area. */
+.shell-main{
+  background-color:#fbfdfe;
+  background-image:url('assets/clpeasy-region-top.png'), url('assets/clpeasy-region-bottom.png');
+  background-repeat:no-repeat, no-repeat;
+  background-position:top right, bottom center;
+  background-size:38% auto, 100% auto;
+}
+.shell-topbar{
+  display:none;align-items:center;gap:12px;height:var(--shell-topbar-h);
+  padding:0 16px;background:white;border-bottom:1.5px solid var(--border);
+  position:sticky;top:0;z-index:150;
+}
+.shell-topbar-title{font-weight:700;font-size:15px;}
+.sidebar-toggle,.sidebar-toggle-inline{
+  display:none;flex-direction:column;justify-content:center;gap:4px;
+  width:44px;height:44px;border:1.5px solid var(--border);border-radius:10px;background:white;
+  cursor:pointer;flex-shrink:0;
+}
+.sidebar-toggle span,.sidebar-toggle-inline span{display:block;height:2px;background:var(--text);border-radius:1px;margin:0 9px;}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(17,19,24,0.4);z-index:290;opacity:0;transition:opacity .2s ease;}
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);box-shadow:8px 0 24px rgba(0,0,0,0.08);}
+  .sidebar.open{transform:translateX(0);}
+  .shell-main{margin-left:0;}
+  .shell-topbar{display:flex;}
+  .sidebar-toggle-inline{display:flex;}
+  .sidebar-overlay.open{display:block;opacity:1;}
+}
+
+.sidebar-logo .nav-badge{width:40px;height:40px;font-size:17px;letter-spacing:-1px;}
+.sidebar-logo .nav-easy{font-size:22px;margin-left:6px;letter-spacing:-1px;}
+/* Stale top-navbar tag-selector removed (24 Aug 2026, GUI integration pass):
+   `nav{...}` previously here (fixed top bar, height 88px, justify-content:
+   space-between) matched ZERO elements — builder.html has no <nav> tag
+   anywhere in its markup (the sidebar nav is a <div class="sidebar-nav">
+   specifically to avoid this exact collision, per the same bug already
+   found and fixed in dashboard.html/account.html this pass). Its matching
+   @media(max-width:600px) sub-rules (`nav{padding:...}`, `nav > div{...}`)
+   were removed with it. .nav-logo/.nav-back/.btn-help below are also
+   unused (no matching markup) but left in place as harmless. */
 .nav-logo{display:flex;align-items:center;gap:0;text-decoration:none;line-height:1;}
-.nav-badge{width:80px;height:80px;border-radius:50%;background:#4C9BB0;color:white;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;flex-shrink:0;font-family:'DM Sans',sans-serif;letter-spacing:-1px;}
-.nav-easy{font-family:'DM Sans',sans-serif;font-size:38px;font-weight:900;color:#4C9BB0;margin-left:5px;letter-spacing:-2px;line-height:1;}
+.nav-badge{width:52px;height:52px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;letter-spacing:-1px;flex-shrink:0;}
+.nav-easy{font-size:26px;font-weight:900;color:var(--teal);margin-left:4px;letter-spacing:-1px;}
 .nav-back{font-size:13px;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;white-space:nowrap;}
 .nav-back:hover{color:var(--teal);border-color:var(--teal);}
 .btn-help{width:32px;height:32px;border-radius:50%;background:var(--off);border:1.5px solid var(--border);color:var(--muted);font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:'DM Sans',sans-serif;flex-shrink:0;}
 .btn-help:hover{background:var(--teal-light);border-color:var(--teal);color:var(--teal);}
 
+@media(max-width:600px){
+  .nav-badge{width:52px;height:52px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;letter-spacing:-1px;flex-shrink:0;}
+  .nav-easy{font-size:26px;font-weight:900;color:var(--teal);margin-left:4px;letter-spacing:-1px;}
+  .nav-compliance{display:none !important;}
+  #nav-user{display:none !important;}
+}
+
 /* BETA EXPIRED SCREEN */
 .beta-expired{display:none;position:fixed;inset:0;background:var(--off);z-index:999;align-items:center;justify-content:center;padding:24px;}
 .beta-expired-card{background:white;border-radius:20px;border:1px solid var(--border);padding:48px 40px;max-width:480px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.08);}
 .beta-expired-icon{font-size:48px;margin-bottom:20px;}
-.beta-expired-title{font-family:'DM Serif Display',serif;font-size:28px;margin-bottom:12px;}
+.beta-expired-title{font-family:'DM Sans',sans-serif;font-weight:800;font-size:26px;margin-bottom:12px;}
 .beta-expired-sub{font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:28px;}
 .help-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:400;display:none;opacity:0;transition:opacity .3s;}
 .help-overlay.open{display:block;opacity:1;}
 .help-panel{position:fixed;top:0;right:-480px;width:460px;max-width:100vw;height:100vh;background:white;z-index:401;overflow-y:auto;transition:right .3s;box-shadow:-4px 0 24px rgba(0,0,0,0.12);}
 .help-panel.open{right:0;}
 .help-header{position:sticky;top:0;background:white;border-bottom:1px solid var(--border);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;z-index:1;}
-.help-header h2{font-family:'DM Serif Display',serif;font-size:20px;}
+.help-header h2{font-family:'DM Sans',sans-serif;font-weight:800;font-size:19px;}
 .help-close{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);background:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--muted);}
 .help-body{padding:20px;}
 .help-section{margin-bottom:24px;}
@@ -55,42 +168,83 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 .help-faq summary{font-size:13px;font-weight:600;cursor:pointer;padding:8px 0;color:var(--text);}
 .help-faq p{font-size:13px;color:var(--muted);padding:8px 0 4px;line-height:1.6;}
 
-/* DESKTOP LAYOUT */
-.builder-layout{display:grid;grid-template-columns:1fr 360px;min-height:100vh;padding-top:88px;}
-.wizard-panel{padding:28px 32px 80px;min-width:0;overflow-y:auto;}
-.preview-panel{background:#1a1f2e;-webkit-user-select:none;-moz-user-select:none;user-select:none;position:sticky;top:88px;height:calc(100vh - 88px);display:flex;flex-direction:column;overflow:hidden;align-self:start;}
 
-/* MOBILE LAYOUT */
+/* LAYOUT — form + live preview are the two dominant working surfaces.
+   (24 Aug 2026 correction: previously a third, fixed 250px "Steps/AI/
+   Compliance" column squeezed both of these and left the tablet/mobile
+   responsive story fighting itself. AI Assistant and Label Compliance are
+   now contextual UI inside/around the form instead of a permanent column
+   — see .ai-banner and .page-compliance-badge below — so there is nothing
+   left to reflow or hide at narrower widths.) */
+.builder-layout{display:grid;grid-template-columns:minmax(340px,390px) minmax(440px,1fr) 270px;gap:20px;padding:20px 32px 40px;max-width:1500px;margin:0 auto;align-items:start;}
+@media(max-width:1280px){.builder-layout{grid-template-columns:minmax(330px,1fr) minmax(400px,1.25fr);}.builder-side-rail{grid-column:1/-1;display:grid!important;grid-template-columns:repeat(3,1fr);}}
+@media(max-width:860px){.builder-layout{display:block;padding:16px 24px 40px;}}
+.wizard-panel{background:white;border:1.5px solid var(--border);border-radius:18px;padding:24px 28px 32px;min-width:0;}
+.builder-accordion{display:flex;flex-direction:column;}
+.builder-accordion-section{border-bottom:1px solid var(--border);}
+.builder-accordion-section:first-child{border-top:0;}
+.builder-accordion-trigger{width:100%;display:grid;grid-template-columns:26px 1fr 18px;align-items:center;gap:10px;padding:14px 0;border:0;background:white;color:var(--text);font:700 14px 'DM Sans',sans-serif;text-align:left;cursor:pointer;}
+.builder-accordion-trigger .acc-num{width:23px;height:23px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;}
+.builder-accordion-section:not(.active) .acc-num{background:#eef4f6;color:var(--teal-dark);}
+.builder-accordion-body{padding:2px 0 12px;}.builder-accordion-body .step-heading{display:none;}.builder-accordion-body .step-sub{margin-top:0;}
+.builder-accordion-body .step-nav{display:none!important;}
+.wizard-panel>.step-panel{display:none!important;}.builder-accordion-body>.step-panel{display:block!important;}
+.classification-review{padding:14px;border:1px solid var(--border);border-radius:10px;background:var(--off);font-size:13px;line-height:1.6;color:var(--muted);}.classification-review strong{color:var(--text);}.classification-review button{margin-top:12px;}
+.builder-accordion-actions{display:grid;grid-template-columns:1fr .72fr;gap:10px;padding-top:16px;}.builder-accordion-actions button{padding:11px;border-radius:9px;font:700 12px 'DM Sans',sans-serif;cursor:pointer;}.builder-save-progress{border:0;background:var(--teal);color:white}.builder-reset{border:1.5px solid var(--border);background:white;color:var(--text)}
+.wizard-panel>.steps-bar,.wizard-panel>div[style*="justify-content:flex-end"]{display:none!important;}
+.builder-side-rail{display:flex;flex-direction:column;gap:18px;}
+.builder-rail-card{background:white;border:1.5px solid var(--border);border-radius:16px;padding:20px;box-shadow:0 4px 18px rgba(15,23,42,.035);}
+.builder-rail-card h3{font-size:16px;margin:0 0 16px;color:var(--text);}
+.rail-step{display:grid;grid-template-columns:24px 1fr auto;align-items:center;gap:9px;padding:8px 0;font-size:12px;color:var(--muted);}
+.rail-step-num{width:22px;height:22px;border:1.5px solid #cbd5e1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;background:white;}
+.rail-step.active{color:var(--text);font-weight:700}.rail-step.active .rail-step-num{background:var(--teal);border-color:var(--teal);color:white;}
+.rail-status{font-size:10px;padding:5px 7px;border:1px solid var(--border);border-radius:6px;background:var(--off);white-space:nowrap;}.rail-step.active .rail-status{background:var(--teal-light);border-color:#b8e0ea;color:var(--teal-dark);}
+.rail-ai-icon{font-size:22px;color:var(--teal);}.rail-copy{font-size:13px;line-height:1.55;color:var(--muted);margin:8px 0 14px;}.rail-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border:1.5px solid var(--border);border-radius:9px;background:white;color:var(--teal-dark);font:700 13px 'DM Sans',sans-serif;cursor:pointer;}.rail-chip{display:inline-block;margin:10px 6px 0 0;padding:5px 9px;border-radius:999px;background:#e9f8ee;color:#166534;font-size:10px;font-weight:700;}
+
+/* Contextual AI Assistant banner — lives inline at the top of the form
+   (visible on every step) instead of a permanent side column. */
+.ai-banner{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,var(--teal-light),#eef8fa);border:1.5px solid #c9e6ee;border-radius:14px;padding:14px 18px;margin-bottom:26px;}
+.ai-banner-icon{width:38px;height:38px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ai-banner-icon svg{width:19px;height:19px;display:block;}
+.ai-banner-text{flex:1;min-width:0;}
+.ai-banner-text strong{display:block;font-size:13.5px;color:var(--text);}
+.ai-banner-text span{font-size:12px;color:var(--muted);}
+.ai-banner-btn{flex-shrink:0;background:var(--teal);color:white;border:none;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;}
+.ai-banner-btn:hover{background:var(--teal-dark);}
+@media(max-width:480px){.ai-banner{flex-wrap:wrap;}.ai-banner-btn{width:100%;}}
+
+/* Label Compliance — relocated from its own column into a compact badge in
+   the page header: secondary, contextual, no longer competing for width. */
+.page-compliance-badge{display:inline-flex;align-items:center;gap:6px;background:var(--teal-light);color:var(--teal-dark);font-size:11.5px;font-weight:700;border-radius:999px;padding:5px 12px;margin-left:10px;vertical-align:middle;white-space:nowrap;}
+.page-compliance-badge svg{width:13px;height:13px;display:block;}
+@media(max-width:600px){.page-compliance-badge{display:block;margin:8px 0 0;width:fit-content;}}
+
+/* Page header (breadcrumb/title/subtitle) + trust strip — same pattern as
+   my-labels.html, reused verbatim for visual consistency across the shell. */
+.page-crumb{font-size:12px;color:var(--muted);margin:0 auto;max-width:1280px;padding:40px 40px 6px;}
+.page-crumb a{color:var(--muted);text-decoration:none;}
+.page-crumb a:hover{color:var(--teal);}
+.page-head{max-width:1280px;margin:0 auto;padding:8px 40px 0;}
+.page-title{font-family:'DM Serif Display',serif;font-size:32px;margin-bottom:4px;}
+.page-sub{color:var(--muted);font-size:13.5px;}
+.trust-strip{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:40px auto 0;max-width:1280px;background:white;border:1px solid var(--border);border-radius:16px;padding:20px;}
+@media(max-width:760px){.trust-strip{grid-template-columns:1fr 1fr;}}
+.trust-item{display:flex;align-items:center;gap:10px;font-size:12px;}
+.trust-item b{display:block;font-size:13px;}
+.trust-icon{width:36px;height:36px;border-radius:50%;background:var(--teal-light);color:var(--teal-dark);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.trust-icon svg{width:17px;height:17px;display:block;}
+a.trust-item{color:inherit;text-decoration:none;}
+a.trust-item:hover .trust-icon{background:var(--teal);color:white;}
+.right-column{display:flex;flex-direction:column;gap:16px;}
+@media(min-width:861px){.right-column{position:sticky;top:28px;max-height:calc(100vh - 56px);overflow-y:auto;}}
+.preview-panel{background:var(--off);border:1.5px solid var(--border);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
+
 @media(max-width:860px){
-  .builder-layout{display:block;padding-top:88px;}
-  .wizard-panel{padding:20px 16px 40px;max-width:100%;width:100%;}
-  .preview-panel{display:none;}
-  .mobile-preview-bar{position:sticky;top:0;z-index:50;display:flex !important;background:#1a1f2e;}
+  .wizard-panel{padding:16px 16px 40px;max-width:100%;width:100%;}
   .form-row{grid-template-columns:1fr;}
   body{padding-bottom:20px;}
-}
-
-/* MOBILE PREVIEW BAR - shown at top of each step on mobile */
-.mobile-preview-bar{
-  display:none;
-  background:#1a1f2e;
-  border-radius:16px;
-  padding:16px;
-  margin-bottom:24px;
-  flex-direction:column;
-  align-items:center;
-  gap:10px;
-}
-.mobile-preview-bar-label{
-  font-size:11px;color:rgba(255,255,255,0.4);
-  letter-spacing:1px;text-transform:uppercase;
-  align-self:flex-start;
-}
-.mobile-preview-dims{
-  font-size:11px;color:rgba(255,255,255,0.35);
-}
-.mobile-dl-row{
-  display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;
+  .page-crumb{padding:24px 24px 6px;}
+  .page-head{padding:8px 24px 0;}
 }
 
 /* STEPS */
@@ -112,8 +266,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 .step-panel{display:none;}
 .step-panel.active{display:block;animation:fadeIn .25s ease;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
-.step-heading{font-family:'DM Serif Display',serif;font-size:24px;margin-bottom:4px;}
-.step-sub{font-size:13px;color:var(--muted);margin-bottom:24px;}
+.step-heading{font-family:'DM Sans',sans-serif;font-weight:800;letter-spacing:-0.01em;font-size:27px;margin-bottom:6px;}
+.step-sub{font-size:13.5px;color:var(--muted);margin-bottom:22px;}
 
 /* FORMS */
 .form-group{margin-bottom:16px;}
@@ -126,17 +280,17 @@ textarea{resize:vertical;min-height:80px;font-size:14px;}
 select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
 
 /* SHAPE/SIZE CARDS */
-.shape-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px;}
-.shape-card{border:1.5px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;background:white;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:7px;-webkit-tap-highlight-color:transparent;}
-.shape-card:active,.shape-card:hover{border-color:var(--teal);}
-.shape-card.selected{border-color:var(--teal);background:var(--teal-light);}
+.shape-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.shape-card{border:1.5px solid var(--border);border-radius:14px;padding:14px 8px;text-align:center;cursor:pointer;background:white;transition:all .18s ease;display:flex;flex-direction:column;align-items:center;gap:6px;-webkit-tap-highlight-color:transparent;min-height:44px;box-shadow:0 1px 2px rgba(17,19,24,0.04);}
+.shape-card:active,.shape-card:hover{border-color:var(--teal);box-shadow:0 4px 12px rgba(76,155,176,0.14);transform:translateY(-1px);}
+.shape-card.selected{border-color:var(--teal);background:var(--teal-light);box-shadow:0 2px 8px rgba(76,155,176,0.18);}
 .shape-label{font-size:12px;font-weight:600;}
 .size-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
-.size-card{border:1.5px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;background:white;transition:all .2s;-webkit-tap-highlight-color:transparent;}
-.size-card:active,.size-card:hover{border-color:var(--teal);}
-.size-card.selected{border-color:var(--teal);background:var(--teal-light);}
-.size-card .sz{font-size:17px;font-weight:700;font-family:'DM Serif Display',serif;color:var(--teal);}
-.size-card .sz-label{font-size:11px;color:var(--muted);margin-top:2px;}
+.size-card{border:1.5px solid var(--border);border-radius:14px;padding:14px 8px;text-align:center;cursor:pointer;background:white;transition:all .18s ease;-webkit-tap-highlight-color:transparent;min-height:44px;box-shadow:0 1px 2px rgba(17,19,24,0.04);}
+.size-card:active,.size-card:hover{border-color:var(--teal);box-shadow:0 4px 12px rgba(76,155,176,0.14);transform:translateY(-1px);}
+.size-card.selected{border-color:var(--teal);background:var(--teal-light);box-shadow:0 2px 8px rgba(76,155,176,0.18);}
+.size-card .sz{font-size:18px;font-weight:800;font-family:'DM Sans',sans-serif;color:var(--teal);}
+.size-card .sz-label{font-size:11.5px;color:var(--muted);margin-top:3px;}
 .custom-dims{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .custom-dims .form-group{margin-bottom:0;}
 
@@ -151,7 +305,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 /* SIGNAL */
 .signal-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
-.signal-btn{border:2px solid var(--border);border-radius:10px;padding:13px;text-align:center;cursor:pointer;background:white;transition:all .2s;font-weight:700;font-size:15px;-webkit-tap-highlight-color:transparent;cursor:default;user-select:none;}
+.signal-btn{border:2px solid var(--border);border-radius:9px;padding:10px;text-align:center;cursor:pointer;background:white;transition:all .2s;font-weight:700;font-size:14px;-webkit-tap-highlight-color:transparent;cursor:default;user-select:none;}
 .signal-btn.sel-warn{border-color:var(--amber);background:var(--amber-light);color:#92400E;}
 .signal-btn.sel-danger{border-color:var(--red);background:#FEF2F2;color:#991B1B;}
 
@@ -187,31 +341,52 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .allergen-tag{background:var(--off);border:1px solid var(--border);border-radius:100px;padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:5px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
 
 /* DIVIDER */
-.sdiv{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);margin:22px 0 12px;display:flex;align-items:center;gap:10px;}
+.sdiv{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);margin:28px 0 12px;display:flex;align-items:center;gap:10px;}
+.sdiv:first-child{margin-top:0;}
+
+/* Field-level alerts (warning/danger/success) — one consistent visual
+   language for every in-form notice across all five steps, reusing the
+   same palette dashboard.html's .msg/.badge already use elsewhere in the
+   app (24 Aug 2026 correction — these were previously ad-hoc inline
+   styles with several slightly different hex values for the same colour). */
+.field-alert{border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.6;margin-bottom:20px;}
+.field-alert-warn{background:var(--amber-light);border:1.5px solid #FDE68A;color:#92400E;}
+.field-alert-danger{background:#FEF2F2;border:1.5px solid #FECACA;color:#991B1B;}
+.field-alert-success{background:#F0FDF4;border:1.5px solid #BBF7D0;color:#166534;}
 .sdiv::after{content:'';flex:1;height:1px;background:var(--border);}
 
 /* NAV BUTTONS */
-.step-nav{display:flex;justify-content:space-between;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid var(--border);}
-.btn-prev{background:white;color:var(--text);border:1.5px solid var(--border);padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;-webkit-tap-highlight-color:transparent;}
+.step-nav{display:flex;justify-content:space-between;align-items:center;margin-top:32px;padding-top:24px;border-top:1px solid var(--border);}
+.btn-prev{background:white;color:var(--text);border:1.5px solid var(--border);padding:13px 22px;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;-webkit-tap-highlight-color:transparent;}
 .btn-prev:active,.btn-prev:hover{border-color:var(--teal);color:var(--teal);}
-.btn-next{background:var(--teal);color:white;border:none;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;box-shadow:0 4px 14px rgba(13,148,136,0.25);-webkit-tap-highlight-color:transparent;}
+.btn-next{background:var(--teal);color:white;border:none;padding:13px 26px;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;box-shadow:0 4px 14px rgba(13,148,136,0.25);-webkit-tap-highlight-color:transparent;}
 .btn-next:active,.btn-next:hover{background:var(--teal-dark);}
 
 /* PREVIEW PANEL DESKTOP */
-.preview-header{padding:12px 16px 10px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
-.preview-header h3{font-size:11px;font-weight:600;color:rgba(255,255,255,0.45);letter-spacing:1px;white-space:nowrap;}
+.preview-header{padding:12px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+.preview-header h3{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1px;white-space:nowrap;}
 .preview-header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
-.preview-badge{font-size:11px;background:rgba(13,148,136,0.2);color:#5EEAD4;padding:3px 10px;border-radius:100px;font-weight:600;white-space:nowrap;}
+.preview-badge{font-size:11px;background:var(--teal-light);color:var(--teal-dark);padding:3px 10px;border-radius:100px;font-weight:600;white-space:nowrap;}
 /* Zoom bar */
 .zoom-bar{display:flex;align-items:center;gap:6px;}
-.zoom-btn{width:24px;height:24px;border-radius:5px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.55);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:'DM Sans',sans-serif;line-height:1;padding:0;}
-.zoom-btn:hover{background:rgba(255,255,255,0.15);}
-.zoom-track{position:relative;width:72px;height:4px;background:rgba(255,255,255,0.12);border-radius:2px;cursor:pointer;}
+.zoom-btn{width:24px;height:24px;border-radius:5px;background:white;border:1.5px solid var(--border);color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:'DM Sans',sans-serif;line-height:1;padding:0;}
+.zoom-btn:hover{background:var(--off);}
+.zoom-track{position:relative;width:72px;height:4px;background:var(--border);border-radius:2px;cursor:pointer;}
 .zoom-fill{height:100%;background:var(--teal);border-radius:2px;transition:width .15s;}
-.zoom-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:white;box-shadow:0 1px 4px rgba(0,0,0,0.4);cursor:grab;transition:left .15s;}
-.zoom-pct{font-size:11px;color:rgba(255,255,255,0.4);min-width:30px;text-align:right;}
+.zoom-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:var(--teal-dark);box-shadow:0 1px 4px rgba(0,0,0,0.2);cursor:grab;transition:left .15s;}
+.zoom-pct{font-size:11px;color:var(--muted);min-width:30px;text-align:right;font-weight:600;}
 /* Canvas area — scrollable so zoomed labels don't get clipped */
-.preview-canvas-area{display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto;flex:1;min-height:0;}
+.preview-canvas-area{display:flex;align-items:flex-start;justify-content:center;gap:20px;padding:16px;overflow:auto;min-height:400px;}
+.preview-canvas-area>#label-svg-container{flex:1;display:flex;align-items:center;justify-content:center;min-width:0;}
+.preview-legend{flex:0 0 220px;background:white;border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:12px;align-self:stretch;overflow-y:auto;max-height:100%;}
+.preview-legend .fine-tune-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.preview-legend .fine-tune-sub{font-size:10.5px;color:var(--muted);margin-bottom:10px;line-height:1.35;}
+.preview-legend .ft-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);}
+.preview-legend .ft-row span{font-size:11.5px;font-weight:600;color:var(--text);}
+.preview-legend .ft-controls{display:flex;align-items:center;gap:4px;}
+.preview-legend .ft-btn{background:var(--off);border:1px solid var(--border);color:var(--text);border-radius:4px;width:19px;height:19px;font-size:11px;cursor:pointer;line-height:1;padding:0;}
+.preview-legend .ft-pct{font-size:10.5px;color:var(--muted);min-width:28px;text-align:center;font-weight:600;}
+.preview-legend .ft-reset{font-size:9.5px;color:var(--teal);font-weight:600;cursor:pointer;display:none;text-align:right;padding:2px 0 4px;}
 #label-svg-container{
   -webkit-user-select:none;-moz-user-select:none;user-select:none;
   pointer-events:none;
@@ -225,16 +400,16 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   filter:drop-shadow(0 6px 20px rgba(0,0,0,0.4));
   /* Width/height driven by JS transform-origin scale */
 }
-.preview-footer{padding:10px 16px 14px;border-top:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;gap:8px;}
-.preview-size-info{font-size:11px;color:rgba(255,255,255,0.3);text-align:center;}
+.preview-footer{padding:10px 16px 14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;}
+.preview-size-info{font-size:11px;color:var(--muted);text-align:center;}
 
 /* DOWNLOAD BUTTONS */
 .dl-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .btn-dl{background:var(--teal);color:white;border:none;padding:11px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;width:100%;-webkit-tap-highlight-color:transparent;}
 .btn-dl:active,.btn-dl:hover{background:var(--teal-dark);}
-.btn-dl-svg{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.8);border:1.5px solid rgba(255,255,255,0.15);padding:11px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;width:100%;}
-.btn-dl-svg:active,.btn-dl-svg:hover{background:rgba(255,255,255,0.15);}
-.cricut-note{font-size:11px;color:rgba(255,255,255,0.3);text-align:center;}
+.btn-dl-svg{background:white;color:var(--text);border:1.5px solid var(--border);padding:11px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;width:100%;}
+.btn-dl-svg:active,.btn-dl-svg:hover{background:var(--off);}
+.cricut-note{font-size:11px;color:var(--muted);text-align:center;}
 
 /* MOBILE PREVIEW SHEET */
 .mobile-preview-btn{display:none;background:rgba(13,148,136,0.15);color:#5EEAD4;border:1.5px solid rgba(13,148,136,0.3);padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;-webkit-tap-highlight-color:transparent;}
@@ -259,9 +434,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .supplier-card.featured.selected{border-color:var(--teal);background:var(--teal-light);}
 .sds-link-box{background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:10px;padding:12px 14px;font-size:13px;color:#166534;line-height:1.6;}
 .sds-link-box a{color:var(--teal-dark);font-weight:600;}
-.saved-section{margin-top:32px;padding-top:24px;border-top:1px solid var(--border);}
+.saved-section{background:white;border:1.5px solid var(--border);border-radius:16px;padding:18px;}
 .saved-section h3{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
-@media(min-width:861px){.saved-section{position:sticky;bottom:0;background:var(--off);padding-bottom:16px;z-index:10;box-shadow:0 -8px 16px rgba(247,248,250,0.9);}}
 .saved-count{font-size:12px;color:var(--muted);font-weight:400;}
 .saved-item{display:flex;align-items:center;justify-content:space-between;background:white;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:8px;gap:10px;}
 .saved-item-info{flex:1;min-width:0;}
@@ -280,7 +454,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .wiz-header{padding:16px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#4C9BB0 0%,#3a7d8f 100%);flex-shrink:0;}
 .wiz-header-left{display:flex;align-items:center;gap:10px;}
 .wiz-header-icon{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:18px;}
-.wiz-header-title{font-family:'DM Serif Display',serif;font-size:18px;color:white;line-height:1.1;}
+.wiz-header-title{font-family:'DM Sans',sans-serif;font-weight:800;font-size:17px;color:white;line-height:1.1;}
 .wiz-header-sub{font-size:11px;color:rgba(255,255,255,0.7);margin-top:1px;}
 .wiz-clear-btn{padding:5px 10px;border-radius:8px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.8);font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;flex-shrink:0;}
 .wiz-clear-btn:hover{background:rgba(255,255,255,0.25);color:white;}
@@ -334,7 +508,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 @keyframes micPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
 .wiz-hint{font-size:11px;color:var(--muted);text-align:center;margin-top:6px;}
 @media(max-width:860px){.wizard-panel-ai{width:100vw;right:-100vw;}.wizard-panel-ai.open{right:0;}}
-.compliance-box{background:var(--teal-light);border:1.5px solid var(--teal);border-radius:14px;padding:16px;margin-bottom:20px;}
+.compliance-box{background:var(--teal-light);border:1.5px solid var(--teal);border-radius:14px;padding:14px 16px;margin-bottom:14px;}
 .compliance-box p{font-size:13px;color:var(--teal-dark);font-weight:500;line-height:1.6;}
 .summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;color:var(--muted);}
 .summary-grid strong{color:var(--text);display:block;font-size:12px;}
@@ -376,7 +550,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .fdel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;}
 .fdel-overlay.show{opacity:1;pointer-events:all;}
 .fdel-box{background:white;border-radius:16px;padding:28px;width:100%;max-width:380px;box-shadow:0 16px 48px rgba(0,0,0,0.2);}
-.fdel-title{font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:8px;color:var(--text);}
+.fdel-title{font-family:'DM Sans',sans-serif;font-weight:800;font-size:19px;margin-bottom:8px;color:var(--text);}
 .fdel-sub{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px;}
 .fdel-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
 .fdel-opt{border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all .2s;font-size:13px;line-height:1.5;text-align:left;background:white;font-family:'DM Sans',sans-serif;}
@@ -385,6 +559,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .fdel-opt.danger:hover{border-color:#EF4444;background:#FEF2F2;}
 .fdel-cancel{width:100%;background:transparent;border:1px solid var(--border);color:var(--muted);padding:9px;border-radius:8px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;}
 .fdel-cancel:hover{border-color:var(--muted);}
+
+/* SHARED TRUST FOOTER — same across Dashboard, Create Label, My Labels, Account */
+.shell-trust{display:grid;grid-template-columns:1.05fr 1fr 0.95fr 1fr;gap:0;padding:0;border-top:3px solid var(--teal);background:#fff;border:1px solid var(--border);border-radius:16px;margin:24px 0;overflow:hidden;position:relative;z-index:1;}
+.shell-trust-item{display:flex;align-items:center;gap:10px;padding:26px 15px;border-left:1px solid var(--border);}
+.shell-trust-item:first-child{border-left:none;}
+.shell-trust-icon{width:38px;height:38px;border-radius:10px;background:#edf8fa;color:var(--teal);display:grid;place-items:center;flex:0 0 auto;box-shadow:0 0 0 1px rgba(12,137,155,0.12) inset;}
+.shell-trust-icon svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.shell-clp-ready-badge{background:none;box-shadow:none;width:58px;height:73px;border-radius:0;}
+.shell-trust-copy{display:flex;flex-direction:column;min-width:0;}
+.shell-trust-copy b{font-size:13px;}
+.shell-trust-copy small{font-size:11.5px;color:var(--muted);}
+@media(max-width:1100px){.shell-trust{grid-template-columns:1fr 1fr;}.shell-trust-item:nth-child(3){border-left:0;border-top:1px solid var(--border);}.shell-trust-item:nth-child(4){border-top:1px solid var(--border);}}
+@media(max-width:760px){.shell-trust{grid-template-columns:1fr;}.shell-trust-item{border-left:0 !important;border-top:1px solid var(--border);}.shell-trust-item:first-child{border-top:none;}}
 </style>
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"></script>
@@ -395,25 +582,69 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 </head>
 <body>
 
-<nav>
-  <a href="index.html" class="nav-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span></a>
-  <div style="display:flex;align-items:center;gap:8px;">
+<!-- ============================================================
+     APP SHELL — Phase 2 rollout (3 Aug 2026), same shared shell
+     architecture proven on dashboard.html. Everything previously
+     inside <nav> is preserved below (Compliance/Support/Account/
+     Sign-out links) but relocated into the sidebar/topbar pattern.
+     All modal/overlay/wizard markup and the builder-layout content
+     that follows are completely unchanged — only the outer wrapper
+     changed.
+     ============================================================ -->
+<div class="app-shell">
 
-    <a href="compliance.html" style="font-size:13px;color:var(--muted);text-decoration:none;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;white-space:nowrap;font-family:'DM Sans',sans-serif;" onmouseover="this.style.borderColor='var(--teal)';this.style.color='var(--teal)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Compliance</a>
-    <button onclick="openSupport()" style="font-size:13px;color:var(--muted);background:none;text-decoration:none;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;white-space:nowrap;cursor:pointer;font-family:'DM Sans',sans-serif;" onmouseover="this.style.borderColor='var(--teal)';this.style.color='var(--teal)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Support</button>
-    <button class="btn-help" onclick="openHelp()" title="Help guide">?</button>
-    <span id="nav-user" style="font-size:13px;color:var(--muted);display:none;"></span>
-    <a href="auth.html" id="nav-signin" class="nav-back" style="display:none;">Sign in</a>
-    <button id="nav-signout" onclick="signOut()" style="display:none;font-size:13px;color:var(--muted);background:none;border:1.5px solid var(--border);padding:7px 12px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;" onmouseover="this.style.borderColor='var(--teal)';this.style.color='var(--teal)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Sign out</button>
-  </div>
-</nav>
+  <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidebar">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <a href="index.html" class="sidebar-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span></a>
+    <div class="sidebar-nav" role="navigation" aria-label="Main navigation">
+      <a href="dashboard.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg></span>Dashboard</a>
+      <a href="builder.html" class="sidebar-nav-item active"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>Create Label</a>
+      <a href="my-labels.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5a1 1 0 0 1 1-1h4.7l2 2.2h8.3a1 1 0 0 1 1 1V18a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1Z"/></svg></span>My Labels</a>
+      <a href="knowledge.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5c-1.6-1.3-4-2-6.5-2A2 2 0 0 0 3.5 6.5V17c2.6 0 5 .7 6.5 2 1.5-1.3 3.9-2 6.5-2s2-.9 2-.9V6.5c0-1.1-.9-2-2-2-2.5 0-4.9.7-6.5 2Z"/><path d="M12 6.5V19"/></svg></span>Knowledge Base</a>
+      <a href="account.html" id="nav-account" class="sidebar-nav-item" style="display:none;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.4-3.6 4.3-5.5 7.5-5.5s6.1 1.9 7.5 5.5"/></svg></span>Account</a>
+      <a href="auth.html?next=builder.html" id="nav-signin" class="sidebar-nav-item" style="display:none;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4h5a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-5"/><path d="M3 12h11.5"/><path d="M11 8l4 4-4 4"/></svg></span>Sign in</a>
+      <button class="sidebar-nav-item" onclick="openSupport()" style="width:100%;text-align:left;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 1 3.3 6.4L4 20l1.3-3.6A7.96 7.96 0 0 1 4 12Z"/></svg></span>Support</button>
+    </div>
+    <div class="sidebar-bottom">
+      <div class="sidebar-usage" id="sidebar-usage" style="display:none;">
+        <div class="su-label">Downloads remaining</div>
+        <div class="su-count" id="su-count">—</div>
+        <div class="su-bar"><span id="su-fill" style="width:0%"></span></div>
+        <a href="pricing.html" class="su-topup">Buy Top-Up →</a>
+      </div>
+      <div class="sidebar-profile">
+        <button type="button" class="sidebar-user" id="sidebar-user" style="display:none;" aria-haspopup="true" aria-expanded="false">
+          <div class="su-avatar" id="su-avatar">—</div>
+          <div class="su-info"><div class="su-name" id="su-name">—</div><div class="su-plan" id="su-plan">—</div></div>
+          <svg class="sidebar-user-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m8 10 4 4 4-4"/></svg>
+        </button>
+        <div class="sidebar-user-menu" role="menu"><button type="button" onclick="signOut()" role="menuitem"><span aria-hidden="true">↪</span> Log out</button></div>
+      </div>
+      <!-- nav-user kept as a hidden data-sink (see #nav-user rule above): its
+           email text is now redundant with the su-name shown above, so it is
+           never displayed — existing code that writes to it is untouched. -->
+      <span id="nav-user" style="display:none;"></span>
+    </div>
+  </aside>
+
+  <div class="shell-main">
+    <header class="shell-topbar">
+      <button class="sidebar-toggle-inline" id="sidebar-toggle-inline" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <span class="shell-topbar-title">Create Label</span>
+    </header>
 
 <!-- SUPPORT MODAL -->
 <div id="support-overlay" onclick="closeSupport()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center;padding:24px;"></div>
 <div id="support-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;border-radius:20px;padding:36px;width:100%;max-width:440px;z-index:501;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
   <div style="text-align:center;margin-bottom:20px;">
     <div style="width:52px;height:52px;border-radius:50%;background:var(--teal-light);display:inline-flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:12px;">💬</div>
-    <h2 style="font-family:'DM Serif Display',serif;font-size:24px;margin-bottom:8px;">We're here to help</h2>
+    <h2 style="font-family:'DM Sans',sans-serif;font-weight:800;font-size:22px;margin-bottom:8px;">We're here to help</h2>
     <p style="font-size:14px;color:var(--muted);line-height:1.6;">Our support team can assist with any queries about CLPeasy — from technical issues to questions about CLP labelling.</p>
   </div>
   <div style="background:var(--off);border-radius:12px;padding:20px;margin-bottom:20px;text-align:center;">
@@ -423,7 +654,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
   <div style="display:flex;align-items:center;gap:8px;background:#F0FDF4;border-radius:10px;padding:12px 14px;margin-bottom:20px;">
     <div style="font-size:18px;">✓</div>
-    <div style="font-size:13px;color:#166534;line-height:1.5;">Before emailing, check our <strong>Help guide</strong> (the ? button) — most questions are answered there.</div>
+    <div style="font-size:13px;color:#166534;line-height:1.5;">Before emailing, check our <a href="#" onclick="closeSupport();openHelp();return false;" style="color:#166534;font-weight:700;text-decoration:underline;cursor:pointer;">Help guide</a> — most questions are answered there.</div>
   </div>
   <button onclick="closeSupport()" style="width:100%;padding:13px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">Got it</button>
 </div>
@@ -473,6 +704,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <h2>How to use CLPeasy</h2>
     <button class="help-close" onclick="closeHelp()">✕</button>
   </div>
+  <div style="padding:14px 20px 0;position:sticky;top:0;background:white;z-index:2;">
+    <div style="position:relative;">
+      <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--muted);pointer-events:none;">🔍</span>
+      <input type="text" id="help-search" placeholder="Search for help — e.g. 'download', 'SDS', 'pictogram'..." oninput="filterHelp(this.value)" style="width:100%;padding:10px 14px 10px 34px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='var(--border)'">
+    </div>
+    <div id="help-no-results" style="display:none;text-align:center;padding:16px 0 4px;font-size:13px;color:var(--muted);">No results — try a different search term, or <a href="mailto:support@clpeasy.com" style="color:var(--teal);">email support</a>.</div>
+  </div>
   <div class="help-body">
 
     <div class="help-section">
@@ -484,7 +722,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="help-section">
       <h3>Step 1 — Label size & shape</h3>
       <div class="help-step"><div class="help-num">1</div><div class="help-step-text">Choose your <strong>shape</strong> — Circle, Square or Rectangle.</div></div>
-      <div class="help-step"><div class="help-num">2</div><div class="help-step-text">Choose your <strong>size</strong> — 35mm (wax melt), 40mm (small candle), 50mm (standard candle), 63mm (large jar) or Custom.</div></div>
+      <div class="help-step"><div class="help-num">2</div><div class="help-step-text">Choose your <strong>size</strong> — 52mm (standard candle, the CLP minimum), 63mm (large jar) or Custom.</div></div>
       <div class="help-step"><div class="help-num">3</div><div class="help-step-text">Watch the <strong>live preview</strong> update as you make changes.</div></div>
       <div class="help-warn">Read the disclaimer carefully — you are responsible for verifying all label information against your SDS before selling.</div>
     </div>
@@ -529,29 +767,24 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <details class="help-faq"><summary>Do I legally need a CLP label?</summary><p>Yes — if you sell scented candles or wax melts in the UK or EU you are legally required to have a CLP label. Trading Standards can issue fines for non-compliance.</p></details>
       <details class="help-faq"><summary>Where do I find my SDS sheet?</summary><p>On your fragrance supplier's website — usually on the individual product page. Look for a Download SDS or Safety Data Sheet link. Contact your supplier if you can't find it.</p></details>
       <details class="help-faq"><summary>What is EUH208?</summary><p>EUH208 means "Contains [substance name] — may produce an allergic reaction." You need it if your fragrance contains certain sensitiser substances above the threshold level. Your SDS Section 2.2 will tell you if it applies.</p></details>
-      <details class="help-faq"><summary>What size label should I use?</summary><p>35mm circle for wax melt clamshells. 50mm circle for standard candle jars. Measure the area where your label will sit and use Custom size if none of the presets fit.</p></details>
+      <details class="help-faq"><summary>What size label should I use?</summary><p>52mm circle is the CLP minimum and suits most standard candle jars. 63mm for larger jars. For wax melt clamshells or other small formats below 52mm, use Custom size and check the compliance warning that appears — your CLP text may need a larger label or a fold-out leaflet to stay legible.</p></details>
       <details class="help-faq"><summary>Smart Paste didn't extract everything correctly</summary><p>Make sure you copied only Section 2.2 of the SDS. If it still doesn't work, use the H statement chips and sensitiser library to enter the data manually.</p></details>
       <details class="help-faq"><summary>Can I use this on my phone?</summary><p>Yes — CLPeasy works on iPhone and Android. PNG files save to your camera roll and SVG files save to your Files app.</p></details>
-      <details class="help-faq"><summary>What's the difference between Easy Start and Easy Pro?</summary><p>Easy Start (£9.99/mo or £99/year) gives you 20 downloads a month, no watermark, the full label builder, and A4 print sheets. Easy Pro (£14.99/mo or £149/year) adds 30 downloads a month plus Smart Paste, UFI generator, and QR digital safety sheets. Both plans start with a 14-day free trial — no card needed.</p></details>
+      <details class="help-faq"><summary>What's the difference between Easy Start and Easy Pro?</summary><p>Easy Start (£9.99/mo or £99/year) gives you 20 downloads a month, no watermark, the full label builder, and A4 print sheets. Easy Pro (£14.99/mo or £149/year) adds 30 downloads a month plus Smart Paste. Both plans start with a 14-day free trial — no card needed.</p></details>
     </div>
 
   </div>
 </div>
 
+<div class="page-crumb"><a href="dashboard.html">Dashboard</a> &nbsp;›&nbsp; Create Label</div>
+<div class="page-head">
+  <div class="page-title">Create Label</div>
+  <div class="page-sub">Build your CLP label step by step. Add your product details and let CLPeasy handle the compliance.</div>
+</div>
+
 <div class="builder-layout">
 <!-- WIZARD -->
 <div class="wizard-panel">
-  <!-- MOBILE PREVIEW BAR -->
-  <div class="mobile-preview-bar" id="mobile-preview-bar">
-    <div class="mobile-preview-bar-label">Live Preview</div>
-    <div id="mobile-preview-svg"></div>
-    <div class="mobile-preview-dims" id="mobile-preview-dims">35 × 35mm</div>
-    <div class="mobile-dl-row" id="mobile-dl-row" style="display:none;">
-      <button class="btn-dl" onclick="downloadPNG()">⬇ PNG</button>
-      <button class="btn-dl-svg" onclick="downloadSVG()">⬡ SVG</button>
-    </div>
-  </div>
-
   <div class="steps-bar" id="steps-bar">
     <div class="step-item active" data-step="1" onclick="goToStep(1)"><div class="step-circle">1</div><div class="step-label">Label</div></div>
     <div class="step-line" id="line-1"></div>
@@ -564,10 +797,22 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="step-item inactive" data-step="5" onclick="goToStep(5)"><div class="step-circle">5</div><div class="step-label">Download</div></div>
   </div>
 
+  <!-- AI Assistant entry point (24 Aug 2026, integration pass): the old
+       full-width banner is gone (not in review_2_create_label.png), but
+       openWizard() needs an on-demand trigger somewhere, so this reuses the
+       existing (previously unused) .btn-help icon-button style — a small,
+       discreet circular icon, not a new component — visible on every step
+       the same way the banner was. Reuses the banner's own sparkle icon. -->
+  <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+    <button type="button" class="btn-help" onclick="openWizard()" title="Guide Me — AI Assistant" aria-label="Open AI Assistant">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/><circle cx="12" cy="12" r="3.2"/></svg>
+    </button>
+  </div>
+
   <!--!-- STEP 1 -->
   <div class="step-panel active" id="step-1">
     <h2 class="step-heading">Label size &amp; shape</h2>
-    <div style="background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:10px;padding:12px 14px;font-size:12px;color:#92400E;margin-bottom:20px;line-height:1.6;">
+    <div class="field-alert field-alert-warn">
       ⚠️ <strong>Important:</strong> CLPeasy generates labels based on the data you enter. You must always verify all hazard information against your fragrance supplier's SDS sheet at your actual fragrance load before printing and selling. You are solely responsible for ensuring your labels are accurate and legally compliant.
     </div>
     <div class="sdiv">Load from your library</div>
@@ -594,9 +839,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <div class="sdiv">Preset sizes</div>
     <div class="size-grid">
-      <div class="size-card selected" data-size="35" onclick="selectSize(35)"><div class="sz">35mm</div><div class="sz-label">Wax Melt</div></div>
-      <div class="size-card" data-size="40" onclick="selectSize(40)"><div class="sz">40mm</div><div class="sz-label">Small Candle</div></div>
-      <div class="size-card" data-size="50" onclick="selectSize(50)"><div class="sz">50mm</div><div class="sz-label">Standard Candle</div></div>
+      <div class="size-card selected" data-size="52" onclick="selectSize(52)"><div class="sz">52mm</div><div class="sz-label">Standard Candle</div></div>
       <div class="size-card" data-size="63" onclick="selectSize(63)"><div class="sz">63mm</div><div class="sz-label">Large Jar</div></div>
       <div class="size-card" data-size="custom" onclick="selectSize('custom')"><div class="sz" style="font-size:14px">Custom</div><div class="sz-label">Your own size</div></div>
     </div>
@@ -604,8 +847,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="custom-dims">
       <div class="form-group"><label>Width (mm)</label><input type="number" id="custom-w" placeholder="e.g. 50" inputmode="numeric" min="10" max="150" oninput="onDimInput()"></div>
       <div class="form-group"><label>Height (mm) <span id="height-note" style="font-weight:400;color:#6B7280;font-size:11px;"></span></label><input type="number" id="custom-h" placeholder="e.g. 40" inputmode="numeric" min="10" max="200" oninput="onDimInput()"></div>
-      <div id="custom-size-warn" style="display:none;background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:9px 12px;font-size:12px;color:#92400E;line-height:1.5;grid-column:1/-1;"></div>
-    <div id="en15494-warn" style="display:none;background:#FEF2F2;border:1.5px solid #FCA5A5;border-radius:10px;padding:12px 14px;font-size:12px;color:#991B1B;line-height:1.6;grid-column:1/-1;margin-top:8px;">
+      <div id="custom-size-warn" class="field-alert field-alert-warn" style="display:none;grid-column:1/-1;margin-bottom:0;"></div>
+    <div id="en15494-warn" class="field-alert field-alert-danger" style="display:none;grid-column:1/-1;margin-top:8px;margin-bottom:0;">
       🔴 <strong>EN 15494:2019 pictograms may not display clearly at this label size.</strong><br>
       CLP labels for candles should ideally be 52mm or larger to display all mandatory safety information legibly.<br>
       EN 15494 candle safety pictograms do <strong>not</strong> have to appear on the CLP label — they can legally be placed on the packaging (e.g. printed on the jar, box, or a separate swing tag).<br><br>
@@ -641,7 +884,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <button id="border-off" onclick="setBorder(false)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Hide border</button>
       </div>
     </div>
-    <!-- QR safety code toggle removed until feature is ready -->
     <div class="step-nav"><div></div><button class="btn-next" onclick="nextStep()">Next: Product details →</button></div>
   </div>
 
@@ -649,7 +891,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="step-panel" id="step-2">
     <h2 class="step-heading">Product details</h2>
     <p class="step-sub">This information appears directly on your label.</p>
-    <div class="form-group"><label>Fragrance / Scent name</label><input type="text" id="scent-name" placeholder="e.g. Black Plum &amp; Rhubarb" autocomplete="off" oninput="updateLabel()"></div>
+    <div class="form-group"><label>Product Name</label><input type="text" id="scent-name" placeholder="e.g. Lemongrass &amp; Lime Candle" autocomplete="off" oninput="updateLabel()"></div>
+    <div class="form-group"><label>Intended Use</label><select id="intended-use"><option>For burning</option><option>For melting in a suitable wax warmer</option><option>For fragrancing a room</option><option>For use as supplied</option></select></div>
     <div class="form-row">
       <div class="form-group"><label>Product type</label><select id="product-type" onchange="onProductTypeChange();updateLabel();saveProdDetails()">
         <option value="" disabled selected>— Choose product type —</option>
@@ -730,6 +973,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <p>Copy Section 2.2 from your fragrance supplier's SDS PDF and paste it here. CLPeasy extracts all hazard data automatically.</p>
       <textarea id="smart-paste-input" placeholder="Paste SDS Section 2.2 text here..."></textarea>
       <br><br><button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
+      <a href="#" id="hazard-clear-link" onclick="clearHazardData();return false;" style="display:none;margin-left:14px;font-size:12px;color:var(--teal-dark);text-decoration:underline;">✓ Data extracted — clear and start over</a>
     </div>
     <div class="sdiv">Signal word</div>
     <div class="signal-row">
@@ -760,24 +1004,22 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <span class="library-toggle" onclick="toggleLib('s-library',this)">▼ Show sensitiser library</span>
     <div id="s-library" style="display:none;margin-bottom:10px;"><div class="sensitiser-grid" id="sensitiser-chips"></div></div>
     <div class="allergen-tags" id="allergen-tags"></div>
-    <div class="sdiv" style="margin-top:14px;">Hazard text size <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--muted)">— adjust within the compliant range</span></div>
-    <div style="display:flex;align-items:center;gap:10px;">
-      <input type="range" id="hazard-fs-slider" min="0" max="100" value="100" step="1" style="flex:1;accent-color:var(--teal);" oninput="onHazardFSInput(this.value)">
-      <span id="hazard-fs-reset" onclick="resetHazardFS()" style="font-size:12px;color:var(--teal);font-weight:600;cursor:pointer;white-space:nowrap;display:none;">Reset to auto</span>
-    </div>
-    <div style="background:#FEF9E7;border:1px solid #F9E27A;border-radius:10px;padding:12px 14px;margin-top:14px;margin-bottom:4px;">
+    <div id="hazard-confirm-block" class="field-alert field-alert-warn" style="margin-top:14px;margin-bottom:4px;">
       <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:var(--text);font-weight:500;line-height:1.5;">
         <input type="checkbox" id="hazard-confirm" style="width:18px;height:18px;margin-top:1px;flex-shrink:0;accent-color:var(--teal);" onchange="toggleHazardNext()">
         I confirm the hazard data shown in the Smart Paste section above is correct and matches my fragrance supplier's SDS sheet at my actual fragrance load.
       </label>
     </div>
-    <div id="label-warn" style="display:none;margin-bottom:10px;background:#FEF2F2;border-left:3px solid #EF4444;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#991B1B;line-height:1.5;"></div>
-    <div style="margin-bottom:10px;background:#FEF3C7;border-left:3px solid #F59E0B;padding:8px 12px;border-radius:0 6px 6px 0;font-size:12px;color:#92400E;display:flex;align-items:center;justify-content:space-between;gap:10px;">
-      <span>⚠️ Always verify hazard data against your fragrance SDS at your actual fragrance load before downloading.</span>
-      <button type="button" onclick="clearHazardData()" style="background:#EF4444;color:white;border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">Clear hazard data</button>
-    </div>
-    <div id="hazard-lock-banner" style="display:none;margin-bottom:12px;background:#DCFCE7;border-left:3px solid #22C55E;padding:10px 14px;border-radius:0 8px 8px 0;font-size:12px;color:#15803D;align-items:center;justify-content:space-between;gap:10px;">
-      <span>🔒 Hazard data extracted and locked. Click <strong>Clear hazard data</strong> above to start again with new SDS data.</span>
+    <!-- Single blocked-state message (3 Aug 2026, UX simplification — per Michaela's
+         request, exactly one state shows at a time: this box OR hazard-confirm-block
+         above, never both). Contains its own heading/explanation/restart action, so
+         no separate warning bar or lock banner is needed alongside it. -->
+    <div id="hazard-blocked-cta" class="field-alert field-alert-danger" style="display:none;margin-bottom:10px;padding:14px 16px;font-size:13px;">
+      <strong>⚠️ Download unavailable — label size too small for CLP labelling requirements.</strong><br><br>
+      This label can't proceed at its current size. Go back to <a href="#" onclick="goToStep(1);return false;" style="color:#991B1B;text-decoration:underline;font-weight:700;">Step 1</a> and choose a larger label size, or use an alternative labelling method permitted for your product, before continuing.
+      <div style="margin-top:10px;">
+        <button type="button" onclick="clearHazardData()" style="background:white;color:#991B1B;border:1.5px solid #EF4444;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;">Clear hazard data and start again</button>
+      </div>
     </div>
     <div class="step-nav"><button class="btn-prev" onclick="prevStep()">← Back</button><button class="btn-next" id="btn-next-step3" onclick="nextStep()" style="opacity:0.4;pointer-events:none;">Next: Business details →</button></div>
   </div>
@@ -800,8 +1042,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div style="margin-top:4px;font-size:11px;color:var(--muted);">Last used: <span id="last-batch-display">—</span></div>
       </div>
     </div>
-    <!-- UFI Code section hidden — not required for UK consumer sales -->
-    <input type="hidden" id="ufi-code" value="">
     <div class="step-nav"><button class="btn-prev" onclick="prevStep()">← Back</button><button class="btn-next" onclick="checkStep4AndNext()">Preview &amp; download →</button></div>
   </div>
 
@@ -809,23 +1049,62 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="step-panel" id="step-5">
     <h2 class="step-heading">Your label is ready!</h2>
     <p class="step-sub">Review your label, then download in your preferred format.</p>
-    <div class="compliance-box"><p>⚠️ <strong>Compliance reminder:</strong> Always verify all hazard data against your fragrance supplier's SDS at your actual fragrance load before printing. You are responsible for final verification.</p></div>
     <div class="watermark-note">🆓 Free trial — labels include a CLPeasy watermark. <button onclick="window.location.href='pricing.html'" style="background:var(--teal,#4C9BB0);color:white;border:none;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;">Subscribe to remove →</button></div>
+    <!-- STEP 5: preview moves here (from right column), fine-tune moves to right column -->
+    <div id="step5-preview-slot" style="margin-bottom:20px;"></div>
+    <div id="finetune-panel-el" class="preview-legend">
+        <div class="fine-tune-title">Fine-tune your label</div>
+        <div class="fine-tune-sub">Within the compliant range. Pictograms locked at 10mm. H/P/sensitisers move as one block.</div>
+
+        <div class="ft-row">
+          <span>Product type</span>
+          <div class="ft-controls">
+            <button class="ft-btn" onclick="nudgeTypeFS(-1)">−</button>
+            <span id="type-fs-pct" class="ft-pct">100%</span>
+            <button class="ft-btn" onclick="nudgeTypeFS(1)">+</button>
+          </div>
+        </div>
+        <div class="ft-reset" id="type-fs-reset" onclick="resetTypeFS()">Reset</div>
+        <div class="ft-row">
+          <span>Signal word</span>
+          <div class="ft-controls">
+            <button class="ft-btn" onclick="nudgeSigFS(-1)">−</button>
+            <span id="sig-fs-pct" class="ft-pct">100%</span>
+            <button class="ft-btn" onclick="nudgeSigFS(1)">+</button>
+          </div>
+        </div>
+        <div class="ft-reset" id="sig-fs-reset" onclick="resetSigFS()">Reset</div>
+        <div class="ft-row">
+          <span>Hazard font <span style="font-weight:400;color:var(--muted);">(H/P/sens.)</span></span>
+          <div class="ft-controls">
+            <button class="ft-btn" onclick="nudgeHazardFS(-1)">−</button>
+            <span id="hazard-fs-pct" class="ft-pct">100%</span>
+            <button class="ft-btn" onclick="nudgeHazardFS(1)">+</button>
+          </div>
+        </div>
+        <div class="ft-reset" id="hazard-fs-reset" onclick="resetHazardFS()">Reset</div>
+        <div class="ft-row">
+          <span>Scent name</span>
+          <div class="ft-controls">
+            <button class="ft-btn" onclick="nudgeScentFS(-1)">−</button>
+            <span id="scent-fs-pct" class="ft-pct">100%</span>
+            <button class="ft-btn" onclick="nudgeScentFS(1)">+</button>
+          </div>
+        </div>
+        <div class="ft-reset" id="scent-fs-reset" onclick="resetScentFS()">Reset</div>
+        <div class="ft-row" style="border-bottom:none;">
+          <span>Business name</span>
+          <div class="ft-controls">
+            <button class="ft-btn" onclick="nudgeBizNameFS(-1)">−</button>
+            <span id="bizname-fs-pct" class="ft-pct">100%</span>
+            <button class="ft-btn" onclick="nudgeBizNameFS(1)">+</button>
+          </div>
+        </div>
+        <div class="ft-reset" id="bizname-fs-reset" onclick="resetBizNameFS()">Reset</div>
+    </div>
     <div style="background:white;border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;">
       <div class="sdiv" style="margin-top:0">Label summary</div>
       <div class="summary-grid" id="label-summary"></div>
-    </div>
-    <!-- MOBILE PREVIEW IN STEP 5 -->
-    <div style="background:#1a1f2e;border-radius:16px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:20px;" id="mobile-preview-container">
-      <div style="overflow:auto;width:100%;max-height:420px;display:flex;align-items:flex-start;justify-content:center;padding:8px 0;" id="mobile-label-scroll">
-        <div id="mobile-label-preview" style="flex-shrink:0;"></div>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;width:100%;justify-content:center;">
-        <button onclick="mobileZoomAdj(-0.15)" style="background:rgba(255,255,255,0.1);color:white;border:none;border-radius:6px;width:32px;height:32px;font-size:18px;cursor:pointer;font-family:'DM Sans',sans-serif;">−</button>
-        <span id="mobile-zoom-pct" style="font-size:11px;color:rgba(255,255,255,0.5);min-width:36px;text-align:center;">100%</span>
-        <button onclick="mobileZoomAdj(0.15)" style="background:rgba(255,255,255,0.1);color:white;border:none;border-radius:6px;width:32px;height:32px;font-size:18px;cursor:pointer;font-family:'DM Sans',sans-serif;">+</button>
-      </div>
-      <div style="font-size:11px;color:rgba(255,255,255,0.35)" id="mobile-size-info">Print size: 35 × 35mm</div>
     </div>
     <div style="background:#F8FAFC;border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;">
       <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:var(--text);font-weight:500;line-height:1.5;">
@@ -833,6 +1112,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         I confirm I have verified all hazard data on this label against my fragrance supplier's SDS sheet at my actual fragrance load. I understand I am solely responsible for ensuring this label is accurate and legally compliant before printing and selling.
       </label>
     </div>
+    <!-- Visible on Step 5 (unlike #label-warn, which lives in Step 3's hidden panel) so the
+         download-block reason is shown right next to the disabled buttons it explains. -->
+    <div id="label-warn-step5" class="field-alert field-alert-danger" style="display:none;margin-bottom:16px;font-size:13px;"></div>
 
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
       <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ Download PNG</button>
@@ -840,7 +1122,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button id="btn-svg" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬡ Download SVG</button>
       <button id="btn-pdf" onclick="printToPDF()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">🖨 Print to PDF</button>
       <button id="btn-save" onclick="saveLabel()" style="background:var(--off);color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">💾 Save to my label library</button>
-    </div>
+
 
     <!-- PRINT SHEET COMPOSER LINK -->
     <a id="print-sheet-link" href="print.html" style="display:none;align-items:center;gap:14px;background:linear-gradient(135deg,#F0FDF4,#ECFDF5);border:1.5px solid var(--teal);border-radius:12px;padding:14px 16px;text-decoration:none;margin-top:14px;transition:all .2s;" onmouseover="this.style.background='linear-gradient(135deg,#d6eef4,#D1FAE5)'" onmouseout="this.style.background='linear-gradient(135deg,#F0FDF4,#ECFDF5)'">
@@ -859,27 +1141,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button onclick="startOver()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;padding:8px;">↺ New label</button>
     </div>
   </div>
+  </div><!-- /.wizard-panel -->
 
-  <!-- SAVED LABELS LIBRARY -->
-  <div class="saved-section" id="saved-section" style="display:none;">
-    <div class="lib-header">
-      <div class="lib-title">📁 Your label library <span class="saved-count" id="saved-count"></span></div>
-      <button class="lib-manage-btn" onclick="toggleFolderPanel()">⚙ Folders</button>
-    </div>
-    <!-- Folder toggle panel -->
-    <div class="folder-toggle-panel" id="folder-toggle-panel">
-      <div class="folder-toggle-title">Activate folders to organise your labels</div>
-      <div class="folder-toggle-list" id="folder-toggle-list"></div>
-    </div>
-    <div id="saved-list"></div>
-  </div>
-
-</div>
-
+<!-- RIGHT COLUMN: live preview + label library, sticky together -->
+<div class="right-column">
 <!-- DESKTOP PREVIEW PANEL -->
-<div class="preview-panel">
+<div class="preview-panel" id="preview-panel-el">
   <div class="preview-header">
-    <h3>LIVE PREVIEW</h3>
+    <h3>Label Preview <span style="margin-left:8px;padding:5px 9px;border-radius:999px;background:var(--teal-light);color:var(--teal-dark);font-size:10px;font-weight:600;">Updates as you go</span></h3>
     <div class="preview-header-right">
       <div class="zoom-bar">
         <button class="zoom-btn" onclick="setPreviewZoom(previewZoom-0.1)" title="Zoom out">−</button>
@@ -890,7 +1159,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <button class="zoom-btn" onclick="setPreviewZoom(previewZoom+0.1)" title="Zoom in">+</button>
         <span class="zoom-pct" id="zoom-pct">75%</span>
       </div>
-      <div class="preview-badge" id="preview-badge">35mm · Circle</div>
+      <button type="button" class="preview-badge" onclick="setPreviewZoom(.75)" title="Fit label to preview">Fit to view ↗</button>
     </div>
   </div>
   <div class="preview-canvas-area" id="preview-canvas-area"><div id="label-svg-container"></div></div>
@@ -907,11 +1176,46 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div style="margin-top:6px;">
 
     </div>
-    <a id="print-sheet-link-preview" href="print.html" style="display:none;align-items:center;justify-content:center;gap:7px;background:rgba(13,148,136,0.12);border:1px solid rgba(13,148,136,0.25);color:#5EEAD4;padding:9px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;transition:all .2s;margin-top:2px;" title="Arrange your saved labels on an A4 sheet. For cutting machines: labels must be the same size on each sheet." onmouseover="this.style.background='rgba(13,148,136,0.22)'" onmouseout="this.style.background='rgba(13,148,136,0.12)'">🖨 Print Sheet Composer →</a>
+    <a id="print-sheet-link-preview" href="print.html" style="display:none;align-items:center;justify-content:center;gap:7px;background:var(--teal-light);border:1px solid var(--teal);color:var(--teal-dark);padding:9px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;transition:all .2s;margin-top:2px;" title="Arrange your saved labels on an A4 sheet. For cutting machines: labels must be the same size on each sheet." onmouseover="this.style.background='#c5e6ee'" onmouseout="this.style.background='var(--teal-light)'">🖨 Print Sheet Composer →</a>
     <div class="cricut-note" style="display:none;"></div>
   </div>
 </div>
+
+<!-- SAVED LABELS LIBRARY -->
+<div class="saved-section" id="saved-section" style="display:none;">
+  <div class="lib-header">
+    <div class="lib-title">📁 Your label library <span class="saved-count" id="saved-count"></span></div>
+    <button class="lib-manage-btn" onclick="toggleFolderPanel()">⚙ Folders</button>
+  </div>
+  <div class="folder-toggle-panel" id="folder-toggle-panel">
+    <div class="folder-toggle-title">Activate folders to organise your labels</div>
+    <div class="folder-toggle-list" id="folder-toggle-list"></div>
+  </div>
+  <div id="saved-list"></div>
 </div>
+</div>
+
+<aside class="builder-side-rail" aria-label="Builder progress and assistance">
+  <section class="builder-rail-card">
+    <h3>Steps</h3>
+    <div class="rail-step active" data-rail-step="1"><span class="rail-step-num">1</span><span>Product Details</span><span class="rail-status">In progress</span></div>
+    <div class="rail-step" data-rail-step="2"><span class="rail-step-num">2</span><span>Ingredients</span><span class="rail-status">Not started</span></div>
+    <div class="rail-step" data-rail-step="3"><span class="rail-step-num">3</span><span>AI Review &amp; Classification</span><span class="rail-status">Not started</span></div>
+    <div class="rail-step" data-rail-step="4"><span class="rail-step-num">4</span><span>Label Content</span><span class="rail-status">Not started</span></div>
+    <div class="rail-step" data-rail-step="5"><span class="rail-step-num">5</span><span>Review &amp; Finalise</span><span class="rail-status">Not started</span></div>
+  </section>
+  <section class="builder-rail-card">
+    <div class="rail-ai-icon">✧</div><h3 style="margin-top:-24px;margin-left:32px;">AI Assistant</h3>
+    <p class="rail-copy">Need help with ingredients or classification?</p>
+    <button class="rail-btn" type="button" onclick="openWizard()">Guide Me AI <span>→</span></button>
+  </section>
+  <section class="builder-rail-card">
+    <h3>🛡 Label Compliance</h3>
+    <strong style="font-size:13px;">GB CLP aligned</strong>
+    <p class="rail-copy" style="margin-bottom:0;">Smart Compliance. Simple.</p>
+    <span class="rail-chip">GB CLP</span><span class="rail-chip">X-height 1.2mm</span>
+  </section>
+</aside>
 
 <!-- MOBILE PREVIEW SHEET -->
 <div class="preview-sheet" id="preview-sheet" onclick="closeSheet(event)">
@@ -934,6 +1238,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div style="margin-top:12px;text-align:center;"><button onclick="closeSheet()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:8px;">Close</button></div>
   </div>
 </div>
+
+
 
 <script>
 // ── DATA ──────────────────────────────────────────────────────
@@ -975,7 +1281,7 @@ const SENSITISERS=[
   {name:'2-acetoxy-2,3,8,8-tetramethyloctahydronaphthalene',cat:'1B',cas:'54464-57-2'},
   {name:'Iso E Super',cat:'1B',cas:'54464-57-2'},
 ];
-const H_LIB=[{code:'H225',desc:'Highly flammable liquid and vapour'},{code:'H226',desc:'Flammable liquid and vapour'},{code:'H228',desc:'Flammable solid'},{code:'H301',desc:'Toxic if swallowed'},{code:'H302',desc:'Harmful if swallowed'},{code:'H304',desc:'May be fatal if swallowed and enters airways'},{code:'H311',desc:'Toxic in contact with skin'},{code:'H312',desc:'Harmful in contact with skin'},{code:'H314',desc:'Causes severe skin burns and eye damage'},{code:'H315',desc:'Causes skin irritation'},{code:'H317',desc:'May cause an allergic skin reaction'},{code:'H318',desc:'Causes serious eye damage'},{code:'H319',desc:'Causes serious eye irritation'},{code:'H331',desc:'Toxic if inhaled'},{code:'H332',desc:'Harmful if inhaled'},{code:'H334',desc:'May cause allergy or asthma symptoms if inhaled'},{code:'H335',desc:'May cause respiratory irritation'},{code:'H336',desc:'May cause drowsiness or dizziness'},{code:'H361',desc:'Suspected of damaging fertility or the unborn child'},{code:'H371',desc:'May cause damage to organs'},{code:'H373',desc:'May cause damage to organs through prolonged or repeated exposure'},{code:'H400',desc:'Very toxic to aquatic life'},{code:'H401',desc:'Toxic to aquatic life'},{code:'H410',desc:'Very toxic to aquatic life with long lasting effects'},{code:'H411',desc:'Toxic to aquatic life with long lasting effects'},{code:'H412',desc:'Harmful to aquatic life with long lasting effects'},{code:'H413',desc:'May cause long lasting harmful effects to aquatic life'},{code:'EUH066',desc:'Repeated exposure may cause skin dryness or cracking'},{code:'EUH208',desc:'Contains sensitiser — may produce an allergic reaction'},{code:'EUH071',desc:'Corrosive to the respiratory tract'},{code:'H200',desc:'Unstable explosive'},{code:'H201',desc:'Explosive; mass explosion hazard'},{code:'H202',desc:'Explosive; severe projection hazard'},{code:'H203',desc:'Explosive; fire, blast or projection hazard'},{code:'H204',desc:'Fire or projection hazard'},{code:'H205',desc:'May mass explode in fire'},{code:'H223',desc:'Flammable aerosol'},{code:'H224',desc:'Extremely flammable liquid and vapour'},{code:'H240',desc:'Heating may cause an explosion'},{code:'H241',desc:'Heating may cause a fire or explosion'},{code:'H242',desc:'Heating may cause a fire'},{code:'H250',desc:'Catches fire spontaneously if exposed to air'},{code:'H251',desc:'Self-heating; may catch fire'},{code:'H252',desc:'Self-heating in large quantities; may catch fire'},{code:'H260',desc:'In contact with water releases flammable gases which may ignite spontaneously'},{code:'H261',desc:'In contact with water releases flammable gas'},{code:'H270',desc:'May cause or intensify fire; oxidiser'},{code:'H271',desc:'May cause fire or explosion; strong oxidiser'},{code:'H272',desc:'May intensify fire; oxidiser'},{code:'H280',desc:'Contains gas under pressure; may explode if heated'},{code:'H281',desc:'Contains refrigerated gas; may cause cryogenic burns or injury'},{code:'H282',desc:'Extremely flammable chemical under pressure: may explode if heated'},{code:'H283',desc:'Flammable chemical under pressure: may explode if heated'},{code:'H284',desc:'Chemical under pressure: may explode if heated'},{code:'H290',desc:'May be corrosive to metals'},{code:'H300',desc:'Fatal if swallowed'},{code:'H310',desc:'Fatal in contact with skin'},{code:'H316',desc:'Causes mild skin irritation'},{code:'H330',desc:'Fatal if inhaled'},{code:'H340',desc:'May cause genetic defects'},{code:'H341',desc:'Suspected of causing genetic defects'},{code:'H350',desc:'May cause cancer'},{code:'H351',desc:'Suspected of causing cancer'},{code:'H360',desc:'May damage fertility or the unborn child'},{code:'H362',desc:'May cause harm to breast-fed children'},{code:'H370',desc:'Causes damage to organs'},{code:'H372',desc:'Causes damage to organs through prolonged or repeated exposure'}];
+const H_LIB=[{code:'H225',desc:'Highly flammable liquid and vapour'},{code:'H226',desc:'Flammable liquid and vapour'},{code:'H228',desc:'Flammable solid'},{code:'H301',desc:'Toxic if swallowed'},{code:'H302',desc:'Harmful if swallowed'},{code:'H304',desc:'May be fatal if swallowed and enters airways'},{code:'H311',desc:'Toxic in contact with skin'},{code:'H312',desc:'Harmful in contact with skin'},{code:'H314',desc:'Causes severe skin burns and eye damage'},{code:'H315',desc:'Causes skin irritation'},{code:'H317',desc:'May cause an allergic skin reaction'},{code:'H318',desc:'Causes serious eye damage'},{code:'H319',desc:'Causes serious eye irritation'},{code:'H331',desc:'Toxic if inhaled'},{code:'H332',desc:'Harmful if inhaled'},{code:'H334',desc:'May cause allergy or asthma symptoms if inhaled'},{code:'H335',desc:'May cause respiratory irritation'},{code:'H336',desc:'May cause drowsiness or dizziness'},{code:'H361',desc:'Suspected of damaging fertility or the unborn child'},{code:'H371',desc:'May cause damage to organs'},{code:'H373',desc:'May cause damage to organs through prolonged or repeated exposure'},{code:'H400',desc:'Very toxic to aquatic life'},{code:'H401',desc:'Toxic to aquatic life'},{code:'H410',desc:'Very toxic to aquatic life with long lasting effects'},{code:'H411',desc:'Toxic to aquatic life with long lasting effects'},{code:'H412',desc:'Harmful to aquatic life with long lasting effects'},{code:'H413',desc:'May cause long lasting harmful effects to aquatic life'},{code:'EUH066',desc:'Repeated exposure may cause skin dryness or cracking'},{code:'EUH208',desc:'Contains sensitiser — may produce an allergic reaction'},{code:'EUH071',desc:'Corrosive to the respiratory tract'},{code:'EUH210',desc:'Safety data sheet available on request'},{code:'H200',desc:'Unstable explosive'},{code:'H201',desc:'Explosive; mass explosion hazard'},{code:'H202',desc:'Explosive; severe projection hazard'},{code:'H203',desc:'Explosive; fire, blast or projection hazard'},{code:'H204',desc:'Fire or projection hazard'},{code:'H205',desc:'May mass explode in fire'},{code:'H223',desc:'Flammable aerosol'},{code:'H224',desc:'Extremely flammable liquid and vapour'},{code:'H240',desc:'Heating may cause an explosion'},{code:'H241',desc:'Heating may cause a fire or explosion'},{code:'H242',desc:'Heating may cause a fire'},{code:'H250',desc:'Catches fire spontaneously if exposed to air'},{code:'H251',desc:'Self-heating; may catch fire'},{code:'H252',desc:'Self-heating in large quantities; may catch fire'},{code:'H260',desc:'In contact with water releases flammable gases which may ignite spontaneously'},{code:'H261',desc:'In contact with water releases flammable gas'},{code:'H270',desc:'May cause or intensify fire; oxidiser'},{code:'H271',desc:'May cause fire or explosion; strong oxidiser'},{code:'H272',desc:'May intensify fire; oxidiser'},{code:'H280',desc:'Contains gas under pressure; may explode if heated'},{code:'H281',desc:'Contains refrigerated gas; may cause cryogenic burns or injury'},{code:'H282',desc:'Extremely flammable chemical under pressure: may explode if heated'},{code:'H283',desc:'Flammable chemical under pressure: may explode if heated'},{code:'H284',desc:'Chemical under pressure: may explode if heated'},{code:'H290',desc:'May be corrosive to metals'},{code:'H300',desc:'Fatal if swallowed'},{code:'H310',desc:'Fatal in contact with skin'},{code:'H316',desc:'Causes mild skin irritation'},{code:'H330',desc:'Fatal if inhaled'},{code:'H340',desc:'May cause genetic defects'},{code:'H341',desc:'Suspected of causing genetic defects'},{code:'H350',desc:'May cause cancer'},{code:'H351',desc:'Suspected of causing cancer'},{code:'H360',desc:'May damage fertility or the unborn child'},{code:'H362',desc:'May cause harm to breast-fed children'},{code:'H370',desc:'Causes damage to organs'},{code:'H372',desc:'Causes damage to organs through prolonged or repeated exposure'}];
 const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product container or label at hand'},{code:'P102',desc:'Keep out of reach of children'},{code:'P103',desc:'Read label before use'},{code:'P210',desc:'Keep away from heat and ignition sources. No smoking'},{code:'P233',desc:'Keep container tightly closed'},{code:'P260',desc:'Do not breathe vapours or dust'},{code:'P261',desc:'Avoid breathing vapours and dust'},{code:'P271',desc:'Use only outdoors or in a well-ventilated area'},{code:'P273',desc:'Avoid release to the environment'},{code:'P301+P310',desc:'IF SWALLOWED: immediately call a POISON CENTRE or doctor'},{code:'P301+P312',desc:'IF SWALLOWED: call a POISON CENTRE or doctor if unwell'},{code:'P302+P352',desc:'IF ON SKIN: wash with plenty of water'},{code:'P304+P340',desc:'IF INHALED: remove to fresh air and keep comfortable for breathing'},{code:'P305+P351+P338',desc:'IF IN EYES: rinse cautiously with water for several minutes'},{code:'P312',desc:'Call a POISON CENTRE or doctor if you feel unwell'},{code:'P313',desc:'Get medical advice/attention'},{code:'P314',desc:'Get medical advice if you feel unwell'},{code:'P321',desc:'Specific treatment: see label'},{code:'P330',desc:'Rinse mouth'},{code:'P331',desc:'Do NOT induce vomiting'},{code:'P332+P313',desc:'If skin irritation occurs: get medical advice/attention'},{code:'P333+P313',desc:'If skin irritation or rash occurs: get medical advice'},{code:'P337+P313',desc:'If eye irritation persists: get medical advice'},{code:'P370+P378',desc:'In case of fire: use appropriate media for extinction'},{code:'P391',desc:'Collect spillage'},{code:'P403+P233',desc:'Store in a well-ventilated place. Keep container tightly closed'},{code:'P211',desc:'Do not spray on an open flame or other ignition source'},{code:'P501',desc:'Dispose of contents and container in accordance with local regulations'}];
 // GHS pictogram SVG symbols — black and white, diamond shaped, industry standard
 const GHS_IMG={
@@ -1008,8 +1314,7 @@ function ghsPicto(key,cx,cy,size){
 }
 
 // ── STATE ─────────────────────────────────────────────────────
-const S={step:1,shape:'circle',size:35,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,hazardFSOverride:null};
-
+const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,hazardFSOverride:null,scentFSOverride:null,bizNameFSOverride:null,hazardYOffset:null,typeFSOverride:null,sigFSOverride:null};
 // ── PRODUCT TYPE GUIDANCE ─────────────────────────────────────
 const FRAG_LOAD_TIPS={
   'Scented Candle':'Recommended: 6–10%. Your CLP must be for the actual % used — you can overestimate but never underestimate.',
@@ -1098,7 +1403,9 @@ function setBorder(show){
 }
 
 // ── JPEG DOWNLOAD ─────────────────────────────────────────────
-async function downloadJPEG(){plausible('Label Downloaded',{props:{format:'JPEG'}});
+async function downloadJPEG(){
+  if(!_downloadAllowed()){alert('Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.');return;}
+  plausible('Label Downloaded',{props:{format:'JPEG'}});
   await ensureFontsLoaded(); // wait for DM Sans before rasterising
   readForm();
   const{mmW,mmH,pw,ph}=getDims();
@@ -1146,6 +1453,7 @@ async function downloadJPEG(){plausible('Label Downloaded',{props:{format:'JPEG'
 
 // ── PRINT TO PDF ──────────────────────────────────────────────
 function printToPDF(){
+  if(!_downloadAllowed()){alert('Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.');return;}
   readForm();
   const{mmW,mmH,pw,ph}=getDims();
   const svgStr=buildSVG(true);
@@ -1258,7 +1566,9 @@ function labelToCanvas(cb){
 }
 
 // ── PDF SHEET — Avery-aligned home printing ───────────────────
-async function downloadPDFSheet(){plausible('Label Downloaded',{props:{format:'PDF Sheet'}});
+async function downloadPDFSheet(){
+  if(!_downloadAllowed()){alert('Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.');return;}
+  plausible('Label Downloaded',{props:{format:'PDF Sheet'}});
   await ensureFontsLoaded(); // wait for DM Sans before rasterising
   readForm();
   const{mmW}=getDims();
@@ -1310,7 +1620,9 @@ async function downloadPDFSheet(){plausible('Label Downloaded',{props:{format:'P
 // ── PRINT-READY PDF — for professional print companies ────────
 // Exports a single label with 3mm bleed on all sides + crop marks
 // Print shops accept this directly — 300 DPI, bleed included
-async function downloadPrintReadyPDF(){plausible('Label Downloaded',{props:{format:'Print-Ready PDF'}});
+async function downloadPrintReadyPDF(){
+  if(!_downloadAllowed()){alert('Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.');return;}
+  plausible('Label Downloaded',{props:{format:'Print-Ready PDF'}});
   await ensureFontsLoaded(); // wait for DM Sans before rasterising
   readForm();
   const{mmW,mmH,pw,ph}=getDims();
@@ -1381,13 +1693,6 @@ async function downloadPrintReadyPDF(){plausible('Label Downloaded',{props:{form
 .extract-toast-title{font-size:15px;font-weight:700;color:#4ADE80;margin-bottom:8px;}
 .extract-toast-row{font-size:13px;color:rgba(255,255,255,0.85);line-height:1.8;}
 .extract-toast-warn{font-size:11px;color:rgba(255,255,255,0.5);margin-top:10px;border-top:1px solid rgba(255,255,255,0.1);padding-top:8px;}
-
-/* ── MOBILE: hide desktop preview panel, use mobile bar ── */
-@media(max-width:768px){
-  .builder-layout{grid-template-columns:1fr;}
-  .preview-panel{display:none;}
-  .mobile-preview-bar{display:flex !important;}
-}
 </style>
     </head><body>
     <div class="card"><img src="${pngUri}"/></div>
@@ -1414,7 +1719,9 @@ async function downloadPrintReadyPDF(){plausible('Label Downloaded',{props:{form
 }
 
 // ── CUTTING MACHINE PNGs — download as ZIP ──────────────────
-function downloadCricutPNGs(){plausible('Label Downloaded',{props:{format:'Cricut PNGs'}});
+function downloadCricutPNGs(){
+  if(!_downloadAllowed()){alert('Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.');return;}
+  plausible('Label Downloaded',{props:{format:'Cricut PNGs'}});
   readForm();
   const qtyEl=document.getElementById('sheet-qty');
   const qty=qtyEl ? (parseInt(qtyEl.value)||1) : 1;
@@ -1486,18 +1793,51 @@ function openHelp(){
   document.getElementById('help-panel').classList.add('open');
   document.getElementById('help-overlay').classList.add('open');
   document.body.style.overflow='hidden';
+  const search=document.getElementById('help-search');
+  if(search){search.value='';filterHelp('');search.focus();}
 }
 function closeHelp(){
   document.getElementById('help-panel').classList.remove('open');
   document.getElementById('help-overlay').classList.remove('open');
   document.body.style.overflow='';
 }
+// Filters the Help guide by search term. Matches against each section's
+// full text (heading + steps + tips); within the FAQ section, filters
+// individual <details> entries so a broad section isn't hidden/shown as
+// one block when only some of its FAQs match.
+function filterHelp(query){
+  const q=query.trim().toLowerCase();
+  const sections=document.querySelectorAll('.help-body > .help-section');
+  let anyVisible=false;
+  sections.forEach(section=>{
+    const faqs=section.querySelectorAll('.help-faq');
+    if(faqs.length){
+      let sectionHasMatch=false;
+      faqs.forEach(faq=>{
+        const match=!q||faq.textContent.toLowerCase().includes(q);
+        faq.style.display=match?'':'none';
+        if(match)sectionHasMatch=true;
+      });
+      const heading=section.querySelector('h3');
+      const headingMatch=!q||(heading&&heading.textContent.toLowerCase().includes(q));
+      const show=sectionHasMatch||headingMatch;
+      section.style.display=show?'':'none';
+      if(show){anyVisible=true; faqs.forEach(faq=>{if(headingMatch&&!q)faq.style.display='';});}
+    } else {
+      const match=!q||section.textContent.toLowerCase().includes(q);
+      section.style.display=match?'':'none';
+      if(match)anyVisible=true;
+    }
+  });
+  const noResults=document.getElementById('help-no-results');
+  if(noResults)noResults.style.display=(q&&!anyVisible)?'block':'none';
+}
 const SUPABASE_URL='https://qvkosdqcryrcfbjtaxic.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
 let sbClient=null;
 let currentUser=null;
 // Download allowance (from profiles table). loaded=false means don't block.
-let DL={ used:0, limit:10, plan:'free', is_pro:false, loaded:false };
+let DL={ used:0, limit:10, plan:'free', is_pro:false, credits:0, loaded:false };
 
 async function initAuth(){
   try{
@@ -1591,13 +1931,62 @@ async function initAuth(){
       if(navUser){navUser.textContent=email;navUser.style.display='';}
       if(navSignout)navSignout.style.display='';
       if(navSignin)navSignin.style.display='none';
+      const navAccount=document.getElementById('nav-account');
+      if(navAccount)navAccount.style.display='';
+
+      // Sidebar bottom block (24 Aug 2026, GUI redesign) — reuses currentUser
+      // already resolved above; no new fetch (full name, if any, already came
+      // with the session's user_metadata).
+      const suUser=document.getElementById('sidebar-user');
+      if(suUser){
+        suUser.style.display='flex';
+        const suDisplayName=meta.full_name || email;
+        document.getElementById('su-avatar').textContent=(meta.full_name||email||'?').charAt(0).toUpperCase();
+        document.getElementById('su-name').textContent=suDisplayName;
+        document.getElementById('su-plan').textContent=S.isPro?'Easy Pro':(DL.plan==='easy_start'?'Easy Start':'Easy Trial');
+      }
+
+      // Auth resolves after init() has already called renderSaved() once
+      // (using the pre-auth 'guest' namespace) — re-render now that
+      // currentUser is known so the panel shows this account's own library,
+      // never whatever was rendered before sign-in resolved.
+      try{ renderSaved(); }catch(e){}
+      // Same race, same fix, for saved business details (clpeasy_biz fix,
+      // reviewed bizdetails-cross-account-scoping): init() already called
+      // restoreBizDetails() once pre-auth ('guest'-scoped); re-call now that
+      // currentUser is known so this account's own saved business details
+      // load, not whatever 'guest' had.
+      try{ restoreBizDetails(); }catch(e){}
+      try{ _clpHandleOpenParam(); }catch(e){}
     } else {
       const navSignin=document.getElementById('nav-signin');
       const navSignout=document.getElementById('nav-signout');
       if(navSignin)navSignin.style.display='';
       if(navSignout)navSignout.style.display='none';
+      const navAccount=document.getElementById('nav-account');
+      if(navAccount)navAccount.style.display='none';
+      const suUserGuest=document.getElementById('sidebar-user');
+      if(suUserGuest)suUserGuest.style.display='none';
+      const suUsageGuest=document.getElementById('sidebar-usage');
+      if(suUsageGuest)suUsageGuest.style.display='none';
+      try{ _clpHandleOpenParam(); }catch(e){}
     }
   }catch(e){console.log('Auth init error:',e);}
+}
+
+// Deep-link support for the My Labels page's "Open" button:
+// builder.html?open=<index> loads that saved label straight into the
+// wizard. Fired once, after auth state (and therefore the correct
+// per-account library namespace — see libNS()) is resolved, from both
+// branches above, so a signed-in account never opens from the 'guest'
+// namespace by mistake. Guarded so it only ever runs once.
+function _clpHandleOpenParam(){
+  if(window._clpOpenHandled)return;
+  window._clpOpenHandled=true;
+  const openIdx=new URLSearchParams(window.location.search).get('open');
+  if(openIdx===null)return;
+  const idx=parseInt(openIdx,10);
+  if(!isNaN(idx))loadLabelAndGotoStep5(idx);
 }
 
 // ───────────────────────────────────────────────────────────────
@@ -1607,14 +1996,15 @@ async function loadDownloadAllowance(){
   if(!sbClient||!currentUser) return;
   try{
     const {data:prof}=await sbClient.from('profiles')
-      .select('downloads_used,downloads_limit,plan,is_pro,downloads_reset_date')
+      .select('downloads_used,downloads_limit,plan,is_pro,downloads_reset_date,topup_credits')
       .eq('id',currentUser.id).single();
     if(prof){
-      DL.used  = prof.downloads_used||0;
-      DL.limit = (prof.downloads_limit==null?10:prof.downloads_limit);
-      DL.plan  = prof.plan||'free';
-      DL.is_pro= !!prof.is_pro;
-      DL.loaded= true;
+      DL.used   = prof.downloads_used||0;
+      DL.limit  = (prof.downloads_limit==null?10:prof.downloads_limit);
+      DL.plan   = prof.plan||'free';
+      DL.is_pro = !!prof.is_pro;
+      DL.credits= prof.topup_credits||0;
+      DL.loaded = true;
       // Monthly refill: if past the reset date, zero the counter (covers annual plans too)
       if(prof.downloads_reset_date && new Date(prof.downloads_reset_date) < new Date()){
         DL.used=0;
@@ -1627,29 +2017,84 @@ async function loadDownloadAllowance(){
 }
 
 function updateDlCounter(){
+  // Sidebar bottom block (24 Aug 2026, GUI redesign) — reuses the DL state
+  // this function already reads; runs before the #dl-counter early-return
+  // below so it still updates even on steps where that element isn't in the DOM.
+  const suUsage=document.getElementById('sidebar-usage');
+  if(suUsage){
+    if(!DL.loaded || !Number.isFinite(DL.limit) || DL.limit<=0){
+      suUsage.style.display='none';
+    } else {
+      suUsage.style.display='block';
+      const suLeft=Math.max(0,DL.limit-DL.used);
+      document.getElementById('su-count').textContent=suLeft+' of '+DL.limit;
+      document.getElementById('su-fill').style.width=Math.min(100,Math.round((suLeft/DL.limit)*100))+'%';
+    }
+  }
+
   const el=document.getElementById('dl-counter');
   if(!el) return;
   if(!DL.loaded){ el.style.display='none'; return; }
   const left=Math.max(0,DL.limit-DL.used);
   el.style.display='block';
-  el.textContent=left+' of '+DL.limit+' downloads left'+(DL.plan==='free'?' on your trial':' this month');
-  el.style.color = left===0 ? '#DC2626' : (left<=2 ? '#D97706' : 'var(--muted)');
+  el.textContent=left+' of '+DL.limit+' downloads left'+(DL.plan==='free'?' on your trial':' this month')
+    +(DL.credits>0 ? ' · '+DL.credits+' purchased credit'+(DL.credits===1?'':'s')+' available' : '');
+  el.style.color = (left===0 && DL.credits===0) ? '#DC2626' : (left<=2 ? '#D97706' : 'var(--muted)');
 }
 
 function dlGate(){
   if(!DL.loaded) return true;          // not logged in / no data — don't block
-  if(DL.used < DL.limit) return true;
+  if(DL.used < DL.limit || DL.credits > 0) return true;
   showDlLimitModal();
   return false;
 }
 
+// Consumes monthly allowance first, then purchased top-up credits. Returns
+// true if the download may proceed, false if it must NOT proceed — the
+// caller (wrapDownloads) must not generate/download the file when this
+// returns false. topup_credits is a server-protected column (only the
+// Stripe webhook can write it directly — see the protect_profile_billing_
+// columns trigger), so spending one goes through the auth.uid()-scoped
+// consume_topup_credit() RPC rather than a client-side table update.
+//
+// Per explicit product decision: never assume the credit was spent. If the
+// RPC errors, or reports nothing left to spend (a race against another tab/
+// device, or a stale local balance), the credit is NOT decremented locally
+// and the download does not proceed — showing a false "success" would let
+// the displayed balance drift from the real one.
 async function dlRecord(){
-  if(!DL.loaded) return;
-  DL.used=Math.min(DL.limit,DL.used+1);
-  updateDlCounter();
-  try{
-    await sbClient.from('profiles').update({downloads_used:DL.used}).eq('id',currentUser.id);
-  }catch(e){ console.error('dlRecord write failed:',e); }
+  if(!DL.loaded) return true; // not logged in / no data — don't block
+
+  if(DL.used < DL.limit){
+    DL.used=DL.used+1;
+    updateDlCounter();
+    try{
+      await sbClient.from('profiles').update({downloads_used:DL.used}).eq('id',currentUser.id);
+    }catch(e){ console.error('dlRecord write failed:',e); }
+    return true;
+  }
+
+  if(DL.credits > 0){
+    try{
+      const {data,error} = await sbClient.rpc('consume_topup_credit');
+      if(error || typeof data !== 'number' || data < 0){
+        console.error('consume_topup_credit failed:', error || 'no credit available (data='+data+')');
+        alert('Something went wrong recording your download credit. Please try again — you have not been charged a credit.');
+        return false;
+      }
+      DL.credits = data;
+      updateDlCounter();
+      return true;
+    }catch(e){
+      console.error('consume_topup_credit failed:', e);
+      alert('Something went wrong recording your download credit. Please try again — you have not been charged a credit.');
+      return false;
+    }
+  }
+
+  // Neither allowance nor credits available — dlGate() should already have
+  // blocked this, but fail safe rather than silently allow a free download.
+  return false;
 }
 
 function closeDlLimitModal(){
@@ -1658,7 +2103,12 @@ function closeDlLimitModal(){
 }
 
 // ── TOP-UP CHECKOUT ──────────────────────────────────────────
-// Sandbox price IDs — swap for live IDs on go-live day
+// RESOLVED (2026-07-28, AUDIT_AND_FIX_LOG.md BLOCKER-2): confirmed by
+// Michaela directly against the CLPeasy Stripe dashboard — these ARE the
+// correct, canonical top-up Price IDs. checkout.html and stripe-webhook have
+// been updated to match this file (they previously referenced a different,
+// incorrect pair, price_1TeBHj.../price_1TeBIK..., which is no longer used
+// anywhere in active logic).
 const TOPUP_PRICES = {
   topup_5:  'price_1Tdpd7GZLILz5vqUAiSw9udI',
   topup_10: 'price_1TdpdzGZLILz5vqUYEjn6TZ2',
@@ -1666,16 +2116,22 @@ const TOPUP_PRICES = {
 const SUPABASE_URL_CHECKOUT = 'https://qvkosdqcryrcfbjtaxic.supabase.co';
 
 async function startTopup(pack){
-  if(!currentUser){ window.location.href='auth.html?redirect=builder.html'; return; }
+  if(!currentUser){ window.location.href='auth.html?next=builder.html'; return; }
   const priceId = TOPUP_PRICES['topup_'+pack];
   if(!priceId){ alert('Pack not found — please refresh.'); return; }
   const btn = document.getElementById('topup-btn-'+pack);
   if(btn){ btn.textContent='Loading…'; btn.style.opacity='0.7'; btn.disabled=true; }
   try{
+    const {data:{session}} = await sbClient.auth.getSession();
+    if(!session){
+      alert('Please sign in again and retry.');
+      if(btn){ btn.textContent=(pack==='5'?'5 downloads — £3.99':'10 downloads — £7.99'); btn.style.opacity='1'; btn.disabled=false; }
+      return;
+    }
     const res = await fetch(SUPABASE_URL_CHECKOUT+'/functions/v1/create-checkout-session',{
       method:'POST',
-      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+SUPABASE_KEY },
-      body:JSON.stringify({ priceId, userEmail:currentUser.email, userId:currentUser.id, mode:'payment' })
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+session.access_token },
+      body:JSON.stringify({ priceId, mode:'payment' })
     });
     const data = await res.json();
     if(data.url){ window.location.href=data.url; }
@@ -1721,15 +2177,88 @@ function showDlLimitModal(){
   document.body.appendChild(m);
 }
 
-// Wrap every export function so it checks the allowance, then counts. saveLabel is NOT wrapped (saving is unlimited).
+// ── 7-DAY RE-DOWNLOAD GRACE ───────────────────────────────────
+// A user's first download of a given label consumes 1 credit. Re-downloading
+// the SAME label within 7 days of its last download is free (0 credits) —
+// re-downloading it again after 7 days consumes another credit. Tracked
+// server-side in Supabase (label_downloads table) so it works across
+// browsers/devices, not just localStorage.
+//
+// "Same label" uses the same identity the app already relies on elsewhere
+// (see the saveLabel → history-matching hook below: `e.scentName===S.scentName
+// && e.productType===S.productType`) — scent name + product type, normalised.
+// This is a stable key: it doesn't change just because the user tweaks size,
+// wording, or batch number on what is still conceptually the same label.
+const REDOWNLOAD_GRACE_DAYS = 7;
+
+function computeLabelKey(){
+  const scent=(S.scentName||'').trim().toLowerCase();
+  const type=(S.productType||'').trim().toLowerCase();
+  if(!scent || !type) return null; // no stable identity yet — meter normally
+  return scent+'::'+type;
+}
+
+// True if this label_key was already downloaded by this user within the
+// last REDOWNLOAD_GRACE_DAYS — i.e. this download should be free.
+async function isWithinRedownloadGrace(labelKey){
+  if(!sbClient || !currentUser || !labelKey) return false;
+  try{
+    const {data,error}=await sbClient.from('label_downloads')
+      .select('last_downloaded_at')
+      .eq('user_id',currentUser.id)
+      .eq('label_key',labelKey)
+      .maybeSingle();
+    if(error || !data || !data.last_downloaded_at) return false;
+    const lastMs=new Date(data.last_downloaded_at).getTime();
+    const graceMs=REDOWNLOAD_GRACE_DAYS*24*60*60*1000;
+    return (Date.now()-lastMs) < graceMs;
+  }catch(e){
+    console.error('isWithinRedownloadGrace check failed:',e);
+    return false; // fail safe: meter normally rather than silently granting free downloads
+  }
+}
+
+// Records/refreshes "last downloaded" for this label_key — always called on
+// a successful download (free or charged) so the 7-day window rolls forward
+// from the most recent download, not just the first.
+async function recordLabelDownload(labelKey){
+  if(!sbClient || !currentUser || !labelKey) return;
+  try{
+    await sbClient.from('label_downloads').upsert({
+      user_id:currentUser.id,
+      label_key:labelKey,
+      last_downloaded_at:new Date().toISOString()
+    },{onConflict:'user_id,label_key'});
+  }catch(e){
+    console.error('recordLabelDownload upsert failed:',e);
+  }
+}
+
+// Wrap every export function so it checks the allowance, then counts — unless
+// this exact label was already downloaded within the last 7 days, in which
+// case it's free. saveLabel is NOT wrapped (saving is unlimited).
 function wrapDownloads(){
   ['downloadPNG','downloadJPEG','downloadSVG','downloadPDFSheet','downloadPrintReadyPDF','downloadCricutPNGs','printToPDF'].forEach(function(fn){
     const orig=window[fn];
     if(typeof orig!=='function' || orig.__dlwrapped) return;
-    const wrapped=function(){
-      if(!dlGate()) return;
+    const wrapped=async function(){
+      const labelKey=computeLabelKey();
+      const freeRedownload = labelKey ? await isWithinRedownloadGrace(labelKey) : false;
+      if(!freeRedownload){
+        if(!dlGate()) return;
+      }
+      // dlRecord() must be awaited and checked BEFORE generating the file —
+      // if it consumes a top-up credit and that fails, the download must
+      // not happen, or the user would get a free download while the UI
+      // (correctly) still shows the credit as unspent.
+      if(!freeRedownload){
+        const ok = await dlRecord();
+        if(!ok) return;
+      }
       const r=orig.apply(this,arguments);
-      dlRecord();
+      if(labelKey){
+        recordLabelDownload(labelKey);
+      }
       return r;
     };
     wrapped.__dlwrapped=true;
@@ -1739,7 +2268,7 @@ function wrapDownloads(){
 
 async function signOut(){
   if(sbClient){await sbClient.auth.signOut();}
-  window.location.href='auth.html';
+  window.location.href='auth.html?next=builder.html';
 }
 const SUPPLIERS={
   csc:{name:'CandleScience',sdsUrl:'https://www.candlescience.com',instructions:'Visit CandleScience → find your fragrance product page → look under Documents for the SDS PDF → copy Section 2 → paste below.'},
@@ -1747,23 +2276,20 @@ const SUPPLIERS={
   bb:{name:'Brambleberry',sdsUrl:'https://www.brambleberry.com',instructions:'Visit Brambleberry → find your fragrance product page → look for the SDS document → copy Section 2 → paste below.'},
 };
 
-function selectSupplier(el,key){
-  document.querySelectorAll('.supplier-card').forEach(c=>c.classList.remove('selected'));
-  el.classList.add('selected');
-  S.supplier=key;
-  const s=SUPPLIERS[key];
-  const box=document.getElementById('supplier-sds-link');
-  if(s.sdsUrl){
-    box.innerHTML=`<div class="sds-link-box">📄 <strong>${s.name} SDS:</strong> ${s.instructions}<br><br><a href="${s.sdsUrl}" target="_blank" rel="noopener">Open ${s.name} SDS page →</a></div>`;
-  } else {
-    box.innerHTML=`<div class="sds-link-box">📄 ${s.instructions}</div>`;
-  }
-  box.style.display='';
-}
 
 // ── SAVED LABELS LIBRARY ──────────────────────────────────────
-function getSaved(){try{return JSON.parse(localStorage.getItem('clpeasy_labels')||'[]');}catch(e){return[];}}
-function persistSaved(arr){localStorage.setItem('clpeasy_labels',JSON.stringify(arr));}
+// SECURITY FIX: library data is namespaced per signed-in account
+// (currentUser.id) so that signing out of one account and into another on
+// the same browser can never show — or let one user overwrite — another
+// user's saved labels/folders. Previously these all lived under one
+// unscoped 'clpeasy_labels'/'clpeasy_folders' key shared by every account
+// that had ever used that browser. Any older data under those unscoped
+// keys is left exactly as-is (not deleted, not auto-migrated to any
+// account's new namespaced key) — flagged separately for review.
+function libNS(){ return (currentUser && currentUser.id) ? currentUser.id : 'guest'; }
+function libKey(base){ return base + '__u_' + libNS(); }
+function getSaved(){try{return JSON.parse(localStorage.getItem(libKey('clpeasy_labels'))||'[]');}catch(e){return[];}}
+function persistSaved(arr){localStorage.setItem(libKey('clpeasy_labels'),JSON.stringify(arr));}
 
 // ── FOLDER DEFINITIONS ─────────────────────────────────────────
 // Map every product type to a canonical folder key
@@ -1786,8 +2312,8 @@ const FOLDER_DEFS=[
   {key:'other',     label:'Other',         icon:'✨'},
 ];
 
-function getFolders(){try{return JSON.parse(localStorage.getItem('clpeasy_folders')||'{}');}catch(e){return{};}}
-function persistFolders(obj){localStorage.setItem('clpeasy_folders',JSON.stringify(obj));}
+function getFolders(){try{return JSON.parse(localStorage.getItem(libKey('clpeasy_folders'))||'{}');}catch(e){return{};}}
+function persistFolders(obj){localStorage.setItem(libKey('clpeasy_folders'),JSON.stringify(obj));}
 
 function isFolderActive(key){
   const f=getFolders();
@@ -1915,9 +2441,10 @@ function saveLabel(){plausible('Label Saved to Library');
     bizPhone:S.bizPhone,bizWebsite:S.bizWebsite,netWeight:S.netWeight,burnTime:S.burnTime,batchNum:S.batchNum,
     bgColour:(document.getElementById('label-bg-colour')?.value)||'#ffffff',
     pStatements:S.pStatements||'',textColour:S.textColour||'dark',showBorder:S.showBorder!==false,
-    ufiCode:document.getElementById('ufi-code')?.value||'',
     labelLang:document.getElementById('label-lang')?.value||'en',
-    showQR:S.showQR||false,
+    hazardFSOverride:S.hazardFSOverride,scentFSOverride:S.scentFSOverride,
+    bizNameFSOverride:S.bizNameFSOverride,hazardYOffset:S.hazardYOffset,
+    typeFSOverride:S.typeFSOverride,sigFSOverride:S.sigFSOverride,
     savedAt:new Date().toLocaleDateString('en-GB')};
   // Auto-activate folder for this product type
   const folderKey=getLabelFolder(entry.productType);
@@ -1945,9 +2472,13 @@ function loadLabel(i){
   if(e.pStatements!==undefined)S.pStatements=e.pStatements;
   if(e.textColour)S.textColour=e.textColour;
   if(e.showBorder!==undefined)S.showBorder=e.showBorder;
-  if(e.ufiCode!==undefined){S.ufiCode=e.ufiCode;const uel=document.getElementById('ufi-code');if(uel)uel.value=e.ufiCode||'';}
   if(e.labelLang){S.labelLang=e.labelLang;const lel=document.getElementById('label-lang');if(lel)lel.value=e.labelLang;}
-  if(e.showQR!==undefined){S.showQR=e.showQR;setQR(e.showQR);}
+  S.hazardFSOverride=e.hazardFSOverride!==undefined?e.hazardFSOverride:null;
+  S.scentFSOverride=e.scentFSOverride!==undefined?e.scentFSOverride:null;
+  S.bizNameFSOverride=e.bizNameFSOverride!==undefined?e.bizNameFSOverride:null;
+  S.hazardYOffset=e.hazardYOffset!==undefined?e.hazardYOffset:null;
+  S.typeFSOverride=e.typeFSOverride!==undefined?e.typeFSOverride:null;
+  S.sigFSOverride=e.sigFSOverride!==undefined?e.sigFSOverride:null;
   const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};
   set('scent-name',e.scentName);set('product-type',e.productType);set('h-statements',e.hStatements||'');set('p-statements',e.pStatements||'');
   set('biz-name',e.bizName||'');set('biz-address',e.bizAddress||'');set('biz-phone',e.bizPhone||'');
@@ -1979,8 +2510,29 @@ function loadLabelAndGotoStep5(i){
   forceGoToStep(5);
 }
 
+// Moves the single preview panel and fine-tune panel between their
+// Step 1-4 positions (preview in right column) and Step 5 positions
+// (preview large in main column, fine-tune compact in right column).
+// Same DOM nodes throughout — never duplicated, just relocated.
+function layoutForStep(n){
+  const preview=document.getElementById('preview-panel-el');
+  const finetune=document.getElementById('finetune-panel-el');
+  const rightCol=document.querySelector('.right-column');
+  const step5Slot=document.getElementById('step5-preview-slot');
+  const step5Panel=document.getElementById('step-5');
+  const canvasArea=document.getElementById('preview-canvas-area');
+  if(!preview||!finetune||!rightCol||!step5Slot||!step5Panel||!canvasArea)return;
+  if(n===5){
+    step5Slot.appendChild(preview);
+    canvasArea.appendChild(finetune);
+  } else {
+    rightCol.insertBefore(preview,rightCol.firstChild);
+    step5Slot.insertAdjacentElement('afterend',finetune);
+  }
+}
 function forceGoToStep(n){
   S.step=n;
+  layoutForStep(n);
   document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('step-'+n).classList.add('active');
   updateStepsBar();
@@ -2116,20 +2668,33 @@ function init(){
   wrapDownloads();
   buildHChips();buildPChips();buildSensitiserChips();
   initExtensions();
-  // Restore saved business details
-  const biz=JSON.parse(localStorage.getItem('clpeasy_biz')||'{}');
-  if(biz.bizName){document.getElementById('biz-name').value=biz.bizName;S.bizName=biz.bizName;}
-  if(biz.bizAddress){document.getElementById('biz-address').value=biz.bizAddress;S.bizAddress=biz.bizAddress;}
-  if(biz.bizPhone){document.getElementById('biz-phone').value=biz.bizPhone;S.bizPhone=biz.bizPhone;}
-  if(biz.bizWebsite){document.getElementById('biz-website').value=biz.bizWebsite;S.bizWebsite=biz.bizWebsite;}
+  // I4 fix (2026-08-01, reviewed history-cross-account-scoping): one-time
+  // purge of the old global, non-account-scoped label-history key. History
+  // is now stored per-account under libKey('clpeasy_history') instead (see
+  // getLabelHistory/pushLabelHistory) — this only ever removes the literal
+  // legacy 'clpeasy_history' key, never a namespaced one, and is a no-op
+  // once already purged. Per Michaela's explicit approval: closes the
+  // residual devtools-level exposure of a prior account's business data on
+  // shared/reused browsers, at the cost of permanently deleting any label
+  // version history saved before this fix shipped.
+  localStorage.removeItem('clpeasy_history');
+  // clpeasy_biz fix (2026-08-01, reviewed bizdetails-cross-account-scoping):
+  // same purge, same reasoning, for the legacy global business-details key
+  // — only ever removes the literal 'clpeasy_biz' string, never a
+  // libKey()-namespaced one (see restoreBizDetails()/saveBizDetails()
+  // below). Per Michaela's explicit approval.
+  localStorage.removeItem('clpeasy_biz');
+  // Restore saved business details (see restoreBizDetails() below — also
+  // re-called from initAuth() once currentUser resolves, matching the
+  // renderSaved() double-call pattern this file already uses for the same
+  // init()-vs-async-auth race)
+  restoreBizDetails();
   // Restore saved product details
   const prod=JSON.parse(localStorage.getItem('clpeasy_prod')||'{}');
   // productType not restored — always starts at placeholder
   // Clear label-specific fields — always start fresh
   try{const _p=JSON.parse(localStorage.getItem('clpeasy_prod')||'{}');delete _p.productType;delete _p.netWeight;delete _p.burnTime;delete _p.fragLoad;localStorage.setItem('clpeasy_prod',JSON.stringify(_p));}catch(e){}
-  syncDimFields();updateLabel();
-  document.getElementById('custom-w').value=35;
-  document.getElementById('custom-h').value=35;
+  applySize(52);
   renderSaved();
   // Ensure hazard data is always clear on page load — never cached
   S.signal=''; S.pictograms=[]; S.hSelected=[]; S.pSelected=[]; S.sensitisers=[];
@@ -2137,9 +2702,26 @@ function init(){
   lockHazardFields(false);
   updateLabel();
 }
+// clpeasy_biz fix (2026-08-01, reviewed bizdetails-cross-account-scoping):
+// previously a single global, unscoped key — same root cause as the
+// clpeasy_history leak, now namespaced the same way via libKey()/libNS().
+// Split into its own function (was inline in init()) so it can be called
+// twice, matching the renderSaved() double-call pattern used elsewhere in
+// this file: once synchronously in init() (pre-auth, 'guest'-scoped, so
+// guests still see today's behaviour), and again from initAuth() once
+// currentUser is known, so a logged-in account's own saved details load
+// correctly rather than staying on whatever 'guest' had. Legacy unscoped
+// key is deliberately NOT purged here — that is a separate decision.
+function restoreBizDetails(){
+  const biz=JSON.parse(localStorage.getItem(libKey('clpeasy_biz'))||'{}');
+  if(biz.bizName){document.getElementById('biz-name').value=biz.bizName;S.bizName=biz.bizName;}
+  if(biz.bizAddress){document.getElementById('biz-address').value=biz.bizAddress;S.bizAddress=biz.bizAddress;}
+  if(biz.bizPhone){document.getElementById('biz-phone').value=biz.bizPhone;S.bizPhone=biz.bizPhone;}
+  if(biz.bizWebsite){document.getElementById('biz-website').value=biz.bizWebsite;S.bizWebsite=biz.bizWebsite;}
+}
 function saveBizDetails(){
   const biz={bizName:document.getElementById('biz-name')?.value||'',bizAddress:document.getElementById('biz-address')?.value||'',bizPhone:document.getElementById('biz-phone')?.value||'',bizWebsite:document.getElementById('biz-website')?.value||''};
-  localStorage.setItem('clpeasy_biz',JSON.stringify(biz));
+  localStorage.setItem(libKey('clpeasy_biz'),JSON.stringify(biz));
 }
 function saveProdDetails(){
   const prod={labelLang:document.getElementById('label-lang')?.value||'en'};
@@ -2199,14 +2781,28 @@ function buildSensitiserChips(){
     `<div class="s-chip cat${s.cat.toLowerCase().replace(/\./g,'').replace(' ','')} " data-name="${s.name}" style="cursor:default;pointer-events:none;opacity:0.75;"><span class="s-name">${s.name}</span><span class="s-cat">Skin Sens. ${s.cat}</span></div>`
   ).join('');
 }
-function toggleDownload(){
+// U4 fix (2026-08-01, reviewed builder-critical-compliance-001): single
+// source of truth for whether ANY export/save action is currently allowed —
+// the compliance-confirmation checkbox must be ticked AND the label must not
+// be in a clipped/unfittable state (see window._labelBlockDownload, set in
+// the render pipeline per the U2/U3 fix). Called both to drive the visible
+// button state (toggleDownload) and as a hard guard inside every download/
+// save function itself, so no current or future UI entry point — including
+// the preview-panel and mobile-sheet buttons, which have no button id and
+// were previously never gated at all — can bypass either check.
+function _downloadAllowed(){
   const checked=document.getElementById('verify-checkbox')?.checked;
+  return !!checked && !window._labelBlockDownload;
+}
+
+function toggleDownload(){
+  const allowed=_downloadAllowed();
   const btns=['btn-png','btn-jpeg','btn-svg','btn-pdf','btn-save'];
   btns.forEach(id=>{
     const btn=document.getElementById(id);
     if(!btn)return;
-    btn.style.opacity=checked?'1':'0.4';
-    btn.style.pointerEvents=checked?'auto':'none';
+    btn.style.opacity=allowed?'1':'0.4';
+    btn.style.pointerEvents=allowed?'auto':'none';
   });
 }
 function toggleLib(id,tog){
@@ -2217,7 +2813,6 @@ function toggleLib(id,tog){
 }
 function toggleHChip(el,code){el.classList.toggle('selected');const i=S.hSelected.indexOf(code);if(i>-1)S.hSelected.splice(i,1);else S.hSelected.push(code);document.getElementById('h-statements').value=S.hSelected.join(', ');syncPictogramsFromH();}
 function togglePChip(el,code){el.classList.toggle('selected');const i=S.pSelected.indexOf(code);if(i>-1)S.pSelected.splice(i,1);else S.pSelected.push(code);document.getElementById('p-statements').value=S.pSelected.join(', ');updateLabel();}
-function toggleSensitiser(el,name){el.classList.toggle('selected');if(el.classList.contains('selected')){if(!S.sensitisers.includes(name))S.sensitisers.push(name);}else S.sensitisers=S.sensitisers.filter(x=>x!==name);renderTags();updateLabel();}
 
 function renderTags(){
   const tags=document.getElementById('allergen-tags');
@@ -2231,6 +2826,13 @@ function renderTags(){
   }
 }
 function extractSDS(){
+  // NOTE (2026-08-02, reversal — see smart-paste-pro-gating / reverify):
+  // A plan gate was added here believing Smart Paste was Easy-Pro-exclusive.
+  // Michaela confirmed this was based on an incorrect premise: Smart Paste
+  // is available on all plans, including signed-out, Free, and free-trial
+  // use — it is not an Easy Pro-exclusive feature. Gate removed; restored
+  // to unconditional behaviour. Do not re-add a plan check here without a
+  // fresh, explicit product-rules confirmation.
   const text=document.getElementById('smart-paste-input').value.trim();
   if(!text){alert('Please paste SDS Section 2.2 text first.');return;}
 
@@ -2283,28 +2885,63 @@ function extractSDS(){
   document.getElementById('signal-danger').className='signal-btn'+(sig==='Danger'?' sel-danger':'');
 
   // ── PICTOGRAMS ────────────────────────────────────────────────────────────
-  // Clear existing
-  S.pictograms=[];
-  document.querySelectorAll('.picto-btn').forEach(b=>b.classList.remove('selected'));
-  // Map H codes → pictograms
-  const hPictoMap={
-    exclamation:['H302','H312','H315','H317','H319','H332','H335','H336'],
-    health:['H340','H341','H350','H351','H360','H361','H362','H370','H371','H372','H373'],
-    aquatic:['H400','H410','H411'],
-    corrosive:['H290','H314','H318'],
-    skull:['H300','H301','H310','H311','H330','H331'],
-    explosion:['H200','H201','H202','H203','H204','H205','H206','H207','H208','H209','H210','H211','H240','H241','H242'],
-    flame:['H220','H221','H222','H223','H224','H225','H226','H228','H232','H250','H251','H252','H260','H261'],
-    oxidiser:['H270','H271','H272'],
-    gas:['H280','H281']
-  };
-  Object.entries(hPictoMap).forEach(([picto,codes])=>{
-    if(allH.some(h=>codes.includes(h)))addPicto(picto);
-  });
+  // Pictogram bug fix (24 Aug 2026, reviewed hazard-picto-live-preview-sync):
+  // this block used to re-derive pictograms itself, via a second, separately
+  // maintained H-code→pictogram map (hPictoMap) that had drifted out of sync
+  // with the canonical H_PICTO_MAP used elsewhere (e.g. H304/H334/H316 had no
+  // entry here so their pictogram silently disappeared; H242 was classed as
+  // 'explosion' here vs 'flame' in H_PICTO_MAP; gas was missing H282-H284).
+  // It also clobbered S.pictograms AFTER syncPictogramsFromH() (above) had
+  // already computed the correct set and re-rendered the Live Preview via
+  // updateLabel() — but this block never called updateLabel() again, so the
+  // preview was left showing a stale render until some unrelated field change
+  // triggered the next re-render, at which point it would flip to this
+  // block's (wrong) pictogram set. syncPictogramsFromH() already performs
+  // this whole step correctly (correct map, adds/removes S.pictograms,
+  // updates .picto-btn selected state, and re-renders), so this duplicate
+  // pass is removed rather than fixed in place.
 
   // ── SENSITISERS ───────────────────────────────────────────────────────────
+  // I2 fix (2026-08-02, reviewed sensitiser-word-boundary-matching): plain
+  // substring .includes() over-disclosed sensitisers whose listed name is
+  // fused into or embedded inside a different, longer listed name — e.g.
+  // 'Eugenol' is a substring of 'Isoeugenol'; 'Cinnamal' is a substring of
+  // 'Hexyl Cinnamal', 'Amyl Cinnamal' and 'Alpha-Methyl Cinnamal'. Confirmed
+  // in CLPeasy_Pre-Change_Review_and_Validation_Report.docx (table,
+  // 'Sensitiser display'). Fix: boundary-anchored matching (rules out
+  // mid-word fusions like Isoeugenol/Eugenol) plus longest-name-first span
+  // claiming (rules out a shorter name that only occurs as part of a
+  // longer, different listed name's phrase, like Cinnamal inside Hexyl
+  // Cinnamal). Uses explicit (?<![A-Z0-9])/(?![A-Z0-9]) lookaround rather
+  // than \b, because \b silently fails to anchor at a name that itself ends
+  // in punctuation — e.g. 'Linalool (oxidised)' followed by a space is not
+  // a \b transition (')' and ' ' are both non-word chars), which caused a
+  // first-draft \b-only version to wrongly fall through to the shorter
+  // plain 'Linalool' — caught by the targeted test suite before shipping.
+  // Every occurrence of every name is still tested independently by
+  // position, so a name genuinely also present on its own elsewhere in the
+  // same text is still detected — nothing is under-disclosed, this only
+  // suppresses a match at a text span a longer, more specific name has
+  // already claimed.
   const upperText=text.toUpperCase();
-  const matched=SENSITISERS.filter(s=>upperText.includes(s.name.toUpperCase()));
+  const matched=(()=>{
+    const bySpecificity=[...SENSITISERS].sort((a,b)=>b.name.length-a.name.length);
+    const claimed=[]; // [start,end) text spans already matched by a longer name
+    const hits=[];
+    bySpecificity.forEach(s=>{
+      const re=new RegExp('(?<![A-Z0-9])'+s.name.toUpperCase().replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?![A-Z0-9])','g');
+      let m;
+      while((m=re.exec(upperText))){
+        const start=m.index, end=start+m[0].length;
+        if(!claimed.some(([cs,ce])=>start<ce && end>cs)){
+          claimed.push([start,end]);
+          hits.push(s);
+          break;
+        }
+      }
+    });
+    return SENSITISERS.filter(s=>hits.includes(s)); // restore original list order
+  })();
   S.sensitisers=matched.map(s=>s.name);
   renderTags();
 
@@ -2385,13 +3022,62 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
+const BUILDER_STEP_LABELS=['Product Details','Ingredients','AI Review & Classification','Label Content','Review & Finalise'];
+let approvedBuilderStep=1;
+function renderBuilderAccordion(){
+  const panel=document.querySelector('.wizard-panel');
+  if(!panel)return;
+  const old=panel.querySelector('.builder-accordion');
+  if(old){
+    old.querySelectorAll('.step-panel').forEach(step=>panel.appendChild(step));
+    old.remove();
+  }
+  const accordion=document.createElement('div');
+  accordion.className='builder-accordion';
+  const panelMap={1:[2],2:[3],3:[],4:[1,4],5:[5]};
+  BUILDER_STEP_LABELS.forEach((label,index)=>{
+    const n=index+1,section=document.createElement('section');
+    section.className='builder-accordion-section'+(n===approvedBuilderStep?' active':'');
+    const trigger=document.createElement('button');
+    trigger.type='button';trigger.className='builder-accordion-trigger';
+    trigger.innerHTML=`<span class="acc-num">${n}</span><span>${label}</span><span>${n===approvedBuilderStep?'⌃':'›'}</span>`;
+    trigger.onclick=()=>{approvedBuilderStep=n;renderBuilderAccordion();if(n===5)buildSummary();};
+    section.appendChild(trigger);
+    if(n===approvedBuilderStep){
+      const body=document.createElement('div');body.className='builder-accordion-body';
+      panelMap[n].forEach(source=>{const step=panel.querySelector('#step-'+source);if(step){step.classList.add('active');body.appendChild(step);}});
+      if(n===3){body.innerHTML='<div class="classification-review"><strong>AI Review &amp; Classification</strong><br>Use the AI Assistant to review the ingredient and hazard information entered in the previous stage. Always verify the result against your supplier’s SDS.<br><button type="button" class="rail-btn" onclick="openWizard()">Guide Me AI →</button></div>';}
+      section.appendChild(body);
+    }
+    accordion.appendChild(section);
+  });
+  const actions=document.createElement('div');actions.className='builder-accordion-actions';
+  actions.innerHTML='<button type="button" class="builder-save-progress" onclick="saveLabel()">▣ Save Progress</button><button type="button" class="builder-reset" onclick="startOver()">Reset</button>';
+  accordion.appendChild(actions);
+  panel.insertBefore(accordion,panel.firstChild);
+  document.querySelectorAll('[data-rail-step]').forEach(row=>{
+    const step=Number(row.dataset.railStep),status=row.querySelector('.rail-status');
+    row.classList.toggle('active',step===approvedBuilderStep);
+    if(status)status.textContent=step<approvedBuilderStep?'Complete':(step===approvedBuilderStep?'In progress':'Not started');
+    row.onclick=()=>{approvedBuilderStep=step;renderBuilderAccordion();if(step===5)buildSummary();};
+  });
+}
+
 function goToStep(n){if(n>S.step+1)return;S.step=n;
+  layoutForStep(n);
+  document.querySelectorAll('[data-rail-step]').forEach(row=>{
+    const step=Number(row.dataset.railStep);
+    row.classList.toggle('active',step===n);
+    const status=row.querySelector('.rail-status');
+    if(status)status.textContent=step<n?'Complete':(step===n?'In progress':'Not started');
+  });
   window.scrollTo({top:0,behavior:'smooth'});
   // Hide preview download buttons unless on step 5
   const dlRow=document.getElementById('preview-dl-row');
   if(dlRow)dlRow.style.display=(n===5)?'flex':'none';
   const mobileDlRow=document.getElementById('mobile-dl-row');
-  if(mobileDlRow)mobileDlRow.style.display=(n===5)?'flex':'none';document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+n).classList.add('active');updateStepsBar();if(n===5)buildSummary();updateLabel();if(n===3){const cb=document.getElementById('hazard-confirm');const btn=document.getElementById('btn-next-step3');if(cb){cb.checked=false;}if(btn){btn.style.opacity='0.4';btn.style.pointerEvents='none';}}}
+  if(mobileDlRow)mobileDlRow.style.display=(n===5)?'flex':'none';document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+n).classList.add('active');updateStepsBar();renderBuilderAccordion();if(n===5)buildSummary();updateLabel();if(n===3){const cb=document.getElementById('hazard-confirm');const btn=document.getElementById('btn-next-step3');if(cb){cb.checked=false;}if(btn){btn.style.opacity='0.4';btn.style.pointerEvents='none';}}}
+document.addEventListener('DOMContentLoaded',()=>setTimeout(renderBuilderAccordion,0));
 function nextStep(){if(S.step<5){plausible('Builder: Step '+(S.step+1),{props:{from_step:String(S.step)}});goToStep(S.step+1);window.scrollTo({top:0,behavior:'smooth'});}}
 function checkStep2Next(){
   const scent=document.getElementById('scent-name')?.value.trim();
@@ -2412,6 +3098,15 @@ function toggleHazardNext(){
   const cb=document.getElementById('hazard-confirm');
   const btn=document.getElementById('btn-next-step3');
   if(!btn)return;
+  // Hard override (3 Aug 2026, per Michaela's workflow-gate request): if the label
+  // currently can't be downloaded at this size, never let Step 3 progress regardless
+  // of checkbox/hazard state — Next is hidden entirely in this state anyway (see
+  // _applyHazardBlockGate), this is just belt-and-braces.
+  if(window._labelBlockDownload){
+    if(cb)cb.checked=false;
+    btn.style.opacity='0.4';btn.style.pointerEvents='none';
+    return;
+  }
   const hasHazard=S.hStatements&&S.hStatements.trim().length>0;
   if(!hasHazard&&cb&&cb.checked){
     cb.checked=false;
@@ -2421,6 +3116,26 @@ function toggleHazardNext(){
   }
   if(cb&&cb.checked&&hasHazard){btn.style.opacity='1';btn.style.pointerEvents='auto';}
   else{btn.style.opacity='0.4';btn.style.pointerEvents='none';}
+}
+// U6 fix (2026-08-03, UX simplification round 2 — per Michaela's request): show
+// exactly one state at a time on Step 3. Blocked: single red CTA only, Next hidden
+// entirely (not just disabled). Valid: single confirm checkbox only, "always verify"
+// bar and "extracted and locked" banner removed in favour of a small unobtrusive
+// clear/restart link inside the Smart Paste box itself (see lockHazardFields).
+function _applyHazardBlockGate(){
+  const blocked=!!window._labelBlockDownload;
+  const confirmBlock=document.getElementById('hazard-confirm-block');
+  const blockedCta=document.getElementById('hazard-blocked-cta');
+  const nextBtn=document.getElementById('btn-next-step3');
+  if(confirmBlock)confirmBlock.style.display=blocked?'none':'block';
+  if(blockedCta)blockedCta.style.display=blocked?'block':'none';
+  if(nextBtn)nextBtn.style.display=blocked?'none':'inline-block';
+  // A blocked label can't have "extracted and locked" data implying readiness —
+  // suppress the subtle clear-link too, since the blocked CTA already has its own.
+  const clearLink=document.getElementById('hazard-clear-link');
+  if(clearLink&&blocked)clearLink.style.display='none';
+  else if(clearLink&&document.getElementById('smart-paste-input')?.readOnly)clearLink.style.display='inline';
+  if(typeof toggleHazardNext==='function')toggleHazardNext();
 }
 function prevStep(){if(S.step>1)goToStep(S.step-1);}
 function checkStep4AndNext(){
@@ -2463,9 +3178,10 @@ function lockHazardFields(lock){
     extractBtn.disabled=lock;
     extractBtn.style.opacity=lock?'0.5':'1';
   }
-  // Show/hide locked banner
-  const banner=document.getElementById('hazard-lock-banner');
-  if(banner)banner.style.display=lock?'flex':'none';
+  // Show/hide the subtle "data extracted — clear and start over" link.
+  // Suppressed while blocked (the blocked CTA already has its own Clear action).
+  const clearLink=document.getElementById('hazard-clear-link');
+  if(clearLink)clearLink.style.display=(lock&&!window._labelBlockDownload)?'inline':'none';
 }
 
 // ── LABEL DONE SPLASH ─────────────────────────────────────────────────────
@@ -2564,11 +3280,19 @@ function updateStepsBar(){
 
 // ── SHAPE/SIZE ────────────────────────────────────────────────
 function selectShape(s){S.shape=s;document.querySelectorAll('.shape-card').forEach(c=>c.classList.toggle('selected',c.dataset.shape===s));syncDimFields();updateLabel();}
-function selectSize(sz){
-  S.size=sz;document.querySelectorAll('.size-card').forEach(c=>c.classList.toggle('selected',c.dataset.size==sz));
-  if(sz!=='custom'){const mm=parseInt(sz);document.getElementById('custom-w').value=mm;document.getElementById('custom-h').value=(S.shape==='rectangle')?Math.round(mm*0.7):mm;S.customW=mm;S.customH=(S.shape==='rectangle')?Math.round(mm*0.7):mm;}
+function applySize(sz){
+  S.size=sz;
+  document.querySelectorAll('.size-card').forEach(c=>c.classList.toggle('selected',c.dataset.size==sz));
+  if(sz!=='custom'){
+    const mm=parseInt(sz);
+    document.getElementById('custom-w').value=mm;
+    document.getElementById('custom-h').value=(S.shape==='rectangle')?Math.round(mm*0.7):mm;
+    S.customW=mm;
+    S.customH=(S.shape==='rectangle')?Math.round(mm*0.7):mm;
+  }
   syncDimFields();updateSizeWarnings();updateLabel();
 }
+function selectSize(sz){applySize(sz);}
 function updateSizeWarnings(){
   const rawW = parseInt(document.getElementById('custom-w').value)||50;
   const rawH = parseInt(document.getElementById('custom-h').value)||50;
@@ -2618,7 +3342,6 @@ function syncDimFields(){
 function selectSignal(s){
   if(S.signal&&S.signal!==s){const h=(document.getElementById('h-statements')?.value||'').trim();const p=(document.getElementById('p-statements')?.value||'').trim();if((h||p)&&!confirm('⚠️ Signal word changed to '+s+'.\n\nPlease check your H and P statements are still correct.'))return;}
   S.signal=s;document.getElementById('signal-warning').className='signal-btn'+(s==='Warning'?' sel-warn':'');document.getElementById('signal-danger').className='signal-btn'+(s==='Danger'?' sel-danger':'');updateLabel();}
-function togglePicto(el,key){el.classList.toggle('selected');const i=S.pictograms.indexOf(key);if(i>-1)S.pictograms.splice(i,1);else S.pictograms.push(key);updateLabel();}
 
 // ── READ FORM ─────────────────────────────────────────────────
 function readForm(){
@@ -2782,7 +3505,14 @@ function buildSVG(forExport=false){
   // bizSW must use sW (shape width), not pw, for rect/square to avoid overflow
   const bizSW = Math.min(chordW(bizY, 0.10), sW*0.88);
   const webSW = Math.min(chordW(webY, 0.10), sW*0.88);
-  const bizFS = fitFont(bizName, bizSW*0.84, clamp(BASE*0.065*1.0,4,13*1.0), clamp(BASE*0.030,3,6.5), true, true);
+  const bizFSMax = clamp(BASE*0.065*1.0,4,13*1.0);
+  const bizFSMin = clamp(BASE*0.030,3,6.5);
+  let bizFS = fitFont(bizName, bizSW*0.84, bizFSMax, bizFSMin, true, true);
+  const _bizFSAuto = bizFS;
+  if(S.bizNameFSOverride!=null){
+    bizFS = Math.min(Math.max(S.bizNameFSOverride, bizFSMin), bizFSMax);
+  }
+  window._bizNameFSBounds={min:bizFSMin,max:bizFSMax,auto:_bizFSAuto};
   const webFS = clamp(BASE*0.038*1.35, 2.8, 7*1.35);
 
   // ── DIVIDER LINES ─────────────────────────────────────────────
@@ -2834,6 +3564,11 @@ function buildSVG(forExport=false){
   const scentMaxFS = Math.min(topH * 0.30 * 0.9, scentSW * 0.38, clamp(BASE*0.110*0.9,6,22*0.9));
   const scentMinFS = clamp(BASE*0.036, 3, 7);
   let scentFS      = fitFont(scent, scentSW*0.90, scentMaxFS, scentMinFS, true, true);
+  const _scentFSAuto = scentFS;
+  if(S.scentFSOverride!=null){
+    scentFS = Math.min(Math.max(S.scentFSOverride, scentMinFS), scentMaxFS);
+  }
+  window._scentFSBounds={min:scentMinFS,max:scentMaxFS,auto:_scentFSAuto};
   let scentLines   = wrapText(scent, scentSW*0.90, scentFS, true, true);
   // If wrapping to 2 lines, reduce font size so 2 lines fit in slot
   if(scentLines.length > 1){
@@ -2894,13 +3629,27 @@ function buildSVG(forExport=false){
 
   // Product type
   const typeSW  = chordW(curY + slot.type*0.5, 0.09);
-  const typeFS  = Math.min(slot.type * 0.68 * 1.5, fitFont(type, typeSW*0.88, clamp(BASE*0.060*1.5,4,14*1.5), clamp(BASE*0.028,2.5,6), true, false));
+  const typeFSMax = Math.min(slot.type * 0.68 * 1.5, clamp(BASE*0.060*1.5,4,14*1.5));
+  const typeFSMin = clamp(BASE*0.028,2.5,6);
+  let typeFS = fitFont(type, typeSW*0.88, typeFSMax, typeFSMin, true, false);
+  const _typeFSAuto = typeFS;
+  if(S.typeFSOverride!=null){
+    typeFS = Math.min(Math.max(S.typeFSOverride, typeFSMin), typeFSMax);
+  }
+  window._typeFSBounds={min:typeFSMin,max:typeFSMax,auto:_typeFSAuto};
   const typeY   = curY + slot.type*0.5 + midH*0.15*(0.6-1);
   curY += slot.type;
 
   // Signal word
   const sigSW   = chordW(curY + slot.signal*0.5, 0.09);
-  const sigFS   = Math.min(slot.signal * 0.68 * 1.4, fitFont(sig, sigSW*0.76, clamp(BASE*0.074*1.4,5,16*1.4), clamp(BASE*0.032,3,7), true, false));
+  const sigFSMax = Math.min(slot.signal * 0.68 * 1.4, clamp(BASE*0.074*1.4,5,16*1.4));
+  const sigFSMin = clamp(BASE*0.032,3,7);
+  let sigFS = fitFont(sig, sigSW*0.76, sigFSMax, sigFSMin, true, false);
+  const _sigFSAuto = sigFS;
+  if(S.sigFSOverride!=null){
+    sigFS = Math.min(Math.max(S.sigFSOverride, sigFSMin), sigFSMax);
+  }
+  window._sigFSBounds={min:sigFSMin,max:sigFSMax,auto:_sigFSAuto};
   const sigY    = curY + slot.signal*0.5 + midH*0.15*(0.55-1);
   curY += slot.signal;
 
@@ -2932,7 +3681,15 @@ function buildSVG(forExport=false){
   // sensitiser + P sequentially between curY and the hard botY boundary.
 
   // Build text content
-  const hText   = hCodes.map(c=>{const e=H_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(hCodes.length>0?'.':'') || '';
+  // U7 fix (18 Aug 2026): unrecognized H/EUH/P codes must never print their raw
+  // code text on the label (e.g. "EUH210" appearing literally) -- that's not a
+  // real hazard/precautionary statement and isn't safe consumer-facing text.
+  // Unknown codes are excluded from the printed text and collected here so
+  // updateLabel() can block the download and explain exactly which code(s)
+  // need attention, consistent with the existing "block, don't silently drop"
+  // compliance pattern used elsewhere on this page.
+  window._unrecognizedCodes = [];
+  const hText   = hCodes.map(c=>{const e=H_LIB.find(x=>x.code===c);if(!e)window._unrecognizedCodes.push(c);return e?e.desc:'';}).filter(Boolean).join('. ')+(hCodes.filter(c=>H_LIB.find(x=>x.code===c)).length>0?'.':'') || '';
   // Normalise P codes
   const _pNorm=[];
   const _pRaw=pCodes;
@@ -2942,8 +3699,27 @@ function buildSVG(forExport=false){
     if(_comb&&P_LIB.find(x=>x.code===_comb)){_pNorm.push(_comb);_i++;}
     else _pNorm.push(_c);
   }
-  const pText = _pNorm.map(c=>{const e=P_LIB.find(x=>x.code===c);return e?e.desc:c;}).join('. ')+(pCodes.length>0?'.':'');
-  const _sensBase = sensArr.length>0 ? _containsPrefix+' '+sensArr.slice(0,3).map(s=>{const _mc=mmW<=50?18:26;return s.length>_mc?s.slice(0,_mc-2)+'…':s;}).join(', ')+(sensArr.length>3?'...':'') : (hasEUH208 ? _containsPrefix+' sensitising substance' : '');
+  const pText = _pNorm.map(c=>{const e=P_LIB.find(x=>x.code===c);if(!e)window._unrecognizedCodes.push(c);return e?e.desc:'';}).filter(Boolean).join('. ')+(_pNorm.filter(c=>P_LIB.find(x=>x.code===c)).length>0?'.':'');
+  // U8 fix (19 Aug 2026): sensitisers were previously hard-capped to the first
+  // 3 named substances (+ "..."), silently omitting any beyond that -- for a
+  // fragrance with 4+ sensitisers above threshold, the printed label would
+  // have understated what's actually in the product, a real CLP accuracy
+  // issue. All named sensitisers are now listed in full; the existing
+  // auto-fit/block-on-overflow logic (which already measures actual rendered
+  // text against available space) handles sizing, consistent with the
+  // "never silently drop content -- block instead" pattern used elsewhere.
+  // U9 fix (24 Aug 2026): the per-name truncation below (each substance name
+  // hard-sliced to 18/26 characters + "…") was a leftover of the same old
+  // approach the U8 fix above was meant to remove -- it re-introduced exactly
+  // the "silently omit legally required text" problem for any single long
+  // IUPAC/INCI name (e.g. "2-acetoxy-2,3,8,8-tetramethyloctahydronaphthalene"
+  // was being cut to "2-acetoxy-2,3,8,8-tetram…"). sensText already flows
+  // through _layoutHazard()'s wrapText()/binary-search font-fit below (the
+  // same mechanism hText and pText use) which wraps onto extra lines and
+  // shrinks font size to fit the full text -- so no separate truncation is
+  // needed here; removing it lets that existing engine handle sensitiser
+  // names the same way it already handles H/P statement text.
+  const _sensBase = sensArr.length>0 ? _containsPrefix+' '+sensArr.join(', ') : (hasEUH208 ? _containsPrefix+' sensitising substance' : '');
   const _euhSuffix = hasEUH208 ? 'May produce an allergic reaction.' : '';
   const sensText = [_sensBase, _euhSuffix].filter(Boolean).join(' ');
 
@@ -2971,10 +3747,11 @@ function buildSVG(forExport=false){
   // whole block. Used for both the fit test and the final render.
   function _layoutHazard(fs, y0){
     const hLH=fs*1.25, sLH=fs*1.25, pLH=fs*1.15;
+    const _edgeMargin=2*pxPerMm; // fixed 2mm from the label edge, both sides
     let y=y0;
     let hLines=[];
     if(hText){
-      const sw=chordW(y+hLH*0.5,0.08)*0.92;
+      const sw=Math.max(fs*3, chordW(y+hLH*0.5,0)-_edgeMargin*2);
       hLines=wrapText(hText,sw,fs,false,false);
     }
     const hStartY=y+hLH*0.5;
@@ -2983,7 +3760,7 @@ function buildSVG(forExport=false){
 
     let sLines=[],eLines=[];
     if(sensText){
-      const sw=chordW(y+sLH*0.5,0.08)*0.82;
+      const sw=Math.max(fs*3, chordW(y+sLH*0.5,0)-_edgeMargin*2);
       sLines=_sensBase?wrapText(_sensBase,sw,fs,false,false):[];
       eLines=_euhSuffix?wrapText(_euhSuffix,sw,fs,false,false):[];
     }
@@ -2994,7 +3771,7 @@ function buildSVG(forExport=false){
 
     let pLines=[];
     if(pText){
-      const sw=chordW(y+pLH*0.5,0.08)*0.90;
+      const sw=Math.max(fs*3, chordW(y+pLH*0.5,0)-_edgeMargin*2);
       pLines=wrapText(pText,sw,fs,false,false);
     }
     const pStartY=y+pLH*0.5;
@@ -3025,10 +3802,27 @@ function buildSVG(forExport=false){
     }
   }
   let _sharedFS=_bsLo;
-  if(S.hazardFSOverride!=null){
-    _sharedFS=clamp(S.hazardFSOverride,_minLegibleFS,_bsHi);
+  // Manual override gets its own ceiling using zero breathing margin — right up
+  // to the label boundary itself, not auto-fit's cautious buffer.
+  const _fitsExact=(fs)=> _layoutHazard(fs,_curY0).endY <= _hardBot;
+  let _manualHi=_bsHi;
+  if(_fitsAtMin){
+    let _mLo=_bsHi, _mHi=clamp(BASE*0.30,8,60);
+    if(_fitsExact(_mHi)){
+      _manualHi=_mHi;
+    } else {
+      for(let _i=0;_i<40;_i++){
+        const _mid=(_mLo+_mHi)/2;
+        if(_fitsExact(_mid)) _mLo=_mid; else _mHi=_mid;
+        if(_mHi-_mLo<0.02) break;
+      }
+      _manualHi=_mLo;
+    }
   }
-  window._hazardFSBounds={min:_minLegibleFS,max:_bsHi,auto:_bsLo};
+  if(S.hazardFSOverride!=null){
+    _sharedFS=clamp(S.hazardFSOverride,_minLegibleFS,_manualHi);
+  }
+  window._hazardFSBounds={min:_minLegibleFS,max:_manualHi,auto:_bsLo};
 
   // Legibility warning is finalised after P truncation below: it must fire
   // whenever content can't fit at the minimum legible size OR any P statement
@@ -3038,9 +3832,19 @@ function buildSVG(forExport=false){
   // Vertical centring: re-lay from a Y offset by half the leftover slack.
   const _topLayout=_layoutHazard(_sharedFS,_curY0);
   const _slack=Math.max(0,(_hardBot - _fitMargin(_sharedFS)) - _topLayout.endY);
-  let _L=_layoutHazard(_sharedFS,_curY0+_slack*0.5);
-  // Safety: if centring shifted line-wrapping enough to cross botY (possible on
-  // circles as chord width changes), fall back to the top-aligned layout.
+  let _yFrac=(S.hazardYOffset!=null?Math.min(Math.max(S.hazardYOffset,0),1):0.5);
+  let _L=_layoutHazard(_sharedFS,_curY0+_slack*_yFrac);
+  window._hazardYSlack=_slack;
+  // On circles, chord width narrows away from the vertical centre, so a
+  // requested offset can cause more wrapping than at the top and overflow.
+  // Step the offset back toward 0 until it fits, rather than snapping the
+  // whole way to top-aligned — keeps the control visibly responsive.
+  let _yTries=0;
+  while(_L.endY > _hardBot && _yFrac>0 && _yTries<20){
+    _yFrac=Math.max(0,_yFrac-0.05);
+    _L=_layoutHazard(_sharedFS,_curY0+_slack*_yFrac);
+    _yTries++;
+  }
   if(_L.endY > _hardBot) _L=_topLayout;
 
   // Derive render variables from the chosen layout.
@@ -3139,10 +3943,18 @@ function buildSVG(forExport=false){
     const fs = fitFont(slot.text, availW, _fsMax, Math.max(minFooterFS * 0.5, 1.5), slot.bold, false);
     footerElems.push({text: slot.text, fs, bold: slot.bold, isPhone: slot.isPhone||false, slotY});
   });
-  // Drop bottom slots if their font is unreadably tiny
+  // Drop bottom slots if their font is unreadably tiny. This must never
+  // happen silently — U3 fix (2026-08-01, reviewed builder-critical-
+  // compliance-001): flag it so the caller can block export until the
+  // maker shortens their business/footer details or picks a larger label,
+  // per Michaela's explicit decision (block download, force a fix) rather
+  // than exporting a label with business/batch info missing.
+  let _footerClipped = false;
   while(footerElems.length > 1 && footerElems[footerElems.length-1].fs < minFooterFS * 0.4){
     footerElems.pop();
+    _footerClipped = true;
   }
+  window._footerLegibilityClipped = _footerClipped;
   // Y positions already set per-slot — no global recompute needed
   const footerRendered = footerElems.map(elem=>{
     if(elem.slotY > sBot - 1) return '';
@@ -3181,29 +3993,6 @@ function buildSVG(forExport=false){
       // Reserve exactly the icons' vertical footprint (matches the pre-calc).
       _bcfRowH = _bcfMaxSz * 1.35;
     }
-  }
-
-  // ── QR CODE (small, bottom-right of label if enabled) ────────
-  let qrEl='';
-  if(S.showQR&&S.ufiCode){
-    const uid=S.ufiCode.replace(/-/g,'').toLowerCase().substring(0,8);
-    const qrUrl=`clpeasy.com/s/${uid}`;
-    const qrSz=Math.min(sW*0.10,10);
-    const qrX=shapeX+shapeW-qrSz*1.2;
-    const qrY=sBot-qrSz*1.4;
-    // Simple QR placeholder: tiny squares pattern + URL
-    const sq=(x,y,s,f)=>`<rect x="${x}" y="${y}" width="${s}" height="${s}" fill="${f}"/>`;
-    const qrM=qrSz/5;
-    const qrPattern=[
-      sq(qrX,qrY,qrM,'#000'),sq(qrX+qrM,qrY,qrM,'#fff'),sq(qrX+qrM*2,qrY,qrM,'#000'),
-      sq(qrX,qrY+qrM,qrM,'#fff'),sq(qrX+qrM,qrY+qrM,qrM,'#000'),sq(qrX+qrM*2,qrY+qrM,qrM,'#fff'),
-      sq(qrX,qrY+qrM*2,qrM,'#000'),sq(qrX+qrM,qrY+qrM*2,qrM,'#fff'),sq(qrX+qrM*2,qrY+qrM*2,qrM,'#000'),
-      sq(qrX+qrM*3,qrY,qrM,'#000'),sq(qrX+qrM*4,qrY,qrM,'#fff'),
-      sq(qrX+qrM*3,qrY+qrM,qrM,'#fff'),sq(qrX+qrM*4,qrY+qrM,qrM,'#000'),
-      sq(qrX+qrM*3,qrY+qrM*2,qrM,'#000'),sq(qrX+qrM*4,qrY+qrM*2,qrM,'#000'),
-    ].join('');
-    const urlFS=Math.max(qrSz*0.18,1.8);
-    qrEl=`<g opacity="0.5">${qrPattern}<text x="${qrX+qrSz*0.5}" y="${qrY+qrSz+urlFS*1.1}" font-family="DM Sans,sans-serif" font-size="${urlFS.toFixed(1)}" fill="#555" text-anchor="middle">${qrUrl}</text></g>`;
   }
 
   // ── WATERMARK ─────────────────────────────────────────────────
@@ -3257,34 +4046,69 @@ function buildSVG(forExport=false){
   <!-- EN 15494 CANDLE SAFETY PICTOGRAMS -->
   ${bcfRow}
 
-  <!-- QR CODE -->
-  ${qrEl}
-
   <!-- WATERMARK -->
   ${wm}
 </g></svg>`;
 }
 
 // ── UPDATE PREVIEW ────────────────────────────────────────────
-function syncHazardFSSlider(){
-  const sl=document.getElementById('hazard-fs-slider');
-  const rs=document.getElementById('hazard-fs-reset');
-  const b=window._hazardFSBounds;
-  if(!sl||!b)return;
-  const pct=b.max>b.min?Math.round(((S.hazardFSOverride!=null?clamp(S.hazardFSOverride,b.min,b.max):b.auto)-b.min)/(b.max-b.min)*100):100;
-  sl.value=pct;
-  if(rs)rs.style.display=S.hazardFSOverride!=null?'inline':'none';
+function _fsPct(override,bounds){
+  if(!bounds)return 100;
+  const v=override!=null?Math.min(Math.max(override,bounds.min),bounds.max):bounds.auto;
+  return bounds.max>bounds.min?Math.round((v-bounds.min)/(bounds.max-bounds.min)*100):100;
 }
-function onHazardFSInput(pct){
-  const b=window._hazardFSBounds;
-  if(!b)return;
-  S.hazardFSOverride=b.min+(b.max-b.min)*(pct/100);
+function syncAdjustPanel(){
+  const hb=window._hazardFSBounds, sb=window._scentFSBounds, bb=window._bizNameFSBounds;
+  const tb=window._typeFSBounds, gb=window._sigFSBounds;
+  const hEl=document.getElementById('hazard-fs-pct'); if(hEl)hEl.textContent=_fsPct(S.hazardFSOverride,hb)+'%';
+  const sEl=document.getElementById('scent-fs-pct'); if(sEl)sEl.textContent=_fsPct(S.scentFSOverride,sb)+'%';
+  const zEl=document.getElementById('bizname-fs-pct'); if(zEl)zEl.textContent=_fsPct(S.bizNameFSOverride,bb)+'%';
+  const tEl=document.getElementById('type-fs-pct'); if(tEl)tEl.textContent=_fsPct(S.typeFSOverride,tb)+'%';
+  const gEl=document.getElementById('sig-fs-pct'); if(gEl)gEl.textContent=_fsPct(S.sigFSOverride,gb)+'%';
+  const yPct=Math.round((S.hazardYOffset!=null?S.hazardYOffset:0.5)*100);
+  const yEl=document.getElementById('hazard-y-pct'); if(yEl)yEl.textContent=yPct+'%';
+  const hR=document.getElementById('hazard-fs-reset'); if(hR)hR.style.display=S.hazardFSOverride!=null?'block':'none';
+  const sR=document.getElementById('scent-fs-reset'); if(sR)sR.style.display=S.scentFSOverride!=null?'block':'none';
+  const zR=document.getElementById('bizname-fs-reset'); if(zR)zR.style.display=S.bizNameFSOverride!=null?'block':'none';
+  const tR=document.getElementById('type-fs-reset'); if(tR)tR.style.display=S.typeFSOverride!=null?'block':'none';
+  const gR=document.getElementById('sig-fs-reset'); if(gR)gR.style.display=S.sigFSOverride!=null?'block':'none';
+  const yR=document.getElementById('hazard-y-reset'); if(yR)yR.style.display=S.hazardYOffset!=null?'inline':'none';
+}
+function nudgeTypeFS(delta){
+  const b=window._typeFSBounds; if(!b)return;
+  const cur=S.typeFSOverride!=null?S.typeFSOverride:b.auto;
+  S.typeFSOverride=Math.min(Math.max(cur+delta*(b.max-b.min)*0.08,b.min),b.max);
   updateLabel();
 }
-function resetHazardFS(){
-  S.hazardFSOverride=null;
+function resetTypeFS(){S.typeFSOverride=null;updateLabel();}
+function nudgeSigFS(delta){
+  const b=window._sigFSBounds; if(!b)return;
+  const cur=S.sigFSOverride!=null?S.sigFSOverride:b.auto;
+  S.sigFSOverride=Math.min(Math.max(cur+delta*(b.max-b.min)*0.08,b.min),b.max);
   updateLabel();
 }
+function resetSigFS(){S.sigFSOverride=null;updateLabel();}
+function nudgeHazardFS(delta){
+  const b=window._hazardFSBounds; if(!b)return;
+  const cur=S.hazardFSOverride!=null?S.hazardFSOverride:b.auto;
+  S.hazardFSOverride=Math.min(Math.max(cur+delta*(b.max-b.min)*0.08,b.min),b.max);
+  updateLabel();
+}
+function resetHazardFS(){S.hazardFSOverride=null;updateLabel();}
+function nudgeScentFS(delta){
+  const b=window._scentFSBounds; if(!b)return;
+  const cur=S.scentFSOverride!=null?S.scentFSOverride:b.auto;
+  S.scentFSOverride=Math.min(Math.max(cur+delta*(b.max-b.min)*0.08,b.min),b.max);
+  updateLabel();
+}
+function resetScentFS(){S.scentFSOverride=null;updateLabel();}
+function nudgeBizNameFS(delta){
+  const b=window._bizNameFSBounds; if(!b)return;
+  const cur=S.bizNameFSOverride!=null?S.bizNameFSOverride:b.auto;
+  S.bizNameFSOverride=Math.min(Math.max(cur+delta*(b.max-b.min)*0.08,b.min),b.max);
+  updateLabel();
+}
+function resetBizNameFS(){S.bizNameFSOverride=null;updateLabel();}
 function updateLabel(){
   readForm();
   // Auto-set signal word from selected H-codes (mirrors extractSDS logic so manual chip clicks work too)
@@ -3298,19 +4122,50 @@ function updateLabel(){
   }
   const{mmW,mmH}=getDims();
   const svgHtml=buildSVG(false);
-  syncHazardFSSlider();
-  const _labelWarnEl=document.getElementById('label-warn');
-  if(_labelWarnEl){
-    if(window._labelLegibilityWarn){
+  syncAdjustPanel();
+  // U2/U3 fix (2026-08-01, reviewed builder-critical-compliance-001):
+  // combine the hazard-text and footer/business-info clipping signals into
+  // one block-download condition. Per Michaela's explicit decision, if any
+  // legally required content had to be clipped to fit, the label must not
+  // be exportable until the maker shortens the content or picks a larger
+  // label size — it is never silently exported incomplete.
+  // U7 fix (18 Aug 2026): a code that isn't in H_LIB/P_LIB (e.g. EUH210 was
+  // previously missing) must never appear as raw text on the label. Treat
+  // it the same way as clipped content -- block download and explain,
+  // rather than silently print an internal code or silently drop it.
+  const _hasUnrecognizedCodes = window._unrecognizedCodes && window._unrecognizedCodes.length>0;
+  window._labelBlockDownload = !!(window._labelLegibilityWarn || window._footerLegibilityClipped || _hasUnrecognizedCodes);
+  // Wording (updated 3 Aug 2026, round 2 — per Michaela's CLP-labelling-focused
+  // request): name the CLP labelling requirement specifically rather than
+  // "required information" generically.
+  const _blockHeading = _hasUnrecognizedCodes
+    ? '⚠️ Download unavailable — unrecognised hazard/precautionary code'
+    : '⚠️ Download unavailable — label size too small for CLP labelling requirements';
+  const _blockBody = _hasUnrecognizedCodes
+    ? 'CLPeasy doesn\'t recognise the code'+(window._unrecognizedCodes.length>1?'s':'')+' <strong>'+window._unrecognizedCodes.join(', ')+'</strong> and will not print it directly on your label, since that would show an internal code rather than the required statement text.<br><br>Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
+    : window._footerLegibilityClipped
+    ? 'Your business/supplier details cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling, so some required information would be left off.<br><br>To create a downloadable label, try selecting a larger label size in Step 1, or shorten your business details.<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
+    : 'The required hazard and precautionary information cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, try selecting a larger label size in Step 1. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>';
+  [document.getElementById('label-warn'), document.getElementById('label-warn-step5')].forEach(_labelWarnEl=>{
+    if(!_labelWarnEl)return;
+    if(window._labelBlockDownload){
       _labelWarnEl.style.display='block';
-      _labelWarnEl.textContent='⚠️ The volume of hazard and precautionary statements for this fragrance will render the text too small to read at the label size you have selected. If your product allows, try a larger label size in Step 1, or attach a fold-out leaflet to carry the full hazard information.';
+      _labelWarnEl.innerHTML = '<strong>'+_blockHeading+'</strong><br><br>'+_blockBody;
     } else {
       _labelWarnEl.style.display='none';
     }
-  }
-  // Desktop preview
+  });
+  // U5 fix (2026-08-03): Step 3 shouldn't offer a confirm-and-continue path when
+  // the label is already known to be undownloadable at this size.
+  if(typeof _applyHazardBlockGate==='function')_applyHazardBlockGate();
+  // Refresh download-button enabled/disabled state every time content
+  // changes (not just on checkbox click) — U2/U3/U4 fix, so a label that
+  // becomes unfittable mid-edit is blocked immediately, and re-enables
+  // automatically once the maker fixes it.
+  if(typeof toggleDownload==='function') toggleDownload();
+  // Desktop preview — panel is retired (replaced by the top preview bar), skip entirely.
   const dc=document.getElementById('label-svg-container');
-  if(dc){
+  if(dc && dc.offsetParent!==null){
     dc.innerHTML=svgHtml;
     // Auto-fit zoom to fill available panel on first render, then apply current zoom
     const area=document.getElementById('preview-canvas-area');
@@ -3322,14 +4177,22 @@ function updateLabel(){
         if(vb){
           const[,, vbW, vbH]=vb.split(' ').map(Number);
           if(vbW>0&&vbH>0){
-            // Scale to fill panel (respecting aspect ratio)
-            const fitZoom=Math.min(aW/vbW,aH/vbH,2.0);
-            // Only auto-set zoom if it's still at default or the label size changed
+            // Max zoom = full box fill, no breathing room.
+            const fitZoom=Math.min(aW/vbW,aH/vbH);
+            _previewMaxZoom=fitZoom;
+            // Default fill (88% of full fit) is the "100%" reference point shown to the user.
+            _previewFitZoom=fitZoom*0.88;
             if(previewZoom===0.75||previewZoom<0.5||previewZoom>1.8){
-              // fitZoom*0.88 gives a little breathing room; no floor at 1.0
-              previewZoom=Math.min(fitZoom*0.88, 2.0);
-              const pct=Math.round(previewZoom*100);
-              const fillPct=((previewZoom-0.2)/(2.0-0.2)*100).toFixed(1);
+              previewZoom=_previewFitZoom;
+            }
+            // Always keep previewZoom within the current bounds — the container
+            // can resize between renders, so a value valid last time may no
+            // longer fit now. Without this, zooming in can appear to shrink
+            // the label if it snaps down to a lower ceiling than expected.
+            previewZoom=Math.min(Math.max(previewZoom,0.2),_previewMaxZoom);
+            {
+              const pct=Math.round(_previewFitZoom>0?(previewZoom/_previewFitZoom*100):100);
+              const fillPct=(_previewMaxZoom>0.2?((previewZoom-0.2)/(_previewMaxZoom-0.2)*100):0).toFixed(1);
               const zpEl=document.getElementById('zoom-pct');const zfEl=document.getElementById('zoom-fill');const ztEl=document.getElementById('zoom-thumb');
               if(zpEl)zpEl.textContent=pct+'%';
               if(zfEl)zfEl.style.width=fillPct+'%';
@@ -3341,16 +4204,6 @@ function updateLabel(){
       }
     }
   }
-  // Mobile top bar preview
-  const mb=document.getElementById('mobile-preview-svg');
-  if(mb)mb.innerHTML=svgHtml;
-  const md=document.getElementById('mobile-preview-dims');
-  if(md)md.textContent=`Print size: ${mmW} × ${mmH}mm`;
-  // Mobile step 5 preview
-  const mc=document.getElementById('mobile-label-preview');
-  if(mc)mc.innerHTML=svgHtml;
-  const mi=document.getElementById('mobile-size-info');
-  if(mi)mi.textContent=`Print size: ${mmW} × ${mmH}mm`;
   // Sheet preview
   const sc=document.getElementById('sheet-label-container');
   if(sc)sc.innerHTML=svgHtml;
@@ -3406,30 +4259,14 @@ function svgWrapped(lines,x,startY,lineH,sizePx,bold,serif,fill,anchor='middle',
 }
 
 // ── PREVIEW ZOOM ──────────────────────────────────────────────
-let _mobileZoom=1.0;
-function mobileZoomAdj(delta){
-  _mobileZoom=Math.min(3.0,Math.max(0.3,_mobileZoom+delta));
-  const el=document.getElementById('mobile-label-preview');
-  if(el){
-    const svg=el.querySelector('svg');
-    if(svg){
-      const vb=svg.getAttribute('viewBox');
-      if(vb){
-        const[,, vbW, vbH]=vb.split(' ').map(Number);
-        svg.setAttribute('width', Math.round(vbW*_mobileZoom));
-        svg.setAttribute('height', Math.round(vbH*_mobileZoom));
-      }
-    }
-  }
-  const pct=document.getElementById('mobile-zoom-pct');
-  if(pct)pct.textContent=Math.round(_mobileZoom*100)+'%';
-}
 let previewZoom=0.75;
+let _previewMaxZoom=2.0;
+let _previewFitZoom=1.0;
 
 function setPreviewZoom(z){
-  previewZoom=Math.min(2.0,Math.max(0.2,z));
-  const pct=Math.round(previewZoom*100);
-  const fillPct=((previewZoom-0.2)/(2.0-0.2)*100).toFixed(1);
+  previewZoom=Math.min(_previewMaxZoom,Math.max(0.2,z));
+  const pct=Math.round(_previewFitZoom>0?(previewZoom/_previewFitZoom*100):100);
+  const fillPct=(_previewMaxZoom>0.2?((previewZoom-0.2)/(_previewMaxZoom-0.2)*100):0).toFixed(1);
   const zpEl=document.getElementById('zoom-pct');
   const zfEl=document.getElementById('zoom-fill');
   const ztEl=document.getElementById('zoom-thumb');
@@ -3444,12 +4281,12 @@ function onZoomTrackClick(e){
   if(!track)return;
   const rect=track.getBoundingClientRect();
   const frac=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
-  setPreviewZoom(0.2+frac*(2.0-0.2));
+  setPreviewZoom(0.2+frac*(_previewMaxZoom-0.2));
 }
 
 function applyZoomToSVG(){
   const container=document.getElementById('label-svg-container');
-  if(!container)return;
+  if(!container||container.offsetParent===null)return;
   const svg=container.querySelector('svg');
   if(!svg)return;
   // Get intrinsic SVG size from viewBox
@@ -3496,7 +4333,9 @@ async function ensureFontsLoaded(){
   }catch(e){}
 }
 
-async function downloadPNG(){plausible('Label Downloaded',{props:{format:'PNG'}});
+async function downloadPNG(){
+  if(!_downloadAllowed()){alert('Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.');return;}
+  plausible('Label Downloaded',{props:{format:'PNG'}});
   await ensureFontsLoaded();
   readForm();
   const{mmW,mmH,pw,ph}=getDims();
@@ -3564,7 +4403,9 @@ async function downloadPNG(){plausible('Label Downloaded',{props:{format:'PNG'}}
 }
 
 // ── SVG DOWNLOAD ──────────────────────────────────────────────
-function downloadSVG(){plausible('Label Downloaded',{props:{format:'SVG'}});
+function downloadSVG(){
+  if(!_downloadAllowed()){alert('Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.');return;}
+  plausible('Label Downloaded',{props:{format:'SVG'}});
   try{
     readForm();
     const{mmW,mmH,pw,ph}=getDims();
@@ -3593,7 +4434,6 @@ function downloadSVG(){plausible('Label Downloaded',{props:{format:'SVG'}});
 }
 
 // ── MOBILE SHEET ──────────────────────────────────────────────
-function openSheet(){document.getElementById('preview-sheet').classList.add('open');document.body.style.overflow='hidden';}
 function wizRetry(text){
   // Remove last error message and retry
   const msgs = document.getElementById('wiz-messages');
@@ -3737,7 +4577,7 @@ Key things to know:
 - Printing at home on Avery sticker paper: use 🖨 Avery Sheet — it aligns exactly to real Avery sheets
 - Printing at home on plain paper (cut yourself): use ⬇ PNG
 - Uploading to Canva to add branding first: use ⬇ PNG, then in Canva use "Upload" and overlay brand elements
-- Sizes: 35mm = wax melt, 40mm = small candle, 50mm = standard candle, 63mm = large jar
+- Sizes: 52mm = standard candle (CLP minimum), 63mm = large jar, Custom = any other size including wax melts (below 52mm triggers a compliance warning)
 - Maximum labels on A4 at 75mm: approximately 6 (3×2 grid with margins)
 
 When generating steps, format them clearly. For WALKTHROUGH style, include visual hints in brackets like [→ Click "Circle" in the shape grid] or [→ Step 1: Label size & shape].
@@ -3915,31 +4755,6 @@ function wizStopMic(){
 init();
 
 // ══════════════════════════════════════════════════════════════
-// FEATURE: UFI GENERATOR
-// Generates a unique formatted UFI: XXXX-XXXX-XXXX-XXXX
-// Using a simple hash of user email + scent + product type
-// ══════════════════════════════════════════════════════════════
-function generateUFI(){plausible('UFI Generated');
-  const email=currentUser?.email||'guest';
-  const scent=document.getElementById('scent-name')?.value||S.scentName||'label';
-  const product=document.getElementById('product-type')?.value||S.productType||'candle';
-  const seed=email+scent+product+Date.now().toString(36);
-  // Simple but deterministic hash → 16 hex chars → 4 groups of 4
-  let h=0;
-  for(let i=0;i<seed.length;i++){h=Math.imul(31,h)+seed.charCodeAt(i)|0;}
-  const abs=Math.abs(h)>>>0;
-  // Generate 16 uppercase hex chars from multiple hashes
-  function hashStr(s){let n=0;for(let i=0;i<s.length;i++){n=Math.imul(31,n)+s.charCodeAt(i)|0;}return(Math.abs(n)>>>0).toString(16).padStart(8,'0').toUpperCase();}
-  const p1=hashStr(seed).substring(0,4);
-  const p2=hashStr(seed+'A').substring(0,4);
-  const p3=hashStr(seed+'B').substring(0,4);
-  const p4=hashStr(seed+'C').substring(0,4);
-  const ufi=`${p1}-${p2}-${p3}-${p4}`;
-  const el=document.getElementById('ufi-code');
-  if(el){el.value=ufi;updateLabel();}
-}
-
-// ══════════════════════════════════════════════════════════════
 // FEATURE: BATCH AUTO-INCREMENT
 // ══════════════════════════════════════════════════════════════
 function clearBatchNum(){
@@ -4021,22 +4836,6 @@ function applyFragLoad(){
 }
 
 // ══════════════════════════════════════════════════════════════
-// FEATURE: QR CODE TOGGLE
-// ══════════════════════════════════════════════════════════════
-S.showQR=false;
-
-function setQR(show){
-  S.showQR=show;
-  const on=document.getElementById('btn-qr-on');
-  const off=document.getElementById('btn-qr-off');
-  const active='flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--teal);background:var(--teal-light);color:var(--teal-dark);font-size:13px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif;';
-  const inactive='flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:\'DM Sans\',sans-serif;';
-  if(on)on.style.cssText=show?active:inactive;
-  if(off)off.style.cssText=show?inactive:active;
-  updateLabel();
-}
-
-// ══════════════════════════════════════════════════════════════
 // FEATURE: LABEL LANGUAGE
 // H&P statement translations for key CLP phrases
 // ══════════════════════════════════════════════════════════════
@@ -4052,29 +4851,19 @@ const LANG_PRODUCT_TYPE_SUFFIX={
   de:{'Scented Candle':'Duftkerze','Soy Candle':'Sojakerze','Wax Melt':'Duftwachs','Reed Diffuser':'Raumduft-Stäbchen','Room Spray':'Raumspray','Electric Diffuser':'Elektrischer Diffuser'},
 };
 
-function getLangSignal(sig,langs){
-  const parts=[];
-  langs.forEach(l=>{const t=LANG_SIGNAL[l]?.[sig]||sig;if(t&&!parts.includes(t))parts.push(t);});
-  return parts.join(' / ');
-}
-
-function getLangContains(langs){
-  const parts=[];
-  langs.forEach(l=>{const t=LANG_CONTAINS[l]||'Contains:';if(!parts.includes(t))parts.push(t);});
-  return parts.join(' / ');
-}
-
-function getActiveLangs(){
-  const v=document.getElementById('label-lang')?.value||'en';
-  return v.split('_');
-}
-
 // ══════════════════════════════════════════════════════════════
 // FEATURE: LABEL HISTORY / VERSION CONTROL
 // ══════════════════════════════════════════════════════════════
+// I4 fix (2026-08-01, reviewed history-cross-account-scoping): history was
+// previously stored under a single global 'clpeasy_history' key, shared by
+// every account that ever used this browser — same root cause already fixed
+// for the main label library via libKey()/libNS() (see getSaved/persistSaved
+// above). Now namespaced the same way, per-user. The old global key is
+// purged once in init() (see below) so previously-exposed data left in a
+// shared browser's localStorage is also removed, not just no longer read.
 function getLabelHistory(scentName,productType){
   try{
-    const all=JSON.parse(localStorage.getItem('clpeasy_history')||'{}');
+    const all=JSON.parse(localStorage.getItem(libKey('clpeasy_history'))||'{}');
     const key=scentName+'|'+productType;
     return all[key]||[];
   }catch(e){return[];}
@@ -4082,7 +4871,7 @@ function getLabelHistory(scentName,productType){
 
 function pushLabelHistory(entry){
   try{
-    const all=JSON.parse(localStorage.getItem('clpeasy_history')||'{}');
+    const all=JSON.parse(localStorage.getItem(libKey('clpeasy_history'))||'{}');
     const key=entry.scentName+'|'+entry.productType;
     if(!all[key])all[key]=[];
     // Don't add duplicate (same savedAt)
@@ -4091,7 +4880,7 @@ function pushLabelHistory(entry){
       // Keep max 10 versions
       if(all[key].length>10)all[key]=all[key].slice(0,10);
     }
-    localStorage.setItem('clpeasy_history',JSON.stringify(all));
+    localStorage.setItem(libKey('clpeasy_history'),JSON.stringify(all));
   }catch(e){}
 }
 
@@ -4119,13 +4908,10 @@ function showLabelHistory(encodedScent,encodedProduct){
 }
 
 // ══════════════════════════════════════════════════════════════
-// HOOK INTO saveLabel — push to history + handle UFI
+// HOOK INTO saveLabel — push to history
 // ══════════════════════════════════════════════════════════════
 const _origSaveLabel=saveLabel;
 saveLabel=function(){
-  // Auto-generate UFI if not set
-  const ufiEl=document.getElementById('ufi-code');
-  if(ufiEl&&!ufiEl.value.trim())generateUFI();
   // Call original saveLabel
   _origSaveLabel();
   // Push to history
@@ -4133,7 +4919,6 @@ saveLabel=function(){
   const entry=arr.find(e=>e.scentName===S.scentName&&e.productType===S.productType);
   if(entry){
     pushLabelHistory(entry);
-    syncSafetySheet(entry); // Write to Supabase safety_sheets table
   }
   // Save last batch
   const batch=document.getElementById('batch-num')?.value;
@@ -4141,43 +4926,18 @@ saveLabel=function(){
 };
 
 // ══════════════════════════════════════════════════════════════
-// SYNC SAFETY SHEET TO SUPABASE
-// Called every time a label is saved. Creates or updates the
-// safety_sheets row for this label so the QR code always points
-// to current data.
-// ══════════════════════════════════════════════════════════════
-async function syncSafetySheet(entry){
-  if(!sbClient||!currentUser)return; // not logged in
-  if(!entry.ufiCode)return; // no UFI = no QR
-  // Generate a stable UID from the UFI code (strip dashes, lowercase)
-  const uid=entry.ufiCode.replace(/-/g,'').toLowerCase().substring(0,16);
-  try{
-    await sbClient.from('safety_sheets').upsert({
-      uid,
-      user_id:currentUser.id,
-      label_data:entry,
-      updated_at:new Date().toISOString()
-    },{onConflict:'uid'});
-  }catch(e){
-    console.log('Safety sheet sync failed:',e.message);
-  }
-}
-
-// ══════════════════════════════════════════════════════════════
-// HOOK INTO readForm — capture UFI + lang + QR
+// HOOK INTO readForm — capture label language
 // ══════════════════════════════════════════════════════════════
 const _origReadForm=readForm;
 readForm=function(){
   _origReadForm();
-  S.ufiCode=document.getElementById('ufi-code')?.value||'';
   S.labelLang=document.getElementById('label-lang')?.value||'en';
-  S.showQR=S.showQR||false;
 };
 
 // ══════════════════════════════════════════════════════════════
 // HOOK INTO saveLabel entry — include new fields
 // ══════════════════════════════════════════════════════════════
-const _origSaveLabelEntry=null; // handled via readForm hook above — ufiCode/labelLang now in S
+const _origSaveLabelEntry=null; // handled via readForm hook above — labelLang now in S
 
 // ══════════════════════════════════════════════════════════════
 // INIT EXTENSIONS — called at end of init()
@@ -4193,8 +4953,6 @@ function initExtensions(){
     const el=document.getElementById('label-lang');
     if(el)el.value=prod.labelLang;
   }
-  // QR off by default
-  setQR(false);
 }
 
 </script>
@@ -4222,6 +4980,56 @@ function initExtensions(){
   </div>
 </div>
 
+  
+  <section class="shell-trust">
+    <div class="shell-trust-item"><span class="shell-trust-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></span><span class="shell-trust-copy"><b>Secure</b><small>Your account and label data are protected</small></span></div>
+    <div class="shell-trust-item"><span class="shell-trust-icon shell-clp-ready-badge"><img src="assets/clp-ready.png" alt="CLP Ready" width="58" height="73" style="width:58px;height:73px;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(12,137,155,0.3));"></span><span class="shell-trust-copy"><b>CLP Ready</b><small>Built for UK label creation</small></span></div>
+    <div class="shell-trust-item"><span class="shell-trust-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 5.7a5.4 5.4 0 0 0-7.6 0L12 6.9l-1.2-1.2a5.4 5.4 0 1 0-7.6 7.6L12 22l8.8-8.7a5.4 5.4 0 0 0 0-7.6Z"/></svg></span><span class="shell-trust-copy"><b>By makers, for makers</b><small>Practical tools for small businesses</small></span></div>
+    <div class="shell-trust-item"><span class="shell-trust-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H8l-4 4Z"/></svg></span><span class="shell-trust-copy"><b>We're here to help</b><small>support@clpeasy.com</small></span></div>
+  </section>
+</div><!-- /.shell-main -->
+</div><!-- /.app-shell -->
+
+<script>
+  // Sidebar mobile toggle (Phase 2 shell rollout — shared pattern)
+  (function(){
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const toggles = [document.getElementById('sidebar-toggle'), document.getElementById('sidebar-toggle-inline')].filter(Boolean);
+    function openSidebar(){
+      sidebar.classList.add('open');
+      overlay.classList.add('open');
+      toggles.forEach(t=>t.setAttribute('aria-expanded','true'));
+    }
+    function closeSidebar(){
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+      toggles.forEach(t=>t.setAttribute('aria-expanded','false'));
+    }
+    toggles.forEach(t=>t.addEventListener('click', ()=>{
+      sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+    }));
+    if(overlay) overlay.addEventListener('click', closeSidebar);
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeSidebar(); });
+  })();
++  (function(){
+    const profile=document.querySelector('.sidebar-profile');
+    const trigger=document.getElementById('sidebar-user');
+    if(!profile||!trigger)return;
+    function closeProfileMenu(){
+      profile.classList.remove('open');
+      trigger.setAttribute('aria-expanded','false');
+    }
+    trigger.addEventListener('click',event=>{
+      event.stopPropagation();
+      const open=profile.classList.toggle('open');
+      trigger.setAttribute('aria-expanded',String(open));
+    });
+    profile.addEventListener('click',event=>event.stopPropagation());
+    document.addEventListener('click',closeProfileMenu);
+    document.addEventListener('keydown',event=>{if(event.key==='Escape')closeProfileMenu();});
+  })();
+</script>
 
 </body>
 </html>

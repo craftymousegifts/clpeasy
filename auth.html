@@ -20,8 +20,8 @@ body{display:flex;flex-direction:column;min-height:100vh;}
 /* NAV */
 nav{background:white;border-bottom:1px solid var(--border);padding:0 24px;height:88px;display:flex;align-items:center;justify-content:space-between;}
 .nav-logo{display:flex;align-items:center;gap:0;text-decoration:none;line-height:1;}
-.nav-badge{width:80px;height:80px;border-radius:50%;background:#4C9BB0;color:white;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;flex-shrink:0;font-family:'DM Sans',sans-serif;letter-spacing:-1px;}
-.nav-easy{font-family:'DM Sans',sans-serif;font-size:38px;font-weight:900;color:#4C9BB0;margin-left:5px;letter-spacing:-2px;line-height:1;}
+.nav-badge{width:52px;height:52px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;letter-spacing:-1px;flex-shrink:0;}
+.nav-easy{font-size:26px;font-weight:900;color:var(--teal);margin-left:4px;letter-spacing:-1px;}
 .nav-back{font-size:13px;color:var(--muted);text-decoration:none;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;}
 .nav-back:hover{color:var(--teal);border-color:var(--teal);}
 
@@ -75,6 +75,11 @@ input:focus{border-color:var(--teal);}
 .verify-icon{font-size:48px;margin-bottom:16px;}
 .verify-title{font-family:'DM Serif Display',serif;font-size:24px;margin-bottom:8px;}
 .verify-sub{font-size:14px;color:var(--muted);line-height:1.6;}
+@media(max-width:480px){
+  nav{padding:0 16px;height:64px;}
+  .nav-badge{width:52px;height:52px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;letter-spacing:-1px;flex-shrink:0;}
+  .nav-easy{font-size:26px;font-weight:900;color:var(--teal);margin-left:4px;letter-spacing:-1px;}
+}
 </style>
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"></script>
@@ -86,10 +91,10 @@ input:focus{border-color:var(--teal);}
 <body>
 
 <nav>
-  <a href="home.html" class="nav-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span></a>
+  <a href="index.html" class="nav-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span></a>
   <div style="display:flex;gap:8px;align-items:center;">
     <a href="support.html" style="font-size:13px;color:var(--muted);text-decoration:none;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;" onmouseover="this.style.color='#4C9BB0';this.style.borderColor='#4C9BB0'" onmouseout="this.style.color='';this.style.borderColor=''">Support</a>
-    <a href="home.html" class="nav-back">← Home</a>
+    <a href="index.html" class="nav-back">← Home</a>
   </div>
 </nav>
 
@@ -107,7 +112,24 @@ input:focus{border-color:var(--teal);}
       <div class="verify-title">Check your email</div>
       <div class="verify-sub" id="verify-sub">We've sent a verification link to your email address. Click the link to activate your CLPeasy account.</div>
       <br>
-      <a href="home.html" style="color:var(--teal);font-size:14px;font-weight:600;">← Back to home</a>
+      <a href="index.html" style="color:var(--teal);font-size:14px;font-weight:600;">← Back to home</a>
+    </div>
+
+    <!-- PASSWORD RECOVERY SCREEN -->
+    <div class="verify-screen" id="recovery-screen">
+      <div class="verify-icon">🔒</div>
+      <div class="verify-title">Set a new password</div>
+      <div class="verify-sub">Choose a new password for your CLPeasy account.</div>
+      <div class="msg" id="recovery-msg" style="text-align:left;"></div>
+      <div class="form-group" style="text-align:left;margin-top:20px;">
+        <label>New password</label>
+        <input type="password" id="recovery-password" placeholder="••••••••" autocomplete="new-password">
+      </div>
+      <div class="form-group" style="text-align:left;">
+        <label>Confirm new password</label>
+        <input type="password" id="recovery-password-confirm" placeholder="••••••••" autocomplete="new-password">
+      </div>
+      <button type="button" class="btn-primary" id="recovery-submit-btn" onclick="updatePassword()">Update password</button>
     </div>
 
     <!-- AUTH FORM -->
@@ -188,6 +210,55 @@ function switchTab(tab) {
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// Only permit authenticated returns to known CLPeasy account pages. Keeping
+// this as a fixed allow-list prevents `next=` from becoming an open redirect.
+const SAFE_AUTH_DESTINATIONS = new Set([
+  'builder.html',
+  'dashboard.html',
+  'my-labels.html',
+  'account.html'
+]);
+
+function getSafeNextDestination() {
+  const requested = new URLSearchParams(window.location.search).get('next');
+  if (!requested) return 'builder.html';
+
+  try {
+    const resolved = new URL(requested, window.location.origin + '/');
+    const filename = resolved.pathname.replace(/^\/+/, '');
+    if (
+      resolved.origin === window.location.origin &&
+      !resolved.search &&
+      !resolved.hash &&
+      SAFE_AUTH_DESTINATIONS.has(filename)
+    ) return filename;
+  } catch (_) {}
+
+  return 'builder.html';
+}
+
+const postAuthDestination = getSafeNextDestination();
+
+function getAuthCallbackUrl() {
+  const callback = new URL('/auth.html', window.location.origin);
+  callback.searchParams.set('next', postAuthDestination);
+  return callback.toString();
+}
+
+// ── PASSWORD RECOVERY ──────────────────────────
+// A password-reset link redirects here from Supabase's /auth/v1/verify
+// endpoint with the session tokens appended as a URL hash fragment
+// (#access_token=...&type=recovery&...). Checked synchronously, before
+// supabase-js's own async URL-session processing has a chance to strip the
+// hash, so this is reliable even if the PASSWORD_RECOVERY event below fires
+// late or is ever missed. While this flag is true, the SIGNED_IN/USER_UPDATED
+// auto-redirect below is suppressed — without this, a recovery session would
+// be indistinguishable from a normal sign-in and the user would be sent
+// straight to builder.html, never getting a chance to actually set a new
+// password (the bug this fixes).
+let isRecoveryFlow = /type=recovery/.test(window.location.hash);
+if (isRecoveryFlow) showRecoveryScreen();
+
 function showMsg(text, type) {
   const el = document.getElementById('msg');
   el.textContent = text;
@@ -211,6 +282,7 @@ async function handleSubmit() {
     const termsError = document.getElementById('terms-error');
     if (termsBox && !termsBox.checked) {
       if (termsError) termsError.style.display = 'block';
+      showMsg('Please agree to the terms to continue.', 'error');
       termsBox.focus();
       return;
     }
@@ -235,34 +307,21 @@ if (mode === 'signin') {
     btn.textContent = 'Sign in';
   } else {
 
-    // ── GET LOGGED IN USER ─────────────────────────────
-    const { data: { user } } = await sb.auth.getUser();
+    // REMOVED (2026-07-27, AUDIT_AND_FIX_LOG.md Phase 12): this used to upsert
+    // into a `public.users` table on every sign-in. That table was dropped from
+    // production via the `drop_unused_users_table` migration and nothing reads
+    // from it — the row it wrote was dead data, and the write itself was a
+    // failing no-op on every login. Signup/profile seeding is already handled
+    // by the `handle_new_user()` trigger on auth.users, which inserts into
+    // `public.profiles` (the authoritative table) automatically.
 
-    // ── ENSURE USER EXISTS IN PUBLIC.USERS ─────────────
-    // Insert-only: seed defaults for brand-new users, never overwrite an
-    // existing row (otherwise a returning paid user would be reset to free).
-    if (user) {
-      await sb
-        .from('users')
-        .upsert(
-          [
-            {
-              id: user.id,
-              email: user.email,
-              plan: 'free',
-              credits: 10,
-              subscription_status: 'inactive'
-            }
-          ],
-          { onConflict: 'id', ignoreDuplicates: true }
-        );
-    }
-
-    // ── GO TO BUILDER ───────────────────────────────────
-    window.location.href = 'builder.html';
+    window.location.href = postAuthDestination;
   }
   } else {
-    const { data: signUpData, error } = await sb.auth.signUp({ email, password });
+    const { data: signUpData, error } = await sb.auth.signUp({
+      email, password,
+      options: { emailRedirectTo: getAuthCallbackUrl() }
+    });
     if (error) {
       showMsg(error.message, 'error');
       btn.disabled = false;
@@ -303,7 +362,7 @@ async function signInWithGoogle() {
   }
   await sb.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.origin + '/builder.html' }
+    options: { redirectTo: getAuthCallbackUrl() }
   });
 }
 
@@ -311,28 +370,93 @@ async function resetPassword() {
   const email = document.getElementById('email').value.trim();
   if (!email) { showMsg('Enter your email address first, then click Forgot password.', 'error'); return; }
   const { error } = await sb.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + '/auth.html'
+    redirectTo: getAuthCallbackUrl()
   });
   if (error) { showMsg(error.message, 'error'); }
   else { showMsg('Password reset email sent — check your inbox.', 'success'); }
 }
 
-// Allow Enter key to submit
-document.addEventListener('keydown', e => { if (e.key === 'Enter') handleSubmit(); });
+function showRecoveryScreen() {
+  document.getElementById('auth-form').style.display = 'none';
+  document.getElementById('verify-screen').style.display = 'none';
+  document.getElementById('recovery-screen').style.display = 'block';
+}
+
+function showRecoveryMsg(text, type) {
+  const el = document.getElementById('recovery-msg');
+  el.textContent = text;
+  el.className = 'msg ' + type + ' show';
+}
+function hideRecoveryMsg() {
+  document.getElementById('recovery-msg').className = 'msg';
+}
+
+// Completes the password-recovery flow: sets the new password on the
+// already-established recovery session via Supabase's updateUser(), then
+// takes the user to the Builder — the step that was previously missing
+// entirely, leaving "Forgot password" a dead end.
+async function updatePassword() {
+  const pw1 = document.getElementById('recovery-password').value;
+  const pw2 = document.getElementById('recovery-password-confirm').value;
+  const btn = document.getElementById('recovery-submit-btn');
+  hideRecoveryMsg();
+
+  if (!pw1 || !pw2) { showRecoveryMsg('Please enter and confirm your new password.', 'error'); return; }
+  if (pw1.length < 6) { showRecoveryMsg('Password must be at least 6 characters.', 'error'); return; }
+  if (pw1 !== pw2) { showRecoveryMsg('Passwords do not match.', 'error'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Updating password...';
+
+  const { error } = await sb.auth.updateUser({ password: pw1 });
+
+  if (error) {
+    showRecoveryMsg(error.message || 'Something went wrong — please try again.', 'error');
+    btn.disabled = false;
+    btn.textContent = 'Update password';
+    return;
+  }
+
+  showRecoveryMsg('Password updated — signing you in…', 'success');
+  // Recovery is complete — clear the flag and hand off to the normal
+  // post-auth redirect (after a short pause so the success message is
+  // actually visible) rather than the generic SIGNED_IN/USER_UPDATED
+  // listener firing mid-update and jumping away before this shows.
+  isRecoveryFlow = false;
+  setTimeout(() => { window.location.href = postAuthDestination; }, 1200);
+}
+
+// Allow Enter key to submit — the recovery form when that screen is showing,
+// the normal sign-in/sign-up form otherwise.
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (document.getElementById('recovery-screen').style.display === 'block') updatePassword();
+  else handleSubmit();
+});
 
 // Check URL params to determine which tab to show
 const urlParams=new URLSearchParams(window.location.search);
 const defaultTab=urlParams.get('mode')==='signup'?'signup':'signin';
 
-// Check if already logged in or handle redirect from email verification
+// Check if already logged in or handle redirect from email verification.
+// PASSWORD_RECOVERY is its own event (distinct from SIGNED_IN) — confirms
+// the isRecoveryFlow detection above and shows the same screen if the URL
+// check somehow missed it. Either way, a recovery session must never hit
+// the auto-redirect below, or "Forgot password" silently signs the user
+// back in with their OLD password instead of letting them set a new one.
 sb.auth.onAuthStateChange((event, session) => {
-  if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-    window.location.href = 'builder.html';
+  if (event === 'PASSWORD_RECOVERY') {
+    isRecoveryFlow = true;
+    showRecoveryScreen();
+    return;
+  }
+  if (!isRecoveryFlow && (event === 'SIGNED_IN' || event === 'USER_UPDATED')) {
+    window.location.href = postAuthDestination;
   }
 });
 
 sb.auth.getSession().then(({ data: { session } }) => {
-  if (session) window.location.href = 'builder.html';
+  if (session && !isRecoveryFlow) window.location.href = postAuthDestination;
 });
 
 // Set initial state
