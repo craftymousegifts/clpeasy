@@ -58,7 +58,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
   position:fixed;top:0;left:0;bottom:0;z-index:300;
   transition:transform .25s ease;
 }
-.sidebar-logo{display:flex;align-items:center;gap:8px;text-decoration:none;padding:var(--shell-space-2) var(--shell-space-2) var(--shell-space-5);}
+.sidebar-logo{display:flex;align-items:center;gap:0;text-decoration:none;padding:var(--shell-space-2) var(--shell-space-2) var(--shell-space-5);}
 .sidebar-nav{display:flex;flex-direction:column;gap:2px;flex:1;}
 .sidebar-nav-item{
   display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:var(--shell-radius-control);
@@ -292,7 +292,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
         <div class="su-label">Downloads remaining</div>
         <div class="su-count" id="su-count">—</div>
         <div class="su-bar"><span id="su-fill" style="width:0%"></span></div>
-        <a href="pricing.html" target="_blank" rel="noopener" class="su-topup">Buy Top-Up →</a>
+        <a href="account.html?topup=1" target="_blank" rel="noopener" class="su-topup">Buy Top-Up →</a>
       </div>
       <div class="sidebar-profile">
         <button type="button" class="sidebar-user" id="sidebar-user" style="display:none;" aria-haspopup="true" aria-expanded="false">
@@ -776,6 +776,16 @@ function renderAccount() {
 
   // Action buttons
   renderActionRow(u.status);
+
+  // Sidebar top-up links arrive here in a separate tab. Open the existing
+  // top-up picker directly instead of sending the customer to Pricing.
+  const pageParams = new URLSearchParams(window.location.search);
+  if (pageParams.get('topup') === '1') {
+    buyTopup();
+    pageParams.delete('topup');
+    const cleanQuery = pageParams.toString();
+    history.replaceState(null, '', window.location.pathname + (cleanQuery ? '?' + cleanQuery : ''));
+  }
 }
 
 function renderActionRow(status) {
@@ -1122,20 +1132,31 @@ async function confirmResub() {
 
 // ── OTHER ─────────────────────────────────────────────────────────
 async function openStripePortal() {
+  const portalTab = window.open('about:blank', '_blank');
+  if (!portalTab) {
+    alert('Please allow pop-ups for CLPeasy so Stripe billing can open without closing your account page.');
+    return;
+  }
+  portalTab.opener = null;
   try {
     const { data: { session } } = await _sb.auth.getSession();
-    if (!session) { alert('Please sign in again to manage billing.'); return; }
+    if (!session) {
+      portalTab.close();
+      alert('Please sign in again to manage billing.');
+      return;
+    }
     const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/create-portal-session', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
-      body: JSON.stringify({ userId: currentUser.id })
+      body: '{}'
     });
     const data = await res.json();
-    if (data.url) { window.location.href = data.url; }
+    if (data.url) { portalTab.location.href = data.url; }
     else { throw new Error(data.error || 'No portal URL returned'); }
   } catch (e) {
+    try { portalTab.close(); } catch (_error) {}
     console.error('Stripe portal error:', e);
-    alert('Something went wrong opening billing. Please try again.');
+    alert(e.message || 'Something went wrong opening billing. Please try again.');
   }
 }
 async function signOut() {

@@ -38,9 +38,9 @@ html,body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--tex
   position:fixed;top:0;left:0;bottom:0;z-index:300;
   transition:transform .25s ease;
 }
-.sidebar-logo{display:flex;align-items:center;gap:8px;text-decoration:none;padding:var(--shell-space-2) var(--shell-space-2) var(--shell-space-5);}
+.sidebar-logo{display:flex;align-items:center;gap:0;text-decoration:none;padding:var(--shell-space-2) var(--shell-space-2) var(--shell-space-5);}
 .sidebar-logo .nav-badge{width:40px;height:40px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;letter-spacing:-1px;flex-shrink:0;}
-.sidebar-logo .nav-easy{font-size:22px;font-weight:900;color:var(--teal);margin-left:6px;letter-spacing:-1px;}
+.sidebar-logo .nav-easy{font-size:22px;font-weight:900;color:var(--teal);margin-left:4px;letter-spacing:-1px;}
 .sidebar-nav{display:flex;flex-direction:column;gap:2px;flex:1;}
 .sidebar-nav-item{
   display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:var(--shell-radius-control);
@@ -212,7 +212,7 @@ a.trust-item:hover .trust-icon{background:var(--teal);color:white;}
         <div class="su-label">Downloads remaining</div>
         <div class="su-count" id="su-count">—</div>
         <div class="su-bar"><span id="su-fill" style="width:0%"></span></div>
-        <a href="pricing.html" target="_blank" rel="noopener" class="su-topup">Buy Top-Up →</a>
+        <a href="account.html?topup=1" target="_blank" rel="noopener" class="su-topup">Buy Top-Up →</a>
       </div>
       <div class="sidebar-profile">
         <button type="button" class="sidebar-user" id="sidebar-user" style="display:none;" aria-haspopup="true" aria-expanded="false">
