@@ -76,6 +76,18 @@ Before modifying:
 4. Test.
 5. Report.
 
+## Builder recovery contract — August 2026
+
+The approved five-step Builder behaviour is:
+
+1. Label — choose shape, size and appearance first.
+2. Product — enter product details; there is no Intended Use field.
+3. Hazards — Smart Paste extracts H/EUH/P codes and sensitisers, automatically selects the required GHS pictograms, and candle products display their EN 15494 safety pictograms.
+4. Business — enter responsible-person and contact details.
+5. Download — review the complete label and export PNG, PDF or SVG.
+
+The live preview stays in its preview column throughout the wizard. Every step has consistent Back/Next navigation. Mandatory hazard, precautionary and sensitiser text must never be shortened or replaced with ellipses. Export is blocked when the complete content cannot fit at the required legibility. A representative long-content 63 mm candle label must remain usable, while genuinely undersized content such as the same case at 52 mm must be blocked. Custom rectangle width and height are independent physical dimensions; the 63×44 mm candle layout must keep product type, signal word and pictograms separated.
+
 ## Other business context
 Michaela also operates Crafty Mouse Gifts, a handmade product business.
 

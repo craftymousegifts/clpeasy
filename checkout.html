@@ -132,7 +132,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.97);backdrop
 
   <!-- Not logged in warning -->
   <div class="auth-check" id="auth-check">
-    ⚠️ You're not signed in. <a href="auth.html?mode=signup&redirect=checkout.html">Create a free account</a> or <a href="auth.html?mode=signin&redirect=checkout.html">sign in</a> to continue.
+    ⚠️ You're not signed in. <a href="auth.html?mode=signup&amp;next=checkout.html">Create a free account</a> or <a href="auth.html?mode=signin&amp;next=checkout.html">sign in</a> to continue.
   </div>
 
   <div class="checkout-grid">
@@ -383,13 +383,13 @@ function updateSummary() {
 // ── CHECKOUT ──────────────────────────────────────────────────
 async function startCheckout() {
   if (!currentUser) {
-    window.location.href = 'auth.html?mode=signup&redirect=checkout.html';
+    window.location.href = 'auth.html?mode=signup&next=checkout.html';
     return;
   }
 
   const { data: { session } } = await sbClient.auth.getSession();
   if (!session) {
-    window.location.href = 'auth.html?mode=signin&redirect=checkout.html';
+    window.location.href = 'auth.html?mode=signin&next=checkout.html';
     return;
   }
 
