@@ -92,3 +92,41 @@ The live preview stays in its preview column throughout the wizard. Every step h
 Michaela also operates Crafty Mouse Gifts, a handmade product business.
 
 The practical maker perspective is useful when evaluating CLPeasy UX, pricing, onboarding, and product features.
+
+## Known issues (open) — logged 28 Aug 2026
+
+**Print Sheet Composer (print.html) does not replicate the actual label.**
+Reported by Michaela at end of a session, to be investigated and fixed in a
+future session — not yet looked into. Screenshots showed: a saved label
+("hjfhjfh", Scented Candle, custom rectangle) whose real Label Preview (in
+the builder) shows the full compliant label — product name, CLPEasy
+branding, "SCENTED CANDLE WARNING", hazard diamond pictogram, H/P
+statement text, GHS pictogram row, and business-details footer. But the
+Print Sheet Composer's own Sheet Preview (right-hand pane, 35mm-circle
+template selected) rendered each position on the sheet as an empty dashed
+outline circle with no label content inside — the sheet grid did not
+reflect what the actual label contains. Needs investigation into how
+print.html reads/renders the saved label data into each sheet position
+before any fix is attempted; not yet root-caused.
+
+## Session log — 28 Aug 2026
+
+Fixed and verified live on clpeasy.com this session (see git history on
+`main` for exact commits): sidebar logo size mismatch between
+Dashboard/Account and Create Label/My Labels; Sign-in nav link not
+updating to show signed-in state on knowledge.html and index.html (root
+cause: Netlify strips `.html` from served link hrefs, so exact-href-match
+selectors silently never matched — the same root cause also broke the
+homepage's signed-in "Start free trial" -> "Go to builder" CTA swap, fixed
+the same way); account.html Billing card showing a misleading plan/cycle
+during free trial; three SECURITY DEFINER trigger functions
+(`handle_new_user`, `notify_beta_tester_email`,
+`protect_profile_billing_columns`) were callable directly via the
+PostgREST RPC endpoint by anon/authenticated -- revoked (first attempt
+only revoked from the two roles directly and did nothing, because Postgres
+had granted EXECUTE to PUBLIC by default; the working fix revokes from
+PUBLIC and re-grants to the function owner). Confirmed the new-user
+signup trigger still fires correctly after the revoke (tested via a
+rolled-back transaction). Leaked password protection remains disabled --
+confirmed it requires a Supabase Pro-plan upgrade, not actionable on the
+current Free plan.
