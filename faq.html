@@ -6,6 +6,10 @@
 <title>FAQ Updates — CLPeasy</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  /* 28 Aug 2026 fix: the logo badge/wordmark below is set in DM Sans (matching
+     the site-wide standard logo), but this page never loaded that font --
+     only Inter -- so it was silently falling back to a generic sans-serif. */
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@700;900&display=swap');
   :root {
     --teal: #4C9BB0;
     --teal-dark: #3a7d8f;
@@ -33,8 +37,8 @@
      with. Nav height bumped 60px->72px to match, since the larger badge
      needs the room every other page already gives it. */
   .nav-logo { display: flex; align-items: center; text-decoration: none; }
-  .nav-badge { width: 52px; height: 52px; border-radius: 50%; background: var(--teal); color: white; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; letter-spacing: -1px; flex-shrink: 0; }
-  .nav-easy { font-size: 26px; font-weight: 900; color: var(--teal); margin-left: 4px; letter-spacing: -1px; }
+  .nav-badge { width: 52px; height: 52px; border-radius: 50%; background: var(--teal); color: white; display: flex; align-items: center; justify-content: center; font-family: 'DM Sans', sans-serif; font-size: 22px; font-weight: 900; letter-spacing: -1px; flex-shrink: 0; }
+  .nav-easy { font-family: 'DM Sans', sans-serif; font-size: 26px; font-weight: 900; color: var(--teal); margin-left: 4px; letter-spacing: -1px; }
   .nav-links { display: flex; gap: 24px; }
   .nav-links a { text-decoration: none; color: var(--text-mid); font-size: 14px; font-weight: 500; transition: color 0.15s; }
   .nav-links a:hover { color: var(--teal); }
