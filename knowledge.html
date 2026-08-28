@@ -839,7 +839,7 @@ async function askCLP() {
     if(!session) return;
     var navLinks = document.querySelector('.nav-links');
     if(!navLinks) return;
-    var signinLink = navLinks.querySelector('a[href="auth.html?mode=signin"]');
+    var signinLink = navLinks.querySelector('a[href*="mode=signin"]');
     if(signinLink){
       signinLink.textContent = session.user.email;
       signinLink.href = 'account.html';

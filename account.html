@@ -832,8 +832,13 @@ function renderAccount() {
   }
 
   // Billing details
-  document.getElementById('billing-plan').textContent = planLabel + ' · ' + (u.billing_cycle === 'annual' ? 'Annual' : 'Monthly');
-  document.getElementById('billing-cycle').textContent = u.billing_cycle === 'annual' ? 'Annual (paid yearly)' : 'Monthly';
+  // 28 Aug 2026 fix: these two lines used to render unconditionally, so a
+  // trialing account (no plan chosen, nothing billed yet) showed a
+  // misleading "Easy Start · Monthly" here even though billing-next and
+  // billing-card correctly show "—" for the same trial state below. Gated
+  // the same way so all four Billing fields agree during trial.
+  document.getElementById('billing-plan').textContent = u.status === 'trialing' ? '—' : planLabel + ' · ' + (u.billing_cycle === 'annual' ? 'Annual' : 'Monthly');
+  document.getElementById('billing-cycle').textContent = u.status === 'trialing' ? '—' : (u.billing_cycle === 'annual' ? 'Annual (paid yearly)' : 'Monthly');
   document.getElementById('billing-next').textContent = u.status === 'active' ? u.next_payment : '—';
   document.getElementById('billing-card').textContent = u.card_last4 ? `Visa ending ${u.card_last4}` : '—';
   document.getElementById('stripe-portal-link').style.display =

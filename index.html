@@ -1172,7 +1172,7 @@ _sb.auth.getSession().then(async ({data:{session}})=>{
     // Update nav
     const navLinks=document.querySelector('.nav-links');
     if(navLinks){
-      const signinLink=navLinks.querySelector('a[href="auth.html?mode=signin"]');
+      const signinLink=navLinks.querySelector('a[href*="mode=signin"]');
       if(signinLink){
         signinLink.textContent=session.user.email;
         signinLink.href='account.html';
