@@ -353,7 +353,10 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
 
     <!-- SUBSCRIPTION CARD -->
     <div class="card" id="sub-card">
-      <div class="card-title"><span>💳</span> Subscription</div>
+      <!-- 28 Aug 2026: eyebrow label added to match Michaela's approved
+           "Current Plan" reference design (clpeasy.com/dashboard) — replaces
+           the old "💳 Subscription" header, same card/logic underneath. -->
+      <div class="su-label">Current Plan</div>
 
       <div class="plan-row">
         <div class="plan-name" id="plan-name">Easy Start</div>
@@ -396,11 +399,21 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
 
     <!-- ACCOUNT DETAILS CARD -->
     <div class="card">
-      <div class="card-title"><span>👤</span> Account</div>
+      <!-- 28 Aug 2026: restyled to match Michaela's approved "Account Details"
+           reference design (clpeasy.com/dashboard) — eyebrow label, added
+           Plan/Status rows (existing planLabel/u.status values, no new data),
+           added password-reset action, and dropped the "Contact support"
+           button since it's redundant with the sidebar's own Support link
+           (present in the reference design's sidebar too, so nothing is
+           actually lost). -->
+      <div class="su-label">Account Details</div>
       <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value" id="acct-email">—</span></div>
+      <div class="detail-row"><span class="detail-label">Plan</span><span class="detail-value" id="acct-plan">—</span></div>
+      <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value" id="acct-status">—</span></div>
       <div class="detail-row"><span class="detail-label">Member since</span><span class="detail-value" id="acct-since">—</span></div>
       <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
-        <a href="support.html" target="_blank" rel="noopener" class="btn btn-outline">Contact support</a>
+        <button type="button" class="btn btn-outline" onclick="sendPasswordReset()">Send password reset email</button>
+        <button type="button" class="btn btn-outline" onclick="signOut()">Sign out</button>
       </div>
     </div>
 
@@ -696,6 +709,12 @@ function renderAccount() {
 
   document.getElementById('nav-email').textContent = currentUser.email;
   document.getElementById('acct-email').textContent = currentUser.email;
+  // Same "Easy Trial" / planLabel value already used for the plan-name/badge
+  // above — no new data, just also surfaced in the Account Details rows to
+  // match the approved reference design.
+  document.getElementById('acct-plan').textContent =
+    u.status === 'trialing' ? 'Easy Trial™' : planLabel;
+  document.getElementById('acct-status').textContent = u.status;
   document.getElementById('acct-since').textContent = u.created_at;
 
   // Sidebar bottom block (24 Aug 2026, GUI redesign) — reuses the same
@@ -1188,6 +1207,28 @@ async function openStripePortal() {
 async function signOut() {
   await _sb.auth.signOut();
   window.location.href = 'index.html';
+}
+
+// 28 Aug 2026: new "Send password reset email" action on the Account Details
+// card (approved reference design). Uses the same _sb client and
+// resetPasswordForEmail() call already proven working on auth.html's own
+// reset flow; the redirect target is auth.html itself (which already knows
+// how to handle the resulting recovery link), built directly rather than via
+// auth.html's getAuthCallbackUrl() helper since that helper depends on
+// auth.html-only state (postAuthDestination) that doesn't exist here.
+async function sendPasswordReset() {
+  if (!currentUser || !currentUser.email) return;
+  try {
+    const redirectTo = new URL('/auth.html', window.location.origin).toString();
+    const { error } = await _sb.auth.resetPasswordForEmail(currentUser.email, { redirectTo });
+    if (error) {
+      alert(error.message || 'Something went wrong — please try again or contact support@clpeasy.com');
+      return;
+    }
+    alert('Password reset email sent to ' + currentUser.email + '. Check your inbox.');
+  } catch (e) {
+    alert('Something went wrong — please try again or contact support@clpeasy.com');
+  }
 }
 </script>
 <script>
