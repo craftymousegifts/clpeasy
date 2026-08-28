@@ -752,7 +752,14 @@ function renderAccount() {
   // Win-back banner
   if (u.status === 'cancelled') {
     document.getElementById('winback-banner').style.display = 'block';
-    document.getElementById('winback-days').textContent = u.cancelled_days_remaining || 30;
+    // 28 Aug 2026 fix: the banner markup has no #winback-days element (the day
+    // count is already shown via the renewal-line above), so this used to
+    // throw and silently abort the rest of renderAccount() for every
+    // cancelled-status account -- billing details, the "Update payment
+    // method" link, and the action-row buttons never rendered. Guarded so it
+    // only writes to the element if a future banner redesign adds it back.
+    const winbackDaysEl = document.getElementById('winback-days');
+    if (winbackDaysEl) winbackDaysEl.textContent = u.cancelled_days_remaining || 30;
   }
 
   // Download bar
