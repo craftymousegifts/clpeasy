@@ -263,6 +263,10 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
   .plan-row{flex-direction:column;align-items:flex-start;}
   #nav-email{display:none !important;}
   .main{padding:24px 14px 60px;}
+  /* 28 Aug 2026: .acct-2col's grid-template-columns is set inline
+     (1.4fr 1fr), so it needs !important here to be overridden — same fix
+     pattern already used for dashboard.html's .dash-quicklinks-grid. */
+  .acct-2col{grid-template-columns:1fr !important;}
 }
 
 /* SHARED TRUST FOOTER — same across Dashboard, Create Label, My Labels, Account */
@@ -351,69 +355,83 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
       <button class="winback-btn" onclick="openModal('resubscribe')">Reactivate my account →</button>
     </div>
 
-    <!-- SUBSCRIPTION CARD -->
-    <div class="card" id="sub-card">
-      <!-- 28 Aug 2026: eyebrow label added to match Michaela's approved
-           "Current Plan" reference design (clpeasy.com/dashboard) — replaces
-           the old "💳 Subscription" header, same card/logic underneath. -->
-      <div class="su-label">Current Plan</div>
+    <!-- 28 Aug 2026: wrapped in the same 2-column grid ratio (1.4fr/1fr)
+         already used for dashboard.html's Plan & Billing / Recent Labels
+         layout, so Current Plan + Billing sit in a left column and Account
+         Details in a right column, matching the approved reference design
+         (clpeasy.com/dashboard) instead of stretching one narrow column of
+         cards across the full page width, which left a large empty gap
+         inside each row on wide screens. Collapses to one column on mobile
+         via .acct-2col below (no known-broken-on-mobile precedent carried
+         over — dashboard.html's own copy of this grid has no mobile rule
+         either, a separate pre-existing issue, logged, not fixed here). -->
+    <div class="acct-2col" style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;align-items:start;">
+      <div>
+        <!-- SUBSCRIPTION CARD -->
+        <div class="card" id="sub-card">
+          <!-- 28 Aug 2026: eyebrow label added to match Michaela's approved
+               "Current Plan" reference design (clpeasy.com/dashboard) — replaces
+               the old "💳 Subscription" header, same card/logic underneath. -->
+          <div class="su-label">Current Plan</div>
 
-      <div class="plan-row">
-        <div class="plan-name" id="plan-name">Easy Start</div>
-        <div class="plan-badge active" id="plan-badge">Active</div>
-      </div>
-      <div class="renewal-line" id="renewal-line"></div>
+          <div class="plan-row">
+            <div class="plan-name" id="plan-name">Easy Start</div>
+            <div class="plan-badge active" id="plan-badge">Active</div>
+          </div>
+          <div class="renewal-line" id="renewal-line"></div>
 
-      <!-- DOWNLOAD USAGE BAR -->
-      <div id="dl-section">
-        <div class="dl-label">
-          <span class="dl-label-text">Downloads this month</span>
-          <span class="dl-label-count" id="dl-count">— / —</span>
+          <!-- DOWNLOAD USAGE BAR -->
+          <div id="dl-section">
+            <div class="dl-label">
+              <span class="dl-label-text">Downloads this month</span>
+              <span class="dl-label-count" id="dl-count">— / —</span>
+            </div>
+            <div class="dl-bar-wrap">
+              <div class="dl-bar ok" id="dl-bar" style="width:0%"></div>
+            </div>
+            <div class="dl-note" id="dl-note">Resets on your next billing date. Re-downloading the same label within 7 days is free.</div>
+            <button class="topup-btn" id="topup-btn" style="display:none;" onclick="buyTopup()">+ Buy more downloads</button>
+          </div>
+          <div id="topup-credits-section" style="display:none;margin-top:10px;font-size:13px;color:var(--teal-dark);font-weight:600;">
+            <span id="topup-credits-count"></span> purchased top-up credits available — never expire, used after your monthly allowance.
+          </div>
+
+          <div class="action-row" id="action-row">
+            <!-- Populated by JS based on plan state -->
+          </div>
         </div>
-        <div class="dl-bar-wrap">
-          <div class="dl-bar ok" id="dl-bar" style="width:0%"></div>
+
+        <!-- BILLING DETAILS CARD -->
+        <div class="card">
+          <div class="card-title"><span>🧾</span> Billing</div>
+          <div class="detail-row"><span class="detail-label">Plan</span><span class="detail-value" id="billing-plan">—</span></div>
+          <div class="detail-row"><span class="detail-label">Billing cycle</span><span class="detail-value" id="billing-cycle">—</span></div>
+          <div class="detail-row"><span class="detail-label">Next payment</span><span class="detail-value" id="billing-next">—</span></div>
+          <div class="detail-row"><span class="detail-label">Payment method</span><span class="detail-value" id="billing-card">—</span></div>
+          <div style="margin-top:16px;">
+            <a href="#" id="stripe-portal-link" onclick="openStripePortal();return false;" style="display:none;font-size:13px;color:var(--teal);font-weight:600;text-decoration:none;">Update payment method via Stripe →</a>
+          </div>
         </div>
-        <div class="dl-note" id="dl-note">Resets on your next billing date. Re-downloading the same label within 7 days is free.</div>
-        <button class="topup-btn" id="topup-btn" style="display:none;" onclick="buyTopup()">+ Buy more downloads</button>
-      </div>
-      <div id="topup-credits-section" style="display:none;margin-top:10px;font-size:13px;color:var(--teal-dark);font-weight:600;">
-        <span id="topup-credits-count"></span> purchased top-up credits available — never expire, used after your monthly allowance.
       </div>
 
-      <div class="action-row" id="action-row">
-        <!-- Populated by JS based on plan state -->
-      </div>
-    </div>
-
-    <!-- BILLING DETAILS CARD -->
-    <div class="card">
-      <div class="card-title"><span>🧾</span> Billing</div>
-      <div class="detail-row"><span class="detail-label">Plan</span><span class="detail-value" id="billing-plan">—</span></div>
-      <div class="detail-row"><span class="detail-label">Billing cycle</span><span class="detail-value" id="billing-cycle">—</span></div>
-      <div class="detail-row"><span class="detail-label">Next payment</span><span class="detail-value" id="billing-next">—</span></div>
-      <div class="detail-row"><span class="detail-label">Payment method</span><span class="detail-value" id="billing-card">—</span></div>
-      <div style="margin-top:16px;">
-        <a href="#" id="stripe-portal-link" onclick="openStripePortal();return false;" style="display:none;font-size:13px;color:var(--teal);font-weight:600;text-decoration:none;">Update payment method via Stripe →</a>
-      </div>
-    </div>
-
-    <!-- ACCOUNT DETAILS CARD -->
-    <div class="card">
-      <!-- 28 Aug 2026: restyled to match Michaela's approved "Account Details"
-           reference design (clpeasy.com/dashboard) — eyebrow label, added
-           Plan/Status rows (existing planLabel/u.status values, no new data),
-           added password-reset action, and dropped the "Contact support"
-           button since it's redundant with the sidebar's own Support link
-           (present in the reference design's sidebar too, so nothing is
-           actually lost). -->
-      <div class="su-label">Account Details</div>
-      <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value" id="acct-email">—</span></div>
-      <div class="detail-row"><span class="detail-label">Plan</span><span class="detail-value" id="acct-plan">—</span></div>
-      <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value" id="acct-status">—</span></div>
-      <div class="detail-row"><span class="detail-label">Member since</span><span class="detail-value" id="acct-since">—</span></div>
-      <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
-        <button type="button" class="btn btn-outline" onclick="sendPasswordReset()">Send password reset email</button>
-        <button type="button" class="btn btn-outline" onclick="signOut()">Sign out</button>
+      <!-- ACCOUNT DETAILS CARD -->
+      <div class="card">
+        <!-- 28 Aug 2026: restyled to match Michaela's approved "Account Details"
+             reference design (clpeasy.com/dashboard) — eyebrow label, added
+             Plan/Status rows (existing planLabel/u.status values, no new data),
+             added password-reset action, and dropped the "Contact support"
+             button since it's redundant with the sidebar's own Support link
+             (present in the reference design's sidebar too, so nothing is
+             actually lost). -->
+        <div class="su-label">Account Details</div>
+        <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value" id="acct-email">—</span></div>
+        <div class="detail-row"><span class="detail-label">Plan</span><span class="detail-value" id="acct-plan">—</span></div>
+        <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value" id="acct-status">—</span></div>
+        <div class="detail-row"><span class="detail-label">Member since</span><span class="detail-value" id="acct-since">—</span></div>
+        <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
+          <button type="button" class="btn btn-outline" onclick="sendPasswordReset()">Send password reset email</button>
+          <button type="button" class="btn btn-outline" onclick="signOut()">Sign out</button>
+        </div>
       </div>
     </div>
 
