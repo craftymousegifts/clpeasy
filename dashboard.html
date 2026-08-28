@@ -58,7 +58,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
   position:fixed;top:0;left:0;bottom:0;z-index:300;
   transition:transform .25s ease;
 }
-.sidebar-logo{display:flex;align-items:center;gap:8px;text-decoration:none;padding:var(--shell-space-2) var(--shell-space-2) var(--shell-space-5);}
+.sidebar-logo{display:flex;align-items:center;gap:0;text-decoration:none;padding:var(--shell-space-2) var(--shell-space-2) var(--shell-space-5);}
 .sidebar-nav{display:flex;flex-direction:column;gap:2px;flex:1;}
 .sidebar-nav-item{
   display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:var(--shell-radius-control);
@@ -99,13 +99,30 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
 .su-plan{font-size:11.5px;color:var(--teal-dark);}
 .sidebar-logout{color:var(--muted);border-top:1px solid var(--border);padding-top:14px;}
 .sidebar-logout:hover{background:var(--off);color:var(--red);}
-.shell-main{flex:1;margin-left:var(--shell-sidebar-w);min-width:0;}
+.shell-main{flex:1;margin-left:var(--shell-sidebar-w);min-width:0;position:relative;isolation:isolate;}
+/* CLP SHARED BACKGROUND SHELL — identical treatment on Dashboard, Create
+   Label, My Labels and Account (27 Aug 2026, seam fix: clpeasy-region-top.png
+   and clpeasy-region-bottom.png are the same image reused twice — the bottom
+   copy's crop lands at the box's natural bottom edge so it has no seam, but
+   the top-right copy's crop edge falls in the middle of the page, which
+   showed as a hard-edged block. Fixed with a soft mask fade on that one
+   layer only, at full opacity/natural size. No overflow:hidden: some pages
+   have position:sticky descendants (mobile topbar; builder's sticky preview
+   column) it would silently break. */
 .shell-main{
   background-color:#fbfdfe;
-  background-image:url('assets/clpeasy-region-top.png'), url('assets/clpeasy-region-bottom.png');
-  background-repeat:no-repeat, no-repeat;
-  background-position:top right, bottom center;
-  background-size:38% auto, 100% auto;
+  background-image:url('assets/clpeasy-region-bottom.png');
+  background-repeat:no-repeat;
+  background-position:bottom center;
+  background-size:100% auto;
+}
+.shell-main::before{
+  content:'';position:absolute;top:0;right:0;z-index:-1;pointer-events:none;
+  width:38%;aspect-ratio:1703/913;
+  background-image:url('assets/clpeasy-region-top.png');
+  background-repeat:no-repeat;background-position:top right;background-size:auto 100%;
+  -webkit-mask-image:linear-gradient(to left,#000 55%,transparent 100%);
+  mask-image:linear-gradient(to left,#000 55%,transparent 100%);
 }
 .shell-topbar{display:none;align-items:center;gap:12px;height:var(--shell-topbar-h);padding:0 var(--shell-space-4);background:white;border-bottom:1.5px solid var(--border);position:sticky;top:0;z-index:150;}
 .shell-topbar-title{font-weight:700;font-size:15px;}
@@ -246,6 +263,11 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
   .plan-row{flex-direction:column;align-items:flex-start;}
   #nav-email{display:none !important;}
   .main{padding:24px 14px 60px;}
+  /* FIX (28 Aug 2026): .dash-quicklinks-grid's grid-template-columns is set
+     inline (repeat(3,1fr)), so it needs !important here to be overridden —
+     without this the 3 top cards stayed side-by-side and caused ~65px of
+     horizontal overflow on mobile. */
+  .dash-quicklinks-grid{grid-template-columns:1fr !important;}
 }
 
 /* SHARED TRUST FOOTER — same across Dashboard, Create Label, My Labels, Account */
@@ -273,9 +295,9 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
   <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
   <aside class="sidebar" id="sidebar">
-    <a href="index.html" class="sidebar-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span></a>
+    <a href="index.html" class="sidebar-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span><sup style="font-size:9px;font-weight:700;color:#4C9BB0;vertical-align:super;line-height:0;margin-left:1px;">™</sup></a>
     <nav class="sidebar-nav" aria-label="Main navigation">
-      <a href="dashboard.html" class="sidebar-nav-item active"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg></span>Dashboard</a>
+      <a href="dashboard.html" class="sidebar-nav-item active" aria-current="page" onclick="return false;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg></span>Dashboard</a>
       <a href="builder.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>Create Label</a>
       <a href="my-labels.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5a1 1 0 0 1 1-1h4.7l2 2.2h8.3a1 1 0 0 1 1 1V18a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1Z"/></svg></span>My Labels</a>
       <a href="knowledge.html" target="_blank" rel="noopener" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5c-1.6-1.3-4-2-6.5-2A2 2 0 0 0 3.5 6.5V17c2.6 0 5 .7 6.5 2 1.5-1.3 3.9-2 6.5-2s2-.9 2-.9V6.5c0-1.1-.9-2-2-2-2.5 0-4.9.7-6.5 2Z"/><path d="M12 6.5V19"/></svg></span>Knowledge Base</a>
@@ -287,7 +309,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
         <div class="su-label">Downloads remaining</div>
         <div class="su-count" id="su-count">—</div>
         <div class="su-bar"><span id="su-fill" style="width:0%"></span></div>
-        <a href="pricing.html" class="su-topup">Buy Top-Up →</a>
+        <a href="account.html?topup=1" target="_blank" rel="noopener" class="su-topup">Buy Top-Up →</a>
       </div>
       <div class="sidebar-profile">
         <button type="button" class="sidebar-user" id="sidebar-user" style="display:none;" aria-haspopup="true" aria-expanded="false">
@@ -316,7 +338,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
     <h1 class="page-title" id="welcome-heading">Welcome back</h1>
     <p class="page-sub">Create UK CLP labels quickly and confidently.</p>
 
-    <div class="action-row" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:20px 0;">
+    <div class="action-row dash-quicklinks-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:20px 0;">
       <div class="card">
         <div class="card-title"><span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span> Create a Label</div>
         <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Start a new label in just a few simple steps.</p>
@@ -330,20 +352,26 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
       <div class="card">
         <div class="card-title"><span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7v.5"/><path d="M12 17h.01"/></svg></span> Need Help?</div>
         <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Visit the Help Centre for guides, FAQs and more.</p>
-        <a href="knowledge.html" target="_blank" rel="noopener" class="btn btn-outline" style="display:inline-block;text-decoration:none;">Go to Help Centre</a>
+        <a href="support.html" target="_blank" rel="noopener" class="btn btn-outline" style="display:inline-block;text-decoration:none;">Go to Help Centre</a>
       </div>
     </div>
 
     <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px;">
       <div class="card">
         <div class="card-title"><span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg></span> Plan &amp; Billing</div>
-        <div class="plan-row"><span style="color:var(--muted);">Plan</span><strong id="db-plan">—</strong></div>
-        <div class="plan-row"><span style="color:var(--muted);">Status</span><strong id="db-status">—</strong></div>
-        <div class="plan-row"><span style="color:var(--muted);">Downloads</span><strong id="db-downloads">—</strong></div>
-        <div class="plan-row"><span style="color:var(--muted);">Billing cycle</span><strong id="db-cycle">—</strong></div>
-        <div style="margin-top:14px;">
-          <a href="account.html" target="_blank" rel="noopener" class="btn btn-outline" style="display:block;text-align:center;text-decoration:none;">Manage account &amp; billing</a>
+        <div class="plan-row">
+          <div class="plan-name" id="db-plan-name">—</div>
+          <div class="plan-badge" id="db-plan-badge">—</div>
         </div>
+        <div class="renewal-line" id="db-renewal-line"></div>
+        <div id="db-dl-section">
+          <div class="dl-label">
+            <span class="dl-label-text">Downloads this month</span>
+            <span class="dl-label-count" id="db-dl-count">— / —</span>
+          </div>
+          <div class="dl-bar-wrap"><div class="dl-bar ok" id="db-dl-bar" style="width:0%"></div></div>
+        </div>
+        <div class="action-row" id="db-action-row"></div>
       </div>
       <div class="card">
         <div class="card-title"><span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span> Recent labels</div>
@@ -398,13 +426,18 @@ async function fetchProfile(userId) {
   const now = new Date();
   const trialEnd = data.trial_end ? new Date(data.trial_end) : null;
   const isOnTrial = data.subscription_status === 'trialing' && trialEnd && trialEnd > now;
+  const trialDaysLeft = isOnTrial ? Math.ceil((trialEnd - now) / (1000*60*60*24)) : null;
 
   return {
     plan: data.is_pro ? 'pro' : 'start',
     status: data.subscription_status || 'inactive',
     billing_cycle: data.billing_cycle || 'monthly',
+    next_payment: data.next_payment
+      ? new Date(data.next_payment).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})
+      : null,
     downloads_used: data.downloads_used || 0,
     downloads_limit: data.downloads_limit ?? (data.is_pro ? 30 : 20),
+    trial_ends: trialDaysLeft ? `${trialDaysLeft} days` : null,
     created_at: new Date(data.created_at).toLocaleDateString('en-GB', {month:'long',year:'numeric'}),
     email: data.email,
     full_name: data.full_name,
@@ -451,16 +484,62 @@ function renderDashboard() {
   const firstName = (u.full_name || currentUser.email.split('@')[0] || 'there').split(' ')[0];
   document.getElementById('welcome-heading').textContent = 'Welcome back, ' + firstName;
 
-  // Plan & Billing card
-  const statusLabel = u.status === 'trialing' ? 'Free Trial' :
+  // Plan & Billing card (redesigned 28 Aug 2026 — Michaela: free trial accounts
+  // must not mention billing at all; only an active subscription sees billing
+  // management + top-ups. Mirrors account.html's Subscription-card pattern.)
+  document.getElementById('db-plan-name').textContent = u.status === 'trialing' ? 'Easy Trial™' : planLabel;
+
+  const dbBadge = document.getElementById('db-plan-badge');
+  dbBadge.textContent = u.status === 'trialing' ? 'Free trial' :
     u.status === 'active' ? 'Active' :
     u.status === 'paused' ? 'Paused' :
     u.status === 'cancelled' ? 'Cancelled' : u.status;
-  document.getElementById('db-plan').textContent = u.status === 'trialing' ? 'Easy Trial™' : planLabel;
-  document.getElementById('db-status').textContent = statusLabel;
-  document.getElementById('db-downloads').textContent =
-    (Math.max(0,u.downloads_limit-u.downloads_used)) + ' of ' + u.downloads_limit + ' remaining';
-  document.getElementById('db-cycle').textContent = u.billing_cycle === 'annual' ? 'Annual' : 'Monthly';
+  // NOTE: CSS only defines .plan-badge.lapsed (not .cancelled) — same
+  // pre-existing naming mismatch found in account.html's own badge, mapped
+  // here so this new card doesn't render an unstyled "Cancelled" pill.
+  dbBadge.className = 'plan-badge ' + (u.status === 'cancelled' ? 'lapsed' : u.status);
+
+  const dbRenewal = document.getElementById('db-renewal-line');
+  if (u.status === 'trialing') {
+    dbRenewal.innerHTML = `Trial ends in <strong>${u.trial_ends || '14 days'}</strong>. No card required until you choose a plan.`;
+  } else if (u.status === 'active') {
+    dbRenewal.innerHTML = u.next_payment ? `Next payment on <strong>${u.next_payment}</strong>` : '';
+  } else if (u.status === 'paused') {
+    dbRenewal.innerHTML = 'Subscription paused';
+  } else if (u.status === 'cancelled') {
+    dbRenewal.innerHTML = 'Subscription cancelled';
+  } else {
+    dbRenewal.innerHTML = '';
+  }
+
+  // Download bar — only meaningful while actively consuming an allowance
+  const dbDlSection = document.getElementById('db-dl-section');
+  if (u.status === 'active' || u.status === 'trialing') {
+    dbDlSection.style.display = '';
+    const dbLeft = Math.max(0, u.downloads_limit - u.downloads_used);
+    const dbPct = Math.min(Math.round(u.downloads_used / u.downloads_limit * 100), 100);
+    document.getElementById('db-dl-count').textContent = dbLeft + ' of ' + u.downloads_limit + ' remaining';
+    const dbBar = document.getElementById('db-dl-bar');
+    dbBar.style.width = dbPct + '%';
+    dbBar.className = 'dl-bar ' + (dbPct >= 100 ? 'full' : dbPct >= 75 ? 'warn' : 'ok');
+  } else {
+    dbDlSection.style.display = 'none';
+  }
+
+  // Action buttons — trial: no billing mention, just the upgrade CTA.
+  // Active: billing management + top-ups. Paused/cancelled: billing
+  // management only (matches account.html's stripe-portal-link gating).
+  const dbActions = document.getElementById('db-action-row');
+  if (u.status === 'trialing') {
+    dbActions.innerHTML = `<a href="pricing.html" target="_blank" rel="noopener" class="btn btn-teal">Choose a plan</a>`;
+  } else if (u.status === 'active') {
+    dbActions.innerHTML = `
+      <a href="account.html" target="_blank" rel="noopener" class="btn btn-outline">Manage account &amp; billing</a>
+      <a href="account.html?topup=1" target="_blank" rel="noopener" class="btn btn-outline">Buy top-up downloads</a>
+    `;
+  } else {
+    dbActions.innerHTML = `<a href="account.html" target="_blank" rel="noopener" class="btn btn-outline">Manage account &amp; billing</a>`;
+  }
 
   // Recent labels (genuine, from the same per-account storage My Labels uses)
   const saved = getSaved();

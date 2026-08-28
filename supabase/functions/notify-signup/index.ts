@@ -3,6 +3,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2?target=deno";
 
 const BREVO_API_KEY       = Deno.env.get("BREVO_API_KEY")!;
 const ALERT_TO            = "support@clpeasy.com";
@@ -10,6 +11,11 @@ const FROM_EMAIL          = "support@clpeasy.com";
 const FROM_NAME           = "CLPeasy™";
 const BREVO_AUTOMATION_ID = Deno.env.get("BREVO_AUTOMATION_ID") ?? "";
 const BREVO_LIST_ID       = parseInt(Deno.env.get("BREVO_LIST_ID") ?? "2");
+
+const supabase = createClient(
+  Deno.env.get("SUPABASE_URL")!,
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+);
 
 function safeDate(val: unknown): Date {
   if (!val) return new Date();
@@ -80,6 +86,40 @@ serve(async (req) => {
       );
       automationResult = `status ${automationResp.status}`;
       console.log("Brevo automation trigger:", automationResult);
+    }
+
+    // ── IDEMPOTENCY GATE: only ever send ONE admin alert per user_id ──
+    // notify-signup is called twice per real signup (auth.html frontend +
+    // the "on-user-signup" DB webhook), ~150ms apart. Claim the user_id via
+    // a primary-key insert; whichever call wins the insert sends the alert,
+    // the loser skips it. Steps 1-2 (Brevo contact + automation) above are
+    // unaffected and still run on every call as before.
+    let shouldSendAlert = true;
+    if (user_id) {
+      const { error: claimError } = await supabase
+        .from("signup_notifications")
+        .insert({ user_id });
+      if (claimError) {
+        if (claimError.code === "23505") {
+          // unique_violation — another call already claimed this user_id
+          console.log("notify-signup: duplicate call for user_id, skipping admin alert:", user_id);
+          shouldSendAlert = false;
+        } else {
+          // Unexpected DB error — fail open so a real signup is never silently unreported
+          console.error("signup_notifications insert error (failing open):", claimError.message);
+        }
+      }
+    } else {
+      console.log("notify-signup: no user_id in payload — skipping idempotency check, failing open");
+    }
+
+    if (!shouldSendAlert) {
+      return new Response(JSON.stringify({
+        success: true,
+        brevo_contact: brevoContact.status,
+        automation: automationResult,
+        alert: "skipped — duplicate notification for this user_id"
+      }), { status: 200 });
     }
 
     // ── STEP 3: Admin alert email ─────────────────────────────

@@ -6,6 +6,10 @@
 <title>Terms of Service — CLPeasy</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  /* 28 Aug 2026 fix: the logo badge/wordmark below is set in DM Sans (matching
+     the site-wide standard logo), but this page never loaded that font --
+     only Inter -- so it was silently falling back to a generic sans-serif. */
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@700;900&display=swap');
   :root {
     --teal: #4C9BB0; --teal-dark: #3a7d8f; --teal-light: #d6eef4; --teal-mid: #c8eae6;
     --text: #1a1a1a; --text-mid: #4a5568; --text-light: #718096;
@@ -14,8 +18,15 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.7; }
 
-  nav { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 50; }
-  .nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 700; font-size: 17px; color: var(--teal); }
+  nav { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 72px; position: sticky; top: 0; z-index: 50; }
+  /* 28 Aug 2026 fix: brought this page's logo (was 28px badge, 700-weight
+     "easy") in line with the site-wide standard (52px badge, 900-weight --
+     see pricing.html/dashboard.html/etc), which it was visibly inconsistent
+     with. Nav height bumped 60px->72px to match, since the larger badge
+     needs the room every other page already gives it. */
+  .nav-logo { display: flex; align-items: center; text-decoration: none; }
+  .nav-badge { width: 52px; height: 52px; border-radius: 50%; background: var(--teal); color: white; display: flex; align-items: center; justify-content: center; font-family: 'DM Sans', sans-serif; font-size: 22px; font-weight: 900; letter-spacing: -1px; flex-shrink: 0; }
+  .nav-easy { font-family: 'DM Sans', sans-serif; font-size: 26px; font-weight: 900; color: var(--teal); margin-left: 4px; letter-spacing: -1px; }
   .nav-links { display: flex; gap: 24px; }
   .nav-links a { text-decoration: none; color: var(--text-mid); font-size: 14px; font-weight: 500; }
   .nav-links a:hover { color: var(--teal); }
@@ -62,14 +73,13 @@
 
 <nav>
   <a class="nav-logo" href="index.html">
-    <svg viewBox="0 0 28 28" fill="none" width="28" height="28"><rect width="28" height="28" rx="7" fill="#4C9BB0"/><text x="5" y="20" font-family="Inter,sans-serif" font-size="14" font-weight="700" fill="white">CLP</text></svg>
-    CLPeasy
+    <div class="nav-badge">CLP</div><span class="nav-easy">easy</span><sup style="font-size:9px;font-weight:700;color:#4C9BB0;vertical-align:super;line-height:0;margin-left:1px;">™</sup>
   </a>
   <div class="nav-links">
     <a href="index.html">Home</a>
-    <a href="pricing.html">Pricing</a>
-    <a href="faq.html">FAQ</a>
-    <a href="compliance.html">Compliance</a>
+    <a href="pricing.html" target="_blank" rel="noopener">Pricing</a>
+    <a href="faq.html" target="_blank" rel="noopener">FAQ</a>
+    <a href="compliance.html" target="_blank" rel="noopener">Compliance</a>
   </div>
 </nav>
 

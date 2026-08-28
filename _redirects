@@ -1,3 +1,26 @@
 # Reverse proxy: auth.clpeasy.com → Supabase auth endpoint
 # Makes Google OAuth show "auth.clpeasy.com" instead of Supabase project URL
 https://auth.clpeasy.com/*  https://qvkosdqcryrcfbjtaxic.supabase.co/:splat  200!
+
+# Retired/internal pages must not be publicly served from the static publish root.
+/beta-archived.html          /  404!
+/beta-feedback.html          /  404!
+/clpeasy-flow.html           /  404!
+/coming-soon.html            /  404!
+/link-checker.html           /  404!
+/monitor.html                /  404!
+/packagemonitor.html         /  404!
+/renewal-reminder-email.html /  404!
+/scrum.html                  /  404!
+
+# Repository-only source, tests and project notes are not website routes.
+/docs/*                      /  404!
+/tests/*                     /  404!
+/supabase/*                  /  404!
+/*.sql                       /  404!
+/*.ts                        /  404!
+/package.json                /  404!
+/package-lock.json           /  404!
+/render-test.js              /  404!
+/AGENTS.md                   /  404!
+/README.md                   /  404!
