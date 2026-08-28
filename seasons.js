@@ -15,6 +15,24 @@
 
   const TEAL = '#4C9BB0';
 
+  // Particle animation handle + one-shot stop timer, shared by addParticles()
+  // and injectFooterBanner() so the effect can be stopped from either place.
+  let particleRAF = null;
+  let particleCanvasEl = null;
+  let particleStopTimer = null;
+
+  function stopParticles() {
+    if (particleStopTimer) { clearTimeout(particleStopTimer); particleStopTimer = null; }
+    if (particleRAF) { cancelAnimationFrame(particleRAF); particleRAF = null; }
+    if (particleCanvasEl) {
+      const el = particleCanvasEl;
+      particleCanvasEl = null;
+      el.style.transition = 'opacity 0.6s ease';
+      el.style.opacity = '0';
+      setTimeout(() => el.remove(), 600);
+    }
+  }
+
   const MONTHS = [
     {
       name: 'January',
@@ -243,6 +261,7 @@
     canvas.id = 'clpeasy-particles';
     canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:0.4;';
     document.body.appendChild(canvas);
+    particleCanvasEl = canvas;
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -292,10 +311,13 @@
         if (p.x > canvas.width + 20) p.x = -20;
         if (p.x < -20) p.x = canvas.width + 20;
       });
-      requestAnimationFrame(draw);
+      particleRAF = requestAnimationFrame(draw);
     }
     draw();
     window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+    // Stop the effect after 60s even if the banner never appears/dismisses
+    // (e.g. it was already dismissed earlier this session).
+    particleStopTimer = setTimeout(stopParticles, 60000);
   }
 
   // ── TOP STRIPE ─────────────────────────────────────────────────
@@ -407,12 +429,14 @@
         setTimeout(() => {
           banner.style.transform = 'translateY(100%)';
           sessionStorage.setItem(dismissKey, '1');
+          stopParticles();
         }, 8000);
       }, 4000);
     }
     document.getElementById('clpeasy-banner-close').addEventListener('click', () => {
       banner.style.transform = 'translateY(100%)';
       sessionStorage.setItem(dismissKey, '1');
+      stopParticles();
     });
   }
 

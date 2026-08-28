@@ -53,6 +53,8 @@
     letter-spacing: -0.3px;
   }
   .nav-logo svg { width: 28px; height: 28px; }
+  .nav-badge { width: 28px; height: 28px; border-radius: 50%; background: var(--teal); color: white; display: flex; align-items: center; justify-content: center; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 900; letter-spacing: -1px; flex-shrink: 0; }
+  .nav-easy { font-weight: 700; font-size: 17px; color: var(--teal); letter-spacing: -0.3px; }
   .nav-links { display: flex; gap: 24px; }
   .nav-links a {
     text-decoration: none;
@@ -313,17 +315,13 @@
 
 <nav>
   <a class="nav-logo" href="index.html">
-    <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="28" height="28" rx="7" fill="#4C9BB0"/>
-      <text x="5" y="20" font-family="Inter,sans-serif" font-size="14" font-weight="700" fill="white">CLP</text>
-    </svg>
-    CLPeasy
+    <div class="nav-badge">CLP</div><span class="nav-easy">easy</span><sup style="font-size:9px;font-weight:700;color:#4C9BB0;vertical-align:super;line-height:0;margin-left:1px;">™</sup>
   </a>
   <div class="nav-links">
     <a href="index.html">Home</a>
-    <a href="pricing.html">Pricing</a>
-    <a href="faq.html">FAQ</a>
-    <a href="terms.html">Terms</a>
+    <a href="pricing.html" target="_blank" rel="noopener">Pricing</a>
+    <a href="faq.html" target="_blank" rel="noopener">FAQ</a>
+    <a href="terms.html" target="_blank" rel="noopener">Terms</a>
   </div>
 </nav>
 

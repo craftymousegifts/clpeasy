@@ -185,7 +185,17 @@ Deno.serve(async (req) => {
 
         // ── SUBSCRIPTION PURCHASE ────────────────────────────────
         const plan = getPlanFromPriceId(priceId!);
-        await supabase.from('subscriptions').upsert({
+        // FIX (28 Aug 2026): this upsert's error was previously discarded —
+        // a failure here (e.g. a future schema/permission change) left the
+        // customer showing subscription_status:'active' on their profile
+        // with no row in `subscriptions` at all, breaking the Stripe billing
+        // portal (create-portal-session 404s with no stripe_customer_id to
+        // hand it). Logging only, not throwing — the idempotency claim above
+        // has already been made, so aborting here would make Stripe's retry
+        // of this event get silently skipped as a "duplicate" instead of
+        // actually reprocessing; profile/plan activation below must still
+        // proceed so the customer isn't blocked over a logging concern.
+        const { error: subUpsertError } = await supabase.from('subscriptions').upsert({
           user_id: userId,
           stripe_customer_id: customerId,
           stripe_subscription_id: subscriptionId,
@@ -194,6 +204,11 @@ Deno.serve(async (req) => {
           status: 'active',
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' });
+        if (subUpsertError) {
+          console.error('❌ subscriptions upsert FAILED (checkout.session.completed):', {
+            userId, error: subUpsertError.message, code: subUpsertError.code, details: subUpsertError.details,
+          });
+        }
 
         await applyProfilePlan(userId, priceId!);
         await supabase.from('profiles').update({ subscription_status: 'active' }).eq('id', userId);
@@ -223,7 +238,7 @@ Deno.serve(async (req) => {
         const plan    = getPlanFromPriceId(priceId!);
         const status  = subscription.status === 'active' ? 'active' : 'inactive';
 
-        await supabase.from('subscriptions').upsert({
+        const { error: subUpsertError2 } = await supabase.from('subscriptions').upsert({
           user_id: userId,
           stripe_subscription_id: subscription.id,
           price_id: priceId,
@@ -231,6 +246,11 @@ Deno.serve(async (req) => {
           status: status,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' });
+        if (subUpsertError2) {
+          console.error('❌ subscriptions upsert FAILED (customer.subscription.updated):', {
+            userId, error: subUpsertError2.message, code: subUpsertError2.code, details: subUpsertError2.details,
+          });
+        }
 
         // ── Terminal state can arrive via 'updated' instead of 'deleted' in
         // some flows (e.g. exhausted payment retries). Treat it as a real
@@ -338,13 +358,18 @@ if (profileStatus) {
         const userId = subscription.metadata?.userId;
         if (!userId) break;
 
-        await supabase.from('subscriptions').upsert({
+        const { error: subUpsertError3 } = await supabase.from('subscriptions').upsert({
           user_id: userId,
           stripe_subscription_id: subscription.id,
           status: 'cancelled',
           plan: 'free',
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' });
+        if (subUpsertError3) {
+          console.error('❌ subscriptions upsert FAILED (customer.subscription.deleted):', {
+            userId, error: subUpsertError3.message, code: subUpsertError3.code, details: subUpsertError3.details,
+          });
+        }
 
         await downgradeToFree(userId);
 

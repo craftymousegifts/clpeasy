@@ -16,6 +16,8 @@
 
   nav { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 50; }
   .nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 700; font-size: 17px; color: var(--teal); }
+  .nav-badge { width: 28px; height: 28px; border-radius: 50%; background: var(--teal); color: white; display: flex; align-items: center; justify-content: center; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 900; letter-spacing: -1px; flex-shrink: 0; }
+  .nav-easy { font-weight: 700; font-size: 17px; color: var(--teal); }
   .nav-links { display: flex; gap: 24px; }
   .nav-links a { text-decoration: none; color: var(--text-mid); font-size: 14px; font-weight: 500; }
   .nav-links a:hover { color: var(--teal); }
@@ -62,14 +64,13 @@
 
 <nav>
   <a class="nav-logo" href="index.html">
-    <svg viewBox="0 0 28 28" fill="none" width="28" height="28"><rect width="28" height="28" rx="7" fill="#4C9BB0"/><text x="5" y="20" font-family="Inter,sans-serif" font-size="14" font-weight="700" fill="white">CLP</text></svg>
-    CLPeasy
+    <div class="nav-badge">CLP</div><span class="nav-easy">easy</span><sup style="font-size:9px;font-weight:700;color:#4C9BB0;vertical-align:super;line-height:0;margin-left:1px;">™</sup>
   </a>
   <div class="nav-links">
     <a href="index.html">Home</a>
-    <a href="pricing.html">Pricing</a>
-    <a href="faq.html">FAQ</a>
-    <a href="compliance.html">Compliance</a>
+    <a href="pricing.html" target="_blank" rel="noopener">Pricing</a>
+    <a href="faq.html" target="_blank" rel="noopener">FAQ</a>
+    <a href="compliance.html" target="_blank" rel="noopener">Compliance</a>
   </div>
 </nav>
 
