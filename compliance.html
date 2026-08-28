@@ -37,24 +37,25 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 60px;
+    height: 72px;
     position: sticky;
     top: 0;
     z-index: 50;
   }
+  /* 28 Aug 2026 fix: this page's logo used a smaller, lighter-weight treatment
+     (28px badge, 700-weight "easy") than every other page on the site (52px
+     badge, 900-weight "easy" -- see pricing.html/dashboard.html/etc), which
+     read as visibly inconsistent branding. Brought in line with the
+     site-wide standard; nav height bumped 60px->72px to match, since the
+     larger badge needs the room every other page already gives it. */
   .nav-logo {
     display: flex;
     align-items: center;
-    gap: 8px;
     text-decoration: none;
-    font-weight: 700;
-    font-size: 17px;
-    color: var(--teal);
-    letter-spacing: -0.3px;
   }
   .nav-logo svg { width: 28px; height: 28px; }
-  .nav-badge { width: 28px; height: 28px; border-radius: 50%; background: var(--teal); color: white; display: flex; align-items: center; justify-content: center; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 900; letter-spacing: -1px; flex-shrink: 0; }
-  .nav-easy { font-weight: 700; font-size: 17px; color: var(--teal); letter-spacing: -0.3px; }
+  .nav-badge { width: 52px; height: 52px; border-radius: 50%; background: var(--teal); color: white; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; letter-spacing: -1px; flex-shrink: 0; }
+  .nav-easy { font-size: 26px; font-weight: 900; color: var(--teal); margin-left: 4px; letter-spacing: -1px; }
   .nav-links { display: flex; gap: 24px; }
   .nav-links a {
     text-decoration: none;

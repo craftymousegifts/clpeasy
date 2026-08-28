@@ -14,10 +14,15 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.7; }
 
-  nav { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 50; }
-  .nav-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 700; font-size: 17px; color: var(--teal); }
-  .nav-badge { width: 28px; height: 28px; border-radius: 50%; background: var(--teal); color: white; display: flex; align-items: center; justify-content: center; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 900; letter-spacing: -1px; flex-shrink: 0; }
-  .nav-easy { font-weight: 700; font-size: 17px; color: var(--teal); }
+  nav { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 72px; position: sticky; top: 0; z-index: 50; }
+  /* 28 Aug 2026 fix: brought this page's logo (was 28px badge, 700-weight
+     "easy") in line with the site-wide standard (52px badge, 900-weight --
+     see pricing.html/dashboard.html/etc), which it was visibly inconsistent
+     with. Nav height bumped 60px->72px to match, since the larger badge
+     needs the room every other page already gives it. */
+  .nav-logo { display: flex; align-items: center; text-decoration: none; }
+  .nav-badge { width: 52px; height: 52px; border-radius: 50%; background: var(--teal); color: white; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 900; letter-spacing: -1px; flex-shrink: 0; }
+  .nav-easy { font-size: 26px; font-weight: 900; color: var(--teal); margin-left: 4px; letter-spacing: -1px; }
   .nav-links { display: flex; gap: 24px; }
   .nav-links a { text-decoration: none; color: var(--text-mid); font-size: 14px; font-weight: 500; }
   .nav-links a:hover { color: var(--teal); }
