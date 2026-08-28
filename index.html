@@ -56,19 +56,23 @@
     display: flex; align-items: center; gap: 0;
     text-decoration: none; line-height: 1;
   }
+  /* 28 Aug 2026 fix: this page's logo was a third, one-off size (62px badge,
+     16px "CLP" text) that didn't match the 52px/22px standard used by every
+     other page (pricing/dashboard/knowledge/etc), which read as inconsistent
+     branding on the homepage. Brought in line with that standard. */
   .nav-badge {
-    width: 62px; height: 62px; border-radius: 50%;
+    width: 52px; height: 52px; border-radius: 50%;
     background: #4C9BB0; color: white;
     display: flex; align-items: center; justify-content: center;
     font-family: 'DM Sans', sans-serif;
-    font-size: 16px; font-weight: 900; letter-spacing: -1px;
+    font-size: 22px; font-weight: 900; letter-spacing: -1px;
     flex-shrink: 0;
   }
   .nav-easy {
     font-family: 'DM Sans', sans-serif;
-    font-size: 28px; font-weight: 900;
+    font-size: 26px; font-weight: 900;
     color: #4C9BB0;
-    margin-left: 5px; letter-spacing: -2px; line-height: 1;
+    margin-left: 4px; letter-spacing: -1px; line-height: 1;
   }
   .nav-links { display: flex; align-items: center; gap: 4px; }
   .nav-links a:not(.btn-nav) {
