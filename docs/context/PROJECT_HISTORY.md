@@ -108,6 +108,51 @@ reflect what the actual label contains.
 
 Root-caused and fixed 29 Aug 2026 — see session log below for details.
 
+## Session log — 29 Aug 2026 (part 4)
+
+**Fixed and verified live on clpeasy.com (commit `c4ef922` on `main`):**
+Print Sheet Composer footer text overlapping mandatory hazard/
+precautionary text on dense labels. Reported by Michaela with a
+screenshot of a real 63mm circle label ("eryryrty") whose sheet-cell
+preview showed the P-statement line and the business phone number
+overlapping in a garbled, illegible block, plus the supplier's CLP
+Hazard Labelling Contribution Advice document showing the label's real
+data: 3 H-codes, 6 sensitisers, 5 P-statements (including two combined
+codes, P302+P352 and P333+P313).
+
+Root cause: `buildLabelSVGFromData()` draws the footer (divider line,
+background band, phone/weight/burn-time text) at a Y position that's a
+fixed fraction of the label height, regardless of how tall the
+H-statement/sensitiser/P-statement block above it actually turns out to
+be. That block already grows correctly with real line-wrap count, but
+nothing checked whether it grew past the footer's fixed start — so a
+label with enough hazard/precautionary text on a small label could have
+the footer start before that text ended.
+
+Fix: after computing the H/sensitiser/P block's real bottom edge, the
+footer now starts at whichever is lower — the original fixed position,
+or that block's actual bottom — so it only moves when it needs to, and
+otherwise renders exactly where it always has. Nothing above the footer
+(header, product type, signal word, pictograms, the hazard text itself)
+changed. Reproduced the exact reported overlap via live function-
+injection using the real hazard data from the supplier's compliance
+document (both with and without the pre-fix "split" P-code format, in
+case the label had been saved before the Smart Paste fix above), at
+sizes from 80px to 265px; confirmed zero overlaps after the fix at every
+size, and confirmed an unrelated normal-content label renders identically
+to before (no regression). Michaela's real saved label data was not
+read or touched — testing used data reconstructed from the compliance
+document she supplied.
+
+**Separate finding, flagged but not fixed (out of scope for this
+task):** while probing sizes for the fix above, a distinct, unrelated
+~1px bounding-box overlap between "SCENTED CANDLE" and "WARNING"
+appeared at one specific small circle size (~120px), independent of
+hazard-text length. This is the same category of bug already documented
+above under "Important technical issue" (a 63×44mm SCENTED CANDLE/
+WARNING overlap, patched in builder.html) — worth a regression check in
+print.html specifically, but wasn't part of what was reported here.
+
 ## Session log — 29 Aug 2026 (part 3)
 
 **Fixed and verified live on clpeasy.com (commit `6f76360` on `main`):**
