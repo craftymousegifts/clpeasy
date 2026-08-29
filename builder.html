@@ -2832,7 +2832,13 @@ function extractSDS(){
   });
 
   // ── P STATEMENTS ──────────────────────────────────────────────────────────
-  const _pAllCodes=[...new Set(text.match(/\bP\d{3}(?:\+P\d{3})*\b/g)||[])];
+  // Combined P-codes (e.g. "P302+P352") are often printed by suppliers with
+  // spaces around the "+" (e.g. "P302 + P352" — seen in real supplier SDS
+  // PDFs). Match that spaced form too, then strip the spaces so the token
+  // matches P_LIB's/​_pExclude's no-space "P302+P352" convention exactly —
+  // otherwise each half is captured as a separate, unrecognised standalone
+  // code (e.g. orphan "P302"/"P352"), which incorrectly blocked Step 3.
+  const _pAllCodes=[...new Set((text.match(/\bP\d{3}(?:\s*\+\s*P\d{3})*\b/g)||[]).map(c=>c.replace(/\s*\+\s*/g,'+')))];
   const _pExclude=[
     'P272',            // Contaminated work clothing — occupational only
     'P264',            // Wash hands after handling — workplace handling context
