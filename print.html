@@ -112,7 +112,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 .sheet-canvas{background:white;box-shadow:0 8px 40px rgba(0,0,0,0.5);position:relative;overflow:hidden;}
 .sheet-margin-guide{position:absolute;pointer-events:none;border:1px dashed rgba(13,148,136,0.25);}
 .sheet-cell{position:absolute;display:flex;align-items:center;justify-content:center;}
-.sheet-cell svg{width:100%;height:100%;display:block;}
+.sheet-cell svg{max-width:100%;max-height:100%;width:auto;height:auto;display:block;}
 .sheet-cell-empty{position:absolute;display:flex;align-items:center;justify-content:center;}
 .empty-slot{border-radius:50%;border:1px dashed rgba(0,0,0,0.08);width:80%;height:80%;}
 .preview-footer{padding:10px 20px 14px;border-top:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;}
@@ -359,10 +359,26 @@ function libNS(){ return (currentUser && currentUser.id) ? currentUser.id : 'gue
 function libKey(base){ return base + '__u_' + libNS(); }
 function getSaved(){try{return JSON.parse(localStorage.getItem(libKey('clpeasy_labels'))||'[]');}catch(e){return[];}}
 
+// Returns a saved label's real physical footprint in mm as {w,h}.
+// Mirrors builder.html's own applySize()/syncDimFields() rectangle-ratio
+// convention (0.7) instead of assuming every label is a square matching
+// whatever sheet-template cell it gets placed into.
+function getLabelDimsMM(e){
+  const isRect=(e.shape||'circle')==='rectangle';
+  if(e.size==='custom'){
+    const w=parseFloat(e.customW)||50;
+    const h=isRect?(parseFloat(e.customH)||Math.round(w*0.7)):w;
+    return{w,h};
+  }
+  const s=parseFloat(e.size)||35;
+  const h=isRect?Math.round(s*0.7):s;
+  return{w:s,h};
+}
+
 function getLockedSizeMM(){
   if(!sheetItems.length) return null;
   const first=sheetItems[0].labelData;
-  return first ? (parseInt(first.size)||35) : null;
+  return first ? getLabelDimsMM(first).w : null;
 }
 
 function renderSavedList(){
@@ -380,7 +396,9 @@ function renderSavedList(){
   html+=arr.map((e,i)=>{
     const inSheet=sheetItems.findIndex(s=>s.id===i);
     const qty=inSheet>=0?sheetItems[inSheet].qty:0;
-    const thisLabelMM=parseInt(e.size)||35;
+    const dims=getLabelDimsMM(e);
+    const thisLabelMM=dims.w;
+    const sizeLabel=(dims.w===dims.h)?`${dims.w}mm`:`${dims.w}×${dims.h}mm`;
     const isLocked=lockedMM!==null && qty===0 && thisLabelMM!==lockedMM;
     const lockedAttr=isLocked?'disabled title="Different size — remove existing labels first"':'';
     const itemStyle=isLocked?'opacity:0.4;pointer-events:none;':'';
@@ -388,7 +406,7 @@ function renderSavedList(){
       <div class="sli-preview" id="sli-prev-${i}"></div>
       <div class="sli-info">
         <div class="sli-name">${xe(e.scentName||'Unnamed')}</div>
-        <div class="sli-meta">${xe(e.productType||'')} · ${e.size||'35'}mm ${e.shape||'circle'}${isLocked?' 🔒':''}</div>
+        <div class="sli-meta">${xe(e.productType||'')} · ${sizeLabel} ${e.shape||'circle'}${isLocked?' 🔒':''}</div>
       </div>
       <div class="sli-qty">
         ${qty>0?`
@@ -419,7 +437,7 @@ function addToSheet(idx){
   }
   // Size-lock: once one label is on the sheet, all subsequent labels must match its size
   const lockedMM=getLockedSizeMM();
-  const thisLabelMM=parseInt(e.size)||35;
+  const thisLabelMM=getLabelDimsMM(e).w;
   if(lockedMM!==null && thisLabelMM!==lockedMM){
     alert('This label is '+thisLabelMM+'mm but the sheet already has '+lockedMM+'mm labels.\n\nA print sheet can only contain one label size. Remove the existing labels first.');
     return;
@@ -555,7 +573,11 @@ function renderSheetCanvas(){
       const y=marginTPX+row*(lPX+gapVPX);
       if(labelIdx<flatLabels.length){
         const ld=flatLabels[labelIdx];
-        html+=`<div class="sheet-cell" style="left:${x}px;top:${y}px;width:${lPX}px;height:${lPX}px;">${buildLabelSVGFromData(ld,lPX)}</div>`;
+        const dims=getLabelDimsMM(ld);
+        const aspect=dims.w/dims.h;
+        const cw=aspect>=1?lPX:Math.round(lPX*aspect);
+        const ch=aspect>=1?Math.round(lPX/aspect):lPX;
+        html+=`<div class="sheet-cell" style="left:${x}px;top:${y}px;width:${lPX}px;height:${lPX}px;">${buildLabelSVGFromData(ld,cw,ch)}</div>`;
         labelIdx++;
       } else {
         // Empty slot indicator
@@ -575,9 +597,15 @@ function mTxt(txt,sz,bold,serif){_ctx2.font=`${bold?'700':'400'} ${sz}px ${serif
 function fitFnt(txt,maxPx,start,min,bold=true,serif=false){let sz=start;while(sz>min){if(mTxt(txt,sz,bold,serif)<=maxPx)break;sz-=0.5;}return Math.max(sz,min);}
 function wrapTxt(txt,maxPx,sz,bold=false,serif=false){if(!txt)return[];const words=txt.split(/\s+/);const lines=[];let cur='';for(const w of words){const test=cur?cur+' '+w:w;if(mTxt(test,sz,bold,serif)<=maxPx){cur=test;}else{if(cur)lines.push(cur);cur=w;}}if(cur)lines.push(cur);return lines;}
 
-function buildLabelSVGFromData(e,sizePx){
-  // Reconstruct a full label SVG from saved label data at exact sizePx
-  const pw=sizePx,ph=sizePx;
+function buildLabelSVGFromData(e,pw,ph){
+  // Reconstruct a full label SVG from saved label data at the label's own
+  // real width/height in px (ph defaults to pw for square/circle shapes).
+  // pw/ph must reflect the LABEL's actual physical aspect ratio (see
+  // getLabelDimsMM) — never force every label into a square matching
+  // whatever sheet-template cell it's being placed into, or rectangular
+  // labels render squashed/miniaturised into the wrong shape.
+  if(ph===undefined)ph=pw;
+  const sizePx=Math.round(pw)+'_'+Math.round(ph); // id suffix for this SVG's <clipPath>
   const cx=pw/2,cy=ph/2;
   const isCircle=(e.shape||'circle')==='circle';
   const r=pw/2-1.5;
@@ -737,7 +765,13 @@ function downloadPDF(){
       const x=marLPX+col*(lPX+gHPX);
       const y=marTPX+row*(lPX+gVPX);
       if(idx<flatLabels.length){
-        cellsHTML+=`<g transform="translate(${x},${y})">${buildLabelSVGFromData(flatLabels[idx],lPX)}</g>`;
+        const ld=flatLabels[idx];
+        const dims=getLabelDimsMM(ld);
+        const aspect=dims.w/dims.h;
+        const cw=aspect>=1?lPX:Math.round(lPX*aspect);
+        const ch=aspect>=1?Math.round(lPX/aspect):lPX;
+        const offX=(lPX-cw)/2, offY=(lPX-ch)/2;
+        cellsHTML+=`<g transform="translate(${x+offX},${y+offY})">${buildLabelSVGFromData(ld,cw,ch)}</g>`;
         idx++;
       }
     }
@@ -787,24 +821,24 @@ function downloadPDF(){
 function buildLabelPNGBlob(item){
   return new Promise(resolve=>{
     const e=item.labelData||{};
-    const mmSize=parseInt(e.size)||35;
-    const fname=getFileName(e,mmSize);
+    const dims=getLabelDimsMM(e);
+    const fname=getFileName(e,dims);
     let settled=false;
     const finish=(res)=>{ if(settled)return; settled=true; clearTimeout(timer); resolve(res); };
     // Safety net: if the image never loads or errors, don't hang the whole batch.
     const timer=setTimeout(()=>finish({blob:null,fname,error:true}),12000);
     try{
       const DPI=300,M2PX=DPI/25.4;
-      const pxSize=Math.round(mmSize*M2PX);
-      const svgStr=buildLabelSVGFromData(e,pxSize);
+      const pxW=Math.round(dims.w*M2PX), pxH=Math.round(dims.h*M2PX);
+      const svgStr=buildLabelSVGFromData(e,pxW,pxH);
       const svgDataUri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgStr);
       const img=new Image();
       img.onload=function(){
         try{
-          const cvs=document.createElement('canvas');cvs.width=pxSize;cvs.height=pxSize;
+          const cvs=document.createElement('canvas');cvs.width=pxW;cvs.height=pxH;
           const ctx=cvs.getContext('2d');
-          ctx.clearRect(0,0,pxSize,pxSize);
-          ctx.drawImage(img,0,0,pxSize,pxSize);
+          ctx.clearRect(0,0,pxW,pxH);
+          ctx.drawImage(img,0,0,pxW,pxH);
           cvs.toBlob(blob=>finish({blob,fname,error:!blob}),'image/png');
         }catch(err){ console.error('Cutting machine PNG render failed:',err); finish({blob:null,fname,error:true}); }
       };
@@ -813,9 +847,10 @@ function buildLabelPNGBlob(item){
     }catch(err){ console.error('Cutting machine PNG build failed:',err); finish({blob:null,fname,error:true}); }
   });
 }
-function getFileName(e,mmSize){
+function getFileName(e,dims){
   const slug=(e.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-  return `clpeasy-${slug}-${mmSize}mm.png`;
+  const sizeLabel=(dims.w===dims.h)?`${dims.w}mm`:`${dims.w}x${dims.h}mm`;
+  return `clpeasy-${slug}-${sizeLabel}.png`;
 }
 function openCricutModal(){
   if(!sheetItems.length){alert('Add at least one label to the sheet first.');return;}
