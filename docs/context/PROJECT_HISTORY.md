@@ -108,6 +108,60 @@ reflect what the actual label contains.
 
 Root-caused and fixed 29 Aug 2026 — see session log below for details.
 
+## Session log — 29 Aug 2026 (part 5)
+
+**Fixed and verified live on clpeasy.com (commit `d766564` on `main`):**
+Print Sheet Composer showing bare hazard/precautionary CODES instead of
+the actual required GB-CLP statement text. Reported by Michaela by
+comparing two screenshots of the same real label ("eryryrty"): the real
+Label Preview (builder.html) showed full compliant wording ("May cause
+an allergic skin reaction. Harmful to aquatic life with long lasting
+effects." / "Avoid breathing vapours and dust. Avoid release to the
+environment. IF ON SKIN: wash with plenty of water. ..."), while the
+Print Sheet Composer's own Sheet Preview showed only the bare codes
+("H317 · H412 · EUH208" / "P261 · P273 · P302+P352 · P333+P313 · P501")
+for the same saved label.
+
+Root cause: `buildLabelSVGFromData()` never looked codes up against any
+text table — it just joined the raw H/P codes with " · " for display.
+builder.html's real, approved `buildSVG()` has always looked codes up in
+its own `H_LIB`/`P_LIB` tables to print the actual statement wording;
+print.html's separate reimplementation never had this step, so the two
+renderers showed different content for the same saved label.
+
+Fix: ported `H_LIB`/`P_LIB` (the code->text lookup tables) verbatim from
+builder.html into print.html, and rebuilt the H/sensitiser/P text
+construction in `buildLabelSVGFromData()` to match builder.html's
+`buildSVG()` logic exactly — including EUH208 being pulled out of the
+H-code list and folded into the sensitiser line ("...May produce an
+allergic reaction."), and adjacent split P-codes (e.g. saved as "P302",
+"P352" rather than "P302+P352") being re-paired into their combined form
+before lookup, the same safety net builder.html's real preview uses.
+Also removed this composer's old placeholder sensitiser fallback
+(`['Linalool']`) and its `slice(0,8)`/`slice(0,5)` code-list truncation
+caps — a label with more sensitisers/codes than the cap would have
+silently had legally required content cut off; builder.html's own code
+comments document removing equivalent caps previously for the same
+reason ("U8"/"U9" fixes, never silently drop legally required text).
+Did **not** port builder.html's much larger `_layoutHazard()` dynamic
+font-sizing/hard-clip engine — out of scope for a content-parity fix;
+the existing (already-fixed-last-session) footer-push layout was
+retested instead, see below.
+
+Tested via live function-injection against the exact deployed function:
+(1) the real "eryryrty" case (3 H-codes+EUH208, 1 sensitiser, 5
+P-statements incl. two combined codes) — output text matched the real
+Label Preview's wording exactly, zero overlaps at 150-600px; (2) a
+normal single-hazard case (regression check) — unchanged from before;
+(3) EUH208 with no sensitisers/undefined sensitisers array — correct
+"Contains: sensitising substance..." fallback, no crash; (4) an
+unrecognised code mixed with known codes — silently dropped, no crash,
+matches builder.html's own behaviour; (5) a deliberately extreme stress
+case (7 H-codes, 6 sensitisers, 14 P-statements) down to 150px — zero
+overlaps, no clipping. Re-verified all of this against the actual live
+site after push (cache-busted reload). No changes to builder.html or any
+saved customer data.
+
 ## Session log — 29 Aug 2026 (part 4)
 
 **Fixed and verified live on clpeasy.com (commit `c4ef922` on `main`):**
