@@ -728,32 +728,68 @@ function buildLabelSVGFromData(e,pw,ph){
     return`<image href="${src}" x="${(px-pSz/2).toFixed(1)}" y="${(py-pSz/2).toFixed(1)}" width="${pSz.toFixed(1)}" height="${pSz.toFixed(1)}" preserveAspectRatio="xMidYMid meet"/>`;
   }).join('');
 
-  // H stmts
-  const hAreaY=pictoMY+pSz*0.55+2,hMY2=hAreaY+4,hSW2=chordW(hMY2,0.08);
-  const hFS=clamp(BASE*0.036,3,7),hLH=hFS*1.25;
-  const hLines=hText?wrapTxt(hText,hSW2*0.85,hFS):[];
-
-  // Sensitisers
-  const snsY=hAreaY+hLines.length*hLH+hLH*0.25,snsMY=snsY+3,snsSW=chordW(snsMY,0.08);
-  const snsFS=clamp(BASE*0.033,3,6.5),snsLH=snsFS*1.25;
-  const snsLines=sensText?wrapTxt(sensText,snsSW*0.85,snsFS):[];
-
-  // P stmts
-  const pY=snsY+snsLines.length*snsLH+snsLH*0.25,pMY2=pY+3,pSW=chordW(pMY2,0.08);
-  const pFS=clamp(BASE*0.030,3,6),pLH=pFS*1.25;
-  const pLines2=pText?wrapTxt(pText,pSW*0.92,pFS):[];
-
-  // Footer — pushed down (never up) if the H/sensitiser/P block above needed
-  // more room than the fixed layout budgeted for it (long H/P-code or
-  // sensitiser lists on a small label). Without this, a dense label could
-  // render its footer starting above the end of that mandatory hazard text,
-  // producing illegible overlapping text — reported on a 63mm circle label
-  // with 3 H-codes, 6 sensitisers and 5 P-statements. Everything ABOVE the
-  // footer (header, type/signal, pictograms, H/sensitiser/P block itself)
-  // keeps its original fixed position — only the footer moves.
-  const contentBottomY=pLines2.length?(pY+pLines2.length*pLH+pLH*0.25)
-                       :(snsY+snsLines.length*snsLH+snsLH*0.25);
-  const footerTopY=Math.max(botY,contentBottomY);
+  // ── H + SENSITISER + P: shared-font binary-search auto-sizing ────────────
+  // Ported from builder.html's own _layoutHazard()/binary-search engine (the
+  // real, approved Label Preview) in place of the previous fixed font sizes.
+  // Full statement TEXT (not bare codes) takes far more vertical room than
+  // codes did; at a small label size the fixed sizes could push content (and
+  // even the footer, via the earlier footer-push fix) past the label's own
+  // edge, where the circular/rounded clip silently cut it off mid-sentence —
+  // reported as "contents drop off the label" on a 52mm circle. This shrinks
+  // one shared font size (H, sensitiser and P all move together, exactly
+  // like builder.html) until everything fits between the pictograms and the
+  // footer's fixed position, so the footer never needs to move at all. If
+  // content still can't fit even at the minimum legible size, only the
+  // P-statement text is hard-clipped at the footer boundary as a last
+  // resort — H and sensitiser text are never clipped — matching
+  // builder.html's own defensive fallback exactly.
+  const hAreaY=pictoMY+pSz*0.55+2;
+  const _pxPerMm=pw/(getLabelDimsMM(e).w||pw);
+  const _minLegibleFS=Math.max(1.2*_pxPerMm,3.2);
+  const _fitMaxFS=clamp(BASE*0.036,3,7); // previous fixed H-line size = auto-fit ceiling
+  function _layoutHazard2(fs,y0){
+    const hLH2=fs*1.25,snsLH2=fs*1.25,pLH2=fs*1.25;
+    let y=y0;
+    let hL=[];
+    if(hText){const sw=Math.max(fs*3,chordW(y+hLH2*0.5,0.08)*0.85);hL=wrapTxt(hText,sw,fs);}
+    const hStartY=y+hLH2*0.5;
+    y+=hL.length*hLH2;
+    if(hL.length&&(sensText||pText))y+=hLH2*0.25;
+    let sL=[];
+    if(sensText){const sw=Math.max(fs*3,chordW(y+snsLH2*0.5,0.08)*0.85);sL=wrapTxt(sensText,sw,fs);}
+    const sStartY=y+snsLH2*0.5;
+    y+=sL.length*snsLH2;
+    if(sL.length&&pText)y+=snsLH2*0.25;
+    let pL=[];
+    if(pText){const sw=Math.max(fs*3,chordW(y+pLH2*0.5,0.08)*0.92);pL=wrapTxt(pText,sw,fs);}
+    const pStartY=y+pLH2*0.5;
+    y+=pL.length*pLH2;
+    return{hLH:hLH2,snsLH:snsLH2,pLH:pLH2,hL,hStartY,sL,sStartY,pL,pStartY,endY:y};
+  }
+  const _fitsHazard=(fs)=>_layoutHazard2(fs,hAreaY).endY<=botY;
+  let _hzLo=_minLegibleFS,_hzHi=_fitMaxFS;
+  const _fitsAtFloor=_fitsHazard(_minLegibleFS);
+  if(!_fitsAtFloor){_hzLo=_hzHi=_minLegibleFS;}
+  else if(_fitsHazard(_hzHi)){_hzLo=_hzHi;}
+  else{
+    for(let _i=0;_i<30;_i++){
+      const _mid=(_hzLo+_hzHi)/2;
+      if(_fitsHazard(_mid))_hzLo=_mid;else _hzHi=_mid;
+      if(_hzHi-_hzLo<0.05)break;
+    }
+  }
+  const _sharedFS=_hzLo;
+  let _hzL=_layoutHazard2(_sharedFS,hAreaY);
+  if(_hzL.endY>botY){
+    // Even the floor size overflows — hard-clip P lines only, never H/sensitiser.
+    let _y=_hzL.pStartY-_hzL.pLH*0.5;
+    const _keep=[];
+    for(const line of _hzL.pL){if(_y+_hzL.pLH>botY)break;_keep.push(line);_y+=_hzL.pLH;}
+    _hzL=Object.assign({},_hzL,{pL:_keep});
+  }
+  const hFS=_sharedFS,hLH=_hzL.hLH,hLines=_hzL.hL,hStartY=_hzL.hStartY;
+  const snsFS=_sharedFS,snsLH=_hzL.snsLH,snsLines=_hzL.sL,snsStartY=_hzL.sStartY;
+  const pFS=_sharedFS,pLH=_hzL.pLH,pLines2=_hzL.pL,pStartY=_hzL.pStartY;
 
   // Footer
   const footerParts=[];
@@ -763,7 +799,7 @@ function buildLabelSVGFromData(e,pw,ph){
   if(detP.length)footerParts.push({text:detP.join(' · '),bold:false});
   const fFS=clamp(BASE*0.038,3.2,7.5);
   const footerHTML=footerParts.map((fp,i)=>{
-    const fY=footerTopY+botH*(0.25+i*0.28);
+    const fY=botY+botH*(0.25+i*0.28);
     const fSW=chordW(fY,0.10);
     const fs2=fitFnt(fp.text,fSW*0.90,fFS,clamp(BASE*0.026,2.8,5),fp.bold,false);
     return`<text x="${cx}" y="${fY.toFixed(1)}" font-family="sans-serif" font-size="${fs2.toFixed(2)}" font-weight="${fp.bold?'700':'400'}" fill="${fp.bold?txtCol:mutedCol}" text-anchor="middle" dominant-baseline="middle">${xe(fp.text)}</text>`;
@@ -789,11 +825,11 @@ function buildLabelSVGFromData(e,pw,ph){
   <text x="${cx}" y="${tMY.toFixed(1)}" font-family="sans-serif" font-size="${tFS.toFixed(2)}" font-weight="700" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle" letter-spacing="0.5">${xe(type)}</text>
   <text x="${cx}" y="${sigMY.toFixed(1)}" font-family="sans-serif" font-size="${sigFS.toFixed(2)}" font-weight="800" fill="${sig==='DANGER'?'#cc0000':txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(sig)}</text>
   ${pictoRow}
-  ${svgW2(hLines,cx,hAreaY+hLH*0.5,hLH,hFS,false,false,txtCol)}
-  ${svgW2(snsLines,cx,snsY+snsLH*0.5,snsLH,snsFS,false,false,mutedCol)}
-  ${pLines2.length?svgW2(pLines2,cx,pY+pLH*0.5,pLH,pFS,false,false,mutedCol):''}
-  <line x1="${(cx-pw/2+divInset).toFixed(1)}" y1="${footerTopY.toFixed(1)}" x2="${(cx+pw/2-divInset).toFixed(1)}" y2="${footerTopY.toFixed(1)}" stroke="#ddd" stroke-width="0.4"/>
-  <rect x="0" y="${footerTopY.toFixed(1)}" width="${pw}" height="${Math.max(botH,ph-footerTopY)}" fill="${bgCol}"/>
+  ${svgW2(hLines,cx,hStartY,hLH,hFS,false,false,txtCol)}
+  ${svgW2(snsLines,cx,snsStartY,snsLH,snsFS,false,false,mutedCol)}
+  ${pLines2.length?svgW2(pLines2,cx,pStartY,pLH,pFS,false,false,mutedCol):''}
+  <line x1="${(cx-pw/2+divInset).toFixed(1)}" y1="${botY.toFixed(1)}" x2="${(cx+pw/2-divInset).toFixed(1)}" y2="${botY.toFixed(1)}" stroke="#ddd" stroke-width="0.4"/>
+  <rect x="0" y="${botY.toFixed(1)}" width="${pw}" height="${botH}" fill="${bgCol}"/>
   ${footerHTML}
 </g></svg>`;
 }
