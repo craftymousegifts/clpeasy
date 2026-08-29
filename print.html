@@ -707,6 +707,18 @@ function buildLabelSVGFromData(e,pw,ph){
   const pTxt=pCodes.slice(0,8).join(' · ');
   const pLines2=pTxt?wrapTxt(pTxt,pSW*0.92,pFS):[];
 
+  // Footer — pushed down (never up) if the H/sensitiser/P block above needed
+  // more room than the fixed layout budgeted for it (long H/P-code or
+  // sensitiser lists on a small label). Without this, a dense label could
+  // render its footer starting above the end of that mandatory hazard text,
+  // producing illegible overlapping text — reported on a 63mm circle label
+  // with 3 H-codes, 6 sensitisers and 5 P-statements. Everything ABOVE the
+  // footer (header, type/signal, pictograms, H/sensitiser/P block itself)
+  // keeps its original fixed position — only the footer moves.
+  const contentBottomY=pLines2.length?(pY+pLines2.length*pLH+pLH*0.25)
+                       :(snsY+snsLines.length*snsLH+snsLH*0.25);
+  const footerTopY=Math.max(botY,contentBottomY);
+
   // Footer
   const footerParts=[];
   if(e.bizAddress)footerParts.push({text:e.bizAddress,bold:false});
@@ -715,7 +727,7 @@ function buildLabelSVGFromData(e,pw,ph){
   if(detP.length)footerParts.push({text:detP.join(' · '),bold:false});
   const fFS=clamp(BASE*0.038,3.2,7.5);
   const footerHTML=footerParts.map((fp,i)=>{
-    const fY=botY+botH*(0.25+i*0.28);
+    const fY=footerTopY+botH*(0.25+i*0.28);
     const fSW=chordW(fY,0.10);
     const fs2=fitFnt(fp.text,fSW*0.90,fFS,clamp(BASE*0.026,2.8,5),fp.bold,false);
     return`<text x="${cx}" y="${fY.toFixed(1)}" font-family="sans-serif" font-size="${fs2.toFixed(2)}" font-weight="${fp.bold?'700':'400'}" fill="${fp.bold?txtCol:mutedCol}" text-anchor="middle" dominant-baseline="middle">${xe(fp.text)}</text>`;
@@ -744,8 +756,8 @@ function buildLabelSVGFromData(e,pw,ph){
   ${svgW2(hLines,cx,hAreaY+hLH*0.5,hLH,hFS,false,false,txtCol)}
   ${svgW2(snsLines,cx,snsY+snsLH*0.5,snsLH,snsFS,false,false,mutedCol)}
   ${pLines2.length?svgW2(pLines2,cx,pY+pLH*0.5,pLH,pFS,false,false,mutedCol):''}
-  <line x1="${(cx-pw/2+divInset).toFixed(1)}" y1="${botY.toFixed(1)}" x2="${(cx+pw/2-divInset).toFixed(1)}" y2="${botY.toFixed(1)}" stroke="#ddd" stroke-width="0.4"/>
-  <rect x="0" y="${botY.toFixed(1)}" width="${pw}" height="${botH}" fill="${bgCol}"/>
+  <line x1="${(cx-pw/2+divInset).toFixed(1)}" y1="${footerTopY.toFixed(1)}" x2="${(cx+pw/2-divInset).toFixed(1)}" y2="${footerTopY.toFixed(1)}" stroke="#ddd" stroke-width="0.4"/>
+  <rect x="0" y="${footerTopY.toFixed(1)}" width="${pw}" height="${Math.max(botH,ph-footerTopY)}" fill="${bgCol}"/>
   ${footerHTML}
 </g></svg>`;
 }
