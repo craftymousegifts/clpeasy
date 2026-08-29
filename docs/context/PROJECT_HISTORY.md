@@ -108,6 +108,72 @@ reflect what the actual label contains.
 
 Root-caused and fixed 29 Aug 2026 — see session log below for details.
 
+## Session log — 29 Aug 2026 (part 2)
+
+**Fixed and verified live on clpeasy.com (commit `68e2bae` on `main`):**
+four further Print Sheet Composer issues, reported by Michaela with
+screenshots of a real saved label ("hjfhjfh", Scented Candle, 70×68mm
+rectangle) after the fix above went live:
+
+1. **Sub-52mm sheet templates removed.** The 35mm/40mm/51mm circle presets
+   were removed from Sheet Template; "Custom sheet" is now the only
+   option and is selected by default. The custom label-size field now
+   defaults to 52mm and has `min="52"`; the underlying JS (`getTplConfig`)
+   also now hard-clamps to a 52mm floor (`Math.max(52, ...)`) so a
+   manually typed or blank value can't produce a smaller sheet — the
+   `min` attribute alone doesn't stop that on `oninput`. (Per Michaela's
+   explicit instruction; the exact regulatory citation for "52mm
+   minimum" was not independently verified against GB-CLP — implemented
+   as stated rather than self-adjudicated, consistent with the CLPeasy
+   skill's rule not to assert regulatory requirements.)
+2. **Header order fixed.** `buildLabelSVGFromData()` was rendering the
+   business name above the fragrance/scent name. Reordered to match
+   builder.html's own documented order (scent → biz → website), with the
+   scent name now largest/topmost and the business name/website smaller
+   and secondary.
+3. **Real GHS pictograms.** The composer was drawing a diamond outline
+   with the GHS code as text (e.g. "GHS0?") instead of real artwork.
+   Ported `GHS_IMG` (the base64 pictogram images) verbatim from
+   builder.html — verified byte-identical via SHA256 hash — and switched
+   the pictogram row to the same `<image href="...">` approach
+   builder.html uses, so the composer now shows the real pictogram icons.
+4. **H/P statements and sensitisers** were already reading the real
+   saved fields correctly; re-verified they render properly (not
+   truncated to "GH"/"H") once the pictogram/header fixes were in.
+
+Root cause for #2/#3 was the same as the earlier bug in this file:
+print.html's `buildLabelSVGFromData()` is a separate reimplementation of
+builder.html's real `buildSVG()`, not shared code, so the two renderers
+had drifted apart on header order and pictogram rendering.
+
+Tested in two stages before committing: (1) live function-injection on
+the production site with the exact `buildLabelSVGFromData` code extracted
+verbatim from the file (not retyped) plus a small real subset of
+`GHS_IMG`, checking DOM/attribute structure (pictogram `<image>` count,
+x/y/width/height, no overlaps) and a scaled visual render; (2) after
+push, re-verified end-to-end on the live site using Michaela's own real
+saved "hjfhjfh" label (read-only — the real saved-label data under
+`clpeasy_labels__u_guest` was not modified) added to the sheet via the
+real `addToSheet()`, confirming the actual rendered sheet cell shows
+correct header order, real pictogram icons, and correct H/P/sensitiser
+text. A stray synthetic test key (`undefined__u_guest`) created during
+step 1 was removed afterwards; it was never the key the app actually
+reads from, so it had no effect on real data.
+
+**Separate finding, not fixed (flagging only, out of scope for this
+task):** `libKey()` in print.html returned `"undefined__u_guest"` for
+the guest session used during testing — the real saved-labels key the
+app actually reads/writes is `clpeasy_labels__u_guest`. There may be a
+user-id variable that's unset in some guest-mode code path in
+print.html, producing a second, effectively dead localStorage key. Not
+investigated further or changed since it wasn't part of what was
+reported and didn't affect real data.
+
+Not fixed / out of scope this session (unchanged from the note below):
+EN15494/BCF candle safety icons were not ported into print.html: same
+scope decision as the first Print Sheet Composer fix. The saved-label-
+list preview icon (`buildMiniSVG`) still renders as a plain square.
+
 ## Session log — 29 Aug 2026
 
 **Fixed and verified live on clpeasy.com (commit `d32da6a` on `main`):**
