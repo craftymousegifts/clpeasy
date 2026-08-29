@@ -93,11 +93,10 @@ Michaela also operates Crafty Mouse Gifts, a handmade product business.
 
 The practical maker perspective is useful when evaluating CLPeasy UX, pricing, onboarding, and product features.
 
-## Known issues (open) — logged 28 Aug 2026
+## Known issues (resolved 29 Aug 2026) — logged 28 Aug 2026
 
 **Print Sheet Composer (print.html) does not replicate the actual label.**
-Reported by Michaela at end of a session, to be investigated and fixed in a
-future session — not yet looked into. Screenshots showed: a saved label
+Reported by Michaela at end of a session. Screenshots showed: a saved label
 ("hjfhjfh", Scented Candle, custom rectangle) whose real Label Preview (in
 the builder) shows the full compliant label — product name, CLPEasy
 branding, "SCENTED CANDLE WARNING", hazard diamond pictogram, H/P
@@ -105,9 +104,46 @@ statement text, GHS pictogram row, and business-details footer. But the
 Print Sheet Composer's own Sheet Preview (right-hand pane, 35mm-circle
 template selected) rendered each position on the sheet as an empty dashed
 outline circle with no label content inside — the sheet grid did not
-reflect what the actual label contains. Needs investigation into how
-print.html reads/renders the saved label data into each sheet position
-before any fix is attempted; not yet root-caused.
+reflect what the actual label contains.
+
+Root-caused and fixed 29 Aug 2026 — see session log below for details.
+
+## Session log — 29 Aug 2026
+
+**Fixed and verified live on clpeasy.com (commit `d32da6a` on `main`):**
+the Print Sheet Composer bug logged above. Root cause: `print.html`'s
+`buildLabelSVGFromData()` always rendered a label into a square sized to
+match the chosen sheet-template cell (e.g. 35mm), and `getLockedSizeMM()`/
+`addToSheet()` used `parseInt(e.size)`, which is `NaN` (silently falling
+back to 35) for a custom-sized label — so a real custom-rectangle label
+(e.g. 63×44mm) got squashed into the wrong shape/size and became
+illegibly small, reading as "empty". Reproduced first with synthetic
+label data matching the reported case (guest-namespace localStorage, no
+real customer data touched), confirmed via live DOM/geometry inspection
+in the browser, then fixed by adding a `getLabelDimsMM(e)` helper (mirrors
+builder.html's own rectangle 0.7 aspect-ratio convention) and updating all
+four places that build label output — the on-screen sheet preview, the
+PDF export, and the cutting-machine PNG export (all three shared the same
+bug, so all three now render/export each label at its true physical shape
+and size, contained and centred within its sheet slot) — plus the
+size-lock check and the saved-label-list size text (was showing the typo
+"custommm" for custom sizes; now shows e.g. "63×44mm"). The common case —
+a standard circle label on a matching circle template — is unaffected;
+verified this explicitly (cw/ch still resolve to an exact square in that
+case, byte-for-byte same as the pre-fix code path). Tested via live
+function-injection against the production site before committing, then
+re-tested against the actual deployed fix after push. No changes to
+builder.html, CLP/hazard logic, or any saved customer data.
+
+Left behind: `print_test.html` in the repo root (a copy of the fixed file
+used for local git-diff testing before the real `print.html` was
+overwritten) — untracked, not committed, safe to delete whenever
+convenient.
+
+Not fixed / out of scope this session: the small saved-label-list preview
+icon (`buildMiniSVG`, the 36×36 thumbnail next to each label name) still
+renders as a plain square regardless of the label's real shape — left
+alone since it's just a tiny identifying icon, not the print output itself.
 
 ## Session log — 28 Aug 2026
 
