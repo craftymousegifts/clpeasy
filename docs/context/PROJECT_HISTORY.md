@@ -108,6 +108,43 @@ reflect what the actual label contains.
 
 Root-caused and fixed 29 Aug 2026 — see session log below for details.
 
+## Session log — 29 Aug 2026 (part 3)
+
+**Fixed and verified live on clpeasy.com (commit `6f76360` on `main`):**
+Smart Paste (Step 3 — Hazards) blocked users with "Please resolve the
+unrecognised hazard or precautionary codes before continuing:
+P302, P352, P333" for a valid, correctly-formatted supplier SDS.
+Reported by Michaela with a screenshot of the blocking dialog plus the
+actual SDS PDF (Supplies for Candles / The Soap Kitchen) showing the
+precautionary statements as combined codes: "P302 + P352" and
+"P333 + P313".
+
+Root cause: `extractSDS()`'s P-code regex
+(`/\bP\d{3}(?:\+P\d{3})*\b/g`) only matched combined codes written with
+no space around the "+" (e.g. "P302+P352"). Many real supplier SDS PDFs
+print them with spaces ("P302 + P352"), which the old regex split into
+two standalone codes ("P302", "P352"). Neither exists as its own entry
+in `P_LIB` — only the combined form does — so Step 3's validation
+correctly rejected them as unrecognised, blocking progress on a label
+that was otherwise entirely valid.
+
+Fix: widened the regex to also match the space-padded form, then
+normalises the match by stripping the spaces so it becomes the same
+canonical "P302+P352" string `P_LIB`/`_pExclude` already use — one
+regex + one `.replace()`, ~7 lines. Nothing about which P-codes are
+valid, excluded, or how hazards/pictograms/signal word are derived
+changed; this only fixes text extraction from pasted SDS content.
+
+Verified by reproducing the exact reported error against the live
+site's real `P_LIB` (same three codes: P302, P352, P333) before the fix,
+then confirming zero unrecognised codes after, using Michaela's own SDS
+text. After deploying, re-ran the actual live `extractSDS()` function
+end-to-end with the same text (via the Smart Paste textarea, restored
+afterwards) and confirmed Step 3's real validation check now passes
+(`wouldBlock:false`). No saved/customer data was touched — this test
+only set in-memory form state via the real function, never called Save,
+and the page was reloaded afterwards to clear it.
+
 ## Session log — 29 Aug 2026 (part 2)
 
 **Fixed and verified live on clpeasy.com (commit `68e2bae` on `main`):**
