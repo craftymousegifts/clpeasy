@@ -180,8 +180,11 @@ setTimeout(() => {
     assert(document.querySelector('.builder-layout').classList.contains('reviewing'), 'review layout was not activated');
     assert(document.querySelector('.right-column > #preview-panel-el'), 'Download moved the live preview out of the right-hand preview column');
     assert(document.querySelector('.builder-accordion-section.active #finetune-panel-el'), 'fine-tune controls are missing from Download');
-    assert(document.getElementById('label-summary').textContent.includes('H315'), 'final summary omitted H315');
-    assert(document.getElementById('label-summary').textContent.includes('2-acetoxy-2,3,8,8-tetramethyloctahydronaphthalene'), 'final summary shortened a long sensitiser');
+    // The "Label summary" panel (#label-summary) was removed from Step 5 --
+    // its two checks here (H315 present, long sensitiser name not truncated)
+    // are retained via still-existing coverage instead: H315 retention is
+    // already asserted above (line 170, S.hSelected), and the long-sensitiser
+    // check is re-proven below against the real label output (buildSVG(false)).
     assert.strictEqual(document.querySelectorAll('#btn-png,#btn-pdf,#btn-svg').length, 3, 'approved exports are incomplete');
     assert.strictEqual(window.eval('window._labelBlockDownload'), false, 'representative 63mm candle was falsely blocked');
     assert(window.buildSVG(false).includes('2-acetoxy-2,3,8,8-tetramethyloctahydronaphthalene'), 'label output shortened a long sensitiser');

@@ -1138,10 +1138,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
         <div class="ft-reset" id="bizname-fs-reset" onclick="resetBizNameFS()">Reset</div>
     </div>
-    <div style="background:white;border:1.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:20px;">
-      <div class="sdiv" style="margin-top:0">Label summary</div>
-      <div class="summary-grid" id="label-summary"></div>
-    </div>
     <div style="background:#F8FAFC;border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;">
       <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:var(--text);font-weight:500;line-height:1.5;">
         <input type="checkbox" id="verify-checkbox" onchange="toggleDownload()" style="width:18px;height:18px;margin-top:1px;flex-shrink:0;accent-color:var(--teal);">
@@ -3782,7 +3778,14 @@ function buildSummary(){
     const hit=lib.find(x=>x.code===code);return hit?`${code} — ${hit.desc}`:code;
   }).join('; ')||'—';
   const items=[['Shape',S.shape.charAt(0).toUpperCase()+S.shape.slice(1)],['Size',`${mmW} × ${mmH}mm`],['Product',S.scentName||'—'],['Type',S.productType||'—'],['Signal word',S.signal||'—'],['H/EUH statements',fullCodes(S.hStatements,H_LIB)],['P statements',fullCodes(S.pStatements,P_LIB)],['Sensitisers',S.sensitisers.join(', ')||'—'],['Business',S.bizName||'—']];
-  document.getElementById('label-summary').innerHTML=items.map(([k,v])=>`<div><strong>${escapeBuilderText(k)}</strong>${escapeBuilderText(v)}</div>`).join('');
+  // The "Label summary" panel (#label-summary) was removed from the Step 5
+  // Download stage -- this element no longer exists in the DOM. Guarded so
+  // buildSummary()'s existing call sites (forceGoToStep/setApprovedBuilderStep/
+  // goToStep, which also rely on this function's readForm() call above to
+  // refresh S when entering Step 5) can stay unchanged rather than needing
+  // three separate edits, without throwing on the missing element.
+  const summaryEl=document.getElementById('label-summary');
+  if(summaryEl)summaryEl.innerHTML=items.map(([k,v])=>`<div><strong>${escapeBuilderText(k)}</strong>${escapeBuilderText(v)}</div>`).join('');
 }
 
 // ── PNG DOWNLOAD (works on iPhone Safari) ─────────────────────

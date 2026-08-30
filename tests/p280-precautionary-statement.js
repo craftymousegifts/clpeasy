@@ -246,9 +246,9 @@ const emptyQuery = {
     assert(svg1.includes('Wear protective gloves/eye protection'), 'Builder preview must render exactly the selected wording');
     assert(!svg1.includes('hearing protection'), 'Builder preview must not render an unselected item');
 
-    bwindow.buildSummary();
-    const summaryHTML1 = bdocument.getElementById('label-summary').innerHTML;
-    assert(summaryHTML1.includes('Wear protective gloves/eye protection'), 'Step 5 summary table must show the identical selected wording');
+    // (The Step 5 "Label summary" panel (#label-summary) that used to be
+    // checked here has been removed from the Download stage -- the identical-
+    // wording proof above (svg1, the real live preview) already covers this.)
 
     // 3. Save/reopen round-trip.
     bwindow.saveLabel();
@@ -287,14 +287,25 @@ const emptyQuery = {
     assert(!bdocument.getElementById('p280-item-opts').querySelector('img'), 'no injected element may appear in the picker\'s own DOM when reopened with a malicious "other" value');
     bwindow.closeP280Modal();
 
-    // Step 5 summary: innerHTML must never produce a real injected element,
-    // the escaped markup must be present, and the ORIGINAL characters must
-    // still be readable as plain visible text (via textContent).
-    bwindow.buildSummary();
-    const summaryEl = bdocument.getElementById('label-summary');
-    assert(!summaryEl.querySelector('img'), 'no injected <img> element may appear in the Builder Step 5 summary DOM');
-    assert(summaryEl.innerHTML.includes('&lt;img'), 'the summary\'s underlying markup must show the angle brackets HTML-escaped');
-    assert(summaryEl.textContent.includes(XSS_OTHER), 'the summary\'s visible text content must still show the original characters unmodified -- proves it displays as harmless text, not that it was stripped');
+    // Builder's real live preview (the Step 5 "Label summary" panel this used
+    // to check has been removed -- the live preview is now the only Builder
+    // surface p280Other reaches, so the escaping proof lives here instead):
+    // the rendered SVG string must never contain a literal <img> tag, must
+    // show the angle brackets XML-escaped, and the ORIGINAL characters must
+    // still be present as visible text content once parsed.
+    const svgXss = bwindow.buildSVG(false);
+    assert(!svgXss.includes('<img'), 'a malicious p280Other must never produce a literal <img> tag in Builder\'s live preview SVG');
+    assert(svgXss.includes('&lt;img'), 'Builder\'s live preview SVG must show p280Other\'s angle brackets escaped, not raw');
+    const previewParse = new bwindow.DOMParser().parseFromString(svgXss, 'image/svg+xml');
+    assert(!previewParse.querySelector('parsererror'), 'Builder\'s live preview SVG must still parse as valid XML with an escaped p280Other');
+    assert(!previewParse.querySelector('img'), 'parsing Builder\'s live preview SVG must not produce a real <img> element from p280Other');
+    // Real SVG at this preview size can wrap onto a new <tspan> mid-phrase
+    // (between "Protective" and "footwear") -- same tspan-boundary caveat
+    // documented elsewhere in this file -- so check both halves
+    // independently rather than one contiguous string.
+    const previewText = previewParse.documentElement.textContent;
+    assert(previewText.includes('Protective'), 'Builder\'s live preview SVG must still show the original characters as plain visible text once parsed (opening word)');
+    assert(previewText.includes('footwear <img src=x onerror=alert(1)>'), 'Builder\'s live preview SVG must still show the original characters as plain visible text once parsed (rest of the malicious text, unescaped once parsed back to text)');
 
     // Save/reopen must retain the exact original plain value -- never
     // escaped, mangled, or stripped at rest.
