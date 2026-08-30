@@ -299,13 +299,22 @@ const emptyQuery = {
     const previewParse = new bwindow.DOMParser().parseFromString(svgXss, 'image/svg+xml');
     assert(!previewParse.querySelector('parsererror'), 'Builder\'s live preview SVG must still parse as valid XML with an escaped p280Other');
     assert(!previewParse.querySelector('img'), 'parsing Builder\'s live preview SVG must not produce a real <img> element from p280Other');
-    // Real SVG at this preview size can wrap onto a new <tspan> mid-phrase
-    // (between "Protective" and "footwear") -- same tspan-boundary caveat
-    // documented elsewhere in this file -- so check both halves
-    // independently rather than one contiguous string.
+    // Real SVG at this preview size can wrap onto a new <tspan> at ANY
+    // space in the phrase (the exact wrap point moves whenever available
+    // vertical/horizontal space changes -- e.g. with the physical
+    // pictogram size, which is no longer a fixed constant -- see
+    // choosePictoMmAndRender() in label-render.js), and the delimiting
+    // space at a wrap point is not preserved when tspan text is
+    // concatenated back via .textContent. Word-wrapping only ever breaks
+    // BETWEEN words, never mid-word, so check each individual
+    // (space-delimited) word/token of the original text independently
+    // rather than any substring that spans a space -- robust to the wrap
+    // point landing anywhere.
     const previewText = previewParse.documentElement.textContent;
-    assert(previewText.includes('Protective'), 'Builder\'s live preview SVG must still show the original characters as plain visible text once parsed (opening word)');
-    assert(previewText.includes('footwear <img src=x onerror=alert(1)>'), 'Builder\'s live preview SVG must still show the original characters as plain visible text once parsed (rest of the malicious text, unescaped once parsed back to text)');
+    const xssTokens = XSS_OTHER.split(' '); // ['Protective','footwear','<img','src=x','onerror=alert(1)>']
+    for(const token of xssTokens){
+      assert(previewText.includes(token), `Builder's live preview SVG must still show the original characters as plain visible text once parsed (token: ${JSON.stringify(token)})`);
+    }
 
     // Save/reopen must retain the exact original plain value -- never
     // escaped, mangled, or stripped at rest.
@@ -410,13 +419,19 @@ const emptyQuery = {
     const xssSheetHTML = pdocument.getElementById('sheet-canvas').innerHTML;
     assert(!pdocument.getElementById('sheet-canvas').querySelector('img'), 'a malicious p280Other must never produce a real <img> element in the Composer sheet canvas');
     assert(xssSheetHTML.includes('&lt;img'), 'the sheet canvas markup must show p280Other\'s angle brackets HTML/XML-escaped, not raw');
-    // Real SVG at this small cell size wraps onto a new <tspan> mid-phrase
-    // (between "Protective" and "footwear") -- same tspan-boundary caveat as
-    // the earlier "Wear protective gloves/eye protection" check above, so
-    // check both halves independently rather than one contiguous string.
+    // Real SVG at this small cell size can wrap onto a new <tspan> at ANY
+    // space in the phrase -- the exact wrap point moves whenever available
+    // space changes (e.g. with the physical pictogram size, no longer a
+    // fixed constant -- see choosePictoMmAndRender() in label-render.js),
+    // and a wrap point's delimiting space isn't preserved when tspan text
+    // is concatenated via .textContent. Word-wrap only ever breaks BETWEEN
+    // words, never mid-word, so check each individual (space-delimited)
+    // word/token independently rather than any substring spanning a space.
     const xssSheetText = pdocument.getElementById('sheet-canvas').textContent;
-    assert(xssSheetText.includes('Wear protective gloves/Protective'), 'the malicious p280Other text must still be visible as plain text in the Composer sheet (opening words)');
-    assert(xssSheetText.includes('footwear <img src=x onerror=alert(1)>'), 'the malicious p280Other text must still be visible as plain text in the Composer sheet, unescaped when read via textContent (proves it is real text content, not a real element)');
+    const xssSheetTokens = ('Wear protective gloves/' + XSS_OTHER).split(' ');
+    for(const token of xssSheetTokens){
+      assert(xssSheetText.includes(token), `the malicious p280Other text must still be visible as plain text in the Composer sheet (token: ${JSON.stringify(token)})`);
+    }
 
     if (printErrors.length) throw new Error('jsdom runtime errors (print): ' + printErrors.join('; '));
 

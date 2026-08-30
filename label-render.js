@@ -355,9 +355,118 @@ function svgArcText(instanceId, text, cx, cy, r, fontSize, color, arcPos){
 // renderLabel(rawData, opts) - the canonical shared renderer
 // ============================================================
 
+// GB-CLP (retained/assimilated CLP Regulation (EC) No 1272/2008, Annex I,
+// §1.2.1, Table 1.3 — verify against the current authoritative text before
+// relying on these exact figures for anything beyond CLPeasy's own <=3 litre
+// product scope) sets an absolute floor of 10x10mm for a hazard pictogram,
+// and, for packages not exceeding 3 litres, a "16x16mm if possible" target.
+const PICTO_FLOOR_MM = 10;
+const PICTO_TARGET_MM = 16;
+const PICTO_SEARCH_PRECISION_MM = 0.1;
+
+// Resolves the correct physical pictogram size (mm) for one label, then
+// returns the full render at that size. The correct size is the LARGEST
+// value in [PICTO_FLOOR_MM, PICTO_TARGET_MM] at which every mandatory
+// element (pictograms, signal word, H statements, sensitisers, P
+// statements, business/footer info, all at their existing legibility
+// floors) still fits THIS label's own physical dimensions and content — a
+// roomy label reaches 16mm, a dense one shrinks only as far as it must, and
+// a label that can't fit mandatory content even at the 10mm floor stays at
+// 10mm and reports fits:false, exactly like any other overflow (export
+// stays blocked).
+//
+// The search re-uses the real rendering pipeline itself (via
+// opts._pictoMmOverride) to trial-render the same label at candidate mm
+// sizes and read the real, already-existing `fits` result computed at the
+// bottom of renderLabel() — so this can never drift out of sync with what
+// the label actually draws, and needs no separate/duplicated fit logic.
+// Deterministic bounded (binary) search, per spec: check the 16mm target
+// first (common case — most labels have room), then the 10mm floor as a
+// short-circuit for "impossible even at the minimum", then bisect between
+// them to the requested precision.
+//
+// IMPORTANT: the search itself is run at THREE FIXED reference resolutions
+// -- never at whatever pw/ph THIS call's real caller passed in -- and a
+// candidate mm size is only accepted if mandatory content fits at ALL
+// three. Each reference is a deterministic FORMULA of the label's own
+// mmW/mmH alone (never a runtime opts.pw), so the decision still depends
+// only on physical label dimensions, label content, and pictogram count,
+// per spec ("must depend only on physical label dimensions, label content,
+// and pictogram count -- not on Builder/Composer canvas or SVG pixel
+// dimensions") -- it is just evaluated against the three scale FAMILIES
+// this app actually renders at (Builder's fixed preview canvas, Composer's
+// on-screen zoom, and either page's export DPI), rather than only one.
+//
+// A single canonical reference is not enough: several OTHER, pre-existing,
+// UNRELATED font-size formulas further down this file (e.g. the
+// hazard-text auto-sizing ceiling, `_bsHi=clamp(BASE*0.13,8,28)`, and the
+// manual-override ceiling, `clamp(BASE*0.30,8,60)`) clamp to ABSOLUTE
+// SVG-viewBox units that are not proportional to pxPerMm -- so a resolution
+// in the middle of this app's actual range (Composer's on-screen preview,
+// roughly 3.7795*0.75 px/mm) can have LESS headroom than either Builder's
+// fixed-260 scale or the much higher export DPI, both of which happen to
+// hit the same generous absolute ceiling. Confirmed while building this
+// search: for an identical 52mm-circle/3-pictogram label with moderate
+// content, checking fit ONLY at Builder's 260-unit scale picked 12.5mm --
+// which then did NOT fit when that same 12.5mm was actually rendered at
+// Composer's real on-screen preview resolution, even though it fit fine at
+// both Builder's scale and Composer's export scale. That other clamp logic
+// is pre-existing, unrelated hazard-text-sizing behaviour (not part of
+// this task, not touched here, and should be flagged separately for
+// review since it can affect other sizing decisions too) -- checking all
+// three of this app's actual scale families here, and taking the most
+// conservative result, guarantees the ONE physical mm size this function
+// picks genuinely fits everywhere it will actually be used, without
+// silently changing that other (protected, CLP-related) logic.
+function choosePictoMmAndRender(rawData, opts){
+  const strippedOpts = Object.assign({}, opts);
+  delete strippedOpts.pw; delete strippedOpts.ph;
+  const {mmW, mmH} = getLabelDims(normalizeLabel(rawData), strippedOpts);
+  // The three scale families this app actually renders labels at (see
+  // getLabelDims()'s own default for Builder, and print.html's
+  // renderSheetPosition() for Composer's preview/export DPI) -- each a
+  // fixed formula of this label's own mmW/mmH, never a runtime opts.pw.
+  const _referenceOptsList = [
+    strippedOpts, // Builder preview/export: no override -> getLabelDims defaults to 260/mmW
+    Object.assign({}, strippedOpts, {pw: Math.round(mmW*3.7795*0.75), ph: Math.round(mmH*3.7795*0.75)}), // Composer on-screen preview (default zoom)
+    Object.assign({}, strippedOpts, {pw: Math.round(mmW*300/25.4), ph: Math.round(mmH*300/25.4)}), // Composer/Builder export DPI (300dpi)
+  ];
+  function fitsAtAllReferences(mm){
+    return _referenceOptsList.every(refOpts =>
+      renderLabel(rawData, Object.assign({}, refOpts, {_pictoMmOverride: mm})).fits
+    );
+  }
+  let chosenMm;
+  if(fitsAtAllReferences(PICTO_TARGET_MM)){
+    chosenMm = PICTO_TARGET_MM;
+  } else if(!fitsAtAllReferences(PICTO_FLOOR_MM)){
+    chosenMm = PICTO_FLOOR_MM; // even the floor doesn't fit at every reference scale -- keep the floor size regardless of caller resolution
+  } else {
+    let lo=PICTO_FLOOR_MM, hi=PICTO_TARGET_MM;
+    while(hi-lo > PICTO_SEARCH_PRECISION_MM){
+      const mid=(lo+hi)/2;
+      if(fitsAtAllReferences(mid)) lo=mid; else hi=mid;
+    }
+    chosenMm = lo;
+  }
+  // Real, final render at the caller's own actual resolution (opts.pw/ph,
+  // if any), fixed to the resolved physical mm size. THIS render's own
+  // `fits` (not the reference search's) is what's returned and is what
+  // actually gates export for this caller, exactly as before.
+  return renderLabel(rawData, Object.assign({}, opts, {_pictoMmOverride: chosenMm}));
+}
+
 function renderLabel(rawData, opts){
   opts = opts || {};
   if(!opts.instanceId) throw new Error('renderLabel: opts.instanceId is required (must be unique per rendered label in a document)');
+  // A top-level call (no _pictoMmOverride yet) always resolves the physical
+  // pictogram size first via the bounded search above, and returns that
+  // search's own winning render directly -- the rest of this function body
+  // only ever executes for a trial/final render where the candidate mm size
+  // has already been fixed by the caller (see choosePictoMmAndRender()).
+  if(opts._pictoMmOverride == null){
+    return choosePictoMmAndRender(rawData, opts);
+  }
   const instanceId = opts.instanceId;
   const data = normalizeLabel(rawData);
   const forExport = !!opts.forExport;
@@ -508,10 +617,16 @@ function renderLabel(rawData, opts){
   // scent: 22%, type: 13%, signal: 16%, pictos: 14%, H-stmts: 13%, sens: 11%, gap: 11%
   // ── SLOT HEIGHTS — picto is guaranteed ≥10mm per CLP Regulation, wraps into extra rows if needed ──
   const _pxPerMm = pw / mmW;
-  // 10mm minimum, per icon — this is a hard legal floor that must never be reduced to fit a row.
-  // Instead of shrinking icons, work out how many rows are needed at this floor size and
-  // reserve enough slot height up front for all of them.
-  const _minPictoPx = Math.ceil(10 * _pxPerMm);
+  // Physical pictogram size (mm) for THIS render, already resolved by the
+  // caller-side bounded search in choosePictoMmAndRender() -- never a
+  // hardcoded constant here, so the slot reservation below and the actual
+  // drawn icon size further down (which reads the same opts._pictoMmOverride)
+  // always agree for this specific trial/final size. 10mm is the absolute
+  // GB-CLP floor and is never reduced further to fit a row; instead, work out
+  // how many rows are needed at this size and reserve enough slot height up
+  // front for all of them.
+  const _pictoMm = opts._pictoMmOverride;
+  const _minPictoPx = Math.ceil(_pictoMm * _pxPerMm);
   const _pictoWEstimate = chordW(midY, 0.06);
   const _pictoGapEstimate = _pictoWEstimate * 0.04;
   const _pictoPerRowEst = Math.max(1, Math.floor((_pictoWEstimate + _pictoGapEstimate) / (_minPictoPx + _pictoGapEstimate)));
@@ -634,24 +749,23 @@ function renderLabel(rawData, opts){
   const nP        = pictos.length;
   const pictoSW   = chordW(curY + slot.picto*0.5, 0.06);
   const pxPerMm   = pw / mmW; // preview: 260/mmW; export: 300/25.4 ≈ 11.81
-  const minPictoSz = Math.ceil(10 * pxPerMm); // 10mm minimum, always — the hard legal floor, never reduced
+  const minPictoSz = Math.ceil(_pictoMm * pxPerMm); // physical _pictoMm-per-icon size for this render -- see _pictoMm above and choosePictoMmAndRender()
   const _pictoGapAtMin = pictoSW * 0.04;
   const pictoPerRow = Math.max(1, Math.floor((pictoSW + _pictoGapAtMin) / (minPictoSz + _pictoGapAtMin)));
   const pictoRows = [];
   for(let i=0;i<nP;i+=pictoPerRow) pictoRows.push(pictos.slice(i,i+pictoPerRow));
   if(!pictoRows.length) pictoRows.push([]);
-  // Pictogram size is always the physical 10mm-per-icon size (minPictoSz),
-  // derived from pxPerMm (pw/mmW) -- the same real-world 10mm icon
-  // regardless of which canvas/caller (Builder's fixed-260 preview canvas
-  // or Composer's mm-accurate sheet-cell canvas) is rendering it. A
-  // previous version additionally grew a single-row icon up to
-  // clamp(BASE*0.22,8,40) "for visual balance" -- that ceiling was
-  // expressed in absolute SVG-viewBox units, not tied to pw/mmW, so the
-  // *same* real label rendered a differently-sized pictogram depending on
-  // which canvas called renderLabel() (confirmed: up to ~34% larger on
-  // Composer than Builder for an identical 63mm label). Corrected per
-  // review -- one canonical size, no caller-dependent growth, no separate
-  // Composer formula.
+  // Pictogram size is always the physical _pictoMm-per-icon size
+  // (minPictoSz), derived from pxPerMm (pw/mmW) -- the same real-world
+  // physical icon regardless of which canvas/caller (Builder's fixed-260
+  // preview canvas or Composer's mm-accurate sheet-cell canvas) is
+  // rendering it. No caller-dependent growth, no separate Composer formula
+  // (confirmed: a previous absolute-SVG-unit growth cap produced up to
+  // ~34% size mismatch between Builder and Composer for an identical 63mm
+  // label; removed). _pictoMm itself is chosen once, physically, by
+  // choosePictoMmAndRender()'s bounded search between the 10mm GB-CLP floor
+  // and the 16mm "if possible" target -- the largest size in that range at
+  // which mandatory content still fits this label -- not a fixed constant.
   const pictoSz = minPictoSz;
   const pictoGap    = pictoSz * 0.04;
   const pictoRowGap = pictoSz * 0.18;
@@ -1061,6 +1175,11 @@ function renderLabel(rawData, opts){
     hazardYSlack: _hazardYSlack,
     footerClipped: _footerLegibilityClipped,
     unrecognizedCodes: _unrecognizedCodes.slice(),
+    // The physical pictogram size (mm) chosen for THIS render by
+    // choosePictoMmAndRender()'s bounded search -- between PICTO_FLOOR_MM
+    // (10) and PICTO_TARGET_MM (16). Exposed for transparency/testing, not
+    // currently read by Builder/Composer UI.
+    pictoSizeMm: _pictoMm,
   };
 
   // A label only fits if it clears every mandatory-content check, not just
