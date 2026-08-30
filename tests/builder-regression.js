@@ -4,6 +4,14 @@ const { JSDOM, VirtualConsole } = require('jsdom');
 
 const source = fs.readFileSync('builder.html', 'utf8')
   .replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
+// builder.html loads the shared renderer via <script src="label-render.js">
+// -- a same-origin/local file, not a CDN fetch this offline test harness
+// should skip. The generic src-stripping above (aimed at CDN scripts like
+// Supabase/JSZip that would otherwise try a real network fetch) can't tell
+// the two apart, so load label-render.js explicitly before the page's own
+// inline script runs, giving the exact same window.LabelRenderer the real
+// browser would have by the time buildSVG() calls it.
+const labelRendererSource = fs.readFileSync('label-render.js', 'utf8');
 const errors = [];
 const virtualConsole = new VirtualConsole();
 virtualConsole.on('jsdomError', error => errors.push(error.message));
@@ -20,6 +28,11 @@ const dom = new JSDOM(source, {
   pretendToBeVisual: true,
   virtualConsole,
   beforeParse(window) {
+    // Stub the canvas 2D context BEFORE evaluating label-render.js -- its
+    // module-level `_cvs.getContext('2d')` call runs immediately on load,
+    // and jsdom has no real canvas backend (returns null without this stub),
+    // which would otherwise leave `_ctx` null and crash the first
+    // measureText() call.
     window.HTMLCanvasElement.prototype.getContext = () => ({
       font:'',
       measureText(text){
@@ -28,6 +41,7 @@ const dom = new JSDOM(source, {
       },
       drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
     });
+    window.eval(labelRendererSource);
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
     window.scrollTo = () => {};
