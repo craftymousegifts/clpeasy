@@ -108,6 +108,63 @@ reflect what the actual label contains.
 
 Root-caused and fixed 29 Aug 2026 — see session log below for details.
 
+## Session log — 29 Aug 2026 (part 6)
+
+**Fixed and verified live on clpeasy.com (commit `794ce24` on `main`):**
+Print Sheet Composer clipping hazard/precautionary text (and the footer)
+off the edge of the label. Reported by Michaela immediately after part 5
+above shipped, by comparing the real Label Preview against the Sheet
+Preview for the same "eryryrty" label again. Root cause: full statement
+TEXT (part 5's fix) takes far more vertical room than the bare codes it
+replaced; at the label's real size (63mm circle) the fixed font sizes
+used for the H/sensitiser/P block, plus the interim footer-push fix from
+part 4, together pushed content past the label's own edge, where the
+circular clip-path silently cut it off mid-sentence — the P-statement
+text and the whole footer were being clipped away invisibly.
+
+Fix: ported builder.html's own `_layoutHazard()` binary-search
+auto-sizing engine (the real, approved Label Preview's actual mechanism)
+into print.html, replacing the fixed H/sensitiser/P font sizes with one
+shared font size that's searched for — shrinking from a ceiling down to
+a ~1.2mm legibility floor — until the whole block fits between the
+pictograms and the footer. The footer no longer needs to move at all
+(part 4's footer-push is superseded by this and was removed — the footer
+is back at its original fixed position, exactly like builder.html, since
+the hazard block itself now guarantees it fits above that line). If
+content still can't fit even at the floor size, only the P-statement
+text is hard-clipped at the footer boundary as a last resort — H and
+sensitiser text are never clipped — matching builder.html's own
+defensive fallback exactly.
+
+Tested via live function-injection against the actual deployed function,
+at the label's real px size (63mm; also checked 52mm, the sheet
+template's minimum): the real reconstructed "eryryrty" data — 3
+H-codes+EUH208, 1 sensitiser, 5 P-statements — now renders with zero
+overflow past the label edge and zero overlap at 63mm (previously the
+P-statement text and the entire footer were being clipped off); a normal
+single-hazard label is unaffected at both sizes; a deliberately extreme
+stress case (7 H-codes, 6 sensitisers, 14 P-statements — far beyond
+anything realistic) shows no overlaps at 52/63/100mm, with only a
+marginal (~2%) bounding-box measurement past the circle on one
+sensitiser line at 100mm — not visible text clipping, not investigated
+further. Re-verified against the live site after push (a first check hit
+Netlify's usual deploy-propagation delay and correctly still showed the
+pre-fix function; a second check after the deploy settled showed the fix
+live).
+
+**Discussed, not changed this session:** Michaela asked whether the
+composer could instead reuse a snapshot of the label builder.html has
+already rendered, rather than re-deriving the content itself — this
+would remove the drift-between-two-renderers root cause behind parts
+2/4/5/6 for good. Checked the real saved-label data: it only stores raw
+fields (scentName, hStatements, pStatements, sensitisers, etc.) — no
+rendered SVG/image is saved anywhere today, so there is nothing for
+print.html to reuse yet. Doing this properly would mean builder.html
+saving real SVG markup (not a bitmap, to keep 300 DPI export quality)
+alongside every saved/updated label, plus handling labels saved before
+that existed. Flagging as a real candidate for a dedicated follow-up
+task, not attempted here.
+
 ## Session log — 29 Aug 2026 (part 5)
 
 **Fixed and verified live on clpeasy.com (commit `d766564` on `main`):**
