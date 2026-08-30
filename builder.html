@@ -3090,18 +3090,30 @@ function escapeBuilderText(value){return String(value??'').replace(/[&<>"']/g,c=
 function canLeaveApprovedBuilderStep(step){
   if(step===1){
     readForm();
-    const usesCustom=S.size==='custom'||S.shape==='rectangle';
-    const width=Number(usesCustom?S.customW:S.size);
-    const height=Number(usesCustom?S.customH:S.size);
-    if(!Number.isFinite(width)||!Number.isFinite(height)||width<10||height<10){
-      alert('Please choose a valid label size before continuing.');
-      document.getElementById('custom-w')?.focus();
-      return false;
-    }
-    if(isCustomSizeBelowSupportedMinimum()){
-      alert(CUSTOM_SIZE_MIN_MSG);
-      document.getElementById('custom-w')?.focus();
-      return false;
+    // Custom sizes: ALL invalid cases (blank, 0, negative, below 10, and
+    // 10-51.9) must show the one approved CLPeasy-supported-minimum
+    // message -- isCustomSizeBelowSupportedMinimum() already treats a
+    // non-finite/blank-derived value as invalid (Number.isFinite check),
+    // so it alone is authoritative for S.size==='custom'. The older
+    // width<10 "valid label size" guard below is for PRESET sizes only
+    // (S.size a fixed mm value, not 'custom' -- currently 52/63mm, both
+    // circle) and must not run for -- or intercept with a different
+    // message -- a custom size. Preset validation itself is unchanged.
+    if(S.size==='custom'){
+      if(isCustomSizeBelowSupportedMinimum()){
+        alert(CUSTOM_SIZE_MIN_MSG);
+        document.getElementById('custom-w')?.focus();
+        return false;
+      }
+    } else {
+      const usesCustom=S.shape==='rectangle';
+      const width=Number(usesCustom?S.customW:S.size);
+      const height=Number(usesCustom?S.customH:S.size);
+      if(!Number.isFinite(width)||!Number.isFinite(height)||width<10||height<10){
+        alert('Please choose a valid label size before continuing.');
+        document.getElementById('custom-w')?.focus();
+        return false;
+      }
     }
   }
   if(step===2){

@@ -96,44 +96,45 @@ const EXPECTED_MSG = 'CLPeasy supports custom label dimensions from 52mm. Choose
     bwindow.onDimInput();
   }
 
-  const boundaryValues = [0, -5, 51, 51.9, 52, 60];
+  // 'blank' is included per Michaela's explicit requirement that a blank
+  // Custom entry be treated as invalid and show the SAME approved message
+  // as every other below-52mm case -- not a distinct "blank" message.
+  const boundaryValues = ['blank', 0, -5, 3, 9, 10, 51, 51.9, 52, 60];
   const shapes = ['circle', 'square', 'rectangle'];
 
-  // Mirrors readForm()'s own (pre-existing, unrelated-to-this-feature)
-  // parsing exactly: parseInt() truncates decimals, and a falsy parsed
-  // result (only 0, since parseInt('-5') is truthy) falls back to a
-  // default rather than surfacing as 0 -- both quirks predate this change
-  // and are reproduced here only so the test predicts the CORRECT
-  // pre-existing behaviour rather than a hand-guessed threshold.
-  function readFormWidth(raw){ return Math.min(parseInt(raw)||50, 150); }
+  function setCustomDimsRaw(shape, wRaw, hRaw){
+    bwindow.selectShape(shape);
+    bwindow.selectSize('custom');
+    bdocument.getElementById('custom-w').value = wRaw==='blank' ? '' : String(wRaw);
+    if(shape==='rectangle') bdocument.getElementById('custom-h').value = hRaw==='blank' ? '' : String(hRaw);
+    bwindow.onDimInput();
+  }
 
   for(const shape of shapes){
     for(const w of boundaryValues){
-      const h = shape==='rectangle' ? w : w; // isolate width; height tested separately below for rectangle
-      setCustomDims(shape, w, h);
+      const h = w; // isolate width; height tested separately below for rectangle
+      setCustomDimsRaw(shape, w, h);
       fillMinimalValidForm();
-      const expectBlocked = w < 52;
+      // 'blank' resolves (via onDimInput()/readForm()'s own pre-existing
+      // `||50` fallback) to 50mm, which is itself below 52mm -- so it must
+      // block, same as every other case in this list.
+      const numericW = w==='blank' ? 50 : w;
+      const expectBlocked = numericW < 52;
       const isBelow = bwindow.eval('isCustomSizeBelowSupportedMinimum()');
       assert.strictEqual(isBelow, expectBlocked, `${shape} width=${w}: isCustomSizeBelowSupportedMinimum() should be ${expectBlocked}`);
 
-      // Step 1 progression. Note: canLeaveApprovedBuilderStep(1) calls the
-      // PRE-EXISTING readForm() first, which re-parses the raw DOM input
-      // with only an upper Math.min(...,150) cap and NO lower floor (unlike
-      // onDimInput()'s Math.max(rawW,10) floor) -- so a raw value below 10
-      // (0, -5) still trips the older, pre-existing "valid label size"
-      // guard (width<10) before ever reaching the new 52mm check. That
-      // pre-existing guard and its generic message are untouched, unrelated
-      // functionality -- not something this feature should alter -- so
-      // values <10 are expected to surface the OLDER message, and only
-      // values in [10,52) are expected to surface the new CLPeasy-supported-
-      // minimum message.
+      // Step 1 progression. Every invalid CUSTOM size -- blank, 0, negative,
+      // below 10, or 10-51.9 -- must show the ONE approved CLPeasy-
+      // supported-minimum message. The older, separate "Please choose a
+      // valid label size before continuing." width<10 guard is for PRESET
+      // sizes only and must never fire for -- or intercept -- a custom
+      // size (verified explicitly below, after this loop, since none of
+      // Builder's current presets are invalid).
       bwindow.__lastAlert = null;
       const canLeave = bwindow.canLeaveApprovedBuilderStep(1);
       assert.strictEqual(canLeave, !expectBlocked, `${shape} width=${w}: Step 1 progression should be ${expectBlocked?'blocked':'allowed'}`);
       if(expectBlocked){
-        const parsedW = readFormWidth(w);
-        const expectedStep1Msg = parsedW < 10 ? 'Please choose a valid label size before continuing.' : EXPECTED_MSG;
-        assert.strictEqual(bwindow.__lastAlert, expectedStep1Msg, `${shape} width=${w}: Step 1 block must show the expected message`);
+        assert.strictEqual(bwindow.__lastAlert, EXPECTED_MSG, `${shape} width=${w}: Step 1 block must show the approved CLPeasy-supported-minimum message, not the older generic "valid label size" wording`);
       }
 
       // Save
@@ -154,8 +155,10 @@ const EXPECTED_MSG = 'CLPeasy supports custom label dimensions from 52mm. Choose
       const blockedForExport = bwindow.eval('window._labelBlockDownload');
       assert.strictEqual(blockedForExport, expectBlocked, `${shape} width=${w}: window._labelBlockDownload should be ${expectBlocked}`);
       // The entered value itself must never be silently altered -- the
-      // input still shows exactly what was typed.
-      assert.strictEqual(bdocument.getElementById('custom-w').value, String(w), `${shape} width=${w}: the custom-w input must still show the exact value the user entered, not a silently-corrected one`);
+      // input still shows exactly what was typed (including staying blank
+      // for the blank case).
+      const expectedRawValue = w==='blank' ? '' : String(w);
+      assert.strictEqual(bdocument.getElementById('custom-w').value, expectedRawValue, `${shape} width=${w}: the custom-w input must still show the exact value the user entered, not a silently-corrected one`);
     }
   }
 
@@ -178,6 +181,19 @@ const EXPECTED_MSG = 'CLPeasy supports custom label dimensions from 52mm. Choose
   // that happens not to exist yet.
   bwindow.eval(`S.size='40'; S.customW=40; S.customH=40; S.shape='circle';`);
   assert.strictEqual(bwindow.eval('isCustomSizeBelowSupportedMinimum()'), false, 'a non-custom (preset) size must be exempt from the custom-size minimum, even below 52mm');
+
+  // Preset validation itself must remain UNCHANGED: an invalid preset
+  // (S.size a fixed value below 10, not 'custom') must still surface the
+  // older, pre-existing "Please choose a valid label size before
+  // continuing." message via Step 1 -- proving the restructured
+  // canLeaveApprovedBuilderStep(1) still runs that separate guard, and
+  // that the new CLPeasy-supported-minimum message never leaks into the
+  // preset path.
+  bwindow.eval(`S.size='5'; S.shape='circle'; S.customW=40; S.customH=40;`);
+  bwindow.__lastAlert = null;
+  const presetInvalidCanLeave = bwindow.canLeaveApprovedBuilderStep(1);
+  assert.strictEqual(presetInvalidCanLeave, false, 'an invalid preset size (5mm) must still block Step 1 progression');
+  assert.strictEqual(bwindow.__lastAlert, 'Please choose a valid label size before continuing.', 'an invalid PRESET size must show the older generic message, unchanged -- not the CLPeasy-supported-minimum wording, which is for custom sizes only');
 
   // HTML min="52" on both custom dimension inputs.
   assert.strictEqual(bdocument.getElementById('custom-w').getAttribute('min'), '52', 'custom-w input must have min="52"');
@@ -249,5 +265,5 @@ const EXPECTED_MSG = 'CLPeasy supports custom label dimensions from 52mm. Choose
 
   if (printErrors.length) throw new Error('jsdom runtime errors (print): ' + printErrors.join('; '));
 
-  console.log('custom-size-minimum checks passed (0/negative/51/51.9/52/>52 for circle/square/rectangle, Step 1 + save + export all blocked with the exact CLPeasy-supported-minimum wording, entered value never silently altered, presets exempt, Composer refuses legacy sub-52mm custom labels)');
+  console.log('custom-size-minimum checks passed (blank/0/negative/3/9/10/51/51.9/52/>52 for circle/square/rectangle, Step 1 + save + export all blocked with the ONE approved CLPeasy-supported-minimum message for every invalid custom case, older preset-only "valid label size" message proven unchanged and non-leaking, entered value never silently altered, presets exempt, Composer refuses legacy sub-52mm custom labels)');
 })().catch(e => { console.error(e); process.exit(1); });
