@@ -588,6 +588,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .fdel-cancel{width:100%;background:transparent;border:1px solid var(--border);color:var(--muted);padding:9px;border-radius:8px;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;}
 .fdel-cancel:hover{border-color:var(--muted);}
 
+/* P280 protection-item picker modal — reuses the fdel-overlay/fdel-box
+   overlay+card pattern above for visual consistency; adds its own
+   checkbox-row and "other" input styling only. */
+.p280-item-row{display:flex;align-items:center;gap:9px;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.p280-item-row:hover{border-color:var(--teal);}
+.p280-item-row input[type="checkbox"]{width:16px;height:16px;accent-color:var(--teal);flex:0 0 auto;}
+.p280-other-label{font-size:12px;color:var(--muted);margin:12px 0 6px;font-family:'DM Sans',sans-serif;}
+.p280-other-input{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;font-size:13px;font-family:'DM Sans',sans-serif;box-sizing:border-box;}
+.p280-other-input:focus{outline:none;border-color:var(--teal);}
+.p280-modal-error{font-size:12px;color:#DC2626;margin-top:10px;display:none;}
+.p280-confirm{width:100%;background:var(--teal);color:white;border:none;padding:10px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:14px;margin-bottom:8px;}
+.p280-confirm:hover{background:var(--teal-dark);}
+
 /* SHARED TRUST FOOTER — same across Dashboard, Create Label, My Labels, Account */
 .shell-trust{display:grid;grid-template-columns:1.05fr 1fr 0.95fr 1fr;gap:0;padding:0;border-top:3px solid var(--teal);background:#fff;border:1px solid var(--border);border-radius:16px;margin:24px 0;overflow:hidden;position:relative;z-index:1;}
 .shell-trust-item{display:flex;align-items:center;gap:10px;padding:26px 15px;border-left:1px solid var(--border);}
@@ -1315,9 +1328,25 @@ const SENSITISERS=[
   {name:'Iso E Super',cat:'1B',cas:'54464-57-2'},
 ];
 const H_LIB=[{code:'H225',desc:'Highly flammable liquid and vapour'},{code:'H226',desc:'Flammable liquid and vapour'},{code:'H228',desc:'Flammable solid'},{code:'H301',desc:'Toxic if swallowed'},{code:'H302',desc:'Harmful if swallowed'},{code:'H304',desc:'May be fatal if swallowed and enters airways'},{code:'H311',desc:'Toxic in contact with skin'},{code:'H312',desc:'Harmful in contact with skin'},{code:'H314',desc:'Causes severe skin burns and eye damage'},{code:'H315',desc:'Causes skin irritation'},{code:'H317',desc:'May cause an allergic skin reaction'},{code:'H318',desc:'Causes serious eye damage'},{code:'H319',desc:'Causes serious eye irritation'},{code:'H331',desc:'Toxic if inhaled'},{code:'H332',desc:'Harmful if inhaled'},{code:'H334',desc:'May cause allergy or asthma symptoms if inhaled'},{code:'H335',desc:'May cause respiratory irritation'},{code:'H336',desc:'May cause drowsiness or dizziness'},{code:'H361',desc:'Suspected of damaging fertility or the unborn child'},{code:'H371',desc:'May cause damage to organs'},{code:'H373',desc:'May cause damage to organs through prolonged or repeated exposure'},{code:'H400',desc:'Very toxic to aquatic life'},{code:'H401',desc:'Toxic to aquatic life'},{code:'H410',desc:'Very toxic to aquatic life with long lasting effects'},{code:'H411',desc:'Toxic to aquatic life with long lasting effects'},{code:'H412',desc:'Harmful to aquatic life with long lasting effects'},{code:'H413',desc:'May cause long lasting harmful effects to aquatic life'},{code:'EUH066',desc:'Repeated exposure may cause skin dryness or cracking'},{code:'EUH208',desc:'Contains sensitiser — may produce an allergic reaction'},{code:'EUH071',desc:'Corrosive to the respiratory tract'},{code:'EUH210',desc:'Safety data sheet available on request'},{code:'H200',desc:'Unstable explosive'},{code:'H201',desc:'Explosive; mass explosion hazard'},{code:'H202',desc:'Explosive; severe projection hazard'},{code:'H203',desc:'Explosive; fire, blast or projection hazard'},{code:'H204',desc:'Fire or projection hazard'},{code:'H205',desc:'May mass explode in fire'},{code:'H223',desc:'Flammable aerosol'},{code:'H224',desc:'Extremely flammable liquid and vapour'},{code:'H240',desc:'Heating may cause an explosion'},{code:'H241',desc:'Heating may cause a fire or explosion'},{code:'H242',desc:'Heating may cause a fire'},{code:'H250',desc:'Catches fire spontaneously if exposed to air'},{code:'H251',desc:'Self-heating; may catch fire'},{code:'H252',desc:'Self-heating in large quantities; may catch fire'},{code:'H260',desc:'In contact with water releases flammable gases which may ignite spontaneously'},{code:'H261',desc:'In contact with water releases flammable gas'},{code:'H270',desc:'May cause or intensify fire; oxidiser'},{code:'H271',desc:'May cause fire or explosion; strong oxidiser'},{code:'H272',desc:'May intensify fire; oxidiser'},{code:'H280',desc:'Contains gas under pressure; may explode if heated'},{code:'H281',desc:'Contains refrigerated gas; may cause cryogenic burns or injury'},{code:'H282',desc:'Extremely flammable chemical under pressure: may explode if heated'},{code:'H283',desc:'Flammable chemical under pressure: may explode if heated'},{code:'H284',desc:'Chemical under pressure: may explode if heated'},{code:'H290',desc:'May be corrosive to metals'},{code:'H300',desc:'Fatal if swallowed'},{code:'H310',desc:'Fatal in contact with skin'},{code:'H316',desc:'Causes mild skin irritation'},{code:'H330',desc:'Fatal if inhaled'},{code:'H340',desc:'May cause genetic defects'},{code:'H341',desc:'Suspected of causing genetic defects'},{code:'H350',desc:'May cause cancer'},{code:'H351',desc:'Suspected of causing cancer'},{code:'H360',desc:'May damage fertility or the unborn child'},{code:'H362',desc:'May cause harm to breast-fed children'},{code:'H370',desc:'Causes damage to organs'},{code:'H372',desc:'Causes damage to organs through prolonged or repeated exposure'}];
-const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product container or label at hand'},{code:'P102',desc:'Keep out of reach of children'},{code:'P103',desc:'Read label before use'},{code:'P210',desc:'Keep away from heat and ignition sources. No smoking'},{code:'P233',desc:'Keep container tightly closed'},{code:'P260',desc:'Do not breathe vapours or dust'},{code:'P261',desc:'Avoid breathing vapours and dust'},{code:'P271',desc:'Use only outdoors or in a well-ventilated area'},{code:'P273',desc:'Avoid release to the environment'},{code:'P301+P310',desc:'IF SWALLOWED: immediately call a POISON CENTRE or doctor'},{code:'P301+P312',desc:'IF SWALLOWED: call a POISON CENTRE or doctor if unwell'},{code:'P302+P352',desc:'IF ON SKIN: wash with plenty of water'},{code:'P304+P340',desc:'IF INHALED: remove to fresh air and keep comfortable for breathing'},{code:'P305+P351+P338',desc:'IF IN EYES: rinse cautiously with water for several minutes'},{code:'P312',desc:'Call a POISON CENTRE or doctor if you feel unwell'},{code:'P313',desc:'Get medical advice/attention'},{code:'P314',desc:'Get medical advice if you feel unwell'},{code:'P321',desc:'Specific treatment: see label'},{code:'P330',desc:'Rinse mouth'},{code:'P331',desc:'Do NOT induce vomiting'},{code:'P332+P313',desc:'If skin irritation occurs: get medical advice/attention'},{code:'P333+P313',desc:'If skin irritation or rash occurs: get medical advice'},{code:'P337+P313',desc:'If eye irritation persists: get medical advice'},{code:'P370+P378',desc:'In case of fire: use appropriate media for extinction'},{code:'P391',desc:'Collect spillage'},{code:'P403+P233',desc:'Store in a well-ventilated place. Keep container tightly closed'},{code:'P211',desc:'Do not spray on an open flame or other ignition source'},{code:'P501',desc:'Dispose of contents and container in accordance with local regulations'}];
+const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product container or label at hand'},{code:'P102',desc:'Keep out of reach of children'},{code:'P103',desc:'Read label before use'},{code:'P210',desc:'Keep away from heat and ignition sources. No smoking'},{code:'P233',desc:'Keep container tightly closed'},{code:'P260',desc:'Do not breathe vapours or dust'},{code:'P261',desc:'Avoid breathing vapours and dust'},{code:'P271',desc:'Use only outdoors or in a well-ventilated area'},{code:'P273',desc:'Avoid release to the environment'},{code:'P301+P310',desc:'IF SWALLOWED: immediately call a POISON CENTRE or doctor'},{code:'P301+P312',desc:'IF SWALLOWED: call a POISON CENTRE or doctor if unwell'},{code:'P302+P352',desc:'IF ON SKIN: wash with plenty of water'},{code:'P304+P340',desc:'IF INHALED: remove to fresh air and keep comfortable for breathing'},{code:'P305+P351+P338',desc:'IF IN EYES: rinse cautiously with water for several minutes'},{code:'P312',desc:'Call a POISON CENTRE or doctor if you feel unwell'},{code:'P313',desc:'Get medical advice/attention'},{code:'P314',desc:'Get medical advice if you feel unwell'},{code:'P321',desc:'Specific treatment: see label'},{code:'P330',desc:'Rinse mouth'},{code:'P331',desc:'Do NOT induce vomiting'},{code:'P332+P313',desc:'If skin irritation occurs: get medical advice/attention'},{code:'P333+P313',desc:'If skin irritation or rash occurs: get medical advice'},{code:'P337+P313',desc:'If eye irritation persists: get medical advice'},{code:'P370+P378',desc:'In case of fire: use appropriate media for extinction'},{code:'P391',desc:'Collect spillage'},{code:'P403+P233',desc:'Store in a well-ventilated place. Keep container tightly closed'},{code:'P211',desc:'Do not spray on an open flame or other ignition source'},{code:'P501',desc:'Dispose of contents and container in accordance with local regulations'},
+// P280 (verified against the retained GB-CLP Regulation (EC) No 1272/2008,
+// Annex IV, Table 6.2, legislation.gov.uk, current in-force UK text) is a
+// SELECTABLE statement, not one fixed sentence -- only the items that
+// actually apply to the finished product are printed, chosen via the P280
+// picker (openP280Modal()). `desc` here is deliberately a neutral
+// placeholder, shown only as the chip tooltip -- it is NEVER what gets
+// printed on a label; the real per-label wording comes from
+// LabelRenderer.buildP280Wording(). This entry MUST stay byte-identical to
+// label-render.js's own P_LIB entry for P280 (see
+// tests/p280-precautionary-statement.js's drift-check) -- the two are the
+// only P_LIB definitions in the app; this is not a third copy.
+{code:'P280',desc:'Wear the applicable protective equipment (select which items apply when adding this code)'}];
 // ── STATE ─────────────────────────────────────────────────────
-const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,hazardFSOverride:null,scentFSOverride:null,bizNameFSOverride:null,hazardYOffset:null,typeFSOverride:null,sigFSOverride:null};
+const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,hazardFSOverride:null,scentFSOverride:null,bizNameFSOverride:null,hazardYOffset:null,typeFSOverride:null,sigFSOverride:null,
+  // P280's own selected protection items (see openP280Modal()/buildP280Wording
+  // in label-render.js). p280Items: subset of LabelRenderer.P280_ITEMS keys;
+  // p280Other: optional free-text extra item. Empty = no valid selection yet.
+  p280Items:[],p280Other:''};
 // ── PRODUCT TYPE GUIDANCE ─────────────────────────────────────
 const FRAG_LOAD_TIPS={
   'Scented Candle':'Recommended: 6–10%. Your CLP must be for the actual % used — you can overestimate but never underestimate.',
@@ -2410,6 +2439,7 @@ function saveLabel(){plausible('Label Saved to Library');
     bgColour:(document.getElementById('label-bg-colour')?.value)||'#ffffff',
     pStatements:S.pStatements||'',textColour:S.textColour||'dark',showBorder:S.showBorder!==false,
     labelLang:document.getElementById('label-lang')?.value||'en',
+    p280Items:Array.isArray(S.p280Items)?[...S.p280Items]:[],p280Other:S.p280Other||'',
     hazardFSOverride:S.hazardFSOverride,scentFSOverride:S.scentFSOverride,
     bizNameFSOverride:S.bizNameFSOverride,hazardYOffset:S.hazardYOffset,
     typeFSOverride:S.typeFSOverride,sigFSOverride:S.sigFSOverride,
@@ -2438,6 +2468,13 @@ function loadLabel(i){
   S.hSelected=(S.hStatements||'').split(',').map(code=>code.trim()).filter(Boolean);
   S.pStatements=e.pStatements||'';
   S.pSelected=(S.pStatements||'').split(',').map(code=>code.trim()).filter(Boolean);
+  // Older labels saved before this field existed have no p280Items/p280Other
+  // at all -- default to empty, NOT to every item. If the loaded label's
+  // pStatements still contains "P280" with nothing here to back it, it
+  // correctly renders (and Step 3 gates) as an incomplete/unrecognised code
+  // rather than silently showing every protection item.
+  S.p280Items=Array.isArray(e.p280Items)?[...e.p280Items]:[];
+  S.p280Other=e.p280Other||'';
   S.bizName=e.bizName||'';S.bizAddress=e.bizAddress||'';S.bizPhone=e.bizPhone||'';
   S.bizWebsite=e.bizWebsite||'';S.netWeight=e.netWeight||'';S.fragLoad=e.fragLoad||'';S.burnTime=e.burnTime||'';S.batchNum=e.batchNum||'';
   S.supplier=e.supplier||'';S.hideEN15494=!!e.hideEN15494;
@@ -2777,7 +2814,63 @@ function toggleLib(id,tog){
   tog.textContent=(vis?'▼ Show':'▲ Hide')+tog.textContent.slice(tog.textContent.indexOf(' ',2));
 }
 function toggleHChip(el,code){el.classList.toggle('selected');const i=S.hSelected.indexOf(code);if(i>-1)S.hSelected.splice(i,1);else S.hSelected.push(code);document.getElementById('h-statements').value=S.hSelected.join(', ');syncPictogramsFromH();}
-function togglePChip(el,code){el.classList.toggle('selected');const i=S.pSelected.indexOf(code);if(i>-1)S.pSelected.splice(i,1);else S.pSelected.push(code);document.getElementById('p-statements').value=S.pSelected.join(', ');updateLabel();}
+// P280 ("Wear protective gloves/protective clothing/eye protection/face
+// protection/hearing protection/…") is a SELECTABLE GB-CLP statement, not
+// one fixed sentence -- only the items that actually apply to the finished
+// product should ever be printed. Clicking the chip to ADD it opens a
+// picker (openP280Modal()) instead of adding it immediately; the code and
+// its selected wording are only committed to S.pStatements once the user
+// confirms at least one applicable item (see confirmP280Modal()). Clicking
+// an already-selected P280 chip removes it, exactly like any other chip,
+// and clears its saved selection. Every other P-code's toggle behaviour is
+// unchanged below.
+function togglePChip(el,code){
+  if(code==='P280'){
+    if(S.pSelected.includes('P280')){
+      el.classList.remove('selected');
+      const i=S.pSelected.indexOf('P280');if(i>-1)S.pSelected.splice(i,1);
+      S.p280Items=[];S.p280Other='';
+      document.getElementById('p-statements').value=S.pSelected.join(', ');
+      updateLabel();
+    } else {
+      openP280Modal();
+    }
+    return;
+  }
+  el.classList.toggle('selected');const i=S.pSelected.indexOf(code);if(i>-1)S.pSelected.splice(i,1);else S.pSelected.push(code);document.getElementById('p-statements').value=S.pSelected.join(', ');updateLabel();
+}
+function openP280Modal(){
+  const opts=document.getElementById('p280-item-opts');
+  opts.innerHTML=LabelRenderer.P280_ITEMS.map(it=>`
+    <label class="p280-item-row">
+      <input type="checkbox" value="${escapeBuilderText(it.key)}" ${(S.p280Items||[]).includes(it.key)?'checked':''}>
+      ${escapeBuilderText(it.label)}
+    </label>`).join('');
+  document.getElementById('p280-other-input').value=S.p280Other||'';
+  document.getElementById('p280-modal-error').style.display='none';
+  document.getElementById('p280Modal').classList.add('show');
+}
+function closeP280Modal(){document.getElementById('p280Modal').classList.remove('show');}
+function confirmP280Modal(){
+  const checked=[...document.querySelectorAll('#p280-item-opts input[type="checkbox"]:checked')].map(cb=>cb.value);
+  const other=(document.getElementById('p280-other-input').value||'').trim();
+  // At least one applicable item (a standard tick, or a genuine "other")
+  // is required -- P280 must never be accepted with nothing selected,
+  // which is what would silently fall back to printing everything.
+  if(!checked.length && !other){
+    document.getElementById('p280-modal-error').style.display='block';
+    return;
+  }
+  S.p280Items=checked;
+  S.p280Other=other;
+  if(!S.pSelected.includes('P280'))S.pSelected.push('P280');
+  document.getElementById('p-statements').value=S.pSelected.join(', ');
+  const chip=document.querySelector('#p-chips .h-chip[data-code="P280"]');
+  if(chip)chip.classList.add('selected');
+  closeP280Modal();
+  updateLabel();
+}
+document.addEventListener('click',function(e){if(e.target&&e.target.id==='p280Modal')closeP280Modal();});
 
 function renderTags(){
   const tags=document.getElementById('allergen-tags');
@@ -3024,6 +3117,16 @@ function canLeaveApprovedBuilderStep(step){
     const pCodes=(S.pStatements||'').split(',').map(v=>v.trim()).filter(Boolean);
     const unknown=[...hCodes.filter(code=>!H_LIB.some(x=>x.code===code)),...pCodes.filter(code=>!P_LIB.some(x=>x.code===code))];
     if(unknown.length){alert('Please resolve the unrecognised hazard or precautionary codes before continuing: '+unknown.join(', '));return false;}
+    // P280 is present in P_LIB by code (so the generic "unknown" check above
+    // doesn't catch it), but it's a selectable statement -- it must not be
+    // allowed through Step 3 without at least one protection item chosen
+    // (mirrors confirmP280Modal()'s own requirement, as a defensive guard
+    // for any path that could otherwise leave it incomplete, e.g. a legacy
+    // saved label reopened here without ever completing the picker).
+    if(pCodes.includes('P280') && !LabelRenderer.buildP280Wording({p280Items:S.p280Items,p280Other:S.p280Other})){
+      alert('P280 needs at least one applicable protection item selected before continuing. Click the P280 chip to choose.');
+      return false;
+    }
   }
   if(step===4){
     const phone=(document.getElementById('biz-phone')?.value||'').trim();
@@ -3421,6 +3524,7 @@ function buildSVG(forExport=false){
     sensitisers:S.sensitisers, pictograms:S.pictograms,
     textColour:S.textColour, showBorder:S.showBorder,
     hideEN15494:S.hideEN15494, labelLang:S.labelLang,
+    p280Items:S.p280Items, p280Other:S.p280Other,
   };
   const opts={
     instanceId:'builder-main', forExport,
@@ -3666,7 +3770,17 @@ setTimeout(()=>{
 },300);
 function buildSummary(){
   readForm();const{mmW,mmH}=getDims();
-  const fullCodes=(raw,lib)=>(raw||'').split(',').map(v=>v.trim()).filter(Boolean).map(code=>{const hit=lib.find(x=>x.code===code);return hit?`${code} — ${hit.desc}`:code;}).join('; ')||'—';
+  // P280 is resolved to its per-label selected wording (same source the
+  // shared renderer uses), not P_LIB's neutral placeholder desc -- keeps
+  // this summary table showing exactly what will print. Every other H/P
+  // code's lookup (including every other P-code) is unchanged.
+  const fullCodes=(raw,lib)=>(raw||'').split(',').map(v=>v.trim()).filter(Boolean).map(code=>{
+    if(lib===P_LIB && code==='P280'){
+      const w=LabelRenderer.buildP280Wording({p280Items:S.p280Items,p280Other:S.p280Other});
+      return w?`${code} — ${w}`:`${code} — (no protection items selected yet -- open Step 3 to choose)`;
+    }
+    const hit=lib.find(x=>x.code===code);return hit?`${code} — ${hit.desc}`:code;
+  }).join('; ')||'—';
   const items=[['Shape',S.shape.charAt(0).toUpperCase()+S.shape.slice(1)],['Size',`${mmW} × ${mmH}mm`],['Product',S.scentName||'—'],['Type',S.productType||'—'],['Signal word',S.signal||'—'],['H/EUH statements',fullCodes(S.hStatements,H_LIB)],['P statements',fullCodes(S.pStatements,P_LIB)],['Sensitisers',S.sensitisers.join(', ')||'—'],['Business',S.bizName||'—']];
   document.getElementById('label-summary').innerHTML=items.map(([k,v])=>`<div><strong>${escapeBuilderText(k)}</strong>${escapeBuilderText(v)}</div>`).join('');
 }
@@ -4316,6 +4430,26 @@ function initExtensions(){
     <div class="fdel-sub" id="fdel-sub"></div>
     <div class="fdel-opts" id="fdel-opts"></div>
     <button class="fdel-cancel" onclick="closeFdelModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- ── P280 PROTECTION-ITEM PICKER MODAL ────────────────────────
+     P280 ("Wear protective gloves/protective clothing/eye
+     protection/face protection/hearing protection/…") is a
+     selectable GB-CLP statement, not one fixed sentence — only the
+     items that actually apply to the finished product should be
+     printed. Opened by openP280Modal() when the P280 chip is
+     clicked to ADD it (not to remove it); see togglePChip(). -->
+<div class="fdel-overlay" id="p280Modal">
+  <div class="fdel-box">
+    <div class="fdel-title">P280 — protective equipment</div>
+    <div class="fdel-sub">Select the protective equipment that actually applies to this finished product. Only the items you tick are printed — the statement is not one fixed sentence.</div>
+    <div class="fdel-opts" id="p280-item-opts"></div>
+    <div class="p280-other-label">Other item (optional)</div>
+    <input type="text" class="p280-other-input" id="p280-other-input" placeholder="e.g. footwear">
+    <div class="p280-modal-error" id="p280-modal-error">Please select at least one item, or enter an "other" item, before adding P280.</div>
+    <button class="p280-confirm" onclick="confirmP280Modal()">Add P280 with these items</button>
+    <button class="fdel-cancel" onclick="closeP280Modal()">Cancel</button>
   </div>
 </div>
 <div class="label-done-splash" id="label-done-splash" style="display: none;">

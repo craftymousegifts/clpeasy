@@ -37,21 +37,18 @@ const labelLavender = {
 };
 // Mirrors the real-world stress case from the 29 Aug 2026 footer-overlap
 // fix (3 H-codes, 6 sensitisers, 5 P-statements incl. two combined codes).
-// NOTE: originally used P280 as the 5th P-statement, but P280 (a real,
-// valid GB-CLP code -- "Wear protective gloves/eye protection/face
-// protection") is not currently in CLPeasy's own P_LIB, so the shared
-// renderer correctly reports it as unrecognised and (since the fit
-// contract fix -- see label-render.js) fits:false. That P_LIB gap is a
-// real, pre-existing content-completeness issue worth flagging separately;
-// it is not something this test should patch around by expecting an
-// unrecognised code to still count as "fits". Swapped for P501 (also in
-// P_LIB, and thematically apt alongside P273 for an aquatic-hazard label)
-// so this fixture tests real, fully-supported content.
+// P280 (verified GB-CLP wording, see label-render.js's P_LIB) is a
+// recognised, SELECTABLE code -- restored as the 5th P-statement with a
+// concrete p280Items selection (gloves + eye protection), matching what
+// the Builder picker would save. A P280 code with no selection is
+// correctly treated as unrecognised/incomplete (see
+// tests/p280-precautionary-statement.js), so this fixture supplies one.
 const labelVanilla = {
   scentName:'Vanilla Candle', productType:'Scented Candle', signal:'WARNING',
   shape:'rectangle', size:'custom', customW:99.1, customH:57.3,
   bizName:'Test Biz', hStatements:'H317,H411,H315',
-  pStatements:'P302+P352,P333+P313,P305+P351+P338,P273,P501',
+  pStatements:'P302+P352,P333+P313,P305+P351+P338,P273,P280',
+  p280Items:['gloves','eye'],
   sensitisers:['Linalool','Limonene','Citral','Geraniol','Eugenol','Coumarin'],
   pictograms:['exclamation','aquatic']
 };
