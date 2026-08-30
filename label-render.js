@@ -159,9 +159,19 @@ function getLabelDims(data, opts){
   }
   mmW = Math.min(Math.max(isFinite(mmW) ? mmW : 50, 10), 150);
   mmH = Math.min(Math.max(isFinite(mmH) ? mmH : 50, 10), 150);
+  // pw/ph are the CANONICAL internal layout coordinate space -- always
+  // 260 units wide (260 * mmH/mmW tall), regardless of any opts.pw/opts.ph
+  // a caller might pass. Every layout calculation, text-fit calculation,
+  // pictogram search and the final fits decision run entirely in this one
+  // fixed coordinate system (see renderLabel() below), so a label's layout
+  // can never differ by caller/canvas/zoom -- only the OUTER rendered
+  // <svg width/height> (controlled separately, from opts.pw/opts.ph, at
+  // the point the SVG is assembled) differs. opts is accepted for call-
+  // signature compatibility but no longer affects this function's return
+  // value.
   const scale = 260 / mmW;
-  const pw = opts.pw || Math.round(mmW*scale);
-  const ph = opts.ph || Math.round(mmH*scale);
+  const pw = Math.round(mmW*scale); // = 260
+  const ph = Math.round(mmH*scale); // = 260 * mmH/mmW
   return {mmW, mmH, pw, ph};
 }
 
@@ -385,75 +395,32 @@ const PICTO_SEARCH_PRECISION_MM = 0.1;
 // short-circuit for "impossible even at the minimum", then bisect between
 // them to the requested precision.
 //
-// IMPORTANT: the search itself is run at THREE FIXED reference resolutions
-// -- never at whatever pw/ph THIS call's real caller passed in -- and a
-// candidate mm size is only accepted if mandatory content fits at ALL
-// three. Each reference is a deterministic FORMULA of the label's own
-// mmW/mmH alone (never a runtime opts.pw), so the decision still depends
-// only on physical label dimensions, label content, and pictogram count,
-// per spec ("must depend only on physical label dimensions, label content,
-// and pictogram count -- not on Builder/Composer canvas or SVG pixel
-// dimensions") -- it is just evaluated against the three scale FAMILIES
-// this app actually renders at (Builder's fixed preview canvas, Composer's
-// on-screen zoom, and either page's export DPI), rather than only one.
-//
-// A single canonical reference is not enough: several OTHER, pre-existing,
-// UNRELATED font-size formulas further down this file (e.g. the
-// hazard-text auto-sizing ceiling, `_bsHi=clamp(BASE*0.13,8,28)`, and the
-// manual-override ceiling, `clamp(BASE*0.30,8,60)`) clamp to ABSOLUTE
-// SVG-viewBox units that are not proportional to pxPerMm -- so a resolution
-// in the middle of this app's actual range (Composer's on-screen preview,
-// roughly 3.7795*0.75 px/mm) can have LESS headroom than either Builder's
-// fixed-260 scale or the much higher export DPI, both of which happen to
-// hit the same generous absolute ceiling. Confirmed while building this
-// search: for an identical 52mm-circle/3-pictogram label with moderate
-// content, checking fit ONLY at Builder's 260-unit scale picked 12.5mm --
-// which then did NOT fit when that same 12.5mm was actually rendered at
-// Composer's real on-screen preview resolution, even though it fit fine at
-// both Builder's scale and Composer's export scale. That other clamp logic
-// is pre-existing, unrelated hazard-text-sizing behaviour (not part of
-// this task, not touched here, and should be flagged separately for
-// review since it can affect other sizing decisions too) -- checking all
-// three of this app's actual scale families here, and taking the most
-// conservative result, guarantees the ONE physical mm size this function
-// picks genuinely fits everywhere it will actually be used, without
-// silently changing that other (protected, CLP-related) logic.
+// Resolution-independence note (corrected per review): this used to trial
+// -render at three separate fixed PIXEL resolutions to work around other,
+// unrelated absolute-SVG-unit clamps elsewhere in this file. That is no
+// longer needed. renderLabel() now runs its ENTIRE layout — including
+// those other clamps — in one fixed canonical coordinate space (pw/ph from
+// getLabelDims() are always 260 x 260*mmH/mmW; see that function's own
+// comment), and reserves opts.pw/opts.ph for the OUTER rendered <svg>
+// width/height only (assembled at the very end of renderLabel(), see
+// svgW/svgH below) — so trial-rendering with the real opts (pw/ph and
+// all) already runs the identical canonical layout regardless of what
+// the caller asked for, and a single search is correct by construction.
 function choosePictoMmAndRender(rawData, opts){
-  const strippedOpts = Object.assign({}, opts);
-  delete strippedOpts.pw; delete strippedOpts.ph;
-  const {mmW, mmH} = getLabelDims(normalizeLabel(rawData), strippedOpts);
-  // The three scale families this app actually renders labels at (see
-  // getLabelDims()'s own default for Builder, and print.html's
-  // renderSheetPosition() for Composer's preview/export DPI) -- each a
-  // fixed formula of this label's own mmW/mmH, never a runtime opts.pw.
-  const _referenceOptsList = [
-    strippedOpts, // Builder preview/export: no override -> getLabelDims defaults to 260/mmW
-    Object.assign({}, strippedOpts, {pw: Math.round(mmW*3.7795*0.75), ph: Math.round(mmH*3.7795*0.75)}), // Composer on-screen preview (default zoom)
-    Object.assign({}, strippedOpts, {pw: Math.round(mmW*300/25.4), ph: Math.round(mmH*300/25.4)}), // Composer/Builder export DPI (300dpi)
-  ];
-  function fitsAtAllReferences(mm){
-    return _referenceOptsList.every(refOpts =>
-      renderLabel(rawData, Object.assign({}, refOpts, {_pictoMmOverride: mm})).fits
-    );
+  function renderAt(mm){
+    return renderLabel(rawData, Object.assign({}, opts, {_pictoMmOverride: mm}));
   }
-  let chosenMm;
-  if(fitsAtAllReferences(PICTO_TARGET_MM)){
-    chosenMm = PICTO_TARGET_MM;
-  } else if(!fitsAtAllReferences(PICTO_FLOOR_MM)){
-    chosenMm = PICTO_FLOOR_MM; // even the floor doesn't fit at every reference scale -- keep the floor size regardless of caller resolution
-  } else {
-    let lo=PICTO_FLOOR_MM, hi=PICTO_TARGET_MM;
-    while(hi-lo > PICTO_SEARCH_PRECISION_MM){
-      const mid=(lo+hi)/2;
-      if(fitsAtAllReferences(mid)) lo=mid; else hi=mid;
-    }
-    chosenMm = lo;
+  const atTarget = renderAt(PICTO_TARGET_MM);
+  if(atTarget.fits) return atTarget;
+  const atFloor = renderAt(PICTO_FLOOR_MM);
+  if(!atFloor.fits) return atFloor; // even the floor doesn't fit -- keep the floor size; fits:false blocks export exactly as any other overflow already does
+  let lo=PICTO_FLOOR_MM, loResult=atFloor, hi=PICTO_TARGET_MM;
+  while(hi-lo > PICTO_SEARCH_PRECISION_MM){
+    const mid=(lo+hi)/2;
+    const midResult=renderAt(mid);
+    if(midResult.fits){ lo=mid; loResult=midResult; } else { hi=mid; }
   }
-  // Real, final render at the caller's own actual resolution (opts.pw/ph,
-  // if any), fixed to the resolved physical mm size. THIS render's own
-  // `fits` (not the reference search's) is what's returned and is what
-  // actually gates export for this caller, exactly as before.
-  return renderLabel(rawData, Object.assign({}, opts, {_pictoMmOverride: chosenMm}));
+  return loResult;
 }
 
 function renderLabel(rawData, opts){
@@ -1097,11 +1064,24 @@ function renderLabel(rawData, opts){
   </g>`:'';
 
   // ── ASSEMBLE ──────────────────────────────────────────────────
-  // Export: use 600dpi-equivalent viewBox for maximum raster quality
-  // 600dpi = 23.622 px/mm. Preview: use 260px-wide preview dimensions.
+  // pw/ph (from getLabelDims(), above) are the CANONICAL internal layout
+  // coordinate space -- always 260 x 260*mmH/mmW -- and are what the
+  // viewBox uses below. svgW/svgH are the OUTER rendered <svg width/
+  // height> attributes: purely a DISPLAY/EXPORT size, controlled by the
+  // caller's opts.pw/opts.ph (Composer's on-screen zoom, an arbitrary
+  // preview width, an export DPI), with the same sensible defaults as
+  // before when the caller doesn't ask for a specific size (Builder's own
+  // canonical-260 preview when not exporting; a 600dpi-equivalent raster
+  // target when exporting). Because the viewBox never changes, the
+  // browser/rasteriser scales the SAME canonical layout to whatever outer
+  // size is requested -- it never re-lays the label out at a different
+  // coordinate scale, so preview zoom, export DPI, or any other caller
+  // resolution can change how big the label is drawn on screen/paper, but
+  // can never change fits, warnings, the chosen pictogram mm size, text
+  // wrapping, or any element's position in layout units.
   const exportPxPerMm = 600/25.4; // 23.622 px/mm at 600dpi
-  const svgW=forExport?Math.round(mmW*exportPxPerMm):pw;
-  const svgH=forExport?Math.round(mmH*exportPxPerMm):ph;
+  const svgW = opts.pw || (forExport ? Math.round(mmW*exportPxPerMm) : pw);
+  const svgH = opts.ph || (forExport ? Math.round(mmH*exportPxPerMm) : ph);
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" viewBox="0 0 ${pw} ${ph}" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" image-rendering="optimizeQuality">
 <defs>${clip}<style>@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&amp;display=swap');</style></defs>
