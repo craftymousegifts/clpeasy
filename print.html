@@ -548,6 +548,19 @@ function checkRegistryCompatibility(e,t){
   return null;
 }
 
+// CLPeasy's own supported minimum for a CUSTOM label size -- 52mm on every
+// custom dimension, the same product-level floor builder.html enforces
+// going forward (see its isCustomSizeBelowSupportedMinimum()). A label
+// saved before that restriction existed (or otherwise carrying a
+// sub-52mm custom size) must still be refused here, not silently
+// rendered onto a sheet -- registry/preset sizes are never affected
+// (e.size==='custom' scopes this the same way Builder's own check does).
+function isCustomSizeBelowSupportedMinimumSaved(e){
+  if(!e || e.size!=='custom') return false;
+  const dims=getLabelDimsMM(e);
+  return !(Number.isFinite(dims.w)&&dims.w>=52) || !(Number.isFinite(dims.h)&&dims.h>=52);
+}
+
 // ── SINGLE VALIDATION AUTHORITY for anything that puts a label onto the
 // sheet -- Add, the +/- quantity buttons, and typing a quantity directly
 // all funnel through this one function so none of them can bypass a check
@@ -562,6 +575,9 @@ function canAddToSheet(e,qtyToAdd){
     return available<=0
       ? `Sheet is full (${slots} slots${usedNote}). Increase the sheet size or reduce quantities to add more labels.`
       : `Only ${available} slot${available===1?'':'s'} remaining on this sheet (${slots} total${usedNote}). Reduce the quantity or remove other labels first.`;
+  }
+  if(isCustomSizeBelowSupportedMinimumSaved(e)){
+    return 'CLPeasy supports custom label dimensions from 52mm. Choose 52mm or larger.\n\nThis saved label\'s custom size is below that -- edit it in Step 1 of the Label Builder before adding it to a sheet.';
   }
   const registryError=checkRegistryCompatibility(e,t);
   if(registryError)return registryError;

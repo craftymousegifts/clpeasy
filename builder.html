@@ -881,8 +881,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <div class="sdiv">Dimensions (mm)</div>
     <div class="custom-dims">
-      <div class="form-group"><label>Width (mm)</label><input type="number" id="custom-w" placeholder="e.g. 50" inputmode="numeric" min="10" max="150" oninput="onDimInput()"></div>
-      <div class="form-group"><label>Height (mm) <span id="height-note" style="font-weight:400;color:#6B7280;font-size:11px;"></span></label><input type="number" id="custom-h" placeholder="e.g. 40" inputmode="numeric" min="10" max="200" oninput="onDimInput()"></div>
+      <div class="form-group"><label>Width (mm)</label><input type="number" id="custom-w" placeholder="e.g. 50" inputmode="numeric" min="52" max="150" oninput="onDimInput()"></div>
+      <div class="form-group"><label>Height (mm) <span id="height-note" style="font-weight:400;color:#6B7280;font-size:11px;"></span></label><input type="number" id="custom-h" placeholder="e.g. 40" inputmode="numeric" min="52" max="200" oninput="onDimInput()"></div>
       <div id="custom-size-warn" class="field-alert field-alert-warn" style="display:none;grid-column:1/-1;margin-bottom:0;"></div>
     <div id="en15494-warn" class="field-alert field-alert-danger" style="display:none;grid-column:1/-1;margin-top:8px;margin-bottom:0;">
       🔴 <strong>EN 15494:2019 pictograms may not display clearly at this label size.</strong><br>
@@ -2427,6 +2427,7 @@ const LABEL_SCHEMA_VERSION=1;
 function saveLabel(){plausible('Label Saved to Library');
   readForm();
   if(!S.scentName){alert('Please enter a scent name before saving.');return;}
+  if(isCustomSizeBelowSupportedMinimum()){alert(CUSTOM_SIZE_MIN_MSG);return;}
   const entry={schemaVersion:LABEL_SCHEMA_VERSION,rendererVersion:LabelRenderer.RENDERER_VERSION,
     scentName:S.scentName,productType:S.productType,shape:S.shape,size:S.size,customW:S.customW,customH:S.customH,signal:S.signal,
     hStatements:S.hStatements,pictograms:[...S.pictograms],sensitisers:[...S.sensitisers],bizName:S.bizName,bizAddress:S.bizAddress,
@@ -3097,6 +3098,11 @@ function canLeaveApprovedBuilderStep(step){
       document.getElementById('custom-w')?.focus();
       return false;
     }
+    if(isCustomSizeBelowSupportedMinimum()){
+      alert(CUSTOM_SIZE_MIN_MSG);
+      document.getElementById('custom-w')?.focus();
+      return false;
+    }
   }
   if(step===2){
     const name=(document.getElementById('scent-name')?.value||'').trim();
@@ -3460,6 +3466,25 @@ function updateSizeWarnings(){
     }
   }
 }
+// CLPeasy's own supported minimum for a CUSTOM label size -- 52mm on every
+// custom dimension (circle diameter, square side, rectangle width AND
+// height). This is a product-level floor CLPeasy has chosen to support,
+// not a claim about what GB-CLP itself legally requires (see the wording
+// used everywhere this is surfaced: "CLPeasy supports custom label
+// dimensions from 52mm", never "legal minimum"). Approved PRESET sizes
+// (S.size a fixed mm value, not 'custom') are deliberately exempt --
+// checked first below -- even if a preset's own dimension is below 52mm.
+// Reads S.customW/S.customH (already parsed by readForm()/onDimInput()),
+// never re-parses the raw input itself, so it never silently changes what
+// the maker typed -- this only decides whether to block, not what value
+// is stored.
+function isCustomSizeBelowSupportedMinimum(){
+  if(S.size!=='custom') return false;
+  const w=Number(S.customW);
+  const h=Number(S.shape==='rectangle'?S.customH:S.customW);
+  return !(Number.isFinite(w)&&w>=52) || !(Number.isFinite(h)&&h>=52);
+}
+const CUSTOM_SIZE_MIN_MSG='CLPeasy supports custom label dimensions from 52mm. Choose 52mm or larger.';
 function onDimInput(){
   S.size='custom';
   document.querySelectorAll('.size-card').forEach(c=>c.classList.toggle('selected',c.dataset.size==='custom'));
@@ -3626,15 +3651,25 @@ function updateLabel(){
   // it the same way as clipped content -- block download and explain,
   // rather than silently print an internal code or silently drop it.
   const _hasUnrecognizedCodes = window._unrecognizedCodes && window._unrecognizedCodes.length>0;
-  window._labelBlockDownload = !!(window._labelLegibilityWarn || window._footerLegibilityClipped || _hasUnrecognizedCodes);
+  // Custom-size-below-CLPeasy's-supported-minimum fix: a custom size under
+  // 52mm must block export the same way clipped/unrecognised content does
+  // -- folded into the one existing block-download condition rather than a
+  // separate gate, so every export path (PNG/SVG/PDF, all funnelled
+  // through _downloadAllowed()) is covered automatically.
+  const _isCustomSizeTooSmall = isCustomSizeBelowSupportedMinimum();
+  window._labelBlockDownload = !!(window._labelLegibilityWarn || window._footerLegibilityClipped || _hasUnrecognizedCodes || _isCustomSizeTooSmall);
   // Wording (updated 3 Aug 2026, round 2 — per Michaela's CLP-labelling-focused
   // request): name the CLP labelling requirement specifically rather than
   // "required information" generically.
   const _blockHeading = _hasUnrecognizedCodes
     ? '⚠️ Download unavailable — unrecognised hazard/precautionary code'
+    : _isCustomSizeTooSmall
+    ? '⚠️ Download unavailable — custom size below CLPeasy\'s supported minimum'
     : '⚠️ Download unavailable — label size too small for CLP labelling requirements';
   const _blockBody = _hasUnrecognizedCodes
     ? 'CLPeasy doesn\'t recognise the code'+(window._unrecognizedCodes.length>1?'s':'')+' <strong>'+window._unrecognizedCodes.join(', ')+'</strong> and will not print it directly on your label, since that would show an internal code rather than the required statement text.<br><br>Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
+    : _isCustomSizeTooSmall
+    ? CUSTOM_SIZE_MIN_MSG+'<br><br>To create a downloadable label, return to Step 1 and increase the custom width'+(S.shape==='rectangle'?' and/or height':'')+' to 52mm or larger.'
     : window._footerLegibilityClipped
     ? 'Your business/supplier details cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling, so some required information would be left off.<br><br>To create a downloadable label, return to Step 1 and select a larger label size, or shorten your business details.<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
     : 'The required hazard and precautionary information cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, return to Step 1 and select a larger label size. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>';

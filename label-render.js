@@ -640,13 +640,19 @@ function renderLabel(rawData, opts){
   const pictoRows = [];
   for(let i=0;i<nP;i+=pictoPerRow) pictoRows.push(pictos.slice(i,i+pictoPerRow));
   if(!pictoRows.length) pictoRows.push([]);
-  // A single row with spare width can grow icons a little for visual balance on roomy labels;
-  // multiple rows always lock to the legal minimum so the block doesn't grow taller than necessary.
-  let pictoSz = minPictoSz;
-  if(pictoRows.length===1 && nP>0){
-    const _byWidth = (pictoSW - _pictoGapAtMin*(nP-1)) / nP;
-    pictoSz = Math.max(Math.min(_byWidth, clamp(BASE*0.22,8,40)), minPictoSz);
-  }
+  // Pictogram size is always the physical 10mm-per-icon size (minPictoSz),
+  // derived from pxPerMm (pw/mmW) -- the same real-world 10mm icon
+  // regardless of which canvas/caller (Builder's fixed-260 preview canvas
+  // or Composer's mm-accurate sheet-cell canvas) is rendering it. A
+  // previous version additionally grew a single-row icon up to
+  // clamp(BASE*0.22,8,40) "for visual balance" -- that ceiling was
+  // expressed in absolute SVG-viewBox units, not tied to pw/mmW, so the
+  // *same* real label rendered a differently-sized pictogram depending on
+  // which canvas called renderLabel() (confirmed: up to ~34% larger on
+  // Composer than Builder for an identical 63mm label). Corrected per
+  // review -- one canonical size, no caller-dependent growth, no separate
+  // Composer formula.
+  const pictoSz = minPictoSz;
   const pictoGap    = pictoSz * 0.04;
   const pictoRowGap = pictoSz * 0.18;
   const pictoBlockH = pictoRows.length*pictoSz + Math.max(pictoRows.length-1,0)*pictoRowGap;
