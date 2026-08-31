@@ -226,8 +226,29 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
     </div>
 
     <div id="custom-dims-panel" style="display:block;margin-bottom:4px;">
-      <div class="custom-dims-row">
+      <!-- Shown only once the sheet is locked to a non-square rectangle
+           (see initCustomRectLockIfNeeded()/syncCustomDimsPanel() in the
+           script below) -- a plain read-out of that label's own real
+           physical size, never independently editable, so the grid can
+           never disagree with what's actually on the sheet. Circle and
+           square (w===h) labels never show this row; they keep using the
+           single "Label mm" field beneath, completely unchanged. -->
+      <div class="custom-dims-row" id="cust-rect-dims-row" style="display:none;">
         <div class="dim-group">
+          <label>Label width mm</label>
+          <input type="number" id="cust-label-w" value="" disabled>
+        </div>
+        <div class="dim-group">
+          <label>Label height mm</label>
+          <input type="number" id="cust-label-h" value="" disabled>
+        </div>
+        <div class="dim-group">
+          <label>&nbsp;</label>
+          <div style="font-size:10.5px;color:var(--muted);line-height:1.3;padding-top:7px;">Locked to your label's real size</div>
+        </div>
+      </div>
+      <div class="custom-dims-row">
+        <div class="dim-group" id="cust-label-mm-group">
           <label>Label mm</label>
           <input type="number" id="cust-label-mm" value="52" min="52" max="150" oninput="rebuildSheet()">
         </div>
@@ -370,7 +391,7 @@ function updateProGate(){
 // place that reconciles both for every export control rather than letting
 // updateProGate() and renderSheetCanvas() fight over the same attributes.
 function updateExportButtonState(){
-  const blockedByFit=(typeof sheetFitIssues!=='undefined')&&sheetFitIssues.length>0;
+  const blockedByFit=((typeof sheetFitIssues!=='undefined')&&sheetFitIssues.length>0)||!!getCustomGridOverflow();
   const title=blockedByFit?'Fix the label(s) marked below before you can print or download this sheet.':'';
   const btnPdf=document.getElementById('btn-pdf');
   if(btnPdf){ btnPdf.disabled=!isPro||blockedByFit; btnPdf.title=title; }
@@ -383,9 +404,57 @@ function updateExportButtonState(){
 // output at once. Returns the alert message to show and refuse, or null
 // when every occupied position fits and export may proceed.
 function getSheetFitBlockMessage(){
+  // Checked first: a physically-impossible Custom Sheet grid (30 Aug 2026
+  // fix) is a whole-sheet configuration problem, not a per-label one, and
+  // takes priority -- see getCustomGridOverflowMessage().
+  const gridMsg=getCustomGridOverflowMessage();
+  if(gridMsg)return gridMsg;
   if(!sheetFitIssues||!sheetFitIssues.length)return null;
   const list=sheetFitIssues.map(i=>`• ${i.scentName}: ${i.reason}`).join('\n');
   return `This sheet can't be printed or downloaded yet -- ${sheetFitIssues.length} label${sheetFitIssues.length===1?'':'s'} ${sheetFitIssues.length===1?"doesn't":"don't"} fit:\n\n${list}\n\nFix, replace or remove the marked label(s) below, then try again.`;
+}
+
+// ── CUSTOM SHEET GRID/A4-FIT VALIDATION (30 Aug 2026 fix) ────────────
+// Root cause of the reported bug: a saved rectangle's real physical size
+// only ever fed the sheet's LOCK message (getLockedSize(), used for the
+// "Sheet locked to..." banner and to gate which further labels can be
+// added) -- it never fed the sheet's own slot geometry. Custom Sheet's
+// grid geometry came entirely from three independent user-typed fields
+// (Label mm / Cols / Rows) that nothing kept in sync with whatever label
+// was actually locked onto the sheet. A 57x99mm rectangle could therefore
+// be "locked" while the grid quietly kept rendering the stale 52mm/3x5
+// default -- a layout that both mis-sizes every cell AND, at 3 cols x 5
+// rows of 57x99mm labels with 10mm margins/5mm gaps, does not physically
+// fit on A4 at all (needs cols*(w+gapH)-gapH+2*margin <= 210mm and
+// rows*(h+gapV)-gapV+2*margin <= 297mm -- 3x5 fails both). Fixed by:
+// (1) initCustomRectLockIfNeeded() seeds the sheet's real cell size AND a
+//     valid starting Cols/Rows the moment the first non-square rectangle
+//     lands on an empty sheet; (2) getTplConfig() reads the cell footprint
+//     from that locked label (never cust-label-mm) whenever a non-square
+//     rectangle is locked; (3) this function blocks add/render/export
+//     whenever the CURRENT Cols/Rows (the user can still edit them) no
+//     longer fits that real footprint on A4, instead of silently
+//     rendering/exporting a grid that overflows or clips off the page.
+// Circle and square (w===h) Custom Sheet labels are entirely unaffected --
+// t.rectLocked is only ever true for a non-square rectangle (see
+// getTplConfig()), so this returns null for every other case, exactly
+// preserving the pre-existing (unvalidated) circle/square behaviour.
+function getCustomGridOverflow(){
+  if(currentTpl!=='custom')return null;
+  const t=getTplConfig();
+  if(!t.rectLocked)return null;
+  const availW=A4_W-t.marginL-t.marginR, availH=A4_H-t.marginT-t.marginB;
+  const maxCols=Math.max(0,Math.floor((availW+t.gapH)/(t.cellWidthMm+t.gapH)));
+  const maxRows=Math.max(0,Math.floor((availH+t.gapV)/(t.cellHeightMm+t.gapV)));
+  if(t.cols>maxCols||t.rows>maxRows){
+    return{cols:t.cols,rows:t.rows,maxCols,maxRows,cellW:t.cellWidthMm,cellH:t.cellHeightMm};
+  }
+  return null;
+}
+function getCustomGridOverflowMessage(){
+  const p=getCustomGridOverflow();
+  if(!p)return null;
+  return `This sheet's ${p.cols} × ${p.rows} grid doesn't physically fit on an A4 sheet at ${p.cellW}×${p.cellH}mm per label with the current margin/gap settings.\n\nThe maximum that fits is ${p.maxCols} column${p.maxCols===1?'':'s'} × ${p.maxRows} row${p.maxRows===1?'':'s'} (${p.maxCols*p.maxRows} labels). Reduce Cols/Rows, or the margin/gap, to continue.`;
 }
 
 // ── SHEET TEMPLATES (mm) ─────────────────────────────────────
@@ -479,6 +548,56 @@ function getLockedSize(){
   return {shape:first.shape||'circle', w:dims.w, h:dims.h};
 }
 
+// ── CUSTOM SHEET RECTANGLE LOCK (30 Aug 2026 fix) ────────────────────
+// Runs exactly once -- the moment `e` becomes the FIRST label on an
+// otherwise-empty Custom sheet (see addToSheet()'s wasEmpty check). A
+// circle or square (w===h) label is left alone entirely: it keeps using
+// the pre-existing single "Label mm" field, unchanged. A non-square
+// rectangle instead seeds the sheet's Cols/Rows to the largest grid that
+// actually fits THIS label's real size on A4 (so the sheet renders
+// correctly immediately, instead of landing straight in a blocked state)
+// -- the user can still lower Cols/Rows afterwards; raising them past
+// what fits is refused by getCustomGridOverflow(). The cell footprint
+// itself is never read from an editable field -- getTplConfig() takes it
+// straight from getLockedSize() -- so nothing here needs to keep a
+// separate width/height value in sync going forward.
+function initCustomRectLockIfNeeded(e){
+  if(currentTpl!=='custom')return;
+  if((e.shape||'circle')!=='rectangle')return;
+  const dims=getLabelDimsMM(e);
+  if(Math.abs(dims.w-dims.h)<0.05)return; // square rectangle -- single field still applies
+  const m=Math.max(0,parseFloat(document.getElementById('cust-margin')?.value)||10);
+  const gapH=Math.max(0,parseFloat(document.getElementById('cust-gapH')?.value)||5);
+  const gapV=Math.max(0,parseFloat(document.getElementById('cust-gapV')?.value)||5);
+  const maxCols=Math.max(1,Math.floor((A4_W-2*m+gapH)/(dims.w+gapH)));
+  const maxRows=Math.max(1,Math.floor((A4_H-2*m+gapV)/(dims.h+gapV)));
+  const colsEl=document.getElementById('cust-cols'), rowsEl=document.getElementById('cust-rows');
+  if(colsEl)colsEl.value=maxCols;
+  if(rowsEl)rowsEl.value=maxRows;
+}
+
+// Keeps the Custom-dims panel's visible controls truthful to the current
+// lock state -- called from rebuildSheet() so every path that can change
+// sheetItems (add/remove/qty/template switch) re-syncs it, not just the
+// one-time seeding above. Purely a display sync: safe to call on every
+// render since it only ever mirrors getLockedSize(), never invents or
+// overwrites a user-adjustable value (Cols/Rows/Margin/gaps are untouched
+// here).
+function syncCustomDimsPanel(){
+  if(currentTpl!=='custom')return;
+  const locked=getLockedSize();
+  const isRectLock=!!(locked&&locked.shape==='rectangle'&&Math.abs(locked.w-locked.h)>=0.05);
+  const mmGroup=document.getElementById('cust-label-mm-group');
+  const rectRow=document.getElementById('cust-rect-dims-row');
+  if(mmGroup)mmGroup.style.display=isRectLock?'none':'';
+  if(rectRow)rectRow.style.display=isRectLock?'':'none';
+  if(isRectLock){
+    const wEl=document.getElementById('cust-label-w'), hEl=document.getElementById('cust-label-h');
+    if(wEl)wEl.value=locked.w;
+    if(hEl)hEl.value=locked.h;
+  }
+}
+
 function renderSavedList(){
   const arr=getSaved();
   const el=document.getElementById('saved-list');
@@ -567,6 +686,10 @@ function isCustomSizeBelowSupportedMinimumSaved(e){
 // the others enforce. Returns an error string to show and refuse, or null
 // when adding `qtyToAdd` more of label `e` is allowed right now.
 function canAddToSheet(e,qtyToAdd){
+  // Whole-sheet geometry problem takes priority over any per-label check --
+  // see getCustomGridOverflowMessage() (30 Aug 2026 fix).
+  const gridMsg=getCustomGridOverflowMessage();
+  if(gridMsg)return gridMsg;
   const t=getTplConfig();
   const slots=t.cols*t.rows;
   const available=slots-reservedUsed-getTotalQty();
@@ -601,9 +724,11 @@ function addToSheet(idx){
   const e=arr[idx];if(!e)return;
   const err=canAddToSheet(e,1);
   if(err){alert(err);return;}
+  const wasEmpty=sheetItems.length===0;
   const existing=sheetItems.findIndex(s=>s.id===idx);
   if(existing>=0){sheetItems[existing].qty+=1;}
   else{sheetItems.push({id:idx,labelData:e,qty:1});}
+  if(wasEmpty)initCustomRectLockIfNeeded(e);
   renderSavedList();
   rebuildSheet();
 }
@@ -740,15 +865,35 @@ function getTplConfig(){
   }
   const t={...TEMPLATES[currentTpl]};
   if(currentTpl==='custom'){
+    // A non-square rectangle locked onto the sheet (initCustomRectLockIfNeeded()
+    // above) has its own real physical width/height -- the single square
+    // "Label mm" field can't represent that, so the cell footprint comes
+    // straight from the locked label itself in that case, never from
+    // cust-label-mm (30 Aug 2026 fix -- reported: a 57x99mm rectangle was
+    // locked onto the sheet but the grid kept using the stale 52mm/3x5
+    // default). Circle and square (w===h) labels are unaffected: t.rectLocked
+    // is false for them, so they fall straight through to the existing
+    // single-field behaviour on the next line, exactly as before.
+    const locked=getLockedSize();
+    t.rectLocked=!!(locked&&locked.shape==='rectangle'&&Math.abs(locked.w-locked.h)>=0.05);
+    // 31 Aug 2026 fix: t.shape drives the empty-slot placeholder outline
+    // (see renderSheetCanvas() below). It must track whatever shape is
+    // actually locked on the sheet right now, not TEMPLATES.custom's
+    // static 'circle' default -- so a locked square or rectangle shows a
+    // square/rectangular blank, not an oval. Falls back to the static
+    // default only while the sheet is unlocked (empty), preserving the
+    // pre-existing look for a blank Custom sheet exactly as before.
+    t.shape=locked?(locked.shape||'circle'):(t.shape||'circle');
     t.labelMM=Math.max(52,parseFloat(document.getElementById('cust-label-mm')?.value)||52);
     t.cols=parseInt(document.getElementById('cust-cols')?.value)||3;
     t.rows=parseInt(document.getElementById('cust-rows')?.value)||5;
     const m=parseFloat(document.getElementById('cust-margin')?.value)||10;
-    t.marginT=m;t.marginL=m;
+    t.marginT=m;t.marginL=m;t.marginR=m;t.marginB=m;
     t.gapH=parseFloat(document.getElementById('cust-gapH')?.value)||5;
     t.gapV=parseFloat(document.getElementById('cust-gapV')?.value)||5;
+    if(t.rectLocked){ t.cellWidthMm=locked.w; t.cellHeightMm=locked.h; }
   }
-  t.cellWidthMm=t.labelMM;t.cellHeightMm=t.labelMM;
+  if(t.cellWidthMm===undefined){ t.cellWidthMm=t.labelMM; t.cellHeightMm=t.labelMM; }
   t.fixedLabelMM=false;
   return t;
 }
@@ -768,6 +913,7 @@ function changeZoom(delta){
 
 // ── SHEET REBUILD ─────────────────────────────────────────────
 function rebuildSheet(){
+  syncCustomDimsPanel();
   renderSheetCanvas();
   updateSummary();
 }
@@ -808,6 +954,34 @@ function renderSheetCanvas(){
     return;
   }
 
+  // A physically-impossible Custom Sheet grid (30 Aug 2026 fix) is shown as
+  // a clear, specific message on the canvas itself instead of rendering
+  // cells that would silently overflow/clip off the physical A4 page --
+  // never partially built, never a guess at "the closest that fits".
+  const gridOverflow=getCustomGridOverflow();
+  if(gridOverflow){
+    const canvas=document.getElementById('sheet-canvas');
+    canvas.style.width=Math.round(A4_W*3.7795*zoom)+'px';
+    canvas.style.height=Math.round(A4_H*3.7795*zoom)+'px';
+    canvas.innerHTML=`<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;">
+      <div style="max-width:320px;">
+        <div style="font-size:32px;margin-bottom:10px;">⚠️</div>
+        <div style="font-family:'DM Serif Display',serif;font-size:17px;color:#991B1B;margin-bottom:8px;">Grid too large for A4</div>
+        <div style="font-size:12.5px;color:#7a5c00;white-space:pre-line;line-height:1.6;">${xe(getCustomGridOverflowMessage())}</div>
+      </div>
+    </div>`;
+    sheetFitIssues=[];
+    const panel=document.getElementById('fit-issues-panel');
+    if(panel){
+      panel.style.display='block';
+      panel.innerHTML=`<div class="fip-head">⚠ This grid doesn't fit on A4 and must be reduced before you can print or download this sheet.</div>
+        <div class="fit-issue-row"><div class="fir-reason">${xe(getCustomGridOverflowMessage())}</div></div>`;
+    }
+    updateExportButtonState();
+    updateSummary();
+    return;
+  }
+
   // Convert mm → px for screen (96dpi equivalent for display, zoom applied)
   const MM2PX=3.7795*zoom;
   const shW=Math.round(A4_W*MM2PX);
@@ -834,7 +1008,21 @@ function renderSheetCanvas(){
   // sheet has no registry entry, so this stays null and the placeholder
   // keeps its existing, unchanged circular look.
   const regForShape=t.registryKey?getRegistryTemplate(t.registryKey):null;
-  const emptySlotStyleAttr=regForShape?` style="border-radius:${Math.round(regForShape.cornerRadiusMm*MM2PX)}px;"`:'';
+  // Custom Sheet's own blank placeholder (31 Aug 2026 fix): must reflect
+  // whichever shape is currently locked (t.shape, read live off
+  // getLockedSize() in getTplConfig() above -- resets automatically the
+  // moment the sheet is emptied or a different-shaped label takes over).
+  // 'circle' keeps relying on .empty-slot's existing CSS default
+  // (border-radius:50%) -- zero change from before. Square/rectangle get
+  // a small fixed corner radius instead of that 50%, which is what was
+  // turning every non-circle Custom-sheet blank into an oval regardless
+  // of the cell's real (possibly non-square, e.g. 57x99mm) box dimensions
+  // -- the box itself already carries the correct physical width/height
+  // via cellWPX/cellHPX, shared with the occupied-slot markup above, so
+  // this only ever changes the corner rounding, never the box size.
+  const emptySlotStyleAttr=regForShape
+    ? ` style="border-radius:${Math.round(regForShape.cornerRadiusMm*MM2PX)}px;"`
+    : (currentTpl==='custom'&&t.shape!=='circle' ? ' style="border-radius:4px;"' : '');
 
   const canvas=document.getElementById('sheet-canvas');
   canvas.style.width=shW+'px';
