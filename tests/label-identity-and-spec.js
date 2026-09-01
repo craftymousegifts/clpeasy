@@ -307,7 +307,7 @@ function idsOf(arrLike){ return Array.from(arrLike, function(e){ return e.id; })
       sb.localStorage.setItem('clpeasy_labels__u_user-dup2', JSON.stringify([legacyCircle52()]));
       const arr = await LL.init();
       const bad = [arr[0], Object.assign({}, arr[0])]; // same id twice
-      assert.throws(() => LL.persistSaved(bad), /valid, unique id/, 'persistSaved() must reject a collection containing duplicate ids');
+      assert.throws(() => LL._internal.persistSaved(bad), /valid, unique id/, 'persistSaved() must reject a collection containing duplicate ids');
 
       // findById() is not itself the ambiguity guard -- init()/persistSaved()
       // are, and are proven above to reject duplicate ids before findById
@@ -618,7 +618,7 @@ function idsOf(arrLike){ return Array.from(arrLike, function(e){ return e.id; })
       // Editing: change a field on record B, persist, id must be unchanged.
       const idxB = LL.findIndexById(arr, idB);
       arr[idxB] = Object.assign({}, arr[idxB], { scentName: 'Fireside Amber (renamed)' });
-      LL.persistSaved(arr);
+      LL._internal.persistSaved(arr);
       let reread = LL.getSaved();
       assert.strictEqual(LL.findById(reread, idB).scentName, 'Fireside Amber (renamed)');
       assert.strictEqual(LL.findById(reread, idB).id, idB, 'editing a record must preserve its id');
@@ -628,14 +628,14 @@ function idsOf(arrLike){ return Array.from(arrLike, function(e){ return e.id; })
       const clone = Object.assign({}, source, { id: LL.generateId(), scentName: source.scentName + ' (Copy)' });
       assert.notStrictEqual(clone.id, idC, 'a duplicate must receive a distinct id, never the source id');
       reread.push(clone);
-      LL.persistSaved(reread);
+      LL._internal.persistSaved(reread);
       reread = LL.getSaved();
       assert.strictEqual(reread.length, 4);
       assert(LL.findById(reread, idC), 'the original record C must still exist, untouched, after duplication');
 
       // Delete: remove record A (the earliest); B and the duplicate's ids must be unaffected.
       let afterDelete = reread.filter(e => e.id !== idA);
-      LL.persistSaved(afterDelete);
+      LL._internal.persistSaved(afterDelete);
       afterDelete = LL.getSaved();
       assert.strictEqual(LL.findById(afterDelete, idA), null, 'deleted record must no longer resolve');
       assert(LL.findById(afterDelete, idB), "an unrelated record's id must survive deleting an earlier record");
@@ -643,7 +643,7 @@ function idsOf(arrLike){ return Array.from(arrLike, function(e){ return e.id; })
 
       // Reorder: shuffle the remaining array's order and persist; every id must be unchanged and still resolve.
       const reordered = afterDelete.slice().reverse();
-      LL.persistSaved(reordered);
+      LL._internal.persistSaved(reordered);
       const afterReorder = LL.getSaved();
       assert(LL.findById(afterReorder, idB), 'reordering must never change an existing record\'s identity');
       assert(LL.findById(afterReorder, idC));
@@ -700,7 +700,7 @@ function idsOf(arrLike){ return Array.from(arrLike, function(e){ return e.id; })
       assert.strictEqual(guestArr[0].scentName, 'Cedar', 'must now read the guest namespace, not a leftover of alice\'s data');
 
       // Writing under 'guest' must never touch alice's key.
-      LL.persistSaved(guestArr);
+      LL._internal.persistSaved(guestArr);
       const aliceRawStillIntact = JSON.parse(sb.localStorage.getItem('clpeasy_labels__u_alice'));
       assert.strictEqual(aliceRawStillIntact.length, 1);
       assert.strictEqual(aliceRawStillIntact[0].id, aliceArr[0].id, "a write scoped to 'guest' must never alter alice's stored key");
@@ -748,7 +748,7 @@ function idsOf(arrLike){ return Array.from(arrLike, function(e){ return e.id; })
       const editable = LL.getSaved();
       const idx = LL.findIndexById(editable, idToEdit);
       editable[idx] = Object.assign({}, editable[idx], { scentName: 'Renamed After Snapshot', hazards: [] });
-      LL.persistSaved(editable);
+      LL._internal.persistSaved(editable);
 
       assert.strictEqual(snapshotForSheet.scentName, 'Vanilla Bean', "a Composer-style snapshot taken via getSaved() must be unaffected by a LATER library edit to the same record -- it is an intentional detached snapshot, not a live reference");
       assert.deepStrictEqual(Array.from(snapshotForSheet.hazards), ['H315', 'H319']);
@@ -1179,7 +1179,7 @@ function idsOf(arrLike){ return Array.from(arrLike, function(e){ return e.id; })
       // release exactly that reservation, and no other.
       const toSave = LL.getSaved();
       toSave.push(Object.assign({}, legacyRect63(), { id: idA }));
-      LL.persistSaved(toSave);
+      LL._internal.persistSaved(toSave);
 
       const pendingAfter = new Set(LL._internal.debugPendingIds());
       assert.strictEqual(pendingAfter.has(idA), false, "persistSaved() must release the reservation for an id it actually persisted");
@@ -1187,6 +1187,555 @@ function idsOf(arrLike){ return Array.from(arrLike, function(e){ return e.id; })
       assert.strictEqual(pendingAfter.has(idNext), true, "persistSaved() must leave the unrelated idNext reservation untouched too");
 
       console.log('PART 23 passed: a storage-event cache refresh never releases an unpersisted generateId() reservation; persistSaved() releases exactly the reservations it actually committed, leaving unrelated pending reservations intact');
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // Checkpoint B0 -- LabelLibrary.mutate(), the shared coordinated
+    // mutation path every real page write must use instead of the old
+    // whole-array-snapshot persistSaved(). PARTs 24-32 below.
+    // ══════════════════════════════════════════════════════════════════
+
+    // ══════════════════════════════════════════════════════════════════
+    // PART 24 -- two tabs editing DIFFERENT labels, genuinely racing
+    // against one real shared storage backend with no Web Lock available
+    // (the honest no-Web-Locks fallback path). Neither edit may be lost:
+    // mutate()'s compare-before-write + bounded retry must detect the
+    // other tab's write and recompute its own proposal against the fresh
+    // (already-containing-the-other-edit) snapshot, rather than either
+    // silently overwriting the other.
+    // ══════════════════════════════════════════════════════════════════
+    {
+      const sbA = loadInto(makeWindow());
+      const sbB = loadInto(makeWindow());
+      const sharedStore = (function(){
+        const map = new Map();
+        return {
+          getItem(k){ return map.has(k) ? map.get(k) : null; },
+          setItem(k, v){ map.set(k, String(v)); },
+          removeItem(k){ map.delete(k); },
+        };
+      })();
+      Object.defineProperty(sbA, 'localStorage', { value: sharedStore, configurable: true });
+      Object.defineProperty(sbB, 'localStorage', { value: sharedStore, configurable: true });
+
+      const namespace = 'mutate-two-tabs';
+      const key = 'clpeasy_labels__u_' + namespace;
+      sharedStore.setItem(key, JSON.stringify([legacyCircle52(), legacyRect63()]));
+      sbA.LabelLibrary.setNamespace(namespace);
+      sbB.LabelLibrary.setNamespace(namespace);
+      const seed = await sbA.LabelLibrary.init();
+      sbB.LabelLibrary.setNamespace(namespace); // B picks up the same already-migrated store
+      await sbB.LabelLibrary.init();
+      const idX = seed.find(e => e.scentName === 'Vanilla Bean').id; // A will edit this one
+      const idY = seed.find(e => e.scentName === 'Cedar').id;        // B will edit this one
+
+      // NO_CHANGE is a per-window sentinel object (each jsdom window has
+      // its own module instance) -- a mutator handed to sbX.mutate() must
+      // reference sbX's OWN NO_CHANGE, never a different window's.
+      const editMutator = (sb, id, patch) => (current) => {
+        const idx = current.findIndex(e => e.id === id);
+        if(idx === -1) return sb.LabelLibrary.NO_CHANGE;
+        const next = current.slice();
+        next[idx] = Object.assign({}, next[idx], patch);
+        return next;
+      };
+
+      // Both kicked off together (Promise.all), not sequentially awaited --
+      // each runs synchronously up to its first real await (inside
+      // mutate(), at `await mutator(...)`), so both genuinely interleave
+      // against the same shared store with no lock serialising them.
+      const [outcomeA, outcomeB] = await Promise.all([
+        sbA.LabelLibrary.mutate(editMutator(sbA, idX, { scentName: 'Vanilla Bean (edited by A)' })),
+        sbB.LabelLibrary.mutate(editMutator(sbB, idY, { scentName: 'Cedar (edited by B)' })),
+      ]);
+
+      assert.strictEqual(outcomeA.committed, true);
+      assert.strictEqual(outcomeB.committed, true);
+
+      const finalRaw = JSON.parse(sharedStore.getItem(key));
+      const finalX = finalRaw.find(e => e.id === idX);
+      const finalY = finalRaw.find(e => e.id === idY);
+      assert.strictEqual(finalX.scentName, 'Vanilla Bean (edited by A)', "tab A's edit must survive a genuine race against tab B, never silently overwritten");
+      assert.strictEqual(finalY.scentName, 'Cedar (edited by B)', "tab B's edit must survive a genuine race against tab A, never silently overwritten");
+      assert.strictEqual(finalRaw.length, 2, 'no record may be duplicated or dropped by the race');
+
+      console.log('PART 24 passed: two tabs editing different labels under a genuine no-Web-Locks race both survive -- mutate() detects the other tab\'s write via compare-before-write and recomputes against the fresh snapshot rather than losing either change');
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // PART 25 -- delete racing with edit of the SAME record. There is no
+    // way to "merge" a delete and an edit of the same record, so the only
+    // safe, well-defined outcome is: the record ends up deleted (delete
+    // wins), and whichever mutate() call resolves its own proposal
+    // against a snapshot that already reflects the deletion must treat
+    // "the record is gone" as NO_CHANGE, never resurrect it or throw.
+    // ══════════════════════════════════════════════════════════════════
+    {
+      const sbA = loadInto(makeWindow());
+      const sbB = loadInto(makeWindow());
+      const sharedStore = (function(){
+        const map = new Map();
+        return {
+          getItem(k){ return map.has(k) ? map.get(k) : null; },
+          setItem(k, v){ map.set(k, String(v)); },
+          removeItem(k){ map.delete(k); },
+        };
+      })();
+      Object.defineProperty(sbA, 'localStorage', { value: sharedStore, configurable: true });
+      Object.defineProperty(sbB, 'localStorage', { value: sharedStore, configurable: true });
+
+      const namespace = 'mutate-delete-vs-edit';
+      const key = 'clpeasy_labels__u_' + namespace;
+      sharedStore.setItem(key, JSON.stringify([legacyCircle52(), legacyRect63()]));
+      sbA.LabelLibrary.setNamespace(namespace);
+      const seed = await sbA.LabelLibrary.init();
+      sbB.LabelLibrary.setNamespace(namespace);
+      await sbB.LabelLibrary.init();
+      const targetId = seed.find(e => e.scentName === 'Vanilla Bean').id;
+
+      const deleteMutator = (current) => current.filter(e => e.id !== targetId);
+      const editMutator = (current) => {
+        const idx = current.findIndex(e => e.id === targetId);
+        if(idx === -1) return sbB.LabelLibrary.NO_CHANGE; // the record is already gone -- safely no-op, never resurrect it
+        const next = current.slice();
+        next[idx] = Object.assign({}, next[idx], { scentName: 'Should never survive' });
+        return next;
+      };
+
+      const [deleteOutcome, editOutcome] = await Promise.all([
+        sbA.LabelLibrary.mutate(deleteMutator),
+        sbB.LabelLibrary.mutate(editMutator),
+      ]);
+
+      assert.strictEqual(deleteOutcome.committed, true, 'the delete must always commit');
+      // The edit either committed a no-op-equivalent write it never got to
+      // make (impossible, since NO_CHANGE never writes) or genuinely
+      // NO_CHANGEd once it saw the deletion -- either way it must never
+      // throw and must never resurrect the deleted record.
+      const finalRaw = JSON.parse(sharedStore.getItem(key));
+      assert.strictEqual(finalRaw.some(e => e.id === targetId), false, 'the deleted record must not exist in the final persisted collection, regardless of interleaving order');
+      assert.strictEqual(finalRaw.length, 1, 'exactly one record must remain');
+      if(editOutcome.committed){
+        // If the edit's retry happened to run before it ever saw the
+        // deletion land, its own proposal must itself have been a
+        // pass-through of an already-deleted state on a LATER retry --
+        // committed can only be true here if collection is unchanged from
+        // what delete already produced, i.e. NO_CHANGE-equivalent.
+        assert.strictEqual(finalRaw.some(e => e.scentName === 'Should never survive'), false, "the edit's content must never appear in final storage once the record it targeted is deleted");
+      }
+
+      console.log('PART 25 passed: delete racing with edit of the same record always ends with the record deleted -- the edit safely NO_CHANGEs rather than resurrecting it or throwing');
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // PART 26 -- duplicate racing with save: two independent CREATE
+    // mutations (a duplicate-of-existing and a brand-new save) racing
+    // with no Web Lock. Both are pure additions (neither touches the
+    // other's target), so both must survive, and their independently
+    // pre-generated ids must never collide even under the race.
+    // ══════════════════════════════════════════════════════════════════
+    {
+      const sbA = loadInto(makeWindow());
+      const sbB = loadInto(makeWindow());
+      const sharedStore = (function(){
+        const map = new Map();
+        return {
+          getItem(k){ return map.has(k) ? map.get(k) : null; },
+          setItem(k, v){ map.set(k, String(v)); },
+          removeItem(k){ map.delete(k); },
+        };
+      })();
+      Object.defineProperty(sbA, 'localStorage', { value: sharedStore, configurable: true });
+      Object.defineProperty(sbB, 'localStorage', { value: sharedStore, configurable: true });
+
+      const namespace = 'mutate-duplicate-vs-save';
+      const key = 'clpeasy_labels__u_' + namespace;
+      sharedStore.setItem(key, JSON.stringify([legacyCircle52()]));
+      sbA.LabelLibrary.setNamespace(namespace);
+      const seed = await sbA.LabelLibrary.init();
+      sbB.LabelLibrary.setNamespace(namespace);
+      await sbB.LabelLibrary.init();
+      const sourceId = seed[0].id;
+
+      // Per the documented mutate() usage pattern: generate the new id
+      // ONCE, before calling mutate(), and close over it -- never inside
+      // the mutator itself (which may run more than once on retry).
+      const duplicateId = sbA.LabelLibrary.generateId();
+      const saveId = sbB.LabelLibrary.generateId();
+      assert.notStrictEqual(duplicateId, saveId, 'two independently pre-generated ids must never collide');
+
+      const duplicateMutator = (current) => {
+        const src = current.find(e => e.id === sourceId);
+        if(!src) return sbA.LabelLibrary.NO_CHANGE;
+        return current.concat([Object.assign({}, src, { id: duplicateId })]);
+      };
+      const saveMutator = (current) => current.concat([Object.assign({}, customRect57x99(), { id: saveId })]);
+
+      const [dupOutcome, saveOutcome] = await Promise.all([
+        sbA.LabelLibrary.mutate(duplicateMutator),
+        sbB.LabelLibrary.mutate(saveMutator),
+      ]);
+
+      assert.strictEqual(dupOutcome.committed, true);
+      assert.strictEqual(saveOutcome.committed, true);
+
+      const finalRaw = JSON.parse(sharedStore.getItem(key));
+      assert.strictEqual(finalRaw.length, 3, 'the original record plus both independently-created records must all be present');
+      assert.strictEqual(finalRaw.some(e => e.id === duplicateId), true, "the duplicate's id must be present in final storage");
+      assert.strictEqual(finalRaw.some(e => e.id === saveId), true, "the new save's id must be present in final storage");
+      assert.strictEqual(new Set(idsOf(finalRaw)).size, 3, 'all three final ids must be distinct -- no collision under the race');
+
+      console.log('PART 26 passed: duplicate racing with save (two independent creates) -- both survive, and independently pre-generated ids never collide under the race');
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // PART 27 -- stale namespace during mutate(): a namespace switch WHILE
+    // mutate() is still awaiting its mutator must reject the stale call
+    // with StaleLibraryMutationError, make ZERO writes to the old
+    // namespace's storage, and leave the new namespace's own state
+    // completely uncontaminated.
+    // ══════════════════════════════════════════════════════════════════
+    {
+      const sb = loadInto(makeWindow());
+      const LL = sb.LabelLibrary;
+      const aliceKey = 'clpeasy_labels__u_alice-mutate-stale';
+      const bobKey = 'clpeasy_labels__u_bob-mutate-stale';
+      sb.localStorage.setItem(aliceKey, JSON.stringify([legacyCircle52()]));
+      sb.localStorage.setItem(bobKey, JSON.stringify([legacyRect63()]));
+
+      LL.setNamespace('alice-mutate-stale');
+      await LL.init();
+      const aliceBefore = sb.localStorage.getItem(aliceKey);
+
+      const pendingMutation = LL.mutate(function(current){
+        return current.map(e => Object.assign({}, e, { scentName: 'Should never persist' }));
+      });
+      // JS is single-threaded; mutate()'s synchronous prefix (requireReady,
+      // the coordination call, readRaw, isValidCollection, deepClone, and
+      // the synchronous portion of calling the mutator) runs to completion
+      // up to `await mutator(...)` before control returns here -- so this
+      // namespace switch is guaranteed to land before that await resolves.
+      LL.setNamespace('bob-mutate-stale');
+
+      await assert.rejects(() => pendingMutation, /StaleLibraryMutationError/, 'a namespace switch mid-mutate() must cause the stale call to REJECT, never commit into the new namespace\'s lifecycle');
+
+      assert.strictEqual(sb.localStorage.getItem(aliceKey), aliceBefore, "Alice's storage must be completely unchanged -- the stale mutation must never have been written");
+      assert.throws(() => LL.getSaved(), /before init\(\) completed/, "Bob's cache must remain empty until Bob's own init() -- Alice's stale, rejected mutate() must never have touched it");
+
+      const bobResult = await LL.init();
+      assert.strictEqual(bobResult.length, 1);
+      assert.strictEqual(bobResult[0].scentName, 'Cedar', "Bob's own init() must load correctly, uncontaminated by Alice's stale mutate() call");
+
+      console.log('PART 27 passed: a namespace switch while mutate() is still awaiting causes that stale call to REJECT with StaleLibraryMutationError -- zero writes to the old namespace, and the new namespace stays completely uncontaminated');
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // PART 28 -- mutation retries when storage changes: a deterministic,
+    // single-tab forced retry (an external write is injected between this
+    // mutate() call's read and its write, simulating another writer with
+    // no shared Web Lock). The mutator must be re-invoked against the
+    // FRESH snapshot, and the retried write must contain BOTH the
+    // external change and this call's own change -- never blindly
+    // overwrite the external write, never lose its own. Also proves the
+    // bounded retry budget genuinely fails closed rather than looping
+    // forever, via LibraryMutationRetriesExhaustedError, when storage
+    // never stops changing.
+    // ══════════════════════════════════════════════════════════════════
+    {
+      const sb = loadInto(makeWindow());
+      const LL = sb.LabelLibrary;
+      const key = 'clpeasy_labels__u_mutate-retry';
+      sb.localStorage.setItem(key, JSON.stringify([legacyCircle52(), legacyRect63()]));
+      LL.setNamespace('mutate-retry');
+      const initial = await LL.init();
+      const idA = initial.find(e => e.scentName === 'Vanilla Bean').id;
+      const idB = initial.find(e => e.scentName === 'Cedar').id;
+
+      let callCount = 0;
+      const outcome = await LL.mutate(function(current){
+        callCount++;
+        if(callCount === 1){
+          // Simulate an external write landing between mutate()'s read and
+          // its write -- e.g. another tab, with no shared Web Lock.
+          const conflicting = current.map(e => e.id === idB ? Object.assign({}, e, { scentName: 'EXTERNAL WRITE' }) : e);
+          sb.localStorage.setItem(key, JSON.stringify(conflicting));
+        }
+        return current.map(e => e.id === idA ? Object.assign({}, e, { scentName: 'Edited By Mutate' }) : e);
+      });
+
+      assert.strictEqual(callCount, 2, 'the mutator must be re-invoked exactly once, against the fresh post-conflict snapshot, after compare-before-write detects the external change');
+      assert.strictEqual(outcome.committed, true);
+      const finalStored = JSON.parse(sb.localStorage.getItem(key));
+      assert.strictEqual(finalStored.find(e => e.id === idA).scentName, 'Edited By Mutate', "the retried mutation's own change must be present");
+      assert.strictEqual(finalStored.find(e => e.id === idB).scentName, 'EXTERNAL WRITE', 'the external change (already present in the fresh snapshot the retry recomputed from) must be preserved, never blindly overwritten');
+
+      // Bounded fail-closed: an external write on EVERY single attempt
+      // must eventually exhaust the retry budget rather than loop forever
+      // or ever commit a proposal computed against stale data.
+      let retryCallCount = 0;
+      await assert.rejects(
+        () => LL.mutate(function(current){
+          retryCallCount++;
+          sb.localStorage.setItem(key, JSON.stringify(current.concat([]))); // trivially re-serialised but always "changes" relative to the exact object identity check below
+          // Force an ACTUAL content change every attempt so compare-before-write
+          // never matches: append a distinguishable marker each time.
+          sb.localStorage.setItem(key, JSON.stringify(current.map(e => Object.assign({}, e, { _marker: retryCallCount }))));
+          return current;
+        }),
+        /LibraryMutationRetriesExhaustedError/,
+        'when storage keeps changing on every single attempt, mutate() must fail closed after its bounded retry budget rather than loop forever'
+      );
+      assert(retryCallCount >= 2, 'the exhausted-retry path must have genuinely retried more than once before failing closed');
+
+      console.log('PART 28 passed: mutate() retries against the fresh snapshot when storage changes underneath it, preserving both the external and its own change, and fails closed with LibraryMutationRetriesExhaustedError when the retry budget is genuinely exhausted');
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // PART 29 -- duplicate-ID rejection: a mutator proposing a collection
+    // with two records sharing one id must be rejected outright, with
+    // ZERO writes -- the same "ambiguous identity is never accepted"
+    // guarantee isValidCollection() already enforces elsewhere in this
+    // file, now enforced on every mutate() proposal too.
+    // ══════════════════════════════════════════════════════════════════
+    {
+      const sb = loadInto(makeWindow());
+      const LL = sb.LabelLibrary;
+      const key = 'clpeasy_labels__u_mutate-dup-reject';
+      sb.localStorage.setItem(key, JSON.stringify([legacyCircle52()]));
+      LL.setNamespace('mutate-dup-reject');
+      const initial = await LL.init();
+      const before = sb.localStorage.getItem(key);
+
+      await assert.rejects(
+        () => LL.mutate(function(current){
+          return current.concat([Object.assign({}, current[0])]); // same id, twice
+        }),
+        /valid, unique id/,
+        'mutate() must reject a proposed collection containing duplicate ids'
+      );
+
+      assert.strictEqual(sb.localStorage.getItem(key), before, 'a rejected duplicate-id proposal must result in ZERO writes to storage');
+      assert.strictEqual(JSON.stringify(LL.getSaved()), JSON.stringify(initial), 'the cache must remain exactly what it was before the rejected mutation');
+
+      console.log('PART 29 passed: mutate() rejects a proposed collection with duplicate ids outright, with zero writes to storage or cache');
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // PART 30 -- mutator exception causes zero writes: if the mutator
+    // itself throws, mutate() must propagate that exact error and must
+    // never have written anything, at any point.
+    // ══════════════════════════════════════════════════════════════════
+    {
+      const sb = loadInto(makeWindow());
+      const LL = sb.LabelLibrary;
+      const key = 'clpeasy_labels__u_mutate-mutator-throws';
+      sb.localStorage.setItem(key, JSON.stringify([legacyCircle52()]));
+      LL.setNamespace('mutate-mutator-throws');
+      const initial = await LL.init();
+      const before = sb.localStorage.getItem(key);
+
+      await assert.rejects(
+        () => LL.mutate(function(){ throw new Error('deliberate mutator failure'); }),
+        /deliberate mutator failure/,
+        "mutate() must propagate the mutator's own exception rather than swallowing it"
+      );
+      await assert.rejects(
+        () => LL.mutate(async function(){ throw new Error('deliberate ASYNC mutator failure'); }),
+        /deliberate ASYNC mutator failure/,
+        'the same must hold for a mutator that throws after its own await'
+      );
+
+      assert.strictEqual(sb.localStorage.getItem(key), before, 'a mutator exception must result in ZERO writes to storage');
+      assert.strictEqual(JSON.stringify(LL.getSaved()), JSON.stringify(initial), 'the cache must remain exactly what it was before the failed mutation');
+
+      console.log('PART 30 passed: a mutator exception (sync or async) propagates through mutate() and causes zero writes to storage or cache');
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // PART 31 -- cache matches final persistence: after a successful
+    // mutate(), LabelLibrary.getSaved() must return exactly what was just
+    // written to storage -- no drift between the in-memory cache and the
+    // persisted value.
+    // ══════════════════════════════════════════════════════════════════
+    {
+      const sb = loadInto(makeWindow());
+      const LL = sb.LabelLibrary;
+      const key = 'clpeasy_labels__u_mutate-cache-matches';
+      sb.localStorage.setItem(key, JSON.stringify([legacyCircle52(), legacyRect63()]));
+      LL.setNamespace('mutate-cache-matches');
+      const initial = await LL.init();
+      const targetId = initial[0].id;
+
+      const outcome = await LL.mutate(function(current){
+        return current.filter(e => e.id !== targetId);
+      });
+
+      const storedNow = JSON.parse(sb.localStorage.getItem(key));
+      const cacheNow = LL.getSaved();
+      assert.deepStrictEqual(idsOf(cacheNow), idsOf(storedNow), 'the cache must contain exactly the same ids as final persistence after a successful mutate()');
+      assert.deepStrictEqual(idsOf(outcome.collection), idsOf(storedNow), "mutate()'s own returned collection must also match final persistence exactly");
+      assert.strictEqual(storedNow.length, 1, 'the deleted record must be gone from storage');
+
+      console.log('PART 31 passed: after a successful mutate(), the in-memory cache, the resolved outcome.collection, and final storage all agree exactly');
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // PART 32 -- pending generated-ID reservations remain correct through
+    // mutate(): an id generated via generateId() and then actually
+    // committed by mutate() must have its reservation released; an
+    // UNRELATED still-pending reservation (a different in-flight
+    // generateId() call this mutate() didn't use) must remain untouched.
+    // ══════════════════════════════════════════════════════════════════
+    {
+      const sb = loadInto(makeWindow());
+      const LL = sb.LabelLibrary;
+      const key = 'clpeasy_labels__u_mutate-pending-ids';
+      sb.localStorage.setItem(key, JSON.stringify([legacyCircle52()]));
+      LL.setNamespace('mutate-pending-ids');
+      await LL.init();
+
+      const usedId = LL.generateId();
+      const unrelatedId = LL.generateId();
+      assert.deepStrictEqual(new Set(LL._internal.debugPendingIds()), new Set([usedId, unrelatedId]), 'setup: both generated ids must be tracked as pending before either is used');
+
+      const outcome = await LL.mutate(function(current){
+        return current.concat([Object.assign({}, customRect57x99(), { id: usedId })]);
+      });
+      assert.strictEqual(outcome.committed, true);
+
+      const pendingAfter = new Set(LL._internal.debugPendingIds());
+      assert.strictEqual(pendingAfter.has(usedId), false, 'mutate() must release the reservation for an id it actually committed');
+      assert.strictEqual(pendingAfter.has(unrelatedId), true, 'mutate() must leave an UNRELATED, still-unpersisted reservation untouched');
+
+      console.log('PART 32 passed: mutate() releases exactly the pending generateId() reservation it actually commits, leaving unrelated pending reservations from other in-flight generateId() calls intact');
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // PART 33 -- B0 review round, point 2: a mutator's NO_CHANGE decision
+    // must never be trusted if it was computed from data that's since
+    // gone stale. Before this fix, mutate() returned `{committed:false,
+    // collection: deepClone(before)}` unconditionally on NO_CHANGE, with
+    // no re-check against fresh storage -- so a NO_CHANGE decided against
+    // a stale snapshot could permanently miss a change that was only
+    // valid against the ACTUAL current data (sub-test 1), and even a
+    // genuinely-correct NO_CHANGE could hand back / cache a snapshot
+    // older than what's actually persisted (sub-test 2).
+    // ══════════════════════════════════════════════════════════════════
+    {
+      // Sub-test 1: a NO_CHANGE decided against a stale snapshot must be
+      // RE-EVALUATED against the fresh one, not returned as-is -- proven
+      // by a case where the fresh re-evaluation produces a REAL write
+      // that the stale decision would have missed entirely.
+      const sb = loadInto(makeWindow());
+      const LL = sb.LabelLibrary;
+      const key = 'clpeasy_labels__u_mutate-nochange-stale';
+      sb.localStorage.setItem(key, JSON.stringify([legacyCircle52()]));
+      LL.setNamespace('mutate-nochange-stale');
+      await LL.init();
+      const targetId = LL.generateId();
+
+      let callCount = 0;
+      const outcome = await LL.mutate(function(current){
+        callCount++;
+        if(callCount === 1){
+          // Simulate another tab adding the target record between this
+          // read and mutate()'s finalize check -- the OLD code would have
+          // returned NO_CHANGE (correct against what THIS call was
+          // given) and silently discarded the fact that a real edit was
+          // actually possible against the true current data.
+          const withNewRecord = current.concat([Object.assign({}, legacyRect63(), { id: targetId })]);
+          sb.localStorage.setItem(key, JSON.stringify(withNewRecord));
+        }
+        const idx = current.findIndex(e => e.id === targetId);
+        if(idx === -1) return LL.NO_CHANGE; // correct against what THIS call's `current` actually contains
+        const next = current.slice();
+        next[idx] = Object.assign({}, next[idx], { scentName: 'Edited on retry' });
+        return next;
+      });
+
+      assert.strictEqual(callCount, 2, "a NO_CHANGE decision computed from data that's gone stale must trigger a retry against the fresh snapshot, not be trusted as-is");
+      assert.strictEqual(outcome.committed, true, 'once re-evaluated against the fresh data (which now contains the target record), this must resolve as a genuine write -- never silently stay a stale NO_CHANGE');
+      const finalStored = JSON.parse(sb.localStorage.getItem(key));
+      assert.strictEqual(finalStored.find(e => e.id === targetId).scentName, 'Edited on retry', 'the retried mutation must actually apply against the now-current data');
+
+      // Sub-test 2: even a genuinely-correct, non-racing NO_CHANGE must
+      // hand back (and cache) the CONFIRMED-current collection, not
+      // whatever `before` happened to be -- getSaved() right after must
+      // never disagree with what's actually persisted.
+      const sb2 = loadInto(makeWindow());
+      const LL2 = sb2.LabelLibrary;
+      const key2 = 'clpeasy_labels__u_mutate-nochange-plain';
+      sb2.localStorage.setItem(key2, JSON.stringify([legacyCircle52()]));
+      LL2.setNamespace('mutate-nochange-plain');
+      const initial2 = await LL2.init();
+
+      const outcome2 = await LL2.mutate(function(current){
+        return LL2.NO_CHANGE; // nothing ever changes underneath this one -- a plain, non-racing no-op
+      });
+      assert.strictEqual(outcome2.committed, false);
+      const storedNow2 = JSON.parse(sb2.localStorage.getItem(key2));
+      assert.deepStrictEqual(idsOf(outcome2.collection), idsOf(storedNow2), "a plain NO_CHANGE outcome's collection must match what's actually persisted");
+      assert.deepStrictEqual(idsOf(LL2.getSaved()), idsOf(storedNow2), 'the cache must be synced to the confirmed-current value after NO_CHANGE too, so getSaved() never disagrees with actual persistence');
+      assert.deepStrictEqual(idsOf(outcome2.collection), idsOf(initial2), 'and in this non-racing case the confirmed-current value is, correctly, unchanged from what init() originally returned');
+
+      console.log('PART 33 passed: a NO_CHANGE decision is only trusted once confirmed against a fresh read -- a stale NO_CHANGE is retried and can resolve into a real write, and even a genuinely-correct NO_CHANGE syncs the cache and returns the confirmed-current collection rather than a possibly-stale snapshot');
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // PART 34 -- B0 review round, missed correction: generateId() before
+    // init() must fail closed, never silently treat the not-yet-loaded
+    // cache as "zero existing ids". requireReady() alone only proves
+    // setNamespace() resolved -- it says nothing about init() having
+    // actually completed, and `(_cache || [])` was silently masking that
+    // gap.
+    // ══════════════════════════════════════════════════════════════════
+    {
+      const sb = loadInto(makeWindow());
+      const LL = sb.LabelLibrary;
+      const key = 'clpeasy_labels__u_generateId-before-init';
+      const seedId = '99999999-9999-4999-8999-999999999999';
+      sb.localStorage.setItem(key, JSON.stringify([Object.assign({}, legacyCircle52(), { id: seedId })]));
+
+      // 2. Call setNamespace() -- but deliberately do NOT await init() yet.
+      LL.setNamespace('generateId-before-init');
+
+      // Spy on the ONLY source of real randomness randomId()/randomIdOnce()
+      // can draw from in this environment (window.crypto.randomUUID) --
+      // if generateId() fails closed correctly, it must never reach this.
+      let randomUUIDCalls = 0;
+      sb.crypto.randomUUID = function(){ randomUUIDCalls++; return '11111111-1111-4111-8111-111111111111'; };
+
+      // 3/4. Call generateId() before init() -- must throw a clear,
+      // specific "before init() completed" error.
+      assert.throws(() => LL.generateId(), /before init\(\) completed/, 'generateId() called before init() completes must throw a clear, specific error');
+
+      // 5. Random generation must never have been invoked on this path.
+      assert.strictEqual(randomUUIDCalls, 0, 'generateId() failing closed for a not-yet-initialised cache must never reach randomId()/randomIdOnce()');
+
+      // 6. No pending reservation may be created on this failure path.
+      // Array.from() rebuilds the array in NODE's own realm -- debugPendingIds()
+      // is called from inside the window's own module instance, so a raw
+      // deepStrictEqual against a bare [] literal would otherwise fail on
+      // prototype/constructor identity alone, even for two empty arrays
+      // (the same cross-realm Array.prototype mismatch idsOf() exists to
+      // avoid elsewhere in this file).
+      assert.deepStrictEqual(Array.from(LL._internal.debugPendingIds()), [], 'no pending reservation may exist after generateId() throws before init()');
+
+      // 7. After await init(), generateId() must work normally.
+      const arr = await LL.init();
+      assert.strictEqual(arr.length, 1);
+      assert.strictEqual(arr[0].id, seedId, 'the seeded, already-valid persisted id must be preserved by init() untouched');
+
+      const newId = LL.generateId();
+      assert.strictEqual(sb.LabelLibrary.isValidId(newId), true, 'generateId() after init() must return a validly-formatted id');
+
+      // 8. It must not return the existing persisted id.
+      assert.notStrictEqual(newId, seedId, "generateId() after init() must never return the id already persisted for this namespace -- proof that it IS now checking against the real, loaded collection, not an empty stand-in");
+
+      // 9. Exactly one pending reservation must now exist.
+      assert.deepStrictEqual(Array.from(LL._internal.debugPendingIds()), [newId], 'generateId() after init() must create exactly one pending reservation, for the id it actually returned');
+
+      console.log('PART 34 passed: generateId() before init() completes fails closed with a clear error, never calls into random generation, and creates no pending reservation; after init() completes, it works normally, never returns an already-persisted id, and reserves exactly the one id it returns');
     }
 
     console.log('\nALL label-identity-and-spec.js checks passed.');

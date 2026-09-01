@@ -105,6 +105,29 @@
     err.namespace = namespace;
     return err;
   }
+  // ── Checkpoint B0: coordinated mutation errors ───────────────────────
+  // Thrown by mutate() (see below) when the namespace/generation it was
+  // called for no longer matches by the time it's ready to apply or
+  // commit the mutation -- the same "never resolve a stale caller with
+  // another user's data or write into another user's namespace" guarantee
+  // init() already provides, extended to every future write path.
+  function StaleLibraryMutationError(namespace){
+    var err = new Error('LabelLibrary: mutate() for namespace "' + namespace + '" was rejected because the namespace changed while the mutation was in progress -- rejecting rather than applying or returning a stale-namespace result.');
+    err.name = 'StaleLibraryMutationError';
+    err.namespace = namespace;
+    return err;
+  }
+  // Thrown when the stored collection kept changing out from under a
+  // mutate() call (compare-before-write kept failing) past the bounded
+  // retry budget -- fails closed rather than looping forever or, worse,
+  // ever writing a proposal that was computed against data that's since
+  // gone stale.
+  function LibraryMutationRetriesExhaustedError(namespace){
+    var err = new Error('LabelLibrary: mutate() for namespace "' + namespace + '" could not commit -- the stored collection kept changing underneath it after the retry budget was exhausted. No write was made.');
+    err.name = 'LibraryMutationRetriesExhaustedError';
+    err.namespace = namespace;
+    return err;
+  }
 
   // ── review point 6: distinguish empty / corrupt / inaccessible storage.
   // A missing key (never saved before) and a stored "[]" are both a
@@ -584,14 +607,214 @@
     });
   }
 
+  // ── Checkpoint B0: coordinated mutation API ───────────────────────────
+  // persistSaved() above is now test-only (see the _internal export block
+  // at the bottom of this file) -- it accepts a whole-array snapshot and
+  // writes it unconditionally, which is exactly the "blind overwrite of
+  // newer storage" pattern that made the three separate page-level
+  // save/edit/duplicate/delete implementations unsafe to run concurrently
+  // (same tab in quick succession, or two tabs). mutate() is the one
+  // shared, coordinated replacement every real page mutation must use
+  // from Checkpoint B onward.
+  //
+  // Return a sentinel from a mutator to mean "nothing to persist" -- e.g.
+  // an edit/delete that targeted an id no longer present. mutate() makes
+  // ZERO writes in that case and resolves with the collection unchanged.
+  var NO_CHANGE = { __labelLibraryNoChange: true };
+
+  // Contract:
+  //   const outcome = await LabelLibrary.mutate(function(currentCollection){
+  //     // currentCollection is a DETACHED deep clone of whatever is
+  //     // currently persisted -- the freshest value available at the
+  //     // moment this specific attempt started, read from inside the same
+  //     // Web Lock migration and every other mutate()/init() call
+  //     // contends for. Mutating it in place is safe; it is never a live
+  //     // reference into this module's cache.
+  //     ...compute a proposed next collection, ID-based...
+  //     return proposedCollection;             // the common case, OR
+  //     return LabelLibrary.NO_CHANGE;          // nothing to write, OR
+  //     return { collection: proposedCollection, ...anythingElse };
+  //   });
+  //   // outcome = { committed: true|false, collection: <deep clone of
+  //   // whatever is now current>, ...anythingElse (deep-cloned) }
+  //
+  // The mutator MUST be a pure function of the collection it receives --
+  // no reliance on outside mutable state, no side effects beyond
+  // computing and returning the proposal -- because it may be invoked
+  // MORE THAN ONCE per mutate() call if a retry is needed (see below). In
+  // particular, a "create" mutator that needs a fresh id should call
+  // LabelLibrary.generateId() ONCE, before calling mutate(), and close
+  // over that id, rather than generating a new one from inside the
+  // mutator -- otherwise a retried attempt would reserve (and abandon) a
+  // different id on every retry.
+  //
+  // What this actually guarantees, honestly:
+  //   - Where the Web Locks API is available (the same primary mechanism
+  //     migration already uses, via the identical withCoordination() /
+  //     'clpeasy-labels-migrate:<namespace>' lock name -- so a mutate()
+  //     can never run concurrently with an in-flight init() migration,
+  //     or with another mutate() call, in ANY tab sharing this origin):
+  //     genuine mutual exclusion. Only one read-modify-write critical
+  //     section for this namespace executes at a time, anywhere. The
+  //     compare-before-write check below is then a defensive backstop
+  //     (e.g. against a same-tab caller that bypassed mutate() entirely),
+  //     not the primary correctness mechanism.
+  //   - Where Web Locks are NOT available (the best-effort token
+  //     fallback): there is NO real cross-tab mutual exclusion. Two tabs'
+  //     mutate() calls can genuinely interleave. What IS still guaranteed
+  //     is that no write ever blindly overwrites a collection state it
+  //     never saw: immediately before writing, the current stored value
+  //     is re-read and compared against the exact snapshot the mutator's
+  //     proposal was computed from (the same discipline init()'s
+  //     migration already uses); a mismatch means somebody else wrote in
+  //     the meantime, so this attempt is discarded and the mutator is
+  //     re-run against the fresh value, up to MAX_MUTATION_RETRIES times,
+  //     then fails closed with LibraryMutationRetriesExhaustedError
+  //     rather than ever committing a stale proposal. This is NOT a claim
+  //     of perfect atomic serialization -- a sufficiently unlucky
+  //     scheduling of two tabs' compare-then-write pairs around each
+  //     other in the fallback path is still theoretically possible, the
+  //     same way it always has been for any two independent localStorage
+  //     writers with no real lock between them. It IS a guarantee that a
+  //     write is always based on data at least as fresh as what was just
+  //     re-checked immediately before that write, never on an
+  //     arbitrarily-stale in-memory copy held across an earlier await.
+  var MAX_MUTATION_RETRIES = 5;
+  function assertMutationNotStale(namespace, generation){
+    if(!(_namespaceResolved && _namespace === namespace && _namespaceGeneration === generation)){
+      throw StaleLibraryMutationError(namespace);
+    }
+  }
+  async function mutate(mutator){
+    requireReady();
+    if(typeof mutator !== 'function'){
+      throw new Error('LabelLibrary.mutate(): mutator must be a function.');
+    }
+    var namespace = _namespace;
+    var generation = _namespaceGeneration;
+    return withCoordination(namespace, async function(){
+      var attempt = 0;
+      while(true){
+        assertMutationNotStale(namespace, generation);
+
+        // Read the LATEST persisted collection from inside the lock --
+        // never a snapshot cached from before this attempt started.
+        var before = readRaw(namespace); // may throw LibraryReadError -- propagates, fail closed
+        if(!isValidCollection(before)){
+          throw new Error('LabelLibrary.mutate(): the stored collection for namespace "' + namespace + '" is not a valid migrated collection -- call LabelLibrary.init() before mutate().');
+        }
+        var detached = deepClone(before); // the mutator never receives a live reference
+
+        var raw = await mutator(detached);
+        // The mutator may itself have awaited something -- re-check
+        // immediately after, before any further use of its result.
+        assertMutationNotStale(namespace, generation);
+
+        // review point 2 (B0 review round): classify what the mutator
+        // returned FIRST, but do not trust either outcome -- NO_CHANGE
+        // included -- until it's been confirmed against a fresh read.
+        // Classifying (rather than acting on) a malformed non-array,
+        // non-NO_CHANGE, non-{collection} return is a caller-programming
+        // error, not a staleness question, so that specific shape check
+        // still throws immediately without consuming a retry attempt or
+        // an extra read.
+        var isNoChange = (raw === NO_CHANGE);
+        var proposed = null, extra = null;
+        if(!isNoChange){
+          if(Array.isArray(raw)){
+            proposed = raw; extra = null;
+          } else if(raw && typeof raw === 'object' && Array.isArray(raw.collection)){
+            proposed = raw.collection; extra = raw;
+          } else {
+            throw new Error('LabelLibrary.mutate(): mutator must return an array (the proposed collection), LabelLibrary.NO_CHANGE, or { collection: [...], ...}.');
+          }
+          if(!isValidCollection(proposed)){
+            throw new Error('LabelLibrary.mutate(): the mutator\'s proposed collection is not valid -- every record needs a valid, unique id (use LabelLibrary.generateId() for a new one).');
+          }
+        }
+
+        // Compare-before-finalize (the same discipline init()'s migration
+        // retry already uses) -- applied to BOTH outcomes, not just a
+        // write. A NO_CHANGE decision computed from `before` is only
+        // trustworthy if `before` is still the actual current state: if
+        // storage moved on while the mutator was running, that decision
+        // may now be wrong (something the mutator would have handled
+        // differently against the fresh data) and must never be returned
+        // as though it were still accurate. Re-run the mutator against
+        // the fresh snapshot instead, bounded, exactly as a stale write
+        // proposal already does.
+        var current = readRaw(namespace);
+        if(JSON.stringify(current) !== JSON.stringify(before)){
+          attempt++;
+          if(attempt > MAX_MUTATION_RETRIES) throw LibraryMutationRetriesExhaustedError(namespace);
+          continue;
+        }
+
+        assertMutationNotStale(namespace, generation); // final check, immediately before finalizing either outcome
+
+        if(isNoChange){
+          // Confirmed against the freshest available read (current ===
+          // before, just verified above): genuinely nothing to persist.
+          // Still safe -- and correct -- to sync the cache to this
+          // confirmed-current value even though no write happened, so a
+          // caller relying on getSaved() right after a NO_CHANGE outcome
+          // never sees an older in-memory cache than what's actually
+          // persisted.
+          var syncedCache = deepClone(current);
+          _cache = syncedCache;
+          return { committed: false, collection: deepClone(syncedCache) };
+        }
+
+        writeRaw(namespace, proposed);
+
+        var snapshot = deepClone(proposed);
+        _cache = snapshot;
+        // Same targeted reconciliation persistSaved() already used:
+        // release exactly the pending reservations that made it into
+        // THIS write; leave any other in-flight generateId() reservation
+        // (a different, still-unpersisted mutation) untouched.
+        var persistedIds = new Set(snapshot.map(function(e){ return e.id; }));
+        _pendingGeneratedIds.forEach(function(id){
+          if(persistedIds.has(id)) _pendingGeneratedIds.delete(id);
+        });
+
+        var result = { committed: true, collection: deepClone(snapshot) };
+        if(extra){
+          Object.keys(extra).forEach(function(k){
+            if(k === 'collection') return;
+            result[k] = deepClone(extra[k]);
+          });
+        }
+        return result;
+      }
+    });
+  }
+
   // review point 5 (final corrections round): the collision set includes
   // every id already handed out by an EARLIER generateId() call this
   // "session" (since the cache was last adopted) as well as whatever's
   // already in _cache, so two calls made back-to-back before either
   // result is persisted can never return the same id.
+  //
+  // review point (B0 review round, missed correction): requireReady()
+  // only proves setNamespace() has resolved -- it says nothing about
+  // whether init() has actually completed. Between setNamespace() and a
+  // successful init(), _cache is still null, and `(_cache || [])` was
+  // silently treating that as "zero existing ids" -- so a caller who
+  // (incorrectly) called generateId() before awaiting init() would get
+  // back an id validated against an EMPTY collision set, never checked
+  // against whatever ids are actually already persisted for this
+  // namespace. Fail closed instead: generateId() requires a resolved
+  // namespace AND a successfully initialised cache, throws a clear,
+  // distinguishable error otherwise, and -- critically -- must never
+  // reach randomId() or touch _pendingGeneratedIds on that failure path,
+  // since no id was actually generated or reserved.
   function generateId(){
     requireReady();
-    var existing = new Set((_cache || []).map(function(e){ return e.id; }));
+    if(_cache === null){
+      throw new Error('LabelLibrary.generateId(): called before init() completed -- await LabelLibrary.init() first, so new ids are checked against every id already persisted for this namespace.');
+    }
+    var existing = new Set(_cache.map(function(e){ return e.id; }));
     _pendingGeneratedIds.forEach(function(id){ existing.add(id); });
     var id = randomId(existing);
     _pendingGeneratedIds.add(id);
@@ -678,6 +901,17 @@
     global.addEventListener('storage', handleStorageEvent);
   }
 
+  // review point 6 (Checkpoint B0): persistSaved() is deliberately NOT on
+  // the public, page-facing API from here on -- it accepts a whole-array
+  // snapshot and writes it unconditionally with no coordination and no
+  // compare-before-write check, which is exactly the "last write wins,
+  // blindly overwrites newer storage" contract Checkpoint B0 replaces.
+  // It remains available under _internal (test-only, see below) because
+  // several existing lower-level identity/spec tests legitimately use it
+  // as a direct "just persist this exact snapshot" primitive, independent
+  // of the coordination layer under test elsewhere. Every real,
+  // page-facing mutation (create/save, edit, duplicate, delete, and any
+  // future library-changing operation) must go through mutate() instead.
   global.LabelLibrary = {
     ID_FORMAT: ID_FORMAT,
     isValidId: isValidId,
@@ -685,7 +919,8 @@
     reset: reset,
     init: init,
     getSaved: getSaved,
-    persistSaved: persistSaved,
+    mutate: mutate,
+    NO_CHANGE: NO_CHANGE,
     generateId: generateId,
     findById: findById,
     findIndexById: findIndexById,
@@ -713,6 +948,12 @@
       reconcileFromStorageEvent: reconcileFromStorageEvent,
       handleStorageEvent: handleStorageEvent,
       debugPendingIds: function(){ return Array.from(_pendingGeneratedIds); },
+      // Checkpoint B0: persistSaved() is test-only from here on -- see the
+      // comment above global.LabelLibrary for why. Production/page code
+      // must never reach this; only this test file (and only where it's
+      // deliberately testing the raw primitive, or using it as ordinary
+      // test-fixture setup) does.
+      persistSaved: persistSaved,
     };
   }
 
