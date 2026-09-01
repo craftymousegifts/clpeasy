@@ -25,6 +25,11 @@ function stubCanvas(window){
 }
 
 const labelRendererSource = fs.readFileSync('label-render.js', 'utf8');
+// Checkpoint B: builder.html now also loads label-library.js via
+// <script src="...">, stripped by the same generic regex below for the
+// same reason label-render.js already was -- injected explicitly in the
+// builder beforeParse hook, before builder.html's own inline script runs.
+const labelLibrarySource = fs.readFileSync('label-library.js', 'utf8');
 const builderSource = fs.readFileSync('builder.html', 'utf8').replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
 const printSource = fs.readFileSync('print.html', 'utf8').replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
 
@@ -49,6 +54,7 @@ const EXPECTED_MSG = 'CLPeasy supports custom label dimensions from 52mm. Choose
     beforeParse(window) {
       stubCanvas(window);
       window.eval(labelRendererSource);
+      window.eval(labelLibrarySource);
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
       window.scrollTo = () => {};
@@ -113,6 +119,16 @@ const EXPECTED_MSG = 'CLPeasy supports custom label dimensions from 52mm. Choose
   for(const shape of shapes){
     for(const w of boundaryValues){
       const h = w; // isolate width; height tested separately below for rectangle
+      // Checkpoint B (correction round): saveLabel() now always attaches a
+      // successful save's id to editingLabelId, so every subsequent save in
+      // the same session updates that SAME record rather than ever falling
+      // back to name+productType dedupe. Each loop iteration here is meant
+      // to be its own independent "new label" scenario (fillMinimalValidForm()
+      // already gives each one a unique scentName for exactly this reason) --
+      // reset editingLabelId to null before each one, the same way the real
+      // "New Label"/splashNewLabel() action does, so this loop's original
+      // intent (each valid save adds ONE new record) still holds.
+      bwindow.eval('editingLabelId=null;');
       setCustomDimsRaw(shape, w, h);
       fillMinimalValidForm();
       // 'blank' resolves (via onDimInput()/readForm()'s own pre-existing
@@ -140,7 +156,9 @@ const EXPECTED_MSG = 'CLPeasy supports custom label dimensions from 52mm. Choose
       // Save
       bwindow.__lastAlert = null;
       const savedBefore = bwindow.eval('getSaved().length');
-      bwindow.saveLabel();
+      // Checkpoint B: saveLabel() is now async (awaits LabelLibrary.mutate()
+      // internally) -- must be awaited before the next line reads getSaved().
+      await bwindow.saveLabel();
       const savedAfter = bwindow.eval('getSaved().length');
       if(expectBlocked){
         assert.strictEqual(savedAfter, savedBefore, `${shape} width=${w}: saveLabel() must not save a label below the supported minimum`);

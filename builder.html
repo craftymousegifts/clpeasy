@@ -1283,6 +1283,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
      top-level names. -->
 <script src="label-render.js"></script>
 
+<!-- Checkpoint B (connected print-workflow task, 1 Sep 2026): shared
+     saved-label identity/coordinated-mutation module. Every saved-label
+     read/write in this file now goes through this, instead of the old
+     direct localStorage getSaved()/persistSaved() pair. -->
+<script src="label-library.js"></script>
+
 <script>
 // ── DATA ──────────────────────────────────────────────────────
 const SENSITISERS=[
@@ -1925,18 +1931,17 @@ async function initAuth(){
         document.getElementById('su-plan').textContent=S.isPro?'Easy Pro':(DL.plan==='easy_start'?'Easy Start':'Easy Trial');
       }
 
-      // Auth resolves after init() has already called renderSaved() once
-      // (using the pre-auth 'guest' namespace) — re-render now that
-      // currentUser is known so the panel shows this account's own library,
-      // never whatever was rendered before sign-in resolved.
-      try{ renderSaved(); }catch(e){}
       // Same race, same fix, for saved business details (clpeasy_biz fix,
       // reviewed bizdetails-cross-account-scoping): init() already called
       // restoreBizDetails() once pre-auth ('guest'-scoped); re-call now that
       // currentUser is known so this account's own saved business details
       // load, not whatever 'guest' had.
       try{ restoreBizDetails(); }catch(e){}
-      try{ _clpHandleOpenParam(); }catch(e){}
+      // Checkpoint B, requirement 1: the confirmed namespace is only known
+      // here -- LabelLibrary is namespaced and initialised now, never
+      // before, so a signed-in account's saved-label panel/_clpHandleOpenParam
+      // never reads the pre-auth 'guest' library even momentarily.
+      await initSavedLabelLibrary();
     } else {
       const navSignin=document.getElementById('nav-signin');
       const navSignout=document.getElementById('nav-signout');
@@ -1948,24 +1953,100 @@ async function initAuth(){
       if(suUserGuest)suUserGuest.style.display='none';
       const suUsageGuest=document.getElementById('sidebar-usage');
       if(suUsageGuest)suUsageGuest.style.display='none';
-      try{ _clpHandleOpenParam(); }catch(e){}
+      // Checkpoint B, requirement 1: a confirmed "no session" result IS a
+      // resolved auth state (the guest namespace) -- library init happens
+      // here too, exactly the same way, rather than ever being read
+      // optimistically before this point.
+      await initSavedLabelLibrary();
     }
   }catch(e){console.log('Auth init error:',e);}
 }
 
-// Deep-link support for the My Labels page's "Open" button:
-// builder.html?open=<index> loads that saved label straight into the
-// wizard. Fired once, after auth state (and therefore the correct
-// per-account library namespace — see libNS()) is resolved, from both
-// branches above, so a signed-in account never opens from the 'guest'
-// namespace by mistake. Guarded so it only ever runs once.
+// Checkpoint B, requirement 1: shown while auth/LabelLibrary.init() are
+// still resolving, and Checkpoint B, requirement 1 (error case): a
+// recoverable inline error if init() rejects -- kept lightweight, reusing
+// the existing #saved-section/#saved-list elements renderSaved() already
+// toggles, rather than new markup.
+function showSavedLibraryLoadingState(){
+  const sec=document.getElementById('saved-section');
+  const list=document.getElementById('saved-list');
+  if(sec)sec.style.display='';
+  if(list)list.innerHTML='<div style="font-size:13px;color:var(--muted);padding:8px 0;">Loading your saved labels…</div>';
+}
+function showSavedLibraryErrorState(err){
+  const sec=document.getElementById('saved-section');
+  const list=document.getElementById('saved-list');
+  if(sec)sec.style.display='';
+  if(list)list.innerHTML='<div style="font-size:13px;color:#B91C1C;padding:8px 0;">Your saved labels couldn\'t be loaded. <button type="button" onclick="initSavedLabelLibrary()" style="text-decoration:underline;background:none;border:none;color:#B91C1C;font-weight:700;cursor:pointer;padding:0;font-size:13px;">Try again</button></div>';
+  console.log('LabelLibrary init failed:',err);
+}
+// Checkpoint B, requirement 1: the one place LabelLibrary.setNamespace()/
+// init() are called -- always after auth has genuinely resolved (either
+// branch above). Requirement 8: also registers the single onChange
+// handler that keeps the saved-label panel in sync with other tabs
+// without ever touching in-progress Step 1-5 form state.
+async function initSavedLabelLibrary(){
+  showSavedLibraryLoadingState();
+  try{
+    LabelLibrary.setNamespace(libNS());
+    await LabelLibrary.init();
+  }catch(err){
+    showSavedLibraryErrorState(err);
+    return;
+  }
+  renderSaved();
+  populateLibraryDropdown();
+  try{ _clpHandleOpenParam(); }catch(e){}
+  if(!window._clpLibraryOnChangeRegistered){
+    window._clpLibraryOnChangeRegistered=true;
+    LabelLibrary.onChange(function(freshArr){
+      // requirement 8: renderSaved() only ever touches the saved-labels
+      // panel/dropdown, never any Step 1-5 form field, so it is always
+      // safe to call unconditionally here -- another tab changing a
+      // DIFFERENT label must never overwrite this tab's unsaved edits,
+      // and it never does, because nothing here writes into S or the form.
+      renderSaved();
+      if(editingLabelId && !LabelLibrary.findById(freshArr,editingLabelId)){
+        noteEditingLabelDeleted();
+      }
+    });
+  }
+}
+
+// Deep-link support for the My Labels page's "Open" button.
+// Checkpoint B, requirement 2: builder.html?label=<stable-id> is the
+// primary, permanent identity. builder.html?open=<index> is retained ONLY
+// as a legacy migration shim -- resolved strictly through
+// LabelLibrary.resolveLegacyIndex() against the already-migrated,
+// id-bearing collection, then the URL is rewritten to ?label=<id> (other
+// query params and the hash preserved) so every subsequent reference to
+// this label -- reload, share, bookmark -- uses the stable id from then on.
+// Fired once, after LabelLibrary.init() has resolved (see
+// initSavedLabelLibrary() above), so a signed-in account never resolves
+// against the 'guest' namespace by mistake. Guarded so it only ever runs
+// once.
 function _clpHandleOpenParam(){
   if(window._clpOpenHandled)return;
   window._clpOpenHandled=true;
-  const openIdx=new URLSearchParams(window.location.search).get('open');
+  const params=new URLSearchParams(window.location.search);
+  const labelId=params.get('label');
+  if(labelId!==null){
+    loadLabelAndGotoStep5(labelId);
+    return;
+  }
+  const openIdx=params.get('open');
   if(openIdx===null)return;
-  const idx=parseInt(openIdx,10);
-  if(!isNaN(idx))loadLabelAndGotoStep5(idx);
+  const resolved=LabelLibrary.resolveLegacyIndex(getSaved(),openIdx);
+  if(!resolved){
+    showLabelUnavailableNotice();
+    return;
+  }
+  loadLabelRecord(resolved);
+  forceGoToStep(5);
+  params.delete('open');
+  params.set('label',resolved.id);
+  const newUrl=window.location.pathname+'?'+params.toString()+window.location.hash;
+  window.history.replaceState({},'',newUrl);
 }
 
 // ───────────────────────────────────────────────────────────────
@@ -2271,8 +2352,18 @@ const SUPPLIERS={
 // account's new namespaced key) — flagged separately for review.
 function libNS(){ return (currentUser && currentUser.id) ? currentUser.id : 'guest'; }
 function libKey(base){ return base + '__u_' + libNS(); }
-function getSaved(){try{return JSON.parse(localStorage.getItem(libKey('clpeasy_labels'))||'[]');}catch(e){return[];}}
-function persistSaved(arr){localStorage.setItem(libKey('clpeasy_labels'),JSON.stringify(arr));}
+// Checkpoint B: the labels array itself is now owned by the shared
+// LabelLibrary module (same clpeasy_labels__u_<ns> key this page already
+// used) -- getSaved() is kept as a thin alias so the many existing
+// read-only call sites below don't all need renaming. It must only be
+// called after LabelLibrary.init() has resolved (see initAuth()/init()
+// below) -- LabelLibrary.getSaved() itself throws a clear error otherwise.
+// persistSaved(whole array) is gone: every real mutation now goes through
+// LabelLibrary.mutate(), never a blind whole-array overwrite. Folders are
+// a separate, unrelated data structure (clpeasy_folders__u_<ns>, keyed by
+// folder name, not an array of id-bearing labels) untouched by this
+// checkpoint -- libKey() is kept for that.
+function getSaved(){ return LabelLibrary.getSaved(); }
 
 // ── FOLDER DEFINITIONS ─────────────────────────────────────────
 // Map every product type to a canonical folder key
@@ -2391,15 +2482,19 @@ function confirmDeleteFolder(key){
 
 function closeFdelModal(){document.getElementById('fdelModal').classList.remove('show');_fdelKey=null;}
 
-function executeFolderDelete(action){
+async function executeFolderDelete(action){
   if(!_fdelKey)return;
   const key=_fdelKey;
-  let arr=getSaved();
   if(action==='move'){
     // Labels stay but folder becomes inactive — they fall into uncategorised view
   }else if(action==='delete'){
-    arr=arr.filter(e=>getLabelFolder(e.productType)!==key);
-    persistSaved(arr);
+    // Checkpoint B: bulk folder-delete now goes through the coordinated
+    // mutate() API (filters by the same productType->folder rule, just
+    // computed against the freshest collection at mutation time) instead
+    // of a blind persistSaved(whole array) overwrite.
+    const deletedIds=new Set(getSaved().filter(e=>getLabelFolder(e.productType)===key).map(e=>e.id));
+    await LabelLibrary.mutate(current=>current.filter(e=>getLabelFolder(e.productType)!==key));
+    if(editingLabelId && deletedIds.has(editingLabelId)) noteEditingLabelDeleted();
   }
   // Deactivate folder
   const f=getFolders();
@@ -2424,10 +2519,83 @@ document.addEventListener('click',function(e){
 // editing, saving and printing correctly via normalizeLabel's defaults.
 const LABEL_SCHEMA_VERSION=1;
 
-function saveLabel(){plausible('Label Saved to Library');
+// Checkpoint B, requirement 3: which saved record (if any) the wizard is
+// currently editing. Set when an existing label is opened (loadLabelRecord
+// below); cleared by "New label"/Start Over (both already a full
+// location.reload(), which trivially resets every JS variable including
+// this one -- no extra code needed for that half of the requirement).
+let editingLabelId=null;
+// Checkpoint B, requirement 4: guards against a double-click firing two
+// concurrent mutate() calls for the same save.
+let _saveInFlight=false;
+
+// Checkpoint B, requirement 3: shown when Save is pressed while editing a
+// label that turns out to have been deleted elsewhere (another tab, or
+// this same tab via the folder-delete/version-restore paths) -- built the
+// same way this file already builds its toast/notice elements (e.g. the
+// topup-success toast in initAuth()), not new static markup.
+function showStaleEditNotice(){
+  removeStaleEditNotice();
+  const btn=document.getElementById('btn-save');
+  if(!btn||!btn.parentElement) return;
+  const notice=document.createElement('div');
+  notice.id='stale-edit-notice';
+  notice.style.cssText='margin-top:8px;padding:10px 12px;background:#FEF3C7;border:1.5px solid #FDE68A;border-radius:10px;font-size:12.5px;color:#92400E;line-height:1.5;';
+  notice.textContent='This saved label was deleted elsewhere, so it can no longer be updated. ';
+  const saveAsNewBtn=document.createElement('button');
+  saveAsNewBtn.type='button';
+  saveAsNewBtn.textContent='Save as new label';
+  saveAsNewBtn.style.cssText='text-decoration:underline;background:none;border:none;color:#92400E;font-weight:700;cursor:pointer;padding:0;font-size:12.5px;';
+  saveAsNewBtn.addEventListener('click',function(){
+    removeStaleEditNotice();
+    editingLabelId=null;
+    saveLabel();
+  });
+  notice.appendChild(saveAsNewBtn);
+  btn.insertAdjacentElement('afterend',notice);
+}
+function removeStaleEditNotice(){
+  const el=document.getElementById('stale-edit-notice');
+  if(el)el.remove();
+}
+// Checkpoint B, requirement 8: the label currently open in the wizard was
+// deleted elsewhere (another tab via LabelLibrary.onChange, or a same-tab
+// bulk folder-delete/version-restore). Never touches any in-progress form
+// field -- the user's unsaved edits stay exactly as typed; this only
+// surfaces that the identity link to the now-gone record is broken, so a
+// subsequent Save correctly offers "Save as new" instead of silently
+// recreating or silently failing.
+function noteEditingLabelDeleted(){
+  showStaleEditNotice();
+}
+// Checkpoint B, requirement 4: a visible (not silently-swallowed) error
+// when the coordinated mutation itself fails (retries exhausted, a stale
+// namespace mid-save, or any other rejection) -- reuses this file's
+// existing toast-element pattern rather than inventing a new one.
+function showSaveErrorToast(err){
+  const toast=document.createElement('div');
+  toast.textContent='⚠️ Could not save this label: '+((err&&err.message)||'please try again.');
+  toast.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#DC2626;color:white;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);max-width:90vw;text-align:center;';
+  document.body.appendChild(toast);
+  setTimeout(()=>toast.remove(),5000);
+}
+
+// Checkpoint B, requirement 4: every save now goes through the coordinated
+// LabelLibrary.mutate() API -- never the old persistSaved(whole array)
+// overwrite, and never the test-only _internal.persistSaved(). An
+// editingLabelId edit updates only that matching id; a genuinely new label
+// (no editingLabelId set) still receives one generated id, falling back to
+// the existing name+productType dedupe match only when no explicit id is
+// being edited (so an explicit rename-while-editing can never accidentally
+// collide with, and silently overwrite, some other unrelated label that
+// happens to already use the new name).
+async function saveLabel(){
+  if(_saveInFlight)return; // requirement 4: prevent double-click duplicate saves
+  plausible('Label Saved to Library');
   readForm();
   if(!S.scentName){alert('Please enter a scent name before saving.');return;}
   if(isCustomSizeBelowSupportedMinimum()){alert(CUSTOM_SIZE_MIN_MSG);return;}
+  removeStaleEditNotice();
   const entry={schemaVersion:LABEL_SCHEMA_VERSION,rendererVersion:LabelRenderer.RENDERER_VERSION,
     scentName:S.scentName,productType:S.productType,shape:S.shape,size:S.size,customW:S.customW,customH:S.customH,signal:S.signal,
     hStatements:S.hStatements,pictograms:[...S.pictograms],sensitisers:[...S.sensitisers],bizName:S.bizName,bizAddress:S.bizAddress,
@@ -2441,25 +2609,86 @@ function saveLabel(){plausible('Label Saved to Library');
     bizNameFSOverride:S.bizNameFSOverride,hazardYOffset:S.hazardYOffset,
     typeFSOverride:S.typeFSOverride,sigFSOverride:S.sigFSOverride,
     savedAt:new Date().toLocaleDateString('en-GB')};
-  // Auto-activate folder for this product type
+  // Auto-activate folder for this product type (unrelated data structure,
+  // independent of the labels collection -- unchanged from before).
   const folderKey=getLabelFolder(entry.productType);
   const f=getFolders();
   if(!f[folderKey])f[folderKey]={};
   f[folderKey].active=true;
   persistFolders(f);
-  const arr=getSaved();
-  const idx=arr.findIndex(e=>e.scentName===entry.scentName&&e.productType===entry.productType);
-  if(idx>=0)arr[idx]=entry;else arr.push(entry);
-  persistSaved(arr);
-  renderSaved();
+
   const btn=document.getElementById('btn-save');
-  if(btn){btn.textContent='✅ Saved!';btn.style.background='#ECFDF5';btn.style.borderColor='var(--teal)';}
-  setTimeout(()=>showLabelDoneSplash('save'),600);
-  setTimeout(()=>{if(btn){btn.textContent='💾 Save to my label library';btn.style.background='';btn.style.borderColor='';}},2000);
+  _saveInFlight=true;
+  if(btn)btn.disabled=true;
+  const targetId=editingLabelId;
+  // review (Checkpoint B): generateId() is called ONCE here, before
+  // mutate() -- never inside the mutator itself, which label-library.js's
+  // own documentation warns may run more than once per mutate() call on
+  // retry. Generating fresh randomness on each retry would leak an
+  // abandoned reservation per retry.
+  const freshIdForNew=targetId?null:LabelLibrary.generateId();
+  try{
+    const result=await LabelLibrary.mutate(function(current){
+      if(targetId){
+        const idx=current.findIndex(x=>x.id===targetId);
+        if(idx<0){
+          // requirement 3: the label being edited was deleted elsewhere --
+          // never silently create a new record from a stale edit.
+          return LabelLibrary.NO_CHANGE;
+        }
+        const updated=current.slice();
+        updated[idx]=Object.assign({},entry,{id:targetId});
+        return {collection:updated,usedId:targetId};
+      }
+      // No explicit editing id: preserve the existing name+productType
+      // dedupe behaviour as a fallback (documented above), then a
+      // genuinely new label gets the one id generated above.
+      const dupIdx=current.findIndex(x=>x.scentName===entry.scentName&&x.productType===entry.productType);
+      if(dupIdx>=0){
+        const updated=current.slice();
+        const existingId=updated[dupIdx].id;
+        updated[dupIdx]=Object.assign({},entry,{id:existingId});
+        return {collection:updated,usedId:existingId};
+      }
+      const updated=current.concat([Object.assign({},entry,{id:freshIdForNew})]);
+      return {collection:updated,usedId:freshIdForNew};
+    });
+    if(targetId && result.committed===false){
+      showStaleEditNotice();
+      return;
+    }
+    // Checkpoint B (correction round): a successful save -- whether it
+    // created a genuinely new record, matched via the legacy dedupe
+    // fallback, or updated an explicit edit -- always becomes the record
+    // now being edited. This is what makes Create -> Save -> continue
+    // editing -> Print one continuous flow: once a label is attached to a
+    // real id, every subsequent Save in this session updates that exact
+    // id (even across a rename/product-type change), and name+productType
+    // dedupe is never consulted again for it. This also covers explicit
+    // "Save as new" -- its click handler (see showStaleEditNotice() above)
+    // clears editingLabelId then calls saveLabel() again, which lands
+    // here on its own successful commit and attaches ITS new id.
+    editingLabelId=result.usedId;
+    renderSaved();
+    if(btn){btn.textContent='✅ Saved!';btn.style.background='#ECFDF5';btn.style.borderColor='var(--teal)';}
+    setTimeout(()=>showLabelDoneSplash('save'),600);
+    setTimeout(()=>{if(btn){btn.textContent='💾 Save to my label library';btn.style.background='';btn.style.borderColor='';}},2000);
+  }catch(err){
+    console.log('saveLabel mutate() failed:',err);
+    showSaveErrorToast(err);
+  }finally{
+    _saveInFlight=false;
+    if(btn)btn.disabled=false;
+  }
 }
 
-function loadLabel(i){
-  const arr=getSaved();const e=arr[i];if(!e)return;
+// Checkpoint B, requirement 2/3: record-based, never index-based. Also
+// sets editingLabelId so a subsequent Save updates this exact record (see
+// saveLabel() above) rather than falling through to name+productType
+// dedupe or creating a duplicate.
+function loadLabelRecord(e){
+  if(!e)return;
+  editingLabelId=e.id||null;
   S.scentName=e.scentName;S.productType=e.productType;S.shape=e.shape;S.size=e.size;S.customW=e.customW||S.customW;S.customH=e.customH||S.customH;
   S.signal=e.signal||'';S.hStatements=e.hStatements||'';S.sensitisers=e.sensitisers||[];
   S.hSelected=(S.hStatements||'').split(',').map(code=>code.trim()).filter(Boolean);
@@ -2508,15 +2737,34 @@ function loadLabel(i){
   goToStep(1);
 }
 
-function loadFromLibrarySelect(i){
-  if(i==='')return;
-  loadLabelAndGotoStep5(parseInt(i));
+// Checkpoint B, requirement 2: unknown/deleted/malformed ids never fall
+// back to opening index 0 or any other label -- they show a safe inline
+// notice and leave the wizard exactly where it was.
+function loadLabelById(id){
+  const e=LabelLibrary.findById(getSaved(),id);
+  if(!e){
+    showLabelUnavailableNotice();
+    return false;
+  }
+  loadLabelRecord(e);
+  return true;
+}
+function showLabelUnavailableNotice(){
+  const toast=document.createElement('div');
+  toast.textContent='Label no longer available — it may have been deleted, or the link is out of date.';
+  toast.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#374151;color:white;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);max-width:90vw;text-align:center;';
+  document.body.appendChild(toast);
+  setTimeout(()=>toast.remove(),6000);
+}
+
+function loadFromLibrarySelect(id){
+  if(id==='')return;
+  loadLabelAndGotoStep5(id);
   document.getElementById('load-from-library').value='';
 }
 
-function loadLabelAndGotoStep5(i){
-  loadLabel(i);
-  forceGoToStep(5);
+function loadLabelAndGotoStep5(id){
+  if(loadLabelById(id))forceGoToStep(5);
 }
 
 // The live preview stays in the right-hand preview column throughout the
@@ -2544,25 +2792,57 @@ function forceGoToStep(n){
   window.scrollTo(0,0);
 }
 
+// Checkpoint B, requirement 6: same canonical LabelRenderer.getPhysicalSpec()
+// -based formatting used on My Labels, replacing the old `${size}mm ${shape}`
+// text that showed "custommm rectangle" for custom-sized labels (e.size is
+// the literal string 'custom'). A malformed/unreadable record fails safe to
+// the old raw-field text rather than throwing.
+function formatMm(n){
+  if(typeof n!=='number'||!Number.isFinite(n))return '?';
+  const r=Math.round(n*100)/100;
+  return String(r);
+}
+function dimensionLabel(e){
+  try{
+    const spec=LabelRenderer.getPhysicalSpec(e);
+    const shapeName=spec.shape.charAt(0).toUpperCase()+spec.shape.slice(1);
+    if(spec.shape==='circle')return `${shapeName} · ${formatMm(spec.diameterMm)} mm`;
+    return `${shapeName} · ${formatMm(spec.widthMm)} × ${formatMm(spec.heightMm)} mm`;
+  }catch(err){
+    return (e.size?String(e.size)+'mm ':'')+(e.shape||'');
+  }
+}
+
+// Checkpoint B, requirement 7: print.html isn't wired to accept this until
+// Checkpoint C, so nothing here links to it yet (the existing #print-sheet-link
+// / #print-sheet-link-preview elements are left exactly as they were --
+// still plain href="print.html", still shown/hidden only by hasSaved, per
+// the explicit instruction not to expose a working Print Sheet action this
+// checkpoint). This exists only so the URL-generation logic itself can be
+// unit tested now.
+function buildPrintSheetUrl(id){ return 'print.html?label='+encodeURIComponent(id); }
+
 function populateLibraryDropdown(){
   const arr=getSaved();
   const sel=document.getElementById('load-from-library');
   if(!sel)return;
   sel.innerHTML='<option value="">— Select a saved label to load —</option>';
-  arr.forEach((e,i)=>{
+  arr.forEach(e=>{
     const label=e.scentName||'Unnamed';
-    const size=e.size||35;
-    const shape=e.shape||'circle';
     const opt=document.createElement('option');
-    opt.value=i;
-    opt.textContent=`${label} (${size}mm ${shape})`;
+    opt.value=e.id;
+    opt.textContent=`${label} (${dimensionLabel(e)})`;
     sel.appendChild(opt);
   });
 }
 
-function deleteLabel(i){
+// Checkpoint B, requirement 5: id-based delete via the coordinated
+// mutate() API -- removes only the matching id, never a positional splice.
+async function deleteLabelById(id){
   if(!confirm('Delete this saved label?'))return;
-  const arr=getSaved();arr.splice(i,1);persistSaved(arr);renderSaved();
+  await LabelLibrary.mutate(current=>current.filter(x=>x.id!==id));
+  if(editingLabelId===id)noteEditingLabelDeleted();
+  renderSaved();
 }
 
 // ── RENDER SAVED ───────────────────────────────────────────────
@@ -2585,7 +2865,7 @@ function renderSaved(){
 
   if(activeFolders.length===0){
     // No folders active — flat list (original behaviour)
-    list.innerHTML=arr.map((e,i)=>savedItemHTML(e,i)).join('');
+    list.innerHTML=arr.map(e=>savedItemHTML(e)).join('');
     return;
   }
 
@@ -2593,7 +2873,7 @@ function renderSaved(){
   let html='';
   // Active folders first
   activeFolders.forEach(fd=>{
-    const items=arr.map((e,i)=>({e,i})).filter(({e})=>getLabelFolder(e.productType)===fd.key);
+    const items=arr.filter(e=>getLabelFolder(e.productType)===fd.key);
     if(!items.length)return;
     const openState=getFolderOpenState(fd.key);
     html+=`<div class="folder-group">
@@ -2604,13 +2884,13 @@ function renderSaved(){
         <span class="folder-group-chevron ${openState?'open':''}">▶</span>
       </div>
       <div class="folder-group-items ${openState?'open':''}" id="fgroup-${fd.key}">
-        ${items.map(({e,i})=>savedItemHTML(e,i)).join('')}
+        ${items.map(e=>savedItemHTML(e)).join('')}
       </div>
     </div>`;
   });
 
   // Uncategorised — labels whose folder is NOT active
-  const uncatItems=arr.map((e,i)=>({e,i})).filter(({e})=>!isFolderActive(getLabelFolder(e.productType)));
+  const uncatItems=arr.filter(e=>!isFolderActive(getLabelFolder(e.productType)));
   if(uncatItems.length){
     const openState=getFolderOpenState('_uncat');
     html+=`<div class="folder-group">
@@ -2621,7 +2901,7 @@ function renderSaved(){
         <span class="folder-group-chevron ${openState?'open':''}">▶</span>
       </div>
       <div class="folder-group-items ${openState?'open':''}" id="fgroup-_uncat">
-        ${uncatItems.map(({e,i})=>savedItemHTML(e,i)).join('')}
+        ${uncatItems.map(e=>savedItemHTML(e)).join('')}
       </div>
     </div>`;
   }
@@ -2646,21 +2926,57 @@ function toggleFolderGroup(key){
   if(items)items.classList.toggle('open',_folderOpenStates[key]!==false);
 }
 
-function savedItemHTML(e,i){
+function savedItemHTML(e){
   const hist=getLabelHistory(e.scentName,e.productType);
   const hasHist=hist.length>1;
+  // Checkpoint B (correction round): saved-label identity controls no
+  // longer interpolate any stored data into inline onclick JavaScript --
+  // data-label-id / data-action (and, for the name+type-keyed history
+  // control, data-scent / data-product-type, still encodeURIComponent()'d
+  // exactly as showLabelHistory() already expects) are read by the single
+  // delegated listener on #saved-list below -- same pattern My Labels
+  // uses for data-label-id/data-action. Dimension text comes from
+  // LabelRenderer.getPhysicalSpec() instead of the raw `${e.size}mm
+  // ${e.shape}` that produced "custommm rectangle".
   return `<div class="saved-item">
     <div class="saved-item-info">
       <div class="saved-item-name">${e.scentName}</div>
-      <div class="saved-item-meta">${e.productType} · ${e.size}mm ${e.shape} · ${e.savedAt||''}</div>
+      <div class="saved-item-meta">${e.productType} · ${dimensionLabel(e)} · ${e.savedAt||''}</div>
     </div>
     <div class="saved-item-btns">
-      <button class="sb sb-teal" onclick="loadLabelAndGotoStep5(${i})">Load</button>
-      ${hasHist?`<button class="sb" style="background:#EFF6FF;color:#1D4ED8;border:1.5px solid #BFDBFE;font-size:11px;" onclick="showLabelHistory('${encodeURIComponent(e.scentName)}','${encodeURIComponent(e.productType)}')">🕐 v${hist.length}</button>`:''}
-      <button class="sb sb-red" onclick="deleteLabel(${i})">Delete</button>
+      <button class="sb sb-teal" data-action="load" data-label-id="${e.id}">Load</button>
+      ${hasHist?`<button class="sb" style="background:#EFF6FF;color:#1D4ED8;border:1.5px solid #BFDBFE;font-size:11px;" data-action="history" data-scent="${encodeURIComponent(e.scentName)}" data-product-type="${encodeURIComponent(e.productType)}">🕐 v${hist.length}</button>`:''}
+      <button class="sb sb-red" data-action="delete" data-label-id="${e.id}">Delete</button>
     </div>
   </div>`;
 }
+// Checkpoint B (correction round): one delegated listener on the static
+// #saved-list container -- its children are replaced by renderSaved() on
+// every call, but the container itself is not, so this survives every
+// re-render without needing to be re-attached (same pattern as My Labels'
+// #grid-area listener). Covers every saved-label identity control in
+// Builder's internal library panel; sheet-slot indexes and non-label
+// controls elsewhere in the page are unaffected.
+(function(){
+  const savedList=document.getElementById('saved-list');
+  if(!savedList)return;
+  savedList.addEventListener('click',function(ev){
+    const btn=ev.target.closest('[data-action]');
+    if(!btn||!savedList.contains(btn))return;
+    const action=btn.getAttribute('data-action');
+    if(action==='load'){
+      const id=btn.getAttribute('data-label-id');
+      if(id)loadLabelAndGotoStep5(id);
+    } else if(action==='delete'){
+      const id=btn.getAttribute('data-label-id');
+      if(id)deleteLabelById(id);
+    } else if(action==='history'){
+      const scent=btn.getAttribute('data-scent');
+      const product=btn.getAttribute('data-product-type');
+      if(scent&&product)showLabelHistory(scent,product);
+    }
+  });
+})();
 
 function init(){
   initAuth();
@@ -2694,7 +3010,13 @@ function init(){
   // Clear label-specific fields — always start fresh
   try{const _p=JSON.parse(localStorage.getItem('clpeasy_prod')||'{}');delete _p.productType;delete _p.netWeight;delete _p.burnTime;delete _p.fragLoad;localStorage.setItem('clpeasy_prod',JSON.stringify(_p));}catch(e){}
   applySize(52);
-  renderSaved();
+  // Checkpoint B, requirement 1: saved-label rendering no longer happens
+  // here. This used to call renderSaved() synchronously against the
+  // pre-auth 'guest' library before auth had even resolved -- the exact
+  // "optimistic guest read" this requirement forbids. It now happens
+  // exactly once, from initSavedLabelLibrary() (see initAuth() above),
+  // only after LabelLibrary.init() has resolved against the confirmed
+  // namespace (a real signed-in account, or a confirmed no-session guest).
   // Ensure hazard data is always clear on page load — never cached
   S.signal=''; S.pictograms=[]; S.hSelected=[]; S.pSelected=[]; S.sensitisers=[];
   S.hStatements=''; S.pStatements='';
@@ -3379,6 +3701,14 @@ function splashDismiss(){
 }
 function splashNewLabel(){
   splashDismiss();
+  // Checkpoint B (correction round): this is the visible "New Label"
+  // action (the done-splash's "Make another label" button) -- unlike
+  // startOver()/Reset, it does NOT reload the page, so nothing else here
+  // clears editingLabelId. Without this, a Save immediately after
+  // "Make another label" would silently update the PREVIOUS label instead
+  // of creating a new one, since saveLabel() now always attaches the last
+  // successful save's id to editingLabelId (see saveLabel() above).
+  editingLabelId=null;
   // Auto-increment batch number then reset to step 1
   autoIncrementBatch();
   goToStep(1);
@@ -4400,7 +4730,7 @@ function pushLabelHistory(entry){
   }catch(e){}
 }
 
-function showLabelHistory(encodedScent,encodedProduct){
+async function showLabelHistory(encodedScent,encodedProduct){
   const scent=decodeURIComponent(encodedScent);
   const product=decodeURIComponent(encodedProduct);
   const hist=getLabelHistory(scent,product);
@@ -4411,28 +4741,48 @@ function showLabelHistory(encodedScent,encodedProduct){
   const vNum=parseInt(choice);
   const match=hist.find(v=>(v.version||0)===vNum);
   if(!match){alert('Version not found.');return;}
-  // Load that version
-  const i=getSaved().findIndex(e=>e.scentName===scent&&e.productType===product);
-  if(i>=0){
-    const arr=getSaved();
-    // Restore but keep current as latest
-    Object.assign(arr[i],match);
-    persistSaved(arr);
-    renderSaved();
-    alert(`Restored v${vNum} of "${scent}".`);
+  // Checkpoint B: version-restore is a real mutation, now via the
+  // coordinated mutate() API -- the record's own existing id is preserved
+  // (restoring a version must never re-identify the record), found the
+  // same way this feature always found it (by current scentName+productType,
+  // unchanged from before -- history is keyed by name+type, a separate,
+  // pre-existing design not touched by this checkpoint's id work).
+  let result;
+  try{
+    result=await LabelLibrary.mutate(function(current){
+      const idx=current.findIndex(x=>x.scentName===scent&&x.productType===product);
+      if(idx<0)return LabelLibrary.NO_CHANGE;
+      const updated=current.slice();
+      updated[idx]=Object.assign({},updated[idx],match,{id:updated[idx].id});
+      return updated;
+    });
+  }catch(err){
+    console.log('showLabelHistory restore mutate() failed:',err);
+    alert('Could not restore this version — please try again.');
+    return;
   }
+  renderSaved();
+  if(result.committed===false){
+    alert('This label no longer exists, so this version could not be restored.');
+    return;
+  }
+  alert(`Restored v${vNum} of "${scent}".`);
 }
 
 // ══════════════════════════════════════════════════════════════
 // HOOK INTO saveLabel — push to history
 // ══════════════════════════════════════════════════════════════
+// Checkpoint B: saveLabel() is now async (it awaits LabelLibrary.mutate()
+// internally) -- this wrapper must await it too before reading getSaved()
+// for the just-saved entry, otherwise it would race the still-in-flight
+// mutation and read the pre-save collection.
 const _origSaveLabel=saveLabel;
-saveLabel=function(){
+saveLabel=async function(){
   // Call original saveLabel
-  _origSaveLabel();
+  await _origSaveLabel();
   // Push to history
   const arr=getSaved();
-  const entry=arr.find(e=>e.scentName===S.scentName&&e.productType===S.productType);
+  const entry=editingLabelId?arr.find(e=>e.id===editingLabelId):arr.find(e=>e.scentName===S.scentName&&e.productType===S.productType);
   if(entry){
     pushLabelHistory(entry);
   }
@@ -4460,7 +4810,13 @@ const _origSaveLabelEntry=null; // handled via readForm hook above — labelLang
 // ══════════════════════════════════════════════════════════════
 function initExtensions(){
   initBatchDisplay();
-  populateLibraryDropdown();
+  // Checkpoint B, requirement 1: populateLibraryDropdown() reads
+  // getSaved() (LabelLibrary), which throws before setNamespace()/init()
+  // have resolved -- initExtensions() runs synchronously inside init(),
+  // before auth has resolved. Moved into initSavedLabelLibrary() (see
+  // initAuth() above), which calls it once the library is actually ready,
+  // preserving the same initial-population behaviour without ever
+  // touching the pre-auth 'guest' namespace.
   onProductTypeChange();
   renderTags();
   // Restore label lang if saved in prod details

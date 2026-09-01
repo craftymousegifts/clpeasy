@@ -12,6 +12,12 @@ const source = fs.readFileSync('builder.html', 'utf8')
 // inline script runs, giving the exact same window.LabelRenderer the real
 // browser would have by the time buildSVG() calls it.
 const labelRendererSource = fs.readFileSync('label-render.js', 'utf8');
+// Checkpoint B: builder.html now also loads label-library.js via
+// <script src="...">, stripped by the same generic regex above for the
+// same reason label-render.js already was -- injected explicitly here,
+// before the page's own inline script runs, so LabelLibrary exists
+// synchronously by the time init()/initAuth() reference it.
+const labelLibrarySource = fs.readFileSync('label-library.js', 'utf8');
 const errors = [];
 const virtualConsole = new VirtualConsole();
 virtualConsole.on('jsdomError', error => errors.push(error.message));
@@ -42,6 +48,7 @@ const dom = new JSDOM(source, {
       drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
     });
     window.eval(labelRendererSource);
+    window.eval(labelLibrarySource);
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
     window.scrollTo = () => {};
@@ -64,7 +71,7 @@ const dom = new JSDOM(source, {
 const { window } = dom;
 const document = window.document;
 
-setTimeout(() => {
+setTimeout(async () => {
   try {
     assert(document.querySelector('.builder-utility-actions [onclick="openHelp()"]'), 'visible Help Guide control missing');
     assert(document.querySelector('.mobile-preview-btn[onclick="openPreviewSheet()"]'), 'mobile preview control missing');
@@ -198,24 +205,30 @@ setTimeout(() => {
     window.selectSize(63);
     window.updateLabel();
     assert.strictEqual(window.eval('window._labelBlockDownload'), false, 'returning to 63mm did not clear the false fit state');
-    window.saveLabel();
+    // Checkpoint B: saveLabel()/loadLabel(i)/deleteLabel(i) are now
+    // async and id-based (LabelLibrary-backed) rather than synchronous and
+    // array-index-based -- these calls, and only these calls, are updated
+    // to the new API; the assertions/coverage are unchanged.
+    await window.saveLabel();
     assert.strictEqual(window.eval('getSaved()').length, 1, 'label was not saved');
+    const savedId = window.eval('getSaved()')[0].id;
     document.getElementById('scent-name').value = 'Changed value';
-    window.loadLabel(0);
+    window.loadLabelRecord(window.eval('getSaved()').find(e => e.id === savedId));
     assert.strictEqual(document.getElementById('scent-name').value, 'Regression Candle', 'saved product name was not restored');
     assert(window.eval('S.pictograms').includes('exclamation'), 'saved pictogram was not restored');
     assert(window.eval('S.hSelected').includes('H315'), 'saved H-code state was not restored');
     assert(window.eval('S.pSelected').includes('P273'), 'saved P-code state was not restored');
     assert.strictEqual(document.getElementById('frag-load').value, '10%', 'saved fragrance load was not restored');
+    assert.strictEqual(window.eval('editingLabelId'), savedId, 'loading a saved label did not set editingLabelId');
     window.toggleHChip(document.querySelector('.h-chip[data-code="H315"]'), 'H315');
     assert(!window.eval('S.pictograms').includes('exclamation'), 'editing a reopened label retained a stale pictogram');
     window.toggleHChip(document.querySelector('.h-chip[data-code="H315"]'), 'H315');
     assert(window.eval('S.pictograms').includes('exclamation'), 'editing a reopened label did not restore its required pictogram');
-    window.loadLabelAndGotoStep5(0);
+    window.loadLabelAndGotoStep5(savedId);
     assert.strictEqual(window.eval('approvedBuilderStep'), 5, 'reopening a saved label did not return to Download');
     assert(document.querySelector('.right-column > #preview-panel-el'), 'reopening a saved label displaced the live preview');
 
-    window.deleteLabel(0);
+    await window.deleteLabelById(savedId);
     assert.strictEqual(window.eval('getSaved()').length,0,'saved label delete did not remove the label');
 
     window.openHelp();

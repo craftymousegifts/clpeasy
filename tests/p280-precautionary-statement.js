@@ -35,6 +35,7 @@ const assert = require('assert');
 const { JSDOM, VirtualConsole } = require('jsdom');
 
 const labelRendererSource = fs.readFileSync('label-render.js', 'utf8');
+const labelLibrarySource = fs.readFileSync('label-library.js', 'utf8');
 const builderSource = fs.readFileSync('builder.html', 'utf8');
 const printSource = fs.readFileSync('print.html', 'utf8');
 
@@ -170,6 +171,11 @@ const emptyQuery = {
       beforeParse(window) {
         stubCanvas(window);
         window.eval(labelRendererSource);
+        // Checkpoint B: builder.html now also loads label-library.js via
+        // <script src="...">, stripped by the same generic regex above for
+        // the same reason label-render.js already was -- injected
+        // explicitly here, before builder.html's own inline script runs.
+        window.eval(labelLibrarySource);
         window.alert = message => { window.__lastAlert = String(message); };
         window.confirm = () => true;
         window.scrollTo = () => {};
@@ -251,7 +257,9 @@ const emptyQuery = {
     // wording proof above (svg1, the real live preview) already covers this.)
 
     // 3. Save/reopen round-trip.
-    bwindow.saveLabel();
+    // Checkpoint B: saveLabel() is now async (awaits LabelLibrary.mutate()
+    // internally) -- must be awaited before the next line reads getSaved().
+    await bwindow.saveLabel();
     const saved = bwindow.eval('getSaved()');
     const savedEntry = saved.find(e => e.scentName === 'Lavender Fields');
     assert(savedEntry, 'label was not saved');
@@ -259,8 +267,10 @@ const emptyQuery = {
     // Reset builder state to something else, then reload -- selection must
     // come back exactly as saved, not default to every item.
     bwindow.eval(`S.p280Items=[]; S.p280Other=''; S.pSelected=[]; S.pStatements='';`);
-    const savedIdx = saved.findIndex(e => e.scentName === 'Lavender Fields');
-    bwindow.loadLabel(savedIdx);
+    // Checkpoint B: loadLabel(index) was replaced by the record-based
+    // loadLabelRecord(e) -- savedEntry (found above) is exactly the record
+    // this used to look up by index.
+    bwindow.loadLabelRecord(savedEntry);
     assert.deepStrictEqual([...bwindow.eval('S.p280Items')].sort(), ['eye','gloves'], 'reopening the saved label must restore the exact selected items');
     const svg2 = bwindow.buildSVG(false);
     assert(svg2.includes('Wear protective gloves/eye protection'), 'reopened label must render the identical wording it was saved with');
@@ -320,13 +330,16 @@ const emptyQuery = {
     // escaped, mangled, or stripped at rest.
     bdocument.getElementById('scent-name').value = 'XSS Test Label';
     bwindow.eval(`S.scentName='XSS Test Label';`);
-    bwindow.saveLabel();
+    // Checkpoint B: saveLabel() is now async -- await before reading getSaved().
+    await bwindow.saveLabel();
     const savedXss = bwindow.eval('getSaved()').find(e => e.scentName === 'XSS Test Label');
     assert(savedXss, 'the XSS-fixture label was not saved');
     assert.strictEqual(savedXss.p280Other, XSS_OTHER, 'saved label data must retain the exact original plain p280Other value, completely unescaped');
     bwindow.eval(`S.p280Other=''; S.p280Items=[];`);
-    const xssIdx = bwindow.eval('getSaved()').findIndex(e => e.scentName === 'XSS Test Label');
-    bwindow.loadLabel(xssIdx);
+    // Checkpoint B: loadLabel(index) was replaced by the record-based
+    // loadLabelRecord(e) -- savedXss (found above) is exactly the record
+    // this used to look up by index.
+    bwindow.loadLabelRecord(savedXss);
     assert.strictEqual(bwindow.eval('S.p280Other'), XSS_OTHER, 'reopening the saved label must restore the exact original plain p280Other value');
 
     if (builderErrors.length) throw new Error('jsdom runtime errors (builder): ' + builderErrors.join('; '));
