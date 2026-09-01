@@ -1171,7 +1171,182 @@ function renderLabel(rawData, opts){
   return {svg, fits, warnings, metrics, rendererVersion: RENDERER_VERSION};
 }
 
-  const LabelRenderer = { renderLabel, normalizeLabel, getLabelDims, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, P280_ITEMS, buildP280Wording };
+// ── PHYSICAL SPEC & TEMPLATE COMPATIBILITY (31 Aug 2026, Checkpoint A of
+// the connected print-workflow task) ───────────────────────────────────
+// Additive only -- renderLabel()/getLabelDims()/normalizeLabel() above are
+// completely unchanged. getPhysicalSpec() is a derived, never-stored view
+// of a saved label's real-world geometry, built entirely from the one
+// existing canonical getLabelDims() (mmW/mmH -- the ACTUAL property names
+// that function returns, not the illustrative {w,h} from an earlier draft
+// of this plan). checkCompatibility() generalises print.html's existing
+// checkRegistryCompatibility() into a reusable, structured result so the
+// same decision can be reused by template cards, Add buttons, Composer
+// loading, sheet validation, preview and every export path once wired in
+// a later checkpoint -- this file only adds the function, nothing here
+// calls it yet.
+function getPhysicalSpec(rawData){
+  const data = normalizeLabel(rawData);
+  const {mmW, mmH} = getLabelDims(data);
+  const shape = data.shape || 'circle';
+  return {
+    shape,
+    widthMm: mmW,
+    heightMm: mmH,
+    diameterMm: shape === 'circle' ? mmW : null,
+    orientation: mmH > mmW ? 'portrait' : (mmW > mmH ? 'landscape' : 'square'),
+    source: data.size === 'custom' ? 'custom' : 'preset',
+    presetId: data.size === 'custom' ? null : (data.size != null ? data.size : null),
+  };
+}
+
+// Same 0.05mm tolerance print.html's existing checkRegistryCompatibility()
+// already used for its exact-match check (kept identical, not tightened
+// or loosened). templateSpec is either {kind:'custom-sheet'} (Custom
+// Sheet always matches -- it takes its geometry FROM the label, per
+// print.html's getTplConfig()/getLockedSize()) or
+// {kind:'registry', shape, widthMm, heightMm, ...} for a fixed manufacturer
+// template. source/presetId on labelSpec are informational only and never
+// participate in the match decision, per the explicit product rule that
+// custom-vs-preset origin must not affect compatibility.
+//
+// review point 10: every geometry value this function actually uses is
+// validated as a finite number before any comparison is made. A missing/
+// NaN/undefined dimension anywhere (a malformed labelSpec, a malformed
+// template entry) is reported as matchType:'invalid-spec' -- never as a
+// false "compatible", and never as a false "incompatible" built from a
+// NaN-laced customer-facing message like "Your label is NaN×NaNmm...".
+// A circle match validates the template's height as well as its width
+// (both must equal the label's diameter, not just one) so a malformed
+// circle template entry (width and height disagreeing about the
+// diameter) is caught rather than silently trusted from one field alone.
+function isFiniteNum(n){ return typeof n === 'number' && Number.isFinite(n); }
+// review point 6 (final corrections round): a dimension of 0 or negative
+// is physically nonsensical for a label/template, so validation requires
+// POSITIVE finite numbers, not merely finite ones. labelSpec.shape and
+// templateSpec.shape must be one of the shapes this app actually
+// supports, and templateSpec.kind must be one of the two kinds this
+// function actually knows how to handle -- an unrecognised value of
+// either must fail closed as 'invalid-spec', never fall through into a
+// geometry comparison built on assumptions about a shape/kind it doesn't
+// understand. A circle or square must also be internally self-consistent
+// (its own width and height must agree, and so must a circle template's) --
+// a "circle" whose width and height disagree isn't really a circle, so
+// that inconsistency is caught rather than silently compared on width alone.
+function isPositiveFiniteNum(n){ return isFiniteNum(n) && n > 0; }
+const SUPPORTED_LABEL_SHAPES = ['circle', 'rectangle', 'square'];
+const SUPPORTED_TEMPLATE_KINDS = ['custom-sheet', 'registry'];
+const COMPAT_TOLERANCE_MM = 0.05;
+function checkCompatibility(labelSpec, templateSpec){
+  const base = {
+    labelWidthMm: (labelSpec && isFiniteNum(labelSpec.widthMm)) ? labelSpec.widthMm : null,
+    labelHeightMm: (labelSpec && isFiniteNum(labelSpec.heightMm)) ? labelSpec.heightMm : null,
+    templateWidthMm: (templateSpec && isFiniteNum(templateSpec.widthMm)) ? templateSpec.widthMm : null,
+    templateHeightMm: (templateSpec && isFiniteNum(templateSpec.heightMm)) ? templateSpec.heightMm : null,
+    rotationDeg: 0,
+  };
+  function invalid(reason){
+    return Object.assign({}, base, {compatible:false, matchType:'invalid-spec', reason});
+  }
+
+  if(!labelSpec || !isPositiveFiniteNum(labelSpec.widthMm) || !isPositiveFiniteNum(labelSpec.heightMm)){
+    return invalid("This label's size could not be determined.");
+  }
+  if(!labelSpec.shape || SUPPORTED_LABEL_SHAPES.indexOf(labelSpec.shape) === -1){
+    return invalid("This label's shape is not supported.");
+  }
+  if((labelSpec.shape === 'circle' || labelSpec.shape === 'square') && Math.abs(labelSpec.widthMm - labelSpec.heightMm) > COMPAT_TOLERANCE_MM){
+    return invalid(`This label's own ${labelSpec.shape} dimensions are inconsistent (width and height differ).`);
+  }
+  // review point 2 (surgical fixes round): width~=height alone is not
+  // enough for a circle -- a label carrying a stored diameterMm that
+  // disagrees with its own widthMm/heightMm must never be allowed to
+  // match a template through the diameter field alone (matching later
+  // happens on diameterMm, not width/height, for circles). Both must
+  // agree with the label's own physical width and height before any
+  // template is even considered.
+  if(labelSpec.shape === 'circle'){
+    if(!isPositiveFiniteNum(labelSpec.diameterMm)){
+      return invalid("This label's diameter could not be determined.");
+    }
+    if(Math.abs(labelSpec.diameterMm - labelSpec.widthMm) > COMPAT_TOLERANCE_MM || Math.abs(labelSpec.diameterMm - labelSpec.heightMm) > COMPAT_TOLERANCE_MM){
+      return invalid("This label's own circle dimensions are inconsistent (diameter does not match its width/height).");
+    }
+  }
+  if(!templateSpec || typeof templateSpec.kind !== 'string' || SUPPORTED_TEMPLATE_KINDS.indexOf(templateSpec.kind) === -1){
+    return invalid('This sheet template could not be determined.');
+  }
+
+  if(templateSpec.kind === 'custom-sheet'){
+    return Object.assign({}, base, {
+      compatible: true, matchType: 'custom-sheet',
+      reason: 'Custom Sheet will be set up to match this label exactly.',
+      templateWidthMm: labelSpec.widthMm, templateHeightMm: labelSpec.heightMm,
+    });
+  }
+
+  // templateSpec.kind === 'registry' from here on.
+  if(!templateSpec.shape || SUPPORTED_LABEL_SHAPES.indexOf(templateSpec.shape) === -1){
+    return invalid('This sheet requires an unsupported label shape.');
+  }
+
+  if(labelSpec.shape !== templateSpec.shape){
+    return Object.assign({}, base, {
+      compatible: false, matchType: 'incompatible',
+      reason: `This label is a ${labelSpec.shape}, but this sheet requires a ${templateSpec.shape} label shape.`,
+    });
+  }
+
+  if(labelSpec.shape === 'circle'){
+    if(!isPositiveFiniteNum(labelSpec.diameterMm) || !isPositiveFiniteNum(templateSpec.widthMm) || !isPositiveFiniteNum(templateSpec.heightMm)){
+      return invalid("This sheet's circle size could not be determined.");
+    }
+    if(Math.abs(templateSpec.widthMm - templateSpec.heightMm) > COMPAT_TOLERANCE_MM){
+      return invalid("This sheet's circle template is internally inconsistent (width and height differ).");
+    }
+    const okW = Math.abs(labelSpec.diameterMm - templateSpec.widthMm) <= COMPAT_TOLERANCE_MM;
+    const okH = Math.abs(labelSpec.diameterMm - templateSpec.heightMm) <= COMPAT_TOLERANCE_MM;
+    return Object.assign({}, base, (okW && okH)
+      ? {compatible:true, matchType:'exact', reason:'Exact match.'}
+      : {compatible:false, matchType:'incompatible', reason:`Your label is ${labelSpec.diameterMm}mm diameter -- this sheet requires ${templateSpec.widthMm}mm diameter labels.`});
+  }
+
+  if(!isPositiveFiniteNum(templateSpec.widthMm) || !isPositiveFiniteNum(templateSpec.heightMm)){
+    return invalid("This sheet's label size could not be determined.");
+  }
+  if(labelSpec.shape === 'square' && Math.abs(templateSpec.widthMm - templateSpec.heightMm) > COMPAT_TOLERANCE_MM){
+    return invalid("This sheet's square template is internally inconsistent (width and height differ).");
+  }
+
+  const exactW = Math.abs(labelSpec.widthMm - templateSpec.widthMm) <= COMPAT_TOLERANCE_MM;
+  const exactH = Math.abs(labelSpec.heightMm - templateSpec.heightMm) <= COMPAT_TOLERANCE_MM;
+  if(exactW && exactH){
+    return Object.assign({}, base, {compatible:true, matchType:'exact', reason:'Exact match.'});
+  }
+
+  if(labelSpec.shape === 'rectangle'){
+    const swappedW = Math.abs(labelSpec.widthMm - templateSpec.heightMm) <= COMPAT_TOLERANCE_MM;
+    const swappedH = Math.abs(labelSpec.heightMm - templateSpec.widthMm) <= COMPAT_TOLERANCE_MM;
+    if(swappedW && swappedH){
+      // A real swapped-dimension match exists, but no rotation-placement
+      // pipeline exists anywhere in the sheet preview/SVG/PDF/Cricut export
+      // path today (confirmed by direct inspection, 31 Aug 2026) -- so this
+      // is reported as unavailable, never as a false "compatible: rotated".
+      // rotationDeg:null (not 0 or 90) signals "not actually offered."
+      return Object.assign({}, base, {
+        compatible: false, matchType: 'rotation-unavailable',
+        reason: `Your label is ${labelSpec.widthMm}×${labelSpec.heightMm}mm -- this sheet requires ${templateSpec.widthMm}×${templateSpec.heightMm}mm labels. Rotating to fit isn't supported yet.`,
+        rotationDeg: null,
+      });
+    }
+  }
+
+  return Object.assign({}, base, {
+    compatible: false, matchType: 'incompatible',
+    reason: `Your label is ${labelSpec.widthMm}×${labelSpec.heightMm}mm -- this sheet requires ${templateSpec.widthMm}×${templateSpec.heightMm}mm labels.`,
+  });
+}
+
+  const LabelRenderer = { renderLabel, normalizeLabel, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, P280_ITEMS, buildP280Wording };
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = LabelRenderer;
   } else {
