@@ -348,6 +348,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
      is scoped in its own IIFE so it cannot collide with this page's own
      top-level names. -->
 <script src="label-render.js"></script>
+<script src="label-library.js"></script>
 
 <script>
 // ── SUPABASE AUTH ─────────────────────────────────────────────
@@ -367,13 +368,13 @@ async function initAuth(){
       const ns=document.getElementById('nav-signout');
       if(nu){nu.textContent=session.user.email;nu.style.display='';}
       if(ns)ns.style.display='';
-
-      // Auth resolves after init() has already called renderSavedList() once
-      // (using the pre-auth 'guest' namespace) — re-render now that
-      // currentUser is known so this shows this account's own labels.
-      try{ renderSavedList(); }catch(e){}
     }
     updateProGate();
+    // Checkpoint C1: resolve authentication FIRST (above), then -- regardless
+    // of whether a session exists, since the Composer supports guest use just
+    // like Builder/My Labels' 'guest' namespace -- call
+    // LabelLibrary.setNamespace()/init() exactly once.
+    await initComposerLibrary();
   }catch(e){console.log('Auth init:',e);}
 }
 async function signOut(){if(sbClient)await sbClient.auth.signOut();window.location.href='auth.html';}
@@ -492,7 +493,16 @@ function getRegistryTemplate(key){ return TEMPLATE_REGISTRY[key]||null; }
 
 // ── STATE ─────────────────────────────────────────────────────
 let currentTpl='custom';
-let sheetItems=[]; // [{labelData, qty}]
+// [{labelId, qty}] -- labelId is the saved label's stable LabelLibrary id,
+// NEVER a saved-array index and NEVER a cached copy of the label's content
+// (resolveSheetLabel() looks the content up fresh at point of use, every
+// time, so an edit made elsewhere is always reflected and a label deleted
+// elsewhere is never silently kept around under stale data). This is
+// entirely distinct from the sheet's own POSITION indices (row/col/posIdx/
+// labelIdx used throughout rendering/export below) -- those remain ordinary
+// array/loop indices into the physical grid and are never confused with a
+// labelId.
+let sheetItems=[];
 let zoom=0.75;
 // Positions (in reading order, from the start of the sheet) already used up
 // on a physical registry-template sheet from a previous print run -- the
@@ -519,8 +529,72 @@ function setReservedUsed(n){
 // labels to a different account signed in later on the same browser. See
 // builder.html's getSaved()/persistSaved() for the full explanation.
 function libNS(){ return (currentUser && currentUser.id) ? currentUser.id : 'guest'; }
-function libKey(base){ return base + '__u_' + libNS(); }
-function getSaved(){try{return JSON.parse(localStorage.getItem(libKey('clpeasy_labels'))||'[]');}catch(e){return[];}}
+function getSaved(){ return LabelLibrary.getSaved(); }
+
+function showLibraryLoadingState(){
+  const el=document.getElementById('saved-list');
+  if(el)el.innerHTML=`<div class="no-labels">Loading your labels…</div>`;
+}
+function showLibraryErrorState(err){
+  const el=document.getElementById('saved-list');
+  if(el)el.innerHTML=`<div class="no-labels">Your labels couldn't be loaded.<br>${xe((err&&err.message)||'Please try again.')}<br><button class="add-btn" style="margin-top:8px;" onclick="initComposerLibrary()">Try again</button></div>`;
+}
+
+// Resolves authentication, then loads this account's (or guest's) saved
+// labels through the shared LabelLibrary identity module -- the single
+// source of truth for stable saved-label ids, shared with Builder/My
+// Labels. Called once from initAuth() regardless of session state.
+async function initComposerLibrary(){
+  showLibraryLoadingState();
+  try{
+    LabelLibrary.setNamespace(libNS());
+    await LabelLibrary.init();
+  }catch(err){
+    showLibraryErrorState(err);
+    return;
+  }
+  renderSavedList();
+  rebuildSheet();
+  if(!window._clpComposerOnChangeRegistered){
+    window._clpComposerOnChangeRegistered=true;
+    // Fires only on a genuine cross-tab 'storage' event (e.g. a label
+    // deleted in another tab) -- never on this tab's own writes. A sheet
+    // item referencing an id that no longer exists must be removed, never
+    // silently substituted for a different saved label.
+    LabelLibrary.onChange(function(freshArr){
+      pruneMissingSheetItems(freshArr);
+      renderSavedList();
+      rebuildSheet();
+    });
+  }
+}
+
+// Removes any sheetItems entry whose labelId no longer resolves against the
+// freshly-reloaded saved array (e.g. deleted in another tab), and surfaces a
+// visible notice so the user knows why their sheet changed. Never
+// substitutes a different label for the missing one.
+function pruneMissingSheetItems(freshArr){
+  const stillValid=new Set((freshArr||[]).map(e=>e.id));
+  const removedCount=sheetItems.filter(item=>!stillValid.has(item.labelId)).length;
+  if(!removedCount)return false;
+  sheetItems=sheetItems.filter(item=>stillValid.has(item.labelId));
+  showSheetItemsInvalidatedNotice(removedCount);
+  return true;
+}
+function showSheetItemsInvalidatedNotice(count){
+  const toast=document.createElement('div');
+  toast.textContent=`⚠️ ${count} label${count===1?' was':'s were'} deleted in another tab and ${count===1?' has':' have'} been removed from this sheet.`;
+  toast.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#DC2626;color:white;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:700;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);max-width:90vw;text-align:center;';
+  document.body.appendChild(toast);
+  setTimeout(()=>toast.remove(),6000);
+}
+
+// Resolves a sheetItems entry's stable labelId to its current saved-label
+// data at the point of use -- sheetItems never caches a copy of the label
+// content itself, so an edit made elsewhere (Builder) is always reflected.
+function resolveSheetLabel(labelId){
+  return LabelLibrary.findById(getSaved(), labelId);
+}
 
 // Returns a saved label's real physical footprint in mm as {w,h}. A thin
 // adapter over the ONE canonical LabelRenderer.getLabelDims() -- this page
@@ -542,7 +616,7 @@ function getLabelDimsMM(e){
 // sheet is empty (nothing to lock to yet).
 function getLockedSize(){
   if(!sheetItems.length) return null;
-  const first=sheetItems[0].labelData;
+  const first=resolveSheetLabel(sheetItems[0].labelId);
   if(!first) return null;
   const dims=getLabelDimsMM(first);
   return {shape:first.shape||'circle', w:dims.w, h:dims.h};
@@ -611,8 +685,8 @@ function renderSavedList(){
     const lockedLabel=(locked.w===locked.h)?`${locked.w}mm ${locked.shape}`:`${locked.w}×${locked.h}mm ${locked.shape}`;
     html+=`<div style="background:#fff8e7;border:1px solid #f0c040;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#7a5c00;line-height:1.5;">🔒 Sheet locked to <strong>${lockedLabel}</strong> labels. Remove all labels to use a different shape or size.</div>`;
   }
-  html+=arr.map((e,i)=>{
-    const inSheet=sheetItems.findIndex(s=>s.id===i);
+  html+=arr.map((e)=>{
+    const inSheet=sheetItems.findIndex(s=>s.labelId===e.id);
     const qty=inSheet>=0?sheetItems[inSheet].qty:0;
     const dims=getLabelDimsMM(e);
     const sizeLabel=(dims.w===dims.h)?`${dims.w}mm`:`${dims.w}×${dims.h}mm`;
@@ -621,29 +695,49 @@ function renderSavedList(){
     );
     const lockedAttr=isLocked?'disabled title="Different size — remove existing labels first"':'';
     const itemStyle=isLocked?'opacity:0.4;pointer-events:none;':'';
-    return`<div class="saved-label-item" id="sli-${i}" style="${itemStyle}">
-      <div class="sli-preview" id="sli-prev-${i}"></div>
+    return`<div class="saved-label-item" id="sli-${e.id}" style="${itemStyle}">
+      <div class="sli-preview" id="sli-prev-${e.id}"></div>
       <div class="sli-info">
         <div class="sli-name">${xe(e.scentName||'Unnamed')}</div>
         <div class="sli-meta">${xe(e.productType||'')} · ${sizeLabel} ${e.shape||'circle'}${isLocked?' 🔒':''}</div>
       </div>
       <div class="sli-qty">
         ${qty>0?`
-          <button class="qty-btn" onclick="changeQty(${i},-1)">−</button>
-          <input class="qty-input" type="number" min="0" max="99" value="${qty}" id="qty-input-${i}"
-            onchange="setQty(${i},this.value)" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-          <button class="qty-btn" onclick="changeQty(${i},1)">+</button>
-        `:`<button class="add-btn" id="addbtn-${i}" onclick="addToSheet(${i})" ${lockedAttr}>Add</button>`}
+          <button class="qty-btn" data-action="dec" data-label-id="${e.id}">−</button>
+          <input class="qty-input" type="number" min="0" max="99" value="${qty}" id="qty-input-${e.id}" data-label-id="${e.id}"
+            onchange="setQty(this.dataset.labelId,this.value)" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+          <button class="qty-btn" data-action="inc" data-label-id="${e.id}">+</button>
+        `:`<button class="add-btn" id="addbtn-${e.id}" data-action="add" data-label-id="${e.id}" ${lockedAttr}>Add</button>`}
       </div>
     </div>`;
   }).join('');
   el.innerHTML=html;
   // Render mini previews
-  arr.forEach((e,i)=>{
-    const el2=document.getElementById('sli-prev-'+i);
+  arr.forEach((e)=>{
+    const el2=document.getElementById('sli-prev-'+e.id);
     if(el2)el2.innerHTML=buildMiniSVG(e);
   });
 }
+
+// Delegated listener for the saved-labels list's Add/+/- controls -- set up
+// once (the list is re-rendered wholesale on every change, so a per-element
+// listener would need re-attaching every time; delegation on the stable
+// container avoids that). Reads the target label's stable id from
+// data-label-id rather than any array/DOM index.
+(function(){
+  const savedList=document.getElementById('saved-list');
+  if(!savedList)return;
+  savedList.addEventListener('click',function(ev){
+    const btn=ev.target.closest('[data-action]');
+    if(!btn||!savedList.contains(btn))return;
+    const action=btn.getAttribute('data-action');
+    const labelId=btn.getAttribute('data-label-id');
+    if(!labelId)return;
+    if(action==='add')addToSheet(labelId);
+    else if(action==='inc')changeQty(labelId,1);
+    else if(action==='dec')changeQty(labelId,-1);
+  });
+})();
 
 // Registry templates (Phase 1) are a fixed, physical sheet -- a label that
 // doesn't match its shape or its exact size can never be printed onto it,
@@ -719,25 +813,25 @@ function canAddToSheet(e,qtyToAdd){
   return null;
 }
 
-function addToSheet(idx){
-  const arr=getSaved();
-  const e=arr[idx];if(!e)return;
+function addToSheet(labelId){
+  const e=resolveSheetLabel(labelId);if(!e)return;
   const err=canAddToSheet(e,1);
   if(err){alert(err);return;}
   const wasEmpty=sheetItems.length===0;
-  const existing=sheetItems.findIndex(s=>s.id===idx);
+  const existing=sheetItems.findIndex(s=>s.labelId===labelId);
   if(existing>=0){sheetItems[existing].qty+=1;}
-  else{sheetItems.push({id:idx,labelData:e,qty:1});}
+  else{sheetItems.push({labelId,qty:1});}
   if(wasEmpty)initCustomRectLockIfNeeded(e);
   renderSavedList();
   rebuildSheet();
 }
 
-function changeQty(idx,delta){
-  const pos=sheetItems.findIndex(s=>s.id===idx);
+function changeQty(labelId,delta){
+  const pos=sheetItems.findIndex(s=>s.labelId===labelId);
   if(pos<0)return;
   if(delta>0){
-    const err=canAddToSheet(sheetItems[pos].labelData,delta);
+    const e=resolveSheetLabel(labelId);
+    const err=e?canAddToSheet(e,delta):'This label is no longer available.';
     if(err){alert(err);return;}
   }
   sheetItems[pos].qty=Math.max(0,sheetItems[pos].qty+delta);
@@ -746,18 +840,17 @@ function changeQty(idx,delta){
   rebuildSheet();
 }
 
-function setQty(idx,val){
+function setQty(labelId,val){
   // Direct quantity entry must obey exactly the same capacity/shape/size
   // rules as Add and the +/- buttons -- clamp to [0,99] first (never
   // negative, never absurdly large), then validate only the INCREASE over
   // whatever is already on the sheet through the same authority those
   // other two paths use, so this can never bypass a check they enforce.
   const n=Math.max(0,Math.min(99,parseInt(val)||0));
-  const pos=sheetItems.findIndex(s=>s.id===idx);
+  const pos=sheetItems.findIndex(s=>s.labelId===labelId);
   const currentQty=pos>=0?sheetItems[pos].qty:0;
   const delta=n-currentQty;
-  const arr=getSaved();
-  const e=arr[idx];
+  const e=resolveSheetLabel(labelId);
   if(delta>0){
     if(!e)return;
     const err=canAddToSheet(e,delta);
@@ -765,7 +858,7 @@ function setQty(idx,val){
       alert(err);
       // Reject the whole edit -- put the input back to what's actually on
       // the sheet rather than leaving a value in the box that was refused.
-      const inputEl=document.getElementById('qty-input-'+idx);
+      const inputEl=document.getElementById('qty-input-'+labelId);
       if(inputEl)inputEl.value=currentQty;
       return;
     }
@@ -774,7 +867,7 @@ function setQty(idx,val){
     if(pos>=0)sheetItems.splice(pos,1);
   } else {
     if(pos>=0){sheetItems[pos].qty=n;}
-    else if(e){sheetItems.push({id:idx,labelData:e,qty:n});}
+    else if(e){sheetItems.push({labelId,qty:n});}
   }
   renderSavedList();
   rebuildSheet();
@@ -1029,11 +1122,16 @@ function renderSheetCanvas(){
   canvas.style.height=shH+'px';
 
   // Build flat ordered list of label slots -- carries the originating
-  // sheetItems id alongside labelData so a failing position can be traced
-  // back to the specific saved-label entry for the Edit/Remove actions.
+  // sheetItems labelId alongside its freshly-resolved labelData so a
+  // failing position can be traced back to the specific saved-label entry
+  // for the Edit/Remove actions. Resolved fresh (not cached) per item, so
+  // an item whose label has since been deleted elsewhere is simply skipped
+  // here rather than rendering stale/undefined content.
   const flatLabels=[];
   sheetItems.forEach(item=>{
-    for(let q=0;q<item.qty;q++) flatLabels.push({id:item.id, labelData:item.labelData});
+    const ld=resolveSheetLabel(item.labelId);
+    if(!ld)return;
+    for(let q=0;q<item.qty;q++) flatLabels.push({labelId:item.labelId, labelData:ld});
   });
 
   // Build cells HTML. Every OCCUPIED position is validated against the
@@ -1069,7 +1167,7 @@ function renderSheetCanvas(){
         const invalidTitle=result.fits?'':' title="This label does not fit -- see Sheet summary below"';
         html+=`<div class="sheet-cell${invalidCls}" style="left:${x}px;top:${y}px;width:${cellWPX}px;height:${cellHPX}px;"${invalidTitle}>${result.svg}</div>`;
         if(!result.fits){
-          sheetFitIssues.push({itemId:slot.id, scentName:ld.scentName||'Unnamed label', reason:describeFitWarnings(result.warnings)});
+          sheetFitIssues.push({itemId:slot.labelId, scentName:ld.scentName||'Unnamed label', reason:describeFitWarnings(result.warnings)});
         }
         labelIdx++;
       } else {
@@ -1111,9 +1209,9 @@ function renderFitIssuesPanel(){
       <div class="fir-name">${xe(issue.scentName)}</div>
       <div class="fir-reason">${xe(issue.reason)}</div>
       <div class="fir-actions">
-        <a href="builder.html?open=${issue.itemId}">Edit label</a>
+        <a href="builder.html?label=${encodeURIComponent(issue.itemId)}">Edit label</a>
         <button onclick="scrollToTemplateSelector()">Change template</button>
-        <button class="fir-remove" onclick="removeSheetItem(${issue.itemId})">Remove from sheet</button>
+        <button class="fir-remove" onclick="removeSheetItem('${issue.itemId}')">Remove from sheet</button>
       </div>
     </div>`).join('');
   panel.innerHTML=`<div class="fip-head">⚠ ${sheetFitIssues.length} label${sheetFitIssues.length===1?'':'s'} on this sheet ${sheetFitIssues.length===1?"doesn't":"don't"} fit and must be fixed before you can print or download this sheet.</div>${rows}`;
@@ -1199,9 +1297,14 @@ function downloadPDF(){
   const gHPX=Math.round(t.gapH*M2PX);
   const gVPX=Math.round(t.gapV*M2PX);
 
-  // Flatten label order
+  // Flatten label order -- resolved fresh by labelId (not cached), so an
+  // item whose label has since been deleted elsewhere is simply skipped.
   const flatLabels=[];
-  sheetItems.forEach(item=>{for(let q=0;q<item.qty;q++)flatLabels.push(item.labelData);});
+  sheetItems.forEach(item=>{
+    const ld=resolveSheetLabel(item.labelId);
+    if(!ld)return;
+    for(let q=0;q<item.qty;q++)flatLabels.push(ld);
+  });
 
   // Many labels are about to be assembled into one combined physical <svg>
   // for print/export -- share one SharedAssetPool across the whole sheet so
@@ -1272,9 +1375,12 @@ function downloadPDF(){
 }
 
 // ── CRICUT MODAL & DOWNLOAD ──────────────────────────────────
-function buildLabelPNGBlob(item){
+// `e` is the already-resolved label object (not a sheetItems entry) --
+// callers resolve by labelId via resolveSheetLabel() before pushing into
+// their expanded arrays, so this never reads a stale cached labelData.
+function buildLabelPNGBlob(e){
   return new Promise(resolve=>{
-    const e=item.labelData||{};
+    e=e||{};
     const dims=getLabelDimsMM(e);
     const fname=getFileName(e,dims);
     let settled=false;
@@ -1338,9 +1444,15 @@ async function cricutDownloadZip(){
   const txt=document.getElementById('modal-progress-text');
   prog.style.display='block';
   const zip=new JSZip();
-  // Expand sheetItems by qty so each slot gets its own PNG
+  // Expand sheetItems by qty so each slot gets its own PNG -- resolved
+  // fresh by labelId (not cached), so an item whose label has since been
+  // deleted elsewhere is simply skipped.
   const expanded=[];
-  sheetItems.forEach(item=>{for(let q=0;q<item.qty;q++)expanded.push(item);});
+  sheetItems.forEach(item=>{
+    const ld=resolveSheetLabel(item.labelId);
+    if(!ld)return;
+    for(let q=0;q<item.qty;q++)expanded.push(ld);
+  });
   const total=expanded.length;
   const usedNames=new Set();
   let made=0, failed=0;
@@ -1378,9 +1490,15 @@ async function cricutDownloadSequential(){
   const fill=document.getElementById('modal-progress-fill');
   const txt=document.getElementById('modal-progress-text');
   prog.style.display='block';
-  // Expand sheetItems by qty so each slot gets its own PNG
+  // Expand sheetItems by qty so each slot gets its own PNG -- resolved
+  // fresh by labelId (not cached), so an item whose label has since been
+  // deleted elsewhere is simply skipped.
   const expanded=[];
-  sheetItems.forEach(item=>{for(let q=0;q<item.qty;q++)expanded.push(item);});
+  sheetItems.forEach(item=>{
+    const ld=resolveSheetLabel(item.labelId);
+    if(!ld)return;
+    for(let q=0;q<item.qty;q++)expanded.push(ld);
+  });
   const total=expanded.length;
   const usedNames=new Set();
   let made=0, failed=0;
@@ -1410,8 +1528,8 @@ function downloadAllPNGs(){openCricutModal();}
 
 // ── INIT ──────────────────────────────────────────────────────
 function init(){
+  showLibraryLoadingState();
   initAuth();
-  renderSavedList();
   updateSummary();
   // Show preview hint even before labels added
   document.getElementById('preview-info').textContent=`A4 · 210 × 297mm`;

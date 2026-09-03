@@ -9,10 +9,12 @@
 const fs = require('fs');
 const assert = require('assert');
 const { JSDOM, VirtualConsole } = require('jsdom');
+const { webcrypto } = require('crypto');
 
 const source = fs.readFileSync('print.html', 'utf8')
   .replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
 const labelRendererSource = fs.readFileSync('label-render.js', 'utf8');
+const labelLibrarySource = fs.readFileSync('label-library.js', 'utf8');
 const errors = [];
 const virtualConsole = new VirtualConsole();
 virtualConsole.on('jsdomError', error => errors.push(error.message));
@@ -57,7 +59,15 @@ const dom = new JSDOM(source, {
     });
     window.HTMLCanvasElement.prototype.toDataURL = () => 'data:image/png;base64,AA==';
     window.HTMLCanvasElement.prototype.toBlob = function(cb){ cb({ size: 1, type: 'image/png' }); };
+    // jsdom's own window.crypto implements randomUUID()/getRandomValues()
+    // but NOT crypto.subtle (SubtleCrypto) -- label-library.js's legacy-
+    // migration path needs it for deterministic id assignment. Polyfilled
+    // via Node's real webcrypto implementation, exactly matching the
+    // proven pattern in tests/label-identity-and-spec.js, BEFORE
+    // label-library.js is evaluated below.
+    try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
     window.eval(labelRendererSource);
+    window.eval(labelLibrarySource);
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
     window.scrollTo = () => {};
@@ -89,6 +99,21 @@ setTimeout(async () => {
   try {
     window.eval('isPro=true; updateProGate();');
 
+    // ── Resolve each fixture's stable LabelLibrary-assigned id at runtime
+    // -- these fixtures are intentionally id-less (legitimate pre-stable-ID
+    // saved labels put through LabelLibrary's legacy migration on init()),
+    // so tests must look their ids up by scentName rather than assuming a
+    // fixed index/order. ─────────────────────────────────────────────
+    const savedFixtures = window.eval('getSaved()');
+    const idOf = name => {
+      const rec = savedFixtures.find(r => r.scentName === name);
+      assert(rec, `fixture "${name}" not found in migrated saved labels`);
+      return rec.id;
+    };
+    const idCircle = idOf(circleFits.scentName);
+    const idWrongSizeCircle = idOf(wrongSizeCircle.scentName);
+    const idWrongShapeRect = idOf(wrongShapeRect.scentName);
+
     // ── Configure a 10-position Custom sheet (2 cols x 5 rows) so "a
     // ten-position sheet" matches Codex's own wording exactly. ─────────
     document.getElementById('cust-cols').value = '2';
@@ -100,7 +125,7 @@ setTimeout(async () => {
     // nothing on the sheet yet -- must be refused entirely, not clamped
     // and partially applied. ─────────────────────────────────────────
     window.eval('window.__lastAlert = null;');
-    window.eval("setQty(0,'99')");
+    window.eval(`setQty('${idCircle}','99')`);
     assert.strictEqual(window.eval('sheetItems.length'), 0, 'setQty(0,99) on an empty 10-slot sheet must add nothing (99 > 10 available)');
     assert.strictEqual(window.eval('getTotalQty()'), 0, 'total sheet quantity must remain 0 after the refused 99 entry');
     assert(window.eval('window.__lastAlert'), 'setQty() must alert when refusing an over-capacity direct entry');
@@ -108,10 +133,10 @@ setTimeout(async () => {
     // ── Boundary 2: entering a negative value must never produce a
     // negative (or any) stored quantity -- clamps to 0, which removes the
     // item if present. ──────────────────────────────────────────────
-    window.eval("setQty(0,'4')"); // put 4 on the sheet first (valid, well within 10)
-    assert.strictEqual(window.eval('sheetItems.find(s=>s.id===0).qty'), 4, 'setup: 4 should be on the sheet before the negative-entry test');
-    window.eval("setQty(0,'-5')");
-    const afterNegative = window.eval('sheetItems.find(s=>s.id===0)');
+    window.eval(`setQty('${idCircle}','4')`); // put 4 on the sheet first (valid, well within 10)
+    assert.strictEqual(window.eval(`sheetItems.find(s=>s.labelId==='${idCircle}').qty`), 4, 'setup: 4 should be on the sheet before the negative-entry test');
+    window.eval(`setQty('${idCircle}','-5')`);
+    const afterNegative = window.eval(`sheetItems.find(s=>s.labelId==='${idCircle}')`);
     assert.strictEqual(afterNegative, undefined, 'a negative direct-entry value must clamp to 0 and remove the item, never store a negative quantity');
     assert.strictEqual(window.eval('getTotalQty()'), 0, 'total sheet quantity must be 0 after clamping a negative entry to 0');
 
@@ -122,12 +147,12 @@ setTimeout(async () => {
     window.eval(`selectTemplate('eu30009', document.querySelector('.tpl-card[data-tpl="eu30009"]'))`);
     assert.strictEqual(window.eval('sheetItems.length'), 0, 'setup: selecting a template must clear the sheet');
     window.eval('window.__lastAlert = null;');
-    window.eval("setQty(0,'3')"); // circleFits -- wrong shape for EU30009 (rectangle)
+    window.eval(`setQty('${idCircle}','3')`); // circleFits -- wrong shape for EU30009 (rectangle)
     assert.strictEqual(window.eval('sheetItems.length'), 0, 'setQty() must not add a shape-incompatible label to a registry sheet, even via direct entry');
     assert(window.eval('window.__lastAlert') && /shape/i.test(window.eval('window.__lastAlert')), 'setQty() must surface the same registry shape-mismatch message as Add/±');
     // A correctly-shaped but wrong-SIZE rectangle must be refused the same way.
     window.eval('window.__lastAlert = null;');
-    window.eval("setQty(2,'3')"); // wrongShapeRect is actually a rectangle, but 60x40mm, not 99.1x57.3mm
+    window.eval(`setQty('${idWrongShapeRect}','3')`); // wrongShapeRect is actually a rectangle, but 60x40mm, not 99.1x57.3mm
     assert.strictEqual(window.eval('sheetItems.length'), 0, 'setQty() must not add a size-incompatible rectangle to the EU30009 sheet, even via direct entry');
     assert(window.eval('window.__lastAlert'), 'setQty() must alert on the size-incompatible direct entry too');
 
@@ -139,28 +164,28 @@ setTimeout(async () => {
     window.eval('rebuildSheet();');
     window.eval("setReservedUsed('4')"); // 10 slots - 4 reserved = 6 available
     assert.strictEqual(window.eval('reservedUsed'), 4, 'setup: reservedUsed should be 4');
-    window.eval("setQty(0,'6')"); // exactly fills the remaining 6 -- must succeed
-    assert.strictEqual(window.eval('sheetItems.find(s=>s.id===0).qty'), 6, 'setQty() must allow filling exactly the remaining capacity after reserved positions are subtracted');
+    window.eval(`setQty('${idCircle}','6')`); // exactly fills the remaining 6 -- must succeed
+    assert.strictEqual(window.eval(`sheetItems.find(s=>s.labelId==='${idCircle}').qty`), 6, 'setQty() must allow filling exactly the remaining capacity after reserved positions are subtracted');
     window.eval('window.__lastAlert = null;');
-    window.eval("setQty(0,'7')"); // one more than available -- must be refused, not partially applied
-    assert.strictEqual(window.eval('sheetItems.find(s=>s.id===0).qty'), 6, 'setQty() must refuse (and not partially apply) a quantity that exceeds capacity once reserved positions are accounted for');
+    window.eval(`setQty('${idCircle}','7')`); // one more than available -- must be refused, not partially applied
+    assert.strictEqual(window.eval(`sheetItems.find(s=>s.labelId==='${idCircle}').qty`), 6, 'setQty() must refuse (and not partially apply) a quantity that exceeds capacity once reserved positions are accounted for');
     assert(window.eval('window.__lastAlert') && /slot/i.test(window.eval('window.__lastAlert')), 'setQty() must explain the reserved-position capacity refusal');
 
     // ── Boundary 5: replacement/removal releases capacity correctly --
     // reducing quantity via setQty() must free slots for a subsequent
     // direct-entry increase, taking reservedUsed back into account. ────
-    window.eval("setQty(0,'2')"); // reduce from 6 to 2 -- frees 4 slots (6 available again minus the 2 kept = 4 free)
-    assert.strictEqual(window.eval('sheetItems.find(s=>s.id===0).qty'), 2, 'setQty() must allow reducing quantity freely (never blocked going down)');
+    window.eval(`setQty('${idCircle}','2')`); // reduce from 6 to 2 -- frees 4 slots (6 available again minus the 2 kept = 4 free)
+    assert.strictEqual(window.eval(`sheetItems.find(s=>s.labelId==='${idCircle}').qty`), 2, 'setQty() must allow reducing quantity freely (never blocked going down)');
     window.eval('window.__lastAlert = null;');
-    window.eval("setQty(0,'6')"); // back up to 6 (2+4 free = exactly 6) -- must succeed now that capacity was released
-    assert.strictEqual(window.eval('sheetItems.find(s=>s.id===0).qty'), 6, 'setQty() must allow re-increasing into capacity freed by an earlier reduction');
+    window.eval(`setQty('${idCircle}','6')`); // back up to 6 (2+4 free = exactly 6) -- must succeed now that capacity was released
+    assert.strictEqual(window.eval(`sheetItems.find(s=>s.labelId==='${idCircle}').qty`), 6, 'setQty() must allow re-increasing into capacity freed by an earlier reduction');
     assert.strictEqual(window.eval('window.__lastAlert'), null, 'a within-capacity re-increase after a release must not be refused');
     // Full removal (0) must free the entire reserved-adjusted capacity.
-    window.eval("setQty(0,'0')");
+    window.eval(`setQty('${idCircle}','0')`);
     assert.strictEqual(window.eval('sheetItems.length'), 0, 'setQty(...,0) must remove the item entirely');
     window.eval('window.__lastAlert = null;');
-    window.eval("setQty(0,'6')"); // full 6-slot capacity (10 - 4 reserved) must be available again
-    assert.strictEqual(window.eval('sheetItems.find(s=>s.id===0).qty'), 6, 'removing an item via setQty() must fully release its capacity, including relative to reservedUsed');
+    window.eval(`setQty('${idCircle}','6')`); // full 6-slot capacity (10 - 4 reserved) must be available again
+    assert.strictEqual(window.eval(`sheetItems.find(s=>s.labelId==='${idCircle}').qty`), 6, 'removing an item via setQty() must fully release its capacity, including relative to reservedUsed');
     assert.strictEqual(window.eval('window.__lastAlert'), null, 'a full re-fill after complete removal must not be refused');
 
     if (errors.length) throw new Error('jsdom runtime errors: ' + errors.join('; '));

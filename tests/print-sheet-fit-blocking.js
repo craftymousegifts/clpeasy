@@ -11,10 +11,12 @@
 const fs = require('fs');
 const assert = require('assert');
 const { JSDOM, VirtualConsole } = require('jsdom');
+const { webcrypto } = require('crypto');
 
 const source = fs.readFileSync('print.html', 'utf8')
   .replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
 const labelRendererSource = fs.readFileSync('label-render.js', 'utf8');
+const labelLibrarySource = fs.readFileSync('label-library.js', 'utf8');
 const errors = [];
 const virtualConsole = new VirtualConsole();
 virtualConsole.on('jsdomError', error => errors.push(error.message));
@@ -79,7 +81,15 @@ const dom = new JSDOM(source, {
     // canvas.toBlob() rather than toDataURL() -- jsdom has no real canvas
     // backend, so stub a fake PNG blob callback.
     window.HTMLCanvasElement.prototype.toBlob = function(cb){ cb({ size: 1, type: 'image/png' }); };
+    // jsdom's own window.crypto implements randomUUID()/getRandomValues()
+    // but NOT crypto.subtle (SubtleCrypto) -- label-library.js's legacy-
+    // migration path needs it for deterministic id assignment. Polyfilled
+    // via Node's real webcrypto implementation, exactly matching the
+    // proven pattern in tests/label-identity-and-spec.js, BEFORE
+    // label-library.js is evaluated below.
+    try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
     window.eval(labelRendererSource);
+    window.eval(labelLibrarySource);
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
     window.scrollTo = () => {};
@@ -132,12 +142,27 @@ setTimeout(async () => {
     // can't mask what this test is actually checking (the fit-block).
     window.eval('isPro=true; updateProGate();');
 
+    // ── Resolve each fixture's stable LabelLibrary-assigned id at runtime
+    // -- these fixtures are intentionally id-less (legitimate pre-stable-ID
+    // saved labels put through LabelLibrary's legacy migration on init()),
+    // so tests must look their ids up by scentName rather than assuming a
+    // fixed index/order. ─────────────────────────────────────────────
+    const savedFixtures = window.eval('getSaved()');
+    const idOf = name => {
+      const rec = savedFixtures.find(r => r.scentName === name);
+      assert(rec, `fixture "${name}" not found in migrated saved labels`);
+      return rec.id;
+    };
+    const idFitsA = idOf(fitsA.scentName);
+    const idDoesNotFit = idOf(doesNotFit.scentName);
+    const idFitsB = idOf(fitsB.scentName);
+
     // ── Add one fitting + one non-fitting label (mixed sheet) ──────
-    window.eval('addToSheet(0)'); // fitsA
-    window.eval('addToSheet(1)'); // doesNotFit
+    window.eval(`addToSheet('${idFitsA}')`); // fitsA
+    window.eval(`addToSheet('${idDoesNotFit}')`); // doesNotFit
     let issues = window.eval('sheetFitIssues');
     assert.strictEqual(issues.length, 1, 'expected exactly one fit issue after adding one non-fitting label');
-    assert.strictEqual(issues[0].itemId, 1, 'fit issue should be traced back to the doesNotFit sheet item (id 1)');
+    assert.strictEqual(issues[0].itemId, idDoesNotFit, 'fit issue should be traced back to the doesNotFit sheet item');
     assert.strictEqual(issues[0].scentName, doesNotFit.scentName);
     assert(typeof issues[0].reason === 'string' && issues[0].reason.length > 0, 'fit issue must carry a human-readable reason');
 
@@ -160,7 +185,7 @@ setTimeout(async () => {
     assert(window.eval('window.__lastAlert').toLowerCase().includes("can't be printed"), 'downloadPDF() must show a clear summary alert when blocked');
 
     // ── Removing the invalid label releases the export block ───────
-    window.eval('removeSheetItem(1)');
+    window.eval(`removeSheetItem('${idDoesNotFit}')`);
     issues = window.eval('sheetFitIssues');
     assert.strictEqual(issues.length, 0, 'removing the failing label must clear sheetFitIssues');
     assert.strictEqual(window.eval('document.getElementById("btn-pdf").disabled'), false, 'btn-pdf must re-enable once the failing label is removed');
@@ -174,10 +199,10 @@ setTimeout(async () => {
     // ── Replacing the invalid label (remove + add a different fitting
     // label) also releases the block, and the surviving valid label (A)
     // plus the new one (B) both remain on the sheet. ────────────────
-    window.eval('addToSheet(1)'); // doesNotFit again
+    window.eval(`addToSheet('${idDoesNotFit}')`); // doesNotFit again
     assert.strictEqual(window.eval('sheetFitIssues.length'), 1, 'setup: sheet should be blocked again before the replace step');
-    window.eval('removeSheetItem(1)');
-    window.eval('addToSheet(2)'); // fitsB, in its place
+    window.eval(`removeSheetItem('${idDoesNotFit}')`);
+    window.eval(`addToSheet('${idFitsB}')`); // fitsB, in its place
     issues = window.eval('sheetFitIssues');
     assert.strictEqual(issues.length, 0, 'replacing the failing label with a fitting one must clear the block');
     assert.strictEqual(window.eval('getTotalQty()'), 2, 'both the original valid label and its replacement should remain on the sheet');
@@ -208,7 +233,7 @@ setTimeout(async () => {
 
     // ── Now re-block the sheet and prove every cutting-machine path
     // refuses, with zero side effects, before any file/click work. ──
-    window.eval('addToSheet(1)'); // doesNotFit
+    window.eval(`addToSheet('${idDoesNotFit}')`); // doesNotFit
     assert.strictEqual(window.eval('sheetFitIssues.length'), 1, 'setup: sheet should be blocked again for the Cricut-path checks');
     assert.strictEqual(window.eval('document.getElementById("btn-png-all").disabled'), true, 'btn-png-all must be disabled while a position fails to fit');
 
@@ -234,7 +259,7 @@ setTimeout(async () => {
     assert(window.eval('window.__lastAlert'), 'cricutDownloadSequential() called directly while blocked must still alert and refuse');
 
     // Clean up so we end on a known-good state.
-    window.eval('removeSheetItem(1)');
+    window.eval(`removeSheetItem('${idDoesNotFit}')`);
 
     if (errors.length) throw new Error('jsdom runtime errors: ' + errors.join('; '));
     console.log('print-sheet fit-blocking checks passed');

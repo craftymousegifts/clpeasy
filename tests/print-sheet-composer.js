@@ -4,6 +4,7 @@
 const fs = require('fs');
 const assert = require('assert');
 const { JSDOM, VirtualConsole } = require('jsdom');
+const { webcrypto } = require('crypto');
 
 const source = fs.readFileSync('print.html', 'utf8')
   .replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
@@ -15,6 +16,7 @@ const source = fs.readFileSync('print.html', 'utf8')
 // inline script runs, giving the exact same window.LabelRenderer the real
 // browser would have by the time buildLabelSVGFromData() calls it.
 const labelRendererSource = fs.readFileSync('label-render.js', 'utf8');
+const labelLibrarySource = fs.readFileSync('label-library.js', 'utf8');
 const errors = [];
 const virtualConsole = new VirtualConsole();
 virtualConsole.on('jsdomError', error => errors.push(error.message));
@@ -75,7 +77,15 @@ const dom = new JSDOM(source, {
       drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
     });
     window.HTMLCanvasElement.prototype.toDataURL = () => 'data:image/png;base64,AA==';
+    // jsdom's own window.crypto implements randomUUID()/getRandomValues()
+    // but NOT crypto.subtle (SubtleCrypto) -- label-library.js's legacy-
+    // migration path needs it for deterministic id assignment. Polyfilled
+    // via Node's real webcrypto implementation, exactly matching the
+    // proven pattern in tests/label-identity-and-spec.js, BEFORE
+    // label-library.js is evaluated below.
+    try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
     window.eval(labelRendererSource);
+    window.eval(labelLibrarySource);
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
     window.scrollTo = () => {};
@@ -114,6 +124,22 @@ const document = window.document;
 
 setTimeout(() => {
   try {
+    // ── Resolve each fixture's stable LabelLibrary-assigned id at runtime
+    // -- these fixtures are intentionally id-less (legitimate pre-stable-ID
+    // saved labels put through LabelLibrary's legacy migration on init()),
+    // so tests must look their ids up by scentName rather than assuming a
+    // fixed index/order. ─────────────────────────────────────────────
+    const savedFixtures = window.eval('getSaved()');
+    const idOf = name => {
+      const rec = savedFixtures.find(r => r.scentName === name);
+      assert(rec, `fixture "${name}" not found in migrated saved labels`);
+      return rec.id;
+    };
+    const idLavender = idOf(labelLavender.scentName);
+    const idVanilla = idOf(labelVanilla.scentName);
+    const idWrongShape = idOf(labelWrongShape.scentName);
+    const idWrongSize = idOf(labelWrongSize.scentName);
+
     // ── Registry integrity ──────────────────────────────────────
     const reg = window.eval("getRegistryTemplate('eu30009')");
     assert(reg, 'EU30009 is not registered in TEMPLATE_REGISTRY');
@@ -157,21 +183,21 @@ setTimeout(() => {
 
     // ── Compatibility blocking (Testing Req 12) ──────────────────
     window.__lastAlert = null;
-    window.addToSheet(2); // labelWrongShape (circle)
+    window.eval(`addToSheet('${idWrongShape}')`); // labelWrongShape (circle)
     assert(window.__lastAlert && /shape/i.test(window.__lastAlert), 'wrong-shape label was not blocked from EU30009');
     assert.strictEqual(window.eval('sheetItems.length'), 0, 'wrong-shape label was incorrectly added');
 
     window.__lastAlert = null;
-    window.addToSheet(3); // labelWrongSize (70x68 rectangle)
+    window.eval(`addToSheet('${idWrongSize}')`); // labelWrongSize (70x68 rectangle)
     assert(window.__lastAlert && /requires/i.test(window.__lastAlert), 'wrong-size label was not blocked from EU30009');
     assert.strictEqual(window.eval('sheetItems.length'), 0, 'wrong-size label was incorrectly added');
 
     // ── Mixed labels + quantities + reserved/used positions (Testing Req 5,6,7,8,9) ──
     window.__lastAlert = null;
-    window.addToSheet(0); // Lavender
-    window.setQty(0, 2);
-    window.addToSheet(1); // Vanilla
-    window.setQty(1, 3);
+    window.eval(`addToSheet('${idLavender}')`); // Lavender
+    window.eval(`setQty('${idLavender}', 2)`);
+    window.eval(`addToSheet('${idVanilla}')`); // Vanilla
+    window.eval(`setQty('${idVanilla}', 3)`);
     assert.strictEqual(window.__lastAlert, null, `compatible labels were unexpectedly blocked: ${window.__lastAlert}`);
     assert.strictEqual(window.eval('getTotalQty()'), 5, 'auto-fill quantities are wrong');
 

@@ -9,10 +9,12 @@
 const fs = require('fs');
 const assert = require('assert');
 const { JSDOM, VirtualConsole } = require('jsdom');
+const { webcrypto } = require('crypto');
 
 const source = fs.readFileSync('print.html', 'utf8')
   .replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
 const labelRendererSource = fs.readFileSync('label-render.js', 'utf8');
+const labelLibrarySource = fs.readFileSync('label-library.js', 'utf8');
 const errors = [];
 const virtualConsole = new VirtualConsole();
 virtualConsole.on('jsdomError', error => errors.push(error.message));
@@ -48,7 +50,15 @@ const dom = new JSDOM(source, {
     });
     window.HTMLCanvasElement.prototype.toDataURL = () => 'data:image/png;base64,AA==';
     window.HTMLCanvasElement.prototype.toBlob = function(cb){ cb({ size: 1, type: 'image/png' }); };
+    // jsdom's own window.crypto implements randomUUID()/getRandomValues()
+    // but NOT crypto.subtle (SubtleCrypto) -- label-library.js's legacy-
+    // migration path needs it for deterministic id assignment. Polyfilled
+    // via Node's real webcrypto implementation, exactly matching the
+    // proven pattern in tests/label-identity-and-spec.js, BEFORE
+    // label-library.js is evaluated below.
+    try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
     window.eval(labelRendererSource);
+    window.eval(labelLibrarySource);
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
     window.scrollTo = () => {};
@@ -80,6 +90,11 @@ setTimeout(() => {
   try {
     window.eval('isPro=true; updateProGate();');
 
+    // Resolve the fixture's stable LabelLibrary-assigned id at runtime --
+    // this fixture is intentionally id-less (a legitimate pre-stable-ID
+    // saved label put through LabelLibrary's legacy migration on init()).
+    const idCircle = window.eval('getSaved()')[0].id;
+
     // 10-position Custom sheet (2 x 5).
     document.getElementById('cust-cols').value = '2';
     document.getElementById('cust-rows').value = '5';
@@ -102,7 +117,7 @@ setTimeout(() => {
     // already on the sheet must clamp to what's actually still available,
     // not silently produce a negative "remaining slots" summary. ───────
     window.eval("setReservedUsed('0')");
-    window.eval("setQty(0,'6')"); // 6 labels placed, 4 slots free
+    window.eval(`setQty('${idCircle}','6')`); // 6 labels placed, 4 slots free
     assert.strictEqual(window.eval('getTotalQty()'), 6, 'setup: 6 labels should be placed on the 10-slot sheet');
     window.eval("setReservedUsed('9')"); // would leave -5 remaining if unclamped (6 used + 9 reserved > 10)
     assert.strictEqual(window.eval('reservedUsed'), 4, 'reservedUsed must clamp so that reservedUsed + already-placed labels never exceeds sheet capacity (10 - 6 placed = 4 max)');
