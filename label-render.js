@@ -1199,15 +1199,21 @@ function getPhysicalSpec(rawData){
   };
 }
 
-// Same 0.05mm tolerance print.html's existing checkRegistryCompatibility()
-// already used for its exact-match check (kept identical, not tightened
-// or loosened). templateSpec is either {kind:'custom-sheet'} (Custom
-// Sheet always matches -- it takes its geometry FROM the label, per
-// print.html's getTplConfig()/getLockedSize()) or
-// {kind:'registry', shape, widthMm, heightMm, ...} for a fixed manufacturer
-// template. source/presetId on labelSpec are informational only and never
-// participate in the match decision, per the explicit product rule that
-// custom-vs-preset origin must not affect compatibility.
+// COMPAT_TOLERANCE_MM is a negligible floating-point-equality epsilon only
+// (not a real-world manufacturing tolerance). print.html's earlier local
+// checkRegistryCompatibility() used a 0.05mm tolerance for its exact-match
+// check; that was too loose for the product rule that a label's exact
+// stated size must match a template's exact stated size (e.g. 63.45mm must
+// not match a 63.5mm template), so this constant is intentionally tight
+// -- it exists purely to absorb IEEE-754 arithmetic noise (e.g.
+// 0.1+0.2!==0.3), never to treat two genuinely different sizes as the same.
+// templateSpec is either {kind:'custom-sheet'} (Custom Sheet always
+// matches -- it takes its geometry FROM the label, per print.html's
+// getTplConfig()/getLockedSize()) or {kind:'registry', shape, widthMm,
+// heightMm, ...} for a fixed manufacturer template. source/presetId on
+// labelSpec are informational only and never participate in the match
+// decision, per the explicit product rule that custom-vs-preset origin
+// must not affect compatibility.
 //
 // review point 10: every geometry value this function actually uses is
 // validated as a finite number before any comparison is made. A missing/
@@ -1235,7 +1241,7 @@ function isFiniteNum(n){ return typeof n === 'number' && Number.isFinite(n); }
 function isPositiveFiniteNum(n){ return isFiniteNum(n) && n > 0; }
 const SUPPORTED_LABEL_SHAPES = ['circle', 'rectangle', 'square'];
 const SUPPORTED_TEMPLATE_KINDS = ['custom-sheet', 'registry'];
-const COMPAT_TOLERANCE_MM = 0.05;
+const COMPAT_TOLERANCE_MM = 1e-6;
 function checkCompatibility(labelSpec, templateSpec){
   const base = {
     labelWidthMm: (labelSpec && isFiniteNum(labelSpec.widthMm)) ? labelSpec.widthMm : null,

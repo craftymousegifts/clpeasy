@@ -13,31 +13,102 @@
   --teal:#4C9BB0;--teal-light:#d6eef4;--teal-dark:#3a7d8f;
   --amber:#F59E0B;--amber-light:#FEF3C7;--red:#EF4444;
   --dark:#1a1f2e;--dark2:#222840;
+  --shell-sidebar-w:260px;
+  --shell-topbar-h:56px;
+  --shell-radius-card:16px;
+  --shell-radius-control:10px;
+  --shell-space-1:4px;--shell-space-2:8px;--shell-space-3:12px;
+  --shell-space-4:16px;--shell-space-5:24px;--shell-space-6:32px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{-webkit-text-size-adjust:100%;}
 body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);line-height:1.6;-webkit-font-smoothing:antialiased;}
 
-/* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,0.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 20px;height:64px;display:flex;align-items:center;justify-content:space-between;}
-.nav-logo{display:flex;align-items:center;gap:0;text-decoration:none;line-height:1;}
+/* Logo badge classes -- still used inside .sidebar-logo below (the old
+   fixed top <nav> bar that used to own these has been replaced by the
+   canonical authenticated app-shell/sidebar, same as dashboard.html/
+   builder.html/my-labels.html/account.html). */
 .nav-badge{width:52px;height:52px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;letter-spacing:-1px;flex-shrink:0;}
 .nav-easy{font-size:26px;font-weight:900;color:var(--teal);margin-left:4px;letter-spacing:-1px;}
-.nav-right{display:flex;align-items:center;gap:8px;}
-.nav-link{font-size:13px;color:var(--muted);text-decoration:none;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;white-space:nowrap;}
-.nav-link:hover{color:var(--teal);border-color:var(--teal);}
-.nav-user{font-size:13px;color:var(--muted);}
 
-@media(max-width:600px){
-  nav{padding:0 12px;gap:6px;}
-  .nav-right{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:6px;}
-  .nav-right::-webkit-scrollbar{display:none;}
-  #nav-user{display:none !important;}
+/* ============================================================
+   APP SHELL — canonical shared shell (byte-identical block to
+   dashboard.html/account.html/builder.html/my-labels.html), added here
+   so the Print Sheet Composer receives the same authenticated
+   sidebar/header structure and responsive mobile menu as the rest of
+   the authenticated app. The decorative background-image treatment
+   dashboard.html/my-labels.html apply to .shell-main is intentionally
+   NOT copied here: print.html's two-column layout fills .shell-main
+   edge-to-edge (opaque white left panel, opaque dark right panel), so
+   that artwork would never be visible -- omitting it changes nothing
+   the user can see and avoids paying for a background-image fetch on a
+   page that can never show it.
+   ============================================================ */
+.app-shell{display:flex;min-height:100vh;}
+.sidebar{
+  width:var(--shell-sidebar-w);flex-shrink:0;background:white;
+  border-right:1.5px solid var(--border);display:flex;flex-direction:column;
+  padding:var(--shell-space-4) var(--shell-space-3);
+  position:fixed;top:0;left:0;bottom:0;z-index:300;
+  transition:transform .25s ease;
+}
+.sidebar-logo{display:flex;align-items:center;gap:0;text-decoration:none;padding:var(--shell-space-2) var(--shell-space-2) var(--shell-space-5);}
+.sidebar-logo .nav-badge{width:40px;height:40px;font-size:17px;letter-spacing:-1px;}
+.sidebar-logo .nav-easy{font-size:22px;margin-left:4px;letter-spacing:-1px;}
+.sidebar-nav{display:flex;flex-direction:column;gap:2px;flex:1;}
+.sidebar-nav-item{
+  display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:var(--shell-radius-control);
+  color:var(--text);text-decoration:none;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;
+  border:none;background:none;cursor:pointer;text-align:left;width:100%;min-height:44px;
+  transition:background .15s ease,color .15s ease;
+}
+.sidebar-nav-item:hover{background:var(--off);}
+.sidebar-nav-item.active{background:var(--teal-light);color:var(--text);position:relative;}
+.sidebar-nav-item.active::before{content:'';position:absolute;left:2px;top:8px;bottom:8px;width:4px;border-radius:3px;background:var(--teal);}
+.sidebar-nav .snav-icon{color:var(--teal);}
+.snav-icon{width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.snav-icon svg{width:18px;height:18px;display:block;}
+.sidebar-bottom{margin-top:auto;display:flex;flex-direction:column;gap:10px;}
+.sidebar-usage{border:1px solid var(--border);border-radius:12px;padding:12px;}
+.su-label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-bottom:4px;}
+.su-count{font-size:19px;font-weight:800;color:var(--text);margin-bottom:8px;}
+.su-bar{height:6px;border-radius:999px;background:var(--off);overflow:hidden;margin-bottom:9px;}
+.su-bar span{display:block;height:100%;background:var(--teal);border-radius:999px;}
+.su-topup{display:block;text-align:center;font-size:12px;font-weight:700;color:var(--teal-dark);text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:7px;}
+.su-topup:hover{background:var(--off);}
+.sidebar-profile{position:relative;}
+.sidebar-user{width:100%;display:flex;align-items:center;gap:10px;padding:10px;border:1px solid transparent;border-radius:10px;background:white;cursor:pointer;text-align:left;font-family:inherit;}
+.sidebar-user:hover,.sidebar-profile.open .sidebar-user{border-color:var(--border);box-shadow:0 4px 14px rgba(15,23,42,.08);}
+.sidebar-user-chevron{margin-left:auto;width:16px;height:16px;transition:transform .18s;color:var(--muted);}
+.sidebar-profile.open .sidebar-user-chevron{transform:rotate(180deg);}
+.sidebar-user-menu{display:none;position:absolute;left:0;right:0;bottom:calc(100% + 6px);padding:6px;background:white;border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 28px rgba(15,23,42,.14);z-index:20;}
+.sidebar-profile.open .sidebar-user-menu{display:block;}
+.sidebar-user-menu button{width:100%;display:flex;align-items:center;gap:9px;padding:9px 10px;border:0;border-radius:7px;background:white;color:var(--text);font:600 12px 'DM Sans',sans-serif;cursor:pointer;}
+.sidebar-user-menu button:hover{background:var(--off);color:var(--red);}
+.su-avatar{width:36px;height:36px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;}
+.su-info{min-width:0;}
+.su-name{font-size:13px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.su-plan{font-size:11.5px;color:var(--teal-dark);}
+.sidebar-logout{color:var(--muted);border-top:1px solid var(--border);padding-top:14px;}
+.sidebar-logout:hover{background:var(--off);color:var(--red);}
+.shell-main{flex:1;margin-left:var(--shell-sidebar-w);min-width:0;position:relative;isolation:isolate;}
+.shell-topbar{display:none;align-items:center;gap:12px;height:var(--shell-topbar-h);padding:0 var(--shell-space-4);background:white;border-bottom:1.5px solid var(--border);position:sticky;top:0;z-index:150;}
+.shell-topbar-title{font-weight:700;font-size:15px;}
+.sidebar-toggle,.sidebar-toggle-inline{display:none;flex-direction:column;justify-content:center;gap:4px;width:44px;height:44px;border:1.5px solid var(--border);border-radius:10px;background:white;cursor:pointer;flex-shrink:0;}
+.sidebar-toggle span,.sidebar-toggle-inline span{display:block;height:2px;background:var(--text);border-radius:1px;margin:0 9px;}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(17,19,24,0.4);z-index:290;opacity:0;transition:opacity .2s ease;}
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);box-shadow:8px 0 24px rgba(0,0,0,0.08);transition:transform .25s ease;}
+  .sidebar.open{transform:translateX(0);}
+  .shell-main{margin-left:0;}
+  .shell-topbar{display:flex;}
+  .sidebar-toggle-inline{display:flex;}
+  .sidebar-overlay.open{display:block;opacity:1;}
 }
 
 /* LAYOUT */
-.page{padding-top:64px;min-height:100vh;}
-.two-col{display:grid;grid-template-columns:380px 1fr;min-height:calc(100vh - 64px);}
+.page{min-height:100vh;}
+.two-col{display:grid;grid-template-columns:380px 1fr;min-height:100vh;}
 
 /* LEFT PANEL */
 .left-panel{background:white;border-right:1px solid var(--border);padding:24px 20px;overflow-y:auto;display:flex;flex-direction:column;gap:0;}
@@ -57,6 +128,16 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 .tpl-info-btn{border:none;background:none;color:var(--muted);cursor:pointer;font-size:12px;padding:0 0 0 3px;line-height:1;vertical-align:middle;}
 .tpl-info-btn:hover{color:var(--teal-dark);}
 .registry-tpl-info{background:var(--off);border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:11.5px;color:var(--muted);line-height:1.6;}
+/* Section 5: template compatibility -- a template that doesn't match the
+   sheet's current/preloaded label stays visible but cannot be selected,
+   with the exact reason shown beneath it. */
+.tpl-card.tpl-disabled{opacity:0.45;pointer-events:none;}
+.tpl-reason{font-size:10.5px;color:var(--red);margin-top:4px;line-height:1.4;}
+/* Section 6: Compatible/Other saved-label grouping. */
+.other-labels-details{margin-top:8px;}
+.other-labels-summary{cursor:pointer;font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;color:var(--muted);padding:8px 2px;user-select:none;}
+.other-labels-summary:hover{color:var(--teal-dark);}
+.sli-incompat-reason{font-size:10.5px;color:var(--red);margin-top:3px;line-height:1.4;}
 
 /* CUSTOM DIMS */
 .custom-dims-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
@@ -65,8 +146,15 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 .dim-group input{width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;outline:none;-webkit-appearance:none;}
 .dim-group input:focus{border-color:var(--teal);}
 
+/* Section 7: numbered workflow guide strip. */
+.workflow-steps{display:flex;flex-wrap:wrap;gap:6px 10px;margin-bottom:18px;}
+.wf-step{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--muted);}
+.wf-num{width:18px;height:18px;border-radius:50%;background:var(--teal-light);color:var(--teal-dark);font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
 /* SAVED LABELS LIST */
 .no-labels{text-align:center;padding:24px 16px;color:var(--muted);font-size:13px;background:var(--off);border-radius:10px;border:1.5px dashed var(--border);}
+.start-guidance{background:var(--off);border:1.5px dashed var(--border);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:12.5px;color:var(--muted);line-height:1.5;}
+.preload-banner-next{margin-top:8px;font-size:11.5px;color:var(--teal-dark);font-weight:600;}
 /* Checkpoint C2: ?label=<id> preload banner + matching row highlight. */
 .preload-banner{background:var(--teal-light);border:1.5px solid var(--teal);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:12.5px;color:var(--teal-dark);line-height:1.5;}
 .preload-banner-head{font-weight:700;font-size:11px;letter-spacing:0.4px;text-transform:uppercase;margin-bottom:2px;}
@@ -115,6 +203,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 .right-panel{background:var(--dark);display:flex;flex-direction:column;overflow:hidden;}
 .preview-header{padding:16px 20px 12px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;}
 .preview-header h3{font-size:12px;font-weight:600;color:rgba(255,255,255,0.45);letter-spacing:1px;text-transform:uppercase;}
+.preview-dims-summary{padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.07);display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.pds-row{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.pds-label{font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);}
+.pds-val{font-size:12.5px;font-weight:600;color:rgba(255,255,255,0.85);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+@media(max-width:640px){.preview-dims-summary{grid-template-columns:1fr 1fr;}}
 .preview-controls{display:flex;align-items:center;gap:8px;}
 .zoom-btn{width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:'DM Sans',sans-serif;}
 .zoom-btn:hover{background:rgba(255,255,255,0.14);}
@@ -187,23 +280,66 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 </head>
 <body>
 
-<nav>
-  <a href="index.html" class="nav-logo">
-    <div class="nav-badge">CLP</div>
-    <span class="nav-easy">easy</span>
-  </a>
-  <div class="nav-right">
-    <a href="builder.html" class="nav-link">← Label Builder</a>
-    <span class="nav-user" id="nav-user" style="display:none;"></span>
-    <button id="nav-signout" onclick="signOut()" style="display:none;font-size:13px;color:var(--muted);background:none;border:1.5px solid var(--border);padding:6px 12px;border-radius:8px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;" onmouseover="this.style.borderColor='var(--teal)';this.style.color='var(--teal)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Sign out</button>
-  </div>
-</nav>
+<div class="app-shell">
+
+  <button class="sidebar-toggle" id="sidebar-toggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidebar">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <a href="index.html" class="sidebar-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span><sup style="font-size:9px;font-weight:700;color:#4C9BB0;vertical-align:super;line-height:0;margin-left:1px;">™</sup></a>
+    <nav class="sidebar-nav" aria-label="Main navigation">
+      <a href="dashboard.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg></span>Dashboard</a>
+      <a href="builder.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>Create Label</a>
+      <a href="my-labels.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5a1 1 0 0 1 1-1h4.7l2 2.2h8.3a1 1 0 0 1 1 1V18a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1Z"/></svg></span>My Labels</a>
+      <a href="print.html" class="sidebar-nav-item active" aria-current="page" onclick="return false;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8.5V4.5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v4"/><rect x="5" y="8.5" width="14" height="7" rx="1.5"/><path d="M7 14.5v4a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-4"/></svg></span>Print Sheet Composer</a>
+      <a href="knowledge.html" target="_blank" rel="noopener" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5c-1.6-1.3-4-2-6.5-2A2 2 0 0 0 3.5 6.5V17c2.6 0 5 .7 6.5 2 1.5-1.3 3.9-2 6.5-2s2-.9 2-.9V6.5c0-1.1-.9-2-2-2-2.5 0-4.9.7-6.5 2Z"/><path d="M12 6.5V19"/></svg></span>Knowledge Base</a>
+      <a href="account.html" target="_blank" rel="noopener" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.4-3.6 4.3-5.5 7.5-5.5s6.1 1.9 7.5 5.5"/></svg></span>Account</a>
+      <a href="support.html" target="_blank" rel="noopener" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 1 3.3 6.4L4 20l1.3-3.6A7.96 7.96 0 0 1 4 12Z"/></svg></span>Support</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="sidebar-usage" id="sidebar-usage" style="display:none;">
+        <div class="su-label">Downloads remaining</div>
+        <div class="su-count" id="su-count">—</div>
+        <div class="su-bar"><span id="su-fill" style="width:0%"></span></div>
+        <a href="account.html?topup=1" target="_blank" rel="noopener" class="su-topup">Buy Top-Up →</a>
+      </div>
+      <div class="sidebar-profile">
+        <button type="button" class="sidebar-user" id="sidebar-user" style="display:none;" aria-haspopup="true" aria-expanded="false">
+          <div class="su-avatar" id="su-avatar">—</div>
+          <div class="su-info"><div class="su-name" id="su-name">—</div><div class="su-plan" id="su-plan">—</div></div>
+          <svg class="sidebar-user-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m8 10 4 4 4-4"/></svg>
+        </button>
+        <div class="sidebar-user-menu" role="menu"><button type="button" onclick="signOut()" role="menuitem"><span aria-hidden="true">↪</span> Log out</button></div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="shell-main">
+    <header class="shell-topbar">
+      <button class="sidebar-toggle-inline" id="sidebar-toggle-inline" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <span class="shell-topbar-title">Print Sheet Composer</span>
+    </header>
 
 <div class="page">
 <div class="two-col">
 
   <!-- LEFT PANEL -->
   <div class="left-panel" id="left-panel">
+
+    <!-- Section 7: numbered workflow guide -- purely informational, does
+         not gate or reorder any control below; every existing action
+         (template selection, saved-label Add/±/qty, reserved-position
+         input, zoom, export) is completely unchanged. -->
+    <div class="workflow-steps">
+      <div class="wf-step"><span class="wf-num">1</span>Choose label</div>
+      <div class="wf-step"><span class="wf-num">2</span>Choose sheet template</div>
+      <div class="wf-step"><span class="wf-num">3</span>Set quantities</div>
+      <div class="wf-step"><span class="wf-num">4</span>Preview &amp; print</div>
+    </div>
 
     <div class="section-head">Sheet template</div>
 
@@ -223,6 +359,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
       <div class="tpl-card" data-tpl="eu30009" onclick="selectTemplate('eu30009',this)">
         <div class="tpl-name">EU30009 <button type="button" class="tpl-info-btn" title="View sheet specification" onclick="event.stopPropagation();openSpecModal('eu30009')">ⓘ</button></div>
         <div class="tpl-detail">OnlineLabels UK · 2×5 · 99.1×57.3mm</div>
+        <div class="tpl-reason" style="display:none;"></div>
       </div>
     </div>
 
@@ -327,6 +464,16 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
         <button class="zoom-btn" onclick="changeZoom(0.15)">+</button>
       </div>
     </div>
+    <!-- Section 8: dimensions/capacity summary beside the preview -- purely
+         informational chrome, never drawn into the exported sheet/label
+         artwork itself (renderSheetCanvas()/downloadPDF()/buildLabelPNGBlob()
+         are completely untouched by this block). -->
+    <div class="preview-dims-summary" id="preview-dims-summary">
+      <div class="pds-row"><span class="pds-label">Template</span><span class="pds-val" id="pds-tpl">Custom sheet</span></div>
+      <div class="pds-row"><span class="pds-label">Label</span><span class="pds-val" id="pds-label-size">—</span></div>
+      <div class="pds-row"><span class="pds-label">Layout</span><span class="pds-val" id="pds-layout">—</span></div>
+      <div class="pds-row"><span class="pds-label">Positions</span><span class="pds-val" id="pds-positions">—</span></div>
+    </div>
     <div class="preview-scroll" id="preview-scroll">
       <div id="empty-state" class="empty-state">
         <div class="empty-icon">🖨</div>
@@ -349,6 +496,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 
 </div>
 </div><!-- /page -->
+
+  </div><!-- /shell-main -->
+</div><!-- /app-shell -->
 
 <!-- Shared label-rendering engine (used by both Builder and the Print Sheet
      Composer). Loaded from ONE canonical file so there is exactly one
@@ -373,10 +523,22 @@ async function initAuth(){
     if(session){
       currentUser=session.user;
       isPro=true; // Beta: all logged-in users get Pro access. Swap for real Stripe check at launch.
-      const nu=document.getElementById('nav-user');
-      const ns=document.getElementById('nav-signout');
-      if(nu){nu.textContent=session.user.email;nu.style.display='';}
-      if(ns)ns.style.display='';
+      // Sidebar identity block (avatar + email), same element IDs as the
+      // shared shell on dashboard.html/builder.html/my-labels.html/
+      // account.html. This page has never fetched the `profiles` row those
+      // pages use for plan/downloads-remaining data, and does not start
+      // doing so now (that is subscription/download-credit logic, out of
+      // scope here) -- so su-plan and the downloads-remaining sidebar-usage
+      // card are deliberately left at their default hidden/placeholder
+      // state rather than populated with a guess.
+      const suUser=document.getElementById('sidebar-user');
+      if(suUser){
+        suUser.style.display='flex';
+        const suAvatar=document.getElementById('su-avatar');
+        const suName=document.getElementById('su-name');
+        if(suAvatar)suAvatar.textContent=(session.user.email||'?').charAt(0).toUpperCase();
+        if(suName)suName.textContent=session.user.email;
+      }
     }
     updateProGate();
     // Checkpoint C1: resolve authentication FIRST (above), then -- regardless
@@ -699,7 +861,8 @@ function renderPreloadBanner(arr){
         <div class="preload-banner-meta">${xe(rec.productType||'')} · ${sizeLabel} ${rec.shape||'circle'}</div>
         ${alreadyOnSheet
           ? `<span class="preload-banner-added">✓ Already on this sheet</span>`
-          : `<button class="add-btn" data-action="add" data-label-id="${rec.id}">Add to sheet</button>`}
+          : `<button class="add-btn" data-action="add" data-label-id="${rec.id}">Add to sheet</button>
+             <div class="preload-banner-next">👉 Next: choose a sheet template below (or use Custom Sheet, which adapts to this label).</div>`}
       </div>`;
     }
     // Defensive fallback only -- in normal operation the cross-tab
@@ -714,7 +877,10 @@ function renderPreloadBanner(arr){
   if(preloadUnavailable){
     return `<div class="preload-banner preload-banner-warn" id="preload-banner">⚠️ This saved label is no longer available.<button class="preload-dismiss" onclick="dismissPreloadNotice()">Dismiss</button></div>`;
   }
-  return '';
+  // Section 4: opened with no ?label= at all -- every saved label below
+  // stays fully accessible (nothing here restricts or hides any of them),
+  // this is guidance only.
+  return `<div class="start-guidance">👋 Choose a saved label below to add to your sheet, or pick a sheet template first if you'd rather start there.</div>`;
 }
 
 // Returns a saved label's real physical footprint in mm as {w,h}. A thin
@@ -793,37 +959,57 @@ function syncCustomDimsPanel(){
   }
 }
 
-function renderSavedList(){
-  const arr=getSaved();
-  const el=document.getElementById('saved-list');
-  if(!arr.length){
-    el.innerHTML=renderPreloadBanner(arr)+`<div class="no-labels">No saved labels yet.<br><a href="builder.html" style="color:var(--teal);font-weight:600;">Go to Label Builder →</a></div>`;
-    return;
-  }
+// Section 6: whether a compatibility context currently exists to group
+// saved labels by, and where it comes from. A registry template (fixed
+// physical shape/size) is a context the moment it's selected, even before
+// anything is placed. Custom Sheet has no fixed requirement of its own --
+// it only becomes a context once the first label placed on it locks its
+// shape/size (getLockedSize()). An unlocked Custom Sheet has no context at
+// all: every valid saved label may become that first label.
+function getSavedListCompatContext(){
+  if(getRegistryTemplate(currentTpl)) return {active:true, mode:'template', templateKey:currentTpl};
   const locked=getLockedSize();
-  let html='';
-  html+=renderPreloadBanner(arr);
-  if(locked!==null){
-    const lockedLabel=(locked.w===locked.h)?`${locked.w}mm ${locked.shape}`:`${locked.w}×${locked.h}mm ${locked.shape}`;
-    html+=`<div style="background:#fff8e7;border:1px solid #f0c040;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#7a5c00;line-height:1.5;">🔒 Sheet locked to <strong>${lockedLabel}</strong> labels. Remove all labels to use a different shape or size.</div>`;
+  if(locked) return {active:true, mode:'locked', locked};
+  return {active:false};
+}
+
+// Per-label compatibility against the current context, for the saved-list
+// grouping below. A label already on the sheet (qty>0) was already
+// validated at add-time by the same canAddToSheet()/checkRegistryCompatibility()
+// authority, so it is never re-flagged incompatible here.
+function getItemCompat(e,ctx,qty){
+  if(!ctx.active||qty>0) return {incompatible:false, reason:''};
+  if(ctx.mode==='template'){
+    const result=checkTemplateCompatibility(e,ctx.templateKey);
+    return {incompatible:!result.compatible, reason:result.reason};
   }
-  html+=arr.map((e)=>{
-    const inSheet=sheetItems.findIndex(s=>s.labelId===e.id);
-    const qty=inSheet>=0?sheetItems[inSheet].qty:0;
-    const dims=getLabelDimsMM(e);
-    const sizeLabel=(dims.w===dims.h)?`${dims.w}mm`:`${dims.w}×${dims.h}mm`;
-    const isLocked=locked!==null && qty===0 && (
-      (e.shape||'circle')!==locked.shape || Math.abs(dims.w-locked.w)>0.05 || Math.abs(dims.h-locked.h)>0.05
-    );
-    const lockedAttr=isLocked?'disabled title="Different size — remove existing labels first"':'';
-    const itemStyle=isLocked?'opacity:0.4;pointer-events:none;':'';
-    const isPreloaded=preloadedLabelId===e.id;
-    const itemClass=isPreloaded?' preload-selected':'';
-    return`<div class="saved-label-item${itemClass}" id="sli-${e.id}" style="${itemStyle}">
+  const dims=getLabelDimsMM(e);
+  const shape=e.shape||'circle';
+  // Same-sheet size lock: intentionally still 0.05mm (a real assembly
+  // tolerance for "does this label match what's already physically placed
+  // on this sheet"), NOT the manufacturer-template exact-match check above
+  // -- Section 5's "no 0.05mm tolerance" instruction is scoped to fixed
+  // registry-template compatibility, not this pre-existing same-sheet lock.
+  const mismatch = shape!==ctx.locked.shape || Math.abs(dims.w-ctx.locked.w)>0.05 || Math.abs(dims.h-ctx.locked.h)>0.05;
+  if(!mismatch) return {incompatible:false, reason:''};
+  const sizeLabel=(dims.w===dims.h)?`${dims.w}mm ${shape}`:`${dims.w}×${dims.h}mm ${shape}`;
+  const lockedLabel=(ctx.locked.w===ctx.locked.h)?`${ctx.locked.w}mm ${ctx.locked.shape}`:`${ctx.locked.w}×${ctx.locked.h}mm ${ctx.locked.shape}`;
+  return {incompatible:true, reason:`This label is ${sizeLabel} -- the sheet is already locked to ${lockedLabel} labels. Remove the existing labels first to use a different size.`};
+}
+
+function savedItemCardHtml(e,qty,compat){
+  const dims=getLabelDimsMM(e);
+  const sizeLabel=(dims.w===dims.h)?`${dims.w}mm`:`${dims.w}×${dims.h}mm`;
+  const lockedAttr=compat.incompatible?'disabled title="Not compatible with the current sheet -- see reason below"':'';
+  const itemStyle=compat.incompatible?'opacity:0.5;pointer-events:none;':'';
+  const isPreloaded=preloadedLabelId===e.id;
+  const itemClass=isPreloaded?' preload-selected':'';
+  return`<div class="saved-label-item${itemClass}" id="sli-${e.id}" style="${itemStyle}">
       <div class="sli-preview" id="sli-prev-${e.id}"></div>
       <div class="sli-info">
         <div class="sli-name">${xe(e.scentName||'Unnamed')}</div>
-        <div class="sli-meta">${xe(e.productType||'')} · ${sizeLabel} ${e.shape||'circle'}${isLocked?' 🔒':''}</div>
+        <div class="sli-meta">${xe(e.productType||'')} · ${sizeLabel} ${e.shape||'circle'}${compat.incompatible?' 🔒':''}</div>
+        ${compat.incompatible?`<div class="sli-incompat-reason">${xe(compat.reason)}</div>`:''}
       </div>
       <div class="sli-qty">
         ${qty>0?`
@@ -834,12 +1020,93 @@ function renderSavedList(){
         `:`<button class="add-btn" id="addbtn-${e.id}" data-action="add" data-label-id="${e.id}" ${lockedAttr}>Add</button>`}
       </div>
     </div>`;
-  }).join('');
+}
+
+function renderSavedList(){
+  const arr=getSaved();
+  const el=document.getElementById('saved-list');
+  if(!arr.length){
+    el.innerHTML=renderPreloadBanner(arr)+`<div class="no-labels">No saved labels yet.<br><a href="builder.html" style="color:var(--teal);font-weight:600;">Go to Label Builder →</a></div>`;
+    renderTemplateCompat();
+    return;
+  }
+  const ctx=getSavedListCompatContext();
+  const locked=ctx.active&&ctx.mode==='locked'?ctx.locked:null;
+  let html='';
+  html+=renderPreloadBanner(arr);
+  if(locked!==null){
+    const lockedLabel=(locked.w===locked.h)?`${locked.w}mm ${locked.shape}`:`${locked.w}×${locked.h}mm ${locked.shape}`;
+    html+=`<div style="background:#fff8e7;border:1px solid #f0c040;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#7a5c00;line-height:1.5;">🔒 Sheet locked to <strong>${lockedLabel}</strong> labels. Remove all labels to use a different shape or size.</div>`;
+  }
+  if(!ctx.active){
+    // No compatibility context yet (unlocked Custom Sheet) -- every valid
+    // saved label is shown flat and equally eligible to become the first
+    // label placed, exactly as before Section 6.
+    html+=arr.map(e=>savedItemCardHtml(e,sheetItems.find(s=>s.labelId===e.id)?.qty||0,{incompatible:false,reason:''})).join('');
+  } else {
+    const compatible=[], other=[];
+    arr.forEach(e=>{
+      const qty=sheetItems.find(s=>s.labelId===e.id)?.qty||0;
+      const compat=getItemCompat(e,ctx,qty);
+      (compat.incompatible?other:compatible).push({e,qty,compat});
+    });
+    if(compatible.length){
+      html+=`<div class="section-head">Compatible labels</div>`;
+      html+=compatible.map(x=>savedItemCardHtml(x.e,x.qty,x.compat)).join('');
+    }
+    if(other.length){
+      html+=`<details class="other-labels-details"${compatible.length?'':' open'}>`+
+        `<summary class="other-labels-summary">Other labels (${other.length})</summary>`+
+        other.map(x=>savedItemCardHtml(x.e,x.qty,x.compat)).join('')+
+        `</details>`;
+    }
+    if(!compatible.length&&!other.length){
+      html+=`<div class="no-labels">No saved labels match this sheet.</div>`;
+    }
+  }
   el.innerHTML=html;
   // Render mini previews
   arr.forEach((e)=>{
     const el2=document.getElementById('sli-prev-'+e.id);
     if(el2)el2.innerHTML=buildMiniSVG(e);
+  });
+  renderTemplateCompat();
+}
+
+// Section 5: template-card enabled/disabled state + exact reason, checked
+// against whichever label currently gives the Composer something to check
+// against -- the sheet's own locked size takes priority (it's the sheet's
+// actual physical contents right now); otherwise the ?label= preloaded
+// label (Section 4) previews compatibility before anything is placed.
+// Neither present: every template stays fully enabled (nothing to check
+// yet), exactly as before this Section existed.
+function getReferenceLabelForCompat(){
+  if(sheetItems.length) return resolveSheetLabel(sheetItems[0].labelId)||null;
+  if(preloadedLabelId){
+    const arr=getSaved();
+    return arr.find(x=>x.id===preloadedLabelId)||null;
+  }
+  return null;
+}
+function renderTemplateCompat(){
+  const ref=getReferenceLabelForCompat();
+  document.querySelectorAll('.tpl-card[data-tpl]').forEach(card=>{
+    const key=card.dataset.tpl;
+    const reasonEl=card.querySelector('.tpl-reason');
+    if(!ref){
+      card.classList.remove('tpl-disabled');
+      card.removeAttribute('aria-disabled');
+      if(reasonEl){reasonEl.style.display='none';reasonEl.textContent='';}
+      return;
+    }
+    const result=checkTemplateCompatibility(ref,key);
+    const incompatible=!result.compatible;
+    card.classList.toggle('tpl-disabled',incompatible);
+    if(incompatible)card.setAttribute('aria-disabled','true');else card.removeAttribute('aria-disabled');
+    if(reasonEl){
+      reasonEl.style.display=incompatible?'':'none';
+      reasonEl.textContent=incompatible?result.reason:'';
+    }
   });
 }
 
@@ -863,6 +1130,31 @@ function renderSavedList(){
   });
 })();
 
+// A sheet template's own physical requirement, in the shape
+// LabelRenderer.checkCompatibility() expects: Custom Sheet takes its
+// geometry FROM the first label placed (see getLockedSize()), so it has no
+// fixed requirement of its own; a registry template is a real, fixed
+// physical sheet with an exact shape/size a label must match exactly (only
+// a negligible floating-point epsilon, never a real-world tolerance -- see
+// COMPAT_TOLERANCE_MM in label-render.js).
+function getTemplateSpec(templateKey){
+  const reg=getRegistryTemplate(templateKey);
+  if(reg) return {kind:'registry', shape:reg.shape, widthMm:reg.labelWidthMm, heightMm:reg.labelHeightMm};
+  return {kind:'custom-sheet'};
+}
+
+// Single canonical compatibility decision for "does label `e` fit sheet
+// template `templateKey`" -- used for the registry pre-check in
+// canAddToSheet() below, the template-card enabled/disabled state, and the
+// Compatible/Other saved-label grouping, so all three can never disagree.
+// Always routes through the shared LabelRenderer.getPhysicalSpec()/
+// checkCompatibility() (Section 5 requirement) -- custom-vs-preset origin
+// never participates in the decision, and a swapped-dimension rectangle is
+// reported as 'rotation-unavailable', never silently treated as a match.
+function checkTemplateCompatibility(e,templateKey){
+  return LabelRenderer.checkCompatibility(LabelRenderer.getPhysicalSpec(e), getTemplateSpec(templateKey));
+}
+
 // Registry templates (Phase 1) are a fixed, physical sheet -- a label that
 // doesn't match its shape or its exact size can never be printed onto it,
 // so this is checked separately from (and before) the general same-size
@@ -871,18 +1163,8 @@ function renderSavedList(){
 // templates, which have no fixed shape/size to check against).
 function checkRegistryCompatibility(e,t){
   if(!t.registryKey)return null;
-  const reg=getRegistryTemplate(t.registryKey);
-  if(!reg)return null;
-  const labelShape=e.shape||'circle';
-  if(labelShape!==reg.shape){
-    return `This label is a ${labelShape}, but the ${reg.code} sheet requires a ${reg.shape} label shape.\n\nChange the label's shape in Step 1, or choose a different sheet template.`;
-  }
-  const dims=getLabelDimsMM(e);
-  const TOL=0.05;
-  if(Math.abs(dims.w-reg.labelWidthMm)>TOL||Math.abs(dims.h-reg.labelHeightMm)>TOL){
-    return `This label is ${dims.w}×${dims.h}mm, but the ${reg.code} sheet requires exactly ${reg.labelWidthMm}×${reg.labelHeightMm}mm labels.\n\nAdjust the label's custom size in Step 1, or choose a different sheet template.`;
-  }
-  return null;
+  const result=checkTemplateCompatibility(e,t.registryKey);
+  return result.compatible?null:result.reason;
 }
 
 // CLPeasy's own supported minimum for a CUSTOM label size -- 52mm on every
@@ -1142,13 +1424,27 @@ function updateSummary(){
   const slots=t.cols*t.rows;
   const added=getTotalQty();
   const remain=slots-added-reservedUsed;
-  document.getElementById('sum-tpl').textContent=t.name||TEMPLATES[currentTpl]?.name||'Custom';
+  const tplName=t.name||TEMPLATES[currentTpl]?.name||'Custom';
+  document.getElementById('sum-tpl').textContent=tplName;
   document.getElementById('sum-slots').textContent=slots;
   document.getElementById('sum-added').textContent=added;
   const remEl=document.getElementById('sum-remain');
   remEl.textContent=remain<0?Math.abs(remain)+' over limit':remain;
   remEl.className='val '+(remain<0?'over':'ok');
   document.getElementById('preview-badge').textContent=`${slots} slots · ${Math.min(added,slots)} filled${reservedUsed?` · ${reservedUsed} already used`:''}`;
+
+  // Section 8: the same figures, plus exact label shape/size and rows×cols,
+  // shown beside the preview itself (never drawn into the exported sheet).
+  const cell=getCellSizeMM(t);
+  const shapeName=(t.shape||'circle').charAt(0).toUpperCase()+(t.shape||'circle').slice(1);
+  const pdsTpl=document.getElementById('pds-tpl');
+  const pdsLabelSize=document.getElementById('pds-label-size');
+  const pdsLayout=document.getElementById('pds-layout');
+  const pdsPositions=document.getElementById('pds-positions');
+  if(pdsTpl)pdsTpl.textContent=tplName;
+  if(pdsLabelSize)pdsLabelSize.textContent=(cell.w===cell.h)?`${shapeName} · ${cell.w}mm`:`${shapeName} · ${cell.w} × ${cell.h}mm`;
+  if(pdsLayout)pdsLayout.textContent=`${t.cols} × ${t.rows} · ${slots} slot${slots===1?'':'s'}`;
+  if(pdsPositions)pdsPositions.textContent=`${reservedUsed} reserved · ${Math.min(added,slots)} occupied · ${remain<0?'0 (over by '+Math.abs(remain)+')':remain} remaining`;
 }
 
 function renderSheetCanvas(){
@@ -1695,5 +1991,49 @@ init();
     <button class="modal-cancel" onclick="closeCricutModal()">Cancel</button>
   </div>
 </div>
+
+<script>
+  // Sidebar mobile toggle + profile dropdown (same shell script used
+  // verbatim on Dashboard/Account/Create Label/My Labels).
+  (function(){
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const toggles = [document.getElementById('sidebar-toggle'), document.getElementById('sidebar-toggle-inline')].filter(Boolean);
+    function openSidebar(){
+      sidebar.classList.add('open');
+      overlay.classList.add('open');
+      toggles.forEach(t=>t.setAttribute('aria-expanded','true'));
+      document.body.style.overflow='hidden';
+    }
+    function closeSidebar(){
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+      toggles.forEach(t=>t.setAttribute('aria-expanded','false'));
+      document.body.style.overflow='';
+    }
+    toggles.forEach(t=>t.addEventListener('click', ()=>{
+      sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+    }));
+    overlay.addEventListener('click', closeSidebar);
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeSidebar(); });
+  })();
+  (function(){
+    const profile=document.querySelector('.sidebar-profile');
+    const trigger=document.getElementById('sidebar-user');
+    if(!profile||!trigger)return;
+    function closeProfileMenu(){
+      profile.classList.remove('open');
+      trigger.setAttribute('aria-expanded','false');
+    }
+    trigger.addEventListener('click',event=>{
+      event.stopPropagation();
+      const open=profile.classList.toggle('open');
+      trigger.setAttribute('aria-expanded',String(open));
+    });
+    profile.addEventListener('click',event=>event.stopPropagation());
+    document.addEventListener('click',closeProfileMenu);
+    document.addEventListener('keydown',event=>{if(event.key==='Escape')closeProfileMenu();});
+  })();
+</script>
 </body>
 </html>
