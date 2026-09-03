@@ -33,6 +33,7 @@
 const fs = require('fs');
 const assert = require('assert');
 const { JSDOM, VirtualConsole } = require('jsdom');
+const { webcrypto } = require('crypto');
 
 const labelRendererSource = fs.readFileSync('label-render.js', 'utf8');
 const labelLibrarySource = fs.readFileSync('label-library.js', 'utf8');
@@ -368,7 +369,16 @@ const emptyQuery = {
         stubCanvas(window);
         window.HTMLCanvasElement.prototype.toDataURL = () => 'data:image/png;base64,AA==';
         window.HTMLCanvasElement.prototype.toBlob = function(cb){ cb({ size:1, type:'image/png' }); };
+        // jsdom's own window.crypto implements randomUUID()/getRandomValues()
+        // but NOT crypto.subtle (SubtleCrypto) -- label-library.js's legacy-
+        // migration path needs it for deterministic id assignment. Polyfilled
+        // via Node's real webcrypto implementation, same proven pattern as
+        // tests/print-sheet-reserved-bounds.js, BEFORE label-library.js is
+        // evaluated below. Print Sheet Composer (Checkpoint C1) now requires
+        // label-library.js for getSaved()/addToSheet() in print.html.
+        try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
         window.eval(labelRendererSource);
+        window.eval(labelLibrarySource);
         window.alert = message => { window.__lastAlert = String(message); };
         window.confirm = () => true;
         window.scrollTo = () => {};
@@ -397,7 +407,15 @@ const emptyQuery = {
     const pdocument = pwindow.document;
 
     pwindow.eval('isPro=true; updateProGate();');
-    pwindow.eval('addToSheet(0)'); // valid selection
+    // p280LabelValid/p280LabelLegacy are seeded id-less on purpose (so
+    // LabelLibrary's legacy-migration path stays exercised, per Michaela's
+    // explicit requirement). label-library.js's findById()/isValidId() only
+    // accept real UUID-format ids, so addToSheet() below must be called
+    // with each fixture's real post-migration id, not its original array
+    // index -- resolved here, in the same insertion order, once init/
+    // migration has completed.
+    pwindow.__ids = pwindow.eval('getSaved().map(x=>x.id)');
+    pwindow.eval('addToSheet(window.__ids[0])'); // valid selection
     assert.strictEqual(pwindow.eval('sheetFitIssues.length'), 0, 'Composer must not block a label whose P280 has a valid selection');
     const sheetHTML = pdocument.getElementById('sheet-canvas').innerHTML;
     // Real SVG can wrap onto a <tspan> boundary mid-phrase at the sheet
@@ -413,7 +431,7 @@ const emptyQuery = {
 
     // Same sheet template/shape, but the "legacy, no selection" label --
     // must be blocked, not silently printed with every option.
-    pwindow.eval('addToSheet(1)');
+    pwindow.eval('addToSheet(window.__ids[1])');
     assert.strictEqual(pwindow.eval('sheetFitIssues.length'), 1, 'a P280 with no selection (legacy-compatible case) must block the sheet, not silently render every item');
     const issueReason = pwindow.eval('sheetFitIssues[0].reason');
     assert(/P280/.test(issueReason), 'the fit-issue reason should name P280 as the unrecognised/incomplete code');
@@ -426,8 +444,19 @@ const emptyQuery = {
     // wording must be equivalent to what Builder produced for the same
     // selection. ─────────────────────────────────────────────────────────
     const p280LabelXss = { ...p280LabelValid, scentName:'XSS Composer Label', p280Items:['gloves'], p280Other: XSS_OTHER };
-    pwindow.eval(`window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify(${JSON.stringify([p280LabelValid, p280LabelLegacy, p280LabelXss])}))`);
-    pwindow.eval('addToSheet(2)'); // valid selection + malicious "other" text -- getSaved() re-reads localStorage fresh on every call, so no separate refresh is needed
+    // Checkpoint C1: print.html's getSaved() now returns LabelLibrary's own
+    // in-memory cache, not a fresh read of localStorage on every call -- a
+    // raw localStorage.setItem() here would silently never be picked up.
+    // Add the third fixture through LabelLibrary.mutate() instead (the same
+    // API any real caller uses to add a record), giving it a real id via
+    // LabelLibrary.generateId() since this fixture is a mid-test addition,
+    // not a pre-init legacy record -- migration coverage for id-less
+    // fixtures is already exercised by p280LabelValid/p280LabelLegacy above.
+    const xssId = await pwindow.eval(`LabelLibrary.mutate(function(arr){
+      var rec = Object.assign({}, ${JSON.stringify(p280LabelXss)}, { id: LabelLibrary.generateId() });
+      return arr.concat([rec]);
+    }).then(function(r){ return r.collection[r.collection.length - 1].id; })`);
+    pwindow.eval(`addToSheet(${JSON.stringify(xssId)})`); // valid selection + malicious "other" text
     assert.strictEqual(pwindow.eval('sheetFitIssues.length'), 1, 'the XSS-fixture label has a valid P280 selection and must not add a new fit issue (only the still-present legacy label should)');
     const xssSheetHTML = pdocument.getElementById('sheet-canvas').innerHTML;
     assert(!pdocument.getElementById('sheet-canvas').querySelector('img'), 'a malicious p280Other must never produce a real <img> element in the Composer sheet canvas');

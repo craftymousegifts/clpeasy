@@ -10,10 +10,12 @@
 const fs = require('fs');
 const assert = require('assert');
 const { JSDOM, VirtualConsole } = require('jsdom');
+const { webcrypto } = require('crypto');
 
 const source = fs.readFileSync('print.html', 'utf8')
   .replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
 const labelRendererSource = fs.readFileSync('label-render.js', 'utf8');
+const labelLibrarySource = fs.readFileSync('label-library.js', 'utf8');
 const errors = [];
 const virtualConsole = new VirtualConsole();
 virtualConsole.on('jsdomError', error => errors.push(error.message));
@@ -79,7 +81,16 @@ const dom = new JSDOM(source, {
     });
     window.HTMLCanvasElement.prototype.toDataURL = () => 'data:image/png;base64,AA==';
     window.HTMLCanvasElement.prototype.toBlob = function(cb){ cb({ size: 1, type: 'image/png' }); };
+    // jsdom's own window.crypto implements randomUUID()/getRandomValues()
+    // but NOT crypto.subtle (SubtleCrypto) -- label-library.js's legacy-
+    // migration path needs it for deterministic id assignment. Polyfilled
+    // via Node's real webcrypto implementation, same proven pattern as
+    // tests/print-sheet-reserved-bounds.js, BEFORE label-library.js is
+    // evaluated below. Print Sheet Composer (Checkpoint C1) now requires
+    // label-library.js for getSaved()/addToSheet() in print.html.
+    try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
     window.eval(labelRendererSource);
+    window.eval(labelLibrarySource);
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
     window.scrollTo = () => {};
@@ -121,9 +132,18 @@ setTimeout(async () => {
   try {
     window.eval('isPro=true; updateProGate();'); // subscription gate can't mask the fit-block being tested
 
+    // rectA/rectB/circleC/squareD are seeded id-less on purpose (so
+    // LabelLibrary's legacy-migration path stays exercised, per Michaela's
+    // explicit requirement). label-library.js's findById()/isValidId() only
+    // accept real UUID-format ids, so addToSheet() below must be called
+    // with each fixture's real post-migration id, not its original array
+    // index -- resolved here, in the same insertion order, once init/
+    // migration has completed.
+    window.__ids = window.eval('getSaved().map(x=>x.id)');
+
     // ── #4/#3: adding the first 57x99mm rectangle seeds the sheet's REAL
     // cell footprint from the label -- never the stale 52mm default. ──
-    window.eval('addToSheet(0)'); // rectA, 57x99mm
+    window.eval('addToSheet(window.__ids[0])'); // rectA, 57x99mm
     const tplAfterLock = window.eval('getTplConfig()');
     assert.strictEqual(tplAfterLock.rectLocked, true, 'a non-square rectangle must set rectLocked');
     assert.strictEqual(tplAfterLock.cellWidthMm, 57, 'cell width must be the real 57mm, not the old labelMM default');
@@ -216,7 +236,7 @@ setTimeout(async () => {
     // ── #7: mixed contents -- a second, different saved label at the SAME
     // 57x99mm rectangle footprint must still be addable and render. ──
     window.eval('window.__lastAlert=null;'); // clear the stale alert left over from the blocked-export checks above
-    window.eval('addToSheet(1)'); // rectB, same 57x99mm
+    window.eval('addToSheet(window.__ids[1])'); // rectB, same 57x99mm
     assert.strictEqual(window.eval('window.__lastAlert'), null, 'a second label at the identical locked rectangle size must not be blocked');
     assert.strictEqual(window.eval('getTotalQty()'), 2, 'both same-size rectangle labels should be on the sheet');
     const canvasHTML2 = document.getElementById('sheet-canvas').innerHTML;
@@ -262,7 +282,7 @@ setTimeout(async () => {
     assert.strictEqual(document.getElementById('cust-label-mm-group').style.display, '', 'the single Label-mm field must be visible again on a fresh/empty sheet');
     const colsBefore = document.getElementById('cust-cols').value;
     const rowsBefore = document.getElementById('cust-rows').value;
-    window.eval('addToSheet(2)'); // circleC, 52mm circle
+    window.eval('addToSheet(window.__ids[2])'); // circleC, 52mm circle
     const tplCircle = window.eval('getTplConfig()');
     assert.strictEqual(tplCircle.rectLocked, false, 'a circle must never set rectLocked');
     assert.strictEqual(tplCircle.cellWidthMm, 52, 'circle Custom Sheet must keep using the single Label-mm field (default 52), exactly as before this fix');
@@ -281,12 +301,12 @@ setTimeout(async () => {
     const emptyCircleMatch = canvasCircle.match(/<div class="empty-slot"([^>]*)>/);
     assert(emptyCircleMatch, 'expected an empty slot on the circle-only custom sheet');
     assert.strictEqual(emptyCircleMatch[1], '', 'a circle-locked Custom Sheet must keep the default circular empty-slot look (no style override), exactly as before this fix');
-    window.eval('removeSheetItem(2)');
+    window.eval('removeSheetItem(window.__ids[2])');
 
     // ── Empty-slot placeholder shape, square (point #3): geometry stays a
     // single labelMM field / cellWidthMm===cellHeightMm exactly as before
     // this fix, but the placeholder must now be a SQUARE, not a circle. ──
-    window.eval('addToSheet(3)'); // squareD, 60x60mm square
+    window.eval('addToSheet(window.__ids[3])'); // squareD, 60x60mm square
     const tplSquare = window.eval('getTplConfig()');
     assert.strictEqual(tplSquare.rectLocked, false, 'a square (shape===\'square\') must never set rectLocked -- geometry unaffected, exactly as before this fix');
     assert.strictEqual(tplSquare.cellWidthMm, tplSquare.cellHeightMm, 'square Custom Sheet cell must remain literally square, exactly as before this fix');
@@ -296,7 +316,7 @@ setTimeout(async () => {
     assert(emptySquareMatch, 'expected an empty slot on the square-only custom sheet');
     assert(!/border-radius:\s*50%/.test(emptySquareMatch[1]), 'a square-locked Custom Sheet must not draw empty slots as circles');
     assert(/border-radius:\s*4px/.test(emptySquareMatch[1]), 'a square-locked Custom Sheet must show a square placeholder (small corner radius)');
-    window.eval('removeSheetItem(3)');
+    window.eval('removeSheetItem(window.__ids[3])');
 
     // ── #6: EU30009 remains completely independent of any of this ──────
     window.eval("selectTemplate('eu30009', document.querySelector('.tpl-card[data-tpl=\"eu30009\"]'))");

@@ -12,6 +12,7 @@
 const fs = require('fs');
 const assert = require('assert');
 const { JSDOM, VirtualConsole } = require('jsdom');
+const { webcrypto } = require('crypto');
 
 function stubCanvas(window){
   window.HTMLCanvasElement.prototype.getContext = () => ({
@@ -242,7 +243,16 @@ const EXPECTED_MSG = 'CLPeasy supports custom label dimensions from 52mm. Choose
       stubCanvas(window);
       window.HTMLCanvasElement.prototype.toDataURL = () => 'data:image/png;base64,AA==';
       window.HTMLCanvasElement.prototype.toBlob = function(cb){ cb({ size:1, type:'image/png' }); };
+      // jsdom's own window.crypto implements randomUUID()/getRandomValues()
+      // but NOT crypto.subtle (SubtleCrypto) -- label-library.js's legacy-
+      // migration path needs it for deterministic id assignment. Polyfilled
+      // via Node's real webcrypto implementation, same proven pattern as
+      // tests/print-sheet-reserved-bounds.js, BEFORE label-library.js is
+      // evaluated below. Print Sheet Composer (Checkpoint C1) now requires
+      // label-library.js for getSaved()/canAddToSheet() in print.html.
+      try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
       window.eval(labelRendererSource);
+      window.eval(labelLibrarySource);
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
       window.scrollTo = () => {};
