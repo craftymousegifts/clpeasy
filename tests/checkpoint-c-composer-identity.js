@@ -418,15 +418,17 @@ async function openComposer(opts){
     assert.strictEqual(window.eval('preloadedLabelId'), idA, 'a valid ?label=<id> must set preloadedLabelId to exactly that record\'s id');
     assert.strictEqual(window.eval('preloadUnavailable'), false, 'a valid ?label=<id> must not set preloadUnavailable');
     const banner = document.getElementById('preload-banner');
-    assert(banner, 'a "Selected label" banner must render for a valid preload');
+    assert(banner, 'a "Label you chose" banner must render for a valid preload');
     assert(banner.textContent.includes('Preload Target'), 'the banner must show the preloaded record\'s own name');
     assert(!banner.textContent.includes('Other Label'), 'the banner must never show a different record\'s content');
-    const row = document.getElementById(`sli-${idA}`);
-    assert(row && row.className.includes('preload-selected'), 'the matching saved-label row must carry a clear "selected" visual state');
+    // Correction batch (Section 3): the preloaded label is represented ONLY
+    // by the banner above -- it must never also appear as a separate row
+    // in the saved-label list below (no duplicate card).
+    assert.strictEqual(document.getElementById(`sli-${idA}`), null, 'the preloaded label must not be duplicated as a separate list row -- the banner above is its only representation');
     const otherRow = document.getElementById(`sli-${idB}`);
     assert(otherRow && !otherRow.className.includes('preload-selected'), 'a non-matching saved-label row must never be marked selected');
     assert(/52mm circle/.test(banner.textContent), 'the banner must display the preloaded label\'s exact shape and physical dimensions');
-    ok('a valid ?label=<id> selects exactly that record and highlights it, never a different one');
+    ok('a valid ?label=<id> selects exactly that record and shows it once, never a different one and never duplicated');
   }
 
   // ── 13. Preload never auto-adds to sheetItems, never auto-selects/
@@ -437,8 +439,12 @@ async function openComposer(opts){
     const { window } = await openComposer({ seed, search:`?label=${idA}` });
     assert.strictEqual(window.eval('sheetItems.length'), 0, '?label= must never automatically add the label to sheetItems');
     assert.strictEqual(window.eval('getTotalQty()'), 0, '?label= must never set any quantity by itself');
-    assert.strictEqual(window.eval('currentTpl'), 'custom', '?label= must never automatically select/change the template');
-    ok('?label= preload never adds the record to sheetItems, changes the template, or sets a quantity by itself');
+    // Correction batch (Section 2): a resolved ?label= preload must start
+    // with NO sheet template selected -- the user must explicitly choose
+    // one (or Custom Sheet, which then adapts to this label) before any
+    // template is active. Never fall back to the old 'custom' default.
+    assert.strictEqual(window.eval('currentTpl'), null, '?label= must leave no template selected -- the user must explicitly choose one');
+    ok('?label= preload never adds the record to sheetItems, auto-selects a template, or sets a quantity by itself');
   }
 
   // ── 14. The "Selected label" banner provides a working manual Add
@@ -447,12 +453,22 @@ async function openComposer(opts){
     const idA = fakeId();
     const seed = [fixture({ id:idA, scentName:'Preload Add Me' })];
     const { window, document } = await openComposer({ seed, search:`?label=${idA}` });
+    // Correction batch (Section 2): Add/quantity belongs to Step 3, which
+    // only exists once a sheet template is chosen (Step 2) -- no template
+    // is selected yet here, so the banner's Add control must be blocked.
+    const bannerAddBtnBefore = document.querySelector('#preload-banner [data-action="add"]');
+    assert(bannerAddBtnBefore && bannerAddBtnBefore.getAttribute('data-label-id') === idA, 'the "Label you chose" banner must provide a manual Add control for the preloaded record');
+    bannerAddBtnBefore.dispatchEvent(new window.MouseEvent('click', { bubbles:true }));
+    assert.strictEqual(window.eval('getTotalQty()'), 0, 'clicking Add before a sheet template is chosen must not add anything');
+    assert(window.eval('window.__lastAlert'), 'clicking Add before a sheet template is chosen must alert, explaining a template is needed first');
+    // Now choose a sheet template (Step 2) -- Add should work afterwards.
+    window.eval(`selectTemplate('custom', document.querySelector('.tpl-card[data-tpl="custom"]'))`);
     const bannerAddBtn = document.querySelector('#preload-banner [data-action="add"]');
-    assert(bannerAddBtn && bannerAddBtn.getAttribute('data-label-id') === idA, 'the "Selected label" banner must provide a manual Add control for the preloaded record');
+    assert(bannerAddBtn && bannerAddBtn.getAttribute('data-label-id') === idA, 'the banner\'s manual Add control must still be present once a template is chosen');
     bannerAddBtn.dispatchEvent(new window.MouseEvent('click', { bubbles:true }));
-    assert.strictEqual(window.eval('getTotalQty()'), 1, 'clicking the banner\'s manual Add control must actually add the preloaded record to the sheet');
+    assert.strictEqual(window.eval('getTotalQty()'), 1, 'clicking the banner\'s manual Add control must actually add the preloaded record to the sheet once a template is chosen');
     assert.strictEqual(window.eval('sheetItems[0].labelId'), idA, 'the added sheet item must be the preloaded record');
-    ok('the "Selected label" banner provides a working manual Add action, never an automatic one');
+    ok('the "Label you chose" banner provides a working manual Add action once a template is chosen, never an automatic one, and never before Step 2');
   }
 
   // ── 15. Malformed and unknown ?label= ids never select another
@@ -485,13 +501,18 @@ async function openComposer(opts){
     const seed = [fixture({ id:idA, scentName:'Stays Selected' }), fixture({ id:idB, scentName:'Other' })];
     const { window, document } = await openComposer({ seed, search:`?label=${idA}` });
     assert.strictEqual(window.eval('preloadedLabelId'), idA, 'setup: preload should resolve');
+    // A template must be chosen (Step 2) before idB can be added (Step 3) --
+    // see Section 2's correction. Choosing it also confirms the preload
+    // (idA) survives a template-selection rerender, not just an add/qty one.
+    window.eval(`selectTemplate('custom', document.querySelector('.tpl-card[data-tpl="custom"]'))`);
     window.eval(`addToSheet('${idB}')`);
     window.eval(`changeQty('${idB}',1)`);
-    assert.strictEqual(window.eval('preloadedLabelId'), idA, 'preloadedLabelId must survive an ordinary add/quantity rerender of a DIFFERENT label');
-    const rowAfter = document.getElementById(`sli-${idA}`);
-    assert(rowAfter && rowAfter.className.includes('preload-selected'), 'the preloaded row\'s highlighted state must survive a rerender');
-    assert(document.getElementById('preload-banner'), 'the "Selected label" banner must survive a rerender, not just the initial render');
-    ok('the preload selection (highlight + banner) survives ordinary Composer rerenders');
+    assert.strictEqual(window.eval('preloadedLabelId'), idA, 'preloadedLabelId must survive an ordinary template-selection/add/quantity rerender of a DIFFERENT label');
+    // Correction batch (Section 3): the preloaded label is represented only
+    // by the banner -- it must never also appear as a separate list row.
+    assert.strictEqual(document.getElementById(`sli-${idA}`), null, 'the preloaded label must still never appear as a duplicate list row after a rerender');
+    assert(document.getElementById('preload-banner'), 'the "Label you chose" banner must survive a rerender, not just the initial render');
+    ok('the preload selection (banner, never duplicated) survives ordinary Composer rerenders');
   }
 
   // ── 17. Deleting the preloaded label in another tab clears only the
@@ -501,6 +522,8 @@ async function openComposer(opts){
     const seed = [fixture({ id:idPreload, scentName:'Preloaded And Deleted' }), fixture({ id:idSheet, scentName:'On Sheet' })];
     const { window, document } = await openComposer({ seed, search:`?label=${idPreload}` });
     assert.strictEqual(window.eval('preloadedLabelId'), idPreload, 'setup: preload should resolve');
+    // A template must be chosen (Step 2) before idSheet can be added (Step 3).
+    window.eval(`selectTemplate('custom', document.querySelector('.tpl-card[data-tpl="custom"]'))`);
     window.eval(`addToSheet('${idSheet}')`);
     window.eval(`setQty('${idSheet}','2')`);
     assert.strictEqual(window.eval('getTotalQty()'), 2, 'setup: an unrelated label should be on the sheet');

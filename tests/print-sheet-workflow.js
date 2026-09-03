@@ -186,15 +186,22 @@ setTimeout(() => {
         try {
           const mw = mdom.window, mdoc = mw.document;
           mw.eval('renderGrid();');
-          const printLinks = [...mdoc.querySelectorAll('a[title="Print multiple"]')];
+          // GUI correction: icon-only card actions were replaced with
+          // readable text pill buttons (no title-only tooltip) -- Print
+          // multiple is now identified by its href pattern and visible
+          // text, not a title attribute.
+          const printLinks = [...mdoc.querySelectorAll('a[href^="print.html?label="]')];
           assert.strictEqual(printLinks.length, 2, 'My Labels: every card must have a Print multiple action');
+          printLinks.forEach(a=>assert.strictEqual(a.textContent.trim(), 'Print multiple', 'My Labels: the Print multiple action must be readable text, not an icon-only/title-only control'));
           const hrefs = printLinks.map(a=>a.getAttribute('href')).sort();
           assert.deepStrictEqual(hrefs, ['print.html?label=00000000-0000-4000-8000-000000000001','print.html?label=00000000-0000-4000-8000-000000000002'], 'My Labels: Print multiple must link by stable id');
-          assert(mdoc.querySelector('a[data-action]')===null || true); // Open/Duplicate/Delete unchanged, spot-checked below
           assert(mdoc.querySelector('button[data-action="delete"]'), 'My Labels: Delete action must still exist');
+          assert.strictEqual(mdoc.querySelector('button[data-action="delete"]').textContent.trim(), 'Delete', 'My Labels: Delete must be readable text, not an icon-only control');
           assert(mdoc.querySelector('button[data-action="duplicate"]'), 'My Labels: Duplicate action must still exist');
+          assert.strictEqual(mdoc.querySelector('button[data-action="duplicate"]').textContent.trim(), 'Duplicate', 'My Labels: Duplicate must be readable text, not an icon-only control');
           assert(mdoc.querySelector('a.btn-outline.btn-sm'), 'My Labels: Open action must still exist');
-          console.log('PASS: My Labels Print multiple action uses a stable id; Open/Duplicate/Delete unchanged');
+          assert.strictEqual(mdoc.querySelectorAll('.icon-btn').length, 0, 'My Labels: no icon-only card action controls must remain');
+          console.log('PASS: My Labels shows four readable text actions (Open/Print multiple/Duplicate/Delete), no icon-only controls remain');
           mdom.window.close();
         } catch (error) {
           console.error(error.stack || error.message);
@@ -251,10 +258,16 @@ setTimeout(() => {
       window.eval(`resolvePreloadFromURLForTest(null); preloadedLabelId=null; preloadUnavailable=false;`);
       window.eval(`selectTemplate('eu30009', document.querySelector('.tpl-card[data-tpl="eu30009"]'))`);
       window.eval('renderSavedList();');
-      const compatHead = [...document.querySelectorAll('.section-head')].find(h=>h.textContent==='Compatible labels');
+      // Correction batch (Section 3): "Compatible labels" -> "Other
+      // compatible labels" and "Other labels (N)" -> "Different size
+      // labels (N)", now that the chosen/preloaded label (when present) is
+      // shown once, separately, above -- this list is always the OTHER
+      // labels beyond it.
+      const compatHead = [...document.querySelectorAll('.section-head')].find(h=>h.textContent==='Other compatible labels');
       const otherDetails = document.querySelector('.other-labels-details');
-      assert(compatHead, 'Selecting EU30009 must show a "Compatible labels" section for the matching label');
-      assert(otherDetails, 'Selecting EU30009 must show an "Other labels" section for the non-matching labels');
+      assert(compatHead, 'Selecting EU30009 must show an "Other compatible labels" section for the matching label');
+      assert(otherDetails, 'Selecting EU30009 must show a "Different size labels" section for the non-matching labels');
+      assert(otherDetails.querySelector('.other-labels-summary').textContent.includes('Different size labels'), 'the collapsed group must be titled "Different size labels"');
       const otherIds = [...otherDetails.querySelectorAll('.saved-label-item')].map(el=>el.id);
       assert(otherIds.includes(`sli-${idPortrait}`), 'Portrait 57x99 must be grouped under Other labels for EU30009');
       assert(otherIds.includes(`sli-${idCircle}`), 'The circle label must be grouped under Other labels for EU30009 (wrong shape)');
@@ -275,16 +288,23 @@ setTimeout(() => {
 
       console.log('PASS: Custom Sheet first-label lock still groups non-matching saved labels under Other labels');
 
-      // ── Section 8: preview-side dimensions summary ─────────────────
+      // ── Section 8 / correction batch (compaction item 6): preview-side
+      // dimensions summary -- Reserved/Filled/Remaining are now three
+      // separate fields, never one combined ellipsis-truncated string. ──
       window.eval('updateSummary();');
       const pdsTpl = document.getElementById('pds-tpl').textContent;
       const pdsLabelSize = document.getElementById('pds-label-size').textContent;
       const pdsLayout = document.getElementById('pds-layout').textContent;
-      const pdsPositions = document.getElementById('pds-positions').textContent;
+      const pdsReserved = document.getElementById('pds-reserved').textContent;
+      const pdsFilled = document.getElementById('pds-filled').textContent;
+      const pdsRemaining = document.getElementById('pds-remaining').textContent;
       assert(pdsTpl.length>0, 'Preview summary must show the selected template name');
       assert(/99\.1|57\.3|Rectangle/.test(pdsLabelSize), `Preview summary must show the exact label shape/size, got: ${pdsLabelSize}`);
       assert(/\d+\s*×\s*\d+/.test(pdsLayout), `Preview summary must show rows x cols, got: ${pdsLayout}`);
-      assert(/occupied/.test(pdsPositions) && /remaining/.test(pdsPositions) && /reserved/.test(pdsPositions), `Preview summary must show reserved/occupied/remaining positions, got: ${pdsPositions}`);
+      assert(pdsReserved.length>0 && pdsReserved!=='—', `Preview summary must show a Reserved value, got: ${pdsReserved}`);
+      assert(pdsFilled.length>0 && pdsFilled!=='—', `Preview summary must show a Filled value, got: ${pdsFilled}`);
+      assert(pdsRemaining.length>0 && pdsRemaining!=='—', `Preview summary must show a Remaining value, got: ${pdsRemaining}`);
+      assert(!document.getElementById('pds-positions'), 'the old combined pds-positions field must no longer exist -- Reserved/Filled/Remaining are separate elements now');
       assert(/A4/.test(document.getElementById('preview-info').textContent), 'Preview summary must show the A4 sheet size');
 
       console.log('PASS: preview-side summary shows template name, exact label shape/size, rows x cols and reserved/occupied/remaining positions');

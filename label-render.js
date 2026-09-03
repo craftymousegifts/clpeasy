@@ -197,7 +197,28 @@ SharedAssetPool.prototype.register = function(key, src){
   if(this._ids.has(key)) return this._ids.get(key);
   const id = 'asset-' + key;
   this._ids.set(key, id);
-  this._defs.push(`<image id="${id}" href="${src}"/>`);
+  // Print/PDF fidelity fix (root cause of the GHS pictogram vanishing and
+  // the EN15494/candle-safety icons rendering hugely oversized/clipped in
+  // the exported sheet while the live on-screen preview -- which never
+  // uses this pool; see the comment above -- rendered every label
+  // correctly): a bare <image id="..." href="..."> with no width/height/
+  // viewBox of its own has no defined intrinsic size, and a later
+  // <use href="#id" width=".." height=".."> referencing it is NOT
+  // reliably honoured by every SVG rendering path -- specifically, the
+  // combined sheet SVG here is rasterised through an <img> element
+  // (downloadPDF()'s canvas conversion), a stricter "static image"
+  // rendering mode that -- unlike this same markup rendered live in the
+  // DOM -- does not consistently apply the <use>'s width/height onto a
+  // sized-less referenced <image>, so the pictogram either painted at its
+  // raw embedded-JPEG pixel size (massively oversized, clipping outside
+  // the label) or did not paint at all. Wrapping the asset in a <symbol>
+  // with its own viewBox is the standard, spec-correct construct for one
+  // embedded raster asset reused at different sizes via <use> -- a
+  // <symbol> is never rendered directly and is always instantiated
+  // through <use>, which then unambiguously maps onto the <use>'s own
+  // width/height in every rendering context, live DOM and rasterised
+  // <img> alike.
+  this._defs.push(`<symbol id="${id}" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"><image href="${src}" x="0" y="0" width="100" height="100"/></symbol>`);
   return id;
 };
 SharedAssetPool.prototype.defsMarkup = function(){

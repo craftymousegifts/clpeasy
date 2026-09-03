@@ -104,13 +104,30 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
   .shell-topbar{display:flex;}
   .sidebar-toggle-inline{display:flex;}
   .sidebar-overlay.open{display:block;opacity:1;}
+  /* Correction batch (compaction item 4): the mobile topbar occupies its
+     own height above .page here, so the desktop full-viewport-height rule
+     below must subtract it -- otherwise the two-col grid would be 100vh
+     tall AND sit below a 56px topbar, overflowing the actual viewport and
+     forcing the whole page (not just a pane) to scroll. Overridden again,
+     back to normal document flow, by the narrower mobile-stacking query
+     below once the layout actually stacks. */
+  .page{min-height:calc(100vh - var(--shell-topbar-h));}
+  .two-col{height:calc(100vh - var(--shell-topbar-h));}
 }
 
-/* LAYOUT */
+/* LAYOUT -- Correction batch (compaction item 4): height (not min-height)
+   on .two-col caps both grid columns to exactly one viewport-tall row, so
+   each column's own overflow rule (not ordinary page/body scrolling) is
+   what scrolls its content -- see .left-panel below and .right-panel's
+   existing flex-column + .preview-scroll{flex:1;overflow:auto} structure,
+   both unchanged. Reverted to normal auto-height single-column flow on
+   mobile (see the max-width:860px query further down). */
 .page{min-height:100vh;}
-.two-col{display:grid;grid-template-columns:380px 1fr;min-height:100vh;}
+.two-col{display:grid;grid-template-columns:380px 1fr;height:100vh;}
 
-/* LEFT PANEL */
+/* LEFT PANEL -- overflow-y:auto (pre-existing) is what actually gives the
+   controls column its own independent scrollbar once .two-col above caps
+   its row height to the viewport. */
 .left-panel{background:white;border-right:1px solid var(--border);padding:24px 20px;overflow-y:auto;display:flex;flex-direction:column;gap:0;}
 .section-head{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);margin:20px 0 10px;display:flex;align-items:center;gap:8px;}
 .section-head::after{content:'';flex:1;height:1px;background:var(--border);}
@@ -158,11 +175,17 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 /* Checkpoint C2: ?label=<id> preload banner + matching row highlight. */
 .preload-banner{background:var(--teal-light);border:1.5px solid var(--teal);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:12.5px;color:var(--teal-dark);line-height:1.5;}
 .preload-banner-head{font-weight:700;font-size:11px;letter-spacing:0.4px;text-transform:uppercase;margin-bottom:2px;}
+.preload-banner-body{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.preload-banner-body .sli-preview{background:white;}
 .preload-banner-name{font-weight:700;font-size:14px;color:var(--text);}
-.preload-banner-meta{color:var(--muted);margin-bottom:8px;}
+.preload-banner-meta{color:var(--muted);}
 .preload-banner-added{font-size:12px;font-weight:700;color:#059669;}
+.preload-banner-onsheet{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
 .preload-banner.preload-banner-warn{background:#FEF2F2;border-color:var(--red);color:#991B1B;}
 .preload-dismiss{background:none;border:none;color:inherit;text-decoration:underline;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;padding:0;margin-left:6px;}
+/* Section 3: single explanatory note above the "Different size labels"
+   group, replacing the old per-card repeated paragraph. */
+.other-labels-note{font-size:11px;color:var(--muted);padding:0 2px 6px;line-height:1.4;}
 .saved-label-item.preload-selected{border-color:var(--teal);background:var(--teal-light);box-shadow:0 0 0 2px var(--teal-light);}
 .saved-label-item{display:flex;align-items:center;gap:10px;background:var(--off);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;transition:all .2s;}
 .saved-label-item:hover{border-color:var(--teal-light);}
@@ -181,13 +204,35 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 .add-btn.added{background:#059669;}
 .add-btn.added::before{content:'✓ ';}
 
-/* SHEET SUMMARY */
+/* SHEET SUMMARY -- Correction batch (compaction item 2): the authoritative
+   summary now lives in the preview header (.preview-dims-summary) only.
+   This card is kept in the DOM (existing JS/tests update sum-tpl/sum-slots/
+   sum-added/sum-remain, e.g. tests/custom-rect-grid-geometry.js) but is no
+   longer shown as a second visible card -- .visually-hidden below removes
+   it from view/layout while keeping it in the accessibility tree as a live
+   status region, never deleted outright. */
 .sheet-summary{background:var(--off);border-radius:10px;padding:12px 14px;font-size:13px;margin-bottom:4px;}
 .sheet-summary-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;}
 .sheet-summary-row .label{color:var(--muted);}
 .sheet-summary-row .val{font-weight:700;color:var(--text);}
 .sheet-summary-row .val.over{color:var(--red);}
 .sheet-summary-row .val.ok{color:#059669;}
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+
+/* COLLAPSIBLE SECTIONS -- Correction batch (compaction items 1 & 5):
+   "Advanced layout settings" (margins/gaps) and "Printing help" both use
+   this shared collapsed-by-default <details>/<summary> treatment. */
+.collapsible{border:1.5px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden;}
+.collapsible summary{cursor:pointer;padding:9px 12px;font-size:11.5px;font-weight:700;color:var(--muted);list-style:none;display:flex;align-items:center;gap:6px;user-select:none;-webkit-tap-highlight-color:transparent;}
+.collapsible summary::-webkit-details-marker{display:none;}
+.collapsible summary::before{content:'▸';font-size:10px;color:var(--teal);transition:transform .15s ease;flex-shrink:0;}
+.collapsible[open] summary{border-bottom:1px solid var(--border);}
+.collapsible[open] summary::before{transform:rotate(90deg);}
+.collapsible summary:hover{color:var(--teal-dark);}
+.collapsible-body{padding:12px;}
+.collapsible-body.no-pad{padding:0;}
+.custom-total-slots{font-size:11px;color:var(--muted);margin:-4px 0 12px;}
+.custom-total-slots strong{color:var(--text);}
 
 /* ACTION BUTTONS */
 .btn-primary{width:100%;background:var(--teal);color:white;border:none;padding:13px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-bottom:8px;}
@@ -199,14 +244,27 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 .pro-gate strong{display:block;font-size:13px;margin-bottom:4px;}
 .pro-gate a{color:var(--teal-dark);font-weight:700;}
 
-/* RIGHT PANEL — SHEET PREVIEW */
+/* RIGHT PANEL — SHEET PREVIEW -- Correction batch (compaction item 5): the
+   right-panel is already a fixed-height (via .two-col height:100vh above)
+   flex column with only .preview-scroll set to flex:1;overflow:auto, so
+   .preview-header/.preview-dims-summary (siblings of .preview-scroll, not
+   its children) never scroll out of view by construction -- only the A4
+   sheet inside .preview-scroll does. position:sticky below is added on top
+   of that for explicitness/robustness and is switched off again on mobile
+   (max-width:860px query) where the whole pane returns to normal flow. */
 .right-panel{background:var(--dark);display:flex;flex-direction:column;overflow:hidden;}
-.preview-header{padding:16px 20px 12px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;}
+.preview-header{padding:16px 20px 12px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:2;background:var(--dark);}
 .preview-header h3{font-size:12px;font-weight:600;color:rgba(255,255,255,0.45);letter-spacing:1px;text-transform:uppercase;}
-.preview-dims-summary{padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.07);display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+/* Correction batch (compaction item 6): 3 columns x 2 rows -- Template/
+   Label/Layout on row 1, Reserved/Filled/Remaining (replacing the old
+   single combined "Positions" field) on row 2 -- a responsive grid instead
+   of one ellipsis-truncated string, and every .pds-val below drops the old
+   overflow:hidden/text-overflow:ellipsis/white-space:nowrap so none of the
+   6 values (including Template/Label/Layout) can ever be clipped. */
+.preview-dims-summary{padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.07);display:grid;grid-template-columns:repeat(3,1fr);gap:10px 14px;position:sticky;top:0;z-index:2;background:var(--dark);}
 .pds-row{display:flex;flex-direction:column;gap:2px;min-width:0;}
 .pds-label{font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);}
-.pds-val{font-size:12.5px;font-weight:600;color:rgba(255,255,255,0.85);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pds-val{font-size:12.5px;font-weight:600;color:rgba(255,255,255,0.85);word-break:break-word;white-space:normal;}
 @media(max-width:640px){.preview-dims-summary{grid-template-columns:1fr 1fr;}}
 .preview-controls{display:flex;align-items:center;gap:8px;}
 .zoom-btn{width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.6);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:'DM Sans',sans-serif;}
@@ -249,12 +307,19 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 .empty-title{font-family:'DM Serif Display',serif;font-size:22px;color:rgba(255,255,255,0.5);margin-bottom:8px;}
 .empty-sub{font-size:14px;color:rgba(255,255,255,0.25);max-width:280px;line-height:1.6;}
 
-/* MOBILE */
+/* MOBILE -- Correction batch (compaction item 7): below this breakpoint,
+   undo every desktop independent-scrolling-pane/sticky-preview rule above
+   and restore normal single-page vertical flow -- controls and preview
+   simply stack and the page itself scrolls, exactly like any other
+   CLPeasy page on mobile. Nothing here changes selection, compatibility,
+   quantity, fit-blocking or export/print logic -- layout/scroll only. */
 @media(max-width:860px){
-  .two-col{grid-template-columns:1fr;grid-template-rows:auto 1fr;}
-  .right-panel{min-height:60vh;}
-  .left-panel{order:2;}
-  .right-panel{order:1;}
+  .page{min-height:100vh;overflow-x:hidden;}
+  .two-col{grid-template-columns:1fr;grid-template-rows:auto auto;height:auto;overflow-x:hidden;}
+  .left-panel{order:2;overflow-y:visible;height:auto;}
+  .right-panel{order:1;min-height:60vh;height:auto;overflow:visible;}
+  .preview-header,.preview-dims-summary{position:static;}
+  .preview-scroll{overflow:visible;flex:none;}
 }
 
 /* ── CRICUT MODAL ───────────────────────────────────────────── */
@@ -407,31 +472,50 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
           <input type="number" id="cust-rows" value="5" min="1" max="12" oninput="rebuildSheet()">
         </div>
       </div>
-      <div class="custom-dims-row">
-        <div class="dim-group">
-          <label>Margin mm</label>
-          <input type="number" id="cust-margin" value="10" min="0" max="30" oninput="rebuildSheet()">
+      <!-- Correction batch (compaction item 1): essential info (exact label
+           width/height above, calculated cols x rows above, total slots
+           here) stays visible outside any collapsed section -- only the
+           expert margin/gap controls below move into "Advanced layout
+           settings", collapsed by default. -->
+      <div class="custom-total-slots" id="custom-total-slots-row">Total slots: <strong id="custom-total-slots">15</strong></div>
+      <details class="collapsible" id="advanced-layout-settings">
+        <summary>Advanced layout settings</summary>
+        <div class="collapsible-body">
+          <div class="custom-dims-row">
+            <div class="dim-group">
+              <label>Margin mm</label>
+              <input type="number" id="cust-margin" value="10" min="0" max="30" oninput="rebuildSheet()">
+            </div>
+            <div class="dim-group">
+              <label>H gap mm</label>
+              <input type="number" id="cust-gapH" value="5" min="0" max="20" oninput="rebuildSheet()">
+            </div>
+            <div class="dim-group">
+              <label>V gap mm</label>
+              <input type="number" id="cust-gapV" value="5" min="0" max="20" oninput="rebuildSheet()">
+            </div>
+          </div>
         </div>
-        <div class="dim-group">
-          <label>H gap mm</label>
-          <input type="number" id="cust-gapH" value="5" min="0" max="20" oninput="rebuildSheet()">
-        </div>
-        <div class="dim-group">
-          <label>V gap mm</label>
-          <input type="number" id="cust-gapV" value="5" min="0" max="20" oninput="rebuildSheet()">
-        </div>
-      </div>
+      </details>
     </div>
 
     <div class="section-head">Your saved labels</div>
     <div id="saved-list"></div>
 
-    <div class="section-head">Sheet summary</div>
-    <div class="sheet-summary">
-      <div class="sheet-summary-row"><span class="label">Template</span><span class="val" id="sum-tpl">Custom sheet</span></div>
-      <div class="sheet-summary-row"><span class="label">Slots on sheet</span><span class="val" id="sum-slots">15</span></div>
-      <div class="sheet-summary-row"><span class="label">Labels added</span><span class="val" id="sum-added">0</span></div>
-      <div class="sheet-summary-row"><span class="label">Slots remaining</span><span class="val" id="sum-remain">15</span></div>
+    <!-- Correction batch (compaction item 2): the visible "Sheet summary"
+         card is removed -- the preview header's .preview-dims-summary is
+         now the one authoritative summary. sum-tpl/sum-slots/sum-added/
+         sum-remain are kept (updateSummary() still writes to them, and
+         tests/custom-rect-grid-geometry.js reads sum-slots directly) as a
+         visually-hidden, screen-reader-accessible live-status region
+         instead of a second visible card. -->
+    <div class="visually-hidden" role="status" aria-live="polite" aria-label="Sheet summary">
+      <div class="sheet-summary">
+        <div class="sheet-summary-row"><span class="label">Template</span><span class="val" id="sum-tpl">Custom sheet</span></div>
+        <div class="sheet-summary-row"><span class="label">Slots on sheet</span><span class="val" id="sum-slots">15</span></div>
+        <div class="sheet-summary-row"><span class="label">Labels added</span><span class="val" id="sum-added">0</span></div>
+        <div class="sheet-summary-row"><span class="label">Slots remaining</span><span class="val" id="sum-remain">15</span></div>
+      </div>
     </div>
 
     <div id="fit-issues-panel" style="display:none;"></div>
@@ -447,10 +531,18 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
     <button class="btn-secondary" id="btn-png-all" onclick="openCricutModal()">✂️ Download for cutting machine</button>
     <a href="builder.html" style="display:block;background:white;color:#111318;font-weight:600;padding:16px 24px;border-radius:10px;text-decoration:none;font-size:15px;border:1.5px solid #E5E7EB;transition:all .2s;cursor:pointer;text-align:center;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='white'">Cancel</a>
 
-    <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 12px;font-size:12px;color:#166534;line-height:1.6;margin-top:4px;">
-      <strong>🖨 Home printing / print companies:</strong> Use the PDF sheet — print on A4 sticker paper.<br>
-      <strong>✂ Cutting machine (Print Then Cut):</strong> Download individual PNGs and upload each one to your cutting machine separately. It cannot split a sheet into individual labels.
-    </div>
+    <!-- Correction batch (compaction item 3): the lengthy home-printing/
+         cutting-machine explanation collapses by default -- the two export
+         buttons above remain immediately visible/usable either way. -->
+    <details class="collapsible" id="printing-help">
+      <summary>Printing help</summary>
+      <div class="collapsible-body no-pad">
+        <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 12px;font-size:12px;color:#166534;line-height:1.6;">
+          <strong>🖨 Home printing / print companies:</strong> Use the PDF sheet — print on A4 sticker paper.<br>
+          <strong>✂ Cutting machine (Print Then Cut):</strong> Download individual PNGs and upload each one to your cutting machine separately. It cannot split a sheet into individual labels.
+        </div>
+      </div>
+    </details>
 
   </div><!-- /left-panel -->
 
@@ -472,7 +564,13 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
       <div class="pds-row"><span class="pds-label">Template</span><span class="pds-val" id="pds-tpl">Custom sheet</span></div>
       <div class="pds-row"><span class="pds-label">Label</span><span class="pds-val" id="pds-label-size">—</span></div>
       <div class="pds-row"><span class="pds-label">Layout</span><span class="pds-val" id="pds-layout">—</span></div>
-      <div class="pds-row"><span class="pds-label">Positions</span><span class="pds-val" id="pds-positions">—</span></div>
+      <!-- Correction batch (compaction item 6): Reserved/Filled/Remaining
+           are three separate compact fields (never one combined,
+           ellipsis-truncated string) so all three stay fully visible at
+           common desktop widths. -->
+      <div class="pds-row"><span class="pds-label">Reserved</span><span class="pds-val" id="pds-reserved">—</span></div>
+      <div class="pds-row"><span class="pds-label">Filled</span><span class="pds-val" id="pds-filled">—</span></div>
+      <div class="pds-row"><span class="pds-label">Remaining</span><span class="pds-val" id="pds-remaining">—</span></div>
     </div>
     <div class="preview-scroll" id="preview-scroll">
       <div id="empty-state" class="empty-state">
@@ -741,6 +839,18 @@ async function initComposerLibrary(){
   // Checkpoint C2: resolve ?label= only now that auth AND
   // LabelLibrary.init() have both completed.
   resolvePreloadFromURL();
+  // Section 2 (workflow-order correction): arriving through "Print
+  // multiple" (a resolved ?label= preload) must start with NO sheet
+  // template chosen -- the old default straight into Custom Sheet's
+  // generic 52mm/3x5 layout was shown before the actual selected label,
+  // which was confusing. The ordinary entry point (no ?label=, e.g. from
+  // the sidebar) is completely unaffected -- currentTpl keeps its original
+  // 'custom' default and the Custom sheet card stays preselected in the
+  // markup exactly as before.
+  if(preloadedLabelId){
+    currentTpl=null;
+    document.querySelectorAll('.tpl-card').forEach(c=>c.classList.remove('selected'));
+  }
   renderSavedList();
   rebuildSheet();
   if(preloadedLabelId)scrollPreloadedIntoView();
@@ -854,15 +964,31 @@ function renderPreloadBanner(arr){
     if(rec){
       const dims=getLabelDimsMM(rec);
       const sizeLabel=(dims.w===dims.h)?`${dims.w}mm`:`${dims.w}×${dims.h}mm`;
-      const alreadyOnSheet=sheetItems.some(s=>s.labelId===rec.id);
+      const qty=sheetItems.find(s=>s.labelId===rec.id)?.qty||0;
+      const alreadyOnSheet=qty>0;
       return `<div class="preload-banner" id="preload-banner">
-        <div class="preload-banner-head">📌 Selected label</div>
-        <div class="preload-banner-name">${xe(rec.scentName||'Unnamed')}</div>
-        <div class="preload-banner-meta">${xe(rec.productType||'')} · ${sizeLabel} ${rec.shape||'circle'}</div>
+        <div class="preload-banner-head">📌 Label you chose</div>
+        <div class="preload-banner-body">
+          <div class="sli-preview" id="sli-prev-${rec.id}"></div>
+          <div class="sli-info">
+            <div class="preload-banner-name">${xe(rec.scentName||'Unnamed')}</div>
+            <div class="preload-banner-meta">${xe(rec.productType||'')} · ${sizeLabel} ${rec.shape||'circle'}</div>
+          </div>
+        </div>
         ${alreadyOnSheet
-          ? `<span class="preload-banner-added">✓ Already on this sheet</span>`
+          ? `<div class="preload-banner-onsheet">
+               <span class="preload-banner-added">✓ On this sheet</span>
+               <div class="sli-qty">
+                 <button class="qty-btn" data-action="dec" data-label-id="${rec.id}">−</button>
+                 <input class="qty-input" type="number" min="0" max="99" value="${qty}" id="qty-input-${rec.id}" data-label-id="${rec.id}"
+                   onchange="setQty(this.dataset.labelId,this.value)" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                 <button class="qty-btn" data-action="inc" data-label-id="${rec.id}">+</button>
+               </div>
+             </div>`
           : `<button class="add-btn" data-action="add" data-label-id="${rec.id}">Add to sheet</button>
-             <div class="preload-banner-next">👉 Next: choose a sheet template below (or use Custom Sheet, which adapts to this label).</div>`}
+             ${currentTpl===null
+               ? `<div class="preload-banner-next">👉 Now choose the sheet you want to print on, below.</div>`
+               : `<div class="preload-banner-next">👉 Next: choose a sheet template below (or use Custom Sheet, which adapts to this label).</div>`}`}
       </div>`;
     }
     // Defensive fallback only -- in normal operation the cross-tab
@@ -909,6 +1035,24 @@ function getLockedSize(){
   return {shape:first.shape||'circle', w:dims.w, h:dims.h};
 }
 
+// Section 2 (workflow-order correction): while Custom Sheet is selected but
+// nothing has actually been placed on it yet, the grid/controls preview
+// should already reflect the chosen/preloaded reference label's real
+// shape/size -- never the generic 52mm/3x5 default -- so the user never
+// sees a sheet that doesn't match the label they came here for. This is
+// DISPLAY-ONLY: canAddToSheet() and every other real validation gate keep
+// calling getLockedSize() directly above and are completely unaffected --
+// nothing here can make a label "count" as placed on the sheet.
+function getCustomSheetPreviewSize(){
+  const locked=getLockedSize();
+  if(locked) return locked;
+  if(currentTpl!=='custom') return null;
+  const ref=getReferenceLabelForCompat();
+  if(!ref) return null;
+  const dims=getLabelDimsMM(ref);
+  return {shape:ref.shape||'circle', w:dims.w, h:dims.h};
+}
+
 // ── CUSTOM SHEET RECTANGLE LOCK (30 Aug 2026 fix) ────────────────────
 // Runs exactly once -- the moment `e` becomes the FIRST label on an
 // otherwise-empty Custom sheet (see addToSheet()'s wasEmpty check). A
@@ -937,16 +1081,42 @@ function initCustomRectLockIfNeeded(e){
   if(rowsEl)rowsEl.value=maxRows;
 }
 
+// Section 2 (workflow-order correction): seeds the Custom Sheet's cell-size
+// controls from a label's exact real dimensions -- a non-square rectangle
+// uses the existing Cols/Rows auto-seed above (initCustomRectLockIfNeeded());
+// a circle or square uses the single "Label mm" field's own real size, the
+// same idea applied to that field. Called both the moment Custom Sheet is
+// selected (against the reference label, before anything is added -- so
+// the generic 52mm/3x5 default is never shown for a label that doesn't
+// match it) and, as before, the moment a label actually becomes the
+// sheet's first real item (addToSheet()'s existing wasEmpty call) --
+// display-only in both cases: it writes only the same user-adjustable DOM
+// fields these controls already are, never touches sheetItems or any real
+// validation.
+function initCustomSheetFromReference(e){
+  if(currentTpl!=='custom'||!e)return;
+  const dims=getLabelDimsMM(e);
+  const shape=e.shape||'circle';
+  if(shape==='rectangle'&&Math.abs(dims.w-dims.h)>=0.05){
+    initCustomRectLockIfNeeded(e);
+  } else {
+    const mmEl=document.getElementById('cust-label-mm');
+    if(mmEl)mmEl.value=Math.max(52,Math.round(dims.w*100)/100);
+  }
+}
+
 // Keeps the Custom-dims panel's visible controls truthful to the current
 // lock state -- called from rebuildSheet() so every path that can change
 // sheetItems (add/remove/qty/template switch) re-syncs it, not just the
 // one-time seeding above. Purely a display sync: safe to call on every
-// render since it only ever mirrors getLockedSize(), never invents or
-// overwrites a user-adjustable value (Cols/Rows/Margin/gaps are untouched
-// here).
+// render since it only ever mirrors getCustomSheetPreviewSize() (the
+// sheet's real lock, or -- while still empty -- the reference label so the
+// Width/Height read-out is already correct before anything is added),
+// never invents or overwrites a user-adjustable value (Cols/Rows/Margin/
+// gaps are untouched here).
 function syncCustomDimsPanel(){
   if(currentTpl!=='custom')return;
-  const locked=getLockedSize();
+  const locked=getCustomSheetPreviewSize();
   const isRectLock=!!(locked&&locked.shape==='rectangle'&&Math.abs(locked.w-locked.h)>=0.05);
   const mmGroup=document.getElementById('cust-label-mm-group');
   const rectRow=document.getElementById('cust-rect-dims-row');
@@ -963,12 +1133,16 @@ function syncCustomDimsPanel(){
 // saved labels by, and where it comes from. A registry template (fixed
 // physical shape/size) is a context the moment it's selected, even before
 // anything is placed. Custom Sheet has no fixed requirement of its own --
-// it only becomes a context once the first label placed on it locks its
-// shape/size (getLockedSize()). An unlocked Custom Sheet has no context at
-// all: every valid saved label may become that first label.
+// it becomes a context once the first label placed on it locks its
+// shape/size, OR (Section 2 correction) once a reference/preloaded label
+// exists while the sheet is still empty, via getCustomSheetPreviewSize() --
+// so "Other compatible labels"/"Different size labels" groups the list the
+// same way before and after that first label is actually added. An
+// unlocked Custom Sheet with no reference label at all has no context:
+// every valid saved label may become that first label.
 function getSavedListCompatContext(){
   if(getRegistryTemplate(currentTpl)) return {active:true, mode:'template', templateKey:currentTpl};
-  const locked=getLockedSize();
+  const locked=getCustomSheetPreviewSize();
   if(locked) return {active:true, mode:'locked', locked};
   return {active:false};
 }
@@ -993,8 +1167,10 @@ function getItemCompat(e,ctx,qty){
   const mismatch = shape!==ctx.locked.shape || Math.abs(dims.w-ctx.locked.w)>0.05 || Math.abs(dims.h-ctx.locked.h)>0.05;
   if(!mismatch) return {incompatible:false, reason:''};
   const sizeLabel=(dims.w===dims.h)?`${dims.w}mm ${shape}`:`${dims.w}×${dims.h}mm ${shape}`;
-  const lockedLabel=(ctx.locked.w===ctx.locked.h)?`${ctx.locked.w}mm ${ctx.locked.shape}`:`${ctx.locked.w}×${ctx.locked.h}mm ${ctx.locked.shape}`;
-  return {incompatible:true, reason:`This label is ${sizeLabel} -- the sheet is already locked to ${lockedLabel} labels. Remove the existing labels first to use a different size.`};
+  // Section 3: shortened -- the full "remove the existing labels first"
+  // explanation is shown ONCE, above the "Different size labels" group in
+  // renderSavedList(), not repeated on every individual disabled card.
+  return {incompatible:true, reason:`${sizeLabel} — doesn't match this sheet.`};
 }
 
 function savedItemCardHtml(e,qty,compat){
@@ -1030,42 +1206,62 @@ function renderSavedList(){
     renderTemplateCompat();
     return;
   }
+  // Section 3: the chosen/preloaded label is already shown once, above, by
+  // renderPreloadBanner() -- it must never also appear a second time in the
+  // list below, added or not.
+  const listArr=preloadedLabelId?arr.filter(e=>e.id!==preloadedLabelId):arr;
   const ctx=getSavedListCompatContext();
   const locked=ctx.active&&ctx.mode==='locked'?ctx.locked:null;
+  // A real lock banner ("Sheet locked to...") only when something is
+  // actually placed (getLockedSize()) -- ctx.locked above also covers the
+  // not-yet-added reference-label preview case (Section 2), which must
+  // never claim the sheet is already "locked".
+  const realLocked=getLockedSize();
   let html='';
   html+=renderPreloadBanner(arr);
-  if(locked!==null){
-    const lockedLabel=(locked.w===locked.h)?`${locked.w}mm ${locked.shape}`:`${locked.w}×${locked.h}mm ${locked.shape}`;
+  if(realLocked!==null){
+    const lockedLabel=(realLocked.w===realLocked.h)?`${realLocked.w}mm ${realLocked.shape}`:`${realLocked.w}×${realLocked.h}mm ${realLocked.shape}`;
     html+=`<div style="background:#fff8e7;border:1px solid #f0c040;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#7a5c00;line-height:1.5;">🔒 Sheet locked to <strong>${lockedLabel}</strong> labels. Remove all labels to use a different shape or size.</div>`;
   }
   if(!ctx.active){
-    // No compatibility context yet (unlocked Custom Sheet) -- every valid
-    // saved label is shown flat and equally eligible to become the first
-    // label placed, exactly as before Section 6.
-    html+=arr.map(e=>savedItemCardHtml(e,sheetItems.find(s=>s.labelId===e.id)?.qty||0,{incompatible:false,reason:''})).join('');
+    // No compatibility context yet (unlocked Custom Sheet, no reference
+    // label either) -- every other valid saved label is shown flat and
+    // equally eligible to become the first label placed, exactly as before
+    // Section 6.
+    if(!listArr.length){
+      html+=`<div class="no-labels">No other saved labels yet.</div>`;
+    } else {
+      html+=listArr.map(e=>savedItemCardHtml(e,sheetItems.find(s=>s.labelId===e.id)?.qty||0,{incompatible:false,reason:''})).join('');
+    }
   } else {
     const compatible=[], other=[];
-    arr.forEach(e=>{
+    listArr.forEach(e=>{
       const qty=sheetItems.find(s=>s.labelId===e.id)?.qty||0;
       const compat=getItemCompat(e,ctx,qty);
       (compat.incompatible?other:compatible).push({e,qty,compat});
     });
     if(compatible.length){
-      html+=`<div class="section-head">Compatible labels</div>`;
+      html+=`<div class="section-head">Other compatible labels</div>`;
       html+=compatible.map(x=>savedItemCardHtml(x.e,x.qty,x.compat)).join('');
     }
     if(other.length){
       html+=`<details class="other-labels-details"${compatible.length?'':' open'}>`+
-        `<summary class="other-labels-summary">Other labels (${other.length})</summary>`+
+        `<summary class="other-labels-summary">Different size labels (${other.length})</summary>`+
+        // Section 3: the "remove existing labels first" explanation is
+        // shown ONCE here, only when it's actually the sheet's own real
+        // lock causing the mismatch (not the not-yet-added preview case) --
+        // never repeated on every individual card (see getItemCompat()).
+        (ctx.mode==='locked'&&realLocked?`<div class="other-labels-note">Remove the labels already on this sheet first to use a different size.</div>`:'')+
         other.map(x=>savedItemCardHtml(x.e,x.qty,x.compat)).join('')+
         `</details>`;
     }
     if(!compatible.length&&!other.length){
-      html+=`<div class="no-labels">No saved labels match this sheet.</div>`;
+      html+=`<div class="no-labels">No other saved labels match this sheet.</div>`;
     }
   }
   el.innerHTML=html;
-  // Render mini previews
+  // Render mini previews -- unfiltered `arr`, so the preload banner's own
+  // thumbnail (same sli-prev-<id> convention) is populated too.
   arr.forEach((e)=>{
     const el2=document.getElementById('sli-prev-'+e.id);
     if(el2)el2.innerHTML=buildMiniSVG(e);
@@ -1090,6 +1286,20 @@ function getReferenceLabelForCompat(){
 }
 function renderTemplateCompat(){
   const ref=getReferenceLabelForCompat();
+  // Section 2: Custom Sheet's own card explains what it will actually do
+  // with the chosen/preloaded label, instead of always showing the generic
+  // "Set your own size" text -- reverts to the generic text once there's
+  // no reference label to describe (e.g. the sheet was cleared).
+  const customDetailEl=document.querySelector('.tpl-card[data-tpl="custom"] .tpl-detail');
+  if(customDetailEl){
+    if(ref){
+      const dims=getLabelDimsMM(ref);
+      const sizeLabel=(dims.w===dims.h)?`${dims.w}mm`:`${dims.w} × ${dims.h}mm`;
+      customDetailEl.textContent=`Will adapt to your ${sizeLabel} ${ref.shape||'circle'} label`;
+    } else {
+      customDetailEl.textContent='Set your own size (52mm minimum)';
+    }
+  }
   document.querySelectorAll('.tpl-card[data-tpl]').forEach(card=>{
     const key=card.dataset.tpl;
     const reasonEl=card.querySelector('.tpl-reason');
@@ -1186,6 +1396,10 @@ function isCustomSizeBelowSupportedMinimumSaved(e){
 // the others enforce. Returns an error string to show and refuse, or null
 // when adding `qtyToAdd` more of label `e` is allowed right now.
 function canAddToSheet(e,qtyToAdd){
+  // Section 2: nothing can be added before a sheet template is actually
+  // chosen (currentTpl===null -- see getTplConfig()'s own null guard,
+  // which would otherwise report a confusing "sheet is full (0 slots)").
+  if(currentTpl===null)return 'Choose a sheet template first, then add this label.';
   // Whole-sheet geometry problem takes priority over any per-label check --
   // see getCustomGridOverflowMessage() (30 Aug 2026 fix).
   const gridMsg=getCustomGridOverflowMessage();
@@ -1227,7 +1441,7 @@ function addToSheet(labelId){
   const existing=sheetItems.findIndex(s=>s.labelId===labelId);
   if(existing>=0){sheetItems[existing].qty+=1;}
   else{sheetItems.push({labelId,qty:1});}
-  if(wasEmpty)initCustomRectLockIfNeeded(e);
+  if(wasEmpty)initCustomSheetFromReference(e);
   renderSavedList();
   rebuildSheet();
 }
@@ -1298,6 +1512,16 @@ function selectTemplate(key,el){
   if(reg){
     const info=document.getElementById('registry-tpl-info');
     if(info)info.innerHTML=`${xe(reg.manufacturer)} ${xe(reg.code)} · ${reg.labelWidthMm}×${reg.labelHeightMm}mm · ${reg.labelsPerSheet} per A4 sheet`;
+  } else if(key==='custom'){
+    // Section 2 (workflow-order correction): the moment Custom Sheet is
+    // picked, seed its cell-size controls from the chosen/preloaded
+    // reference label's real dimensions -- sheetItems was just reset above,
+    // so getReferenceLabelForCompat() falls through to preloadedLabelId
+    // (or returns null when there's no reference at all, in which case
+    // this is a no-op and the plain 52mm/3x5 default is shown, exactly as
+    // before this fix, for the ordinary no-preload entry point).
+    const ref=getReferenceLabelForCompat();
+    if(ref)initCustomSheetFromReference(ref);
   }
   renderSavedList();
   rebuildSheet();
@@ -1346,6 +1570,16 @@ function closeSpecModal(){document.getElementById('specModal').classList.remove(
 document.addEventListener('click',function(e){if(e.target&&e.target.id==='specModal')closeSpecModal();});
 
 function getTplConfig(){
+  // Section 2: no sheet template has been chosen yet -- a deliberately
+  // inert, all-zero config (never TEMPLATES.custom's 52mm/3x5 default) so
+  // every existing consumer (updateSummary()/renderSheetCanvas()/
+  // getCustomGridOverflow()/canAddToSheet()) renders "nothing to show yet"
+  // instead of a wrong guessed layout. Only reachable when Composer opened
+  // through a resolved ?label= preload (see initComposerLibrary()) -- the
+  // ordinary no-preload entry point never sets currentTpl to null.
+  if(currentTpl===null){
+    return {name:'No template selected',shape:'circle',cols:0,rows:0,marginT:0,marginL:0,marginR:0,marginB:0,gapH:0,gapV:0,cellWidthMm:0,cellHeightMm:0,fixedLabelMM:false};
+  }
   const reg=getRegistryTemplate(currentTpl);
   if(reg){
     // Fixed physical sheet -- every field comes from the registry entry,
@@ -1373,7 +1607,7 @@ function getTplConfig(){
     // default). Circle and square (w===h) labels are unaffected: t.rectLocked
     // is false for them, so they fall straight through to the existing
     // single-field behaviour on the next line, exactly as before.
-    const locked=getLockedSize();
+    const locked=getCustomSheetPreviewSize();
     t.rectLocked=!!(locked&&locked.shape==='rectangle'&&Math.abs(locked.w-locked.h)>=0.05);
     // 31 Aug 2026 fix: t.shape drives the empty-slot placeholder outline
     // (see renderSheetCanvas() below). It must track whatever shape is
@@ -1421,6 +1655,38 @@ function getTotalQty(){return sheetItems.reduce((s,x)=>s+x.qty,0);}
 
 function updateSummary(){
   const t=getTplConfig();
+  const pdsTpl=document.getElementById('pds-tpl');
+  const pdsLabelSize=document.getElementById('pds-label-size');
+  const pdsLayout=document.getElementById('pds-layout');
+  // Correction batch (compaction item 6): Reserved/Filled/Remaining are now
+  // three separate fields (replacing the old single combined pds-positions
+  // string) so none of the three can ever be ellipsis-truncated.
+  const pdsReserved=document.getElementById('pds-reserved');
+  const pdsFilled=document.getElementById('pds-filled');
+  const pdsRemaining=document.getElementById('pds-remaining');
+  // Correction batch (compaction item 1): total-slots read-out that stays
+  // visible in the controls column even while "Advanced layout settings"
+  // is collapsed.
+  const customTotalSlots=document.getElementById('custom-total-slots');
+  // Section 2: no sheet template chosen yet -- show placeholders instead of
+  // a computed (all-zero) layout, which would otherwise read as "0 slots"
+  // rather than "nothing to show yet".
+  if(currentTpl===null){
+    document.getElementById('sum-tpl').textContent='—';
+    document.getElementById('sum-slots').textContent='—';
+    document.getElementById('sum-added').textContent='0';
+    const remEl0=document.getElementById('sum-remain');
+    remEl0.textContent='—'; remEl0.className='val ok';
+    document.getElementById('preview-badge').textContent='Choose a sheet template';
+    if(pdsTpl)pdsTpl.textContent='—';
+    if(pdsLabelSize)pdsLabelSize.textContent='—';
+    if(pdsLayout)pdsLayout.textContent='—';
+    if(pdsReserved)pdsReserved.textContent='—';
+    if(pdsFilled)pdsFilled.textContent='—';
+    if(pdsRemaining)pdsRemaining.textContent='—';
+    if(customTotalSlots)customTotalSlots.textContent='—';
+    return;
+  }
   const slots=t.cols*t.rows;
   const added=getTotalQty();
   const remain=slots-added-reservedUsed;
@@ -1432,19 +1698,18 @@ function updateSummary(){
   remEl.textContent=remain<0?Math.abs(remain)+' over limit':remain;
   remEl.className='val '+(remain<0?'over':'ok');
   document.getElementById('preview-badge').textContent=`${slots} slots · ${Math.min(added,slots)} filled${reservedUsed?` · ${reservedUsed} already used`:''}`;
+  if(customTotalSlots)customTotalSlots.textContent=slots;
 
   // Section 8: the same figures, plus exact label shape/size and rows×cols,
   // shown beside the preview itself (never drawn into the exported sheet).
   const cell=getCellSizeMM(t);
   const shapeName=(t.shape||'circle').charAt(0).toUpperCase()+(t.shape||'circle').slice(1);
-  const pdsTpl=document.getElementById('pds-tpl');
-  const pdsLabelSize=document.getElementById('pds-label-size');
-  const pdsLayout=document.getElementById('pds-layout');
-  const pdsPositions=document.getElementById('pds-positions');
   if(pdsTpl)pdsTpl.textContent=tplName;
   if(pdsLabelSize)pdsLabelSize.textContent=(cell.w===cell.h)?`${shapeName} · ${cell.w}mm`:`${shapeName} · ${cell.w} × ${cell.h}mm`;
   if(pdsLayout)pdsLayout.textContent=`${t.cols} × ${t.rows} · ${slots} slot${slots===1?'':'s'}`;
-  if(pdsPositions)pdsPositions.textContent=`${reservedUsed} reserved · ${Math.min(added,slots)} occupied · ${remain<0?'0 (over by '+Math.abs(remain)+')':remain} remaining`;
+  if(pdsReserved)pdsReserved.textContent=String(reservedUsed);
+  if(pdsFilled)pdsFilled.textContent=String(Math.min(added,slots));
+  if(pdsRemaining)pdsRemaining.textContent=remain<0?`0 (over by ${Math.abs(remain)})`:String(remain);
 }
 
 function renderSheetCanvas(){
@@ -1458,6 +1723,18 @@ function renderSheetCanvas(){
   document.getElementById('empty-state').style.display=hasContent?'none':'flex';
   document.getElementById('sheet-canvas-wrap').style.display=hasContent?'block':'none';
   if(!hasContent){
+    // Section 2: while no sheet template has been chosen yet, the empty
+    // state gives that specific instruction instead of the generic
+    // "no labels on sheet" message.
+    const emptyTitleEl=document.querySelector('#empty-state .empty-title');
+    const emptySubEl=document.querySelector('#empty-state .empty-sub');
+    if(currentTpl===null){
+      if(emptyTitleEl)emptyTitleEl.textContent='Now choose the sheet you want to print on.';
+      if(emptySubEl)emptySubEl.textContent='Pick Custom Sheet or EU30009 on the left to continue.';
+    } else {
+      if(emptyTitleEl)emptyTitleEl.textContent='No labels on sheet yet';
+      if(emptySubEl)emptySubEl.textContent='Add labels from your saved library on the left to build your print sheet.';
+    }
     // An emptied sheet must not leave stale fit issues behind (e.g. the
     // failing label was just removed) -- clear the block along with the canvas.
     sheetFitIssues=[];
@@ -1584,7 +1861,7 @@ function renderSheetCanvas(){
         const ch=aspect>=boxAspect?Math.round(cellWPX/aspect):cellHPX;
         const result=renderSheetPosition(ld,cw,ch);
         const invalidCls=result.fits?'':' sheet-cell-invalid';
-        const invalidTitle=result.fits?'':' title="This label does not fit -- see Sheet summary below"';
+        const invalidTitle=result.fits?'':' title="This label does not fit -- see the fit issues list on the left"';
         html+=`<div class="sheet-cell${invalidCls}" style="left:${x}px;top:${y}px;width:${cellWPX}px;height:${cellHPX}px;"${invalidTitle}>${result.svg}</div>`;
         if(!result.fits){
           sheetFitIssues.push({itemId:slot.labelId, scentName:ld.scentName||'Unnamed label', reason:describeFitWarnings(result.warnings)});
