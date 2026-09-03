@@ -67,6 +67,15 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(255,255,255,
 
 /* SAVED LABELS LIST */
 .no-labels{text-align:center;padding:24px 16px;color:var(--muted);font-size:13px;background:var(--off);border-radius:10px;border:1.5px dashed var(--border);}
+/* Checkpoint C2: ?label=<id> preload banner + matching row highlight. */
+.preload-banner{background:var(--teal-light);border:1.5px solid var(--teal);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:12.5px;color:var(--teal-dark);line-height:1.5;}
+.preload-banner-head{font-weight:700;font-size:11px;letter-spacing:0.4px;text-transform:uppercase;margin-bottom:2px;}
+.preload-banner-name{font-weight:700;font-size:14px;color:var(--text);}
+.preload-banner-meta{color:var(--muted);margin-bottom:8px;}
+.preload-banner-added{font-size:12px;font-weight:700;color:#059669;}
+.preload-banner.preload-banner-warn{background:#FEF2F2;border-color:var(--red);color:#991B1B;}
+.preload-dismiss{background:none;border:none;color:inherit;text-decoration:underline;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;padding:0;margin-left:6px;}
+.saved-label-item.preload-selected{border-color:var(--teal);background:var(--teal-light);box-shadow:0 0 0 2px var(--teal-light);}
 .saved-label-item{display:flex;align-items:center;gap:10px;background:var(--off);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;transition:all .2s;}
 .saved-label-item:hover{border-color:var(--teal-light);}
 .sli-preview{width:38px;height:38px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:white;border-radius:6px;border:1px solid var(--border);overflow:hidden;}
@@ -504,6 +513,20 @@ let currentTpl='custom';
 // labelId.
 let sheetItems=[];
 let zoom=0.75;
+// Checkpoint C2: the stable id of a saved label preloaded via this page's
+// own ?label=<id> URL parameter (see resolvePreloadFromURL() below) --
+// purely a "make this one easy to find and add" UI hint (highlighted row +
+// a "Selected label" banner). It is NEVER auto-added to sheetItems, never
+// changes the template, and never changes any quantity by itself -- the
+// only entry points that ever touch sheetItems/currentTpl/qty remain the
+// existing manual Add/±/setQty/template controls.
+let preloadedLabelId=null;
+// True only when a ?label= parameter was present but did not resolve to a
+// real saved label right now (missing/malformed value, or a real id that's
+// unknown or has since been deleted) -- surfaces a recoverable notice;
+// must never cause a fallback to selecting a different (e.g. the first)
+// saved label.
+let preloadUnavailable=false;
 // Positions (in reading order, from the start of the sheet) already used up
 // on a physical registry-template sheet from a previous print run -- the
 // Composer must never place a new label there, but also must never treat
@@ -553,8 +576,12 @@ async function initComposerLibrary(){
     showLibraryErrorState(err);
     return;
   }
+  // Checkpoint C2: resolve ?label= only now that auth AND
+  // LabelLibrary.init() have both completed.
+  resolvePreloadFromURL();
   renderSavedList();
   rebuildSheet();
+  if(preloadedLabelId)scrollPreloadedIntoView();
   if(!window._clpComposerOnChangeRegistered){
     window._clpComposerOnChangeRegistered=true;
     // Fires only on a genuine cross-tab 'storage' event (e.g. a label
@@ -563,6 +590,14 @@ async function initComposerLibrary(){
     // silently substituted for a different saved label.
     LabelLibrary.onChange(function(freshArr){
       pruneMissingSheetItems(freshArr);
+      // The preloaded label itself is never in sheetItems (requirement 7),
+      // so pruneMissingSheetItems() above can't catch its own deletion --
+      // checked separately here: clear the preload and show the
+      // unavailable notice, but never substitute a different label for it.
+      if(preloadedLabelId && !LabelLibrary.findById(freshArr, preloadedLabelId)){
+        preloadedLabelId=null;
+        preloadUnavailable=true;
+      }
       renderSavedList();
       rebuildSheet();
     });
@@ -594,6 +629,92 @@ function showSheetItemsInvalidatedNotice(count){
 // content itself, so an edit made elsewhere (Builder) is always reflected.
 function resolveSheetLabel(labelId){
   return LabelLibrary.findById(getSaved(), labelId);
+}
+
+// ── ?label=<stable-id> PRELOAD (Checkpoint C2) ────────────────────────
+// print.html?label=<id> opens the Composer with that one saved label
+// found and highlighted, ready for the user to manually add it -- it never
+// adds it to the sheet, never touches the template, and never touches a
+// quantity by itself (see canAddToSheet()/addToSheet() -- entirely
+// untouched by this feature). Resolved exactly once per page load, only
+// after authentication AND LabelLibrary.init() have both completed (called
+// from initComposerLibrary() below), so getSaved()/findById() are never
+// evaluated against a library that hasn't finished loading/migrating yet.
+function getLabelParamFromURL(){
+  return new URLSearchParams(window.location.search).get('label');
+}
+
+// Resolves the current ?label= value (if any) against the freshly-loaded
+// saved array. ALWAYS goes through LabelLibrary.findById() -- the raw
+// string is never treated as an array/position index. print.html's
+// Composer has never supported a legacy ?open=<index> route (label-library.js
+// exposes a builder.html-only legacy-index-resolution shim for exactly that
+// case -- this page must never call it), and this must not create one. A
+// value that doesn't resolve -- missing, malformed, or a real id that's
+// unknown or already deleted -- opens NOTHING: it must never fall back to the first
+// saved record or any other record.
+function resolvePreloadFromURL(){
+  const raw=getLabelParamFromURL();
+  if(raw===null){ preloadedLabelId=null; preloadUnavailable=false; return; }
+  const match=LabelLibrary.findById(getSaved(), raw);
+  if(match){
+    preloadedLabelId=match.id;
+    preloadUnavailable=false;
+  } else {
+    preloadedLabelId=null;
+    preloadUnavailable=true;
+  }
+}
+
+// Scrolls the "Selected label" banner into view once, right after it's
+// first rendered -- only ever called when a preload actually resolved.
+function scrollPreloadedIntoView(){
+  const banner=document.getElementById('preload-banner');
+  if(banner && banner.scrollIntoView) banner.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// User-dismissible -- lets them get past the "no longer available" notice
+// and carry on using the rest of the Composer normally.
+function dismissPreloadNotice(){
+  preloadUnavailable=false;
+  renderSavedList();
+}
+
+// Builds the "Selected label"/"no longer available" banner HTML prepended
+// to #saved-list on every renderSavedList() call, so the preload's visual
+// state survives ordinary Composer rerenders (add/±/qty/template-switch),
+// not just the very first render. Placed inside #saved-list's own innerHTML
+// so its Add button is picked up by the existing delegated
+// data-action/data-label-id click listener with no separate wiring.
+function renderPreloadBanner(arr){
+  if(preloadedLabelId){
+    const rec=LabelLibrary.findById(arr, preloadedLabelId);
+    if(rec){
+      const dims=getLabelDimsMM(rec);
+      const sizeLabel=(dims.w===dims.h)?`${dims.w}mm`:`${dims.w}×${dims.h}mm`;
+      const alreadyOnSheet=sheetItems.some(s=>s.labelId===rec.id);
+      return `<div class="preload-banner" id="preload-banner">
+        <div class="preload-banner-head">📌 Selected label</div>
+        <div class="preload-banner-name">${xe(rec.scentName||'Unnamed')}</div>
+        <div class="preload-banner-meta">${xe(rec.productType||'')} · ${sizeLabel} ${rec.shape||'circle'}</div>
+        ${alreadyOnSheet
+          ? `<span class="preload-banner-added">✓ Already on this sheet</span>`
+          : `<button class="add-btn" data-action="add" data-label-id="${rec.id}">Add to sheet</button>`}
+      </div>`;
+    }
+    // Defensive fallback only -- in normal operation the cross-tab
+    // onChange handler below clears preloadedLabelId the moment its record
+    // stops resolving, before this ever renders. If it's somehow still set
+    // against a record that isn't in `arr`, fail closed to the unavailable
+    // notice rather than showing stale/incorrect data -- never render
+    // anything for a different record instead.
+    preloadedLabelId=null;
+    preloadUnavailable=true;
+  }
+  if(preloadUnavailable){
+    return `<div class="preload-banner preload-banner-warn" id="preload-banner">⚠️ This saved label is no longer available.<button class="preload-dismiss" onclick="dismissPreloadNotice()">Dismiss</button></div>`;
+  }
+  return '';
 }
 
 // Returns a saved label's real physical footprint in mm as {w,h}. A thin
@@ -676,11 +797,12 @@ function renderSavedList(){
   const arr=getSaved();
   const el=document.getElementById('saved-list');
   if(!arr.length){
-    el.innerHTML=`<div class="no-labels">No saved labels yet.<br><a href="builder.html" style="color:var(--teal);font-weight:600;">Go to Label Builder →</a></div>`;
+    el.innerHTML=renderPreloadBanner(arr)+`<div class="no-labels">No saved labels yet.<br><a href="builder.html" style="color:var(--teal);font-weight:600;">Go to Label Builder →</a></div>`;
     return;
   }
   const locked=getLockedSize();
   let html='';
+  html+=renderPreloadBanner(arr);
   if(locked!==null){
     const lockedLabel=(locked.w===locked.h)?`${locked.w}mm ${locked.shape}`:`${locked.w}×${locked.h}mm ${locked.shape}`;
     html+=`<div style="background:#fff8e7;border:1px solid #f0c040;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:12px;color:#7a5c00;line-height:1.5;">🔒 Sheet locked to <strong>${lockedLabel}</strong> labels. Remove all labels to use a different shape or size.</div>`;
@@ -695,7 +817,9 @@ function renderSavedList(){
     );
     const lockedAttr=isLocked?'disabled title="Different size — remove existing labels first"':'';
     const itemStyle=isLocked?'opacity:0.4;pointer-events:none;':'';
-    return`<div class="saved-label-item" id="sli-${e.id}" style="${itemStyle}">
+    const isPreloaded=preloadedLabelId===e.id;
+    const itemClass=isPreloaded?' preload-selected':'';
+    return`<div class="saved-label-item${itemClass}" id="sli-${e.id}" style="${itemStyle}">
       <div class="sli-preview" id="sli-prev-${e.id}"></div>
       <div class="sli-info">
         <div class="sli-name">${xe(e.scentName||'Unnamed')}</div>

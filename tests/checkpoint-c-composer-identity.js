@@ -409,6 +409,142 @@ async function openComposer(opts){
     ok('an id-less legacy saved label is migrated, stays visible, and receives a valid stable id before it can be added to the sheet');
   }
 
+  // ── 12. A valid ?label=<id> selects exactly that record and highlights
+  //       it, never a different one ───────────────────────────────────
+  {
+    const idA = fakeId(), idB = fakeId();
+    const seed = [fixture({ id:idA, scentName:'Preload Target' }), fixture({ id:idB, scentName:'Other Label' })];
+    const { window, document } = await openComposer({ seed, search:`?label=${idA}` });
+    assert.strictEqual(window.eval('preloadedLabelId'), idA, 'a valid ?label=<id> must set preloadedLabelId to exactly that record\'s id');
+    assert.strictEqual(window.eval('preloadUnavailable'), false, 'a valid ?label=<id> must not set preloadUnavailable');
+    const banner = document.getElementById('preload-banner');
+    assert(banner, 'a "Selected label" banner must render for a valid preload');
+    assert(banner.textContent.includes('Preload Target'), 'the banner must show the preloaded record\'s own name');
+    assert(!banner.textContent.includes('Other Label'), 'the banner must never show a different record\'s content');
+    const row = document.getElementById(`sli-${idA}`);
+    assert(row && row.className.includes('preload-selected'), 'the matching saved-label row must carry a clear "selected" visual state');
+    const otherRow = document.getElementById(`sli-${idB}`);
+    assert(otherRow && !otherRow.className.includes('preload-selected'), 'a non-matching saved-label row must never be marked selected');
+    assert(/52mm circle/.test(banner.textContent), 'the banner must display the preloaded label\'s exact shape and physical dimensions');
+    ok('a valid ?label=<id> selects exactly that record and highlights it, never a different one');
+  }
+
+  // ── 13. Preload never auto-adds to sheetItems, never auto-selects/
+  //       changes a template, never sets a quantity ──────────────────
+  {
+    const idA = fakeId();
+    const seed = [fixture({ id:idA, scentName:'Preload Only' })];
+    const { window } = await openComposer({ seed, search:`?label=${idA}` });
+    assert.strictEqual(window.eval('sheetItems.length'), 0, '?label= must never automatically add the label to sheetItems');
+    assert.strictEqual(window.eval('getTotalQty()'), 0, '?label= must never set any quantity by itself');
+    assert.strictEqual(window.eval('currentTpl'), 'custom', '?label= must never automatically select/change the template');
+    ok('?label= preload never adds the record to sheetItems, changes the template, or sets a quantity by itself');
+  }
+
+  // ── 14. The "Selected label" banner provides a working manual Add
+  //       action ──────────────────────────────────────────────────────
+  {
+    const idA = fakeId();
+    const seed = [fixture({ id:idA, scentName:'Preload Add Me' })];
+    const { window, document } = await openComposer({ seed, search:`?label=${idA}` });
+    const bannerAddBtn = document.querySelector('#preload-banner [data-action="add"]');
+    assert(bannerAddBtn && bannerAddBtn.getAttribute('data-label-id') === idA, 'the "Selected label" banner must provide a manual Add control for the preloaded record');
+    bannerAddBtn.dispatchEvent(new window.MouseEvent('click', { bubbles:true }));
+    assert.strictEqual(window.eval('getTotalQty()'), 1, 'clicking the banner\'s manual Add control must actually add the preloaded record to the sheet');
+    assert.strictEqual(window.eval('sheetItems[0].labelId'), idA, 'the added sheet item must be the preloaded record');
+    ok('the "Selected label" banner provides a working manual Add action, never an automatic one');
+  }
+
+  // ── 15. Malformed and unknown ?label= ids never select another
+  //       (e.g. the first) record ────────────────────────────────────
+  {
+    const idA = fakeId();
+    const seed = [fixture({ id:idA, scentName:'Only Label' })];
+    {
+      const { window, document } = await openComposer({ seed, search:'?label=not-a-real-id' });
+      assert.strictEqual(window.eval('preloadedLabelId'), null, 'a malformed ?label= value must never resolve to any record');
+      assert.strictEqual(window.eval('preloadUnavailable'), true, 'a malformed ?label= value must surface the unavailable notice');
+      const row = document.getElementById(`sli-${idA}`);
+      assert(row && !row.className.includes('preload-selected'), 'a malformed id must never cause a fallback selection of the only/first record');
+      assert(document.getElementById('saved-list').innerHTML.includes('no longer available'), 'a malformed id must show the recoverable "no longer available" notice');
+    }
+    {
+      const unknownId = fakeId();
+      const { window, document } = await openComposer({ seed, search:`?label=${unknownId}` });
+      assert.strictEqual(window.eval('preloadedLabelId'), null, 'a well-formed but unknown ?label= id must never resolve to any record');
+      assert.strictEqual(window.eval('preloadUnavailable'), true, 'an unknown id must surface the unavailable notice');
+      const row = document.getElementById(`sli-${idA}`);
+      assert(row && !row.className.includes('preload-selected'), 'an unknown id must never fall back to selecting the first/only real record');
+    }
+    ok('malformed and unknown ?label= ids never select another (e.g. the first) record, and surface a recoverable notice');
+  }
+
+  // ── 16. Preload selection survives ordinary Composer rerenders ─────
+  {
+    const idA = fakeId(), idB = fakeId();
+    const seed = [fixture({ id:idA, scentName:'Stays Selected' }), fixture({ id:idB, scentName:'Other' })];
+    const { window, document } = await openComposer({ seed, search:`?label=${idA}` });
+    assert.strictEqual(window.eval('preloadedLabelId'), idA, 'setup: preload should resolve');
+    window.eval(`addToSheet('${idB}')`);
+    window.eval(`changeQty('${idB}',1)`);
+    assert.strictEqual(window.eval('preloadedLabelId'), idA, 'preloadedLabelId must survive an ordinary add/quantity rerender of a DIFFERENT label');
+    const rowAfter = document.getElementById(`sli-${idA}`);
+    assert(rowAfter && rowAfter.className.includes('preload-selected'), 'the preloaded row\'s highlighted state must survive a rerender');
+    assert(document.getElementById('preload-banner'), 'the "Selected label" banner must survive a rerender, not just the initial render');
+    ok('the preload selection (highlight + banner) survives ordinary Composer rerenders');
+  }
+
+  // ── 17. Deleting the preloaded label in another tab clears only the
+  //       preload, never unrelated sheet items ───────────────────────
+  {
+    const idPreload = fakeId(), idSheet = fakeId();
+    const seed = [fixture({ id:idPreload, scentName:'Preloaded And Deleted' }), fixture({ id:idSheet, scentName:'On Sheet' })];
+    const { window, document } = await openComposer({ seed, search:`?label=${idPreload}` });
+    assert.strictEqual(window.eval('preloadedLabelId'), idPreload, 'setup: preload should resolve');
+    window.eval(`addToSheet('${idSheet}')`);
+    window.eval(`setQty('${idSheet}','2')`);
+    assert.strictEqual(window.eval('getTotalQty()'), 2, 'setup: an unrelated label should be on the sheet');
+    window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify([{ ...seed[1] }]));
+    const evt = new window.StorageEvent('storage', { key:'clpeasy_labels__u_guest', storageArea: window.localStorage });
+    window.dispatchEvent(evt);
+    await new Promise(resolve => setTimeout(resolve, 300));
+    assert.strictEqual(window.eval('preloadedLabelId'), null, 'the preloaded label being deleted in another tab must clear preloadedLabelId');
+    assert.strictEqual(window.eval('preloadUnavailable'), true, 'the preloaded label being deleted in another tab must show the unavailable notice');
+    assert(document.getElementById('saved-list').innerHTML.includes('no longer available'), 'the unavailable notice must actually render after the cross-tab deletion');
+    assert.strictEqual(window.eval('getTotalQty()'), 2, 'the unrelated sheet item (a completely different label) must be preserved, untouched by the preload\'s own deletion');
+    assert.strictEqual(window.eval(`sheetItems.some(s=>s.labelId==='${idSheet}')`), true, 'the unrelated sheet item must still be present after the preload is invalidated');
+    ok('deleting the preloaded label in another tab clears only the preload (never unrelated sheet items)');
+  }
+
+  // ── 18. Unrelated query parameters and the URL hash survive
+  //       resolving ?label= ─────────────────────────────────────────
+  {
+    const idA = fakeId();
+    const seed = [fixture({ id:idA, scentName:'URL Preserved' })];
+    const search = `?label=${idA}&utm_source=test&foo=bar#some-hash`;
+    const { window } = await openComposer({ seed, search });
+    assert.strictEqual(window.eval('preloadedLabelId'), idA, 'setup: the label param must still resolve alongside other params/hash');
+    assert.strictEqual(window.location.search, `?label=${idA}&utm_source=test&foo=bar`, 'resolving ?label= must never strip or rewrite unrelated query parameters');
+    assert.strictEqual(window.location.hash, '#some-hash', 'resolving ?label= must never strip or rewrite the URL hash');
+    ok('unrelated query parameters and the URL hash are preserved while resolving ?label=');
+  }
+
+  // ── 19. No Composer ?open=<index> route exists ──────────────────────
+  {
+    const idA = fakeId();
+    const seed = [fixture({ id:idA, scentName:'Index Zero' })];
+    // Composer has never supported ?open=<index> -- prove this Checkpoint
+    // did not accidentally introduce one. '0' is a valid array index for
+    // idA (the only saved label) -- it must still select nothing.
+    const { window, document } = await openComposer({ seed, search:'?open=0' });
+    assert.strictEqual(window.eval('preloadedLabelId'), null, 'print.html must never support a legacy ?open=<index> preload route');
+    assert.strictEqual(window.eval('preloadUnavailable'), false, '?open= is simply not a parameter this page reads -- it must not even trigger the unavailable notice');
+    const row = document.getElementById(`sli-${idA}`);
+    assert(row && !row.className.includes('preload-selected'), '?open=0 must never select the record at that array position');
+    assert(!printSource.includes('resolveLegacyIndex'), 'print.html must never call label-library.js\'s builder.html-only resolveLegacyIndex() shim');
+    ok('no Composer ?open=<index> route exists -- only ?label=<stable-id> is ever read');
+  }
+
   console.log(`\nAll ${passed} checkpoint-c-composer-identity.js checks passed.`);
 })().catch(err => {
   console.error(err.stack || err.message);
