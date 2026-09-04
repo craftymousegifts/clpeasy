@@ -297,6 +297,14 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 .preview-info{font-size:11px;color:rgba(255,255,255,0.3);}
 .preview-badge{font-size:11px;background:rgba(13,148,136,0.18);color:#5EEAD4;padding:3px 10px;border-radius:100px;font-weight:600;}
 
+/* EXPORT ACTION FOOTER (Sheet Preview pane) -- see the HTML comment above
+   #preview-export-footer for why this is structurally pinned without
+   needing more than position:sticky for explicitness/robustness, same
+   pattern as .preview-header/.preview-dims-summary above. */
+.preview-export-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,0.07);position:sticky;bottom:0;z-index:2;background:var(--dark);}
+.preview-export-footer .btn-primary,.preview-export-footer .btn-secondary{margin-bottom:8px;}
+.preview-export-footer .btn-secondary:last-child{margin-bottom:0;}
+
 /* CRICUT TIP BOX */
 .cricut-tip{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px;font-size:12px;color:rgba(255,255,255,0.45);line-height:1.6;margin:0 20px 14px;}
 .cricut-tip strong{color:#5EEAD4;display:block;margin-bottom:3px;}
@@ -320,6 +328,10 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
   .right-panel{order:1;min-height:60vh;height:auto;overflow:visible;}
   .preview-header,.preview-dims-summary{position:static;}
   .preview-scroll{overflow:visible;flex:none;}
+  /* Correction batch: no sticky/fixed export footer on mobile -- it drops
+     into normal document flow directly after the preview, exactly like
+     every other pane element at this breakpoint. */
+  .preview-export-footer{position:static;}
 }
 
 /* ── CRICUT MODAL ───────────────────────────────────────────── */
@@ -520,20 +532,21 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 
     <div id="fit-issues-panel" style="display:none;"></div>
 
+    <!-- Correction batch: Export's own two action buttons (Print/Save as
+         PDF, Download for cutting machine) and their sign-in gate now live
+         in the Sheet Preview pane's persistent action footer on the right
+         (#preview-export-footer) -- they belong to the preview, not this
+         configuration column. #btn-pdf/#btn-png-all/#pro-gate keep their
+         exact element ids, so updateProGate()/updateExportButtonState()
+         (which look them up purely by id) are untouched by the move. -->
     <div class="section-head">Export</div>
 
-    <div id="pro-gate" class="pro-gate" style="display:none;">
-      <strong>🔒 Sign in to download</strong>
-      Please <a href="auth.html">sign in to your CLPeasy account</a> to download your print sheet.
-    </div>
-
-    <button class="btn-primary" id="btn-pdf" onclick="downloadPDF()">🖨 Print / Save as PDF</button>
-    <button class="btn-secondary" id="btn-png-all" onclick="openCricutModal()">✂️ Download for cutting machine</button>
     <a href="builder.html" style="display:block;background:white;color:#111318;font-weight:600;padding:16px 24px;border-radius:10px;text-decoration:none;font-size:15px;border:1.5px solid #E5E7EB;transition:all .2s;cursor:pointer;text-align:center;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='white'">Cancel</a>
 
     <!-- Correction batch (compaction item 3): the lengthy home-printing/
-         cutting-machine explanation collapses by default -- the two export
-         buttons above remain immediately visible/usable either way. -->
+         cutting-machine explanation collapses by default -- the export
+         buttons themselves (now in the preview pane on the right) remain
+         immediately visible/usable either way. -->
     <details class="collapsible" id="printing-help">
       <summary>Printing help</summary>
       <div class="collapsible-body no-pad">
@@ -589,6 +602,28 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
     <div class="preview-footer">
       <span class="preview-info" id="preview-info">A4 · 210 × 297mm</span>
       <span class="preview-badge" id="preview-badge">15 slots · 0 filled</span>
+    </div>
+
+    <!-- Correction batch: persistent export action footer, moved here from
+         the left configuration column -- it belongs to Sheet Preview, stays
+         visible at the bottom of this pane while either column scrolls
+         (position:sticky;bottom:0, structurally reinforced the same way
+         .preview-header/.preview-dims-summary already are at the top: this
+         is the last flex child after .preview-scroll -- the only
+         flex:1;overflow:auto child -- so it never scrolls out of view even
+         without position:sticky), and never overlaps the A4 canvas, the
+         cutting-machine tip or the zoom/summary chrome above it. Element
+         ids (#pro-gate/#btn-pdf/#btn-png-all) are unchanged so every
+         existing validation/disabled/fit-blocking JS keeps working
+         untouched. Removed again on mobile (max-width:860px) in favour of
+         normal in-flow placement -- see that query below. -->
+    <div class="preview-export-footer" id="preview-export-footer">
+      <div id="pro-gate" class="pro-gate" style="display:none;">
+        <strong>🔒 Sign in to download</strong>
+        Please <a href="auth.html">sign in to your CLPeasy account</a> to download your print sheet.
+      </div>
+      <button class="btn-primary" id="btn-pdf" onclick="downloadPDF()">🖨 Print / Save as PDF</button>
+      <button class="btn-secondary" id="btn-png-all" onclick="openCricutModal()">✂️ Download for cutting machine</button>
     </div>
   </div><!-- /right-panel -->
 
@@ -662,7 +697,11 @@ function updateProGate(){
 // updateProGate() and renderSheetCanvas() fight over the same attributes.
 function updateExportButtonState(){
   const blockedByFit=((typeof sheetFitIssues!=='undefined')&&sheetFitIssues.length>0)||!!getCustomGridOverflow();
-  const title=blockedByFit?'Fix the label(s) marked below before you can print or download this sheet.':'';
+  // Correction batch: no longer says "marked below" -- since the export
+  // buttons moved into the Sheet Preview pane, the fit-issues list they
+  // refer to is no longer spatially below them (desktop: it's in the left
+  // column; mobile: it's after the preview). Kept direction-neutral.
+  const title=blockedByFit?"Fix the label(s) that don't fit before you can print or download this sheet.":'';
   const btnPdf=document.getElementById('btn-pdf');
   if(btnPdf){ btnPdf.disabled=!isPro||blockedByFit; btnPdf.title=title; }
   const btnPng=document.getElementById('btn-png-all');
@@ -1245,7 +1284,14 @@ function renderSavedList(){
       html+=compatible.map(x=>savedItemCardHtml(x.e,x.qty,x.compat)).join('');
     }
     if(other.length){
-      html+=`<details class="other-labels-details"${compatible.length?'':' open'}>`+
+      // Correction batch: always collapsed by default and never forced
+      // open by this rerender -- previously this opened automatically
+      // whenever there were no compatible labels, which also meant it
+      // silently re-opened itself on every quantity/template/storage
+      // rerender even after the user had collapsed it. The count/heading
+      // stay visible either way and users can still expand it manually;
+      // incompatible labels are never removed from the DOM, just collapsed.
+      html+=`<details class="other-labels-details">`+
         `<summary class="other-labels-summary">Different size labels (${other.length})</summary>`+
         // Section 3: the "remove existing labels first" explanation is
         // shown ONCE here, only when it's actually the sheet's own real
@@ -1893,6 +1939,7 @@ function describeFitWarnings(warnings){
   if(warnings.includes('footer-clipped')) return 'The business/footer details are being cut off at this label size.';
   const unrecognized=warnings.filter(w=>w.startsWith('unrecognized-code:')).map(w=>w.split('unrecognized-code:')[1]);
   if(unrecognized.length) return `Contains a hazard/precautionary code CLPeasy doesn't recognise: ${unrecognized.join(', ')}.`;
+  if(warnings.includes('candle-safety-symbols-too-small')) return "The candle-safety symbols can't fit at their required minimum size (5mm, BS EN 15494:2019) at this label size.";
   return "This label doesn't fit at its current size.";
 }
 

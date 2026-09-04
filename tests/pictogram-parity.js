@@ -1,16 +1,30 @@
 // Physical CLP pictogram sizing — regression test.
 //
-// Per Michaela's approved formula: pictogram physical size is chosen once,
-// in millimetres, as the LARGEST value in [10, 16] at which every
-// mandatory element (pictograms, signal word, H statements, sensitisers,
-// P statements, business/footer info, all at their existing legibility
+// Per Michaela's approved formula: the pictogram's RED-SQUARE SIDE (the
+// regulated GB-CLP measurement -- see label-render.js's
+// PICTO_FLOOR_SQUARE_MM/PICTO_TARGET_OUTER_BBOX_MM/PICTO_TARGET_SQUARE_MM/
+// pictoOuterBoundingBoxMm() comments for the full Sept 2026 red-square-vs-
+// rotated-bounding-box fix, corrected a second time to stop conflating the
+// 16mm "if possible" figure's OUTER BOUNDING BOX with a second red-square
+// side) is chosen once, in millimetres, as the LARGEST value in
+// [PICTO_FLOOR_SQUARE_MM, PICTO_TARGET_SQUARE_MM] at which every mandatory
+// element (pictograms, signal word, H statements, sensitisers, P
+// statements, business/footer info, all at their existing legibility
 // floors) still fits the label's own physical dimensions and content —
-//   - 10mm is the absolute GB-CLP floor, never violated;
-//   - 16mm is the "if possible" target for CLPeasy's <=3 litre scope;
-//   - a roomy label reaches 16mm; a dense one shrinks only as far as it
-//     must; a label that can't fit mandatory content even at 10mm keeps
-//     10mm and reports fits:false (export stays blocked, same as any
-//     other overflow).
+//   - 10mm square side (100mm^2 area) is the absolute GB-CLP floor, never
+//     violated;
+//   - 16mm is the "if possible" target for CLPeasy's <=3 litre scope, but
+//     it names an OUTER BOUNDING BOX, not a red-square side -- its
+//     red-square-side equivalent (PICTO_TARGET_SQUARE_MM, ~11.3137mm side,
+//     ~128.06mm^2 area) is what the search below actually targets;
+//   - a roomy label reaches the target; a dense one shrinks only as far as
+//     it must; a label that can't fit mandatory content even at the floor
+//     keeps the floor and reports fits:false (export stays blocked, same
+//     as any other overflow).
+// The rendered <image> viewport itself is always the LARGER outer rotated
+// bounding box (square side * sqrt(2)), since that's the artwork's real
+// on-page footprint -- this file's own pxPerMm/expectedPx check below
+// goes through LR.pictoOuterBoundingBoxMm() to account for that.
 // The choice must depend ONLY on physical label dimensions, label
 // content, and pictogram count — never on which canvas/pixel resolution
 // (Builder's fixed preview canvas, Composer's on-screen zoom, either
@@ -94,7 +108,7 @@ const labelRendererSource = fs.readFileSync(path.join(__dirname,'..','label-rend
     const dims = LR.getLabelDims(data, opts);
     const pictoW = renderedPictoWidth(r.svg);
     const pxPerMm = dims.pw / dims.mmW;
-    return { pictoW, pw: dims.pw, mmW: dims.mmW, pxPerMm, fits: r.fits, pictoSizeMm: r.metrics.pictoSizeMm, ratio: pictoW/dims.pw };
+    return { pictoW, pw: dims.pw, mmW: dims.mmW, pxPerMm, fits: r.fits, warnings: r.warnings, pictoSquareSideMm: r.metrics.pictoSquareSideMm, ratio: pictoW/dims.pw };
   }
 
   function measureAllScales(data){
@@ -111,25 +125,30 @@ const labelRendererSource = fs.readFileSync(path.join(__dirname,'..','label-rend
   // noise, well below anything visible, but still tight enough to catch a
   // real reintroduction of caller-dependent growth.
   const RATIO_TOLERANCE = 0.035;
-  const PICTO_FLOOR_MM = 10;
-  const PICTO_TARGET_MM = 16;
+  const PICTO_FLOOR_MM = LR.PICTO_FLOOR_SQUARE_MM;
+  const PICTO_TARGET_MM = LR.PICTO_TARGET_SQUARE_MM;
 
   function assertParity(label, m){
     // 1. The chosen physical mm size must be IDENTICAL across all three
     //    caller scales -- the core "depends only on physical dims/content/
     //    count, not canvas pixels" requirement.
-    assert.strictEqual(m.composerPreview.pictoSizeMm, m.builder.pictoSizeMm, `${label}: Composer preview must choose the identical physical pictogram mm size as Builder`);
-    assert.strictEqual(m.composerExport.pictoSizeMm, m.builder.pictoSizeMm, `${label}: Composer export must choose the identical physical pictogram mm size as Builder`);
+    assert.strictEqual(m.composerPreview.pictoSquareSideMm, m.builder.pictoSquareSideMm, `${label}: Composer preview must choose the identical physical pictogram mm size as Builder`);
+    assert.strictEqual(m.composerExport.pictoSquareSideMm, m.builder.pictoSquareSideMm, `${label}: Composer export must choose the identical physical pictogram mm size as Builder`);
     // 2. Never outside [10,16].
     for(const [name, r] of Object.entries(m)){
-      assert(r.pictoSizeMm >= PICTO_FLOOR_MM - 1e-9 && r.pictoSizeMm <= PICTO_TARGET_MM + 1e-9, `${label} (${name}): chosen pictogram size ${r.pictoSizeMm}mm must be within [${PICTO_FLOOR_MM},${PICTO_TARGET_MM}]mm`);
+      assert(r.pictoSquareSideMm >= PICTO_FLOOR_MM - 1e-9 && r.pictoSquareSideMm <= PICTO_TARGET_MM + 1e-9, `${label} (${name}): chosen pictogram size ${r.pictoSquareSideMm}mm must be within [${PICTO_FLOOR_MM},${PICTO_TARGET_MM}]mm`);
     }
-    // 3. Rendered pixel width must equal ceil(chosenMm * that caller's own
-    //    pxPerMm) -- i.e. pictoSz = selectedPictoMm * pxPerMm, applied
-    //    after the mm choice, never before.
+    // 3. Rendered pixel width must equal ceil(outerBoundingBoxMm *
+    //    caller's own pxPerMm) -- i.e. pictoSz = outer-bounding-box-mm *
+    //    pxPerMm, applied after the mm choice, never before. The rendered
+    //    <image> viewport is always sized to the OUTER BOUNDING BOX (per
+    //    the Sept 2026 red-square-vs-bounding-box fix), which is
+    //    pictoSquareSideMm*sqrt(2) -- never the bare square-side value
+    //    directly (that would be the old, incorrect behaviour this test
+    //    used to encode).
     for(const [name, r] of Object.entries(m)){
-      const expectedPx = Math.ceil(r.pictoSizeMm * r.pxPerMm);
-      assert.strictEqual(r.pictoW, expectedPx, `${label} (${name}): rendered pictogram width (${r.pictoW}px) must equal the chosen mm size times this caller's own pxPerMm (${expectedPx}px)`);
+      const expectedPx = Math.ceil(LR.pictoOuterBoundingBoxMm(r.pictoSquareSideMm) * r.pxPerMm);
+      assert.strictEqual(r.pictoW, expectedPx, `${label} (${name}): rendered pictogram width (${r.pictoW}px) must equal the chosen square-side's outer bounding box times this caller's own pxPerMm (${expectedPx}px)`);
     }
     // 4. Physical pictogram-to-label ratio still matches across callers
     //    (redundant with 1+3 given identical mm, kept as an explicit,
@@ -149,6 +168,18 @@ const labelRendererSource = fs.readFileSync(path.join(__dirname,'..','label-rend
   const pictoPool = ['exclamation','health','corrosive'];
   const seenSizes = []; // for the "roomy reaches 16 / dense reduces" checks below
 
+  // circle 52mm/3 pictograms (2 pictogram rows at 52mm, CLPeasy's smallest
+  // supported label size) is a KNOWN, EXPECTED exception since the Sept
+  // 2026 red-square-vs-bounding-box fix: the correctly-sized (~41% larger
+  // bounding box than the pre-fix bug rendered) pictogram row genuinely no
+  // longer fits alongside mandatory hazard/sensitiser text at this size --
+  // it did "fit" before only because pictograms were rendered under the
+  // legal minimum. It now correctly reports fits:false and blocks export
+  // (verified separately, below the main loop) instead of silently
+  // exporting a non-compliant label -- exactly the "block export when it
+  // genuinely cannot fit" requirement, not a regression to paper over.
+  const KNOWN_NOW_BLOCKED = new Set(['circle 52mm, 3 picto(s)']);
+
   for(const c of cases){
     for(const n of [1,2,3]){
       const pictos = pictoPool.slice(0,n);
@@ -156,16 +187,29 @@ const labelRendererSource = fs.readFileSync(path.join(__dirname,'..','label-rend
       const label = `${c.shape} ${c.mm||c.rectDims.join('x')}mm, ${n} picto(s)`;
       const m = measureAllScales(data);
       assertParity(label, m);
-      assert.strictEqual(m.builder.fits, true, `${label}: this short-content fixture is expected to fit at every scale`);
-      seenSizes.push({label, mm: m.builder.pictoSizeMm});
+      if(KNOWN_NOW_BLOCKED.has(label)){
+        assert.strictEqual(m.builder.fits, false, `${label}: expected to now correctly block export (see KNOWN_NOW_BLOCKED comment above) -- if this now fits, the geometry fix's real-world impact has shifted and this exception should be re-reviewed, not just re-tightened`);
+        assert(m.builder.warnings.includes('hazard-text-overflow'), `${label}: must report the specific hazard-text-overflow warning`);
+      } else {
+        assert.strictEqual(m.builder.fits, true, `${label}: this short-content fixture is expected to fit at every scale`);
+      }
+      seenSizes.push({label, mm: m.builder.pictoSquareSideMm});
     }
   }
 
-  // Roomy cases (single pictogram, plenty of room) must reach the 16mm
-  // target -- confirms the search doesn't under-grow when content permits.
+  // Roomy cases (single pictogram, plenty of room) must reach the target --
+  // confirms the search doesn't under-grow when content permits. With the
+  // second-pass correction, PICTO_TARGET_MM is the ~11.3137mm red-square-
+  // side equivalent of the 16mm OUTER BOUNDING BOX target (not a 16mm
+  // square side), so every single-pictogram fixture below -- including
+  // circle 52mm (CLPeasy's smallest supported label size) and rectangle
+  // 99.1x57.3mm (EU30009, a candle fixture where the BS EN 15494
+  // candle-safety row also reserves footer space) -- comfortably reaches
+  // the full target directly; no exceptions are needed at this smaller,
+  // correctly-defined target size.
   const roomySingle = seenSizes.filter(s => / 1 picto/.test(s.label));
   for(const s of roomySingle){
-    assert.strictEqual(s.mm, PICTO_TARGET_MM, `${s.label}: a roomy single-pictogram label must reach the 16mm target`);
+    assert.strictEqual(s.mm, PICTO_TARGET_MM, `${s.label}: a roomy single-pictogram label must reach the target (${PICTO_TARGET_MM.toFixed(4)}mm)`);
   }
 
   // ── 2. Dense content reduces only as much as required (graduated, not a
@@ -177,10 +221,21 @@ const labelRendererSource = fs.readFileSync(path.join(__dirname,'..','label-rend
   const dense52 = seenSizes.find(s => s.label === 'circle 52mm, 3 picto(s)');
   const dense63 = seenSizes.find(s => s.label === 'circle 63mm, 3 picto(s)');
   const roomy75x3 = seenSizes.find(s => s.label === 'circle 75mm, 3 picto(s)');
-  assert(dense52.mm > PICTO_FLOOR_MM && dense52.mm < PICTO_TARGET_MM, `circle 52mm/3 pictograms must reduce below the 16mm target (needs a second picto row) but stay above the 10mm floor -- got ${dense52.mm}mm`);
-  assert(dense63.mm > PICTO_FLOOR_MM && dense63.mm < PICTO_TARGET_MM, `circle 63mm/3 pictograms must reduce below the 16mm target but stay above the 10mm floor -- got ${dense63.mm}mm`);
+  // circle 52mm/3 pictograms is the KNOWN_NOW_BLOCKED exception (see
+  // comment above the main loop): it is pinned AT the 10mm floor and
+  // reports fits:false, not a graduated in-between reduction -- asserted
+  // separately here rather than folded into the "graduated, in-between"
+  // check below, which is specifically about cases that DO still fit.
+  assert.strictEqual(dense52.mm, PICTO_FLOOR_MM, `circle 52mm/3 pictograms is expected to be pinned at the 10mm floor (it no longer fits even there -- see KNOWN_NOW_BLOCKED) -- got ${dense52.mm}mm`);
+  assert(dense63.mm > PICTO_FLOOR_MM && dense63.mm < PICTO_TARGET_MM, `circle 63mm/3 pictograms must reduce below the target but stay above the 10mm floor -- got ${dense63.mm}mm`);
   assert(dense63.mm > dense52.mm, `a larger physical label (63mm) carrying the same dense 3-pictogram content as a smaller one (52mm) must need LESS reduction (${dense63.mm}mm) than the smaller one (${dense52.mm}mm), not more`);
-  assert.strictEqual(roomy75x3.mm, PICTO_TARGET_MM, `circle 75mm/3 pictograms has enough room to still reach the 16mm target -- got ${roomy75x3.mm}mm`);
+  // 75mm/3 pictograms: at the corrected, smaller target (~11.3137mm red-
+  // square side, the equivalent of the 16mm OUTER BOUNDING BOX -- not a
+  // 16mm square side), a 75mm circle with a 2-row/3-pictogram layout has
+  // enough room to reach the FULL target exactly, unlike the smaller 63mm
+  // circle carrying the same content.
+  assert.strictEqual(roomy75x3.mm, PICTO_TARGET_MM, `circle 75mm/3 pictograms must reach the full target (${PICTO_TARGET_MM.toFixed(4)}mm) now the pictogram target is correctly sized -- got ${roomy75x3.mm}mm`);
+  assert(roomy75x3.mm > dense63.mm, `a larger physical label (75mm) carrying the same dense 3-pictogram content as a smaller one (63mm) must need LESS reduction (${roomy75x3.mm}mm) than the smaller one (${dense63.mm}mm), not more`);
 
   // ── 3. Impossible content (can't fit even at the 10mm floor) keeps the
   //    floor size and reports fits:false, at every scale -- export stays
@@ -194,7 +249,7 @@ const labelRendererSource = fs.readFileSync(path.join(__dirname,'..','label-rend
   const impossibleM = measureAllScales(impossible);
   for(const [name, r] of Object.entries(impossibleM)){
     assert.strictEqual(r.fits, false, `impossible-content fixture (${name}): must report fits:false, keeping export blocked`);
-    assert.strictEqual(r.pictoSizeMm, PICTO_FLOOR_MM, `impossible-content fixture (${name}): must retain the 10mm floor, never shrink further or grow`);
+    assert.strictEqual(r.pictoSquareSideMm, PICTO_FLOOR_MM, `impossible-content fixture (${name}): must retain the 10mm floor, never shrink further or grow`);
   }
   assertParity('impossible-content circle 52mm, 3 picto(s)', impossibleM);
 
@@ -224,13 +279,13 @@ const labelRendererSource = fs.readFileSync(path.join(__dirname,'..','label-rend
   const longM = measureAllScales(longContent);
   assertParity('63mm circle, short mandatory content', shortM);
   assertParity('63mm circle, long mandatory content', longM);
-  assert.strictEqual(shortM.builder.pictoSizeMm, PICTO_TARGET_MM, 'short mandatory content on a 63mm circle must reach the 16mm target');
-  assert(longM.builder.pictoSizeMm <= shortM.builder.pictoSizeMm, `long mandatory content (${longM.builder.pictoSizeMm}mm) must never choose a LARGER pictogram than short content (${shortM.builder.pictoSizeMm}mm) on the same physical label`);
+  assert.strictEqual(shortM.builder.pictoSquareSideMm, PICTO_TARGET_MM, `short mandatory content on a 63mm circle must reach the target (${PICTO_TARGET_MM.toFixed(4)}mm)`);
+  assert(longM.builder.pictoSquareSideMm <= shortM.builder.pictoSquareSideMm, `long mandatory content (${longM.builder.pictoSquareSideMm}mm) must never choose a LARGER pictogram than short content (${shortM.builder.pictoSquareSideMm}mm) on the same physical label`);
 
   // ── 6. No caller-dependent growth beyond what content/physical size
   //    determines -- i.e. the OLD bug (absolute-SVG-unit single-row
   //    growth) must not have returned. Every case above already proves
   //    this via assertParity()'s exact-px check; this is a final,
   //    explicit sanity statement.
-  console.log("physical CLP pictogram sizing checks passed (10-16mm bounded search; identical physical mm size and pixel ratio across Builder/Composer preview/export for 1-3 pictograms, 52/63/75mm circle, square, EU30009 rectangle, 63x44mm custom regression fixture; roomy labels and short content reach 16mm; dense labels/long content reduce only as far as required, proportional to available room and never exceed shorter content's size; content that cannot fit even at the 10mm floor keeps the floor and reports fits:false at every scale)");
+  console.log(`physical CLP pictogram sizing checks passed (${PICTO_FLOOR_MM}-${PICTO_TARGET_MM.toFixed(4)}mm bounded red-square-side search, target being the red-square-side equivalent of the 16mm OUTER BOUNDING BOX "if possible" figure; identical physical mm size and pixel ratio across Builder/Composer preview/export for 1-3 pictograms, 52/63/75mm circle, square, EU30009 rectangle, 63x44mm custom regression fixture; roomy labels and short content reach the target; dense labels/long content reduce only as far as required, proportional to available room and never exceed shorter content's size; content that cannot fit even at the ${PICTO_FLOOR_MM}mm floor keeps the floor and reports fits:false at every scale)`);
 })().catch(e => { console.error(e); process.exit(1); });
