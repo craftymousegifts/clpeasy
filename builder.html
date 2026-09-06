@@ -2736,6 +2736,24 @@ function loadLabelRecord(e){
   }
   onProductTypeChange();renderTags();updateLabel();
   goToStep(1);
+  // Regression fix (2026-09-05, reported against Preview #105 commit 6087b05):
+  // renderSaved() is the ONLY place that computes and applies the contextual
+  // #print-sheet-link/#print-sheet-link-preview ("Print multiple"/Composer
+  // action for the label CURRENTLY open in the builder) -- see renderSaved()
+  // below, which reads editingLabelId at the moment it runs. It is called
+  // once during initSavedLabelLibrary(), but that call happens BEFORE
+  // _clpHandleOpenParam() -> loadLabelAndGotoStep5() -> loadLabelRecord()
+  // (this function) ever sets editingLabelId for a label opened via
+  // builder.html?label=<id> (from My Labels' Open link, the internal
+  // "Your label library" panel's Load button, or the legacy ?open=<index>
+  // migration path -- all three funnel through this function). Without a
+  // second call here, the composer link stays stuck at its pre-load
+  // (editingLabelId===null) state -- hidden, with no href -- even though
+  // editingLabelId, S and the Label Preview SVG are by now all correctly
+  // populated. This re-call matches the existing double-call pattern this
+  // file already uses for the same class of "value set after the first
+  // render" ordering issue (see restoreBizDetails()/initAuth()).
+  renderSaved();
 }
 
 // Checkpoint B, requirement 2: unknown/deleted/malformed ids never fall
@@ -2791,6 +2809,21 @@ function forceGoToStep(n){
   updateLabel();
   renderBuilderAccordion();
   window.scrollTo(0,0);
+  // Regression fix (2026-09-05, reported against Preview #105 commit 6087b05):
+  // #print-sheet-link-preview (the Step-5-only copy of the contextual Print
+  // Sheet Composer action shown in the sticky Label Preview panel) is gated
+  // in renderSaved() on BOTH editingLabelId AND S.step===5 together. Both
+  // loadLabelAndGotoStep5() and the legacy ?open= migration path in
+  // _clpHandleOpenParam() call loadLabelRecord() (which sets editingLabelId
+  // and, since the fix above, already re-calls renderSaved()) BEFORE this
+  // function ever sets S.step to its final value -- so that first
+  // renderSaved() call always sees the pre-navigation S.step and leaves
+  // #print-sheet-link-preview hidden even once a label is genuinely open.
+  // forceGoToStep() is the single place S.step reaches its final value for
+  // every current label-load path, so re-calling the same shared
+  // renderSaved() here (no new load path, no delay) is the correct point to
+  // recompute it once both conditions are actually true.
+  renderSaved();
 }
 
 // Checkpoint B, requirement 6: same canonical LabelRenderer.getPhysicalSpec()

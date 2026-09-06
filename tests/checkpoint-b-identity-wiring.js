@@ -145,6 +145,14 @@ async function openMyLabels(opts){
   }
 
   // ── 2. Stable-ID open/edit (builder.html?label=<id>) ────────────────
+  // Regression coverage for the Preview #105 / commit 6087b05 report:
+  // opening builder.html?label=<id> must not just land on Step 5 with the
+  // right URL -- editingLabelId, the full builder state, the rendered SVG
+  // preview content, and the contextual Print Sheet Composer action must
+  // all be correctly populated too, and this must hold up even though
+  // renderSaved() (which computes the Composer link) is first called
+  // earlier during initSavedLabelLibrary(), before _clpHandleOpenParam()
+  // has resolved LabelLibrary.init() and called loadLabelRecord().
   {
     const idA = fakeId(), idB = fakeId();
     const seed = [fixture({ id:idA, scentName:'Label A' }), fixture({ id:idB, scentName:'Label B' })];
@@ -152,7 +160,54 @@ async function openMyLabels(opts){
     assert.strictEqual(document.getElementById('scent-name').value, 'Label B', '?label=<id> must open exactly that record');
     assert.strictEqual(window.eval('editingLabelId'), idB, 'opening via ?label= must set editingLabelId to that record\'s id');
     assert.strictEqual(window.eval('approvedBuilderStep'), 5, '?label= deep link must land on Step 5, same as the legacy ?open= shim did');
-    ok('stable-ID open/edit: builder.html?label=<id> opens the exact record and sets editingLabelId');
+
+    // Preview must genuinely render this record's content via the shared
+    // renderer (buildSVG()/LabelRenderer.renderLabel()), not merely land on
+    // Step 5 with stale/blank/default content. jsdom never computes layout
+    // (offsetParent is always null -- see updateLabel()'s visibility gate
+    // around #label-svg-container), so the actual DOM write into
+    // #label-svg-container cannot be observed in this harness; calling the
+    // same shared renderer entry point the real page calls is the
+    // established way this suite already verifies rendered content (see
+    // tests/builder-regression.js's window.buildSVG(false) assertions).
+    const svg = window.buildSVG(false);
+    assert(svg.includes('Label B'), 'the Label Preview SVG must contain the opened record\'s actual scent name, not blank/default/other-record content');
+    assert(!svg.includes('Label A'), 'the Label Preview SVG must not contain a different record\'s content');
+
+    // Contextual Print Sheet Composer / "Print multiple" action must now be
+    // visible and point at this exact record.
+    const psLink = document.getElementById('print-sheet-link');
+    const psLinkPreview = document.getElementById('print-sheet-link-preview');
+    assert.notStrictEqual(psLink.style.display, 'none', 'the contextual Print Sheet Composer action (#print-sheet-link) must be visible once a saved label is opened via ?label=<id>');
+    assert.strictEqual(psLink.getAttribute('href'), 'print.html?label=' + encodeURIComponent(idB), 'the contextual Composer action must link to print.html?label=<the same encoded id>');
+    assert.notStrictEqual(psLinkPreview.style.display, 'none', 'the Step-5 preview-panel copy of the contextual Composer action (#print-sheet-link-preview) must also be visible on Step 5');
+    assert.strictEqual(psLinkPreview.getAttribute('href'), 'print.html?label=' + encodeURIComponent(idB), 'the Step-5 contextual Composer action must also link to print.html?label=<the same encoded id>');
+    ok('stable-ID open/edit: builder.html?label=<id> opens the exact record, sets editingLabelId, renders that record\'s content, and shows the contextual Composer action with the correct URL');
+  }
+
+  // ── 2b. Manually clicking "Open" from a rendered My Labels card ─────
+  // Proves the actual rendered anchor in my-labels.html (not just a
+  // hand-built ?label=<id> query string) leads to the identical correct
+  // result end to end.
+  {
+    const idA = fakeId(), idB = fakeId();
+    const seed = [fixture({ id:idA, scentName:'Label A' }), fixture({ id:idB, scentName:'Label B' })];
+    const { document: myLabelsDoc } = await openMyLabels({ seed });
+    const openLink = myLabelsDoc.querySelector(`a[href*="${encodeURIComponent(idB)}"]`);
+    assert(openLink, 'My Labels must render an "Open" link for the seeded record');
+    assert(/^builder\.html\?label=/.test(openLink.getAttribute('href')), 'the rendered Open link must point at builder.html?label=<id>, not an index-based or other URL');
+    const openHref = openLink.getAttribute('href');
+    const search = openHref.slice(openHref.indexOf('?'));
+
+    const { window, document } = await openBuilder({ seed, search });
+    assert.strictEqual(document.getElementById('scent-name').value, 'Label B', 'following the rendered My Labels Open link must open the exact same record');
+    assert.strictEqual(window.eval('editingLabelId'), idB, 'following the rendered My Labels Open link must set editingLabelId correctly');
+    assert.strictEqual(window.eval('approvedBuilderStep'), 5, 'following the rendered My Labels Open link must land on Step 5');
+    assert(window.buildSVG(false).includes('Label B'), 'following the rendered My Labels Open link must render the correct record\'s content');
+    const psLink = document.getElementById('print-sheet-link');
+    assert.notStrictEqual(psLink.style.display, 'none', 'following the rendered My Labels Open link must also show the contextual Composer action');
+    assert.strictEqual(psLink.getAttribute('href'), 'print.html?label=' + encodeURIComponent(idB), 'following the rendered My Labels Open link must give the Composer action the correct URL');
+    ok('manually clicking Open from a rendered My Labels card produces the identical correct route, state, preview content and Composer action as a direct ?label=<id> open');
   }
 
   // ── 3. Unknown/deleted/malformed id never opens index 0 or another label ─
@@ -162,7 +217,10 @@ async function openMyLabels(opts){
     const { window, document } = await openBuilder({ seed, search:`?label=${badId}` });
     assert.notStrictEqual(document.getElementById('scent-name').value, 'Should Not Open', `unknown/malformed id (${badId}) must never silently fall back to index 0 / any other label`);
     assert.strictEqual(window.eval('approvedBuilderStep'), 1, `unknown/malformed id (${badId}) must leave the wizard at Step 1, not force it to Step 5`);
-    ok(`unknown/deleted/malformed id (${badId}) never opens index 0 or another label`);
+    assert.strictEqual(window.eval('editingLabelId'), null, `unknown/malformed id (${badId}) must never set editingLabelId to any record`);
+    const psLink = document.getElementById('print-sheet-link');
+    assert.strictEqual(psLink.style.display, 'none', `unknown/malformed id (${badId}) must never expose the contextual Composer action for any other record`);
+    ok(`unknown/deleted/malformed id (${badId}) never opens index 0 or another label, and never exposes the Composer action`);
   }
 
   // ── 4. Legacy ?open=<index> strictly resolved + URL rewritten ───────
