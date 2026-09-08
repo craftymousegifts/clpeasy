@@ -7,6 +7,16 @@
 <meta name="description" content="View, manage and reuse your saved CLP labels.">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Checkpoint B (connected print-workflow task, 1 Sep 2026): shared
+     saved-label identity/storage module -- same file builder.html now
+     loads, so both pages read/write the identical migrated, id-bearing
+     collection through one coordinated path rather than two separate
+     ad-hoc implementations. label-render.js is loaded too, ONLY so this
+     page can show each card's canonical physical dimensions via
+     LabelRenderer.getPhysicalSpec() (requirement 6) -- it is not used
+     for label rendering/export here. -->
+<script src="label-library.js"></script>
+<script src="label-render.js"></script>
 <style>
 :root{
   --teal:#4C9BB0;--teal-dark:#3a7d8f;--teal-light:#d6eef4;
@@ -168,10 +178,15 @@ select.sel{padding:10px 30px 10px 14px;border:1.5px solid var(--border);border-r
 .label-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
 .tag{font-size:11px;font-weight:600;background:var(--off);border:1px solid var(--border);border-radius:999px;padding:3px 9px;color:var(--muted);}
 .label-updated{font-size:12px;color:var(--muted);}
-.label-btns{display:flex;gap:8px;margin-top:2px;}
-.label-btns .btn-outline{padding:8px 10px;}
-.icon-btn{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
-.icon-btn.danger:hover{border-color:var(--red);color:var(--red);}
+.label-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px;}
+.label-btns .btn{padding:8px 12px;white-space:nowrap;}
+/* Correction batch: Print multiple is the primary teal action (.btn-primary,
+   reused as-is); Open/Duplicate stay neutral/secondary (.btn-outline,
+   unchanged); Delete gets a recognisably destructive but not alarming
+   at-rest style -- red text on the same neutral outline, filling lightly
+   red only on hover/focus, never a solid red card. */
+.label-btns .btn-outline.danger{color:var(--red);}
+.label-btns .btn-outline.danger:hover,.label-btns .btn-outline.danger:focus-visible{background:#FEF2F2;border-color:var(--red);color:var(--red);}
 
 .empty-state{background:white;border:1.5px dashed var(--border);border-radius:16px;padding:60px 24px;text-align:center;color:var(--muted);}
 .empty-state .btn{margin-top:14px;}
@@ -220,6 +235,7 @@ a.trust-item:hover .trust-icon{background:var(--teal);color:white;}
       <a href="dashboard.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg></span>Dashboard</a>
       <a href="builder.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>Create Label</a>
       <a href="my-labels.html" class="sidebar-nav-item active" aria-current="page" onclick="return false;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5a1 1 0 0 1 1-1h4.7l2 2.2h8.3a1 1 0 0 1 1 1V18a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1Z"/></svg></span>My Labels</a>
+      <a href="print.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8.5V4.5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v4"/><rect x="5" y="8.5" width="14" height="7" rx="1.5"/><path d="M7 14.5v4a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-4"/></svg></span>Print Sheet Composer</a>
       <a href="knowledge.html" target="_blank" rel="noopener" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5c-1.6-1.3-4-2-6.5-2A2 2 0 0 0 3.5 6.5V17c2.6 0 5 .7 6.5 2 1.5-1.3 3.9-2 6.5-2s2-.9 2-.9V6.5c0-1.1-.9-2-2-2-2.5 0-4.9.7-6.5 2Z"/><path d="M12 6.5V19"/></svg></span>Knowledge Base</a>
       <a href="account.html" target="_blank" rel="noopener" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.4-3.6 4.3-5.5 7.5-5.5s6.1 1.9 7.5 5.5"/></svg></span>Account</a>
       <a href="support.html" target="_blank" rel="noopener" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 1 3.3 6.4L4 20l1.3-3.6A7.96 7.96 0 0 1 4 12Z"/></svg></span>Support</a>
@@ -291,14 +307,22 @@ const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 let currentUser = null;
 
-// ── Same per-account library storage used by builder.html's label
-// library panel — read-only reuse here (My Labels never writes labels
-// itself except duplicate/delete, both of which reuse the identical
-// storage shape builder.html already produces via saveLabel()). ──
+// ── Checkpoint B: the labels array itself is now owned by the shared
+// LabelLibrary module (same namespace scheme, same underlying
+// clpeasy_labels__u_<ns> key builder.html already used) -- getSaved()
+// here is just a thin, page-local alias over LabelLibrary.getSaved() so
+// the rest of this file's existing call sites don't all need renaming.
+// It must only ever be called AFTER LabelLibrary.init() has resolved
+// (see initPage() below) -- LabelLibrary.getSaved() itself throws a
+// clear error otherwise, which is the correct fail-closed behaviour.
+// persistSaved(whole array) is gone: every real mutation below now goes
+// through LabelLibrary.mutate(), never a blind whole-array overwrite.
+// Folders are a separate, unrelated data structure (clpeasy_folders__u_<ns>,
+// keyed by folder name, not an array of id-bearing labels) untouched by
+// this checkpoint -- libNS()/libKey() are kept for that.
 function libNS(){ return (currentUser && currentUser.id) ? currentUser.id : 'guest'; }
 function libKey(base){ return base + '__u_' + libNS(); }
-function getSaved(){try{return JSON.parse(localStorage.getItem(libKey('clpeasy_labels'))||'[]');}catch(e){return[];}}
-function persistSaved(arr){localStorage.setItem(libKey('clpeasy_labels'),JSON.stringify(arr));}
+function getSaved(){ return LabelLibrary.getSaved(); }
 function getFolders(){try{return JSON.parse(localStorage.getItem(libKey('clpeasy_folders'))||'{}');}catch(e){return{};}}
 
 const PRODUCT_FOLDER_MAP={
@@ -360,17 +384,54 @@ function labelThumb(e){
   return `<div class="label-thumb" style="background:${color}">${initial}</div>`;
 }
 
+// review (Checkpoint B): no array index is tracked or carried through
+// here any more -- every saved record already carries its own stable
+// `id` (assigned by LabelLibrary), which is what filtering/sorting/
+// pagination/card-rendering identify it by from here on.
 function getFilteredSorted(){
-  let arr=getSaved().map((e,i)=>({e,i}));
-  if(activeFilter==='_uncat') arr=arr.filter(({e})=>!isFolderActive(getLabelFolder(e.productType)));
-  else if(activeFilter!=='all') arr=arr.filter(({e})=>getLabelFolder(e.productType)===activeFilter);
+  let arr=getSaved();
+  if(activeFilter==='_uncat') arr=arr.filter(e=>!isFolderActive(getLabelFolder(e.productType)));
+  else if(activeFilter!=='all') arr=arr.filter(e=>getLabelFolder(e.productType)===activeFilter);
   const q=(document.getElementById('ml-search').value||'').trim().toLowerCase();
-  if(q) arr=arr.filter(({e})=>(e.scentName||'').toLowerCase().includes(q)||(e.productType||'').toLowerCase().includes(q));
+  if(q) arr=arr.filter(e=>(e.scentName||'').toLowerCase().includes(q)||(e.productType||'').toLowerCase().includes(q));
   const sort=document.getElementById('ml-sort').value;
-  if(sort==='az') arr.sort((a,b)=>(a.e.scentName||'').localeCompare(b.e.scentName||''));
-  else arr.sort((a,b)=>parseSavedAt(b.e.savedAt)-parseSavedAt(a.e.savedAt));
+  if(sort==='az') arr.sort((a,b)=>(a.scentName||'').localeCompare(b.scentName||''));
+  else arr.sort((a,b)=>parseSavedAt(b.savedAt)-parseSavedAt(a.savedAt));
   return arr;
 }
+
+// Checkpoint B, requirement 6 (DISPLAY CORRECTIONS): the old tag text was
+// `${e.size}mm ${e.shape}`, which for a custom-sized label (e.size is the
+// literal string 'custom') rendered as the "custommm rectangle" bug. This
+// now always derives the real physical geometry from the one canonical
+// LabelRenderer.getPhysicalSpec() (same function print.html's Composer will
+// use in a later checkpoint for compatibility matching), so preset and
+// custom labels are displayed identically and correctly -- "Circle · 52 mm",
+// "Square · 60 × 60 mm", "Rectangle · 57 × 99 mm". A malformed/unreadable
+// record fails safe to the old raw-field text rather than throwing out of
+// the card render.
+function formatMm(n){
+  if(typeof n!=='number'||!Number.isFinite(n)) return '?';
+  // Exact decimal millimetres are preserved (requirement 6) -- this only
+  // trims incidental floating-point noise (e.g. 59.999999999996), never
+  // rounds a genuinely non-integer stored value.
+  const r=Math.round(n*100)/100;
+  return String(r);
+}
+function dimensionLabel(e){
+  try{
+    const spec=LabelRenderer.getPhysicalSpec(e);
+    const shapeName=spec.shape.charAt(0).toUpperCase()+spec.shape.slice(1);
+    if(spec.shape==='circle') return `${shapeName} · ${formatMm(spec.diameterMm)} mm`;
+    return `${shapeName} · ${formatMm(spec.widthMm)} × ${formatMm(spec.heightMm)} mm`;
+  }catch(err){
+    return (e.size?String(e.size)+'mm ':'')+(e.shape||'');
+  }
+}
+
+// Wired into each card's "Print multiple" action below -- always the
+// card's own stable id, never its position on the page/in the array.
+function buildPrintSheetUrl(id){ return 'print.html?label='+encodeURIComponent(id); }
 
 function renderGrid(){
   const all=getFilteredSorted();
@@ -397,7 +458,11 @@ function renderGrid(){
   const start=(currentPage-1)*PAGE_SIZE;
   const pageItems=all.slice(start,start+PAGE_SIZE);
 
-  area.innerHTML=`<div class="label-grid">${pageItems.map(({e,i})=>`
+  // Checkpoint B, requirement 5: every card is identified by its stable
+  // `id`, never by its position in this page/array. Duplicate/Delete carry
+  // that id only via data-label-id (never interpolated into inline JS --
+  // see the single delegated listener on #grid-area below).
+  area.innerHTML=`<div class="label-grid">${pageItems.map(e=>`
     <div class="label-card">
       <div class="label-card-top">
         ${labelThumb(e)}
@@ -405,15 +470,16 @@ function renderGrid(){
           <div class="label-name">${escapeHtml(e.scentName||'Untitled')}</div>
           <div class="label-tags">
             <span class="tag">${escapeHtml(e.productType||'—')}</span>
-            <span class="tag">${escapeHtml(String(e.size||''))}${e.size?'mm ':''}${escapeHtml(e.shape||'')}</span>
+            <span class="tag">${escapeHtml(dimensionLabel(e))}</span>
           </div>
         </div>
       </div>
       <div class="label-updated">Updated ${escapeHtml(e.savedAt||'—')}</div>
       <div class="label-btns">
-        <a href="builder.html?open=${i}" class="btn btn-outline btn-sm" style="flex:1;justify-content:center;">Open</a>
-        <button class="btn btn-outline icon-btn" title="Duplicate" onclick="duplicateLabel(${i})">⧉</button>
-        <button class="btn btn-outline icon-btn danger" title="Delete" onclick="deleteLabel(${i})">🗑</button>
+        <a href="builder.html?label=${encodeURIComponent(e.id)}" class="btn btn-outline btn-sm">Open</a>
+        <a href="${buildPrintSheetUrl(e.id)}" class="btn btn-primary btn-sm">Print multiple</a>
+        <button class="btn btn-outline btn-sm" data-action="duplicate" data-label-id="${escapeHtml(e.id)}">Duplicate</button>
+        <button class="btn btn-outline btn-sm danger" data-action="delete" data-label-id="${escapeHtml(e.id)}">Delete</button>
       </div>
     </div>`).join('')}</div>`;
 
@@ -428,36 +494,62 @@ function renderGrid(){
   pag.innerHTML=`<div class="pagination-info">Showing ${from} to ${to} of ${all.length} labels</div><div class="pagination-btns">${btns}</div>`;
 }
 
+// Checkpoint B, requirement 5: one delegated listener on the (static)
+// grid container, bound once -- #grid-area's own children are replaced on
+// every renderGrid() call above, but the container element itself is not,
+// so this survives every re-render without needing to be re-attached.
+(function(){
+  const gridArea=document.getElementById('grid-area');
+  if(!gridArea) return;
+  gridArea.addEventListener('click', function(ev){
+    const btn=ev.target.closest('[data-action]');
+    if(!btn||!gridArea.contains(btn)) return;
+    const id=btn.getAttribute('data-label-id');
+    const action=btn.getAttribute('data-action');
+    if(!id) return;
+    if(action==='duplicate') duplicateLabelById(id);
+    else if(action==='delete') deleteLabelById(id);
+  });
+})();
+
 function goPage(p){ currentPage=p; renderGrid(); }
 
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-// Delete reuses the exact same array shape/index builder.html's Label
-// Library panel deletes from — same confirm(), same splice+persist.
-function deleteLabel(i){
+// Checkpoint B, requirement 5: id-based delete via the coordinated
+// mutate() API -- removes only the matching id, never a positional splice,
+// so it can never be thrown off by another tab's concurrent edit.
+async function deleteLabelById(id){
   if(!confirm('Delete this saved label?'))return;
-  const arr=getSaved();arr.splice(i,1);persistSaved(arr);
+  await LabelLibrary.mutate(function(current){
+    return current.filter(function(x){ return x.id!==id; });
+  });
   renderFolderTabs();renderGrid();
 }
 
-// NEW — duplicateLabel() did not exist before (builder.html's library
-// panel only ever had Load/Delete). Clones the entry, appends a
-// "(Copy)" suffix so it never collides with saveLabel()'s
-// scentName+productType dedupe match, and appends to the same array.
-function duplicateLabel(i){
-  const arr=getSaved();
-  const src=arr[i];
-  if(!src)return;
-  const copy=JSON.parse(JSON.stringify(src));
-  let baseName=copy.scentName||'Untitled';
-  baseName=baseName.replace(/ \(Copy( \d+)?\)$/,'');
-  let n=1, newName=baseName+' (Copy)';
-  const existingNames=new Set(arr.map(e=>e.scentName));
-  while(existingNames.has(newName)){ n++; newName=baseName+' (Copy '+n+')'; }
-  copy.scentName=newName;
-  copy.savedAt=new Date().toLocaleDateString('en-GB');
-  arr.push(copy);
-  persistSaved(arr);
+// duplicateLabelById() did not exist before as a page action (builder.html's
+// library panel only ever had Load/Delete). Generates a fresh id ONCE,
+// before calling mutate() (per label-library.js's own documented pattern --
+// the mutator can be invoked more than once on retry, so id generation
+// must not happen inside it), then clones the source record found by id,
+// strips its old identity, applies the same "(Copy)"/"(Copy N)" name-suffix
+// logic as before, and appends under the new id.
+async function duplicateLabelById(id){
+  const freshId=LabelLibrary.generateId();
+  await LabelLibrary.mutate(function(current){
+    const src=current.find(function(x){ return x.id===id; });
+    if(!src) return LabelLibrary.NO_CHANGE;
+    const copy=JSON.parse(JSON.stringify(src));
+    copy.id=freshId;
+    let baseName=copy.scentName||'Untitled';
+    baseName=baseName.replace(/ \(Copy( \d+)?\)$/,'');
+    let n=1, newName=baseName+' (Copy)';
+    const existingNames=new Set(current.map(function(x){ return x.scentName; }));
+    while(existingNames.has(newName)){ n++; newName=baseName+' (Copy '+n+')'; }
+    copy.scentName=newName;
+    copy.savedAt=new Date().toLocaleDateString('en-GB');
+    return current.concat([copy]);
+  });
   renderFolderTabs();renderGrid();
 }
 
@@ -466,7 +558,31 @@ async function signOut(){
   window.location.href='index.html';
 }
 
+// Checkpoint B, requirement 1: shown immediately, before auth/library
+// resolve, so the page never flashes an empty "no labels" grid while it's
+// actually still loading. Kept intentionally lightweight -- no spinner
+// library, just the same empty-state container renderGrid() already uses.
+function showLibraryLoadingState(){
+  const area=document.getElementById('grid-area');
+  if(area) area.innerHTML=`<div class="empty-state"><div style="font-size:13px;">Loading your labels…</div></div>`;
+}
+// Checkpoint B, requirement 1: a recoverable inline error -- library init
+// failing (storage unavailable, a corrupt collection that fails migration,
+// etc.) must not leave the page silently stuck on the loading state above,
+// and must not be treated as "zero labels" (that would risk a user acting
+// on an empty grid and, e.g., re-creating labels that actually still exist).
+function showLibraryErrorState(err){
+  const area=document.getElementById('grid-area');
+  if(area) area.innerHTML=`<div class="empty-state">
+    <div style="font-weight:700;">Your labels couldn't be loaded</div>
+    <div style="font-size:13px;margin-top:4px;">${escapeHtml((err&&err.message)||'Please try again.')}</div>
+    <button class="btn btn-primary" onclick="initPage()">Try again</button>
+  </div>`;
+  document.querySelector('.pagination')?.remove();
+}
+
 async function initPage(){
+  showLibraryLoadingState();
   try{
     const { data:{ session } } = await sb.auth.getSession();
     if(!session){
@@ -508,8 +624,29 @@ async function initPage(){
     window.location.href='auth.html?mode=signin&next=my-labels.html';
     return;
   }
+  // Checkpoint B, requirement 1: the confirmed namespace is only known once
+  // auth has resolved above (this page has no guest mode -- it redirects
+  // to sign-in otherwise) -- LabelLibrary is namespaced and initialised
+  // here, never before, so the guest/pre-auth library is never read even
+  // momentarily.
+  try{
+    LabelLibrary.setNamespace(libNS());
+    await LabelLibrary.init();
+  }catch(e){
+    showLibraryErrorState(e);
+    return;
+  }
   renderFolderTabs();
   renderGrid();
+  // Checkpoint B, requirement 8: re-render safely whenever another tab
+  // changes the library. This page holds no in-progress form state (unlike
+  // Builder), so an unconditional re-render on every change is safe here.
+  // Guarded so re-running initPage() (the "Try again" retry above) never
+  // registers a second listener.
+  if(!window._clpMyLabelsOnChangeRegistered){
+    window._clpMyLabelsOnChangeRegistered=true;
+    LabelLibrary.onChange(function(){ renderFolderTabs(); renderGrid(); });
+  }
 }
 initPage();
 </script>
