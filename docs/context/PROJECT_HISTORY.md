@@ -108,6 +108,63 @@ reflect what the actual label contains.
 
 Root-caused and fixed 29 Aug 2026 — see session log below for details.
 
+## Post-Composer mandatory backlog — recorded 1 Sep 2026
+
+**Not started. Do not begin until the full connected Print Sheet Composer
+workflow (Checkpoints A–D of the connected print-workflow task) has
+passed, been reviewed, tested and safely merged.** Recorded here at
+Michaela's explicit instruction, given during Checkpoint A, as a
+record-only entry — no files were edited, no branch created, and
+Checkpoints A–D were not interrupted to record this.
+
+### Audit GB CLP precautionary-statement relevance and selectable wording
+
+**Reason:** the current renderer displays P261 as "Avoid breathing vapours
+and dust." P261's statutory generic wording contains selectable exposure
+routes ("Avoid breathing dust/fume/gas/mist/vapours/spray."). For a
+finished consumer candle, "vapours and dust" must not be automatically
+selected merely because a fragrance contribution document supplies P261.
+GB CLP requires the supplier to select precautions appropriate to the
+finished mixture, intended use, physical form and packaging; clearly
+unnecessary or redundant P-statements may need to be omitted under
+Article 28. The same concern applies to statements such as P272
+(contaminated work clothing), P280 (selectable protective equipment), and
+other statements that may be occupational, conditional, redundant or
+inappropriate for a finished candle/wax melt/diffuser/room spray.
+
+**Task requirements, as specified:**
+- Research the current in-force GB CLP legal text using authoritative
+  sources only, primarily legislation.gov.uk and HSE.
+- Audit every P-code CLPeasy currently supports.
+- Record official wording, selectable terms, hazard-class links,
+  conditions for use, precedence/redundancy rules and permitted omission
+  conditions.
+- Separate legal wording from CLPeasy guidance.
+- Distinguish consumer candles, wax melts, reed diffusers and room sprays
+  by physical form and intended exposure.
+- Do not decide silently for the manufacturer.
+- For selectable statements such as P261 and P280, provide relevant
+  choices rather than automatically combining generic alternatives.
+- Never automatically convert slash-separated statutory alternatives into
+  "and".
+- Provide an explicit review/confirmation step and retain the user's
+  decision.
+- Check whether EUH208 is required or redundant where the finished
+  mixture is already classified H317.
+- Preserve exact supplier-provided statements where appropriate, but flag
+  them for finished-product relevance review.
+- Add authoritative citations and regression tests.
+- Obtain regulatory review before describing the output as legally
+  compliant.
+- Maintain CLPeasy wording "CLP Ready"; do not claim guaranteed
+  compliance.
+
+**Process:** start a separate branch/task for this once the print-workflow
+task above is fully merged. This is protected CLP/regulatory logic per the
+clpeasy-development working rules — do not self-adjudicate the regulatory
+question; surface uncertainty and obtain Michaela's/regulatory
+confirmation rather than asserting what the law requires.
+
 ## Session log — 29 Aug 2026 (part 6)
 
 **Fixed and verified live on clpeasy.com (commit `794ce24` on `main`):**
