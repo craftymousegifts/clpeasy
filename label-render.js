@@ -37,6 +37,35 @@
 
 const RENDERER_VERSION = '1.0.0';
 
+// ── MANDATORY-TEXT LEGIBILITY FLOOR ──────────────────────────────────────
+// Genuine physical x-height standard used for every mandatory CLP text
+// category (product identifier, business/supplier name, product type,
+// signal word, footer/address/phone/net-qty, hazard/precautionary/
+// sensitiser text). This is CLPeasy's OWN conservative product standard.
+// Current GB CLP has no statutory numeric x-height/font-size requirement --
+// only a qualitative "clearly legible" test. This figure happens to match
+// the x-height specified in the revised EU/NI CLP Regulation (EU) 2024/2865,
+// Annex I Table 1.3, for packaging not exceeding 0.5 litres -- but that EU/NI
+// requirement is not in force for Great Britain, and this constant must
+// never be presented (in code comments, UI copy, or reports) as a current
+// GB statutory minimum.
+const MANDATORY_XHEIGHT_MM = 1.2;
+// Real lowercase-x height as a fraction of declared SVG font-size, for the
+// production typeface (DM Sans). Measured 2026-09 in headless Chromium
+// against the actual @fontsource/dm-sans font files (canvas.measureText('x')
+// actualBoundingBoxAscent+actualBoundingBoxDescent), stable across 50px-
+// 1000px and identical at font-weight 400 and 600. Declared SVG font-size
+// and real rendered x-height are NOT the same thing: a floor expressed
+// directly in "font-size mm" silently delivers only about half the intended
+// physical x-height. This ratio corrects for that gap.
+const DM_SANS_XHEIGHT_RATIO = 0.515625;
+// The nominal font-size-equivalent (in the same mm-based units _pxPerMm
+// already converts elsewhere in this file) that actually delivers
+// MANDATORY_XHEIGHT_MM of REAL rendered x-height, once DM_SANS_XHEIGHT_RATIO
+// is accounted for. Every mandatory-text floor in this file must derive from
+// this constant rather than re-deriving its own nominal-mm figure.
+const MANDATORY_MIN_FS_MM_EQUIV = MANDATORY_XHEIGHT_MM / DM_SANS_XHEIGHT_RATIO;
+
 // ============================================================
 // IIFE namespace wrapper
 // ------------------------------------------------------------
@@ -468,7 +497,43 @@ const BCF_FLOOR_MM = 5;
 // _bcfRowH) is untouched.
 //   BCF_FOOTER_PAD_FRAC: top/bottom footer padding, each, as a fraction of
 //     botH -- trimmed from 0.06 to 0.03 first, per "reduce unnecessary
-//     footer padding/gaps before reducing other required content".
+//     footer padding/gaps before reducing other required content", then to
+//     0.01 (2026-09-07, see BCF_ROW_HEIGHT_RATIO below -- Michaela's
+//     explicit instruction was to prefer reducing the icon row's own
+//     decorative buffer over removing footer padding entirely, so this
+//     second trim is real but deliberately small, not zero).
+//   BCF_ROW_HEIGHT_RATIO: the icon row's reserved vertical footprint as a
+//     multiple of the icon's own size (1.0 = icon height; the remainder is
+//     pure decorative breathing room, not part of the BS EN 15494:2019 5mm
+//     floor itself -- BCF_FLOOR_MM). Was a fixed 1.35 (a 35% buffer:
+//     roughly 10% above the icon, 25% below it, before the footer text
+//     zone starts). Real Chromium rendering + getBBox measurement (2026-
+//     09-07, Michaela's fail-closed footer-overlap investigation) proved
+//     that on a 63mm circle/square candle with an ordinary 2-line footer
+//     (address + phone), the candle-safety icon row and the mandatory
+//     1.2mm-x-height/>=120%-line-spacing footer text are BOTH already
+//     pinned at their own absolute legal floors, yet together they still
+//     needed real, measured extra room the footer band (botH) did not
+//     provide -- a genuine shortfall, not a misordered allocation (icons
+//     already yield to text's minimum first, see _footerTextMinH below).
+//     Per Michaela's explicit decision, reduced toward ~15% (1.35 -> 1.15,
+//     matching her instruction almost exactly) as the PRIMARY lever, with
+//     BCF_FOOTER_PAD_FRAC trimmed only a little further (0.03 -> 0.01) as
+//     the secondary one -- together these close the shortfall with a small
+//     positive margin (~0.06-0.08mm, node-verified against this file's own
+//     real geometry, including the circle/square shape insets -- circle's
+//     r=min(pw,ph)/2-1.5, square's s=min(pw,ph)-4 -- not an approximation).
+//     Every fixture this affects was re-verified: the ordinary 63mm circle
+//     and 63mm square (address+phone footer) now genuinely fit; the 52mm
+//     circle, the 63mm circle's full 5-part footer, the dense 63x44mm
+//     rectangle, and the EU30009 (99.1x57.3mm) 3-row footer all remain
+//     correctly blocked -- their shortfalls are far larger and unaffected
+//     by a change this size. This never reduces the icon below its own
+//     1.0x (i.e. never below BCF_FLOOR_MM=5mm) -- only the decorative
+//     margin around it -- and every candle shape/size was re-rendered and
+//     visually inspected after this change to confirm icons and footer
+//     text no longer read as crowded.
+const BCF_ROW_HEIGHT_RATIO = 1.15;
 //   BCF_FOOTER_SHARE_CAP: the icon row's own ceiling as a fraction of botH.
 //     First pass raised this from 0.5 to 0.66, but re-measuring against
 //     Michaela's 63x44mm rectangle fixture (the one AGENTS.md already
@@ -491,7 +556,7 @@ const BCF_FLOOR_MM = 5;
 //     (minFooterFS / footer-clipped) -- so this can never silently crush
 //     footer text below its required size, only trigger the same explicit
 //     block it always could.
-const BCF_FOOTER_PAD_FRAC = 0.03;
+const BCF_FOOTER_PAD_FRAC = 0.01;
 const BCF_FOOTER_SHARE_CAP = 0.85;
 
 // Resolves the correct physical pictogram size for one label, then returns
@@ -567,6 +632,33 @@ function renderLabel(rawData, opts){
   const warnings = [];
   const{mmW,mmH,pw,ph}=getLabelDims(data, opts);
   const cx=pw/2,cy=ph/2;
+  // Regression fix (2026-09-06, Michaela's manual review of Preview #105):
+  // the H/P/sensitiser hazard-text block already enforced a genuine
+  // physical x-height legibility floor (see _minLegibleFS further below),
+  // but business/supplier name, product type, signal word and the footer
+  // slots (address, phone, net quantity/burn time/batch) each used their
+  // own unrelated, purely aesthetic clamp(BASE*k, lo, hi) "floor" -- never
+  // converted from any physical mm standard -- and some of those could be
+  // shrunk even further afterward (the header-overlap guard) with no
+  // re-check against any floor at all. That let mandatory CLP text legally
+  // render far below the intended x-height while never being flagged or
+  // blocked. _pxPerMm/_mandatoryMinFS are hoisted here (from their former
+  // position further down) so every one of those sections can reference
+  // the SAME physical floor _minLegibleFS already uses, instead of each
+  // inventing its own.
+  //
+  // Correction (2026-09, read-only impact assessment + Michaela's decision):
+  // the constant below was `1.2 * _pxPerMm` -- i.e. it treated the 1.2mm
+  // figure as if it were the real rendered x-height. It is not: the real
+  // DM Sans x-height is only DM_SANS_XHEIGHT_RATIO (~51.6%) of declared
+  // SVG font-size, so this formula was actually delivering roughly half of
+  // MANDATORY_XHEIGHT_MM of genuine x-height. MANDATORY_MIN_FS_MM_EQUIV
+  // (defined near the top of this file) corrects for that ratio, so this
+  // is now a genuine, measured MANDATORY_XHEIGHT_MM physical floor -- see
+  // that constant's own comment for the GB CLP / EU CLP / CLPeasy-standard
+  // distinction, which applies here identically.
+  const _pxPerMm = pw / mmW;
+  const _mandatoryMinFS = Math.max(MANDATORY_MIN_FS_MM_EQUIV * _pxPerMm, 3.2);
   const isCircle=data.shape==='circle';
   const isSquare=data.shape==='square';
   const _isRect=!isCircle&&!isSquare;
@@ -710,7 +802,8 @@ function renderLabel(rawData, opts){
   // Reserve vertical slots as fractions of midH:
   // scent: 22%, type: 13%, signal: 16%, pictos: 14%, H-stmts: 13%, sens: 11%, gap: 11%
   // ── SLOT HEIGHTS — picto's red square is guaranteed ≥10mm/100mm² per CLP Regulation, wraps into extra rows if needed ──
-  const _pxPerMm = pw / mmW;
+  // _pxPerMm is now declared once, near the top of this function (see the
+  // 2026-09-06 legibility-floor fix comment above) -- kept in scope here.
   // opts._pictoMmOverride is the OUTER BOUNDING BOX (mm) -- the actual
   // rendered/space-reserving viewport size assetMarkup() draws into --
   // already resolved by the caller-side bounded search in
@@ -769,7 +862,22 @@ function renderLabel(rawData, opts){
     scentLines = wrapText(scent, scentSW*0.90, fs2, true, true);
     scentFS = fs2;
   }
-  const scentLH   = scentFS * 1.15;
+  // Regression fix (2026-09-06): the product name/identifier must never
+  // render below the physical 1.2mm x-height floor -- clamp up to it
+  // (accepting visual overlap if unavoidable, matching hazard text's own
+  // existing hard-floor behaviour) and flag if it still can't fit even at
+  // the floor so export is blocked rather than shipping illegible text.
+  let _scentTooSmall = false;
+  if(scentFS < _mandatoryMinFS){
+    scentFS = _mandatoryMinFS;
+    scentLines = wrapText(scent, scentSW*0.90, scentFS, true, true);
+    if(scentLines.some(line=>measureText(line, scentFS, true, true) > scentSW*0.90)) _scentTooSmall = true;
+  }
+  // Compliance fix: scent name is mandatory product-identifier text, so its
+  // line spacing must meet the same >=120% minimum every other mandatory
+  // text block uses (see the H/sensitiser/P line-height fix below, and
+  // bizName's existing *1.2 a few lines down) -- 1.15x was below that floor.
+  const scentLH   = scentFS * 1.2;
   const scentBlock= scentLines.length * scentLH;
 
   const scentY    = curY + slot.scent*0.5 - scentBlock*0.5 + scentLH*0.5;
@@ -801,6 +909,19 @@ function renderLabel(rawData, opts){
       _webYf = _bizYf + _bizFSf * 0.5 + _gap + _webFSf * 0.5;
     }
   }
+  // Regression fix (2026-09-06): business/supplier name is mandatory CLP
+  // text and must never render below the physical 1.2mm x-height floor --
+  // the overlap-guard shrink above (down to 50% of its already-computed
+  // size) had no re-check against any floor at all. Clamp back up to the
+  // floor (accepting visual overlap if unavoidable, matching hazard text's
+  // own existing hard-floor behaviour) and flag if it still can't fit even
+  // at the floor. The website line is not itself a mandatory CLP element,
+  // so it is left unclamped here.
+  let _bizNameTooSmall = false;
+  if(_bizFSf < _mandatoryMinFS){
+    _bizFSf = _mandatoryMinFS;
+    if(measureText(bizName, _bizFSf, true, true) > bizSW*0.84) _bizNameTooSmall = true;
+  }
 
   // ── HEADER → MID-BAND BREATHING ──────────────────────────────
   // The product type slot is nudged upward; combined with the website sitting
@@ -829,6 +950,15 @@ function renderLabel(rawData, opts){
   if(opts.typeFSOverride!=null){
     typeFS = Math.min(Math.max(opts.typeFSOverride, typeFSMin), typeFSMax);
   }
+  // Regression fix (2026-09-06): product type/identifier is mandatory CLP
+  // text -- never render below the physical 1.2mm x-height floor, whether
+  // the size came from auto-fit or a manual fine-tune override. Clamp up
+  // to the floor and flag if it still can't fit even there.
+  let _typeTooSmall = false;
+  if(typeFS < _mandatoryMinFS){
+    typeFS = _mandatoryMinFS;
+    if(measureText(type, typeFS, true, false) > typeSW*0.88) _typeTooSmall = true;
+  }
   const _typeFSBounds={min:typeFSMin,max:typeFSMax,auto:_typeFSAuto};
   const typeY   = curY + slot.type*0.5 + (_isRect?0:midH*0.15*(0.6-1));
   curY += slot.type;
@@ -841,6 +971,15 @@ function renderLabel(rawData, opts){
   const _sigFSAuto = sigFS;
   if(opts.sigFSOverride!=null){
     sigFS = Math.min(Math.max(opts.sigFSOverride, sigFSMin), sigFSMax);
+  }
+  // Regression fix (2026-09-06): the signal word is mandatory CLP text --
+  // never render below the physical 1.2mm x-height floor, whether the size
+  // came from auto-fit or a manual fine-tune override. Clamp up to the
+  // floor and flag if it still can't fit even there.
+  let _signalTooSmall = false;
+  if(sigFS < _mandatoryMinFS){
+    sigFS = _mandatoryMinFS;
+    if(measureText(sig, sigFS, true, false) > sigSW*0.76) _signalTooSmall = true;
   }
   const _sigFSBounds={min:sigFSMin,max:sigFSMax,auto:_sigFSAuto};
   const sigY    = curY + slot.signal*0.5 + (_isRect?0:midH*0.15*(0.55-1));
@@ -957,14 +1096,25 @@ function renderLabel(rawData, opts){
 
   const _curY0 = curY;
   const _hardBot = botY;                       // text must never cross this
-  // Minimum legible font = 1.2mm physical x-height, the working CLP legibility standard (pxPerMm = pw/mmW in this view).
-  const _minLegibleFS = Math.max(1.2 * _pxPerMm, 3.2);
+  // Minimum legible font = MANDATORY_XHEIGHT_MM genuine physical x-height
+  // (CLPeasy's own conservative legibility standard, not a current GB CLP
+  // statutory figure -- see MANDATORY_XHEIGHT_MM's own comment), corrected
+  // for the real DM Sans x-height/font-size ratio via
+  // MANDATORY_MIN_FS_MM_EQUIV (pxPerMm = pw/mmW in this view).
+  const _minLegibleFS = Math.max(MANDATORY_MIN_FS_MM_EQUIV * _pxPerMm, 3.2);
 
   // Single source of truth — lay the three blocks out exactly as they render.
   // Returns each block's lines, its first-line centre Y, and the Y after the
   // whole block. Used for both the fit test and the final render.
   function _layoutHazard(fs, y0){
-    const hLH=fs*1.25, sLH=fs*1.25, pLH=fs*1.15;
+    // Compliance fix: the revised EU/NI formatting rule that accompanies the
+    // genuine 1.2mm x-height floor specifies mandatory-text line spacing of
+    // at least 120% of font size. hLH/sLH already met that; pLH (1.15x) did
+    // not, so P-statement text could legally have been laid out slightly
+    // tighter than the standard CLPeasy has voluntarily adopted. Raised to
+    // match hLH/sLH exactly -- no line-height in this file may go below
+    // 1.2x for mandatory text; capacity must be found elsewhere, never here.
+    const hLH=fs*1.25, sLH=fs*1.25, pLH=fs*1.25;
     const _edgeMargin=2*pxPerMm; // fixed 2mm from the label edge, both sides
     let y=y0;
     let hLines=[];
@@ -1096,6 +1246,35 @@ function renderLabel(rawData, opts){
   if(phone)footerSlots.push({text:phone,bold:false,isPhone:true});
   if(detailParts.length)footerSlots.push({text:detailParts.join(' · '),bold:false});
 
+  // Fail-closed footer/BCF space-sharing fix (2026-09-07, Michaela's
+  // explicit "allocate sufficient footer height" requirement): computed
+  // BEFORE candle-safety icon sizing below so icons and mandatory footer
+  // text share the footer band fairly instead of icons always claiming
+  // their full aesthetic target (5.5-8mm, "nice to have, above the 5mm
+  // floor") first and text getting only whatever's left. That ordering is
+  // what caused a real, previously-undetected bug: for a large range of
+  // realistic candle sizes, icons alone consumed 80%+ of the footer band,
+  // leaving mandatory footer text less room than its own 1.2mm floor
+  // needed at >=120% line spacing -- fitFont() then silently returned the
+  // floor size anyway (it never returns below the floor it's given), so
+  // adjacent footer lines visually overlapped in real exports while
+  // renderLabel() still reported fits:true (see the vertical-overlap
+  // detection a few dozen lines below, `if(fs / 0.82 > slotLH)`, which
+  // catches this at render time; this block fixes the root cause so the
+  // overlap is avoided rather than merely detected wherever it's
+  // avoidable). _footerTextMinH mirrors _slotFSCap's exact ratio
+  // (row >= fs/0.82, i.e. >=~122% spacing) so the two stay in sync.
+  const _footerNSlotsEarly = Math.min(footerSlots.length, 3);
+  const _footerTextMinH = _footerNSlotsEarly > 0 ? _footerNSlotsEarly * (_mandatoryMinFS / 0.82) : 0;
+  // The footer band's total usable height (icons + text together), before
+  // either claims their share -- matches fTopPad/fBotPad's own _showBCF
+  // padding fraction exactly (both sides), computed early so the BCF
+  // sizing block below (and its exact duplicate further down, which must
+  // stay in sync with it -- see that block's own comment) can both cap
+  // the icon row against it without duplicating this padding arithmetic
+  // three times.
+  const _footerBandTotalEarly = botH - 2*(botH*BCF_FOOTER_PAD_FRAC);
+
 
 
   // ── FOOTER BAND: wrapped address support ─────────────────────
@@ -1118,15 +1297,23 @@ function renderLabel(rawData, opts){
     // BCF_FOOTER_SHARE_CAP of the footer band (matching the reservation
     // below).
     const _bcfMaxWidthSzPre  = sW * 0.82 / 6;
-    const _bcfMaxFooterSzPre = botH * BCF_FOOTER_SHARE_CAP / 1.35;
+    const _bcfMaxFooterSzPre = botH * BCF_FOOTER_SHARE_CAP / BCF_ROW_HEIGHT_RATIO;
     const _bcfPhysicalCapPre = Math.min(_bcfMaxWidthSzPre, _bcfMaxFooterSzPre);
     const _bcfFloorSzPre = BCF_FLOOR_MM * pxPerMm;
     if(_bcfFloorSzPre <= _bcfPhysicalCapPre){
+      // Icons may grow toward their aesthetic target, but never at the
+      // expense of mandatory footer text's own floor -- see
+      // _footerTextMinH/_footerBandTotalEarly above. Icons still never go
+      // below their own 5mm floor either way (the outer Math.max), so
+      // when there truly isn't room for both at their respective floors,
+      // icons keep the floor and text is what fails closed (footer-
+      // clipped), never the reverse and never a silent shrink of either.
+      const _bcfRoomForIconsPre = Math.max(_bcfFloorSzPre*BCF_ROW_HEIGHT_RATIO, _footerBandTotalEarly - _footerTextMinH);
       // Grow toward the target as far as the label's own width/footer room
       // (and the aesthetic per-icon width cap) allow, but never below the
       // legal floor -- matches the render block below exactly.
-      const _bcfMaxSzPre = Math.max(_bcfFloorSzPre, Math.min(sW * 0.07, _bcfTargetMmPre * pxPerMm, _bcfPhysicalCapPre));
-      _bcfRowH = _bcfMaxSzPre * 1.35; // matches the icons' actual vertical footprint
+      const _bcfMaxSzPre = Math.max(_bcfFloorSzPre, Math.min(sW * 0.07, _bcfTargetMmPre * pxPerMm, _bcfPhysicalCapPre, _bcfRoomForIconsPre/BCF_ROW_HEIGHT_RATIO));
+      _bcfRowH = _bcfMaxSzPre * BCF_ROW_HEIGHT_RATIO; // matches the icons' actual vertical footprint
     } else {
       _bcfTooSmall = true;
     }
@@ -1138,7 +1325,21 @@ function renderLabel(rawData, opts){
   const fBotPad = botH * (_showBCF ? BCF_FOOTER_PAD_FRAC : 0.06);
   const fUsable = botH - fTopPad - fBotPad - _bcfRowH; // EN15494 row reserved
   const maxFooterFS  = clamp(BASE*0.036, 3, 7.5);
-  const minFooterFS  = clamp(BASE*0.022, 2, 4.5);
+  // minFooterFS: retained for the historical record only -- both fitFont()
+  // calls in this footer block now floor at _mandatoryMinFS directly (the
+  // read-only-impact-assessment fix removed this variable's last remaining
+  // use, a second, much smaller floor in the final-fit recompute below,
+  // which could silently shrink already-clipped footer text well below the
+  // mandatory floor). Regression fix (2026-09-06, Michaela's manual review
+  // of Preview #105): footer text (business address, phone, net quantity/
+  // burn time/batch) must never render below the same physical x-height
+  // floor mandatory hazard text already used -- previously fitFont() was
+  // given only HALF of this unrelated, purely-aesthetic value as its floor,
+  // and "clipped" only fired below 40% of THAT, so mandatory footer text
+  // could legally render far smaller than the physical standard while
+  // never being flagged or blocked. No longer referenced; left in place
+  // rather than removed so this history stays attached to the constant.
+  const minFooterFS  = clamp(BASE*0.022, 2, 4.5); // eslint-disable-line no-unused-vars
 
   // Distribute the slots evenly across the usable footer height. Each slot is
   // centred in its own row; the font is capped to the row height so adjacent
@@ -1149,34 +1350,69 @@ function renderLabel(rawData, opts){
   const _footerBase = botY + fTopPad + _bcfRowH; // top of footer text zone (below EN row)
   const _slotFSCap  = slotLH * 0.82;             // hard vertical cap per row
   let footerElems = [];
+  let _footerClipped = false;
   footerSlots.slice(0, nSlots).forEach((slot, i)=>{
     const _isDetail = !slot.isPhone && i>0;
     const _fsMax  = Math.min(maxFooterFS * (slot.isPhone?1.05:_isDetail?1.15:1.0), _slotFSCap);
     const slotY   = _footerBase + slotLH * (i + 0.5);
     const chordAtY = Math.min(chordW(slotY, 0.09), sW * 0.88);
     const availW  = chordAtY * 0.88;
-    const fs = fitFont(slot.text, availW, _fsMax, Math.max(minFooterFS * 0.5, 1.5), slot.bold, false);
+    const fs = fitFont(slot.text, availW, _fsMax, _mandatoryMinFS, slot.bold, false);
+    // fitFont() never returns below the floor it's given (Math.max(sz,
+    // minPx)) -- but that alone doesn't prove the text actually FITS at
+    // that floor. Mandatory footer text (business address, phone, net
+    // quantity, batch/burn-time) must never bypass the physical
+    // legibility floor merely for being placed in the footer; if it still
+    // doesn't fit even at the floor, this label cannot legibly hold it and
+    // must fail closed (see `fits` below) -- never truncate or shrink
+    // further silently, and never silently drop the content either (it
+    // still renders, at the legible floor size, exactly like hazard text
+    // overflowing its hard bottom boundary).
+    if(measureText(slot.text, _mandatoryMinFS, slot.bold, false) > availW) _footerClipped = true;
+    // Vertical-overlap fix (2026-09-07, Michaela's explicit fail-closed
+    // requirement): the horizontal check above is not the only way footer
+    // text can fail to fit. fitFont() (see its own comment) never returns
+    // below the mandatory floor it's given, REGARDLESS of _fsMax/_slotFSCap
+    // -- so whenever _mandatoryMinFS is itself larger than _slotFSCap (the
+    // row height's own 82%-of-slotLH cap, chosen so slotLH/fs >= 1/0.82 =
+    // ~122%, i.e. this footer's own version of the >=120% mandatory line-
+    // spacing rule), `fs` silently comes back bigger than its row and the
+    // rendered line visually overlaps the next slot -- while every existing
+    // check here only ever looked at WIDTH, so `fits` still reported true.
+    // Detect that directly: does the size this slot actually rendered at
+    // fit back inside its own row at the same >=120%-equivalent spacing?
+    // If not, this label cannot legibly hold this footer at this size --
+    // fail closed exactly like the horizontal case just above (same
+    // warning, same contract: never truncate, never silently shrink below
+    // the floor or below 120% spacing, never silently move/reorder -- the
+    // text still renders, at its true mandatory size and position, so the
+    // overlap itself is visible evidence of the block, not hidden by it).
+    if(fs / 0.82 > slotLH) _footerClipped = true;
     footerElems.push({text: slot.text, fs, bold: slot.bold, isPhone: slot.isPhone||false, slotY});
   });
-  // Drop bottom slots if their font is unreadably tiny. This must never
-  // happen silently — U3 fix (2026-08-01, reviewed builder-critical-
-  // compliance-001): flag it so the caller can block export until the
-  // maker shortens their business/footer details or picks a larger label,
-  // per Michaela's explicit decision (block download, force a fix) rather
-  // than exporting a label with business/batch info missing.
-  let _footerClipped = false;
-  while(footerElems.length > 1 && footerElems[footerElems.length-1].fs < minFooterFS * 0.4){
-    footerElems.pop();
-    _footerClipped = true;
-  }
   const _footerLegibilityClipped = _footerClipped;
   // Y positions already set per-slot — no global recompute needed
   const footerRendered = footerElems.map(elem=>{
     if(elem.slotY > sBot - 1) return '';
     const chordAtY = Math.min(chordW(elem.slotY, 0.09), sW * 0.88);
     const availW = chordAtY * 0.88;
-    // Final fit at actual Y — catches any rounding
-    const fs = fitFont(elem.text, availW, elem.fs, Math.max(minFooterFS * 0.5, 1.5), elem.bold, false);
+    // Final fit at actual Y — catches any rounding. Bug fix (read-only
+    // impact assessment, 2026-09): this recompute previously floored at
+    // Math.max(minFooterFS*0.5, 1.5) -- a tiny, purely aesthetic value far
+    // below _mandatoryMinFS. Since chordW(elem.slotY,...) is deterministic
+    // and elem.slotY is unchanged from the first pass, availW here is
+    // identical to the first pass's -- so whenever the first pass had
+    // already hit the mandatory floor without fitting (elem.fs===
+    // _mandatoryMinFS and _footerClipped was set), this second fitFont call
+    // would silently keep shrinking past the mandatory floor, all the way
+    // down to ~1.5px, to make the text "fit" -- exactly the silent-shrink
+    // this floor exists to prevent. The rendered SVG never went below
+    // _mandatoryMinFS otherwise, so this was a real (if narrow) gap. The
+    // floor here must be _mandatoryMinFS, matching every other mandatory
+    // category and the hazard-text block: render AT the floor and accept
+    // visual overflow (already flagged via _footerClipped above) rather
+    // than shrinking further.
+    const fs = fitFont(elem.text, availW, elem.fs, _mandatoryMinFS, elem.bold, false);
     // CLP compliance: all supplier/footer text must be solid black, not muted.
     return`<text x="${cx}" y="${elem.slotY.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${fs.toFixed(2)}" font-weight="${elem.isPhone?'600':'400'}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(elem.text)}</text>`;
   }).join('');
@@ -1200,10 +1436,15 @@ function renderLabel(rawData, opts){
     // 5mm-floor rule, as the pre-calc above (must stay in sync -- _bcfTooSmall
     // being false here already guarantees the floor physically fits).
     const _bcfMaxWidthSz  = sW * 0.82 / 6;
-    const _bcfMaxFooterSz = botH * BCF_FOOTER_SHARE_CAP / 1.35;
+    const _bcfMaxFooterSz = botH * BCF_FOOTER_SHARE_CAP / BCF_ROW_HEIGHT_RATIO;
     const _bcfPhysicalCap = Math.min(_bcfMaxWidthSz, _bcfMaxFooterSz);
     const _bcfFloorSz = BCF_FLOOR_MM * _pxPerMm;
-    const _bcfMaxSz = Math.max(_bcfFloorSz, Math.min(sW * 0.07, _bcfTargetMm * _pxPerMm, _bcfPhysicalCap));
+    // Must stay in sync with the pre-calc's _bcfRoomForIconsPre above --
+    // same reasoning: icons share the footer band with mandatory text
+    // fairly rather than always claiming their full aesthetic target
+    // first (see _footerTextMinH/_footerBandTotalEarly's own comment).
+    const _bcfRoomForIcons = Math.max(_bcfFloorSz*BCF_ROW_HEIGHT_RATIO, _footerBandTotalEarly - _footerTextMinH);
+    const _bcfMaxSz = Math.max(_bcfFloorSz, Math.min(sW * 0.07, _bcfTargetMm * _pxPerMm, _bcfPhysicalCap, _bcfRoomForIcons/BCF_ROW_HEIGHT_RATIO));
     const _bcfGap   = _bcfMaxSz * 0.25;
     const _bcfTotW  = _nBcf * _bcfMaxSz + (_nBcf - 1) * _bcfGap;
     // Position at top of footer band with small padding
@@ -1215,7 +1456,7 @@ function renderLabel(rawData, opts){
       return assetMarkup(BCF_IMG[key], bx, by, _bcfMaxSz, opts.sharedDefs, 'bcf-'+key);
     }).join('');
     // Reserve exactly the icons' vertical footprint (matches the pre-calc).
-    _bcfRowH = _bcfMaxSz * 1.35;
+    _bcfRowH = _bcfMaxSz * BCF_ROW_HEIGHT_RATIO;
     _bcfSizeMm = _bcfMaxSz / _pxPerMm;
   }
 
@@ -1292,6 +1533,14 @@ function renderLabel(rawData, opts){
   if(_labelLegibilityWarn) warnings.push('hazard-text-overflow');
   if(_footerLegibilityClipped) warnings.push('footer-clipped');
   if(_bcfTooSmall) warnings.push('candle-safety-symbols-too-small');
+  // Regression fix (2026-09-06): mandatory text outside the hazard/footer
+  // blocks (product name, business name, product type, signal word) now
+  // gets the same physical-floor fail-closed treatment those blocks
+  // already had -- see _mandatoryMinFS above.
+  if(_scentTooSmall) warnings.push('scent-name-too-small');
+  if(_bizNameTooSmall) warnings.push('business-name-too-small');
+  if(_typeTooSmall) warnings.push('product-type-too-small');
+  if(_signalTooSmall) warnings.push('signal-word-too-small');
 
   const _hazardHalfW = chordW((_curY0+_L.endY)/2, 0.08)/2;
   const _footerHalfW = chordW((botY+ph)/2, 0.10)/2;
@@ -1344,15 +1593,118 @@ function renderLabel(rawData, opts){
     // requested, or _bcfTooSmall, see `warnings`), for transparency/testing.
     bcfSizeMm: _bcfSizeMm,
     bcfTooSmall: _bcfTooSmall,
+    // Regression fix (2026-09-06): per-category "hit the physical 1.2mm
+    // x-height floor and still doesn't fit" flags, exposed for
+    // transparency/testing alongside the existing footerClipped/bcfTooSmall.
+    scentTooSmall: _scentTooSmall,
+    businessNameTooSmall: _bizNameTooSmall,
+    productTypeTooSmall: _typeTooSmall,
+    signalWordTooSmall: _signalTooSmall,
   };
 
   // A label only fits if it clears every mandatory-content check, not just
   // the main hazard/precautionary overflow: footer clipping and unrecognised
   // H/P codes are equally disqualifying (an unrecognised code means the
   // label may be missing mandatory wording CLPeasy couldn't verify/render).
-  const fits = !_labelLegibilityWarn && !_footerLegibilityClipped && _unrecognizedCodes.length===0 && !_bcfTooSmall;
+  // Regression fix (2026-09-06): product name, business name, product type
+  // and signal word hitting the physical legibility floor and still not
+  // fitting are equally disqualifying -- see _mandatoryMinFS above.
+  const fits = !_labelLegibilityWarn && !_footerLegibilityClipped && _unrecognizedCodes.length===0 && !_bcfTooSmall
+    && !_scentTooSmall && !_bizNameTooSmall && !_typeTooSmall && !_signalTooSmall;
 
   return {svg, fits, warnings, metrics, rendererVersion: RENDERER_VERSION};
+}
+
+// ── SMALLEST FITTING SIZE — read-only "would a larger size work?" search ──
+// Fail-closed design (2026-09-07): when a label's real content cannot fit at
+// its genuine 1.2mm x-height / >=120% line-spacing / 2mm edge-margin / 10mm
+// GHS / 5mm candle-safety floors, CLPeasy blocks export rather than silently
+// shrinking anything further -- see the `fits`/`warnings` contract above,
+// unchanged by this function. This helper answers the natural follow-up
+// question ("what size WOULD work?") without ever touching the size itself:
+// it takes the exact same content and tries it, unchanged, at progressively
+// larger sizes of the SAME shape, through this same renderLabel() function --
+// never an estimate, never a guess, always a genuine fits:true render. It
+// never selects, applies, or defaults to a size; callers only ever display
+// its answer as a recommendation and the maker/customer must still act on
+// it themselves (Step 1 / editing the saved label), exactly like every other
+// export-blocking message already works.
+// Returns {shape, mmW, mmH} for the smallest size (by governing dimension)
+// that fits, or null if nothing up to the renderer's own 150mm ceiling (see
+// getLabelDims()) fits -- meaning the content itself needs to be reduced, or
+// supplementary labelling considered, not just a larger size.
+function findSmallestFittingSize(rawData, opts){
+  opts = opts || {};
+  // Only options that don't change the fit outcome by content may carry
+  // over -- manual fine-tune overrides (hazardFSOverride, scentFSOverride,
+  // hazardYOffset, etc.) were tuned for the CURRENT size and must never leak
+  // into a different candidate size's own auto-fit search, or the search
+  // would be testing the wrong thing.
+  const cleanOpts = {instanceId: opts.instanceId, bgColour: opts.bgColour};
+  const shape = rawData.shape;
+  const cur = getLabelDims(rawData, opts);
+  const MAX_MM = 150;   // matches getLabelDims()'s own hard ceiling
+  const MIN_MM = 52;    // CLPeasy's own supported minimum -- never recommend below it
+  // Genuine-size fix (2026-09-07, Michaela's explicit requirement): this
+  // function must only ever recommend a size the maker could actually go
+  // and select in Builder -- never an arbitrary decimal like "72x50.3mm"
+  // that isn't one of the two real size-card presets (52mm/63mm, whose
+  // rectangle height is always Math.round(mm*0.7) -- see builder.html's
+  // applySize()/getLabelDims() above, kept in exact sync) and wouldn't
+  // even be enterable as a Custom size (Builder's own custom-width/height
+  // fields parseInt() to whole mm, and isCustomSizeBelowSupportedMinimum()
+  // requires BOTH dimensions >=52mm for a Custom rectangle -- the two
+  // named presets are the only sizes exempt from that per-dimension rule).
+  // Named presets are tried first, in ascending size order; only when
+  // neither fits does this fall back to a genuine (integer, both-
+  // dimensions->=52mm) Custom size preserving the record's own aspect
+  // ratio, so a maker who deliberately chose a specific proportion (e.g.
+  // to match a real print-sheet template) isn't recommended a different
+  // one. Returns null -- never a guess -- when nothing up to 150mm works.
+  const PRESETS_MM = [52, 63];
+  function dimsForPreset(mm){
+    return shape === 'rectangle'
+      ? {mmW: mm, mmH: Math.round(mm*0.7)}
+      : {mmW: mm, mmH: mm};
+  }
+  for(const presetMm of PRESETS_MM){
+    const {mmW, mmH} = dimsForPreset(presetMm);
+    // Presets below the current size, or identical to it, were already
+    // ruled out (the label is blocked AT its current size, and a preset
+    // no bigger than that can only be smaller or the same) -- skip
+    // re-rendering them.
+    if(mmW <= cur.mmW && mmH <= cur.mmH) continue;
+    const candidate = Object.assign({}, rawData, {size: presetMm, customW: mmW, customH: mmH});
+    if(renderLabel(candidate, cleanOpts).fits) return {shape, mmW, mmH, source:'preset', presetMm};
+  }
+  if(shape === 'rectangle'){
+    const aspect = cur.mmH / cur.mmW; // preserve the maker's chosen proportions
+    const startW = Math.max(Math.floor(cur.mmW) + 1, 10);
+    for(let w = startW; w <= MAX_MM; w++){
+      // Whole mm only (matches what Builder's custom-width/height fields
+      // actually accept). Corrected 2026-09-07 (Michaela's explicit
+      // decision): a rectangle's real supported minimum is >=52mm on its
+      // LONG side and >=36mm on its SHORT side (either orientation), not
+      // >=52mm on both -- see isCustomSizeBelowSupportedMinimum()'s own
+      // comment. Skip any (w,h) that function would still block, so this
+      // never recommends a size the maker couldn't actually keep once they
+      // typed it in.
+      const h = Math.min(Math.max(Math.round(w * aspect), 10), MAX_MM);
+      if(isCustomSizeBelowSupportedMinimum(shape, w, h)) continue;
+      const candidate = Object.assign({}, rawData, {size:'custom', customW:w, customH:h});
+      if(renderLabel(candidate, cleanOpts).fits) return {shape, mmW:w, mmH:h, source:'custom', presetMm:null};
+    }
+    return null;
+  }
+  // circle/square: one governing dimension, already always a whole mm
+  // value with both dimensions equal -- inherently satisfies the same
+  // both-dimensions->=52mm rule Custom rectangles must meet.
+  const start = Math.max(Math.floor(cur.mmW) + 1, MIN_MM);
+  for(let mm = start; mm <= MAX_MM; mm++){
+    const candidate = Object.assign({}, rawData, {size:'custom', customW:mm, customH:mm});
+    if(renderLabel(candidate, cleanOpts).fits) return {shape, mmW:mm, mmH:mm, source:'custom', presetMm:null};
+  }
+  return null;
 }
 
 // ── PHYSICAL SPEC & TEMPLATE COMPATIBILITY (31 Aug 2026, Checkpoint A of
@@ -1536,14 +1888,58 @@ function checkCompatibility(labelSpec, templateSpec){
   });
 }
 
+// ── SHARED CUSTOM-SIZE MINIMUM (2026-09-07, Michaela's explicit decision) ──
+// CLPeasy's own supported minimum for a CUSTOM (non-preset) label size.
+// This is a product-level floor CLPeasy has chosen to support, not a claim
+// about what GB-CLP itself legally requires -- content still has to pass
+// this same file's own fit checks (fits/footer-clipped/hazard-text-overflow
+// etc) independently; a size clearing this floor is never a guarantee that
+// specific content will fit at it.
+//
+// Circle/square: unchanged -- a single dimension, CUSTOM_SIZE_MIN_MM (52mm)
+// or larger.
+//
+// Rectangle: previously required BOTH width AND height >=52mm, which
+// disagreed with CLPeasy's own long-standing named presets -- the 52mm and
+// 63mm rectangle size-cards have always produced 52x36mm and 63x44mm
+// (height = round(width*0.7)), both already below 52mm on the short side,
+// and showcase.html has long advertised further examples in the same
+// family (60x40mm, 70x50mm, 76x51mm) as if they were ordinary, supported
+// sizes. The old both->=52mm rule silently blocked a maker from typing in
+// exactly those advertised dimensions via Custom, even though the presets
+// and marketing copy already established them as real. Corrected to match
+// that existing precedent: a rectangle is supported from CUSTOM_RECT_
+// LONG_MIN_MM (52mm) on its LONG side and CUSTOM_RECT_SHORT_MIN_MM (36mm)
+// on its SHORT side, whichever way round the maker enters width/height
+// (portrait or landscape) -- verified against every advertised example:
+// 52x36 (52/36), 60x40 (60/40), 63x44 (63/44), 70x50 (70/50), 76x51
+// (76/51) all satisfy long>=52 && short>=36; 105x74 clears both floors by
+// a wide margin either way. This is the SINGLE shared source of truth for
+// this rule -- builder.html and print.html (Composer) both call this
+// function rather than each keeping their own copy, so they can never
+// silently drift apart again.
+const CUSTOM_SIZE_MIN_MM = 52;
+const CUSTOM_RECT_LONG_MIN_MM = 52;
+const CUSTOM_RECT_SHORT_MIN_MM = 36;
+function isCustomSizeBelowSupportedMinimum(shape, w, h){
+  w = Number(w); h = Number(h);
+  if(shape === 'rectangle'){
+    if(!Number.isFinite(w) || !Number.isFinite(h)) return true;
+    const long = Math.max(w, h), short = Math.min(w, h);
+    return !(long >= CUSTOM_RECT_LONG_MIN_MM && short >= CUSTOM_RECT_SHORT_MIN_MM);
+  }
+  return !(Number.isFinite(w) && w >= CUSTOM_SIZE_MIN_MM);
+}
+
   const LabelRenderer = {
-    renderLabel, normalizeLabel, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, P280_ITEMS, buildP280Wording,
+    renderLabel, normalizeLabel, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
     // GHS pictogram geometry -- exposed so tests/consumers measuring
     // compliance never have to re-derive or hardcode the sqrt(2)
     // square<->bounding-box relationship themselves.
     PICTO_FLOOR_SQUARE_MM, PICTO_TARGET_SQUARE_MM, PICTO_TARGET_OUTER_BBOX_MM,
     pictoOuterBoundingBoxMm, pictoSquareSideFromBoundingBoxMm, pictoSquareAreaMm2,
     BCF_FLOOR_MM,
+    isCustomSizeBelowSupportedMinimum, CUSTOM_SIZE_MIN_MM, CUSTOM_RECT_LONG_MIN_MM, CUSTOM_RECT_SHORT_MIN_MM,
   };
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = LabelRenderer;

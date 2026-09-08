@@ -260,20 +260,29 @@ setTimeout(async () => {
 
     // ── Content-dependence (b): the SAME dense hazard/precautionary
     //    content at the SAME 63×44mm, but on a non-candle product type
-    //    (Wax Melt), genuinely fits -- since _showBCF only applies to
-    //    CLPeasy's defined candle product types (_candleTypes in
-    //    label-render.js), the mandatory candle-safety icon row (and its
-    //    5mm floor) does not apply at all here, so this outcome required
-    //    lowering no regulatory minimum. This is the "minimal/ordinary
-    //    63×44mm label that genuinely fits" proof, built by removing what
-    //    doesn't legally apply to this product, never by shrinking
-    //    anything that does. ─────────────────────────────────────────
+    //    (Wax Melt), was expected to genuinely fit once the candle-safety
+    //    icon row (5mm floor, inapplicable to non-candle product types via
+    //    _candleTypes in label-render.js) no longer competes for space.
+    //
+    // Correction (read-only impact assessment, 2026-09, Michaela's
+    // decision): with the mandatory-text floor corrected to a genuinely
+    // measured 1.2mm x-height (previously `1.2 * _pxPerMm` only delivered
+    // ~0.6mm real x-height), this dense content (2 H-statements, 2
+    // P-statements, 2 sensitisers) no longer fits at 63×44mm even with
+    // the candle-safety row removed entirely -- the mid-body hazard/
+    // precautionary block itself is now the binding constraint, not the
+    // icon row. Removing the (still correctly inapplicable) candle-safety
+    // requirement is confirmed below exactly as before; it is simply no
+    // longer sufficient on its own to make this dense content fit at this
+    // size, which is the correct, intended outcome of a genuine physical
+    // floor -- not a regression in this fix. ─────────────────────────
     document.getElementById('product-type').value='Wax Melt';
     window.onProductTypeChange();
     window.updateLabel();
     const nonCandleResult = renderCurrentState('nonCandle-63x44');
-    assert.strictEqual(nonCandleResult.fits, true, `a Wax Melt (non-candle) at 63×44mm carrying the identical dense hazard content must genuinely fit once the (inapplicable) candle-safety requirement no longer applies -- got warnings ${JSON.stringify(nonCandleResult.warnings)}`);
-    assert.strictEqual(nonCandleResult.warnings.length, 0, `a fitting Wax Melt label must report no warnings, got ${JSON.stringify(nonCandleResult.warnings)}`);
+    assert.strictEqual(nonCandleResult.fits, false, `a Wax Melt (non-candle) at 63×44mm carrying the identical dense hazard content is expected to still fail closed at the genuine 1.2mm floor, on the hazard text alone -- got warnings ${JSON.stringify(nonCandleResult.warnings)}`);
+    assert.strictEqual(nonCandleResult.warnings.length, 1, `a Wax Melt (non-candle) blocked here must be blocked for hazard-text-overflow only (never candle-safety, which is inapplicable) -- got ${JSON.stringify(nonCandleResult.warnings)}`);
+    assert(nonCandleResult.warnings.includes('hazard-text-overflow'), `a Wax Melt (non-candle) blocked here must report hazard-text-overflow -- got ${JSON.stringify(nonCandleResult.warnings)}`);
     assert.strictEqual(nonCandleResult.metrics.bcfSizeMm, null, 'Wax Melt (non-candle): candle-safety row must not apply at all -- metrics.bcfSizeMm must be null');
     assert.strictEqual(nonCandleResult.metrics.bcfTooSmall, false, 'Wax Melt (non-candle): bcfTooSmall must be false -- the requirement is inapplicable to this product type, not failed');
     document.getElementById('product-type').value='Scented Candle';
@@ -284,15 +293,35 @@ setTimeout(async () => {
     //    rectangle fits the SAME unreduced dense candle content, without
     //    lowering any regulatory minimum -- proving 63×44mm is not
     //    "universally unsupported," just physically too small for this
-    //    specific content/product combination. ─────────────────────────
-    document.getElementById('custom-w').value='80';
-    document.getElementById('custom-h').value='56';
+    //    specific content/product combination.
+    //
+    // Correction (2026-09-07, Michaela's fail-closed footer-overlap fix):
+    // 99×67mm was the previous example here, but that assertion was itself
+    // wrong -- it never checked for VERTICAL overlap between adjacent
+    // footer lines, only horizontal (width) clipping, so it missed that
+    // this exact fixture's address+phone footer visually overlapped at
+    // 99×67mm even while `fits` incorrectly reported true. Once
+    // renderLabel() was fixed to also detect vertical overlap (a footer
+    // row's actual font size must fit back inside its own row at the same
+    // >=120%-equivalent spacing the rest of this label already requires),
+    // 99×67mm correctly reports footer-clipped/fits:false for this
+    // fixture. 104×73mm -- confirmed directly via
+    // LabelRenderer.findSmallestFittingSize() against this exact content,
+    // then independently re-verified by rendering it -- is the smallest
+    // genuinely-fitting size with zero warnings and no overlap, so it
+    // replaces 99×67mm here; the point being proven (a bigger label fixes
+    // it, 63×44mm is not universally unsupported) is unchanged. 99×67mm
+    // is not a CLPeasy size-card preset either way (only 52mm/63mm are --
+    // see tests/fail-closed-size-boundaries.js) so nothing here relied on
+    // it being one. ──────────────────────────────────────────────────
+    document.getElementById('custom-w').value='104';
+    document.getElementById('custom-h').value='73';
     window.onDimInput();
-    const largerResult = renderCurrentState('larger-80x56');
-    assert.strictEqual(largerResult.fits, true, `an 80×56mm rectangle carrying the identical dense scented-candle content must fit -- got warnings ${JSON.stringify(largerResult.warnings)}`);
-    assert.strictEqual(largerResult.warnings.length, 0, `a fitting 80×56mm label must report no warnings, got ${JSON.stringify(largerResult.warnings)}`);
-    assert.strictEqual(largerResult.metrics.pictoSquareSideMm, LR.PICTO_TARGET_SQUARE_MM, `80×56mm: GHS pictogram should reach the full ${LR.PICTO_TARGET_SQUARE_MM.toFixed(4)}mm target with room to spare -- got ${largerResult.metrics.pictoSquareSideMm}mm`);
-    assert(largerResult.metrics.bcfSizeMm >= LR.BCF_FLOOR_MM - 0.01, `80×56mm: candle-safety icon must reach at least the ${LR.BCF_FLOOR_MM}mm floor -- got ${largerResult.metrics.bcfSizeMm}mm`);
+    const largerResult = renderCurrentState('larger-104x73');
+    assert.strictEqual(largerResult.fits, true, `a 104×73mm rectangle carrying the identical dense scented-candle content must fit -- got warnings ${JSON.stringify(largerResult.warnings)}`);
+    assert.strictEqual(largerResult.warnings.length, 0, `a fitting 104×73mm label must report no warnings, got ${JSON.stringify(largerResult.warnings)}`);
+    assert.strictEqual(largerResult.metrics.pictoSquareSideMm, LR.PICTO_TARGET_SQUARE_MM, `104×73mm: GHS pictogram should reach the full ${LR.PICTO_TARGET_SQUARE_MM.toFixed(4)}mm target with room to spare -- got ${largerResult.metrics.pictoSquareSideMm}mm`);
+    assert(largerResult.metrics.bcfSizeMm >= LR.BCF_FLOOR_MM - 0.01, `104×73mm: candle-safety icon must reach at least the ${LR.BCF_FLOOR_MM}mm floor -- got ${largerResult.metrics.bcfSizeMm}mm`);
 
     // ── Export-blocking UX: the user-facing message for the dense
     //    63×44mm fixture must give a useful "go bigger" recommendation,
@@ -348,6 +377,29 @@ setTimeout(async () => {
     assert(window.eval('S.pictograms').includes('exclamation'), 'H315 did not add exclamation pictogram');
     assert(document.querySelector('.picto-btn[data-picto="exclamation"].selected'), 'pictogram control did not render selected state');
 
+    // Correction (read-only impact assessment, 2026-09, Michaela's
+    // decision): the smart-paste extraction above deliberately left
+    // S.pStatements/S.sensitisers at a dense 7-statement/4-sensitiser
+    // combination -- needed only to prove the EXTRACTION logic above
+    // (H410 detected, aquatic pictogram added, Limonene sensitiser
+    // extracted), not to represent a realistic label. Combined with the
+    // two H-codes still active here (H410 + H315), that dense combination
+    // no longer fits a 63mm circle at the genuine 1.2mm x-height floor
+    // (confirmed directly) -- extreme-density content correctly failing
+    // closed is already covered by the 63x44mm dense-fixture tests above.
+    // This "representative 63mm candle" check exists to prove ORDINARY
+    // content at this size downloads successfully, so it is trimmed here
+    // to a single H-code (H315), a single P-code (P273, needed by the
+    // save/load check further down) and one still-meaningfully-long real
+    // fragrance-allergen sensitiser name (needed by the truncation check
+    // further down) -- confirmed directly to genuinely fit at 63mm and
+    // still correctly fail at 52mm (used a few lines below to prove the
+    // size-toggle blocking behaviour).
+    window.eval("S.hSelected=['H315'];S.pSelected=['P273'];S.sensitisers=['Butylphenyl methylpropional']");
+    document.getElementById('h-statements').value='H315';
+    document.getElementById('p-statements').value='P273';
+    window.updateLabel();
+
     document.getElementById('hazard-confirm').checked = true;
     window.setApprovedBuilderStep(4);
     assert(document.querySelector('.builder-accordion-section.active #step-4'), 'business details are not in Step 4');
@@ -364,7 +416,7 @@ setTimeout(async () => {
     // check is re-proven below against the real label output (buildSVG(false)).
     assert.strictEqual(document.querySelectorAll('#btn-png,#btn-pdf,#btn-svg').length, 3, 'approved exports are incomplete');
     assert.strictEqual(window.eval('window._labelBlockDownload'), false, 'representative 63mm candle was falsely blocked');
-    assert(window.buildSVG(false).includes('2-acetoxy-2,3,8,8-tetramethyloctahydronaphthalene'), 'label output shortened a long sensitiser');
+    assert(window.buildSVG(false).includes('Butylphenyl methylpropional'), 'label output shortened a long sensitiser');
     document.getElementById('verify-checkbox').checked = true;
     window.toggleDownload();
     assert.strictEqual(window.eval('_downloadAllowed()'), true, 'valid 63mm label did not enable the shared PNG/PDF/SVG gate');

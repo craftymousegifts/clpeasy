@@ -216,33 +216,122 @@ function measureBcfSvgHeightMm(svg, mmW){
   // (B) CANDLE-SAFETY (BS EN 15494:2019) ICON ROW SIZING
   // ══════════════════════════════════════════════════════════════════
 
-  // ── B1. The label sizes Michaela named explicitly now fit, with icons
-  //        >=5mm, nothing clipped/overlapping, verified from real SVG
-  //        geometry in both preview and export. 63x44mm (second pass) is
-  //        this file's own candleFixture() default content unmodified --
-  //        a single H-code/P-code, no sensitisers -- i.e. a genuinely
+  // ── B1. The label sizes Michaela named explicitly: icons hold >=5mm,
+  //        nothing clipped/overlapping/silently shrunk, verified from real
+  //        SVG geometry in both preview and export. 63x44mm uses this
+  //        file's own candleFixture() default content unmodified -- a
+  //        single H-code/P-code, no sensitisers -- i.e. a genuinely
   //        simple/minimal Scented Candle at this historically sensitive
-  //        size, proving the FOOTER LAYOUT itself can now hold the floor
-  //        here, not merely that a stripped-down fixture can dodge it. ──
+  //        size. ──
   {
+    // Regression-fix note (2026-09-06, Michaela's manual review of Preview
+    // #105): fixing the footer text legibility floor (label-render.js's
+    // _mandatoryMinFS, now the same genuine physical x-height standard
+    // hazard text already used, replacing the previous unrelated and more
+    // lenient minFooterFS-based floor) revealed a REAL, previously-hidden
+    // constraint: candleFixture()'s default footer content includes
+    // bizAddress + bizPhone + a combined "netWeight · Burn: Xhrs ·
+    // Batch: Y" detail line -- three footer rows. On a 63mm CIRCLE
+    // specifically, the bottom-most row sits where the circle's chord has
+    // narrowed sharply near the shape's edge, and the full 3-part detail
+    // line genuinely cannot fit there at the legal floor.
+    //
+    // Correction (read-only impact assessment, 2026-09, Michaela's
+    // decision): the floor above was itself corrected a second time --
+    // `1.2 * _pxPerMm` only ever delivered ~0.6mm of REAL x-height (DM
+    // Sans's real x-height is ~51.6% of declared font-size), not the
+    // genuine 1.2mm intended. With the floor now corrected to a genuinely
+    // measured 1.2mm, the 63x44mm rectangle case ALSO stops fitting -- on
+    // the mid-body hazard/precautionary block, which at this label's
+    // reduced height cannot hold even a single H-statement + P-statement
+    // at the corrected floor once the candle-safety icon row and the
+    // 3-row footer have taken their share of the 44mm height (footer text
+    // was believed to still fit at the time this note was written --
+    // see the follow-up correction below, once the vertical-overlap fix
+    // proved that belief itself was wrong). `fits` is therefore no longer
+    // simply the inverse of `footerClippedExpected` -- each target now
+    // states its own expected overall outcome (fitsExpected) alongside
+    // its footer-specific one, rather than assuming the two always match.
+    // This is exactly the "fail closed and tell the user to select a
+    // larger label" behaviour Michaela's fix requires -- not a bug in the
+    // fix -- so expectations are corrected here to match the newly-
+    // established true boundary, rather than weakening the legibility
+    // floor to keep an old (incorrect) expectation passing. The
+    // candle-safety ICON sizing this block also exists to test is
+    // completely unaffected either way (icons never derive from
+    // _mandatoryMinFS/_minLegibleFS at all -- they use the independent
+    // BCF_FLOOR_MM geometry check).
+    // Correction (2026-09-07, Michaela's fail-closed footer-overlap fix):
+    // the EU30009 target below used to assert footerClippedExpected:false/
+    // fitsExpected:true. That was wrong -- it was only ever checked for
+    // HORIZONTAL (width) footer clipping, never vertical overlap between
+    // this fixture's 3 footer rows (address+phone+detail). Once
+    // renderLabel() was fixed to also detect a footer row's actual font
+    // size overflowing back out of its own row (the same >=120%-
+    // equivalent spacing every other mandatory text block on this label
+    // already requires), EU30009 with this exact 3-row footer content
+    // correctly reports footer-clipped/fits:false -- confirmed this is a
+    // genuine, aspect-ratio-driven boundary, not a search bug: no size
+    // sharing EU30009's own 99.1x57.3 (~0.578) aspect ratio fits this
+    // content up to the renderer's 150mm ceiling either (verified via
+    // LabelRenderer.findSmallestFittingSize(), which returns null here).
+    // The candle-safety ICON sizing this block exists to test is
+    // completely unaffected (bcfTooSmall stays false, icons still hold
+    // their 5mm floor below) -- only the mandatory footer TEXT is what
+    // now correctly fails closed instead of silently overlapping.
+    //
+    // Correction #2 (2026-09-07, Michaela's "diagnose before editing
+    // expectations" instruction): the SAME vertical-overlap fix also
+    // exposed that the 63x44mm target below (this file's own default
+    // candleFixture() content -- address+phone+website+netWeight+batchNum+
+    // burnTime, i.e. every field candleFixture() sets) was NEVER actually
+    // fitting its footer at footerClippedExpected:false -- it only looked
+    // that way because the same silent-overlap bug this whole correction
+    // fixes was hiding it. Before touching this expectation, real
+    // Chromium rendering + getBBox() measurement (not estimation) proved
+    // all three footer rows ("123 Test Street, Testville" / "01234
+    // 567890" / "220g (middle dot) Burn: 20 hrs (middle dot) Batch: B001")
+    // genuinely overlap pairwise on real rendered geometry. A full floor-
+    // by-floor accounting of the footer band at this exact size then
+    // proved this is a genuine, large structural shortfall, not a
+    // misordered allocation: the candle-safety icon row is already pinned
+    // at its absolute 5mm legal floor (27.9 canonical px reserved), the
+    // 3-line footer text is already pinned at its absolute 1.2mm-x-height/
+    // ~122%-line-spacing floor (35.1 canonical px needed), and the two
+    // together need ~65.0 canonical px against a footer band (botH) of
+    // only 33.8 canonical px at 63x44mm -- a ~31px (~7.6mm) shortfall,
+    // roughly half this label's entire 44mm height, with neither
+    // component able to yield any further without dropping below a legal
+    // floor. This fixture also independently fails hazard-text-overflow
+    // in the mid-body block, its own separate large deficit -- this is a
+    // genuinely content-overloaded 63x44mm label, not a layout defect.
+    // footerClippedExpected corrected from false to true to match this
+    // proven, real boundary (fitsExpected is unchanged at false, already
+    // correct for the hazard-text-overflow reason alone).
     const targets = [
-      { label:'EU30009 registry template (99.1x57.3mm)', w:99.1, h:57.3, shape:'rectangle' },
-      { label:'63mm circle candle', w:63, h:63, shape:'circle' },
-      { label:'63x44mm rectangle candle, simple content', w:63, h:44, shape:'rectangle' },
+      { label:'EU30009 registry template (99.1x57.3mm)', w:99.1, h:57.3, shape:'rectangle', footerClippedExpected:true, fitsExpected:false },
+      { label:'63mm circle candle (full address+phone+netWeight+burnTime+batch footer content)', w:63, h:63, shape:'circle', footerClippedExpected:true, fitsExpected:false },
+      { label:'63x44mm rectangle candle, full candleFixture() footer content', w:63, h:44, shape:'rectangle', footerClippedExpected:true, fitsExpected:false },
     ];
     for(const t of targets){
       for(const forExport of [false, true]){
         const data = candleFixture({ customW:t.w, customH:t.h, shape:t.shape });
         const result = LR.renderLabel(data, { instanceId:`bcf-${t.w}x${t.h}-${forExport}`, forExport });
         assert.strictEqual(result.metrics.bcfTooSmall, false, `${t.label} (${forExport?'export':'preview'}): must fit the candle-safety icon row after the footer redesign`);
-        assert.strictEqual(result.metrics.footerClipped, false, `${t.label} (${forExport?'export':'preview'}): footer/regulatory text must not be clipped`);
+        assert.strictEqual(result.metrics.footerClipped, t.footerClippedExpected, `${t.label} (${forExport?'export':'preview'}): footer/regulatory text clipped-state must match the genuine 1.2mm-floor result`);
         const svgMm = measureBcfSvgHeightMm(result.svg, t.w);
         assert(svgMm !== null, `${t.label} (${forExport?'export':'preview'}): expected a rendered candle-safety icon`);
         assert(svgMm >= 4.95, `${t.label} (${forExport?'export':'preview'}): candle-safety icon must be >=5mm, measured ${svgMm.toFixed(3)}mm from real SVG geometry`);
-        assert.strictEqual(result.fits, true, `${t.label} (${forExport?'export':'preview'}): the whole label must report fits:true once icons and text both fit -- got warnings ${JSON.stringify(result.warnings)}`);
+        assert.strictEqual(result.fits, t.fitsExpected, `${t.label} (${forExport?'export':'preview'}): the whole label's fits flag must match the genuine 1.2mm-floor result -- got warnings ${JSON.stringify(result.warnings)}`);
+        if(!t.fitsExpected && !t.footerClippedExpected){
+          // When this target is blocked for a reason OTHER than the
+          // footer, name it explicitly so this test can't silently start
+          // passing for the wrong reason (e.g. an unrelated regression).
+          assert(result.warnings.includes('hazard-text-overflow'), `${t.label} (${forExport?'export':'preview'}): expected to be blocked specifically by hazard-text-overflow (the mid-body H/P block, not the footer) -- got warnings ${JSON.stringify(result.warnings)}`);
+        }
       }
     }
-    ok('EU30009 (99.1x57.3mm), 63mm circle, and (second pass) a simple-content 63x44mm rectangle candle label all now hold the 5mm candle-safety icon row without clipping the footer text, in both preview and export SVG geometry');
+    ok('EU30009 (99.1x57.3mm) holds the 5mm candle-safety icon row but correctly fails closed on its own 3-row footer text (address+phone+detail) once vertical overlap is detected, not just width -- and no size at EU30009\'s own aspect ratio fixes it up to 150mm; a 63mm circle with full footer content correctly fails closed on the footer text alone (icons still fit); the dense 63x44mm rectangle carrying every candleFixture() field -- CLPeasy\'s own smallest rectangle preset -- now correctly fails closed on BOTH its 3-row footer text (a genuine, proven ~7.6mm shortfall even with icons and text already at their absolute floors) and the mid-body hazard text, rather than silently overlapping either')
   }
 
   // ── B2. Wherever the icon row IS shown more broadly, it is never below
@@ -264,48 +353,76 @@ function measureBcfSvgHeightMm(svg, mmW){
     ok('candle-safety icons never render below the 5mm physical floor, verified from real SVG geometry across representative label sizes (including sizes that only became fittable after the footer redesign)');
   }
 
-  // ── B3. Genuinely impossible labels still fail CLOSED with the
-  //       specific warning, never a silent under-floor shrink -- the
-  //       floor itself (5mm) was NOT lowered, only the footer budget
-  //       around it was redesigned ──────────────────────────────────
+  // ── B3. The bcfTooSmall fail-closed path itself is still intact -- the
+  //       floor (5mm) was NOT lowered, only the decorative row-height
+  //       buffer around it was redesigned a second time ─────────────────
   //
-  // 45x45mm square was previously listed here as still-impossible, but
-  // the second-pass footer-budget fix (BCF_FOOTER_SHARE_CAP 0.66 -> 0.85,
-  // driven by 63x44mm's own genuine ~4.01mm shortfall) is a single shared
-  // formula, not a per-size carve-out: 45mm is geometrically EASIER to
-  // satisfy than 63x44mm's 44mm height (a square keeps the full canonical
-  // footer-band height regardless of its physical size, where a wide-short
-  // rectangle's canonical footer band shrinks with its aspect ratio), so
-  // any fix that clears 63x44mm's shortfall necessarily also clears
-  // 45x45mm's smaller one -- confirmed directly below, not silently
-  // dropped. 40x40mm and a 150x40mm strip remain genuinely below the
-  // floor even after this fix and are unaffected.
+  // Correction (2026-09-08, Michaela's explicit BCF_ROW_HEIGHT_RATIO
+  // decision, 1.35 -> 1.15): 40x40mm and a 150x40mm strip were previously
+  // listed here as still genuinely bcfTooSmall. Re-verified directly
+  // against the real renderer after the buffer cut: both now hold the
+  // floor (bcfSizeMm:5, bcfTooSmall:false, icon actually rendered) --
+  // the same predictable, single-shared-formula consequence already
+  // documented above for 45x45mm, just carried one step further. A
+  // direct sweep of every combination of {40,41,42,45,50}mm x
+  // {40,45,50,150}mm (the full width x height grid at and above the
+  // _showBCF >=40mm gate) found NO remaining size where bcfTooSmall
+  // fires -- so there is currently no genuine real-content example of
+  // this state inside the candle-icon-eligible domain to assert against,
+  // and asserting one anyway would misrepresent the real boundary. The
+  // bcfTooSmall code path itself (label-render.js's _bcfTooSmall flag,
+  // the 'candle-safety-symbols-too-small' warning, and the "never render
+  // an undersized icon" behaviour) is untouched and still there as a
+  // fail-closed fallback; it simply has no reachable trigger among
+  // currently supported candle sizes/shapes after this fix. Both
+  // sizes are folded into the "icons hold the floor" assertions below
+  // instead of the old "still blocked" ones.
   {
-    const tooSmallSizes = [[40,40], [150,40]];
-    for(const [mmW, mmH] of tooSmallSizes){
+    const nowFitSizes = [[40,40], [150,40]];
+    for(const [mmW, mmH] of nowFitSizes){
       const data = candleFixture({ customW:mmW, customH:mmH });
-      const result = LR.renderLabel(data, { instanceId:`bcf-toosmall-${mmW}x${mmH}`, forExport:true });
-      assert.strictEqual(result.metrics.bcfTooSmall, true, `${mmW}x${mmH}mm was expected to still be flagged bcfTooSmall (genuinely impossible even after the footer redesign)`);
-      assert.strictEqual(result.fits, false, `${mmW}x${mmH}mm: a bcfTooSmall label must not be reported as fits:true`);
-      assert(result.warnings.includes('candle-safety-symbols-too-small'), `${mmW}x${mmH}mm: warnings must include the specific candle-safety-symbols-too-small warning so print.html can block export and explain why`);
+      const result = LR.renderLabel(data, { instanceId:`bcf-nowfits-${mmW}x${mmH}`, forExport:true });
+      assert.strictEqual(result.metrics.bcfTooSmall, false, `${mmW}x${mmH}mm: expected to now hold the 5mm candle-safety icon floor after the BCF_ROW_HEIGHT_RATIO 1.35->1.15 reduction -- got bcfTooSmall:true`);
+      assert(Math.abs(result.metrics.bcfSizeMm - 5) < 1e-6, `${mmW}x${mmH}mm: icon must sit exactly at its 5mm floor here (never below, and this fixture leaves no room to grow above it), got ${result.metrics.bcfSizeMm}mm`);
       const svgMm = measureBcfSvgHeightMm(result.svg, mmW);
-      assert.strictEqual(svgMm, null, `${mmW}x${mmH}mm: a bcfTooSmall label must not render any candle-safety icon at all (no silent under-floor shrink)`);
+      assert(svgMm !== null, `${mmW}x${mmH}mm: expected a rendered candle-safety icon now that bcfTooSmall is false`);
+      assert(svgMm >= 4.95, `${mmW}x${mmH}mm: candle-safety icon rendered at ${svgMm.toFixed(3)}mm (real SVG geometry), below the 5mm BS EN 15494:2019 floor`);
     }
-    ok('labels genuinely too small to hold the 5mm floor (even after the footer redesign) still fail closed: export blocked via fits:false + the specific candle-safety-symbols-too-small warning, no undersized icon rendered');
+    ok('40x40mm and a 150x40mm strip -- previously genuinely too small for the candle-safety icon row -- now correctly hold the 5mm floor after the BCF_ROW_HEIGHT_RATIO buffer reduction (Michaela\'s 63mm-circle decision), verified from real SVG geometry; a direct sweep across the {40-50}x{40-150}mm grid found no remaining candle-icon-eligible size where bcfTooSmall still fires, so no false "still blocked" case is asserted, while the fail-closed bcfTooSmall code path itself remains unchanged and in place')
   }
 
-  // ── B3b. 45x45mm square: a direct, disclosed consequence of fixing
-  //        63x44mm's shortfall -- now genuinely holds the 5mm floor too,
-  //        proven the same way as B1/B2 rather than silently dropped. ──
+  // ── B3b. 45x45mm square: the candle-safety ICON row genuinely holds the
+  //        5mm floor -- a direct, disclosed consequence of fixing
+  //        63x44mm's icon-row shortfall -- proven the same way as B1/B2
+  //        rather than silently dropped. The label's TEXT content is a
+  //        separate question (see correction below): at this size, with
+  //        candleFixture()'s full address+phone+netWeight+burnTime+batch
+  //        footer, both the footer and the mid-body hazard text now
+  //        correctly fail closed at the genuine x-height floor -- so this
+  //        label overall still reports fits:false, for reasons entirely
+  //        unrelated to (and unaffected by) the icon-row fix this block
+  //        exists to prove. ──
   {
+    // Correction (read-only impact assessment, 2026-09, Michaela's
+    // decision): this block originally also asserted footerClipped:false
+    // and fits:true, written when the mandatory-text floor was still the
+    // unfixed `1.2 * _pxPerMm` (~0.6mm real x-height). At the genuinely
+    // corrected 1.2mm floor, candleFixture()'s full 3-row footer content
+    // no longer fits in a 45mm square, and neither does its hazard text
+    // -- both now correctly fail closed rather than silently rendering
+    // below the standard. This is the intended, disclosed effect of the
+    // floor correction (see the B1 block above for the identical finding
+    // at 63x44mm) -- it does not touch BCF_FLOOR_MM or this icon row's
+    // own geometry, which is exactly what this test still confirms below.
     const data = candleFixture({ customW:45, customH:45, shape:'square' });
     const result = LR.renderLabel(data, { instanceId:'bcf-45x45-now-fits', forExport:true });
-    assert.strictEqual(result.metrics.bcfTooSmall, false, '45x45mm square: a direct consequence of the 63x44mm footer-budget fix is that this now also holds the 5mm floor -- got bcfTooSmall:true');
-    assert.strictEqual(result.metrics.footerClipped, false, '45x45mm square: footer/regulatory text must not be clipped');
+    assert.strictEqual(result.metrics.bcfTooSmall, false, '45x45mm square: a direct consequence of the 63x44mm footer-budget fix is that the candle-safety ICON row now also holds the 5mm floor -- got bcfTooSmall:true');
+    assert.strictEqual(result.metrics.footerClipped, true, '45x45mm square: candleFixture()\'s full 3-row footer content genuinely does not fit at the corrected genuine 1.2mm x-height floor -- expected footerClipped:true');
     const svgMm = measureBcfSvgHeightMm(result.svg, 45);
     assert(svgMm !== null && svgMm >= 4.95, `45x45mm square: candle-safety icon must be >=5mm, measured ${svgMm}mm from real SVG geometry`);
-    assert.strictEqual(result.fits, true, `45x45mm square must now report fits:true -- got warnings ${JSON.stringify(result.warnings)}`);
-    ok('45x45mm square now holds the 5mm candle-safety floor too -- an unavoidable, correct side effect of fixing 63x44mm\'s shortfall, not a separate change');
+    assert.strictEqual(result.fits, false, `45x45mm square: the label overall is still expected to fail closed (footer and hazard text both overflow the genuine floor here) -- got warnings ${JSON.stringify(result.warnings)}`);
+    assert(result.warnings.includes('footer-clipped') && result.warnings.includes('hazard-text-overflow'), `45x45mm square: expected both footer-clipped and hazard-text-overflow -- got warnings ${JSON.stringify(result.warnings)}`);
+    ok('45x45mm square now holds the 5mm candle-safety ICON floor too -- an unavoidable, correct side effect of fixing 63x44mm\'s icon-row shortfall -- but candleFixture()\'s full footer content and hazard text both correctly fail closed at the genuine 1.2mm x-height floor, so the label still reports fits:false overall for reasons unrelated to the icon row');
   }
 
   // ── B3c. The dense scented-candle 63x44mm fixture (the one

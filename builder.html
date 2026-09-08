@@ -1193,7 +1193,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <button class="zoom-btn" onclick="setPreviewZoom(previewZoom+0.1)" title="Zoom in">+</button>
         <span class="zoom-pct" id="zoom-pct">75%</span>
       </div>
-      <button type="button" class="preview-badge" onclick="setPreviewZoom(.75)" title="Fit label to preview">Fit to view ↗</button>
+      <button type="button" class="preview-badge" onclick="fitPreviewToView()" title="Fit label to preview">Fit to view ↗</button>
     </div>
   </div>
   <div class="preview-canvas-area" id="preview-canvas-area"><div id="label-svg-container"></div></div>
@@ -1248,7 +1248,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <h3>🛡 Label Compliance</h3>
     <strong style="font-size:13px;">GB CLP aligned</strong>
     <p class="rail-copy" style="margin-bottom:0;">Smart Compliance. Simple.</p>
-    <span class="rail-chip">GB CLP</span><span class="rail-chip">X-height 1.2mm</span>
+    <span class="rail-chip">GB CLP</span><span class="rail-chip" title="CLPeasy's own conservative legibility standard for mandatory label text — not a current statutory GB CLP numeric requirement">X-height 1.2mm</span>
   </section>
 </aside>
 
@@ -2595,7 +2595,7 @@ async function saveLabel(){
   plausible('Label Saved to Library');
   readForm();
   if(!S.scentName){alert('Please enter a scent name before saving.');return;}
-  if(isCustomSizeBelowSupportedMinimum()){alert(CUSTOM_SIZE_MIN_MSG);return;}
+  if(isCustomSizeBelowSupportedMinimum()){alert(getCustomSizeMinMsg());return;}
   removeStaleEditNotice();
   const entry={schemaVersion:LABEL_SCHEMA_VERSION,rendererVersion:LabelRenderer.RENDERER_VERSION,
     scentName:S.scentName,productType:S.productType,shape:S.shape,size:S.size,customW:S.customW,customH:S.customH,signal:S.signal,
@@ -3468,7 +3468,7 @@ function canLeaveApprovedBuilderStep(step){
     // message -- a custom size. Preset validation itself is unchanged.
     if(S.size==='custom'){
       if(isCustomSizeBelowSupportedMinimum()){
-        alert(CUSTOM_SIZE_MIN_MSG);
+        alert(getCustomSizeMinMsg());
         document.getElementById('custom-w')?.focus();
         return false;
       }
@@ -3853,25 +3853,42 @@ function updateSizeWarnings(){
     }
   }
 }
-// CLPeasy's own supported minimum for a CUSTOM label size -- 52mm on every
-// custom dimension (circle diameter, square side, rectangle width AND
-// height). This is a product-level floor CLPeasy has chosen to support,
-// not a claim about what GB-CLP itself legally requires (see the wording
-// used everywhere this is surfaced: "CLPeasy supports custom label
-// dimensions from 52mm", never "legal minimum"). Approved PRESET sizes
-// (S.size a fixed mm value, not 'custom') are deliberately exempt --
-// checked first below -- even if a preset's own dimension is below 52mm.
+// CLPeasy's own supported minimum for a CUSTOM label size. This is a
+// product-level floor CLPeasy has chosen to support, not a claim about
+// what GB-CLP itself legally requires (see the wording used everywhere
+// this is surfaced: "CLPeasy supports custom label dimensions from...",
+// never "legal minimum"). Approved PRESET sizes (S.size a fixed mm value,
+// not 'custom') are deliberately exempt -- checked first below -- even if
+// a preset's own dimension is below this floor.
+//
+// Corrected 2026-09-07 (Michaela's explicit decision): a rectangle used to
+// require BOTH width AND height >=52mm, which disagreed with CLPeasy's own
+// long-standing 52mm/63mm rectangle presets (52x36mm, 63x44mm -- both
+// already below 52mm on the short side) and with showcase.html's
+// advertised examples (60x40mm, 70x50mm, 76x51mm). Now delegates to
+// LabelRenderer.isCustomSizeBelowSupportedMinimum() -- the single shared
+// rule print.html's Composer also calls, so the two pages can never
+// silently drift apart -- which allows a rectangle from 52mm on its long
+// side and 36mm on its short side, either orientation; circle/square are
+// unchanged (a single dimension, 52mm or larger).
+//
 // Reads S.customW/S.customH (already parsed by readForm()/onDimInput()),
 // never re-parses the raw input itself, so it never silently changes what
 // the maker typed -- this only decides whether to block, not what value
-// is stored.
+// is stored. Passing this floor is never a promise that the exact content
+// on this label will fit at it -- LabelRenderer.renderLabel()'s own fit
+// checks (fits/footer-clipped/hazard-text-overflow) still apply
+// independently.
 function isCustomSizeBelowSupportedMinimum(){
   if(S.size!=='custom') return false;
-  const w=Number(S.customW);
-  const h=Number(S.shape==='rectangle'?S.customH:S.customW);
-  return !(Number.isFinite(w)&&w>=52) || !(Number.isFinite(h)&&h>=52);
+  return LabelRenderer.isCustomSizeBelowSupportedMinimum(S.shape, S.customW, S.shape==='rectangle'?S.customH:S.customW);
 }
-const CUSTOM_SIZE_MIN_MSG='CLPeasy supports custom label dimensions from 52mm. Choose 52mm or larger.';
+function getCustomSizeMinMsg(){
+  if(S.shape==='rectangle'){
+    return 'CLPeasy supports custom rectangle labels from '+LabelRenderer.CUSTOM_RECT_LONG_MIN_MM+'mm on the long side and '+LabelRenderer.CUSTOM_RECT_SHORT_MIN_MM+'mm on the short side (either orientation).';
+  }
+  return 'CLPeasy supports custom label dimensions from '+LabelRenderer.CUSTOM_SIZE_MIN_MM+'mm. Choose '+LabelRenderer.CUSTOM_SIZE_MIN_MM+'mm or larger.';
+}
 function onDimInput(){
   S.size='custom';
   document.querySelectorAll('.size-card').forEach(c=>c.classList.toggle('selected',c.dataset.size==='custom'));
@@ -3884,10 +3901,25 @@ function onDimInput(){
   updateLabel();
 }
 function syncDimFields(){
-  const hI=document.getElementById('custom-h'),hN=document.getElementById('height-note');
+  const hI=document.getElementById('custom-h'),hN=document.getElementById('height-note'),wI=document.getElementById('custom-w');
   const isRect=S.shape==='rectangle';
-  if(isRect){hI.disabled=false;hI.style.opacity='1';if(hN)hN.textContent='';}
-  else{hI.disabled=true;hI.style.opacity='0.45';if(hN)hN.innerHTML='— <a href="#" onclick="selectShape(\'rectangle\');return false;" style="color:#4C9BB0;font-size:11px;">Use Rectangle for different height</a>';const wv=document.getElementById('custom-w').value;if(wv)hI.value=wv;}
+  // Corrected 2026-09-07 (Michaela's explicit decision, see
+  // LabelRenderer.isCustomSizeBelowSupportedMinimum()'s own comment): a
+  // rectangle's real supported minimum is 52mm on its LONG side and 36mm
+  // on its SHORT side, either orientation -- either field could end up
+  // being the short side depending on what's typed in the other, so both
+  // inputs' HTML min is relaxed to the absolute floor (36) for a
+  // rectangle; the real long/short check still runs in
+  // isCustomSizeBelowSupportedMinimum() regardless of this attribute,
+  // which is only a soft browser hint (spinner bounds), never the source
+  // of truth. Circle/square are unchanged (a single dimension, 52mm).
+  if(isRect){
+    hI.disabled=false;hI.style.opacity='1';if(hN)hN.textContent='';
+    hI.min='36';wI.min='36';
+  } else {
+    hI.disabled=true;hI.style.opacity='0.45';if(hN)hN.innerHTML='— <a href="#" onclick="selectShape(\'rectangle\');return false;" style="color:#4C9BB0;font-size:11px;">Use Rectangle for different height</a>';const wv=document.getElementById('custom-w').value;if(wv)hI.value=wv;
+    hI.min='52';wI.min='52';
+  }
 }
 function selectSignal(s){
   if(S.signal&&S.signal!==s){const h=(document.getElementById('h-statements')?.value||'').trim();const p=(document.getElementById('p-statements')?.value||'').trim();if((h||p)&&!confirm('⚠️ Signal word changed to '+s+'.\n\nPlease check your H and P statements are still correct.'))return;}
@@ -3934,6 +3966,10 @@ function buildSVG(forExport=false){
     hideEN15494:S.hideEN15494, labelLang:S.labelLang,
     p280Items:S.p280Items, p280Other:S.p280Other,
   };
+  // Exposed so updateLabel()'s fail-closed block message can look up
+  // "what size WOULD fit this exact content" via LabelRenderer's own
+  // findSmallestFittingSize() -- read-only, never used to change S.size.
+  window._lastLabelData=data;
   const opts={
     instanceId:'builder-main', forExport,
     bgColour:document.getElementById('label-bg-colour')?.value,
@@ -3952,6 +3988,16 @@ function buildSVG(forExport=false){
   window._labelLegibilityWarn=result.metrics.overflow;
   window._hazardYSlack=result.metrics.hazardYSlack;
   window._footerLegibilityClipped=result.metrics.footerClipped;
+  // Regression fix (2026-09-06, Michaela's manual review of Preview #105):
+  // mandatory text outside the hazard/footer blocks (product name,
+  // business name, product type, signal word) now gets the same
+  // physical-1.2mm-x-height-floor fail-closed treatment those blocks
+  // already had -- see label-render.js's _mandatoryMinFS. Surfaced here so
+  // the download-blocking check and warning message below can see them.
+  window._scentTooSmall=result.metrics.scentTooSmall;
+  window._businessNameTooSmall=result.metrics.businessNameTooSmall;
+  window._productTypeTooSmall=result.metrics.productTypeTooSmall;
+  window._signalWordTooSmall=result.metrics.signalWordTooSmall;
   return result.svg;
 }
 
@@ -4044,7 +4090,33 @@ function updateLabel(){
   // separate gate, so every export path (PNG/SVG/PDF, all funnelled
   // through _downloadAllowed()) is covered automatically.
   const _isCustomSizeTooSmall = isCustomSizeBelowSupportedMinimum();
-  window._labelBlockDownload = !!(window._labelLegibilityWarn || window._footerLegibilityClipped || _hasUnrecognizedCodes || _isCustomSizeTooSmall);
+  // Regression fix (2026-09-06): product name, business name, product type
+  // and signal word hitting the physical 1.2mm x-height floor and still
+  // not fitting must block download exactly like hazard-text-overflow and
+  // footer-clipped already do -- see label-render.js's _mandatoryMinFS.
+  const _hasMandatoryTextTooSmall = !!(window._scentTooSmall || window._businessNameTooSmall || window._productTypeTooSmall || window._signalWordTooSmall);
+  window._labelBlockDownload = !!(window._labelLegibilityWarn || window._footerLegibilityClipped || _hasUnrecognizedCodes || _isCustomSizeTooSmall || _hasMandatoryTextTooSmall);
+  // Fail-closed design (2026-09-07): when the label is blocked for a reason a
+  // bigger label might actually fix (not the unrecognised-code or below-
+  // minimum-size cases, which have their own specific remedy), tell the
+  // maker exactly which size WOULD work -- never a guess, a genuine
+  // renderLabel() result for this exact content via label-render.js's
+  // findSmallestFittingSize(). Read-only: this never changes S.size itself:
+  // the maker always makes that choice, in Step 1, themselves.
+  const _sizeHelpsIfBlocked = window._labelBlockDownload && !_hasUnrecognizedCodes && !_isCustomSizeTooSmall;
+  const _sizeRec = (_sizeHelpsIfBlocked && window._lastLabelData && typeof LabelRenderer!=='undefined' && LabelRenderer.findSmallestFittingSize)
+    ? LabelRenderer.findSmallestFittingSize(window._lastLabelData, {instanceId:'builder-main'})
+    : null;
+  // Genuine-size fix (2026-09-07): findSmallestFittingSize() now tries the
+  // two real size-card presets (52mm/63mm) before any custom size, and
+  // reports which kind of size it found (source/presetMm) so this message
+  // never implies a made-up preset ("72×50.3mm") -- only an actual
+  // preset button or a genuinely enterable whole-mm Custom size.
+  const _sizeRecDims = _sizeRec ? (_sizeRec.mmW===_sizeRec.mmH?_sizeRec.mmW+'mm':_sizeRec.mmW+'×'+_sizeRec.mmH+'mm') : '';
+  const _sizeRecKind = _sizeRec ? (_sizeRec.source==='preset' ? ', the built-in '+_sizeRec.presetMm+'mm preset' : ', a custom size') : '';
+  const _sizeRecMsg = _sizeRec
+    ? ' The smallest size that fits this exact content is <strong>'+_sizeRecDims+'</strong> ('+_sizeRec.shape+_sizeRecKind+') — go to Step 1 and try that size.'
+    : (_sizeHelpsIfBlocked ? ' CLPeasy checked every supported size up to 150mm and none of them fit this exact content, so a larger size alone won\'t be enough — the content itself will need to be shortened.' : '');
   // Wording (updated 3 Aug 2026, round 2 — per Michaela's CLP-labelling-focused
   // request): name the CLP labelling requirement specifically rather than
   // "required information" generically.
@@ -4053,13 +4125,21 @@ function updateLabel(){
     : _isCustomSizeTooSmall
     ? '⚠️ Download unavailable — custom size below CLPeasy\'s supported minimum'
     : '⚠️ Download unavailable — label size too small for CLP labelling requirements';
+  const _mandatoryTextTooSmallLabel = [
+    window._scentTooSmall && 'product name',
+    window._businessNameTooSmall && 'business name',
+    window._productTypeTooSmall && 'product type',
+    window._signalWordTooSmall && 'signal word',
+  ].filter(Boolean).join(', ');
   const _blockBody = _hasUnrecognizedCodes
     ? 'CLPeasy doesn\'t recognise the code'+(window._unrecognizedCodes.length>1?'s':'')+' <strong>'+window._unrecognizedCodes.join(', ')+'</strong> and will not print it directly on your label, since that would show an internal code rather than the required statement text.<br><br>Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
     : _isCustomSizeTooSmall
-    ? CUSTOM_SIZE_MIN_MSG+'<br><br>To create a downloadable label, return to Step 1 and increase the custom width'+(S.shape==='rectangle'?' and/or height':'')+' to 52mm or larger.'
+    ? getCustomSizeMinMsg()+'<br><br>To create a downloadable label, return to Step 1 and '+(S.shape==='rectangle'?'set the long side to '+LabelRenderer.CUSTOM_RECT_LONG_MIN_MM+'mm or larger and the short side to '+LabelRenderer.CUSTOM_RECT_SHORT_MIN_MM+'mm or larger':'increase the custom size to '+LabelRenderer.CUSTOM_SIZE_MIN_MM+'mm or larger')+'.'
     : window._footerLegibilityClipped
-    ? 'Your business/supplier details cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling, so some required information would be left off.<br><br>To create a downloadable label, return to Step 1 and select a larger label size, or shorten your business details.<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
-    : 'The required hazard and precautionary information cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, return to Step 1 and select a larger label size. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>';
+    ? 'Your business/supplier details cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling, so some required information would be left off.<br><br>To create a downloadable label, return to Step 1 and select a larger label size, or shorten your business details.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
+    : _hasMandatoryTextTooSmall
+    ? 'Your '+_mandatoryTextTooSmallLabel+' cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, return to Step 1 and select a larger label size, or shorten the affected text.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
+    : 'The required hazard and precautionary information cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, return to Step 1 and select a larger label size. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>';
   [document.getElementById('label-warn-stage4'), document.getElementById('label-warn-step5')].forEach(_labelWarnEl=>{
     if(!_labelWarnEl)return;
     if(window._labelBlockDownload){
@@ -4082,41 +4162,8 @@ function updateLabel(){
   if(dc && dc.offsetParent!==null){
     dc.innerHTML=svgHtml;
     // Auto-fit zoom to fill available panel on first render, then apply current zoom
-    const area=document.getElementById('preview-canvas-area');
-    if(area){
-      const aW=area.clientWidth-40,aH=area.clientHeight-40;
-      const svg=dc.querySelector('svg');
-      if(svg){
-        const vb=svg.getAttribute('viewBox');
-        if(vb){
-          const[,, vbW, vbH]=vb.split(' ').map(Number);
-          if(vbW>0&&vbH>0){
-            // Max zoom = full box fill, no breathing room.
-            const fitZoom=Math.min(aW/vbW,aH/vbH);
-            _previewMaxZoom=fitZoom;
-            // Default fill (88% of full fit) is the "100%" reference point shown to the user.
-            _previewFitZoom=fitZoom*0.88;
-            if(previewZoom===0.75||previewZoom<0.5||previewZoom>1.8){
-              previewZoom=_previewFitZoom;
-            }
-            // Always keep previewZoom within the current bounds — the container
-            // can resize between renders, so a value valid last time may no
-            // longer fit now. Without this, zooming in can appear to shrink
-            // the label if it snaps down to a lower ceiling than expected.
-            previewZoom=Math.min(Math.max(previewZoom,0.2),_previewMaxZoom);
-            {
-              const pct=Math.round(_previewFitZoom>0?(previewZoom/_previewFitZoom*100):100);
-              const fillPct=(_previewMaxZoom>0.2?((previewZoom-0.2)/(_previewMaxZoom-0.2)*100):0).toFixed(1);
-              const zpEl=document.getElementById('zoom-pct');const zfEl=document.getElementById('zoom-fill');const ztEl=document.getElementById('zoom-thumb');
-              if(zpEl)zpEl.textContent=pct+'%';
-              if(zfEl)zfEl.style.width=fillPct+'%';
-              if(ztEl)ztEl.style.left=fillPct+'%';
-            }
-          }
-        }
-        applyZoomToSVG();
-      }
-    }
+    recomputePreviewFit();
+    applyZoomToSVG();
   }
   // Sheet preview
   const sc=document.getElementById('sheet-label-container');
@@ -4131,20 +4178,81 @@ function updateLabel(){
 }
 
 // ── PREVIEW ZOOM ──────────────────────────────────────────────
+// Regression fix (2026-09-06, Michaela's manual review of Preview #105):
+// "100%" must mean the largest scale that fits the whole label inside the
+// available preview panel -- no more, no less -- and the displayed range
+// must never exceed 100%. Previously _previewFitZoom (the "100%" reference
+// used to compute the displayed percentage) was set to only 88% of
+// _previewMaxZoom (the true full-fill scale), which mathematically fixed
+// the top of the range at 1/0.88 ~= 114% and left "Fit to view" (which
+// called setPreviewZoom(.75) -- a hardcoded absolute scale unrelated to any
+// actual fit calculation) landing anywhere from far below 100% to over it,
+// depending on the panel size and label dimensions. Both variables now
+// always hold the same genuinely-computed fit value.
 let previewZoom=0.75;
 let _previewMaxZoom=2.0;
 let _previewFitZoom=1.0;
 
-function setPreviewZoom(z){
-  previewZoom=Math.min(_previewMaxZoom,Math.max(0.2,z));
+// Recomputes _previewMaxZoom/_previewFitZoom (both equal to the largest
+// scale that fits the current label's rendered SVG inside the current
+// preview panel, preserving aspect ratio -- no cropping, no distortion, no
+// artificial headroom) and re-clamps the current previewZoom into that
+// range. Called on every render (label load, shape/dimension change) via
+// updateLabel(), and on preview-panel/window resize below -- the single
+// shared calculation every trigger uses, per requirement not to invent a
+// second path.
+function recomputePreviewFit(){
+  const dc=document.getElementById('label-svg-container');
+  if(!dc||dc.offsetParent===null)return;
+  const area=document.getElementById('preview-canvas-area');
+  if(!area)return;
+  const aW=area.clientWidth-40,aH=area.clientHeight-40;
+  const svg=dc.querySelector('svg');
+  if(!svg)return;
+  const vb=svg.getAttribute('viewBox');
+  if(!vb)return;
+  const[,, vbW, vbH]=vb.split(' ').map(Number);
+  if(!(vbW>0&&vbH>0))return;
+  const fitZoom=Math.min(aW/vbW,aH/vbH);
+  if(!(fitZoom>0))return;
+  _previewMaxZoom=fitZoom;
+  _previewFitZoom=fitZoom;
+  if(previewZoom===0.75||previewZoom<0.5||previewZoom>_previewMaxZoom){
+    previewZoom=_previewFitZoom;
+  }
+  // Always keep previewZoom within the current bounds — the container
+  // can resize between renders, so a value valid last time may no
+  // longer fit now. Without this, zooming in can appear to shrink
+  // the label if it snaps down to a lower ceiling than expected.
+  previewZoom=Math.min(Math.max(previewZoom,0.2),_previewMaxZoom);
+  updateZoomDisplay();
+}
+
+function updateZoomDisplay(){
   const pct=Math.round(_previewFitZoom>0?(previewZoom/_previewFitZoom*100):100);
   const fillPct=(_previewMaxZoom>0.2?((previewZoom-0.2)/(_previewMaxZoom-0.2)*100):0).toFixed(1);
-  const zpEl=document.getElementById('zoom-pct');
-  const zfEl=document.getElementById('zoom-fill');
-  const ztEl=document.getElementById('zoom-thumb');
+  const zpEl=document.getElementById('zoom-pct');const zfEl=document.getElementById('zoom-fill');const ztEl=document.getElementById('zoom-thumb');
   if(zpEl)zpEl.textContent=pct+'%';
   if(zfEl)zfEl.style.width=fillPct+'%';
   if(ztEl)ztEl.style.left=fillPct+'%';
+}
+
+function setPreviewZoom(z){
+  previewZoom=Math.min(_previewMaxZoom,Math.max(0.2,z));
+  updateZoomDisplay();
+  applyZoomToSVG();
+}
+
+// "Fit to view" must always snap to the true largest-contained scale for
+// the CURRENT panel size and label dimensions, regardless of the user's
+// last manual zoom -- unlike the auto-fit-on-render in recomputePreviewFit()
+// (which only snaps on first load or when the current zoom has fallen
+// outside the valid range), this is an explicit user action so it always
+// re-fits.
+function fitPreviewToView(){
+  recomputePreviewFit();
+  previewZoom=_previewFitZoom;
+  updateZoomDisplay();
   applyZoomToSVG();
 }
 
@@ -4186,6 +4294,27 @@ setTimeout(()=>{
   const track=document.getElementById('zoom-track');
   if(track)track.addEventListener('mousedown',onZoomTrackMouseDown);
 },300);
+
+// Requirement: recalculate the fit automatically when the preview panel
+// changes size or the window is resized (label load / shape / dimension
+// change already goes through updateLabel() -> recomputePreviewFit() above).
+// rAF-batched so a drag-resize doesn't recompute on every intermediate pixel.
+let _previewResizeRAF=null;
+function _schedulePreviewRefit(){
+  if(_previewResizeRAF)return;
+  _previewResizeRAF=requestAnimationFrame(()=>{
+    _previewResizeRAF=null;
+    recomputePreviewFit();
+    applyZoomToSVG();
+  });
+}
+window.addEventListener('resize',_schedulePreviewRefit);
+if(typeof ResizeObserver!=='undefined'){
+  setTimeout(()=>{
+    const area=document.getElementById('preview-canvas-area');
+    if(area)new ResizeObserver(_schedulePreviewRefit).observe(area);
+  },300);
+}
 function buildSummary(){
   readForm();const{mmW,mmH}=getDims();
   // P280 is resolved to its per-label selected wording (same source the

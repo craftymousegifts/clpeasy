@@ -178,7 +178,28 @@ const labelRendererSource = fs.readFileSync(path.join(__dirname,'..','label-rend
   // (verified separately, below the main loop) instead of silently
   // exporting a non-compliant label -- exactly the "block export when it
   // genuinely cannot fit" requirement, not a regression to paper over.
-  const KNOWN_NOW_BLOCKED = new Set(['circle 52mm, 3 picto(s)']);
+  //
+  // Sept 2026 correction (genuine 1.2mm mandatory-text x-height floor, per
+  // Michaela's decision to implement the real DM Sans lowercase-x height
+  // rather than a nominal SVG font-size figure): mandatory text now needs
+  // measurably more physical room on every label, independent of and in
+  // addition to the pictogram-geometry fix above. This pushes two more
+  // combinations past the point where they can still fit alongside
+  // mandatory hazard/precautionary/sensitiser text at the 10mm pictogram
+  // floor: circle 52mm at 1 and 2 pictograms (previously only 3 pictograms
+  // was blocked), and EU30009 (99.1x57.3mm rectangle) at ALL of 1/2/3
+  // pictograms -- this rectangle was previously unaffected by the geometry
+  // fix, but the larger genuine text floor now also outgrows its available
+  // width even at a single pictogram. Each was verified directly against
+  // the corrected renderer before being added here.
+  const KNOWN_NOW_BLOCKED = new Set([
+    'circle 52mm, 1 picto(s)',
+    'circle 52mm, 2 picto(s)',
+    'circle 52mm, 3 picto(s)',
+    'rectangle 99.1x57.3mm, 1 picto(s)',
+    'rectangle 99.1x57.3mm, 2 picto(s)',
+    'rectangle 99.1x57.3mm, 3 picto(s)',
+  ]);
 
   for(const c of cases){
     for(const n of [1,2,3]){
@@ -201,15 +222,22 @@ const labelRendererSource = fs.readFileSync(path.join(__dirname,'..','label-rend
   // confirms the search doesn't under-grow when content permits. With the
   // second-pass correction, PICTO_TARGET_MM is the ~11.3137mm red-square-
   // side equivalent of the 16mm OUTER BOUNDING BOX target (not a 16mm
-  // square side), so every single-pictogram fixture below -- including
-  // circle 52mm (CLPeasy's smallest supported label size) and rectangle
-  // 99.1x57.3mm (EU30009, a candle fixture where the BS EN 15494
-  // candle-safety row also reserves footer space) -- comfortably reaches
-  // the full target directly; no exceptions are needed at this smaller,
-  // correctly-defined target size.
-  const roomySingle = seenSizes.filter(s => / 1 picto/.test(s.label));
+  // square side), so every single-pictogram fixture that still FITS reaches
+  // the full target directly.
+  //
+  // Sept 2026 correction (genuine 1.2mm mandatory-text floor): circle 52mm
+  // and EU30009 (99.1x57.3mm rectangle) are now in KNOWN_NOW_BLOCKED even
+  // at 1 pictogram (see comment above the main loop) -- a blocked label is
+  // pinned at the 10mm FLOOR, not the target, by design (r.fits:false means
+  // the search never got to grow past the minimum), so those two are
+  // excluded here rather than asserted against the target.
+  const roomySingle = seenSizes.filter(s => / 1 picto/.test(s.label) && !KNOWN_NOW_BLOCKED.has(s.label));
   for(const s of roomySingle){
     assert.strictEqual(s.mm, PICTO_TARGET_MM, `${s.label}: a roomy single-pictogram label must reach the target (${PICTO_TARGET_MM.toFixed(4)}mm)`);
+  }
+  const blockedSingle = seenSizes.filter(s => / 1 picto/.test(s.label) && KNOWN_NOW_BLOCKED.has(s.label));
+  for(const s of blockedSingle){
+    assert.strictEqual(s.mm, PICTO_FLOOR_MM, `${s.label}: a blocked single-pictogram label is expected to be pinned at the 10mm floor, not the target`);
   }
 
   // ── 2. Dense content reduces only as much as required (graduated, not a
@@ -258,10 +286,23 @@ const labelRendererSource = fs.readFileSync(path.join(__dirname,'..','label-rend
   //    used to prove parity here, NOT added as a new Builder preset or
   //    Composer registry template (neither exists in this codebase; this
   //    is size:'custom', not a preset key). ─────────────────────────────
+  //
+  // Sept 2026 correction (genuine 1.2mm mandatory-text floor): this exact
+  // base fixture (H317/P273/one sensitiser, 1 pictogram) no longer fits a
+  // 63x44mm rectangle once the mandatory text floor is measured as a real
+  // DM Sans x-height rather than a nominal SVG font-size. Verified directly
+  // against the corrected renderer: fits:false with warnings including
+  // 'hazard-text-overflow'. Parity (identical mm size/ratio across all
+  // three caller scales) must still hold even while blocked -- that
+  // invariant does not depend on fits -- so assertParity() below is
+  // unchanged; only the fits expectation is updated to match the new,
+  // stricter, correct behaviour. This is a real, disclosed consequence of
+  // the floor correction, not a test-only accommodation.
   const custom63x44 = mkData('rectangle', null, ['exclamation'], [63,44]);
   const m63x44 = measureAllScales(custom63x44);
   assertParity('63x44mm custom rectangle (regression fixture, not a preset), 1 picto', m63x44);
-  assert.strictEqual(m63x44.builder.fits, true, '63x44mm custom rectangle fixture is expected to fit');
+  assert.strictEqual(m63x44.builder.fits, false, '63x44mm custom rectangle fixture is expected to no longer fit under the corrected genuine 1.2mm mandatory-text floor');
+  assert(m63x44.builder.warnings.includes('hazard-text-overflow'), '63x44mm custom rectangle fixture must report hazard-text-overflow as the blocking reason');
 
   // ── 5. Short vs. long mandatory content on the SAME physical label --
   //    proves the search actually responds to content length (not just

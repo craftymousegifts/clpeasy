@@ -231,13 +231,33 @@ const emptyQuery = {
     assert(p280Chip.classList.contains('selected'), 'P280 chip must visibly show as selected after a valid confirm');
 
     // Complete a full, valid label and confirm the render + Step 3 gate.
+    //
+    // Correction (read-only impact assessment, 2026-09, Michaela's
+    // decision): this fixture no longer genuinely fits Builder's default
+    // 52mm circle once the mandatory-text floor was corrected to a
+    // genuinely measured 1.2mm x-height -- confirmed directly, even after
+    // moving to the 63mm circle preset, because S.pStatements/S.pSelected
+    // still carried the leftover P102/P261/P501 codes extracted by the
+    // earlier Smart Paste check (section 1 above), on top of P280 -- four
+    // P-codes were never this section's intent (that section only tested
+    // extraction, and nothing later depends on those three specific codes
+    // surviving into this "complete a full, valid label" fixture). This
+    // section exists to prove P280's WORDING is built and rendered
+    // correctly, not to test legibility/fit with an accumulated 4-P-code
+    // combination, so both the leftover P-codes are cleared here (down to
+    // P280 alone, its actual subject) AND the size is moved to the 63mm
+    // circle preset -- confirmed directly to genuinely fit this content
+    // with the P280 wording on one line.
+    bwindow.selectSize(63);
     bwindow.eval(`
       S.scentName='Lavender Fields'; S.productType='Candle'; S.bizName='Crafty Mouse Gifts';
       S.bizPhone='01234 567890'; S.signal='Warning';
       S.hSelected=['H317']; S.hStatements='H317';
+      S.pSelected=['P280']; S.pStatements='P280';
       S.sensitisers=['Linalool']; S.pictograms=['exclamation'];
     `);
     bdocument.getElementById('h-statements').value = 'H317';
+    bdocument.getElementById('p-statements').value = 'P280';
     bdocument.getElementById('hazard-confirm').checked = true;
     // saveLabel()/canLeaveApprovedBuilderStep() both call readForm(), which
     // re-reads these fields from the DOM (not from S directly) -- set the
@@ -351,9 +371,17 @@ const emptyQuery = {
     const printErrors = [];
     const printVC = new VirtualConsole();
     printVC.on('jsdomError', e => printErrors.push(e.message));
+    // Correction (read-only impact assessment, 2026-09): as with the
+    // Builder fixture above, this exact content no longer genuinely fits
+    // a 52mm circle at the corrected genuine 1.2mm x-height floor. Moved
+    // to 75mm rather than 63mm -- 63mm fits THIS fixture's own content
+    // (confirmed directly), but the XSS variant further below (same base,
+    // a longer p280Other free-text value) needs 75mm to genuinely fit
+    // too, and every P280 fixture in this block shares one sheet (and
+    // therefore one locked size) -- confirmed directly at 75mm for both.
     const p280LabelValid = {
       scentName:'Lavender Fields', productType:'Candle', bizName:'Crafty Mouse Gifts',
-      shape:'circle', size:'custom', customW:52, customH:52,
+      shape:'circle', size:'custom', customW:75, customH:75,
       bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'',
       signal:'Warning', hStatements:'H317', pStatements:'P280', p280Items:['gloves','eye'],
       sensitisers:['Linalool'], pictograms:['exclamation'], textColour:'dark', showBorder:true,

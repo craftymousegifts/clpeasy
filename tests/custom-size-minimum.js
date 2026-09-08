@@ -1,14 +1,32 @@
-// Custom-size minimum (52mm) regression test.
+// Custom-size minimum regression test.
 //
 // CLPeasy-supported minimum for a CUSTOM label size (not a claim about
 // GB-CLP's own legal minimum -- see the exact wording asserted below):
-// circle diameter, square side, and rectangle width AND height must all be
-// >=52mm. Approved PRESET sizes are exempt, even one below 52mm. Builder
-// must block Step 1 progression, saving, and every export path (PNG/SVG/
-// PDF, via the existing window._labelBlockDownload gate); Composer must
-// refuse a legacy/custom saved label under 52mm rather than silently
+// circle diameter and square side must be >=52mm, unchanged.
+//
+// Corrected 2026-09-07 (Michaela's explicit decision): a rectangle used to
+// require BOTH width AND height >=52mm. That disagreed with CLPeasy's own
+// long-standing 52mm/63mm rectangle size-card presets (which have always
+// produced 52x36mm and 63x44mm -- both already below 52mm on the short
+// side) and with showcase.html's advertised examples (60x40mm, 70x50mm,
+// 76x51mm). A rectangle is now supported from 52mm on its LONG side and
+// 36mm on its SHORT side, in EITHER orientation -- verified below via the
+// real UI entry path (typing into custom-w/custom-h and calling the real
+// onDimInput()/isCustomSizeBelowSupportedMinimum()/canLeaveApprovedBuilder
+// Step(1)/saveLabel()/window._labelBlockDownload chain), for every
+// advertised example, in both portrait and landscape orientation, and
+// cross-checked against LabelRenderer.getPhysicalSpec()/getLabelDims() so
+// Builder, the saved record, and the shared renderer can never disagree on
+// what a given entry actually produces. Approved PRESET sizes remain
+// exempt, even one below the relevant floor. Builder must block Step 1
+// progression, saving, and every export path (PNG/SVG/PDF, via the
+// existing window._labelBlockDownload gate); Composer must refuse a
+// legacy/custom saved label below the relevant floor rather than silently
 // rendering it. The entered value itself is never silently altered --
-// only blocked.
+// only blocked. Clearing this size floor is never a promise that a given
+// label's actual content will fit at it -- LabelRenderer.renderLabel()'s
+// own fit checks (fits/footer-clipped/hazard-text-overflow) are separate
+// and still apply; this test covers ONLY the size-gate, not content fit.
 const fs = require('fs');
 const assert = require('assert');
 const { JSDOM, VirtualConsole } = require('jsdom');
@@ -41,6 +59,7 @@ const emptyQuery = {
 };
 
 const EXPECTED_MSG = 'CLPeasy supports custom label dimensions from 52mm. Choose 52mm or larger.';
+const EXPECTED_RECT_MSG = 'CLPeasy supports custom rectangle labels from 52mm on the long side and 36mm on the short side (either orientation).';
 
 (async () => {
   // ── Builder ────────────────────────────────────────────────────────
@@ -133,10 +152,16 @@ const EXPECTED_MSG = 'CLPeasy supports custom label dimensions from 52mm. Choose
       setCustomDimsRaw(shape, w, h);
       fillMinimalValidForm();
       // 'blank' resolves (via onDimInput()/readForm()'s own pre-existing
-      // `||50` fallback) to 50mm, which is itself below 52mm -- so it must
-      // block, same as every other case in this list.
+      // `||50` fallback) to 50mm, which is itself below every shape's
+      // floor -- so it must block, same as every other case in this list.
+      // This loop always sets width===height (h=w above), so for a
+      // rectangle here long===short===w and the new asymmetric rule
+      // (long>=52 && short>=36) collapses to exactly the same w>=52 test
+      // as circle/square -- the asymmetric behaviour itself is verified
+      // separately below, where width and height actually differ.
       const numericW = w==='blank' ? 50 : w;
       const expectBlocked = numericW < 52;
+      const expectedMsg = shape==='rectangle' ? EXPECTED_RECT_MSG : EXPECTED_MSG;
       const isBelow = bwindow.eval('isCustomSizeBelowSupportedMinimum()');
       assert.strictEqual(isBelow, expectBlocked, `${shape} width=${w}: isCustomSizeBelowSupportedMinimum() should be ${expectBlocked}`);
 
@@ -151,7 +176,7 @@ const EXPECTED_MSG = 'CLPeasy supports custom label dimensions from 52mm. Choose
       const canLeave = bwindow.canLeaveApprovedBuilderStep(1);
       assert.strictEqual(canLeave, !expectBlocked, `${shape} width=${w}: Step 1 progression should be ${expectBlocked?'blocked':'allowed'}`);
       if(expectBlocked){
-        assert.strictEqual(bwindow.__lastAlert, EXPECTED_MSG, `${shape} width=${w}: Step 1 block must show the approved CLPeasy-supported-minimum message, not the older generic "valid label size" wording`);
+        assert.strictEqual(bwindow.__lastAlert, expectedMsg, `${shape} width=${w}: Step 1 block must show the approved CLPeasy-supported-minimum message, not the older generic "valid label size" wording`);
       }
 
       // Save
@@ -163,7 +188,7 @@ const EXPECTED_MSG = 'CLPeasy supports custom label dimensions from 52mm. Choose
       const savedAfter = bwindow.eval('getSaved().length');
       if(expectBlocked){
         assert.strictEqual(savedAfter, savedBefore, `${shape} width=${w}: saveLabel() must not save a label below the supported minimum`);
-        assert.strictEqual(bwindow.__lastAlert, EXPECTED_MSG, `${shape} width=${w}: saveLabel() block must show the exact message`);
+        assert.strictEqual(bwindow.__lastAlert, expectedMsg, `${shape} width=${w}: saveLabel() block must show the exact message`);
       } else {
         assert.strictEqual(savedAfter, savedBefore+1, `${shape} width=${w}: saveLabel() must succeed for a valid custom size`);
       }
@@ -181,17 +206,89 @@ const EXPECTED_MSG = 'CLPeasy supports custom label dimensions from 52mm. Choose
     }
   }
 
-  // Rectangle: width and height must each independently gate (a valid
-  // width with an invalid height must still block, and vice versa).
+  // Rectangle: the real rule is long-side>=52mm && short-side>=36mm, in
+  // EITHER orientation -- not "both dimensions >=52mm". 60x40 and 40x60
+  // (long=60,short=40) both satisfy that and must NOT block; a short side
+  // below 36 (e.g. 60x30) must still block regardless of orientation; a
+  // long side below 52 (e.g. 40x40, 51x51) must still block even though
+  // the short-side floor alone would be satisfied.
   setCustomDims('rectangle', 60, 40);
   fillMinimalValidForm();
-  assert.strictEqual(bwindow.eval('isCustomSizeBelowSupportedMinimum()'), true, 'rectangle 60x40: height alone below 52mm must still block');
+  assert.strictEqual(bwindow.eval('isCustomSizeBelowSupportedMinimum()'), false, 'rectangle 60x40 (long=60,short=40): must NOT block -- matches CLPeasy\'s own advertised 60x40mm example');
   setCustomDims('rectangle', 40, 60);
   fillMinimalValidForm();
-  assert.strictEqual(bwindow.eval('isCustomSizeBelowSupportedMinimum()'), true, 'rectangle 40x60: width alone below 52mm must still block');
+  assert.strictEqual(bwindow.eval('isCustomSizeBelowSupportedMinimum()'), false, 'rectangle 40x60 (landscape of the same 60x40, long=60,short=40): must NOT block -- orientation must not matter');
   setCustomDims('rectangle', 60, 60);
   fillMinimalValidForm();
   assert.strictEqual(bwindow.eval('isCustomSizeBelowSupportedMinimum()'), false, 'rectangle 60x60: both dimensions >=52mm must not block');
+  setCustomDims('rectangle', 60, 30);
+  fillMinimalValidForm();
+  assert.strictEqual(bwindow.eval('isCustomSizeBelowSupportedMinimum()'), true, 'rectangle 60x30 (long=60 OK, short=30<36): must still block on the short-side floor');
+  setCustomDims('rectangle', 30, 60);
+  fillMinimalValidForm();
+  assert.strictEqual(bwindow.eval('isCustomSizeBelowSupportedMinimum()'), true, 'rectangle 30x60 (landscape of 60x30): must still block regardless of orientation');
+  setCustomDims('rectangle', 40, 40);
+  fillMinimalValidForm();
+  assert.strictEqual(bwindow.eval('isCustomSizeBelowSupportedMinimum()'), true, 'rectangle 40x40 (short-side floor alone satisfied, but long=40<52): must still block on the long-side floor');
+  setCustomDims('rectangle', 36, 52);
+  fillMinimalValidForm();
+  assert.strictEqual(bwindow.eval('isCustomSizeBelowSupportedMinimum()'), false, 'rectangle 36x52 (exactly at both floors, long side second): must NOT block -- exact boundary');
+  // Note: onDimInput() parseInt()s the raw field value (matching Builder's
+  // existing whole-mm-only custom size entry), so the boundary just below
+  // the 36mm short-side floor is tested as an integer (35), not a
+  // fractional value that would be silently truncated by that same
+  // pre-existing parseInt() before ever reaching the gate.
+  setCustomDims('rectangle', 52, 35);
+  fillMinimalValidForm();
+  assert.strictEqual(bwindow.eval('isCustomSizeBelowSupportedMinimum()'), true, 'rectangle 52x35 (long side fine, short side 1mm under its 36mm floor): must block -- exact boundary');
+
+  // ── Every rectangle example CLPeasy has actually advertised or shipped
+  //    as a preset, verified through the REAL UI entry path (typing into
+  //    custom-w/custom-h, real onDimInput()), in BOTH portrait and
+  //    landscape orientation, cross-checked against
+  //    LabelRenderer.getPhysicalSpec() so Builder's own state and the
+  //    shared renderer agree on the exact dimensions produced. None of
+  //    these are blocked by the size gate (whether the exact CONTENT on a
+  //    given label fits at that size is a separate, unrelated check --
+  //    see tests/fail-closed-size-boundaries.js and
+  //    tests/correction-batch-symbol-sizing.js). ──────────────────────
+  const advertisedRectangles = [
+    [52, 36], // named 52mm preset's own derived rectangle dims
+    [60, 40], // showcase.html example
+    [63, 44], // named 63mm preset's own derived rectangle dims
+    [70, 50], // showcase.html example
+    [76, 51], // showcase.html example
+  ];
+  for(const [long, short] of advertisedRectangles){
+    for(const [w, h] of [[long, short], [short, long]]){
+      bwindow.eval('editingLabelId=null;');
+      setCustomDims('rectangle', w, h);
+      fillMinimalValidForm();
+      const below = bwindow.eval('isCustomSizeBelowSupportedMinimum()');
+      assert.strictEqual(below, false, `rectangle ${w}x${h}mm (advertised ${long}x${short}mm example): must not be blocked by the custom-size gate`);
+      const canLeave2 = bwindow.canLeaveApprovedBuilderStep(1);
+      assert.strictEqual(canLeave2, true, `rectangle ${w}x${h}mm: Step 1 progression must be allowed (the size gate alone; this step never checks content fit)`);
+      // Deliberately NOT asserting window._labelBlockDownload here: at the
+      // smallest advertised sizes (e.g. 52x36mm) minimal form content can
+      // legitimately fail the renderer's OWN separate fit checks (footer-
+      // clipped/hazard-text-overflow) even though the size gate itself
+      // correctly allows the size -- exactly the distinction Michaela drew
+      // ("never imply that an allowed physical size guarantees all content
+      // will fit"). That content-fit boundary is covered by
+      // tests/fail-closed-size-boundaries.js and
+      // tests/correction-batch-symbol-sizing.js, not this file.
+      // Builder's own S.customW/S.customH, the shared renderer's
+      // getLabelDims(), and getPhysicalSpec() must all agree exactly with
+      // what was actually typed -- no silent rounding/swapping anywhere
+      // in the chain.
+      const sDims = bwindow.eval('({w:S.customW,h:S.customH})');
+      assert.strictEqual(sDims.w, w, `rectangle ${w}x${h}mm: S.customW must equal exactly what was typed`);
+      assert.strictEqual(sDims.h, h, `rectangle ${w}x${h}mm: S.customH must equal exactly what was typed`);
+      const spec = bwindow.eval(`LabelRenderer.getPhysicalSpec({shape:'rectangle', size:'custom', customW:${w}, customH:${h}})`);
+      assert.strictEqual(spec.widthMm, w, `rectangle ${w}x${h}mm: LabelRenderer.getPhysicalSpec().widthMm must match Builder's own dimensions`);
+      assert.strictEqual(spec.heightMm, h, `rectangle ${w}x${h}mm: LabelRenderer.getPhysicalSpec().heightMm must match Builder's own dimensions`);
+    }
+  }
 
   // Preset sizes are exempt, even one below 52mm -- simulate a preset
   // (S.size a fixed value, not 'custom') carrying a sub-52mm dimension;
@@ -214,9 +311,18 @@ const EXPECTED_MSG = 'CLPeasy supports custom label dimensions from 52mm. Choose
   assert.strictEqual(presetInvalidCanLeave, false, 'an invalid preset size (5mm) must still block Step 1 progression');
   assert.strictEqual(bwindow.__lastAlert, 'Please choose a valid label size before continuing.', 'an invalid PRESET size must show the older generic message, unchanged -- not the CLPeasy-supported-minimum wording, which is for custom sizes only');
 
-  // HTML min="52" on both custom dimension inputs.
-  assert.strictEqual(bdocument.getElementById('custom-w').getAttribute('min'), '52', 'custom-w input must have min="52"');
-  assert.strictEqual(bdocument.getElementById('custom-h').getAttribute('min'), '52', 'custom-h input must have min="52"');
+  // HTML min on both custom dimension inputs -- a soft browser hint only
+  // (isCustomSizeBelowSupportedMinimum() above is the real, authoritative
+  // gate regardless of this attribute), but it must still reflect the
+  // right floor per shape: 52 for circle/square (unchanged), relaxed to
+  // 36 for rectangle (2026-09-07, see syncDimFields()'s own comment)
+  // since either rectangle field can legitimately be the short side.
+  bwindow.selectShape('circle');
+  assert.strictEqual(bdocument.getElementById('custom-w').getAttribute('min'), '52', 'circle: custom-w input must have min="52"');
+  assert.strictEqual(bdocument.getElementById('custom-h').getAttribute('min'), '52', 'circle: custom-h input must have min="52"');
+  bwindow.selectShape('rectangle');
+  assert.strictEqual(bdocument.getElementById('custom-w').getAttribute('min'), '36', 'rectangle: custom-w input must have min="36" (either field may be the short side)');
+  assert.strictEqual(bdocument.getElementById('custom-h').getAttribute('min'), '36', 'rectangle: custom-h input must have min="36" (either field may be the short side)');
 
   if (builderErrors.length) throw new Error('jsdom runtime errors (builder): ' + builderErrors.join('; '));
 
@@ -234,6 +340,13 @@ const EXPECTED_MSG = 'CLPeasy supports custom label dimensions from 52mm. Choose
   };
   const validCustomLabel = { ...legacySmallLabel, scentName:'Valid Custom 60mm', customW:60, customH:60 };
   const presetBelow52 = { ...legacySmallLabel, scentName:'Synthetic Preset Below 52', size:'40', customW:40, customH:40 };
+  // A saved rectangle at one of CLPeasy's own advertised examples
+  // (60x40mm) -- under the OLD both->=52mm rule this would have been
+  // wrongly refused by Composer even though it was never blocked from
+  // being saved in the first place (saveLabel() itself never enforced
+  // this floor -- only Builder's Step 1/download gates did); the
+  // corrected rule must accept it.
+  const legacyRect6040 = { ...legacySmallLabel, scentName:'Advertised Rect 60x40', shape:'rectangle', customW:60, customH:40 };
   const pdom = new JSDOM(printSource, {
     url: 'https://local.clpeasy.test/print.html',
     runScripts: 'dangerously',
@@ -273,7 +386,7 @@ const EXPECTED_MSG = 'CLPeasy supports custom label dimensions from 52mm. Choose
         from: () => Object.create(emptyQuery),
         rpc: async () => ({ data:false, error:null })
       }) };
-      window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify([legacySmallLabel, validCustomLabel, presetBelow52]));
+      window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify([legacySmallLabel, validCustomLabel, presetBelow52, legacyRect6040]));
     }
   });
   await new Promise(resolve => setTimeout(resolve, 60));
@@ -291,7 +404,13 @@ const EXPECTED_MSG = 'CLPeasy supports custom label dimensions from 52mm. Choose
   const presetCheck = pwindow.eval('isCustomSizeBelowSupportedMinimumSaved(getSaved()[2])');
   assert.strictEqual(presetCheck, false, 'a non-custom (preset) saved size must be exempt from the custom-size minimum check, even below 52mm');
 
+  // A saved rectangle at CLPeasy's own advertised 60x40mm example must be
+  // accepted by Composer -- under the OLD both->=52mm rule this would
+  // have been wrongly refused (2026-09-07 correction).
+  const rect6040Err = pwindow.eval('canAddToSheet(getSaved()[3], 1)');
+  assert.strictEqual(rect6040Err, null, `Composer must allow a saved rectangle at the advertised 60x40mm example, got error: ${rect6040Err}`);
+
   if (printErrors.length) throw new Error('jsdom runtime errors (print): ' + printErrors.join('; '));
 
-  console.log('custom-size-minimum checks passed (blank/0/negative/3/9/10/51/51.9/52/>52 for circle/square/rectangle, Step 1 + save + export all blocked with the ONE approved CLPeasy-supported-minimum message for every invalid custom case, older preset-only "valid label size" message proven unchanged and non-leaking, entered value never silently altered, presets exempt, Composer refuses legacy sub-52mm custom labels)');
+  console.log('custom-size-minimum checks passed (blank/0/negative/3/9/10/51/51.9/52/>52 for circle/square/rectangle; rectangle long>=52mm/short>=36mm asymmetric rule verified in both orientations for every advertised example -- 52x36, 60x40, 63x44, 70x50, 76x51 -- via the real UI entry path with Builder/renderer dimension-agreement checks; Step 1 + save + export all blocked with the correct shape-specific CLPeasy-supported-minimum message for every invalid custom case; older preset-only "valid label size" message proven unchanged and non-leaking; entered value never silently altered; presets exempt; HTML min attribute reflects the right floor per shape; Composer refuses legacy sub-floor custom labels and accepts a legacy advertised-example rectangle)');
 })().catch(e => { console.error(e); process.exit(1); });

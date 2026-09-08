@@ -56,6 +56,18 @@ const labelVanilla = {
 };
 const labelWrongShape = { scentName:'Rose Candle', productType:'Scented Candle', signal:'WARNING', shape:'circle', size:63.5, bizName:'Test Biz', hStatements:'H315', pStatements:'', sensitisers:[], pictograms:['exclamation'] };
 const labelWrongSize = { scentName:'Cinnamon Wax Melt', productType:'Wax Melt', signal:'WARNING', shape:'rectangle', size:'custom', customW:70, customH:68, bizName:'Test Biz', hStatements:'H315', pStatements:'', sensitisers:[], pictograms:['exclamation'] };
+// Sept 2026 correction (genuine 1.2mm mandatory-text floor): added for the
+// "PDF export stays true A4" check further below only. Lavender/Vanilla
+// (the real 29 Aug 2026 dense stress-case content) no longer fit
+// 99.1x57.3mm under the corrected floor and now correctly trip export
+// blocking (see the filledCount/invalidCount note further down) -- exactly
+// right for THAT check, but it means they can no longer also be used to
+// verify unrelated PDF page geometry, which needs a label that exports
+// without being blocked. This fixture is simple/light content, verified
+// directly against the corrected renderer to fit 99.1x57.3mm with zero
+// warnings, used only to swap onto the sheet immediately before the
+// PDF/A4 geometry check.
+const labelSimple = { scentName:'Rosemary Candle', productType:'Scented Candle', signal:'WARNING', shape:'rectangle', size:'custom', customW:99.1, customH:57.3, bizName:'Test Biz', hStatements:'H315', pStatements:'P273', sensitisers:[], pictograms:['exclamation'] };
 
 const dom = new JSDOM(source, {
   url: 'https://local.clpeasy.test/print.html',
@@ -115,7 +127,7 @@ const dom = new JSDOM(source, {
       rpc: async () => ({ data:false, error:null })
     }) };
     // Seed the guest-namespace saved-label library before init() runs.
-    window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify([labelLavender, labelVanilla, labelWrongShape, labelWrongSize]));
+    window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify([labelLavender, labelVanilla, labelWrongShape, labelWrongSize, labelSimple]));
   }
 });
 
@@ -139,6 +151,7 @@ setTimeout(() => {
     const idVanilla = idOf(labelVanilla.scentName);
     const idWrongShape = idOf(labelWrongShape.scentName);
     const idWrongSize = idOf(labelWrongSize.scentName);
+    const idSimple = idOf(labelSimple.scentName);
 
     // ── Registry integrity ──────────────────────────────────────
     const reg = window.eval("getRegistryTemplate('eu30009')");
@@ -207,12 +220,31 @@ setTimeout(() => {
 
     const canvasHTML = document.getElementById('sheet-canvas').innerHTML;
     const usedCount = (canvasHTML.match(/sheet-cell-used/g)||[]).length;
-    const filledCount = (canvasHTML.match(/class="sheet-cell"/g)||[]).length;
+    // Sept 2026 correction (genuine 1.2mm mandatory-text floor): both
+    // fixtures above (real 29 Aug 2026 stress-case content, deliberately
+    // dense, at 99.1x57.3mm) are now individually verified to no longer
+    // fit under the corrected, stricter floor (fits:false,
+    // 'hazard-text-overflow') -- a genuine, disclosed consequence of the
+    // floor correction reaching even EU30009, one of CLPeasy's larger
+    // supported label sizes. renderSheetPosition() correctly still places
+    // and fully renders each cell (no content is dropped or truncated --
+    // svgWrapped() for hazard/P-statement/sensitiser text always runs
+    // regardless of fit status; only a visual "FULL CONTENT DOES NOT FIT"
+    // overlay is added on top), but marks the cell class
+    // `"sheet-cell sheet-cell-invalid"` instead of the bare `"sheet-cell"`
+    // this test originally expected. The strict `class="sheet-cell"` match
+    // below is therefore widened to also match the invalid variant, and a
+    // new explicit invalid-count assertion records the finding rather than
+    // silently accepting it.
+    const filledCount = (canvasHTML.match(/class="sheet-cell( sheet-cell-invalid)?"/g)||[]).length;
+    const invalidCount = (canvasHTML.match(/class="sheet-cell sheet-cell-invalid"/g)||[]).length;
     const emptyCount = (canvasHTML.match(/sheet-cell-empty/g)||[]).length;
     assert.strictEqual(usedCount, 2, `expected 2 already-used positions, got ${usedCount}`);
     assert.strictEqual(filledCount, 5, `expected 5 filled positions (2 Lavender + 3 Vanilla), got ${filledCount}`);
+    assert.strictEqual(invalidCount, 5, `expected all 5 filled positions to be flagged sheet-cell-invalid under the corrected floor (both fixtures no longer fit 99.1x57.3mm), got ${invalidCount}`);
     assert.strictEqual(emptyCount, 3, `expected 3 blank positions, got ${emptyCount}`);
     assert.strictEqual(usedCount+filledCount+emptyCount, 10, 'positions do not add up to the 10-slot EU30009 sheet');
+    assert(window.eval('sheetFitIssues').length >= 2, `expected at least 2 fit issues to be recorded (one per non-fitting saved label), got ${window.eval('sheetFitIssues.length')}`);
 
     // ── Real completed label content, not truncated (Testing Req 5,13) ──
     assert(canvasHTML.includes('Lavender Candle'), 'Lavender label content missing from sheet');
@@ -241,7 +273,20 @@ setTimeout(() => {
     // one line rather than the full string (or a substring straddling the
     // wrap point).
     assert(canvasHTML.includes(P_LIB.find(p => p.code === 'P302+P352').desc), `combined P-code P302+P352 truncated/missing from sheet render`);
-    assert(canvasHTML.includes(P_LIB.find(p => p.code === 'P333+P313').desc), `combined P-code P333+P313 truncated/missing from sheet render`);
+    // Sept 2026 correction (genuine 1.2mm mandatory-text floor): the
+    // corrected floor is a real physical x-height roughly double the old,
+    // uncorrected nominal-font-size figure, so at this dense 5-P-statement
+    // fixture (now genuinely too dense for 99.1x57.3mm -- see the
+    // filledCount/invalidCount note above) the auto-fit engine lands on a
+    // LARGER minimum font than before, which wraps fewer characters per
+    // line. P333+P313's own description now legitimately straddles a
+    // <tspan> wrap point ("...get medical" / "advice. IF IN EYES...") --
+    // real, correct word-wrapping, not truncation (nothing is dropped; see
+    // the P305+P351+P338 check just below, which already documents this
+    // same category of wrap-point split). Checked the same way: the part
+    // that stays intact on one line, plus the wrapped continuation.
+    assert(canvasHTML.includes('occurs: get medical'), `combined P-code P333+P313 truncated/missing from sheet render (opening clause)`);
+    assert(canvasHTML.includes('advice. IF IN EYES'), `combined P-code P333+P313 truncated/missing from sheet render (wrapped continuation)`);
     assert(canvasHTML.includes('IF IN EYES: rinse'), `combined P-code P305+P351+P338 truncated/missing from sheet render (opening clause)`);
     assert(canvasHTML.includes('cautiously with water for several minutes'), `combined P-code P305+P351+P338 truncated/missing from sheet render (wrapped continuation)`);
     // NOTE: buildLabelSVGFromData() (pre-existing, unmodified by Phase 1)
@@ -255,6 +300,17 @@ setTimeout(() => {
     assert(Math.abs(dims.w/dims.h - reg.labelWidthMm/reg.labelHeightMm) < 0.001, 'fixed-size EU30009 label aspect ratio does not match the template cell — would stretch');
 
     // ── PDF export stays true A4 for EU30009 too (Testing Req 14) ──
+    // Swap off the now-blocked Lavender/Vanilla content (see above) onto
+    // the light labelSimple fixture -- this check is about PDF PAGE
+    // GEOMETRY, not label content, and export is correctly refused
+    // whenever any occupied cell doesn't fit (see getSheetFitBlockMessage()
+    // in print.html), so a non-blocked sheet is required to reach it at
+    // all.
+    window.eval(`setQty('${idLavender}', 0)`);
+    window.eval(`setQty('${idVanilla}', 0)`);
+    window.eval(`addToSheet('${idSimple}')`);
+    window.rebuildSheet();
+    assert.strictEqual(window.eval('sheetFitIssues.length'), 0, `expected the sheet to have no fit issues once swapped to simple content, got ${window.eval('JSON.stringify(sheetFitIssues)')}`);
     window.downloadPDF();
     const svgDims = window.eval('window.__capturedSvg');
     assert(svgDims, 'downloadPDF did not build a sheet SVG');

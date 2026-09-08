@@ -878,17 +878,16 @@ async function initComposerLibrary(){
   // Checkpoint C2: resolve ?label= only now that auth AND
   // LabelLibrary.init() have both completed.
   resolvePreloadFromURL();
-  // Section 2 (workflow-order correction): arriving through "Print
-  // multiple" (a resolved ?label= preload) must start with NO sheet
-  // template chosen -- the old default straight into Custom Sheet's
-  // generic 52mm/3x5 layout was shown before the actual selected label,
-  // which was confusing. The ordinary entry point (no ?label=, e.g. from
-  // the sidebar) is completely unaffected -- currentTpl keeps its original
-  // 'custom' default and the Custom sheet card stays preselected in the
-  // markup exactly as before.
+  // Section 8 (2026-09-06, streamlined deep-link journey): arriving through
+  // "Print multiple" (a resolved ?label= preload) now auto-selects a Custom
+  // Sheet sized to the label's own real dimensions AND places one copy of
+  // it in the sheet's first position -- see autoInitPreloadedLabelOnSheet()
+  // below for the exact conditions and the safe fallback. The ordinary
+  // entry point (no ?label=, e.g. from the sidebar) is completely
+  // unaffected -- currentTpl keeps its original 'custom' default and the
+  // Custom sheet card stays preselected in the markup exactly as before.
   if(preloadedLabelId){
-    currentTpl=null;
-    document.querySelectorAll('.tpl-card').forEach(c=>c.classList.remove('selected'));
+    autoInitPreloadedLabelOnSheet();
   }
   renderSavedList();
   rebuildSheet();
@@ -1142,6 +1141,92 @@ function initCustomSheetFromReference(e){
     const mmEl=document.getElementById('cust-label-mm');
     if(mmEl)mmEl.value=Math.max(52,Math.round(dims.w*100)/100);
   }
+}
+
+// The largest Cols x Rows grid of a wMm x hMm cell that actually fits an
+// A4 sheet at the current margin/gap settings -- the same formula
+// initCustomRectLockIfNeeded() above already uses for a locked non-square
+// rectangle, generalised so autoInitPreloadedLabelOnSheet() (below) can
+// apply the same real "calculated A4 layout" to a circle/square label too,
+// instead of leaving Cols/Rows at TEMPLATES.custom's static 3x5 default
+// (which has no relationship to the actual label being auto-placed and,
+// per Michaela's 2026-09-06 review, must never be silently shown/used for
+// this deep-link journey). Read-only: never writes to the DOM itself.
+function calcA4GridForCell(wMm,hMm){
+  const m=Math.max(0,parseFloat(document.getElementById('cust-margin')?.value)||10);
+  const gapH=Math.max(0,parseFloat(document.getElementById('cust-gapH')?.value)||5);
+  const gapV=Math.max(0,parseFloat(document.getElementById('cust-gapV')?.value)||5);
+  const maxCols=Math.max(1,Math.floor((A4_W-2*m+gapH)/(wMm+gapH)));
+  const maxRows=Math.max(1,Math.floor((A4_H-2*m+gapV)/(hMm+gapV)));
+  return {cols:maxCols,rows:maxRows};
+}
+
+// Section 8 (2026-09-06, streamlined deep-link journey): called once, from
+// initComposerLibrary(), only when print.html?label=<id> resolved to a
+// real saved label. Selects a Custom Sheet sized to that label's own real
+// dimensions -- a calculated A4 grid, never the generic 52mm/3x5 default --
+// and places exactly one copy of it in the sheet's first position, so the
+// common "print copies of this one label" journey needs no extra clicks.
+// The user can still freely switch to a different template or change the
+// quantity afterwards (this only calls the exact same
+// canAddToSheet()/sheetItems mechanism every other Add path already goes
+// through -- see addToSheet() -- it does not bypass or duplicate that
+// authority). Never runs when unsafe: requires a genuinely empty sheet
+// (always true on a fresh page load, checked explicitly rather than
+// assumed in case that ever changes -- "conflicts with an existing saved
+// composition") AND a Custom Sheet grid that actually has at least one
+// valid slot for this label's real size ("automatic placement is
+// unsafe"). Either check failing falls back to exactly the pre-existing
+// "present the template choice" state (currentTpl=null, no card marked
+// selected) instead of forcing a broken or unrelated layout -- the same
+// safe state this deep link already fell back to before this feature
+// existed.
+function autoInitPreloadedLabelOnSheet(){
+  const fallbackToTemplateChoice=()=>{
+    currentTpl=null;
+    document.querySelectorAll('.tpl-card').forEach(c=>c.classList.remove('selected'));
+  };
+  // A composition already exists on the sheet (not reachable today -- this
+  // function only ever runs once, immediately after LabelLibrary.init(),
+  // before anything else can populate sheetItems -- kept as an explicit
+  // guard in case that ever changes) -- leave it completely untouched
+  // rather than resetting/overwriting it to present a "clean" template
+  // choice; auto-placement simply does not happen this time.
+  if(sheetItems.length)return;
+  if(!preloadedLabelId){ fallbackToTemplateChoice(); return; }
+  const label=resolveSheetLabel(preloadedLabelId);
+  if(!label){ fallbackToTemplateChoice(); return; }
+  const dims=getLabelDimsMM(label);
+  const shape=label.shape||'circle';
+  // Genuinely-too-big-for-A4 guard: initCustomRectLockIfNeeded()'s own
+  // Math.max(1, Math.floor(...)) (reused unchanged by calcA4GridForCell()
+  // above) always reports at least 1 column/row even for a label that
+  // cannot physically fit A4 at all -- correct for its pre-existing,
+  // user-driven, already-visible-on-screen use, but not safe to auto-place
+  // from behind an unattended deep link. Checked explicitly, before
+  // anything is written to the DOM or sheetItems, so a label this large
+  // always falls back to the plain template-choice state instead of
+  // silently placing something that doesn't really fit.
+  const m0=Math.max(0,parseFloat(document.getElementById('cust-margin')?.value)||10);
+  if(dims.w>(A4_W-2*m0)||dims.h>(A4_H-2*m0)){ fallbackToTemplateChoice(); return; }
+  currentTpl='custom';
+  initCustomSheetFromReference(label);
+  // initCustomSheetFromReference()/initCustomRectLockIfNeeded() already
+  // compute a calculated A4 grid for a non-square rectangle; a circle or
+  // square label only gets its "Label mm" field seeded above; still needs
+  // Cols/Rows recalculated here to the real fitting grid for THIS label,
+  // not whatever Cols/Rows happened to already be in the DOM.
+  if(!(shape==='rectangle'&&Math.abs(dims.w-dims.h)>=0.05)){
+    const grid=calcA4GridForCell(dims.w,dims.h);
+    const colsEl=document.getElementById('cust-cols'), rowsEl=document.getElementById('cust-rows');
+    if(colsEl)colsEl.value=grid.cols;
+    if(rowsEl)rowsEl.value=grid.rows;
+  }
+  const overflow=getCustomGridOverflow();
+  if(overflow){ fallbackToTemplateChoice(); return; }
+  const err=canAddToSheet(label,1);
+  if(err){ fallbackToTemplateChoice(); return; }
+  sheetItems=[{labelId:preloadedLabelId,qty:1}];
 }
 
 // Keeps the Custom-dims panel's visible controls truthful to the current
@@ -1423,17 +1508,21 @@ function checkRegistryCompatibility(e,t){
   return result.compatible?null:result.reason;
 }
 
-// CLPeasy's own supported minimum for a CUSTOM label size -- 52mm on every
-// custom dimension, the same product-level floor builder.html enforces
-// going forward (see its isCustomSizeBelowSupportedMinimum()). A label
-// saved before that restriction existed (or otherwise carrying a
-// sub-52mm custom size) must still be refused here, not silently
-// rendered onto a sheet -- registry/preset sizes are never affected
-// (e.size==='custom' scopes this the same way Builder's own check does).
+// CLPeasy's own supported minimum for a CUSTOM label size -- delegates to
+// LabelRenderer.isCustomSizeBelowSupportedMinimum(), the single shared rule
+// builder.html also calls (updated 2026-09-07, Michaela's explicit
+// decision: a rectangle is supported from 52mm on its long side and 36mm
+// on its short side, either orientation, matching CLPeasy's own 52mm/63mm
+// rectangle presets and showcase.html's advertised examples; circle/square
+// unchanged). A label saved before that restriction existed (or otherwise
+// carrying a below-minimum custom size) must still be refused here, not
+// silently rendered onto a sheet -- registry/preset sizes are never
+// affected (e.size==='custom' scopes this the same way Builder's own check
+// does).
 function isCustomSizeBelowSupportedMinimumSaved(e){
   if(!e || e.size!=='custom') return false;
   const dims=getLabelDimsMM(e);
-  return !(Number.isFinite(dims.w)&&dims.w>=52) || !(Number.isFinite(dims.h)&&dims.h>=52);
+  return LabelRenderer.isCustomSizeBelowSupportedMinimum(e.shape, dims.w, dims.h);
 }
 
 // ── SINGLE VALIDATION AUTHORITY for anything that puts a label onto the
@@ -1460,7 +1549,10 @@ function canAddToSheet(e,qtyToAdd){
       : `Only ${available} slot${available===1?'':'s'} remaining on this sheet (${slots} total${usedNote}). Reduce the quantity or remove other labels first.`;
   }
   if(isCustomSizeBelowSupportedMinimumSaved(e)){
-    return 'CLPeasy supports custom label dimensions from 52mm. Choose 52mm or larger.\n\nThis saved label\'s custom size is below that -- edit it in Step 1 of the Label Builder before adding it to a sheet.';
+    const _minMsg = e.shape==='rectangle'
+      ? `CLPeasy supports custom rectangle labels from ${LabelRenderer.CUSTOM_RECT_LONG_MIN_MM}mm on the long side and ${LabelRenderer.CUSTOM_RECT_SHORT_MIN_MM}mm on the short side (either orientation).`
+      : `CLPeasy supports custom label dimensions from ${LabelRenderer.CUSTOM_SIZE_MIN_MM}mm. Choose ${LabelRenderer.CUSTOM_SIZE_MIN_MM}mm or larger.`;
+    return _minMsg+'\n\nThis saved label\'s custom size is below that -- edit it in Step 1 of the Label Builder before adding it to a sheet.';
   }
   const registryError=checkRegistryCompatibility(e,t);
   if(registryError)return registryError;
@@ -1910,7 +2002,7 @@ function renderSheetCanvas(){
         const invalidTitle=result.fits?'':' title="This label does not fit -- see the fit issues list on the left"';
         html+=`<div class="sheet-cell${invalidCls}" style="left:${x}px;top:${y}px;width:${cellWPX}px;height:${cellHPX}px;"${invalidTitle}>${result.svg}</div>`;
         if(!result.fits){
-          sheetFitIssues.push({itemId:slot.labelId, scentName:ld.scentName||'Unnamed label', reason:describeFitWarnings(result.warnings)});
+          sheetFitIssues.push({itemId:slot.labelId, scentName:ld.scentName||'Unnamed label', reason:describeFitWarnings(result.warnings, ld)});
         }
         labelIdx++;
       } else {
@@ -1933,14 +2025,39 @@ function renderSheetCanvas(){
 // and never count as a failure.
 let sheetFitIssues=[];
 
-function describeFitWarnings(warnings){
+function describeFitWarnings(warnings, ld){
   warnings=warnings||[];
-  if(warnings.includes('hazard-text-overflow')) return "The hazard/precautionary text doesn't fit at this label size, even at the smallest legible size.";
-  if(warnings.includes('footer-clipped')) return 'The business/footer details are being cut off at this label size.';
   const unrecognized=warnings.filter(w=>w.startsWith('unrecognized-code:')).map(w=>w.split('unrecognized-code:')[1]);
+  // Fail-closed design (2026-09-07): tell the maker exactly which size WOULD
+  // fit this exact label's content -- never a guess, a genuine renderLabel()
+  // result via label-render.js's findSmallestFittingSize(). Never applied
+  // when the block is an unrecognised code, since no size fixes that.
+  // Read-only: this never changes the saved label's own size.
+  let sizeMsg='';
+  if(ld && !unrecognized.length && typeof LabelRenderer!=='undefined' && LabelRenderer.findSmallestFittingSize){
+    const rec=LabelRenderer.findSmallestFittingSize(ld, {instanceId:'fit-check'});
+    // Genuine-size fix (2026-09-07): only ever names an actual size-card
+    // preset (52mm/63mm) or a genuinely enterable whole-mm Custom size --
+    // never a made-up decimal dimension nobody could actually select.
+    const recDims = rec ? (rec.mmW===rec.mmH?rec.mmW+'mm':rec.mmW+'×'+rec.mmH+'mm') : '';
+    const recKind = rec ? (rec.source==='preset' ? `, the built-in ${rec.presetMm}mm preset` : ', a custom size') : '';
+    sizeMsg = rec
+      ? ` The smallest size that fits this exact content is ${recDims} (${rec.shape}${recKind}) -- edit this label in Step 1 to try it.`
+      : ' CLPeasy checked every supported size up to 150mm and none of them fit this exact content -- the content itself will need to be shortened.';
+  }
+  if(warnings.includes('hazard-text-overflow')) return "The hazard/precautionary text doesn't fit at this label size, even at the smallest legible size."+sizeMsg;
+  if(warnings.includes('footer-clipped')) return 'The business/footer details are being cut off at this label size.'+sizeMsg;
   if(unrecognized.length) return `Contains a hazard/precautionary code CLPeasy doesn't recognise: ${unrecognized.join(', ')}.`;
-  if(warnings.includes('candle-safety-symbols-too-small')) return "The candle-safety symbols can't fit at their required minimum size (5mm, BS EN 15494:2019) at this label size.";
-  return "This label doesn't fit at its current size.";
+  if(warnings.includes('candle-safety-symbols-too-small')) return "The candle-safety symbols can't fit at their required minimum size (5mm, BS EN 15494:2019) at this label size."+sizeMsg;
+  // Read-only-impact-assessment fix: these four warnings existed already
+  // (label-render.js's mandatory-text-floor fix) but weren't described
+  // here, so a sheet item blocked for one of them fell through to the
+  // generic message below instead of naming the actual cause.
+  if(warnings.includes('scent-name-too-small')) return "The product name/scent doesn't fit at this label size while staying clearly legible."+sizeMsg;
+  if(warnings.includes('business-name-too-small')) return "The business/supplier name doesn't fit at this label size while staying clearly legible."+sizeMsg;
+  if(warnings.includes('product-type-too-small')) return "The product type text doesn't fit at this label size while staying clearly legible."+sizeMsg;
+  if(warnings.includes('signal-word-too-small')) return "The signal word doesn't fit at this label size while staying clearly legible."+sizeMsg;
+  return "This label doesn't fit at its current size."+sizeMsg;
 }
 
 function renderFitIssuesPanel(){

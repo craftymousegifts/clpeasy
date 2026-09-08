@@ -27,15 +27,30 @@ const emptyQuery = {
   then(resolve){ return Promise.resolve({ data:null, error:null }).then(resolve); }
 };
 
-// A label that fits comfortably at a 52mm circle -- used twice (A and B,
-// different names) so a "replace the failing label" scenario has a second
-// distinct fitting label to swap in.
+// A label that fits at a 52mm circle -- used twice (A and B, different
+// names) so a "replace the failing label" scenario has a second distinct
+// fitting label to swap in.
+//
+// Sept 2026 correction (genuine 1.2mm mandatory-text floor): CLPeasy's
+// smallest supported label size (52mm circle) now has very little headroom
+// for hazard/precautionary/sensitiser content once the floor is measured
+// as a real DM Sans x-height rather than a nominal SVG font-size -- the
+// original 2-H/2-P/2-sensitiser content here was verified to now overflow
+// even at the floor (fits:false, hazard-text-overflow). Reduced to the
+// bare-minimum single H-statement/single P-statement/no-sensitiser
+// combination, verified directly against the corrected renderer to
+// genuinely fit. This test's purpose is proving the fit-BLOCKING mechanism
+// (which cells get marked, which exports refuse, what clears the block),
+// not stress-testing how much content 52mm can hold -- that's covered
+// separately in tests/pictogram-parity.js and the read-only impact
+// assessment -- so a thin-but-real fitting fixture serves this test's
+// purpose correctly.
 const fitsA = {
   scentName:'Lavender Fields', productType:'Candle', bizName:'Crafty Mouse Gifts',
   shape:'circle', size:'custom', customW:52, customH:52,
   bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'',
-  signal:'Warning', hStatements:'H315, H319', pStatements:'P302+P352, P305+P351+P338',
-  sensitisers:['Linalool','Limonene'], pictograms:['exclamation'], textColour:'dark', showBorder:true,
+  signal:'Warning', hStatements:'H315', pStatements:'P273',
+  sensitisers:[], pictograms:['exclamation'], textColour:'dark', showBorder:true,
   hideEN15494:false, labelLang:'en',
 };
 // Same footprint (52mm circle, so it satisfies the sheet's one-size lock)
