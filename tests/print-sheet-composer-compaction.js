@@ -341,9 +341,27 @@ function unset(style, prop){
 
     const previewScrollMobile = findMediaRule(860, '.preview-scroll');
     assert(previewScrollMobile, '.preview-scroll must be re-declared inside @media(max-width:860px)');
-    assert(has(previewScrollMobile,'overflow','visible'), 'mobile .preview-scroll must drop its own inner scrollbar (overflow:visible) now that the whole pane is back in normal flow');
+    // Narrowed 2026-09-09 (mobile responsive-layout fix, follow-up to the
+    // cutting-machine tip wording fix): the original blanket
+    // overflow:visible correctly removed the desktop VERTICAL
+    // independent-scrolling pane, but as a side effect also gave
+    // #sheet-canvas -- a plain div whose pixel width is fixed by the
+    // physical A4 page size, entirely independent of viewport -- an
+    // unclamped CSS Grid/Flexbox "automatic minimum width" once overflow
+    // stopped being exactly "hidden". With no min-width:0 anywhere in the
+    // chain, that fixed width silently became .right-panel's (and the
+    // whole 1fr grid track's) own minimum width, dragging the
+    // cutting-machine tip and export buttons off-screen with it on real
+    // narrow viewports. Vertically the pane is still in completely normal
+    // flow (overflow-y:visible, unchanged intent) -- only the horizontal
+    // axis now has an explicit, bounded scroller (overflow-x:auto) so the
+    // one element that genuinely cannot shrink to fit stays reachable
+    // without forcing its siblings wide. See
+    // tests/print-sheet-mobile-responsive-layout.js for the full fix.
+    assert(has(previewScrollMobile,'overflow-x','auto'), 'mobile .preview-scroll must scroll horizontally on its own (overflow-x:auto) so the physically-fixed-size sheet preview stays reachable without forcing its siblings (tip, export buttons) wide -- see print-sheet-mobile-responsive-layout.js');
+    assert(has(previewScrollMobile,'overflow-y','visible'), 'mobile .preview-scroll must stay vertically in normal flow (overflow-y:visible) -- only the horizontal axis gets a contained scroller; the pane must never become its own independent vertically-scrolling pane again');
 
-    ok('mobile media rules (max-width:860px) restore normal single-page stacked flow and remove the desktop independent-pane/sticky behaviour -- verified via CSSOM against the rules actually nested inside that specific @media block');
+    ok('mobile media rules (max-width:860px) restore normal single-page stacked flow and remove the desktop independent-pane/sticky behaviour, with .preview-scroll narrowed (2026-09-09) to a horizontal-only contained scroller for the fixed-size sheet preview -- verified via CSSOM against the rules actually nested inside that specific @media block');
   }
 
   console.log(`\nAll ${passed} print-sheet-composer-compaction.js checks passed.`);
