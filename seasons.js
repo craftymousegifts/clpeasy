@@ -441,10 +441,18 @@
       setTimeout(() => {
         banner.style.transform = 'translateY(0)';
         // Auto-dismiss after 8 seconds
+        // Fix (Preview #108 QA, 2026-09-09): automatic dismissal must only
+        // hide the banner and record that it's been dismissed this session
+        // -- it must NOT stop the particle effect. stopParticles() here was
+        // cutting the autumn leaves ~12s after page load (4s banner-appear
+        // delay + 8s auto-dismiss delay), well before the leaves' own
+        // independent 60s particleStopTimer (set in addParticles()) was
+        // meant to end them. The explicit "×" close button below is the
+        // only place a user action should stop the particles early --
+        // that handler's own stopParticles() call is untouched.
         setTimeout(() => {
           banner.style.transform = 'translateY(100%)';
           sessionStorage.setItem(dismissKey, '1');
-          stopParticles();
         }, 8000);
       }, 4000);
     }
