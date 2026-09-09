@@ -306,8 +306,15 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 .preview-export-footer .btn-secondary:last-child{margin-bottom:0;}
 
 /* CRICUT TIP BOX */
-.cricut-tip{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px;font-size:12px;color:rgba(255,255,255,0.45);line-height:1.6;margin:0 20px 14px;}
-.cricut-tip strong{color:#5EEAD4;display:block;margin-bottom:3px;}
+.cricut-tip{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px;font-size:12px;color:rgba(255,255,255,0.8);line-height:1.5;margin:0 20px 14px;}
+/* Scoped to the heading only (not a bare "strong" selector) so a second
+   emphasised word/phrase in the tip's own sentence -- like the
+   "Download for cutting machine" link below -- never gets forced onto
+   its own line the way it previously did when the heading rule matched
+   every <strong> in the card. */
+.cricut-tip-heading{color:#5EEAD4;display:block;margin-bottom:3px;}
+.cricut-tip-link{color:#5EEAD4;font-weight:700;text-decoration:underline;cursor:pointer;}
+.cricut-tip-link:hover,.cricut-tip-link:focus{color:#7FF3E0;}
 
 /* EMPTY STATE */
 .empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center;}
@@ -324,10 +331,36 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 @media(max-width:860px){
   .page{min-height:100vh;overflow-x:hidden;}
   .two-col{grid-template-columns:1fr;grid-template-rows:auto auto;height:auto;overflow-x:hidden;}
-  .left-panel{order:2;overflow-y:visible;height:auto;}
-  .right-panel{order:1;min-height:60vh;height:auto;overflow:visible;}
+  .left-panel{order:2;overflow-y:visible;height:auto;min-width:0;}
+  /* min-width:0 on both grid items below is the actual fix (diagnosed
+     2026-09-09): .two-col is a CSS Grid, and a grid item's automatic
+     minimum width defaults to its content's min-content size once the
+     item's own overflow is anything but the default "hidden" clamp --
+     which is exactly what happens here, since .right-panel switches to
+     overflow:visible at this breakpoint (needed so the page itself
+     scrolls instead of an internal pane). #sheet-canvas is a fixed-size
+     div (its pixel width is set in JS from the physical A4 page size,
+     completely independent of viewport -- see renderSheetCanvas()/
+     MM2PX, untouched here), so without min-width:0 that fixed width was
+     silently becoming EVERY ancestor's automatic minimum width in turn
+     (.preview-scroll -> .right-panel -> the grid track itself), forcing
+     the whole right-hand column -- including the cutting-machine tip and
+     export buttons, which have no width needs of their own -- to render
+     ~600-800px wide on a 390px viewport, with only .two-col's own
+     overflow-x:hidden hiding (not scrolling) the excess.
+     min-width:0 restores the normal responsive assumption that a grid/
+     flex item may shrink to fit its container regardless of a child's
+     intrinsic size; the one child that genuinely cannot shrink (the
+     physical-size sheet preview) gets its own explicit, contained
+     horizontal scroller directly below instead, so it stays fully
+     viewable without dragging every sibling wide with it. */
+  .right-panel{order:1;min-height:60vh;height:auto;overflow:visible;min-width:0;}
   .preview-header,.preview-dims-summary{position:static;}
-  .preview-scroll{overflow:visible;flex:none;}
+  /* The sheet preview keeps its real physical on-screen size (unchanged --
+     renderSheetCanvas()/zoom/MM2PX are all untouched) but now scrolls
+     horizontally within its own bounded box instead of forcing every
+     sibling (tip, export buttons, header) wide with it. */
+  .preview-scroll{overflow-x:auto;overflow-y:visible;flex:none;min-width:0;-webkit-overflow-scrolling:touch;}
   /* Correction batch: no sticky/fixed export footer on mobile -- it drops
      into normal document flow directly after the preview, exactly like
      every other pane element at this breakpoint. */
@@ -596,8 +629,8 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
       </div>
     </div>
     <div class="cricut-tip" id="cricut-tip">
-      <strong>💡 Cutting machine tip</strong>
-      Use <strong>Download individual PNGs</strong> for your cutting machine — upload each label separately as a "Print Then Cut" image. Maximum Print Then Cut size is 171 × 235mm.
+      <strong class="cricut-tip-heading">💡 Cutting machine tip</strong>
+      For Cricut and other cutting machines, select <a href="#btn-png-all" id="cricut-tip-link" class="cricut-tip-link" onclick="event.preventDefault();var b=document.getElementById('btn-png-all');if(b){b.scrollIntoView({behavior:'smooth',block:'center'});b.focus();}">Download for cutting machine</a> below. Each label will be downloaded as an individual PNG for Print Then Cut. Maximum Print Then Cut size: 171 × 235 mm.
     </div>
     <div class="preview-footer">
       <span class="preview-info" id="preview-info">A4 · 210 × 297mm</span>
