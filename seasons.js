@@ -439,7 +439,19 @@
   }
 
   // ── FOOTER SEASONAL BANNER ─────────────────────────────────────
-  function injectFooterBanner(m) {
+  // `onEligibilityResolved(eligible)` fires once the real auth state and
+  // this load's own dismissal key are both known -- `eligible` is true
+  // only when the banner (for this auth state) has not already been
+  // dismissed earlier this browser session. init() uses this to decide
+  // whether to start the particle effect at all: previously addParticles()
+  // ran unconditionally regardless of dismissal state, so a refresh after
+  // the banner had already auto-dismissed (or been closed) left the
+  // leaves running anyway, with no banner ever shown for them, stopped
+  // only by the unrelated 60s fallback -- this is the refresh bug being
+  // fixed here. Deciding eligibility before addParticles() is ever called
+  // (rather than starting it and immediately stopping it again) avoids a
+  // visible flicker on an ineligible refresh.
+  function injectFooterBanner(m, onEligibilityResolved) {
     const existing = document.getElementById('clpeasy-season-banner');
     if (existing) existing.remove();
     const banner = document.createElement('div');
@@ -487,7 +499,8 @@
 
     authPromise.then((signedIn) => {
       const dismissKey = dismissKeyFor(signedIn);
-      if (!sessionStorage.getItem(dismissKey)) {
+      const eligible = !sessionStorage.getItem(dismissKey);
+      if (eligible) {
         setTimeout(() => {
           banner.style.transform = 'translateY(0)';
           // Auto-dismiss after 8 seconds
@@ -507,6 +520,9 @@
           }, 8000);
         }, 4000);
       }
+      // Tell init() whether it's safe to start the particle effect at all
+      // -- see this function's own header comment above.
+      if (typeof onEligibilityResolved === 'function') onEligibilityResolved(eligible);
     });
 
     document.getElementById('clpeasy-banner-close').addEventListener('click', () => {
@@ -531,8 +547,13 @@
     applyHeroPill(m);
     applyHeroItalic(m);
     applySeasonIcon(m);
-    injectFooterBanner(m);
-    addParticles(m.particle, m.accent);
+    // Particles only start once we know the banner (for this auth state,
+    // this load) hasn't already been dismissed -- see injectFooterBanner()
+    // -- so a refresh after dismissal never leaves the leaves running with
+    // no banner ever shown for them.
+    injectFooterBanner(m, (eligible) => {
+      if (eligible) addParticles(m.particle, m.accent);
+    });
   }
 
   if (document.readyState === 'loading') {
