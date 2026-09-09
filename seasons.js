@@ -259,7 +259,7 @@
     if (existing) existing.remove();
     const canvas = document.createElement('canvas');
     canvas.id = 'clpeasy-particles';
-    canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:0.4;';
+    canvas.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:${type === 'leaves' ? '0.72' : '0.4'};`;
     document.body.appendChild(canvas);
     particleCanvasEl = canvas;
     const ctx = canvas.getContext('2d');
@@ -286,11 +286,22 @@
         ctx.save();
         ctx.translate(p.x, p.y);
         if (type === 'leaves') {
+          // A pointed, veined leaf silhouette rather than a plain oval.
+          // Keep it deliberately simple so the animation remains lightweight.
           ctx.rotate(p.rot * Math.PI / 180);
           ctx.fillStyle = p.color;
           ctx.beginPath();
-          ctx.ellipse(0, 0, p.r, p.r * 0.6, 0, 0, Math.PI * 2);
+          ctx.moveTo(0, -p.r);
+          ctx.bezierCurveTo(p.r * 0.9, -p.r * 0.45, p.r * 0.9, p.r * 0.45, 0, p.r);
+          ctx.bezierCurveTo(-p.r * 0.9, p.r * 0.45, -p.r * 0.9, -p.r * 0.45, 0, -p.r);
+          ctx.closePath();
           ctx.fill();
+          ctx.strokeStyle = 'rgba(92,45,12,0.55)';
+          ctx.lineWidth = Math.max(0.7, p.r * 0.08);
+          ctx.beginPath();
+          ctx.moveTo(0, -p.r * 0.72);
+          ctx.lineTo(0, p.r * 1.22);
+          ctx.stroke();
         } else if (type === 'petals') {
           ctx.rotate(p.rot * Math.PI / 180);
           ctx.fillStyle = 'rgba(249,168,212,0.6)';
@@ -354,8 +365,10 @@
     if (existing) existing.remove();
     const hero = document.querySelector('section.hero, .hero');
     if (!hero) return;
-    const icon = document.createElement('div');
+    const icon = document.createElement('a');
     icon.id = 'clpeasy-season-icon';
+    icon.href = m.bannerCtaUrl || 'builder.html';
+    icon.setAttribute('aria-label', m.iconLabel);
     icon.style.cssText = `
       display:inline-flex;align-items:center;gap:6px;
       background:${m.pillBg};
@@ -367,6 +380,8 @@
       margin-bottom:12px;
       font-family:'DM Sans',sans-serif;
       animation:clpeasy-float 3s ease-in-out infinite;
+      text-decoration:none;
+      cursor:pointer;
     `;
     icon.innerHTML = `<span style="font-size:16px">${m.icon}</span><span>${m.iconLabel}</span>`;
     // Insert after the hero pill (below "BUILT BY A MAKER, FOR MAKERS")
@@ -426,10 +441,18 @@
       setTimeout(() => {
         banner.style.transform = 'translateY(0)';
         // Auto-dismiss after 8 seconds
+        // Fix (Preview #108 QA, 2026-09-09): automatic dismissal must only
+        // hide the banner and record that it's been dismissed this session
+        // -- it must NOT stop the particle effect. stopParticles() here was
+        // cutting the autumn leaves ~12s after page load (4s banner-appear
+        // delay + 8s auto-dismiss delay), well before the leaves' own
+        // independent 60s particleStopTimer (set in addParticles()) was
+        // meant to end them. The explicit "×" close button below is the
+        // only place a user action should stop the particles early --
+        // that handler's own stopParticles() call is untouched.
         setTimeout(() => {
           banner.style.transform = 'translateY(100%)';
           sessionStorage.setItem(dismissKey, '1');
-          stopParticles();
         }, 8000);
       }, 4000);
     }
