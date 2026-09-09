@@ -38,33 +38,52 @@
 const RENDERER_VERSION = '1.0.0';
 
 // ── MANDATORY-TEXT LEGIBILITY FLOOR ──────────────────────────────────────
-// Genuine physical x-height standard used for every mandatory CLP text
-// category (product identifier, business/supplier name, product type,
-// signal word, footer/address/phone/net-qty, hazard/precautionary/
-// sensitiser text). This is CLPeasy's OWN conservative product standard.
-// Current GB CLP has no statutory numeric x-height/font-size requirement --
-// only a qualitative "clearly legible" test. This figure happens to match
-// the x-height specified in the revised EU/NI CLP Regulation (EU) 2024/2865,
-// Annex I Table 1.3, for packaging not exceeding 0.5 litres -- but that EU/NI
-// requirement is not in force for Great Britain, and this constant must
+// GB mode (ACTIVE, default): CLPeasy targets clearly legible mandatory CLP
+// text (product identifier, business/supplier name, product type, signal
+// word, footer/address/phone/net-qty, hazard/precautionary/sensitiser text)
+// without asserting any specific numeric x-height or font-size figure as a
+// GB statutory requirement. Current GB CLP has no statutory numeric
+// x-height/font-size requirement -- only a qualitative "clearly legible"
+// test. The active floor below (GB_ACTIVE_MIN_FS_MM) restores CLPeasy's
+// pre-PR-105 production formula (nominal declared-font-size mm, not a
+// verified physical x-height) -- see GB_ACTIVE_MIN_FS_MM's own comment.
+//
+// EU/NI mode (NOT ACTIVE -- documentation / future optional mode only):
+// the constants below (MANDATORY_XHEIGHT_MM, DM_SANS_XHEIGHT_RATIO,
+// MANDATORY_MIN_FS_MM_EQUIV) record the genuine physical x-height figure
+// specified in the revised EU/NI CLP Regulation (EU) 2024/2865, Annex I
+// Table 1.3, for packaging not exceeding 0.5 litres, and the font-metric
+// ratio needed to actually deliver it. That EU/NI requirement is not in
+// force for Great Britain. These constants are NOT currently referenced by
+// any active GB rendering path in this file -- they are retained only so a
+// future, separate, explicitly-selected EU/NI mode can use them. They must
 // never be presented (in code comments, UI copy, or reports) as a current
-// GB statutory minimum.
-const MANDATORY_XHEIGHT_MM = 1.2;
+// GB statutory minimum, nor as describing CLPeasy's active GB output.
+const MANDATORY_XHEIGHT_MM = 1.2; // EU/NI Reg (EU) 2024/2865 figure -- inactive in GB mode
 // Real lowercase-x height as a fraction of declared SVG font-size, for the
 // production typeface (DM Sans). Measured 2026-09 in headless Chromium
 // against the actual @fontsource/dm-sans font files (canvas.measureText('x')
 // actualBoundingBoxAscent+actualBoundingBoxDescent), stable across 50px-
 // 1000px and identical at font-weight 400 and 600. Declared SVG font-size
 // and real rendered x-height are NOT the same thing: a floor expressed
-// directly in "font-size mm" silently delivers only about half the intended
-// physical x-height. This ratio corrects for that gap.
-const DM_SANS_XHEIGHT_RATIO = 0.515625;
-// The nominal font-size-equivalent (in the same mm-based units _pxPerMm
-// already converts elsewhere in this file) that actually delivers
-// MANDATORY_XHEIGHT_MM of REAL rendered x-height, once DM_SANS_XHEIGHT_RATIO
-// is accounted for. Every mandatory-text floor in this file must derive from
-// this constant rather than re-deriving its own nominal-mm figure.
+// directly in "font-size mm" delivers only about half the intended physical
+// x-height. This ratio would correct for that gap in a future EU/NI mode;
+// GB mode does not apply it (see GB_ACTIVE_MIN_FS_MM below).
+const DM_SANS_XHEIGHT_RATIO = 0.515625; // EU/NI-mode ratio correction -- inactive in GB mode
+// The nominal font-size-equivalent that would deliver MANDATORY_XHEIGHT_MM
+// of REAL rendered x-height, once DM_SANS_XHEIGHT_RATIO is accounted for.
+// Reserved for a future, separate EU/NI mode -- NOT used by any active GB
+// rendering path (see GB_ACTIVE_MIN_FS_MM below for what GB mode actually
+// enforces).
 const MANDATORY_MIN_FS_MM_EQUIV = MANDATORY_XHEIGHT_MM / DM_SANS_XHEIGHT_RATIO;
+// ACTIVE GB floor (restored pre-PR-105 behaviour, 2026-09-08, Michaela's
+// explicit decision): a nominal declared-font-size mm figure, deliberately
+// NOT corrected to a verified physical x-height. This is CLPeasy's own
+// conservative "clearly legible" product standard for GB output -- it is
+// not, and must never be described as, a genuine measured x-height or a GB
+// statutory numeric minimum. Every mandatory-text floor in the active GB
+// rendering path derives from this constant.
+const GB_ACTIVE_MIN_FS_MM = 1.2;
 
 // ============================================================
 // IIFE namespace wrapper
@@ -633,32 +652,32 @@ function renderLabel(rawData, opts){
   const{mmW,mmH,pw,ph}=getLabelDims(data, opts);
   const cx=pw/2,cy=ph/2;
   // Regression fix (2026-09-06, Michaela's manual review of Preview #105):
-  // the H/P/sensitiser hazard-text block already enforced a genuine
-  // physical x-height legibility floor (see _minLegibleFS further below),
-  // but business/supplier name, product type, signal word and the footer
-  // slots (address, phone, net quantity/burn time/batch) each used their
-  // own unrelated, purely aesthetic clamp(BASE*k, lo, hi) "floor" -- never
-  // converted from any physical mm standard -- and some of those could be
-  // shrunk even further afterward (the header-overlap guard) with no
-  // re-check against any floor at all. That let mandatory CLP text legally
-  // render far below the intended x-height while never being flagged or
-  // blocked. _pxPerMm/_mandatoryMinFS are hoisted here (from their former
-  // position further down) so every one of those sections can reference
-  // the SAME physical floor _minLegibleFS already uses, instead of each
-  // inventing its own.
+  // the H/P/sensitiser hazard-text block already enforced a legibility
+  // floor (see _minLegibleFS further below), but business/supplier name,
+  // product type, signal word and the footer slots (address, phone, net
+  // quantity/burn time/batch) each used their own unrelated, purely
+  // aesthetic clamp(BASE*k, lo, hi) "floor" -- never converted from any
+  // shared mm standard -- and some of those could be shrunk even further
+  // afterward (the header-overlap guard) with no re-check against any floor
+  // at all. That let mandatory CLP text render smaller than intended while
+  // never being flagged or blocked. _pxPerMm/_mandatoryMinFS are hoisted
+  // here (from their former position further down) so every one of those
+  // sections can reference the SAME floor _minLegibleFS already uses,
+  // instead of each inventing its own.
   //
-  // Correction (2026-09, read-only impact assessment + Michaela's decision):
-  // the constant below was `1.2 * _pxPerMm` -- i.e. it treated the 1.2mm
-  // figure as if it were the real rendered x-height. It is not: the real
-  // DM Sans x-height is only DM_SANS_XHEIGHT_RATIO (~51.6%) of declared
-  // SVG font-size, so this formula was actually delivering roughly half of
-  // MANDATORY_XHEIGHT_MM of genuine x-height. MANDATORY_MIN_FS_MM_EQUIV
-  // (defined near the top of this file) corrects for that ratio, so this
-  // is now a genuine, measured MANDATORY_XHEIGHT_MM physical floor -- see
-  // that constant's own comment for the GB CLP / EU CLP / CLPeasy-standard
-  // distinction, which applies here identically.
+  // Targeted revert (2026-09-08, Michaela's explicit decision): PR #105
+  // briefly changed this constant to MANDATORY_MIN_FS_MM_EQUIV * _pxPerMm
+  // (a ratio-corrected figure intended to deliver a genuine, measured
+  // MANDATORY_XHEIGHT_MM physical x-height). That correction is accurate,
+  // but it moved the active GB default onto the stricter EU/NI Reg (EU)
+  // 2024/2865 figure, which is not required for GB and shrank the fitting
+  // envelope for existing GB labels. Restored to GB_ACTIVE_MIN_FS_MM (the
+  // pre-PR-105 GB formula, a nominal declared-font-size mm floor, not a
+  // verified physical x-height) as CLPeasy's active GB "clearly legible"
+  // standard; MANDATORY_MIN_FS_MM_EQUIV remains available, unused, for a
+  // future separate EU/NI mode.
   const _pxPerMm = pw / mmW;
-  const _mandatoryMinFS = Math.max(MANDATORY_MIN_FS_MM_EQUIV * _pxPerMm, 3.2);
+  const _mandatoryMinFS = Math.max(GB_ACTIVE_MIN_FS_MM * _pxPerMm, 3.2);
   const isCircle=data.shape==='circle';
   const isSquare=data.shape==='square';
   const _isRect=!isCircle&&!isSquare;
@@ -863,7 +882,7 @@ function renderLabel(rawData, opts){
     scentFS = fs2;
   }
   // Regression fix (2026-09-06): the product name/identifier must never
-  // render below the physical 1.2mm x-height floor -- clamp up to it
+  // render below the GB legibility floor (CLPeasy's own conservative standard, not a genuine x-height) -- clamp up to it
   // (accepting visual overlap if unavoidable, matching hazard text's own
   // existing hard-floor behaviour) and flag if it still can't fit even at
   // the floor so export is blocked rather than shipping illegible text.
@@ -910,7 +929,7 @@ function renderLabel(rawData, opts){
     }
   }
   // Regression fix (2026-09-06): business/supplier name is mandatory CLP
-  // text and must never render below the physical 1.2mm x-height floor --
+  // text and must never render below the GB legibility floor (CLPeasy's own conservative standard, not a genuine x-height) --
   // the overlap-guard shrink above (down to 50% of its already-computed
   // size) had no re-check against any floor at all. Clamp back up to the
   // floor (accepting visual overlap if unavoidable, matching hazard text's
@@ -951,7 +970,7 @@ function renderLabel(rawData, opts){
     typeFS = Math.min(Math.max(opts.typeFSOverride, typeFSMin), typeFSMax);
   }
   // Regression fix (2026-09-06): product type/identifier is mandatory CLP
-  // text -- never render below the physical 1.2mm x-height floor, whether
+  // text -- never render below the GB legibility floor (CLPeasy's own conservative standard, not a genuine x-height), whether
   // the size came from auto-fit or a manual fine-tune override. Clamp up
   // to the floor and flag if it still can't fit even there.
   let _typeTooSmall = false;
@@ -973,7 +992,7 @@ function renderLabel(rawData, opts){
     sigFS = Math.min(Math.max(opts.sigFSOverride, sigFSMin), sigFSMax);
   }
   // Regression fix (2026-09-06): the signal word is mandatory CLP text --
-  // never render below the physical 1.2mm x-height floor, whether the size
+  // never render below the GB legibility floor (CLPeasy's own conservative standard, not a genuine x-height), whether the size
   // came from auto-fit or a manual fine-tune override. Clamp up to the
   // floor and flag if it still can't fit even there.
   let _signalTooSmall = false;
@@ -1096,25 +1115,28 @@ function renderLabel(rawData, opts){
 
   const _curY0 = curY;
   const _hardBot = botY;                       // text must never cross this
-  // Minimum legible font = MANDATORY_XHEIGHT_MM genuine physical x-height
-  // (CLPeasy's own conservative legibility standard, not a current GB CLP
-  // statutory figure -- see MANDATORY_XHEIGHT_MM's own comment), corrected
-  // for the real DM Sans x-height/font-size ratio via
-  // MANDATORY_MIN_FS_MM_EQUIV (pxPerMm = pw/mmW in this view).
-  const _minLegibleFS = Math.max(MANDATORY_MIN_FS_MM_EQUIV * _pxPerMm, 3.2);
+  // Minimum legible font = GB_ACTIVE_MIN_FS_MM (CLPeasy's own conservative
+  // "clearly legible" GB standard, restored to the pre-PR-105 formula --
+  // not a current GB CLP statutory figure, and not a verified physical
+  // x-height; see GB_ACTIVE_MIN_FS_MM's own comment near the top of this
+  // file). pxPerMm = pw/mmW in this view.
+  const _minLegibleFS = Math.max(GB_ACTIVE_MIN_FS_MM * _pxPerMm, 3.2);
 
   // Single source of truth — lay the three blocks out exactly as they render.
   // Returns each block's lines, its first-line centre Y, and the Y after the
   // whole block. Used for both the fit test and the final render.
   function _layoutHazard(fs, y0){
-    // Compliance fix: the revised EU/NI formatting rule that accompanies the
-    // genuine 1.2mm x-height floor specifies mandatory-text line spacing of
-    // at least 120% of font size. hLH/sLH already met that; pLH (1.15x) did
-    // not, so P-statement text could legally have been laid out slightly
-    // tighter than the standard CLPeasy has voluntarily adopted. Raised to
-    // match hLH/sLH exactly -- no line-height in this file may go below
-    // 1.2x for mandatory text; capacity must be found elsewhere, never here.
-    const hLH=fs*1.25, sLH=fs*1.25, pLH=fs*1.25;
+    // Targeted revert (2026-09-08, Michaela's explicit decision): PR #105
+    // raised pLH (P-statement line spacing) from 1.15x to 1.25x to match
+    // hLH/sLH, following the revised EU/NI Reg (EU) 2024/2865 formatting
+    // rule of >=120% line spacing for mandatory text alongside the genuine
+    // x-height floor. That rule is not required for GB and, combined with
+    // the x-height floor revert above, cost fitting capacity on existing GB
+    // labels. Restored pLH to the pre-PR-105 GB value (1.15x); hLH/sLH are
+    // unrelated to this revert and remain unchanged at 1.25x. The >=120%
+    // EU/NI line-spacing figure is documented here only as inactive future
+    // EU/NI-mode information, not an active GB requirement.
+    const hLH=fs*1.25, sLH=fs*1.25, pLH=fs*1.15;
     const _edgeMargin=2*pxPerMm; // fixed 2mm from the label edge, both sides
     let y=y0;
     let hLines=[];
@@ -1227,7 +1249,6 @@ function renderLabel(rawData, opts){
   // an unmistakable non-exportable state instead of replacing mandatory text
   // with dots or silently omitting statements.
   const _labelLegibilityWarn = !_fitsAtMin || _L.endY>_hardBot;
-  const overflowOverlay=_labelLegibilityWarn?`<g class="clp-fit-block"><rect x="${(pw*.08).toFixed(1)}" y="${(ph*.34).toFixed(1)}" width="${(pw*.84).toFixed(1)}" height="${(ph*.32).toFixed(1)}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${(ph*.46).toFixed(1)}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${Math.max(8,pw*.035).toFixed(1)}" font-weight="800" fill="#991b1b">FULL CONTENT DOES NOT FIT</text><text x="${cx}" y="${(ph*.55).toFixed(1)}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${Math.max(6,pw*.025).toFixed(1)}" fill="#991b1b">Select a larger size in Step 1</text></g>`:'';
 
   const showP   = pLines.length > 0;
 
@@ -1254,8 +1275,8 @@ function renderLabel(rawData, opts){
   // floor") first and text getting only whatever's left. That ordering is
   // what caused a real, previously-undetected bug: for a large range of
   // realistic candle sizes, icons alone consumed 80%+ of the footer band,
-  // leaving mandatory footer text less room than its own 1.2mm floor
-  // needed at >=120% line spacing -- fitFont() then silently returned the
+  // leaving mandatory footer text less room than its own GB legibility floor
+  // needed -- fitFont() then silently returned the
   // floor size anyway (it never returns below the floor it's given), so
   // adjacent footer lines visually overlapped in real exports while
   // renderLabel() still reported fits:true (see the vertical-overlap
@@ -1332,8 +1353,8 @@ function renderLabel(rawData, opts){
   // which could silently shrink already-clipped footer text well below the
   // mandatory floor). Regression fix (2026-09-06, Michaela's manual review
   // of Preview #105): footer text (business address, phone, net quantity/
-  // burn time/batch) must never render below the same physical x-height
-  // floor mandatory hazard text already used -- previously fitFont() was
+  // burn time/batch) must never render below the same GB legibility floor
+  // mandatory hazard text already used -- previously fitFont() was
   // given only HALF of this unrelated, purely-aesthetic value as its floor,
   // and "clipped" only fired below 40% of THAT, so mandatory footer text
   // could legally render far smaller than the physical standard while
@@ -1391,6 +1412,27 @@ function renderLabel(rawData, opts){
     footerElems.push({text: slot.text, fs, bold: slot.bold, isPhone: slot.isPhone||false, slotY});
   });
   const _footerLegibilityClipped = _footerClipped;
+
+  // ── SHARED NON-FIT BOOLEAN ──────────────────────────────────────────────
+  // Single source of truth for "this label's real content does not fit",
+  // used by BOTH the blocked-preview overlay (immediately below) and the
+  // `fits` contract returned to callers (further down, where it now simply
+  // reads `!_contentBlocked` instead of re-deriving the same expression).
+  // Previously the overlay had its own, earlier, incomplete copy of this
+  // condition (just _labelLegibilityWarn, computed before the other six
+  // flags existed) -- that let a label blocked for a different reason
+  // render with no overlay at all, and left two independent expressions
+  // free to drift apart if either was ever edited without the other. Every
+  // flag `fits` has ever included is included here; if a new blocking
+  // condition is ever added, add it to THIS line, not to a second copy.
+  const _contentBlocked = _labelLegibilityWarn || _footerLegibilityClipped
+    || _unrecognizedCodes.length>0 || _bcfTooSmall || _scentTooSmall
+    || _bizNameTooSmall || _typeTooSmall || _signalTooSmall;
+  // Full-bleed rect: the existing clip-path (applied to the whole <g> this
+  // gets drawn into) already confines it to the label's true circle/rect
+  // outline, so covering the entire canonical canvas can never bleed past
+  // the real label edge, and nothing blocked can peek out from behind it.
+  const overflowOverlay=_contentBlocked?`<g class="clp-fit-block"><rect x="0" y="0" width="${pw}" height="${ph}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${(ph*.46).toFixed(1)}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${Math.max(8,pw*.035).toFixed(1)}" font-weight="800" fill="#991b1b">FULL CONTENT DOES NOT FIT</text><text x="${cx}" y="${(ph*.55).toFixed(1)}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${Math.max(6,pw*.025).toFixed(1)}" fill="#991b1b">Select a larger size in Step 1</text></g>`:'';
   // Y positions already set per-slot — no global recompute needed
   const footerRendered = footerElems.map(elem=>{
     if(elem.slotY > sBot - 1) return '';
@@ -1593,8 +1635,8 @@ function renderLabel(rawData, opts){
     // requested, or _bcfTooSmall, see `warnings`), for transparency/testing.
     bcfSizeMm: _bcfSizeMm,
     bcfTooSmall: _bcfTooSmall,
-    // Regression fix (2026-09-06): per-category "hit the physical 1.2mm
-    // x-height floor and still doesn't fit" flags, exposed for
+    // Regression fix (2026-09-06): per-category "hit the GB legibility
+    // floor and still doesn't fit" flags, exposed for
     // transparency/testing alongside the existing footerClipped/bcfTooSmall.
     scentTooSmall: _scentTooSmall,
     businessNameTooSmall: _bizNameTooSmall,
@@ -1609,16 +1651,15 @@ function renderLabel(rawData, opts){
   // Regression fix (2026-09-06): product name, business name, product type
   // and signal word hitting the physical legibility floor and still not
   // fitting are equally disqualifying -- see _mandatoryMinFS above.
-  const fits = !_labelLegibilityWarn && !_footerLegibilityClipped && _unrecognizedCodes.length===0 && !_bcfTooSmall
-    && !_scentTooSmall && !_bizNameTooSmall && !_typeTooSmall && !_signalTooSmall;
+  const fits = !_contentBlocked;
 
   return {svg, fits, warnings, metrics, rendererVersion: RENDERER_VERSION};
 }
 
 // ── SMALLEST FITTING SIZE — read-only "would a larger size work?" search ──
 // Fail-closed design (2026-09-07): when a label's real content cannot fit at
-// its genuine 1.2mm x-height / >=120% line-spacing / 2mm edge-margin / 10mm
-// GHS / 5mm candle-safety floors, CLPeasy blocks export rather than silently
+// its GB legibility / 2mm edge-margin / 10mm GHS / 5mm candle-safety floors,
+// CLPeasy blocks export rather than silently
 // shrinking anything further -- see the `fits`/`warnings` contract above,
 // unchanged by this function. This helper answers the natural follow-up
 // question ("what size WOULD work?") without ever touching the size itself:

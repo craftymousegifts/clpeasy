@@ -1200,9 +1200,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="preview-footer">
     <div class="preview-size-info" id="preview-size-info">Print size: 35 × 35mm</div>
     <div class="dl-row" id="preview-dl-row" style="display:none;">
-      <button class="btn-dl" onclick="downloadPNG()">⬇ PNG</button>
-      <button class="btn-dl" onclick="printToPDF()">▣ PDF</button>
-      <button class="btn-dl-svg" onclick="downloadSVG()">⬡ SVG</button>
+      <button class="btn-dl" id="btn-png-preview" onclick="downloadPNG()" style="opacity:0.4;pointer-events:none;">⬇ PNG</button>
+      <button class="btn-dl" id="btn-pdf-preview" onclick="printToPDF()" style="opacity:0.4;pointer-events:none;">▣ PDF</button>
+      <button class="btn-dl-svg" id="btn-svg-preview" onclick="downloadSVG()" style="opacity:0.4;pointer-events:none;">⬡ SVG</button>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
 
@@ -1248,7 +1248,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <h3>🛡 Label Compliance</h3>
     <strong style="font-size:13px;">GB CLP aligned</strong>
     <p class="rail-copy" style="margin-bottom:0;">Smart Compliance. Simple.</p>
-    <span class="rail-chip">GB CLP</span><span class="rail-chip" title="CLPeasy's own conservative legibility standard for mandatory label text — not a current statutory GB CLP numeric requirement">X-height 1.2mm</span>
+    <span class="rail-chip">GB CLP</span><span class="rail-chip" title="CLPeasy's own conservative legibility standard for mandatory label text — GB CLP has no statutory numeric x-height/font-size requirement">Clearly legible text</span>
   </section>
 </aside>
 
@@ -3163,7 +3163,14 @@ function _downloadAllowed(){
 
 function toggleDownload(){
   const allowed=_downloadAllowed();
-  const btns=['btn-png','btn-svg','btn-pdf','btn-save'];
+  // Hotfix: the live preview panel has its own PNG/SVG/PDF row
+  // (#preview-dl-row) calling the exact same download functions -- it was
+  // missing from this list, so those buttons stayed visually enabled
+  // (opacity 1, clickable) even while blocked. The click-time guard inside
+  // downloadPNG/downloadSVG/printToPDF (_downloadAllowed(), unchanged)
+  // already refused the export either way -- this only fixes the visual
+  // state to match what actually happens on click.
+  const btns=['btn-png','btn-svg','btn-pdf','btn-save','btn-png-preview','btn-svg-preview','btn-pdf-preview'];
   btns.forEach(id=>{
     const btn=document.getElementById(id);
     if(!btn)return;

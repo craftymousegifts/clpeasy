@@ -181,24 +181,23 @@ const labelRendererSource = fs.readFileSync(path.join(__dirname,'..','label-rend
   //
   // Sept 2026 correction (genuine 1.2mm mandatory-text x-height floor, per
   // Michaela's decision to implement the real DM Sans lowercase-x height
-  // rather than a nominal SVG font-size figure): mandatory text now needs
-  // measurably more physical room on every label, independent of and in
-  // addition to the pictogram-geometry fix above. This pushes two more
-  // combinations past the point where they can still fit alongside
-  // mandatory hazard/precautionary/sensitiser text at the 10mm pictogram
-  // floor: circle 52mm at 1 and 2 pictograms (previously only 3 pictograms
-  // was blocked), and EU30009 (99.1x57.3mm rectangle) at ALL of 1/2/3
-  // pictograms -- this rectangle was previously unaffected by the geometry
-  // fix, but the larger genuine text floor now also outgrows its available
-  // width even at a single pictogram. Each was verified directly against
-  // the corrected renderer before being added here.
+  // rather than a nominal SVG font-size figure) briefly pushed five more
+  // combinations into KNOWN_NOW_BLOCKED here: circle 52mm at 1 and 2
+  // pictograms, and EU30009 (99.1x57.3mm rectangle) at all of 1/2/3
+  // pictograms.
+  //
+  // Updated (2026-09-08, targeted GB legibility-floor revert -- see
+  // tests/gb-legibility-floor-targeted-revert.js): per Michaela's explicit
+  // decision, that genuine ratio-corrected 1.2mm x-height floor is no
+  // longer the ACTIVE GB formula -- GB CLP has no statutory numeric
+  // x-height requirement, and the previous, less demanding formula is
+  // restored. Measured directly against the reverted renderer: all five
+  // of those combinations fit again (confirmed to reach the full
+  // PICTO_TARGET_SQUARE_MM, not just the floor -- see the "roomy single"
+  // check below), leaving only the ORIGINAL geometry-fix-only exception,
+  // circle 52mm/3 pictograms, still blocked.
   const KNOWN_NOW_BLOCKED = new Set([
-    'circle 52mm, 1 picto(s)',
-    'circle 52mm, 2 picto(s)',
     'circle 52mm, 3 picto(s)',
-    'rectangle 99.1x57.3mm, 1 picto(s)',
-    'rectangle 99.1x57.3mm, 2 picto(s)',
-    'rectangle 99.1x57.3mm, 3 picto(s)',
   ]);
 
   for(const c of cases){
@@ -225,12 +224,13 @@ const labelRendererSource = fs.readFileSync(path.join(__dirname,'..','label-rend
   // square side), so every single-pictogram fixture that still FITS reaches
   // the full target directly.
   //
-  // Sept 2026 correction (genuine 1.2mm mandatory-text floor): circle 52mm
-  // and EU30009 (99.1x57.3mm rectangle) are now in KNOWN_NOW_BLOCKED even
-  // at 1 pictogram (see comment above the main loop) -- a blocked label is
-  // pinned at the 10mm FLOOR, not the target, by design (r.fits:false means
-  // the search never got to grow past the minimum), so those two are
-  // excluded here rather than asserted against the target.
+  // Any label in KNOWN_NOW_BLOCKED is pinned at the 10mm FLOOR, not the
+  // target, by design (r.fits:false means the search never got to grow
+  // past the minimum), so it is excluded here rather than asserted
+  // against the target. After the targeted GB legibility-floor revert
+  // (see comment above the main loop), no single-pictogram case remains
+  // in KNOWN_NOW_BLOCKED, so `roomySingle` below now covers every case
+  // and `blockedSingle` is empty.
   const roomySingle = seenSizes.filter(s => / 1 picto/.test(s.label) && !KNOWN_NOW_BLOCKED.has(s.label));
   for(const s of roomySingle){
     assert.strictEqual(s.mm, PICTO_TARGET_MM, `${s.label}: a roomy single-pictogram label must reach the target (${PICTO_TARGET_MM.toFixed(4)}mm)`);
@@ -287,22 +287,25 @@ const labelRendererSource = fs.readFileSync(path.join(__dirname,'..','label-rend
   //    Composer registry template (neither exists in this codebase; this
   //    is size:'custom', not a preset key). ─────────────────────────────
   //
-  // Sept 2026 correction (genuine 1.2mm mandatory-text floor): this exact
-  // base fixture (H317/P273/one sensitiser, 1 pictogram) no longer fits a
-  // 63x44mm rectangle once the mandatory text floor is measured as a real
-  // DM Sans x-height rather than a nominal SVG font-size. Verified directly
-  // against the corrected renderer: fits:false with warnings including
-  // 'hazard-text-overflow'. Parity (identical mm size/ratio across all
-  // three caller scales) must still hold even while blocked -- that
-  // invariant does not depend on fits -- so assertParity() below is
-  // unchanged; only the fits expectation is updated to match the new,
-  // stricter, correct behaviour. This is a real, disclosed consequence of
-  // the floor correction, not a test-only accommodation.
+  // Sept 2026 correction (genuine 1.2mm mandatory-text floor) briefly made
+  // this exact base fixture (H317/P273/one sensitiser, 1 pictogram) no
+  // longer fit a 63x44mm rectangle, once the mandatory text floor was
+  // measured as a real DM Sans x-height rather than a nominal SVG
+  // font-size.
+  //
+  // Updated (2026-09-08, targeted GB legibility-floor revert -- see
+  // tests/gb-legibility-floor-targeted-revert.js): per Michaela's explicit
+  // decision, that genuine floor is no longer the ACTIVE GB formula.
+  // Verified directly against the reverted renderer: this fixture fits
+  // again at 63x44mm with zero warnings -- the pre-PR-105 behaviour this
+  // fixture originally proved. Parity (identical mm size/ratio across all
+  // three caller scales) still holds -- assertParity() below is
+  // unchanged; only the fits expectation is restored to match.
   const custom63x44 = mkData('rectangle', null, ['exclamation'], [63,44]);
   const m63x44 = measureAllScales(custom63x44);
   assertParity('63x44mm custom rectangle (regression fixture, not a preset), 1 picto', m63x44);
-  assert.strictEqual(m63x44.builder.fits, false, '63x44mm custom rectangle fixture is expected to no longer fit under the corrected genuine 1.2mm mandatory-text floor');
-  assert(m63x44.builder.warnings.includes('hazard-text-overflow'), '63x44mm custom rectangle fixture must report hazard-text-overflow as the blocking reason');
+  assert.strictEqual(m63x44.builder.fits, true, '63x44mm custom rectangle fixture is expected to fit again under the restored GB mandatory-text floor');
+  assert.strictEqual(m63x44.builder.warnings.length, 0, `a fitting 63x44mm custom rectangle must report no warnings -- got ${JSON.stringify(m63x44.builder.warnings)}`);
 
   // ── 5. Short vs. long mandatory content on the SAME physical label --
   //    proves the search actually responds to content length (not just
