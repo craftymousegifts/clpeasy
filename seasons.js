@@ -359,6 +359,33 @@
     }
   }
 
+  // ── AUTH STATE (for gating Builder-bound seasonal CTAs) ─────────
+  // Reuses the exact Supabase session mechanism index.html already
+  // establishes as the global `_sb` client (see index.html's own
+  // `_sb.auth.getSession()` call, and the same pattern in account.html) --
+  // never infers sign-in from visible page text or the current URL. Fails
+  // safe to "signed out" if `_sb` isn't available or the check errors, so
+  // a genuinely signed-out visitor is never sent straight into the
+  // restricted Builder preview.
+  function getAuthState() {
+    try {
+      if (typeof _sb !== 'undefined' && _sb && _sb.auth && typeof _sb.auth.getSession === 'function') {
+        return _sb.auth.getSession()
+          .then(({ data }) => !!(data && data.session))
+          .catch(() => false);
+      }
+    } catch (e) { /* fall through to safe default below */ }
+    return Promise.resolve(false);
+  }
+
+  // A seasonal CTA that targets the Builder must not admit a signed-out
+  // visitor straight into it -- send them to sign up instead. CTAs that
+  // target anything else (e.g. August's knowledge.html) are unaffected.
+  function resolveCtaUrl(m, signedIn) {
+    const target = m.bannerCtaUrl || 'builder.html';
+    return (target === 'builder.html' && !signedIn) ? '/auth?mode=signup' : target;
+  }
+
   // ── FLOATING SEASONAL ICON ─────────────────────────────────────
   function applySeasonIcon(m) {
     const existing = document.getElementById('clpeasy-season-icon');
@@ -367,7 +394,9 @@
     if (!hero) return;
     const icon = document.createElement('a');
     icon.id = 'clpeasy-season-icon';
-    icon.href = m.bannerCtaUrl || 'builder.html';
+    // Safe default until the real auth state resolves just below --
+    // never assume signed-in.
+    icon.href = resolveCtaUrl(m, false);
     icon.setAttribute('aria-label', m.iconLabel);
     icon.style.cssText = `
       display:inline-flex;align-items:center;gap:6px;
@@ -405,6 +434,8 @@
       `;
       document.head.appendChild(style);
     }
+    // Correct the CTA once the real session state resolves.
+    getAuthState().then(signedIn => { icon.href = resolveCtaUrl(m, signedIn); });
   }
 
   // ── FOOTER SEASONAL BANNER ─────────────────────────────────────
@@ -430,34 +461,56 @@
         <span style="font-size:13px;color:#374151;line-height:1.5;">${m.bannerText}</span>
       </div>
       <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
-        <a href="${m.bannerCtaUrl}" style="background:${m.accentDark};color:white;padding:7px 16px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;">${m.bannerCta} →</a>
+        <a id="clpeasy-banner-cta" href="${resolveCtaUrl(m, false)}" style="background:${m.accentDark};color:white;padding:7px 16px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;">${m.bannerCta} →</a>
         <button id="clpeasy-banner-close" style="background:none;border:none;color:#9CA3AF;font-size:20px;cursor:pointer;padding:0 4px;line-height:1;" aria-label="Close">×</button>
       </div>
     `;
     document.body.appendChild(banner);
 
-    const dismissKey = `clpeasy-banner-dismissed-${new Date().getMonth()}`;
-    if (!sessionStorage.getItem(dismissKey)) {
-      setTimeout(() => {
-        banner.style.transform = 'translateY(0)';
-        // Auto-dismiss after 8 seconds
-        // Timing correction (2026-09-09, clarified requirement): the
-        // leaves are meant to stop together with the banner's own
-        // automatic dismissal, at this ~12s point (4s banner-appear delay
-        // + 8s auto-visible window) -- not run on independently until the
-        // separate 60s particleStopTimer (set in addParticles()) catches
-        // them later. That 60s timer stays in place purely as a fallback
-        // for sessions where the banner was already dismissed earlier and
-        // never reappears. The explicit "x" close button below stops the
-        // particles the same way, immediately, on a direct user action.
-        setTimeout(() => {
-          banner.style.transform = 'translateY(100%)';
-          sessionStorage.setItem(dismissKey, '1');
-          stopParticles();
-        }, 8000);
-      }, 4000);
+    // Auth-state gating (see getAuthState()/resolveCtaUrl() above): the
+    // CTA above starts pointing at the safe signed-out default and is
+    // corrected here once the real session state resolves. The banner's
+    // own dismissal key is likewise scoped per auth state below, so
+    // dismissing it while signed out never suppresses it for a later
+    // signed-in visit in the same browser session, or vice versa.
+    let signedInState = false;
+    const authPromise = getAuthState().then(signedIn => {
+      signedInState = signedIn;
+      const cta = document.getElementById('clpeasy-banner-cta');
+      if (cta) cta.href = resolveCtaUrl(m, signedIn);
+      return signedIn;
+    });
+
+    function dismissKeyFor(signedIn) {
+      return `clpeasy-banner-dismissed-${new Date().getMonth()}-${signedIn ? 'in' : 'out'}`;
     }
+
+    authPromise.then((signedIn) => {
+      const dismissKey = dismissKeyFor(signedIn);
+      if (!sessionStorage.getItem(dismissKey)) {
+        setTimeout(() => {
+          banner.style.transform = 'translateY(0)';
+          // Auto-dismiss after 8 seconds
+          // Timing correction (2026-09-09, clarified requirement): the
+          // leaves are meant to stop together with the banner's own
+          // automatic dismissal, at this ~12s point (4s banner-appear delay
+          // + 8s auto-visible window) -- not run on independently until the
+          // separate 60s particleStopTimer (set in addParticles()) catches
+          // them later. That 60s timer stays in place purely as a fallback
+          // for sessions where the banner was already dismissed earlier and
+          // never reappears. The explicit "x" close button below stops the
+          // particles the same way, immediately, on a direct user action.
+          setTimeout(() => {
+            banner.style.transform = 'translateY(100%)';
+            sessionStorage.setItem(dismissKey, '1');
+            stopParticles();
+          }, 8000);
+        }, 4000);
+      }
+    });
+
     document.getElementById('clpeasy-banner-close').addEventListener('click', () => {
+      const dismissKey = dismissKeyFor(signedInState);
       banner.style.transform = 'translateY(100%)';
       sessionStorage.setItem(dismissKey, '1');
       stopParticles();
