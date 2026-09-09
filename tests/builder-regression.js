@@ -395,6 +395,18 @@ setTimeout(async () => {
     // needed by the truncation check further down) -- confirmed directly
     // to genuinely fit at 63mm and still correctly fail at 52mm (blocked
     // by footer-clipped).
+    // Updated again (2026-09-09, circle/square header-band layout fix --
+    // see tests/circle-header-band-layout-fix.js): that 2-H-code/2-P-code
+    // fixture now ALSO fits at 52mm under the reduced circle/square
+    // topFrac (0.24 -> 0.20), for the same reason as the previous update --
+    // more genuine improvement, one less fixture able to exercise the
+    // "blocked at 52mm" half of this check. Given one more ordinary,
+    // realistic addition -- EUH208 ("Contains sensitising substances," the
+    // standard supplementary statement for fragranced candles carrying a
+    // named sensitiser, already used verbatim in this fashion in the
+    // "eryryrty"/Lavendar fixtures elsewhere in this suite) -- confirmed
+    // directly to genuinely fit at 63mm and still correctly fail at 52mm
+    // (blocked by hazard-text-overflow) under the current topFrac.
     // Note: H411 and H373 (not H317/H319) were chosen as the extra
     // H-codes deliberately -- H317 and H319 also map to the 'exclamation'
     // pictogram (see H_PICTO_MAP), which would make the pictogram-removal
@@ -403,13 +415,15 @@ setTimeout(async () => {
     // 'exclamation' selected. H411 maps to 'aquatic' and H373 maps to
     // 'health' -- neither is 'exclamation' -- so 'exclamation' on
     // S.pictograms remains a true proxy for H315 specifically, exactly as
-    // this test's later assertions require. Measured directly against
-    // this exact builder-state (bizName/bizAddress carried over from the
+    // this test's later assertions require. EUH208 is a supplementary EU
+    // hazard statement, not an H-code, and isn't in H_PICTO_MAP at all, so
+    // it doesn't affect that proxy either. Measured directly against this
+    // exact builder-state (bizName/bizAddress carried over from the
     // earlier rectangle sub-test, netWeight/batchNum/burnTime/website
     // empty, as they are at this point in the flow): blocked at 52mm
     // (hazard-text-overflow) and fits cleanly at 63mm with no warnings.
     window.eval("S.hSelected=['H315','H411','H373'];S.pSelected=['P273','P302+P352'];S.sensitisers=['Butylphenyl methylpropional']");
-    document.getElementById('h-statements').value='H315, H411, H373';
+    document.getElementById('h-statements').value='H315, H411, H373, EUH208';
     document.getElementById('p-statements').value='P273, P302+P352';
     window.updateLabel();
 
