@@ -220,31 +220,40 @@ setTimeout(() => {
 
     const canvasHTML = document.getElementById('sheet-canvas').innerHTML;
     const usedCount = (canvasHTML.match(/sheet-cell-used/g)||[]).length;
-    // Sept 2026 correction (genuine 1.2mm mandatory-text floor): both
-    // fixtures above (real 29 Aug 2026 stress-case content, deliberately
-    // dense, at 99.1x57.3mm) are now individually verified to no longer
-    // fit under the corrected, stricter floor (fits:false,
-    // 'hazard-text-overflow') -- a genuine, disclosed consequence of the
-    // floor correction reaching even EU30009, one of CLPeasy's larger
-    // supported label sizes. renderSheetPosition() correctly still places
-    // and fully renders each cell (no content is dropped or truncated --
+    // Sept 2026 correction (genuine 1.2mm mandatory-text floor) briefly
+    // made both fixtures above (real 29 Aug 2026 stress-case content,
+    // deliberately dense, at 99.1x57.3mm) individually fail to fit under
+    // the corrected, stricter floor (fits:false, 'hazard-text-overflow')
+    // -- renderSheetPosition() correctly still placed and fully rendered
+    // each cell in that state (no content dropped or truncated --
     // svgWrapped() for hazard/P-statement/sensitiser text always runs
     // regardless of fit status; only a visual "FULL CONTENT DOES NOT FIT"
-    // overlay is added on top), but marks the cell class
+    // overlay would be added on top), marking the cell class
     // `"sheet-cell sheet-cell-invalid"` instead of the bare `"sheet-cell"`
     // this test originally expected. The strict `class="sheet-cell"` match
-    // below is therefore widened to also match the invalid variant, and a
-    // new explicit invalid-count assertion records the finding rather than
-    // silently accepting it.
+    // below was widened to also match the invalid variant, to keep working
+    // whichever state holds.
+    //
+    // Updated (2026-09-08, targeted GB legibility-floor revert -- see
+    // tests/gb-legibility-floor-targeted-revert.js): per Michaela's
+    // explicit decision, that genuine floor is no longer the ACTIVE GB
+    // formula. Verified directly against the reverted renderer: both
+    // fixtures fit again at 99.1x57.3mm with zero warnings -- the
+    // pre-PR-105 behaviour this fixture originally proved -- so all 5
+    // filled positions are the plain (non-invalid) cell class and no fit
+    // issues are recorded. The widened class match above is left in place
+    // (harmless, and protects against a future genuine invalid case)
+    // but the counts/assertions below are restored to the fitting
+    // expectation.
     const filledCount = (canvasHTML.match(/class="sheet-cell( sheet-cell-invalid)?"/g)||[]).length;
     const invalidCount = (canvasHTML.match(/class="sheet-cell sheet-cell-invalid"/g)||[]).length;
     const emptyCount = (canvasHTML.match(/sheet-cell-empty/g)||[]).length;
     assert.strictEqual(usedCount, 2, `expected 2 already-used positions, got ${usedCount}`);
     assert.strictEqual(filledCount, 5, `expected 5 filled positions (2 Lavender + 3 Vanilla), got ${filledCount}`);
-    assert.strictEqual(invalidCount, 5, `expected all 5 filled positions to be flagged sheet-cell-invalid under the corrected floor (both fixtures no longer fit 99.1x57.3mm), got ${invalidCount}`);
+    assert.strictEqual(invalidCount, 0, `expected all 5 filled positions to fit cleanly (no sheet-cell-invalid) under the restored GB floor -- both fixtures fit 99.1x57.3mm again, got ${invalidCount}`);
     assert.strictEqual(emptyCount, 3, `expected 3 blank positions, got ${emptyCount}`);
     assert.strictEqual(usedCount+filledCount+emptyCount, 10, 'positions do not add up to the 10-slot EU30009 sheet');
-    assert(window.eval('sheetFitIssues').length >= 2, `expected at least 2 fit issues to be recorded (one per non-fitting saved label), got ${window.eval('sheetFitIssues.length')}`);
+    assert.strictEqual(window.eval('sheetFitIssues').length, 0, `expected no fit issues to be recorded now that both fixtures fit 99.1x57.3mm again, got ${window.eval('sheetFitIssues.length')}`);
 
     // ── Real completed label content, not truncated (Testing Req 5,13) ──
     assert(canvasHTML.includes('Lavender Candle'), 'Lavender label content missing from sheet');

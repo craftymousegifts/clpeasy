@@ -719,8 +719,11 @@ async function openComposer(opts){
   // (H317, P273, its real business name/address/phone) no longer fits its
   // own genuine 63x44mm size -- confirmed directly (LabelRenderer.
   // renderLabel() on this exact structure now returns fits:false,
-  // warnings:['hazard-text-overflow']). This is a real, disclosed
-  // consequence of the floor correction on a genuine production record,
+  // warnings:['footer-clipped']; updated 2026-09-08, targeted GB
+  // legibility-floor revert -- restoring the pre-PR-105 GB floor gave the
+  // hazard text enough room, so the reason changed from hazard-text-
+  // overflow to footer-clipped, but the record remains genuinely blocked).
+  // This is a real, disclosed consequence on a genuine production record,
   // not a defect in the Composer or in this deep-link feature -- and it
   // is handled by the pre-existing, unrelated "this label doesn't fit"
   // UX (sheet-cell-invalid outline, fit-issues panel, export blocked)
@@ -753,11 +756,15 @@ async function openComposer(opts){
     // The disclosed finding itself: this real record's genuine content no
     // longer fits its own genuine size at the corrected floor, so the
     // pre-existing "doesn't fit" UX must be showing, not a plain fit.
-    assert.strictEqual(invalidCount, 1, 'at the corrected genuine 1.2mm x-height floor, QA Test Candle 6344\'s real content (H317/P273/its real business details) no longer fits its own real 63x44mm size -- the occupied position must be marked sheet-cell-invalid, not shown as a plain fit');
+    assert.strictEqual(invalidCount, 1, 'QA Test Candle 6344\'s real content (H317/P273/its real business details) does not fit its own real 63x44mm size -- the occupied position must be marked sheet-cell-invalid, not shown as a plain fit');
     assert.strictEqual(window.eval('sheetFitIssues.length'), 1, 'the fit-issues panel must list this exact placement as not fitting');
     assert.strictEqual(window.eval('sheetFitIssues[0].itemId'), idA, 'the fit issue must be attributed to QA Test Candle 6344 itself');
-    assert(/hazard.*overflow|hazard\/precautionary text/i.test(window.eval('sheetFitIssues[0].reason')), `the fit issue's reason must name the real cause (hazard/precautionary text overflow) -- got: ${window.eval('sheetFitIssues[0].reason')}`);
-    ok('the exact QA Test Candle 6344 saved-record structure (a genuine 63mm rectangle preset) is still correctly auto-placed on deep link, dimensionally, exactly as before -- but at the corrected genuine 1.2mm x-height floor its real content no longer fits its own real size, and the Composer correctly surfaces this via the pre-existing fit-issues UX rather than silently placing an illegible label');
+    // Updated (2026-09-08, targeted GB legibility-floor revert): restoring
+    // the pre-PR-105 GB floor gave this record's hazard/precautionary text
+    // enough room at 63x44mm -- the real, remaining cause here is now its
+    // footer (business/address/phone/detail) being cut off, not hazard text.
+    assert(/footer|business|address|phone|cut off/i.test(window.eval('sheetFitIssues[0].reason')), `the fit issue's reason must name the real cause (footer/business details being cut off) -- got: ${window.eval('sheetFitIssues[0].reason')}`);
+    ok('the exact QA Test Candle 6344 saved-record structure (a genuine 63mm rectangle preset) is still correctly auto-placed on deep link, dimensionally, exactly as before -- but its real content still does not fit its own real size (now for a footer, not hazard-text, reason after the restored GB floor), and the Composer correctly surfaces this via the pre-existing fit-issues UX rather than silently placing an illegible label');
   }
 
   // ── 23. A MANUALLY entered custom 63x44mm rectangle (size:'custom', a

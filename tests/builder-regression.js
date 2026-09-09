@@ -260,29 +260,24 @@ setTimeout(async () => {
 
     // ── Content-dependence (b): the SAME dense hazard/precautionary
     //    content at the SAME 63×44mm, but on a non-candle product type
-    //    (Wax Melt), was expected to genuinely fit once the candle-safety
-    //    icon row (5mm floor, inapplicable to non-candle product types via
-    //    _candleTypes in label-render.js) no longer competes for space.
+    //    (Wax Melt), genuinely fits once the candle-safety icon row (5mm
+    //    floor, inapplicable to non-candle product types via _candleTypes
+    //    in label-render.js) no longer competes for space.
     //
-    // Correction (read-only impact assessment, 2026-09, Michaela's
-    // decision): with the mandatory-text floor corrected to a genuinely
-    // measured 1.2mm x-height (previously `1.2 * _pxPerMm` only delivered
-    // ~0.6mm real x-height), this dense content (2 H-statements, 2
-    // P-statements, 2 sensitisers) no longer fits at 63×44mm even with
-    // the candle-safety row removed entirely -- the mid-body hazard/
-    // precautionary block itself is now the binding constraint, not the
-    // icon row. Removing the (still correctly inapplicable) candle-safety
-    // requirement is confirmed below exactly as before; it is simply no
-    // longer sufficient on its own to make this dense content fit at this
-    // size, which is the correct, intended outcome of a genuine physical
-    // floor -- not a regression in this fix. ─────────────────────────
+    // Updated (2026-09-08, targeted GB legibility-floor revert -- see
+    // tests/gb-legibility-floor-targeted-revert.js): restoring the
+    // pre-PR-105 GB mandatory-text floor and P-statement line spacing gives
+    // this dense content (2 H-statements, 2 P-statements, 2 sensitisers)
+    // enough room at 63×44mm once the candle-safety row is removed --
+    // re-verified directly against label-render.js. The candle (Scented
+    // Candle) version above remains genuinely blocked (the icon row still
+    // competes for the same space there); only the non-candle case changes.
     document.getElementById('product-type').value='Wax Melt';
     window.onProductTypeChange();
     window.updateLabel();
     const nonCandleResult = renderCurrentState('nonCandle-63x44');
-    assert.strictEqual(nonCandleResult.fits, false, `a Wax Melt (non-candle) at 63×44mm carrying the identical dense hazard content is expected to still fail closed at the genuine 1.2mm floor, on the hazard text alone -- got warnings ${JSON.stringify(nonCandleResult.warnings)}`);
-    assert.strictEqual(nonCandleResult.warnings.length, 1, `a Wax Melt (non-candle) blocked here must be blocked for hazard-text-overflow only (never candle-safety, which is inapplicable) -- got ${JSON.stringify(nonCandleResult.warnings)}`);
-    assert(nonCandleResult.warnings.includes('hazard-text-overflow'), `a Wax Melt (non-candle) blocked here must report hazard-text-overflow -- got ${JSON.stringify(nonCandleResult.warnings)}`);
+    assert.strictEqual(nonCandleResult.fits, true, `a Wax Melt (non-candle) at 63×44mm carrying the identical dense hazard content is expected to fit under the restored GB floor once the candle-safety row is removed -- got warnings ${JSON.stringify(nonCandleResult.warnings)}`);
+    assert.strictEqual(nonCandleResult.warnings.length, 0, `a Wax Melt (non-candle) here must carry no warnings -- got ${JSON.stringify(nonCandleResult.warnings)}`);
     assert.strictEqual(nonCandleResult.metrics.bcfSizeMm, null, 'Wax Melt (non-candle): candle-safety row must not apply at all -- metrics.bcfSizeMm must be null');
     assert.strictEqual(nonCandleResult.metrics.bcfTooSmall, false, 'Wax Melt (non-candle): bcfTooSmall must be false -- the requirement is inapplicable to this product type, not failed');
     document.getElementById('product-type').value='Scented Candle';
@@ -382,22 +377,40 @@ setTimeout(async () => {
     // S.pStatements/S.sensitisers at a dense 7-statement/4-sensitiser
     // combination -- needed only to prove the EXTRACTION logic above
     // (H410 detected, aquatic pictogram added, Limonene sensitiser
-    // extracted), not to represent a realistic label. Combined with the
-    // two H-codes still active here (H410 + H315), that dense combination
-    // no longer fits a 63mm circle at the genuine 1.2mm x-height floor
-    // (confirmed directly) -- extreme-density content correctly failing
-    // closed is already covered by the 63x44mm dense-fixture tests above.
-    // This "representative 63mm candle" check exists to prove ORDINARY
-    // content at this size downloads successfully, so it is trimmed here
-    // to a single H-code (H315), a single P-code (P273, needed by the
-    // save/load check further down) and one still-meaningfully-long real
-    // fragrance-allergen sensitiser name (needed by the truncation check
-    // further down) -- confirmed directly to genuinely fit at 63mm and
-    // still correctly fail at 52mm (used a few lines below to prove the
-    // size-toggle blocking behaviour).
-    window.eval("S.hSelected=['H315'];S.pSelected=['P273'];S.sensitisers=['Butylphenyl methylpropional']");
-    document.getElementById('h-statements').value='H315';
-    document.getElementById('p-statements').value='P273';
+    // extracted), not to represent a realistic label. This
+    // "representative 63mm candle" check exists to prove ORDINARY content
+    // at this size downloads successfully, and ALSO to prove the
+    // size-toggle blocking behaviour (blocked at 52mm, fits again at
+    // 63mm) -- so it needs a fixture that genuinely straddles that
+    // boundary.
+    // Updated (2026-09-08, targeted GB legibility-floor revert -- see
+    // tests/gb-legibility-floor-targeted-revert.js): the single-H315/
+    // single-P273 fixture previously used here now fits at 52mm too under
+    // the restored pre-PR-105 GB floor (a genuine, measured improvement),
+    // so it can no longer exercise the "blocked at 52mm" half of the
+    // size-toggle check. Given slightly denser real content instead (2
+    // H-codes, 2 P-codes, still an ordinary realistic combination, not an
+    // extreme stress case, still carrying P273 and the one
+    // still-meaningfully-long real fragrance-allergen sensitiser name
+    // needed by the truncation check further down) -- confirmed directly
+    // to genuinely fit at 63mm and still correctly fail at 52mm (blocked
+    // by footer-clipped).
+    // Note: H411 and H373 (not H317/H319) were chosen as the extra
+    // H-codes deliberately -- H317 and H319 also map to the 'exclamation'
+    // pictogram (see H_PICTO_MAP), which would make the pictogram-removal
+    // assertions further below (toggling H315 off/on) falsely pass/fail
+    // regardless of H315's own state, since H317/H319 alone would keep
+    // 'exclamation' selected. H411 maps to 'aquatic' and H373 maps to
+    // 'health' -- neither is 'exclamation' -- so 'exclamation' on
+    // S.pictograms remains a true proxy for H315 specifically, exactly as
+    // this test's later assertions require. Measured directly against
+    // this exact builder-state (bizName/bizAddress carried over from the
+    // earlier rectangle sub-test, netWeight/batchNum/burnTime/website
+    // empty, as they are at this point in the flow): blocked at 52mm
+    // (hazard-text-overflow) and fits cleanly at 63mm with no warnings.
+    window.eval("S.hSelected=['H315','H411','H373'];S.pSelected=['P273','P302+P352'];S.sensitisers=['Butylphenyl methylpropional']");
+    document.getElementById('h-statements').value='H315, H411, H373';
+    document.getElementById('p-statements').value='P273, P302+P352';
     window.updateLabel();
 
     document.getElementById('hazard-confirm').checked = true;
