@@ -34,6 +34,18 @@
 // while signed out must never suppress the banner on a later signed-in
 // load in the same browser session, and vice versa.
 //
+// Refresh bug fix coverage (2026-09-09): addParticles() previously ran
+// unconditionally on every load, regardless of whether the banner (for
+// this exact auth state) had already been dismissed earlier in the same
+// browser session. So a refresh after an auto-dismiss or a manual close
+// left the leaves running anyway -- with no banner ever shown for them --
+// stopped only by the unrelated 60s fallback timer. injectFooterBanner()
+// now reports an `eligible` flag (this load's own auth-scoped dismissal
+// key not already set) once the real auth state resolves, and init()
+// only calls addParticles() when eligible is true -- decided *before*
+// particles would ever visibly start, so an ineligible refresh shows no
+// flicker at all, just nothing.
+//
 // All of this needs real elapsed time (4s, 12s, then 60s) without the test
 // actually waiting that long, so `makeWindow()` below replaces the
 // window's setTimeout/clearTimeout/requestAnimationFrame/
@@ -77,6 +89,14 @@ assert(source.includes('id="clpeasy-banner-cta"'),
   'the bottom-banner CTA must be addressable so its href can be corrected once the real auth state resolves');
 assert(source.includes("${signedIn ? 'in' : 'out'}"),
   "the banner's own sessionStorage dismissal key must be scoped by auth state so a dismissal cannot leak between signed-in and signed-out visits");
+
+// Refresh-bug guards.
+assert(source.includes('onEligibilityResolved'),
+  'injectFooterBanner must report whether this load is eligible so init() can decide whether to start particles at all');
+assert(source.includes('if (eligible) addParticles(m.particle, m.accent);'),
+  "addParticles() must only run when this load is eligible (its auth-scoped dismissal key not already set) -- never unconditionally on every load");
+assert(source.includes('particleStopTimer = setTimeout(stopParticles, 60000);'),
+  'the independent 60s safety-fallback timer must not be removed');
 
 function makeWindow(opts) {
   const { signedIn = false, sbAvailable = true, presetDismissed = [] } = opts || {};
@@ -364,26 +384,44 @@ async function main() {
     dom.window.close();
   }
   {
-    // Fallback role preserved per auth state too: if THIS load's own
-    // auth-scoped key was already dismissed, the banner correctly stays
-    // suppressed, and the independent 60s timer is the one that (still)
-    // stops the leaves.
+    // THE REFRESH BUG, fixed: with THIS load's own auth-scoped key already
+    // dismissed, particles must never be created at all -- not started
+    // and later stopped by the 60s fallback (that was the bug), and no
+    // flicker in between. The banner must likewise never become visible.
     const dom = makeWindow({ signedIn: false, presetDismissed: ['clpeasy-banner-dismissed-8-out'] });
     await loadAndSettle(dom);
 
-    dom.window.__advanceClock(30000);
     let particles = dom.window.document.getElementById('clpeasy-particles');
-    assert(particles && particles.style.opacity === '0.72',
-      'with this load\'s own auth-scoped key already dismissed, the banner auto-show chain must not run, and the leaves must not have stopped yet');
+    assert.strictEqual(particles, null,
+      "a refresh after this auth state's banner was already dismissed must never start the particle canvas at all");
+    let banner = dom.window.document.getElementById('clpeasy-season-banner');
+    assert.strictEqual(banner.style.transform, 'translateY(100%)',
+      'the banner must remain suppressed (never becomes visible) on this refresh');
 
-    dom.window.__advanceClock(30001); // now at ~60.001s
+    // Confirm this holds well past every timing point that would
+    // otherwise be involved (4s, 12s, 60s) -- there is no delayed leak,
+    // and the (never-created) 60s timer cannot resurrect anything.
+    assert.doesNotThrow(() => dom.window.__advanceClock(65000));
     particles = dom.window.document.getElementById('clpeasy-particles');
-    assert(particles && particles.style.opacity === '0',
-      'the independent 60s timer must still act as the fallback stop when this load\'s own auth-scoped banner was already dismissed');
+    banner = dom.window.document.getElementById('clpeasy-season-banner');
+    assert.strictEqual(particles, null,
+      'the particle canvas must still not exist even after 65s of elapsed time on this refresh');
+    assert.strictEqual(banner.style.transform, 'translateY(100%)',
+      'the banner must still never have appeared on this refresh');
 
-    dom.window.__advanceClock(700);
-    particles = dom.window.document.getElementById('clpeasy-particles');
-    assert.strictEqual(particles, null);
+    dom.window.close();
+  }
+  {
+    // Symmetric refresh-bug case for the signed-in dismissal key.
+    const dom = makeWindow({ signedIn: true, presetDismissed: ['clpeasy-banner-dismissed-8-in'] });
+    await loadAndSettle(dom);
+
+    const particles = dom.window.document.getElementById('clpeasy-particles');
+    assert.strictEqual(particles, null,
+      "a refresh after this auth state's banner was already dismissed must never start the particle canvas at all (signed-in)");
+    const banner = dom.window.document.getElementById('clpeasy-season-banner');
+    assert.strictEqual(banner.style.transform, 'translateY(100%)',
+      'the banner must remain suppressed on this signed-in refresh too');
 
     dom.window.close();
   }
@@ -404,7 +442,40 @@ async function main() {
     dom.window.close();
   }
 
-  console.log('autumn homepage UI checks passed (working, auth-aware CTAs on both hero pill and bottom banner; recognisable pointed, veined leaf particles; automatic banner dismissal stops the leaves together with it at ~12s for either auth state; an explicit close still stops them immediately; the independent 60s timer remains a harmless no-op once already stopped and a working fallback otherwise; banner dismissal is isolated per auth state; and the CTA fails safe to signed-out when no Supabase client is available)');
+  // ── SCENARIO F: manual close, then a refresh in the same auth state --
+  //    neither the banner nor the leaves may appear on that refresh ────
+  {
+    // Phase 1: fresh signed-out load, user clicks the close button.
+    const dom1 = makeWindow({ signedIn: false });
+    await loadAndSettle(dom1);
+    dom1.window.document.getElementById('clpeasy-banner-close').dispatchEvent(new dom1.window.Event('click'));
+    await flushMicrotasks();
+    const recordedKey = 'clpeasy-banner-dismissed-8-out';
+    assert.strictEqual(dom1.window.sessionStorage.getItem(recordedKey), '1',
+      'manual close must record the same auth-scoped dismissal key a later refresh will see');
+    let particles = dom1.window.document.getElementById('clpeasy-particles');
+    assert.strictEqual(particles && particles.style.opacity, '0',
+      'manual close must immediately stop the leaves (fade to opacity 0) in this same load');
+    dom1.window.__advanceClock(700);
+    particles = dom1.window.document.getElementById('clpeasy-particles');
+    assert.strictEqual(particles, null,
+      'manual close must have fully removed the leaves shortly afterward in this same load');
+    dom1.window.close();
+
+    // Phase 2: simulate a refresh in the same browser session/auth state
+    // by starting a new load with that exact key already present.
+    const dom2 = makeWindow({ signedIn: false, presetDismissed: [recordedKey] });
+    await loadAndSettle(dom2);
+    particles = dom2.window.document.getElementById('clpeasy-particles');
+    const banner = dom2.window.document.getElementById('clpeasy-season-banner');
+    assert.strictEqual(particles, null,
+      'refreshing after a manual close must not start the particle canvas');
+    assert.strictEqual(banner.style.transform, 'translateY(100%)',
+      'refreshing after a manual close must not show the banner');
+    dom2.window.close();
+  }
+
+  console.log('autumn homepage UI checks passed (working, auth-aware CTAs on both hero pill and bottom banner; recognisable pointed, veined leaf particles; automatic banner dismissal stops the leaves together with it at ~12s for either auth state; an explicit close still stops them immediately; a refresh after either kind of dismissal shows neither banner nor leaves, with no flicker; the independent 60s timer never gets the chance to leak leaves on an ineligible refresh; banner dismissal is isolated per auth state; and the CTA fails safe to signed-out when no Supabase client is available)');
 }
 
 main().catch(err => {
