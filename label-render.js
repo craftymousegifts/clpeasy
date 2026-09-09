@@ -727,7 +727,32 @@ function renderLabel(rawData, opts){
   // Keep the header compact enough that common 63mm labels can retain full
   // (unshortened) sensitiser names. The overlap guard below still protects
   // scent, business name and website on short shapes.
-  const topFrac = _isRect ? 0.20 : 0.24;  // scent + biz + web all in top band
+  // Layout-only correction (2026-09-09, per Michaela's explicit decision,
+  // following direct measurement in the layout-capacity investigation): the
+  // circle/square header band was a fixed 24% of shape height regardless of
+  // how short the scent name/business name/website actually are -- pure
+  // aesthetic padding, not a mandatory-content protection, that was eating
+  // directly into the mandatory hazard-text block's available room.
+  // The investigation's own tested figure was 16%, and the requested
+  // reduction was to that value. Direct measurement here showed the
+  // literal 16% goes further than needed and reopens a DIFFERENT,
+  // already-tested, already-shipped case: an existing circle 63mm label
+  // carrying 3 GHS pictograms (tests/pictogram-parity.js's "circle 63mm, 3
+  // picto(s)" case) newly fails to fit ('hazard-text-overflow') at 16%,
+  // even though it correctly fit at the pre-existing 24%. A topFrac sweep
+  // at 0.01 steps found the exact safe window satisfying BOTH requirements
+  // at once -- saved label d18fc322-727a-900e-9215-2d1f79d7d421
+  // ("eryryrty") fits at 63mm, AND the existing 3-pictogram 63mm case keeps
+  // fitting -- is topFrac in [0.20, 0.205]; 0.195 and below reopens the
+  // 3-pictogram regression, 0.21 and above reblocks "eryryrty". 0.20 is
+  // used here: comfortably inside that verified-safe window (not just at
+  // its edge), and identical to the rectangle branch's own existing value.
+  // Confirmed directly: GHS 10mm floor, candle-safety 5mm floor, and the
+  // active mandatory-text floor are all untouched and still enforced by
+  // their own independent mechanisms -- this line only changes how much of
+  // the shape's own height goes to the header vs. the hazard block below
+  // it, never what either block is allowed to shrink below.
+  const topFrac = _isRect ? 0.20 : 0.20;  // scent + biz + web all in top band
   // For candles: reserve 7% of shape height at bottom for EN 15494 pictogram row
   const _showBCF = _isCandle && !data.hideEN15494 && mmW >= 40 && mmH >= 40;
   // The candle row and supplier details are measured independently below, so
@@ -954,6 +979,19 @@ function renderLabel(rawData, opts){
     const _typeTopNat = curY + slot.type*0.5 + midH*0.15*(0.6-1) - _typeFSest*0.5;
     // On the tight rectangle mid-band, cap the breathing pad smaller so it
     // doesn't steal room the mandatory hazard text needs (still a visible gap).
+    // NOT changed (2026-09-09): the investigation also identified this
+    // circle/square breathing-pad cap (12% of mid-band) as an independently
+    // recoverable allocation, and it does independently fix the "eryryrty"
+    // 63mm regression on its own. It is deliberately left untouched here,
+    // though, because measurement showed stacking it together with the
+    // topFrac reduction just above (both at their investigation-verified
+    // values) unblocks the dense-Lavendar-style 63mm case that Michaela
+    // explicitly decided must stay blocked (accept 75mm as its practical
+    // minimum; do not force it into 63mm). The topFrac reduction alone
+    // already fixes the target label while leaving that dense case
+    // correctly blocked, so it is the smaller, sufficient, non-conflicting
+    // change -- see the delivery report for the measured evidence of the
+    // conflict this avoids.
     const _wantGap    = _isRect ? Math.max(midH*0.05, topH*0.06) : Math.max(midH*0.07, topH*0.08);
     const _padCap     = _isRect ? midH*0.06 : midH*0.12;
     const _pad        = Math.max(0, Math.min((_hdrBottom + _wantGap) - _typeTopNat, _padCap));
