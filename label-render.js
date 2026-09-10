@@ -1069,7 +1069,23 @@ function renderLabel(rawData, opts){
   const pictoGap    = pictoSz * 0.04;
   const pictoRowGap = pictoSz * 0.18;
   const pictoBlockH = pictoRows.length*pictoSz + Math.max(pictoRows.length-1,0)*pictoRowGap;
-  const pictoBlockTopY = curY + slot.picto*0.5 - pictoBlockH*0.5 + (_isRect?0:midH*0.15*(0.5-1));
+  // Placement fix (2026-09-10, Michaela's approved "dynamic use of available
+  // space" audit): circle/square pictograms previously carried an extra
+  // -0.075*midH upward shift here (midH*0.15*(0.5-1)) that rectangles never
+  // had. Measurement in that audit found _pictoSlot always equals
+  // pictoBlockH exactly for every fixture actually reachable in CLPeasy's
+  // supported size range (no slot-vs-rendered-size surplus exists to
+  // reclaim), so this offset did not reserve or free any layout capacity --
+  // it only floated the icon block above the bottom of its own already-
+  // exactly-sized slot, stranding a purely cosmetic, unrecoverable dead
+  // strip (measured 2.85mm@63mm circle, scaling to ~4.5% of diameter)
+  // directly between the pictogram and the mandatory hazard/sensitiser/P
+  // text start. Removing it makes circle/square match rectangle's existing
+  // (already gap-free) flush-to-slot placement. This is placement-only:
+  // curY/_curY0/_hardBot and every font-size/fit/warning decision below are
+  // completely unaffected (verified identical across the full regression
+  // suite -- see tests/pictogram-placement-flush-fix.js).
+  const pictoBlockTopY = curY + slot.picto*0.5 - pictoBlockH*0.5;
   curY += slot.picto;
 
   // ── H + SENS + P: flow layout, shared remaining space ──────────
