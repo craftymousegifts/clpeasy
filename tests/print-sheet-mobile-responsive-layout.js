@@ -1,8 +1,12 @@
 // Regression coverage for the print.html mobile responsive-layout fix
-// (2026-09-09, follow-up to the cutting-machine tip wording fix). Reported
-// bug: at narrow viewports (<=860px), the right-hand preview column
-// rendered ~600-800px wide regardless of the actual viewport -- clipped
-// (not scrollable) by the outer .two-col's overflow-x:hidden -- so the
+// (2026-09-09, follow-up to the cutting-machine tip wording fix; the tip
+// card itself was later removed entirely in a 2026-09-10 visual revision --
+// see tests/cutting-machine-tip-layout.js -- this file's own coverage of
+// this fix's min-width:0/overflow-x:auto mechanics is unaffected by that,
+// since it never depended on the tip card's presence). Reported bug: at
+// narrow viewports (<=860px), the right-hand preview column rendered
+// ~600-800px wide regardless of the actual viewport -- clipped (not
+// scrollable) by the outer .two-col's overflow-x:hidden -- so the
 // cutting-machine tip text, the export buttons, and part of the sheet
 // preview itself were all inaccessible off-screen, and the mobile nav
 // visually overlapped the sheet in a full-page screenshot.
@@ -76,23 +80,30 @@ try {
       `${fn}() must still exist, completely untouched by this responsive-layout fix`);
   });
 
-  // ── 5: the cutting-machine tip and export footer are NOT inside the
+  // ── 5: the export footer (and preview footer) are NOT inside the
   //    scrollable preview area -- they must remain full-width siblings
-  //    that reflow with the viewport, not scroll away with the sheet ──
+  //    that reflow with the viewport, not scroll away with the sheet.
+  //    (Updated 2026-09-10: the cutting-machine tip card this originally
+  //    also checked for was removed entirely in the "visual revision"
+  //    follow-up -- see tests/cutting-machine-tip-layout.js -- so the
+  //    same not-nested-inside-the-scroller check now targets the element
+  //    that immediately follows the scroller instead, #preview-footer.) ──
   const previewScrollOpenIdx = source.indexOf('id="preview-scroll"');
-  const previewScrollCloseSearchFrom = source.indexOf('id="cricut-tip"');
-  assert(previewScrollOpenIdx > -1 && previewScrollCloseSearchFrom > previewScrollOpenIdx,
-    'expected #preview-scroll to open before #cricut-tip in the document');
-  const betweenScrollAndTip = source.slice(previewScrollOpenIdx, previewScrollCloseSearchFrom);
-  // The scrollable region's own closing </div> must appear before the tip
-  // starts, i.e. the tip is a sibling AFTER #preview-scroll closes, not a
-  // descendant still inside it.
-  const openDivs = (betweenScrollAndTip.match(/<div\b/g) || []).length;
-  const closeDivs = (betweenScrollAndTip.match(/<\/div>/g) || []).length;
+  const previewFooterIdx = source.indexOf('class="preview-footer"');
+  assert(previewScrollOpenIdx > -1 && previewFooterIdx > previewScrollOpenIdx,
+    'expected #preview-scroll to open before .preview-footer in the document');
+  const betweenScrollAndFooter = source.slice(previewScrollOpenIdx, previewFooterIdx);
+  // The scrollable region's own closing </div> must appear before the
+  // footer starts, i.e. the footer is a sibling AFTER #preview-scroll
+  // closes, not a descendant still inside it.
+  const openDivs = (betweenScrollAndFooter.match(/<div\b/g) || []).length;
+  const closeDivs = (betweenScrollAndFooter.match(/<\/div>/g) || []).length;
   assert(closeDivs >= openDivs,
-    '#cricut-tip must sit outside (after) the scrollable #preview-scroll container, not nested inside it, so it always reflows to the full viewport width instead of scrolling away with the sheet');
+    '.preview-footer must sit outside (after) the scrollable #preview-scroll container, not nested inside it, so it always reflows to the full viewport width instead of scrolling away with the sheet');
+  assert(!/id="cricut-tip"/.test(source),
+    'the cutting-machine tip card must remain removed (visual revision 2026-09-10) -- see tests/cutting-machine-tip-layout.js');
 
-  console.log('print-sheet mobile responsive-layout checks passed (min-width:0 fix present on .left-panel/.right-panel/.preview-scroll; sheet preview scrolls horizontally within its own bounded box via .preview-scroll{overflow-x:auto}; .two-col overflow-x:hidden backstop retained; zoom/MM2PX/export DPI and all export/geometry functions untouched; cutting-machine tip and export footer remain outside the scrollable preview area so they reflow to full viewport width)');
+  console.log('print-sheet mobile responsive-layout checks passed (min-width:0 fix present on .left-panel/.right-panel/.preview-scroll; sheet preview scrolls horizontally within its own bounded box via .preview-scroll{overflow-x:auto}; .two-col overflow-x:hidden backstop retained; zoom/MM2PX/export DPI and all export/geometry functions untouched; the preview footer remains outside the scrollable preview area so it reflows to full viewport width; the cutting-machine tip card stays removed per the 2026-09-10 visual revision)');
 } catch (error) {
   console.error(error.stack || error.message);
   process.exitCode = 1;
