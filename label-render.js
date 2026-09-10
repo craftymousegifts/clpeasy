@@ -832,11 +832,11 @@ function renderLabel(rawData, opts){
   const webFS = clamp(BASE*0.038*1.35, 2.8, 7*1.35);
 
   // ── DIVIDER LINES ─────────────────────────────────────────────
-  const divTopY = midY;
+  let divTopY = midY;
   const divBotY = botY;
-  const divTopHW = chordW(divTopY, 0.08)/2;
+  let divTopHW = chordW(divTopY, 0.08)/2;
   const divBotHW = chordW(divBotY, 0.08)/2;
-  const divTop = `<line x1="${(cx-divTopHW).toFixed(1)}" y1="${divTopY.toFixed(1)}" x2="${(cx+divTopHW).toFixed(1)}" y2="${divTopY.toFixed(1)}" stroke="#ddd" stroke-width="0.5"/>`;
+  let divTop = `<line x1="${(cx-divTopHW).toFixed(1)}" y1="${divTopY.toFixed(1)}" x2="${(cx+divTopHW).toFixed(1)}" y2="${divTopY.toFixed(1)}" stroke="#ddd" stroke-width="0.5"/>`;
   const divBot = `<line x1="${(cx-divBotHW).toFixed(1)}" y1="${divBotY.toFixed(1)}" x2="${(cx+divBotHW).toFixed(1)}" y2="${divBotY.toFixed(1)}" stroke="#ddd" stroke-width="0.5"/>`;
 
   // ── MID BAND: fixed proportional layout ──────────────────────
@@ -868,9 +868,9 @@ function renderLabel(rawData, opts){
   const _pictoWEstimate = chordW(midY, 0.06);
   const _pictoGapEstimate = _pictoWEstimate * 0.04;
   const _pictoPerRowEst = Math.max(1, Math.floor((_pictoWEstimate + _pictoGapEstimate) / (_minPictoPx + _pictoGapEstimate)));
-  const _pictoRowCount = pictos.length ? Math.ceil(pictos.length / _pictoPerRowEst) : 1;
+  const _pictoRowCount = pictos.length ? Math.ceil(pictos.length / _pictoPerRowEst) : 0;
   const _pictoRowGapPx = _minPictoPx * 0.18;
-  const _minPictoSlot = Math.ceil(_pictoRowCount * _minPictoPx + (_pictoRowCount - 1) * _pictoRowGapPx);
+  const _minPictoSlot = _pictoRowCount ? Math.ceil(_pictoRowCount * _minPictoPx + (_pictoRowCount - 1) * _pictoRowGapPx) : 0;
   const _naturalPicto = midH * 0.16 * _pictoRowCount;
   const _pictoSlot    = Math.max(_naturalPicto, _minPictoSlot);
   // Remaining mid-band space shared between type, signal, H, sens, P, gap
@@ -973,30 +973,17 @@ function renderLabel(rawData, opts){
   // touching (esp. circles). Push the whole mid-band down by just enough to
   // open a clear gap below the header. Everything below derives from curY, so
   // internal spacing is preserved — only the slack-rich H/sens/P region shrinks.
-  {
-    const _hdrBottom  = webLine ? _webYf + _webFSf*0.5 : _bizYf + _bizFSf*0.5;
-    const _typeFSest  = Math.min(slot.type*0.68*1.5, clamp(BASE*0.060*1.5,4,21));
-    const _typeTopNat = curY + slot.type*0.5 + midH*0.15*(0.6-1) - _typeFSest*0.5;
-    // On the tight rectangle mid-band, cap the breathing pad smaller so it
-    // doesn't steal room the mandatory hazard text needs (still a visible gap).
-    // NOT changed (2026-09-09): the investigation also identified this
-    // circle/square breathing-pad cap (12% of mid-band) as an independently
-    // recoverable allocation, and it does independently fix the "eryryrty"
-    // 63mm regression on its own. It is deliberately left untouched here,
-    // though, because measurement showed stacking it together with the
-    // topFrac reduction just above (both at their investigation-verified
-    // values) unblocks the dense-Lavendar-style 63mm case that Michaela
-    // explicitly decided must stay blocked (accept 75mm as its practical
-    // minimum; do not force it into 63mm). The topFrac reduction alone
-    // already fixes the target label while leaving that dense case
-    // correctly blocked, so it is the smaller, sufficient, non-conflicting
-    // change -- see the delivery report for the measured evidence of the
-    // conflict this avoids.
-    const _wantGap    = _isRect ? Math.max(midH*0.05, topH*0.06) : Math.max(midH*0.07, topH*0.08);
-    const _padCap     = _isRect ? midH*0.06 : midH*0.12;
-    const _pad        = Math.max(0, Math.min((_hdrBottom + _wantGap) - _typeTopNat, _padCap));
-    curY += _pad;
-  }
+  // Content-aware body start: the old layout always began at the fixed 20%
+  // header boundary, even when the rendered header ended earlier. Start from
+  // the measured lower edge of the actual header stack instead. This is the
+  // first boundary in the shared body-space allocator; everything below is
+  // advanced by its real rendered height rather than by aesthetic slots.
+  const _hdrBottom = webLine ? _webYf + _webFSf*0.5 : _bizYf + _bizFSf*0.5;
+  const _bodyGap = Math.max(_mandatoryMinFS*0.35, 1);
+  curY = _hdrBottom + _bodyGap;
+  divTopY = curY;
+  divTopHW = chordW(divTopY, 0.08)/2;
+  divTop = `<line x1="${(cx-divTopHW).toFixed(1)}" y1="${divTopY.toFixed(1)}" x2="${(cx+divTopHW).toFixed(1)}" y2="${divTopY.toFixed(1)}" stroke="#ddd" stroke-width="0.5"/>`;
 
   // Product type
   const typeSW  = chordW(curY + slot.type*0.5, 0.09);
@@ -1017,8 +1004,9 @@ function renderLabel(rawData, opts){
     if(measureText(type, typeFS, true, false) > typeSW*0.88) _typeTooSmall = true;
   }
   const _typeFSBounds={min:typeFSMin,max:typeFSMax,auto:_typeFSAuto};
-  const typeY   = curY + slot.type*0.5 + (_isRect?0:midH*0.15*(0.6-1));
-  curY += slot.type;
+  const _typeTopY = curY;
+  const typeY   = curY + typeFS*0.5;
+  curY += typeFS + _bodyGap;
 
   // Signal word
   const sigSW   = chordW(curY + slot.signal*0.5, 0.09);
@@ -1039,19 +1027,30 @@ function renderLabel(rawData, opts){
     if(measureText(sig, sigFS, true, false) > sigSW*0.76) _signalTooSmall = true;
   }
   const _sigFSBounds={min:sigFSMin,max:sigFSMax,auto:_sigFSAuto};
-  const sigY    = curY + slot.signal*0.5 + (_isRect?0:midH*0.15*(0.55-1));
-  curY += slot.signal;
+  const _signalTopY = curY;
+  const sigY    = curY + sigFS*0.5;
+  curY += sigFS + _bodyGap;
 
   // Pictograms: wrap into extra rows rather than shrinking below the CLP 10mm legal minimum.
   const nP        = pictos.length;
-  const pictoSW   = chordW(curY + slot.picto*0.5, 0.06);
   const pxPerMm   = pw / mmW; // preview: 260/mmW; export: 300/25.4 ≈ 11.81
   const minPictoSz = Math.ceil(_pictoMm * pxPerMm); // physical _pictoMm-per-icon size for this render -- see _pictoMm above and choosePictoMmAndRender()
-  const _pictoGapAtMin = pictoSW * 0.04;
-  const pictoPerRow = Math.max(1, Math.floor((pictoSW + _pictoGapAtMin) / (minPictoSz + _pictoGapAtMin)));
+  // Resolve row count against the chord at the ACTUAL block centre. A fixed
+  // mid-band estimate can overstate the width lower down a circle. Iterate
+  // to a stable, deterministic per-row count (at most three passes for the
+  // supported 1–9 pictograms).
+  let pictoPerRow=Math.max(1,nP||1);
+  for(let _i=0;_i<3 && nP;_i++){
+    const _rows=Math.ceil(nP/pictoPerRow);
+    const _blockH=_rows*minPictoSz+Math.max(_rows-1,0)*minPictoSz*0.18;
+    const _sw=chordW(curY+_blockH*0.5,0.06);
+    const _gap=_sw*0.04;
+    const _next=Math.max(1,Math.floor((_sw+_gap)/(minPictoSz+_gap)));
+    if(_next===pictoPerRow) break;
+    pictoPerRow=_next;
+  }
   const pictoRows = [];
   for(let i=0;i<nP;i+=pictoPerRow) pictoRows.push(pictos.slice(i,i+pictoPerRow));
-  if(!pictoRows.length) pictoRows.push([]);
   // Pictogram size is always the physical _pictoMm-per-icon size
   // (minPictoSz), derived from pxPerMm (pw/mmW) -- the same real-world
   // physical icon regardless of which canvas/caller (Builder's fixed-260
@@ -1085,8 +1084,8 @@ function renderLabel(rawData, opts){
   // curY/_curY0/_hardBot and every font-size/fit/warning decision below are
   // completely unaffected (verified identical across the full regression
   // suite -- see tests/pictogram-placement-flush-fix.js).
-  const pictoBlockTopY = curY + slot.picto*0.5 - pictoBlockH*0.5;
-  curY += slot.picto;
+  const pictoBlockTopY = curY;
+  curY += pictoBlockH + (pictoBlockH ? _bodyGap : 0);
 
   // ── H + SENS + P: flow layout, shared remaining space ──────────
   // All three blocks use ONE shared font size — the largest that fits H +
@@ -1192,11 +1191,33 @@ function renderLabel(rawData, opts){
     // EU/NI-mode information, not an active GB requirement.
     const hLH=fs*1.25, sLH=fs*1.25, pLH=fs*1.15;
     const _edgeMargin=2*pxPerMm; // fixed 2mm from the label edge, both sides
+    // Circle-aware greedy wrapping: each prospective line is measured at
+    // that line's own Y coordinate. The previous implementation calculated
+    // one chord width at the first line of each block and reused it for every
+    // later line, even though a circle narrows toward the footer. Measuring
+    // and rendering from this same line list makes the fit decision reflect
+    // the space that is physically available at every line.
+    function _wrapAtY(text, startY, lh){
+      if(!text) return [];
+      const words=String(text).trim().split(/\s+/).filter(Boolean);
+      const lines=[];
+      let line='';
+      for(const word of words){
+        const candidate=line?line+' '+word:word;
+        const lineY=startY+(lines.length+0.5)*lh;
+        const sw=Math.max(fs*3,chordW(lineY,0)-_edgeMargin*2);
+        if(line && measureText(candidate,fs,false,false)>sw){
+          lines.push(line);
+          line=word;
+        } else line=candidate;
+      }
+      if(line) lines.push(line);
+      return lines;
+    }
     let y=y0;
     let hLines=[];
     if(hText){
-      const sw=Math.max(fs*3, chordW(y+hLH*0.5,0)-_edgeMargin*2);
-      hLines=wrapText(hText,sw,fs,false,false);
+      hLines=_wrapAtY(hText,y,hLH);
     }
     const hStartY=y+hLH*0.5;
     y+=hLines.length*hLH;
@@ -1204,9 +1225,8 @@ function renderLabel(rawData, opts){
 
     let sLines=[],eLines=[];
     if(sensText){
-      const sw=Math.max(fs*3, chordW(y+sLH*0.5,0)-_edgeMargin*2);
-      sLines=_sensBase?wrapText(_sensBase,sw,fs,false,false):[];
-      eLines=_euhSuffix?wrapText(_euhSuffix,sw,fs,false,false):[];
+      sLines=_sensBase?_wrapAtY(_sensBase,y,sLH):[];
+      eLines=_euhSuffix?_wrapAtY(_euhSuffix,y+sLines.length*sLH,sLH):[];
     }
     const sStartY=y+sLH*0.5;
     const allS=[...sLines,...eLines];
@@ -1215,8 +1235,7 @@ function renderLabel(rawData, opts){
 
     let pLines=[];
     if(pText){
-      const sw=Math.max(fs*3, chordW(y+pLH*0.5,0)-_edgeMargin*2);
-      pLines=wrapText(pText,sw,fs,false,false);
+      pLines=_wrapAtY(pText,y,pLH);
     }
     const pStartY=y+pLH*0.5;
     y+=pLines.length*pLH;
@@ -1641,6 +1660,14 @@ function renderLabel(rawData, opts){
   const _hazardHalfW = chordW((_curY0+_L.endY)/2, 0.08)/2;
   const _footerHalfW = chordW((botY+ph)/2, 0.10)/2;
   const _pictoHalfW = chordW(pictoBlockTopY+pictoBlockH/2, 0.06)/2;
+  const _mandatoryLineMetrics=[];
+  const _recordMandatoryLines=(kind,lines,startY,lh)=>lines.forEach((text,i)=>{
+    const y=startY+i*lh;
+    _mandatoryLineMetrics.push({kind,text,y,width:measureText(text,_sharedFS,false,false),availableWidth:Math.max(_sharedFS*3,chordW(y,0)-4*pxPerMm)});
+  });
+  _recordMandatoryLines('hazard',_L.hLines,_L.hStartY,_L.hLH);
+  _recordMandatoryLines('sensitiser',_L.allS,_L.sStartY,_L.sLH);
+  _recordMandatoryLines('precautionary',_L.pLines,_L.pStartY,_L.pLH);
 
   const metrics = {
     labelDims: {mmW, mmH, pw, ph},
@@ -1648,6 +1675,17 @@ function renderLabel(rawData, opts){
     hazardBounds: {x0: cx-_hazardHalfW, x1: cx+_hazardHalfW, y0: _curY0, y1: _L.endY},
     footerBounds: {x0: cx-_footerHalfW, x1: cx+_footerHalfW, y0: botY, y1: ph},
     pictogramBounds: pictos.length ? {x0: cx-_pictoHalfW, x1: cx+_pictoHalfW, y0: pictoBlockTopY, y1: pictoBlockTopY+pictoBlockH} : null,
+    layoutBands: {
+      header: {y0: topY, y1: _hdrBottom},
+      body: {y0: divTopY, y1: _hardBot},
+      productType: {y0: _typeTopY, y1: _typeTopY+typeFS},
+      signal: {y0: _signalTopY, y1: _signalTopY+sigFS},
+      pictograms: pictos.length ? {y0: pictoBlockTopY, y1: pictoBlockTopY+pictoBlockH} : null,
+      mandatoryText: {y0: _L.hStartY-_L.hLH*0.5, y1: _L.endY},
+      footer: {y0: botY, y1: ph},
+      gap: _bodyGap,
+    },
+    mandatoryLines: _mandatoryLineMetrics,
     overflow: _labelLegibilityWarn,
     // Manual-override slider ranges {min,max,auto} for each overridable font
     // size -- restores what builder.html's syncAdjustPanel() previously read

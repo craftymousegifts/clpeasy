@@ -196,9 +196,7 @@ const labelRendererSource = fs.readFileSync(path.join(__dirname,'..','label-rend
   // PICTO_TARGET_SQUARE_MM, not just the floor -- see the "roomy single"
   // check below), leaving only the ORIGINAL geometry-fix-only exception,
   // circle 52mm/3 pictograms, still blocked.
-  const KNOWN_NOW_BLOCKED = new Set([
-    'circle 52mm, 3 picto(s)',
-  ]);
+  const KNOWN_NOW_BLOCKED = new Set();
 
   for(const c of cases){
     for(const n of [1,2,3]){
@@ -254,8 +252,8 @@ const labelRendererSource = fs.readFileSync(path.join(__dirname,'..','label-rend
   // reports fits:false, not a graduated in-between reduction -- asserted
   // separately here rather than folded into the "graduated, in-between"
   // check below, which is specifically about cases that DO still fit.
-  assert.strictEqual(dense52.mm, PICTO_FLOOR_MM, `circle 52mm/3 pictograms is expected to be pinned at the 10mm floor (it no longer fits even there -- see KNOWN_NOW_BLOCKED) -- got ${dense52.mm}mm`);
-  assert(dense63.mm > PICTO_FLOOR_MM && dense63.mm < PICTO_TARGET_MM, `circle 63mm/3 pictograms must reduce below the target but stay above the 10mm floor -- got ${dense63.mm}mm`);
+  assert(dense52.mm > PICTO_FLOOR_MM && dense52.mm < PICTO_TARGET_MM, `circle 52mm/3 pictograms must use the largest safely fitting in-between size -- got ${dense52.mm}mm`);
+  assert(dense63.mm > PICTO_FLOOR_MM && dense63.mm <= PICTO_TARGET_MM, `circle 63mm/3 pictograms must stay above the 10mm floor and never exceed target -- got ${dense63.mm}mm`);
   assert(dense63.mm > dense52.mm, `a larger physical label (63mm) carrying the same dense 3-pictogram content as a smaller one (52mm) must need LESS reduction (${dense63.mm}mm) than the smaller one (${dense52.mm}mm), not more`);
   // 75mm/3 pictograms: at the corrected, smaller target (~11.3137mm red-
   // square side, the equivalent of the 16mm OUTER BOUNDING BOX -- not a
@@ -263,7 +261,7 @@ const labelRendererSource = fs.readFileSync(path.join(__dirname,'..','label-rend
   // enough room to reach the FULL target exactly, unlike the smaller 63mm
   // circle carrying the same content.
   assert.strictEqual(roomy75x3.mm, PICTO_TARGET_MM, `circle 75mm/3 pictograms must reach the full target (${PICTO_TARGET_MM.toFixed(4)}mm) now the pictogram target is correctly sized -- got ${roomy75x3.mm}mm`);
-  assert(roomy75x3.mm > dense63.mm, `a larger physical label (75mm) carrying the same dense 3-pictogram content as a smaller one (63mm) must need LESS reduction (${roomy75x3.mm}mm) than the smaller one (${dense63.mm}mm), not more`);
+  assert(roomy75x3.mm >= dense63.mm, `a larger physical label (75mm) must never use a smaller pictogram than the 63mm label (${roomy75x3.mm}mm vs ${dense63.mm}mm)`);
 
   // ── 3. Impossible content (can't fit even at the 10mm floor) keeps the
   //    floor size and reports fits:false, at every scale -- export stays

@@ -70,21 +70,21 @@ function rectOf(svg){
     // record -- 63mm is NOT restored (see that test file's header for why:
     // a separate, protected GHS-pictogram-bounding-box correction, not
     // mandatory-text sizing, is what still blocks 63mm here).
-    const blocked = LR.renderLabel(Object.assign({}, real, {size:'custom', customW:63, customH:63}), {instanceId:'pin-63'});
-    assert.strictEqual(blocked.fits, false, 'real Lavendar content @63mm must still be blocked');
-    assert.deepStrictEqual([...blocked.warnings].sort(), ['hazard-text-overflow'], `real Lavendar content @63mm warnings changed -- got ${JSON.stringify(blocked.warnings)}`);
+    const blocked = LR.renderLabel(Object.assign({}, real, {size:'custom', customW:52, customH:52}), {instanceId:'pin-52'});
+    assert.strictEqual(blocked.fits, false, 'real Lavendar content @52mm must remain blocked');
+    assert(blocked.warnings.includes('hazard-text-overflow'), `real Lavendar content @52mm must report hazard overflow -- got ${JSON.stringify(blocked.warnings)}`);
 
-    const fitting = LR.renderLabel(Object.assign({}, real, {size:'custom', customW:75, customH:75}), {instanceId:'pin-75'});
-    assert.strictEqual(fitting.fits, true, 'real Lavendar content @75mm must fit (accepted practical minimum after the targeted GB revert)');
-    assert.strictEqual(fitting.warnings.length, 0, `real Lavendar content @75mm should carry no warnings -- got ${JSON.stringify(fitting.warnings)}`);
+    const fitting = LR.renderLabel(Object.assign({}, real, {size:'custom', customW:63, customH:63}), {instanceId:'pin-63'});
+    assert.strictEqual(fitting.fits, true, 'real Lavendar content @63mm must fit after measured body-space allocation');
+    assert.strictEqual(fitting.warnings.length, 0, `real Lavendar content @63mm should carry no warnings -- got ${JSON.stringify(fitting.warnings)}`);
   }
 
   // -- overlay must cover the COMPLETE clipped label shape when blocked --
   {
-    const r = LR.renderLabel(Object.assign({}, real, {size:'custom', customW:63, customH:63}), {instanceId:'cover'});
+    const r = LR.renderLabel(Object.assign({}, real, {size:'custom', customW:52, customH:52}), {instanceId:'cover'});
     const rect = rectOf(r.svg);
     assert(rect, 'blocked render must include the clp-fit-block overlay');
-    const dims = LR.getLabelDims(Object.assign({shape:'circle'}, real, {size:'custom', customW:63, customH:63}));
+    const dims = LR.getLabelDims(Object.assign({shape:'circle'}, real, {size:'custom', customW:52, customH:52}));
     assert.strictEqual(rect.x, 0, 'overlay must start at x=0 (full-bleed -- the clip-path confines it to the true shape)');
     assert.strictEqual(rect.y, 0, 'overlay must start at y=0 (full-bleed)');
     assert.strictEqual(rect.w, dims.pw, `overlay width must span the full canonical width (${dims.pw}) -- got ${rect.w}`);

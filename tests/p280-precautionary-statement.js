@@ -270,8 +270,9 @@ const emptyQuery = {
 
     const svg1 = bwindow.buildSVG(false);
     assert(!bwindow.eval('window._unrecognizedCodes').includes('P280'), 'Builder\'s render pipeline must not flag a validly-selected P280 as unrecognised');
-    assert(svg1.includes('Wear protective gloves/eye protection'), 'Builder preview must render exactly the selected wording');
-    assert(!svg1.includes('hearing protection'), 'Builder preview must not render an unselected item');
+    const svgText1 = svg1.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    assert(svgText1.includes('Wear protective gloves/eye protection'), 'Builder preview must render exactly the selected wording, including when safe circle-aware wrapping splits it across SVG tspans');
+    assert(!svgText1.includes('hearing protection'), 'Builder preview must not render an unselected item');
 
     // (The Step 5 "Label summary" panel (#label-summary) that used to be
     // checked here has been removed from the Download stage -- the identical-
@@ -294,7 +295,8 @@ const emptyQuery = {
     bwindow.loadLabelRecord(savedEntry);
     assert.deepStrictEqual([...bwindow.eval('S.p280Items')].sort(), ['eye','gloves'], 'reopening the saved label must restore the exact selected items');
     const svg2 = bwindow.buildSVG(false);
-    assert(svg2.includes('Wear protective gloves/eye protection'), 'reopened label must render the identical wording it was saved with');
+    const svgText2 = svg2.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    assert(svgText2.includes('Wear protective gloves/eye protection'), 'reopened label must render the identical wording it was saved with');
 
     // 4. Legacy-compatibility: a label with P280 in pStatements but NO
     // p280Items/p280Other data (as if saved before this feature existed)
@@ -449,7 +451,8 @@ const emptyQuery = {
     // Real SVG can wrap onto a <tspan> boundary mid-phrase at the sheet
     // cell's small pixel size -- check the two halves independently, same
     // as the equivalent renderLabel() check above.
-    assert(sheetHTML.includes('Wear protective gloves/eye'), 'Composer canvas must render the identical selected wording Builder produced (opening clause)');
+    const sheetText = sheetHTML.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    assert(sheetText.includes('Wear protective gloves/eye'), 'Composer canvas must render the identical selected wording Builder produced (opening clause)');
     assert(sheetHTML.includes('protection'), 'Composer canvas must render the identical selected wording Builder produced (closing word)');
     assert(!sheetHTML.includes('hearing protection'), 'Composer canvas must not render an unselected item');
     assert.strictEqual(pwindow.eval('document.getElementById("btn-pdf").disabled'), false, 'Print/PDF must be enabled -- a valid P280 selection must not block export');
