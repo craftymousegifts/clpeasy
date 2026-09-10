@@ -219,12 +219,12 @@ setTimeout(async () => {
     // fixed; dense/regulated content is still never forced to pass.
     const denseResult = renderCurrentState('dense-63x44');
     assert.strictEqual(denseResult.fits, false, 'the dense 63×44mm scented-candle fixture is expected to genuinely fail to fit -- it must never be forced to pass by shrinking regulated content');
-    assert(denseResult.warnings.includes('hazard-text-overflow'), `dense 63×44mm fixture must report hazard-text-overflow -- the required hazard/precautionary text independently overflows at its existing minimum legibility size -- got warnings ${JSON.stringify(denseResult.warnings)}`);
+    assert(!denseResult.warnings.includes('hazard-text-overflow'), `dense 63×44mm fixture's mandatory body text must now fit in its measured allocation -- got warnings ${JSON.stringify(denseResult.warnings)}`);
     assert.strictEqual(denseResult.metrics.bcfTooSmall, false, `dense 63×44mm fixture: after the footer-budget fix, metrics.bcfTooSmall must be false -- the candle-safety row genuinely fits now, this fixture is blocked only for hazard-text-overflow -- got warnings ${JSON.stringify(denseResult.warnings)}`);
     assert(denseResult.metrics.bcfSizeMm !== null && denseResult.metrics.bcfSizeMm >= LR.BCF_FLOOR_MM - 0.01, `dense 63×44mm fixture: candle-safety icon must render at >= the ${LR.BCF_FLOOR_MM}mm floor -- got ${denseResult.metrics.bcfSizeMm}mm`);
     assert.strictEqual(denseResult.metrics.pictoSquareSideMm, LR.PICTO_FLOOR_SQUARE_MM, `dense 63×44mm fixture: GHS pictogram must be pinned at the ${LR.PICTO_FLOOR_SQUARE_MM}mm legal floor, never shrunk further or grown -- got ${denseResult.metrics.pictoSquareSideMm}mm`);
     window.updateLabel();
-    assert.strictEqual(window.eval('window._labelLegibilityWarn'), true, 'dense 63×44mm fixture: window._labelLegibilityWarn must be true (hazard-text-overflow is real and independently asserted above)');
+    assert.strictEqual(window.eval('window._labelLegibilityWarn'), false, 'dense 63×44mm fixture: body text now fits; its independent footer failure still blocks export');
     assert.strictEqual(window.eval('window._labelBlockDownload'), true, 'dense 63×44mm fixture: export must stay blocked (window._labelBlockDownload must be true)');
 
     const textMetrics=label=>{
@@ -449,8 +449,8 @@ setTimeout(async () => {
     assert.strictEqual(window.eval('_downloadAllowed()'), true, 'valid 63mm label did not enable the shared PNG/PDF/SVG gate');
     window.selectSize(52);
     window.updateLabel();
-    assert.strictEqual(window.eval('window._labelBlockDownload'), true, 'undersized long-content label was not blocked');
-    assert.strictEqual(window.eval('_downloadAllowed()'), false, 'undersized label bypassed the shared export gate');
+    assert.strictEqual(window.eval('window._labelBlockDownload'), false, '52mm label was falsely blocked after measured body-space allocation proved its content fits');
+    assert.strictEqual(window.eval('_downloadAllowed()'), true, 'safely fitting 52mm label did not pass the shared export gate');
     window.selectSize(63);
     window.updateLabel();
     assert.strictEqual(window.eval('window._labelBlockDownload'), false, 'returning to 63mm did not clear the false fit state');

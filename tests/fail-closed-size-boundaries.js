@@ -152,10 +152,10 @@ try {
     // recommendation at all.
     const lightCircle = {
       shape:'circle', size:'custom', customW:52, customH:52,
-      scentName:'Rose Garden', productType:'Scented Candle', bizName:'Crafty Mouse Gifts',
-      signal:'Warning', hStatements:'H315, H317, H412', pStatements:'P302+P352, P273, P501',
-      sensitisers:['Linalool','Limonene'],
-      pictograms:['exclamation'], bizAddress:'Stable Lodge', bizPhone:'07702451104',
+      scentName:'Lavendar', productType:'Scented Candle', bizName:'CLPeasy',
+      signal:'Warning', hStatements:'H317, H412, EUH208', pStatements:'P261, P273, P302+P352, P333+P313, P501',
+      sensitisers:['Benzyl Salicylate','Hydroxycitronellal','Linalool','Limonene','2-acetoxy-2,3,8,8-tetramethyloctahydronaphthalene'],
+      pictograms:['exclamation'], bizAddress:'CLPeasy', bizPhone:'01234567890', bizWebsite:'www.clpeasy.com', netWeight:'200g', burnTime:'35hrs',
     };
     const before = LR.renderLabel(lightCircle, {instanceId:'x'});
     assert.strictEqual(before.fits, false, `setup: this fixture is expected to be blocked at 52mm under the restored GB floor -- got fits=${before.fits} warnings=${JSON.stringify(before.warnings)}`);

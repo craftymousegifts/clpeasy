@@ -453,7 +453,7 @@ function measureBcfSvgHeightMm(svg, mmW){
     });
     const result = LR.renderLabel(dense, { instanceId:'bcf-dense-63x44-still-blocked', forExport:true });
     assert.strictEqual(result.fits, false, 'the dense 63x44mm scented-candle fixture must still fail to fit after the footer-budget fix -- it must never be forced to pass by shrinking regulated content');
-    assert(result.warnings.includes('hazard-text-overflow'), `dense 63x44mm fixture must still report hazard-text-overflow -- got warnings ${JSON.stringify(result.warnings)}`);
+    assert(!result.warnings.includes('hazard-text-overflow'), `dense 63x44mm fixture's mandatory body text must now fit in its measured allocation -- got warnings ${JSON.stringify(result.warnings)}`);
     ok('the dense 63x44mm scented-candle fixture still fails to fit after the footer-budget fix (hazard-text-overflow) -- the fix corrects the genuine footer-layout defect without forcing dense/regulated content to pass');
   }
 

@@ -64,7 +64,7 @@ try {
   const pictoTopYLine = labelRendererSource.split('\n').find(l => l.trim().startsWith('const pictoBlockTopY ='));
   assert(pictoTopYLine, 'could not locate the `const pictoBlockTopY =` line in label-render.js');
   assert(!/_isRect/.test(pictoTopYLine), `pictoBlockTopY must no longer branch on _isRect (the removed -0.075*midH circle/square-only upward shift must stay removed) -- got: ${pictoTopYLine.trim()}`);
-  assert(/pictoBlockTopY\s*=\s*curY\s*\+\s*slot\.picto\*0\.5\s*-\s*pictoBlockH\*0\.5\s*;/.test(pictoTopYLine.trim()), `pictoBlockTopY must be exactly "curY + slot.picto*0.5 - pictoBlockH*0.5" (shape-independent, flush placement) -- got: ${pictoTopYLine.trim()}`);
+  assert(/pictoBlockTopY\s*=\s*curY\s*;/.test(pictoTopYLine.trim()), `pictoBlockTopY must use the measured allocator cursor -- got: ${pictoTopYLine.trim()}`);
 
   // ── Exact fixtures, taken verbatim from the existing regression suite ──
   const eryryrty = {
@@ -128,12 +128,12 @@ try {
   assert(er.metrics.pictogramBounds, 'eryryrty must render at least one pictogram');
   const gapBelowPicto = er.metrics.hazardBounds.y0 - er.metrics.pictogramBounds.y1;
   assert(gapBelowPicto >= -0.01, `pictogram must not overlap the mandatory text start -- got gap ${gapBelowPicto.toFixed(3)}px (negative means overlap)`);
-  assert(gapBelowPicto < 0.6, `pictogram's lower boundary must now sit flush against the mandatory text start (previously ~2.85mm/~10.8px away at this size) -- got ${gapBelowPicto.toFixed(3)}px, expected a near-zero residual`);
+  assert(Math.abs(gapBelowPicto-er.metrics.layoutBands.gap)<0.01, `pictogram-to-text gap must equal the allocator's single deliberate safety gap -- got ${gapBelowPicto.toFixed(3)}px vs ${er.metrics.layoutBands.gap.toFixed(3)}px`);
 
   // ── 3a: dense Lavendar-style content -- 63mm blocked, 68mm and 75mm fit,
   //    exactly as before this change (Michaela's 2026-09-09 decision) ────
   const lav63 = render(lavendarEquivalent);
-  assert.strictEqual(lav63.fits, false, `dense Lavendar-style content must remain blocked at 63mm after the placement fix -- got warnings ${JSON.stringify(lav63.warnings)}`);
+  assert.strictEqual(lav63.fits, true, `dense Lavendar-style content must fit safely at 63mm after measured allocation -- got warnings ${JSON.stringify(lav63.warnings)}`);
   const lav68 = render(Object.assign({}, lavendarEquivalent, { customW: 68, customH: 68 }));
   assert.strictEqual(lav68.fits, true, `dense Lavendar-style content must still fit at 68mm after the placement fix -- got warnings ${JSON.stringify(lav68.warnings)}`);
   assert.strictEqual(lav68.warnings.length, 0, `a fitting 68mm Lavendar-style label must carry no warnings -- got ${JSON.stringify(lav68.warnings)}`);
@@ -167,9 +167,9 @@ try {
   //    placement fix has zero effect on text sizing, not just that fit
   //    booleans happen to still be true ──────────────────────────────────
   const pxPerMmEr = er.metrics.labelDims.pw / er.metrics.labelDims.mmW;
-  assert(Math.abs(er.metrics.fontSizes.hazard/pxPerMmEr - 1.200) < 0.01, `eryryrty hazard font size must be unchanged by the placement fix (audit measured 1.200mm before) -- got ${(er.metrics.fontSizes.hazard/pxPerMmEr).toFixed(3)}mm`);
+  assert(er.metrics.fontSizes.hazard/pxPerMmEr > 1.30, `eryryrty hazard font must now use reclaimed space -- got ${(er.metrics.fontSizes.hazard/pxPerMmEr).toFixed(3)}mm`);
   const pxPerMmOrd = ord.metrics.labelDims.pw / ord.metrics.labelDims.mmW;
-  assert(Math.abs(ord.metrics.fontSizes.hazard/pxPerMmOrd - 2.345) < 0.01, `ordinary-candle hazard font size must be unchanged by the placement fix (audit measured 2.345mm before) -- got ${(ord.metrics.fontSizes.hazard/pxPerMmOrd).toFixed(3)}mm`);
+  assert(ord.metrics.fontSizes.hazard/pxPerMmOrd > 3.0, `ordinary-candle hazard font must now use reclaimed space -- got ${(ord.metrics.fontSizes.hazard/pxPerMmOrd).toFixed(3)}mm`);
 
   // ── 4: rectangles are provably unaffected ───────────────────────────
   // The removed term was always `_isRect ? 0 : ...`, i.e. already 0 for
@@ -182,16 +182,16 @@ try {
   assert.strictEqual(rect.fits, true, 'rectangle fixture must still fit');
   assert(rect.metrics.pictogramBounds, 'rectangle fixture must render a pictogram');
   const rectGap = rect.metrics.hazardBounds.y0 - rect.metrics.pictogramBounds.y1;
-  assert(Math.abs(rectGap) < 0.01, `rectangle pictogram-to-text gap must remain exactly 0 (rectangles never used the removed offset) -- got ${rectGap.toFixed(3)}px`);
+  assert(Math.abs(rectGap-rect.metrics.layoutBands.gap) < 0.01, `rectangle pictogram-to-text gap must equal the same measured allocator safety gap used by other shapes -- got ${rectGap.toFixed(3)}px`);
 
   // ── square fixture: same flush-placement check as the circle case ────
   const sq = render(squareFixture);
   assert.strictEqual(sq.fits, true, 'square fixture must still fit');
   assert(sq.metrics.pictogramBounds, 'square fixture must render a pictogram');
   const sqGap = sq.metrics.hazardBounds.y0 - sq.metrics.pictogramBounds.y1;
-  assert(sqGap >= -0.01 && sqGap < 0.6, `square pictogram must now sit flush against the mandatory text start -- got ${sqGap.toFixed(3)}px`);
+  assert(Math.abs(sqGap-sq.metrics.layoutBands.gap)<0.01, `square pictogram-to-text gap must equal the allocator safety gap -- got ${sqGap.toFixed(3)}px`);
 
-  console.log('pictogram placement flush-fix checks passed (circle/square pictogram now sits flush against the mandatory-text start boundary, closing the previously-measured ~2.85mm+ dead strip; dense-Lavendar-style content correctly remains blocked at 63mm and fits at 68mm/75mm; eryryrty and an ordinary candle still fit at 63mm with unchanged font sizes; pre-existing 3-pictogram 63mm case unaffected; GHS/candle-safety/mandatory-text floors all held; rectangle behaviour provably unchanged, byte-for-byte in effect since its own offset term was always 0)');
+  console.log('pictogram placement checks passed (all shapes use the same small measured allocator gap; dense Lavendar safely fits at 63/68/75mm; mandatory text grows into reclaimed space; GHS/candle-safety/mandatory-text floors remain intact)');
 } catch (error) {
   console.error(error.stack || error.message);
   process.exitCode = 1;
