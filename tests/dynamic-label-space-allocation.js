@@ -62,8 +62,13 @@ try {
   assert(source.includes('function _wrapAtY('), 'mandatory text must be wrapped against the chord width at each real line Y');
   assert(/const pictoBlockTopY\s*=\s*curY\s*;/.test(source), 'pictogram block must start at the allocator cursor');
 
-  const er=render(eryryrty), lav63=render(lavendar), lav68=render({...lavendar,customW:68,customH:68}), lav75=render({...lavendar,customW:75,customH:75}), ord=render(ordinary);
-  for(const [name,r] of [['eryryrty 63mm',er],['dense Lavendar 63mm',lav63],['dense Lavendar 68mm',lav68],['dense Lavendar 75mm',lav75],['ordinary 63mm',ord]]) assertSafe(name,r);
+  const er=render(eryryrty), lav63=render(lavendar), lavBatch63=render({...lavendar,batchNum:'BN-002'}), lav68=render({...lavendar,customW:68,customH:68}), lav75=render({...lavendar,customW:75,customH:75}), ord=render(ordinary);
+  for(const [name,r] of [['eryryrty 63mm',er],['dense Lavendar 63mm',lav63],['dense Lavendar 63mm with BN-002',lavBatch63],['dense Lavendar 68mm',lav68],['dense Lavendar 75mm',lav75],['ordinary 63mm',ord]]) assertSafe(name,r);
+
+  assert(lavBatch63.metrics.footerLines?.length >= 4, 'BN-002 case must expose the wrapped footer lines used by pre-layout');
+  for(const line of lavBatch63.metrics.footerLines){
+    assert(line.y+line.fontSize/2<=lavBatch63.metrics.footerSafeBottom+0.01, `BN-002 footer line breaches the 2mm edge margin: ${line.text}`);
+  }
 
   const erPpm=er.metrics.labelDims.pw/er.metrics.labelDims.mmW;
   const ordPpm=ord.metrics.labelDims.pw/ord.metrics.labelDims.mmW;

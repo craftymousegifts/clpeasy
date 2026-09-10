@@ -759,7 +759,13 @@ function renderLabel(rawData, opts){
   // a 22% blanket reservation wasted usable hazard space on 63mm circles.
   const botFrac = _showBCF ? 0.19 : 0.15;
   const topH = sH * topFrac;
-  const botH = sH * botFrac;
+  // Pre-allocate a fourth footer row when weight, burn time and batch are all
+  // present. This is part of the complete layout calculation: the footer
+  // claims the height it needs before the flexible mandatory-text body is
+  // fitted, rather than discovering the extra row after body placement.
+  const _footerDetailCount = [data.netWeight, data.burnTime, data.batchNum].filter(Boolean).length;
+  const _footerExtraFrac = _footerDetailCount >= 3 ? 0.04 : 0;
+  const botH = sH * (botFrac + _footerExtraFrac);
   const midH = sH - topH - botH;
   const topY  = sTop;                // absolute Y: top of shape
   const midY  = sTop + topH;        // absolute Y: mid band starts
@@ -1338,7 +1344,24 @@ function renderLabel(rawData, opts){
   const footerSlots=[];
   if(addr)footerSlots.push({text:addr,bold:false});
   if(phone)footerSlots.push({text:phone,bold:false,isPhone:true});
-  if(detailParts.length)footerSlots.push({text:detailParts.join(' · '),bold:false});
+  if(detailParts.length){
+    // Footer content participates in layout before any font size is chosen.
+    // A weight/burn/batch line that is wider than the lower circle chord must
+    // become multiple real rows rather than hitting the legibility floor and
+    // failing only after rendering. Keep related details together whenever
+    // they fit; otherwise split only at the existing semantic separators.
+    const _footerProbeY = botY + botH * 0.82;
+    const _footerProbeAvail = Math.min(chordW(_footerProbeY, 0.09), sW * 0.88) * 0.88;
+    let _detailLine='';
+    detailParts.forEach(part=>{
+      const candidate=_detailLine ? `${_detailLine} · ${part}` : part;
+      if(_detailLine && measureText(candidate, _mandatoryMinFS, false, false) > _footerProbeAvail){
+        footerSlots.push({text:_detailLine,bold:false,isDetail:true});
+        _detailLine=part;
+      } else _detailLine=candidate;
+    });
+    if(_detailLine) footerSlots.push({text:_detailLine,bold:false,isDetail:true});
+  }
 
   // Fail-closed footer/BCF space-sharing fix (2026-09-07, Michaela's
   // explicit "allocate sufficient footer height" requirement): computed
@@ -1358,7 +1381,7 @@ function renderLabel(rawData, opts){
   // overlap is avoided rather than merely detected wherever it's
   // avoidable). _footerTextMinH mirrors _slotFSCap's exact ratio
   // (row >= fs/0.82, i.e. >=~122% spacing) so the two stay in sync.
-  const _footerNSlotsEarly = Math.min(footerSlots.length, 3);
+  const _footerNSlotsEarly = footerSlots.length;
   const _footerTextMinH = _footerNSlotsEarly > 0 ? _footerNSlotsEarly * (_mandatoryMinFS / 0.82) : 0;
   // The footer band's total usable height (icons + text together), before
   // either claims their share -- matches fTopPad/fBotPad's own _showBCF
@@ -1367,7 +1390,8 @@ function renderLabel(rawData, opts){
   // stay in sync with it -- see that block's own comment) can both cap
   // the icon row against it without duplicating this padding arithmetic
   // three times.
-  const _footerBandTotalEarly = botH - 2*(botH*BCF_FOOTER_PAD_FRAC);
+  const _footerPadFrac = _showBCF ? BCF_FOOTER_PAD_FRAC : 0.06;
+  const _footerBandTotalEarly = botH - 2*(botH*_footerPadFrac);
 
 
 
@@ -1415,8 +1439,8 @@ function renderLabel(rawData, opts){
   // Candle labels get the trimmed BCF_FOOTER_PAD_FRAC padding (freed room
   // for the icon row); every other product type keeps the original 0.06 --
   // this redesign is scoped to candles only, per the correction batch.
-  const fTopPad = botH * (_showBCF ? BCF_FOOTER_PAD_FRAC : 0.06);
-  const fBotPad = botH * (_showBCF ? BCF_FOOTER_PAD_FRAC : 0.06);
+  const fTopPad = botH * _footerPadFrac;
+  const fBotPad = botH * _footerPadFrac;
   const fUsable = botH - fTopPad - fBotPad - _bcfRowH; // EN15494 row reserved
   const maxFooterFS  = clamp(BASE*0.036, 3, 7.5);
   // minFooterFS: retained for the historical record only -- both fitFont()
@@ -1439,14 +1463,19 @@ function renderLabel(rawData, opts){
   // centred in its own row; the font is capped to the row height so adjacent
   // lines can never overlap vertically. The EN15494 row occupies the reserved
   // strip above (_footerBase), so the text always sits clear of the icons.
-  const nSlots = Math.min(footerSlots.length, 3);
-  const slotLH = nSlots > 0 ? fUsable / nSlots : fUsable;
+  const nSlots = footerSlots.length;
   const _footerBase = botY + fTopPad + _bcfRowH; // top of footer text zone (below EN row)
+  const _footerSafeBottom = sBot - 2*pxPerMm;
+  // With four or more rows, do not stretch the lines down toward the narrow
+  // tip of a circle. Cap their row height so the rendered glyph box retains
+  // the same 2mm physical edge margin used by the overall layout.
+  const _footerSafeSlotLH = nSlots > 0 ? Math.max(0, (_footerSafeBottom-_footerBase)/(nSlots-0.09)) : fUsable;
+  const slotLH = nSlots > 0 ? Math.min(fUsable/nSlots, nSlots>3?_footerSafeSlotLH:Infinity) : fUsable;
   const _slotFSCap  = slotLH * 0.82;             // hard vertical cap per row
   let footerElems = [];
   let _footerClipped = false;
-  footerSlots.slice(0, nSlots).forEach((slot, i)=>{
-    const _isDetail = !slot.isPhone && i>0;
+  footerSlots.forEach((slot, i)=>{
+    const _isDetail = !!slot.isDetail;
     const _fsMax  = Math.min(maxFooterFS * (slot.isPhone?1.05:_isDetail?1.15:1.0), _slotFSCap);
     const slotY   = _footerBase + slotLH * (i + 0.5);
     const chordAtY = Math.min(chordW(slotY, 0.09), sW * 0.88);
@@ -1482,7 +1511,7 @@ function renderLabel(rawData, opts){
     // text still renders, at its true mandatory size and position, so the
     // overlap itself is visible evidence of the block, not hidden by it).
     if(fs / 0.82 > slotLH) _footerClipped = true;
-    footerElems.push({text: slot.text, fs, bold: slot.bold, isPhone: slot.isPhone||false, slotY});
+    footerElems.push({text: slot.text, fs, bold: slot.bold, isPhone: slot.isPhone||false, isDetail:_isDetail, slotY});
   });
   const _footerLegibilityClipped = _footerClipped;
 
@@ -1674,6 +1703,8 @@ function renderLabel(rawData, opts){
     fontSizes: {scent: scentFS, biz: _bizFSf, web: _webFSf, type: typeFS, signal: sigFS, hazard: hFS, footer: footerElems.length?footerElems[0].fs:null},
     hazardBounds: {x0: cx-_hazardHalfW, x1: cx+_hazardHalfW, y0: _curY0, y1: _L.endY},
     footerBounds: {x0: cx-_footerHalfW, x1: cx+_footerHalfW, y0: botY, y1: ph},
+    footerSafeBottom: _footerSafeBottom,
+    footerLines: footerElems.map(elem=>({text:elem.text,y:elem.slotY,fontSize:elem.fs,width:measureText(elem.text,elem.fs,elem.bold,false),availableWidth:Math.min(chordW(elem.slotY,0.09),sW*0.88)*0.88})),
     pictogramBounds: pictos.length ? {x0: cx-_pictoHalfW, x1: cx+_pictoHalfW, y0: pictoBlockTopY, y1: pictoBlockTopY+pictoBlockH} : null,
     layoutBands: {
       header: {y0: topY, y1: _hdrBottom},
