@@ -85,6 +85,19 @@ const WITCHY_WOO_TEXT = 'EUH208 - Contains: ACETATE PTBCH, Cedramber, Limonene, 
 function flattenSvgText(svg){
   return svg.replace(/<\/?[^>]+>/g, ' ').replace(/\s+/g, ' ');
 }
+// Word-boundary wraps discard the joining space (wrapText splits on
+// whitespace and starts a new line with the next word, without
+// re-inserting the space), so a tag-boundary-as-space reconstruction can
+// itself be wrong the other way. And a long, space-free word that itself
+// had to be split (see the horizontal-overflow fix in wrapText()) is
+// split WITHOUT any space at all, mid-word. A name is genuinely present
+// if either reconstruction contains it as a contiguous substring.
+function flattenSvgTextNoGaps(svg){
+  return svg.replace(/<\/?[^>]+>/g, '');
+}
+function svgContainsName(svg, name){
+  return flattenSvgText(svg).includes(name) || flattenSvgTextNoGaps(svg).includes(name);
+}
 
 setTimeout(async () => {
   try {
@@ -110,7 +123,7 @@ setTimeout(async () => {
     const svg = window.buildSVG(true);
     const flatSvg = flattenSvgText(svg);
     ['ACETATE PTBCH','Cedramber','Limonene','Linalyl acetate','2-acetoxy-2,3,8,8-tetramethyloctahydronaphthalene'].forEach(name=>{
-      assert(flatSvg.includes(name), `exported SVG text is missing substance "${name}"`);
+      assert(svgContainsName(svg, name), `exported SVG text is missing substance "${name}"`);
     });
 
     // ── generality check: a SECOND, unrelated fixture (different

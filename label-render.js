@@ -373,10 +373,41 @@ function wrapText(txt,maxPx,sizePx,bold=false,serif=false){
   if(!txt)return[];
   const words=txt.split(/\s+/);
   const lines=[];let cur='';
+  // Fix (horizontal-overflow defect, confirmed by direct SVG-geometry
+  // measurement): a single space-free "word" wider than maxPx on its own
+  // (e.g. a long IUPAC/systematic chemical name with no internal spaces,
+  // such as "2-acetoxy-2,3,8,8-tetramethyloctahydronaphthalene") used to
+  // be pushed onto its own line unconditionally, with no check that it
+  // actually fit -- silently rendering past both edges of the label. This
+  // never truncates or drops content: it breaks the word into successive
+  // character-level chunks, each individually verified to fit maxPx, so
+  // every character still renders, just across more lines. Height then
+  // correctly reflects the extra lines, so the EXISTING vertical fit
+  // check (._fits()/_labelLegibilityWarn, unchanged) already fails
+  // closed if the extra lines push the block past the label -- no
+  // separate horizontal check was needed once wrapping itself is honest
+  // about what fits.
+  function splitLongWord(word){
+    const chunks=[];let chunk='';
+    for(const ch of word){
+      const test=chunk+ch;
+      if(chunk && measureText(test,sizePx,bold,serif)>maxPx){chunks.push(chunk);chunk=ch;}
+      else{chunk=test;}
+    }
+    if(chunk)chunks.push(chunk);
+    return chunks;
+  }
   for(const w of words){
     const test=cur?cur+' '+w:w;
-    if(measureText(test,sizePx,bold,serif)<=maxPx){cur=test;}
-    else{if(cur)lines.push(cur);cur=w;}
+    if(measureText(test,sizePx,bold,serif)<=maxPx){cur=test;continue;}
+    if(cur){lines.push(cur);cur='';}
+    if(measureText(w,sizePx,bold,serif)<=maxPx){
+      cur=w;
+    } else {
+      const chunks=splitLongWord(w);
+      for(let i=0;i<chunks.length-1;i++)lines.push(chunks[i]);
+      cur=chunks[chunks.length-1]||'';
+    }
   }
   if(cur)lines.push(cur);
   return lines;
