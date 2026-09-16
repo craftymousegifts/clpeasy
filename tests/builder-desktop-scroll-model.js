@@ -49,12 +49,12 @@ assert(desktopBlockIdx > -1, 'the desktop scroll-model media query is missing en
 // html/body's overflow-x:hidden breaks viewport-relative stickiness for
 // any descendant) must not still be present for .right-column.
 assert(!/\.right-column\{position:sticky;top:92px/.test(rawSource), 'the old broken position:sticky rule for .right-column (which measurably did not stick in real-browser QA) is still present');
-assert(/\.right-column\{height:100%;max-height:none;overflow-y:auto;position:static;\}/.test(rawSource), 'expected .right-column desktop override to use position:static with a real bounded height, not position:sticky');
+assert(/\.right-column\{grid-row:1;height:100%;max-height:none;overflow-y:auto;position:static;\}/.test(rawSource), 'expected .right-column desktop override to use position:static with a real bounded height, not position:sticky');
 
 // .builder-layout must be height-bounded on desktop (the core fix: the
 // outer page no longer needs to scroll for ordinary wizard use, so the
 // stepper above it -- in normal flow -- is simply always on-screen).
-assert(/\.builder-layout\{height:calc\(100vh - 230px\);min-height:520px;align-items:stretch;\}/.test(rawSource), 'expected .builder-layout to be height-bounded on desktop');
+assert(/\.builder-layout\{height:calc\(100vh - 230px\);min-height:520px;align-items:stretch;grid-template-rows:minmax\(0,1fr\) auto;\}/.test(rawSource), 'expected .builder-layout to be height-bounded on desktop with explicit grid-template-rows');
 
 // .builder-accordion-body must be able to actually shrink/scroll on
 // desktop: flex:1 + min-height:0 (the standard flexbox pattern that
@@ -62,7 +62,7 @@ assert(/\.builder-layout\{height:calc\(100vh - 230px\);min-height:520px;align-it
 // overflow-y:auto to actually engage) plus max-height:none there instead
 // of a fixed vh-calc, since a real flex ancestor chain bounds it instead.
 assert(/\.builder-accordion-body\{padding:2px 6px 12px 0;flex:1;min-height:0;/.test(rawSource), 'expected .builder-accordion-body to be flex:1;min-height:0 so it can shrink/scroll within the bounded workspace');
-assert(/@media\(min-width:861px\)\{[\s\S]{0,400}\.builder-accordion-body\{max-height:none;\}/.test(rawSource), 'expected the desktop override to set .builder-accordion-body max-height:none (bounded instead by the flex chain, not a fixed vh-calc)');
+assert(/@media\(min-width:861px\)\{[\s\S]{0,2000}\.builder-accordion-body\{max-height:none;\}/.test(rawSource), 'expected the desktop override to set .builder-accordion-body max-height:none (bounded instead by the flex chain, not a fixed vh-calc)');
 
 // Sticky Back/Continue: this element's OWN nearest scrolling ancestor is
 // now genuinely .builder-accordion-body itself (a real overflow-y:auto
@@ -83,6 +83,43 @@ assert(!/\.compliance-card\{grid-column:1\/-1/.test(rawSource), 'the old full-wi
 assert(/@media\(max-width:860px\)\{[\s\S]{0,60}\.builder-layout\{display:block/.test(rawSource), 'mobile .builder-layout block-stacking rule is missing or moved');
 assert(/\.builder-accordion-body\{max-height:none;overflow:visible;padding-right:0;padding-bottom:76px;\}/.test(rawSource), 'mobile .builder-accordion-body override (full-page scroll, fixed bottom nav bar) is missing or changed');
 assert(/\.approved-stage-nav\{position:fixed;left:0;right:0;bottom:0;/.test(rawSource), 'mobile fixed bottom Back/Continue bar rule is missing or changed');
+
+// ── SECOND desktop correction (25 Sep 2026): .compliance-card's
+// grid-column:2 placement created an implicit second grid row that
+// .builder-layout never explicitly sized, so the default "auto" row-
+// sizing algorithm shrank row 1 (containing .wizard-panel's flex chain,
+// deliberately min-height:0 so it CAN shrink) down to near its min-content
+// size instead of "the rest of the bounded workspace" -- real QA measured
+// the active .builder-accordion-body collapsed to ~15.7px as a result.
+// Fix: explicit grid-template-rows + .wizard-panel spanning both rows so
+// the form column keeps the full bounded height regardless of how the
+// right-hand stack (preview + compact compliance) splits across rows.
+const desktopBlockMatch = rawSource.match(/@media\(min-width:861px\)\{\r?\n  \.builder-layout\{[\s\S]*?\r?\n\}\r?\n/);
+assert(desktopBlockMatch, 'could not isolate the desktop scroll-model media query block for row-placement checks');
+const desktopBlock = desktopBlockMatch[0];
+assert(/\.builder-layout\{height:calc\(100vh - 230px\);min-height:520px;align-items:stretch;grid-template-rows:minmax\(0,1fr\) auto;\}/.test(desktopBlock), 'expected .builder-layout to declare explicit grid-template-rows (minmax(0,1fr) auto) so the implicit compliance-card row cannot silently starve row 1');
+assert(/\.wizard-panel\{grid-row:1\/3;/.test(desktopBlock), 'expected .wizard-panel to span both grid rows (grid-row:1/3) so the form column keeps the full bounded workspace height');
+assert(/\.right-column\{grid-row:1;/.test(desktopBlock), 'expected .right-column to be explicitly placed in row 1 (beside the top of the form)');
+assert(/\.compliance-card\.builder-rail-card\{grid-row:2;/.test(desktopBlock), 'expected .compliance-card to be explicitly placed in row 2 (compact, below the preview)');
+
+// Specificity check (the exact class of bug fixed twice already in this
+// branch): .builder-rail-card{padding:20px} and .builder-rail-card
+// h3{font-size:16px} are pre-existing, same-file rules with the SAME
+// selector shape (one/two plain classes) as a naive ".compliance-card{...}"
+// override would have -- equal specificity means whichever is LATER in
+// the file wins, regardless of intent. The compact override must use a
+// compound selector with MORE classes than what it needs to beat, so it
+// wins on specificity and is immune to future reordering, not source
+// position. (Simple heuristic: count ".className" segments in the
+// selector text before "{" -- a real cascade engine agrees with this for
+// selectors built only from class matches, which is all that's used here.)
+function classCount(selectorText){ return (selectorText.match(/\.[\w-]+/g)||[]).length; }
+const compliancePaddingSelector = desktopBlock.match(/([^\n{]+)\{grid-row:2;padding:12px 16px/);
+assert(compliancePaddingSelector, 'compact .compliance-card padding override not found in the desktop block');
+assert(classCount(compliancePaddingSelector[1]) > classCount('.builder-rail-card'), `.compliance-card's compact padding override must out-specify .builder-rail-card{padding:20px} (a same-file, same-specificity rule that appears LATER in the file and would otherwise silently win); selector was: ${compliancePaddingSelector[1]}`);
+const complianceH3Selector = desktopBlock.match(/([^\n{]+)\{font-size:13px;margin:0;white-space:nowrap;\}/);
+assert(complianceH3Selector, 'compact .compliance-card h3 override not found in the desktop block');
+assert(classCount(complianceH3Selector[1]) > classCount('.builder-rail-card h3'), `.compliance-card h3's compact override must out-specify .builder-rail-card h3{font-size:16px} (same reasoning); selector was: ${complianceH3Selector[1]}`);
 
 console.log('static CSS-source scroll-model checks passed');
 
