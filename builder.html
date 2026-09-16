@@ -3250,9 +3250,57 @@ function renderTags(){
     tags.innerHTML='<span style="font-size:13px;color:var(--muted);font-style:italic;">None detected — paste SDS data and click Extract</span>';
   } else {
     tags.innerHTML=S.sensitisers.map(name=>
-      `<span class="allergen-tag">${name}</span>`
+      `<span class="allergen-tag">${escapeBuilderText(name)}</span>`
     ).join('');
   }
+}
+// ── EUH208 BOUNDED SUBSTANCE-LIST EXTRACTION ────────────────────────────
+// The SENSITISERS table above is a curated reference list used to
+// recognise/normalise KNOWN allergens; it must never act as an allowlist
+// that silently drops a supplier-named substance the table doesn't happen
+// to contain. When the pasted text carries a clearly bounded EUH208
+// "Contains ... may produce/cause an allergic reaction" statement, every
+// name inside that bounded clause is trusted and kept, IN THE SUPPLIER'S
+// OWN ORDER -- names matching the table are normalised to its canonical
+// spelling IN PLACE (never moved/reordered); anything not in the table is
+// kept exactly as the supplier wrote it. Ordering correction (Michaela's
+// review): this bounded clause, when present, is the SOLE and
+// AUTHORITATIVE source of the sensitiser list -- it is never merged with,
+// appended to, or reordered by the whole-text table scan in extractSDS()
+// below (`matched`), which is used only as the FALLBACK when no valid
+// bounded clause is found. Text outside a bounded EUH208 clause (Section 3
+// tables, ingredient lists, addresses, unrelated "contains" wording) is
+// never source material for this step, because both the EUH208 anchor and
+// the closing allergic-reaction phrase must be present and reasonably
+// close together for the regex to match at all. No fixed maximum item
+// count is applied anywhere in this path.
+const EUH208_CLAUSE_RE = /EUH\s*208\b[\s\S]{0,50}?Contains\s*:?\s*([\s\S]*?)\.?\s*May\s+(?:produce|cause)\s+an\s+allergic\s+reaction\b/i;
+function normaliseSubstanceName(raw){
+  const upper = raw.toUpperCase();
+  const known = SENSITISERS.find(s=>s.name.toUpperCase()===upper);
+  return known ? known.name : raw;
+}
+function parseBoundedSubstanceList(raw){
+  // Line breaks within the list are just wrapping, not separators.
+  const normalised = String(raw||'').replace(/[\r\n]+/g,' ').trim();
+  if(!normalised) return [];
+  // Split on a semicolon, or on a comma that is followed by whitespace.
+  // A long systematic/IUPAC name's own internal commas (e.g. the "2,3,8,8"
+  // in "2-acetoxy-2,3,8,8-tetramethyloctahydronaphthalene") are never
+  // followed by whitespace, so they are correctly kept inside one name
+  // rather than being split into separate substances.
+  const pieces = normalised.split(/;\s*|,\s+/);
+  const seen = new Set(); // de-dupe case-insensitively, keep first wording
+  const out = [];
+  pieces.forEach(p=>{
+    const name = p.trim().replace(/^[.,;]+|[.,;]+$/g,'').trim();
+    if(!name) return;
+    const key = name.toUpperCase();
+    if(seen.has(key)) return;
+    seen.add(key);
+    out.push(name);
+  });
+  return out;
 }
 function extractSDS(){
   // NOTE (2026-08-02, reversal — see smart-paste-pro-gating / reverify):
@@ -3377,13 +3425,28 @@ function extractSDS(){
     });
     return SENSITISERS.filter(s=>hits.includes(s)); // restore original list order
   })();
-  S.sensitisers=matched.map(s=>s.name);
+  // Correction (Michaela's review, ordering requirement): a bounded EUH208
+  // "Contains ... may produce/cause an allergic reaction" statement, when
+  // present, is now the SOLE and AUTHORITATIVE source of the sensitiser
+  // list -- never merged with, appended to, or reordered by the whole-text
+  // SENSITISERS table scan above (`matched`), which remains the FALLBACK
+  // used only when no valid bounded clause is found. This preserves the
+  // supplier's own ordering exactly (known names are normalised to the
+  // table's spelling IN PLACE, never moved) and stops table-recognised
+  // names from jumping ahead of unrecognised ones the way the previous
+  // "append what's missing" approach did.
+  const _euh208Match = text.match(EUH208_CLAUSE_RE);
+  if(_euh208Match){
+    S.sensitisers = parseBoundedSubstanceList(_euh208Match[1]).map(normaliseSubstanceName);
+  } else {
+    S.sensitisers = matched.map(s=>s.name);
+  }
   renderTags();
 
   // ── LOCK & FINISH ─────────────────────────────────────────────────────────
   updateLabel();
   lockHazardFields(true);
-  showExtractToast(allH.length,pRaw.length,matched.length);
+  showExtractToast(allH.length,pRaw.length,S.sensitisers.length);
 }
 
 function showExtractToast(hCount, pCount, sensCount){
