@@ -49,7 +49,7 @@ assert(desktopBlockIdx > -1, 'the desktop scroll-model media query is missing en
 // html/body's overflow-x:hidden breaks viewport-relative stickiness for
 // any descendant) must not still be present for .right-column.
 assert(!/\.right-column\{position:sticky;top:92px/.test(rawSource), 'the old broken position:sticky rule for .right-column (which measurably did not stick in real-browser QA) is still present');
-assert(/\.right-column\{grid-row:1;height:100%;max-height:none;overflow-y:auto;position:static;\}/.test(rawSource), 'expected .right-column desktop override to use position:static with a real bounded height, not position:sticky');
+assert(/\.right-column\{grid-row:1;height:100%;min-height:0;overflow:visible;position:static;display:flex;flex-direction:column;\}/.test(rawSource), 'expected .right-column desktop override to use position:static (no self-scrolling) with a real bounded height, not position:sticky');
 
 // .builder-layout must be height-bounded on desktop (the core fix: the
 // outer page no longer needs to scroll for ordinary wizard use, so the
@@ -79,7 +79,46 @@ assert(/\.approved-stage-nav\{[^}]*position:sticky;bottom:0/.test(rawSource), 's
 assert(/\.compliance-card\{grid-column:2;/.test(rawSource), 'expected .compliance-card to sit in the preview\'s grid column (compact, beneath the preview) rather than spanning a full-width row');
 assert(!/\.compliance-card\{grid-column:1\/-1/.test(rawSource), 'the old full-width .compliance-card row (contributing extra document height) should have been replaced');
 
-// Mobile/tablet rules must remain intact and untouched by this correction.
+// The desktop override block was relocated (26 Sep 2026, third
+// correction) to the very END of the stylesheet, so it always wins the
+// cascade over ANY same-specificity base rule anywhere above it --
+// this recurring bug (a later same-file base rule silently re-
+// overriding an earlier desktop override) had already broken this fix
+// twice by selector-specific patching; placing the whole block last
+// removes the need to reason about it selector-by-selector. Confirm it
+// sits after every relevant base rule, including ones a naive earlier
+// placement missed (.preview-panel, .preview-canvas-area, the full
+// .right-column base rule).
+const styleCloseIdx = rawSource.indexOf('</style>');
+assert(styleCloseIdx > -1, '</style> not found');
+['\\.wizard-panel\\{background:white', '\\.builder-accordion\\{display:flex', '\\.builder-accordion-body\\{padding:2px 6px 12px 0', '\\.right-column\\{display:flex;flex-direction:column;gap:16px;\\}', '\\.preview-panel\\{background:var\\(--off\\)', '\\.preview-canvas-area\\{display:flex'].forEach(pattern=>{
+  const idx = lastIndexOfRule(rawSource, pattern);
+  assert(idx > -1, `base rule matching /${pattern}/ not found`);
+  assert(idx < desktopBlockIdx, `base rule matching /${pattern}/ (at ${idx}) must come BEFORE the desktop scroll-model media query (at ${desktopBlockIdx})`);
+});
+// The desktop block itself must be the LAST thing before </style> (give
+// or take the mobile-only media queries, which don't share selectors/
+// specificity conflicts with it since their ranges are mutually
+// exclusive) -- i.e. reasonably close to styleCloseIdx, not buried
+// earlier where some future edit could reintroduce a same-specificity
+// override after it again.
+assert(styleCloseIdx - desktopBlockIdx < 6000, `desktop override block (at ${desktopBlockIdx}) is not close to the end of the stylesheet (</style> at ${styleCloseIdx}) -- the "always place last" strategy this comment relies on requires it to stay there`);
+
+// ── THIRD desktop correction (26 Sep 2026, real QA at ~1884x672) ────────
+// (1) inactive accordion sections duplicate the horizontal stepper and
+// must be hidden entirely on desktop, but kept on mobile.
+assert(/\.builder-accordion-section:not\(\.active\)\{display:none;\}/.test(rawSource), 'expected inactive .builder-accordion-section elements to be hidden on desktop (duplicate the horizontal stepper, and eat scarce height at short viewports)');
+assert(!/@media\(max-width:860px\)\{[^}]*\.builder-accordion-section:not\(\.active\)\{display:none/.test(rawSource), 'inactive accordion sections must NOT be hidden on mobile -- only the desktop rule should do this');
+// (2) preview panel/canvas must be allowed to shrink (not flex-shrink:0)
+// and the right column must not scroll itself -- both inside the desktop
+// block specifically (not as a global change that would also affect mobile).
+assert(/\.preview-panel\{flex:1;min-height:0;flex-shrink:1;\}/.test(rawSource), 'expected .preview-panel to be allowed to shrink to the available row height on desktop (was flex-shrink:0, unshrinkable)');
+assert(/\.preview-canvas-area\{flex:1;min-height:0;\}/.test(rawSource), 'expected .preview-canvas-area to be allowed to shrink below its 460px base min-height on desktop');
+// The base (unconditional) rule still has flex-shrink:0 -- proves the
+// override is real (a property is actually being changed), not a no-op.
+assert(/\.preview-panel\{background:var\(--off\)[^}]*flex-shrink:0;\}/.test(rawSource), 'expected the base .preview-panel rule to still have flex-shrink:0 (the desktop override must be changing something real)');
+
+
 assert(/@media\(max-width:860px\)\{[\s\S]{0,60}\.builder-layout\{display:block/.test(rawSource), 'mobile .builder-layout block-stacking rule is missing or moved');
 assert(/\.builder-accordion-body\{max-height:none;overflow:visible;padding-right:0;padding-bottom:76px;\}/.test(rawSource), 'mobile .builder-accordion-body override (full-page scroll, fixed bottom nav bar) is missing or changed');
 assert(/\.approved-stage-nav\{position:fixed;left:0;right:0;bottom:0;/.test(rawSource), 'mobile fixed bottom Back/Continue bar rule is missing or changed');
@@ -194,8 +233,32 @@ setTimeout(() => {
     const finetune = document.getElementById('finetune-panel-el');
     assert.strictEqual(finetune.closest('#preview-canvas-area')?.id, 'preview-canvas-area', 'Step 5 fine-tune relocation beside the preview regressed');
 
+    // Existing stepper navigation/validation/data-retention behaviour
+    // (already covered in tests/builder-step-navigation-layout.js) must
+    // still work unchanged after this third correction -- re-exercised
+    // briefly here since this correction touches the accordion sections
+    // those clicks operate on.
+    window.setApprovedBuilderStep(1);
+    const stepperItems = [...document.querySelectorAll('.stepper-item')];
+    stepperItems[2].click(); // step 3 from step 1 -- must still be blocked
+    assert.strictEqual(window.eval('approvedBuilderStep'), 1, 'forward-skip validation via the stepper regressed');
+    document.getElementById('scent-name').value = 'Regression Check';
+    stepperItems[1].click(); // -> step 2 (step 1 already valid from earlier in this test)
+    assert.strictEqual(window.eval('approvedBuilderStep'), 2, 'stepper-driven navigation (setApprovedBuilderStep reuse) regressed');
+    stepperItems[0].click(); // back to completed step 1
+    assert.strictEqual(document.getElementById('scent-name').value, 'Regression Check', 'data retention when returning to a completed step regressed');
+
     const structuralErrors = errors.filter(message => !/not implemented|navigation/i.test(message));
     assert.deepStrictEqual(structuralErrors, [], `runtime errors: ${structuralErrors.join('; ')}`);
+    // Structural presence of the inactive accordion section triggers --
+    // the CSS hides them at desktop widths (can't be verified visually
+    // here), but the underlying elements/behaviour must still exist for
+    // mobile, where the desktop media query doesn't apply.
+    const allSections = document.querySelectorAll('.builder-accordion-section');
+    assert.strictEqual(allSections.length, 5, 'expected all 5 accordion sections (1 active + 4 inactive) to still exist in the DOM -- desktop hides them via CSS only, they must not be removed from markup (which would also break mobile)');
+    const inactiveTriggers = [...allSections].filter(s=>!s.classList.contains('active'));
+    assert.strictEqual(inactiveTriggers.length, 4, 'expected exactly 4 inactive accordion sections to remain clickable/present for mobile');
+
     console.log('DOM structure / Smart Paste / fine-tune regression checks passed');
   } catch (error) {
     console.error(error.stack || error.message);
