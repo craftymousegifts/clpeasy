@@ -190,12 +190,45 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
    responsive story fighting itself. AI Assistant and Label Compliance are
    now contextual UI inside/around the form instead of a permanent column
    — see .ai-banner and .page-compliance-badge below — so there is nothing
-   left to reflow or hide at narrower widths.) */
-.builder-layout{display:grid;grid-template-columns:minmax(340px,390px) minmax(440px,1fr) 270px;gap:20px;padding:20px 32px 40px;max-width:1500px;margin:0 auto;align-items:start;}
-.builder-layout.reviewing{grid-template-columns:minmax(480px,.95fr) minmax(440px,1.05fr);}
-.builder-layout.reviewing .builder-side-rail{display:none!important;}
-@media(max-width:1280px){.builder-layout{grid-template-columns:minmax(330px,1fr) minmax(400px,1.25fr);}.builder-side-rail{grid-column:1/-1;display:grid!important;grid-template-columns:repeat(3,1fr);}}
-@media(max-width:860px){.builder-layout,.builder-layout.reviewing{display:block;padding:16px 24px 40px;}}
+   left to reflow or hide at narrower widths.)
+   (24 Sep 2026, stepper redesign: the right-hand "Steps" card is gone --
+   replaced by the sticky horizontal stepper above -- so the always-two-
+   column form|preview split that used to be step-5-only (.reviewing) is
+   now the standing layout on every step, at the same ~47/53 form/preview
+   ratio .reviewing already used. Kept as a fixed 2-column grid rather than
+   3, with .compliance-card spanning both columns as a full-width row
+   underneath, per the "left: controls, right: preview" requirement.) */
+.builder-layout{display:grid;grid-template-columns:minmax(420px,.94fr) minmax(460px,1.06fr);gap:20px;padding:20px 32px 40px;max-width:1360px;margin:0 auto;align-items:start;}
+.compliance-card{grid-column:1/-1;max-width:1360px;margin:0 auto;width:100%;}
+@media(max-width:1280px){.builder-layout{grid-template-columns:minmax(360px,1fr) minmax(400px,1.15fr);}}
+@media(max-width:860px){.builder-layout{display:block;padding:16px 24px 40px;}}
+.wizard-panel{background:white;border:1.5px solid var(--border);border-radius:18px;padding:24px 28px 32px;min-width:0;}
+
+/* STICKY HORIZONTAL STEPPER (replaces the old right-rail "Steps" card) */
+.builder-stepper{position:sticky;top:0;z-index:60;background:var(--bg,#F7FAFB);padding:14px 32px;max-width:1360px;margin:0 auto;}
+.stepper-track{display:flex;align-items:center;gap:8px;max-width:1360px;margin:0 auto;background:white;border:1.5px solid var(--border);border-radius:14px;padding:10px 18px;box-shadow:0 4px 18px rgba(15,23,42,.035);}
+.stepper-item{display:flex;align-items:center;gap:8px;background:none;border:0;padding:6px 4px;cursor:pointer;font-family:'DM Sans',sans-serif;flex-shrink:0;}
+.stepper-item:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:8px;}
+.stepper-num{width:24px;height:24px;border-radius:50%;border:1.5px solid #cbd5e1;background:white;color:var(--muted);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.stepper-item.active .stepper-num{background:var(--teal);border-color:var(--teal);color:white;}
+.stepper-item.complete .stepper-num{background:var(--teal-light);border-color:var(--teal);color:var(--teal-dark);}
+.stepper-label{font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap;}
+.stepper-item.active .stepper-label{color:var(--text);}
+.stepper-status{display:none;}
+.stepper-line{flex:1;height:1.5px;background:var(--border);min-width:14px;}
+.stepper-item.complete+.stepper-line{background:var(--teal);}
+.stepper-mobile-summary{display:none;width:100%;background:white;border:1.5px solid var(--border);border-radius:12px;padding:12px 16px;align-items:center;justify-content:space-between;font:700 13px 'DM Sans',sans-serif;color:var(--text);cursor:pointer;}
+.stepper-chevron{color:var(--muted);transition:transform .2s;}
+.builder-stepper.expanded .stepper-chevron{transform:rotate(180deg);}
+@media(max-width:860px){
+  .builder-stepper{padding:12px 16px;position:static;}
+  .stepper-mobile-summary{display:flex;}
+  .stepper-track{display:none;flex-direction:column;align-items:stretch;gap:2px;margin-top:8px;padding:8px;}
+  .builder-stepper.expanded .stepper-track{display:flex;}
+  .stepper-item{padding:10px 8px;border-radius:8px;}
+  .stepper-item.active{background:var(--teal-light);}
+  .stepper-line{display:none;}
+}
 .wizard-panel{background:white;border:1.5px solid var(--border);border-radius:18px;padding:24px 28px 32px;min-width:0;}
 .builder-accordion{display:flex;flex-direction:column;}
 .builder-accordion-section{border-bottom:1px solid var(--border);}
@@ -203,7 +236,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 .builder-accordion-trigger{width:100%;display:grid;grid-template-columns:26px 1fr 18px;align-items:center;gap:10px;padding:14px 0;border:0;background:white;color:var(--text);font:700 14px 'DM Sans',sans-serif;text-align:left;cursor:pointer;}
 .builder-accordion-trigger .acc-num{width:23px;height:23px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;}
 .builder-accordion-section:not(.active) .acc-num{background:#eef4f6;color:var(--teal-dark);}
-.builder-accordion-body{padding:2px 6px 12px 0;max-height:calc(100vh - 330px);overflow-y:auto;scrollbar-gutter:stable;}.builder-accordion-body .step-heading{display:none;}.builder-accordion-body .step-sub{margin-top:0;}
+.builder-accordion-body{padding:2px 6px 12px 0;max-height:calc(100vh - 400px);overflow-y:auto;scrollbar-gutter:stable;}/* -400px (was -330px) accounts for the added sticky .builder-stepper height */.builder-accordion-body .step-heading{display:none;}.builder-accordion-body .step-sub{margin-top:0;}
 .builder-accordion-body .step-nav{display:none!important;}
 .approved-stage-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 0 4px;border-top:1px solid var(--border);background:white;position:sticky;bottom:0;z-index:2;}
 .approved-stage-nav .btn-prev,.approved-stage-nav .btn-next{min-width:120px;}
@@ -214,14 +247,16 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 .builder-accordion-actions{display:grid;grid-template-columns:1fr .72fr;gap:10px;padding-top:16px;}.builder-accordion-actions button{padding:11px;border-radius:9px;font:700 12px 'DM Sans',sans-serif;cursor:pointer;}.builder-save-progress{border:0;background:var(--teal);color:white}.builder-reset{border:1.5px solid var(--border);background:white;color:var(--text)}
 .wizard-panel>.steps-bar,.wizard-panel>div[style*="justify-content:flex-end"]{display:none!important;}
 .wizard-panel>.builder-utility-actions{display:flex!important;}
-.builder-side-rail{display:flex;flex-direction:column;gap:18px;}
+/* .builder-rail-card now only backs the standalone .compliance-card row
+   (the "Steps" and "AI Assistant" cards that used to share this class
+   inside a builder-side-rail are gone -- see the stepper/compliance-card
+   comments above). .rail-status is kept because the stepper items above
+   reuse it (via renderBuilderAccordion()'s existing update loop) for
+   their Complete/In progress/Not started text. */
 .builder-rail-card{background:white;border:1.5px solid var(--border);border-radius:16px;padding:20px;box-shadow:0 4px 18px rgba(15,23,42,.035);}
 .builder-rail-card h3{font-size:16px;margin:0 0 16px;color:var(--text);}
-.rail-step{display:grid;grid-template-columns:24px 1fr auto;align-items:center;gap:9px;padding:8px 0;font-size:12px;color:var(--muted);}
-.rail-step-num{width:22px;height:22px;border:1.5px solid #cbd5e1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;background:white;}
-.rail-step.active{color:var(--text);font-weight:700}.rail-step.active .rail-step-num{background:var(--teal);border-color:var(--teal);color:white;}
-.rail-status{font-size:10px;padding:5px 7px;border:1px solid var(--border);border-radius:6px;background:var(--off);white-space:nowrap;}.rail-step.active .rail-status{background:var(--teal-light);border-color:#b8e0ea;color:var(--teal-dark);}
-.rail-ai-icon{font-size:22px;color:var(--teal);}.rail-copy{font-size:13px;line-height:1.55;color:var(--muted);margin:8px 0 14px;}.rail-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border:1.5px solid var(--border);border-radius:9px;background:white;color:var(--teal-dark);font:700 13px 'DM Sans',sans-serif;cursor:pointer;}.rail-chip{display:inline-block;margin:10px 6px 0 0;padding:5px 9px;border-radius:999px;background:#e9f8ee;color:#166534;font-size:10px;font-weight:700;}
+.rail-status{font-size:10px;padding:5px 7px;border:1px solid var(--border);border-radius:6px;background:var(--off);white-space:nowrap;}
+.rail-copy{font-size:13px;line-height:1.55;color:var(--muted);margin:8px 0 14px;}.rail-chip{display:inline-block;margin:10px 6px 0 0;padding:5px 9px;border-radius:999px;background:#e9f8ee;color:#166534;font-size:10px;font-weight:700;}
 
 /* Contextual AI Assistant banner — lives inline at the top of the form
    (visible on every step) instead of a permanent side column. */
@@ -258,7 +293,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 a.trust-item{color:inherit;text-decoration:none;}
 a.trust-item:hover .trust-icon{background:var(--teal);color:white;}
 .right-column{display:flex;flex-direction:column;gap:16px;}
-@media(min-width:861px){.right-column{position:sticky;top:28px;max-height:calc(100vh - 56px);overflow-y:auto;}}
+@media(min-width:861px){.right-column{position:sticky;top:92px;max-height:calc(100vh - 120px);overflow-y:auto;}}/* top offset clears the sticky .builder-stepper above it */
 .preview-panel{background:var(--off);border:1.5px solid var(--border);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
 
 @media(max-width:860px){
@@ -398,7 +433,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .zoom-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:var(--teal-dark);box-shadow:0 1px 4px rgba(0,0,0,0.2);cursor:grab;transition:left .15s;}
 .zoom-pct{font-size:11px;color:var(--muted);min-width:30px;text-align:right;font-weight:600;}
 /* Canvas area — scrollable so zoomed labels don't get clipped */
-.preview-canvas-area{display:flex;align-items:flex-start;justify-content:center;gap:20px;padding:16px;overflow:auto;min-height:400px;}
+.preview-canvas-area{display:flex;align-items:flex-start;justify-content:center;gap:20px;padding:16px;overflow:auto;min-height:460px;}
 .preview-canvas-area>#label-svg-container{flex:1;display:flex;align-items:center;justify-content:center;min-width:0;}
 .preview-legend{flex:0 0 220px;background:white;border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:12px;align-self:stretch;overflow-y:auto;max-height:100%;}
 .preview-legend .fine-tune-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
@@ -436,10 +471,16 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 /* MOBILE PREVIEW SHEET */
 .mobile-preview-btn{display:none;background:var(--teal);color:white;border:0;padding:11px 16px;border-radius:999px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;-webkit-tap-highlight-color:transparent;box-shadow:0 8px 24px rgba(12,137,155,.28);}
 @media(max-width:860px){
-  .builder-accordion-body{max-height:none;overflow:visible;padding-right:0;}
+  .builder-accordion-body{max-height:none;overflow:visible;padding-right:0;padding-bottom:76px;}
   .right-column{display:none;}
-  .builder-side-rail{display:flex!important;grid-column:auto;margin-top:18px;}
-  .mobile-preview-btn{display:flex;position:fixed;right:16px;bottom:16px;z-index:250;align-items:center;gap:7px;}
+  .compliance-card{margin-top:18px;}
+  .mobile-preview-btn{display:flex;position:fixed;right:16px;bottom:84px;z-index:250;align-items:center;gap:7px;}
+  /* Sticky-within-scroll-container (desktop) can't work once the form's
+     own overflow is set to visible above, so Back/Continue instead become
+     a true fixed bottom bar on mobile -- otherwise they'd need a scroll to
+     the very end of the (now full-page-length) form to reach, which is
+     exactly the original "keep scrolling to find Next/Back" complaint. */
+  .approved-stage-nav{position:fixed;left:0;right:0;bottom:0;z-index:220;background:white;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 16px rgba(15,23,42,.08);border-top:1px solid var(--border);}
 }
 .preview-sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;align-items:flex-end;justify-content:center;}
 .preview-sheet.open{display:flex;}
@@ -816,7 +857,32 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="page-sub">Build your CLP label step by step. Add your product details and let CLPeasy handle the compliance.</div>
 </div>
 
-<button type="button" class="mobile-preview-btn" onclick="openPreviewSheet()" aria-controls="preview-sheet">View label preview ↗</button>
+<button type="button" class="mobile-preview-btn" onclick="openPreviewSheet()" aria-controls="preview-sheet">View label ↗</button>
+
+<!-- STICKY HORIZONTAL STEPPER (replaces the old right-rail "Steps" card,
+     which duplicated this same progress information; see the
+     builder-side-rail removal below). Reuses data-rail-step so the
+     existing renderBuilderAccordion() update loop drives this element too
+     -- no second source of truth for step state. Buttons call the same
+     setApprovedBuilderStep(n) used everywhere else, so the existing
+     canLeaveApprovedBuilderStep() validation gate still prevents skipping
+     ahead. Real <button> elements give keyboard focus/activation for free. -->
+<nav class="builder-stepper" id="builder-stepper" aria-label="Label builder steps">
+  <button type="button" class="stepper-mobile-summary" id="stepper-mobile-summary" onclick="toggleStepperExpanded()" aria-expanded="false" aria-controls="builder-stepper-track">
+    <span id="stepper-mobile-text">Step 1 of 5 — Label</span><span class="stepper-chevron">▾</span>
+  </button>
+  <div class="stepper-track" id="builder-stepper-track">
+    <button type="button" class="stepper-item active" data-rail-step="1" aria-current="step"><span class="stepper-num">1</span><span class="stepper-label">Label</span><span class="stepper-status rail-status">In progress</span></button>
+    <div class="stepper-line"></div>
+    <button type="button" class="stepper-item" data-rail-step="2"><span class="stepper-num">2</span><span class="stepper-label">Product</span><span class="stepper-status rail-status">Not started</span></button>
+    <div class="stepper-line"></div>
+    <button type="button" class="stepper-item" data-rail-step="3"><span class="stepper-num">3</span><span class="stepper-label">Hazards</span><span class="stepper-status rail-status">Not started</span></button>
+    <div class="stepper-line"></div>
+    <button type="button" class="stepper-item" data-rail-step="4"><span class="stepper-num">4</span><span class="stepper-label">Business</span><span class="stepper-status rail-status">Not started</span></button>
+    <div class="stepper-line"></div>
+    <button type="button" class="stepper-item" data-rail-step="5"><span class="stepper-num">5</span><span class="stepper-label">Download</span><span class="stepper-status rail-status">Not started</span></button>
+  </div>
+</nav>
 
 <div class="builder-layout">
 <!-- WIZARD -->
@@ -1230,27 +1296,21 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 </div>
 </div>
 
-<aside class="builder-side-rail" aria-label="Builder progress and assistance">
-  <section class="builder-rail-card">
-    <h3>Steps</h3>
-    <div class="rail-step active" data-rail-step="1"><span class="rail-step-num">1</span><span>Label</span><span class="rail-status">In progress</span></div>
-    <div class="rail-step" data-rail-step="2"><span class="rail-step-num">2</span><span>Product</span><span class="rail-status">Not started</span></div>
-    <div class="rail-step" data-rail-step="3"><span class="rail-step-num">3</span><span>Hazards</span><span class="rail-status">Not started</span></div>
-    <div class="rail-step" data-rail-step="4"><span class="rail-step-num">4</span><span>Business</span><span class="rail-status">Not started</span></div>
-    <div class="rail-step" data-rail-step="5"><span class="rail-step-num">5</span><span>Download</span><span class="rail-status">Not started</span></div>
-  </section>
-  <section class="builder-rail-card">
-    <div class="rail-ai-icon">✧</div><h3 style="margin-top:-24px;margin-left:32px;">AI Assistant</h3>
-    <p class="rail-copy">Need help with ingredients or classification?</p>
-    <button class="rail-btn" type="button" onclick="openWizard()">Guide Me AI <span>→</span></button>
-  </section>
-  <section class="builder-rail-card">
-    <h3>🛡 Label Compliance</h3>
-    <strong style="font-size:13px;">GB CLP aligned</strong>
-    <p class="rail-copy" style="margin-bottom:0;">Smart Compliance. Simple.</p>
-    <span class="rail-chip">GB CLP</span><span class="rail-chip" title="CLPeasy's own conservative legibility standard for mandatory label text — GB CLP has no statutory numeric x-height/font-size requirement">Clearly legible text</span>
-  </section>
-</aside>
+<!-- Compliance card (24 Sep 2026, stepper redesign): the "Steps" and large
+     "AI Assistant" cards that used to sit alongside this one in a
+     right-hand builder-side-rail are gone -- Steps is now the sticky
+     horizontal stepper above, and Guide Me AI already has a compact entry
+     point (the ✧ icon button next to the form, wired to the same
+     openWizard()). This card's own content/behaviour is unchanged. Kept as
+     a sibling of (not nested inside) .right-column so it stays visible on
+     mobile too, same as before, where .right-column itself is hidden in
+     favour of the mobile preview sheet. -->
+<section class="builder-rail-card compliance-card">
+  <h3>🛡 Label Compliance</h3>
+  <strong style="font-size:13px;">GB CLP aligned</strong>
+  <p class="rail-copy" style="margin-bottom:0;">Smart Compliance. Simple.</p>
+  <span class="rail-chip">GB CLP</span><span class="rail-chip" title="CLPeasy's own conservative legibility standard for mandatory label text — GB CLP has no statutory numeric x-height/font-size requirement">Clearly legible text</span>
+</section>
 
 <!-- MOBILE PREVIEW SHEET -->
 <div class="preview-sheet" id="preview-sheet" onclick="closeSheet(event)">
@@ -1270,7 +1330,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     </div>
     <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.3);text-align:center;">PNG for printing · SVG for cutting machines</div>
-    <div style="margin-top:12px;text-align:center;"><button onclick="closeSheet()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:8px;">Close</button></div>
+    <div style="margin-top:12px;text-align:center;"><button onclick="closeSheet()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:8px;">Hide label</button></div>
   </div>
 </div>
 
@@ -3598,6 +3658,7 @@ function setApprovedBuilderStep(n){
   renderBuilderAccordion();
   if(n===5)buildSummary();
   updateLabel();
+  document.getElementById('builder-stepper')?.classList.remove('expanded'); // collapse mobile step list after navigating
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function renderBuilderAccordion(){
@@ -3610,13 +3671,27 @@ function renderBuilderAccordion(){
   }
   const accordion=document.createElement('div');
   accordion.className='builder-accordion';
-  document.querySelector('.builder-layout')?.classList.toggle('reviewing',approvedBuilderStep===5);
   let staging=panel.querySelector('#builder-source-staging');
   if(!staging){staging=document.createElement('div');staging.id='builder-source-staging';staging.hidden=true;panel.appendChild(staging);}
   const appearance=panel.querySelector('#label-appearance-section');
   if(appearance)staging.appendChild(appearance);
   const fitWarning=panel.querySelector('#label-warn-stage4');
   if(fitWarning)staging.appendChild(fitWarning);
+  // Step 5's "Fine-tune your label" panel is styled (.preview-legend) to
+  // sit beside the live preview, so on Step 5 it's moved into
+  // #preview-canvas-area (right next to the SVG, under the preview
+  // header's zoom/fit controls) instead of requiring a scroll down the
+  // Step 5 form; on any other step it's parked in the same staging area
+  // used for #label-appearance-section/#label-warn-stage4 above, so it
+  // doesn't sit visible in the preview column when Step 5 isn't active.
+  const finetune=document.getElementById('finetune-panel-el');
+  if(finetune){
+    if(approvedBuilderStep===5){
+      document.getElementById('preview-canvas-area')?.appendChild(finetune);
+    } else if(finetune.parentElement && finetune.parentElement.id==='preview-canvas-area'){
+      staging.appendChild(finetune);
+    }
+  }
   const panelMap={1:[1],2:[2],3:[3],4:[4],5:[5]};
   BUILDER_STEP_LABELS.forEach((label,index)=>{
     const n=index+1,section=document.createElement('section');
@@ -3652,10 +3727,25 @@ function renderBuilderAccordion(){
   panel.insertBefore(accordion,panel.firstChild);
   document.querySelectorAll('[data-rail-step]').forEach(row=>{
     const step=Number(row.dataset.railStep),status=row.querySelector('.rail-status');
-    row.classList.toggle('active',step===approvedBuilderStep);
-    if(status)status.textContent=step<approvedBuilderStep?'Complete':(step===approvedBuilderStep?'In progress':'Not started');
+    const isActive=step===approvedBuilderStep,isComplete=step<approvedBuilderStep;
+    row.classList.toggle('active',isActive);
+    row.classList.toggle('complete',isComplete);
+    if(isActive)row.setAttribute('aria-current','step');else row.removeAttribute('aria-current');
+    if(status)status.textContent=isComplete?'Complete':(isActive?'In progress':'Not started');
     row.onclick=()=>setApprovedBuilderStep(step);
   });
+  // Mobile compact "Step N of 5 — Label" summary (same stepper items,
+  // just collapsed behind one summary row below the sticky breakpoint --
+  // see toggleStepperExpanded()).
+  const mobileText=document.getElementById('stepper-mobile-text');
+  if(mobileText)mobileText.textContent=`Step ${approvedBuilderStep} of 5 — ${BUILDER_STEP_LABELS[approvedBuilderStep-1]}`;
+}
+function toggleStepperExpanded(){
+  const stepper=document.getElementById('builder-stepper');
+  const summary=document.getElementById('stepper-mobile-summary');
+  if(!stepper)return;
+  const expanded=stepper.classList.toggle('expanded');
+  summary?.setAttribute('aria-expanded',String(expanded));
 }
 
 function goToStep(n){if(n>S.step+1)return;S.step=n;
