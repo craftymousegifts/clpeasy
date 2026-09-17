@@ -35,8 +35,17 @@ function lastIndexOfRule(css, selectorPattern){
   while((m = re.exec(css))) last = m.index;
   return last;
 }
-const desktopBlockIdx = rawSource.indexOf('@media(min-width:861px){');
-assert(desktopBlockIdx > -1, 'the desktop scroll-model media query is missing entirely');
+// (29 Sep 2026, breakpoint-audit correction): can no longer use a plain
+// indexOf('@media(min-width:861px){') -- the seventh correction aligned
+// the sidebar-collapse breakpoint to the SAME 861px threshold
+// .builder-layout already uses, so that exact media-query prefix now
+// also opens an EARLIER, unrelated block (the sidebar collapse rules,
+// near the top of the stylesheet) before the desktop scroll-model block
+// this test actually means (deliberately placed at the END of the
+// stylesheet -- see its own comment). Located instead by its unique,
+// unambiguous first rule.
+const desktopBlockIdx = rawSource.indexOf('@media(min-width:861px){\n  .builder-layout{height:calc(100vh - 230px)');
+assert(desktopBlockIdx > -1, 'the desktop scroll-model media query (identified by its .builder-layout height rule) is missing entirely');
 
 ['\\.wizard-panel\\{background:white', '\\.builder-accordion\\{display:flex', '\\.builder-accordion-body\\{padding:2px 6px 12px 0'].forEach(pattern=>{
   const idx = lastIndexOfRule(rawSource, pattern);
@@ -190,7 +199,7 @@ assert(classCount(complianceH3Selector[1]) > classCount('.builder-rail-card h3')
 // the workspace, form was cramped, Step 1 scrolled internally) ──────────
 // A. Form-dominant columns, bounded preview width (not a fraction of the
 // row that can grow toward half the workspace).
-assert(/\.builder-layout\{display:grid;grid-template-columns:minmax\(0,1fr\) clamp\(360px,32vw,500px\);/.test(rawSource), 'expected .builder-layout columns to be minmax(0,1fr) [form] / clamp(360px,32vw,500px) [bounded preview], favouring the form');
+assert(/\.builder-layout\{display:grid;grid-template-columns:minmax\(0,1fr\) clamp\(360px,30vw,420px\);gap:20px;padding:20px 32px 40px;max-width:1850px;/.test(rawSource), 'expected .builder-layout columns to be minmax(0,1fr) [form] / clamp(360px,30vw,420px) [bounded, compact preview], favouring the form, with max-width:1850px so the collapsible sidebar\'s reclaimed width actually reaches the form at wide viewports (not the old 1360px, which a collapsed sidebar could not get past)');
 assert(!/@media\(max-width:1280px\)\{\.builder-layout\{grid-template-columns/.test(rawSource), 'the old separate <=1280px column override (which gave the preview even MORE relative width at exactly the widths the form needed it most) should be gone -- the clamp() above covers all desktop widths');
 
 // B. Preview panel content-hugging, not stretched to workspace height.

@@ -32,6 +32,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
    ============================================================ */
 :root{
   --shell-sidebar-w:260px;
+  --shell-sidebar-collapsed-w:72px;
   --shell-topbar-h:56px;
 }
 .app-shell{display:flex;min-height:100vh;}
@@ -39,8 +40,53 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
   width:var(--shell-sidebar-w);flex-shrink:0;background:white;
   border-right:1.5px solid var(--border);display:flex;flex-direction:column;
   padding:16px 12px;position:fixed;top:0;left:0;bottom:0;z-index:300;
-  transition:transform .25s ease;
+  transition:transform .25s ease,width .2s ease,padding .2s ease;
 }
+/* (29 Sep 2026, collapsible Builder sidebar): desktop-only, builder.html-
+   only (this file's own <style> block, not shared with dashboard.html/
+   my-labels.html/account.html, each of which has its own separate copy
+   of this markup/CSS and is untouched). Collapsed by default so the
+   Builder workspace gets its width back; the general sibling combinator
+   below lets toggling just .sidebar's own class also resize .shell-main
+   (a true sibling in the DOM) without needing a second class toggle. */
+/* Collapse behaviour is desktop-only -- mobile already has its own
+   translateX(-100%) show/hide pattern via .sidebar.open (untouched
+   below), and collapsing is a distinct, additional concept that only
+   makes sense once the sidebar is actually docked in the layout.
+   (29 Sep 2026, breakpoint-audit correction): aligned to 861px, matching
+   .builder-layout's own existing desktop/mobile threshold
+   (@media(min-width:861px) / @media(max-width:860px), used throughout
+   this file for the two-column layout, compact scroll model, sticky
+   stepper etc.) instead of a second, independent 900/901px breakpoint.
+   That mismatch created a real 861-900px hybrid zone: builder-layout
+   would already be rendering its full desktop 2-column layout while the
+   sidebar was still in mobile-drawer mode (off-canvas, collapse toggle
+   hidden) -- not broken exactly (the drawer shell still functions), but
+   an unnecessary second threshold with no genuine reason to differ from
+   the one .builder-layout already uses. This breakpoint is scoped to
+   builder.html's own embedded <style> block only (confirmed: no other
+   HTML file shares it), so aligning it here cannot affect
+   dashboard.html/my-labels.html/account.html, each of which keeps its
+   own separate 900px copy of this same shell pattern, untouched. */
+@media(min-width:861px){
+.sidebar.collapsed{width:var(--shell-sidebar-collapsed-w);padding:16px 10px;}
+.sidebar.collapsed ~ .shell-main{margin-left:var(--shell-sidebar-collapsed-w);}
+.sidebar.collapsed .snav-label,.sidebar.collapsed .sidebar-logo .nav-easy,.sidebar.collapsed .sidebar-logo sup,.sidebar.collapsed .sidebar-usage,.sidebar.collapsed .su-info,.sidebar.collapsed .sidebar-user-chevron{display:none;}
+.sidebar.collapsed .sidebar-nav-item{justify-content:center;padding:11px 0;gap:0;}
+.sidebar.collapsed .sidebar-user{justify-content:center;padding:10px 0;}
+.sidebar.collapsed .sidebar-logo{justify-content:center;padding:8px 0 24px;}
+}
+.sidebar-collapse-toggle{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:9px;margin-bottom:8px;border:1.5px solid var(--border);
+  border-radius:9px;background:white;color:var(--muted);cursor:pointer;
+  font:600 12px 'DM Sans',sans-serif;
+}
+.sidebar-collapse-toggle:hover{background:var(--off);color:var(--text);}
+.sidebar-collapse-toggle:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+.sidebar-collapse-toggle svg{width:16px;height:16px;flex-shrink:0;transition:transform .2s ease;}
+.sidebar.collapsed .sidebar-collapse-toggle svg{transform:rotate(180deg);}
+.sidebar.collapsed .sidebar-collapse-toggle-label{display:none;}
 .sidebar-logo{display:flex;align-items:center;gap:0;text-decoration:none;padding:8px 8px 24px;}
 .sidebar-nav{display:flex;flex-direction:column;gap:2px;flex:1;}
 .sidebar-nav-item{
@@ -122,13 +168,17 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 }
 .sidebar-toggle span,.sidebar-toggle-inline span{display:block;height:2px;background:var(--text);border-radius:1px;margin:0 9px;}
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(17,19,24,0.4);z-index:290;opacity:0;transition:opacity .2s ease;}
-@media(max-width:900px){
+/* (29 Sep 2026, breakpoint-audit correction): aligned to 860px, matching
+   .builder-layout's own existing mobile threshold, instead of a second
+   independent 900px -- see the collapse-rule comment above for why. */
+@media(max-width:860px){
   .sidebar{transform:translateX(-100%);box-shadow:8px 0 24px rgba(0,0,0,0.08);}
   .sidebar.open{transform:translateX(0);}
   .shell-main{margin-left:0;}
   .shell-topbar{display:flex;}
   .sidebar-toggle-inline{display:flex;}
   .sidebar-overlay.open{display:block;opacity:1;}
+  .sidebar-collapse-toggle{display:none;}/* mobile already has its own show/hide drawer pattern via .sidebar-toggle-inline; collapsing is a distinct desktop-only concept */
 }
 
 .sidebar-logo .nav-badge{width:40px;height:40px;font-size:17px;letter-spacing:-1px;}
@@ -206,13 +256,32 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
    inverted: the form column is now the flexible 1fr track (dominant,
    ~65%+ of the row), and the preview column is BOUNDED by clamp() instead
    of being a fraction of the row: never narrower than 360px (so a 63mm+
-   circle stays comfortably readable) and never wider than 500px (so it
+   circle stays comfortably readable) and never wider than 420px (so it
    can't creep back toward half the workspace on very wide screens). One
    clamp()-based rule now covers every width from 861px up, replacing the
    separate <=1280px override that used to give the preview even MORE
    relative width at exactly the narrower desktop sizes where the form
-   needed it most. */
-.builder-layout{display:grid;grid-template-columns:minmax(0,1fr) clamp(360px,32vw,500px);gap:20px;padding:20px 32px 40px;max-width:1360px;margin:0 auto;align-items:start;}
+   needed it most.
+   (29 Sep 2026, seventh correction: narrowed further, 500px->420px, and
+   an explicit display-size cap added to recomputePreviewFit() itself --
+   see that function -- since a width-driven fit alone let a circle grow
+   to nearly fill even this bounded column, overlapping the compliance
+   row below it. The column bound alone was necessary but not sufficient.) */
+   (29 Sep 2026, seventh correction, collapsible sidebar): max-width
+   raised 1360px->1850px (and the stepper's matching max-width, so it
+   stays visually aligned with the workspace below it). Without this, the
+   collapsible sidebar's reclaimed width never actually reached the form
+   at wide viewports: at ~1884px, BOTH the expanded-sidebar (1624px
+   available) and collapsed-sidebar (1812px available) cases already
+   exceeded even a first attempt at 1600px, so collapsing still did
+   nothing but grow the unused centring margin -- directly contradicting
+   "the main Builder content must actually reclaim the released width".
+   1850px keeps BOTH cases genuinely uncapped at this reference viewport
+   (1624px and 1812px both stay under it), so the form column's real
+   width differs by the full ~188px the sidebar collapse actually frees
+   (1120px expanded -> 1308px collapsed, at 1884px -- see the correction
+   report for the full calculation), not zero. */
+.builder-layout{display:grid;grid-template-columns:minmax(0,1fr) clamp(360px,30vw,420px);gap:20px;padding:20px 32px 40px;max-width:1850px;margin:0 auto;align-items:start;}
 .compliance-card{grid-column:2;max-width:100%;}
 @media(max-width:860px){.builder-layout{display:block;padding:16px 24px 40px;}.compliance-card{grid-column:auto;}}
 /* DESKTOP/TABLET-LANDSCAPE SCROLL MODEL (24 Sep 2026 correction):
@@ -244,8 +313,8 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 .wizard-panel{background:white;border:1.5px solid var(--border);border-radius:18px;padding:24px 28px 32px;min-width:0;}
 
 /* STICKY HORIZONTAL STEPPER (replaces the old right-rail "Steps" card) */
-.builder-stepper{position:sticky;top:0;z-index:60;background:var(--bg,#F7FAFB);padding:14px 32px;max-width:1360px;margin:0 auto;}
-.stepper-track{display:flex;align-items:center;gap:8px;max-width:1360px;margin:0 auto;background:white;border:1.5px solid var(--border);border-radius:14px;padding:10px 18px;box-shadow:0 4px 18px rgba(15,23,42,.035);}
+.builder-stepper{position:sticky;top:0;z-index:60;background:var(--bg,#F7FAFB);padding:14px 32px;max-width:1850px;margin:0 auto;}
+.stepper-track{display:flex;align-items:center;gap:8px;max-width:1850px;margin:0 auto;background:white;border:1.5px solid var(--border);border-radius:14px;padding:10px 18px;box-shadow:0 4px 18px rgba(15,23,42,.035);}
 .stepper-item{display:flex;align-items:center;gap:8px;background:none;border:0;padding:6px 4px;cursor:pointer;font-family:'DM Sans',sans-serif;flex-shrink:0;}
 .stepper-item:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:8px;}
 .stepper-num{width:24px;height:24px;border-radius:50%;border:1.5px solid #cbd5e1;background:white;color:var(--muted);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -850,16 +919,28 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
   <aside class="sidebar" id="sidebar">
     <a href="index.html" class="sidebar-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span><sup style="font-size:9px;font-weight:700;color:#4C9BB0;vertical-align:super;line-height:0;margin-left:1px;">™</sup></a>
+    <!-- (29 Sep 2026, collapsible Builder sidebar): desktop-only toggle,
+         hidden on mobile below (the mobile drawer already has its own
+         hamburger/overlay pattern, untouched). type="button" (no form
+         submit), a real accessible label that flips with state,
+         aria-expanded (reflects the SIDEBAR's expanded state, i.e. the
+         inverse of "collapsed"), native keyboard support from being a
+         real <button>, and a CSS :focus-visible outline for a visible
+         focus state. -->
+    <button type="button" id="sidebar-collapse-toggle" class="sidebar-collapse-toggle" aria-expanded="true" aria-controls="sidebar" aria-label="Collapse navigation sidebar" onclick="toggleSidebarCollapsed()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+      <span class="sidebar-collapse-toggle-label">Collapse</span>
+    </button>
     <div class="sidebar-nav" role="navigation" aria-label="Main navigation">
-      <a href="dashboard.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg></span>Dashboard</a>
-      <a href="builder.html" class="sidebar-nav-item active" aria-current="page" onclick="return false;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>Create Label</a>
-      <a href="my-labels.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5a1 1 0 0 1 1-1h4.7l2 2.2h8.3a1 1 0 0 1 1 1V18a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1Z"/></svg></span>My Labels</a>
-      <a href="print.html" target="_blank" rel="noopener" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8.5V4.5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v4"/><rect x="5" y="8.5" width="14" height="7" rx="1.5"/><path d="M7 14.5v4a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-4"/></svg></span>Print Sheet Composer</a>
-      <a href="knowledge.html" target="_blank" rel="noopener" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5c-1.6-1.3-4-2-6.5-2A2 2 0 0 0 3.5 6.5V17c2.6 0 5 .7 6.5 2 1.5-1.3 3.9-2 6.5-2s2-.9 2-.9V6.5c0-1.1-.9-2-2-2-2.5 0-4.9.7-6.5 2Z"/><path d="M12 6.5V19"/></svg></span>Knowledge Base</a>
-      <a href="account.html" target="_blank" rel="noopener" id="nav-account" class="sidebar-nav-item" style="display:none;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.4-3.6 4.3-5.5 7.5-5.5s6.1 1.9 7.5 5.5"/></svg></span>Account</a>
-      <a href="auth.html?next=builder.html" id="nav-signin" class="sidebar-nav-item" style="display:none;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4h5a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-5"/><path d="M3 12h11.5"/><path d="M11 8l4 4-4 4"/></svg></span>Sign in</a>
-      <button type="button" class="sidebar-nav-item" onclick="openHelp()"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7v.5"/><path d="M12 17h.01"/></svg></span>Help Guide</button>
-      <a href="support.html" target="_blank" rel="noopener" class="sidebar-nav-item" style="width:100%;text-align:left;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 1 3.3 6.4L4 20l1.3-3.6A7.96 7.96 0 0 1 4 12Z"/></svg></span>Support</a>
+      <a href="dashboard.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1v-9"/></svg></span><span class="snav-label">Dashboard</span></a>
+      <a href="builder.html" class="sidebar-nav-item active" aria-current="page" onclick="return false;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span><span class="snav-label">Create Label</span></a>
+      <a href="my-labels.html" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5a1 1 0 0 1 1-1h4.7l2 2.2h8.3a1 1 0 0 1 1 1V18a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1Z"/></svg></span><span class="snav-label">My Labels</span></a>
+      <a href="print.html" target="_blank" rel="noopener" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8.5V4.5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v4"/><rect x="5" y="8.5" width="14" height="7" rx="1.5"/><path d="M7 14.5v4a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-4"/></svg></span><span class="snav-label">Print Sheet Composer</span></a>
+      <a href="knowledge.html" target="_blank" rel="noopener" class="sidebar-nav-item"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5c-1.6-1.3-4-2-6.5-2A2 2 0 0 0 3.5 6.5V17c2.6 0 5 .7 6.5 2 1.5-1.3 3.9-2 6.5-2s2-.9 2-.9V6.5c0-1.1-.9-2-2-2-2.5 0-4.9.7-6.5 2Z"/><path d="M12 6.5V19"/></svg></span><span class="snav-label">Knowledge Base</span></a>
+      <a href="account.html" target="_blank" rel="noopener" id="nav-account" class="sidebar-nav-item" style="display:none;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.4-3.6 4.3-5.5 7.5-5.5s6.1 1.9 7.5 5.5"/></svg></span><span class="snav-label">Account</span></a>
+      <a href="auth.html?next=builder.html" id="nav-signin" class="sidebar-nav-item" style="display:none;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4h5a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-5"/><path d="M3 12h11.5"/><path d="M11 8l4 4-4 4"/></svg></span><span class="snav-label">Sign in</span></a>
+      <button type="button" class="sidebar-nav-item" onclick="openHelp()"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7v.5"/><path d="M12 17h.01"/></svg></span><span class="snav-label">Help Guide</span></button>
+      <a href="support.html" target="_blank" rel="noopener" class="sidebar-nav-item" style="width:100%;text-align:left;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 1 3.3 6.4L4 20l1.3-3.6A7.96 7.96 0 0 1 4 12Z"/></svg></span><span class="snav-label">Support</span></a>
     </div>
     <div class="sidebar-bottom">
       <div class="sidebar-usage" id="sidebar-usage" style="display:none;">
@@ -4631,7 +4712,20 @@ function recomputePreviewFit(){
   // 3. A tall/narrow label (aspect ratio makes width-zoom render it
   // taller than the row budget allows) falls back to the height-limited
   // zoom instead; an ordinary label stays width-driven.
-  const fitZoom=Math.min(widthZoom,heightZoom);
+  // 4. (29 Sep 2026, seventh correction): an EXPLICIT display-size cap,
+  // independent of both of the above. Even bounded to a 360-420px column,
+  // a width-driven fit alone let a circle/square grow to nearly the full
+  // column width -- comfortably larger than a "compact inspection panel"
+  // should be, and tall enough in some cases to push the stage past the
+  // compliance row below it. MAX_DISPLAY_PX caps the LARGER of the
+  // rendered width/height at ~320px (within the requested 300-340px
+  // range) regardless of how much column width is actually available;
+  // for a rectangle this preserves its aspect ratio within that same
+  // square bounding box, exactly like the width/height fit above, just
+  // with a third, smaller ceiling in the mix.
+  const MAX_DISPLAY_PX=320;
+  const capZoom=Math.min(MAX_DISPLAY_PX/vbW,MAX_DISPLAY_PX/vbH);
+  const fitZoom=Math.min(widthZoom,heightZoom,capZoom);
   if(!(fitZoom>0))return;
   _previewMaxZoom=fitZoom;
   _previewFitZoom=fitZoom;
@@ -5496,6 +5590,37 @@ function initExtensions(){
     }));
     if(overlay) overlay.addEventListener('click', closeSidebar);
     document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeSidebar(); });
+  })();
+  // (29 Sep 2026, collapsible Builder sidebar): desktop-only, builder.html
+  // -only preference. Defaults to COLLAPSED on a first visit (no stored
+  // preference yet) so the workspace gets its width back immediately;
+  // afterwards the user's own last choice always wins. Runs immediately
+  // (this <script> is after the sidebar's own markup in the document, so
+  // the elements already exist) rather than waiting for any load event,
+  // so there's no visible flash of the expanded state before collapsing.
+  (function(){
+    const SIDEBAR_COLLAPSE_KEY='clpeasy-builder-sidebar-collapsed';
+    const sidebar=document.getElementById('sidebar');
+    const btn=document.getElementById('sidebar-collapse-toggle');
+    if(!sidebar||!btn)return;
+    function applyState(collapsed){
+      sidebar.classList.toggle('collapsed',collapsed);
+      btn.setAttribute('aria-expanded',String(!collapsed));
+      btn.setAttribute('aria-label',collapsed?'Expand navigation sidebar':'Collapse navigation sidebar');
+      const label=btn.querySelector('.sidebar-collapse-toggle-label');
+      if(label)label.textContent=collapsed?'Expand':'Collapse';
+    }
+    let collapsed=true; // default: collapsed
+    try{
+      const stored=localStorage.getItem(SIDEBAR_COLLAPSE_KEY);
+      if(stored!==null)collapsed=stored==='1';
+    }catch(e){/* localStorage unavailable (private browsing etc.) -- fall back to the default above */}
+    applyState(collapsed);
+    window.toggleSidebarCollapsed=function(){
+      const next=!sidebar.classList.contains('collapsed');
+      applyState(next);
+      try{localStorage.setItem(SIDEBAR_COLLAPSE_KEY,next?'1':'0');}catch(e){/* best-effort persistence only */}
+    };
   })();
   (function(){
     const profile=document.querySelector('.sidebar-profile');

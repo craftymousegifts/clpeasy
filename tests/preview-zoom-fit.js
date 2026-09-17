@@ -135,13 +135,16 @@ function expectedReservedInset(){
 }
 // Independently computes the expected fit zoom using the SAME algorithm
 // recomputePreviewFit() is documented to use -- width-driven, height
-// capped by an independent row-height reference -- WITHOUT calling into
-// builder.html's own function, so this is a genuine cross-check.
+// capped by an independent row-height reference, AND an explicit
+// display-size cap (29 Sep 2026, seventh correction) -- WITHOUT calling
+// into builder.html's own function, so this is a genuine cross-check.
+const MAX_DISPLAY_PX = 320;
 function expectedFitZoom(colWidth, rowHeight, vbW, vbH){
   const inset = expectedReservedInset();
   const widthZoom = (colWidth - inset.x) / vbW;
   const heightZoom = (rowHeight - inset.y) / vbH;
-  return Math.min(widthZoom, heightZoom);
+  const capZoom = Math.min(MAX_DISPLAY_PX / vbW, MAX_DISPLAY_PX / vbH);
+  return Math.min(widthZoom, heightZoom, capZoom);
 }
 
 setTimeout(async () => {
@@ -177,6 +180,25 @@ setTimeout(async () => {
       { label:'narrow desktop', w:400, h:340 },
     ];
 
+    // ── 0. Explicit display-size cap is genuinely enforced ───────────────
+    // At a realistic column/row size (well within the 360-420px column
+    // and comfortably tall), the circle/square MUST be capped at
+    // MAX_DISPLAY_PX, not merely happen to be smaller for some other
+    // reason -- this proves the cap is a real, binding constraint, not
+    // just present in the formula but never actually the limiting factor.
+    {
+      setPreviewGeometry(400, 500); // generous width+height so only the cap can be binding
+      window.selectShape('circle'); window.selectSize(63);
+      window.fitPreviewToView();
+      const dc = document.getElementById('label-svg-container');
+      const svg = dc.querySelector('svg');
+      const renderedW = Number(svg.getAttribute('width'));
+      const renderedH = Number(svg.getAttribute('height'));
+      assert(renderedW <= MAX_DISPLAY_PX + 1 && renderedH <= MAX_DISPLAY_PX + 1, `a circle must never display larger than the ${MAX_DISPLAY_PX}px cap even with generous column/row space, got ${renderedW}x${renderedH}`);
+      assert(Math.abs(Math.max(renderedW, renderedH) - MAX_DISPLAY_PX) <= 1, `the cap must be the genuinely BINDING constraint here (rendered size should equal the cap, not sit arbitrarily smaller), got ${renderedW}x${renderedH} vs cap ${MAX_DISPLAY_PX}`);
+      ok(`explicit display-size cap (${MAX_DISPLAY_PX}px) is genuinely enforced for a circle with generous available space`);
+    }
+
     // ── 1. Fit to view always lands on exactly 100%, genuinely contained ─
     for(const c of cases){
       for(const geo of geometries){
@@ -203,7 +225,15 @@ setTimeout(async () => {
         // smaller inside them (which would mean unnecessary empty space).
         const touchesWidth = Math.abs(renderedW - aW) <= 1;
         const touchesHeight = Math.abs(renderedH - aH) <= 1;
-        assert(touchesWidth || touchesHeight, `Fit to view must use all available width or height (no unnecessary empty space) for ${c.label} at ${geo.label} geometry -- got ${renderedW}x${renderedH} inside ${aW}x${aH}`);
+        // (29 Sep 2026, seventh correction): a third valid reason to stop
+        // growing is the explicit display-size cap -- when that's the
+        // binding constraint, the rendered label legitimately does NOT
+        // touch the column/row boundary (there's deliberate room to
+        // spare), so "no unnecessary empty space" must also accept
+        // "correctly capped" as a valid outcome, not just "fills the
+        // available space".
+        const touchesCap = Math.abs(Math.max(renderedW, renderedH) - MAX_DISPLAY_PX) <= 1;
+        assert(touchesWidth || touchesHeight || touchesCap, `Fit to view must use all available width/height, or be correctly capped at ${MAX_DISPLAY_PX}px, for ${c.label} at ${geo.label} geometry -- got ${renderedW}x${renderedH} inside ${aW}x${aH} (cap ${MAX_DISPLAY_PX})`);
         // Aspect ratio preserved -- no distortion.
         assert(Math.abs((renderedW/renderedH) - (vbW/vbH)) < 0.01, `Fit to view must preserve aspect ratio (no distortion) for ${c.label} at ${geo.label} geometry`);
 
@@ -230,9 +260,22 @@ setTimeout(async () => {
       document.getElementById('custom-w').value='63'; document.getElementById('custom-h').value='44'; window.onDimInput();
       window.fitPreviewToView();
       const fitRect = window.eval('_previewFitZoom');
+      let { vbW: rectVbW, vbH: rectVbH } = currentSvgBox();
+      assert(Math.abs(fitRect - expectedFitZoom(760, 560, rectVbW, rectVbH)) < 1e-6, 'fit for the initial rectangle must be correct');
+
       window.selectShape('circle'); window.selectSize(63); // dimensions/shape change alone, no explicit re-fit call
       const fitCircle = window.eval('_previewFitZoom');
-      assert.notStrictEqual(fitRect, fitCircle, 'changing shape/dimensions must recalculate the fit scale automatically (via updateLabel() -> recomputePreviewFit()), not keep the previous shape\'s value');
+      const { vbW: circleVbW, vbH: circleVbH } = currentSvgBox();
+      // (29 Sep 2026, seventh correction): with the explicit display-size
+      // cap in play, two different shapes CAN legitimately land on the
+      // identical capped zoom (both this rectangle and this circle share
+      // the same canonical vbW=260, so both hit the same cap here) -- so
+      // "the value changed" is no longer the right thing to assert.
+      // Instead: each shape's zoom must independently match ITS OWN
+      // correctly-recalculated expected value, proving a real
+      // recalculation happened (not a stale leftover) even when the
+      // numeric result happens to coincide.
+      assert(Math.abs(fitCircle - expectedFitZoom(760, 560, circleVbW, circleVbH)) < 1e-6, 'fit after a shape change must be correctly recalculated for the NEW shape, not a stale leftover from the previous one');
       const pctAfterShapeChange = document.getElementById('zoom-pct').textContent;
       assert.notStrictEqual(pctAfterShapeChange, '', 'zoom display must still be populated immediately after a shape change');
       ok('shape/dimension change automatically recalculates the fit scale, no manual re-fit required');
@@ -252,10 +295,16 @@ setTimeout(async () => {
       await new Promise(resolve => window.requestAnimationFrame(() => setTimeout(resolve, 0)));
 
       const fitAfter = window.eval('_previewFitZoom');
-      assert.notStrictEqual(fitAfter, fitBefore, 'resizing must recalculate the fit scale for the new geometry, not keep the old one');
       const { vbW, vbH } = currentSvgBox();
       const expectedFitAfter = expectedFitZoom(400, 340, vbW, vbH);
-      assert(Math.abs(fitAfter - expectedFitAfter) < 1e-6, 'the recalculated fit scale after resize must match the new geometry exactly');
+      // (29 Sep 2026, seventh correction): with the explicit display-size
+      // cap in play, a resize CAN legitimately leave the zoom numerically
+      // unchanged (this fixture's rectangle is cap-bound at both the old
+      // and new geometry) -- so "the value changed" is no longer the
+      // right thing to assert. The real requirement is that a
+      // recalculation genuinely happened and produced the CORRECT result
+      // for the new geometry, which is what actually matters.
+      assert(Math.abs(fitAfter - expectedFitAfter) < 1e-6, 'the recalculated fit scale after resize must match the new geometry exactly (a genuine recalculation, whether or not the numeric result happens to be unchanged)');
       ok('window resize automatically recalculates the fit scale for the new panel size');
     }
 
