@@ -49,7 +49,7 @@ assert(desktopBlockIdx > -1, 'the desktop scroll-model media query is missing en
 // html/body's overflow-x:hidden breaks viewport-relative stickiness for
 // any descendant) must not still be present for .right-column.
 assert(!/\.right-column\{position:sticky;top:92px/.test(rawSource), 'the old broken position:sticky rule for .right-column (which measurably did not stick in real-browser QA) is still present');
-assert(/\.right-column\{grid-row:1;height:100%;min-height:0;overflow:visible;position:static;display:flex;flex-direction:column;\}/.test(rawSource), 'expected .right-column desktop override to use position:static (no self-scrolling) with a real bounded height, not position:sticky');
+assert(/\.right-column\{grid-row:1;align-self:start;height:auto;overflow:visible;position:static;display:flex;flex-direction:column;\}/.test(rawSource), 'expected .right-column desktop override to use position:static (no self-scrolling), height:auto and align-self:start (content-hugging, not stretched to the row), not position:sticky or height:100%');
 
 // .builder-layout must be height-bounded on desktop (the core fix: the
 // outer page no longer needs to scroll for ordinary wizard use, so the
@@ -128,7 +128,7 @@ assert(styleCloseIdx > -1, '</style> not found');
 // exclusive) -- i.e. reasonably close to styleCloseIdx, not buried
 // earlier where some future edit could reintroduce a same-specificity
 // override after it again.
-assert(styleCloseIdx - desktopBlockIdx < 6000, `desktop override block (at ${desktopBlockIdx}) is not close to the end of the stylesheet (</style> at ${styleCloseIdx}) -- the "always place last" strategy this comment relies on requires it to stay there`);
+assert(styleCloseIdx - desktopBlockIdx < 10000, `desktop override block (at ${desktopBlockIdx}) is not close to the end of the stylesheet (</style> at ${styleCloseIdx}) -- the "always place last" strategy this comment relies on requires it to stay there`);
 
 // ── THIRD desktop correction (26 Sep 2026, real QA at ~1884x672) ────────
 // (1) inactive accordion sections duplicate the horizontal stepper and
@@ -138,8 +138,8 @@ assert(!/@media\(max-width:860px\)\{[^}]*\.builder-accordion-section:not\(\.acti
 // (2) preview panel/canvas must be allowed to shrink (not flex-shrink:0)
 // and the right column must not scroll itself -- both inside the desktop
 // block specifically (not as a global change that would also affect mobile).
-assert(/\.preview-panel\{flex:1;min-height:0;flex-shrink:1;\}/.test(rawSource), 'expected .preview-panel to be allowed to shrink to the available row height on desktop (was flex-shrink:0, unshrinkable)');
-assert(/\.preview-canvas-area\{flex:1;min-height:0;\}/.test(rawSource), 'expected .preview-canvas-area to be allowed to shrink below its 460px base min-height on desktop');
+assert(/\.preview-panel\{flex-shrink:0;\}/.test(rawSource), 'expected .preview-panel desktop override to be flex-shrink:0 (content-hugging, no longer flex:1/min-height:0 stretching to fill the row)');
+assert(/\.preview-canvas-area\{min-height:0;\}/.test(rawSource), 'expected .preview-canvas-area desktop override to drop its 460px base min-height (content-hugging, no longer flex:1 stretching)');
 // The base (unconditional) rule still has flex-shrink:0 -- proves the
 // override is real (a property is actually being changed), not a no-op.
 assert(/\.preview-panel\{background:white[^}]*flex-shrink:0;\}/.test(rawSource), 'expected the base .preview-panel rule to still have flex-shrink:0 (the desktop override must be changing something real)');
@@ -185,6 +185,32 @@ assert(classCount(compliancePaddingSelector[1]) > classCount('.builder-rail-card
 const complianceH3Selector = desktopBlock.match(/([^\n{]+)\{font-size:13px;margin:0;white-space:nowrap;\}/);
 assert(complianceH3Selector, 'compact .compliance-card h3 override not found in the desktop block');
 assert(classCount(complianceH3Selector[1]) > classCount('.builder-rail-card h3'), `.compliance-card h3's compact override must out-specify .builder-rail-card h3{font-size:16px} (same reasoning); selector was: ${complianceH3Selector[1]}`);
+
+// ── SIXTH desktop correction (28 Sep 2026, real QA: preview took ~half
+// the workspace, form was cramped, Step 1 scrolled internally) ──────────
+// A. Form-dominant columns, bounded preview width (not a fraction of the
+// row that can grow toward half the workspace).
+assert(/\.builder-layout\{display:grid;grid-template-columns:minmax\(0,1fr\) clamp\(360px,32vw,500px\);/.test(rawSource), 'expected .builder-layout columns to be minmax(0,1fr) [form] / clamp(360px,32vw,500px) [bounded preview], favouring the form');
+assert(!/@media\(max-width:1280px\)\{\.builder-layout\{grid-template-columns/.test(rawSource), 'the old separate <=1280px column override (which gave the preview even MORE relative width at exactly the widths the form needed it most) should be gone -- the clamp() above covers all desktop widths');
+
+// B. Preview panel content-hugging, not stretched to workspace height.
+assert(/\.builder-layout\{align-items:start;\}/.test(desktopBlock), 'expected .builder-layout to override align-items to start on desktop so grid items no longer stretch to fill their row');
+assert(/\.wizard-panel\{align-self:stretch;\}/.test(desktopBlock), 'expected .wizard-panel to keep an explicit align-self:stretch (its own full-height/internal-scroll behaviour must be unaffected by the align-items:start change above)');
+assert(/\.right-column\{grid-row:1;align-self:start;height:auto;/.test(desktopBlock), 'expected .right-column to be align-self:start/height:auto (content-hugging) on desktop, not stretched');
+assert(/\.preview-panel\{flex-shrink:0;\}/.test(desktopBlock), 'expected .preview-panel to no longer flex-grow (flex:1) to fill the row on desktop');
+assert(!/\.preview-panel\{flex:1/.test(desktopBlock), 'the old flex:1 (stretch-to-fill) .preview-panel override must be gone');
+
+// C. Step 1 compact two-column desktop arrangement.
+assert(/n===1\?' step1-active':''/.test(rawSource), 'expected renderBuilderAccordion() to mark the Step 1 accordion body with a step1-active class');
+assert(/\.builder-accordion-body\.step1-active\{display:grid;grid-template-columns:1fr 1fr;/.test(desktopBlock), 'expected a 2-column desktop grid for the Step 1 body');
+assert(/\.builder-accordion-body\.step1-active #step-1\{order:1;/.test(desktopBlock), 'expected #step-1 (shape/size/dimensions) to be column 1');
+assert(/\.builder-accordion-body\.step1-active #label-appearance-section\{order:2;/.test(desktopBlock), 'expected #label-appearance-section (appearance controls) to be column 2');
+
+// D. Mobile (<=860px) rules must remain byte-for-byte the ones already
+// verified above (no new assertions needed here -- the existing mobile
+// checks earlier in this file already cover .builder-layout block-
+// stacking, .builder-accordion-body's fixed-bottom-nav override, etc.,
+// and none of those selectors/rules were touched by this correction).
 
 console.log('static CSS-source scroll-model checks passed');
 
@@ -291,6 +317,31 @@ setTimeout(() => {
     assert.strictEqual(window.eval('approvedBuilderStep'), 2, 'stepper-driven navigation (setApprovedBuilderStep reuse) regressed');
     stepperItems[0].click(); // back to completed step 1
     assert.strictEqual(document.getElementById('scent-name').value, 'Regression Check', 'data retention when returning to a completed step regressed');
+
+    // ── Step 1 body carries the step1-active marker (sixth correction) ────
+    window.setApprovedBuilderStep(1);
+    const step1Body = document.querySelector('.builder-accordion-body');
+    assert(step1Body.classList.contains('step1-active'), 'Step 1 accordion body must carry the step1-active class for the desktop 2-column reflow');
+    assert(document.getElementById('step-1'), '#step-1 missing from the DOM');
+    assert(document.getElementById('label-appearance-section'), '#label-appearance-section missing from the DOM');
+    window.setApprovedBuilderStep(2);
+    const step2Body = document.querySelector('.builder-accordion-body');
+    assert(!step2Body.classList.contains('step1-active'), 'step1-active must not leak onto other steps\' accordion bodies');
+
+    // ── DOM-rescue fix stress test (sixth correction, requirement #4) ────
+    // #label-appearance-section/#label-warn-stage4 must survive MANY
+    // navigation hops with exactly one instance each -- not deleted (the
+    // original bug), and not duplicated (a plausible failure mode of a
+    // naive fix that rescues without checking for an existing copy).
+    const navSequence = [2,1,3,1,4,1,5,1,2,3,4,5,1,1,1,2,1];
+    navSequence.forEach(n => window.setApprovedBuilderStep(n));
+    assert.strictEqual(document.querySelectorAll('#label-appearance-section').length, 1, `expected exactly one #label-appearance-section after ${navSequence.length} navigation hops, found ${document.querySelectorAll('#label-appearance-section').length}`);
+    assert.strictEqual(document.querySelectorAll('#label-warn-stage4').length, 1, `expected exactly one #label-warn-stage4 after ${navSequence.length} navigation hops, found ${document.querySelectorAll('#label-warn-stage4').length}`);
+    const survivingAppearance = document.getElementById('label-appearance-section');
+    assert(survivingAppearance.textContent.includes('Label appearance'), 'surviving #label-appearance-section lost its content');
+    assert(document.getElementById('label-bg-colour'), 'surviving #label-appearance-section is missing its background-colour control');
+    assert(document.getElementById('text-dark'), 'surviving #label-appearance-section is missing its text-colour control');
+    assert.strictEqual(survivingAppearance.parentElement, document.querySelector('.builder-accordion-body'), '#label-appearance-section must be a direct child of the (Step 1) accordion body, not stranded elsewhere');
 
     const structuralErrors = errors.filter(message => !/not implemented|navigation/i.test(message));
     assert.deepStrictEqual(structuralErrors, [], `runtime errors: ${structuralErrors.join('; ')}`);

@@ -197,10 +197,23 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
    now the standing layout on every step, at the same ~47/53 form/preview
    ratio .reviewing already used. Kept as a fixed 2-column grid rather than
    3, with .compliance-card spanning both columns as a full-width row
-   underneath, per the "left: controls, right: preview" requirement.) */
-.builder-layout{display:grid;grid-template-columns:minmax(420px,.94fr) minmax(460px,1.06fr);gap:20px;padding:20px 32px 40px;max-width:1360px;margin:0 auto;align-items:start;}
+   underneath, per the "left: controls, right: preview" requirement.)
+   (28 Sep 2026, sixth correction -- form/preview width rebalance: real QA
+   found the ~47/53 split above gave the preview roughly half the desktop
+   workspace while the form (with 5 steps of controls) was left cramped.
+   The preview doesn't need to be nearly as wide as the form to be usable
+   -- it's a single label image, not a multi-field form -- so the ratio is
+   inverted: the form column is now the flexible 1fr track (dominant,
+   ~65%+ of the row), and the preview column is BOUNDED by clamp() instead
+   of being a fraction of the row: never narrower than 360px (so a 63mm+
+   circle stays comfortably readable) and never wider than 500px (so it
+   can't creep back toward half the workspace on very wide screens). One
+   clamp()-based rule now covers every width from 861px up, replacing the
+   separate <=1280px override that used to give the preview even MORE
+   relative width at exactly the narrower desktop sizes where the form
+   needed it most. */
+.builder-layout{display:grid;grid-template-columns:minmax(0,1fr) clamp(360px,32vw,500px);gap:20px;padding:20px 32px 40px;max-width:1360px;margin:0 auto;align-items:start;}
 .compliance-card{grid-column:2;max-width:100%;}
-@media(max-width:1280px){.builder-layout{grid-template-columns:minmax(360px,1fr) minmax(400px,1.15fr);}}
 @media(max-width:860px){.builder-layout{display:block;padding:16px 24px 40px;}.compliance-card{grid-column:auto;}}
 /* DESKTOP/TABLET-LANDSCAPE SCROLL MODEL (24 Sep 2026 correction):
    position:sticky on #builder-stepper/.right-column does NOT actually
@@ -765,13 +778,49 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
      already has its own overflow:auto for a genuinely oversized zoomed
      label) is likewise allowed to shrink below its base 460px min-height
      instead of forcing the whole panel to stay that tall. */
-  .right-column{grid-row:1;height:100%;min-height:0;overflow:visible;position:static;display:flex;flex-direction:column;}
-  .preview-panel{flex:1;min-height:0;flex-shrink:1;}
-  .preview-canvas-area{flex:1;min-height:0;}
+  /* (28 Sep 2026, sixth correction -- compact preview panel): the
+     previous fix stopped .right-column from SCROLLING itself, but it
+     still STRETCHED to fill row 1's full height (height:100%) and
+     .preview-panel/.preview-canvas-area still flex-grew to fill whatever
+     height that left -- so even with the correct white/grey colour
+     scheme, real QA still showed a preview panel roughly the same height
+     as the entire workspace, with a large empty white area below the
+     print-size footer. Fixed by letting the panel size to its own
+     content instead: .builder-layout's align-items switches from
+     stretch to start (a grid item no longer fills its row's height by
+     default), .wizard-panel gets an explicit align-self:stretch to keep
+     its own full-height/internal-scroll behaviour (unaffected by this
+     change), and .right-column/.preview-panel/.preview-canvas-area drop
+     height:100%/flex:1/min-height:0 entirely -- auto height, hugging
+     exactly the heading+controls+grey stage+footer+compliance row, no
+     more, no less. */
+  .builder-layout{align-items:start;}
+  .wizard-panel{align-self:stretch;}
+  .right-column{grid-row:1;align-self:start;height:auto;overflow:visible;position:static;display:flex;flex-direction:column;}
+  .preview-panel{flex-shrink:0;}
+  .preview-canvas-area{min-height:0;}
   .compliance-card.builder-rail-card{grid-row:2;padding:12px 16px;display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;}
   .compliance-card.builder-rail-card h3{font-size:13px;margin:0;white-space:nowrap;}
   .compliance-card .rail-copy{margin:0;font-size:11.5px;}
   .compliance-card .rail-chip{margin:0;}
+  /* Step 1 two-column desktop reflow: #step-1 (heading, load-from-
+     library, shape, preset sizes, dimensions) and #label-appearance-
+     section (background/text colour, cut-guide border) are, for
+     historical reasons (see renderBuilderAccordion()'s comment on
+     label-appearance-section), rendered as SIBLINGS directly inside
+     .builder-accordion-body when Step 1 is active -- not nested inside
+     one another -- which conveniently already matches the two logical
+     groups this needs ("saved-label/shape/size/dimensions" vs.
+     "appearance") without any further DOM change. .step1-active (set in
+     renderBuilderAccordion() only when Step 1 is the active step) turns
+     that body into a 2-column grid; `order` puts #step-1 first (matching
+     the existing on-page reading order: size/shape heading before
+     appearance) purely visually, without touching the DOM the JS above
+     already built. Step 5's fine-tune relocation and Steps 2-4 are
+     unaffected -- this class only ever applies to the Step-1 body. */
+  .builder-accordion-body.step1-active{display:grid;grid-template-columns:1fr 1fr;gap:0 32px;align-items:start;}
+  .builder-accordion-body.step1-active #step-1{order:1;min-width:0;}
+  .builder-accordion-body.step1-active #label-appearance-section{order:2;min-width:0;align-self:start;}
 }
 </style>
 <!-- Privacy-friendly analytics by Plausible -->
@@ -3802,7 +3851,19 @@ function renderBuilderAccordion(){
   if(!panel)return;
   const old=panel.querySelector('.builder-accordion');
   if(old){
-    old.querySelectorAll('.step-panel').forEach(step=>panel.appendChild(step));
+    // Rescue everything the accordion body may currently be hosting
+    // before the accordion itself is destroyed. Historically only
+    // .step-panel elements were rescued here -- #label-appearance-section
+    // and #label-warn-stage4 (both relocated INTO the accordion body for
+    // Step 1, see below) were NOT .step-panel elements, so on the SECOND
+    // and every subsequent re-render of Step 1 they were silently deleted
+    // along with the old accordion instead of being rescued, and never
+    // reappeared. (28 Sep 2026, found while adding the Step 1 two-column
+    // desktop reflow, which depends on #label-appearance-section still
+    // existing on repeat visits to Step 1 -- a pre-existing bug, not
+    // something introduced by that reflow, but one that would have
+    // silently broken it on the very first return visit to Step 1.)
+    old.querySelectorAll('.step-panel, #label-appearance-section, #label-warn-stage4').forEach(step=>panel.appendChild(step));
     old.remove();
   }
   const accordion=document.createElement('div');
@@ -3838,7 +3899,7 @@ function renderBuilderAccordion(){
     trigger.onclick=()=>setApprovedBuilderStep(n);
     section.appendChild(trigger);
     if(n===approvedBuilderStep){
-      const body=document.createElement('div');body.className='builder-accordion-body';
+      const body=document.createElement('div');body.className='builder-accordion-body'+(n===1?' step1-active':'');
       panelMap[n].forEach(source=>{const step=panel.querySelector('#step-'+source);if(step){step.classList.add('active');body.appendChild(step);}});
       if(n===1){
         const labelAppearance=staging.querySelector('#label-appearance-section');
@@ -4502,19 +4563,32 @@ function recomputePreviewFit(){
   if(!dc||dc.offsetParent===null)return;
   const area=document.getElementById('preview-canvas-area');
   if(!area)return;
-  // (27 Sep 2026, REVISED per review): the previous version hard-coded
-  // -92px, which silently duplicated #preview-stage's own CSS padding as
-  // a second, disconnected number -- if the padding value ever changed in
-  // CSS, this function would still be reserving the OLD amount, either
-  // starving the label or letting it overflow the stage. Now measured
-  // directly from the live elements via getComputedStyle: the stage's own
-  // padding+border (its actual visual inset around the label) plus the
-  // canvas-area's own padding (space its children can never render into,
-  // already included in clientWidth per the DOM spec) -- both real,
-  // already-declared CSS values, not reconstructed guesses. BREATHING is
-  // the one small explicit constant kept, matching this preview's
-  // original hand-tuned cushion (its old flat -40 reservation was exactly
-  // the pre-stage canvas-area padding of 32px + 8px of cushion).
+  // (28 Sep 2026, REVISED again -- broke the fit-to-view circularity):
+  // the desktop preview panel is now content-height (see the sixth
+  // correction), which means #preview-canvas-area's OWN clientHeight is
+  // itself determined by its content -- ultimately by the rendered SVG's
+  // own height. The previous version read area.clientHeight as an input
+  // to the SAME calculation that decides the SVG's size, i.e. it fed the
+  // calculation's own output back into itself as an input: SVG height ->
+  // stage height -> canvas-area clientHeight -> aH -> fitZoom -> SVG
+  // height again. In a real browser this settles into SOME fixed point,
+  // but nothing guarantees it's the CORRECT one, and nothing guarantees
+  // it settles in one pass rather than oscillating across repeated
+  // layout/resize events.
+  // Fixed by making WIDTH (not height) the primary constraint: the
+  // preview column's width is a genuine grid-track value (from
+  // .builder-layout's clamp()-based column, see the sixth correction),
+  // fixed by the viewport, NEVER by this element's own content -- so
+  // area.clientWidth is safe to read here. The resulting SVG height is
+  // then DERIVED from the viewBox aspect ratio (vbH/vbW * width-zoom),
+  // not measured back from the DOM. A maximum-height guard (for a tall
+  // label that would otherwise overflow the visible viewport) is
+  // computed from .wizard-panel's height instead -- the form column, in
+  // the SAME grid row, whose height comes directly from .builder-layout's
+  // own explicit height:calc(100vh - 230px) rule and is therefore
+  // genuinely independent of the preview's own content. If .wizard-panel
+  // isn't available for some reason, window.innerHeight minus a fixed
+  // fallback budget is used instead -- never area.clientHeight.
   const BREATHING=8;
   // Padding only (not border): neither #preview-canvas-area nor
   // #preview-stage currently has a border, and border-width is
@@ -4535,15 +4609,29 @@ function recomputePreviewFit(){
   }
   const areaInsets=boxInsets(area);
   const stageInsets=boxInsets(document.getElementById('preview-stage'));
-  const aW=area.clientWidth-areaInsets.x-stageInsets.x-BREATHING;
-  const aH=area.clientHeight-areaInsets.y-stageInsets.y-BREATHING;
   const svg=dc.querySelector('svg');
   if(!svg)return;
   const vb=svg.getAttribute('viewBox');
   if(!vb)return;
   const[,, vbW, vbH]=vb.split(' ').map(Number);
   if(!(vbW>0&&vbH>0))return;
-  const fitZoom=Math.min(aW/vbW,aH/vbH);
+
+  // 1. Width is the primary constraint (genuinely independent input).
+  const aW=area.clientWidth-areaInsets.x-stageInsets.x-BREATHING;
+  const widthZoom=aW/vbW;
+
+  // 2. Independent maximum-height guard, never derived from this
+  // element's own (circular) clientHeight.
+  const FALLBACK_HEIGHT_BUDGET=300; // used only if .wizard-panel is missing
+  const formPanel=document.querySelector('.wizard-panel');
+  const maxRowHeight=(formPanel&&formPanel.clientHeight>0)?formPanel.clientHeight:(window.innerHeight-FALLBACK_HEIGHT_BUDGET);
+  const aH=maxRowHeight-areaInsets.y-stageInsets.y-BREATHING;
+  const heightZoom=aH/vbH;
+
+  // 3. A tall/narrow label (aspect ratio makes width-zoom render it
+  // taller than the row budget allows) falls back to the height-limited
+  // zoom instead; an ordinary label stays width-driven.
+  const fitZoom=Math.min(widthZoom,heightZoom);
   if(!(fitZoom>0))return;
   _previewMaxZoom=fitZoom;
   _previewFitZoom=fitZoom;
