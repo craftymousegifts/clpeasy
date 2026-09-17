@@ -79,6 +79,32 @@ assert(/\.approved-stage-nav\{[^}]*position:sticky;bottom:0/.test(rawSource), 's
 assert(/\.compliance-card\{grid-column:2;/.test(rawSource), 'expected .compliance-card to sit in the preview\'s grid column (compact, beneath the preview) rather than spanning a full-width row');
 assert(!/\.compliance-card\{grid-column:1\/-1/.test(rawSource), 'the old full-width .compliance-card row (contributing extra document height) should have been replaced');
 
+// ── (27 Sep 2026, preview grey-space correction -- REVISED per review) ──
+// Colour direction: the OUTER unused area (.preview-panel, which the
+// canvas area's background is inherited from) must be white/neutral, not
+// the old --off grey, so it blends into the panel instead of reading as
+// one giant grey field. The close-fitting #preview-stage is the ONE
+// element that carries the grey background, tightly hugging the label.
+assert(/\.preview-panel\{background:white/.test(rawSource), 'expected .preview-panel to be white (was the grey --off) so the outer unused area blends into the panel, not a big grey field');
+assert(!/\.preview-panel\{background:var\(--off\)/.test(rawSource), 'the old grey .preview-panel background should have been replaced with white');
+assert(/#preview-stage\{[^}]*background:var\(--off\)/.test(rawSource), 'expected #preview-stage to carry the grey (--off) background -- it is the one element that should read as grey, not the whole panel');
+assert(!/#preview-stage\{[^}]*background:white/.test(rawSource), 'the first (rejected) version put a white stage inside the grey field -- #preview-stage must not be white');
+// Padding: close-fitting (12-20px range), not the first version's 26px.
+const stagePaddingMatch = rawSource.match(/#preview-stage\{[^}]*padding:(\d+)px/);
+assert(stagePaddingMatch, '#preview-stage padding not found');
+const stagePaddingPx = Number(stagePaddingMatch[1]);
+assert(stagePaddingPx >= 12 && stagePaddingPx <= 20, `expected #preview-stage padding in the requested 12-20px range, got ${stagePaddingPx}px`);
+
+// Fit-to-view must DERIVE its reserved space from the live elements'
+// actual CSS (getComputedStyle), not a hard-coded number that silently
+// duplicates whatever #preview-stage's padding happens to be in CSS --
+// the first version's flat "-92" was exactly this problem: it would
+// silently go stale the moment either element's padding changed in CSS.
+assert(!/area\.clientWidth-92/.test(rawSource), 'the old hard-coded -92px magic number must not still be used');
+assert(/getComputedStyle\(el\)/.test(rawSource) && /function boxInsets/.test(rawSource), 'expected recomputePreviewFit() to derive insets via getComputedStyle (boxInsets helper), not a hard-coded constant');
+assert(/const BREATHING=8;/.test(rawSource), 'expected only a small explicit breathing-space constant to remain, not a large hard-coded total');
+
+
 // The desktop override block was relocated (26 Sep 2026, third
 // correction) to the very END of the stylesheet, so it always wins the
 // cascade over ANY same-specificity base rule anywhere above it --
@@ -91,7 +117,7 @@ assert(!/\.compliance-card\{grid-column:1\/-1/.test(rawSource), 'the old full-wi
 // .right-column base rule).
 const styleCloseIdx = rawSource.indexOf('</style>');
 assert(styleCloseIdx > -1, '</style> not found');
-['\\.wizard-panel\\{background:white', '\\.builder-accordion\\{display:flex', '\\.builder-accordion-body\\{padding:2px 6px 12px 0', '\\.right-column\\{display:flex;flex-direction:column;gap:16px;\\}', '\\.preview-panel\\{background:var\\(--off\\)', '\\.preview-canvas-area\\{display:flex'].forEach(pattern=>{
+['\\.wizard-panel\\{background:white', '\\.builder-accordion\\{display:flex', '\\.builder-accordion-body\\{padding:2px 6px 12px 0', '\\.right-column\\{display:flex;flex-direction:column;gap:16px;\\}', '\\.preview-panel\\{background:white', '\\.preview-canvas-area\\{display:flex'].forEach(pattern=>{
   const idx = lastIndexOfRule(rawSource, pattern);
   assert(idx > -1, `base rule matching /${pattern}/ not found`);
   assert(idx < desktopBlockIdx, `base rule matching /${pattern}/ (at ${idx}) must come BEFORE the desktop scroll-model media query (at ${desktopBlockIdx})`);
@@ -116,7 +142,7 @@ assert(/\.preview-panel\{flex:1;min-height:0;flex-shrink:1;\}/.test(rawSource), 
 assert(/\.preview-canvas-area\{flex:1;min-height:0;\}/.test(rawSource), 'expected .preview-canvas-area to be allowed to shrink below its 460px base min-height on desktop');
 // The base (unconditional) rule still has flex-shrink:0 -- proves the
 // override is real (a property is actually being changed), not a no-op.
-assert(/\.preview-panel\{background:var\(--off\)[^}]*flex-shrink:0;\}/.test(rawSource), 'expected the base .preview-panel rule to still have flex-shrink:0 (the desktop override must be changing something real)');
+assert(/\.preview-panel\{background:white[^}]*flex-shrink:0;\}/.test(rawSource), 'expected the base .preview-panel rule to still have flex-shrink:0 (the desktop override must be changing something real)');
 
 
 assert(/@media\(max-width:860px\)\{[\s\S]{0,60}\.builder-layout\{display:block/.test(rawSource), 'mobile .builder-layout block-stacking rule is missing or moved');
@@ -233,6 +259,24 @@ setTimeout(() => {
     const finetune = document.getElementById('finetune-panel-el');
     assert.strictEqual(finetune.closest('#preview-canvas-area')?.id, 'preview-canvas-area', 'Step 5 fine-tune relocation beside the preview regressed');
 
+    // ── (27 Sep 2026) Preview grey-space / #preview-stage structure ───────
+    // Checked here (still on Step 5) before the navigation re-check below
+    // moves back to Step 1 and parks fine-tune in staging again.
+    const svgContainer = document.getElementById('label-svg-container');
+    assert(svgContainer, '#label-svg-container is missing');
+    const stage = document.getElementById('preview-stage');
+    assert(stage, '#preview-stage wrapper is missing');
+    assert.strictEqual(svgContainer.parentElement, stage, '#label-svg-container must be nested inside #preview-stage');
+    assert.strictEqual(stage.parentElement.id, 'preview-canvas-area', '#preview-stage must be a direct child of #preview-canvas-area');
+    assert.strictEqual(finetune.parentElement.id, 'preview-canvas-area', 'Step 5 fine-tune must remain a direct sibling of #preview-stage inside #preview-canvas-area (not nested inside the stage itself)');
+    // Zoom/fit wiring must still target the same elements by the same ids
+    // (functions themselves, and their own numeric correctness, are
+    // covered end-to-end by tests/preview-zoom-fit.js -- this just proves
+    // this correction didn't disconnect that wiring).
+    assert(typeof window.recomputePreviewFit === 'function', 'recomputePreviewFit() is missing');
+    assert(typeof window.applyZoomToSVG === 'function', 'applyZoomToSVG() is missing');
+    assert(typeof window.fitPreviewToView === 'function', 'fitPreviewToView() is missing');
+
     // Existing stepper navigation/validation/data-retention behaviour
     // (already covered in tests/builder-step-navigation-layout.js) must
     // still work unchanged after this third correction -- re-exercised
@@ -258,6 +302,29 @@ setTimeout(() => {
     assert.strictEqual(allSections.length, 5, 'expected all 5 accordion sections (1 active + 4 inactive) to still exist in the DOM -- desktop hides them via CSS only, they must not be removed from markup (which would also break mobile)');
     const inactiveTriggers = [...allSections].filter(s=>!s.classList.contains('active'));
     assert.strictEqual(inactiveTriggers.length, 4, 'expected exactly 4 inactive accordion sections to remain clickable/present for mobile');
+
+    // ── (27 Sep 2026) Step 1 warning relocation / Step 3 contextual note ──
+    const step1 = document.getElementById('step-1');
+    assert(!/solely responsible for ensuring your labels/i.test(step1.textContent), 'Step 1 must no longer contain the general responsibility disclaimer text');
+    assert(!/CLPeasy generates labels based on the data you enter/i.test(step1.textContent), 'Step 1 must no longer contain the old general disclaimer wording');
+    // The UNRELATED custom-size-too-small warning (also .field-alert-warn,
+    // shown dynamically for an invalid custom size) is a different,
+    // legitimate message and must NOT have been removed.
+    assert(document.getElementById('custom-size-warn'), 'the unrelated custom-size-too-small warning was incorrectly removed along with the disclaimer');
+    const step3 = document.getElementById('step-3');
+    const contextualNotes = [...step3.querySelectorAll('.field-alert-info')];
+    assert.strictEqual(contextualNotes.length, 1, `expected exactly one contextual info message in Step 3, found ${contextualNotes.length}`);
+    const expectedWording = "Use safety information that matches your finished product and actual fragrance percentage. For candles and wax melts, use the supplier's CLP information for that percentage rather than information for the 100% concentrated oil.";
+    assert(contextualNotes[0].textContent.includes(expectedWording), `Step 3 contextual note must use the exact specified wording, got: ${JSON.stringify(contextualNotes[0].textContent.trim())}`);
+    // Must sit above/immediately beside Smart Paste, not buried elsewhere.
+    const smartPasteBox = step3.querySelector('.smart-paste-box');
+    assert(smartPasteBox, 'Smart Paste box is missing from Step 3');
+    const noteAndBoxSiblings = [...smartPasteBox.parentElement.children];
+    assert(noteAndBoxSiblings.indexOf(contextualNotes[0]) < noteAndBoxSiblings.indexOf(smartPasteBox), 'the contextual note must appear above/before the Smart Paste box, not after it');
+    // The existing mandatory confirmation checkbox (a distinct, binding
+    // "I confirm..." gate) must be completely unchanged by this correction.
+    const confirmLabel = document.getElementById('hazard-confirm-block');
+    assert(confirmLabel && /I confirm the hazard data shown in the Smart Paste section above is correct/.test(confirmLabel.textContent), 'existing Step 3 hazard-confirm checkbox text was altered');
 
     console.log('DOM structure / Smart Paste / fine-tune regression checks passed');
   } catch (error) {

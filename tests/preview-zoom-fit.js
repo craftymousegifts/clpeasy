@@ -89,6 +89,31 @@ function stubVisible(){
   const dc = document.getElementById('label-svg-container');
   Object.defineProperty(dc, 'offsetParent', { value: {}, configurable: true });
 }
+// Independently derives the expected reserved inset from the LIVE elements'
+// own computed CSS (padding only, matching recomputePreviewFit()'s own
+// boxInsets() -- reimplemented separately here, not imported from
+// builder.html, precisely so this test would actually fail if that
+// function's real behaviour diverged from what it's declared to do) plus
+// the one documented small BREATHING constant. This must never be a fixed
+// number: if either element's CSS padding changes, this recalculates
+// automatically instead of silently going stale (the exact problem the
+// second review found with the first revision's hard-coded -92, and which
+// a hard-coded -52 would have simply reintroduced one layer down).
+const BREATHING = 8;
+function expectedReservedInset(){
+  const area = document.getElementById('preview-canvas-area');
+  const stage = document.getElementById('preview-stage');
+  function pad(el, axis){
+    const cs = window.getComputedStyle(el);
+    return axis === 'x'
+      ? (parseFloat(cs.paddingLeft)||0) + (parseFloat(cs.paddingRight)||0)
+      : (parseFloat(cs.paddingTop)||0) + (parseFloat(cs.paddingBottom)||0);
+  }
+  return {
+    x: pad(area,'x') + pad(stage,'x') + BREATHING,
+    y: pad(area,'y') + pad(stage,'y') + BREATHING
+  };
+}
 
 setTimeout(async () => {
   try {
@@ -121,7 +146,13 @@ setTimeout(async () => {
         setPanelSize(vp.w, vp.h);
         c.setup();
         const { vbW, vbH } = currentSvgBox();
-        const aW = vp.w - 40, aH = vp.h - 40;
+        // (27 Sep 2026, REVISED again per second review): no fixed number
+        // at all now -- derived live from the same elements' own CSS via
+        // expectedReservedInset() above, so this check would fail if
+        // recomputePreviewFit()'s real reserved space ever diverged from
+        // what its own boxInsets()/BREATHING are declared to compute.
+        const inset = expectedReservedInset();
+        const aW = vp.w - inset.x, aH = vp.h - inset.y;
         const expectedFit = Math.min(aW / vbW, aH / vbH);
 
         window.fitPreviewToView();
@@ -191,7 +222,8 @@ setTimeout(async () => {
       const fitAfter = window.eval('_previewFitZoom');
       assert.notStrictEqual(fitAfter, fitBefore, 'resizing the window must recalculate the fit scale for the new panel size, not keep the old one');
       const { vbW, vbH } = currentSvgBox();
-      const expectedFitAfter = Math.min((340-40)/vbW, (300-40)/vbH);
+      const insetAfter = expectedReservedInset();
+      const expectedFitAfter = Math.min((340-insetAfter.x)/vbW, (300-insetAfter.y)/vbH);
       assert(Math.abs(fitAfter - expectedFitAfter) < 1e-6, 'the recalculated fit scale after resize must match the new panel size exactly');
       ok('window resize automatically recalculates the fit scale for the new panel size');
     }

@@ -323,7 +323,7 @@ a.trust-item:hover .trust-icon{background:var(--teal);color:white;}
    block above .builder-layout (height:100%, not position:sticky -- see
    its comment for why sticky doesn't work against this page's html/body
    overflow-x:hidden rule). */
-.preview-panel{background:var(--off);border:1.5px solid var(--border);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
+.preview-panel{background:white;border:1.5px solid var(--border);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
 
 @media(max-width:860px){
   .wizard-panel{padding:16px 16px 40px;max-width:100%;width:100%;}
@@ -437,6 +437,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
    styles with several slightly different hex values for the same colour). */
 .field-alert{border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.6;margin-bottom:20px;}
 .field-alert-warn{background:var(--amber-light);border:1.5px solid #FDE68A;color:#92400E;}
+.field-alert-info{background:var(--teal-light);border:1.5px solid #B8E0EA;color:var(--teal-dark);margin-bottom:14px;}
 .field-alert-danger{background:#FEF2F2;border:1.5px solid #FECACA;color:#991B1B;}
 .field-alert-success{background:#F0FDF4;border:1.5px solid #BBF7D0;color:#166534;}
 .sdiv::after{content:'';flex:1;height:1px;background:var(--border);}
@@ -462,8 +463,31 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .zoom-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:var(--teal-dark);box-shadow:0 1px 4px rgba(0,0,0,0.2);cursor:grab;transition:left .15s;}
 .zoom-pct{font-size:11px;color:var(--muted);min-width:30px;text-align:right;font-weight:600;}
 /* Canvas area — scrollable so zoomed labels don't get clipped */
-.preview-canvas-area{display:flex;align-items:flex-start;justify-content:center;gap:20px;padding:16px;overflow:auto;min-height:460px;}
-.preview-canvas-area>#label-svg-container{flex:1;display:flex;align-items:center;justify-content:center;min-width:0;}
+.preview-canvas-area{display:flex;align-items:flex-start;justify-content:center;gap:20px;padding:8px;overflow:auto;min-height:460px;}/* padding reduced 16px->8px (27 Sep 2026, revised preview correction): #preview-stage now supplies its own close-fitting frame around the label, so the outer canvas no longer needs its own separate large buffer -- keeping both would compound into extra reserved space and shrink the label more than necessary (see recomputePreviewFit(), which measures both insets directly rather than guessing). */
+/* No longer used (label-svg-container now nests one level deeper, inside
+   #preview-stage below -- kept only as a comment so the selector isn't
+   silently reused for something else): .preview-canvas-area>#label-svg-container{flex:1;...} */
+/* (27 Sep 2026, preview grey-space correction -- REVISED per review):
+   #label-svg-container is ALREADY kept sized to exactly the rendered
+   SVG's pixel box by the existing applyZoomToSVG() -- that part was
+   never the problem. The problem was .preview-panel/.preview-canvas-area
+   sharing one uniform --off (grey) background across the ENTIRE panel,
+   so a small label just floated in a wide, featureless grey field.
+   First attempt got the colour direction backwards (a white stage sitting
+   INSIDE that same oversized grey field, which didn't reduce the visible
+   grey and shrank the label via extra padding). Corrected direction:
+   .preview-panel is now white (see its own rule above) -- so the "outer
+   unused area" is white/blends into the panel, not grey. #preview-stage
+   is now the GREY element, and its padding is tight (16px -- "close-
+   fitting", not a generous card) so the grey is visually limited to a
+   modest mat immediately around the label rather than the whole panel.
+   It's an inline-flex box with no explicit width/height of its own, so
+   it automatically hugs #label-svg-container's current size plus its own
+   fixed padding -- tracks every zoom change and adapts to any label
+   aspect ratio (circle/square/rectangle) with zero JS changes beyond
+   recomputePreviewFit() now MEASURING this padding via getComputedStyle
+   instead of hard-coding it (see that function). */
+#preview-stage{display:inline-flex;align-items:center;justify-content:center;padding:12px;margin:auto;background:var(--off);border-radius:12px;}
 .preview-legend{flex:0 0 220px;background:white;border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:12px;align-self:stretch;overflow-y:auto;max-height:100%;}
 .preview-legend .fine-tune-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
 .preview-legend .fine-tune-sub{font-size:10.5px;color:var(--muted);margin-bottom:10px;line-height:1.35;}
@@ -1010,9 +1034,18 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <!--!-- STEP 1 -->
   <div class="step-panel active" id="step-1">
     <h2 class="step-heading">Label size &amp; shape</h2>
-    <div class="field-alert field-alert-warn">
-      ⚠️ <strong>Important:</strong> CLPeasy generates labels based on the data you enter. You must always verify all hazard information against your fragrance supplier's SDS sheet at your actual fragrance load before printing and selling. You are solely responsible for ensuring your labels are accurate and legally compliant.
-    </div>
+    <!-- (27 Sep 2026, Step 1 warning relocation): the general responsibility
+         disclaimer that used to sit here (large, amber, ~4 lines) has been
+         removed -- it was duplicative of the site-wide legal disclaimer
+         already in terms.html, the explanation on compliance.html, and the
+         FAQ on index.html, and wasn't relevant while choosing label size/
+         shape. A concise, CONTEXTUAL version of the one specific point that
+         actually matters at the moment of choosing hazard data now lives in
+         Step 3, immediately above Smart Paste (search "field-alert-info" in
+         this file) -- see also the existing mandatory Step 3 confirmation
+         checkbox (#hazard-confirm-block) and the Step 5 review confirmation,
+         both unchanged, which remain the binding "I confirm..." gates. No
+         site-wide legal disclaimer (terms.html) was touched. -->
     <div class="sdiv">Load from your library</div>
     <div class="form-group" style="margin-bottom:20px;">
       <select id="load-from-library" onchange="loadFromLibrarySelect(this.value)" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;background:white;cursor:pointer;">
@@ -1168,6 +1201,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="supplier-grid" id="supplier-grid">
     </div>
     <div id="supplier-sds-link" style="display:none;margin-bottom:16px;"></div>
+    <!-- Concise, context-specific info note (27 Sep 2026, relocated from
+         the old Step 1 general warning -- see that step's comment). Exact
+         wording per Michaela's spec. This is deliberately an information
+         note, not a confirmation gate -- #hazard-confirm-block just below
+         (unchanged) remains the mandatory "I confirm..." checkbox. -->
+    <div class="field-alert field-alert-info">
+      💡 Use safety information that matches your finished product and actual fragrance percentage. For candles and wax melts, use the supplier's CLP information for that percentage rather than information for the 100% concentrated oil.
+    </div>
     <div class="smart-paste-box">
       <h4>✨ Smart Paste — paste SDS Section 2.2</h4>
       <p>Copy Section 2.2 from your fragrance supplier's SDS PDF and paste it here. CLPeasy extracts all hazard data automatically.</p>
@@ -1357,7 +1398,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button type="button" class="preview-badge" onclick="fitPreviewToView()" title="Fit label to preview">Fit to view ↗</button>
     </div>
   </div>
-  <div class="preview-canvas-area" id="preview-canvas-area"><div id="label-svg-container"></div></div>
+  <div class="preview-canvas-area" id="preview-canvas-area"><div id="preview-stage"><div id="label-svg-container"></div></div></div>
   <div class="preview-footer">
     <div class="preview-size-info" id="preview-size-info">Print size: 35 × 35mm</div>
     <div class="dl-row" id="preview-dl-row" style="display:none;">
@@ -4461,7 +4502,41 @@ function recomputePreviewFit(){
   if(!dc||dc.offsetParent===null)return;
   const area=document.getElementById('preview-canvas-area');
   if(!area)return;
-  const aW=area.clientWidth-40,aH=area.clientHeight-40;
+  // (27 Sep 2026, REVISED per review): the previous version hard-coded
+  // -92px, which silently duplicated #preview-stage's own CSS padding as
+  // a second, disconnected number -- if the padding value ever changed in
+  // CSS, this function would still be reserving the OLD amount, either
+  // starving the label or letting it overflow the stage. Now measured
+  // directly from the live elements via getComputedStyle: the stage's own
+  // padding+border (its actual visual inset around the label) plus the
+  // canvas-area's own padding (space its children can never render into,
+  // already included in clientWidth per the DOM spec) -- both real,
+  // already-declared CSS values, not reconstructed guesses. BREATHING is
+  // the one small explicit constant kept, matching this preview's
+  // original hand-tuned cushion (its old flat -40 reservation was exactly
+  // the pre-stage canvas-area padding of 32px + 8px of cushion).
+  const BREATHING=8;
+  // Padding only (not border): neither #preview-canvas-area nor
+  // #preview-stage currently has a border, and border-width is
+  // deliberately left out of this measurement -- jsdom's getComputedStyle
+  // reports a nonzero default border-width even for border-style:none
+  // unless a border is explicitly declared (a jsdom-only quirk, confirmed
+  // against a real spec-compliant browser default of 0), which would
+  // otherwise silently poison this measurement in the test harness. If a
+  // real border is ever added to either element, add its width here too
+  // (and give it an explicit value, not just an omitted one, so both a
+  // real browser and jsdom agree on the result).
+  function boxInsets(el){
+    if(!el)return{x:0,y:0};
+    const cs=window.getComputedStyle(el);
+    const x=(parseFloat(cs.paddingLeft)||0)+(parseFloat(cs.paddingRight)||0);
+    const y=(parseFloat(cs.paddingTop)||0)+(parseFloat(cs.paddingBottom)||0);
+    return{x,y};
+  }
+  const areaInsets=boxInsets(area);
+  const stageInsets=boxInsets(document.getElementById('preview-stage'));
+  const aW=area.clientWidth-areaInsets.x-stageInsets.x-BREATHING;
+  const aH=area.clientHeight-areaInsets.y-stageInsets.y-BREATHING;
   const svg=dc.querySelector('svg');
   if(!svg)return;
   const vb=svg.getAttribute('viewBox');
