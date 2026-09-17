@@ -138,7 +138,7 @@ function expectedReservedInset(){
 // capped by an independent row-height reference, AND an explicit
 // display-size cap (29 Sep 2026, seventh correction) -- WITHOUT calling
 // into builder.html's own function, so this is a genuine cross-check.
-const MAX_DISPLAY_PX = 320;
+const MAX_DISPLAY_PX = 290;
 function expectedFitZoom(colWidth, rowHeight, vbW, vbH){
   const inset = expectedReservedInset();
   const widthZoom = (colWidth - inset.x) / vbW;
@@ -181,7 +181,7 @@ setTimeout(async () => {
     ];
 
     // ── 0. Explicit display-size cap is genuinely enforced ───────────────
-    // At a realistic column/row size (well within the 360-420px column
+    // At a realistic column/row size (well within the 320-380px column
     // and comfortably tall), the circle/square MUST be capped at
     // MAX_DISPLAY_PX, not merely happen to be smaller for some other
     // reason -- this proves the cap is a real, binding constraint, not
