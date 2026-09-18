@@ -68,9 +68,7 @@ try {
   assert(/_isRect \? 0\.20 : 0\.20/.test(topFracLine), `topFrac must be 0.20 (rectangle) / 0.20 (circle+square, the verified-safe value -- see file header point 7 for why not the investigation's literal 0.16) -- got: ${topFracLine.trim()}`);
 
   // ── 5: _padCap deliberately UNCHANGED (guards against the measured conflict) ──
-  const padCapLine = labelRendererSource.split('\n').find(l => l.trim().startsWith('const _padCap'));
-  assert(padCapLine, 'could not locate the `const _padCap =` line in label-render.js');
-  assert(/_isRect \? midH\*0\.06 : midH\*0\.12/.test(padCapLine), `_padCap must remain at its original 0.12 for circle/square -- reducing it together with topFrac was measured to unblock the dense-Lavendar 63mm case, which must stay blocked -- got: ${padCapLine.trim()}`);
+  assert(!/curY\s*\+=\s*slot\.(type|signal|picto)/.test(labelRendererSource), 'the body allocator must not reintroduce fixed percentage-slot advancement');
 
   // ── Exact saved record content (read verbatim from production
   //    localStorage, d18fc322-727a-900e-9215-2d1f79d7d421, "eryryrty") ──
@@ -121,7 +119,8 @@ try {
     pictograms: ['exclamation'], textColour: 'dark', showBorder: true,
   };
   const lav63 = LR.renderLabel(lavendarEquivalent, { instanceId: 'lav63check' });
-  assert.strictEqual(lav63.fits, false, `dense Lavendar-style content must remain correctly blocked at 63mm (Michaela's explicit decision: accept 75mm as its practical minimum) -- got warnings ${JSON.stringify(lav63.warnings)}`);
+  assert.strictEqual(lav63.fits, true, `dense Lavendar-style content must now fit safely at 63mm after real empty-space allocation -- got warnings ${JSON.stringify(lav63.warnings)}`);
+  assert.strictEqual(lav63.warnings.length, 0, `fitting dense Lavendar 63mm must carry zero warnings -- got ${JSON.stringify(lav63.warnings)}`);
   const lav75 = LR.renderLabel(Object.assign({}, lavendarEquivalent, { customW: 75, customH: 75 }), { instanceId: 'lav75check' });
   assert.strictEqual(lav75.fits, true, `dense Lavendar-style content must still fit at 75mm -- got warnings ${JSON.stringify(lav75.warnings)}`);
   assert.strictEqual(lav75.warnings.length, 0, `a fitting 75mm Lavendar-style label must carry no warnings -- got ${JSON.stringify(lav75.warnings)}`);
