@@ -50,6 +50,16 @@ const fs = require('fs');
 const assert = require('assert');
 const { JSDOM, VirtualConsole } = require('jsdom');
 
+// Correction 2 (2026-09): the blocked-preview overlay now wraps its
+// wording across multiple <tspan> lines, so a literal contiguous-string
+// check against the raw SVG can miss a sentence that happens to wrap.
+// flattenSvgText() strips tags to spaces (reused pattern from
+// tests/h316-h401-gb-unsupported-removal.js / renderer-block-reason-
+// messaging.js) so wrapped sentences are still matched as one phrase.
+function flattenSvgText(svg){
+  return svg.replace(/<\/?[^>]+>/g, ' ').replace(/\s+/g, ' ');
+}
+
 const rawBuilderSource = fs.readFileSync('builder.html', 'utf8');
 const rawLabelRendererSource = fs.readFileSync('label-render.js', 'utf8');
 const source = rawBuilderSource.replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
@@ -285,9 +295,11 @@ P501, Dispose of contents and container in accordance with local regulations.`;
   {
     const r = renderDirectAndUpdate('H316,H999');
     results.mixedOverlay = { svgHasBoth: r.svg.includes('H316') && r.svg.includes('H999') };
+    const mixedFlat = flattenSvgText(r.svg);
     assert(r.svg.includes('LABEL DATA NEEDS REVIEW'), 'mixed overlay must show the review heading');
-    assert(r.svg.includes('Unsupported GB CLP code: H316'), 'mixed overlay must name the unsupported group');
-    assert(r.svg.includes('Unrecognised CLP code: H999'), 'mixed overlay must ALSO name the generic group');
+    assert(mixedFlat.includes('H316') && mixedFlat.includes('not supported under CLPeasy\'s Great Britain rules'), 'mixed overlay must name the unsupported group and say it is not supported under GB rules');
+    assert(mixedFlat.includes('H999') && mixedFlat.includes('not recognised by CLPeasy'), 'mixed overlay must ALSO name the generic group without claiming it is unsupported');
+    assert(mixedFlat.includes('Check you pasted Section 2.2 from the correct supplier SDS'), 'mixed overlay must include the shared Section 2.2 instruction');
     assert(!r.svg.includes('FULL CONTENT DOES NOT FIT'), 'mixed overlay must not show the sizing message');
   }
 
@@ -340,7 +352,7 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     assert.strictEqual(r.blockReason, 'unsupported-gb-clp-code', 'blockReason must lead with the regulatory issue even though genuine overflow ALSO applies');
     assert.deepStrictEqual([...r.unsupportedCodes], ['H316'], 'unsupportedCodes must still report H316');
     assert.strictEqual(r.contentOverflow, true, 'contentOverflow must independently report true -- both states are retained structurally, not just the leading one');
-    assert(r.svg.includes('Unsupported GB CLP code: H316'), 'overlay must show the regulatory-issue message');
+    assert(flattenSvgText(r.svg).includes('H316') && flattenSvgText(r.svg).includes('not supported under CLPeasy\'s Great Britain rules'), 'overlay must show the regulatory-issue message');
     assert(!r.svg.includes('FULL CONTENT DOES NOT FIT') && !r.svg.includes('Select a larger size'), 'overlay must NOT advise a larger size while the regulatory-code issue is unresolved, even though the content also genuinely overflows');
 
     // Builder-side download-blocking banner for the same combined case --
@@ -490,7 +502,11 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     results.savedLabelMixed = { blockReason:r.blockReason, unrecognizedCodes:r.unrecognizedCodes };
     assert(r.unrecognizedCodes.includes('H401') && r.unrecognizedCodes.includes('H998'), 'a simulated saved label with mixed codes must surface both in unrecognizedCodes');
     assert.strictEqual(r.blockReason, 'unsupported-gb-clp-code', 'mixed saved label must lead with the regulatory reason');
-    assert(r.svg.includes('Unsupported GB CLP code: H401') && r.svg.includes('Unrecognised CLP code: H998'), 'mixed saved label overlay must show both groups on reopen');
+    {
+      const savedFlat = flattenSvgText(r.svg);
+      assert(savedFlat.includes('H401') && savedFlat.includes('not supported under CLPeasy\'s Great Britain rules'), 'mixed saved label overlay must name the unsupported group on reopen');
+      assert(savedFlat.includes('H998') && savedFlat.includes('not recognised by CLPeasy'), 'mixed saved label overlay must ALSO name the generic group on reopen');
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────
@@ -539,6 +555,162 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     const speculativePattern = /(moderate.confidence|not.yet.confirmed|unconfirmed|open investigation)[^.]{0,120}H28[234]|H28[234][^.]{0,120}(moderate.confidence|not.yet.confirmed|unconfirmed|open investigation)/i;
     assert(!speculativePattern.test(rawBuilderSource), 'builder.html must not carry speculative H282/H283/H284 GB-status discussion');
     assert(!speculativePattern.test(rawLabelRendererSource), 'label-render.js must not carry speculative H282/H283/H284 GB-status discussion');
+  }
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 17. Correction 3 -- "Clear hazard data and start again" control.
+  // Reuses the existing hazard-clear-link element/clearHazardData()
+  // handler (both already present) rather than a new one; this section
+  // proves the restored wiring rather than any new markup/handler.
+  // ─────────────────────────────────────────────────────────────────────
+  const VALID_TEXT = `2.2 Label elements
+Signal word: Warning
+Hazard statements: H315, Causes skin irritation.
+Precautionary statements:
+P273, Avoid release to the environment.
+P501, Dispose of contents and container in accordance with local regulations.`;
+  const H316_TEXT = `2.2 Label elements
+Signal word: Warning
+Hazard statements: H316, Causes mild skin irritation.
+Precautionary statements:
+P501, Dispose of contents and container in accordance with local regulations.`;
+  const H999_TEXT = `2.2 Label elements
+Signal word: Warning
+Hazard statements: H999, Not a real code.
+Precautionary statements:
+P501, Dispose of contents and container in accordance with local regulations.`;
+  const MIXED_H316_H999_TEXT = `2.2 Label elements
+Signal word: Warning
+Hazard statements: H316, Causes mild skin irritation.
+H999, Not a real code.
+Precautionary statements:
+P501, Dispose of contents and container in accordance with local regulations.`;
+
+  function clearLinkVisible(){
+    const el = document.getElementById('hazard-clear-link');
+    return !!el && el.style.display !== 'none' && el.style.display !== '';
+  }
+
+  {
+    setupBuilderState();
+    window.setApprovedBuilderStep(3);
+    // Earlier tests in this same run left hazard state populated -- reset
+    // to the genuine "nothing extracted yet" starting point before
+    // checking. (window.clearHazardData() itself, used to do exactly this
+    // reset, is what test 17's later block verifies in detail; this is
+    // just establishing a clean baseline here.)
+    window.clearHazardData();
+    results.clearControlHiddenInitially = { visible: clearLinkVisible() };
+    assert.strictEqual(clearLinkVisible(), false, 'Clear control must be hidden when Step 3 has no extracted/selected hazard data');
+  }
+  {
+    pasteAndExtract(VALID_TEXT);
+    results.clearControlAfterValidExtract = { visible: clearLinkVisible() };
+    assert.strictEqual(clearLinkVisible(), true, 'Clear control must appear immediately after a successful, fully-supported Smart Paste extraction');
+  }
+  for(const [label, text] of [['H316', H316_TEXT], ['H999', H999_TEXT], ['H316+H999 mixed', MIXED_H316_H999_TEXT]]){
+    pasteAndExtract(text);
+    results['clearControlAfter_'+label] = { visible: clearLinkVisible() };
+    assert.strictEqual(clearLinkVisible(), true, `Clear control must appear after extracting ${label} -- this is exactly the blocked case the control was previously invisible for`);
+  }
+
+  {
+    // Accessible, keyboard-reachable control: a real <button>, not a bare
+    // link, with a non-empty accessible name, never keyboard-trapped.
+    const el = document.getElementById('hazard-clear-link');
+    results.clearControlAccessibility = { tagName: el.tagName, text: el.textContent.trim(), tabIndex: el.tabIndex };
+    assert.strictEqual(el.tagName, 'BUTTON', 'Clear control must be an actual <button>, not a styled link, for reliable keyboard/assistive-tech access');
+    assert.strictEqual(el.textContent.trim(), 'Clear hazard data and start again', 'Clear control must have this exact accessible name');
+    assert.notStrictEqual(el.tabIndex, -1, 'Clear control must remain keyboard-focusable');
+  }
+
+  {
+    // Full clear, from the mixed-blocked state (the hardest case: hazard
+    // data present, download blocked, Step 3 alert would otherwise fire).
+    pasteAndExtract(MIXED_H316_H999_TEXT);
+    document.getElementById('hazard-confirm').checked = true; // simulate a maker who had ticked it before deciding to start over
+    document.getElementById('verify-checkbox').checked = true;
+    // Unrelated state that must survive the clear untouched.
+    document.getElementById('scent-name').value = 'Survives Scent';
+    document.getElementById('biz-name').value = 'Survives Biz';
+    document.getElementById('biz-phone').value = '01234 567890';
+    const Sget = expr => window.eval('S.'+expr);
+    const shapeBefore = Sget('shape'), sizeBefore = Sget('size'), customWBefore = Sget('customW'), customHBefore = Sget('customH');
+    window.eval("S.p280Items=['P280a'];S.p280Other='Custom P280 text';");
+
+    window.__lastAlert = undefined;
+    window.clearHazardData();
+
+    results.clearBehaviour = {
+      hStatements: Sget('hStatements'), pStatements: Sget('pStatements'), signal: Sget('signal'),
+      pictograms: [...Sget('pictograms')], hSelected: [...Sget('hSelected')], pSelected: [...Sget('pSelected')],
+      sensitisers: [...Sget('sensitisers')], p280Items: [...Sget('p280Items')], p280Other: Sget('p280Other'),
+      smartPasteValue: document.getElementById('smart-paste-input').value,
+      hazardConfirmChecked: document.getElementById('hazard-confirm').checked,
+      verifyChecked: document.getElementById('verify-checkbox').checked,
+      unsupportedCodes: window.eval('window._unsupportedCodes') ? [...window.eval('window._unsupportedCodes')] : [],
+      unrecognizedCodesGeneric: window.eval('window._unrecognizedCodesGeneric') ? [...window.eval('window._unrecognizedCodesGeneric')] : [],
+      alertFired: window.__lastAlert,
+      clearLinkVisibleAfter: clearLinkVisible(),
+      scentName: document.getElementById('scent-name').value,
+      bizName: document.getElementById('biz-name').value,
+      shape: Sget('shape'), size: Sget('size'), customW: Sget('customW'), customH: Sget('customH'),
+    };
+
+    // Every listed Step 3 hazard field/state is cleared.
+    assert.strictEqual(results.clearBehaviour.hStatements, '', 'Clear must empty S.hStatements');
+    assert.strictEqual(results.clearBehaviour.pStatements, '', 'Clear must empty S.pStatements');
+    assert.strictEqual(results.clearBehaviour.signal, '', 'Clear must empty S.signal');
+    assert.deepStrictEqual(results.clearBehaviour.pictograms, [], 'Clear must empty selected pictograms');
+    assert.deepStrictEqual(results.clearBehaviour.hSelected, [], 'Clear must empty selected H chips');
+    assert.deepStrictEqual(results.clearBehaviour.pSelected, [], 'Clear must empty selected P chips');
+    assert.deepStrictEqual(results.clearBehaviour.sensitisers, [], 'Clear must empty sensitiser/allergen information');
+    assert.deepStrictEqual(results.clearBehaviour.p280Items, [], 'Clear must empty P280 sub-selections');
+    assert.strictEqual(results.clearBehaviour.p280Other, '', 'Clear must empty the P280 free-text item');
+    assert.strictEqual(document.getElementById('smart-paste-input').value, '', 'Clear must empty the Smart Paste textarea');
+    assert.deepStrictEqual(results.clearBehaviour.unsupportedCodes, [], 'Clear must reset the unsupported-code state');
+    assert.deepStrictEqual(results.clearBehaviour.unrecognizedCodesGeneric, [], 'Clear must reset the generic-unrecognised-code state');
+    assert.strictEqual(document.getElementById('verify-checkbox').checked, false, 'Clear must re-lock the Step 5 download by unticking verify-checkbox');
+    assert.strictEqual(document.getElementById('hazard-confirm').checked, false, 'Clear must uncheck the Step 3 confirm checkbox, and do so before it can trigger toggleHazardNext()\'s alert');
+    assert.strictEqual(window.__lastAlert, undefined, 'Clear must never itself trigger the "Please extract hazard data..." alert as a side effect');
+
+    // Must NOT clear label size/shape/product/business/whole-Builder state.
+    assert.strictEqual(results.clearBehaviour.shape, shapeBefore, 'Clear must not alter label shape');
+    assert.strictEqual(results.clearBehaviour.size, sizeBefore, 'Clear must not alter label size');
+    assert.strictEqual(results.clearBehaviour.customW, customWBefore, 'Clear must not alter custom width');
+    assert.strictEqual(results.clearBehaviour.customH, customHBefore, 'Clear must not alter custom height');
+    assert.strictEqual(document.getElementById('scent-name').value, 'Survives Scent', 'Clear must not touch product name/type fields');
+    assert.strictEqual(document.getElementById('biz-name').value, 'Survives Biz', 'Clear must not touch business details');
+
+    // The Clear control hides itself again once there is nothing left to clear.
+    assert.strictEqual(clearLinkVisible(), false, 'Clear control must hide itself again immediately after clearing');
+
+    // Preview returns to a correct, non-blocked state for what remains.
+    const postClearSvg = window.buildSVG(true);
+    assert(!postClearSvg.includes('LABEL DATA NEEDS REVIEW'), 'preview must no longer show the blocked overlay once hazard data has been cleared');
+  }
+
+  {
+    // A different Section 2.2 can be pasted and extracts normally after clearing.
+    pasteAndExtract(VALID_TEXT);
+    window.clearHazardData();
+    const SECOND_TEXT = `2.2 Label elements
+Signal word: Danger
+Hazard statements: H317, May cause an allergic skin reaction.
+Precautionary statements:
+P302+352, IF ON SKIN: Wash with plenty of water.
+P333+313, If skin irritation or rash occurs: Get medical advice/attention.
+P501, Dispose of contents and container in accordance with local regulations.`;
+    document.getElementById('smart-paste-input').value = SECOND_TEXT;
+    window.extractSDS();
+    const hStAfter = window.eval('S.hStatements'), pStAfter = window.eval('S.pStatements');
+    results.reExtractAfterClear = { hStatements: hStAfter, pStatements: pStAfter, clearVisibleAfter: clearLinkVisible() };
+    assert(hStAfter.includes('H317'), 'a different Section 2.2 must extract normally after Clear');
+    // Slash P-code normalisation (pre-existing, unrelated fix) must still
+    // work after Clear -- proves Clear did not disturb extractSDS() itself.
+    assert(pStAfter.includes('P302+P352'), 'P302/352 must still normalise to P302+P352 after a Clear/re-extract cycle');
+    assert(pStAfter.includes('P333+P313'), 'P333/313 must still normalise to P333+P313 after a Clear/re-extract cycle');
+    assert.strictEqual(clearLinkVisible(), true, 'Clear control must reappear once the new extraction has populated hazard data again');
   }
 
   const structuralErrors = errors.filter(message => !/not implemented|navigation/i.test(message));

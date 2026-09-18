@@ -726,30 +726,101 @@ function choosePictoMmAndRender(rawData, opts){
 // content-does-not-fit branch, which is BYTE-IDENTICAL to the overlay this
 // replaced, so genuine layout overflow with only recognised, GB-supported
 // codes is completely unaffected by this change.
-function buildBlockedOverlaySVG(pw, ph, cx, unsupportedCodes, genericCodes){
-  const titleY = (ph*.46).toFixed(1), bodyY = (ph*.55).toFixed(1);
-  const titleFS = Math.max(8,pw*.035).toFixed(1), bodyFS = Math.max(6,pw*.025).toFixed(1);
+function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, genericCodes){
   unsupportedCodes = unsupportedCodes||[]; genericCodes = genericCodes||[];
-  let heading, body;
-  if(unsupportedCodes.length || genericCodes.length){
-    heading = 'LABEL DATA NEEDS REVIEW';
-    const parts = [];
-    // Codes reaching here are, by definition, not confirmed against
-    // H_LIB/P_LIB (that's what makes them unsupported/generic in the
-    // first place), so they are untrusted text as far as this SVG string
-    // is concerned -- xe() (the same XML-escape already used elsewhere in
-    // this file, e.g. for the Google Fonts import URL) is applied before
-    // interpolation so a malformed/adversarial code value can't break out
-    // of the <text> element or inject markup, without altering how an
-    // ordinary code like H316 or H999 displays.
-    if(unsupportedCodes.length) parts.push('Unsupported GB CLP code: '+unsupportedCodes.map(xe).join(', '));
-    if(genericCodes.length) parts.push('Unrecognised CLP code: '+genericCodes.map(xe).join(', '));
-    body = parts.join(' / ')+' / Check the current GB-market SDS.';
-  } else {
-    heading = 'FULL CONTENT DOES NOT FIT';
-    body = 'Select a larger size in Step 1';
+  const hasIssue = unsupportedCodes.length>0 || genericCodes.length>0;
+
+  if(!hasIssue){
+    // Genuine physical overflow with only recognised/supported codes --
+    // byte-identical to the original single-line overlay this replaced.
+    // Correction 2 only changes the code-related wording below; this
+    // branch (and its exact markup) is deliberately left untouched.
+    const titleY = (ph*.46).toFixed(1), bodyY = (ph*.55).toFixed(1);
+    const titleFS = Math.max(8,pw*.035).toFixed(1), bodyFS = Math.max(6,pw*.025).toFixed(1);
+    return `<g class="clp-fit-block"><rect x="0" y="0" width="${pw}" height="${ph}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${titleY}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${titleFS}" font-weight="800" fill="#991b1b">FULL CONTENT DOES NOT FIT</text><text x="${cx}" y="${bodyY}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${bodyFS}" fill="#991b1b">Select a larger size in Step 1</text></g>`;
   }
-  return `<g class="clp-fit-block"><rect x="0" y="0" width="${pw}" height="${ph}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${titleY}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${titleFS}" font-weight="800" fill="#991b1b">${heading}</text><text x="${cx}" y="${bodyY}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${bodyFS}" fill="#991b1b">${body}</text></g>`;
+
+  // ── Correction 2 (2026-09, readable blocked-preview wording) ──────────
+  // Codes reaching here are, by definition, not confirmed against
+  // H_LIB/P_LIB (that's what makes them unsupported/generic in the first
+  // place), so they remain untrusted text -- xe() (the same XML-escape
+  // already used elsewhere in this file) is applied to every code value
+  // before it is interpolated, exactly as the previous single-line
+  // version did, so a malformed/adversarial code value still can't break
+  // out of the <text>/<tspan> elements.
+  const heading = 'LABEL DATA NEEDS REVIEW';
+  const uCodes = unsupportedCodes.map(xe), gCodes = genericCodes.map(xe);
+  let sentences;
+  if(uCodes.length && gCodes.length){
+    // Mixed: identify both groups by name -- neither hides the other --
+    // plus the one instruction both groups share.
+    sentences = [
+      uCodes.join(', ')+' '+(uCodes.length>1?'are':'is')+' not supported under CLPeasy\'s Great Britain rules.',
+      gCodes.join(', ')+' '+(gCodes.length>1?'were':'was')+' not recognised by CLPeasy.',
+      'Check you pasted Section 2.2 from the correct supplier SDS.'
+    ];
+  } else if(uCodes.length){
+    // Verified GB-unsupported code(s) -- confirmed regulatory issue.
+    sentences = [
+      uCodes.join(', ')+' '+(uCodes.length>1?'are':'is')+' not supported under CLPeasy\'s Great Britain rules.',
+      'Check you pasted Section 2.2 from the correct supplier SDS.',
+      'Ask your supplier for current GB CLP information for this product and concentration.'
+    ];
+  } else {
+    // Generic/unrecognised code(s) -- must NOT state or imply the code is
+    // legally unsupported under GB rules, since that has not been verified.
+    sentences = [
+      gCodes.join(', ')+' '+(gCodes.length>1?'were':'was')+' not recognised by CLPeasy.',
+      'Check you pasted Section 2.2 from the correct supplier SDS.',
+      'If the code is present in Section 2.2, contact CLPeasy support.'
+    ];
+  }
+
+  // Largest safe, genuinely readable font sizes -- materially larger than
+  // the previous fixed 8px/6px minimums. chordWFn (the caller's own
+  // circle/square/rectangle chord-width function, reused rather than
+  // reimplemented) is used to size and wrap every line so it stays inside
+  // the label's true shape at its own row, not just inside the pw/ph
+  // bounding box (which the outer clip-path would otherwise silently clip
+  // into invisibility for a circle).
+  const HEAD_MIN=11, HEAD_MAX=22, BODY_MIN=9, BODY_MAX=15;
+  // Generous upper-bound line-count budget (heading + up to 8 wrapped body
+  // lines comfortably covers the longest realistic case -- all 3
+  // GB_UNSUPPORTED_CODES plus a generic code, each sentence wrapped) used
+  // only to pick a conservative, safe wrap width; the real, usually much
+  // shorter, wrapped output is what actually gets drawn.
+  const MAX_BODY_LINES = 8;
+  let headFS = Math.min(HEAD_MAX, Math.max(HEAD_MIN, pw*.058));
+  let bodyFS = Math.min(BODY_MAX, Math.max(BODY_MIN, pw*.040));
+  let wrapped = [], lineH = 0, gap = 0, safeW = 0;
+  for(let attempt=0; attempt<10; attempt++){
+    lineH = bodyFS*1.32;
+    gap = bodyFS*0.5;
+    const halfSpan = (headFS*1.1 + gap + MAX_BODY_LINES*lineH)/2;
+    // The narrower of the two rows at the assumed block's top/bottom edge
+    // -- for a circle this is always the true minimum available width
+    // across every row the block can occupy, since chord width only
+    // shrinks moving away from centre; for a square/rectangle chordWFn is
+    // constant, so this is just that constant.
+    safeW = Math.min(chordWFn(cy-halfSpan,0.12), chordWFn(cy+halfSpan,0.12)) * 0.94;
+    wrapped = [];
+    for(const s of sentences) wrapped = wrapped.concat(wrapText(s, safeW, bodyFS, false, false));
+    if(wrapped.length<=MAX_BODY_LINES && safeW>20) break;
+    if(headFS>HEAD_MIN) headFS-=1;
+    if(bodyFS>BODY_MIN) bodyFS-=1;
+    if(headFS<=HEAD_MIN && bodyFS<=BODY_MIN) break; // floor reached -- accept best effort (wrapText never drops text)
+  }
+  // Heading is bold/larger than body -- confirm it independently fits the
+  // same safe width, shrinking further (never growing) if not.
+  headFS = Math.min(headFS, fitFont(heading, safeW*0.98, headFS, HEAD_MIN, true, false, 0.5));
+
+  const totalBodyLines = wrapped.length;
+  const totalH = headFS*1.1 + gap + totalBodyLines*lineH;
+  let y = cy - totalH/2;
+  const headY = (y + headFS*0.85).toFixed(1);
+  y += headFS*1.1 + gap;
+  const bodyTspans = wrapped.map((ln,i)=>`<tspan x="${cx}" y="${(y+i*lineH).toFixed(1)}">${ln}</tspan>`).join('');
+  return `<g class="clp-fit-block"><rect x="0" y="0" width="${pw}" height="${ph}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${headY}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${headFS.toFixed(1)}" font-weight="800" fill="#991b1b">${heading}</text><text x="${cx}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${bodyFS.toFixed(1)}" fill="#991b1b">${bodyTspans}</text></g>`;
 }
 
 function renderLabel(rawData, opts){
@@ -1649,7 +1720,7 @@ function renderLabel(rawData, opts){
   // recognised/supported codes is unaffected by this change. Both code
   // groups are passed through in full (not just the leading-reason one),
   // so a mixed unsupported+generic input shows both in the overlay too.
-  const overflowOverlay=_contentBlocked?buildBlockedOverlaySVG(pw,ph,cx,_unsupportedCodesFound,_genericUnrecognizedFound):'';
+  const overflowOverlay=_contentBlocked?buildBlockedOverlaySVG(pw,ph,cx,cy,chordW,_unsupportedCodesFound,_genericUnrecognizedFound):'';
   // Y positions already set per-slot — no global recompute needed
   const footerRendered = footerElems.map(elem=>{
     if(elem.slotY > sBot - 1) return '';

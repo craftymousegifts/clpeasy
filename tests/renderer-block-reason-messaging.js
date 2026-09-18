@@ -197,7 +197,7 @@ async function run(){
     assert.strictEqual(r.blockReason, 'unsupported-gb-clp-code', `${code} alone must report blockReason:'unsupported-gb-clp-code', got: ${r.blockReason}`);
     assert.deepStrictEqual(r.blockReasonCodes, [code], `${code} alone: blockReasonCodes must be exactly [${code}], got: ${JSON.stringify(r.blockReasonCodes)}`);
     assert(r.svg.includes('LABEL DATA NEEDS REVIEW'), `${code}: renderer overlay must show "LABEL DATA NEEDS REVIEW"`);
-    assert(r.svg.includes('Unsupported GB CLP code') && r.svg.includes(code), `${code}: renderer overlay must show "Unsupported GB CLP code: ${code}"`);
+    assert(flattenSvgText(r.svg).includes(code) && flattenSvgText(r.svg).includes('not supported under CLPeasy\'s Great Britain rules'), `${code}: renderer overlay must say it is not supported under CLPeasy's Great Britain rules`);
     assert(!r.svg.includes('FULL CONTENT DOES NOT FIT') && !r.svg.includes('Select a larger size'), `${code}: must NOT show the misleading sizing overlay`);
   }
 
@@ -321,8 +321,8 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     // Renderer-level (bypassing Step 3): same generic distinction.
     const rDirect = renderDirect('H999', true);
     assert.strictEqual(rDirect.blockReason, 'unrecognised-code', `H999 fed directly to the renderer must report blockReason:'unrecognised-code', got: ${rDirect.blockReason}`);
-    assert(rDirect.svg.includes('LABEL DATA NEEDS REVIEW') && rDirect.svg.includes('Unrecognised CLP code') && rDirect.svg.includes('H999'), 'H999: renderer overlay must show "LABEL DATA NEEDS REVIEW / Unrecognised CLP code: H999"');
-    assert(!rDirect.svg.includes('Unsupported GB CLP code'), 'H999: renderer overlay must NOT claim it is a confirmed-unsupported GB CLP code');
+    assert(rDirect.svg.includes('LABEL DATA NEEDS REVIEW') && flattenSvgText(rDirect.svg).includes('H999') && flattenSvgText(rDirect.svg).includes('not recognised by CLPeasy'), 'H999: renderer overlay must show "LABEL DATA NEEDS REVIEW" and say H999 was not recognised by CLPeasy');
+    assert(!flattenSvgText(rDirect.svg).includes('not supported under CLPeasy\'s Great Britain rules'), 'H999: renderer overlay must NOT claim it is a confirmed-unsupported GB CLP code');
     assert(!rDirect.svg.includes('FULL CONTENT DOES NOT FIT') && !rDirect.svg.includes('Select a larger size'), 'H999: must not show the misleading sizing overlay');
   }
 

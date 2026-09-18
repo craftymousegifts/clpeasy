@@ -849,9 +849,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <!--!-- STEP 1 -->
   <div class="step-panel active" id="step-1">
     <h2 class="step-heading">Label size &amp; shape</h2>
-    <div class="field-alert field-alert-warn">
-      ⚠️ <strong>Important:</strong> CLPeasy generates labels based on the data you enter. You must always verify all hazard information against your fragrance supplier's SDS sheet at your actual fragrance load before printing and selling. You are solely responsible for ensuring your labels are accurate and legally compliant.
-    </div>
     <div class="sdiv">Load from your library</div>
     <div class="form-group" style="margin-bottom:20px;">
       <select id="load-from-library" onchange="loadFromLibrarySelect(this.value)" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;background:white;cursor:pointer;">
@@ -1012,7 +1009,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <p>Copy the complete Section 2.2 (Label elements) from your current supplier SDS PDF and paste it here. CLPeasy extracts the information it can identify; review the result against your SDS before continuing.</p>
       <textarea id="smart-paste-input" placeholder="Paste SDS Section 2.2 text here..."></textarea>
       <br><br><button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
-      <a href="#" id="hazard-clear-link" onclick="clearHazardData();return false;" style="display:none;margin-left:14px;font-size:12px;color:var(--teal-dark);text-decoration:underline;">✓ Data extracted — clear and start over</a>
+      <button type="button" id="hazard-clear-link" onclick="clearHazardData()" style="display:none;margin-left:14px;font-size:12px;color:var(--teal-dark);text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">Clear hazard data and start again</button>
     </div>
     <div class="sdiv">Signal word</div>
     <div class="signal-row">
@@ -3820,11 +3817,18 @@ function _applyHazardBlockGate(){
   if(confirmBlock)confirmBlock.style.display=blocked?'none':'block';
   if(blockedCta)blockedCta.style.display='none';
   if(nextBtn)nextBtn.style.display=blocked?'none':'inline-block';
-  // A blocked label can't have "extracted and locked" data implying readiness —
-  // suppress the subtle clear-link too, since the blocked CTA already has its own.
+  // Correction (2026-09, Clear hazard data restoration): visibility is now
+  // keyed purely on whether Step 3 has extracted/selected hazard data
+  // (S.hStatements), not on `blocked`/readOnly. The old readOnly-based
+  // check left this control invisible for exactly the cases that most
+  // need it (H316/H401/H402/unrecognised codes never reach
+  // approvedBuilderStep>=4, since canLeaveApprovedBuilderStep()'s alert()
+  // stops advancement first, so `blocked` was never true for them either).
+  // This makes _applyHazardBlockGate() the single source of truth for
+  // this control's visibility — the conflicting duplicate previously in
+  // lockHazardFields() has been removed.
   const clearLink=document.getElementById('hazard-clear-link');
-  if(clearLink&&blocked)clearLink.style.display='none';
-  else if(clearLink&&document.getElementById('smart-paste-input')?.readOnly)clearLink.style.display='inline';
+  if(clearLink)clearLink.style.display=(S.hStatements||'').trim()?'inline-block':'none';
   if(typeof toggleHazardNext==='function')toggleHazardNext();
 }
 function prevStep(){if(approvedBuilderStep>1)setApprovedBuilderStep(approvedBuilderStep-1);}
@@ -3868,10 +3872,10 @@ function lockHazardFields(lock){
     extractBtn.disabled=lock;
     extractBtn.style.opacity=lock?'0.5':'1';
   }
-  // Show/hide the subtle "data extracted — clear and start over" link.
-  // Suppressed while blocked (the blocked CTA already has its own Clear action).
-  const clearLink=document.getElementById('hazard-clear-link');
-  if(clearLink)clearLink.style.display=(lock&&!window._labelBlockDownload)?'inline':'none';
+  // "Clear hazard data and start again" visibility is now decided solely
+  // by _applyHazardBlockGate() (keyed on S.hStatements), which always runs
+  // via the adjacent updateLabel() call at every call site of this
+  // function — removed the conflicting duplicate that used to live here.
 }
 
 // ── LABEL DONE SPLASH ─────────────────────────────────────────────────────
@@ -3938,6 +3942,15 @@ function splashGoLibrary(){
 
 function startOver(){location.reload();}
 function clearHazardData(){
+  // Correction (2026-09, Clear hazard data restoration): pre-emptively
+  // uncheck the Step 3 hazard-confirm checkbox before updateLabel() runs
+  // below. Without this, if the maker had already ticked it,
+  // toggleHazardNext() (called from _applyHazardBlockGate(), itself
+  // called at the end of updateLabel()) would see a checked box with no
+  // hazard data and fire its "Please extract hazard data..." alert() as
+  // an unwanted side effect of clicking Clear.
+  const hzCb=document.getElementById('hazard-confirm');
+  if(hzCb)hzCb.checked=false;
   // Clear signal word
   S.signal='';
   document.getElementById('signal-warning').className='signal-btn';
@@ -3954,6 +3967,10 @@ function clearHazardData(){
   S.pStatements='';
   S.pSelected=[];
   document.querySelectorAll('#p-chips .h-chip').forEach(c=>c.classList.remove('selected'));
+  // Correction (2026-09): P280 sub-selections were not previously cleared,
+  // leaving stale precautionary-statement wording selections behind after
+  // a Clear even though P statements themselves were reset.
+  S.p280Items=[];S.p280Other='';
   // Clear pictograms
   S.pictograms=[];
   document.querySelectorAll('.picto-btn').forEach(c=>c.classList.remove('selected'));

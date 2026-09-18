@@ -180,6 +180,61 @@ function run(){
     }
   }
 
+  // ─────────────────────────────────────────────────────────────────────
+  // Correction 1 (2026-09): the Step 1 yellow "Important" disclaimer card
+  // has been removed outright, with no replacement card/panel/alert/
+  // accordion anywhere in Steps 1-4. The Help Guide's own separate
+  // SDS-verification instruction and the Step 5 verification checkbox
+  // (an unrelated, pre-existing control) must both remain untouched.
+  // ─────────────────────────────────────────────────────────────────────
+  {
+    const removedDisclaimer = "CLPeasy generates labels based on the data you enter. You must always verify all hazard information against your fragrance supplier's SDS sheet at your actual fragrance load before printing and selling. You are solely responsible for ensuring your labels are accurate and legally compliant.";
+    results.correction1 = {
+      disclaimerGone: !builderSource.includes(removedDisclaimer),
+      noFieldAlertWarnInSteps1to4: null,
+      helpGuidePreserved: null,
+      step5CheckboxPreserved: null,
+    };
+    assert(!builderSource.includes(removedDisclaimer), 'Step 1: the exact yellow "Important" disclaimer text must be gone');
+
+    // Scope Steps 1-4 (step-1 through step-4 panels; step-5 -- the download
+    // step -- is intentionally excluded, since its own pre-existing
+    // verification checkbox/copy is a separate, unrelated control that
+    // must be left alone, not swept for "no replacement card").
+    const step1Start = builderSource.indexOf('id="step-1"');
+    const step5Start = builderSource.indexOf('id="step-5"');
+    assert(step1Start > -1 && step5Start > step1Start, 'could not locate the Step 1-5 panel boundaries in builder.html');
+    const steps1to4Html = builderSource.slice(step1Start, step5Start);
+    // Narrow, distinctive fragments of the removed disclaimer's own wording
+    // -- not a sweep for the generic .field-alert-warn class, which two
+    // other, pre-existing and unrelated warnings (custom-size-warn,
+    // en15494-warn) legitimately use elsewhere in Steps 1-4 and must not be
+    // flagged as if they were a reintroduced disclaimer.
+    const noReplacementCard = !/solely responsible for ensuring|you must always verify|verify all hazard information against your (fragrance )?supplier/i.test(steps1to4Html);
+    results.correction1.noFieldAlertWarnInSteps1to4 = noReplacementCard;
+    assert(noReplacementCard, 'Steps 1-4 must carry no replacement disclaimer card/panel/alert/accordion using the retired wording anywhere');
+    // The specific card element itself (an "Important" warning right below
+    // the Step 1 heading, above "Load from your library") must be gone,
+    // not just relocated -- pin the exact surrounding structure.
+    const noHeadingAdjacentWarnCard = !/step-heading">Label size &amp; shape<\/h2>\s*<div class="field-alert/i.test(steps1to4Html);
+    assert(noHeadingAdjacentWarnCard, 'no field-alert card of any kind must sit directly below the Step 1 heading where the removed disclaimer used to be');
+
+    // Help Guide's own SDS-verification instruction (a separate, pre-existing
+    // element, unaffected by removing the Step 1 disclaimer).
+    const helpGuideInstruction = 'Tick the verification checkbox</strong> to confirm you have checked all data against your SDS.';
+    results.correction1.helpGuidePreserved = builderSource.includes(helpGuideInstruction);
+    assert(results.correction1.helpGuidePreserved, 'Help Guide must still carry its own SDS-verification instruction');
+
+    // Step 5 verification checkbox and its label text (enforcement itself
+    // -- toggleDownload()/_downloadAllowed() -- is covered by the existing
+    // tests/builder-regression.js and tests/blocked-overlay-and-download-
+    // guard-parity.js download-gate suites, which continue to run against
+    // this file unchanged).
+    const step5CheckboxLabel = 'I confirm I have verified all hazard data on this label against my fragrance supplier\'s SDS sheet at my actual fragrance load. I understand I am solely responsible for ensuring this label is accurate and legally compliant before printing and selling.';
+    results.correction1.step5CheckboxPreserved = builderSource.includes('id="verify-checkbox"') && builderSource.includes(step5CheckboxLabel);
+    assert(results.correction1.step5CheckboxPreserved, 'Step 5 verification checkbox and its label text must remain exactly as before');
+  }
+
   console.log('smart-paste-user-guidance-wording checks passed (20 approved locations)');
   console.log(JSON.stringify(results, null, 2));
 }
