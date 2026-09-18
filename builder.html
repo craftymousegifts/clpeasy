@@ -3809,6 +3809,27 @@ function toggleHazardNext(){
 // entirely (not just disabled). Valid: single confirm checkbox only, "always verify"
 // bar and "extracted and locked" banner removed in favour of a small unobtrusive
 // clear/restart link inside the Smart Paste box itself (see lockHazardFields).
+// Correction (2026-09, follow-up): "has Step 3 got any hazard data" must
+// cover every meaningful field the Builder can put hazard data into, not
+// H statements alone -- P statements, selected pictograms, sensitiser/
+// EUH208 information, P280 sub-selections/free text, and an explicitly
+// chosen signal word. S.signal's own default is '' (see the S object
+// literal), so testing S.signal directly already excludes the untouched-
+// default case without a separate check. Centralised here as the single
+// shared calculation so _applyHazardBlockGate() (the only caller today)
+// and anything else that needs this stay in sync -- no second visibility
+// controller.
+function _hasStep3HazardData(){
+  return !!(
+    (S.hStatements||'').trim() ||
+    (S.pStatements||'').trim() ||
+    (S.pictograms&&S.pictograms.length) ||
+    (S.sensitisers&&S.sensitisers.length) ||
+    (S.p280Items&&S.p280Items.length) ||
+    (S.p280Other||'').trim() ||
+    S.signal
+  );
+}
 function _applyHazardBlockGate(){
   const blocked=!!window._labelBlockDownload&&approvedBuilderStep>=4;
   const confirmBlock=document.getElementById('hazard-confirm-block');
@@ -3818,17 +3839,20 @@ function _applyHazardBlockGate(){
   if(blockedCta)blockedCta.style.display='none';
   if(nextBtn)nextBtn.style.display=blocked?'none':'inline-block';
   // Correction (2026-09, Clear hazard data restoration): visibility is now
-  // keyed purely on whether Step 3 has extracted/selected hazard data
-  // (S.hStatements), not on `blocked`/readOnly. The old readOnly-based
-  // check left this control invisible for exactly the cases that most
-  // need it (H316/H401/H402/unrecognised codes never reach
-  // approvedBuilderStep>=4, since canLeaveApprovedBuilderStep()'s alert()
-  // stops advancement first, so `blocked` was never true for them either).
-  // This makes _applyHazardBlockGate() the single source of truth for
-  // this control's visibility — the conflicting duplicate previously in
-  // lockHazardFields() has been removed.
+  // keyed on whether Step 3 has ANY extracted/selected hazard data
+  // (_hasStep3HazardData() -- H/P statements, pictograms, sensitisers,
+  // P280, or an explicitly chosen signal word), not on `blocked`/readOnly.
+  // The old readOnly-based check left this control invisible for exactly
+  // the cases that most need it (H316/H401/H402/unrecognised codes never
+  // reach approvedBuilderStep>=4, since canLeaveApprovedBuilderStep()'s
+  // alert() stops advancement first, so `blocked` was never true for them
+  // either), and an earlier version of this fix checked S.hStatements
+  // alone, which missed P-only/pictogram-only/sensitiser-only/P280-only/
+  // signal-only data. This makes _applyHazardBlockGate() the single
+  // source of truth for this control's visibility — the conflicting
+  // duplicate previously in lockHazardFields() has been removed.
   const clearLink=document.getElementById('hazard-clear-link');
-  if(clearLink)clearLink.style.display=(S.hStatements||'').trim()?'inline-block':'none';
+  if(clearLink)clearLink.style.display=_hasStep3HazardData()?'inline-block':'none';
   if(typeof toggleHazardNext==='function')toggleHazardNext();
 }
 function prevStep(){if(approvedBuilderStep>1)setApprovedBuilderStep(approvedBuilderStep-1);}

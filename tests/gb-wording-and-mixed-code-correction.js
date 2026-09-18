@@ -614,6 +614,114 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     assert.strictEqual(clearLinkVisible(), true, `Clear control must appear after extracting ${label} -- this is exactly the blocked case the control was previously invisible for`);
   }
 
+  // ─────────────────────────────────────────────────────────────────────
+  // 17b. Follow-up correction -- the Clear control's visibility must be
+  // driven by _hasStep3HazardData(), covering every meaningful Step 3
+  // field, not S.hStatements alone. Each case: reset to genuinely
+  // untouched (window.clearHazardData()), populate ONLY that one field,
+  // confirm the control appears, then clear again and confirm it hides.
+  // ─────────────────────────────────────────────────────────────────────
+  {
+    // P-only: a maker who manually picks P statements without ever
+    // touching Smart Paste/H statements.
+    setupBuilderState();
+    window.setApprovedBuilderStep(2);
+    window.setApprovedBuilderStep(3);
+    window.clearHazardData();
+    assert.strictEqual(clearLinkVisible(), false, 'P-only case: must start from a genuinely untouched Step 3');
+    document.getElementById('p-statements').value = 'P501, Dispose of contents and container in accordance with local regulations.';
+    window.updateLabel();
+    results.clearControlPOnly = { visible: clearLinkVisible(), hStatements: window.eval('S.hStatements') };
+    assert.strictEqual(window.eval('S.hStatements'), '', 'P-only case: H statements must remain genuinely empty (proves this is not an H-driven pass)');
+    assert.strictEqual(clearLinkVisible(), true, 'Clear control must appear for P-statement-only data, with no H statements present');
+    window.clearHazardData();
+    assert.strictEqual(clearLinkVisible(), false, 'Clear control must hide again once P-only data is cleared');
+  }
+  {
+    // Pictogram-only: pictograms present with no H/P text at all -- e.g. a
+    // saved/loaded label whose stored pictograms field is set independently
+    // of hStatements (loadLabelRecord()/renderDirectAndUpdate() already
+    // treat these as independent fields elsewhere in this suite).
+    setupBuilderState();
+    window.setApprovedBuilderStep(2);
+    window.setApprovedBuilderStep(3);
+    window.clearHazardData();
+    window.eval("S.pictograms=['flame'];");
+    window.updateLabel();
+    results.clearControlPictogramOnly = { visible: clearLinkVisible(), hStatements: window.eval('S.hStatements'), pStatements: window.eval('S.pStatements') };
+    assert.strictEqual(window.eval('S.hStatements'), '', 'pictogram-only case: H statements must remain empty');
+    assert.strictEqual(window.eval('S.pStatements'), '', 'pictogram-only case: P statements must remain empty');
+    assert.strictEqual(clearLinkVisible(), true, 'Clear control must appear for pictogram-only data, with no H/P statements present');
+    window.clearHazardData();
+    assert.strictEqual(clearLinkVisible(), false, 'Clear control must hide again once pictogram-only data is cleared');
+  }
+  {
+    // Sensitiser/EUH208-only.
+    setupBuilderState();
+    window.setApprovedBuilderStep(2);
+    window.setApprovedBuilderStep(3);
+    window.clearHazardData();
+    window.eval("S.sensitisers=['Linalool'];");
+    window.updateLabel();
+    results.clearControlSensitiserOnly = { visible: clearLinkVisible(), hStatements: window.eval('S.hStatements') };
+    assert.strictEqual(window.eval('S.hStatements'), '', 'sensitiser-only case: H statements must remain empty');
+    assert.strictEqual(clearLinkVisible(), true, 'Clear control must appear for sensitiser/EUH208-only data');
+    window.clearHazardData();
+    assert.strictEqual(clearLinkVisible(), false, 'Clear control must hide again once sensitiser-only data is cleared');
+  }
+  {
+    // P280-only: a P280 sub-selection with no other H/P text.
+    setupBuilderState();
+    window.setApprovedBuilderStep(2);
+    window.setApprovedBuilderStep(3);
+    window.clearHazardData();
+    window.eval("S.p280Items=['P280a'];S.p280Other='Custom protective note';");
+    window.updateLabel();
+    results.clearControlP280Only = { visible: clearLinkVisible(), hStatements: window.eval('S.hStatements'), pStatements: window.eval('S.pStatements') };
+    assert.strictEqual(window.eval('S.hStatements'), '', 'P280-only case: H statements must remain empty');
+    assert.strictEqual(clearLinkVisible(), true, 'Clear control must appear for P280-only data');
+    window.clearHazardData();
+    assert.strictEqual(clearLinkVisible(), false, 'Clear control must hide again once P280-only data is cleared');
+  }
+  {
+    // Signal word: confirmed NOT independently settable in this Builder --
+    // the signal-word buttons (#signal-warning/#signal-danger) carry
+    // style="cursor:default" and no onclick at all; updateLabel() itself
+    // unconditionally re-derives S.signal from S.hStatements on every call
+    // (see the "Auto-set signal word from selected H-codes" block), so a
+    // signal value can never exist independently of H statements -- a
+    // direct S.signal write is overwritten back to '' the moment
+    // updateLabel() next runs, before _applyHazardBlockGate() ever sees it.
+    // A genuine "signal-only" Step 3 state is therefore not reachable, so
+    // _hasStep3HazardData() still checks S.signal (harmless, and correct
+    // if a future change ever makes it independently settable), but no
+    // "appears" case is asserted for it, since asserting a state the app
+    // cannot produce would not be a real regression test. What IS tested
+    // below is the one real, currently-reachable signal-related
+    // requirement: a bare, untouched Step 3 (empty signal, empty
+    // everything else) must never show the Clear control.
+    setupBuilderState();
+    window.setApprovedBuilderStep(2);
+    window.setApprovedBuilderStep(3);
+    window.clearHazardData();
+    window.eval("S.signal='Warning';"); // simulates a hypothetical direct write
+    window.updateLabel(); // ...which updateLabel() immediately corrects back
+    results.signalNotIndependentlySettable = { signalAfterUpdateLabel: window.eval('S.signal') };
+    assert.strictEqual(window.eval('S.signal'), '', 'updateLabel() must still re-derive signal from H statements (confirms the app has no independent signal-word input to test as its own Clear-control case)');
+  }
+  {
+    // Regression guard for the bug this follow-up fixes: the default
+    // signal value is '' (never a non-empty default), so merely being on
+    // a fresh, untouched Step 3 must never show the Clear control.
+    setupBuilderState();
+    window.setApprovedBuilderStep(2);
+    window.setApprovedBuilderStep(3);
+    window.clearHazardData();
+    results.clearControlNeverOnBareDefault = { visible: clearLinkVisible(), signal: window.eval('S.signal') };
+    assert.strictEqual(window.eval('S.signal'), '', 'a genuinely untouched Step 3 must have the empty default signal, not a pre-selected one');
+    assert.strictEqual(clearLinkVisible(), false, 'Clear control must NOT appear merely because a default signal-word value exists before any hazard data is entered/extracted');
+  }
+
   {
     // Accessible, keyboard-reachable control: a real <button>, not a bare
     // link, with a non-empty accessible name, never keyboard-trapped.
