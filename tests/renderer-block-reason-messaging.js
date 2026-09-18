@@ -198,6 +198,12 @@ async function run(){
     assert.deepStrictEqual(r.blockReasonCodes, [code], `${code} alone: blockReasonCodes must be exactly [${code}], got: ${JSON.stringify(r.blockReasonCodes)}`);
     assert(r.svg.includes('LABEL DATA NEEDS REVIEW'), `${code}: renderer overlay must show "LABEL DATA NEEDS REVIEW"`);
     assert(flattenSvgText(r.svg).includes(code) && flattenSvgText(r.svg).includes('needs supplier confirmation for a Great Britain CLP label'), `${code}: renderer overlay must request supplier confirmation without presenting CLPeasy as the regulator`);
+    const block=(r.svg.match(/<g class="clp-fit-block">[\s\S]*?<\/g>/)||[])[0]||'';
+    const heading=block.match(/<text[^>]*y="([\d.]+)"[^>]*font-size="([\d.]+)"[^>]*font-weight="800"[^>]*>LABEL DATA NEEDS REVIEW<\/text>/);
+    const body=block.match(/<text[^>]*font-size="([\d.]+)"[^>]*><tspan[^>]*y="([\d.]+)"/);
+    assert(heading&&body,`${code}: must expose measurable heading/body geometry`);
+    const visibleGap=Number(body[2])-Number(body[1])-(Number(heading[2])*.2)-(Number(body[1])*.8);
+    assert(visibleGap>=2,`${code}: heading and first explanation line need a visible gap; got ${visibleGap.toFixed(2)}px`);
     assert(!r.svg.includes('FULL CONTENT DOES NOT FIT') && !r.svg.includes('Select a larger size'), `${code}: must NOT show the misleading sizing overlay`);
   }
 

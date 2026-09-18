@@ -795,7 +795,10 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
   let wrapped = [], lineH = 0, gap = 0, safeW = 0;
   for(let attempt=0; attempt<10; attempt++){
     lineH = bodyFS*1.32;
-    gap = bodyFS*0.5;
+    // Keep the first explanation line visibly separate from the bold
+    // heading. A half-line gap left the two text boxes touching at some
+    // preview scales even though their baselines were technically distinct.
+    gap = bodyFS*1.1;
     const halfSpan = (headFS*1.1 + gap + MAX_BODY_LINES*lineH)/2;
     // The narrower of the two rows at the assumed block's top/bottom edge
     // -- for a circle this is always the true minimum available width
