@@ -1009,7 +1009,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div id="supplier-sds-link" style="display:none;margin-bottom:16px;"></div>
     <div class="smart-paste-box">
       <h4>✨ Smart Paste — paste SDS Section 2.2</h4>
-      <p>Copy Section 2.2 from your fragrance supplier's SDS PDF and paste it here. CLPeasy extracts all hazard data automatically.</p>
+      <p>Copy the complete Section 2.2 (Label elements) from your current supplier SDS PDF and paste it here. CLPeasy extracts the information it can identify; review the result against your SDS before continuing.</p>
       <textarea id="smart-paste-input" placeholder="Paste SDS Section 2.2 text here..."></textarea>
       <br><br><button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
       <a href="#" id="hazard-clear-link" onclick="clearHazardData();return false;" style="display:none;margin-left:14px;font-size:12px;color:var(--teal-dark);text-decoration:underline;">✓ Data extracted — clear and start over</a>
@@ -1330,7 +1330,13 @@ const SENSITISERS=[
   {name:'2-acetoxy-2,3,8,8-tetramethyloctahydronaphthalene',cat:'1B',cas:'54464-57-2'},
   {name:'Iso E Super',cat:'1B',cas:'54464-57-2'},
 ];
-const H_LIB=[{code:'H225',desc:'Highly flammable liquid and vapour'},{code:'H226',desc:'Flammable liquid and vapour'},{code:'H228',desc:'Flammable solid'},{code:'H301',desc:'Toxic if swallowed'},{code:'H302',desc:'Harmful if swallowed'},{code:'H304',desc:'May be fatal if swallowed and enters airways'},{code:'H311',desc:'Toxic in contact with skin'},{code:'H312',desc:'Harmful in contact with skin'},{code:'H314',desc:'Causes severe skin burns and eye damage'},{code:'H315',desc:'Causes skin irritation'},{code:'H317',desc:'May cause an allergic skin reaction'},{code:'H318',desc:'Causes serious eye damage'},{code:'H319',desc:'Causes serious eye irritation'},{code:'H331',desc:'Toxic if inhaled'},{code:'H332',desc:'Harmful if inhaled'},{code:'H334',desc:'May cause allergy or asthma symptoms if inhaled'},{code:'H335',desc:'May cause respiratory irritation'},{code:'H336',desc:'May cause drowsiness or dizziness'},{code:'H361',desc:'Suspected of damaging fertility or the unborn child'},{code:'H371',desc:'May cause damage to organs'},{code:'H373',desc:'May cause damage to organs through prolonged or repeated exposure'},{code:'H400',desc:'Very toxic to aquatic life'},{code:'H401',desc:'Toxic to aquatic life'},{code:'H410',desc:'Very toxic to aquatic life with long lasting effects'},{code:'H411',desc:'Toxic to aquatic life with long lasting effects'},{code:'H412',desc:'Harmful to aquatic life with long lasting effects'},{code:'H413',desc:'May cause long lasting harmful effects to aquatic life'},{code:'EUH066',desc:'Repeated exposure may cause skin dryness or cracking'},{code:'EUH208',desc:'Contains sensitiser — may produce an allergic reaction'},{code:'EUH071',desc:'Corrosive to the respiratory tract'},{code:'EUH210',desc:'Safety data sheet available on request'},{code:'H200',desc:'Unstable explosive'},{code:'H201',desc:'Explosive; mass explosion hazard'},{code:'H202',desc:'Explosive; severe projection hazard'},{code:'H203',desc:'Explosive; fire, blast or projection hazard'},{code:'H204',desc:'Fire or projection hazard'},{code:'H205',desc:'May mass explode in fire'},{code:'H223',desc:'Flammable aerosol'},{code:'H224',desc:'Extremely flammable liquid and vapour'},{code:'H240',desc:'Heating may cause an explosion'},{code:'H241',desc:'Heating may cause a fire or explosion'},{code:'H242',desc:'Heating may cause a fire'},{code:'H250',desc:'Catches fire spontaneously if exposed to air'},{code:'H251',desc:'Self-heating; may catch fire'},{code:'H252',desc:'Self-heating in large quantities; may catch fire'},{code:'H260',desc:'In contact with water releases flammable gases which may ignite spontaneously'},{code:'H261',desc:'In contact with water releases flammable gas'},{code:'H270',desc:'May cause or intensify fire; oxidiser'},{code:'H271',desc:'May cause fire or explosion; strong oxidiser'},{code:'H272',desc:'May intensify fire; oxidiser'},{code:'H280',desc:'Contains gas under pressure; may explode if heated'},{code:'H281',desc:'Contains refrigerated gas; may cause cryogenic burns or injury'},{code:'H282',desc:'Extremely flammable chemical under pressure: may explode if heated'},{code:'H283',desc:'Flammable chemical under pressure: may explode if heated'},{code:'H284',desc:'Chemical under pressure: may explode if heated'},{code:'H290',desc:'May be corrosive to metals'},{code:'H300',desc:'Fatal if swallowed'},{code:'H310',desc:'Fatal in contact with skin'},{code:'H316',desc:'Causes mild skin irritation'},{code:'H330',desc:'Fatal if inhaled'},{code:'H340',desc:'May cause genetic defects'},{code:'H341',desc:'Suspected of causing genetic defects'},{code:'H350',desc:'May cause cancer'},{code:'H351',desc:'Suspected of causing cancer'},{code:'H360',desc:'May damage fertility or the unborn child'},{code:'H362',desc:'May cause harm to breast-fed children'},{code:'H370',desc:'Causes damage to organs'},{code:'H372',desc:'Causes damage to organs through prolonged or repeated exposure'}];
+// H_LIB lists GB CLP-recognised hazard statement codes only. H316 and
+// H401 are deliberately absent (not GB-adopted); see
+// LabelRenderer.GB_UNSUPPORTED_CODES for codes that are explicitly
+// blocked, with a dedicated message, rather than just silently
+// unrecognised. Kept in sync with label-render.js's own H_LIB copy --
+// both must change together.
+const H_LIB=[{code:'H225',desc:'Highly flammable liquid and vapour'},{code:'H226',desc:'Flammable liquid and vapour'},{code:'H228',desc:'Flammable solid'},{code:'H301',desc:'Toxic if swallowed'},{code:'H302',desc:'Harmful if swallowed'},{code:'H304',desc:'May be fatal if swallowed and enters airways'},{code:'H311',desc:'Toxic in contact with skin'},{code:'H312',desc:'Harmful in contact with skin'},{code:'H314',desc:'Causes severe skin burns and eye damage'},{code:'H315',desc:'Causes skin irritation'},{code:'H317',desc:'May cause an allergic skin reaction'},{code:'H318',desc:'Causes serious eye damage'},{code:'H319',desc:'Causes serious eye irritation'},{code:'H331',desc:'Toxic if inhaled'},{code:'H332',desc:'Harmful if inhaled'},{code:'H334',desc:'May cause allergy or asthma symptoms if inhaled'},{code:'H335',desc:'May cause respiratory irritation'},{code:'H336',desc:'May cause drowsiness or dizziness'},{code:'H361',desc:'Suspected of damaging fertility or the unborn child'},{code:'H371',desc:'May cause damage to organs'},{code:'H373',desc:'May cause damage to organs through prolonged or repeated exposure'},{code:'H400',desc:'Very toxic to aquatic life'},{code:'H410',desc:'Very toxic to aquatic life with long lasting effects'},{code:'H411',desc:'Toxic to aquatic life with long lasting effects'},{code:'H412',desc:'Harmful to aquatic life with long lasting effects'},{code:'H413',desc:'May cause long lasting harmful effects to aquatic life'},{code:'EUH066',desc:'Repeated exposure may cause skin dryness or cracking'},{code:'EUH208',desc:'Contains sensitiser — may produce an allergic reaction'},{code:'EUH071',desc:'Corrosive to the respiratory tract'},{code:'EUH210',desc:'Safety data sheet available on request'},{code:'H200',desc:'Unstable explosive'},{code:'H201',desc:'Explosive; mass explosion hazard'},{code:'H202',desc:'Explosive; severe projection hazard'},{code:'H203',desc:'Explosive; fire, blast or projection hazard'},{code:'H204',desc:'Fire or projection hazard'},{code:'H205',desc:'May mass explode in fire'},{code:'H223',desc:'Flammable aerosol'},{code:'H224',desc:'Extremely flammable liquid and vapour'},{code:'H240',desc:'Heating may cause an explosion'},{code:'H241',desc:'Heating may cause a fire or explosion'},{code:'H242',desc:'Heating may cause a fire'},{code:'H250',desc:'Catches fire spontaneously if exposed to air'},{code:'H251',desc:'Self-heating; may catch fire'},{code:'H252',desc:'Self-heating in large quantities; may catch fire'},{code:'H260',desc:'In contact with water releases flammable gases which may ignite spontaneously'},{code:'H261',desc:'In contact with water releases flammable gas'},{code:'H270',desc:'May cause or intensify fire; oxidiser'},{code:'H271',desc:'May cause fire or explosion; strong oxidiser'},{code:'H272',desc:'May intensify fire; oxidiser'},{code:'H280',desc:'Contains gas under pressure; may explode if heated'},{code:'H281',desc:'Contains refrigerated gas; may cause cryogenic burns or injury'},{code:'H282',desc:'Extremely flammable chemical under pressure: may explode if heated'},{code:'H283',desc:'Flammable chemical under pressure: may explode if heated'},{code:'H284',desc:'Chemical under pressure: may explode if heated'},{code:'H290',desc:'May be corrosive to metals'},{code:'H300',desc:'Fatal if swallowed'},{code:'H310',desc:'Fatal in contact with skin'},{code:'H330',desc:'Fatal if inhaled'},{code:'H340',desc:'May cause genetic defects'},{code:'H341',desc:'Suspected of causing genetic defects'},{code:'H350',desc:'May cause cancer'},{code:'H351',desc:'Suspected of causing cancer'},{code:'H360',desc:'May damage fertility or the unborn child'},{code:'H362',desc:'May cause harm to breast-fed children'},{code:'H370',desc:'Causes damage to organs'},{code:'H372',desc:'Causes damage to organs through prolonged or repeated exposure'}];
 const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product container or label at hand'},{code:'P102',desc:'Keep out of reach of children'},{code:'P103',desc:'Read label before use'},{code:'P210',desc:'Keep away from heat and ignition sources. No smoking'},{code:'P233',desc:'Keep container tightly closed'},{code:'P260',desc:'Do not breathe vapours or dust'},{code:'P261',desc:'Avoid breathing vapours and dust'},{code:'P271',desc:'Use only outdoors or in a well-ventilated area'},{code:'P273',desc:'Avoid release to the environment'},{code:'P301+P310',desc:'IF SWALLOWED: immediately call a POISON CENTRE or doctor'},{code:'P301+P312',desc:'IF SWALLOWED: call a POISON CENTRE or doctor if unwell'},{code:'P302+P352',desc:'IF ON SKIN: wash with plenty of water'},{code:'P304+P340',desc:'IF INHALED: remove to fresh air and keep comfortable for breathing'},{code:'P305+P351+P338',desc:'IF IN EYES: rinse cautiously with water for several minutes'},{code:'P312',desc:'Call a POISON CENTRE or doctor if you feel unwell'},{code:'P313',desc:'Get medical advice/attention'},{code:'P314',desc:'Get medical advice if you feel unwell'},{code:'P321',desc:'Specific treatment: see label'},{code:'P330',desc:'Rinse mouth'},{code:'P331',desc:'Do NOT induce vomiting'},{code:'P332+P313',desc:'If skin irritation occurs: get medical advice/attention'},{code:'P333+P313',desc:'If skin irritation or rash occurs: get medical advice'},{code:'P337+P313',desc:'If eye irritation persists: get medical advice'},{code:'P370+P378',desc:'In case of fire: use appropriate media for extinction'},{code:'P391',desc:'Collect spillage'},{code:'P403+P233',desc:'Store in a well-ventilated place. Keep container tightly closed'},{code:'P211',desc:'Do not spray on an open flame or other ignition source'},{code:'P501',desc:'Dispose of contents and container in accordance with local regulations'},
 // P280 (verified against the retained GB-CLP Regulation (EC) No 1272/2008,
 // Annex IV, Table 6.2, legislation.gov.uk, current in-force UK text) is a
@@ -3337,7 +3343,23 @@ function extractSDS(){
   // matches P_LIB's/​_pExclude's no-space "P302+P352" convention exactly —
   // otherwise each half is captured as a separate, unrecognised standalone
   // code (e.g. orphan "P302"/"P352"), which incorrectly blocked Step 3.
-  const _pAllCodes=[...new Set((text.match(/\bP\d{3}(?:\s*\+\s*P\d{3})*\b/g)||[]).map(c=>c.replace(/\s*\+\s*/g,'+')))];
+  // Combined-P-code notation fix: the official/canonical combined P-code
+  // designation is represented internally with "+" (e.g. "P302+P352",
+  // matching P_LIB/_pExclude) -- that has not changed. Some supplier SDS
+  // documents and PDF text layers instead print combined codes using an
+  // abbreviated "/"-separated shorthand (e.g. "P302/352", "P333/313"),
+  // which Smart Paste must tolerate and canonicalise to the official "+"
+  // form, not treat as a second valid notation in its own right. The
+  // previous regex only matched the "+" form, so a "/"-joined code's
+  // trailing segments (printed without their own "P" prefix, e.g. the
+  // "352" in "P302/352") were dropped entirely, leaving an orphan leading
+  // code ("P302") that can never match P_LIB's combined "P302+P352" entry
+  // and was wrongly flagged as unrecognised, blocking Step 3/Download.
+  // Fix: also match "/"-joined trailing groups, then rebuild the token from
+  // every 3-digit group found (prefixing "P" onto each) so both "P302/352"
+  // and "P302+P352" normalise to the same official "P302+P352" internal
+  // form.
+  const _pAllCodes=[...new Set((text.match(/\bP\d{3}(?:\s*[\/+]\s*P?\d{3})*\b/g)||[]).map(c=>(c.match(/\d{3}/g)||[]).map(n=>'P'+n).join('+')))];
   const _pExclude=[
     'P272',            // Contaminated work clothing — occupational only
     'P264',            // Wash hands after handling — workplace handling context
@@ -3524,6 +3546,66 @@ const BUILDER_STEP_LABELS=['Label','Product','Hazards','Business','Download'];
 let approvedBuilderStep=1;
 const APPROVED_TO_LEGACY={1:1,2:2,3:3,4:4,5:5};
 function escapeBuilderText(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+// ── STRUCTURED FAILURE-REASON MESSAGES ────────────────────────────────────
+// Single source of truth for the two distinct "this code is a problem"
+// messages, shared by the Step-3 Smart Paste gate below and the
+// download-blocking banner in updateLabel() -- so a maker sees the exact
+// same wording (and the exact same GB_UNSUPPORTED_CODES vs. generic
+// distinction) wherever CLPeasy tells them about it, and the two call
+// sites can never drift apart into two different messages for the same
+// underlying problem. Neither message infers anything from a size/fit
+// signal -- both are only ever built from the actual affected code list.
+//
+// A code in LabelRenderer.GB_UNSUPPORTED_CODES (H316, H401, H402) has been
+// CONFIRMED, against a primary GB source, to be a UN GHS statement the
+// ACTIVE regulatory profile (currently Great Britain only) does not
+// support -- this is a maker/supplier SDS problem, not something CLPeasy
+// got wrong, so the message says so specifically and never implies a
+// bigger label would help, and never implies the code's origin/the
+// product's country of manufacture determines classification -- only the
+// target sales market does. Any other code absent from H_LIB/P_LIB could
+// be a typo, malformed paste, or a genuinely unhandled code CLPeasy hasn't
+// been taught yet -- CLPeasy makes no claim about its regulatory status
+// either way.
+// `escapeFn` lets a caller opt into markup-safe output at the point where
+// it actually inserts this text as HTML (e.g. via innerHTML) -- default is
+// identity (raw), which is correct for a plain-text consumer like alert().
+// Codes reaching these functions are not guaranteed to be library-known
+// strings (that is the whole point of "unrecognised"), so they are
+// untrusted text and must be escaped before any HTML-boundary insertion;
+// callers that only ever display them as plain text (alert()) must NOT
+// pass an escapeFn, or the user would see literal "&amp;" etc. instead of
+// the real character.
+function clpUnsupportedCodesMessage(codes, escapeFn){
+  const esc=escapeFn||(v=>v);
+  const plural=codes.length>1, codeWord=plural?'codes':'code', thisThese2=plural?'These':'This', areIs=plural?'are':'is', theyIt=plural?'They':'It', thisThese=plural?'these':'this';
+  return {
+    heading:thisThese2+' '+codeWord+' '+areIs+' not supported under the selected Great Britain rules',
+    body:'The following '+codeWord+' '+areIs+' not part of the current Great Britain CLP hazard-statement system: '+codes.map(esc).join(', ')+'. '+theyIt+' may be recognised under another national or international classification system. CLPeasy currently supports products placed on the market in Great Britain (England, Scotland and Wales). Please ask your supplier for the current Great Britain-market SDS or classification information applicable to your final formulation and concentration. CLPeasy has not added, removed, translated or substituted '+thisThese+' '+codeWord+'.'
+  };
+}
+function clpUnrecognisedCodesMessage(codes, escapeFn){
+  const esc=escapeFn||(v=>v);
+  const plural=codes.length>1, codeWord=plural?'codes':'code';
+  return {
+    heading:'CLP code not recognised',
+    body:'CLPeasy did not recognise the following '+codeWord+': '+codes.map(esc).join(', ')+'. Check that the SDS text was copied correctly and that you are using the current Great Britain-market SDS or classification documentation.'
+  };
+}
+// Combines the two message types for a MIXED input (some codes confirmed
+// unsupported under the active profile, others just generically
+// unrecognised) -- returns an array of {heading,body} parts, regulatory
+// issue always first, so a caller can render/report BOTH groups rather
+// than letting the unsupported-code priority hide the generic-unknown
+// codes (that was a real bug: a maker with one confirmed-unsupported code
+// and one genuinely unrelated unrecognised code must be told about both,
+// not just whichever one this app currently treats as "more important").
+function clpCombinedCodeBlockMessage(unsupportedCodes, genericCodes, escapeFn){
+  const parts=[];
+  if(unsupportedCodes && unsupportedCodes.length) parts.push(clpUnsupportedCodesMessage(unsupportedCodes, escapeFn));
+  if(genericCodes && genericCodes.length) parts.push(clpUnrecognisedCodesMessage(genericCodes, escapeFn));
+  return parts;
+}
 function canLeaveApprovedBuilderStep(step){
   if(step===1){
     readForm();
@@ -3567,7 +3649,22 @@ function canLeaveApprovedBuilderStep(step){
     const hCodes=(S.hStatements||'').split(',').map(v=>v.trim()).filter(Boolean);
     const pCodes=(S.pStatements||'').split(',').map(v=>v.trim()).filter(Boolean);
     const unknown=[...hCodes.filter(code=>!H_LIB.some(x=>x.code===code)),...pCodes.filter(code=>!P_LIB.some(x=>x.code===code))];
-    if(unknown.length){alert('Please resolve the unrecognised hazard or precautionary codes before continuing: '+unknown.join(', '));return false;}
+    if(unknown.length){
+      // Structured failure reason: a CONFIRMED code unsupported under the
+      // active regulatory profile (LabelRenderer.GB_UNSUPPORTED_CODES) gets
+      // the specific "not supported under the selected Great Britain
+      // rules" message; any other unrecognised code gets the separate
+      // generic message -- never inferred from the fact that Step 3 is
+      // blocked, always from the actual code list. When BOTH kinds are
+      // present at once, both messages are shown together (regulatory
+      // issue first) -- the confirmed-unsupported codes must never hide
+      // the generic-unrecognised codes from the maker, or vice versa.
+      const gbUnsupported=unknown.filter(code=>LabelRenderer.GB_UNSUPPORTED_CODES.includes(code));
+      const genericUnknown=unknown.filter(code=>!LabelRenderer.GB_UNSUPPORTED_CODES.includes(code));
+      const parts=clpCombinedCodeBlockMessage(gbUnsupported, genericUnknown);
+      alert(parts.map(p=>p.heading+'\n\n'+p.body).join('\n\n'));
+      return false;
+    }
     // P280 is present in P_LIB by code (so the generic "unknown" check above
     // doesn't catch it), but it's a selectable statement -- it must not be
     // allowed through Step 3 without at least one protection item chosen
@@ -4055,6 +4152,21 @@ function buildSVG(forExport=false){
   window._sigFSBounds=result.metrics.fsBounds.signal;
   window._hazardFSBounds=result.metrics.fsBounds.hazard;
   window._unrecognizedCodes=result.metrics.unrecognizedCodes;
+  // Structured failure fields: the renderer's own determination of WHY
+  // this render is blocked, never re-derived here. blockReason/
+  // blockReasonCodes are the single leading-reason summary; unsupported-
+  // Codes/unrecognizedCodesGeneric are each the FULL, independent code
+  // list for their group (so a mixed unsupported+generic input is never
+  // collapsed down to just the leading reason's codes). Surfaced on
+  // window.* the same way every other per-render flag already is, so
+  // Builder preview and every export path read the exact same reason (and
+  // full code groups) the renderer itself used to choose the overlay it
+  // drew.
+  window._blockReason=result.blockReason;
+  window._blockReasonCodes=result.blockReasonCodes;
+  window._unsupportedCodes=result.unsupportedCodes;
+  window._unrecognizedCodesGeneric=result.unrecognizedCodesGeneric;
+  window._contentOverflow=result.contentOverflow;
   window._labelLegibilityWarn=result.metrics.overflow;
   window._hazardYSlack=result.metrics.hazardYSlack;
   window._footerLegibilityClipped=result.metrics.footerClipped;
@@ -4154,6 +4266,17 @@ function updateLabel(){
   // it the same way as clipped content -- block download and explain,
   // rather than silently print an internal code or silently drop it.
   const _hasUnrecognizedCodes = window._unrecognizedCodes && window._unrecognizedCodes.length>0;
+  // Structured failure fields: read the renderer's own FULL, independent
+  // code groups straight off window.* (set by buildSVG() above from
+  // result.unsupportedCodes/result.unrecognizedCodesGeneric) -- never
+  // re-derived or filtered down to just the leading reason's codes, so a
+  // mixed unsupported+generic input keeps both groups intact here too.
+  // Falls back to deriving from window._unrecognizedCodes only for a
+  // caller of this block that hasn't gone through buildSVG() this cycle.
+  const _gbUnsupportedCodesFound = window._unsupportedCodes
+    || (window._unrecognizedCodes||[]).filter(code=>LabelRenderer.GB_UNSUPPORTED_CODES.includes(code));
+  const _genericUnrecognizedCodesFound = window._unrecognizedCodesGeneric
+    || (window._unrecognizedCodes||[]).filter(code=>!LabelRenderer.GB_UNSUPPORTED_CODES.includes(code));
   // Custom-size-below-CLPeasy's-supported-minimum fix: a custom size under
   // 52mm must block export the same way clipped/unrecognised content does
   // -- folded into the one existing block-download condition rather than a
@@ -4190,8 +4313,19 @@ function updateLabel(){
   // Wording (updated 3 Aug 2026, round 2 — per Michaela's CLP-labelling-focused
   // request): name the CLP labelling requirement specifically rather than
   // "required information" generically.
-  const _blockHeading = _hasUnrecognizedCodes
-    ? '⚠️ Download unavailable — unrecognised hazard/precautionary code'
+  // Structured failure reason: a confirmed GB-unsupported code gets its own
+  // specific heading/body (never "unrecognised", never implies a bigger
+  // label would help); a generic unrecognised code keeps its own separate
+  // message. When BOTH are present, clpCombinedCodeBlockMessage() returns
+  // both parts (regulatory issue first) -- neither group is ever hidden by
+  // the other here. Built from the same clpUnsupportedCodesMessage()/
+  // clpUnrecognisedCodesMessage() helpers as the Step-3 Smart Paste gate
+  // above, so the wording a maker sees here always matches what they saw
+  // (or would see) at Step 3, and matches the reason the renderer itself
+  // used for the SVG overlay on the label preview.
+  const _codeBlockParts = clpCombinedCodeBlockMessage(_gbUnsupportedCodesFound, _genericUnrecognizedCodesFound, escapeBuilderText);
+  const _blockHeading = _codeBlockParts.length
+    ? '⚠️ '+_codeBlockParts.map(p=>p.heading).join(' / ')
     : _isCustomSizeTooSmall
     ? '⚠️ Download unavailable — custom size below CLPeasy\'s supported minimum'
     : '⚠️ Download unavailable — label size too small for CLP labelling requirements';
@@ -4201,8 +4335,17 @@ function updateLabel(){
     window._productTypeTooSmall && 'product type',
     window._signalWordTooSmall && 'signal word',
   ].filter(Boolean).join(', ');
-  const _blockBody = _hasUnrecognizedCodes
-    ? 'CLPeasy doesn\'t recognise the code'+(window._unrecognizedCodes.length>1?'s':'')+' <strong>'+window._unrecognizedCodes.join(', ')+'</strong> and will not print it directly on your label, since that would show an internal code rather than the required statement text.<br><br>Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
+  // Each part keeps its own follow-up advice: a confirmed-unsupported code
+  // is never invited to be "added" (that would be wrong -- CLPeasy doesn't
+  // add codes the active regulatory profile doesn't support), while a
+  // genuinely unrecognised code still offers the double-check/contact-
+  // support path it always has.
+  const _blockBody = _codeBlockParts.length
+    ? _gbUnsupportedCodesFound.length && _genericUnrecognizedCodesFound.length
+      ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br>'+clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+' Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than print a code CLPeasy could not safely include on your label.</strong>'
+      : _gbUnsupportedCodesFound.length
+      ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br><strong>CLPeasy has blocked the download rather than print a code that is not part of the current Great Britain CLP hazard-statement system.</strong>'
+      : clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+'<br><br>Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
     : _isCustomSizeTooSmall
     ? getCustomSizeMinMsg()+'<br><br>To create a downloadable label, return to Step 1 and '+(S.shape==='rectangle'?'set the long side to '+LabelRenderer.CUSTOM_RECT_LONG_MIN_MM+'mm or larger and the short side to '+LabelRenderer.CUSTOM_RECT_SHORT_MIN_MM+'mm or larger':'increase the custom size to '+LabelRenderer.CUSTOM_SIZE_MIN_MM+'mm or larger')+'.'
     : window._footerLegibilityClipped
