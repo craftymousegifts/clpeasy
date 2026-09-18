@@ -238,7 +238,7 @@ P501, Dispose of contents and container in accordance with local regulations.`;
   // the generic "FULL CONTENT DOES NOT FIT / Select a larger size" overlay --
   // no size fixes a regulatory code problem. It must show the specific
   // "LABEL DATA NEEDS REVIEW" overlay (Correction 2, 2026-09: now reading
-  // "<code> is not supported under CLPeasy's Great Britain rules.")
+  // "<code> needs supplier confirmation for a Great Britain CLP label.")
   // instead, so the user isn't misdirected into resizing a label that a
   // resize can never fix. See tests/renderer-block-reason-messaging.js for
   // the dedicated regression suite covering this distinction in full.
@@ -246,7 +246,7 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     const r = renderDirect('H316');
     results.failClosedRendering.h316Direct = { unrecognizedCodes: r.unrecognizedCodes, containsBlockOverlay: r.svg.includes('LABEL DATA NEEDS REVIEW'), containsWording: svgContainsWording(r.svg, H316_WORDING) };
     assert(r.unrecognizedCodes.includes('H316'), `H316 fed directly to the renderer must appear in unrecognizedCodes, got: ${JSON.stringify(r.unrecognizedCodes)}`);
-    assert(r.svg.includes('LABEL DATA NEEDS REVIEW') && flattenSvgText(r.svg).includes('H316') && flattenSvgText(r.svg).includes('not supported under CLPeasy\'s Great Britain rules'), 'H316 fed directly to the renderer must produce the specific "LABEL DATA NEEDS REVIEW" overlay saying H316 is not supported under GB rules');
+    assert(r.svg.includes('LABEL DATA NEEDS REVIEW') && flattenSvgText(r.svg).includes('H316') && flattenSvgText(r.svg).includes('needs supplier confirmation for a Great Britain CLP label'), 'H316 fed directly to the renderer must produce the supplier-confirmation review overlay');
     assert(!r.svg.includes('FULL CONTENT DOES NOT FIT') && !r.svg.includes('Select a larger size'), 'H316 must NOT show the misleading sizing overlay -- no size fixes a regulatory code problem');
     assert(!svgContainsWording(r.svg, H316_WORDING), `H316's statement wording ("${H316_WORDING}") must never appear in the rendered SVG`);
   }
@@ -254,7 +254,7 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     const r = renderDirect('H401');
     results.failClosedRendering.h401Direct = { unrecognizedCodes: r.unrecognizedCodes, containsBlockOverlay: r.svg.includes('LABEL DATA NEEDS REVIEW'), containsWording: svgContainsWording(r.svg, H401_WORDING) };
     assert(r.unrecognizedCodes.includes('H401'), `H401 fed directly to the renderer must appear in unrecognizedCodes, got: ${JSON.stringify(r.unrecognizedCodes)}`);
-    assert(r.svg.includes('LABEL DATA NEEDS REVIEW') && flattenSvgText(r.svg).includes('H401') && flattenSvgText(r.svg).includes('not supported under CLPeasy\'s Great Britain rules'), 'H401 fed directly to the renderer must produce the specific "LABEL DATA NEEDS REVIEW" overlay saying H401 is not supported under GB rules');
+    assert(r.svg.includes('LABEL DATA NEEDS REVIEW') && flattenSvgText(r.svg).includes('H401') && flattenSvgText(r.svg).includes('needs supplier confirmation for a Great Britain CLP label'), 'H401 fed directly to the renderer must produce the supplier-confirmation review overlay');
     assert(!r.svg.includes('FULL CONTENT DOES NOT FIT') && !r.svg.includes('Select a larger size'), 'H401 must NOT show the misleading sizing overlay -- no size fixes a regulatory code problem');
     assert(!svgContainsWording(r.svg, H401_WORDING), `H401's statement wording ("${H401_WORDING}") must never appear in the rendered SVG`);
   }
@@ -265,7 +265,7 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     const r = renderFromSimulatedSavedLabel('H316');
     results.failClosedRendering.h316SimulatedSavedLabel = { unrecognizedCodes: r.unrecognizedCodes, containsBlockOverlay: r.svg.includes('LABEL DATA NEEDS REVIEW') };
     assert(r.unrecognizedCodes.includes('H316'), 'a simulated saved label containing H316 must be caught by the renderer\'s unrecognised-code check');
-    assert(r.svg.includes('LABEL DATA NEEDS REVIEW') && flattenSvgText(r.svg).includes('H316') && flattenSvgText(r.svg).includes('not supported under CLPeasy\'s Great Britain rules'), 'a simulated saved label containing H316 must fail closed on reopen with the specific unsupported-code overlay');
+    assert(r.svg.includes('LABEL DATA NEEDS REVIEW') && flattenSvgText(r.svg).includes('H316') && flattenSvgText(r.svg).includes('needs supplier confirmation for a Great Britain CLP label'), 'a simulated saved label containing H316 must fail closed on reopen with the supplier-confirmation overlay');
     assert(!r.svg.includes('FULL CONTENT DOES NOT FIT') && !r.svg.includes('Select a larger size'), 'a simulated saved label containing H316 must NOT show the misleading sizing overlay on reopen');
     assert(!svgContainsWording(r.svg, H316_WORDING), 'a simulated saved label containing H316 must never print its wording');
   }
@@ -273,7 +273,7 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     const r = renderFromSimulatedSavedLabel('H401');
     results.failClosedRendering.h401SimulatedSavedLabel = { unrecognizedCodes: r.unrecognizedCodes, containsBlockOverlay: r.svg.includes('LABEL DATA NEEDS REVIEW') };
     assert(r.unrecognizedCodes.includes('H401'), 'a simulated saved label containing H401 must be caught by the renderer\'s unrecognised-code check');
-    assert(r.svg.includes('LABEL DATA NEEDS REVIEW') && flattenSvgText(r.svg).includes('H401') && flattenSvgText(r.svg).includes('not supported under CLPeasy\'s Great Britain rules'), 'a simulated saved label containing H401 must fail closed on reopen with the specific unsupported-code overlay');
+    assert(r.svg.includes('LABEL DATA NEEDS REVIEW') && flattenSvgText(r.svg).includes('H401') && flattenSvgText(r.svg).includes('needs supplier confirmation for a Great Britain CLP label'), 'a simulated saved label containing H401 must fail closed on reopen with the supplier-confirmation overlay');
     assert(!r.svg.includes('FULL CONTENT DOES NOT FIT') && !r.svg.includes('Select a larger size'), 'a simulated saved label containing H401 must NOT show the misleading sizing overlay on reopen');
     assert(!svgContainsWording(r.svg, H401_WORDING), 'a simulated saved label containing H401 must never print its wording');
   }

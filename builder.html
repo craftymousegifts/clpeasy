@@ -601,6 +601,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .p280-confirm{width:100%;background:var(--teal);color:white;border:none;padding:10px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:14px;margin-bottom:8px;}
 .p280-confirm:hover{background:var(--teal-dark);}
 
+/* Code-review explanation shown only when a CLP code blocks the label. */
+.clp-code-help-btn{display:none;width:100%;margin:10px 0 2px;padding:10px 14px;border:1.5px solid #DC2626;border-radius:9px;background:#FFF7F7;color:#991B1B;font:700 13px 'DM Sans',sans-serif;cursor:pointer;}
+.clp-code-help-btn:hover{background:#FEE2E2;}
+.clp-code-help-copy{font-size:13px;color:var(--text);line-height:1.65;}
+.clp-code-help-copy p{margin:0 0 12px;}
+.clp-code-help-copy p:last-child{margin-bottom:0;}
+
 /* SHARED TRUST FOOTER — same across Dashboard, Create Label, My Labels, Account */
 .shell-trust{display:grid;grid-template-columns:1.05fr 1fr 0.95fr 1fr;gap:0;padding:0;border-top:3px solid var(--teal);background:#fff;border:1px solid var(--border);border-radius:16px;margin:24px 0;overflow:hidden;position:relative;z-index:1;}
 .shell-trust-item{display:flex;align-items:center;gap:10px;padding:26px 15px;border-left:1px solid var(--border);}
@@ -700,6 +707,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div style="font-size:13px;color:#166534;line-height:1.5;">Before emailing, check our <a href="#" onclick="closeSupport();openHelp();return false;" style="color:#166534;font-weight:700;text-decoration:underline;cursor:pointer;">Help guide</a> — most questions are answered there.</div>
   </div>
   <button onclick="closeSupport()" style="width:100%;padding:13px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">Got it</button>
+</div>
+
+<!-- CLP CODE REVIEW EXPLANATION -->
+<div class="fdel-overlay" id="clp-code-help-overlay" onclick="if(event.target===this)closeClpCodeHelp()">
+  <div class="fdel-box" role="dialog" aria-modal="true" aria-labelledby="clp-code-help-title" style="max-width:520px;max-height:85vh;overflow:auto;">
+    <div class="fdel-title" id="clp-code-help-title">Why has CLPeasy blocked this label?</div>
+    <div class="clp-code-help-copy" id="clp-code-help-copy"></div>
+    <button type="button" class="p280-confirm" onclick="closeClpCodeHelp()">Close explanation</button>
+  </div>
 </div>
 
 <!-- WIZARD OVERLAY + PANEL -->
@@ -1195,6 +1211,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
   <div class="preview-canvas-area" id="preview-canvas-area"><div id="label-svg-container"></div></div>
   <div class="preview-footer">
+    <button type="button" id="clp-code-help-btn" class="clp-code-help-btn" onclick="openClpCodeHelp()">Why is this label blocked?</button>
     <div class="preview-size-info" id="preview-size-info">Print size: 35 × 35mm</div>
     <div class="dl-row" id="preview-dl-row" style="display:none;">
       <button class="btn-dl" id="btn-png-preview" onclick="downloadPNG()" style="opacity:0.4;pointer-events:none;">⬇ PNG</button>
@@ -1825,6 +1842,40 @@ function closeSupport(){
   document.getElementById('support-modal').style.display='none';
   document.body.style.overflow='';
 }
+
+let _clpCodeHelpReturnFocus=null;
+function openClpCodeHelp(){
+  const unsupported=(window._unsupportedCodes||[]).map(String);
+  const generic=(window._unrecognizedCodesGeneric||[]).map(String);
+  if(!unsupported.length&&!generic.length)return;
+  const copy=document.getElementById('clp-code-help-copy');
+  const overlay=document.getElementById('clp-code-help-overlay');
+  if(!copy||!overlay)return;
+  const u=unsupported.map(escapeBuilderText).join(', ');
+  const g=generic.map(escapeBuilderText).join(', ');
+  const paragraphs=[];
+  if(unsupported.length){
+    paragraphs.push('Your supplier\'s SDS contains <strong>'+u+'</strong>. CLPeasy does not recognise '+(unsupported.length>1?'these codes as hazard statements':'this code as a hazard statement')+' in the current Great Britain CLP information checked by the service. '+(unsupported.length>1?'They may':'It may')+' come from another national or international classification system, or the supplier may need to clarify the Great Britain classification.');
+  }
+  if(generic.length){
+    paragraphs.push('CLPeasy could not identify <strong>'+g+'</strong>. This may be a copying error, a code that is not yet recognised by the service, or information from a different classification system.');
+  }
+  paragraphs.push('CLPeasy cannot determine the correct replacement, remove the '+(unsupported.length+generic.length>1?'codes':'code')+', or substitute a different classification on the supplier\'s behalf. The label has therefore been blocked to avoid creating a label that may be incomplete or incorrect.');
+  paragraphs.push('Check that you copied only Section 2.2 from the SDS for the correct product and concentration. If the '+(unsupported.length+generic.length>1?'codes are':'code is')+' shown there, ask your supplier for the current Great Britain-market SDS or written Great Britain CLP classification information.');
+  copy.innerHTML=paragraphs.map(p=>'<p>'+p+'</p>').join('');
+  _clpCodeHelpReturnFocus=document.activeElement;
+  overlay.classList.add('show');
+  document.body.style.overflow='hidden';
+  overlay.querySelector('button')?.focus();
+}
+function closeClpCodeHelp(){
+  const overlay=document.getElementById('clp-code-help-overlay');
+  if(overlay)overlay.classList.remove('show');
+  document.body.style.overflow='';
+  if(_clpCodeHelpReturnFocus&&typeof _clpCodeHelpReturnFocus.focus==='function')_clpCodeHelpReturnFocus.focus();
+  _clpCodeHelpReturnFocus=null;
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('clp-code-help-overlay')?.classList.contains('show'))closeClpCodeHelp();});
 
 // ── HELP PANEL ────────────────────────────────────────────────
 function openHelp(){
@@ -3629,8 +3680,8 @@ function clpUnsupportedCodesMessage(codes, escapeFn){
   const esc=escapeFn||(v=>v);
   const plural=codes.length>1, codeWord=plural?'codes':'code', thisThese2=plural?'These':'This', areIs=plural?'are':'is', theyIt=plural?'They':'It', thisThese=plural?'these':'this';
   return {
-    heading:thisThese2+' '+codeWord+' '+areIs+' not supported under the selected Great Britain rules',
-    body:'The following '+codeWord+' '+areIs+' not part of the current Great Britain CLP hazard-statement system: '+codes.map(esc).join(', ')+'. '+theyIt+' may be recognised under another national or international classification system. CLPeasy currently supports products placed on the market in Great Britain (England, Scotland and Wales). Please ask your supplier for the current Great Britain-market SDS or classification information applicable to your final formulation and concentration. CLPeasy has not added, removed, translated or substituted '+thisThese+' '+codeWord+'.'
+    heading:thisThese2+' '+codeWord+' need'+(plural?'':'s')+' supplier confirmation for a Great Britain CLP label',
+    body:'The following '+codeWord+' appear'+(plural?'':'s')+' in your supplier SDS: '+codes.map(esc).join(', ')+'. CLPeasy does not recognise '+(plural?'them as hazard statements':'it as a hazard statement')+' in the current Great Britain CLP information checked by the service. '+theyIt+' may be recognised under another national or international classification system, or the supplier may need to clarify the Great Britain classification. CLPeasy currently supports products placed on the market in Great Britain (England, Scotland and Wales). Please ask your supplier for the current Great Britain-market SDS or classification information applicable to your final formulation and concentration. CLPeasy has not added, removed, translated or substituted '+thisThese+' '+codeWord+'.'
   };
 }
 function clpUnrecognisedCodesMessage(codes, escapeFn){
@@ -4371,6 +4422,8 @@ function updateLabel(){
     || (window._unrecognizedCodes||[]).filter(code=>LabelRenderer.GB_UNSUPPORTED_CODES.includes(code));
   const _genericUnrecognizedCodesFound = window._unrecognizedCodesGeneric
     || (window._unrecognizedCodes||[]).filter(code=>!LabelRenderer.GB_UNSUPPORTED_CODES.includes(code));
+  const _codeHelpBtn=document.getElementById('clp-code-help-btn');
+  if(_codeHelpBtn)_codeHelpBtn.style.display=(_gbUnsupportedCodesFound.length||_genericUnrecognizedCodesFound.length)?'block':'none';
   // Custom-size-below-CLPeasy's-supported-minimum fix: a custom size under
   // 52mm must block export the same way clipped/unrecognised content does
   // -- folded into the one existing block-download condition rather than a
@@ -4438,7 +4491,7 @@ function updateLabel(){
     ? _gbUnsupportedCodesFound.length && _genericUnrecognizedCodesFound.length
       ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br>'+clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+' Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than print a code CLPeasy could not safely include on your label.</strong>'
       : _gbUnsupportedCodesFound.length
-      ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br><strong>CLPeasy has blocked the download rather than print a code that is not part of the current Great Britain CLP hazard-statement system.</strong>'
+      ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br><strong>CLPeasy has blocked the download rather than remove, replace or print a code it cannot safely resolve for a Great Britain CLP label.</strong>'
       : clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+'<br><br>Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
     : _isCustomSizeTooSmall
     ? getCustomSizeMinMsg()+'<br><br>To create a downloadable label, return to Step 1 and '+(S.shape==='rectangle'?'set the long side to '+LabelRenderer.CUSTOM_RECT_LONG_MIN_MM+'mm or larger and the short side to '+LabelRenderer.CUSTOM_RECT_SHORT_MIN_MM+'mm or larger':'increase the custom size to '+LabelRenderer.CUSTOM_SIZE_MIN_MM+'mm or larger')+'.'

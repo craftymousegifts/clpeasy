@@ -12,7 +12,7 @@
 //      fits:false, plus the exact affected code list (blockReasonCodes).
 //   2. A confirmed-unsupported code (LabelRenderer.GB_UNSUPPORTED_CODES --
 //      H316, H401, H402) blocks Smart Paste/Step 3 with the "not supported
-//      under the selected Great Britain rules" message, and fails closed
+//      supplier-confirmation message for a Great Britain CLP label, and fails closed
 //      in the renderer with "LABEL DATA NEEDS REVIEW / Unsupported GB CLP
 //      code: ..." -- never the sizing message.
 //   3. Any other unrecognised code (e.g. a typo/malformed code, H999) gets
@@ -197,7 +197,7 @@ async function run(){
     assert.strictEqual(r.blockReason, 'unsupported-gb-clp-code', `${code} alone must report blockReason:'unsupported-gb-clp-code', got: ${r.blockReason}`);
     assert.deepStrictEqual(r.blockReasonCodes, [code], `${code} alone: blockReasonCodes must be exactly [${code}], got: ${JSON.stringify(r.blockReasonCodes)}`);
     assert(r.svg.includes('LABEL DATA NEEDS REVIEW'), `${code}: renderer overlay must show "LABEL DATA NEEDS REVIEW"`);
-    assert(flattenSvgText(r.svg).includes(code) && flattenSvgText(r.svg).includes('not supported under CLPeasy\'s Great Britain rules'), `${code}: renderer overlay must say it is not supported under CLPeasy's Great Britain rules`);
+    assert(flattenSvgText(r.svg).includes(code) && flattenSvgText(r.svg).includes('needs supplier confirmation for a Great Britain CLP label'), `${code}: renderer overlay must request supplier confirmation without presenting CLPeasy as the regulator`);
     assert(!r.svg.includes('FULL CONTENT DOES NOT FIT') && !r.svg.includes('Select a larger size'), `${code}: must NOT show the misleading sizing overlay`);
   }
 
@@ -245,7 +245,7 @@ regulations.`;
     results.nagChampa = { extracted:r, gate };
     assert(r.pSelected.includes('P302+P352') && r.pSelected.includes('P333+P313'), 'Nag Champa: P-codes must still canonicalise correctly before the block is evaluated');
     assert.strictEqual(gate.ok, false, 'Nag Champa: must be blocked');
-    assert(gate.alert.startsWith('This code is not supported under the selected Great Britain rules'), `Nag Champa: alert must use the corrected Great Britain heading, got: ${JSON.stringify(gate.alert)}`);
+    assert(gate.alert.startsWith('This code needs supplier confirmation for a Great Britain CLP label'), `Nag Champa: alert must use the neutral supplier-confirmation heading, got: ${JSON.stringify(gate.alert)}`);
     assert(/\bH316\b/.test(gate.alert), 'Nag Champa: alert must name H316');
     assert(!gate.alert.includes('P302') && !gate.alert.includes('P333'), 'Nag Champa: alert must not mention the (now-canonicalised, valid) P302/P333');
     assert(!/select a larger|full content|does not fit/i.test(gate.alert), 'Nag Champa: alert must never imply a size problem');
@@ -315,14 +315,14 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     assert.strictEqual(gate.ok, false, 'H999 fixture: must be blocked');
     assert(gate.alert.startsWith('CLP code not recognised'), `H999 fixture: alert must use the generic heading, got: ${JSON.stringify(gate.alert)}`);
     assert(/\bH999\b/.test(gate.alert), 'H999 fixture: alert must name H999');
-    assert(!gate.alert.includes('not supported under the selected Great Britain rules') && !gate.alert.includes('another national or international classification system'), 'H999 fixture: must NOT use the confirmed-unsupported wording -- H999 is not a verified unsupported code');
+    assert(!gate.alert.includes('needs supplier confirmation for a Great Britain CLP label') && !gate.alert.includes('another national or international classification system'), 'H999 fixture: must NOT use the confirmed-unsupported wording -- H999 is not a verified unsupported code');
     assert(!/select a larger|full content|does not fit/i.test(gate.alert), 'H999 fixture: alert must never imply a size problem');
 
     // Renderer-level (bypassing Step 3): same generic distinction.
     const rDirect = renderDirect('H999', true);
     assert.strictEqual(rDirect.blockReason, 'unrecognised-code', `H999 fed directly to the renderer must report blockReason:'unrecognised-code', got: ${rDirect.blockReason}`);
     assert(rDirect.svg.includes('LABEL DATA NEEDS REVIEW') && flattenSvgText(rDirect.svg).includes('H999') && flattenSvgText(rDirect.svg).includes('not recognised by CLPeasy'), 'H999: renderer overlay must show "LABEL DATA NEEDS REVIEW" and say H999 was not recognised by CLPeasy');
-    assert(!flattenSvgText(rDirect.svg).includes('not supported under CLPeasy\'s Great Britain rules'), 'H999: renderer overlay must NOT claim it is a confirmed-unsupported GB CLP code');
+    assert(!flattenSvgText(rDirect.svg).includes('needs supplier confirmation for a Great Britain CLP label'), 'H999: renderer overlay must NOT use the confirmed-unsupported supplier-confirmation message');
     assert(!rDirect.svg.includes('FULL CONTENT DOES NOT FIT') && !rDirect.svg.includes('Select a larger size'), 'H999: must not show the misleading sizing overlay');
   }
 

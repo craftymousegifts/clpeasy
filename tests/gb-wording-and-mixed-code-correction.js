@@ -4,7 +4,7 @@
 // tests/renderer-block-reason-messaging.js). This file proves:
 //
 //   1. The public unsupported-code message now reads "This code is not
-//      supported under the selected Great Britain rules" (was: "This SDS
+//      needs supplier confirmation for a Great Britain CLP label (was: "This SDS
 //      may not be intended for the GB market"), and its body: names every
 //      affected code; states the code is not part of the current Great
 //      Britain CLP hazard-statement system; says it may be recognised
@@ -210,9 +210,9 @@ async function run(){
   {
     const msg = window.eval("clpUnsupportedCodesMessage(['H316'])");
     results.unsupportedSingular = msg;
-    assert.strictEqual(msg.heading, 'This code is not supported under the selected Great Britain rules', `singular heading wrong: ${JSON.stringify(msg.heading)}`);
+    assert.strictEqual(msg.heading, 'This code needs supplier confirmation for a Great Britain CLP label', `singular heading wrong: ${JSON.stringify(msg.heading)}`);
     assert(msg.body.includes('H316'), 'singular body must identify the affected code');
-    assert(/not part of the current Great Britain CLP hazard-statement system/.test(msg.body), 'singular body must state the code is not part of the current GB CLP system');
+    assert(/does not recognise it as a hazard statement in the current Great Britain CLP information checked by the service/.test(msg.body), 'singular body must describe CLPeasy as a service checking GB CLP information, not as the regulatory authority');
     assert(/may be recognised under another national or international classification system/.test(msg.body), 'singular body must say it may be recognised under another system');
     assert(/CLPeasy currently supports products placed on the market in Great Britain \(England, Scotland and Wales\)/.test(msg.body), 'singular body must explain CLPeasy\'s GB market scope');
     assert(msg.body.includes('Please ask your supplier for the current Great Britain-market SDS or classification information applicable to your final formulation and concentration.'), 'singular body must explicitly tell the user to ask their supplier for the current GB-market SDS/classification info for the final formulation and concentration');
@@ -227,9 +227,9 @@ async function run(){
   {
     const msg = window.eval("clpUnsupportedCodesMessage(['H316','H401'])");
     results.unsupportedPlural = msg;
-    assert.strictEqual(msg.heading, 'These codes are not supported under the selected Great Britain rules', `plural heading wrong: ${JSON.stringify(msg.heading)}`);
+    assert.strictEqual(msg.heading, 'These codes need supplier confirmation for a Great Britain CLP label', `plural heading wrong: ${JSON.stringify(msg.heading)}`);
     assert(msg.body.includes('H316') && msg.body.includes('H401'), 'plural body must identify every affected code');
-    assert(/are not part of the current Great Britain CLP hazard-statement system/.test(msg.body), 'plural body must use plural "are"');
+    assert(/does not recognise them as hazard statements in the current Great Britain CLP information checked by the service/.test(msg.body), 'plural body must use neutral service wording');
     assert(/They may be recognised under another national or international classification system/.test(msg.body), 'plural body must use plural "They"');
     assert(/CLPeasy has not added, removed, translated or substituted these codes/.test(msg.body), 'plural body must use plural "these codes"');
     assert(msg.body.includes('Please ask your supplier for the current Great Britain-market SDS or classification information applicable to your final formulation and concentration.'), 'plural body must also explicitly tell the user to ask their supplier for the current GB-market SDS/classification info');
@@ -269,10 +269,10 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     assert.strictEqual(gate.ok, false, 'mixed input must be blocked');
     assert(/\bH316\b/.test(gate.alert), 'mixed alert must name H316 (unsupported group)');
     assert(/\bH999\b/.test(gate.alert), 'mixed alert must ALSO name H999 (generic-unrecognised group) -- must not be hidden by the unsupported-code priority');
-    assert(gate.alert.includes('not supported under the selected Great Britain rules'), 'mixed alert must include the unsupported-code message');
+    assert(gate.alert.includes('needs supplier confirmation for a Great Britain CLP label'), 'mixed alert must include the supplier-confirmation message');
     assert(gate.alert.includes('CLP code not recognised'), 'mixed alert must ALSO include the generic-unrecognised-code message');
     // Regulatory issue shown first.
-    assert(gate.alert.indexOf('not supported under the selected Great Britain rules') < gate.alert.indexOf('CLP code not recognised'), 'the regulatory (unsupported-code) message must appear before the generic-unrecognised message');
+    assert(gate.alert.indexOf('needs supplier confirmation for a Great Britain CLP label') < gate.alert.indexOf('CLP code not recognised'), 'the supplier-confirmation message must appear before the generic-unrecognised message');
   }
 
   // ─────────────────────────────────────────────────────────────────────
@@ -283,7 +283,7 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     results.mixedBanner = { bannerVisible:r.bannerVisible, bannerHTML:r.bannerHTML, unsupportedCodes:r.unsupportedCodes, unrecognizedCodesGeneric:r.unrecognizedCodesGeneric };
     assert.strictEqual(r.bannerVisible, true, 'mixed input must show the download-blocking banner');
     assert(r.bannerHTML.includes('H316') && r.bannerHTML.includes('H999'), 'download banner must name BOTH H316 and H999');
-    assert(r.bannerHTML.includes('not supported under the selected Great Britain rules'), 'download banner must include the unsupported-code message');
+    assert(r.bannerHTML.includes('needs supplier confirmation for a Great Britain CLP label'), 'download banner must include the supplier-confirmation message');
     assert(r.bannerHTML.includes('CLP code not recognised'), 'download banner must ALSO include the generic-unrecognised message');
     assert.deepStrictEqual(r.unsupportedCodes, ['H316'], 'structured field unsupportedCodes must be exactly [H316]');
     assert.deepStrictEqual(r.unrecognizedCodesGeneric, ['H999'], 'structured field unrecognizedCodesGeneric must be exactly [H999]');
@@ -297,7 +297,7 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     results.mixedOverlay = { svgHasBoth: r.svg.includes('H316') && r.svg.includes('H999') };
     const mixedFlat = flattenSvgText(r.svg);
     assert(r.svg.includes('LABEL DATA NEEDS REVIEW'), 'mixed overlay must show the review heading');
-    assert(mixedFlat.includes('H316') && mixedFlat.includes('not supported under CLPeasy\'s Great Britain rules'), 'mixed overlay must name the unsupported group and say it is not supported under GB rules');
+    assert(mixedFlat.includes('H316') && mixedFlat.includes('needs supplier confirmation for a Great Britain CLP label'), 'mixed overlay must name the unsupported group and request supplier confirmation');
     assert(mixedFlat.includes('H999') && mixedFlat.includes('not recognised by CLPeasy'), 'mixed overlay must ALSO name the generic group without claiming it is unsupported');
     assert(mixedFlat.includes('Check you pasted Section 2.2 from the correct supplier SDS'), 'mixed overlay must include the shared Section 2.2 instruction');
     assert(!r.svg.includes('FULL CONTENT DOES NOT FIT'), 'mixed overlay must not show the sizing message');
@@ -352,7 +352,7 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     assert.strictEqual(r.blockReason, 'unsupported-gb-clp-code', 'blockReason must lead with the regulatory issue even though genuine overflow ALSO applies');
     assert.deepStrictEqual([...r.unsupportedCodes], ['H316'], 'unsupportedCodes must still report H316');
     assert.strictEqual(r.contentOverflow, true, 'contentOverflow must independently report true -- both states are retained structurally, not just the leading one');
-    assert(flattenSvgText(r.svg).includes('H316') && flattenSvgText(r.svg).includes('not supported under CLPeasy\'s Great Britain rules'), 'overlay must show the regulatory-issue message');
+    assert(flattenSvgText(r.svg).includes('H316') && flattenSvgText(r.svg).includes('needs supplier confirmation for a Great Britain CLP label'), 'overlay must show the supplier-confirmation message');
     assert(!r.svg.includes('FULL CONTENT DOES NOT FIT') && !r.svg.includes('Select a larger size'), 'overlay must NOT advise a larger size while the regulatory-code issue is unresolved, even though the content also genuinely overflows');
 
     // Builder-side download-blocking banner for the same combined case --
@@ -373,7 +373,7 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     results.regulatoryPlusOverflowBanner = { bannerHTML: rb.bannerHTML, contentOverflow: rb.contentOverflow, blockReason: rb.blockReason };
     assert.strictEqual(rb.blockReason, 'unsupported-gb-clp-code', 'Builder-side blockReason must also lead with the regulatory issue');
     assert.strictEqual(rb.contentOverflow, true, 'Builder-side contentOverflow must also independently report true');
-    assert(rb.bannerHTML.includes('not supported under the selected Great Britain rules'), 'download banner must show the regulatory-issue message');
+    assert(rb.bannerHTML.includes('needs supplier confirmation for a Great Britain CLP label'), 'download banner must show the supplier-confirmation message');
     assert(!/select a larger label|select a larger size/i.test(rb.bannerHTML), 'download banner must NOT advise a larger label while the regulatory-code issue is unresolved');
   }
 
@@ -410,7 +410,7 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     const r = renderDirectAndUpdate(code);
     results.individualCodes[code] = { blockReason:r.blockReason, bannerHTML:r.bannerHTML };
     assert.strictEqual(r.blockReason, 'unsupported-gb-clp-code', `${code} alone must report blockReason:unsupported-gb-clp-code`);
-    assert(r.bannerHTML.includes('not supported under the selected Great Britain rules'), `${code}: download banner must use the corrected wording`);
+    assert(r.bannerHTML.includes('needs supplier confirmation for a Great Britain CLP label'), `${code}: download banner must use the neutral supplier-confirmation wording`);
   }
 
   // ─────────────────────────────────────────────────────────────────────
@@ -504,7 +504,7 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     assert.strictEqual(r.blockReason, 'unsupported-gb-clp-code', 'mixed saved label must lead with the regulatory reason');
     {
       const savedFlat = flattenSvgText(r.svg);
-      assert(savedFlat.includes('H401') && savedFlat.includes('not supported under CLPeasy\'s Great Britain rules'), 'mixed saved label overlay must name the unsupported group on reopen');
+      assert(savedFlat.includes('H401') && savedFlat.includes('needs supplier confirmation for a Great Britain CLP label'), 'mixed saved label overlay must name the unsupported group on reopen');
       assert(savedFlat.includes('H998') && savedFlat.includes('not recognised by CLPeasy'), 'mixed saved label overlay must ALSO name the generic group on reopen');
     }
   }
@@ -819,6 +819,31 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     assert(pStAfter.includes('P302+P352'), 'P302/352 must still normalise to P302+P352 after a Clear/re-extract cycle');
     assert(pStAfter.includes('P333+P313'), 'P333/313 must still normalise to P333+P313 after a Clear/re-extract cycle');
     assert.strictEqual(clearLinkVisible(), true, 'Clear control must reappear once the new extraction has populated hazard data again');
+  }
+
+  {
+    // The preview stays concise, while a separate accessible explanation
+    // makes the service/supplier/regulator boundaries explicit.
+    pasteAndExtract(MIXED_H316_H999_TEXT);
+    const helpBtn=document.getElementById('clp-code-help-btn');
+    assert.strictEqual(helpBtn.style.display,'block','code-blocked preview must expose the explanation action');
+    assert.strictEqual(helpBtn.textContent.trim(),'Why is this label blocked?','explanation action needs a clear accessible name');
+    window.openClpCodeHelp();
+    const overlay=document.getElementById('clp-code-help-overlay');
+    const copy=document.getElementById('clp-code-help-copy').textContent.replace(/\s+/g,' ').trim();
+    results.codeHelpModal={shown:overlay.classList.contains('show'),copy};
+    assert(overlay.classList.contains('show'),'explanation modal must open');
+    assert(copy.includes("Your supplier's SDS contains H316"),'modal must identify the supplier SDS and affected supported-review code');
+    assert(copy.includes('CLPeasy does not recognise this code as a hazard statement in the current Great Britain CLP information checked by the service'),'modal must describe CLPeasy as a service, not a regulatory body');
+    assert(copy.includes('CLPeasy could not identify H999'),'mixed modal must also explain the generic unrecognised code');
+    assert(copy.includes('CLPeasy cannot determine the correct replacement'),'modal must explain why CLPeasy cannot self-correct supplier classification data');
+    assert(copy.includes('blocked to avoid creating a label that may be incomplete or incorrect'),'modal must explain the safety reason for fail-closed behaviour');
+    assert(copy.includes('ask your supplier for the current Great Britain-market SDS or written Great Britain CLP classification information'),'modal must give the user a concrete next action');
+    assert(!/CLPeasy(?:'|’|&apos;)s (?:Great Britain )?(?:rules|profile)/i.test(copy),'modal must never imply CLPeasy owns GB CLP rules or maintains a regulatory profile');
+    window.closeClpCodeHelp();
+    assert(!overlay.classList.contains('show'),'explanation modal must close');
+    window.clearHazardData();
+    assert.strictEqual(helpBtn.style.display,'none','explanation action must disappear after the code issue is cleared');
   }
 
   const structuralErrors = errors.filter(message => !/not implemented|navigation/i.test(message));
