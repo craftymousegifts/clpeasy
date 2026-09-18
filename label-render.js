@@ -327,7 +327,7 @@ const ACTIVE_REGULATORY_PROFILE = 'GB';
 // hasn't been taught yet). Both cases block progression/rendering, but
 // callers use THIS list to tell the two apart and show the right
 // message: a code listed here gets the specific "not supported under the
-// selected Great Britain rules" message; any other code absent from
+// supplier-confirmation message for a Great Britain CLP label; any other code absent from
 // H_LIB gets the generic "code not recognised" message instead.
 //
 // H316 (Skin Irritation Cat 3) and H401 (Acute Aquatic Toxicity Cat 2):
@@ -755,14 +755,14 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
     // Mixed: identify both groups by name -- neither hides the other --
     // plus the one instruction both groups share.
     sentences = [
-      uCodes.join(', ')+' '+(uCodes.length>1?'are':'is')+' not supported under CLPeasy\'s Great Britain rules.',
+      uCodes.join(', ')+' need'+(uCodes.length>1?'':'s')+' supplier confirmation for a Great Britain CLP label.',
       gCodes.join(', ')+' '+(gCodes.length>1?'were':'was')+' not recognised by CLPeasy.',
       'Check you pasted Section 2.2 from the correct supplier SDS.'
     ];
   } else if(uCodes.length){
     // Verified GB-unsupported code(s) -- confirmed regulatory issue.
     sentences = [
-      uCodes.join(', ')+' '+(uCodes.length>1?'are':'is')+' not supported under CLPeasy\'s Great Britain rules.',
+      uCodes.join(', ')+' need'+(uCodes.length>1?'':'s')+' supplier confirmation for a Great Britain CLP label.',
       'Check you pasted Section 2.2 from the correct supplier SDS.',
       'Ask your supplier for current GB CLP information for this product and concentration.'
     ];
@@ -795,7 +795,10 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
   let wrapped = [], lineH = 0, gap = 0, safeW = 0;
   for(let attempt=0; attempt<10; attempt++){
     lineH = bodyFS*1.32;
-    gap = bodyFS*0.5;
+    // Keep the first explanation line visibly separate from the bold
+    // heading. A half-line gap left the two text boxes touching at some
+    // preview scales even though their baselines were technically distinct.
+    gap = bodyFS*1.1;
     const halfSpan = (headFS*1.1 + gap + MAX_BODY_LINES*lineH)/2;
     // The narrower of the two rows at the assumed block's top/bottom edge
     // -- for a circle this is always the true minimum available width

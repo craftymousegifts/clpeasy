@@ -601,6 +601,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .p280-confirm{width:100%;background:var(--teal);color:white;border:none;padding:10px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:14px;margin-bottom:8px;}
 .p280-confirm:hover{background:var(--teal-dark);}
 
+/* Code-review explanation shown only when a CLP code blocks the label. */
+.clp-code-help-btn{display:none;width:100%;margin:10px 0 2px;padding:10px 14px;border:1.5px solid #DC2626;border-radius:9px;background:#FFF7F7;color:#991B1B;font:700 13px 'DM Sans',sans-serif;cursor:pointer;}
+.clp-code-help-btn:hover{background:#FEE2E2;}
+.clp-code-help-copy{font-size:13px;color:var(--text);line-height:1.65;}
+.clp-code-help-copy p{margin:0 0 12px;}
+.clp-code-help-copy p:last-child{margin-bottom:0;}
+
 /* SHARED TRUST FOOTER — same across Dashboard, Create Label, My Labels, Account */
 .shell-trust{display:grid;grid-template-columns:1.05fr 1fr 0.95fr 1fr;gap:0;padding:0;border-top:3px solid var(--teal);background:#fff;border:1px solid var(--border);border-radius:16px;margin:24px 0;overflow:hidden;position:relative;z-index:1;}
 .shell-trust-item{display:flex;align-items:center;gap:10px;padding:26px 15px;border-left:1px solid var(--border);}
@@ -700,6 +707,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div style="font-size:13px;color:#166534;line-height:1.5;">Before emailing, check our <a href="#" onclick="closeSupport();openHelp();return false;" style="color:#166534;font-weight:700;text-decoration:underline;cursor:pointer;">Help guide</a> — most questions are answered there.</div>
   </div>
   <button onclick="closeSupport()" style="width:100%;padding:13px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">Got it</button>
+</div>
+
+<!-- CLP CODE REVIEW EXPLANATION -->
+<div class="fdel-overlay" id="clp-code-help-overlay" onclick="if(event.target===this)closeClpCodeHelp()">
+  <div class="fdel-box" role="dialog" aria-modal="true" aria-labelledby="clp-code-help-title" style="max-width:520px;max-height:85vh;overflow:auto;">
+    <div class="fdel-title" id="clp-code-help-title">Why has CLPeasy blocked this label?</div>
+    <div class="clp-code-help-copy" id="clp-code-help-copy"></div>
+    <button type="button" class="p280-confirm" onclick="closeClpCodeHelp()">Close explanation</button>
+  </div>
 </div>
 
 <!-- WIZARD OVERLAY + PANEL -->
@@ -1195,6 +1211,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
   <div class="preview-canvas-area" id="preview-canvas-area"><div id="label-svg-container"></div></div>
   <div class="preview-footer">
+    <button type="button" id="clp-code-help-btn" class="clp-code-help-btn" onclick="openClpCodeHelp()">Why is this label blocked?</button>
     <div class="preview-size-info" id="preview-size-info">Print size: 35 × 35mm</div>
     <div class="dl-row" id="preview-dl-row" style="display:none;">
       <button class="btn-dl" id="btn-png-preview" onclick="downloadPNG()" style="opacity:0.4;pointer-events:none;">⬇ PNG</button>
@@ -1334,6 +1351,55 @@ const SENSITISERS=[
 // unrecognised. Kept in sync with label-render.js's own H_LIB copy --
 // both must change together.
 const H_LIB=[{code:'H225',desc:'Highly flammable liquid and vapour'},{code:'H226',desc:'Flammable liquid and vapour'},{code:'H228',desc:'Flammable solid'},{code:'H301',desc:'Toxic if swallowed'},{code:'H302',desc:'Harmful if swallowed'},{code:'H304',desc:'May be fatal if swallowed and enters airways'},{code:'H311',desc:'Toxic in contact with skin'},{code:'H312',desc:'Harmful in contact with skin'},{code:'H314',desc:'Causes severe skin burns and eye damage'},{code:'H315',desc:'Causes skin irritation'},{code:'H317',desc:'May cause an allergic skin reaction'},{code:'H318',desc:'Causes serious eye damage'},{code:'H319',desc:'Causes serious eye irritation'},{code:'H331',desc:'Toxic if inhaled'},{code:'H332',desc:'Harmful if inhaled'},{code:'H334',desc:'May cause allergy or asthma symptoms if inhaled'},{code:'H335',desc:'May cause respiratory irritation'},{code:'H336',desc:'May cause drowsiness or dizziness'},{code:'H361',desc:'Suspected of damaging fertility or the unborn child'},{code:'H371',desc:'May cause damage to organs'},{code:'H373',desc:'May cause damage to organs through prolonged or repeated exposure'},{code:'H400',desc:'Very toxic to aquatic life'},{code:'H410',desc:'Very toxic to aquatic life with long lasting effects'},{code:'H411',desc:'Toxic to aquatic life with long lasting effects'},{code:'H412',desc:'Harmful to aquatic life with long lasting effects'},{code:'H413',desc:'May cause long lasting harmful effects to aquatic life'},{code:'EUH066',desc:'Repeated exposure may cause skin dryness or cracking'},{code:'EUH208',desc:'Contains sensitiser — may produce an allergic reaction'},{code:'EUH071',desc:'Corrosive to the respiratory tract'},{code:'EUH210',desc:'Safety data sheet available on request'},{code:'H200',desc:'Unstable explosive'},{code:'H201',desc:'Explosive; mass explosion hazard'},{code:'H202',desc:'Explosive; severe projection hazard'},{code:'H203',desc:'Explosive; fire, blast or projection hazard'},{code:'H204',desc:'Fire or projection hazard'},{code:'H205',desc:'May mass explode in fire'},{code:'H223',desc:'Flammable aerosol'},{code:'H224',desc:'Extremely flammable liquid and vapour'},{code:'H240',desc:'Heating may cause an explosion'},{code:'H241',desc:'Heating may cause a fire or explosion'},{code:'H242',desc:'Heating may cause a fire'},{code:'H250',desc:'Catches fire spontaneously if exposed to air'},{code:'H251',desc:'Self-heating; may catch fire'},{code:'H252',desc:'Self-heating in large quantities; may catch fire'},{code:'H260',desc:'In contact with water releases flammable gases which may ignite spontaneously'},{code:'H261',desc:'In contact with water releases flammable gas'},{code:'H270',desc:'May cause or intensify fire; oxidiser'},{code:'H271',desc:'May cause fire or explosion; strong oxidiser'},{code:'H272',desc:'May intensify fire; oxidiser'},{code:'H280',desc:'Contains gas under pressure; may explode if heated'},{code:'H281',desc:'Contains refrigerated gas; may cause cryogenic burns or injury'},{code:'H282',desc:'Extremely flammable chemical under pressure: may explode if heated'},{code:'H283',desc:'Flammable chemical under pressure: may explode if heated'},{code:'H284',desc:'Chemical under pressure: may explode if heated'},{code:'H290',desc:'May be corrosive to metals'},{code:'H300',desc:'Fatal if swallowed'},{code:'H310',desc:'Fatal in contact with skin'},{code:'H330',desc:'Fatal if inhaled'},{code:'H340',desc:'May cause genetic defects'},{code:'H341',desc:'Suspected of causing genetic defects'},{code:'H350',desc:'May cause cancer'},{code:'H351',desc:'Suspected of causing cancer'},{code:'H360',desc:'May damage fertility or the unborn child'},{code:'H362',desc:'May cause harm to breast-fed children'},{code:'H370',desc:'Causes damage to organs'},{code:'H372',desc:'Causes damage to organs through prolonged or repeated exposure'}];
+// GB CLP Annex I label-element tables, current legislation.gov.uk text.
+// Empty string means the statement does not itself require a signal word.
+// A few physical-hazard statements cover more than one category and can use
+// Danger OR Warning; Smart Paste therefore preserves the supplier's explicit
+// Section 2.2 signal word for those codes instead of guessing from the H-code.
+const GB_CLP_SIGNAL_WORD_BY_CODE=Object.freeze({
+  H200:'Danger',H201:'Danger',H202:'Danger',H203:'Danger',H204:'Warning',H205:'Danger',
+  H223:'Warning',H224:'Danger',H225:'Danger',H226:'Warning',
+  H240:'Danger',H241:'Danger',H250:'Danger',H251:'Danger',H252:'Warning',H260:'Danger',
+  H270:'Danger',H271:'Danger',H280:'Warning',H281:'Warning',H290:'Warning',
+  H300:'Danger',H301:'Danger',H302:'Warning',H304:'Danger',
+  H310:'Danger',H311:'Danger',H312:'Warning',H314:'Danger',H315:'Warning',H317:'Warning',
+  H318:'Danger',H319:'Warning',H330:'Danger',H331:'Danger',H332:'Warning',H334:'Danger',
+  H335:'Warning',H336:'Warning',H340:'Danger',H341:'Warning',H350:'Danger',H351:'Warning',
+  H360:'Danger',H361:'Warning',H362:'',H370:'Danger',H371:'Warning',H372:'Danger',H373:'Warning',
+  H400:'Warning',H410:'Warning',H411:'',H412:'',H413:'',
+  EUH066:'',EUH071:'',EUH208:'',EUH210:''
+});
+// H228/H242/H261/H272 span categories with different signal words. The
+// pre-existing H282-H284 entries are also supplier-signal-dependent here:
+// their separate GB-profile status remains outside this focused bugfix.
+const GB_CLP_SIGNAL_WORD_AMBIGUOUS_CODES=Object.freeze(['H228','H242','H261','H272','H282','H283','H284']);
+function normaliseSdsSignalWord(value){
+  const v=String(value||'').trim().toLowerCase();
+  if(v==='danger')return 'Danger';
+  if(v==='warning')return 'Warning';
+  if(v==='none'||v==='no signal word'||v==='no signal word is used')return '';
+  return '';
+}
+function extractSdsSignalWord(text){
+  const m=String(text||'').match(/\bSignal\s+word\s*:?\s*(Danger|Warning|None|No\s+signal\s+word(?:\s+is\s+used)?)/i);
+  return normaliseSdsSignalWord(m?m[1]:'');
+}
+function resolveGbClpSignalWord(codes, suppliedSignal){
+  const list=Array.isArray(codes)?codes:String(codes||'').split(',');
+  const clean=[...new Set(list.map(v=>String(v).trim().toUpperCase()).filter(Boolean))];
+  const supplied=normaliseSdsSignalWord(suppliedSignal);
+  const ambiguous=clean.some(code=>GB_CLP_SIGNAL_WORD_AMBIGUOUS_CODES.includes(code));
+  if(clean.some(code=>GB_CLP_SIGNAL_WORD_BY_CODE[code]==='Danger'))return 'Danger';
+  // An ambiguous physical-hazard statement may genuinely require Danger.
+  if(ambiguous&&supplied==='Danger')return 'Danger';
+  if(clean.some(code=>GB_CLP_SIGNAL_WORD_BY_CODE[code]==='Warning'))return 'Warning';
+  if(ambiguous&&supplied==='Warning')return 'Warning';
+  // Preserve the previous Warning fallback for a manually selected ambiguous
+  // code where no Section 2.2 signal word is available; Smart Paste always
+  // supplies the actual value when the SDS prints one.
+  if(ambiguous)return 'Warning';
+  return '';
+}
 const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product container or label at hand'},{code:'P102',desc:'Keep out of reach of children'},{code:'P103',desc:'Read label before use'},{code:'P210',desc:'Keep away from heat and ignition sources. No smoking'},{code:'P233',desc:'Keep container tightly closed'},{code:'P260',desc:'Do not breathe vapours or dust'},{code:'P261',desc:'Avoid breathing vapours and dust'},{code:'P271',desc:'Use only outdoors or in a well-ventilated area'},{code:'P273',desc:'Avoid release to the environment'},{code:'P301+P310',desc:'IF SWALLOWED: immediately call a POISON CENTRE or doctor'},{code:'P301+P312',desc:'IF SWALLOWED: call a POISON CENTRE or doctor if unwell'},{code:'P302+P352',desc:'IF ON SKIN: wash with plenty of water'},{code:'P304+P340',desc:'IF INHALED: remove to fresh air and keep comfortable for breathing'},{code:'P305+P351+P338',desc:'IF IN EYES: rinse cautiously with water for several minutes'},{code:'P312',desc:'Call a POISON CENTRE or doctor if you feel unwell'},{code:'P313',desc:'Get medical advice/attention'},{code:'P314',desc:'Get medical advice if you feel unwell'},{code:'P321',desc:'Specific treatment: see label'},{code:'P330',desc:'Rinse mouth'},{code:'P331',desc:'Do NOT induce vomiting'},{code:'P332+P313',desc:'If skin irritation occurs: get medical advice/attention'},{code:'P333+P313',desc:'If skin irritation or rash occurs: get medical advice'},{code:'P337+P313',desc:'If eye irritation persists: get medical advice'},{code:'P370+P378',desc:'In case of fire: use appropriate media for extinction'},{code:'P391',desc:'Collect spillage'},{code:'P403+P233',desc:'Store in a well-ventilated place. Keep container tightly closed'},{code:'P211',desc:'Do not spray on an open flame or other ignition source'},{code:'P501',desc:'Dispose of contents and container in accordance with local regulations'},
 // P280 (verified against the retained GB-CLP Regulation (EC) No 1272/2008,
 // Annex IV, Table 6.2, legislation.gov.uk, current in-force UK text) is a
@@ -1348,7 +1414,7 @@ const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product contai
 // only P_LIB definitions in the app; this is not a third copy.
 {code:'P280',desc:'Wear the applicable protective equipment (select which items apply when adding this code)'}];
 // ── STATE ─────────────────────────────────────────────────────
-const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,hazardFSOverride:null,scentFSOverride:null,bizNameFSOverride:null,hazardYOffset:null,typeFSOverride:null,sigFSOverride:null,
+const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',sdsSignal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,hazardFSOverride:null,scentFSOverride:null,bizNameFSOverride:null,hazardYOffset:null,typeFSOverride:null,sigFSOverride:null,
   // P280's own selected protection items (see openP280Modal()/buildP280Wording
   // in label-render.js). p280Items: subset of LabelRenderer.P280_ITEMS keys;
   // p280Other: optional free-text extra item. Empty = no valid selection yet.
@@ -1776,6 +1842,40 @@ function closeSupport(){
   document.getElementById('support-modal').style.display='none';
   document.body.style.overflow='';
 }
+
+let _clpCodeHelpReturnFocus=null;
+function openClpCodeHelp(){
+  const unsupported=(window._unsupportedCodes||[]).map(String);
+  const generic=(window._unrecognizedCodesGeneric||[]).map(String);
+  if(!unsupported.length&&!generic.length)return;
+  const copy=document.getElementById('clp-code-help-copy');
+  const overlay=document.getElementById('clp-code-help-overlay');
+  if(!copy||!overlay)return;
+  const u=unsupported.map(escapeBuilderText).join(', ');
+  const g=generic.map(escapeBuilderText).join(', ');
+  const paragraphs=[];
+  if(unsupported.length){
+    paragraphs.push('Your supplier\'s SDS contains <strong>'+u+'</strong>. CLPeasy does not recognise '+(unsupported.length>1?'these codes as hazard statements':'this code as a hazard statement')+' in the current Great Britain CLP information checked by the service. '+(unsupported.length>1?'They may':'It may')+' come from another national or international classification system, or the supplier may need to clarify the Great Britain classification.');
+  }
+  if(generic.length){
+    paragraphs.push('CLPeasy could not identify <strong>'+g+'</strong>. This may be a copying error, a code that is not yet recognised by the service, or information from a different classification system.');
+  }
+  paragraphs.push('CLPeasy cannot determine the correct replacement, remove the '+(unsupported.length+generic.length>1?'codes':'code')+', or substitute a different classification on the supplier\'s behalf. The label has therefore been blocked to avoid creating a label that may be incomplete or incorrect.');
+  paragraphs.push('Check that you copied only Section 2.2 from the SDS for the correct product and concentration. If the '+(unsupported.length+generic.length>1?'codes are':'code is')+' shown there, ask your supplier for the current Great Britain-market SDS or written Great Britain CLP classification information.');
+  copy.innerHTML=paragraphs.map(p=>'<p>'+p+'</p>').join('');
+  _clpCodeHelpReturnFocus=document.activeElement;
+  overlay.classList.add('show');
+  document.body.style.overflow='hidden';
+  overlay.querySelector('button')?.focus();
+}
+function closeClpCodeHelp(){
+  const overlay=document.getElementById('clp-code-help-overlay');
+  if(overlay)overlay.classList.remove('show');
+  document.body.style.overflow='';
+  if(_clpCodeHelpReturnFocus&&typeof _clpCodeHelpReturnFocus.focus==='function')_clpCodeHelpReturnFocus.focus();
+  _clpCodeHelpReturnFocus=null;
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('clp-code-help-overlay')?.classList.contains('show'))closeClpCodeHelp();});
 
 // ── HELP PANEL ────────────────────────────────────────────────
 function openHelp(){
@@ -2601,7 +2701,7 @@ async function saveLabel(){
   if(isCustomSizeBelowSupportedMinimum()){alert(getCustomSizeMinMsg());return;}
   removeStaleEditNotice();
   const entry={schemaVersion:LABEL_SCHEMA_VERSION,rendererVersion:LabelRenderer.RENDERER_VERSION,
-    scentName:S.scentName,productType:S.productType,shape:S.shape,size:S.size,customW:S.customW,customH:S.customH,signal:S.signal,
+    scentName:S.scentName,productType:S.productType,shape:S.shape,size:S.size,customW:S.customW,customH:S.customH,signal:S.signal,sdsSignal:S.sdsSignal,
     hStatements:S.hStatements,pictograms:[...S.pictograms],sensitisers:[...S.sensitisers],bizName:S.bizName,bizAddress:S.bizAddress,
     bizPhone:S.bizPhone,bizWebsite:S.bizWebsite,netWeight:S.netWeight,fragLoad:S.fragLoad,burnTime:S.burnTime,batchNum:S.batchNum,
     supplier:S.supplier||'',hideEN15494:!!S.hideEN15494,
@@ -2694,7 +2794,7 @@ function loadLabelRecord(e){
   if(!e)return;
   editingLabelId=e.id||null;
   S.scentName=e.scentName;S.productType=e.productType;S.shape=e.shape;S.size=e.size;S.customW=e.customW||S.customW;S.customH=e.customH||S.customH;
-  S.signal=e.signal||'';S.hStatements=e.hStatements||'';S.sensitisers=e.sensitisers||[];
+  S.signal=e.signal||'';S.sdsSignal=e.sdsSignal!==undefined?e.sdsSignal:(e.signal||'');S.hStatements=e.hStatements||'';S.sensitisers=e.sensitisers||[];
   S.hSelected=(S.hStatements||'').split(',').map(code=>code.trim()).filter(Boolean);
   S.pStatements=e.pStatements||'';
   S.pSelected=(S.pStatements||'').split(',').map(code=>code.trim()).filter(Boolean);
@@ -3066,7 +3166,7 @@ function init(){
   // only after LabelLibrary.init() has resolved against the confirmed
   // namespace (a real signed-in account, or a confirmed no-session guest).
   // Ensure hazard data is always clear on page load — never cached
-  S.signal=''; S.pictograms=[]; S.hSelected=[]; S.pSelected=[]; S.sensitisers=[];
+  S.signal=''; S.sdsSignal=''; S.pictograms=[]; S.hSelected=[]; S.pSelected=[]; S.sensitisers=[];
   S.hStatements=''; S.pStatements='';
   lockHazardFields(false);
   updateLabel();
@@ -3379,9 +3479,12 @@ function extractSDS(){
   });
 
   // ── SIGNAL WORD ───────────────────────────────────────────────────────────
-  const dangerH=['H300','H301','H310','H311','H330','H331','H340','H350','H360','H370','H372','H290','H304','H314','H318','H225','H224'];
-  const isDanger=allH.some(h=>dangerH.includes(h));
-  const sig=isDanger?'Danger':'Warning';
+  // Read the supplier's explicit Section 2.2 value for the handful of
+  // physical-hazard statements whose H-code alone does not distinguish the
+  // category/signal word. All deterministic codes use the GB Annex I registry
+  // above. Crucially, H411/H412/H413 and EUH-only inputs resolve to blank.
+  S.sdsSignal=extractSdsSignalWord(text);
+  const sig=resolveGbClpSignalWord(allH,S.sdsSignal);
   S.signal=sig;
   document.getElementById('signal-warning').className='signal-btn'+(sig==='Warning'?' sel-warn':'');
   document.getElementById('signal-danger').className='signal-btn'+(sig==='Danger'?' sel-danger':'');
@@ -3577,8 +3680,8 @@ function clpUnsupportedCodesMessage(codes, escapeFn){
   const esc=escapeFn||(v=>v);
   const plural=codes.length>1, codeWord=plural?'codes':'code', thisThese2=plural?'These':'This', areIs=plural?'are':'is', theyIt=plural?'They':'It', thisThese=plural?'these':'this';
   return {
-    heading:thisThese2+' '+codeWord+' '+areIs+' not supported under the selected Great Britain rules',
-    body:'The following '+codeWord+' '+areIs+' not part of the current Great Britain CLP hazard-statement system: '+codes.map(esc).join(', ')+'. '+theyIt+' may be recognised under another national or international classification system. CLPeasy currently supports products placed on the market in Great Britain (England, Scotland and Wales). Please ask your supplier for the current Great Britain-market SDS or classification information applicable to your final formulation and concentration. CLPeasy has not added, removed, translated or substituted '+thisThese+' '+codeWord+'.'
+    heading:thisThese2+' '+codeWord+' need'+(plural?'':'s')+' supplier confirmation for a Great Britain CLP label',
+    body:'The following '+codeWord+' appear'+(plural?'':'s')+' in your supplier SDS: '+codes.map(esc).join(', ')+'. CLPeasy does not recognise '+(plural?'them as hazard statements':'it as a hazard statement')+' in the current Great Britain CLP information checked by the service. '+theyIt+' may be recognised under another national or international classification system, or the supplier may need to clarify the Great Britain classification. CLPeasy currently supports products placed on the market in Great Britain (England, Scotland and Wales). Please ask your supplier for the current Great Britain-market SDS or classification information applicable to your final formulation and concentration. CLPeasy has not added, removed, translated or substituted '+thisThese+' '+codeWord+'.'
   };
 }
 function clpUnrecognisedCodesMessage(codes, escapeFn){
@@ -3977,6 +4080,7 @@ function clearHazardData(){
   if(hzCb)hzCb.checked=false;
   // Clear signal word
   S.signal='';
+  S.sdsSignal='';
   document.getElementById('signal-warning').className='signal-btn';
   document.getElementById('signal-danger').className='signal-btn';
   // Clear H statements
@@ -4284,11 +4388,11 @@ function nudgeBizNameFS(delta){
 function resetBizNameFS(){S.bizNameFSOverride=null;updateLabel();}
 function updateLabel(){
   readForm();
-  // Auto-set signal word from selected H-codes (mirrors extractSDS logic so manual chip clicks work too)
+  // Shared GB-CLP resolver: Smart Paste and manual chip changes must never
+  // drift into different signal-word rules.
   const _autoH=(S.hStatements||'').split(',').map(h=>h.trim()).filter(Boolean);
   {
-    const _dangerH=['H300','H301','H310','H311','H330','H331','H340','H350','H360','H370','H372','H290','H304','H314','H318','H225','H224'];
-    const _sig=_autoH.length>0?(_autoH.some(h=>_dangerH.includes(h))?'Danger':'Warning'):'';
+    const _sig=resolveGbClpSignalWord(_autoH,S.sdsSignal);
     S.signal=_sig;
     document.getElementById('signal-warning').className='signal-btn'+(_sig==='Warning'?' sel-warn':'');
     document.getElementById('signal-danger').className='signal-btn'+(_sig==='Danger'?' sel-danger':'');
@@ -4318,6 +4422,8 @@ function updateLabel(){
     || (window._unrecognizedCodes||[]).filter(code=>LabelRenderer.GB_UNSUPPORTED_CODES.includes(code));
   const _genericUnrecognizedCodesFound = window._unrecognizedCodesGeneric
     || (window._unrecognizedCodes||[]).filter(code=>!LabelRenderer.GB_UNSUPPORTED_CODES.includes(code));
+  const _codeHelpBtn=document.getElementById('clp-code-help-btn');
+  if(_codeHelpBtn)_codeHelpBtn.style.display=(_gbUnsupportedCodesFound.length||_genericUnrecognizedCodesFound.length)?'block':'none';
   // Custom-size-below-CLPeasy's-supported-minimum fix: a custom size under
   // 52mm must block export the same way clipped/unrecognised content does
   // -- folded into the one existing block-download condition rather than a
@@ -4385,7 +4491,7 @@ function updateLabel(){
     ? _gbUnsupportedCodesFound.length && _genericUnrecognizedCodesFound.length
       ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br>'+clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+' Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than print a code CLPeasy could not safely include on your label.</strong>'
       : _gbUnsupportedCodesFound.length
-      ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br><strong>CLPeasy has blocked the download rather than print a code that is not part of the current Great Britain CLP hazard-statement system.</strong>'
+      ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br><strong>CLPeasy has blocked the download rather than remove, replace or print a code it cannot safely resolve for a Great Britain CLP label.</strong>'
       : clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+'<br><br>Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
     : _isCustomSizeTooSmall
     ? getCustomSizeMinMsg()+'<br><br>To create a downloadable label, return to Step 1 and '+(S.shape==='rectangle'?'set the long side to '+LabelRenderer.CUSTOM_RECT_LONG_MIN_MM+'mm or larger and the short side to '+LabelRenderer.CUSTOM_RECT_SHORT_MIN_MM+'mm or larger':'increase the custom size to '+LabelRenderer.CUSTOM_SIZE_MIN_MM+'mm or larger')+'.'
