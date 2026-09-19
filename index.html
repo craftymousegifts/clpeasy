@@ -117,6 +117,52 @@
   }
   .nav-dropdown-menu a:hover { background: var(--teal-light); color: var(--teal); }
 
+  /* Mobile navigation menu: hidden entirely on desktop/tablet (the toggle
+     button below is display:none there, so it can never be focused or
+     clicked, and the panel stays [hidden]). Visible-state styling for both
+     is scoped to @media(max-width:600px) further down, matching the
+     existing pattern for other mobile-only nav rules in this file. */
+  .nav-mobile-toggle {
+    display: none; background: none; border: none; cursor: pointer;
+    width: 40px; height: 40px; padding: 8px; border-radius: 8px;
+    align-items: center; justify-content: center; flex-direction: column; gap: 5px;
+    flex-shrink: 0;
+  }
+  .nav-mobile-toggle:hover { background: var(--teal-light); }
+  .nav-mobile-toggle-bar {
+    display: block; width: 20px; height: 2px; background: var(--text);
+    border-radius: 2px; transition: transform .2s ease, opacity .2s ease;
+  }
+  /* Bars morph into an "X" when open -- purely a CSS reaction to the real
+     aria-expanded state the toggle button already carries for assistive
+     tech, not a second source of truth. */
+  .nav-mobile-toggle[aria-expanded="true"] .nav-mobile-toggle-bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .nav-mobile-toggle[aria-expanded="true"] .nav-mobile-toggle-bar:nth-child(2) { opacity: 0; }
+  .nav-mobile-toggle[aria-expanded="true"] .nav-mobile-toggle-bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  .nav-mobile-menu[hidden] { display: none; }
+  .nav-mobile-menu {
+    display: flex; flex-direction: column;
+    position: fixed; left: 0; right: 0; top: 68px; z-index: 99;
+    background: rgba(255,255,255,0.98); backdrop-filter: blur(12px);
+    border-bottom: 1.5px solid var(--border);
+    padding: 8px 20px 20px; max-height: calc(100vh - 68px); overflow-y: auto;
+    box-shadow: 0 12px 24px rgba(15,34,54,0.12);
+  }
+  .nav-mobile-menu a {
+    display: block; padding: 13px 4px; font-size: 15px; font-weight: 500;
+    color: var(--text); text-decoration: none; border-bottom: 1px solid var(--border);
+  }
+  .nav-mobile-menu a:hover, .nav-mobile-menu a:focus-visible { color: var(--teal); background: var(--teal-light); }
+  .nav-mobile-menu-heading {
+    padding: 14px 4px 2px; font-size: 12px; font-weight: 700; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .nav-mobile-menu-cta {
+    background: var(--teal); color: #ffffff !important; text-align: center;
+    border-radius: 8px; font-weight: 700; border-bottom: none !important; margin-top: 10px;
+  }
+  .nav-mobile-menu-cta:hover { background: var(--teal-dark); color: #ffffff !important; }
+
   /* HERO */
   .hero {
     padding: 120px 24px 48px;
@@ -420,10 +466,15 @@
        trial" into wrapping. Hide it here instead (existing pattern, same
        fix already applied to plain nav links). */
     .nav-dropdown { display: none !important; }
-    .nav-signin { font-size: 13px !important; padding: 6px 10px !important; white-space: nowrap; }
+    /* The header "Sign in" link is hidden on mobile (not duplicated) --
+       it's now reachable from the mobile menu below instead, alongside
+       Start free trial, keeping the header itself to logo + CTA + menu
+       toggle so nothing wraps or crowds at 390px. */
+    .nav-signin { display: none; }
     .btn-nav { padding: 8px 16px; font-size: 13px; white-space: nowrap; margin-left: 4px; }
     nav { justify-content: space-between; gap: 8px; }
     .nav-logo { flex-shrink: 0; }
+    .nav-mobile-toggle { display: inline-flex; }
     .hero { padding: 90px 20px 40px; }
     .hero-sub { margin-bottom: 28px; }
     .preview-wrapper { flex-direction: column; padding: 24px 16px; gap: 24px; }
@@ -490,7 +541,38 @@
     <a href="auth.html?mode=signin" class="nav-signin" target="_blank" rel="noopener" style="font-size:14px;font-weight:500;color:var(--muted);text-decoration:none;padding:6px 12px;">Sign in</a>
     <a href="auth.html?mode=signup" class="btn-nav">Start free trial</a>
   </div>
+  <!-- Mobile-only menu toggle: display:none on desktop/tablet (see the
+       .nav-mobile-toggle rule near the other nav CSS), so it's never
+       focusable or clickable there. Real <button>, accurate aria-expanded,
+       aria-controls pointing at the panel below. -->
+  <button type="button" class="nav-mobile-toggle" id="nav-mobile-toggle" aria-expanded="false" aria-controls="nav-mobile-menu" aria-label="Menu" onclick="toggleMobileNav()">
+    <span class="nav-mobile-toggle-bar"></span>
+    <span class="nav-mobile-toggle-bar"></span>
+    <span class="nav-mobile-toggle-bar"></span>
+  </button>
 </nav>
+
+<!-- Mobile nav menu panel: reuses the same destinations as the desktop
+     nav-links/Resources dropdown (flattened into one list rather than a
+     nested toggle, for a simpler, fully keyboard-reachable mobile menu),
+     plus Sign in and Start free trial since both are hidden from the
+     mobile header itself to keep it from crowding. Starts hidden via the
+     `hidden` attribute -- the single source of truth toggleMobileNav()
+     flips, in step with the button's aria-expanded. -->
+<div class="nav-mobile-menu" id="nav-mobile-menu" hidden>
+  <a href="#features">Features</a>
+  <a href="pricing.html" target="_blank" rel="noopener">Pricing</a>
+  <a href="#faq">FAQ</a>
+  <div class="nav-mobile-menu-heading">Resources</div>
+  <a href="#about">Our story</a>
+  <a href="knowledge.html" target="_blank" rel="noopener">Knowledge Base</a>
+  <a href="compliance.html" target="_blank" rel="noopener">Compliance</a>
+  <a href="showcase.html" target="_blank" rel="noopener">Label Showcase</a>
+  <a href="support.html" target="_blank" rel="noopener">Support</a>
+  <a href="#" onclick="closeMobileNav();openGuide();return false;">Setup Guide</a>
+  <a href="auth.html?mode=signin" target="_blank" rel="noopener">Sign in</a>
+  <a href="auth.html?mode=signup" class="nav-mobile-menu-cta">Start free trial</a>
+</div>
 
 <script>
 function toggleNavResources(e){
@@ -500,6 +582,41 @@ function toggleNavResources(e){
 document.addEventListener('click', function(e){
   const d = document.getElementById('nav-resources');
   if(d && !d.contains(e.target)) d.classList.remove('open');
+});
+
+// Mobile nav menu: real <button>, accurate aria-expanded, aria-controls,
+// Escape to close (returning focus to the toggle), click-outside to
+// close, and closing after any in-menu link is chosen. No focus trap --
+// Tab moves through the menu's links in normal DOM order and can leave it
+// like any other page content.
+function toggleMobileNav(){
+  const btn = document.getElementById('nav-mobile-toggle');
+  const isOpen = btn.getAttribute('aria-expanded') === 'true';
+  if (isOpen) closeMobileNav(); else openMobileNav();
+}
+function openMobileNav(){
+  document.getElementById('nav-mobile-toggle').setAttribute('aria-expanded', 'true');
+  document.getElementById('nav-mobile-menu').removeAttribute('hidden');
+}
+function closeMobileNav(){
+  document.getElementById('nav-mobile-toggle').setAttribute('aria-expanded', 'false');
+  document.getElementById('nav-mobile-menu').setAttribute('hidden', '');
+}
+document.getElementById('nav-mobile-menu').addEventListener('click', function(e){
+  if (e.target.tagName === 'A') closeMobileNav();
+});
+document.addEventListener('click', function(e){
+  const menu = document.getElementById('nav-mobile-menu');
+  const btn = document.getElementById('nav-mobile-toggle');
+  if (btn.getAttribute('aria-expanded') === 'true' && !menu.contains(e.target) && !btn.contains(e.target)) {
+    closeMobileNav();
+  }
+});
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape' && document.getElementById('nav-mobile-toggle').getAttribute('aria-expanded') === 'true') {
+    closeMobileNav();
+    document.getElementById('nav-mobile-toggle').focus();
+  }
 });
 </script>
 
@@ -741,11 +858,22 @@ document.addEventListener('click', function(e){
 
     <!-- Headline with CLP spin tooltip -->
     <style>
-    .clp-label-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;width:1.9em;height:1.9em;cursor:pointer;vertical-align:middle;}
-    .clp-label-wrap .clp-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(0deg);width:1.9em;height:1.9em;pointer-events:none;}
+    /* Stamp enlarged ~30% (1.9em -> 2.47em) on desktop/tablet so it reads
+       as an intentional part of the headline instead of getting lost
+       among the background decorative labels. Both the ring and the "CLP"
+       word are scaled by the same 1.3x factor (0.42em -> 0.546em) to keep
+       their existing proportions -- only the overall size changes, not
+       the lettering, colours or dashed-ring styling. Both use "em" units
+       relative to the h1's own font-size (clamp(40px,7vw,72px)), which is
+       already fluid across desktop/tablet widths, so this single change
+       scales proportionally at both breakpoints without a separate tablet
+       rule. Unaffected on mobile: the existing mobile-only override further
+       down still collapses the whole stamp to plain inline text there. */
+    .clp-label-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;width:2.47em;height:2.47em;cursor:pointer;vertical-align:middle;}
+    .clp-label-wrap .clp-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(0deg);width:2.47em;height:2.47em;pointer-events:none;}
     .clp-label-wrap:hover .clp-ring,.clp-label-wrap.tip-open .clp-ring{animation:clp-spin 0.7s cubic-bezier(0.4,0,0.2,1) forwards;}
     @keyframes clp-spin{from{transform:translate(-50%,-50%) rotate(0deg);}to{transform:translate(-50%,-50%) rotate(360deg);}}
-    .clp-label-wrap .clp-word{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;color:var(--teal);font-style:normal;font-size:0.42em;letter-spacing:0.1em;font-weight:900;line-height:1;white-space:nowrap;}
+    .clp-label-wrap .clp-word{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;color:var(--teal);font-style:normal;font-size:0.546em;letter-spacing:0.1em;font-weight:900;line-height:1;white-space:nowrap;}
     .clp-label-wrap .clp-tip-text{visibility:hidden;opacity:0;position:absolute;bottom:calc(100% + 14px);left:50%;transform:translateX(-50%);background:#0f2236;color:white;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:400;font-family:'DM Sans',sans-serif;white-space:nowrap;pointer-events:none;transition:opacity .25s ease;box-shadow:0 4px 16px rgba(0,0,0,0.25);z-index:50;line-height:1.4;}
     .clp-label-wrap .clp-tip-text::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#0f2236;}
     .clp-label-wrap:hover .clp-tip-text,.clp-label-wrap.tip-open .clp-tip-text{visibility:visible;opacity:1;}
@@ -772,6 +900,15 @@ document.addEventListener('click', function(e){
       <span class="clp-word">CLP</span>
       <span class="clp-tip-text">Classification, Labelling &amp; Packaging</span>
     </span> labels<br class="hero-mobile-break"> in minutes</h1>
+
+    <!-- Small, visually secondary geographic clarification -- GB CLP (this
+         product's scope) covers England, Scotland and Wales only, not
+         Northern Ireland, which follows a different framework. Placed here
+         rather than in the h1 itself (approved heading wording/layout is
+         unchanged) and not inside the teal panel below (its approved copy
+         is also unchanged) -- its own small line, muted and smaller than
+         .hero-sub, directly under the heading it clarifies. -->
+    <p style="margin:10px auto 0;text-align:center;font-size:12px;color:var(--muted);font-weight:500;">Built for makers selling in England, Scotland and Wales.</p>
 
     <!-- Product explanation: what CLPeasy does, in plain steps -- this is
          the primary hero message a visitor needs within ~3 seconds, so it
