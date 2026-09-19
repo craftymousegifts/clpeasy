@@ -711,17 +711,17 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   .compliance-card .rail-copy{margin:0;font-size:11.5px;}
   .compliance-card .rail-chip{margin:0;}
   /* Step 1 two-column desktop reflow: #step-1 (heading, load-from-
-     library, shape, preset sizes, dimensions) and #label-appearance-
-     section (background/text colour, cut-guide border) are, for
+     library and shape) and #label-appearance-section (background/text
+     colour, cut-guide border and dimensions) are, for
      historical reasons (see renderBuilderAccordion()'s comment on
      label-appearance-section), rendered as SIBLINGS directly inside
      .builder-accordion-body when Step 1 is active -- not nested inside
      one another -- which conveniently already matches the two logical
-     groups this needs ("saved-label/shape/size/dimensions" vs.
-     "appearance") without any further DOM change. .step1-active (set in
+     groups this needs ("saved-label/shape" vs. "appearance/dimensions")
+     without any further DOM change. .step1-active (set in
      renderBuilderAccordion() only when Step 1 is the active step) turns
      that body into a 2-column grid; `order` puts #step-1 first (matching
-     the existing on-page reading order: size/shape heading before
+     the existing on-page reading order: load/shape controls before
      appearance) purely visually, without touching the DOM the JS above
      already built. Step 5's fine-tune relocation and Steps 2-4 are
      unaffected -- this class only ever applies to the Step-1 body. */
@@ -1005,7 +1005,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <option value="">— Select a saved label to load —</option>
       </select>
     </div>
-    <p class="step-sub">Choose a preset or enter your own dimensions.</p>
     <div class="sdiv" style="margin-top:0">Shape</div>
     <div class="shape-grid">
       <div class="shape-card selected" data-shape="circle" onclick="selectShape('circle')">
@@ -1020,27 +1019,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <svg width="32" height="32" viewBox="0 0 32 32"><rect x="2" y="2" width="28" height="28" rx="4" fill="none" stroke="#6B7280" stroke-width="2.5"/></svg>
         <div class="shape-label">Square</div>
       </div>
-    </div>
-    <div class="sdiv">Preset sizes</div>
-    <div class="size-grid">
-      <div class="size-card selected" data-size="52" onclick="selectSize(52)"><div class="sz">52mm</div><div class="sz-label">Standard Candle</div></div>
-      <div class="size-card" data-size="63" onclick="selectSize(63)"><div class="sz">63mm</div><div class="sz-label">Large Jar</div></div>
-      <div class="size-card" data-size="custom" onclick="selectSize('custom')"><div class="sz" style="font-size:14px">Custom</div><div class="sz-label">Your own size</div></div>
-    </div>
-    <div class="sdiv">Dimensions (mm)</div>
-    <div class="custom-dims">
-      <div class="form-group"><label>Width (mm)</label><input type="number" id="custom-w" placeholder="e.g. 50" inputmode="numeric" min="52" max="150" oninput="onDimInput()"></div>
-      <div class="form-group"><label>Height (mm) <span id="height-note" style="font-weight:400;color:#6B7280;font-size:11px;"></span></label><input type="number" id="custom-h" placeholder="e.g. 40" inputmode="numeric" min="52" max="200" oninput="onDimInput()"></div>
-      <div id="custom-size-warn" class="field-alert field-alert-warn" style="display:none;grid-column:1/-1;margin-bottom:0;"></div>
-    <div id="en15494-warn" class="field-alert field-alert-danger" style="display:none;grid-column:1/-1;margin-top:8px;margin-bottom:0;">
-      🔴 <strong>EN 15494:2019 pictograms may not display clearly at this label size.</strong><br>
-      CLP labels for candles should ideally be 52mm or larger to display all mandatory safety information legibly.<br>
-      EN 15494 candle safety pictograms do <strong>not</strong> have to appear on the CLP label — they can legally be placed on the packaging (e.g. printed on the jar, box, or a separate swing tag).<br><br>
-      <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;">
-        <input type="checkbox" id="hide-en15494" onchange="S.hideEN15494=this.checked;updateLabel()" style="margin-top:2px;width:16px;height:16px;flex-shrink:0;accent-color:#991B1B;">
-        <span>Remove EN 15494 pictograms from this label <em>(I will display them on the packaging instead)</em></span>
-      </label>
-    </div>
     </div>
     <!-- Label language selector removed — GB CLP (English only) for now -->
     <input type="hidden" id="label-lang" value="en">
@@ -1067,6 +1045,21 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div style="display:flex;gap:8px;">
         <button id="border-on" onclick="setBorder(true)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--teal);background:var(--teal-light);color:var(--teal-dark);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Show border</button>
         <button id="border-off" onclick="setBorder(false)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Hide border</button>
+      </div>
+    </div>
+    <div class="sdiv">Dimensions (mm)</div>
+    <div class="custom-dims">
+      <div class="form-group" id="custom-w-group" style="grid-column:1/-1;"><label id="custom-w-label">Diameter (mm)</label><input type="number" id="custom-w" placeholder="e.g. 52" inputmode="numeric" min="52" max="150" oninput="onDimInput()"></div>
+      <div class="form-group" id="custom-h-group" style="display:none;"><label>Height (mm)</label><input type="number" id="custom-h" placeholder="e.g. 40" inputmode="numeric" min="52" max="200" oninput="onDimInput()"></div>
+      <div id="custom-size-warn" class="field-alert field-alert-warn" style="display:none;grid-column:1/-1;margin-bottom:0;"></div>
+      <div id="en15494-warn" class="field-alert field-alert-danger" style="display:none;grid-column:1/-1;margin-top:8px;margin-bottom:0;">
+        🔴 <strong>EN 15494:2019 pictograms may not display clearly at this label size.</strong><br>
+        CLP labels for candles should ideally be 52mm or larger to display all mandatory safety information legibly.<br>
+        EN 15494 candle safety pictograms do <strong>not</strong> have to appear on the CLP label — they can legally be placed on the packaging (e.g. printed on the jar, box, or a separate swing tag).<br><br>
+        <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;">
+          <input type="checkbox" id="hide-en15494" onchange="S.hideEN15494=this.checked;updateLabel()" style="margin-top:2px;width:16px;height:16px;flex-shrink:0;accent-color:#991B1B;">
+          <span>Remove EN 15494 pictograms from this label <em>(I will display them on the packaging instead)</em></span>
+        </label>
       </div>
     </div>
     </div><!-- /#label-appearance-section -->
@@ -3991,7 +3984,10 @@ function renderBuilderAccordion(){
       panelMap[n].forEach(source=>{const step=panel.querySelector('#step-'+source);if(step){step.classList.add('active');body.appendChild(step);}});
       if(n===1){
         const labelAppearance=staging.querySelector('#label-appearance-section');
-        if(labelAppearance)body.insertBefore(labelAppearance,body.firstChild);
+        // Keep the natural mobile reading order (load/shape first, then
+        // appearance/dimensions). Desktop CSS places these same siblings in
+        // two columns without changing their DOM order.
+        if(labelAppearance)body.appendChild(labelAppearance);
         const labelFitWarning=staging.querySelector('#label-warn-stage4');
         if(labelFitWarning)body.appendChild(labelFitWarning);
       }
@@ -4316,7 +4312,7 @@ function applySize(sz){
 function selectSize(sz){applySize(sz);}
 function updateSizeWarnings(){
   const rawW = parseInt(document.getElementById('custom-w').value)||50;
-  const rawH = parseInt(document.getElementById('custom-h').value)||50;
+  const rawH = S.shape==='rectangle'?(parseInt(document.getElementById('custom-h').value)||40):rawW;
   const warn = document.getElementById('custom-size-warn');
   if(warn){
     const _isSmallForCLP = rawW < 52 || rawH < 40;
@@ -4383,7 +4379,7 @@ function onDimInput(){
   S.size='custom';
   document.querySelectorAll('.size-card').forEach(c=>c.classList.toggle('selected',c.dataset.size==='custom'));
   const rawW = parseInt(document.getElementById('custom-w').value)||50;
-  const rawH = parseInt(document.getElementById('custom-h').value)||50;
+  const rawH = S.shape==='rectangle'?(parseInt(document.getElementById('custom-h').value)||40):rawW;
   S.customW = Math.min(Math.max(rawW, 10), 150);
   S.customH = Math.min(Math.max(rawH, 10), 150);
   syncDimFields();
@@ -4391,8 +4387,11 @@ function onDimInput(){
   updateLabel();
 }
 function syncDimFields(){
-  const hI=document.getElementById('custom-h'),hN=document.getElementById('height-note'),wI=document.getElementById('custom-w');
+  const hI=document.getElementById('custom-h'),hG=document.getElementById('custom-h-group'),wI=document.getElementById('custom-w'),wG=document.getElementById('custom-w-group'),wL=document.getElementById('custom-w-label');
   const isRect=S.shape==='rectangle';
+  if(wL)wL.textContent=isRect?'Width (mm)':(S.shape==='square'?'Size (mm)':'Diameter (mm)');
+  if(hG)hG.style.display=isRect?'block':'none';
+  if(wG)wG.style.gridColumn=isRect?'auto':'1 / -1';
   // Corrected 2026-09-07 (Michaela's explicit decision, see
   // LabelRenderer.isCustomSizeBelowSupportedMinimum()'s own comment): a
   // rectangle's real supported minimum is 52mm on its LONG side and 36mm
@@ -4404,10 +4403,10 @@ function syncDimFields(){
   // which is only a soft browser hint (spinner bounds), never the source
   // of truth. Circle/square are unchanged (a single dimension, 52mm).
   if(isRect){
-    hI.disabled=false;hI.style.opacity='1';if(hN)hN.textContent='';
+    hI.disabled=false;hI.style.opacity='1';
     hI.min='36';wI.min='36';
   } else {
-    hI.disabled=true;hI.style.opacity='0.45';if(hN)hN.innerHTML='— <a href="#" onclick="selectShape(\'rectangle\');return false;" style="color:#4C9BB0;font-size:11px;">Use Rectangle for different height</a>';const wv=document.getElementById('custom-w').value;if(wv)hI.value=wv;
+    hI.disabled=true;hI.style.opacity='1';const wv=wI.value;if(wv){hI.value=wv;S.customH=Math.min(Math.max(parseInt(wv)||50,10),150);}
     hI.min='52';wI.min='52';
   }
 }

@@ -46,6 +46,22 @@ assert(/\.preview-canvas-area\{min-height:0;\}/.test(desktopBlock), 'preview can
 assert(/\.compliance-card\.builder-rail-card\{grid-row:2;padding:12px 16px;/.test(desktopBlock), 'compact compliance card should remain beneath the preview');
 assert(/\.builder-accordion-body\.step1-active\{display:grid;grid-template-columns:1fr 1fr;/.test(desktopBlock), 'Step 1 two-column reflow must remain intact');
 
+// Step 1 size controls are deliberately direct-entry only: the visible
+// preset cards duplicated the dimensions fields and consumed the vertical
+// space this redesign is meant to recover. Internal selectSize()/applySize()
+// remain for saved-label compatibility and programmatic callers.
+const step1Source = rawSource.match(/<div class="step-panel active" id="step-1">[\s\S]*?<!-- STEP 2 -->/)?.[0] || '';
+assert(step1Source, 'could not isolate Step 1 source markup');
+assert(!/>Preset sizes</.test(step1Source), 'visible Preset sizes heading must be removed from Step 1');
+assert(!/class="size-grid"/.test(step1Source), 'visible preset-size cards must be removed from Step 1');
+assert(!/Choose a preset or enter your own dimensions/.test(step1Source), 'obsolete preset-size helper text must be removed');
+const appearanceSource = step1Source.match(/<div id="label-appearance-section">[\s\S]*?<\/div><!-- \/#label-appearance-section -->/)?.[0] || '';
+assert(appearanceSource, 'could not isolate #label-appearance-section');
+assert(appearanceSource.includes('id="custom-w-group"') && appearanceSource.includes('id="custom-h-group"'), 'Dimensions must live inside #label-appearance-section');
+assert(/id="custom-w-label">Diameter \(mm\)<\/label>/.test(appearanceSource), 'Circle must initially present one Diameter field');
+assert(/id="custom-h-group" style="display:none;"/.test(appearanceSource), 'Height field must initially be hidden for Circle');
+assert(/function selectSize\(sz\)\{applySize\(sz\);\}/.test(rawSource), 'internal selectSize compatibility function must remain');
+
 assert(/\.preview-panel\{background:white/.test(rawSource), 'outer preview panel should remain white');
 assert(/#preview-stage\{[^}]*padding:12px[^}]*background:var\(--off\)/.test(rawSource), 'close-fitting grey preview stage with 12px padding is missing');
 assert(/const MAX_DISPLAY_PX=290;/.test(rawSource), 'preview display cap must be 290px');
@@ -171,6 +187,45 @@ setTimeout(() => {
     assert(step1Body.classList.contains('step1-active'), 'Step 1 accordion body must carry the step1-active class for the desktop 2-column reflow');
     assert(document.getElementById('step-1'), '#step-1 missing from the DOM');
     assert(document.getElementById('label-appearance-section'), '#label-appearance-section missing from the DOM');
+    const appearance = document.getElementById('label-appearance-section');
+    const widthGroup = document.getElementById('custom-w-group');
+    const widthLabel = document.getElementById('custom-w-label');
+    const widthInput = document.getElementById('custom-w');
+    const heightGroup = document.getElementById('custom-h-group');
+    const heightInput = document.getElementById('custom-h');
+    assert(appearance.contains(widthGroup) && appearance.contains(heightGroup), 'Dimensions must render inside Label appearance');
+    assert([...step1Body.children].indexOf(document.getElementById('step-1')) < [...step1Body.children].indexOf(appearance), 'mobile/source reading order must keep load/shape before appearance/dimensions');
+
+    // Circle: a single Diameter field, with equal internal dimensions.
+    window.selectShape('circle');
+    window.selectSize(63);
+    assert.strictEqual(widthLabel.textContent, 'Diameter (mm)', 'Circle must label its one visible field Diameter');
+    assert.strictEqual(heightGroup.style.display, 'none', 'Circle must hide Height');
+    assert.strictEqual(widthGroup.style.gridColumn, '1 / -1', 'Circle Diameter field must span the dimensions row');
+    assert.strictEqual(widthInput.value, '63', 'internal 63mm preset compatibility regressed for Circle');
+    assert.deepStrictEqual({...window.getDims()}, {mmW:63,mmH:63,pw:260,ph:260}, 'Circle dimensions must remain equal');
+    widthInput.value='58';heightInput.value='99';window.onDimInput();
+    assert.strictEqual(window.eval('S.customH'), 58, 'Circle direct entry must mirror Diameter internally instead of retaining hidden Height');
+
+    // Square: a single Size field, also equal on both axes.
+    window.selectShape('square');
+    window.selectSize(75);
+    assert.strictEqual(widthLabel.textContent, 'Size (mm)', 'Square must label its one visible field Size');
+    assert.strictEqual(heightGroup.style.display, 'none', 'Square must hide Height');
+    assert.deepStrictEqual({...window.getDims()}, {mmW:75,mmH:75,pw:260,ph:260}, 'Square dimensions must remain equal');
+
+    // Rectangle: Width and Height are both visible and independently used.
+    window.selectShape('rectangle');
+    widthInput.value='63';heightInput.value='44';window.onDimInput();
+    assert.strictEqual(widthLabel.textContent, 'Width (mm)', 'Rectangle must label its first field Width');
+    assert.strictEqual(heightGroup.style.display, 'block', 'Rectangle must show Height');
+    assert.strictEqual(widthGroup.style.gridColumn, 'auto', 'Rectangle Width must share the row with Height');
+    assert.deepStrictEqual({...window.getDims()}, {mmW:63,mmH:44,pw:260,ph:182}, 'Rectangle must preserve independent Width and Height');
+
+    // Restore the ordinary starting fixture before the remaining navigation
+    // and preservation checks run.
+    window.selectShape('circle');
+    window.selectSize(52);
     window.setApprovedBuilderStep(2);
     const step2Body = document.querySelector('.builder-accordion-body');
     assert(!step2Body.classList.contains('step1-active'), 'step1-active must not leak onto other steps\' accordion bodies');
