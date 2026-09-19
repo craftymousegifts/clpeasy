@@ -198,7 +198,7 @@ function switchTab(tab) {
   document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
   document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
   document.getElementById('auth-title').textContent = tab === 'signin' ? 'Welcome back' : 'Create your account';
-  document.getElementById('auth-sub').textContent = tab === 'signin' ? 'Sign in to your CLPeasy account' : 'Start generating compliant CLP labels';
+  document.getElementById('auth-sub').textContent = tab === 'signin' ? 'Sign in to your CLPeasy account' : 'Start creating print-ready GB CLP labels';
   document.getElementById('submit-btn').textContent = tab === 'signin' ? 'Sign in' : 'Create account';
   document.getElementById('forgot-link').style.display = tab === 'signin' ? '' : 'none';
   document.getElementById('terms-text').style.display = tab === 'signup' ? '' : 'none';
@@ -206,6 +206,19 @@ function switchTab(tab) {
   document.getElementById('signup-hint').style.display = tab === 'signup' ? '' : 'none';
   hideMsg();
 }
+
+// Select the initial tab from ?mode=signup|signin as soon as switchTab is
+// defined -- deliberately BEFORE the Supabase client setup below, so the
+// correct heading/subheading/tab show up even if the Supabase CDN script
+// is blocked, slow, or fails to load. This used to run as the very last
+// statement in this script, after `const { createClient } = supabase`; if
+// that line threw (supabase undefined because the CDN script didn't load),
+// the rest of the script -- including this tab selection -- never ran, and
+// the page silently stayed on the hard-coded "Welcome back" sign-in state
+// regardless of ?mode=signup.
+const urlParams = new URLSearchParams(window.location.search);
+const defaultTab = urlParams.get('mode') === 'signup' ? 'signup' : 'signin';
+switchTab(defaultTab);
 
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -436,10 +449,6 @@ document.addEventListener('keydown', e => {
   else handleSubmit();
 });
 
-// Check URL params to determine which tab to show
-const urlParams=new URLSearchParams(window.location.search);
-const defaultTab=urlParams.get('mode')==='signup'?'signup':'signin';
-
 // Check if already logged in or handle redirect from email verification.
 // PASSWORD_RECOVERY is its own event (distinct from SIGNED_IN) — confirms
 // the isRecoveryFlow detection above and shows the same screen if the URL
@@ -460,9 +469,6 @@ sb.auth.onAuthStateChange((event, session) => {
 sb.auth.getSession().then(({ data: { session } }) => {
   if (session && !isRecoveryFlow) window.location.href = postAuthDestination;
 });
-
-// Set initial state
-switchTab(defaultTab);
 </script>
 <style>
   body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; user-select:none; }

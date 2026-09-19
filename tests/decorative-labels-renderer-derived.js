@@ -19,6 +19,16 @@ const path = require('path');
 const assert = require('assert');
 const { JSDOM } = require('jsdom');
 
+// index.html is checked out with this repo's native CRLF line endings, while
+// a freshly rendered SVG string built in-process by label-render.js uses
+// plain \n -- a platform difference in line-ending representation, not a
+// content difference. Normalize both sides before comparing so the content
+// comparison below isn't sensitive to which line-ending style either string
+// happens to carry.
+function normalizeLineEndings(value) {
+  return String(value).replace(/\r\n?/g, '\n');
+}
+
 function stubCanvas(window) {
   window.HTMLCanvasElement.prototype.getContext = () => ({
     font: '',
@@ -116,7 +126,11 @@ for (const fx of FIXTURES) {
   const m = re.exec(html);
   assert(m, `index.html must embed a <symbol id="clp-tmpl-${fx.id}">`);
   assert.strictEqual(m[1], regenerated[fx.id].viewBox, `${fx.id}: embedded viewBox does not match a fresh render`);
-  assert.strictEqual(m[2], regenerated[fx.id].body, `${fx.id}: embedded thumbnail markup does not match a fresh, genuine renderLabel() output -- it may have been hand-edited or gone stale`);
+  assert.strictEqual(
+    normalizeLineEndings(m[2]),
+    normalizeLineEndings(regenerated[fx.id].body),
+    `${fx.id}: embedded thumbnail markup does not match a fresh, genuine renderLabel() output -- it may have been hand-edited or gone stale`
+  );
 }
 
 // ── 3. Shape sanity: circle/square templates are square viewBoxes; the
