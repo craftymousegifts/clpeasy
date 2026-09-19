@@ -284,7 +284,12 @@ function assetMarkup(src, x, y, size, pool, poolKey){
 // H/P statement libraries and pictogram/icon image data
 // ============================================================
 
-const H_LIB=[{code:'H225',desc:'Highly flammable liquid and vapour'},{code:'H226',desc:'Flammable liquid and vapour'},{code:'H228',desc:'Flammable solid'},{code:'H301',desc:'Toxic if swallowed'},{code:'H302',desc:'Harmful if swallowed'},{code:'H304',desc:'May be fatal if swallowed and enters airways'},{code:'H311',desc:'Toxic in contact with skin'},{code:'H312',desc:'Harmful in contact with skin'},{code:'H314',desc:'Causes severe skin burns and eye damage'},{code:'H315',desc:'Causes skin irritation'},{code:'H317',desc:'May cause an allergic skin reaction'},{code:'H318',desc:'Causes serious eye damage'},{code:'H319',desc:'Causes serious eye irritation'},{code:'H331',desc:'Toxic if inhaled'},{code:'H332',desc:'Harmful if inhaled'},{code:'H334',desc:'May cause allergy or asthma symptoms if inhaled'},{code:'H335',desc:'May cause respiratory irritation'},{code:'H336',desc:'May cause drowsiness or dizziness'},{code:'H361',desc:'Suspected of damaging fertility or the unborn child'},{code:'H371',desc:'May cause damage to organs'},{code:'H373',desc:'May cause damage to organs through prolonged or repeated exposure'},{code:'H400',desc:'Very toxic to aquatic life'},{code:'H401',desc:'Toxic to aquatic life'},{code:'H410',desc:'Very toxic to aquatic life with long lasting effects'},{code:'H411',desc:'Toxic to aquatic life with long lasting effects'},{code:'H412',desc:'Harmful to aquatic life with long lasting effects'},{code:'H413',desc:'May cause long lasting harmful effects to aquatic life'},{code:'EUH066',desc:'Repeated exposure may cause skin dryness or cracking'},{code:'EUH208',desc:'Contains sensitiser — may produce an allergic reaction'},{code:'EUH071',desc:'Corrosive to the respiratory tract'},{code:'EUH210',desc:'Safety data sheet available on request'},{code:'H200',desc:'Unstable explosive'},{code:'H201',desc:'Explosive; mass explosion hazard'},{code:'H202',desc:'Explosive; severe projection hazard'},{code:'H203',desc:'Explosive; fire, blast or projection hazard'},{code:'H204',desc:'Fire or projection hazard'},{code:'H205',desc:'May mass explode in fire'},{code:'H223',desc:'Flammable aerosol'},{code:'H224',desc:'Extremely flammable liquid and vapour'},{code:'H240',desc:'Heating may cause an explosion'},{code:'H241',desc:'Heating may cause a fire or explosion'},{code:'H242',desc:'Heating may cause a fire'},{code:'H250',desc:'Catches fire spontaneously if exposed to air'},{code:'H251',desc:'Self-heating; may catch fire'},{code:'H252',desc:'Self-heating in large quantities; may catch fire'},{code:'H260',desc:'In contact with water releases flammable gases which may ignite spontaneously'},{code:'H261',desc:'In contact with water releases flammable gas'},{code:'H270',desc:'May cause or intensify fire; oxidiser'},{code:'H271',desc:'May cause fire or explosion; strong oxidiser'},{code:'H272',desc:'May intensify fire; oxidiser'},{code:'H280',desc:'Contains gas under pressure; may explode if heated'},{code:'H281',desc:'Contains refrigerated gas; may cause cryogenic burns or injury'},{code:'H282',desc:'Extremely flammable chemical under pressure: may explode if heated'},{code:'H283',desc:'Flammable chemical under pressure: may explode if heated'},{code:'H284',desc:'Chemical under pressure: may explode if heated'},{code:'H290',desc:'May be corrosive to metals'},{code:'H300',desc:'Fatal if swallowed'},{code:'H310',desc:'Fatal in contact with skin'},{code:'H316',desc:'Causes mild skin irritation'},{code:'H330',desc:'Fatal if inhaled'},{code:'H340',desc:'May cause genetic defects'},{code:'H341',desc:'Suspected of causing genetic defects'},{code:'H350',desc:'May cause cancer'},{code:'H351',desc:'Suspected of causing cancer'},{code:'H360',desc:'May damage fertility or the unborn child'},{code:'H362',desc:'May cause harm to breast-fed children'},{code:'H370',desc:'Causes damage to organs'},{code:'H372',desc:'Causes damage to organs through prolonged or repeated exposure'}];
+// H_LIB lists GB CLP-recognised hazard statement codes only. H316 and
+// H401 are deliberately absent (not GB-adopted); see GB_UNSUPPORTED_CODES
+// below for codes that are explicitly blocked, with a dedicated message,
+// rather than just silently unrecognised. Kept in sync with builder.html's
+// own H_LIB copy -- both must change together.
+const H_LIB=[{code:'H225',desc:'Highly flammable liquid and vapour'},{code:'H226',desc:'Flammable liquid and vapour'},{code:'H228',desc:'Flammable solid'},{code:'H301',desc:'Toxic if swallowed'},{code:'H302',desc:'Harmful if swallowed'},{code:'H304',desc:'May be fatal if swallowed and enters airways'},{code:'H311',desc:'Toxic in contact with skin'},{code:'H312',desc:'Harmful in contact with skin'},{code:'H314',desc:'Causes severe skin burns and eye damage'},{code:'H315',desc:'Causes skin irritation'},{code:'H317',desc:'May cause an allergic skin reaction'},{code:'H318',desc:'Causes serious eye damage'},{code:'H319',desc:'Causes serious eye irritation'},{code:'H331',desc:'Toxic if inhaled'},{code:'H332',desc:'Harmful if inhaled'},{code:'H334',desc:'May cause allergy or asthma symptoms if inhaled'},{code:'H335',desc:'May cause respiratory irritation'},{code:'H336',desc:'May cause drowsiness or dizziness'},{code:'H361',desc:'Suspected of damaging fertility or the unborn child'},{code:'H371',desc:'May cause damage to organs'},{code:'H373',desc:'May cause damage to organs through prolonged or repeated exposure'},{code:'H400',desc:'Very toxic to aquatic life'},{code:'H410',desc:'Very toxic to aquatic life with long lasting effects'},{code:'H411',desc:'Toxic to aquatic life with long lasting effects'},{code:'H412',desc:'Harmful to aquatic life with long lasting effects'},{code:'H413',desc:'May cause long lasting harmful effects to aquatic life'},{code:'EUH066',desc:'Repeated exposure may cause skin dryness or cracking'},{code:'EUH208',desc:'Contains sensitiser — may produce an allergic reaction'},{code:'EUH071',desc:'Corrosive to the respiratory tract'},{code:'EUH210',desc:'Safety data sheet available on request'},{code:'H200',desc:'Unstable explosive'},{code:'H201',desc:'Explosive; mass explosion hazard'},{code:'H202',desc:'Explosive; severe projection hazard'},{code:'H203',desc:'Explosive; fire, blast or projection hazard'},{code:'H204',desc:'Fire or projection hazard'},{code:'H205',desc:'May mass explode in fire'},{code:'H223',desc:'Flammable aerosol'},{code:'H224',desc:'Extremely flammable liquid and vapour'},{code:'H240',desc:'Heating may cause an explosion'},{code:'H241',desc:'Heating may cause a fire or explosion'},{code:'H242',desc:'Heating may cause a fire'},{code:'H250',desc:'Catches fire spontaneously if exposed to air'},{code:'H251',desc:'Self-heating; may catch fire'},{code:'H252',desc:'Self-heating in large quantities; may catch fire'},{code:'H260',desc:'In contact with water releases flammable gases which may ignite spontaneously'},{code:'H261',desc:'In contact with water releases flammable gas'},{code:'H270',desc:'May cause or intensify fire; oxidiser'},{code:'H271',desc:'May cause fire or explosion; strong oxidiser'},{code:'H272',desc:'May intensify fire; oxidiser'},{code:'H280',desc:'Contains gas under pressure; may explode if heated'},{code:'H281',desc:'Contains refrigerated gas; may cause cryogenic burns or injury'},{code:'H282',desc:'Extremely flammable chemical under pressure: may explode if heated'},{code:'H283',desc:'Flammable chemical under pressure: may explode if heated'},{code:'H284',desc:'Chemical under pressure: may explode if heated'},{code:'H290',desc:'May be corrosive to metals'},{code:'H300',desc:'Fatal if swallowed'},{code:'H310',desc:'Fatal in contact with skin'},{code:'H330',desc:'Fatal if inhaled'},{code:'H340',desc:'May cause genetic defects'},{code:'H341',desc:'Suspected of causing genetic defects'},{code:'H350',desc:'May cause cancer'},{code:'H351',desc:'Suspected of causing cancer'},{code:'H360',desc:'May damage fertility or the unborn child'},{code:'H362',desc:'May cause harm to breast-fed children'},{code:'H370',desc:'Causes damage to organs'},{code:'H372',desc:'Causes damage to organs through prolonged or repeated exposure'}];
 const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product container or label at hand'},{code:'P102',desc:'Keep out of reach of children'},{code:'P103',desc:'Read label before use'},{code:'P210',desc:'Keep away from heat and ignition sources. No smoking'},{code:'P233',desc:'Keep container tightly closed'},{code:'P260',desc:'Do not breathe vapours or dust'},{code:'P261',desc:'Avoid breathing vapours and dust'},{code:'P271',desc:'Use only outdoors or in a well-ventilated area'},{code:'P273',desc:'Avoid release to the environment'},{code:'P301+P310',desc:'IF SWALLOWED: immediately call a POISON CENTRE or doctor'},{code:'P301+P312',desc:'IF SWALLOWED: call a POISON CENTRE or doctor if unwell'},{code:'P302+P352',desc:'IF ON SKIN: wash with plenty of water'},{code:'P304+P340',desc:'IF INHALED: remove to fresh air and keep comfortable for breathing'},{code:'P305+P351+P338',desc:'IF IN EYES: rinse cautiously with water for several minutes'},{code:'P312',desc:'Call a POISON CENTRE or doctor if you feel unwell'},{code:'P313',desc:'Get medical advice/attention'},{code:'P314',desc:'Get medical advice if you feel unwell'},{code:'P321',desc:'Specific treatment: see label'},{code:'P330',desc:'Rinse mouth'},{code:'P331',desc:'Do NOT induce vomiting'},{code:'P332+P313',desc:'If skin irritation occurs: get medical advice/attention'},{code:'P333+P313',desc:'If skin irritation or rash occurs: get medical advice'},{code:'P337+P313',desc:'If eye irritation persists: get medical advice'},{code:'P370+P378',desc:'In case of fire: use appropriate media for extinction'},{code:'P391',desc:'Collect spillage'},{code:'P403+P233',desc:'Store in a well-ventilated place. Keep container tightly closed'},{code:'P211',desc:'Do not spray on an open flame or other ignition source'},{code:'P501',desc:'Dispose of contents and container in accordance with local regulations'},
 // P280 (verified against the retained GB-CLP Regulation (EC) No 1272/2008,
 // Annex IV, Table 6.2, legislation.gov.uk, current in-force UK text) is a
@@ -302,6 +307,43 @@ const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product contai
 // assembly, the same way every other P-code's fixed desc is used, except
 // resolved dynamically per label instead of being a constant.
 {code:'P280',desc:'Wear the applicable protective equipment (select which items apply when adding this code)'}];
+
+// ============================================================
+// Active regulatory profile and confirmed non-GB-CLP hazard codes
+// ============================================================
+// CLPeasy currently supports one regulatory profile: products placed on
+// the market in Great Britain (England, Scotland and Wales). This is not
+// a claim about product/fragrance origin -- it is the target SALES
+// MARKET the applied hazard-statement rules are drawn from. See the
+// read-only future-profiles note in the implementation report for how
+// additional profiles (e.g. Northern Ireland/EU) would be added without
+// merging their code libraries into this one.
+const ACTIVE_REGULATORY_PROFILE = 'GB';
+
+// SINGLE SOURCE OF TRUTH for hazard-statement codes CONFIRMED, against a
+// primary GB source, to be UN GHS statements GB CLP has never adopted --
+// as opposed to a code merely absent from H_LIB for some other reason (a
+// typo, malformed paste text, or a genuinely unhandled code CLPeasy
+// hasn't been taught yet). Both cases block progression/rendering, but
+// callers use THIS list to tell the two apart and show the right
+// message: a code listed here gets the specific "not supported under the
+// supplier-confirmation message for a Great Britain CLP label; any other code absent from
+// H_LIB gets the generic "code not recognised" message instead.
+//
+// H316 (Skin Irritation Cat 3) and H401 (Acute Aquatic Toxicity Cat 2):
+// confirmed against the GB-retained Regulation (EC) 1272/2008, Annex I --
+// skin corrosion/irritation has only Cat 1/corrosion and Cat 2/H315;
+// acute aquatic toxicity has only Cat 1/H400. H402 (Acute Aquatic
+// Toxicity Cat 3) is the same Annex I gap as H401.
+//
+// This list only ever contains codes confirmed against a primary GB
+// source -- do not add a code here without that confirmation.
+//
+// A code in this list is never added back into H_LIB, and CLPeasy never
+// automatically removes, replaces or translates it into another
+// statement -- it blocks and tells the maker to check their supplier's
+// current Great Britain-market SDS instead.
+const GB_UNSUPPORTED_CODES=['H316','H401','H402'];
 
 // The selectable items P280 offers, in the exact order the statutory text
 // lists them -- used both by Builder's picker UI and by buildP280Wording()
@@ -663,6 +705,125 @@ function choosePictoMmAndRender(rawData, opts){
     if(midResult.fits){ lo=mid; loResult=midResult; } else { hi=mid; }
   }
   return loResult;
+}
+
+// ── FAIL-CLOSED BLOCKED OVERLAY -- reason-specific messages ───────────────
+// A regulatory/code problem is NOT the same failure as a label that's
+// genuinely too small for its real content, and telling a maker to
+// "select a larger size" for the former is actively wrong advice -- no
+// size fixes an unsupported or unrecognised hazard code. This helper picks
+// the right overlay for the actual reason `_contentBlocked` is true; it is
+// called only when `_contentBlocked` is true (see the single
+// `_contentBlocked?` gate at the overflowOverlay assignment below), so it
+// never needs its own "nothing is blocked" branch.
+//
+// `unsupportedCodes` and `genericCodes` are the exact, independent lists of
+// confirmed-non-GB codes (GB_UNSUPPORTED_CODES) and other unrecognised
+// codes present, respectively -- NEVER inferred here, always passed in
+// already-computed. Both are shown together when both are non-empty (a
+// mixed unsupported+generic input must never have one group hide the
+// other); when neither is non-empty, this falls through to the
+// content-does-not-fit branch, which is BYTE-IDENTICAL to the overlay this
+// replaced, so genuine layout overflow with only recognised, GB-supported
+// codes is completely unaffected by this change.
+function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, genericCodes){
+  unsupportedCodes = unsupportedCodes||[]; genericCodes = genericCodes||[];
+  const hasIssue = unsupportedCodes.length>0 || genericCodes.length>0;
+
+  if(!hasIssue){
+    // Genuine physical overflow with only recognised/supported codes --
+    // byte-identical to the original single-line overlay this replaced.
+    // Correction 2 only changes the code-related wording below; this
+    // branch (and its exact markup) is deliberately left untouched.
+    const titleY = (ph*.46).toFixed(1), bodyY = (ph*.55).toFixed(1);
+    const titleFS = Math.max(8,pw*.035).toFixed(1), bodyFS = Math.max(6,pw*.025).toFixed(1);
+    return `<g class="clp-fit-block"><rect x="0" y="0" width="${pw}" height="${ph}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${titleY}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${titleFS}" font-weight="800" fill="#991b1b">FULL CONTENT DOES NOT FIT</text><text x="${cx}" y="${bodyY}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${bodyFS}" fill="#991b1b">Select a larger size in Step 1</text></g>`;
+  }
+
+  // ── Correction 2 (2026-09, readable blocked-preview wording) ──────────
+  // Codes reaching here are, by definition, not confirmed against
+  // H_LIB/P_LIB (that's what makes them unsupported/generic in the first
+  // place), so they remain untrusted text -- xe() (the same XML-escape
+  // already used elsewhere in this file) is applied to every code value
+  // before it is interpolated, exactly as the previous single-line
+  // version did, so a malformed/adversarial code value still can't break
+  // out of the <text>/<tspan> elements.
+  const heading = 'LABEL DATA NEEDS REVIEW';
+  const uCodes = unsupportedCodes.map(xe), gCodes = genericCodes.map(xe);
+  let sentences;
+  if(uCodes.length && gCodes.length){
+    // Mixed: identify both groups by name -- neither hides the other --
+    // plus the one instruction both groups share.
+    sentences = [
+      uCodes.join(', ')+' need'+(uCodes.length>1?'':'s')+' supplier confirmation for a Great Britain CLP label.',
+      gCodes.join(', ')+' '+(gCodes.length>1?'were':'was')+' not recognised by CLPeasy.',
+      'Check you pasted Section 2.2 from the correct supplier SDS.'
+    ];
+  } else if(uCodes.length){
+    // Verified GB-unsupported code(s) -- confirmed regulatory issue.
+    sentences = [
+      uCodes.join(', ')+' need'+(uCodes.length>1?'':'s')+' supplier confirmation for a Great Britain CLP label.',
+      'Check you pasted Section 2.2 from the correct supplier SDS.',
+      'Ask your supplier for current GB CLP information for this product and concentration.'
+    ];
+  } else {
+    // Generic/unrecognised code(s) -- must NOT state or imply the code is
+    // legally unsupported under GB rules, since that has not been verified.
+    sentences = [
+      gCodes.join(', ')+' '+(gCodes.length>1?'were':'was')+' not recognised by CLPeasy.',
+      'Check you pasted Section 2.2 from the correct supplier SDS.',
+      'If the code is present in Section 2.2, contact CLPeasy support.'
+    ];
+  }
+
+  // Largest safe, genuinely readable font sizes -- materially larger than
+  // the previous fixed 8px/6px minimums. chordWFn (the caller's own
+  // circle/square/rectangle chord-width function, reused rather than
+  // reimplemented) is used to size and wrap every line so it stays inside
+  // the label's true shape at its own row, not just inside the pw/ph
+  // bounding box (which the outer clip-path would otherwise silently clip
+  // into invisibility for a circle).
+  const HEAD_MIN=11, HEAD_MAX=22, BODY_MIN=9, BODY_MAX=15;
+  // Generous upper-bound line-count budget (heading + up to 8 wrapped body
+  // lines comfortably covers the longest realistic case -- all 3
+  // GB_UNSUPPORTED_CODES plus a generic code, each sentence wrapped) used
+  // only to pick a conservative, safe wrap width; the real, usually much
+  // shorter, wrapped output is what actually gets drawn.
+  const MAX_BODY_LINES = 8;
+  let headFS = Math.min(HEAD_MAX, Math.max(HEAD_MIN, pw*.058));
+  let bodyFS = Math.min(BODY_MAX, Math.max(BODY_MIN, pw*.040));
+  let wrapped = [], lineH = 0, gap = 0, safeW = 0;
+  for(let attempt=0; attempt<10; attempt++){
+    lineH = bodyFS*1.32;
+    // Keep the first explanation line visibly separate from the bold
+    // heading. A half-line gap left the two text boxes touching at some
+    // preview scales even though their baselines were technically distinct.
+    gap = bodyFS*1.1;
+    const halfSpan = (headFS*1.1 + gap + MAX_BODY_LINES*lineH)/2;
+    // The narrower of the two rows at the assumed block's top/bottom edge
+    // -- for a circle this is always the true minimum available width
+    // across every row the block can occupy, since chord width only
+    // shrinks moving away from centre; for a square/rectangle chordWFn is
+    // constant, so this is just that constant.
+    safeW = Math.min(chordWFn(cy-halfSpan,0.12), chordWFn(cy+halfSpan,0.12)) * 0.94;
+    wrapped = [];
+    for(const s of sentences) wrapped = wrapped.concat(wrapText(s, safeW, bodyFS, false, false));
+    if(wrapped.length<=MAX_BODY_LINES && safeW>20) break;
+    if(headFS>HEAD_MIN) headFS-=1;
+    if(bodyFS>BODY_MIN) bodyFS-=1;
+    if(headFS<=HEAD_MIN && bodyFS<=BODY_MIN) break; // floor reached -- accept best effort (wrapText never drops text)
+  }
+  // Heading is bold/larger than body -- confirm it independently fits the
+  // same safe width, shrinking further (never growing) if not.
+  headFS = Math.min(headFS, fitFont(heading, safeW*0.98, headFS, HEAD_MIN, true, false, 0.5));
+
+  const totalBodyLines = wrapped.length;
+  const totalH = headFS*1.1 + gap + totalBodyLines*lineH;
+  let y = cy - totalH/2;
+  const headY = (y + headFS*0.85).toFixed(1);
+  y += headFS*1.1 + gap;
+  const bodyTspans = wrapped.map((ln,i)=>`<tspan x="${cx}" y="${(y+i*lineH).toFixed(1)}">${ln}</tspan>`).join('');
+  return `<g class="clp-fit-block"><rect x="0" y="0" width="${pw}" height="${ph}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${headY}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${headFS.toFixed(1)}" font-weight="800" fill="#991b1b">${heading}</text><text x="${cx}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${bodyFS.toFixed(1)}" fill="#991b1b">${bodyTspans}</text></g>`;
 }
 
 function renderLabel(rawData, opts){
@@ -1513,11 +1674,56 @@ function renderLabel(rawData, opts){
   const _contentBlocked = _labelLegibilityWarn || _footerLegibilityClipped
     || _unrecognizedCodes.length>0 || _bcfTooSmall || _scentTooSmall
     || _bizNameTooSmall || _typeTooSmall || _signalTooSmall;
+  // ── STRUCTURED BLOCK REASON -- never inferred from fits:false alone ─────
+  // A code absent from H_LIB is either a CONFIRMED code that the ACTIVE
+  // regulatory profile (currently Great Britain only -- see
+  // ACTIVE_REGULATORY_PROFILE/GB_UNSUPPORTED_CODES above) does not support,
+  // or some other unrecognised code (typo, malformed paste, or a genuinely
+  // unhandled code -- CLPeasy makes no claim about its regulatory status
+  // either way). Both groups are computed and exposed IN FULL below --
+  // never just one, even when they occur together on the same input, so a
+  // mixed unsupported+generic input can never have one group silently hide
+  // the other from a caller or a rendered message.
+  //
+  // `_blockReason`/`_blockReasonCodes` remain a single leading-reason
+  // summary (kept for existing callers/tests that only need "the ONE
+  // headline reason"): a confirmed-unsupported code is the most
+  // actionable/specific fact, then a generic unrecognised code, then
+  // genuine layout/legibility overflow with every code recognised and
+  // supported -- so a maker is never told "select a larger size" when the
+  // real problem is a regulatory code, even if the label would ALSO be too
+  // small once that code's text were removed. Callers that need the FULL
+  // picture (e.g. a mixed unsupported+generic input, or a regulatory issue
+  // that coincides with genuine overflow) should read the structured
+  // fields below instead: `unsupportedCodes`, `unrecognizedCodesGeneric`
+  // and `contentOverflow` are each independently complete regardless of
+  // which one `_blockReason` leads with.
+  const _unsupportedCodesFound = _unrecognizedCodes.filter(c => GB_UNSUPPORTED_CODES.includes(c));
+  const _genericUnrecognizedFound = _unrecognizedCodes.filter(c => !GB_UNSUPPORTED_CODES.includes(c));
+  // "Physical content overflow" -- every non-code blocking flag, i.e.
+  // _contentBlocked minus the unrecognised-code contribution. Independent
+  // of blockReason's priority ordering: this is true/false on its own
+  // merits, so a caller can tell "is there ALSO a genuine fit problem"
+  // even when a code issue is the headline reason.
+  const _contentOverflow = _labelLegibilityWarn || _footerLegibilityClipped
+    || _bcfTooSmall || _scentTooSmall || _bizNameTooSmall || _typeTooSmall || _signalTooSmall;
+  const _blockReason = !_contentBlocked ? null
+    : _unsupportedCodesFound.length>0 ? 'unsupported-gb-clp-code'
+    : _genericUnrecognizedFound.length>0 ? 'unrecognised-code'
+    : 'content-does-not-fit';
+  const _blockReasonCodes = _blockReason==='unsupported-gb-clp-code' ? _unsupportedCodesFound
+    : _blockReason==='unrecognised-code' ? _genericUnrecognizedFound : [];
   // Full-bleed rect: the existing clip-path (applied to the whole <g> this
   // gets drawn into) already confines it to the label's true circle/rect
   // outline, so covering the entire canonical canvas can never bleed past
   // the real label edge, and nothing blocked can peek out from behind it.
-  const overflowOverlay=_contentBlocked?`<g class="clp-fit-block"><rect x="0" y="0" width="${pw}" height="${ph}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${(ph*.46).toFixed(1)}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${Math.max(8,pw*.035).toFixed(1)}" font-weight="800" fill="#991b1b">FULL CONTENT DOES NOT FIT</text><text x="${cx}" y="${(ph*.55).toFixed(1)}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${Math.max(6,pw*.025).toFixed(1)}" fill="#991b1b">Select a larger size in Step 1</text></g>`:'';
+  // Reason-specific content lives in buildBlockedOverlaySVG() above (see
+  // its comment); the content-does-not-fit branch there is byte-identical
+  // to what this line used to build inline, so genuine overflow with only
+  // recognised/supported codes is unaffected by this change. Both code
+  // groups are passed through in full (not just the leading-reason one),
+  // so a mixed unsupported+generic input shows both in the overlay too.
+  const overflowOverlay=_contentBlocked?buildBlockedOverlaySVG(pw,ph,cx,cy,chordW,_unsupportedCodesFound,_genericUnrecognizedFound):'';
   // Y positions already set per-slot — no global recompute needed
   const footerRendered = footerElems.map(elem=>{
     if(elem.slotY > sBot - 1) return '';
@@ -1696,6 +1902,17 @@ function renderLabel(rawData, opts){
     hazardYSlack: _hazardYSlack,
     footerClipped: _footerLegibilityClipped,
     unrecognizedCodes: _unrecognizedCodes.slice(),
+    // Structured failure fields: the confirmed-unsupported and generic-
+    // unrecognised code groups are each exposed IN FULL and independently
+    // -- a caller never has to re-derive either by cross-referencing
+    // unrecognizedCodes against GB_UNSUPPORTED_CODES itself, and neither
+    // group is ever dropped just because the other is also present (a
+    // mixed unsupported+generic input reports both). See _blockReason
+    // above for the single leading-reason summary these are alongside.
+    unsupportedCodes: _unsupportedCodesFound.slice(),
+    unrecognizedCodesGeneric: _genericUnrecognizedFound.slice(),
+    contentOverflow: _contentOverflow,
+    regulatoryProfile: ACTIVE_REGULATORY_PROFILE,
     // The physical GHS pictogram size chosen for THIS render by
     // choosePictoMmAndRender()'s bounded search -- between
     // PICTO_FLOOR_SQUARE_MM (10mm red-square side) and PICTO_TARGET_SQUARE_MM
@@ -1738,7 +1955,30 @@ function renderLabel(rawData, opts){
   // fitting are equally disqualifying -- see _mandatoryMinFS above.
   const fits = !_contentBlocked;
 
-  return {svg, fits, warnings, metrics, rendererVersion: RENDERER_VERSION};
+  // Structured failure fields a caller (Builder, Print Sheet Composer,
+  // exports) must use instead of inferring anything from fits:false alone:
+  //   blockReason/blockReasonCodes -- single leading-reason summary, one of
+  //     'unsupported-gb-clp-code' | 'unrecognised-code' |
+  //     'content-does-not-fit' | null. See _blockReason above for priority.
+  //   regulatoryProfile        -- the active regulatory profile ('GB').
+  //   unsupportedCodes         -- ALL confirmed-unsupported codes present
+  //                                (not just blockReasonCodes' subset).
+  //   unrecognizedCodesGeneric -- ALL other unrecognised codes present.
+  //   contentOverflow          -- true if genuine physical/legibility
+  //                                overflow applies, independent of and
+  //                                alongside any code issue above.
+  //   blocked                  -- same as !fits, under an explicit name.
+  // These also appear on `metrics` (see above); duplicated at the top
+  // level because blockReason/blockReasonCodes have always lived here.
+  return {
+    svg, fits, blocked: _contentBlocked,
+    blockReason: _blockReason, blockReasonCodes: _blockReasonCodes.slice(),
+    regulatoryProfile: ACTIVE_REGULATORY_PROFILE,
+    unsupportedCodes: _unsupportedCodesFound.slice(),
+    unrecognizedCodesGeneric: _genericUnrecognizedFound.slice(),
+    contentOverflow: _contentOverflow,
+    warnings, metrics, rendererVersion: RENDERER_VERSION,
+  };
 }
 
 // ── SMALLEST FITTING SIZE — read-only "would a larger size work?" search ──
@@ -2058,7 +2298,7 @@ function isCustomSizeBelowSupportedMinimum(shape, w, h){
 }
 
   const LabelRenderer = {
-    renderLabel, normalizeLabel, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
+    renderLabel, normalizeLabel, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, GB_UNSUPPORTED_CODES, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
     // GHS pictogram geometry -- exposed so tests/consumers measuring
     // compliance never have to re-derive or hardcode the sqrt(2)
     // square<->bounding-box relationship themselves.
