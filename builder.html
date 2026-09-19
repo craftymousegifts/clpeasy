@@ -3479,7 +3479,7 @@ function renderTags(){
   const tags=document.getElementById('allergen-tags');
   if(!tags)return;
   if(S.sensitisers.length===0){
-    tags.innerHTML='<span style="font-size:13px;color:var(--muted);font-style:italic;">None detected — paste SDS data and click Extract</span>';
+    tags.innerHTML='<span style="font-size:13px;color:var(--muted);font-style:italic;">None detected — paste Section 2.2 data and click Extract</span>';
   } else {
     tags.innerHTML=S.sensitisers.map(name=>
       `<span class="allergen-tag">${escapeBuilderText(name)}</span>`
