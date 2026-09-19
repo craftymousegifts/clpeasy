@@ -4694,13 +4694,19 @@ function updateLabel(){
   // becomes unfittable mid-edit is blocked immediately, and re-enables
   // automatically once the maker fixes it.
   if(typeof toggleDownload==='function') toggleDownload();
-  // Desktop preview — panel is retired (replaced by the top preview bar), skip entirely.
+  // Keep the desktop preview populated even while it is hidden by the
+  // mobile breakpoint. If the page loads at <=860px and is then widened
+  // to desktop, the resize handler can immediately fit an existing SVG
+  // instead of revealing an empty preview panel until the next form edit.
+  // Only the layout-dependent fit/zoom work needs the visibility guard.
   const dc=document.getElementById('label-svg-container');
-  if(dc && dc.offsetParent!==null){
+  if(dc){
     dc.innerHTML=svgHtml;
-    // Auto-fit zoom to fill available panel on first render, then apply current zoom
-    recomputePreviewFit();
-    applyZoomToSVG();
+    if(dc.offsetParent!==null){
+      // Auto-fit zoom to fill available panel on first render, then apply current zoom
+      recomputePreviewFit();
+      applyZoomToSVG();
+    }
   }
   // Sheet preview
   const sc=document.getElementById('sheet-label-container');

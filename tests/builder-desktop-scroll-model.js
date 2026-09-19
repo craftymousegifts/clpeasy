@@ -121,6 +121,15 @@ const document = window.document;
 
 setTimeout(() => {
   try {
+    // The desktop preview must be populated on initial render even when it
+    // is currently hidden by the mobile breakpoint. This protects the
+    // exact 860 -> 861px transition: once desktop CSS reveals the panel,
+    // the resize handler has a real SVG to fit instead of showing a blank
+    // canvas until the maker changes another field.
+    const initialDesktopSvg = document.querySelector('#label-svg-container svg');
+    assert(initialDesktopSvg, 'initial render must populate the desktop preview while hidden');
+    assert(document.querySelector('#sheet-label-container svg'), 'initial render must continue to populate the mobile preview sheet');
+
     // Stepper still exists and is visible in the DOM (structural presence
     // -- NOT a claim about whether it visually stays on-screen while
     // scrolling, which needs a real browser).
