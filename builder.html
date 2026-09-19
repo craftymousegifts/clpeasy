@@ -190,12 +190,47 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
    responsive story fighting itself. AI Assistant and Label Compliance are
    now contextual UI inside/around the form instead of a permanent column
    — see .ai-banner and .page-compliance-badge below — so there is nothing
-   left to reflow or hide at narrower widths.) */
-.builder-layout{display:grid;grid-template-columns:minmax(340px,390px) minmax(440px,1fr) 270px;gap:20px;padding:20px 32px 40px;max-width:1500px;margin:0 auto;align-items:start;}
-.builder-layout.reviewing{grid-template-columns:minmax(480px,.95fr) minmax(440px,1.05fr);}
-.builder-layout.reviewing .builder-side-rail{display:none!important;}
-@media(max-width:1280px){.builder-layout{grid-template-columns:minmax(330px,1fr) minmax(400px,1.25fr);}.builder-side-rail{grid-column:1/-1;display:grid!important;grid-template-columns:repeat(3,1fr);}}
-@media(max-width:860px){.builder-layout,.builder-layout.reviewing{display:block;padding:16px 24px 40px;}}
+   left to reflow or hide at narrower widths.)
+   (24 Sep 2026, stepper redesign: the right-hand "Steps" card is gone --
+   replaced by the sticky horizontal stepper above -- so the always-two-
+   column form|preview split that used to be step-5-only (.reviewing) is
+   now the standing layout on every step, at the same ~47/53 form/preview
+   ratio .reviewing already used. Kept as a fixed 2-column grid rather than
+   3, with .compliance-card spanning both columns as a full-width row
+   underneath, per the "left: controls, right: preview" requirement.)
+   The form is the dominant workspace. The preview remains beside it on
+   desktop, but its column is deliberately narrow enough that the form
+   controls can use the page width without collapsing the main sidebar. */
+.builder-layout{display:grid;grid-template-columns:minmax(0,1fr) clamp(320px,24vw,380px);gap:20px;padding:20px 32px 40px;max-width:1850px;margin:0 auto;align-items:start;}
+.compliance-card{grid-column:2;max-width:100%;}
+@media(max-width:860px){.builder-layout{display:block;padding:16px 24px 40px;}.compliance-card{grid-column:auto;}}
+.wizard-panel{background:white;border:1.5px solid var(--border);border-radius:18px;padding:24px 28px 32px;min-width:0;}
+
+/* STICKY HORIZONTAL STEPPER (replaces the old right-rail "Steps" card) */
+.builder-stepper{position:sticky;top:0;z-index:60;background:var(--bg,#F7FAFB);padding:14px 32px;max-width:1850px;margin:0 auto;}
+.stepper-track{display:flex;align-items:center;gap:8px;max-width:1850px;margin:0 auto;background:white;border:1.5px solid var(--border);border-radius:14px;padding:10px 18px;box-shadow:0 4px 18px rgba(15,23,42,.035);}
+.stepper-item{display:flex;align-items:center;gap:8px;background:none;border:0;padding:6px 4px;cursor:pointer;font-family:'DM Sans',sans-serif;flex-shrink:0;}
+.stepper-item:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:8px;}
+.stepper-num{width:24px;height:24px;border-radius:50%;border:1.5px solid #cbd5e1;background:white;color:var(--muted);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.stepper-item.active .stepper-num{background:var(--teal);border-color:var(--teal);color:white;}
+.stepper-item.complete .stepper-num{background:var(--teal-light);border-color:var(--teal);color:var(--teal-dark);}
+.stepper-label{font-size:13px;font-weight:700;color:var(--muted);white-space:nowrap;}
+.stepper-item.active .stepper-label{color:var(--text);}
+.stepper-status{display:none;}
+.stepper-line{flex:1;height:1.5px;background:var(--border);min-width:14px;}
+.stepper-item.complete+.stepper-line{background:var(--teal);}
+.stepper-mobile-summary{display:none;width:100%;background:white;border:1.5px solid var(--border);border-radius:12px;padding:12px 16px;align-items:center;justify-content:space-between;font:700 13px 'DM Sans',sans-serif;color:var(--text);cursor:pointer;}
+.stepper-chevron{color:var(--muted);transition:transform .2s;}
+.builder-stepper.expanded .stepper-chevron{transform:rotate(180deg);}
+@media(max-width:860px){
+  .builder-stepper{padding:12px 16px;position:static;}
+  .stepper-mobile-summary{display:flex;}
+  .stepper-track{display:none;flex-direction:column;align-items:stretch;gap:2px;margin-top:8px;padding:8px;}
+  .builder-stepper.expanded .stepper-track{display:flex;}
+  .stepper-item{padding:10px 8px;border-radius:8px;}
+  .stepper-item.active{background:var(--teal-light);}
+  .stepper-line{display:none;}
+}
 .wizard-panel{background:white;border:1.5px solid var(--border);border-radius:18px;padding:24px 28px 32px;min-width:0;}
 .builder-accordion{display:flex;flex-direction:column;}
 .builder-accordion-section{border-bottom:1px solid var(--border);}
@@ -203,7 +238,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 .builder-accordion-trigger{width:100%;display:grid;grid-template-columns:26px 1fr 18px;align-items:center;gap:10px;padding:14px 0;border:0;background:white;color:var(--text);font:700 14px 'DM Sans',sans-serif;text-align:left;cursor:pointer;}
 .builder-accordion-trigger .acc-num{width:23px;height:23px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;}
 .builder-accordion-section:not(.active) .acc-num{background:#eef4f6;color:var(--teal-dark);}
-.builder-accordion-body{padding:2px 6px 12px 0;max-height:calc(100vh - 330px);overflow-y:auto;scrollbar-gutter:stable;}.builder-accordion-body .step-heading{display:none;}.builder-accordion-body .step-sub{margin-top:0;}
+.builder-accordion-body{padding:2px 6px 12px 0;max-height:none;overflow-y:visible;}.builder-accordion-body .step-heading{display:none;}.builder-accordion-body .step-sub{margin-top:0;}
 .builder-accordion-body .step-nav{display:none!important;}
 .approved-stage-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 0 4px;border-top:1px solid var(--border);background:white;position:sticky;bottom:0;z-index:2;}
 .approved-stage-nav .btn-prev,.approved-stage-nav .btn-next{min-width:120px;}
@@ -214,14 +249,16 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 .builder-accordion-actions{display:grid;grid-template-columns:1fr .72fr;gap:10px;padding-top:16px;}.builder-accordion-actions button{padding:11px;border-radius:9px;font:700 12px 'DM Sans',sans-serif;cursor:pointer;}.builder-save-progress{border:0;background:var(--teal);color:white}.builder-reset{border:1.5px solid var(--border);background:white;color:var(--text)}
 .wizard-panel>.steps-bar,.wizard-panel>div[style*="justify-content:flex-end"]{display:none!important;}
 .wizard-panel>.builder-utility-actions{display:flex!important;}
-.builder-side-rail{display:flex;flex-direction:column;gap:18px;}
+/* .builder-rail-card now only backs the standalone .compliance-card row
+   (the "Steps" and "AI Assistant" cards that used to share this class
+   inside a builder-side-rail are gone -- see the stepper/compliance-card
+   comments above). .rail-status is kept because the stepper items above
+   reuse it (via renderBuilderAccordion()'s existing update loop) for
+   their Complete/In progress/Not started text. */
 .builder-rail-card{background:white;border:1.5px solid var(--border);border-radius:16px;padding:20px;box-shadow:0 4px 18px rgba(15,23,42,.035);}
 .builder-rail-card h3{font-size:16px;margin:0 0 16px;color:var(--text);}
-.rail-step{display:grid;grid-template-columns:24px 1fr auto;align-items:center;gap:9px;padding:8px 0;font-size:12px;color:var(--muted);}
-.rail-step-num{width:22px;height:22px;border:1.5px solid #cbd5e1;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;background:white;}
-.rail-step.active{color:var(--text);font-weight:700}.rail-step.active .rail-step-num{background:var(--teal);border-color:var(--teal);color:white;}
-.rail-status{font-size:10px;padding:5px 7px;border:1px solid var(--border);border-radius:6px;background:var(--off);white-space:nowrap;}.rail-step.active .rail-status{background:var(--teal-light);border-color:#b8e0ea;color:var(--teal-dark);}
-.rail-ai-icon{font-size:22px;color:var(--teal);}.rail-copy{font-size:13px;line-height:1.55;color:var(--muted);margin:8px 0 14px;}.rail-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border:1.5px solid var(--border);border-radius:9px;background:white;color:var(--teal-dark);font:700 13px 'DM Sans',sans-serif;cursor:pointer;}.rail-chip{display:inline-block;margin:10px 6px 0 0;padding:5px 9px;border-radius:999px;background:#e9f8ee;color:#166534;font-size:10px;font-weight:700;}
+.rail-status{font-size:10px;padding:5px 7px;border:1px solid var(--border);border-radius:6px;background:var(--off);white-space:nowrap;}
+.rail-copy{font-size:13px;line-height:1.55;color:var(--muted);margin:8px 0 14px;}.rail-chip{display:inline-block;margin:10px 6px 0 0;padding:5px 9px;border-radius:999px;background:#e9f8ee;color:#166534;font-size:10px;font-weight:700;}
 
 /* Contextual AI Assistant banner — lives inline at the top of the form
    (visible on every step) instead of a permanent side column. */
@@ -258,8 +295,11 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 a.trust-item{color:inherit;text-decoration:none;}
 a.trust-item:hover .trust-icon{background:var(--teal);color:white;}
 .right-column{display:flex;flex-direction:column;gap:16px;}
-@media(min-width:861px){.right-column{position:sticky;top:28px;max-height:calc(100vh - 56px);overflow-y:auto;}}
-.preview-panel{background:var(--off);border:1.5px solid var(--border);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
+/* .right-column's desktop sizing is now set by the @media(min-width:861px)
+   block above .builder-layout (height:100%, not position:sticky -- see
+   its comment for why sticky doesn't work against this page's html/body
+   overflow-x:hidden rule). */
+.preview-panel{background:white;border:1.5px solid var(--border);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
 
 @media(max-width:860px){
   .wizard-panel{padding:16px 16px 40px;max-width:100%;width:100%;}
@@ -373,6 +413,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
    styles with several slightly different hex values for the same colour). */
 .field-alert{border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.6;margin-bottom:20px;}
 .field-alert-warn{background:var(--amber-light);border:1.5px solid #FDE68A;color:#92400E;}
+.field-alert-info{background:var(--teal-light);border:1.5px solid #B8E0EA;color:var(--teal-dark);margin-bottom:14px;}
 .field-alert-danger{background:#FEF2F2;border:1.5px solid #FECACA;color:#991B1B;}
 .field-alert-success{background:#F0FDF4;border:1.5px solid #BBF7D0;color:#166534;}
 .sdiv::after{content:'';flex:1;height:1px;background:var(--border);}
@@ -398,8 +439,31 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .zoom-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:var(--teal-dark);box-shadow:0 1px 4px rgba(0,0,0,0.2);cursor:grab;transition:left .15s;}
 .zoom-pct{font-size:11px;color:var(--muted);min-width:30px;text-align:right;font-weight:600;}
 /* Canvas area — scrollable so zoomed labels don't get clipped */
-.preview-canvas-area{display:flex;align-items:flex-start;justify-content:center;gap:20px;padding:16px;overflow:auto;min-height:400px;}
-.preview-canvas-area>#label-svg-container{flex:1;display:flex;align-items:center;justify-content:center;min-width:0;}
+.preview-canvas-area{display:flex;align-items:flex-start;justify-content:center;gap:20px;padding:8px;overflow:auto;min-height:460px;}/* padding reduced 16px->8px (27 Sep 2026, revised preview correction): #preview-stage now supplies its own close-fitting frame around the label, so the outer canvas no longer needs its own separate large buffer -- keeping both would compound into extra reserved space and shrink the label more than necessary (see recomputePreviewFit(), which measures both insets directly rather than guessing). */
+/* No longer used (label-svg-container now nests one level deeper, inside
+   #preview-stage below -- kept only as a comment so the selector isn't
+   silently reused for something else): .preview-canvas-area>#label-svg-container{flex:1;...} */
+/* (27 Sep 2026, preview grey-space correction -- REVISED per review):
+   #label-svg-container is ALREADY kept sized to exactly the rendered
+   SVG's pixel box by the existing applyZoomToSVG() -- that part was
+   never the problem. The problem was .preview-panel/.preview-canvas-area
+   sharing one uniform --off (grey) background across the ENTIRE panel,
+   so a small label just floated in a wide, featureless grey field.
+   First attempt got the colour direction backwards (a white stage sitting
+   INSIDE that same oversized grey field, which didn't reduce the visible
+   grey and shrank the label via extra padding). Corrected direction:
+   .preview-panel is now white (see its own rule above) -- so the "outer
+   unused area" is white/blends into the panel, not grey. #preview-stage
+   is now the GREY element, and its padding is tight (16px -- "close-
+   fitting", not a generous card) so the grey is visually limited to a
+   modest mat immediately around the label rather than the whole panel.
+   It's an inline-flex box with no explicit width/height of its own, so
+   it automatically hugs #label-svg-container's current size plus its own
+   fixed padding -- tracks every zoom change and adapts to any label
+   aspect ratio (circle/square/rectangle) with zero JS changes beyond
+   recomputePreviewFit() now MEASURING this padding via getComputedStyle
+   instead of hard-coding it (see that function). */
+#preview-stage{display:inline-flex;align-items:center;justify-content:center;padding:12px;margin:auto;background:var(--off);border-radius:12px;}
 .preview-legend{flex:0 0 220px;background:white;border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:12px;align-self:stretch;overflow-y:auto;max-height:100%;}
 .preview-legend .fine-tune-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
 .preview-legend .fine-tune-sub{font-size:10.5px;color:var(--muted);margin-bottom:10px;line-height:1.35;}
@@ -436,10 +500,16 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 /* MOBILE PREVIEW SHEET */
 .mobile-preview-btn{display:none;background:var(--teal);color:white;border:0;padding:11px 16px;border-radius:999px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;-webkit-tap-highlight-color:transparent;box-shadow:0 8px 24px rgba(12,137,155,.28);}
 @media(max-width:860px){
-  .builder-accordion-body{max-height:none;overflow:visible;padding-right:0;}
+  .builder-accordion-body{max-height:none;overflow:visible;padding-right:0;padding-bottom:76px;}
   .right-column{display:none;}
-  .builder-side-rail{display:flex!important;grid-column:auto;margin-top:18px;}
-  .mobile-preview-btn{display:flex;position:fixed;right:16px;bottom:16px;z-index:250;align-items:center;gap:7px;}
+  .compliance-card{margin-top:18px;}
+  .mobile-preview-btn{display:flex;position:fixed;right:16px;bottom:84px;z-index:250;align-items:center;gap:7px;}
+  /* Sticky-within-scroll-container (desktop) can't work once the form's
+     own overflow is set to visible above, so Back/Continue instead become
+     a true fixed bottom bar on mobile -- otherwise they'd need a scroll to
+     the very end of the (now full-page-length) form to reach, which is
+     exactly the original "keep scrolling to find Next/Back" complaint. */
+  .approved-stage-nav{position:fixed;left:0;right:0;bottom:0;z-index:220;background:white;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 16px rgba(15,23,42,.08);border-top:1px solid var(--border);}
 }
 .preview-sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;align-items:flex-end;justify-content:center;}
 .preview-sheet.open{display:flex;}
@@ -601,6 +671,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .p280-confirm{width:100%;background:var(--teal);color:white;border:none;padding:10px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:14px;margin-bottom:8px;}
 .p280-confirm:hover{background:var(--teal-dark);}
 
+/* Code-review explanation shown only when a CLP code blocks the label. */
+.clp-code-help-btn{display:none;width:100%;margin:10px 0 2px;padding:10px 14px;border:1.5px solid #DC2626;border-radius:9px;background:#FFF7F7;color:#991B1B;font:700 13px 'DM Sans',sans-serif;cursor:pointer;}
+.clp-code-help-btn:hover{background:#FEE2E2;}
+.clp-code-help-copy{font-size:13px;color:var(--text);line-height:1.65;}
+.clp-code-help-copy p{margin:0 0 12px;}
+.clp-code-help-copy p:last-child{margin-bottom:0;}
+
 /* SHARED TRUST FOOTER — same across Dashboard, Create Label, My Labels, Account */
 .shell-trust{display:grid;grid-template-columns:1.05fr 1fr 0.95fr 1fr;gap:0;padding:0;border-top:3px solid var(--teal);background:#fff;border:1px solid var(--border);border-radius:16px;margin:24px 0;overflow:hidden;position:relative;z-index:1;}
 .shell-trust-item{display:flex;align-items:center;gap:10px;padding:26px 15px;border-left:1px solid var(--border);}
@@ -613,6 +690,45 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .shell-trust-copy small{font-size:11.5px;color:var(--muted);}
 @media(max-width:1100px){.shell-trust{grid-template-columns:1fr 1fr;}.shell-trust-item:nth-child(3){border-left:0;border-top:1px solid var(--border);}.shell-trust-item:nth-child(4){border-top:1px solid var(--border);}}
 @media(max-width:760px){.shell-trust{grid-template-columns:1fr;}.shell-trust-item{border-left:0 !important;border-top:1px solid var(--border);}.shell-trust-item:first-child{border-top:none;}}
+
+/* Desktop layout overrides stay at the end of the stylesheet so they
+   reliably win over same-specificity base rules above. The page uses
+   ordinary document scrolling; the form body is never a nested scroll
+   region. */
+@media(min-width:861px){
+  .wizard-panel{grid-column:1;align-self:start;}
+  /* The horizontal stepper is the desktop navigation, so duplicate
+     inactive accordion headers are hidden. They remain available on
+     mobile, where this media query does not apply. */
+  .builder-accordion-section:not(.active){display:none;}
+  /* Keep the preview in column 2 and let it hug its actual contents.
+     Neither column is height-bound; any overflow uses normal page scroll. */
+  .right-column{grid-column:2;grid-row:1;align-self:start;height:auto;overflow:visible;position:static;display:flex;flex-direction:column;}
+  .preview-panel{flex-shrink:0;}
+  .preview-canvas-area{min-height:0;}
+  .compliance-card.builder-rail-card{grid-row:2;padding:12px 16px;display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;}
+  .compliance-card.builder-rail-card h3{font-size:13px;margin:0;white-space:nowrap;}
+  .compliance-card .rail-copy{margin:0;font-size:11.5px;}
+  .compliance-card .rail-chip{margin:0;}
+  /* Step 1 two-column desktop reflow: #step-1 (heading, load-from-
+     library, shape and dimensions) and #label-appearance-section
+     (background/text colour and cut-guide border) are, for
+     historical reasons (see renderBuilderAccordion()'s comment on
+     label-appearance-section), rendered as SIBLINGS directly inside
+     .builder-accordion-body when Step 1 is active -- not nested inside
+     one another -- which conveniently already matches the two logical
+     groups this needs ("size/shape" vs. "appearance")
+     without any further DOM change. .step1-active (set in
+     renderBuilderAccordion() only when Step 1 is the active step) turns
+     that body into a 2-column grid; `order` puts #step-1 first (matching
+     the existing on-page reading order: load/shape controls before
+     appearance) purely visually, without touching the DOM the JS above
+     already built. Step 5's fine-tune relocation and Steps 2-4 are
+     unaffected -- this class only ever applies to the Step-1 body. */
+  .builder-accordion-body.step1-active{display:grid;grid-template-columns:1fr 1fr;gap:0 32px;align-items:start;}
+  .builder-accordion-body.step1-active #step-1{order:1;min-width:0;}
+  .builder-accordion-body.step1-active #label-appearance-section{order:2;min-width:0;align-self:start;}
+}
 </style>
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"></script>
@@ -700,6 +816,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div style="font-size:13px;color:#166534;line-height:1.5;">Before emailing, check our <a href="#" onclick="closeSupport();openHelp();return false;" style="color:#166534;font-weight:700;text-decoration:underline;cursor:pointer;">Help guide</a> — most questions are answered there.</div>
   </div>
   <button onclick="closeSupport()" style="width:100%;padding:13px;background:var(--teal);color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;">Got it</button>
+</div>
+
+<!-- CLP CODE REVIEW EXPLANATION -->
+<div class="fdel-overlay" id="clp-code-help-overlay" onclick="if(event.target===this)closeClpCodeHelp()">
+  <div class="fdel-box" role="dialog" aria-modal="true" aria-labelledby="clp-code-help-title" style="max-width:520px;max-height:85vh;overflow:auto;">
+    <div class="fdel-title" id="clp-code-help-title">Why has CLPeasy blocked this label?</div>
+    <div class="clp-code-help-copy" id="clp-code-help-copy"></div>
+    <button type="button" class="p280-confirm" onclick="closeClpCodeHelp()">Close explanation</button>
+  </div>
 </div>
 
 <!-- WIZARD OVERLAY + PANEL -->
@@ -816,7 +941,32 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="page-sub">Build your CLP label step by step. Add your product details and let CLPeasy handle the compliance.</div>
 </div>
 
-<button type="button" class="mobile-preview-btn" onclick="openPreviewSheet()" aria-controls="preview-sheet">View label preview ↗</button>
+<button type="button" class="mobile-preview-btn" onclick="openPreviewSheet()" aria-controls="preview-sheet">View label ↗</button>
+
+<!-- STICKY HORIZONTAL STEPPER (replaces the old right-rail "Steps" card,
+     which duplicated this same progress information; see the
+     builder-side-rail removal below). Reuses data-rail-step so the
+     existing renderBuilderAccordion() update loop drives this element too
+     -- no second source of truth for step state. Buttons call the same
+     setApprovedBuilderStep(n) used everywhere else, so the existing
+     canLeaveApprovedBuilderStep() validation gate still prevents skipping
+     ahead. Real <button> elements give keyboard focus/activation for free. -->
+<nav class="builder-stepper" id="builder-stepper" aria-label="Label builder steps">
+  <button type="button" class="stepper-mobile-summary" id="stepper-mobile-summary" onclick="toggleStepperExpanded()" aria-expanded="false" aria-controls="builder-stepper-track">
+    <span id="stepper-mobile-text">Step 1 of 5 — Label</span><span class="stepper-chevron">▾</span>
+  </button>
+  <div class="stepper-track" id="builder-stepper-track">
+    <button type="button" class="stepper-item active" data-rail-step="1" aria-current="step"><span class="stepper-num">1</span><span class="stepper-label">Label</span><span class="stepper-status rail-status">In progress</span></button>
+    <div class="stepper-line"></div>
+    <button type="button" class="stepper-item" data-rail-step="2"><span class="stepper-num">2</span><span class="stepper-label">Product</span><span class="stepper-status rail-status">Not started</span></button>
+    <div class="stepper-line"></div>
+    <button type="button" class="stepper-item" data-rail-step="3"><span class="stepper-num">3</span><span class="stepper-label">Hazards</span><span class="stepper-status rail-status">Not started</span></button>
+    <div class="stepper-line"></div>
+    <button type="button" class="stepper-item" data-rail-step="4"><span class="stepper-num">4</span><span class="stepper-label">Business</span><span class="stepper-status rail-status">Not started</span></button>
+    <div class="stepper-line"></div>
+    <button type="button" class="stepper-item" data-rail-step="5"><span class="stepper-num">5</span><span class="stepper-label">Download</span><span class="stepper-status rail-status">Not started</span></button>
+  </div>
+</nav>
 
 <div class="builder-layout">
 <!-- WIZARD -->
@@ -855,7 +1005,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <option value="">— Select a saved label to load —</option>
       </select>
     </div>
-    <p class="step-sub">Choose a preset or enter your own dimensions.</p>
     <div class="sdiv" style="margin-top:0">Shape</div>
     <div class="shape-grid">
       <div class="shape-card selected" data-shape="circle" onclick="selectShape('circle')">
@@ -871,29 +1020,23 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="shape-label">Square</div>
       </div>
     </div>
-    <div class="sdiv">Preset sizes</div>
-    <div class="size-grid">
-      <div class="size-card selected" data-size="52" onclick="selectSize(52)"><div class="sz">52mm</div><div class="sz-label">Standard Candle</div></div>
-      <div class="size-card" data-size="63" onclick="selectSize(63)"><div class="sz">63mm</div><div class="sz-label">Large Jar</div></div>
-      <div class="size-card" data-size="custom" onclick="selectSize('custom')"><div class="sz" style="font-size:14px">Custom</div><div class="sz-label">Your own size</div></div>
-    </div>
-    <div class="sdiv">Dimensions (mm)</div>
-    <div class="custom-dims">
-      <div class="form-group"><label>Width (mm)</label><input type="number" id="custom-w" placeholder="e.g. 50" inputmode="numeric" min="52" max="150" oninput="onDimInput()"></div>
-      <div class="form-group"><label>Height (mm) <span id="height-note" style="font-weight:400;color:#6B7280;font-size:11px;"></span></label><input type="number" id="custom-h" placeholder="e.g. 40" inputmode="numeric" min="52" max="200" oninput="onDimInput()"></div>
-      <div id="custom-size-warn" class="field-alert field-alert-warn" style="display:none;grid-column:1/-1;margin-bottom:0;"></div>
-    <div id="en15494-warn" class="field-alert field-alert-danger" style="display:none;grid-column:1/-1;margin-top:8px;margin-bottom:0;">
-      🔴 <strong>EN 15494:2019 pictograms may not display clearly at this label size.</strong><br>
-      CLP labels for candles should ideally be 52mm or larger to display all mandatory safety information legibly.<br>
-      EN 15494 candle safety pictograms do <strong>not</strong> have to appear on the CLP label — they can legally be placed on the packaging (e.g. printed on the jar, box, or a separate swing tag).<br><br>
-      <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;">
-        <input type="checkbox" id="hide-en15494" onchange="S.hideEN15494=this.checked;updateLabel()" style="margin-top:2px;width:16px;height:16px;flex-shrink:0;accent-color:#991B1B;">
-        <span>Remove EN 15494 pictograms from this label <em>(I will display them on the packaging instead)</em></span>
-      </label>
-    </div>
-    </div>
     <!-- Label language selector removed — GB CLP (English only) for now -->
     <input type="hidden" id="label-lang" value="en">
+    <div class="sdiv">Dimensions (mm)</div>
+    <div class="custom-dims">
+      <div class="form-group" id="custom-w-group" style="grid-column:1/-1;"><label id="custom-w-label">Diameter (mm)</label><input type="number" id="custom-w" placeholder="e.g. 52" inputmode="numeric" min="52" max="150" oninput="onDimInput()"></div>
+      <div class="form-group" id="custom-h-group" style="display:none;"><label>Height (mm)</label><input type="number" id="custom-h" placeholder="e.g. 40" inputmode="numeric" min="52" max="200" oninput="onDimInput()"></div>
+      <div id="custom-size-warn" class="field-alert field-alert-warn" style="display:none;grid-column:1/-1;margin-bottom:0;"></div>
+      <div id="en15494-warn" class="field-alert field-alert-danger" style="display:none;grid-column:1/-1;margin-top:8px;margin-bottom:0;">
+        🔴 <strong>EN 15494:2019 pictograms may not display clearly at this label size.</strong><br>
+        CLP labels for candles should ideally be 52mm or larger to display all mandatory safety information legibly.<br>
+        EN 15494 candle safety pictograms do <strong>not</strong> have to appear on the CLP label — they can legally be placed on the packaging (e.g. printed on the jar, box, or a separate swing tag).<br><br>
+        <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;">
+          <input type="checkbox" id="hide-en15494" onchange="S.hideEN15494=this.checked;updateLabel()" style="margin-top:2px;width:16px;height:16px;flex-shrink:0;accent-color:#991B1B;">
+          <span>Remove EN 15494 pictograms from this label <em>(I will display them on the packaging instead)</em></span>
+        </label>
+      </div>
+    </div>
     <div id="label-appearance-section">
     <div class="sdiv">Label appearance</div>
     <div class="form-row">
@@ -1004,6 +1147,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="supplier-grid" id="supplier-grid">
     </div>
     <div id="supplier-sds-link" style="display:none;margin-bottom:16px;"></div>
+    <!-- Concise, context-specific info note (27 Sep 2026, relocated from
+         the old Step 1 general warning -- see that step's comment). Exact
+         wording per Michaela's spec. This is deliberately an information
+         note, not a confirmation gate -- #hazard-confirm-block just below
+         (unchanged) remains the mandatory "I confirm..." checkbox. -->
+    <div class="field-alert field-alert-info">
+      💡 Use safety information that matches your finished product and actual fragrance percentage. For candles and wax melts, use the supplier's CLP information for that percentage rather than information for the 100% concentrated oil.
+    </div>
     <div class="smart-paste-box">
       <h4>✨ Smart Paste — paste SDS Section 2.2</h4>
       <p>Copy the complete Section 2.2 (Label elements) from your current supplier SDS PDF and paste it here. CLPeasy extracts the information it can identify; review the result against your SDS before continuing.</p>
@@ -1193,8 +1344,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button type="button" class="preview-badge" onclick="fitPreviewToView()" title="Fit label to preview">Fit to view ↗</button>
     </div>
   </div>
-  <div class="preview-canvas-area" id="preview-canvas-area"><div id="label-svg-container"></div></div>
+  <div class="preview-canvas-area" id="preview-canvas-area"><div id="preview-stage"><div id="label-svg-container"></div></div></div>
   <div class="preview-footer">
+    <button type="button" id="clp-code-help-btn" class="clp-code-help-btn" onclick="openClpCodeHelp()">Why is this label blocked?</button>
     <div class="preview-size-info" id="preview-size-info">Print size: 35 × 35mm</div>
     <div class="dl-row" id="preview-dl-row" style="display:none;">
       <button class="btn-dl" id="btn-png-preview" onclick="downloadPNG()" style="opacity:0.4;pointer-events:none;">⬇ PNG</button>
@@ -1227,27 +1379,21 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 </div>
 </div>
 
-<aside class="builder-side-rail" aria-label="Builder progress and assistance">
-  <section class="builder-rail-card">
-    <h3>Steps</h3>
-    <div class="rail-step active" data-rail-step="1"><span class="rail-step-num">1</span><span>Label</span><span class="rail-status">In progress</span></div>
-    <div class="rail-step" data-rail-step="2"><span class="rail-step-num">2</span><span>Product</span><span class="rail-status">Not started</span></div>
-    <div class="rail-step" data-rail-step="3"><span class="rail-step-num">3</span><span>Hazards</span><span class="rail-status">Not started</span></div>
-    <div class="rail-step" data-rail-step="4"><span class="rail-step-num">4</span><span>Business</span><span class="rail-status">Not started</span></div>
-    <div class="rail-step" data-rail-step="5"><span class="rail-step-num">5</span><span>Download</span><span class="rail-status">Not started</span></div>
-  </section>
-  <section class="builder-rail-card">
-    <div class="rail-ai-icon">✧</div><h3 style="margin-top:-24px;margin-left:32px;">AI Assistant</h3>
-    <p class="rail-copy">Need help with ingredients or classification?</p>
-    <button class="rail-btn" type="button" onclick="openWizard()">Guide Me AI <span>→</span></button>
-  </section>
-  <section class="builder-rail-card">
-    <h3>🛡 Label Compliance</h3>
-    <strong style="font-size:13px;">GB CLP aligned</strong>
-    <p class="rail-copy" style="margin-bottom:0;">Smart Compliance. Simple.</p>
-    <span class="rail-chip">GB CLP</span><span class="rail-chip" title="CLPeasy's own conservative legibility standard for mandatory label text — GB CLP has no statutory numeric x-height/font-size requirement">Clearly legible text</span>
-  </section>
-</aside>
+<!-- Compliance card (24 Sep 2026, stepper redesign): the "Steps" and large
+     "AI Assistant" cards that used to sit alongside this one in a
+     right-hand builder-side-rail are gone -- Steps is now the sticky
+     horizontal stepper above, and Guide Me AI already has a compact entry
+     point (the ✧ icon button next to the form, wired to the same
+     openWizard()). This card's own content/behaviour is unchanged. Kept as
+     a sibling of (not nested inside) .right-column so it stays visible on
+     mobile too, same as before, where .right-column itself is hidden in
+     favour of the mobile preview sheet. -->
+<section class="builder-rail-card compliance-card">
+  <h3>🛡 Label Compliance</h3>
+  <strong style="font-size:13px;">GB CLP aligned</strong>
+  <p class="rail-copy" style="margin-bottom:0;">Smart Compliance. Simple.</p>
+  <span class="rail-chip">GB CLP</span><span class="rail-chip" title="CLPeasy's own conservative legibility standard for mandatory label text — GB CLP has no statutory numeric x-height/font-size requirement">Clearly legible text</span>
+</section>
 
 <!-- MOBILE PREVIEW SHEET -->
 <div class="preview-sheet" id="preview-sheet" onclick="closeSheet(event)">
@@ -1267,7 +1413,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     </div>
     <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.3);text-align:center;">PNG for printing · SVG for cutting machines</div>
-    <div style="margin-top:12px;text-align:center;"><button onclick="closeSheet()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:8px;">Close</button></div>
+    <div style="margin-top:12px;text-align:center;"><button onclick="closeSheet()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:8px;">Hide label</button></div>
   </div>
 </div>
 
@@ -1334,6 +1480,55 @@ const SENSITISERS=[
 // unrecognised. Kept in sync with label-render.js's own H_LIB copy --
 // both must change together.
 const H_LIB=[{code:'H225',desc:'Highly flammable liquid and vapour'},{code:'H226',desc:'Flammable liquid and vapour'},{code:'H228',desc:'Flammable solid'},{code:'H301',desc:'Toxic if swallowed'},{code:'H302',desc:'Harmful if swallowed'},{code:'H304',desc:'May be fatal if swallowed and enters airways'},{code:'H311',desc:'Toxic in contact with skin'},{code:'H312',desc:'Harmful in contact with skin'},{code:'H314',desc:'Causes severe skin burns and eye damage'},{code:'H315',desc:'Causes skin irritation'},{code:'H317',desc:'May cause an allergic skin reaction'},{code:'H318',desc:'Causes serious eye damage'},{code:'H319',desc:'Causes serious eye irritation'},{code:'H331',desc:'Toxic if inhaled'},{code:'H332',desc:'Harmful if inhaled'},{code:'H334',desc:'May cause allergy or asthma symptoms if inhaled'},{code:'H335',desc:'May cause respiratory irritation'},{code:'H336',desc:'May cause drowsiness or dizziness'},{code:'H361',desc:'Suspected of damaging fertility or the unborn child'},{code:'H371',desc:'May cause damage to organs'},{code:'H373',desc:'May cause damage to organs through prolonged or repeated exposure'},{code:'H400',desc:'Very toxic to aquatic life'},{code:'H410',desc:'Very toxic to aquatic life with long lasting effects'},{code:'H411',desc:'Toxic to aquatic life with long lasting effects'},{code:'H412',desc:'Harmful to aquatic life with long lasting effects'},{code:'H413',desc:'May cause long lasting harmful effects to aquatic life'},{code:'EUH066',desc:'Repeated exposure may cause skin dryness or cracking'},{code:'EUH208',desc:'Contains sensitiser — may produce an allergic reaction'},{code:'EUH071',desc:'Corrosive to the respiratory tract'},{code:'EUH210',desc:'Safety data sheet available on request'},{code:'H200',desc:'Unstable explosive'},{code:'H201',desc:'Explosive; mass explosion hazard'},{code:'H202',desc:'Explosive; severe projection hazard'},{code:'H203',desc:'Explosive; fire, blast or projection hazard'},{code:'H204',desc:'Fire or projection hazard'},{code:'H205',desc:'May mass explode in fire'},{code:'H223',desc:'Flammable aerosol'},{code:'H224',desc:'Extremely flammable liquid and vapour'},{code:'H240',desc:'Heating may cause an explosion'},{code:'H241',desc:'Heating may cause a fire or explosion'},{code:'H242',desc:'Heating may cause a fire'},{code:'H250',desc:'Catches fire spontaneously if exposed to air'},{code:'H251',desc:'Self-heating; may catch fire'},{code:'H252',desc:'Self-heating in large quantities; may catch fire'},{code:'H260',desc:'In contact with water releases flammable gases which may ignite spontaneously'},{code:'H261',desc:'In contact with water releases flammable gas'},{code:'H270',desc:'May cause or intensify fire; oxidiser'},{code:'H271',desc:'May cause fire or explosion; strong oxidiser'},{code:'H272',desc:'May intensify fire; oxidiser'},{code:'H280',desc:'Contains gas under pressure; may explode if heated'},{code:'H281',desc:'Contains refrigerated gas; may cause cryogenic burns or injury'},{code:'H282',desc:'Extremely flammable chemical under pressure: may explode if heated'},{code:'H283',desc:'Flammable chemical under pressure: may explode if heated'},{code:'H284',desc:'Chemical under pressure: may explode if heated'},{code:'H290',desc:'May be corrosive to metals'},{code:'H300',desc:'Fatal if swallowed'},{code:'H310',desc:'Fatal in contact with skin'},{code:'H330',desc:'Fatal if inhaled'},{code:'H340',desc:'May cause genetic defects'},{code:'H341',desc:'Suspected of causing genetic defects'},{code:'H350',desc:'May cause cancer'},{code:'H351',desc:'Suspected of causing cancer'},{code:'H360',desc:'May damage fertility or the unborn child'},{code:'H362',desc:'May cause harm to breast-fed children'},{code:'H370',desc:'Causes damage to organs'},{code:'H372',desc:'Causes damage to organs through prolonged or repeated exposure'}];
+// GB CLP Annex I label-element tables, current legislation.gov.uk text.
+// Empty string means the statement does not itself require a signal word.
+// A few physical-hazard statements cover more than one category and can use
+// Danger OR Warning; Smart Paste therefore preserves the supplier's explicit
+// Section 2.2 signal word for those codes instead of guessing from the H-code.
+const GB_CLP_SIGNAL_WORD_BY_CODE=Object.freeze({
+  H200:'Danger',H201:'Danger',H202:'Danger',H203:'Danger',H204:'Warning',H205:'Danger',
+  H223:'Warning',H224:'Danger',H225:'Danger',H226:'Warning',
+  H240:'Danger',H241:'Danger',H250:'Danger',H251:'Danger',H252:'Warning',H260:'Danger',
+  H270:'Danger',H271:'Danger',H280:'Warning',H281:'Warning',H290:'Warning',
+  H300:'Danger',H301:'Danger',H302:'Warning',H304:'Danger',
+  H310:'Danger',H311:'Danger',H312:'Warning',H314:'Danger',H315:'Warning',H317:'Warning',
+  H318:'Danger',H319:'Warning',H330:'Danger',H331:'Danger',H332:'Warning',H334:'Danger',
+  H335:'Warning',H336:'Warning',H340:'Danger',H341:'Warning',H350:'Danger',H351:'Warning',
+  H360:'Danger',H361:'Warning',H362:'',H370:'Danger',H371:'Warning',H372:'Danger',H373:'Warning',
+  H400:'Warning',H410:'Warning',H411:'',H412:'',H413:'',
+  EUH066:'',EUH071:'',EUH208:'',EUH210:''
+});
+// H228/H242/H261/H272 span categories with different signal words. The
+// pre-existing H282-H284 entries are also supplier-signal-dependent here:
+// their separate GB-profile status remains outside this focused bugfix.
+const GB_CLP_SIGNAL_WORD_AMBIGUOUS_CODES=Object.freeze(['H228','H242','H261','H272','H282','H283','H284']);
+function normaliseSdsSignalWord(value){
+  const v=String(value||'').trim().toLowerCase();
+  if(v==='danger')return 'Danger';
+  if(v==='warning')return 'Warning';
+  if(v==='none'||v==='no signal word'||v==='no signal word is used')return '';
+  return '';
+}
+function extractSdsSignalWord(text){
+  const m=String(text||'').match(/\bSignal\s+word\s*:?\s*(Danger|Warning|None|No\s+signal\s+word(?:\s+is\s+used)?)/i);
+  return normaliseSdsSignalWord(m?m[1]:'');
+}
+function resolveGbClpSignalWord(codes, suppliedSignal){
+  const list=Array.isArray(codes)?codes:String(codes||'').split(',');
+  const clean=[...new Set(list.map(v=>String(v).trim().toUpperCase()).filter(Boolean))];
+  const supplied=normaliseSdsSignalWord(suppliedSignal);
+  const ambiguous=clean.some(code=>GB_CLP_SIGNAL_WORD_AMBIGUOUS_CODES.includes(code));
+  if(clean.some(code=>GB_CLP_SIGNAL_WORD_BY_CODE[code]==='Danger'))return 'Danger';
+  // An ambiguous physical-hazard statement may genuinely require Danger.
+  if(ambiguous&&supplied==='Danger')return 'Danger';
+  if(clean.some(code=>GB_CLP_SIGNAL_WORD_BY_CODE[code]==='Warning'))return 'Warning';
+  if(ambiguous&&supplied==='Warning')return 'Warning';
+  // Preserve the previous Warning fallback for a manually selected ambiguous
+  // code where no Section 2.2 signal word is available; Smart Paste always
+  // supplies the actual value when the SDS prints one.
+  if(ambiguous)return 'Warning';
+  return '';
+}
 const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product container or label at hand'},{code:'P102',desc:'Keep out of reach of children'},{code:'P103',desc:'Read label before use'},{code:'P210',desc:'Keep away from heat and ignition sources. No smoking'},{code:'P233',desc:'Keep container tightly closed'},{code:'P260',desc:'Do not breathe vapours or dust'},{code:'P261',desc:'Avoid breathing vapours and dust'},{code:'P271',desc:'Use only outdoors or in a well-ventilated area'},{code:'P273',desc:'Avoid release to the environment'},{code:'P301+P310',desc:'IF SWALLOWED: immediately call a POISON CENTRE or doctor'},{code:'P301+P312',desc:'IF SWALLOWED: call a POISON CENTRE or doctor if unwell'},{code:'P302+P352',desc:'IF ON SKIN: wash with plenty of water'},{code:'P304+P340',desc:'IF INHALED: remove to fresh air and keep comfortable for breathing'},{code:'P305+P351+P338',desc:'IF IN EYES: rinse cautiously with water for several minutes'},{code:'P312',desc:'Call a POISON CENTRE or doctor if you feel unwell'},{code:'P313',desc:'Get medical advice/attention'},{code:'P314',desc:'Get medical advice if you feel unwell'},{code:'P321',desc:'Specific treatment: see label'},{code:'P330',desc:'Rinse mouth'},{code:'P331',desc:'Do NOT induce vomiting'},{code:'P332+P313',desc:'If skin irritation occurs: get medical advice/attention'},{code:'P333+P313',desc:'If skin irritation or rash occurs: get medical advice'},{code:'P337+P313',desc:'If eye irritation persists: get medical advice'},{code:'P370+P378',desc:'In case of fire: use appropriate media for extinction'},{code:'P391',desc:'Collect spillage'},{code:'P403+P233',desc:'Store in a well-ventilated place. Keep container tightly closed'},{code:'P211',desc:'Do not spray on an open flame or other ignition source'},{code:'P501',desc:'Dispose of contents and container in accordance with local regulations'},
 // P280 (verified against the retained GB-CLP Regulation (EC) No 1272/2008,
 // Annex IV, Table 6.2, legislation.gov.uk, current in-force UK text) is a
@@ -1348,7 +1543,7 @@ const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product contai
 // only P_LIB definitions in the app; this is not a third copy.
 {code:'P280',desc:'Wear the applicable protective equipment (select which items apply when adding this code)'}];
 // ── STATE ─────────────────────────────────────────────────────
-const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,hazardFSOverride:null,scentFSOverride:null,bizNameFSOverride:null,hazardYOffset:null,typeFSOverride:null,sigFSOverride:null,
+const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',sdsSignal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,hazardFSOverride:null,scentFSOverride:null,bizNameFSOverride:null,hazardYOffset:null,typeFSOverride:null,sigFSOverride:null,
   // P280's own selected protection items (see openP280Modal()/buildP280Wording
   // in label-render.js). p280Items: subset of LabelRenderer.P280_ITEMS keys;
   // p280Other: optional free-text extra item. Empty = no valid selection yet.
@@ -1776,6 +1971,40 @@ function closeSupport(){
   document.getElementById('support-modal').style.display='none';
   document.body.style.overflow='';
 }
+
+let _clpCodeHelpReturnFocus=null;
+function openClpCodeHelp(){
+  const unsupported=(window._unsupportedCodes||[]).map(String);
+  const generic=(window._unrecognizedCodesGeneric||[]).map(String);
+  if(!unsupported.length&&!generic.length)return;
+  const copy=document.getElementById('clp-code-help-copy');
+  const overlay=document.getElementById('clp-code-help-overlay');
+  if(!copy||!overlay)return;
+  const u=unsupported.map(escapeBuilderText).join(', ');
+  const g=generic.map(escapeBuilderText).join(', ');
+  const paragraphs=[];
+  if(unsupported.length){
+    paragraphs.push('Your supplier\'s SDS contains <strong>'+u+'</strong>. CLPeasy does not recognise '+(unsupported.length>1?'these codes as hazard statements':'this code as a hazard statement')+' in the current Great Britain CLP information checked by the service. '+(unsupported.length>1?'They may':'It may')+' come from another national or international classification system, or the supplier may need to clarify the Great Britain classification.');
+  }
+  if(generic.length){
+    paragraphs.push('CLPeasy could not identify <strong>'+g+'</strong>. This may be a copying error, a code that is not yet recognised by the service, or information from a different classification system.');
+  }
+  paragraphs.push('CLPeasy cannot determine the correct replacement, remove the '+(unsupported.length+generic.length>1?'codes':'code')+', or substitute a different classification on the supplier\'s behalf. The label has therefore been blocked to avoid creating a label that may be incomplete or incorrect.');
+  paragraphs.push('Check that you copied only Section 2.2 from the SDS for the correct product and concentration. If the '+(unsupported.length+generic.length>1?'codes are':'code is')+' shown there, ask your supplier for the current Great Britain-market SDS or written Great Britain CLP classification information.');
+  copy.innerHTML=paragraphs.map(p=>'<p>'+p+'</p>').join('');
+  _clpCodeHelpReturnFocus=document.activeElement;
+  overlay.classList.add('show');
+  document.body.style.overflow='hidden';
+  overlay.querySelector('button')?.focus();
+}
+function closeClpCodeHelp(){
+  const overlay=document.getElementById('clp-code-help-overlay');
+  if(overlay)overlay.classList.remove('show');
+  document.body.style.overflow='';
+  if(_clpCodeHelpReturnFocus&&typeof _clpCodeHelpReturnFocus.focus==='function')_clpCodeHelpReturnFocus.focus();
+  _clpCodeHelpReturnFocus=null;
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('clp-code-help-overlay')?.classList.contains('show'))closeClpCodeHelp();});
 
 // ── HELP PANEL ────────────────────────────────────────────────
 function openHelp(){
@@ -2601,7 +2830,7 @@ async function saveLabel(){
   if(isCustomSizeBelowSupportedMinimum()){alert(getCustomSizeMinMsg());return;}
   removeStaleEditNotice();
   const entry={schemaVersion:LABEL_SCHEMA_VERSION,rendererVersion:LabelRenderer.RENDERER_VERSION,
-    scentName:S.scentName,productType:S.productType,shape:S.shape,size:S.size,customW:S.customW,customH:S.customH,signal:S.signal,
+    scentName:S.scentName,productType:S.productType,shape:S.shape,size:S.size,customW:S.customW,customH:S.customH,signal:S.signal,sdsSignal:S.sdsSignal,
     hStatements:S.hStatements,pictograms:[...S.pictograms],sensitisers:[...S.sensitisers],bizName:S.bizName,bizAddress:S.bizAddress,
     bizPhone:S.bizPhone,bizWebsite:S.bizWebsite,netWeight:S.netWeight,fragLoad:S.fragLoad,burnTime:S.burnTime,batchNum:S.batchNum,
     supplier:S.supplier||'',hideEN15494:!!S.hideEN15494,
@@ -2694,7 +2923,7 @@ function loadLabelRecord(e){
   if(!e)return;
   editingLabelId=e.id||null;
   S.scentName=e.scentName;S.productType=e.productType;S.shape=e.shape;S.size=e.size;S.customW=e.customW||S.customW;S.customH=e.customH||S.customH;
-  S.signal=e.signal||'';S.hStatements=e.hStatements||'';S.sensitisers=e.sensitisers||[];
+  S.signal=e.signal||'';S.sdsSignal=e.sdsSignal!==undefined?e.sdsSignal:(e.signal||'');S.hStatements=e.hStatements||'';S.sensitisers=e.sensitisers||[];
   S.hSelected=(S.hStatements||'').split(',').map(code=>code.trim()).filter(Boolean);
   S.pStatements=e.pStatements||'';
   S.pSelected=(S.pStatements||'').split(',').map(code=>code.trim()).filter(Boolean);
@@ -3066,7 +3295,7 @@ function init(){
   // only after LabelLibrary.init() has resolved against the confirmed
   // namespace (a real signed-in account, or a confirmed no-session guest).
   // Ensure hazard data is always clear on page load — never cached
-  S.signal=''; S.pictograms=[]; S.hSelected=[]; S.pSelected=[]; S.sensitisers=[];
+  S.signal=''; S.sdsSignal=''; S.pictograms=[]; S.hSelected=[]; S.pSelected=[]; S.sensitisers=[];
   S.hStatements=''; S.pStatements='';
   lockHazardFields(false);
   updateLabel();
@@ -3250,7 +3479,7 @@ function renderTags(){
   const tags=document.getElementById('allergen-tags');
   if(!tags)return;
   if(S.sensitisers.length===0){
-    tags.innerHTML='<span style="font-size:13px;color:var(--muted);font-style:italic;">None detected — paste SDS data and click Extract</span>';
+    tags.innerHTML='<span style="font-size:13px;color:var(--muted);font-style:italic;">None detected — paste Section 2.2 data and click Extract</span>';
   } else {
     tags.innerHTML=S.sensitisers.map(name=>
       `<span class="allergen-tag">${escapeBuilderText(name)}</span>`
@@ -3379,9 +3608,12 @@ function extractSDS(){
   });
 
   // ── SIGNAL WORD ───────────────────────────────────────────────────────────
-  const dangerH=['H300','H301','H310','H311','H330','H331','H340','H350','H360','H370','H372','H290','H304','H314','H318','H225','H224'];
-  const isDanger=allH.some(h=>dangerH.includes(h));
-  const sig=isDanger?'Danger':'Warning';
+  // Read the supplier's explicit Section 2.2 value for the handful of
+  // physical-hazard statements whose H-code alone does not distinguish the
+  // category/signal word. All deterministic codes use the GB Annex I registry
+  // above. Crucially, H411/H412/H413 and EUH-only inputs resolve to blank.
+  S.sdsSignal=extractSdsSignalWord(text);
+  const sig=resolveGbClpSignalWord(allH,S.sdsSignal);
   S.signal=sig;
   document.getElementById('signal-warning').className='signal-btn'+(sig==='Warning'?' sel-warn':'');
   document.getElementById('signal-danger').className='signal-btn'+(sig==='Danger'?' sel-danger':'');
@@ -3577,8 +3809,8 @@ function clpUnsupportedCodesMessage(codes, escapeFn){
   const esc=escapeFn||(v=>v);
   const plural=codes.length>1, codeWord=plural?'codes':'code', thisThese2=plural?'These':'This', areIs=plural?'are':'is', theyIt=plural?'They':'It', thisThese=plural?'these':'this';
   return {
-    heading:thisThese2+' '+codeWord+' '+areIs+' not supported under the selected Great Britain rules',
-    body:'The following '+codeWord+' '+areIs+' not part of the current Great Britain CLP hazard-statement system: '+codes.map(esc).join(', ')+'. '+theyIt+' may be recognised under another national or international classification system. CLPeasy currently supports products placed on the market in Great Britain (England, Scotland and Wales). Please ask your supplier for the current Great Britain-market SDS or classification information applicable to your final formulation and concentration. CLPeasy has not added, removed, translated or substituted '+thisThese+' '+codeWord+'.'
+    heading:thisThese2+' '+codeWord+' need'+(plural?'':'s')+' supplier confirmation for a Great Britain CLP label',
+    body:'The following '+codeWord+' appear'+(plural?'':'s')+' in your supplier SDS: '+codes.map(esc).join(', ')+'. CLPeasy does not recognise '+(plural?'them as hazard statements':'it as a hazard statement')+' in the current Great Britain CLP information checked by the service. '+theyIt+' may be recognised under another national or international classification system, or the supplier may need to clarify the Great Britain classification. CLPeasy currently supports products placed on the market in Great Britain (England, Scotland and Wales). Please ask your supplier for the current Great Britain-market SDS or classification information applicable to your final formulation and concentration. CLPeasy has not added, removed, translated or substituted '+thisThese+' '+codeWord+'.'
   };
 }
 function clpUnrecognisedCodesMessage(codes, escapeFn){
@@ -3692,6 +3924,7 @@ function setApprovedBuilderStep(n){
   renderBuilderAccordion();
   if(n===5)buildSummary();
   updateLabel();
+  document.getElementById('builder-stepper')?.classList.remove('expanded'); // collapse mobile step list after navigating
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function renderBuilderAccordion(){
@@ -3699,18 +3932,44 @@ function renderBuilderAccordion(){
   if(!panel)return;
   const old=panel.querySelector('.builder-accordion');
   if(old){
-    old.querySelectorAll('.step-panel').forEach(step=>panel.appendChild(step));
+    // Rescue everything the accordion body may currently be hosting
+    // before the accordion itself is destroyed. Historically only
+    // .step-panel elements were rescued here -- #label-appearance-section
+    // and #label-warn-stage4 (both relocated INTO the accordion body for
+    // Step 1, see below) were NOT .step-panel elements, so on the SECOND
+    // and every subsequent re-render of Step 1 they were silently deleted
+    // along with the old accordion instead of being rescued, and never
+    // reappeared. (28 Sep 2026, found while adding the Step 1 two-column
+    // desktop reflow, which depends on #label-appearance-section still
+    // existing on repeat visits to Step 1 -- a pre-existing bug, not
+    // something introduced by that reflow, but one that would have
+    // silently broken it on the very first return visit to Step 1.)
+    old.querySelectorAll('.step-panel, #label-appearance-section, #label-warn-stage4').forEach(step=>panel.appendChild(step));
     old.remove();
   }
   const accordion=document.createElement('div');
   accordion.className='builder-accordion';
-  document.querySelector('.builder-layout')?.classList.toggle('reviewing',approvedBuilderStep===5);
   let staging=panel.querySelector('#builder-source-staging');
   if(!staging){staging=document.createElement('div');staging.id='builder-source-staging';staging.hidden=true;panel.appendChild(staging);}
   const appearance=panel.querySelector('#label-appearance-section');
   if(appearance)staging.appendChild(appearance);
   const fitWarning=panel.querySelector('#label-warn-stage4');
   if(fitWarning)staging.appendChild(fitWarning);
+  // Step 5's "Fine-tune your label" panel is styled (.preview-legend) to
+  // sit beside the live preview, so on Step 5 it's moved into
+  // #preview-canvas-area (right next to the SVG, under the preview
+  // header's zoom/fit controls) instead of requiring a scroll down the
+  // Step 5 form; on any other step it's parked in the same staging area
+  // used for #label-appearance-section/#label-warn-stage4 above, so it
+  // doesn't sit visible in the preview column when Step 5 isn't active.
+  const finetune=document.getElementById('finetune-panel-el');
+  if(finetune){
+    if(approvedBuilderStep===5){
+      document.getElementById('preview-canvas-area')?.appendChild(finetune);
+    } else if(finetune.parentElement && finetune.parentElement.id==='preview-canvas-area'){
+      staging.appendChild(finetune);
+    }
+  }
   const panelMap={1:[1],2:[2],3:[3],4:[4],5:[5]};
   BUILDER_STEP_LABELS.forEach((label,index)=>{
     const n=index+1,section=document.createElement('section');
@@ -3721,11 +3980,14 @@ function renderBuilderAccordion(){
     trigger.onclick=()=>setApprovedBuilderStep(n);
     section.appendChild(trigger);
     if(n===approvedBuilderStep){
-      const body=document.createElement('div');body.className='builder-accordion-body';
+      const body=document.createElement('div');body.className='builder-accordion-body'+(n===1?' step1-active':'');
       panelMap[n].forEach(source=>{const step=panel.querySelector('#step-'+source);if(step){step.classList.add('active');body.appendChild(step);}});
       if(n===1){
         const labelAppearance=staging.querySelector('#label-appearance-section');
-        if(labelAppearance)body.insertBefore(labelAppearance,body.firstChild);
+        // Keep the natural mobile reading order (load/shape first, then
+        // appearance/dimensions). Desktop CSS places these same siblings in
+        // two columns without changing their DOM order.
+        if(labelAppearance)body.appendChild(labelAppearance);
         const labelFitWarning=staging.querySelector('#label-warn-stage4');
         if(labelFitWarning)body.appendChild(labelFitWarning);
       }
@@ -3746,10 +4008,25 @@ function renderBuilderAccordion(){
   panel.insertBefore(accordion,panel.firstChild);
   document.querySelectorAll('[data-rail-step]').forEach(row=>{
     const step=Number(row.dataset.railStep),status=row.querySelector('.rail-status');
-    row.classList.toggle('active',step===approvedBuilderStep);
-    if(status)status.textContent=step<approvedBuilderStep?'Complete':(step===approvedBuilderStep?'In progress':'Not started');
+    const isActive=step===approvedBuilderStep,isComplete=step<approvedBuilderStep;
+    row.classList.toggle('active',isActive);
+    row.classList.toggle('complete',isComplete);
+    if(isActive)row.setAttribute('aria-current','step');else row.removeAttribute('aria-current');
+    if(status)status.textContent=isComplete?'Complete':(isActive?'In progress':'Not started');
     row.onclick=()=>setApprovedBuilderStep(step);
   });
+  // Mobile compact "Step N of 5 — Label" summary (same stepper items,
+  // just collapsed behind one summary row below the sticky breakpoint --
+  // see toggleStepperExpanded()).
+  const mobileText=document.getElementById('stepper-mobile-text');
+  if(mobileText)mobileText.textContent=`Step ${approvedBuilderStep} of 5 — ${BUILDER_STEP_LABELS[approvedBuilderStep-1]}`;
+}
+function toggleStepperExpanded(){
+  const stepper=document.getElementById('builder-stepper');
+  const summary=document.getElementById('stepper-mobile-summary');
+  if(!stepper)return;
+  const expanded=stepper.classList.toggle('expanded');
+  summary?.setAttribute('aria-expanded',String(expanded));
 }
 
 function goToStep(n){if(n>S.step+1)return;S.step=n;
@@ -3809,6 +4086,27 @@ function toggleHazardNext(){
 // entirely (not just disabled). Valid: single confirm checkbox only, "always verify"
 // bar and "extracted and locked" banner removed in favour of a small unobtrusive
 // clear/restart link inside the Smart Paste box itself (see lockHazardFields).
+// Correction (2026-09, follow-up): "has Step 3 got any hazard data" must
+// cover every meaningful field the Builder can put hazard data into, not
+// H statements alone -- P statements, selected pictograms, sensitiser/
+// EUH208 information, P280 sub-selections/free text, and an explicitly
+// chosen signal word. S.signal's own default is '' (see the S object
+// literal), so testing S.signal directly already excludes the untouched-
+// default case without a separate check. Centralised here as the single
+// shared calculation so _applyHazardBlockGate() (the only caller today)
+// and anything else that needs this stay in sync -- no second visibility
+// controller.
+function _hasStep3HazardData(){
+  return !!(
+    (S.hStatements||'').trim() ||
+    (S.pStatements||'').trim() ||
+    (S.pictograms&&S.pictograms.length) ||
+    (S.sensitisers&&S.sensitisers.length) ||
+    (S.p280Items&&S.p280Items.length) ||
+    (S.p280Other||'').trim() ||
+    S.signal
+  );
+}
 function _applyHazardBlockGate(){
   const blocked=!!window._labelBlockDownload&&approvedBuilderStep>=4;
   const confirmBlock=document.getElementById('hazard-confirm-block');
@@ -3818,17 +4116,20 @@ function _applyHazardBlockGate(){
   if(blockedCta)blockedCta.style.display='none';
   if(nextBtn)nextBtn.style.display=blocked?'none':'inline-block';
   // Correction (2026-09, Clear hazard data restoration): visibility is now
-  // keyed purely on whether Step 3 has extracted/selected hazard data
-  // (S.hStatements), not on `blocked`/readOnly. The old readOnly-based
-  // check left this control invisible for exactly the cases that most
-  // need it (H316/H401/H402/unrecognised codes never reach
-  // approvedBuilderStep>=4, since canLeaveApprovedBuilderStep()'s alert()
-  // stops advancement first, so `blocked` was never true for them either).
-  // This makes _applyHazardBlockGate() the single source of truth for
-  // this control's visibility — the conflicting duplicate previously in
-  // lockHazardFields() has been removed.
+  // keyed on whether Step 3 has ANY extracted/selected hazard data
+  // (_hasStep3HazardData() -- H/P statements, pictograms, sensitisers,
+  // P280, or an explicitly chosen signal word), not on `blocked`/readOnly.
+  // The old readOnly-based check left this control invisible for exactly
+  // the cases that most need it (H316/H401/H402/unrecognised codes never
+  // reach approvedBuilderStep>=4, since canLeaveApprovedBuilderStep()'s
+  // alert() stops advancement first, so `blocked` was never true for them
+  // either), and an earlier version of this fix checked S.hStatements
+  // alone, which missed P-only/pictogram-only/sensitiser-only/P280-only/
+  // signal-only data. This makes _applyHazardBlockGate() the single
+  // source of truth for this control's visibility — the conflicting
+  // duplicate previously in lockHazardFields() has been removed.
   const clearLink=document.getElementById('hazard-clear-link');
-  if(clearLink)clearLink.style.display=(S.hStatements||'').trim()?'inline-block':'none';
+  if(clearLink)clearLink.style.display=_hasStep3HazardData()?'inline-block':'none';
   if(typeof toggleHazardNext==='function')toggleHazardNext();
 }
 function prevStep(){if(approvedBuilderStep>1)setApprovedBuilderStep(approvedBuilderStep-1);}
@@ -3863,6 +4164,15 @@ function lockHazardFields(lock){
   });
   // Lock/unlock pictogram cards
   document.querySelectorAll('.picto-card,.picto-btn').forEach(el=>{
+    el.style.pointerEvents=lock?'none':'auto';
+    el.style.opacity=lock?'0.6':'1';
+  });
+  // Lock/unlock H/P-statement library chips (same technique as above). This
+  // closes the gap where locking the h-statements/p-statements textareas
+  // left the underlying H_LIB/P_LIB chip grids -- which drive S.hSelected/
+  // S.pSelected and, via syncPictogramsFromH(), the auto-derived pictograms
+  // -- independently clickable after Smart Paste extraction.
+  document.querySelectorAll('#h-chips .h-chip,#p-chips .h-chip').forEach(el=>{
     el.style.pointerEvents=lock?'none':'auto';
     el.style.opacity=lock?'0.6':'1';
   });
@@ -3953,6 +4263,7 @@ function clearHazardData(){
   if(hzCb)hzCb.checked=false;
   // Clear signal word
   S.signal='';
+  S.sdsSignal='';
   document.getElementById('signal-warning').className='signal-btn';
   document.getElementById('signal-danger').className='signal-btn';
   // Clear H statements
@@ -4010,7 +4321,7 @@ function applySize(sz){
 function selectSize(sz){applySize(sz);}
 function updateSizeWarnings(){
   const rawW = parseInt(document.getElementById('custom-w').value)||50;
-  const rawH = parseInt(document.getElementById('custom-h').value)||50;
+  const rawH = S.shape==='rectangle'?(parseInt(document.getElementById('custom-h').value)||40):rawW;
   const warn = document.getElementById('custom-size-warn');
   if(warn){
     const _isSmallForCLP = rawW < 52 || rawH < 40;
@@ -4077,7 +4388,7 @@ function onDimInput(){
   S.size='custom';
   document.querySelectorAll('.size-card').forEach(c=>c.classList.toggle('selected',c.dataset.size==='custom'));
   const rawW = parseInt(document.getElementById('custom-w').value)||50;
-  const rawH = parseInt(document.getElementById('custom-h').value)||50;
+  const rawH = S.shape==='rectangle'?(parseInt(document.getElementById('custom-h').value)||40):rawW;
   S.customW = Math.min(Math.max(rawW, 10), 150);
   S.customH = Math.min(Math.max(rawH, 10), 150);
   syncDimFields();
@@ -4085,8 +4396,11 @@ function onDimInput(){
   updateLabel();
 }
 function syncDimFields(){
-  const hI=document.getElementById('custom-h'),hN=document.getElementById('height-note'),wI=document.getElementById('custom-w');
+  const hI=document.getElementById('custom-h'),hG=document.getElementById('custom-h-group'),wI=document.getElementById('custom-w'),wG=document.getElementById('custom-w-group'),wL=document.getElementById('custom-w-label');
   const isRect=S.shape==='rectangle';
+  if(wL)wL.textContent=isRect?'Width (mm)':(S.shape==='square'?'Size (mm)':'Diameter (mm)');
+  if(hG)hG.style.display=isRect?'block':'none';
+  if(wG)wG.style.gridColumn=isRect?'auto':'1 / -1';
   // Corrected 2026-09-07 (Michaela's explicit decision, see
   // LabelRenderer.isCustomSizeBelowSupportedMinimum()'s own comment): a
   // rectangle's real supported minimum is 52mm on its LONG side and 36mm
@@ -4098,10 +4412,10 @@ function syncDimFields(){
   // which is only a soft browser hint (spinner bounds), never the source
   // of truth. Circle/square are unchanged (a single dimension, 52mm).
   if(isRect){
-    hI.disabled=false;hI.style.opacity='1';if(hN)hN.textContent='';
+    hI.disabled=false;hI.style.opacity='1';
     hI.min='36';wI.min='36';
   } else {
-    hI.disabled=true;hI.style.opacity='0.45';if(hN)hN.innerHTML='— <a href="#" onclick="selectShape(\'rectangle\');return false;" style="color:#4C9BB0;font-size:11px;">Use Rectangle for different height</a>';const wv=document.getElementById('custom-w').value;if(wv)hI.value=wv;
+    hI.disabled=true;hI.style.opacity='1';const wv=wI.value;if(wv){hI.value=wv;S.customH=Math.min(Math.max(parseInt(wv)||50,10),150);}
     hI.min='52';wI.min='52';
   }
 }
@@ -4260,11 +4574,11 @@ function nudgeBizNameFS(delta){
 function resetBizNameFS(){S.bizNameFSOverride=null;updateLabel();}
 function updateLabel(){
   readForm();
-  // Auto-set signal word from selected H-codes (mirrors extractSDS logic so manual chip clicks work too)
+  // Shared GB-CLP resolver: Smart Paste and manual chip changes must never
+  // drift into different signal-word rules.
   const _autoH=(S.hStatements||'').split(',').map(h=>h.trim()).filter(Boolean);
   {
-    const _dangerH=['H300','H301','H310','H311','H330','H331','H340','H350','H360','H370','H372','H290','H304','H314','H318','H225','H224'];
-    const _sig=_autoH.length>0?(_autoH.some(h=>_dangerH.includes(h))?'Danger':'Warning'):'';
+    const _sig=resolveGbClpSignalWord(_autoH,S.sdsSignal);
     S.signal=_sig;
     document.getElementById('signal-warning').className='signal-btn'+(_sig==='Warning'?' sel-warn':'');
     document.getElementById('signal-danger').className='signal-btn'+(_sig==='Danger'?' sel-danger':'');
@@ -4294,6 +4608,8 @@ function updateLabel(){
     || (window._unrecognizedCodes||[]).filter(code=>LabelRenderer.GB_UNSUPPORTED_CODES.includes(code));
   const _genericUnrecognizedCodesFound = window._unrecognizedCodesGeneric
     || (window._unrecognizedCodes||[]).filter(code=>!LabelRenderer.GB_UNSUPPORTED_CODES.includes(code));
+  const _codeHelpBtn=document.getElementById('clp-code-help-btn');
+  if(_codeHelpBtn)_codeHelpBtn.style.display=(_gbUnsupportedCodesFound.length||_genericUnrecognizedCodesFound.length)?'block':'none';
   // Custom-size-below-CLPeasy's-supported-minimum fix: a custom size under
   // 52mm must block export the same way clipped/unrecognised content does
   // -- folded into the one existing block-download condition rather than a
@@ -4361,7 +4677,7 @@ function updateLabel(){
     ? _gbUnsupportedCodesFound.length && _genericUnrecognizedCodesFound.length
       ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br>'+clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+' Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than print a code CLPeasy could not safely include on your label.</strong>'
       : _gbUnsupportedCodesFound.length
-      ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br><strong>CLPeasy has blocked the download rather than print a code that is not part of the current Great Britain CLP hazard-statement system.</strong>'
+      ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br><strong>CLPeasy has blocked the download rather than remove, replace or print a code it cannot safely resolve for a Great Britain CLP label.</strong>'
       : clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+'<br><br>Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
     : _isCustomSizeTooSmall
     ? getCustomSizeMinMsg()+'<br><br>To create a downloadable label, return to Step 1 and '+(S.shape==='rectangle'?'set the long side to '+LabelRenderer.CUSTOM_RECT_LONG_MIN_MM+'mm or larger and the short side to '+LabelRenderer.CUSTOM_RECT_SHORT_MIN_MM+'mm or larger':'increase the custom size to '+LabelRenderer.CUSTOM_SIZE_MIN_MM+'mm or larger')+'.'
@@ -4387,13 +4703,19 @@ function updateLabel(){
   // becomes unfittable mid-edit is blocked immediately, and re-enables
   // automatically once the maker fixes it.
   if(typeof toggleDownload==='function') toggleDownload();
-  // Desktop preview — panel is retired (replaced by the top preview bar), skip entirely.
+  // Keep the desktop preview populated even while it is hidden by the
+  // mobile breakpoint. If the page loads at <=860px and is then widened
+  // to desktop, the resize handler can immediately fit an existing SVG
+  // instead of revealing an empty preview panel until the next form edit.
+  // Only the layout-dependent fit/zoom work needs the visibility guard.
   const dc=document.getElementById('label-svg-container');
-  if(dc && dc.offsetParent!==null){
+  if(dc){
     dc.innerHTML=svgHtml;
-    // Auto-fit zoom to fill available panel on first render, then apply current zoom
-    recomputePreviewFit();
-    applyZoomToSVG();
+    if(dc.offsetParent!==null){
+      // Auto-fit zoom to fill available panel on first render, then apply current zoom
+      recomputePreviewFit();
+      applyZoomToSVG();
+    }
   }
   // Sheet preview
   const sc=document.getElementById('sheet-label-container');
@@ -4436,14 +4758,86 @@ function recomputePreviewFit(){
   if(!dc||dc.offsetParent===null)return;
   const area=document.getElementById('preview-canvas-area');
   if(!area)return;
-  const aW=area.clientWidth-40,aH=area.clientHeight-40;
+  // (28 Sep 2026, REVISED again -- broke the fit-to-view circularity):
+  // the desktop preview panel is now content-height (see the sixth
+  // correction), which means #preview-canvas-area's OWN clientHeight is
+  // itself determined by its content -- ultimately by the rendered SVG's
+  // own height. The previous version read area.clientHeight as an input
+  // to the SAME calculation that decides the SVG's size, i.e. it fed the
+  // calculation's own output back into itself as an input: SVG height ->
+  // stage height -> canvas-area clientHeight -> aH -> fitZoom -> SVG
+  // height again. In a real browser this settles into SOME fixed point,
+  // but nothing guarantees it's the CORRECT one, and nothing guarantees
+  // it settles in one pass rather than oscillating across repeated
+  // layout/resize events.
+  // Fixed by making WIDTH (not height) the primary constraint: the
+  // preview column's width is a genuine grid-track value (from
+  // .builder-layout's clamp()-based column, see the sixth correction),
+  // fixed by the viewport, NEVER by this element's own content -- so
+  // area.clientWidth is safe to read here. The resulting SVG height is
+  // then DERIVED from the viewBox aspect ratio (vbH/vbW * width-zoom),
+  // not measured back from the DOM. A maximum-height guard (for a tall
+  // label that would otherwise overflow the visible viewport) is
+  // computed from .wizard-panel's height instead -- the separate form
+  // column, which is independent of the preview's own content. If the
+  // form panel isn't available, window.innerHeight minus a fixed fallback
+  // budget is used instead -- never area.clientHeight.
+  const BREATHING=8;
+  // Padding only (not border): neither #preview-canvas-area nor
+  // #preview-stage currently has a border, and border-width is
+  // deliberately left out of this measurement -- jsdom's getComputedStyle
+  // reports a nonzero default border-width even for border-style:none
+  // unless a border is explicitly declared (a jsdom-only quirk, confirmed
+  // against a real spec-compliant browser default of 0), which would
+  // otherwise silently poison this measurement in the test harness. If a
+  // real border is ever added to either element, add its width here too
+  // (and give it an explicit value, not just an omitted one, so both a
+  // real browser and jsdom agree on the result).
+  function boxInsets(el){
+    if(!el)return{x:0,y:0};
+    const cs=window.getComputedStyle(el);
+    const x=(parseFloat(cs.paddingLeft)||0)+(parseFloat(cs.paddingRight)||0);
+    const y=(parseFloat(cs.paddingTop)||0)+(parseFloat(cs.paddingBottom)||0);
+    return{x,y};
+  }
+  const areaInsets=boxInsets(area);
+  const stageInsets=boxInsets(document.getElementById('preview-stage'));
   const svg=dc.querySelector('svg');
   if(!svg)return;
   const vb=svg.getAttribute('viewBox');
   if(!vb)return;
   const[,, vbW, vbH]=vb.split(' ').map(Number);
   if(!(vbW>0&&vbH>0))return;
-  const fitZoom=Math.min(aW/vbW,aH/vbH);
+
+  // 1. Width is the primary constraint (genuinely independent input).
+  const aW=area.clientWidth-areaInsets.x-stageInsets.x-BREATHING;
+  const widthZoom=aW/vbW;
+
+  // 2. Independent maximum-height guard, never derived from this
+  // element's own (circular) clientHeight.
+  const FALLBACK_HEIGHT_BUDGET=300; // used only if .wizard-panel is missing
+  const formPanel=document.querySelector('.wizard-panel');
+  const maxRowHeight=(formPanel&&formPanel.clientHeight>0)?formPanel.clientHeight:(window.innerHeight-FALLBACK_HEIGHT_BUDGET);
+  const aH=maxRowHeight-areaInsets.y-stageInsets.y-BREATHING;
+  const heightZoom=aH/vbH;
+
+  // 3. A tall/narrow label (aspect ratio makes width-zoom render it
+  // taller than the row budget allows) falls back to the height-limited
+  // zoom instead; an ordinary label stays width-driven.
+  // 4. (29 Sep 2026, seventh correction): an EXPLICIT display-size cap,
+  // independent of both of the above. Even in the narrow preview column,
+  // a width-driven fit alone let a circle/square grow to nearly the full
+  // column width -- comfortably larger than a "compact inspection panel"
+  // should be, and tall enough in some cases to push the stage past the
+  // compliance row below it. MAX_DISPLAY_PX caps the LARGER of the
+  // rendered width/height at 290px regardless of how much column width is
+  // actually available;
+  // for a rectangle this preserves its aspect ratio within that same
+  // square bounding box, exactly like the width/height fit above, just
+  // with a third, smaller ceiling in the mix.
+  const MAX_DISPLAY_PX=290;
+  const capZoom=Math.min(MAX_DISPLAY_PX/vbW,MAX_DISPLAY_PX/vbH);
+  const fitZoom=Math.min(widthZoom,heightZoom,capZoom);
   if(!(fitZoom>0))return;
   _previewMaxZoom=fitZoom;
   _previewFitZoom=fitZoom;
