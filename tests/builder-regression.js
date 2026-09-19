@@ -433,9 +433,20 @@ setTimeout(async () => {
     document.getElementById('biz-phone').value = '01234 567890';
     window.setApprovedBuilderStep(5);
     assert.strictEqual(window.eval('approvedBuilderStep'), 5, 'Business did not advance to Download');
-    assert(document.querySelector('.builder-layout').classList.contains('reviewing'), 'review layout was not activated');
+    // (24 Sep 2026, stepper redesign): the two-column form|preview layout
+    // is no longer a step-5-only ".reviewing" state -- it's the standing
+    // layout on every step now that the old right-hand Steps rail is gone
+    // (replaced by the sticky horizontal stepper). So the meaningful
+    // structural check here is that the side-rail is indeed gone and the
+    // layout is still exactly the two expected columns.
+    assert(!document.querySelector('.builder-side-rail'), 'the old right-hand Steps/AI rail should have been removed by the stepper redesign');
     assert(document.querySelector('.right-column > #preview-panel-el'), 'Download moved the live preview out of the right-hand preview column');
-    assert(document.querySelector('.builder-accordion-section.active #finetune-panel-el'), 'fine-tune controls are missing from Download');
+    // Fine-tune controls are relocated (by renderBuilderAccordion(), see
+    // builder.html) beside the live preview on Step 5, not left inside the
+    // Step 5 form panel -- see the "Better preview tools"/Step 5 fine-
+    // tuning requirement of the builder-step-navigation-layout redesign.
+    assert(document.querySelector('#preview-canvas-area #finetune-panel-el'), 'fine-tune controls were not relocated beside the live preview on Download');
+    assert(!document.querySelector('.builder-accordion-section.active #finetune-panel-el'), 'fine-tune controls are still inside the Step 5 form panel instead of being moved beside the preview');
     // The "Label summary" panel (#label-summary) was removed from Step 5 --
     // its two checks here (H315 present, long sensitiser name not truncated)
     // are retained via still-existing coverage instead: H315 retention is
