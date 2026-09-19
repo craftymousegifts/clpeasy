@@ -198,7 +198,7 @@ function switchTab(tab) {
   document.getElementById('tab-signin').classList.toggle('active', tab === 'signin');
   document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
   document.getElementById('auth-title').textContent = tab === 'signin' ? 'Welcome back' : 'Create your account';
-  document.getElementById('auth-sub').textContent = tab === 'signin' ? 'Sign in to your CLPeasy account' : 'Start generating compliant CLP labels';
+  document.getElementById('auth-sub').textContent = tab === 'signin' ? 'Sign in to your CLPeasy account' : 'Start creating print-ready GB CLP labels';
   document.getElementById('submit-btn').textContent = tab === 'signin' ? 'Sign in' : 'Create account';
   document.getElementById('forgot-link').style.display = tab === 'signin' ? '' : 'none';
   document.getElementById('terms-text').style.display = tab === 'signup' ? '' : 'none';
