@@ -69,8 +69,26 @@ assert(source.includes('ctx.bezierCurveTo('),
   'autumn particles must use a pointed curved leaf silhouette');
 assert(source.includes("ctx.strokeStyle = 'rgba(92,45,12,0.55)'"),
   'autumn leaves must draw a visible centre vein/stem');
-assert(source.includes("type === 'leaves' ? '0.72' : '0.4'"),
-  'autumn leaves must be clearly visible without changing other seasonal particles');
+assert(source.includes("type.indexOf('leaves') === 0 ? '0.72' : '0.4'"),
+  "autumn leaves (and October's mixed leaves+pumpkins) must be clearly visible without changing other seasonal particles");
+
+// Pumpkin-mixing coverage (24 Sep 2026): October mixes a minority of
+// pumpkins in among the same falling leaves rather than replacing them,
+// and both must fall in an evenly spread pattern rather than clumping.
+assert(source.includes("particle: 'leaves+pumpkins'"),
+  "October must use the mixed 'leaves+pumpkins' particle type, not plain leaves");
+assert(source.includes("const isMixed = type === 'leaves+pumpkins';"),
+  'addParticles must recognise the mixed leaves+pumpkins type');
+assert(/PUMPKIN_SHARE\s*=\s*0\.2/.test(source),
+  'pumpkins must be a minority accent among the leaves (not a 50/50 split or a full replacement)');
+assert(source.includes("ctx.fillText('\\u{1F383}', 0, 0)"),
+  'pumpkins must render as a recognisable pumpkin (🎃) rather than a generic shape');
+assert(/kind === 'pumpkin'[\s\S]{0,200}Math\.sin\(p\.swingPhase\)/.test(source),
+  'pumpkins must sway gently rather than spin like leaves -- a carved face should stay upright');
+assert(source.includes('function laneX(lane)'),
+  'particles must spawn (and recycle) within their own horizontal lane so the full width is always covered evenly, not a fully random x that can clump');
+assert(source.includes('if (p.y > canvas.height + 20) { p.y = -20; p.x = laneX(p.lane); }'),
+  'a particle recycling off the bottom of the canvas must respawn within its own lane, keeping the even spread over time, not just on first load');
 
 // Timing correction guard (unchanged): stopParticles() must be called
 // exactly twice -- automatic banner dismissal, and the explicit close.

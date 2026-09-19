@@ -200,7 +200,7 @@
       name: 'October',
       accent: '#EF4444',
       accentDark: '#991B1B',
-      particle: 'leaves',
+      particle: 'leaves+pumpkins',
       pillBg: '#FEF2F2',
       pillColor: '#991B1B',
       icon: '🎃',
@@ -253,31 +253,65 @@
   ];
 
   // ── PARTICLES ──────────────────────────────────────────────────
+  // `type` can be 'snow' | 'petals' | 'leaves' | 'leaves+pumpkins' | 'none'.
+  // 'leaves+pumpkins' (October) mixes a minority of pumpkins in among the
+  // same falling leaves, sharing one particle set/animation loop.
+  //
+  // Even horizontal spread (24 Sep 2026 correction): every particle used
+  // to get a fully random x on spawn AND every time it recycled off the
+  // bottom of the canvas (`p.x = Math.random() * canvas.width`), which at
+  // these low particle counts visibly clumped in places and left long gaps
+  // elsewhere, especially noticeable on first load. Each particle now owns
+  // a fixed-width horizontal "lane" (`canvas.width / count`, by its spawn
+  // index) and only ever re-picks a random x WITHIN its own lane, both on
+  // first spawn and every time it recycles -- so the full width is always
+  // covered evenly, while the jitter inside each lane keeps it looking
+  // organic rather than a rigid grid. Horizontal drift (and the drift
+  // wrap-around at the canvas edges) is unchanged, so a particle can still
+  // wander a little outside its own lane between recycles.
   function addParticles(type, accentColor) {
     if (type === 'none') return;
     const existing = document.getElementById('clpeasy-particles');
     if (existing) existing.remove();
     const canvas = document.createElement('canvas');
     canvas.id = 'clpeasy-particles';
-    canvas.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:${type === 'leaves' ? '0.72' : '0.4'};`;
+    canvas.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:${type.indexOf('leaves') === 0 ? '0.72' : '0.4'};`;
     document.body.appendChild(canvas);
     particleCanvasEl = canvas;
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     const particles = [];
-    const count = type === 'snow' ? 35 : 18;
+    const isMixed = type === 'leaves+pumpkins';
+    const baseType = isMixed ? 'leaves' : type;
+    const count = type === 'snow' ? 35 : (isMixed ? 22 : 18);
     const leafColors = ['#F97316','#EA580C','#FDE68A','#DC2626','#B45309'];
+    // Roughly 1 in 5 particles is a pumpkin when mixed -- a minority accent
+    // among the leaves, not a replacement for them (both fall together).
+    const PUMPKIN_SHARE = 0.2;
+    function laneX(lane) {
+      const laneW = canvas.width / count;
+      return laneW * lane + Math.random() * laneW;
+    }
     for (let i = 0; i < count; i++) {
+      const kind = baseType === 'leaves'
+        ? (isMixed && Math.random() < PUMPKIN_SHARE ? 'pumpkin' : 'leaf')
+        : baseType; // 'snow' | 'petals'
       particles.push({
-        x: Math.random() * canvas.width,
+        lane: i,
+        x: laneX(i),
         y: Math.random() * canvas.height,
-        r: type === 'snow' ? Math.random() * 3 + 1 : Math.random() * 9 + 5,
-        speed: Math.random() * 0.5 + 0.2,
+        r: kind === 'pumpkin' ? Math.random() * 4 + 8 : (kind === 'snow' ? Math.random() * 3 + 1 : Math.random() * 9 + 5),
+        speed: (kind === 'pumpkin' ? 0.75 : 1) * (Math.random() * 0.5 + 0.2),
         drift: (Math.random() - 0.5) * 0.4,
         rot: Math.random() * 360,
         rotSpeed: (Math.random() - 0.5) * 2,
-        color: type === 'leaves' ? leafColors[Math.floor(Math.random() * leafColors.length)] : 'rgba(200,230,245,0.9)'
+        // Pumpkins sway gently rather than spin (keeps the carved face
+        // upright -- "drop down slightly", not tumbling) -- see draw().
+        swingPhase: Math.random() * Math.PI * 2,
+        swingSpeed: 0.015 + Math.random() * 0.015,
+        kind,
+        color: kind === 'leaf' ? leafColors[Math.floor(Math.random() * leafColors.length)] : 'rgba(200,230,245,0.9)'
       });
     }
     function draw() {
@@ -285,7 +319,7 @@
       particles.forEach(p => {
         ctx.save();
         ctx.translate(p.x, p.y);
-        if (type === 'leaves') {
+        if (p.kind === 'leaf') {
           // A pointed, veined leaf silhouette rather than a plain oval.
           // Keep it deliberately simple so the animation remains lightweight.
           ctx.rotate(p.rot * Math.PI / 180);
@@ -302,7 +336,15 @@
           ctx.moveTo(0, -p.r * 0.72);
           ctx.lineTo(0, p.r * 1.22);
           ctx.stroke();
-        } else if (type === 'petals') {
+        } else if (p.kind === 'pumpkin') {
+          const swing = Math.sin(p.swingPhase) * 10;
+          ctx.rotate(swing * Math.PI / 180);
+          ctx.font = `${(p.r * 2).toFixed(1)}px serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('\u{1F383}', 0, 0);
+          p.swingPhase += p.swingSpeed;
+        } else if (p.kind === 'petals') {
           ctx.rotate(p.rot * Math.PI / 180);
           ctx.fillStyle = 'rgba(249,168,212,0.6)';
           ctx.beginPath();
@@ -318,7 +360,7 @@
         p.y += p.speed;
         p.x += p.drift;
         p.rot += p.rotSpeed;
-        if (p.y > canvas.height + 20) { p.y = -20; p.x = Math.random() * canvas.width; }
+        if (p.y > canvas.height + 20) { p.y = -20; p.x = laneX(p.lane); }
         if (p.x > canvas.width + 20) p.x = -20;
         if (p.x < -20) p.x = canvas.width + 20;
       });
