@@ -438,8 +438,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .zoom-fill{height:100%;background:var(--teal);border-radius:2px;transition:width .15s;}
 .zoom-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:var(--teal-dark);box-shadow:0 1px 4px rgba(0,0,0,0.2);cursor:grab;transition:left .15s;}
 .zoom-pct{font-size:11px;color:var(--muted);min-width:30px;text-align:right;font-weight:600;}
-/* Canvas area — scrollable so zoomed labels don't get clipped */
-.preview-canvas-area{display:flex;align-items:flex-start;justify-content:center;gap:20px;padding:8px;overflow:auto;min-height:460px;}/* padding reduced 16px->8px (27 Sep 2026, revised preview correction): #preview-stage now supplies its own close-fitting frame around the label, so the outer canvas no longer needs its own separate large buffer -- keeping both would compound into extra reserved space and shrink the label more than necessary (see recomputePreviewFit(), which measures both insets directly rather than guessing). */
+/* Canvas area — scrollable so zoomed labels don't get clipped.
+   flex-wrap:wrap added (Step 5 fine-tune-panel overflow fix): on Step 5,
+   renderBuilderAccordion() appends #finetune-panel-el (.preview-legend,
+   fixed 220px) into this row alongside #preview-stage. The preview
+   column's width is fixed by .builder-layout's grid track (see
+   recomputePreviewFit()'s comment) and is not always wide enough for
+   both side by side -- previously that made .preview-legend overflow
+   silently past the row AND the page's own right edge (no scrollbar
+   surfaced it, so its text was cut off and unreachable). flex-wrap lets
+   .preview-legend drop to its own line below #preview-stage only when
+   there truly isn't room for both, and keeps them side by side whenever
+   there is -- no size or position changes to either element itself. */
+.preview-canvas-area{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:center;gap:20px;padding:8px;overflow:auto;min-height:460px;}/* padding reduced 16px->8px (27 Sep 2026, revised preview correction): #preview-stage now supplies its own close-fitting frame around the label, so the outer canvas no longer needs its own separate large buffer -- keeping both would compound into extra reserved space and shrink the label more than necessary (see recomputePreviewFit(), which measures both insets directly rather than guessing). */
 /* No longer used (label-svg-container now nests one level deeper, inside
    #preview-stage below -- kept only as a comment so the selector isn't
    silently reused for something else): .preview-canvas-area>#label-svg-container{flex:1;...} */
@@ -691,6 +702,17 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 @media(max-width:1100px){.shell-trust{grid-template-columns:1fr 1fr;}.shell-trust-item:nth-child(3){border-left:0;border-top:1px solid var(--border);}.shell-trust-item:nth-child(4){border-top:1px solid var(--border);}}
 @media(max-width:760px){.shell-trust{grid-template-columns:1fr;}.shell-trust-item{border-left:0 !important;border-top:1px solid var(--border);}.shell-trust-item:first-child{border-top:none;}}
 
+/* App release-version link -- small, unobtrusive line in the sidebar,
+   directly under Support (24 Sep 2026, moved here from the page footer
+   per direct request). "Version X.Y" is always visible; clicking it
+   reveals "— released dd/mm/yyyy" next to it. Both are built from the
+   single APP_VERSION constant near the bottom of the page script, so a
+   release only ever needs that one value updated. */
+.app-version-footer{padding:8px 14px 4px;font-size:11px;color:var(--muted);}
+.app-version-link{background:none;border:none;padding:0;font:inherit;color:var(--muted);cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;}
+.app-version-link:hover{color:var(--teal);}
+.app-version-detail{margin-left:2px;}
+
 /* Desktop layout overrides stay at the end of the stylesheet so they
    reliably win over same-specificity base rules above. The page uses
    ordinary document scrolling; the form body is never a nested scroll
@@ -767,6 +789,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <a href="auth.html?next=builder.html" id="nav-signin" class="sidebar-nav-item" style="display:none;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4h5a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-5"/><path d="M3 12h11.5"/><path d="M11 8l4 4-4 4"/></svg></span>Sign in</a>
       <button type="button" class="sidebar-nav-item" onclick="openHelp()"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7v.5"/><path d="M12 17h.01"/></svg></span>Help Guide</button>
       <a href="support.html" target="_blank" rel="noopener" class="sidebar-nav-item" style="width:100%;text-align:left;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 1 3.3 6.4L4 20l1.3-3.6A7.96 7.96 0 0 1 4 12Z"/></svg></span>Support</a>
+      <div class="app-version-footer"><button type="button" class="app-version-link" id="app-version-link" onclick="toggleVersionInfo()"></button><span class="app-version-detail" id="app-version-detail"></span></div>
     </div>
     <div class="sidebar-bottom">
       <div class="sidebar-usage" id="sidebar-usage" style="display:none;">
@@ -4167,6 +4190,15 @@ function lockHazardFields(lock){
     el.style.pointerEvents=lock?'none':'auto';
     el.style.opacity=lock?'0.6':'1';
   });
+  // Lock/unlock H/P-statement library chips (same technique as above). This
+  // closes the gap where locking the h-statements/p-statements textareas
+  // left the underlying H_LIB/P_LIB chip grids -- which drive S.hSelected/
+  // S.pSelected and, via syncPictogramsFromH(), the auto-derived pictograms
+  // -- independently clickable after Smart Paste extraction.
+  document.querySelectorAll('#h-chips .h-chip,#p-chips .h-chip').forEach(el=>{
+    el.style.pointerEvents=lock?'none':'auto';
+    el.style.opacity=lock?'0.6':'1';
+  });
   // Lock/unlock extract button
   const extractBtn=document.querySelector('.btn-extract');
   if(extractBtn){
@@ -5674,6 +5706,20 @@ function initExtensions(){
 
 <script>
   // Sidebar mobile toggle (Phase 2 shell rollout — shared pattern)
+  // App release version, shown as a small link at the bottom of the
+  // builder page (see .app-version-footer above). APP_VERSION is the
+  // single place to update on every release -- the footer link text and
+  // its "released" detail are both built from it, nothing else to touch.
+  const APP_VERSION={number:'1.0',released:'15/06/2026'}; // dd/mm/yyyy -- confirmed actual CLPeasy public-launch date, not a placeholder
+  function toggleVersionInfo(){
+    const el=document.getElementById('app-version-detail');
+    if(!el)return;
+    el.textContent=el.textContent?'':'— released '+APP_VERSION.released;
+  }
+  (function(){
+    const link=document.getElementById('app-version-link');
+    if(link)link.textContent='Version '+APP_VERSION.number;
+  })();
   (function(){
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebar-overlay');
