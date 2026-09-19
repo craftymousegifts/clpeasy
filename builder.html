@@ -702,6 +702,16 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 @media(max-width:1100px){.shell-trust{grid-template-columns:1fr 1fr;}.shell-trust-item:nth-child(3){border-left:0;border-top:1px solid var(--border);}.shell-trust-item:nth-child(4){border-top:1px solid var(--border);}}
 @media(max-width:760px){.shell-trust{grid-template-columns:1fr;}.shell-trust-item{border-left:0 !important;border-top:1px solid var(--border);}.shell-trust-item:first-child{border-top:none;}}
 
+/* App release-version footer -- small, unobtrusive line beneath the trust
+   footer at the very bottom of the builder page. "Version X.Y" is always
+   visible; clicking it reveals "— released dd/mm/yyyy" next to it. Both
+   are built from the single APP_VERSION constant near the bottom of the
+   page script, so a release only ever needs that one value updated. */
+.app-version-footer{text-align:center;padding:12px 0 4px;font-size:11px;color:var(--muted);}
+.app-version-link{background:none;border:none;padding:0;font:inherit;color:var(--muted);cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;}
+.app-version-link:hover{color:var(--teal);}
+.app-version-detail{margin-left:2px;}
+
 /* Desktop layout overrides stay at the end of the stylesheet so they
    reliably win over same-specificity base rules above. The page uses
    ordinary document scrolling; the form body is never a nested scroll
@@ -5689,11 +5699,26 @@ function initExtensions(){
     <div class="shell-trust-item"><span class="shell-trust-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 5.7a5.4 5.4 0 0 0-7.6 0L12 6.9l-1.2-1.2a5.4 5.4 0 1 0-7.6 7.6L12 22l8.8-8.7a5.4 5.4 0 0 0 0-7.6Z"/></svg></span><span class="shell-trust-copy"><b>By makers, for makers</b><small>Practical tools for small businesses</small></span></div>
     <div class="shell-trust-item"><span class="shell-trust-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H8l-4 4Z"/></svg></span><span class="shell-trust-copy"><b>We're here to help</b><small>support@clpeasy.com</small></span></div>
   </section>
+  <div class="app-version-footer"><button type="button" class="app-version-link" id="app-version-link" onclick="toggleVersionInfo()"></button><span class="app-version-detail" id="app-version-detail"></span></div>
 </div><!-- /.shell-main -->
 </div><!-- /.app-shell -->
 
 <script>
   // Sidebar mobile toggle (Phase 2 shell rollout — shared pattern)
+  // App release version, shown as a small link at the bottom of the
+  // builder page (see .app-version-footer above). APP_VERSION is the
+  // single place to update on every release -- the footer link text and
+  // its "released" detail are both built from it, nothing else to touch.
+  const APP_VERSION={number:'1.0',released:'19/09/2026'}; // dd/mm/yyyy -- set to the actual go-live date when this release is pushed to production
+  function toggleVersionInfo(){
+    const el=document.getElementById('app-version-detail');
+    if(!el)return;
+    el.textContent=el.textContent?'':'— released '+APP_VERSION.released;
+  }
+  (function(){
+    const link=document.getElementById('app-version-link');
+    if(link)link.textContent='Version '+APP_VERSION.number;
+  })();
   (function(){
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebar-overlay');
