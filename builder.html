@@ -711,13 +711,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   .compliance-card .rail-copy{margin:0;font-size:11.5px;}
   .compliance-card .rail-chip{margin:0;}
   /* Step 1 two-column desktop reflow: #step-1 (heading, load-from-
-     library and shape) and #label-appearance-section (background/text
-     colour, cut-guide border and dimensions) are, for
+     library, shape and dimensions) and #label-appearance-section
+     (background/text colour and cut-guide border) are, for
      historical reasons (see renderBuilderAccordion()'s comment on
      label-appearance-section), rendered as SIBLINGS directly inside
      .builder-accordion-body when Step 1 is active -- not nested inside
      one another -- which conveniently already matches the two logical
-     groups this needs ("saved-label/shape" vs. "appearance/dimensions")
+     groups this needs ("size/shape" vs. "appearance")
      without any further DOM change. .step1-active (set in
      renderBuilderAccordion() only when Step 1 is the active step) turns
      that body into a 2-column grid; `order` puts #step-1 first (matching
@@ -1022,6 +1022,21 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <!-- Label language selector removed — GB CLP (English only) for now -->
     <input type="hidden" id="label-lang" value="en">
+    <div class="sdiv">Dimensions (mm)</div>
+    <div class="custom-dims">
+      <div class="form-group" id="custom-w-group" style="grid-column:1/-1;"><label id="custom-w-label">Diameter (mm)</label><input type="number" id="custom-w" placeholder="e.g. 52" inputmode="numeric" min="52" max="150" oninput="onDimInput()"></div>
+      <div class="form-group" id="custom-h-group" style="display:none;"><label>Height (mm)</label><input type="number" id="custom-h" placeholder="e.g. 40" inputmode="numeric" min="52" max="200" oninput="onDimInput()"></div>
+      <div id="custom-size-warn" class="field-alert field-alert-warn" style="display:none;grid-column:1/-1;margin-bottom:0;"></div>
+      <div id="en15494-warn" class="field-alert field-alert-danger" style="display:none;grid-column:1/-1;margin-top:8px;margin-bottom:0;">
+        🔴 <strong>EN 15494:2019 pictograms may not display clearly at this label size.</strong><br>
+        CLP labels for candles should ideally be 52mm or larger to display all mandatory safety information legibly.<br>
+        EN 15494 candle safety pictograms do <strong>not</strong> have to appear on the CLP label — they can legally be placed on the packaging (e.g. printed on the jar, box, or a separate swing tag).<br><br>
+        <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;">
+          <input type="checkbox" id="hide-en15494" onchange="S.hideEN15494=this.checked;updateLabel()" style="margin-top:2px;width:16px;height:16px;flex-shrink:0;accent-color:#991B1B;">
+          <span>Remove EN 15494 pictograms from this label <em>(I will display them on the packaging instead)</em></span>
+        </label>
+      </div>
+    </div>
     <div id="label-appearance-section">
     <div class="sdiv">Label appearance</div>
     <div class="form-row">
@@ -1045,21 +1060,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div style="display:flex;gap:8px;">
         <button id="border-on" onclick="setBorder(true)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--teal);background:var(--teal-light);color:var(--teal-dark);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Show border</button>
         <button id="border-off" onclick="setBorder(false)" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid var(--border);background:white;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Hide border</button>
-      </div>
-    </div>
-    <div class="sdiv">Dimensions (mm)</div>
-    <div class="custom-dims">
-      <div class="form-group" id="custom-w-group" style="grid-column:1/-1;"><label id="custom-w-label">Diameter (mm)</label><input type="number" id="custom-w" placeholder="e.g. 52" inputmode="numeric" min="52" max="150" oninput="onDimInput()"></div>
-      <div class="form-group" id="custom-h-group" style="display:none;"><label>Height (mm)</label><input type="number" id="custom-h" placeholder="e.g. 40" inputmode="numeric" min="52" max="200" oninput="onDimInput()"></div>
-      <div id="custom-size-warn" class="field-alert field-alert-warn" style="display:none;grid-column:1/-1;margin-bottom:0;"></div>
-      <div id="en15494-warn" class="field-alert field-alert-danger" style="display:none;grid-column:1/-1;margin-top:8px;margin-bottom:0;">
-        🔴 <strong>EN 15494:2019 pictograms may not display clearly at this label size.</strong><br>
-        CLP labels for candles should ideally be 52mm or larger to display all mandatory safety information legibly.<br>
-        EN 15494 candle safety pictograms do <strong>not</strong> have to appear on the CLP label — they can legally be placed on the packaging (e.g. printed on the jar, box, or a separate swing tag).<br><br>
-        <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;">
-          <input type="checkbox" id="hide-en15494" onchange="S.hideEN15494=this.checked;updateLabel()" style="margin-top:2px;width:16px;height:16px;flex-shrink:0;accent-color:#991B1B;">
-          <span>Remove EN 15494 pictograms from this label <em>(I will display them on the packaging instead)</em></span>
-        </label>
       </div>
     </div>
     </div><!-- /#label-appearance-section -->

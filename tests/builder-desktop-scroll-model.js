@@ -57,9 +57,11 @@ assert(!/class="size-grid"/.test(step1Source), 'visible preset-size cards must b
 assert(!/Choose a preset or enter your own dimensions/.test(step1Source), 'obsolete preset-size helper text must be removed');
 const appearanceSource = step1Source.match(/<div id="label-appearance-section">[\s\S]*?<\/div><!-- \/#label-appearance-section -->/)?.[0] || '';
 assert(appearanceSource, 'could not isolate #label-appearance-section');
-assert(appearanceSource.includes('id="custom-w-group"') && appearanceSource.includes('id="custom-h-group"'), 'Dimensions must live inside #label-appearance-section');
-assert(/id="custom-w-label">Diameter \(mm\)<\/label>/.test(appearanceSource), 'Circle must initially present one Diameter field');
-assert(/id="custom-h-group" style="display:none;"/.test(appearanceSource), 'Height field must initially be hidden for Circle');
+assert(!appearanceSource.includes('id="custom-w-group"') && !appearanceSource.includes('id="custom-h-group"'), 'Dimensions must not be grouped with appearance controls');
+assert(step1Source.indexOf('id="custom-w-group"') > step1Source.indexOf('class="shape-grid"'), 'Dimensions must follow Shape in Step 1');
+assert(step1Source.indexOf('id="custom-w-group"') < step1Source.indexOf('id="label-appearance-section"'), 'Dimensions must appear before Label appearance in the mobile/source reading order');
+assert(/id="custom-w-label">Diameter \(mm\)<\/label>/.test(step1Source), 'Circle must initially present one Diameter field');
+assert(/id="custom-h-group" style="display:none;"/.test(step1Source), 'Height field must initially be hidden for Circle');
 assert(/function selectSize\(sz\)\{applySize\(sz\);\}/.test(rawSource), 'internal selectSize compatibility function must remain');
 
 assert(/\.preview-panel\{background:white/.test(rawSource), 'outer preview panel should remain white');
@@ -202,7 +204,8 @@ setTimeout(() => {
     const widthInput = document.getElementById('custom-w');
     const heightGroup = document.getElementById('custom-h-group');
     const heightInput = document.getElementById('custom-h');
-    assert(appearance.contains(widthGroup) && appearance.contains(heightGroup), 'Dimensions must render inside Label appearance');
+    assert(document.getElementById('step-1').contains(widthGroup) && document.getElementById('step-1').contains(heightGroup), 'Dimensions must stay with Shape inside #step-1');
+    assert(!appearance.contains(widthGroup) && !appearance.contains(heightGroup), 'Dimensions must remain separate from Label appearance');
     assert([...step1Body.children].indexOf(document.getElementById('step-1')) < [...step1Body.children].indexOf(appearance), 'mobile/source reading order must keep load/shape before appearance/dimensions');
 
     // Circle: a single Diameter field, with equal internal dimensions.
