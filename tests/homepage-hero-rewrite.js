@@ -17,8 +17,21 @@ const html = fs.readFileSync('index.html', 'utf8');
 const seasonsSource = fs.readFileSync('seasons.js', 'utf8');
 
 // ── Section 1: new heading + product explanation ──────────────────────
-const heroMatch = html.match(/<h1>Create <em>print-ready<\/em> GB<br>[\s\S]{0,800}?labels in minutes<\/h1>/);
-assert(heroMatch, 'hero <h1> must read "Create print-ready GB ... labels in minutes" (CLP ring markup sits between "GB" and "labels")');
+// Three mobile-only <br> insertions were added around the already-approved
+// desktop/tablet wording, all hidden by default and shown only under
+// max-width:600px (desktop/tablet render exactly as before, confirmed
+// separately below):
+//  - hero-mobile-gb-lead, before " GB" -- so mobile breaks *before* "GB"
+//    instead of after it, pairing "GB" with "CLP labels" on one line;
+//  - hero-gb-break, after "GB" (pre-existing) -- now hidden on mobile so
+//    "GB" doesn't ALSO get a break after it there (it still applies on
+//    desktop/tablet, giving their approved 2-line wrap);
+//  - hero-mobile-break, before " in minutes" -- mobile only.
+// Together these give the required mobile layout "Create print-ready" /
+// "GB CLP labels" / "in minutes" without changing a single word of the
+// approved copy.
+const heroMatch = html.match(/<h1>Create <em>print-ready<\/em><br class="hero-mobile-gb-lead"> GB<br class="hero-gb-break">[\s\S]{0,800}?labels<br class="hero-mobile-break"> in minutes<\/h1>/);
+assert(heroMatch, 'hero <h1> must read "Create print-ready GB ... labels in minutes" (CLP ring markup sits between "GB" and "labels"; hero-mobile-gb-lead/hero-gb-break/hero-mobile-break control mobile-only line breaks without altering the approved wording)');
 
 assert(html.includes('Paste Section 2.2 from your current supplier SDS, review the hazard information CLPeasy extracts, then build and download your label.'),
   'hero must explain the core workflow in plain steps');
@@ -50,7 +63,7 @@ assert(!/£200[–-]£600/.test(html),
 // wrapper as the heading (i.e. after it in source order, within one
 // <section class="hero">), confirming it was added to the hero, not a
 // stray duplicate elsewhere.
-const headingIdx = html.indexOf('Create <em>print-ready</em> GB');
+const headingIdx = html.indexOf('Create <em>print-ready</em>');
 const founderIdx = html.indexOf('Built by a maker, for makers', headingIdx);
 assert(headingIdx !== -1 && founderIdx > headingIdx,
   'the founder section must appear after the hero heading in source order (not counting the unrelated meta-description/footer occurrences of this phrase elsewhere on the page)');
@@ -71,20 +84,26 @@ assert(seasonsSource.includes('z-index:1;opacity:'),
 assert(!html.includes('Your Brand Name'),
   'the decorative mini-labels must no longer show a "Your Brand Name" header band (the real label renderer never produces one)');
 
-// WARNING/DANGER colour rule on the decorative labels must match the real
-// renderer (label-render.js): WARNING stays the label's normal dark text
-// colour (#111111 here), DANGER is red (#cc0000) -- amber is never used.
-// (circular decorative labels include "position:relative;z-index:1;" before
-// the signal word; rectangular ones omit it -- both are decorative labels
-// covered by this rule, so it is optional in the pattern.)
-const wrongWarning = (html.match(/color:#[0-9a-fA-F]{3,6};font-weight:800;font-family:sans-serif;(?:position:relative;z-index:1;)?">WARNING/g) || [])
-  .filter(m => !m.startsWith('color:#111111;'));
-const wrongDanger = (html.match(/color:#[0-9a-fA-F]{3,6};font-weight:800;font-family:sans-serif;(?:position:relative;z-index:1;)?">DANGER/g) || [])
-  .filter(m => !m.startsWith('color:#cc0000;'));
-assert.strictEqual(wrongWarning.length, 0, 'every decorative WARNING label must use the normal dark text colour (#111111), never amber/red');
-assert.strictEqual(wrongDanger.length, 0, 'every decorative DANGER label must use red (#cc0000)');
-const totalWarning = (html.match(/font-weight:800;font-family:sans-serif;(?:position:relative;z-index:1;)?">WARNING/g) || []).length;
-const totalDanger = (html.match(/font-weight:800;font-family:sans-serif;(?:position:relative;z-index:1;)?">DANGER/g) || []).length;
-assert(totalWarning + totalDanger >= 40, `expected the ~52 decorative labels to still carry a WARNING/DANGER signal word (found ${totalWarning + totalDanger})`);
+// The decorative labels were replaced (separate task, same branch): they
+// are no longer hand-built divs with an isolated signal word in a
+// `color:#xxx;font-weight:800;font-family:sans-serif;...">WARNING`-style
+// span -- they are now static SVG thumbnails cloned from genuine
+// label-render.js output via <use href="#clp-tmpl-...">, embedded once as
+// <symbol> markup. That old hand-rolled pattern is asserted absent below
+// (confirming the fake mini-label markup was actually removed, not just
+// hidden behind new SVGs); the new markup's structural correctness --
+// shape/viewBox sanity, WARNING/DANGER colour matching the renderer's own
+// rule, byte-for-byte match against a fresh render, pointer-events:none,
+// absence of the old "Your Brand Name" band and duplicate inner ring, and
+// the 52-count/32+6+14 template split -- is covered exhaustively by
+// tests/decorative-labels-renderer-derived.js, which re-renders each
+// fixture through the real renderer and diffs it against what's embedded
+// in index.html. Duplicating that here would just be two tests asserting
+// the same generated bytes.
+assert(!/color:#[0-9a-fA-F]{3,6};font-weight:800;font-family:sans-serif;(?:position:relative;z-index:1;)?">(WARNING|DANGER)/.test(html),
+  'the old hand-rolled decorative signal-word span markup must be gone (superseded by renderer-derived SVG thumbnails; see tests/decorative-labels-renderer-derived.js)');
+const decorativeUseCount = (html.match(/<use href="#clp-tmpl-[a-z0-9-]+"\/>/g) || []).length;
+assert.strictEqual(decorativeUseCount, 52,
+  `expected 52 decorative <use> references to the renderer-derived SVG templates (found ${decorativeUseCount}) -- see tests/decorative-labels-renderer-derived.js for full content verification`);
 
-console.log(`homepage hero rewrite checks passed (heading/product-explanation copy, secondary founder section with old long-bio content removed, particle-stacking z-index fix present without touching seasons.js particle creation, "Your Brand Name" bands fully removed, WARNING/DANGER colours correct across ${totalWarning + totalDanger} decorative labels)`);
+console.log(`homepage hero rewrite checks passed (heading/product-explanation copy incl. mobile-only GB/line-break handling, secondary founder section with old long-bio content removed, particle-stacking z-index fix present without touching seasons.js particle creation, old hand-rolled decorative signal-word markup confirmed absent with ${decorativeUseCount} renderer-derived <use> references present)`);
