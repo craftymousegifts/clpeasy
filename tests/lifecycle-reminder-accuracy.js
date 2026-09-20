@@ -268,8 +268,33 @@ assert(!/adds Smart Paste/i.test(html) && !/adds.{0,20}Smart Paste/i.test(html),
   'index.html must not describe Smart Paste as something Easy Pro adds -- it is included on Easy Start too');
 assert(!/adds.{0,40}label folders|adds.{0,10}folders/i.test(html),
   'index.html must not describe label folders as something Easy Pro adds -- they are included on Easy Start too');
-assert(html.includes('Easy Pro (£14.99/mo or £149/year) gives you 30 downloads/month and priority support. Smart Paste and label folders are included on both plans.'),
-  'index.html homepage FAQ must accurately scope Easy Pro\'s added benefits to downloads/month and priority support, and note Smart Paste/folders are on both plans');
+assert(html.includes('Easy Pro (£14.99/mo or £149/year) gives you 30 downloads/month and priority support. Smart Paste is included on both plans, and saved labels are organised automatically by product type.'),
+  'index.html homepage FAQ must accurately scope Easy Pro\'s added benefits to downloads/month and priority support, and describe Smart Paste + automatic product-type grouping, not "label folders"');
+
+// The implementation is five fixed product-type categories with automatic
+// assignment (label-library.js/builder.html FOLDER_DEFS) -- users cannot
+// create a custom-named folder or manually move a label between folders.
+// The unqualified phrase "label folders are included" (or similar) implies
+// controls that do not exist, so it must never reappear on a
+// customer-facing page; every mention of the real feature must instead
+// describe automatic product-type grouping.
+for (const file of [['index.html', html], ['pricing.html', pricing], ['plan-picker.html', planPicker], ['account.html', account], ['showcase.html', showcase]]) {
+  const [name, source] = file;
+  assert(!/label folders are included/i.test(source),
+    `${name} must not claim "label folders are included" -- folders are automatic product-type grouping, not a create/move-labels-into-folders feature`);
+  assert(!/(labels?|folders?) and folders\b/i.test(source),
+    `${name} must not describe saved labels with a bare, unqualified "folders" claim (e.g. "labels and folders") -- must describe automatic product-type grouping instead`);
+}
+assert(pricing.includes("browser-saved labels organised automatically by product type, local version history"),
+  'pricing.html "Easy Start vs Easy Pro" FAQ must describe automatic product-type grouping, not bare "folders"');
+assert(pricing.includes("they're organised automatically by product type"),
+  'pricing.html saved-label FAQ must describe automatic product-type grouping, not "organise them into folders"');
+assert(pricing.includes('Saved labels (organised automatically by product type) and local version history are stored in your current browser'),
+  'pricing.html storage disclaimer must describe automatic product-type grouping, not bare "folders"');
+assert(pricing.includes('Save labels (organised automatically by product type) and local version history in your current browser'),
+  'pricing.html comparison-table "Saved label library" row must describe automatic product-type grouping, not bare "folders"');
+assert(pricing.includes('Organise browser-saved labels into folders &mdash; Candles, Wax Melts, Diffusers and Room Sprays'),
+  'pricing.html "Organised by product type" feature item must still name the real fixed categories');
 assert(html.includes('Everything in Easy Start + 30 downloads/month &#x00B7; Priority support'),
   'index.html Easy Pro Setup Guide banner must list real, Pro-specific benefits only (30 downloads/month, priority support), not Smart Paste or batch export');
 assert(html.includes('<span class="sg-step-title">Use Smart Paste</span>'),
