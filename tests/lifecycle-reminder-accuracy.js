@@ -14,6 +14,7 @@ const html = fs.readFileSync('index.html', 'utf8');
 const pricing = fs.readFileSync('pricing.html', 'utf8');
 const planPicker = fs.readFileSync('plan-picker.html', 'utf8');
 const showcase = fs.readFileSync('showcase.html', 'utf8');
+const builder = fs.readFileSync('builder.html', 'utf8');
 
 // ── Step 7, 8, 9 wording (exact, per approved spec) ────────────────────
 assert(html.includes('7:{t:"Review when something changes",d:"If your supplier issues a revised SDS, you change the formulation or fragrance concentration, or applicable GB CLP requirements change, reassess the finished product and update the label where needed."'),
@@ -106,7 +107,7 @@ assert(/e\.key === 'Enter' \|\| e\.key === ' '/.test(html),
   'lifecycle node keydown handler must support Enter and Space activation');
 assert(/e\.key === 'Escape'/.test(html),
   'lifecycle script must close the open tooltip on Escape');
-assert(/document\.addEventListener\('click', function\(\) \{ hideTip\(\); \}\)/.test(html),
+assert(/document\.addEventListener\('click', function\(\) \{ unpin\(\); \}\)/.test(html),
   'lifecycle script must still close the open tooltip when clicking outside a node');
 assert(/:focus-visible/.test(html), 'lifecycle nodes must define a visible keyboard focus style');
 
@@ -166,4 +167,33 @@ assert(whatsComingIdx !== -1 && regAlertsPanelIdx > whatsComingIdx && regAlertsP
 assert(pricing.includes('Planned feature. Regulation-change monitoring and notifications are not currently available.'),
   'pricing.html must describe regulation-change alerts with neutral "planned feature, not currently available" wording (not a confirmed ECHA-monitoring implementation)');
 
-console.log('lifecycle reminder-accuracy checks passed (Step 7/8/9 wording, automation claims removed, no active reminder/regulation-alert claims in index/pricing/plan-picker, nine-stage lifecycle preserved, lifecycle nodes keyboard-accessible with visible titles and clamped tooltip positioning, multi-language labels not claimed active, "compliant output"/"fully compliant" removed, ECHA-monitoring detail replaced with neutral "planned feature" wording)');
+// ── Round 3: stale size-preset claims and the showcase absolute claim ──
+// (fix: finish lifecycle accuracy audit, part 2)
+//
+// The builder no longer renders any preset-size buttons -- .size-card is
+// dead CSS matched by zero elements, and the only sizing control is a
+// single "Diameter/Width/Size (mm)" number input (builder.html line
+// ~1050). Customer-facing copy describing a preset picker is therefore
+// stale and must be corrected to describe the real mm-entry workflow.
+assert(!/Circle presets cover|Rectangle presets cover/i.test(html),
+  'homepage Setup Guide must not claim circle/rectangle presets cover specific product categories (no preset picker exists)');
+assert(html.includes('Choose Circle, Rectangle or Square, then enter the dimensions you need in millimetres.'),
+  'homepage Setup Guide "Open the label builder" step must describe the real shape-then-mm-entry workflow');
+assert(!/four standard preset sizes/i.test(html),
+  'homepage FAQ must not claim CLPeasy includes four standard preset sizes (no such preset picker exists)');
+assert(!/preset or custom size/i.test(builder),
+  'builder.html in-app help must not describe a preset-vs-custom size choice (only a single mm-entry field exists)');
+assert(!/use Custom size/i.test(builder),
+  'builder.html FAQ must not tell users to "use Custom size" as if it were a distinct mode from a preset (there is only one size field)');
+assert(builder.includes('Choose the label shape, then enter the size you need in millimetres.'),
+  'builder.html in-app help must describe the real shape-then-mm-entry workflow');
+
+// The showcase hero must not claim CLPeasy generates labels for "every
+// fragrance product" unconditionally (implies universal coverage/
+// guaranteed applicability regardless of classification).
+assert(!/every fragrance product/i.test(showcase),
+  'showcase.html must not claim CLPeasy generates labels for "every fragrance product you make"');
+assert(showcase.includes('CLPeasy helps you create print-ready GB CLP labels for candles, wax melts, reed diffusers, room sprays and more.'),
+  'showcase.html hero must use the accurate "helps you create print-ready GB CLP labels" wording');
+
+console.log('lifecycle reminder-accuracy checks passed (Step 7/8/9 wording, automation claims removed, no active reminder/regulation-alert claims in index/pricing/plan-picker, nine-stage lifecycle preserved, lifecycle nodes keyboard-accessible with visible titles and clamped tooltip positioning, multi-language labels not claimed active, "compliant output"/"fully compliant" removed, ECHA-monitoring detail replaced with neutral "planned feature" wording, stale size-preset claims corrected, showcase absolute claim corrected)');
