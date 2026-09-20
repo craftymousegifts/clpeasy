@@ -869,14 +869,11 @@ document.addEventListener('keydown', function(e){
        scales proportionally at both breakpoints without a separate tablet
        rule. Unaffected on mobile: the existing mobile-only override further
        down still collapses the whole stamp to plain inline text there. */
-    .clp-label-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;width:2.47em;height:2.47em;cursor:pointer;vertical-align:middle;}
+    .clp-label-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;width:2.47em;height:2.47em;vertical-align:middle;}
     .clp-label-wrap .clp-ring{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(0deg);width:2.47em;height:2.47em;pointer-events:none;}
-    .clp-label-wrap:hover .clp-ring,.clp-label-wrap.tip-open .clp-ring{animation:clp-spin 0.7s cubic-bezier(0.4,0,0.2,1) forwards;}
+    .clp-label-wrap:hover .clp-ring{animation:clp-spin 0.7s cubic-bezier(0.4,0,0.2,1) forwards;}
     @keyframes clp-spin{from{transform:translate(-50%,-50%) rotate(0deg);}to{transform:translate(-50%,-50%) rotate(360deg);}}
     .clp-label-wrap .clp-word{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;color:var(--teal);font-style:normal;font-size:0.546em;letter-spacing:0.1em;font-weight:900;line-height:1;white-space:nowrap;}
-    .clp-label-wrap .clp-tip-text{visibility:hidden;opacity:0;position:absolute;bottom:calc(100% + 14px);left:50%;transform:translateX(-50%);background:#0f2236;color:white;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:400;font-family:'DM Sans',sans-serif;white-space:nowrap;pointer-events:none;transition:opacity .25s ease;box-shadow:0 4px 16px rgba(0,0,0,0.25);z-index:50;line-height:1.4;}
-    .clp-label-wrap .clp-tip-text::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#0f2236;}
-    .clp-label-wrap:hover .clp-tip-text,.clp-label-wrap.tip-open .clp-tip-text{visibility:visible;opacity:1;}
     /* Mobile-only override: collapse the decorative CLP ring stamp to
        plain inline text so it doesn't interrupt the headline's reading
        order. Placed here (after the unconditional .clp-label-wrap rules
@@ -892,14 +889,20 @@ document.addEventListener('keydown', function(e){
       .clp-label-wrap .clp-word { position: static; transform: none; font-size: 1em; color: inherit; letter-spacing: normal; }
     }
     </style>
-    <h1>Create <em>print-ready</em><br class="hero-mobile-gb-lead"> GB<br class="hero-gb-break"><span class="clp-label-wrap" onclick="this.classList.toggle('tip-open')">
+    <h1>Create <em>print-ready</em><br class="hero-mobile-gb-lead"> GB<br class="hero-gb-break"><span class="clp-label-wrap">
       <svg class="clp-ring" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <circle cx="30" cy="30" r="26" fill="none" stroke="#4C9BB0" stroke-width="1.5" stroke-dasharray="5 3.5" opacity="0.7"/>
         <circle cx="30" cy="30" r="20" fill="none" stroke="#4C9BB0" stroke-width="0.7" stroke-dasharray="3 4" opacity="0.4"/>
       </svg>
       <span class="clp-word">CLP</span>
-      <span class="clp-tip-text">Classification, Labelling &amp; Packaging</span>
     </span> labels<br class="hero-mobile-break"> in minutes</h1>
+
+    <!-- Sep 2026: replaces the removed click-to-pin black tooltip that used
+         to cover part of the headline with no close control. Plain,
+         always-visible secondary text instead -- readable by assistive
+         technology, never overlapping the headline/ring/geo line/teal
+         panel below it. -->
+    <p style="margin:10px auto 0;text-align:center;font-size:15px;color:var(--muted);font-weight:500;">CLP means Classification, Labelling and Packaging.</p>
 
     <!-- Small, visually secondary geographic clarification -- GB CLP (this
          product's scope) covers England, Scotland and Wales only, not
