@@ -13,6 +13,7 @@ const assert = require('assert');
 const html = fs.readFileSync('index.html', 'utf8');
 const pricing = fs.readFileSync('pricing.html', 'utf8');
 const planPicker = fs.readFileSync('plan-picker.html', 'utf8');
+const showcase = fs.readFileSync('showcase.html', 'utf8');
 
 // ── Step 7, 8, 9 wording (exact, per approved spec) ────────────────────
 assert(html.includes('7:{t:"Review when something changes",d:"If your supplier issues a revised SDS, you change the formulation or fragrance concentration, or applicable GB CLP requirements change, reassess the finished product and update the label where needed."'),
@@ -115,4 +116,54 @@ assert(/var tipH = tip\.offsetHeight;/.test(html),
 assert(/top = Math\.max\(0, Math\.min\(top, svgRect\.height - tipH\)\);/.test(html),
   'tooltip vertical position must be clamped within the diagram bounds to avoid clipping/viewport overflow');
 
-console.log('lifecycle reminder-accuracy checks passed (Step 7/8/9 wording, automation claims removed, no active reminder/regulation-alert claims in index/pricing/plan-picker, nine-stage lifecycle preserved, lifecycle nodes keyboard-accessible with visible titles and clamped tooltip positioning)');
+// ── Follow-up audit: multi-language labels, "compliant output", ECHA ──
+// (fix: finish lifecycle accuracy audit)
+
+// Multi-language labels must not be listed as an active Easy Pro benefit
+// anywhere it is not also marked "coming soon" (it is a genuine future
+// feature, already correctly badged "COMING SOON" in the feature list,
+// the "What's coming" panel and on the homepage EU-market notice).
+assert(!/adds SDS Smart Import and multi-language labels/i.test(pricing),
+  'pricing.html FAQ must not list multi-language labels as an active Easy Pro benefit');
+assert(!/multi-language labels/i.test(planPicker) && !/multilingual/i.test(planPicker),
+  'plan-picker.html must not reference multi-language labels (not implemented, must not influence a plan recommendation)');
+// The two remaining pricing.html multi-language mentions must each be
+// unambiguously presented as a future feature: the feature-list item
+// carries its own "COMING SOON" badge, and the "What's coming to
+// CLPeasy™" panel entry sits under that panel's own coming-soon heading.
+assert(/Sell to Europe — multilingual labels<span[^>]*>COMING SOON</.test(pricing),
+  'pricing.html feature list "multilingual labels" item must carry its own COMING SOON badge');
+const whatsComingIdx = pricing.indexOf("What's coming to CLPeasy");
+const multilingualPanelIdx = pricing.indexOf('>Multilingual labels<');
+assert(whatsComingIdx !== -1 && multilingualPanelIdx > whatsComingIdx && multilingualPanelIdx < whatsComingIdx + 2000,
+  'pricing.html "Multilingual labels" panel card must sit under the "What\'s coming to CLPeasy™" heading, not read as an active benefit');
+
+// "compliant output" / "fully compliant" must not appear on customer-facing
+// pages (index.html, pricing.html, plan-picker.html, showcase.html) -- they
+// imply a guarantee of legal compliance, which CLPeasy does not make.
+for (const file of [['index.html', html], ['pricing.html', pricing], ['plan-picker.html', planPicker], ['showcase.html', showcase]]) {
+  const [name, source] = file;
+  assert(!/compliant output|fully compliant|guaranteed compliant|correctly labelled and compliant/i.test(source),
+    `${name} must not claim "compliant output"/"fully compliant"/"guaranteed compliant" (implies a compliance guarantee)`);
+}
+assert(pricing.includes('CLPeasy™ gives you the same print-ready GB CLP label output for £9.99–£14.99/month'),
+  'pricing.html cost-comparison FAQ must use the accurate "print-ready GB CLP label output" wording');
+assert(showcase.includes('Every shape.<br><em>Every size.</em> CLP ready.'),
+  'showcase.html hero must use the approved "CLP ready" status wording instead of "Fully compliant"');
+
+// Regulation-change alerts: detailed ECHA-monitoring claims must be gone
+// from pricing.html (no confirmed implementation exists), while the
+// feature must still be clearly presented as a future ("Coming soon")
+// feature, not removed outright.
+assert(!/\bECHA\b/.test(pricing), 'pricing.html must not make detailed claims about monitoring ECHA (no such system is implemented)');
+assert(/Automatic regulation change alerts<span[^>]*>COMING SOON</.test(pricing),
+  'pricing.html feature list "Regulation change alerts" item must carry its own COMING SOON badge');
+assert(/Regulation change alerts <span[^>]*>Coming soon</.test(pricing),
+  'pricing.html comparison-table "Regulation change alerts" row must carry its own Coming soon badge');
+const regAlertsPanelIdx = pricing.indexOf('>Regulation change alerts<');
+assert(whatsComingIdx !== -1 && regAlertsPanelIdx > whatsComingIdx && regAlertsPanelIdx < whatsComingIdx + 2000,
+  'pricing.html "Regulation change alerts" panel card must sit under the "What\'s coming to CLPeasy™" heading, not read as an active benefit');
+assert(pricing.includes('Planned feature. Regulation-change monitoring and notifications are not currently available.'),
+  'pricing.html must describe regulation-change alerts with neutral "planned feature, not currently available" wording (not a confirmed ECHA-monitoring implementation)');
+
+console.log('lifecycle reminder-accuracy checks passed (Step 7/8/9 wording, automation claims removed, no active reminder/regulation-alert claims in index/pricing/plan-picker, nine-stage lifecycle preserved, lifecycle nodes keyboard-accessible with visible titles and clamped tooltip positioning, multi-language labels not claimed active, "compliant output"/"fully compliant" removed, ECHA-monitoring detail replaced with neutral "planned feature" wording)');
