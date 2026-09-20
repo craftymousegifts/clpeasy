@@ -117,16 +117,16 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 24px;height
   <!-- Q1 -->
   <div class="question-card active" id="q1">
     <div class="q-number">Question 1 of 5</div>
-    <div class="q-text">When you get a new fragrance, how do you want to add the hazard data to your label?</div>
-    <div class="q-sub">This is the biggest difference between our plans.</div>
+    <div class="q-text">How many labels do you expect to download in a typical month?</div>
+    <div class="q-sub">Easy Start includes 20 downloads/month; Easy Pro includes 30.</div>
     <div class="options">
       <button class="option" onclick="selectOption(this,'q1','pro')" data-value="pro">
-        <span class="option-icon">📄</span>
-        <div><div class="option-label">Drop in the full SDS PDF and let CLPeasy read it</div><div class="option-desc">CLPeasy extracts the signal word, H statements, pictograms and sensitisers automatically — no manual lookup required.</div></div>
+        <span class="option-icon">📈</span>
+        <div><div class="option-label">30 or more — I have a large or growing range</div><div class="option-desc">I regularly need more than the Easy Start allowance.</div></div>
       </button>
       <button class="option" onclick="selectOption(this,'q1','start')" data-value="start">
-        <span class="option-icon">✏️</span>
-        <div><div class="option-label">I'll open the SDS, find Section 2.2 and type it in myself</div><div class="option-desc">I don't mind looking it up manually — it's straightforward enough for my range.</div></div>
+        <span class="option-icon">🕯️</span>
+        <div><div class="option-label">20 or fewer — that comfortably covers me</div><div class="option-desc">My range is smaller, or I don't download that often.</div></div>
       </button>
     </div>
     <div class="q-nav">
@@ -139,7 +139,7 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 24px;height
   <div class="question-card" id="q2">
     <div class="q-number">Question 2 of 5</div>
     <div class="q-text">How often do you create labels for new fragrances?</div>
-    <div class="q-sub">The more fragrances you add, the more time SDS Smart Import saves you.</div>
+    <div class="q-sub">The more fragrances you add, the more downloads you'll typically need each month.</div>
     <div class="options">
       <button class="option" onclick="selectOption(this,'q2','pro')" data-value="pro">
         <span class="option-icon">🚀</span>
@@ -267,17 +267,17 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 24px;height
 const answers = {};
 
 const PRO_REASONS = {
-  q1: '📄 You want SDS Smart Import — drop in the PDF and CLPeasy fills everything in automatically, saving you hours of manual lookup.',
-  q2_pro: '🚀 You add new fragrances regularly — SDS Smart Import will save you significant time every time you create a new label.',
-  q2_mid: '📅 Even occasional new fragrances add up — SDS Smart Import means each one takes seconds instead of minutes.',
-  q3: '🛍️ Selling across multiple channels increases compliance scrutiny — Easy Pro keeps your audit trail and version history in one place.',
-  q4_happened: '😬 You\'ve had SDS updates catch you out before — Easy Pro\'s SDS Smart Import and version history make it quicker to re-check and update your labels when that happens.',
-  q4_didnt_know: '🤔 SDS data changes regularly — Easy Pro\'s SDS Smart Import makes it quick to re-import updated data whenever your supplier revises their SDS.',
-  q5: '😰 Easy Pro\'s full audit trail and version history will give you the confidence you need.',
+  q1: '📈 You need more than 20 downloads a month — Easy Pro\'s 30/month allowance covers a larger or growing range.',
+  q2_pro: '🚀 You add new fragrances regularly — Easy Pro\'s extra downloads each month keep pace with a growing range.',
+  q2_mid: '📅 Even occasional new fragrances add up — the extra downloads on Easy Pro give you headroom.',
+  q3: '🛍️ Selling across multiple channels increases compliance scrutiny — Easy Pro\'s priority support means quicker help when you need it.',
+  q4_happened: '😬 You\'ve had SDS updates catch you out before — CLPeasy doesn\'t monitor this for you on either plan yet, but Easy Pro\'s priority support means quicker help if you\'re ever unsure.',
+  q4_didnt_know: '🤔 SDS data changes regularly — CLPeasy doesn\'t monitor this for you on either plan yet, so it\'s worth checking your supplier\'s SDS regularly; Easy Pro\'s priority support is there if you need a hand.',
+  q5: '😰 Easy Pro\'s priority support will give you somewhere to turn when you\'re not sure.',
 };
 
 const START_REASONS = {
-  q1: '✏️ You\'re comfortable entering hazard data manually from your SDS — Easy Start gives you a clean, fast builder to do exactly that.',
+  q1: '🕯️ 20 downloads a month comfortably covers your range — Easy Start gives you everything you need without paying for extras you won\'t use.',
   q2: '🕯️ With a stable range you\'re not creating labels constantly — Easy Start handles your needs without extras you won\'t use.',
   q3: '🏡 Selling through one or two channels keeps things manageable — Easy Start is built for exactly this.',
   q4: '✅ You already have a process for checking your SDS data — Easy Start keeps your labels organised and print-ready.',

@@ -15,6 +15,7 @@ const pricing = fs.readFileSync('pricing.html', 'utf8');
 const planPicker = fs.readFileSync('plan-picker.html', 'utf8');
 const showcase = fs.readFileSync('showcase.html', 'utf8');
 const builder = fs.readFileSync('builder.html', 'utf8');
+const account = fs.readFileSync('account.html', 'utf8');
 
 // ── Step 7, 8, 9 wording (exact, per approved spec) ────────────────────
 assert(html.includes('7:{t:"Review when something changes",d:"If your supplier issues a revised SDS, you change the formulation or fragrance concentration, or applicable GB CLP requirements change, reassess the finished product and update the label where needed."'),
@@ -196,4 +197,61 @@ assert(!/every fragrance product/i.test(showcase),
 assert(showcase.includes('CLPeasy helps you create print-ready GB CLP labels for candles, wax melts, reed diffusers, room sprays and more.'),
   'showcase.html hero must use the accurate "helps you create print-ready GB CLP labels" wording');
 
-console.log('lifecycle reminder-accuracy checks passed (Step 7/8/9 wording, automation claims removed, no active reminder/regulation-alert claims in index/pricing/plan-picker, nine-stage lifecycle preserved, lifecycle nodes keyboard-accessible with visible titles and clamped tooltip positioning, multi-language labels not claimed active, "compliant output"/"fully compliant" removed, ECHA-monitoring detail replaced with neutral "planned feature" wording, stale size-preset claims corrected, showcase absolute claim corrected)');
+// ── Round 4: SDS Smart Import / PDF-import claims, the remaining
+// "compliance alerts" claim, and the Easy Pro Setup Guide numbering ──
+// (fix: finish lifecycle accuracy audit, part 3)
+//
+// The code audit found no PDF-parsing library, file-drop handler or
+// whole-SDS-import code anywhere in the repo -- only the pasted-text
+// Smart Paste feature is real. "SDS Smart Import" / PDF drop-in must
+// therefore not be presented as active/included anywhere, and must not
+// be confused with Smart Paste (pasting Section 2.2 text).
+const smartImportPatterns = [
+  /SDS Smart Import/i,
+  /drop (your|in the|entire) .{0,20}(complete )?SDS PDF/i,
+  /let CLPeasy read/i,
+  /reads your whole document/i,
+];
+for (const file of [['index.html', html], ['plan-picker.html', planPicker], ['account.html', account], ['builder.html', builder]]) {
+  const [name, source] = file;
+  for (const pattern of smartImportPatterns) {
+    assert(!pattern.test(source), `${name} must not present an SDS Smart Import / PDF-import claim as active (${pattern})`);
+  }
+}
+// pricing.html is the one place the feature is still named, but every
+// mention must now be paired with "Coming soon" -- never presented as an
+// included/active Easy Pro benefit.
+assert(!/adds SDS Smart Import/i.test(pricing) && !/plus SDS Smart Import/i.test(pricing) && !/such as SDS Smart Import/i.test(pricing) && !/including SDS Smart Import/i.test(pricing),
+  'pricing.html must not describe SDS Smart Import as an active/included Easy Pro benefit');
+assert(/Drop entire SDS PDF in — hands-free hazard data extraction <span[^>]*>Coming soon</.test(pricing),
+  'pricing.html comparison-table "Drop entire SDS PDF in" row must carry its own Coming soon badge');
+assert(pricing.includes('Coming soon — not currently available. Planned for Easy Pro: drop your complete SDS PDF directly into CLPeasy™ instead of pasting Section 2.2 with Smart Paste.'),
+  'pricing.html must describe the PDF-import row as "Coming soon — not currently available"');
+
+// Smart Paste itself (pasting Section 2.2 text) remains correctly described
+// as a real, currently-available feature -- and no longer has a PDF
+// drop-in claim tacked onto its description.
+assert(pricing.includes("Paste Section 2.2 from your fragrance supplier's SDS and CLPeasy™ extracts all the relevant hazard data automatically"),
+  'pricing.html must still correctly describe Smart Paste as pasting Section 2.2 text');
+assert(!/Smart Paste[\s\S]{0,400}dropping in your complete SDS PDF/i.test(pricing),
+  'pricing.html Smart Paste description must not have a PDF drop-in claim appended to it');
+
+// The one remaining live "compliance alerts" claim (cost-comparison
+// callout) must be gone.
+assert(!/including SDS Smart Import and compliance alerts/i.test(pricing),
+  'pricing.html cost-comparison callout must not claim Easy Pro includes "SDS Smart Import and compliance alerts"');
+assert(!/compliance alert/i.test(pricing) && !/compliance alert/i.test(html) && !/compliance alert/i.test(planPicker),
+  'no customer-facing page may claim an active "compliance alert" feature');
+
+// ── Easy Pro Setup Guide steps must be numbered consecutively ──────────
+const sgProMatch = html.match(/<div class="sg-panel" id="sg-pro">[\s\S]*?(?=<div class="sg-panel" id="sg-start"|<script>)/);
+assert(sgProMatch, 'could not locate the sg-pro Setup Guide panel in index.html');
+const sgProNums = (sgProMatch[0].match(/class="sg-step-num">(\d+)</g) || []).map(m => parseInt(m.match(/\d+/)[0], 10));
+assert.deepStrictEqual(sgProNums, [1, 2, 3, 4, 5],
+  `the Easy Pro Setup Guide panel must show consecutive steps 1-5 (found ${JSON.stringify(sgProNums)})`);
+assert(html.includes('Complete and check your label') && html.includes('Download and save'),
+  'the Easy Pro Setup Guide must include real steps 3 ("Complete and check your label") and 4 ("Download and save")');
+assert(!/PDF import|batch export.{0,20}(pin|extract)|reminder emails|monitor.{0,15}regulator/i.test(sgProMatch[0]),
+  'the new Easy Pro Setup Guide steps must not invent PDF import, batch export, reminders or monitoring');
+
+console.log('lifecycle reminder-accuracy checks passed (Step 7/8/9 wording, automation claims removed, no active reminder/regulation-alert claims in index/pricing/plan-picker, nine-stage lifecycle preserved, lifecycle nodes keyboard-accessible with visible titles and clamped tooltip positioning, multi-language labels not claimed active, "compliant output"/"fully compliant" removed, ECHA-monitoring detail replaced with neutral "planned feature" wording, stale size-preset claims corrected, showcase absolute claim corrected, SDS Smart Import/PDF-import claims removed or coming-soon-labelled, compliance-alerts claim removed, Easy Pro Setup Guide renumbered consecutively with real steps 3-4)');
