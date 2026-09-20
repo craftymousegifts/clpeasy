@@ -254,4 +254,25 @@ assert(html.includes('Complete and check your label') && html.includes('Download
 assert(!/PDF import|batch export.{0,20}(pin|extract)|reminder emails|monitor.{0,15}regulator/i.test(sgProMatch[0]),
   'the new Easy Pro Setup Guide steps must not invent PDF import, batch export, reminders or monitoring');
 
-console.log('lifecycle reminder-accuracy checks passed (Step 7/8/9 wording, automation claims removed, no active reminder/regulation-alert claims in index/pricing/plan-picker, nine-stage lifecycle preserved, lifecycle nodes keyboard-accessible with visible titles and clamped tooltip positioning, multi-language labels not claimed active, "compliant output"/"fully compliant" removed, ECHA-monitoring detail replaced with neutral "planned feature" wording, stale size-preset claims corrected, showcase absolute claim corrected, SDS Smart Import/PDF-import claims removed or coming-soon-labelled, compliance-alerts claim removed, Easy Pro Setup Guide renumbered consecutively with real steps 3-4)');
+// ── Round 5: paid-plan entitlement audit -- "Batch export" has no
+// implementation anywhere in the repo (no batch/bulk export code exists);
+// "Smart Paste" and "label folders" are real but are on BOTH plans, not
+// Pro-exclusive additions, so must not be listed as something Easy Pro
+// "adds". (fix: finish lifecycle accuracy audit, part 4)
+for (const file of [['index.html', html], ['pricing.html', pricing], ['plan-picker.html', planPicker], ['account.html', account], ['showcase.html', showcase]]) {
+  const [name, source] = file;
+  assert(!/batch export/i.test(source),
+    `${name} must not advertise "batch export" as a feature (no batch/bulk export code exists anywhere in the repo)`);
+}
+assert(!/adds Smart Paste/i.test(html) && !/adds.{0,20}Smart Paste/i.test(html),
+  'index.html must not describe Smart Paste as something Easy Pro adds -- it is included on Easy Start too');
+assert(!/adds.{0,40}label folders|adds.{0,10}folders/i.test(html),
+  'index.html must not describe label folders as something Easy Pro adds -- they are included on Easy Start too');
+assert(html.includes('Easy Pro (£14.99/mo or £149/year) gives you 30 downloads/month and priority support. Smart Paste and label folders are included on both plans.'),
+  'index.html homepage FAQ must accurately scope Easy Pro\'s added benefits to downloads/month and priority support, and note Smart Paste/folders are on both plans');
+assert(html.includes('Everything in Easy Start + 30 downloads/month &#x00B7; Priority support'),
+  'index.html Easy Pro Setup Guide banner must list real, Pro-specific benefits only (30 downloads/month, priority support), not Smart Paste or batch export');
+assert(html.includes('<span class="sg-step-title">Use Smart Paste</span>'),
+  'index.html Easy Pro Setup Guide step 2 ("Use Smart Paste") must not carry a PRO badge -- Smart Paste is included on Easy Start too');
+
+console.log('lifecycle reminder-accuracy checks passed (Step 7/8/9 wording, automation claims removed, no active reminder/regulation-alert claims in index/pricing/plan-picker, nine-stage lifecycle preserved, lifecycle nodes keyboard-accessible with visible titles and clamped tooltip positioning, multi-language labels not claimed active, "compliant output"/"fully compliant" removed, ECHA-monitoring detail replaced with neutral "planned feature" wording, stale size-preset claims corrected, showcase absolute claim corrected, SDS Smart Import/PDF-import claims removed or coming-soon-labelled, compliance-alerts claim removed, Easy Pro Setup Guide renumbered consecutively with real steps 3-4, batch export claim removed, Smart Paste/label folders no longer mis-attributed as Pro-exclusive)');
