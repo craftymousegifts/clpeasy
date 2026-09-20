@@ -20,10 +20,17 @@
   let particleRAF = null;
   let particleCanvasEl = null;
   let particleStopTimer = null;
+  // The resize listener addParticles() registers to keep particles spread
+  // across the full viewport width (see addParticles() below) -- tracked
+  // here, at module scope like the other particle handles above, so
+  // stopParticles() can remove it even though it was added inside
+  // addParticles()'s own closure.
+  let particleResizeHandler = null;
 
   function stopParticles() {
     if (particleStopTimer) { clearTimeout(particleStopTimer); particleStopTimer = null; }
     if (particleRAF) { cancelAnimationFrame(particleRAF); particleRAF = null; }
+    if (particleResizeHandler) { window.removeEventListener('resize', particleResizeHandler); particleResizeHandler = null; }
     if (particleCanvasEl) {
       const el = particleCanvasEl;
       particleCanvasEl = null;
@@ -273,6 +280,9 @@
     if (type === 'none') return;
     const existing = document.getElementById('clpeasy-particles');
     if (existing) existing.remove();
+    // Guard against a stray duplicate resize listener if addParticles() were
+    // ever invoked again before the previous canvas/effect was torn down.
+    if (particleResizeHandler) { window.removeEventListener('resize', particleResizeHandler); particleResizeHandler = null; }
     const canvas = document.createElement('canvas');
     canvas.id = 'clpeasy-particles';
     canvas.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:${type.indexOf('leaves') === 0 ? '0.72' : '0.4'};`;
@@ -367,7 +377,49 @@
       particleRAF = requestAnimationFrame(draw);
     }
     draw();
-    window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+    // Keep particles spread across the FULL viewport width after a genuine
+    // resize (maximise/restore, manual drag, orientation change, mobile
+    // viewport change) instead of leaving them confined to the canvas width
+    // that happened to be current when they were created. Previously this
+    // listener only resized the canvas element itself, which clears/resizes
+    // the drawing surface but leaves every particle's existing x/y exactly
+    // where it was -- so widening the window left an empty strip on the
+    // right until particles happened to recycle off the bottom edge.
+    particleResizeHandler = () => {
+      const newWidth = window.innerWidth;
+      const newHeight = window.innerHeight;
+      // Only remap on an ACTUAL dimension change -- mobile browsers fire
+      // resize for address-bar show/hide etc. at the same width/height, and
+      // remapping then would be pointless work (and risks a visible jump
+      // for no reason).
+      if (newWidth === canvas.width && newHeight === canvas.height) return;
+      const oldWidth = canvas.width;
+      const oldHeight = canvas.height;
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+      const scaleX = oldWidth > 0 ? newWidth / oldWidth : 1;
+      const scaleY = oldHeight > 0 ? newHeight / oldHeight : 1;
+      particles.forEach(p => {
+        // A particle mid-wrap (parked just off the left/right edge, waiting
+        // to re-enter) isn't a meaningful position to scale proportionally --
+        // recompute it safely from its assigned lane against the new width
+        // instead, the same way a recycled particle already gets a fresh x.
+        if (p.x < 0 || p.x > oldWidth) {
+          p.x = laneX(p.lane);
+        } else {
+          p.x = p.x * scaleX;
+        }
+        // Scale y proportionally too, so each particle keeps its
+        // approximate vertical progress through the fall rather than
+        // jumping to a different relative height.
+        p.y = p.y * scaleY;
+        if (p.x < -20) p.x = -20;
+        if (p.x > canvas.width + 20) p.x = canvas.width + 20;
+        if (p.y < -20) p.y = -20;
+        if (p.y > canvas.height + 20) p.y = canvas.height + 20;
+      });
+    };
+    window.addEventListener('resize', particleResizeHandler);
     // Stop the effect after 60s even if the banner never appears/dismisses
     // (e.g. it was already dismissed earlier this session).
     particleStopTimer = setTimeout(stopParticles, 60000);
