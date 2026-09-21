@@ -308,7 +308,7 @@ async function openComposer(opts){
     const idA = fakeId();
     const seed = [overflowingFixture({ id:idA })];
     const { window, document } = await openComposer({ seed });
-    window.eval('isPro=true; updateProGate();');
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; updateProGate();");
     window.eval(`addToSheet('${idA}')`);
     const issues = window.eval('sheetFitIssues');
     assert.strictEqual(issues.length, 1, 'setup: the overflowing fixture must produce exactly one fit issue');
@@ -349,7 +349,7 @@ async function openComposer(opts){
     const idA = fakeId(), idB = fakeId();
     const seed = [fixture({ id:idA, scentName:'Custom A' }), fixture({ id:idB, scentName:'Custom B' })];
     const { window, document } = await openComposer({ seed });
-    window.eval('isPro=true; updateProGate();');
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; updateProGate();");
     // JSON round-trip normalises the cross-realm jsdom object (a raw
     // deepStrictEqual across realms can spuriously fail on [[Prototype]]
     // identity even when the own-enumerable-property content is identical).
@@ -380,7 +380,7 @@ async function openComposer(opts){
     const idA = fakeId(), idB = fakeId();
     const seed = [eu30009Fixture({ id:idA, scentName:'Registry A' }), eu30009Fixture({ id:idB, scentName:'Registry B' })];
     const { window, document } = await openComposer({ seed });
-    window.eval('isPro=true; updateProGate();');
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; updateProGate();");
     const reg = window.eval("getRegistryTemplate('eu30009')");
     assert.strictEqual(reg.columns, 2); assert.strictEqual(reg.rows, 5); assert.strictEqual(reg.labelsPerSheet, 10);
     assert.strictEqual(reg.labelWidthMm, 99.1); assert.strictEqual(reg.labelHeightMm, 57.3); assert.strictEqual(reg.cornerRadiusMm, 2);
@@ -409,7 +409,7 @@ async function openComposer(opts){
     const idFits = fakeId(), idFails = fakeId();
     const seed = [fixture({ id:idFits, scentName:'Fits Fine' }), overflowingFixture({ id:idFails })];
     const { window, document, windowOpenCalls } = await openComposer({ seed });
-    window.eval('isPro=true; updateProGate();');
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; updateProGate();");
     window.eval(`addToSheet('${idFits}')`);
     window.eval(`addToSheet('${idFails}')`);
     assert.strictEqual(window.eval('sheetFitIssues.length'), 1, 'setup: the sheet should have exactly one fit issue');
@@ -426,7 +426,7 @@ async function openComposer(opts){
     assert.strictEqual(window.eval('sheetFitIssues.length'), 0, 'removing the failing labelId must clear sheetFitIssues');
     assert.strictEqual(window.eval('document.getElementById("btn-pdf").disabled'), false, 'btn-pdf must re-enable once the failing label is removed');
     windowOpenCalls.count = 0;
-    window.eval('downloadPDF()');
+    await window.eval('downloadPDF()');
     assert.strictEqual(windowOpenCalls.count, 1, 'downloadPDF() must proceed normally once no position is failing');
     ok('every export-fit block (PDF/print and the Cricut/cutting-machine paths) remains effective under labelId-based sheetItems');
   }

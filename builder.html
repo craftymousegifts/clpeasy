@@ -961,7 +961,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <div class="page-crumb"><a href="dashboard.html">Dashboard</a> &nbsp;›&nbsp; Create Label</div>
 <div class="page-head">
   <div class="page-title">Create Label</div>
-  <div class="page-sub">Build your CLP label step by step. Add your product details and let CLPeasy handle the compliance.</div>
+  <div class="page-sub">Build your CLP label step by step. Add your product details and let CLPeasy handle the formatting.</div>
 </div>
 
 <button type="button" class="mobile-preview-btn" onclick="openPreviewSheet()" aria-controls="preview-sheet">View label ↗</button>
@@ -2365,6 +2365,30 @@ function dlGate(){
   return false;
 }
 
+// SECURITY: fresh, server-verified re-check of Pro entitlement, run
+// immediately before any export function actually builds a downloadable
+// artifact (see wrapDownloads() below). S.isPro is set once at page load
+// and is an ordinary mutable page-global — trivially editable from the
+// browser devtools console — so the watermark decision inside buildSVG()
+// must never trust a stale/tampered value at the moment of export. This
+// repeats the exact subscription query initAuth() already runs at login
+// (RLS-scoped to the authenticated user via Supabase, so it cannot be
+// spoofed by editing client state) and overwrites S.isPro with the real
+// result. Fails closed (isPro=false, watermark applied) on any error,
+// missing session or missing subscription row.
+async function refreshProEntitlement(){
+  if(!currentUser || !sbClient){ S.isPro=false; return false; }
+  try{
+    const {data:sub}=await sbClient.from('subscriptions').select('plan,status').eq('user_id',currentUser.id).single();
+    S.isPro = !!(sub && sub.status==='active');
+  }catch(e){
+    S.isPro=false;
+  }
+  const wmNote=document.querySelector('.watermark-note');
+  if(wmNote) wmNote.style.display = S.isPro ? 'none' : '';
+  return S.isPro;
+}
+
 // Consumes monthly allowance first, then purchased top-up credits. Returns
 // true if the download may proceed, false if it must NOT proceed — the
 // caller (wrapDownloads) must not generate/download the file when this
@@ -2575,6 +2599,11 @@ function wrapDownloads(){
         const ok = await dlRecord();
         if(!ok) return;
       }
+      // SECURITY: re-verify Pro entitlement fresh from the server
+      // immediately before generating the export — never trust the cached
+      // S.isPro (see refreshProEntitlement() above), so console-tampering
+      // it beforehand cannot produce an unwatermarked artifact.
+      await refreshProEntitlement();
       const r=orig.apply(this,arguments);
       if(labelKey){
         recordLabelDownload(labelKey);

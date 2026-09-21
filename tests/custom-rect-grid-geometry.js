@@ -130,7 +130,7 @@ const document = window.document;
 
 setTimeout(async () => {
   try {
-    window.eval('isPro=true; updateProGate();'); // subscription gate can't mask the fit-block being tested
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; updateProGate();"); // subscription gate can't mask the fit-block being tested
 
     // rectA/rectB/circleC/squareD are seeded id-less on purpose (so
     // LabelLibrary's legacy-migration path stays exercised, per Michaela's
@@ -230,7 +230,7 @@ setTimeout(async () => {
     assert.strictEqual(window.eval('getCustomGridOverflow()'), null, 'reducing Rows back to 2 must clear the overflow');
     assert.strictEqual(document.getElementById('btn-pdf').disabled, false, 'btn-pdf must re-enable once the grid fits again');
     windowOpenCalls = 0;
-    window.eval('downloadPDF()');
+    await window.eval('downloadPDF()');
     assert.strictEqual(windowOpenCalls, 1, 'downloadPDF() must proceed normally once the grid fits');
 
     // ── #7: mixed contents -- a second, different saved label at the SAME
@@ -261,7 +261,7 @@ setTimeout(async () => {
     // ── #3 (export path too): the exported sheet SVG is true A4, and each
     // cell keeps the real 57x99mm footprint (not stretched to a square). ──
     windowOpenCalls = 0;
-    window.eval('downloadPDF()');
+    await window.eval('downloadPDF()');
     const svgDims = window.eval('window.__capturedSvg');
     assert(svgDims, 'downloadPDF must build a sheet SVG once the grid is valid');
     const DPI=300, mmW = svgDims.width/(DPI/25.4), mmH = svgDims.height/(DPI/25.4);

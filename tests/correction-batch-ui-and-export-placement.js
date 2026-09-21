@@ -338,7 +338,12 @@ function findRule(sheet, selector){
   {
     const session = { user: { id:'export-behaviour-user', email:'maker@example.com', user_metadata:{} } };
     const { window, document } = await openComposer({ session });
-    assert.strictEqual(window.eval('isPro'), true, 'fixture sanity check: a signed-in user is Pro in this beta build, isolating the fit-blocking gate from the subscription gate');
+    // Simulate an active subscription (the real entitlement check now run
+    // by refreshProEntitlement()) so this test can isolate the fit-blocking
+    // gate from the subscription gate, rather than relying on any signed-in
+    // user being treated as Pro.
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; isPro=true; updateProGate();");
+    assert.strictEqual(window.eval('isPro'), true, 'fixture sanity check: a signed-in user with an active subscription is Pro, isolating the fit-blocking gate from the subscription gate');
     const btnPdf = document.getElementById('btn-pdf');
     const btnPng = document.getElementById('btn-png-all');
     assert.strictEqual(btnPdf.disabled, false, 'with no fit issues, Print/Save as PDF must be enabled from its new location');

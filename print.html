@@ -673,7 +673,12 @@ async function initAuth(){
     const{data:{session}}=await sbClient.auth.getSession();
     if(session){
       currentUser=session.user;
-      isPro=true; // Beta: all logged-in users get Pro access. Swap for real Stripe check at launch.
+      isPro=false;
+      // ── CHECK SUBSCRIPTION STATUS (mirrors builder.html's initAuth) ──
+      try{
+        const {data:sub}=await sbClient.from('subscriptions').select('plan,status').eq('user_id',currentUser.id).single();
+        isPro = !!(sub && sub.status==='active');
+      }catch(e){ isPro=false; }
       // Sidebar identity block (avatar + email), same element IDs as the
       // shared shell on dashboard.html/builder.html/my-labels.html/
       // account.html. This page has never fetched the `profiles` row those
@@ -700,6 +705,29 @@ async function initAuth(){
   }catch(e){console.log('Auth init:',e);}
 }
 async function signOut(){if(sbClient)await sbClient.auth.signOut();window.location.href='auth.html';}
+
+// SECURITY: fresh, server-verified re-check of Pro entitlement, run
+// immediately before any export function actually builds a downloadable
+// artifact (see downloadPDF()/cricutDownloadZip()/cricutDownloadSequential()
+// below). `isPro` is an ordinary mutable page-global — trivially editable
+// from the browser devtools console — so renderSheetPosition()'s watermark
+// decision must never trust a stale/tampered value at the moment of
+// export. This repeats the exact subscription query initAuth() runs at
+// login (RLS-scoped to the authenticated user via Supabase, so it cannot
+// be spoofed by editing client state) and overwrites `isPro` with the
+// real result. Fails closed (isPro=false, watermark applied) on any
+// error, missing session or missing subscription row.
+async function refreshProEntitlement(){
+  if(!currentUser || !sbClient){ isPro=false; updateProGate(); return false; }
+  try{
+    const {data:sub}=await sbClient.from('subscriptions').select('plan,status').eq('user_id',currentUser.id).single();
+    isPro = !!(sub && sub.status==='active');
+  }catch(e){
+    isPro=false;
+  }
+  updateProGate();
+  return isPro;
+}
 function updateProGate(){
   const gate=document.getElementById('pro-gate');
   if(isPro){ if(gate)gate.style.display='none'; }
@@ -2133,13 +2161,18 @@ let _renderSeq=0;
 function renderSheetPosition(e,pw,ph,opts){
   opts=opts||{};
   const instanceId=opts.instanceId||('sheet-'+(_renderSeq++));
+  // SECURITY: watermark now follows the real, server-verified `isPro`
+  // state (see refreshProEntitlement()) instead of being hard-coded off —
+  // this is the single rendering path every Composer preview AND every
+  // PDF/PNG/ZIP export funnels through, so fixing it here fixes all of
+  // them at once, consistent with builder.html's `watermark:!S.isPro`.
   return LabelRenderer.renderLabel(e,{
     instanceId,
     pw,
     ph:(ph===undefined?pw:ph),
     bgColour:e&&e.bgColour,
     sharedDefs:opts.sharedDefs,
-    watermark:false, // print.html has never shown the Pro watermark
+    watermark:!isPro,
   });
 }
 function buildLabelSVGFromData(e,pw,ph,opts){
@@ -2149,7 +2182,7 @@ function buildLabelSVGFromData(e,pw,ph,opts){
 function buildMiniSVG(e){return buildLabelSVGFromData(e,36);}
 
 // ── PDF EXPORT (print-sheet quality) ─────────────────────────
-function downloadPDF(){
+async function downloadPDF(){
   const t=getTplConfig();
   if(getTotalQty()===0){alert('Add at least one label to the sheet before downloading.');return;}
 
@@ -2159,6 +2192,13 @@ function downloadPDF(){
   // were never added to sheetFitIssues, so they can never trigger this.
   const blockMsg=getSheetFitBlockMessage();
   if(blockMsg){alert(blockMsg);return;}
+
+  // SECURITY: re-verify Pro entitlement fresh from the server immediately
+  // before generating the export — never trust the cached `isPro` (see
+  // refreshProEntitlement()), so console-tampering it beforehand cannot
+  // produce an unwatermarked PDF.
+  const verifiedPro=await refreshProEntitlement();
+  if(!verifiedPro){alert('Upgrade to Pro to download print-ready PDFs.');return;}
 
   const DPI=300,MM2PT=2.8346; // PDF points per mm
   const shWmm=A4_W,shHmm=A4_H;
@@ -2316,6 +2356,13 @@ async function cricutDownloadZip(){
   // single PNG/ZIP in that case, so it's checked again here before any work.
   const blockMsg=getSheetFitBlockMessage();
   if(blockMsg){alert(blockMsg);return;}
+  // SECURITY: re-verify Pro entitlement fresh from the server immediately
+  // before generating any file -- never trust the cached `isPro` (see
+  // refreshProEntitlement()), so console-tampering it beforehand, or
+  // calling this function directly, cannot produce clean cutting-machine
+  // PNGs for an unentitled user.
+  const verifiedPro=await refreshProEntitlement();
+  if(!verifiedPro){alert('Upgrade to Pro to download cutting-machine files.');return;}
   document.getElementById('modal-options').style.display='none';
   document.getElementById('modal-sub').style.display='none';
   const prog=document.getElementById('modal-progress');
@@ -2363,6 +2410,9 @@ async function cricutDownloadSequential(){
   // Defensive guard (blocker #3) -- see cricutDownloadZip() above.
   const blockMsg=getSheetFitBlockMessage();
   if(blockMsg){alert(blockMsg);return;}
+  // SECURITY: see cricutDownloadZip() above -- same fresh re-check.
+  const verifiedPro=await refreshProEntitlement();
+  if(!verifiedPro){alert('Upgrade to Pro to download cutting-machine files.');return;}
   document.getElementById('modal-options').style.display='none';
   document.getElementById('modal-sub').style.display='none';
   const prog=document.getElementById('modal-progress');

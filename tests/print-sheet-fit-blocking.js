@@ -155,7 +155,7 @@ setTimeout(async () => {
   try {
     // Force Pro status on so the pre-existing, unrelated subscription gate
     // can't mask what this test is actually checking (the fit-block).
-    window.eval('isPro=true; updateProGate();');
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; updateProGate();");
 
     // ── Resolve each fixture's stable LabelLibrary-assigned id at runtime
     // -- these fixtures are intentionally id-less (legitimate pre-stable-ID
@@ -208,7 +208,7 @@ setTimeout(async () => {
     assert.strictEqual((canvasHTML2.match(/sheet-cell-invalid/g) || []).length, 0, 'no cell should remain marked invalid after removal');
 
     windowOpenCalls = 0;
-    window.eval('downloadPDF()');
+    await window.eval('downloadPDF()');
     assert.strictEqual(windowOpenCalls, 1, 'downloadPDF() must proceed normally once no position is failing');
 
     // ── Replacing the invalid label (remove + add a different fitting
@@ -222,7 +222,7 @@ setTimeout(async () => {
     assert.strictEqual(issues.length, 0, 'replacing the failing label with a fitting one must clear the block');
     assert.strictEqual(window.eval('getTotalQty()'), 2, 'both the original valid label and its replacement should remain on the sheet');
     windowOpenCalls = 0;
-    window.eval('downloadPDF()');
+    await window.eval('downloadPDF()');
     assert.strictEqual(windowOpenCalls, 1, 'export must succeed again after the replace');
 
     // ── Blocker #3: the identical fit gate applies to EVERY output path,

@@ -434,7 +434,7 @@ const emptyQuery = {
     const pwindow = printDom.window;
     const pdocument = pwindow.document;
 
-    pwindow.eval('isPro=true; updateProGate();');
+    pwindow.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; updateProGate();");
     // p280LabelValid/p280LabelLegacy are seeded id-less on purpose (so
     // LabelLibrary's legacy-migration path stays exercised, per Michaela's
     // explicit requirement). label-library.js's findById()/isValidId() only
@@ -454,7 +454,7 @@ const emptyQuery = {
     assert(!sheetHTML.includes('hearing protection'), 'Composer canvas must not render an unselected item');
     assert.strictEqual(pwindow.eval('document.getElementById("btn-pdf").disabled'), false, 'Print/PDF must be enabled -- a valid P280 selection must not block export');
     pwindow.eval('window.__windowOpenCalls = 0;');
-    pwindow.eval('downloadPDF()');
+    await pwindow.eval('downloadPDF()');
     assert.strictEqual(pwindow.eval('window.__windowOpenCalls'), 1, 'downloadPDF() must proceed normally for a sheet whose only content is a fitting, validly-selected P280 label');
 
     // Same sheet template/shape, but the "legacy, no selection" label --
