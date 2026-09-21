@@ -101,6 +101,11 @@ function buildDom(){
       window.confirm = () => true;
       window.scrollTo = () => {};
       window.fetch = async () => ({ ok:true, json:async()=>({}) });
+      // The initial guest-mode preview render now rasterises asynchronously
+      // (Sep 2026 unpaid-preview watermark fix) -- stub Image so that
+      // resolves deterministically/near-instantly instead of depending on
+      // jsdom's own (inconsistent) unstubbed Image behaviour.
+      window.Image = class { set src(v){ if (this.onload) this.onload(); } };
       window.open = () => ({ location:{href:''}, close(){}, opener:null });
       window.URL.createObjectURL = () => 'blob:test';
       window.URL.revokeObjectURL = () => {};

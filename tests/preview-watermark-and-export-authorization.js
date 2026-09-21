@@ -1,29 +1,44 @@
 // Security regression coverage for the Sep 2026 preview-watermark /
 // export-authorisation audit (see the accompanying security report).
 //
-// Prior architecture: the watermark WAS already baked directly into the
-// SVG string by label-render.js's renderLabel() (opts.watermark), never a
-// removable DOM overlay -- that part was sound. The actual hole was that
-// every caller decided `watermark` from a plain, page-scoped mutable
-// variable (builder.html's `S.isPro`, print.html's `isPro`) set once at
-// page load and never re-checked -- trivially flippable from the browser
-// devtools console before clicking any download button, or before calling
-// the wrapped export function directly. print.html additionally
-// hard-coded `watermark:false` unconditionally and granted `isPro=true`
-// to any signed-in user regardless of subscription status.
-//
-// The fix adds `refreshProEntitlement()` on both pages: a fresh,
-// fail-closed re-verification (mirroring the exact login-time Supabase
-// subscription query, RLS-scoped to the authenticated user) run
-// immediately before any export function actually builds a downloadable
-// artifact -- see wrapDownloads() in builder.html and
+// ROUND 1 (exports): every export function decided `watermark` from a
+// plain, page-scoped mutable variable (builder.html's `S.isPro`,
+// print.html's `isPro`) set once at page load and never re-checked --
+// trivially flippable from the browser devtools console before clicking
+// any download button, or before calling the wrapped export function
+// directly. print.html additionally hard-coded `watermark:false`
+// unconditionally and granted `isPro=true` to any signed-in user
+// regardless of subscription status. Fixed with `refreshProEntitlement()`
+// on both pages: a fresh, fail-closed re-verification (mirroring the
+// login-time Supabase subscription query, RLS-scoped to the authenticated
+// user) run immediately before any export function actually builds a
+// downloadable artifact -- see wrapDownloads() in builder.html and
 // downloadPDF()/cricutDownloadZip()/cricutDownloadSequential() in
-// print.html.
+// print.html. Round 1 exports remain a normal VECTOR SVG string with the
+// watermark as readable "PREVIEW ONLY" text baked into that string.
 //
-// These tests exercise actual rendering and authorisation BEHAVIOUR
-// (the real SVG content of a captured download, real entitlement-mocked
-// Supabase responses, real console-style tampering of the cached flag) --
-// not a search for the word "watermark" in source. Run from repo root:
+// ROUND 2 (live preview DOM -- an initial "not a removable overlay" claim
+// in this fix's own first version was WRONG and is corrected here): the
+// exports above were fixed, but the LIVE ON-SCREEN PREVIEW
+// (builder.html's #label-svg-container/#sheet-label-container,
+// print.html's Composer #sheet-canvas cells) still injected the clean
+// vector SVG into the DOM with the watermark as one more child <g>
+// alongside it -- reproduced directly: select that <g> (its <text> reads
+// "PREVIEW ONLY") in devtools, call .remove(), and a complete, undamaged
+// clean label is left behind with zero further effort, no console
+// variable tampering needed at all. Fixed by flattening the UNAUTHORISED
+// preview to a single rasterised <image> (watermark burned into the same
+// pixels as the label) before it ever reaches the DOM -- see
+// renderPreviewInto()/rasterizePreviewSVG() in builder.html and
+// renderSheetCanvas()/rasterizeCellSVG()/fillComposerRasterCells() in
+// print.html. An authorised (freshly, server-verified Pro) preview is
+// unaffected and stays full live vector, exactly as before either round.
+//
+// These tests exercise actual rendering and authorisation BEHAVIOUR (the
+// real SVG/DOM structure of a rendered preview, the real content of a
+// captured download, real entitlement-mocked Supabase responses, real
+// console-style tampering of the cached flag) -- not a search for the
+// word "watermark" in source. Run from repo root:
 // node tests/preview-watermark-and-export-authorization.js
 
 const fs = require('fs');
@@ -92,6 +107,11 @@ async function openBuilder(opts){
       // .click() -- capture it there instead of trying to read a real
       // Blob back out of jsdom.
       window.HTMLAnchorElement.prototype.click = function(){ capturedHrefs.push(this.href); };
+      // Deterministic, near-instant preview rasterisation (Sep 2026 fix) --
+      // jsdom's own unstubbed Image is inconsistent (sometimes throws,
+      // sometimes never fires onload/onerror at all).
+      window.Image = class { set src(v){ if (this.onload) this.onload(); } };
+      window.HTMLCanvasElement.prototype.toDataURL = () => 'data:image/png;base64,AA==';
       // printToPDF() builds a Blob of the print-window HTML (which embeds
       // the rendered SVG) -- capture its content directly rather than
       // trying to read a real Blob back out of jsdom.
@@ -153,6 +173,7 @@ async function openComposer(opts){
     runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: vc,
     beforeParse(window){
       window.HTMLCanvasElement.prototype.getContext = canvasStub();
+      window.HTMLCanvasElement.prototype.toDataURL = () => 'data:image/png;base64,AA==';
       try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
       window.eval(labelRendererSource);
       window.eval(labelLibrarySource);
@@ -191,15 +212,66 @@ function candleFixture(overrides){
 
   // ── builder.html ───────────────────────────────────────────────────
 
-  // 1. Unpaid/guest preview bakes the watermark directly into the
-  //    rendered SVG markup -- not a separate overlay element.
+  // 1. buildSVG(false)'s raw string (the source data feeding both the
+  //    live preview and, at export time, buildSVG(true)) still bakes the
+  //    watermark in as normal, readable text -- this part of the
+  //    architecture was always sound and stays unchanged by the DOM fix
+  //    below.
   {
     const { window, document } = await openBuilder({});
     fillMinimalLabel(window);
     const svg = window.buildSVG(false);
     assert(/PREVIEW ONLY/.test(svg) && /CLPeasy/.test(svg), 'unpaid preview SVG must contain the baked-in watermark text');
     assert(!document.querySelector('.label-watermark-overlay'), 'there must be no separate removable watermark overlay element');
-    ok('unpaid/guest preview SVG has the watermark baked directly into the returned markup, not a removable overlay');
+    ok('buildSVG(false) still bakes the watermark into its raw SVG string as before');
+  }
+
+  // 1b. THE ACTUAL DOM: an earlier version of this fix wrongly reported
+  //     this as already safe because the watermark wasn't a separate
+  //     HTML/CSS overlay -- but the LIVE PREVIEW commits that same SVG
+  //     STRING straight into the DOM, where the watermark is still its
+  //     own child <g> next to the clean label paths. Reproduced directly:
+  //     selecting that <g> (whose <text> reads "PREVIEW ONLY") and
+  //     calling .remove() in devtools left a complete, undamaged clean
+  //     label behind -- no variable tampering needed at all. Fixed by
+  //     flattening the unauthorised preview to one rasterised <image>
+  //     before it ever reaches the DOM (renderPreviewInto()); this test
+  //     proves that structurally, not just by string-matching.
+  {
+    const { window } = await openBuilder({});
+    fillMinimalLabel(window);
+    await new Promise(r=>setTimeout(r,300)); // let the async raster commit land
+    const svg = window.document.getElementById('label-svg-container').querySelector('svg');
+    assert(svg, 'the preview container must contain an <svg> once rendering settles');
+    assert.strictEqual(svg.querySelectorAll('g').length, 0, 'an unpaid preview must contain zero <g> elements -- no separate watermark group to delete');
+    assert.strictEqual(svg.querySelectorAll('text').length, 0, 'an unpaid preview must contain zero live <text> elements -- nothing vector to extract');
+    assert.strictEqual(svg.querySelectorAll('path,rect,circle').length, 0, 'an unpaid preview must contain zero live vector shape elements underneath the raster image');
+    const images = svg.querySelectorAll('image');
+    assert.strictEqual(images.length, 1, 'an unpaid preview must be exactly one flattened raster <image>');
+    assert(images[0].getAttribute('href').startsWith('data:image/png'), 'the single preview image must be a rasterised PNG, not a live/vector reference');
+    // The "delete the watermark group" attack itself: there is no group
+    // to delete, so deleting the only content node (the image) must leave
+    // NOTHING -- never a clean label.
+    images[0].remove();
+    assert.strictEqual(svg.querySelectorAll('path,rect,circle,text,image').length, 0, "deleting the preview's only content node must leave nothing recoverable, not a clean label underneath");
+    ok('the live preview DOM for an unpaid user is a single flattened raster image with zero separable vector/text/group content -- the exact devtools deletion this fix addresses has nothing left to expose');
+  }
+
+  // 1c. A genuinely authorised (real active subscription) user's live
+  //     preview DOM stays full, sharp, live vector -- the raster fix must
+  //     not degrade what a paying customer actually sees while building
+  //     their label.
+  {
+    const session = { user:{ id:'user-paid-preview', email:'paid@example.com', user_metadata:{} } };
+    const { window } = await openBuilder({ session, activeSub:true });
+    fillMinimalLabel(window);
+    await new Promise(r=>setTimeout(r,300));
+    const svg = window.document.getElementById('label-svg-container').querySelector('svg');
+    assert(svg, 'the preview container must contain an <svg>');
+    assert.strictEqual(svg.querySelectorAll('image[href^="data:image/png"]').length, 0, "an authorised user's preview must NOT be a rasterised image");
+    assert(svg.querySelectorAll('text').length > 0, "an authorised user's preview must contain live, sharp vector text");
+    assert(/Security Test Candle/.test(svg.outerHTML), "an authorised user's preview must show the real, inspectable label content (proving it is genuinely live vector, not a stale/placeholder frame)");
+    ok("an authorised user's live preview DOM remains full, sharp, live vector -- unaffected by the unpaid-preview raster fix");
   }
 
   // 2. Deleting the informational `.watermark-note` banner (the one
@@ -283,6 +355,12 @@ function candleFixture(overrides){
       assert.strictEqual(window.eval(`window.${fn}.__dlwrapped`), true, `${fn} must be wrapped by wrapDownloads() (the single authorisation choke point)`);
     }
     window.eval('S.isPro = true;'); // console-tamper again, verifying printToPDF's path specifically
+    // fillMinimalLabel()'s own guest-mode preview render kicked off an
+    // async rasterisation (Blob included) that may still be pending --
+    // let it fully settle before counting Blobs, so only printToPDF()'s
+    // own is under test below.
+    await new Promise(r=>setTimeout(r,100));
+    capturedBlobs.length=0;
     await window.printToPDF();
     assert.strictEqual(window.eval('S.isPro'), false, "printToPDF's authorisation path must reach the same fresh re-check and reset the tampered flag, exactly like downloadSVG");
     assert.strictEqual(capturedBlobs.length, 1, 'printToPDF() must build exactly one print-window HTML blob');
@@ -313,6 +391,28 @@ function candleFixture(overrides){
     const svg = window.eval("buildLabelSVGFromData(getSaved()[0], 200, 200)");
     assert(/PREVIEW ONLY/.test(svg), 'print.html must watermark the Composer preview for a non-Pro/guest user (previously hard-coded to no watermark)');
     ok("print.html's Composer preview is watermarked for a non-Pro user");
+  }
+
+  // 9b. THE ACTUAL COMPOSER GRID DOM (same class of bug/fix as 1b, applied
+  //     to print.html's sheet-canvas cells): a guest's placed cell must be
+  //     a single flattened raster image with zero separable vector/text/
+  //     group content, not a live SVG with a deletable watermark <g>.
+  {
+    const idA='aaaaaaaa-0000-4000-8000-00000000009b';
+    const { window } = await openComposer({ seed:[candleFixture({ id:idA })] });
+    window.eval(`selectTemplate('custom', document.querySelector('.tpl-card[data-tpl="custom"]'))`);
+    window.eval(`addToSheet('${idA}')`);
+    await new Promise(r=>setTimeout(r,300)); // let the async cell-fill land
+    const cell=window.document.querySelector('#sheet-canvas .sheet-cell');
+    assert(cell, 'the Composer canvas must show an occupied cell');
+    const svg=cell.querySelector('svg');
+    assert(svg, 'the occupied cell must contain an <svg>');
+    assert.strictEqual(svg.querySelectorAll('g').length,0,'an unpaid Composer cell must contain zero <g> elements -- no separate watermark group to delete');
+    assert.strictEqual(svg.querySelectorAll('text').length,0,'an unpaid Composer cell must contain zero live <text> elements');
+    const images=svg.querySelectorAll('image');
+    assert.strictEqual(images.length,1,'an unpaid Composer cell must be exactly one flattened raster <image>');
+    assert(images[0].getAttribute('href').startsWith('data:image/png'),'the Composer cell image must be a rasterised PNG');
+    ok('the Composer grid DOM for an unpaid user is a single flattened raster image per cell, with zero separable vector/text/group content');
   }
 
   // 10. A guest (no session) cannot export a print sheet at all -- print

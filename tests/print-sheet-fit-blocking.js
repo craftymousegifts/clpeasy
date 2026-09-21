@@ -155,7 +155,7 @@ setTimeout(async () => {
   try {
     // Force Pro status on so the pre-existing, unrelated subscription gate
     // can't mask what this test is actually checking (the fit-block).
-    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; updateProGate();");
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
 
     // ── Resolve each fixture's stable LabelLibrary-assigned id at runtime
     // -- these fixtures are intentionally id-less (legitimate pre-stable-ID

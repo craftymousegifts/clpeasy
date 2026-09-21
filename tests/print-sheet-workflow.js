@@ -97,7 +97,7 @@ const document = window.document;
 
 setTimeout(() => {
   try {
-    window.eval('isPro=true; updateProGate();');
+    window.eval('isPro=true; _previewVerifiedAt=Date.now(); updateProGate();');
 
     // ── Section 1: navigation ────────────────────────────────────────
     const printSidebar = document.querySelector('.sidebar');

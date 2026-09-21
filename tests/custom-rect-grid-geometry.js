@@ -130,7 +130,7 @@ const document = window.document;
 
 setTimeout(async () => {
   try {
-    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; updateProGate();"); // subscription gate can't mask the fit-block being tested
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();"); // subscription gate can't mask the fit-block being tested
 
     // rectA/rectB/circleC/squareD are seeded id-less on purpose (so
     // LabelLibrary's legacy-migration path stays exercised, per Michaela's

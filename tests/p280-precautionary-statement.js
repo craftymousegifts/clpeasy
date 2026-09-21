@@ -434,7 +434,7 @@ const emptyQuery = {
     const pwindow = printDom.window;
     const pdocument = pwindow.document;
 
-    pwindow.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; updateProGate();");
+    pwindow.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
     // p280LabelValid/p280LabelLegacy are seeded id-less on purpose (so
     // LabelLibrary's legacy-migration path stays exercised, per Michaela's
     // explicit requirement). label-library.js's findById()/isValidId() only

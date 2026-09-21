@@ -735,6 +735,72 @@ function updateProGate(){
   updateExportButtonState();
 }
 
+// SECURITY: the Composer preview must not hand an unpaid/trial user a
+// live, clean vector SVG per cell with the watermark appended as a
+// separate, devtools-deletable node -- same class of issue as
+// builder.html's live preview (see its own comment block for the full
+// writeup and tests/preview-watermark-and-export-authorization.js for
+// verification). renderSheetCanvas() below never embeds a cell's clean
+// SVG markup unless entitlement has been verified fresh within
+// PREVIEW_VERIFY_TTL_MS; otherwise it commits a placeholder immediately
+// and asynchronously fills each cell with a flattened raster instead
+// (rasterizeCellSVG()). previewTrustIsFresh() intentionally mirrors
+// builder.html's identically-named function: true only once a prior
+// render has actually, successfully server-verified Pro status within
+// the trust window -- never merely because `isPro` currently reads true
+// (that tamperable read is exactly what this guards against).
+const PREVIEW_VERIFY_TTL_MS=10000;
+let _previewVerifiedAt=0;
+function previewTrustIsFresh(){
+  return isPro && (Date.now()-_previewVerifiedAt<PREVIEW_VERIFY_TTL_MS);
+}
+async function verifiedProForPreview(){
+  if(!isPro) return false;
+  if(previewTrustIsFresh()) return isPro;
+  try{
+    await refreshProEntitlement();
+  }catch(e){
+    isPro=false;
+  }
+  _previewVerifiedAt=Date.now();
+  return isPro;
+}
+
+// Flattens one cell's rendered label SVG (watermark already baked in by
+// LabelRenderer.renderLabel) into a single raster <image>, wrapped in a
+// minimal <svg> shell -- see builder.html's rasterizePreviewSVG() for the
+// full rationale (kept as a near-identical twin here rather than shared
+// across pages, matching this codebase's existing one-file-per-page
+// convention).
+const PREVIEW_RASTER_SCALE=2;
+async function rasterizeCellSVG(svgStr,vbW,vbH){
+  const pxW=Math.max(1,Math.round(vbW*PREVIEW_RASTER_SCALE));
+  const pxH=Math.max(1,Math.round(vbH*PREVIEW_RASTER_SCALE));
+  const svgBlob=new Blob([svgStr],{type:'image/svg+xml;charset=utf-8'});
+  const svgUrl=URL.createObjectURL(svgBlob);
+  try{
+    const loadPromise=new Promise((resolve,reject)=>{
+      const img=new Image();
+      img.onload=function(){
+        try{
+          const cvs=document.createElement('canvas');
+          cvs.width=pxW;cvs.height=pxH;
+          const ctx=cvs.getContext('2d');
+          ctx.drawImage(img,0,0,pxW,pxH);
+          resolve(cvs.toDataURL('image/png'));
+        }catch(err){reject(err);}
+      };
+      img.onerror=function(){reject(new Error('cell rasterisation failed to load source SVG'));};
+      img.src=svgUrl;
+    });
+    const timeoutPromise=new Promise((_,reject)=>setTimeout(()=>reject(new Error('cell rasterisation timed out')),5000));
+    const pngDataUri=await Promise.race([loadPromise,timeoutPromise]);
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vbW} ${vbH}" width="${vbW}" height="${vbH}"><image href="${pngDataUri}" x="0" y="0" width="${vbW}" height="${vbH}" preserveAspectRatio="xMidYMid meet"/></svg>`;
+  }finally{
+    URL.revokeObjectURL(svgUrl);
+  }
+}
+
 // Every export button's disabled state has two independent gates: the
 // pre-existing Pro-subscription gate, and the non-fitting-label export
 // block (amendment #4, extended to every output path per blocker #3) --
@@ -2027,6 +2093,23 @@ function renderSheetCanvas(){
   // Margin guide
   html+=`<div class="sheet-margin-guide" style="left:${marginLPX}px;top:${marginTPX}px;width:${shW-marginLPX*2}px;height:${shH-marginTPX*2}px;"></div>`;
 
+  // SECURITY: an occupied cell's clean vector markup is only ever embedded
+  // directly when entitlement has been verified fresh within the trust
+  // window (see previewTrustIsFresh() / tests/preview-watermark-and-
+  // export-authorization.js) -- otherwise this loop leaves an empty,
+  // id-tagged placeholder div and records what's needed to fill it in
+  // asynchronously below, exactly mirroring builder.html's live preview
+  // fix. renderSheetPosition() is still called here (unconditionally) for
+  // its fits/warnings result, which the fit-issues panel needs regardless
+  // of entitlement -- but its returned .svg is only USED directly on the
+  // trusted path; the untrusted path re-renders with an explicit
+  // watermark:true right before rasterising, in fillComposerRasterCells(),
+  // so a stale/tampered `isPro` read here can never leak an unwatermarked
+  // source image into that path.
+  const trustFresh=previewTrustIsFresh();
+  const composerGen=++_composerRenderGen;
+  const pendingRasterCells=[];
+  let cellSeq=0;
   let labelIdx=0,posIdx=0;
   for(let row=0;row<t.rows;row++){
     for(let col=0;col<t.cols;col++){
@@ -2046,7 +2129,13 @@ function renderSheetCanvas(){
         const result=renderSheetPosition(ld,cw,ch);
         const invalidCls=result.fits?'':' sheet-cell-invalid';
         const invalidTitle=result.fits?'':' title="This label does not fit -- see the fit issues list on the left"';
-        html+=`<div class="sheet-cell${invalidCls}" style="left:${x}px;top:${y}px;width:${cellWPX}px;height:${cellHPX}px;"${invalidTitle}>${result.svg}</div>`;
+        if(trustFresh){
+          html+=`<div class="sheet-cell${invalidCls}" style="left:${x}px;top:${y}px;width:${cellWPX}px;height:${cellHPX}px;"${invalidTitle}>${result.svg}</div>`;
+        }else{
+          const cellId=`composer-cell-${composerGen}-${cellSeq++}`;
+          html+=`<div class="sheet-cell${invalidCls}" id="${cellId}" style="left:${x}px;top:${y}px;width:${cellWPX}px;height:${cellHPX}px;"${invalidTitle}></div>`;
+          pendingRasterCells.push({cellId,ld,cw,ch});
+        }
         if(!result.fits){
           sheetFitIssues.push({itemId:slot.labelId, scentName:ld.scentName||'Unnamed label', reason:describeFitWarnings(result.warnings, ld)});
         }
@@ -2062,6 +2151,46 @@ function renderSheetCanvas(){
   updateSummary();
   renderFitIssuesPanel();
   updateExportButtonState();
+  if(!trustFresh && pendingRasterCells.length){
+    fillComposerRasterCells(pendingRasterCells,composerGen);
+  }
+}
+
+// Async companion to renderSheetCanvas() above: resolves entitlement fresh
+// (verifiedProForPreview()), then fills every placeholder cell left behind
+// with either the real clean vector (if that fresh check confirms Pro) or
+// a rasterised, watermark-baked-in image (the fail-safe default) -- never
+// the earlier, possibly-stale-or-tampered `isPro` read the synchronous
+// loop used only for its fits/warnings side effect. `gen` guards against a
+// slower-finishing older sheet render clobbering a newer one.
+let _composerRenderGen=0;
+async function fillComposerRasterCells(pendingCells,gen){
+  let proNow=false;
+  try{
+    proNow=await verifiedProForPreview();
+  }catch(e){
+    proNow=false; // fail closed
+  }
+  if(gen!==_composerRenderGen) return; // superseded by a newer sheet render
+  for(const cell of pendingCells){
+    if(gen!==_composerRenderGen) return; // superseded mid-fill
+    let markup;
+    if(proNow){
+      markup=renderSheetPosition(cell.ld,cell.cw,cell.ch,{watermark:false}).svg;
+    }else{
+      const freshSvg=renderSheetPosition(cell.ld,cell.cw,cell.ch,{watermark:true}).svg;
+      try{
+        markup=await rasterizeCellSVG(freshSvg,cell.cw,cell.ch);
+      }catch(e){
+        markup=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${cell.cw} ${cell.ch}" width="${cell.cw}" height="${cell.ch}"><rect width="${cell.cw}" height="${cell.ch}" fill="#F3F4F6"/></svg>`;
+      }
+    }
+    if(gen!==_composerRenderGen) return; // superseded while rasterising this cell
+    try{
+      const el=document.getElementById(cell.cellId);
+      if(el) el.innerHTML=markup;
+    }catch(e){/* document/DOM no longer available -- nothing to do */}
+  }
 }
 
 // ── NON-FITTING LABEL UX ─────────────────────────────────────
@@ -2161,18 +2290,22 @@ let _renderSeq=0;
 function renderSheetPosition(e,pw,ph,opts){
   opts=opts||{};
   const instanceId=opts.instanceId||('sheet-'+(_renderSeq++));
-  // SECURITY: watermark now follows the real, server-verified `isPro`
-  // state (see refreshProEntitlement()) instead of being hard-coded off —
-  // this is the single rendering path every Composer preview AND every
-  // PDF/PNG/ZIP export funnels through, so fixing it here fixes all of
-  // them at once, consistent with builder.html's `watermark:!S.isPro`.
+  // SECURITY: watermark follows the real, server-verified `isPro` state
+  // (see refreshProEntitlement()) by default -- this is the single
+  // rendering path every Composer preview AND every PDF/PNG/ZIP export
+  // funnels through, so fixing it here fixes all of them at once,
+  // consistent with builder.html's `watermark:!S.isPro`. Callers that have
+  // already independently resolved entitlement for THIS specific render
+  // (renderSheetCanvas()'s async cell fill, once verifiedProForPreview()
+  // has run) pass an explicit opts.watermark so this never re-reads a
+  // possibly-since-changed `isPro` and produces a mismatch.
   return LabelRenderer.renderLabel(e,{
     instanceId,
     pw,
     ph:(ph===undefined?pw:ph),
     bgColour:e&&e.bgColour,
     sharedDefs:opts.sharedDefs,
-    watermark:!isPro,
+    watermark:(typeof opts.watermark==='boolean')?opts.watermark:!isPro,
   });
 }
 function buildLabelSVGFromData(e,pw,ph,opts){

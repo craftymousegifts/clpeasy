@@ -151,6 +151,13 @@ setTimeout(async () => {
   try {
     assert.deepStrictEqual(errors, [], 'builder.html must never throw during preview-zoom testing: ' + errors.join('; '));
     stubVisible();
+    // This file tests zoom/fit MATH against whatever SVG is in the DOM,
+    // not the Sep 2026 unpaid-preview watermark/rasterisation behaviour
+    // (covered separately in tests/preview-watermark-and-export-authorization.js)
+    // -- simulate an active subscription so every render below takes the
+    // synchronous live-vector path, isolating the geometry being tested
+    // here from the entitlement-gated rendering path.
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser={id:'test-pro-user'}; S.isPro=true; _previewVerifiedAt=Date.now();");
     let passed = 0;
     function ok(label){ passed++; console.log('PASS:', label); }
 

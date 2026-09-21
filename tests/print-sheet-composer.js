@@ -136,6 +136,15 @@ const document = window.document;
 
 setTimeout(async () => {
   try {
+    // This file tests sheet CONTENT rendering (label text, H/P-code
+    // wording, sensitisers) -- not the Sep 2026 unpaid-preview
+    // watermark/rasterisation behaviour (covered separately in
+    // tests/preview-watermark-and-export-authorization.js). Simulate an
+    // active subscription, freshly verified, so the Composer commits the
+    // synchronous live-vector path used before that feature existed --
+    // otherwise the checks below would be inspecting an opaque raster
+    // image's markup instead of the label's actual rendered text.
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser={id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
     // ── Resolve each fixture's stable LabelLibrary-assigned id at runtime
     // -- these fixtures are intentionally id-less (legitimate pre-stable-ID
     // saved labels put through LabelLibrary's legacy migration on init()),

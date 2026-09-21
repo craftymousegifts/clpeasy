@@ -83,8 +83,16 @@ try {
   //    only the tip card's own CSS block was removed; nothing else was
   //    touched (checked broadly via a byte-count sanity range so an
   //    accidental large insertion elsewhere would also be caught) ────
-  assert(source.length < 148815, // strictly smaller than the pre-revision file: something was removed, nothing large was added back
-    'print.html should be smaller than the pre-revision version -- the tip card and its CSS were removed and nothing large was added back in their place');
+  // Ceiling raised (Sep 2026, unpaid-preview watermark security fix):
+  // print.html legitimately grew by ~8KB for refreshProEntitlement(),
+  // previewTrustIsFresh()/rasterizeCellSVG()/fillComposerRasterCells()
+  // (the Composer-preview raster fix) and the entitlement re-checks added
+  // to downloadPDF()/cricutDownloadZip()/cricutDownloadSequential() -- a
+  // real, deliberate feature addition, not an accidental duplicate
+  // insertion. New ceiling keeps a comparable ~4KB headroom above the
+  // current size, same as the original check's intent.
+  assert(source.length < 161000,
+    'print.html should stay close to its current size -- an unexpectedly large increase suggests an accidental duplicate/oversized insertion');
 
   console.log('cutting-machine tip visual-revision checks passed (the #cricut-tip card and all its CSS are completely removed from the sheet-preview area; no replacement card/panel was added; the real "Download for cutting machine" button and its modal wiring are byte-for-byte unchanged; the required guidance sentence now lives inside the existing #cricutModal\'s #modal-sub, alongside its unchanged dynamic count sentence)');
 } catch (error) {
