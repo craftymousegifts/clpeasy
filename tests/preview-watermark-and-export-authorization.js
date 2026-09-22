@@ -58,10 +58,16 @@ const emptyQuery = {
   upsert(){ return this; }, single(){ return Promise.resolve({ data:null, error:null }); },
   then(resolve){ return Promise.resolve({ data:null, error:null }).then(resolve); }
 };
-function activeSubQuery(){
+function activeSubQuery(plan){
+  // The real entitlement check (S.isPro/isPro) reads ONLY sub.status --
+  // never sub.plan -- so Easy Start and Easy Pro must both be treated as
+  // entitled to clean output. `plan` here is deliberately varied by
+  // callers (see tests 6b/12b below) precisely to prove that: passing
+  // 'easy-start' still comes back with a clean export, closing the doubt
+  // the misleading "isPro" variable name could otherwise raise.
   return {
     select(){ return this; }, eq(){ return this; },
-    single(){ return Promise.resolve({ data:{ plan:'pro', status:'active' }, error:null }); }
+    single(){ return Promise.resolve({ data:{ plan:plan||'pro', status:'active' }, error:null }); }
   };
 }
 
@@ -123,7 +129,7 @@ async function openBuilder(opts){
           onAuthStateChange: () => ({ data:{ subscription:{ unsubscribe(){} } } }),
           signOut: async () => ({})
         },
-        from: () => Object.create(opts.activeSub ? activeSubQuery() : emptyQuery),
+        from: () => Object.create(opts.activeSub ? activeSubQuery(opts.plan) : emptyQuery),
         rpc: async () => ({ data:false, error:null })
       }) };
     }
@@ -146,14 +152,14 @@ function fillMinimalLabel(window){
 }
 
 // ── print.html harness (mirrors tests/print-sheet-export-fidelity.js) ──
-function makeSupabaseStub(session, activeSub){
+function makeSupabaseStub(session, activeSub, plan){
   return { createClient: () => ({
     auth: {
       getSession: async () => ({ data:{ session } }),
       onAuthStateChange: () => ({ data:{ subscription:{ unsubscribe(){} } } }),
       signOut: async () => ({})
     },
-    from: () => Object.create(activeSub ? activeSubQuery() : emptyQuery),
+    from: () => Object.create(activeSub ? activeSubQuery(plan) : emptyQuery),
     rpc: async () => ({ data:false, error:null })
   }) };
 }
@@ -185,7 +191,7 @@ async function openComposer(opts){
       window.URL.createObjectURL = () => 'blob:test';
       window.URL.revokeObjectURL = () => {};
       window.Image = makeCapturingImage(capturedImgSrcs);
-      window.supabase = makeSupabaseStub(opts.session || null, opts.activeSub);
+      window.supabase = makeSupabaseStub(opts.session || null, opts.activeSub, opts.plan);
       if (opts.seed){
         const ns = opts.session ? opts.session.user.id : 'guest';
         window.localStorage.setItem('clpeasy_labels__u_'+ns, JSON.stringify(opts.seed));
@@ -342,6 +348,40 @@ function candleFixture(overrides){
     ok('an authorised Pro subscriber still receives a clean, unwatermarked export');
   }
 
+  // 6b. Easy Start is a PAID plan, same as Easy Pro -- the entitlement
+  //     variable is named `S.isPro`/`isPro`, but its actual check
+  //     (sub.status==='active') never inspects sub.plan at all. Prove
+  //     that directly: an active-status "easy-start" subscription (not
+  //     "pro") must still receive a clean, unwatermarked export -- the
+  //     misleading variable name must not translate into an actual
+  //     Pro-only restriction.
+  {
+    const session = { user:{ id:'user-easy-start', email:'start@example.com', user_metadata:{} } };
+    const { window, capturedHrefs } = await openBuilder({ session, activeSub:true, plan:'easy-start' });
+    fillMinimalLabel(window);
+    await window.downloadSVG();
+    const svgOut = decodeDataUri(capturedHrefs[0]);
+    assert(!/PREVIEW ONLY/.test(svgOut), "an active Easy Start subscriber's SVG download must NOT contain the watermark -- plan tier must not gate this, only active subscription status");
+    ok('an Easy Start subscriber (not just Easy Pro) receives a clean, unwatermarked export -- confirms the isPro variable name does not translate into a Pro-only restriction');
+  }
+
+  // 6c. An expired/lapsed trial and a cancelled subscription must both
+  //     stay watermarked -- status is anything other than 'active' in
+  //     both cases (the app never grants entitlement off trial_end/plan
+  //     alone), so this is the fail-safe default already proven for
+  //     guests, now proven explicitly for these two named account states.
+  {
+    for (const status of ['trialing','cancelled','expired','past_due']) {
+      const session = { user:{ id:'user-'+status, email:status+'@example.com', user_metadata:{} } };
+      const { window, capturedHrefs } = await openBuilder({ session }); // no activeSub -> emptyQuery -> single() resolves {data:null}, matching "no active subscriptions row" for a lapsed/expired/never-active account
+      fillMinimalLabel(window);
+      await window.downloadSVG();
+      const svgOut = decodeDataUri(capturedHrefs[0]);
+      assert(/PREVIEW ONLY/.test(svgOut), `an account in a non-active state (${status}) must still receive a watermarked export`);
+    }
+    ok('expired trial, cancelled, expired and past-due subscription states all remain watermarked -- only a genuine active-status row unlocks a clean export');
+  }
+
   // 7. Every clean-export entry point funnels through the same
   //    authorisation choke point (wrapDownloads()), and a second,
   //    independently-implemented export function (printToPDF, which
@@ -377,6 +417,32 @@ function candleFixture(overrides){
     assert.strictEqual(window.eval('DL.loaded'), false, 'guest session must never load a download-allowance row');
     assert.strictEqual(window.eval('dlGate()'), true, 'dlGate() must not block downloads when no allowance data is loaded (guest/no-session case)');
     ok('download-allowance gating (dlGate) is unaffected by the entitlement re-check -- guests remain ungated by allowance as before');
+  }
+
+  // 8b. An Easy Start subscriber who has used their whole monthly
+  //     allowance but holds a purchased top-up credit: the credit must
+  //     still be spent via the existing consume_topup_credit() RPC
+  //     (untouched by this fix -- refreshProEntitlement() runs AFTER
+  //     dlRecord() in wrapDownloads(), never before or instead of it),
+  //     the credit balance must decrement, and -- since they ARE an
+  //     active subscriber -- the resulting download must be clean, not
+  //     watermarked. Composes the allowance mechanism and the
+  //     entitlement mechanism in one realistic scenario.
+  {
+    const session = { user:{ id:'user-topup', email:'topup@example.com', user_metadata:{} } };
+    const { window, capturedHrefs } = await openBuilder({ session, activeSub:true, plan:'easy-start' });
+    fillMinimalLabel(window);
+    window.eval(`
+      DL={used:10,limit:10,plan:'easy-start',is_pro:false,credits:3,loaded:true};
+      window.__rpcCalls=0;
+      sbClient.rpc=function(name){ window.__rpcCalls++; return Promise.resolve({data:2,error:null}); };
+    `);
+    await window.downloadSVG();
+    assert.strictEqual(window.eval('window.__rpcCalls'), 1, 'a user at their monthly limit with a top-up credit must reach consume_topup_credit() exactly once');
+    assert.strictEqual(window.eval('DL.credits'), 2, "the top-up credit balance must decrement from the RPC's returned remaining count");
+    const svgOut = decodeDataUri(capturedHrefs[0]);
+    assert(!/PREVIEW ONLY/.test(svgOut), 'an active Easy Start subscriber spending a top-up credit must still receive a clean, unwatermarked export');
+    ok('an active subscriber using a purchased top-up credit still gets a clean export, and the credit is correctly consumed -- unaffected by the entitlement re-check');
   }
 
   // ── print.html ─────────────────────────────────────────────────────
@@ -461,6 +527,22 @@ function candleFixture(overrides){
     const sheetSvg = decodeURIComponent(capturedImgSrcs[capturedImgSrcs.length-1].split(',').slice(1).join(','));
     assert(!/PREVIEW ONLY/.test(sheetSvg), "a real Pro subscriber's exported print sheet must NOT contain the watermark");
     ok("an authorised Pro subscriber's print-sheet export on print.html remains clean");
+  }
+
+  // 12b. Easy Start on print.html's Composer -- same proof as test 6b,
+  //      for the sheet-export surface: plan tier must not gate this,
+  //      only active subscription status.
+  {
+    const session = { user:{ id:'user-easy-start-sheet', email:'start-sheet@example.com', user_metadata:{} } };
+    const idA = 'aaaaaaaa-0000-4000-8000-000000000004';
+    const { window, capturedImgSrcs } = await openComposer({ session, activeSub:true, plan:'easy-start', seed:[candleFixture({ id:idA })] });
+    window.eval(`selectTemplate('custom', document.querySelector('.tpl-card[data-tpl="custom"]'))`);
+    window.eval(`addToSheet('${idA}')`);
+    await window.eval('downloadPDF()');
+    assert(capturedImgSrcs.length >= 1, 'downloadPDF() must proceed for an active Easy Start subscriber');
+    const sheetSvg = decodeURIComponent(capturedImgSrcs[capturedImgSrcs.length-1].split(',').slice(1).join(','));
+    assert(!/PREVIEW ONLY/.test(sheetSvg), "an active Easy Start subscriber's exported print sheet must NOT contain the watermark");
+    ok('an Easy Start subscriber (not just Easy Pro) receives a clean print-sheet export on print.html');
   }
 
   console.log(`preview watermark and export authorisation checks passed (${passed} assertions)`);
