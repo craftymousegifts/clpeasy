@@ -369,7 +369,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
         <div class="renewal-line" id="db-renewal-line"></div>
         <div id="db-dl-section">
           <div class="dl-label">
-            <span class="dl-label-text">Downloads this month</span>
+            <span class="dl-label-text" id="db-dl-label-text">Downloads this month</span>
             <span class="dl-label-count" id="db-dl-count">— / —</span>
           </div>
           <div class="dl-bar-wrap"><div class="dl-bar ok" id="db-dl-bar" style="width:0%"></div></div>
@@ -418,6 +418,32 @@ const _sb = window.supabase.createClient(
 let currentUser = null;
 let userProfile = null;
 
+// ── TRIAL EXPIRY (fix 2026-09-22) ───────────────────────────────────
+// Same fix as account.html's computeTrialState() -- see that file for
+// the full explanation. Kept as a per-page copy rather than a new
+// shared module, matching how fetchProfile() itself is already
+// duplicated per page in this codebase.
+function computeTrialState(subscriptionStatus, trialEndRaw, createdAtRaw, now) {
+  const isTrialStatus = subscriptionStatus === 'trialing';
+  let trialEnd = trialEndRaw ? new Date(trialEndRaw) : null;
+  if (isTrialStatus && !trialEnd && createdAtRaw) {
+    trialEnd = new Date(new Date(createdAtRaw).getTime() + 14 * 24 * 60 * 60 * 1000);
+  }
+  const trialActive = !!(isTrialStatus && trialEnd && trialEnd.getTime() > now.getTime());
+  const trialExpired = !!(isTrialStatus && trialEnd && trialEnd.getTime() <= now.getTime());
+  let daysLeft = null;
+  if (trialActive) {
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const startOfEndDayUTC = Date.UTC(trialEnd.getUTCFullYear(), trialEnd.getUTCMonth(), trialEnd.getUTCDate());
+    const startOfNowDayUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    daysLeft = Math.max(0, Math.round((startOfEndDayUTC - startOfNowDayUTC) / msPerDay));
+  }
+  const trialEndDateFormatted = trialEnd
+    ? trialEnd.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    : null;
+  return { trialActive, trialExpired, daysLeft, trialEndDateFormatted };
+}
+
 async function fetchProfile(userId) {
   const { data, error } = await _sb
     .from('profiles')
@@ -427,9 +453,7 @@ async function fetchProfile(userId) {
   if (error || !data) return null;
 
   const now = new Date();
-  const trialEnd = data.trial_end ? new Date(data.trial_end) : null;
-  const isOnTrial = data.subscription_status === 'trialing' && trialEnd && trialEnd > now;
-  const trialDaysLeft = isOnTrial ? Math.ceil((trialEnd - now) / (1000*60*60*24)) : null;
+  const trialState = computeTrialState(data.subscription_status, data.trial_end, data.created_at, now);
 
   return {
     plan: data.is_pro ? 'pro' : 'start',
@@ -440,7 +464,10 @@ async function fetchProfile(userId) {
       : null,
     downloads_used: data.downloads_used || 0,
     downloads_limit: data.downloads_limit ?? (data.is_pro ? 30 : 20),
-    trial_ends: trialDaysLeft ? `${trialDaysLeft} days` : null,
+    trial_active: trialState.trialActive,
+    trial_expired: trialState.trialExpired,
+    trial_days_left: trialState.daysLeft,
+    trial_end_date: trialState.trialEndDateFormatted,
     created_at: new Date(data.created_at).toLocaleDateString('en-GB', {month:'long',year:'numeric'}),
     email: data.email,
     full_name: data.full_name,
@@ -455,12 +482,17 @@ _sb.auth.getSession().then(async ({ data: { session } }) => {
   currentUser = session.user;
   userProfile = await fetchProfile(session.user.id);
   if (!userProfile) {
+    // FIX (2026-09-22): anchored to the real auth account-creation
+    // timestamp instead of Date.now() -- see the matching fix in
+    // account.html for the full explanation.
+    const acctCreatedAt = session.user.created_at ? new Date(session.user.created_at) : new Date();
     await _sb.from('profiles').upsert({
       id: session.user.id,
       email: session.user.email,
       full_name: session.user.user_metadata?.full_name || '',
       subscription_status: 'trialing',
-      trial_end: new Date(Date.now() + 14*24*60*60*1000).toISOString(),
+      trial_start: acctCreatedAt.toISOString(),
+      trial_end: new Date(acctCreatedAt.getTime() + 14*24*60*60*1000).toISOString(),
     });
     userProfile = await fetchProfile(session.user.id);
   }
@@ -490,21 +522,32 @@ function renderDashboard() {
   // Plan & Billing card (redesigned 28 Aug 2026 — Michaela: free trial accounts
   // must not mention billing at all; only an active subscription sees billing
   // management + top-ups. Mirrors account.html's Subscription-card pattern.)
-  document.getElementById('db-plan-name').textContent = u.status === 'trialing' ? 'Easy Trial™' : planLabel;
+  document.getElementById('db-plan-name').textContent =
+    u.status === 'trialing' ? (u.trial_expired ? 'Easy Trial™ (Expired)' : 'Easy Trial™') : planLabel;
 
   const dbBadge = document.getElementById('db-plan-badge');
-  dbBadge.textContent = u.status === 'trialing' ? 'Free trial' :
+  dbBadge.textContent = u.status === 'trialing' ? (u.trial_expired ? 'Trial expired' : 'Free trial') :
     u.status === 'active' ? 'Active' :
     u.status === 'paused' ? 'Paused' :
     u.status === 'cancelled' ? 'Cancelled' : u.status;
   // NOTE: CSS only defines .plan-badge.lapsed (not .cancelled) — same
   // pre-existing naming mismatch found in account.html's own badge, mapped
   // here so this new card doesn't render an unstyled "Cancelled" pill.
-  dbBadge.className = 'plan-badge ' + (u.status === 'cancelled' ? 'lapsed' : u.status);
+  // An expired trial reuses the same 'lapsed' (red, "needs action") style.
+  dbBadge.className = 'plan-badge ' + (u.status === 'cancelled' || (u.status === 'trialing' && u.trial_expired) ? 'lapsed' : u.status);
 
   const dbRenewal = document.getElementById('db-renewal-line');
   if (u.status === 'trialing') {
-    dbRenewal.innerHTML = `Trial ends in <strong>${u.trial_ends || '14 days'}</strong>. No card required until you choose a plan.`;
+    // FIX (2026-09-22): this used to fall back to the literal string
+    // "14 days" whenever the real day-count came out null -- which
+    // happens for an EXPIRED trial just as much as a missing one, so an
+    // 84-day-old expired trial still read "Trial ends in 14 days" here.
+    if (u.trial_expired) {
+      dbRenewal.innerHTML = `Trial expired${u.trial_end_date ? ` on <strong>${u.trial_end_date}</strong>` : ''}. Choose a plan to continue.`;
+    } else {
+      const daysLabel = u.trial_days_left === 0 ? 'today' : u.trial_days_left === 1 ? 'tomorrow' : `in ${u.trial_days_left} days`;
+      dbRenewal.innerHTML = `Trial ends <strong>${daysLabel}</strong>${u.trial_end_date ? ` (${u.trial_end_date})` : ''}. No card required until you choose a plan.`;
+    }
   } else if (u.status === 'active') {
     dbRenewal.innerHTML = u.next_payment ? `Next payment on <strong>${u.next_payment}</strong>` : '';
   } else if (u.status === 'paused') {
@@ -519,6 +562,8 @@ function renderDashboard() {
   const dbDlSection = document.getElementById('db-dl-section');
   if (u.status === 'active' || u.status === 'trialing') {
     dbDlSection.style.display = '';
+    document.getElementById('db-dl-label-text').textContent =
+      u.status === 'trialing' ? 'Trial downloads' : 'Downloads this month';
     const dbLeft = Math.max(0, u.downloads_limit - u.downloads_used);
     const dbPct = Math.min(Math.round(u.downloads_used / u.downloads_limit * 100), 100);
     document.getElementById('db-dl-count').textContent = dbLeft + ' of ' + u.downloads_limit + ' remaining';

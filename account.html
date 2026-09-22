@@ -386,7 +386,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
           <!-- DOWNLOAD USAGE BAR -->
           <div id="dl-section">
             <div class="dl-label">
-              <span class="dl-label-text">Downloads this month</span>
+              <span class="dl-label-text" id="dl-label-text">Downloads this month</span>
               <span class="dl-label-count" id="dl-count">— / —</span>
             </div>
             <div class="dl-bar-wrap">
@@ -646,6 +646,51 @@ let selectedTopupQty = 0, selectedTopupPrice = 0;
 let selectedResub = null;
 let cancelReason = '';
 
+// ── TRIAL EXPIRY (fix 2026-09-22) ───────────────────────────────────
+// FIX: the account page used to fall back to the literal string
+// "in 14 days" whenever trialDaysLeft came out null -- which happens
+// both for a genuinely missing trial_end AND for a trial_end that has
+// simply passed. That silently hid every expired trial behind a fake
+// "in 14 days" message forever (confirmed live: accounts with trial_end
+// months in the past were still shown as freshly starting a trial).
+// trial_end itself is set exactly once, at signup, by the
+// handle_new_user() DB trigger, and nothing overwrites it on reload or
+// sign-in -- so it is a trustworthy anchor once read correctly.
+//
+// This never falls back to "now + 14 days": an active/expired trial is
+// always derived from the real stored trial_end, and the one remaining
+// fallback (a profile whose trial_end column is genuinely null) derives
+// from that profile's own created_at + 14 days instead -- a historical
+// account never gets a fresh trial just because a column was empty.
+// This is a display-only derivation; it does not write anything back to
+// the profiles table (see the separate, explicit backfill note in the
+// PR description for actually persisting a value like this).
+function computeTrialState(subscriptionStatus, trialEndRaw, createdAtRaw, now) {
+  const isTrialStatus = subscriptionStatus === 'trialing';
+  let trialEnd = trialEndRaw ? new Date(trialEndRaw) : null;
+  let derived = false;
+  if (isTrialStatus && !trialEnd && createdAtRaw) {
+    trialEnd = new Date(new Date(createdAtRaw).getTime() + 14 * 24 * 60 * 60 * 1000);
+    derived = true;
+  }
+  const trialActive = !!(isTrialStatus && trialEnd && trialEnd.getTime() > now.getTime());
+  const trialExpired = !!(isTrialStatus && trialEnd && trialEnd.getTime() <= now.getTime());
+  let daysLeft = null;
+  if (trialActive) {
+    // Calendar-day difference in UTC (matches how trial_end is stored as
+    // a timestamptz) so "ends today"/"ends tomorrow" read correctly
+    // regardless of the viewer's local timezone or time of day.
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const startOfEndDayUTC = Date.UTC(trialEnd.getUTCFullYear(), trialEnd.getUTCMonth(), trialEnd.getUTCDate());
+    const startOfNowDayUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    daysLeft = Math.max(0, Math.round((startOfEndDayUTC - startOfNowDayUTC) / msPerDay));
+  }
+  const trialEndDateFormatted = trialEnd
+    ? trialEnd.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+    : null;
+  return { trialActive, trialExpired, daysLeft, trialEndDateFormatted, trialEndDerived: derived };
+}
+
 // ── INIT ─────────────────────────────────────────────────────────
 async function fetchProfile(userId) {
   const { data, error } = await _sb
@@ -657,10 +702,8 @@ async function fetchProfile(userId) {
 
   // Map Supabase profile fields to account page shape
   const now = new Date();
-  const trialEnd = data.trial_end ? new Date(data.trial_end) : null;
+  const trialState = computeTrialState(data.subscription_status, data.trial_end, data.created_at, now);
   const deletionDate = data.deletion_date ? new Date(data.deletion_date) : null;
-  const isOnTrial = data.subscription_status === 'trialing' && trialEnd && trialEnd > now;
-  const trialDaysLeft = isOnTrial ? Math.ceil((trialEnd - now) / (1000*60*60*24)) : null;
   const cancelledDaysRemaining = deletionDate
     ? Math.max(0, Math.ceil((deletionDate - now) / (1000*60*60*24)))
     : null;
@@ -682,7 +725,10 @@ async function fetchProfile(userId) {
     downloads_limit: data.downloads_limit ?? (data.is_pro ? 30 : 20),
     topup_months: data.topup_months || 0,
     topup_credits: data.topup_credits || 0,
-    trial_ends: trialDaysLeft ? `${trialDaysLeft} days` : null,
+    trial_active: trialState.trialActive,
+    trial_expired: trialState.trialExpired,
+    trial_days_left: trialState.daysLeft,
+    trial_end_date: trialState.trialEndDateFormatted,
     cancelled_days_remaining: cancelledDaysRemaining,
     created_at: new Date(data.created_at).toLocaleDateString('en-GB', {month:'long',year:'numeric'}),
     discount_active: data.discount_active || false,
@@ -703,13 +749,22 @@ _sb.auth.getSession().then(async ({ data: { session } }) => {
   currentUser = session.user;
   userProfile = await fetchProfile(session.user.id);
   if (!userProfile) {
-    // Profile missing — create a basic one and retry
+    // Profile missing — create a basic one and retry.
+    // FIX (2026-09-22): this used to anchor trial_end to Date.now(), so a
+    // pre-existing account whose profile row had gone missing (trigger
+    // race, manual deletion, etc.) would silently be granted a brand new
+    // 14-day trial on next login. Anchored to the real Supabase auth
+    // account-creation timestamp instead, which always exists and never
+    // changes — a historical account gets its trial correctly backdated,
+    // not refreshed.
+    const acctCreatedAt = session.user.created_at ? new Date(session.user.created_at) : new Date();
     await _sb.from('profiles').upsert({
       id: session.user.id,
       email: session.user.email,
       full_name: session.user.user_metadata?.full_name || '',
       subscription_status: 'trialing',
-      trial_end: new Date(Date.now() + 14*24*60*60*1000).toISOString(),
+      trial_start: acctCreatedAt.toISOString(),
+      trial_end: new Date(acctCreatedAt.getTime() + 14*24*60*60*1000).toISOString(),
     });
     userProfile = await fetchProfile(session.user.id);
   }
@@ -735,7 +790,13 @@ function renderAccount() {
   // match the approved reference design.
   document.getElementById('acct-plan').textContent =
     u.status === 'trialing' ? 'Easy Trial™' : planLabel;
-  document.getElementById('acct-status').textContent = u.status;
+  // FIX (2026-09-22): this used to print the raw subscription_status
+  // column ("trialing") verbatim, which stays "trialing" in the database
+  // forever even after the trial has actually ended (nothing transitions
+  // it) -- so an expired trial's own Account Details table contradicted
+  // the "Trial expired" messaging shown just above it on the same page.
+  document.getElementById('acct-status').textContent =
+    u.status === 'trialing' && u.trial_expired ? 'trial expired' : u.status;
   document.getElementById('acct-since').textContent = u.created_at;
 
   // Sidebar bottom block (24 Aug 2026, GUI redesign) — reuses the same
@@ -760,25 +821,33 @@ function renderAccount() {
     document.getElementById('su-plan').textContent=
       u.status==='cancelled' ? planLabel+' (Cancelled)' :
       u.status==='paused' ? planLabel+' (Paused)' :
-      u.status==='trialing' ? 'Easy Trial' : planLabel;
+      u.status==='trialing' ? (u.trial_expired ? 'Easy Trial (Expired)' : 'Easy Trial') : planLabel;
   }
 
   // Plan name & badge
   document.getElementById('plan-name').textContent =
     u.status === 'cancelled' ? planLabel + ' (Cancelled)' :
     u.status === 'paused' ? planLabel + ' (Paused)' :
-    u.status === 'trialing' ? 'Easy Trial' : planLabel;
+    u.status === 'trialing' ? (u.trial_expired ? 'Easy Trial (Expired)' : 'Easy Trial') : planLabel;
 
   const badge = document.getElementById('plan-badge');
-  badge.textContent = u.status === 'trialing' ? 'Free trial' :
+  badge.textContent = u.status === 'trialing' ? (u.trial_expired ? 'Trial expired' : 'Free trial') :
     u.status === 'active' ? 'Active' :
     u.status === 'paused' ? 'Paused' : 'Cancelled';
-  badge.className = 'plan-badge ' + u.status;
+  // 'lapsed' (red) is the existing badge style already used for a cancelled
+  // plan -- reused here for an expired trial rather than inventing a new
+  // badge colour/class for the same "needs action" meaning.
+  badge.className = 'plan-badge ' + (u.status === 'trialing' && u.trial_expired ? 'lapsed' : u.status);
 
   // Renewal line
   const renewLine = document.getElementById('renewal-line');
   if (u.status === 'trialing') {
-    renewLine.innerHTML = `Trial ends <strong>${u.trial_ends || 'in 14 days'}</strong>. No card required until you choose a plan.`;
+    if (u.trial_expired) {
+      renewLine.innerHTML = `Trial expired${u.trial_end_date ? ` on <strong>${u.trial_end_date}</strong>` : ''}. Choose a plan to continue creating labels.`;
+    } else {
+      const daysLabel = u.trial_days_left === 0 ? 'today' : u.trial_days_left === 1 ? 'tomorrow' : `in ${u.trial_days_left} days`;
+      renewLine.innerHTML = `Trial ends <strong>${daysLabel}</strong>${u.trial_end_date ? ` (${u.trial_end_date})` : ''}. No card required until you choose a plan.`;
+    }
   } else if (u.status === 'active') {
     renewLine.innerHTML = u.discount_active
       ? `Next payment: <strong>${planPrice === '£9.99' ? '£4.99' : '£7.49'}/mo</strong> (discount active until ${u.discount_ends}) · then ${planPrice}/mo`
@@ -812,10 +881,31 @@ function renderAccount() {
     if (pct >= 80) {
       document.getElementById('topup-btn').style.display = 'inline-block';
     }
-    if (pct >= 100) {
-      document.getElementById('dl-note').textContent = u.topup_credits > 0
-        ? `You've reached your monthly limit — now drawing from your ${u.topup_credits} purchased credit(s).`
-        : "You've reached your monthly limit. Buy a top-up pack or wait until your allowance resets next billing date.";
+    // FIX (2026-09-22): label/note used to unconditionally say "Downloads
+    // this month" / "Resets on your next billing date" even for a
+    // no-card trial account, which has no month or billing date. Now
+    // branches on trial vs. paid so the wording matches what's actually
+    // true for the account being shown.
+    const dlLabelEl = document.getElementById('dl-label-text');
+    const dlNoteEl = document.getElementById('dl-note');
+    if (u.status === 'trialing') {
+      dlLabelEl.textContent = 'Trial downloads';
+      if (pct >= 100) {
+        dlNoteEl.textContent = u.trial_expired
+          ? "Your trial has ended and you've used all your trial downloads. Choose a plan to keep downloading."
+          : "You've used all your trial downloads. Choose a plan to keep downloading.";
+      } else if (u.trial_expired) {
+        dlNoteEl.textContent = 'Your trial has ended. Choose a plan to continue downloading.';
+      } else {
+        dlNoteEl.textContent = 'Included with your 14-day trial. Re-downloading the same label within 7 days is free.';
+      }
+    } else {
+      dlLabelEl.textContent = 'Downloads this month';
+      dlNoteEl.textContent = pct >= 100
+        ? (u.topup_credits > 0
+          ? `You've reached your monthly limit — now drawing from your ${u.topup_credits} purchased credit(s).`
+          : "You've reached your monthly limit. Buy a top-up pack or wait until your allowance resets next billing date.")
+        : 'Resets on your next billing date. Re-downloading the same label within 7 days is free.';
     }
   } else {
     document.getElementById('dl-section').style.display = 'none';
