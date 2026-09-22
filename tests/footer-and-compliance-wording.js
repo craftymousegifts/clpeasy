@@ -73,6 +73,7 @@ const customerFacingFiles = [
   'plan-picker.html', 'terms.html', 'privacy.html', 'builder.html', 'my-labels.html',
   'dashboard.html', 'account.html', 'checkout.html', 'support.html',
   'cookie-policy.html', 'refund.html', 'auth.html', 'coming-soon.html', 'showcase.html',
+  'release-notes.html',
 ];
 const forbiddenPatterns = [
   /guarantees? compliance/i,

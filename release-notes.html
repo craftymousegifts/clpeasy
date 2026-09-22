@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What's new in CLPeasy</title>
+<meta name="description" content="What's new in CLPeasy — release notes and version history.">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@700;900&display=swap');
+  :root {
+    --teal: #4C9BB0;
+    --teal-dark: #3a7d8f;
+    --teal-light: #d6eef4;
+    --teal-mid: #c8eae6;
+    --text: #1a1a1a;
+    --text-mid: #4a5568;
+    --text-light: #718096;
+    --border: #e2e8f0;
+    --bg: #f8fafb;
+    --white: #ffffff;
+    --radius: 12px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.7; }
+
+  nav {
+    background: var(--white); border-bottom: 1px solid var(--border);
+    padding: 0 24px; display: flex; align-items: center;
+    justify-content: space-between; height: 72px; position: sticky; top: 0; z-index: 50;
+  }
+  .nav-logo { display: flex; align-items: center; text-decoration: none; }
+  .nav-badge { width: 52px; height: 52px; border-radius: 50%; background: var(--teal); color: white; display: flex; align-items: center; justify-content: center; font-family: 'DM Sans', sans-serif; font-size: 22px; font-weight: 900; letter-spacing: -1px; flex-shrink: 0; }
+  .nav-easy { font-family: 'DM Sans', sans-serif; font-size: 26px; font-weight: 900; color: var(--teal); margin-left: 4px; letter-spacing: -1px; }
+  .nav-links { display: flex; gap: 24px; }
+  .nav-links a { text-decoration: none; color: var(--text-mid); font-size: 14px; font-weight: 500; transition: color 0.15s; }
+  .nav-links a:hover, .nav-links a:focus-visible { color: var(--teal); }
+
+  .hero { background: linear-gradient(135deg, #2d5f6b 0%, #4C9BB0 100%); color: white; padding: 56px 24px 48px; text-align: center; }
+  .hero h1 { font-size: clamp(24px, 4vw, 34px); font-weight: 700; letter-spacing: -0.4px; margin-bottom: 12px; }
+  .hero p { font-size: 15px; opacity: 0.85; max-width: 520px; margin: 0 auto; }
+
+  main { max-width: 760px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  .release-block { margin-bottom: 48px; }
+  .release-header { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .release-version { font-family: 'DM Sans', sans-serif; font-size: 24px; font-weight: 900; color: var(--text); }
+  .release-date { font-size: 13px; color: var(--text-light); }
+  .new-badge {
+    display: inline-block; background: var(--teal); color: white;
+    font-size: 10px; font-weight: 700; padding: 2px 7px;
+    border-radius: 10px; text-transform: uppercase; letter-spacing: 0.4px;
+    vertical-align: middle;
+  }
+
+  .release-section-title {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.8px; color: var(--teal); margin: 24px 0 10px;
+  }
+  .release-section-title:first-of-type { margin-top: 20px; }
+
+  .release-list { list-style: none; }
+  .release-list li {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px;
+    font-size: 14px; color: var(--text-mid); line-height: 1.65;
+  }
+  .release-list li strong { color: var(--text); }
+
+  footer { background: var(--white); border-top: 1px solid var(--border); padding: 28px 24px; text-align: center; margin-top: 24px; }
+  footer p { font-size: 13px; color: var(--text-light); line-height: 1.6; }
+  footer a { color: var(--teal); text-decoration: none; }
+
+  @media(max-width:600px) { .nav-links { display:none; } main { padding: 32px 16px 60px; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <div class="nav-badge">CLP</div><span class="nav-easy">easy</span><sup style="font-size:9px;font-weight:700;color:#4C9BB0;vertical-align:super;line-height:0;margin-left:1px;">™</sup>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="pricing.html" target="_blank" rel="noopener">Pricing</a>
+    <a href="faq.html">FAQ</a>
+    <a href="compliance.html" target="_blank" rel="noopener">Compliance</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>What's new in CLPeasy</h1>
+  <p>A running record of what's changed in CLPeasy since launch, in plain English.</p>
+</div>
+
+<main>
+
+  <div class="release-block">
+    <div class="release-header">
+      <span class="release-version">v1.1.0</span>
+      <span class="new-badge">Current</span>
+      <span class="release-date">22 September 2026</span>
+    </div>
+
+    <div class="release-section-title">New and improved</div>
+    <ul class="release-list">
+      <li><strong>Print Sheet Composer</strong> — lay out multiple labels on one printable sheet. Choose a ready-made UK sheet template or set your own custom grid, then export a print-ready PDF or individual PNGs for cutting machines like Cricut.</li>
+      <li>Homepage and product previews refreshed for clarity, with more accurate descriptions of what CLPeasy does — and what still needs your own check against your SDS.</li>
+    </ul>
+
+    <div class="release-section-title">Label-building improvements</div>
+    <ul class="release-list">
+      <li>Smart Paste extracts sensitiser and EUH208 warning data from pasted SDS text more reliably.</li>
+      <li>Hazard and precautionary statement text now sizes and fits more consistently across label shapes and sizes, including smaller circular labels.</li>
+      <li>Fixed a signal word issue so the wording shown always matches your SDS hazard data.</li>
+      <li>Smart Paste now flags unsupported or unrecognised hazard/precautionary codes instead of silently accepting them.</li>
+      <li>Fixed a layout issue where long chemical or substance names could overflow the label.</li>
+    </ul>
+
+    <div class="release-section-title">Printing and downloads</div>
+    <ul class="release-list">
+      <li>New Print Sheet Composer supports custom label grids and ready-made UK sheet templates, with clear guidance on maximum sizes for cutting-machine software.</li>
+      <li>Cutting-machine printing guidance now appears right inside the download dialog, exactly when you need it.</li>
+    </ul>
+
+    <div class="release-section-title">Usability and accessibility</div>
+    <ul class="release-list">
+      <li>Improved step navigation and responsive layout throughout the label builder, especially on smaller screens.</li>
+      <li>Simplified the hazard confirmation step so it's clearer what's needed before a label can be downloaded.</li>
+    </ul>
+
+    <div class="release-section-title">Reliability and security</div>
+    <ul class="release-list">
+      <li>Strengthened the unpaid/trial preview so it can no longer be tampered with in the browser to reveal a clean label — previews for unverified accounts are now rendered as a flattened image.</li>
+      <li>Added a fresh account-status check immediately before every download, so an expired trial or cancelled subscription can never produce a paid-quality export.</li>
+      <li>General reliability fixes across the label builder workflow.</li>
+    </ul>
+  </div>
+
+  <div class="release-block">
+    <div class="release-header">
+      <span class="release-version">v1.0.0</span>
+      <span class="release-date">15 June 2026 · Original public launch</span>
+    </div>
+
+    <div class="release-section-title">Launch</div>
+    <ul class="release-list">
+      <li>CLPeasy launched: build GB CLP-style labels for candles, wax melts, reed diffusers and other fragranced maker products.</li>
+      <li>Smart Paste — paste your SDS Section 2.2 text to extract hazard data automatically.</li>
+      <li>Hazard statements, precautionary statements, signal word and GHS pictograms generated from your SDS data.</li>
+      <li>Save labels to your personal library for reuse.</li>
+      <li>Print-ready PNG and PDF label exports.</li>
+      <li>Free 14-day trial, with Easy Start and Easy Pro subscription plans plus top-up download packs.</li>
+    </ul>
+  </div>
+
+</main>
+
+<footer>
+  <p>CLPeasy™ · 66 Paul Street, London, EC2A 4NA · <a href="mailto:support@clpeasy.com">support@clpeasy.com</a></p>
+  <p style="margin-top:6px;">© 2026 Michaela Feeley · <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a> · <a href="compliance.html">Compliance &amp; Transparency</a></p>
+</footer>
+
+</body>
+</html>

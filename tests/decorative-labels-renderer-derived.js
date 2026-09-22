@@ -235,9 +235,12 @@ assert(/\.btn-nav\s*\{[^}]*white-space:\s*nowrap/.test(html), '"Start free trial
 // ── 10. Founder-copy readability correction. ────────────────────────────
 assert(html.includes('font-size:14px;color:#4B5563;line-height:1.7;'), 'founder-section body copy must be 14px, #4B5563, line-height 1.7');
 
-// ── 11. Version 1.0's recorded release date must be the real public-
-//    launch date, not a placeholder. ────────────────────────────────────
-const builderSource = fs.readFileSync(path.join(__dirname, '..', 'builder.html'), 'utf8');
-assert(builderSource.includes("released:'15/06/2026'"), "APP_VERSION.released must be CLPeasy's actual public-launch date (15/06/2026)");
+// ── 11. v1.0.0's recorded release date must be the real public-launch
+//    date, not a placeholder. Versioning moved to a single authoritative
+//    source (version.js) in the chore/versioning-and-release-notes work;
+//    the historical launch date now lives in the release records instead
+//    of inline in builder.html. ──────────────────────────────────────────
+const changelogSource = fs.readFileSync(path.join(__dirname, '..', 'CHANGELOG.md'), 'utf8');
+assert(/15 June 2026|2026-06-15/.test(changelogSource), "CHANGELOG.md must record CLPeasy's actual public-launch date (15 June 2026) for v1.0.0, not a placeholder");
 
 console.log(`decorative-labels-renderer-derived checks passed (${useMatches.length} decorative labels genuinely renderer-derived and byte-matched against a fresh render; header-band/duplicate-ring/scent-span removal confirmed; signal-word colour rule verified; pointer-events:none on every decorative svg; hero stacking, mobile heading/header, founder readability and version date all verified)`);

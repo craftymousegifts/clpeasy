@@ -703,15 +703,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 @media(max-width:760px){.shell-trust{grid-template-columns:1fr;}.shell-trust-item{border-left:0 !important;border-top:1px solid var(--border);}.shell-trust-item:first-child{border-top:none;}}
 
 /* App release-version link -- small, unobtrusive line in the sidebar,
-   directly under Support (24 Sep 2026, moved here from the page footer
-   per direct request). "Version X.Y" is always visible; clicking it
-   reveals "— released dd/mm/yyyy" next to it. Both are built from the
-   single APP_VERSION constant near the bottom of the page script, so a
-   release only ever needs that one value updated. */
-.app-version-footer{padding:8px 14px 4px;font-size:11px;color:var(--muted);}
-.app-version-link{background:none;border:none;padding:0;font:inherit;color:var(--muted);cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;}
-.app-version-link:hover{color:var(--teal);}
-.app-version-detail{margin-left:2px;}
+   directly under Support. Links to the customer release-notes page;
+   its "What's new · vX.Y.Z" text is built from the single
+   window.CLPEASY_VERSION source in version.js, so a release only ever
+   needs that one value updated (see VERSIONING.md). */
+.app-version-footer{padding:8px 14px 4px;font-size:11px;}
+.app-version-link{display:block;color:var(--muted);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;}
+.app-version-link:hover,.app-version-link:focus-visible{color:var(--teal);}
 
 /* Desktop layout overrides stay at the end of the stylesheet so they
    reliably win over same-specificity base rules above. The page uses
@@ -789,7 +787,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <a href="auth.html?next=builder.html" id="nav-signin" class="sidebar-nav-item" style="display:none;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4h5a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-5"/><path d="M3 12h11.5"/><path d="M11 8l4 4-4 4"/></svg></span>Sign in</a>
       <button type="button" class="sidebar-nav-item" onclick="openHelp()"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7v.5"/><path d="M12 17h.01"/></svg></span>Help Guide</button>
       <a href="support.html" target="_blank" rel="noopener" class="sidebar-nav-item" style="width:100%;text-align:left;"><span class="snav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 1 3.3 6.4L4 20l1.3-3.6A7.96 7.96 0 0 1 4 12Z"/></svg></span>Support</a>
-      <div class="app-version-footer"><button type="button" class="app-version-link" id="app-version-link" onclick="toggleVersionInfo()"></button><span class="app-version-detail" id="app-version-detail"></span></div>
+      <div class="app-version-footer"><a href="release-notes.html" class="app-version-link" id="app-version-link"></a></div>
     </div>
     <div class="sidebar-bottom">
       <div class="sidebar-usage" id="sidebar-usage" style="display:none;">
@@ -1455,6 +1453,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
      read/write in this file now goes through this, instead of the old
      direct localStorage getSaved()/persistSaved() pair. -->
 <script src="label-library.js"></script>
+
+<!-- Single authoritative release-version source (see VERSIONING.md). -->
+<script src="version.js"></script>
 
 <script>
 // ── DATA ──────────────────────────────────────────────────────
@@ -5895,19 +5896,18 @@ function initExtensions(){
 
 <script>
   // Sidebar mobile toggle (Phase 2 shell rollout — shared pattern)
-  // App release version, shown as a small link at the bottom of the
-  // builder page (see .app-version-footer above). APP_VERSION is the
-  // single place to update on every release -- the footer link text and
-  // its "released" detail are both built from it, nothing else to touch.
-  const APP_VERSION={number:'1.0',released:'15/06/2026'}; // dd/mm/yyyy -- confirmed actual CLPeasy public-launch date, not a placeholder
-  function toggleVersionInfo(){
-    const el=document.getElementById('app-version-detail');
-    if(!el)return;
-    el.textContent=el.textContent?'':'— released '+APP_VERSION.released;
-  }
+  // App release version, shown as a "What's new" link at the bottom of
+  // the builder sidebar (see .app-version-footer above). Reads from the
+  // single authoritative window.CLPEASY_VERSION source (version.js) --
+  // that is the only place to update on every release. The fallback
+  // literal here only applies if version.js somehow failed to load.
+  const APP_VERSION=window.CLPEASY_VERSION||{number:'1.1.0',released:'2026-09-22'};
   (function(){
     const link=document.getElementById('app-version-link');
-    if(link)link.textContent='Version '+APP_VERSION.number;
+    if(link){
+      link.textContent="What's new · v"+APP_VERSION.number;
+      link.setAttribute('aria-label',"What's new in CLPeasy — release notes for version "+APP_VERSION.number);
+    }
   })();
   (function(){
     const sidebar = document.getElementById('sidebar');
