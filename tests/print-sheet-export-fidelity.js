@@ -161,7 +161,14 @@ function decodeSheetSVG(dataUri){
     const { window, capturedImgSrcs } = await openComposerForExport({ seed });
     window.eval(`selectTemplate('custom', document.querySelector('.tpl-card[data-tpl="custom"]'))`);
     window.eval(`addToSheet('${idA}')`);
-    window.eval('downloadPDF()');
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser={id:'test-pro-user'};");
+    // addToSheet()/selectTemplate() above kicked off the Composer's own
+    // guest-mode background preview rasterisation (Sep 2026 unpaid-preview
+    // watermark fix) -- let it fully settle and clear its captured image
+    // src before counting downloadPDF()'s own.
+    await new Promise(r=>setTimeout(r,100));
+    capturedImgSrcs.length=0;
+    await window.eval('downloadPDF()');
     assert.strictEqual(capturedImgSrcs.length, 1, 'downloadPDF() must set exactly one rasteriser <img> src for the sheet');
     const sheetSVG = decodeSheetSVG(capturedImgSrcs[0]);
     assert(!/<image[^>]*\bid="asset-/.test(sheetSVG), 'the exported sheet must never contain a bare, unsized <image id="asset-..."> -- this is the exact construct that caused the pictogram to vanish/oversize; every pooled asset must be <symbol>-wrapped instead');
@@ -181,7 +188,14 @@ function decodeSheetSVG(dataUri){
     window.eval(`selectTemplate('custom', document.querySelector('.tpl-card[data-tpl="custom"]'))`);
     window.eval(`addToSheet('${idA}')`);
     window.eval(`setQty('${idA}','3')`); // 3 identical positions, same pictogram/icons
-    window.eval('downloadPDF()');
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser={id:'test-pro-user'};");
+    // addToSheet()/selectTemplate() above kicked off the Composer's own
+    // guest-mode background preview rasterisation (Sep 2026 unpaid-preview
+    // watermark fix) -- let it fully settle and clear its captured image
+    // src before counting downloadPDF()'s own.
+    await new Promise(r=>setTimeout(r,100));
+    capturedImgSrcs.length=0;
+    await window.eval('downloadPDF()');
     const sheetSVG = decodeSheetSVG(capturedImgSrcs[capturedImgSrcs.length-1]);
     const ghsSymbolCount = (sheetSVG.match(/<symbol id="asset-ghs-exclamation"/g)||[]).length;
     const ghsUseCount = (sheetSVG.match(/<use href="#asset-ghs-exclamation"/g)||[]).length;
@@ -302,7 +316,14 @@ function decodeSheetSVG(dataUri){
     const { window, capturedImgSrcs } = await openComposerForExport({ seed });
     window.eval(`selectTemplate('custom', document.querySelector('.tpl-card[data-tpl="custom"]'))`);
     window.eval(`addToSheet('${idA}')`);
-    window.eval('downloadPDF()');
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser={id:'test-pro-user'};");
+    // addToSheet()/selectTemplate() above kicked off the Composer's own
+    // guest-mode background preview rasterisation (Sep 2026 unpaid-preview
+    // watermark fix) -- let it fully settle and clear its captured image
+    // src before counting downloadPDF()'s own.
+    await new Promise(r=>setTimeout(r,100));
+    capturedImgSrcs.length=0;
+    await window.eval('downloadPDF()');
     const sheetSVG = decodeSheetSVG(capturedImgSrcs[capturedImgSrcs.length-1]);
     const outerTag = sheetSVG.match(/<svg[^>]*>/)[0];
     const w = Number(outerTag.match(/width="(\d+)"/)[1]);

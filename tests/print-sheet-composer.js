@@ -134,8 +134,17 @@ const dom = new JSDOM(source, {
 const { window } = dom;
 const document = window.document;
 
-setTimeout(() => {
+setTimeout(async () => {
   try {
+    // This file tests sheet CONTENT rendering (label text, H/P-code
+    // wording, sensitisers) -- not the Sep 2026 unpaid-preview
+    // watermark/rasterisation behaviour (covered separately in
+    // tests/preview-watermark-and-export-authorization.js). Simulate an
+    // active subscription, freshly verified, so the Composer commits the
+    // synchronous live-vector path used before that feature existed --
+    // otherwise the checks below would be inspecting an opaque raster
+    // image's markup instead of the label's actual rendered text.
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser={id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
     // ── Resolve each fixture's stable LabelLibrary-assigned id at runtime
     // -- these fixtures are intentionally id-less (legitimate pre-stable-ID
     // saved labels put through LabelLibrary's legacy migration on init()),
@@ -320,7 +329,11 @@ setTimeout(() => {
     window.eval(`addToSheet('${idSimple}')`);
     window.rebuildSheet();
     assert.strictEqual(window.eval('sheetFitIssues.length'), 0, `expected the sheet to have no fit issues once swapped to simple content, got ${window.eval('JSON.stringify(sheetFitIssues)')}`);
-    window.downloadPDF();
+    // Simulate an active subscription so downloadPDF()'s entitlement
+    // re-check (refreshProEntitlement()) passes -- this test is about PDF
+    // page geometry, not entitlement.
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser={id:'test-pro-user'};");
+    await window.eval('downloadPDF()');
     const svgDims = window.eval('window.__capturedSvg');
     assert(svgDims, 'downloadPDF did not build a sheet SVG');
     const DPI=300, mmW = svgDims.width/(DPI/25.4), mmH = svgDims.height/(DPI/25.4);

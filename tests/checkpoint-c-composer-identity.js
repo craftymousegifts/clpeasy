@@ -35,14 +35,18 @@ const emptyQuery = {
   upsert(){ return this; }, single(){ return Promise.resolve({ data:null, error:null }); },
   then(resolve){ return Promise.resolve({ data:null, error:null }).then(resolve); }
 };
-function makeSupabaseStub(session){
+const activeSubQuery = {
+  select(){ return this; }, eq(){ return this; },
+  single(){ return Promise.resolve({ data:{ plan:'pro', status:'active' }, error:null }); }
+};
+function makeSupabaseStub(session, activeSub){
   return { createClient: () => ({
     auth: {
       getSession: async () => ({ data:{ session } }),
       onAuthStateChange: () => ({ data:{ subscription:{ unsubscribe(){} } } }),
       signOut: async () => ({})
     },
-    from: () => Object.create(emptyQuery),
+    from: () => Object.create(activeSub ? activeSubQuery : emptyQuery),
     rpc: async () => ({ data:false, error:null })
   }) };
 }
@@ -180,7 +184,7 @@ async function openComposer(opts){
       window.JSZip = function(){ this.file = function(){}; this.generateAsync = async function(){ return { size:0 }; }; };
       class FakeImage { set src(v){ if (this.onload) this.onload(); } }
       window.Image = FakeImage;
-      window.supabase = makeSupabaseStub(opts.session || null);
+      window.supabase = makeSupabaseStub(opts.session || null, opts.activeSub);
       const ns = opts.session ? opts.session.user.id : 'guest';
       if(opts.seed){
         window.localStorage.setItem('clpeasy_labels__u_'+ns, JSON.stringify(opts.seed));
@@ -308,7 +312,7 @@ async function openComposer(opts){
     const idA = fakeId();
     const seed = [overflowingFixture({ id:idA })];
     const { window, document } = await openComposer({ seed });
-    window.eval('isPro=true; updateProGate();');
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
     window.eval(`addToSheet('${idA}')`);
     const issues = window.eval('sheetFitIssues');
     assert.strictEqual(issues.length, 1, 'setup: the overflowing fixture must produce exactly one fit issue');
@@ -349,7 +353,7 @@ async function openComposer(opts){
     const idA = fakeId(), idB = fakeId();
     const seed = [fixture({ id:idA, scentName:'Custom A' }), fixture({ id:idB, scentName:'Custom B' })];
     const { window, document } = await openComposer({ seed });
-    window.eval('isPro=true; updateProGate();');
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
     // JSON round-trip normalises the cross-realm jsdom object (a raw
     // deepStrictEqual across realms can spuriously fail on [[Prototype]]
     // identity even when the own-enumerable-property content is identical).
@@ -380,7 +384,7 @@ async function openComposer(opts){
     const idA = fakeId(), idB = fakeId();
     const seed = [eu30009Fixture({ id:idA, scentName:'Registry A' }), eu30009Fixture({ id:idB, scentName:'Registry B' })];
     const { window, document } = await openComposer({ seed });
-    window.eval('isPro=true; updateProGate();');
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
     const reg = window.eval("getRegistryTemplate('eu30009')");
     assert.strictEqual(reg.columns, 2); assert.strictEqual(reg.rows, 5); assert.strictEqual(reg.labelsPerSheet, 10);
     assert.strictEqual(reg.labelWidthMm, 99.1); assert.strictEqual(reg.labelHeightMm, 57.3); assert.strictEqual(reg.cornerRadiusMm, 2);
@@ -409,7 +413,7 @@ async function openComposer(opts){
     const idFits = fakeId(), idFails = fakeId();
     const seed = [fixture({ id:idFits, scentName:'Fits Fine' }), overflowingFixture({ id:idFails })];
     const { window, document, windowOpenCalls } = await openComposer({ seed });
-    window.eval('isPro=true; updateProGate();');
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
     window.eval(`addToSheet('${idFits}')`);
     window.eval(`addToSheet('${idFails}')`);
     assert.strictEqual(window.eval('sheetFitIssues.length'), 1, 'setup: the sheet should have exactly one fit issue');
@@ -426,7 +430,7 @@ async function openComposer(opts){
     assert.strictEqual(window.eval('sheetFitIssues.length'), 0, 'removing the failing labelId must clear sheetFitIssues');
     assert.strictEqual(window.eval('document.getElementById("btn-pdf").disabled'), false, 'btn-pdf must re-enable once the failing label is removed');
     windowOpenCalls.count = 0;
-    window.eval('downloadPDF()');
+    await window.eval('downloadPDF()');
     assert.strictEqual(windowOpenCalls.count, 1, 'downloadPDF() must proceed normally once no position is failing');
     ok('every export-fit block (PDF/print and the Cricut/cutting-machine paths) remains effective under labelId-based sheetItems');
   }
@@ -734,7 +738,13 @@ async function openComposer(opts){
   {
     const idA = fakeId();
     const seed = [qaTestCandle6344Fixture({ id:idA })];
-    const { window, document } = await openComposer({ seed, search:`?label=${idA}` });
+    // This test is about deep-link placement/content correctness, not the
+    // Sep 2026 unpaid-preview watermark/rasterisation behaviour (covered
+    // separately in tests/preview-watermark-and-export-authorization.js) --
+    // give it a genuine active subscription so the auto-placed cell's
+    // rendered content is inspectable as real text.
+    const session = { user:{ id:'deep-link-pro-user', email:'x@example.com', user_metadata:{} } };
+    const { window, document } = await openComposer({ seed, search:`?label=${idA}`, session, activeSub:true });
     const dims = JSON.parse(window.eval(`JSON.stringify(getLabelDimsMM(resolveSheetLabel('${idA}')))`));
     assert.deepStrictEqual(dims, { w:63, h:44 }, 'setup: the genuine 63mm rectangle preset must resolve to the real 63x44mm physical footprint used everywhere else in the app');
     assert.strictEqual(window.eval(`isCustomSizeBelowSupportedMinimumSaved(resolveSheetLabel('${idA}'))`), false, 'a recognised preset must never be treated as a below-minimum custom entry, however small either of its physical axes is');

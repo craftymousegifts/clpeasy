@@ -97,7 +97,7 @@ const document = window.document;
 
 setTimeout(async () => {
   try {
-    window.eval('isPro=true; updateProGate();');
+    window.eval('isPro=true; _previewVerifiedAt=Date.now(); updateProGate();');
 
     // ── Resolve each fixture's stable LabelLibrary-assigned id at runtime
     // -- these fixtures are intentionally id-less (legitimate pre-stable-ID

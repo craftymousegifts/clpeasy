@@ -392,7 +392,7 @@ const EXPECTED_RECT_MSG = 'CLPeasy supports custom rectangle labels from 52mm on
   await new Promise(resolve => setTimeout(resolve, 60));
   const pwindow = pdom.window;
 
-  pwindow.eval('isPro=true; updateProGate();');
+  pwindow.eval('isPro=true; _previewVerifiedAt=Date.now(); updateProGate();');
   const legacyErr = pwindow.eval('canAddToSheet(getSaved()[0], 1)');
   assert(legacyErr && legacyErr.includes(EXPECTED_MSG), `Composer must refuse a legacy sub-52mm custom label with the exact CLPeasy-supported-minimum message, got: ${legacyErr}`);
 
