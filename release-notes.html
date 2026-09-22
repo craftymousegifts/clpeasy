@@ -112,7 +112,7 @@
     <ul class="release-list">
       <li>Smart Paste extracts sensitiser and EUH208 warning data from pasted SDS text more reliably.</li>
       <li>Hazard and precautionary statement text now sizes and fits more consistently across label shapes and sizes, including smaller circular labels.</li>
-      <li>Fixed a signal word issue so the wording shown always matches your SDS hazard data.</li>
+      <li>Corrected the signal-word selection logic and added further checks to help it reflect the hazard information entered from the current supplier SDS. As always, verify the signal word against your current supplier SDS before printing.</li>
       <li>Smart Paste now flags unsupported or unrecognised hazard/precautionary codes instead of silently accepting them.</li>
       <li>Fixed a layout issue where long chemical or substance names could overflow the label.</li>
     </ul>
@@ -131,8 +131,8 @@
 
     <div class="release-section-title">Reliability and security</div>
     <ul class="release-list">
-      <li>Strengthened the unpaid/trial preview so it can no longer be tampered with in the browser to reveal a clean label — previews for unverified accounts are now rendered as a flattened image.</li>
-      <li>Added a fresh account-status check immediately before every download, so an expired trial or cancelled subscription can never produce a paid-quality export.</li>
+      <li>Strengthened unpaid and trial previews by flattening the displayed label and making simple removal of the preview watermark more difficult.</li>
+      <li>Added a fresh account-status check immediately before downloads to prevent expired trials or cancelled subscriptions from using the normal clean-export flow.</li>
       <li>General reliability fixes across the label builder workflow.</li>
     </ul>
   </div>

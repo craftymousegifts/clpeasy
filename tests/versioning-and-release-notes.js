@@ -101,11 +101,35 @@ try {
     /automatically compliant/i, /always (?:correct|accurate|right)\b/i,
     /100% (?:accurate|compliant|correct)/i, /error[- ]free/i,
     /never have to (?:look anything up|check|verify)/i,
+    // Sep 2026 correction: these specific absolute-security/entitlement
+    // claims overstated protection while Issue #127 (the residual
+    // client-side rendering gap) remains open -- must never return.
+    /can no longer be tampered with/i,
+    /can never produce/i,
+    /always matches your SDS/i,
+    /tamper-?proof/i,
+    /\bimpossible to (?:bypass|tamper|reconstruct)/i,
   ];
   forbiddenCompliancePatterns.forEach((pattern) => {
     assert(!pattern.test(releaseNotesHtml),
-      `release-notes.html must not contain an absolute compliance-guarantee claim matching ${pattern}`);
+      `release-notes.html must not contain an absolute compliance/security-guarantee claim matching ${pattern}`);
   });
+
+  // While Issue #127 (the server-side rendering boundary) remains open,
+  // the release notes must not claim the preview/export security work is
+  // complete -- only that it was strengthened/made harder to bypass.
+  assert(!/complete(?:ly)? (?:secure|protected|prevented)/i.test(releaseNotesHtml),
+    'release-notes.html must not claim complete/total security while Issue #127 is still open');
+
+  // ── 6b. Positively assert the approved, accurate replacement wording ──
+  assert(releaseNotesHtml.includes('Strengthened unpaid and trial previews by flattening the displayed label and making simple removal of the preview watermark more difficult.'),
+    'release-notes.html must use the approved, non-absolute preview-security wording (strengthened/harder to bypass, not "can no longer be tampered with")');
+  assert(releaseNotesHtml.includes('Added a fresh account-status check immediately before downloads to prevent expired trials or cancelled subscriptions from using the normal clean-export flow.'),
+    'release-notes.html must use the approved, non-absolute entitlement-check wording (prevents use of the normal flow, not "can never produce")');
+  assert(releaseNotesHtml.includes('Corrected the signal-word selection logic and added further checks to help it reflect the hazard information entered from the current supplier SDS.'),
+    'release-notes.html must use the approved, non-absolute signal-word wording (helps reflect SDS data, not "always matches")');
+  assert(/verify the signal word against your current supplier SDS/i.test(releaseNotesHtml),
+    'release-notes.html must retain a verify-against-current-SDS reminder alongside the signal-word entry');
 
   // ── 7. Version consistency across records ──────────────────────────────
   assert(/\[1\.1\.0\]/.test(changelogMd), 'CHANGELOG.md must record a [1.1.0] entry');
