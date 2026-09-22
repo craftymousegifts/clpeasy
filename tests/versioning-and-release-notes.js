@@ -70,10 +70,19 @@ try {
   assert(/v1\.0\.0/.test(releaseNotesHtml), 'release-notes.html must document v1.0.0');
   assert(/15 June 2026/.test(releaseNotesHtml),
     'release-notes.html must record the real v1.0.0 launch date as historical information');
+  // Sep 2026 public-communications correction: the original 5-category
+  // structure merged "Usability and accessibility" + "Reliability and
+  // security" into a single "Usability and reliability" section, and
+  // dropped the standalone "security" framing (see the disclosure audit
+  // below) in favour of customer-benefit language throughout.
   ['New and improved', 'Label-building improvements', 'Printing and downloads',
-   'Usability and accessibility', 'Reliability and security'].forEach((heading) => {
+   'Usability and reliability'].forEach((heading) => {
     assert(releaseNotesHtml.includes(heading), `release-notes.html must include the "${heading}" category heading`);
   });
+  assert(!releaseNotesHtml.includes('Usability and accessibility'),
+    'the old "Usability and accessibility" heading must have been merged into "Usability and reliability"');
+  assert(!releaseNotesHtml.includes('Reliability and security'),
+    'the old standalone "Reliability and security" heading must be gone -- merged into "Usability and reliability" with customer-benefit wording');
 
   // Reuses the existing site design system (same CSS variables/classes as
   // faq.html), rather than inventing a new visual language.
@@ -83,16 +92,27 @@ try {
   assert(releaseNotesHtml.includes('66 Paul Street, London, EC2A 4NA'),
     'release-notes.html must reuse the existing standard site footer content');
 
-  // High-level security language only -- no bypass details, internal
-  // function/table names, or vulnerability specifics.
+  // High-level language only -- no bypass details, internal function/table
+  // names, DOM/console mechanics, or vulnerability specifics. Extended Sep
+  // 2026 (public-communications correction, Issue #127 disclosure audit)
+  // to also forbid rasterisation-as-a-security-defence explanations,
+  // watermark-removal-method descriptions, and framing prior behaviour as
+  // a "bug"/"defect"/codes being "silently accepted".
   const forbiddenSecurityDetail = [
     /LabelRenderer\.renderLabel/i, /watermark:\s*false/i, /S\.isPro/,
     /Supabase/i, /localStorage/i, /devtools/i, /console/i, /RLS\b/,
     /SECURITY DEFINER/i, /supabase\.co|subscriptions table/i,
+    /rasteris|rasteriz/i, /watermark[- ]removal/i, /\.remove\(\)/,
+    /getElementById/i, /\bDOM\b/, /<g>|<\/g>/,
+    /silently accepted/i,
+    /signal[- ]?word (?:bug|defect|issue|flaw|vulnerability)/i,
+    /(?:bug|defect|flaw|vulnerability) in (?:the )?signal[- ]?word/i,
+    /expired (?:trial|account)[^.]{0,60}clean (?:export|download)/i,
+    /cancelled (?:account|subscription)[^.]{0,60}clean (?:export|download)/i,
   ];
   forbiddenSecurityDetail.forEach((pattern) => {
     assert(!pattern.test(releaseNotesHtml),
-      `release-notes.html must not expose internal/bypass detail matching ${pattern}`);
+      `release-notes.html must not expose internal/bypass detail or defect-framing matching ${pattern}`);
   });
 
   // ── 6. No absolute compliance claims on the new page ───────────────────
@@ -121,15 +141,48 @@ try {
   assert(!/complete(?:ly)? (?:secure|protected|prevented)/i.test(releaseNotesHtml),
     'release-notes.html must not claim complete/total security while Issue #127 is still open');
 
-  // ── 6b. Positively assert the approved, accurate replacement wording ──
-  assert(releaseNotesHtml.includes('Strengthened unpaid and trial previews by flattening the displayed label and making simple removal of the preview watermark more difficult.'),
-    'release-notes.html must use the approved, non-absolute preview-security wording (strengthened/harder to bypass, not "can no longer be tampered with")');
-  assert(releaseNotesHtml.includes('Added a fresh account-status check immediately before downloads to prevent expired trials or cancelled subscriptions from using the normal clean-export flow.'),
-    'release-notes.html must use the approved, non-absolute entitlement-check wording (prevents use of the normal flow, not "can never produce")');
-  assert(releaseNotesHtml.includes('Corrected the signal-word selection logic and added further checks to help it reflect the hazard information entered from the current supplier SDS.'),
-    'release-notes.html must use the approved, non-absolute signal-word wording (helps reflect SDS data, not "always matches")');
-  assert(/verify the signal word against your current supplier SDS/i.test(releaseNotesHtml),
-    'release-notes.html must retain a verify-against-current-SDS reminder alongside the signal-word entry');
+  // ── 6b. Positively assert the approved, customer-benefit wording ──────
+  // Sep 2026 public-communications correction: the previous round's
+  // technical-but-accurate sentences (naming the preview watermark, the
+  // account-status check, the signal-word selection logic) were still
+  // more implementation detail than a customer release note needs, and
+  // one read as narrating a defect history. Replaced with plain
+  // customer-benefit language; the underlying code change is unchanged
+  // and still documented in full in CHANGELOG.md and git history.
+  [
+    'Added the', 'Print Sheet Composer', 'for arranging multiple labels on a printable sheet.',
+    'Added ready-made UK sheet layouts and custom-grid options.',
+    'Refreshed the homepage and product information to explain CLPeasy more clearly.',
+    'Improved Smart Paste extraction and review guidance.',
+    'Added further checks around hazard codes and signal-word selection.',
+    'Improved text fitting across different label shapes and sizes.',
+    'Improved the handling of long chemical and substance names.',
+    'Added clearer reminders to verify label information against the current supplier SDS before printing.',
+    'Expanded printable-sheet and cutting-machine options.',
+    'Added clearer guidance for Cricut and other cutting machines.',
+    'Refined the download experience and account checks.',
+    'Improved mobile and desktop layouts.',
+    'Simplified label-builder navigation and hazard confirmation.',
+    'Improved preview handling and general platform reliability.',
+    'Added the customer-facing',
+  ].forEach((phrase) => {
+    assert(releaseNotesHtml.includes(phrase), `release-notes.html must include the approved customer-benefit wording "${phrase}"`);
+  });
+  assert(/verify label information against the current supplier SDS/i.test(releaseNotesHtml),
+    'release-notes.html must retain a verify-against-current-SDS reminder');
+
+  // The prior round's more technical sentences must not have survived
+  // this pass (they described real behaviour accurately, but in more
+  // implementation detail than a public release note needs).
+  [
+    'Strengthened unpaid and trial previews by flattening the displayed label',
+    'Added a fresh account-status check immediately before downloads to prevent expired trials or cancelled subscriptions',
+    'Corrected the signal-word selection logic and added further checks to help it reflect the hazard information entered from the current supplier SDS.',
+    'Fixed a signal word issue',
+  ].forEach((phrase) => {
+    assert(!releaseNotesHtml.includes(phrase),
+      `release-notes.html must not retain the more technical/defect-framed wording "${phrase}" from the previous round`);
+  });
 
   // ── 7. Version consistency across records ──────────────────────────────
   assert(/\[1\.1\.0\]/.test(changelogMd), 'CHANGELOG.md must record a [1.1.0] entry');
