@@ -376,8 +376,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .smart-paste-box h4{font-size:14px;font-weight:700;color:var(--teal-dark);margin-bottom:3px;}
 .smart-paste-box p{font-size:13px;color:var(--muted);margin-bottom:10px;}
 .sds-gb-note{background:#F5FAFC;border:1px solid #B9DFE7;border-radius:10px;padding:14px 16px;margin:-4px 0 18px;font-size:13px;line-height:1.55;color:var(--text);}
-.sds-gb-note strong{display:block;color:var(--teal-dark);margin-bottom:6px;}
-.sds-gb-note p+p{margin-top:8px;}
+.sds-gb-note>strong{display:block;color:var(--teal-dark);margin-bottom:6px;}
+.sds-gb-note p+p,.sds-gb-note ul+p{margin-top:8px;}
+.sds-gb-note ul{margin-top:8px;padding-left:18px;}
+.sds-gb-note li+li{margin-top:6px;}
 .sds-gb-note a{color:var(--teal-dark);font-weight:600;text-decoration:underline;}
 .btn-extract{background:var(--teal);color:white;border:none;padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;width:100%;}
 .btn-extract:active,.btn-extract:hover{background:var(--teal-dark);}
@@ -1186,7 +1188,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <aside class="sds-gb-note" aria-label="About supplier SDS information for Great Britain">
       <strong>About your supplier SDS and GB CLP</strong>
-      <p>If you place a fragrance mixture on the market in Great Britain (England, Scotland or Wales), you are responsible for checking that the classification and label for your finished product are accurate and meet the applicable GB CLP requirements. Your supplier's SDS usually describes the fragrance oil on its own, at 100%. Your candle or wax melt contains much less, for example 10%, so its hazards and label warnings may be different. Use your supplier's CLP information for the percentage you actually use, not the information for the undiluted oil.</p>
+      <p>If you place a fragrance mixture on the market in Great Britain (England, Scotland or Wales), you are responsible for checking that the classification and label for your finished product are accurate and meet the applicable GB CLP requirements. Two things to check:</p>
+      <ul>
+        <li><strong>GB CLP, not GHS or another country's rules.</strong> Some SDSs are written for the worldwide GHS system or another country's rules, not GB CLP. These can include hazard codes that aren't used in Great Britain, so CLPeasy will stop the label rather than guess. If this happens, ask your supplier for GB CLP information for your product.</li>
+        <li><strong>Your fragrance percentage.</strong> Your supplier's SDS usually describes the fragrance oil on its own, at 100%. Your candle or wax melt contains much less, for example 10%, so its hazards and label warnings may be different. Use your supplier's CLP information for the percentage you actually use, not the information for the undiluted oil.</li>
+      </ul>
       <p>Why it matters: an incorrect classification could leave warnings, pictograms or precautions wrong or missing. That can put people or the environment at risk and may lead to enforcement action under GB CLP.</p>
       <p><a href="mailto:support@clpeasy.com?subject=SDS%20classification%20query">Email CLPeasy Support</a> with the SDS and the flagged code. We can investigate what CLPeasy identified and, where appropriate, help you seek clarification from your supplier. <a href="https://www.hse.gov.uk/chemical-classification/legal/clp-regulation.htm" target="_blank" rel="noopener noreferrer">Read the official HSE GB CLP guidance ↗</a></p>
     </aside>
