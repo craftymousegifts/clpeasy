@@ -1172,14 +1172,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="supplier-grid" id="supplier-grid">
     </div>
     <div id="supplier-sds-link" style="display:none;margin-bottom:16px;"></div>
-    <!-- Concise, context-specific info note (27 Sep 2026, relocated from
-         the old Step 1 general warning -- see that step's comment). Exact
-         wording per Michaela's spec. This is deliberately an information
-         note, not a confirmation gate -- #hazard-confirm-block just below
+    <!-- The former Step 3 💡 info note ("Use safety information that
+         matches your finished product...") was removed at Michaela's request
+         because the .sds-gb-note below now covers the same point. This is an
+         information note, not a confirmation gate -- #hazard-confirm-block
          (unchanged) remains the mandatory "I confirm..." checkbox. -->
-    <div class="field-alert field-alert-info">
-      💡 Use safety information that matches your finished product and actual fragrance percentage. For candles and wax melts, use the supplier's CLP information for that percentage rather than information for the 100% concentrated oil.
-    </div>
     <div class="smart-paste-box">
       <h4>✨ Smart Paste — paste SDS Section 2.2</h4>
       <p>Copy the complete Section 2.2 (Label elements) from your current supplier SDS PDF and paste it here. CLPeasy extracts the information it can identify; review the result against your SDS before continuing.</p>
@@ -1190,7 +1187,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <aside class="sds-gb-note" aria-label="About supplier SDS information for Great Britain">
       <strong>About your supplier SDS and GB CLP</strong>
       <p>If you place a fragrance mixture on the market in Great Britain (England, Scotland or Wales), you are responsible for checking that the classification and label for your finished product are accurate and meet the applicable GB CLP requirements. Check the information for your actual formulation and fragrance concentration; do not assume that an SDS for the concentrated oil or another market describes your finished product.</p>
-      <p>Some SDS information may use codes from another classification system, contain an error, or include a code CLPeasy cannot yet recognise. If CLPeasy flags a code it cannot safely process, it stops rather than guessing, removing or replacing that information. Check the original SDS and ask your supplier to clarify the GB-market classification where needed. Do not change a code just to make the label generate.</p>
       <p>Why it matters: an incorrect classification could leave warnings, pictograms or precautions wrong or missing. That can put people or the environment at risk and may lead to enforcement action under GB CLP.</p>
       <p><a href="mailto:support@clpeasy.com?subject=SDS%20classification%20query">Email CLPeasy Support</a> with the SDS and the flagged code. We can investigate what CLPeasy identified and, where appropriate, help you seek clarification from your supplier. <a href="https://www.hse.gov.uk/chemical-classification/legal/clp-regulation.htm" target="_blank" rel="noopener noreferrer">Read the official HSE GB CLP guidance ↗</a></p>
     </aside>

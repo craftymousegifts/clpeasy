@@ -282,15 +282,16 @@ setTimeout(() => {
     // legitimate message and must NOT have been removed.
     assert(document.getElementById('custom-size-warn'), 'the unrelated custom-size-too-small warning was incorrectly removed along with the disclaimer');
     const step3 = document.getElementById('step-3');
-    const contextualNotes = [...step3.querySelectorAll('.field-alert-info')];
-    assert.strictEqual(contextualNotes.length, 1, `expected exactly one contextual info message in Step 3, found ${contextualNotes.length}`);
-    const expectedWording = "Use safety information that matches your finished product and actual fragrance percentage. For candles and wax melts, use the supplier's CLP information for that percentage rather than information for the 100% concentrated oil.";
-    assert(contextualNotes[0].textContent.includes(expectedWording), `Step 3 contextual note must use the exact specified wording, got: ${JSON.stringify(contextualNotes[0].textContent.trim())}`);
-    // Must sit above/immediately beside Smart Paste, not buried elsewhere.
+    // The former 💡 .field-alert-info note was removed at Michaela's request
+    // (duplicated by .sds-gb-note); its finished-product guidance now lives
+    // in .sds-gb-note, directly after the Smart Paste box.
+    assert.strictEqual(step3.querySelectorAll('.field-alert-info').length, 0, 'the removed Step 3 info note is back');
     const smartPasteBox = step3.querySelector('.smart-paste-box');
     assert(smartPasteBox, 'Smart Paste box is missing from Step 3');
-    const noteAndBoxSiblings = [...smartPasteBox.parentElement.children];
-    assert(noteAndBoxSiblings.indexOf(contextualNotes[0]) < noteAndBoxSiblings.indexOf(smartPasteBox), 'the contextual note must appear above/before the Smart Paste box, not after it');
+    const sdsNote = step3.querySelector('.sds-gb-note');
+    assert(sdsNote, 'Step 3 SDS / GB CLP guidance note is missing');
+    assert(/actual formulation and fragrance concentration/.test(sdsNote.textContent), 'SDS note must still cover finished-product / fragrance-concentration guidance');
+    assert.strictEqual(smartPasteBox.nextElementSibling, sdsNote, 'the SDS note must sit directly after the Smart Paste box');
     // The existing mandatory confirmation checkbox (a distinct, binding
     // "I confirm..." gate) must be completely unchanged by this correction.
     const confirmLabel = document.getElementById('hazard-confirm-block');
