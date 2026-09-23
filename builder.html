@@ -375,6 +375,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .smart-paste-box{background:linear-gradient(135deg,#F0FDF4,#ECFDF5);border:1.5px dashed var(--teal);border-radius:12px;padding:16px;margin-bottom:18px;}
 .smart-paste-box h4{font-size:14px;font-weight:700;color:var(--teal-dark);margin-bottom:3px;}
 .smart-paste-box p{font-size:13px;color:var(--muted);margin-bottom:10px;}
+.sds-gb-note{background:#F5FAFC;border:1px solid #B9DFE7;border-radius:10px;padding:14px 16px;margin:-4px 0 18px;font-size:13px;line-height:1.55;color:var(--text);}
+.sds-gb-note strong{display:block;color:var(--teal-dark);margin-bottom:6px;}
+.sds-gb-note p+p{margin-top:8px;}
+.sds-gb-note a{color:var(--teal-dark);font-weight:600;text-decoration:underline;}
 .btn-extract{background:var(--teal);color:white;border:none;padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;width:100%;}
 .btn-extract:active,.btn-extract:hover{background:var(--teal-dark);}
 
@@ -1183,6 +1187,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <br><br><button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
       <button type="button" id="hazard-clear-link" onclick="clearHazardData()" style="display:none;margin-left:14px;font-size:12px;color:var(--teal-dark);text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">Clear hazard data and start again</button>
     </div>
+    <aside class="sds-gb-note" aria-label="About supplier SDS information for Great Britain">
+      <strong>About your supplier SDS and GB CLP</strong>
+      <p>If you place a fragrance mixture on the market in Great Britain (England, Scotland or Wales), you are responsible for checking that the classification and label for your finished product are accurate and meet the applicable GB CLP requirements. Check the information for your actual formulation and fragrance concentration; do not assume that an SDS for the concentrated oil or another market describes your finished product.</p>
+      <p>Some SDS information may use codes from another classification system, contain an error, or include a code CLPeasy cannot yet recognise. If CLPeasy flags a code it cannot safely process, it stops rather than guessing, removing or replacing that information. Check the original SDS and ask your supplier to clarify the GB-market classification where needed. Do not change a code just to make the label generate.</p>
+      <p>Why it matters: an incorrect classification could leave warnings, pictograms or precautions wrong or missing. That can put people or the environment at risk and may lead to enforcement action under GB CLP.</p>
+      <p><a href="mailto:support@clpeasy.com?subject=SDS%20classification%20query">Email CLPeasy Support</a> with the SDS and the flagged code. We can investigate what CLPeasy identified and, where appropriate, help you seek clarification from your supplier. <a href="https://www.hse.gov.uk/chemical-classification/legal/clp-regulation.htm" target="_blank" rel="noopener noreferrer">Read the official HSE GB CLP guidance ↗</a></p>
+    </aside>
     <div class="sdiv">Signal word</div>
     <div class="signal-row">
       <div class="signal-btn" id="signal-warning" style="cursor:default;">⚠️ Warning</div>
@@ -2015,6 +2026,7 @@ function openClpCodeHelp(){
   }
   paragraphs.push('CLPeasy cannot determine the correct replacement, remove the '+(unsupported.length+generic.length>1?'codes':'code')+', or substitute a different classification on the supplier\'s behalf. The label has therefore been blocked to avoid creating a label that may be incomplete or incorrect.');
   paragraphs.push('Check that you copied only Section 2.2 from the SDS for the correct product and concentration. If the '+(unsupported.length+generic.length>1?'codes are':'code is')+' shown there, ask your supplier for the current Great Britain-market SDS or written Great Britain CLP classification information.');
+  paragraphs.push('Do not change the SDS code just to make a label generate. If you are unsure, email <a href="mailto:support@clpeasy.com?subject=SDS%20classification%20query">CLPeasy Support</a> with the SDS and the flagged code. See <a href="https://www.hse.gov.uk/chemical-classification/legal/clp-regulation.htm" target="_blank" rel="noopener noreferrer">HSE’s GB CLP guidance</a> for the official rules.');
   copy.innerHTML=paragraphs.map(p=>'<p>'+p+'</p>').join('');
   _clpCodeHelpReturnFocus=document.activeElement;
   overlay.classList.add('show');
@@ -4029,7 +4041,7 @@ function clpUnsupportedCodesMessage(codes, escapeFn){
   const plural=codes.length>1, codeWord=plural?'codes':'code', thisThese2=plural?'These':'This', areIs=plural?'are':'is', theyIt=plural?'They':'It', thisThese=plural?'these':'this';
   return {
     heading:thisThese2+' '+codeWord+' need'+(plural?'':'s')+' supplier confirmation for a Great Britain CLP label',
-    body:'The following '+codeWord+' appear'+(plural?'':'s')+' in your supplier SDS: '+codes.map(esc).join(', ')+'. CLPeasy does not recognise '+(plural?'them as hazard statements':'it as a hazard statement')+' in the current Great Britain CLP information checked by the service. '+theyIt+' may be recognised under another national or international classification system, or the supplier may need to clarify the Great Britain classification. CLPeasy currently supports products placed on the market in Great Britain (England, Scotland and Wales). Please ask your supplier for the current Great Britain-market SDS or classification information applicable to your final formulation and concentration. CLPeasy has not added, removed, translated or substituted '+thisThese+' '+codeWord+'.'
+    body:'The following '+codeWord+' appear'+(plural?'':'s')+' in your supplier SDS: '+codes.map(esc).join(', ')+'. CLPeasy does not recognise '+(plural?'them as hazard statements':'it as a hazard statement')+' in the current Great Britain CLP information checked by the service. '+theyIt+' may be recognised under another national or international classification system, or the supplier may need to clarify the Great Britain classification. CLPeasy currently supports products placed on the market in Great Britain (England, Scotland and Wales). Please ask your supplier for the current Great Britain-market SDS or classification information applicable to your final formulation and concentration. CLPeasy has not added, removed, translated or substituted '+thisThese+' '+codeWord+'. Do not change the SDS code just to make the label generate. For help, contact support@clpeasy.com with the SDS and flagged code.'
   };
 }
 function clpUnrecognisedCodesMessage(codes, escapeFn){
@@ -4037,7 +4049,7 @@ function clpUnrecognisedCodesMessage(codes, escapeFn){
   const plural=codes.length>1, codeWord=plural?'codes':'code';
   return {
     heading:'CLP code not recognised',
-    body:'CLPeasy did not recognise the following '+codeWord+': '+codes.map(esc).join(', ')+'. Check that the SDS text was copied correctly and that you are using the current Great Britain-market SDS or classification documentation.'
+    body:'CLPeasy did not recognise the following '+codeWord+': '+codes.map(esc).join(', ')+'. Check that the SDS text was copied correctly and that you are using the current Great Britain-market SDS or classification documentation. Do not change the SDS code just to make the label generate. For help, contact support@clpeasy.com with the SDS and flagged code.'
   };
 }
 // Combines the two message types for a MIXED input (some codes confirmed
