@@ -290,7 +290,7 @@ setTimeout(() => {
     assert(smartPasteBox, 'Smart Paste box is missing from Step 3');
     const sdsNote = step3.querySelector('.sds-gb-note');
     assert(sdsNote, 'Step 3 SDS / GB CLP guidance note is missing');
-    assert(/actual formulation and fragrance concentration/.test(sdsNote.textContent), 'SDS note must still cover finished-product / fragrance-concentration guidance');
+    assert(/CLP information for the percentage you actually use/.test(sdsNote.textContent), 'SDS note must still cover finished-product / fragrance-concentration guidance');
     assert.strictEqual(smartPasteBox.nextElementSibling, sdsNote, 'the SDS note must sit directly after the Smart Paste box');
     // The existing mandatory confirmation checkbox (a distinct, binding
     // "I confirm..." gate) must be completely unchanged by this correction.
