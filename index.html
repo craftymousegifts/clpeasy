@@ -210,6 +210,26 @@
     box-shadow: 0 4px 14px rgba(13,148,136,0.3);
   }
   .btn-primary:hover { background: var(--teal-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(13,148,136,0.4); }
+  .walkthrough { padding: 64px 24px; text-align: center; }
+  .walkthrough-inner { max-width: 960px; margin: 0 auto; }
+  .walkthrough-copy { max-width: 600px; margin: 0 auto 28px; color: var(--muted); font-size: 15px; }
+  .walkthrough-media {
+    width: min(100%, 540px); margin: 0 auto 28px; position: relative;
+    aspect-ratio: 4 / 5; overflow: hidden; background: var(--teal-light);
+    border: 1px solid var(--border); border-radius: 16px;
+    box-shadow: 0 12px 32px rgba(17,19,24,0.12);
+  }
+  .walkthrough-media video { display: block; width: 100%; height: 100%; object-fit: contain; }
+  .walkthrough-play {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    display: flex; align-items: center; gap: 10px; padding: 14px 22px;
+    border: 0; border-radius: 100px; background: var(--teal); color: white;
+    font: 700 15px 'DM Sans', sans-serif; cursor: pointer;
+    box-shadow: 0 8px 24px rgba(17,19,24,0.24);
+  }
+  .walkthrough-play:hover, .walkthrough-play:focus-visible { background: var(--teal-dark); }
+  .walkthrough-play[hidden] { display: none; }
+  .walkthrough-note { margin-top: 12px; font-size: 13px; color: var(--muted); }
   .btn-secondary {
     background: white; color: var(--text); border: 1.5px solid var(--border);
     padding: 14px 28px; border-radius: 10px; font-size: 16px;
@@ -1016,6 +1036,28 @@ document.addEventListener('keydown', function(e){
 
 </section>
 </div>
+
+<!-- WALKTHROUGH -->
+<section class="walkthrough" aria-labelledby="walkthrough-title">
+  <div class="walkthrough-inner">
+    <h2 class="section-title" id="walkthrough-title">See CLPeasy in action</h2>
+    <p class="walkthrough-copy">From your supplier SDS to a finished label, see the complete process in just over two minutes.</p>
+    <div class="walkthrough-media">
+      <video id="homepage-walkthrough" controls preload="none" playsinline poster="assets/clpeasy-walkthrough-poster.jpg" aria-label="CLPeasy label creation walkthrough, about two minutes long">
+        <source src="assets/clpeasy-walkthrough.mp4" type="video/mp4">
+        Your browser does not support video playback.
+      </video>
+      <button class="walkthrough-play" type="button" aria-label="Play CLPeasy walkthrough" onclick="document.getElementById('homepage-walkthrough').play()"><span aria-hidden="true">▶</span> Play walkthrough</button>
+    </div>
+    <a href="auth.html?mode=signup" class="btn-primary">Start your 14-day free trial</a>
+    <p class="walkthrough-note">No card details required.</p>
+  </div>
+</section>
+<script>
+  document.getElementById('homepage-walkthrough').addEventListener('play', function () {
+    document.querySelector('.walkthrough-play').hidden = true;
+  });
+</script>
 
 <!-- PRICING -->
 <div style="background:white;">
