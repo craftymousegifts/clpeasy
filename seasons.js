@@ -127,7 +127,7 @@
       bannerBg: '#FFFBEB',
       bannerBorder: '#FDE68A',
       bannerEmoji: '🎪',
-      bannerText: "Craft fair season is in full swing — every product on your stall needs a compliant CLP label. Don't forget your testers and samples too.",
+      bannerText: "Craft fair season is in full swing — check that products which require GB CLP labelling have the right current label before they go on your stall. Don't forget to review testers and samples too.",
       bannerCta: 'Print my label sheet',
       bannerCtaUrl: 'builder.html',
     },
