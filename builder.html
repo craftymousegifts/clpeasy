@@ -375,11 +375,20 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .smart-paste-box{background:linear-gradient(135deg,#F0FDF4,#ECFDF5);border:1.5px dashed var(--teal);border-radius:12px;padding:16px;margin-bottom:18px;}
 .smart-paste-box h4{font-size:14px;font-weight:700;color:var(--teal-dark);margin-bottom:3px;}
 .smart-paste-box p{font-size:13px;color:var(--muted);margin-bottom:10px;}
-.sds-gb-note{background:#F5FAFC;border:1px solid #B9DFE7;border-radius:10px;padding:14px 16px;margin:-4px 0 18px;font-size:13px;line-height:1.55;color:var(--text);}
-.sds-gb-note>strong{display:block;color:var(--teal-dark);margin-bottom:6px;}
-.sds-gb-note p+p,.sds-gb-note ul+p{margin-top:8px;}
-.sds-gb-note ul{margin-top:8px;padding-left:18px;}
-.sds-gb-note li+li{margin-top:6px;}
+.sds-gb-note{background:#F5FAFC;border:1px solid #B9DFE7;border-radius:10px;margin:-4px 0 18px;font-size:13px;line-height:1.55;color:var(--text);overflow:hidden;}
+.sds-gb-note summary{cursor:pointer;padding:12px 16px;list-style:none;}
+.sds-gb-note summary::-webkit-details-marker{display:none;}
+.sds-gb-note-title{display:flex;align-items:center;gap:7px;color:var(--teal-dark);font-weight:700;}
+.sds-gb-note-title::before{content:"ⓘ";}
+.sds-gb-note-title::after{content:"⌄";margin-left:auto;}
+.sds-gb-note[open] .sds-gb-note-title::after{content:"⌃";}
+.sds-gb-note-summary{display:block;margin-top:4px;font-size:12.5px;line-height:1.45;}
+.sds-gb-note-action{display:block;margin-top:5px;color:var(--teal-dark);font-size:12px;font-weight:700;text-decoration:underline;}
+.sds-gb-note[open] .sds-gb-note-action{display:none;}
+.sds-gb-note-body{border-top:1px solid #D8EAF0;padding:12px 16px 14px;}
+.sds-gb-note-body p+p,.sds-gb-note-body ul+p{margin-top:8px;}
+.sds-gb-note-body ul{margin-top:8px;padding-left:18px;}
+.sds-gb-note-body li+li{margin-top:6px;}
 .sds-gb-note a{color:var(--teal-dark);font-weight:600;text-decoration:underline;}
 .btn-extract{background:var(--teal);color:white;border:none;padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;width:100%;}
 .btn-extract:active,.btn-extract:hover{background:var(--teal-dark);}
@@ -1186,8 +1195,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <br><br><button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
       <button type="button" id="hazard-clear-link" onclick="clearHazardData()" style="display:none;margin-left:14px;font-size:12px;color:var(--teal-dark);text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">Clear hazard data and start again</button>
     </div>
-    <aside class="sds-gb-note" aria-label="About supplier SDS information for Great Britain">
-      <strong>About your supplier SDS and GB CLP</strong>
+    <details class="sds-gb-note">
+      <summary>
+        <span class="sds-gb-note-title">Using the correct SDS matters</span>
+        <span class="sds-gb-note-summary">Use GB CLP information for the fragrance percentage you actually use. Some supplier SDSs contain GHS or non-GB hazard codes that CLPeasy cannot use.</span>
+        <span class="sds-gb-note-action">Read why this matters ↓</span>
+      </summary>
+      <div class="sds-gb-note-body">
       <p>If you place a fragrance mixture on the market in Great Britain (England, Scotland or Wales), you are responsible for checking that the classification and label for your finished product are accurate and meet the applicable GB CLP requirements. Two things to check:</p>
       <ul>
         <li><strong>GB CLP, not GHS or another country's rules.</strong> Some SDSs are written for the worldwide GHS system or another country's rules, not GB CLP. These can include hazard codes that aren't used in Great Britain. If your SDS contains a code like this, CLPeasy cannot create the label until you have the correct GB CLP information. Ask your supplier for GB CLP information for your product.</li>
@@ -1195,7 +1209,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </ul>
       <p>Why it matters: an incorrect classification could leave warnings, pictograms or precautions wrong or missing. That can put people or the environment at risk and may lead to enforcement action under GB CLP.</p>
       <p><a href="mailto:support@clpeasy.com?subject=SDS%20classification%20query">Email CLPeasy Support</a> with the SDS and the flagged code. We can investigate what CLPeasy identified and, where appropriate, help you seek clarification from your supplier. <a href="https://www.hse.gov.uk/chemical-classification/legal/clp-regulation.htm" target="_blank" rel="noopener noreferrer">Read the official HSE GB CLP guidance ↗</a></p>
-    </aside>
+      </div>
+    </details>
     <div class="sdiv">Signal word</div>
     <div class="signal-row">
       <div class="signal-btn" id="signal-warning" style="cursor:default;">⚠️ Warning</div>
