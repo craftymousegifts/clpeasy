@@ -2524,9 +2524,7 @@ async function cricutDownloadZip(){
   // PNGs for an unentitled user.
   const verifiedPro=await refreshProEntitlement();
   if(!verifiedPro){alert('You have no downloads remaining. Buy downloads or choose a plan to continue.');return;}
-  // A ZIP is one finished exported file, so the whole ZIP costs one download.
-  const charge=await consumeComposerDownload();
-  if(!charge.ok){alert(charge.reason==='accounting_error'?'We could not verify your download allowance. Please try again.':'You have no downloads remaining. Buy downloads or choose a plan to continue.');return;}
+  // Build the ZIP first. A failed generation must never consume a download.
   document.getElementById('modal-options').style.display='none';
   document.getElementById('modal-sub').style.display='none';
   const prog=document.getElementById('modal-progress');
@@ -2563,6 +2561,13 @@ async function cricutDownloadZip(){
   }
   txt.textContent='Creating ZIP...';fill.style.width='95%';
   const zipBlob=await zip.generateAsync({type:'blob'});
+  // A ZIP is one finished exported file. Consume only after the finished ZIP
+  // exists, immediately before handing it to the customer.
+  const charge=await consumeComposerDownload();
+  if(!charge.ok){
+    txt.textContent=charge.reason==='accounting_error'?'We could not verify your download allowance. Please try again.':'You have no downloads remaining. Buy downloads or choose a plan to continue.';
+    return;
+  }
   const a=document.createElement('a');a.href=URL.createObjectURL(zipBlob);a.download='clpeasy-cutting-machine-labels.zip';
   document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(a.href);if(a.parentNode)a.parentNode.removeChild(a);},1000);
