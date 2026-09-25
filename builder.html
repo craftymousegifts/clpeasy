@@ -2455,7 +2455,12 @@ async function consumeBuilderDownload(labelKey){
       return {ok:false,reason:(data&&data.reason)||'accounting_error'};
     }
     await loadDownloadAllowance();
-    return {ok:true,source:data.source||'unknown',free:data.source==='redownload'};
+    return {
+      ok:true,
+      source:data.source||'unknown',
+      free:data.free_redownload===true||data.source==='redownload',
+      clean:data.clean_export===true
+    };
   }catch(e){
     console.error('consume_download failed:',e);
     return {ok:false,reason:'accounting_error'};
@@ -2476,17 +2481,26 @@ function wrapDownloads(){
     const orig=window[fn];
     if(typeof orig!=='function'||orig.__dlwrapped)return;
     const wrapped=async function(){
-      if(!dlGate())return;
-      // Verify clean-export entitlement before doing any expensive work. PAYG
-      // balance qualifies; trials remain watermarked.
-      const entitled=await refreshProEntitlement();
-      if(!entitled){showDlLimitModal();return;}
+      // The atomic RPC is the authority. Do not pre-block on the cached balance:
+      // a customer with zero remaining downloads may still have a valid free
+      // 7-day re-download for this exact label.
+      if(!_downloadAllowed()){
+        alert('Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.');
+        return;
+      }
       const labelKey=computeLabelKey();
       const charge=await consumeBuilderDownload(labelKey);
       if(!charge.ok){
         alert(charge.reason==='accounting_error'?'We could not verify your download allowance. Please try again.':'You have no downloads remaining. Buy downloads or choose a plan to continue.');
         return;
       }
+      // Preserve the entitlement of the authorised export. In particular, the
+      // customer's final PAYG download and its 7-day re-download must render
+      // clean even though the refreshed balance is now zero. Trial exports stay
+      // watermarked because the RPC returns clean_export=false.
+      S.isPro=charge.clean===true;
+      const wmNote=document.querySelector('.watermark-note');
+      if(wmNote)wmNote.style.display=S.isPro?'none':'';
       return orig.apply(this,arguments);
     };
     wrapped.__dlwrapped=true;
