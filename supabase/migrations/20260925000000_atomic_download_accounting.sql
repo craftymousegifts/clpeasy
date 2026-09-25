@@ -122,3 +122,39 @@ $$;
 
 revoke all on function public.consume_download(text) from public;
 grant execute on function public.consume_download(text) to authenticated;
+
+
+-- Webhook-only atomic crediting for PAYG purchases. Distinct successful Stripe
+-- Checkout events can arrive concurrently; a read-then-write balance update
+-- can lose one purchase. This function serialises those increments on the
+-- profile row. Only the service role used by the verified Stripe webhook may
+-- execute it.
+create or replace function public.credit_purchased_downloads(p_user_id uuid, p_downloads integer)
+returns integer
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_balance integer;
+begin
+  if p_user_id is null or p_downloads is null or p_downloads <= 0 then
+    raise exception 'Invalid purchased download credit';
+  end if;
+
+  update public.profiles
+  set topup_credits = coalesce(topup_credits,0) + p_downloads
+  where id = p_user_id
+  returning topup_credits into v_balance;
+
+  if not found then
+    raise exception 'Profile not found';
+  end if;
+
+  return v_balance;
+end;
+$$;
+
+revoke all on function public.credit_purchased_downloads(uuid, integer) from public;
+revoke all on function public.credit_purchased_downloads(uuid, integer) from authenticated;
+grant execute on function public.credit_purchased_downloads(uuid, integer) to service_role;
