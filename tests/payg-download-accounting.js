@@ -21,7 +21,7 @@ assert.match(migration,/'clean_export', v_clean_export/i,'accounting RPC must re
 assert.match(print,/\.from\('profiles'\)[\s\S]*topup_credits/,'Composer entitlement must use profile allowance/purchased downloads');
 assert.ok(!print.includes("from('subscriptions').select('plan,status')"),'Composer must not gate PAYG on subscriptions table');
 assert.match(print,/sbClient\.rpc\('consume_download',\{p_label_key:null\}\)/,'Composer must consume through atomic RPC');
-assert.match(print,/One complete A4 sheet is one finished exported file[\s\S]*consumeComposerDownload\(\)/,'A4 export must consume exactly once at sheet level');
+assert.match(print,/finished A4 sheet[\s\S]*const charge=await consumeComposerDownload\(\)/,'A4 export must consume exactly once at sheet level');
 assert.match(print,/A ZIP is one finished exported file[\s\S]*consumeComposerDownload\(\)/,'ZIP export must consume one download');
 assert.match(print,/"Download one by one" creates separate finished PNG files[\s\S]*consumeComposerDownload\(\)/,'sequential PNG export must consume per file');
 assert.match(print,/Buy downloads or choose a plan/,'zero-balance message must work for PAYG and subscriptions');
