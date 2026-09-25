@@ -4,6 +4,12 @@
 --
 -- One call = one finished exported file. Composer A4 exports therefore call
 -- this once for the whole sheet, regardless of how many labels are on it.
+-- Preserve the entitlement attached to the original individual-label export.
+-- This makes a free 7-day re-download deterministic after a PAYG balance reaches
+-- zero or after a trial/subscription state changes.
+alter table public.label_downloads
+  add column if not exists clean_export boolean not null default false;
+
 create or replace function public.consume_download(p_label_key text default null)
 returns jsonb
 language plpgsql
@@ -19,11 +25,6 @@ declare
   v_clean_export boolean := false;
   v_source text := null;
 begin
-  -- Remember whether a label was originally exported clean or watermarked so
-  -- the 7-day free re-download preserves the same entitlement even after a
-  -- PAYG balance reaches zero or a trial/subscription later changes state.
-  alter table public.label_downloads add column if not exists clean_export boolean not null default false;
-
   if v_user_id is null then
     raise exception 'Not authenticated';
   end if;
