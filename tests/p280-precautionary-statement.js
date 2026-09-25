@@ -176,7 +176,7 @@ const emptyQuery = {
         // <script src="...">, stripped by the same generic regex above for
         // the same reason label-render.js already was -- injected
         // explicitly here, before builder.html's own inline script runs.
-        window.eval(labelLibrarySource);
+        window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
         window.alert = message => { window.__lastAlert = String(message); };
         window.confirm = () => true;
         window.scrollTo = () => {};
@@ -406,12 +406,12 @@ const emptyQuery = {
         // label-library.js for getSaved()/addToSheet() in print.html.
         try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
         window.eval(labelRendererSource);
-        window.eval(labelLibrarySource);
+        window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
         window.alert = message => { window.__lastAlert = String(message); };
         window.confirm = () => true;
         window.scrollTo = () => {};
         window.fetch = async () => ({ ok:true, json:async()=>({}) });
-        window.open = () => { window.__windowOpenCalls=(window.__windowOpenCalls||0)+1; return { document:{ write(){}, close(){} }, location:{ href:'' }, close(){}, opener:null }; };
+        window.open = () => { window.__windowOpenCalls=(window.__windowOpenCalls||0)+1; return { document:{ open(){}, write(){}, close(){} }, location:{ href:'' }, close(){}, opener:null }; };
         window.URL.createObjectURL = () => 'blob:test';
         window.URL.revokeObjectURL = () => {};
         window.HTMLAnchorElement.prototype.click = function(){};
@@ -434,7 +434,7 @@ const emptyQuery = {
     const pwindow = printDom.window;
     const pdocument = pwindow.document;
 
-    pwindow.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
+    pwindow.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active',subscription_status:'active',trial_end:null,downloads_used:0,downloads_limit:30,topup_credits:0},error:null});}}),rpc:()=>Promise.resolve({data:{ok:true,consumed:true,free_redownload:false,source:'plan',clean_export:true},error:null})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
     // p280LabelValid/p280LabelLegacy are seeded id-less on purpose (so
     // LabelLibrary's legacy-migration path stays exercised, per Michaela's
     // explicit requirement). label-library.js's findById()/isValidId() only

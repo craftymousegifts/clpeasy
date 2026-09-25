@@ -89,7 +89,7 @@ async function openMyLabels(opts){
     beforeParse(window){
       stubCanvas(window);
       window.eval(labelRendererSource);
-      window.eval(labelLibrarySource);
+      window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.confirm = () => true;
       window.supabase = makeSupabaseStub(session);
       if(opts.seed){
@@ -113,7 +113,7 @@ async function openComposer(opts){
       stubCanvas(window);
       try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
       window.eval(labelRendererSource);
-      window.eval(labelLibrarySource);
+      window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
       window.scrollTo = () => {};

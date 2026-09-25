@@ -74,7 +74,7 @@ const EXPECTED_RECT_MSG = 'CLPeasy supports custom rectangle labels from 52mm on
     beforeParse(window) {
       stubCanvas(window);
       window.eval(labelRendererSource);
-      window.eval(labelLibrarySource);
+      window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
       window.scrollTo = () => {};
@@ -365,7 +365,7 @@ const EXPECTED_RECT_MSG = 'CLPeasy supports custom rectangle labels from 52mm on
       // label-library.js for getSaved()/canAddToSheet() in print.html.
       try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
       window.eval(labelRendererSource);
-      window.eval(labelLibrarySource);
+      window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
       window.scrollTo = () => {};

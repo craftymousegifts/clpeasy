@@ -660,12 +660,13 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
      top-level names. -->
 <script src="label-render.js"></script>
 <script src="label-library.js"></script>
+<script src="entitlement.js"></script>
 
 <script>
 // ── SUPABASE AUTH ─────────────────────────────────────────────
 const SUPABASE_URL='https://qvkosdqcryrcfbjtaxic.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
-let sbClient=null,currentUser=null,isPro=false;
+let sbClient=null,currentUser=null,isPro=false,composerEnt=null;
 
 async function initAuth(){
   try{
@@ -675,10 +676,10 @@ async function initAuth(){
     if(session){
       currentUser=session.user;
       isPro=false;
-      // Export entitlement is based on an available download, not merely an
-      // active subscription. This lets PAYG customers use purchased downloads
-      // without subscribing, while active trial/subscription allowances still
-      // work exactly as before.
+      // Export entitlement is based on an available CLEAN download, not merely
+      // an active subscription. PAYG customers can use purchased downloads
+      // without subscribing. Trial-only accounts remain unable to export a
+      // Composer sheet, exactly as before PR #156 (see entitlement.js).
       try{ await refreshProEntitlement(); }catch(e){ isPro=false; }
       // Sidebar identity block (avatar + email).
       const suUser=document.getElementById('sidebar-user');
@@ -700,27 +701,51 @@ async function initAuth(){
 }
 async function signOut(){if(sbClient)await sbClient.auth.signOut();window.location.href='auth.html';}
 
-// Fresh server-backed check of whether this account has at least one download
-// available. The historical variable name isPro is retained to minimise risk
+// Fresh server-backed check of whether this account's next download would be
+// a clean one. The historical variable name isPro is retained to minimise risk
 // across the renderer, but now means "clean export currently entitled".
+// Mirrors consume_download(): paid plan allowance (active, or a scheduled
+// cancellation inside its paid period) or purchased downloads. A live trial's
+// allowance is watermarked, so it does not unlock a clean Composer sheet.
 function profileHasAvailableDownload(p){
   if(!p)return false;
-  const purchased=Number(p.topup_credits||0);
-  if(purchased>0)return true;
-  const used=Number(p.downloads_used||0), limit=Number(p.downloads_limit||0);
-  const now=Date.now();
-  const active=p.subscription_status==='active';
-  const trial=p.subscription_status==='trialing' && p.trial_end && new Date(p.trial_end).getTime()>now;
-  return (active||trial) && used<limit;
+  composerEnt=window.CLPEntitlement.summarise(p);
+  return composerEnt.cleanAvailable;
+}
+// A live trial still has (watermarked) trial downloads, so "no downloads
+// remaining" would be untrue for it.
+function composerTrialOnly(){ return !!(composerEnt&&composerEnt.trialActive&&composerEnt.purchased===0); }
+function composerBlockedMessage(){
+  return composerTrialOnly()
+    ? 'Print Sheet Composer exports need a paid plan or purchased downloads. Buy downloads or choose a plan to continue.'
+    : 'You have no downloads remaining. Buy downloads or choose a plan to continue.';
+}
+// Shared sidebar plan name + downloads-left card (same element IDs as the
+// other signed-in pages).
+function renderComposerSidebar(p){
+  window.CLPEntitlement.renderSidebar(document,window.CLPEntitlement.summarise(p));
+}
+// Refresh only the sidebar after a successful export. Deliberately does NOT
+// touch isPro (see consumeComposerDownload()).
+async function refreshComposerSidebar(){
+  if(!currentUser||!sbClient)return;
+  try{
+    const {data:p,error}=await sbClient.from('profiles')
+      .select('subscription_status,trial_end,deletion_date,plan,is_pro,downloads_used,downloads_limit,topup_credits')
+      .eq('id',currentUser.id).single();
+    if(!error&&p)renderComposerSidebar(p);
+  }catch(e){}
 }
 async function refreshProEntitlement(){
+  composerEnt=null;
   if(!currentUser || !sbClient){ isPro=false; updateProGate(); return false; }
   try{
     const {data:p,error}=await sbClient.from('profiles')
-      .select('subscription_status,trial_end,downloads_used,downloads_limit,topup_credits')
+      .select('subscription_status,trial_end,deletion_date,plan,is_pro,downloads_used,downloads_limit,topup_credits')
       .eq('id',currentUser.id).single();
     if(error)throw error;
     isPro=profileHasAvailableDownload(p);
+    try{ renderComposerSidebar(p); }catch(e){}
   }catch(e){ isPro=false; }
   updateProGate();
   return isPro;
@@ -739,6 +764,7 @@ async function consumeComposerDownload(){
   // final download, flipping isPro=false before the renderer runs would
   // watermark the file they just paid for. The next export attempt performs
   // a fresh check and will correctly show the zero-balance gate.
+  refreshComposerSidebar();
   return data;
 }
 function updateProGate(){
@@ -748,7 +774,9 @@ function updateProGate(){
     else{
       gate.style.display='';
       gate.innerHTML=currentUser
-        ? '<strong>🔒 No downloads remaining</strong> <a href="pricing.html">Buy downloads or choose a plan</a> to export this sheet.'
+        ? (composerTrialOnly()
+          ? '<strong>🔒 Print sheets need a paid plan or purchased downloads</strong> <a href="pricing.html">Buy downloads or choose a plan</a> to export this sheet.'
+          : '<strong>🔒 No downloads remaining</strong> <a href="pricing.html">Buy downloads or choose a plan</a> to export this sheet.')
         : '<strong>🔒 Sign in to download</strong> Please <a href="auth.html">sign in to your CLPeasy account</a> to download your print sheet.';
     }
   }
@@ -2356,7 +2384,7 @@ async function downloadPDF(){
   // SECURITY: re-verify entitlement fresh from the server before generating
   // the clean export. Close the holding window if there is no allowance.
   const verifiedPro=await refreshProEntitlement();
-  if(!verifiedPro){win.close();alert('You have no downloads remaining. Buy downloads or choose a plan to continue.');return;}
+  if(!verifiedPro){win.close();alert(composerBlockedMessage());return;}
 
   const DPI=300,MM2PT=2.8346; // PDF points per mm
   const shWmm=A4_W,shHmm=A4_H;
@@ -2523,7 +2551,7 @@ async function cricutDownloadZip(){
   // calling this function directly, cannot produce clean cutting-machine
   // PNGs for an unentitled user.
   const verifiedPro=await refreshProEntitlement();
-  if(!verifiedPro){alert('You have no downloads remaining. Buy downloads or choose a plan to continue.');return;}
+  if(!verifiedPro){alert(composerBlockedMessage());return;}
   // Build the ZIP first. A failed generation must never consume a download.
   document.getElementById('modal-options').style.display='none';
   document.getElementById('modal-sub').style.display='none';
@@ -2581,7 +2609,7 @@ async function cricutDownloadSequential(){
   if(blockMsg){alert(blockMsg);return;}
   // SECURITY: see cricutDownloadZip() above -- same fresh re-check.
   const verifiedPro=await refreshProEntitlement();
-  if(!verifiedPro){alert('You have no downloads remaining. Buy downloads or choose a plan to continue.');return;}
+  if(!verifiedPro){alert(composerBlockedMessage());return;}
   document.getElementById('modal-options').style.display='none';
   document.getElementById('modal-sub').style.display='none';
   const prog=document.getElementById('modal-progress');

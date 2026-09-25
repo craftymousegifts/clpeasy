@@ -90,12 +90,12 @@ const dom = new JSDOM(source, {
     // label-library.js for getSaved()/addToSheet() in print.html.
     try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
     window.eval(labelRendererSource);
-    window.eval(labelLibrarySource);
+    window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
     window.scrollTo = () => {};
     window.fetch = async () => ({ ok:true, json:async()=>({}) });
-    window.open = () => { windowOpenCalls++; return { document:{ write(){}, close(){} }, location:{ href:'' }, close(){}, opener:null }; };
+    window.open = () => { windowOpenCalls++; return { document:{ open(){}, write(){}, close(){} }, location:{ href:'' }, close(){}, opener:null }; };
     window.URL.createObjectURL = () => 'blob:test';
     window.URL.revokeObjectURL = () => {};
     window.HTMLAnchorElement.prototype.click = function(){ anchorClickCalls++; };
@@ -130,7 +130,7 @@ const document = window.document;
 
 setTimeout(async () => {
   try {
-    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();"); // subscription gate can't mask the fit-block being tested
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active',subscription_status:'active',trial_end:null,downloads_used:0,downloads_limit:30,topup_credits:0},error:null});}}),rpc:()=>Promise.resolve({data:{ok:true,consumed:true,free_redownload:false,source:'plan',clean_export:true},error:null})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();"); // subscription gate can't mask the fit-block being tested
 
     // rectA/rectB/circleC/squareD are seeded id-less on purpose (so
     // LabelLibrary's legacy-migration path stays exercised, per Michaela's

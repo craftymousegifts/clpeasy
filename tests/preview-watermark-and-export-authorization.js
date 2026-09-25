@@ -52,12 +52,42 @@ const printSource = fs.readFileSync('print.html', 'utf8')
   .replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
 const labelRendererSource = fs.readFileSync('label-render.js', 'utf8');
 const labelLibrarySource = fs.readFileSync('label-library.js', 'utf8');
+// PR #156 moved entitlement from the `subscriptions` row to the `profiles`
+// row + the atomic consume_download() RPC. The harness below models both
+// from one profile object; consume_download's decision is simulated with
+// entitlement.js, whose agreement with the real SQL function is proven in
+// tests/download-entitlement-sql.js.
+const Ent = require('../entitlement.js');
 
 const emptyQuery = {
   select(){ return this; }, eq(){ return this; }, update(){ return this; },
   upsert(){ return this; }, single(){ return Promise.resolve({ data:null, error:null }); },
   then(resolve){ return Promise.resolve({ data:null, error:null }).then(resolve); }
 };
+function activeProfile(plan){
+  return { plan:plan||'pro', status:'active', subscription_status:'active', trial_end:null, deletion_date:null,
+           is_pro:(plan||'pro')!=='easy-start', downloads_used:0, downloads_limit:20, topup_credits:0 };
+}
+function profileQuery(profile){
+  return {
+    select(){ return this; }, eq(){ return this; },
+    single(){ return Promise.resolve({ data:profile, error:null }); }
+  };
+}
+// Simulated consume_download(): records every call, then answers exactly as
+// the database would for this profile (see tests/download-entitlement-sql.js).
+function consumeRpc(profile, calls){
+  return async (name, args) => {
+    calls.push({ name, args });
+    if (name !== 'consume_download' || !profile) return { data:false, error:null };
+    const e = Ent.summarise(profile);
+    if (!e.nextSource) return { data:{ ok:false, reason:'no_downloads_remaining' }, error:null };
+    if (e.nextSource === 'plan') profile.downloads_used = (profile.downloads_used||0)+1;
+    else profile.topup_credits = profile.topup_credits-1;
+    return { data:{ ok:true, consumed:true, free_redownload:false, source:e.nextSource, clean_export:e.nextClean,
+                    downloads_used:profile.downloads_used, downloads_limit:profile.downloads_limit, purchased_downloads:profile.topup_credits }, error:null };
+  };
+}
 function activeSubQuery(plan){
   // The real entitlement check (S.isPro/isPro) reads ONLY sub.status --
   // never sub.plan -- so Easy Start and Easy Pro must both be treated as
@@ -90,6 +120,8 @@ function decodeDataUri(href){
 // ── builder.html harness ───────────────────────────────────────────────
 async function openBuilder(opts){
   opts = opts || {};
+  const profile = opts.profile || (opts.activeSub ? activeProfile(opts.plan) : null);
+  const rpcCalls = [];
   const capturedHrefs = [];
   const capturedBlobs = [];
   const errors = [];
@@ -101,7 +133,7 @@ async function openBuilder(opts){
     beforeParse(window){
       window.HTMLCanvasElement.prototype.getContext = canvasStub();
       window.eval(labelRendererSource);
-      window.eval(labelLibrarySource);
+      window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
       window.scrollTo = () => {};
@@ -129,14 +161,14 @@ async function openBuilder(opts){
           onAuthStateChange: () => ({ data:{ subscription:{ unsubscribe(){} } } }),
           signOut: async () => ({})
         },
-        from: () => Object.create(opts.activeSub ? activeSubQuery(opts.plan) : emptyQuery),
-        rpc: async () => ({ data:false, error:null })
+        from: () => Object.create(profile ? profileQuery(profile) : emptyQuery),
+        rpc: consumeRpc(profile, rpcCalls)
       }) };
     }
   });
   const { window } = dom;
   await new Promise(resolve => setTimeout(resolve, 250));
-  return { dom, window, document: window.document, errors, capturedHrefs, capturedBlobs };
+  return { dom, window, document: window.document, errors, capturedHrefs, capturedBlobs, rpcCalls, profile };
 }
 
 function fillMinimalLabel(window){
@@ -152,15 +184,16 @@ function fillMinimalLabel(window){
 }
 
 // ── print.html harness (mirrors tests/print-sheet-export-fidelity.js) ──
-function makeSupabaseStub(session, activeSub, plan){
+function makeSupabaseStub(session, activeSub, plan, profileArg, rpcCalls){
+  const profile = profileArg || (activeSub ? activeProfile(plan) : null);
   return { createClient: () => ({
     auth: {
       getSession: async () => ({ data:{ session } }),
       onAuthStateChange: () => ({ data:{ subscription:{ unsubscribe(){} } } }),
       signOut: async () => ({})
     },
-    from: () => Object.create(activeSub ? activeSubQuery(plan) : emptyQuery),
-    rpc: async () => ({ data:false, error:null })
+    from: () => Object.create(profile ? profileQuery(profile) : emptyQuery),
+    rpc: consumeRpc(profile, rpcCalls||[])
   }) };
 }
 function makeCapturingImage(captured){
@@ -170,6 +203,7 @@ function makeCapturingImage(captured){
 }
 async function openComposer(opts){
   opts = opts || {};
+  const rpcCalls = [];
   const capturedImgSrcs = [];
   const errors = [];
   const vc = new VirtualConsole();
@@ -182,16 +216,16 @@ async function openComposer(opts){
       window.HTMLCanvasElement.prototype.toDataURL = () => 'data:image/png;base64,AA==';
       try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
       window.eval(labelRendererSource);
-      window.eval(labelLibrarySource);
+      window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
       window.scrollTo = () => {};
       window.fetch = async () => ({ ok:true, json:async()=>({}) });
-      window.open = () => ({ document:{ write(){}, close(){} }, location:{ href:'' }, close(){}, opener:null });
+      window.open = () => ({ document:{ open(){}, write(){}, close(){} }, location:{ href:'' }, close(){}, opener:null });
       window.URL.createObjectURL = () => 'blob:test';
       window.URL.revokeObjectURL = () => {};
       window.Image = makeCapturingImage(capturedImgSrcs);
-      window.supabase = makeSupabaseStub(opts.session || null, opts.activeSub, opts.plan);
+      window.supabase = makeSupabaseStub(opts.session || null, opts.activeSub, opts.plan, opts.profile, rpcCalls);
       if (opts.seed){
         const ns = opts.session ? opts.session.user.id : 'guest';
         window.localStorage.setItem('clpeasy_labels__u_'+ns, JSON.stringify(opts.seed));
@@ -200,7 +234,7 @@ async function openComposer(opts){
   });
   const { window } = dom;
   await new Promise(resolve => setTimeout(resolve, 250));
-  return { dom, window, document: window.document, errors, capturedImgSrcs };
+  return { dom, window, document: window.document, errors, capturedImgSrcs, rpcCalls };
 }
 function candleFixture(overrides){
   return Object.assign({
@@ -322,18 +356,22 @@ function candleFixture(overrides){
     ok('tampering S.isPro via console does not authorise a clean export -- the wrapped download re-verifies and fails closed');
   }
 
-  // 5. Fail-closed: if the entitlement re-check itself errors, the export
-  //    must stay watermarked, never treated as "probably fine".
+  // 5. Fail-closed: if the server cannot confirm the download (the atomic
+  //    consume_download() RPC errors), NO file is produced at all -- never a
+  //    clean one, whatever the tampered flag says. (Before PR #156 this
+  //    produced a watermarked file; since PR #156 the signed-in export is
+  //    blocked outright because the RPC is the single authority.)
   {
     const session = { user:{ id:'user-error-case', email:'x@example.com', user_metadata:{} } };
     const { window, capturedHrefs } = await openBuilder({ session });
     fillMinimalLabel(window);
     window.eval("sbClient.from = () => ({ select(){return this;}, eq(){return this;}, single(){ return Promise.reject(new Error('network down')); } });");
+    window.eval("sbClient.rpc = () => Promise.reject(new Error('network down'));");
     window.eval('S.isPro = true;'); // also tampered, to prove the error path wins either way
     await window.downloadSVG();
-    const svgOut = decodeDataUri(capturedHrefs[0]);
-    assert(/PREVIEW ONLY/.test(svgOut), 'a failed entitlement re-check must fail closed (watermarked), not open');
-    ok('a failed/erroring entitlement re-check fails closed -- export stays watermarked');
+    assert.strictEqual(capturedHrefs.length, 0, 'a failed download-accounting check must not produce any file');
+    assert(/could not verify your download allowance/i.test(window.__lastAlert||''), 'the customer must be told the allowance could not be verified');
+    ok('a failed/erroring accounting check fails closed -- no export at all');
   }
 
   // 6. Legitimate authorised (real active subscription) users still get a
@@ -365,21 +403,39 @@ function candleFixture(overrides){
     ok('an Easy Start subscriber (not just Easy Pro) receives a clean, unwatermarked export -- confirms the isPro variable name does not translate into a Pro-only restriction');
   }
 
-  // 6c. An expired/lapsed trial and a cancelled subscription must both
-  //     stay watermarked -- status is anything other than 'active' in
-  //     both cases (the app never grants entitlement off trial_end/plan
-  //     alone), so this is the fail-safe default already proven for
-  //     guests, now proven explicitly for these two named account states.
+  // 6c. Every account lifecycle state, decided by the profile + the
+  //     consume_download() result (PR #156 model). Blocked states must
+  //     produce no file; watermarked states must never be clean.
   {
-    for (const status of ['trialing','cancelled','expired','past_due']) {
-      const session = { user:{ id:'user-'+status, email:status+'@example.com', user_metadata:{} } };
-      const { window, capturedHrefs } = await openBuilder({ session }); // no activeSub -> emptyQuery -> single() resolves {data:null}, matching "no active subscriptions row" for a lapsed/expired/never-active account
+    const DAY=86400000, iso=ms=>new Date(Date.now()+ms).toISOString();
+    const cases = [
+      ['expired trial',            { plan:'free', subscription_status:'trialing', trial_end:iso(-DAY), downloads_limit:10, downloads_used:2, topup_credits:0 }, 'blocked'],
+      ['live trial',               { plan:'free', subscription_status:'trialing', trial_end:iso(5*DAY), downloads_limit:10, downloads_used:2, topup_credits:0 }, 'watermarked'],
+      ['subscription ended',       { plan:'free', subscription_status:'cancelled', downloads_limit:0, downloads_used:4, topup_credits:0 }, 'blocked'],
+      ['paused',                   { plan:'easy_start', subscription_status:'paused', downloads_limit:20, downloads_used:1, topup_credits:0 }, 'blocked'],
+      ['past_due',                 { plan:'easy_start', subscription_status:'past_due', downloads_limit:20, downloads_used:1, topup_credits:0 }, 'blocked'],
+      ['cancellation scheduled',   { plan:'easy_pro', is_pro:true, subscription_status:'cancelled', deletion_date:iso(9*DAY), downloads_limit:30, downloads_used:3, topup_credits:0 }, 'clean'],
+      ['cancel period passed',     { plan:'easy_pro', is_pro:true, subscription_status:'cancelled', deletion_date:iso(-DAY), downloads_limit:30, downloads_used:3, topup_credits:0 }, 'blocked'],
+      ['PAYG after expired trial', { plan:'free', subscription_status:'trialing', trial_end:iso(-DAY), downloads_limit:10, downloads_used:10, topup_credits:8 }, 'clean'],
+      ['PAYG during live trial',   { plan:'free', subscription_status:'trialing', trial_end:iso(5*DAY), downloads_limit:10, downloads_used:0, topup_credits:8 }, 'clean'],
+      ['PAYG while paused',        { plan:'easy_start', subscription_status:'paused', downloads_limit:20, downloads_used:1, topup_credits:2 }, 'clean'],
+    ];
+    for (const [name, profile, expected] of cases) {
+      const session = { user:{ id:'user-'+name.replace(/\W+/g,'-'), email:'x@example.com', user_metadata:{} } };
+      const { window, capturedHrefs, rpcCalls } = await openBuilder({ session, profile });
       fillMinimalLabel(window);
       await window.downloadSVG();
-      const svgOut = decodeDataUri(capturedHrefs[0]);
-      assert(/PREVIEW ONLY/.test(svgOut), `an account in a non-active state (${status}) must still receive a watermarked export`);
+      assert.strictEqual(rpcCalls.filter(c=>c.name==='consume_download').length, 1, `${name}: exactly one consume_download call`);
+      if (expected === 'blocked') {
+        assert.strictEqual(capturedHrefs.length, 0, `${name}: must not produce any file`);
+        assert(/no downloads remaining/i.test(window.__lastAlert||''), `${name}: must explain there are no downloads remaining`);
+      } else {
+        assert.strictEqual(capturedHrefs.length, 1, `${name}: must produce one file`);
+        const out = decodeDataUri(capturedHrefs[0]);
+        assert.strictEqual(/PREVIEW ONLY/.test(out), expected === 'watermarked', `${name}: export must be ${expected}`);
+      }
     }
-    ok('expired trial, cancelled, expired and past-due subscription states all remain watermarked -- only a genuine active-status row unlocks a clean export');
+    ok('expired trial, ended/paused/past-due subscriptions are blocked; live trial is watermarked; scheduled cancellation and every PAYG balance export clean');
   }
 
   // 7. Every clean-export entry point funnels through the same
@@ -408,41 +464,38 @@ function candleFixture(overrides){
     ok('every clean-export function is wrapped by the same authorisation choke point, and printToPDF reaches the identical fresh, fail-closed entitlement decision as SVG');
   }
 
-  // 8. Download-allowance counting is unaffected by the entitlement fix:
-  //    a logged-out guest (DL.loaded stays false) is never blocked or
-  //    counted by the allowance gate itself.
+  // 8. Signed-out guests keep the long-standing Builder behaviour: a
+  //    watermarked file that is never counted (no account to count it
+  //    against), and the accounting RPC is never called for them.
   {
-    const { window } = await openBuilder({});
+    const { window, capturedHrefs, rpcCalls } = await openBuilder({});
     fillMinimalLabel(window);
     assert.strictEqual(window.eval('DL.loaded'), false, 'guest session must never load a download-allowance row');
-    assert.strictEqual(window.eval('dlGate()'), true, 'dlGate() must not block downloads when no allowance data is loaded (guest/no-session case)');
-    ok('download-allowance gating (dlGate) is unaffected by the entitlement re-check -- guests remain ungated by allowance as before');
+    assert.strictEqual(typeof window.dlGate, 'undefined', 'the dead dlGate() (which called a removed function) must stay removed');
+    await window.downloadSVG();
+    assert.strictEqual(rpcCalls.length, 0, 'a guest export must never call consume_download');
+    assert.strictEqual(capturedHrefs.length, 1, 'a guest still receives the (watermarked) export, as before PR #156');
+    assert(/PREVIEW ONLY/.test(decodeDataUri(capturedHrefs[0])), 'a guest export is watermarked');
+    ok('guests are not counted or blocked, and always receive a watermarked export');
   }
 
-  // 8b. An Easy Start subscriber who has used their whole monthly
-  //     allowance but holds a purchased top-up credit: the credit must
-  //     still be spent via the existing consume_topup_credit() RPC
-  //     (untouched by this fix -- refreshProEntitlement() runs AFTER
-  //     dlRecord() in wrapDownloads(), never before or instead of it),
-  //     the credit balance must decrement, and -- since they ARE an
-  //     active subscriber -- the resulting download must be clean, not
-  //     watermarked. Composes the allowance mechanism and the
-  //     entitlement mechanism in one realistic scenario.
+  // 8b. An Easy Start subscriber who has used their whole monthly allowance
+  //     but holds purchased downloads: exactly one atomic consume_download
+  //     call (with the stable label key), a purchased download is spent,
+  //     and the export is clean.
   {
     const session = { user:{ id:'user-topup', email:'topup@example.com', user_metadata:{} } };
-    const { window, capturedHrefs } = await openBuilder({ session, activeSub:true, plan:'easy-start' });
+    const profile = { plan:'easy_start', subscription_status:'active', downloads_limit:20, downloads_used:20, topup_credits:3 };
+    const { window, capturedHrefs, rpcCalls } = await openBuilder({ session, profile });
     fillMinimalLabel(window);
-    window.eval(`
-      DL={used:10,limit:10,plan:'easy-start',is_pro:false,credits:3,loaded:true};
-      window.__rpcCalls=0;
-      sbClient.rpc=function(name){ window.__rpcCalls++; return Promise.resolve({data:2,error:null}); };
-    `);
     await window.downloadSVG();
-    assert.strictEqual(window.eval('window.__rpcCalls'), 1, 'a user at their monthly limit with a top-up credit must reach consume_topup_credit() exactly once');
-    assert.strictEqual(window.eval('DL.credits'), 2, "the top-up credit balance must decrement from the RPC's returned remaining count");
-    const svgOut = decodeDataUri(capturedHrefs[0]);
-    assert(!/PREVIEW ONLY/.test(svgOut), 'an active Easy Start subscriber spending a top-up credit must still receive a clean, unwatermarked export');
-    ok('an active subscriber using a purchased top-up credit still gets a clean export, and the credit is correctly consumed -- unaffected by the entitlement re-check');
+    const calls = rpcCalls.filter(c=>c.name==='consume_download');
+    assert.strictEqual(calls.length, 1, 'exactly one consume_download call');
+    assert.strictEqual(calls[0].args.p_label_key, 'security test candle::scented candle', 'the stable label key is passed for the 7-day grace');
+    assert.strictEqual(profile.topup_credits, 2, 'one purchased download is spent');
+    assert.strictEqual(profile.downloads_used, 20, 'the exhausted plan allowance is untouched');
+    assert(!/PREVIEW ONLY/.test(decodeDataUri(capturedHrefs[0])), 'the export is clean');
+    ok('an active subscriber at their limit spends exactly one purchased download and receives a clean export');
   }
 
   // ── print.html ─────────────────────────────────────────────────────
@@ -490,10 +543,15 @@ function candleFixture(overrides){
     const { window } = await openComposer({ seed:[candleFixture({ id:idA })] });
     window.eval(`selectTemplate('custom', document.querySelector('.tpl-card[data-tpl="custom"]'))`);
     window.eval(`addToSheet('${idA}')`);
-    let openCalls = 0;
-    window.open = () => { openCalls++; return { document:{write(){},close(){}}, location:{href:''}, close(){}, opener:null }; };
+    // Since PR #156 downloadPDF() opens a holding window FIRST (while still a
+    // direct user gesture, so pop-up blockers allow it) and closes it again
+    // if there is no entitlement. The security property is unchanged: the
+    // window is closed and never receives the sheet.
+    let openCalls = 0, closed = 0, sheetWrites = 0;
+    window.open = () => { openCalls++; return { document:{open(){},write(h){ if(/CLPeasy Print Sheet<\/title>/.test(h)) sheetWrites++; },close(){}}, location:{href:''}, close(){ closed++; }, opener:null }; };
     await window.eval('downloadPDF()');
-    assert.strictEqual(openCalls, 0, 'a guest/unpaid user must never have a print-sheet PDF window opened');
+    assert.strictEqual(sheetWrites, 0, 'a guest/unpaid user must never have a print sheet written to a window');
+    assert.strictEqual(closed, openCalls, 'any holding window opened for a guest must be closed again');
     ok('a guest/unpaid user cannot export a print-sheet PDF at all (Pro-only export surface)');
   }
 
@@ -505,10 +563,11 @@ function candleFixture(overrides){
     window.eval(`selectTemplate('custom', document.querySelector('.tpl-card[data-tpl="custom"]'))`);
     window.eval(`addToSheet('${idA}')`);
     window.eval('isPro = true;'); // the exact console-tamper this fix defends against
-    let openCalls = 0;
-    window.open = () => { openCalls++; return { document:{write(){},close(){}}, location:{href:''}, close(){}, opener:null }; };
+    let openCalls = 0, closed = 0, sheetWrites = 0;
+    window.open = () => { openCalls++; return { document:{open(){},write(h){ if(/CLPeasy Print Sheet<\/title>/.test(h)) sheetWrites++; },close(){}}, location:{href:''}, close(){ closed++; }, opener:null }; };
     await window.eval('downloadPDF()');
-    assert.strictEqual(openCalls, 0, 'tampering isPro=true via console with no real session must not authorise a print-sheet export');
+    assert.strictEqual(sheetWrites, 0, 'tampering isPro=true via console with no real session must not authorise a print-sheet export');
+    assert.strictEqual(closed, openCalls, 'the holding window must be closed again');
     assert.strictEqual(window.eval('isPro'), false, 'the fresh server re-check must reset the tampered isPro back to false');
     ok('tampering isPro via console on print.html does not authorise an export -- fails closed exactly like builder.html');
   }
@@ -543,6 +602,44 @@ function candleFixture(overrides){
     const sheetSvg = decodeURIComponent(capturedImgSrcs[capturedImgSrcs.length-1].split(',').slice(1).join(','));
     assert(!/PREVIEW ONLY/.test(sheetSvg), "an active Easy Start subscriber's exported print sheet must NOT contain the watermark");
     ok('an Easy Start subscriber (not just Easy Pro) receives a clean print-sheet export on print.html');
+  }
+
+  // 12c. Composer entitlement follows the same clean-download rules as the
+  //      Builder. A LIVE TRIAL alone cannot export an A4 sheet (as on main
+  //      before PR #156 -- DECISION REQUIRED item), never receives a clean
+  //      sheet, and consumes nothing; a PAYG balance exports a clean sheet
+  //      and consumes exactly one download.
+  {
+    const DAY=86400000, iso=ms=>new Date(Date.now()+ms).toISOString();
+    const trial = { plan:'free', subscription_status:'trialing', trial_end:iso(5*DAY), downloads_limit:10, downloads_used:0, topup_credits:0 };
+    const session = { user:{ id:'user-trial-sheet', email:'t@example.com', user_metadata:{} } };
+    const idA = 'aaaaaaaa-0000-4000-8000-000000000005';
+    const t = await openComposer({ session, profile:trial, seed:[candleFixture({ id:idA })] });
+    t.window.eval(`selectTemplate('custom', document.querySelector('.tpl-card[data-tpl="custom"]'))`);
+    t.window.eval(`addToSheet('${idA}')`);
+    let openCalls = 0;
+    t.window.open = () => { openCalls++; return { document:{open(){},write(){},close(){}}, location:{href:''}, close(){}, opener:null }; };
+    await t.window.eval('downloadPDF()');
+    assert.strictEqual(t.rpcCalls.length, 0, 'a trial-only account must not consume anything for a Composer sheet');
+    assert(!t.capturedImgSrcs.some(src => /Security Sheet Candle/.test(decodeURIComponent(src)) && !/PREVIEW ONLY/.test(decodeURIComponent(src))), 'a trial-only account must never receive a clean A4 sheet');
+    assert(/paid plan or purchased downloads/i.test(t.window.__lastAlert||''), 'a live trial is told Composer sheets need a paid plan or purchased downloads (not "no downloads remaining")');
+    assert.strictEqual(trial.downloads_used, 0, 'no trial download is spent');
+
+    const payg = { plan:'free', subscription_status:'trialing', trial_end:iso(-DAY), downloads_limit:10, downloads_used:10, topup_credits:8 };
+    const session2 = { user:{ id:'user-payg-sheet', email:'p@example.com', user_metadata:{} } };
+    const idB = 'aaaaaaaa-0000-4000-8000-000000000006';
+    const pg = await openComposer({ session:session2, profile:payg, seed:[candleFixture({ id:idB })] });
+    pg.window.eval(`selectTemplate('custom', document.querySelector('.tpl-card[data-tpl="custom"]'))`);
+    pg.window.eval(`addToSheet('${idB}')`);
+    assert.strictEqual(pg.document.getElementById('su-plan').textContent, 'Pay As You Go', 'Composer sidebar shows the PAYG plan name');
+    assert.strictEqual(pg.document.getElementById('su-count').textContent, '8 downloads', 'Composer sidebar shows the purchased balance');
+    await pg.window.eval('downloadPDF()');
+    await new Promise(r=>setTimeout(r,50));
+    assert.deepStrictEqual(pg.rpcCalls.filter(c=>c.name==='consume_download').map(c=>c.args.p_label_key), [null], 'one A4 sheet consumes exactly one download with no label key');
+    assert.strictEqual(payg.topup_credits, 7, 'PAYG balance 8 -> 7');
+    const sheetSvg = decodeURIComponent(pg.capturedImgSrcs[pg.capturedImgSrcs.length-1].split(',').slice(1).join(','));
+    assert(!/PREVIEW ONLY/.test(sheetSvg), 'a PAYG A4 sheet is clean');
+    ok('Composer: live trial alone cannot export (no charge, never clean); PAYG exports a clean sheet for exactly one download and the sidebar shows plan + balance');
   }
 
   console.log(`preview watermark and export authorisation checks passed (${passed} assertions)`);

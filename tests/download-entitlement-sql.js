@@ -1,0 +1,192 @@
+// Executes the real download-accounting migrations against a throwaway LOCAL
+// PostgreSQL database (never Supabase) and checks consume_download() for
+// every subscription lifecycle state, trial, and Pay As You Go combination.
+//
+// Needs a local PostgreSQL + psql. If none is available the test prints SKIP
+// and exits 0, so it never blocks machines without PostgreSQL.
+//   node tests/download-entitlement-sql.js
+// Optional: CLP_PSQL="runuser -u postgres -- psql" (default auto-detected).
+'use strict';
+const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
+const { execSync, spawnSync } = require('child_process');
+const E = require('../entitlement.js');
+
+const ROOT = path.join(__dirname, '..');
+const DB = 'clpeasy_entitlement_test';
+
+function detectPsql(){
+  const candidates = [process.env.CLP_PSQL, 'psql', 'runuser -u postgres -- psql'].filter(Boolean);
+  for (const c of candidates){
+    try { execSync(`${c} -X -At -d postgres -c "select 1"`, { stdio:['ignore','pipe','ignore'] }); return c; } catch(e){}
+  }
+  return null;
+}
+const PSQL = detectPsql();
+if (!PSQL){ console.log('SKIP download-entitlement-sql: no local PostgreSQL available'); process.exit(0); }
+
+function run(sql, db){
+  const r = spawnSync('sh', ['-c', `${PSQL} -X -At -q -v ON_ERROR_STOP=1 -d ${db||DB}`], { input: sql, encoding:'utf8' });
+  if (r.status !== 0) throw new Error((r.stderr||'').trim() || 'psql failed');
+  return r.stdout.trim();
+}
+
+function freshDb(migrations){
+  run(`drop database if exists ${DB};`, 'postgres');
+  run(`create database ${DB};`, 'postgres');
+  run(fs.readFileSync(path.join(__dirname,'sql','supabase-shim.sql'),'utf8'));
+  for (const m of migrations) run(fs.readFileSync(path.join(ROOT,'supabase','migrations',m),'utf8'));
+}
+
+let n = 0;
+function uid(){ n++; return `00000000-0000-4000-8000-${String(n).padStart(12,'0')}`; }
+const DAY = 86400000;
+const iso = ms => new Date(Date.now()+ms).toISOString();
+const q = v => v===null||v===undefined ? 'null' : typeof v==='number' ? String(v) : `'${String(v).replace(/'/g,"''")}'`;
+
+function makeUser(p){
+  const id = uid();
+  run(`insert into auth.users(id) values(${q(id)});
+       insert into public.profiles(id,plan,is_pro,subscription_status,trial_end,deletion_date,downloads_used,downloads_limit,topup_credits)
+       values(${q(id)},${q(p.plan)},${p.is_pro?'true':'false'},${q(p.subscription_status)},${q(p.trial_end)},${q(p.deletion_date)},${q(p.downloads_used||0)},${q(p.downloads_limit)},${q(p.topup_credits||0)});`);
+  return id;
+}
+function consumeAs(id, key, role){
+  const out = run(`begin;
+    set local role ${role||'authenticated'};
+    select set_config('request.jwt.claim.sub', ${q(id)}, true);
+    select set_config('request.jwt.claim.role', ${q(role||'authenticated')}, true);
+    select public.consume_download(${key==null?'null':q(key)})::text;
+    commit;`);
+  return JSON.parse(out.split('\n').filter(Boolean).pop());
+}
+function profile(id){
+  return JSON.parse(run(`select row_to_json(p)::text from public.profiles p where id=${q(id)};`));
+}
+
+// Profiles for every lifecycle state the webhook can produce.
+const STATES = {
+  active:               { plan:'easy_start', subscription_status:'active', downloads_limit:20, downloads_used:3 },
+  activeAtLimit:        { plan:'easy_start', subscription_status:'active', downloads_limit:20, downloads_used:20 },
+  cancelScheduled:      { plan:'easy_pro', is_pro:true, subscription_status:'cancelled', deletion_date:iso(10*DAY), downloads_limit:30, downloads_used:4 },
+  cancelScheduledNoDate:{ plan:'easy_pro', is_pro:true, subscription_status:'cancelled', deletion_date:null, downloads_limit:30, downloads_used:4 },
+  cancelPeriodPassed:   { plan:'easy_pro', is_pro:true, subscription_status:'cancelled', deletion_date:iso(-1*DAY), downloads_limit:30, downloads_used:4 },
+  cancelledEnded:       { plan:'free', subscription_status:'cancelled', downloads_limit:0, downloads_used:4 },
+  paused:               { plan:'easy_start', subscription_status:'paused', downloads_limit:20, downloads_used:1 },
+  pastDue:              { plan:'easy_start', subscription_status:'past_due', downloads_limit:20, downloads_used:1 },
+  trialLive:            { plan:'free', subscription_status:'trialing', trial_end:iso(5*DAY), downloads_limit:10, downloads_used:2 },
+  trialExpired:         { plan:'free', subscription_status:'trialing', trial_end:iso(-1*DAY), downloads_limit:10, downloads_used:2 },
+};
+
+// Expected result of ONE new-label export, with and without PAYG downloads.
+// [source, clean] or null for blocked.
+const EXPECT = {
+  active:                [['plan',true],      ['plan',true]],
+  activeAtLimit:         [null,               ['purchased',true]],
+  cancelScheduled:       [['plan',true],      ['plan',true]],
+  cancelScheduledNoDate: [['plan',true],      ['plan',true]],
+  cancelPeriodPassed:    [null,               ['purchased',true]],
+  cancelledEnded:        [null,               ['purchased',true]],
+  paused:                [null,               ['purchased',true]],
+  pastDue:               [null,               ['purchased',true]],
+  trialLive:             [['plan',false],     ['purchased',true]],
+  trialExpired:          [null,               ['purchased',true]],
+};
+
+const MIGRATIONS = ['20260729000000_create_label_downloads.sql','20260925000000_atomic_download_accounting.sql','20260926000000_download_entitlement_lifecycle.sql'];
+freshDb(MIGRATIONS);
+
+let checks = 0;
+for (const [name, base] of Object.entries(STATES)){
+  for (const [i, credits] of [0, 3].entries()){
+    const p = Object.assign({}, base, { topup_credits: credits });
+    const id = makeUser(p);
+    const before = profile(id);
+    const r = consumeAs(id, null);
+    const after = profile(id);
+    const exp = EXPECT[name][i];
+    const label = `${name} + ${credits} purchased`;
+    if (!exp){
+      assert.strictEqual(r.ok, false, `${label}: must be blocked`);
+      assert.strictEqual(r.reason, 'no_downloads_remaining', `${label}: block reason`);
+      assert.deepStrictEqual([after.downloads_used, after.topup_credits], [before.downloads_used, before.topup_credits], `${label}: blocked export must not change balances`);
+    } else {
+      assert.strictEqual(r.ok, true, `${label}: must be allowed`);
+      assert.strictEqual(r.source, exp[0], `${label}: source`);
+      assert.strictEqual(r.clean_export, exp[1], `${label}: clean_export`);
+      if (exp[0]==='plan'){
+        assert.strictEqual(after.downloads_used, before.downloads_used+1, `${label}: plan download counted once`);
+        assert.strictEqual(after.topup_credits, before.topup_credits, `${label}: purchased untouched`);
+      } else {
+        assert.strictEqual(after.topup_credits, before.topup_credits-1, `${label}: purchased decremented once`);
+        assert.strictEqual(after.downloads_used, before.downloads_used, `${label}: plan untouched`);
+      }
+    }
+    // The browser mirror must agree with the database for the same profile.
+    const s = E.summarise(p);
+    assert.strictEqual(s.nextSource, exp ? exp[0] : null, `${label}: entitlement.js nextSource must match consume_download`);
+    assert.strictEqual(s.nextClean, exp ? exp[1] : false, `${label}: entitlement.js nextClean must match consume_download`);
+    checks += 2;
+  }
+}
+
+// Same-label 7-day grace keeps the ORIGINAL export's entitlement, including
+// after the final PAYG download (balance 1 -> 0).
+{
+  const id = makeUser({ plan:'free', subscription_status:'trialing', trial_end:iso(-2*DAY), downloads_limit:10, downloads_used:10, topup_credits:1 });
+  const first = consumeAs(id, 'lavender::scented candle');
+  assert.deepStrictEqual([first.ok, first.source, first.clean_export, first.purchased_downloads], [true,'purchased',true,0], 'final PAYG download consumes and is clean');
+  const again = consumeAs(id, 'lavender::scented candle');
+  assert.deepStrictEqual([again.ok, again.consumed, again.free_redownload, again.clean_export], [true,false,true,true], 'same-label re-download at zero is free and stays clean');
+  const other = consumeAs(id, 'vanilla::wax melt');
+  assert.strictEqual(other.ok, false, 'a new label at zero is blocked');
+  const sheet = consumeAs(id, null);
+  assert.strictEqual(sheet.ok, false, 'a Composer sheet (no label key) at zero is blocked');
+  checks += 4;
+}
+// A live-trial watermarked re-download stays watermarked even after buying PAYG.
+{
+  const id = makeUser({ plan:'free', subscription_status:'trialing', trial_end:iso(3*DAY), downloads_limit:10, downloads_used:0, topup_credits:0 });
+  const first = consumeAs(id, 'rose::scented candle');
+  assert.deepStrictEqual([first.source, first.clean_export], ['plan', false], 'trial download is watermarked');
+  run(`select set_config('request.jwt.claim.role','service_role',false); update public.profiles set topup_credits=5 where id=${q(id)};`);
+  const again = consumeAs(id, 'rose::scented candle');
+  assert.deepStrictEqual([again.free_redownload, again.clean_export], [true, false], 'free re-download keeps the original watermarked entitlement');
+  assert.strictEqual(profile(id).topup_credits, 5, 'a free re-download never spends a purchased download');
+  checks += 3;
+}
+// Permissions (unchanged from 20260925000000; re-checked after the replace).
+{
+  const id = makeUser(STATES.active);
+  assert.throws(() => consumeAs(id, null, 'anon'), /permission denied/, 'anon must not execute consume_download');
+  assert.throws(() => run(`begin; set local role authenticated; select public.credit_purchased_downloads(${q(id)}, 8); commit;`), /permission denied/, 'authenticated must not credit downloads');
+  const bal = run(`begin; set local role service_role; select set_config('request.jwt.claim.role','service_role',true); select public.credit_purchased_downloads(${q(id)}, 8); commit;`);
+  assert.strictEqual(bal.split('\n').pop(), '8', 'service_role credits purchased downloads');
+  run(`begin; set local role authenticated; select set_config('request.jwt.claim.sub', ${q(id)}, true); select set_config('request.jwt.claim.role','authenticated',true); update public.profiles set topup_credits=99 where id=${q(id)}; commit;`);
+  assert.strictEqual(profile(id).topup_credits, 8, 'direct client update must not change the purchased balance');
+  checks += 5;
+}
+// Concurrency: two sessions racing for the final purchased download.
+{
+  const id = makeUser({ plan:'free', subscription_status:'trialing', trial_end:iso(-2*DAY), downloads_limit:10, downloads_used:10, topup_credits:1 });
+  const script = `begin; set local role authenticated; select set_config('request.jwt.claim.sub', ${q(id)}, true); select public.consume_download(null)::text; select pg_sleep(0.3); commit;`;
+  const { spawn } = require('child_process');
+  const runAsync = () => new Promise(res => { const c = spawn('sh',['-c',`${PSQL} -X -At -q -d ${DB}`]); let o=''; c.stdout.on('data',d=>o+=d); c.on('close',()=>res(o)); c.stdin.end(script); });
+  Promise.all([runAsync(), runAsync()]).then(outs => {
+    const results = outs.map(o => JSON.parse(o.split('\n').filter(l=>l.startsWith('{')).pop()));
+    assert.strictEqual(results.filter(r=>r.ok).length, 1, 'only one of two concurrent exports may spend the final purchased download');
+    assert.strictEqual(profile(id).topup_credits, 0, 'balance never goes negative under concurrency');
+    checks += 2;
+
+    // Show what the ORIGINAL PR #156 function does for the two corrected states.
+    freshDb(MIGRATIONS.slice(0,2));
+    const cs = makeUser(STATES.cancelScheduled);
+    const tl = makeUser(Object.assign({}, STATES.trialLive, { topup_credits:3 }));
+    const oldCs = consumeAs(cs, null), oldTl = consumeAs(tl, null);
+    assert.strictEqual(oldCs.ok, false, 'baseline check: original PR function blocks a scheduled cancellation (the bug fixed by 20260926000000)');
+    assert.deepStrictEqual([oldTl.source, oldTl.clean_export], ['plan', false], 'baseline check: original PR function spends a watermarked trial download despite purchased downloads');
+    run(`drop database if exists ${DB};`, 'postgres');
+    console.log(`download entitlement SQL checks passed (${checks+2} groups; real migrations on local PostgreSQL)`);
+  }).catch(e => { console.error(e); process.exitCode = 1; });
+}

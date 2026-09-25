@@ -43,8 +43,8 @@ assert.match(webhook,/stripe_processed_events'[\s\S]*\.delete\(\)[\s\S]*\.eq\('e
 
 assert.match(builder,/sbClient\.rpc\('consume_download',\{p_label_key:labelKey\|\|null\}\)/,'Builder must consume individual exports through atomic RPC');
 assert.ok(!builder.includes("from('subscriptions').select('plan,status')"),'Builder must not gate PAYG on subscriptions table');
-assert.match(builder,/subscription_status,trial_end,topup_credits/,'Builder clean-export entitlement must use profiles');
-assert.match(builder,/const purchased=\(prof\.topup_credits\|\|0\)>0/,'PAYG balance must unlock clean Builder export');
+assert.match(builder,/select\('subscription_status,trial_end,deletion_date,plan,downloads_limit,topup_credits'\)/,'Builder clean-export entitlement must use profiles');
+assert.match(builder,/S\.isPro=window\.CLPEntitlement\.summarise\(prof\)\.cleanPreview/,'Builder clean preview must use the shared entitlement rules (PAYG balance unlocks it; behaviour covered in tests/entitlement-unit.js)');
 assert.match(builder,/return scent\+'::'\+type/,'Builder must pass stable label identity for 7-day grace');
 assert.ok(!builder.includes("sbClient.rpc('consume_topup_credit')"),'Builder must not use legacy non-atomic top-up consumption');
 assert.ok(!builder.includes("from('label_downloads')"),'Builder must leave 7-day grace lookup/update to atomic RPC');

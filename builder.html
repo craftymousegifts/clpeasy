@@ -1467,6 +1467,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
      direct localStorage getSaved()/persistSaved() pair. -->
 <script src="label-library.js"></script>
 
+<!-- Shared plan/download-allowance summary (browser mirror of the
+     consume_download() database rules). -->
+<script src="entitlement.js"></script>
+
 <!-- Single authoritative release-version source (see VERSIONING.md). -->
 <script src="version.js"></script>
 
@@ -2093,7 +2097,7 @@ const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI
 let sbClient=null;
 let currentUser=null;
 // Download allowance (from profiles table). loaded=false means don't block.
-let DL={ used:0, limit:10, plan:'free', is_pro:false, credits:0, loaded:false };
+let DL={ used:0, limit:10, plan:'free', is_pro:false, credits:0, loaded:false, summary:null };
 
 async function initAuth(){
   try{
@@ -2188,7 +2192,7 @@ async function initAuth(){
         const suDisplayName=meta.full_name || email;
         document.getElementById('su-avatar').textContent=(meta.full_name||email||'?').charAt(0).toUpperCase();
         document.getElementById('su-name').textContent=suDisplayName;
-        document.getElementById('su-plan').textContent=S.isPro?'Easy Pro':(DL.plan==='easy_start'?'Easy Start':'Easy Trial');
+        document.getElementById('su-plan').textContent=DL.summary?DL.summary.planName:(DL.plan==='easy_pro'?'Easy Pro':(DL.plan==='easy_start'?'Easy Start':'Easy Trial'));
       }
 
       // Same race, same fix, for saved business details (clpeasy_biz fix,
@@ -2318,9 +2322,10 @@ async function loadDownloadAllowance(){
   if(!sbClient||!currentUser) return;
   try{
     const {data:prof,error}=await sbClient.from('profiles')
-      .select('downloads_used,downloads_limit,plan,is_pro,subscription_status,trial_end,downloads_reset_date,topup_credits')
+      .select('downloads_used,downloads_limit,plan,is_pro,subscription_status,trial_end,deletion_date,downloads_reset_date,topup_credits')
       .eq('id',currentUser.id).single();
     if(error||!prof) throw error||new Error('profile unavailable');
+    DL.summary=window.CLPEntitlement.summarise(prof);
     DL.used=prof.downloads_used||0;
     DL.limit=(prof.downloads_limit==null?10:prof.downloads_limit);
     DL.plan=prof.plan||'free';
@@ -2337,7 +2342,10 @@ async function loadDownloadAllowance(){
 
 function updateDlCounter(){
   const suUsage=document.getElementById('sidebar-usage');
-  const monthlyLeft=Math.max(0,DL.limit-DL.used);
+  // Only a usable plan allowance counts (an expired trial's or a paused
+  // plan's unused downloads cannot be spent -- see entitlement.js).
+  const ent=DL.summary;
+  const monthlyLeft=ent?ent.planLeft:Math.max(0,DL.limit-DL.used);
   const totalLeft=monthlyLeft+Math.max(0,DL.credits);
   if(suUsage){
     if(!DL.loaded){ suUsage.style.display='none'; }
@@ -2351,31 +2359,26 @@ function updateDlCounter(){
   if(!el)return;
   if(!DL.loaded){el.style.display='none';return;}
   el.style.display='block';
-  el.textContent=monthlyLeft+' of '+DL.limit+' plan downloads left'
-    +(DL.credits>0?' · '+DL.credits+' purchased download'+(DL.credits===1?'':'s'):'');
+  el.textContent=(ent&&!ent.planUsable)
+    ? DL.credits+' purchased download'+(DL.credits===1?'':'s')+' left'
+    : monthlyLeft+' of '+DL.limit+' plan downloads left'
+      +(DL.credits>0?' · '+DL.credits+' purchased download'+(DL.credits===1?'':'s'):'');
   el.style.color=(totalLeft===0)?'#DC2626':(totalLeft<=2?'#D97706':'var(--muted)');
 }
 
-function dlGate(){
-  if(!DL.loaded){alert('We could not verify your download allowance. Please refresh and try again.');return false;}
-  if(DL.used<DL.limit||DL.credits>0)return true;
-  showDlLimitModal();
-  return false;
-}
-
-// A clean preview/export is available to an active paid plan OR to a PAYG
-// customer who has purchased downloads remaining. Trial users remain
-// watermarked. The server profile is the source of truth.
+// A clean preview is shown to a paid plan (active, or a scheduled
+// cancellation still inside its paid period) OR to a PAYG customer who has
+// purchased downloads remaining. Trial-only users remain watermarked. The
+// server profile is the source of truth; the export itself always uses the
+// clean_export value returned by consume_download().
 async function refreshProEntitlement(){
   if(!currentUser||!sbClient){S.isPro=false;return false;}
   try{
     const {data:prof,error}=await sbClient.from('profiles')
-      .select('subscription_status,trial_end,topup_credits')
+      .select('subscription_status,trial_end,deletion_date,plan,downloads_limit,topup_credits')
       .eq('id',currentUser.id).single();
     if(error||!prof)throw error||new Error('profile unavailable');
-    const paidPlan=prof.subscription_status==='active';
-    const purchased=(prof.topup_credits||0)>0;
-    S.isPro=paidPlan||purchased;
+    S.isPro=window.CLPEntitlement.summarise(prof).cleanPreview;
   }catch(e){
     S.isPro=false;
   }
@@ -2487,6 +2490,16 @@ function wrapDownloads(){
       if(!_downloadAllowed()){
         alert('Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.');
         return;
+      }
+      // Signed-out guests keep the long-standing Builder behaviour: a
+      // watermarked export that is not counted against any allowance (there
+      // is no account to count it against). Never clean, whatever S.isPro
+      // says -- a console-tampered flag is reset here.
+      if(!currentUser){
+        S.isPro=false;
+        const wmGuest=document.querySelector('.watermark-note');
+        if(wmGuest)wmGuest.style.display='';
+        return orig.apply(this,arguments);
       }
       const labelKey=computeLabelKey();
       const charge=await consumeBuilderDownload(labelKey);
