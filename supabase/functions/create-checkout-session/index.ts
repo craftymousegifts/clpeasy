@@ -64,8 +64,14 @@ serve(async (req) => {
     const userId = user.id;
     const userEmail = user.email;
 
-    const { priceId, mode, successUrl, cancelUrl } = await req.json();
+    const { priceId: clientPriceId, productKey, mode, successUrl, cancelUrl } = await req.json();
     const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
+
+    // PAYG prices stay server-side so the public pricing page never needs a
+    // live Stripe price ID. Set PAYG_5_PRICE_ID in Supabase secrets after
+    // creating the one-off £4.99 Stripe price.
+    const paygPriceId = productKey === "payg_5" ? Deno.env.get("PAYG_5_PRICE_ID") : null;
+    const priceId = paygPriceId || clientPriceId;
 
     if (!priceId || !userEmail || !userId) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
@@ -170,6 +176,9 @@ serve(async (req) => {
     if (checkoutMode === "subscription") {
       params.set("subscription_data[metadata][userId]", userId);
       params.set("subscription_data[metadata][priceId]", priceId);
+    } else if (productKey === "payg_5") {
+      params.set("metadata[type]", "payg");
+      params.set("metadata[downloads]", "5");
     } else {
       params.set("metadata[type]", "topup");
     }
