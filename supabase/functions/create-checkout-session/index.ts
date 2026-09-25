@@ -12,7 +12,7 @@ const CORS = {
 // builder.html?topup=success regardless of mode; now we honour the caller's
 // intent but only within known CLPeasy pages — never an arbitrary external URL) ──
 const ALLOWED_ORIGIN = "https://clpeasy.com";
-const ALLOWED_PATHS = new Set(["/builder.html", "/checkout.html", "/account.html", "/dashboard.html"]);
+const ALLOWED_PATHS = new Set(["/builder.html", "/checkout.html", "/account.html", "/dashboard.html", "/pricing.html"]);
 
 function safeRedirect(candidate: unknown, fallback: string): string {
   if (typeof candidate !== "string" || !candidate) return fallback;
