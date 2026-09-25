@@ -633,6 +633,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="entitlement.js"></script>
 <script>
 const _sb = window.supabase.createClient(
   'https://qvkosdqcryrcfbjtaxic.supabase.co',
@@ -730,6 +731,9 @@ async function fetchProfile(userId) {
     trial_days_left: trialState.daysLeft,
     trial_end_date: trialState.trialEndDateFormatted,
     cancelled_days_remaining: cancelledDaysRemaining,
+    access_until: deletionDate
+      ? deletionDate.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})
+      : null,
     created_at: new Date(data.created_at).toLocaleDateString('en-GB', {month:'long',year:'numeric'}),
     discount_active: data.discount_active || false,
     discount_ends: data.discount_ends
@@ -738,6 +742,9 @@ async function fetchProfile(userId) {
     email: data.email,
     full_name: data.full_name,
     is_beta: data.is_beta || false,
+    // Shared plan/download summary (entitlement.js) -- mirrors the server
+    // consume_download() rules, including Pay As You Go balances.
+    ent: window.CLPEntitlement.summarise(data),
   };
 }
 
@@ -788,8 +795,7 @@ function renderAccount() {
   // Same "Easy Trial" / planLabel value already used for the plan-name/badge
   // above — no new data, just also surfaced in the Account Details rows to
   // match the approved reference design.
-  document.getElementById('acct-plan').textContent =
-    u.status === 'trialing' ? 'Easy Trial™' : planLabel;
+  document.getElementById('acct-plan').textContent = u.ent.planName.replace('Easy Trial', 'Easy Trial™');
   // FIX (2026-09-22): this used to print the raw subscription_status
   // column ("trialing") verbatim, which stays "trialing" in the database
   // forever even after the trial has actually ended (nothing transitions
@@ -801,34 +807,18 @@ function renderAccount() {
 
   // Sidebar bottom block (24 Aug 2026, GUI redesign) — reuses the same
   // userProfile/currentUser values already fetched above; no new fetch.
-  const suUsage=document.getElementById('sidebar-usage');
-  if(suUsage){
-    if(!Number.isFinite(u.downloads_limit) || u.downloads_limit<=0){
-      suUsage.style.display='none';
-    } else {
-      suUsage.style.display='block';
-      const suLeft=Math.max(0,u.downloads_limit-u.downloads_used);
-      document.getElementById('su-count').textContent=suLeft+' of '+u.downloads_limit;
-      document.getElementById('su-fill').style.width=Math.min(100,Math.round((suLeft/u.downloads_limit)*100))+'%';
-    }
-  }
+  window.CLPEntitlement.renderSidebar(document, u.ent);
   const suUser=document.getElementById('sidebar-user');
   if(suUser){
     suUser.style.display='flex';
     const suDisplayName=u.full_name || currentUser.email || 'Account';
     document.getElementById('su-avatar').textContent=(u.full_name||currentUser.email||'?').charAt(0).toUpperCase();
     document.getElementById('su-name').textContent=suDisplayName;
-    document.getElementById('su-plan').textContent=
-      u.status==='cancelled' ? planLabel+' (Cancelled)' :
-      u.status==='paused' ? planLabel+' (Paused)' :
-      u.status==='trialing' ? (u.trial_expired ? 'Easy Trial (Expired)' : 'Easy Trial') : planLabel;
   }
 
-  // Plan name & badge
-  document.getElementById('plan-name').textContent =
-    u.status === 'cancelled' ? planLabel + ' (Cancelled)' :
-    u.status === 'paused' ? planLabel + ' (Paused)' :
-    u.status === 'trialing' ? (u.trial_expired ? 'Easy Trial (Expired)' : 'Easy Trial') : planLabel;
+  // Plan name & badge (a Pay As You Go balance after the trial reads
+  // "Pay As You Go"; every other state is named exactly as before).
+  document.getElementById('plan-name').textContent = u.ent.planName;
 
   const badge = document.getElementById('plan-badge');
   badge.textContent = u.status === 'trialing' ? (u.trial_expired ? 'Trial expired' : 'Free trial') :
@@ -843,7 +833,9 @@ function renderAccount() {
   const renewLine = document.getElementById('renewal-line');
   if (u.status === 'trialing') {
     if (u.trial_expired) {
-      renewLine.innerHTML = `Trial expired${u.trial_end_date ? ` on <strong>${u.trial_end_date}</strong>` : ''}. Choose a plan to continue creating labels.`;
+      renewLine.innerHTML = `Trial expired${u.trial_end_date ? ` on <strong>${u.trial_end_date}</strong>` : ''}.` + (u.ent.purchased > 0
+        ? ' Your purchased downloads are ready to use.'
+        : ' Choose a plan to continue creating labels.');
     } else {
       const daysLabel = u.trial_days_left === 0 ? 'today' : u.trial_days_left === 1 ? 'tomorrow' : `in ${u.trial_days_left} days`;
       renewLine.innerHTML = `Trial ends <strong>${daysLabel}</strong>${u.trial_end_date ? ` (${u.trial_end_date})` : ''}. No card required until you choose a plan.`;
@@ -855,7 +847,14 @@ function renderAccount() {
   } else if (u.status === 'paused') {
     renewLine.innerHTML = `Subscription paused · <a href="#" onclick="openModal('resubscribe');return false;" style="color:var(--teal);">Reactivate →</a>`;
   } else if (u.status === 'cancelled') {
-    renewLine.innerHTML = `Cancellation scheduled · Access continues until <strong>${fmtDate(u.renewal_date)}</strong> · <a href="#" onclick="openModal('resubscribe');return false;" style="color:var(--teal);">Reactivate →</a>`;
+    // FIX: this used to call fmtDate(u.renewal_date) -- neither exists, so
+    // every cancelled account threw here and the rest of the page (purchased
+    // downloads, billing details, Reactivate button) never rendered. The
+    // date is the Stripe cancel_at the webhook stores as deletion_date.
+    const reactivate = `<a href="#" onclick="openModal('resubscribe');return false;" style="color:var(--teal);">Reactivate →</a>`;
+    renewLine.innerHTML = u.ent.cancelScheduled
+      ? `Cancellation scheduled · Access continues${u.access_until ? ` until <strong>${u.access_until}</strong>` : ' until the end of your billing period'} · ${reactivate}`
+      : `Subscription cancelled · ${reactivate}`;
   }
 
   // Win-back banner
@@ -872,7 +871,8 @@ function renderAccount() {
   }
 
   // Download bar
-  if (u.status === 'active' || u.status === 'trialing') {
+  // A scheduled cancellation keeps its paid allowance until the period ends.
+  if (u.status === 'active' || u.status === 'trialing' || u.ent.cancelScheduled) {
     const pct = Math.min(Math.round(u.downloads_used / u.downloads_limit * 100), 100);
     const bar = document.getElementById('dl-bar');
     bar.style.width = pct + '%';
@@ -891,11 +891,15 @@ function renderAccount() {
     if (u.status === 'trialing') {
       dlLabelEl.textContent = 'Trial downloads';
       if (pct >= 100) {
-        dlNoteEl.textContent = u.trial_expired
+        dlNoteEl.textContent = u.ent.purchased > 0
+          ? (u.trial_expired ? 'Your trial has ended. Your purchased downloads can still be used.' : "You've used all your trial downloads. Your purchased downloads can still be used.")
+          : u.trial_expired
           ? "Your trial has ended and you've used all your trial downloads. Choose a plan to keep downloading."
           : "You've used all your trial downloads. Choose a plan to keep downloading.";
       } else if (u.trial_expired) {
-        dlNoteEl.textContent = 'Your trial has ended. Choose a plan to continue downloading.';
+        dlNoteEl.textContent = u.ent.purchased > 0
+          ? 'Your trial has ended. Your purchased downloads can still be used.'
+          : 'Your trial has ended. Choose a plan to continue downloading.';
       } else {
         dlNoteEl.textContent = 'Included with your 14-day trial. Re-downloading the same label within 7 days is free.';
       }
