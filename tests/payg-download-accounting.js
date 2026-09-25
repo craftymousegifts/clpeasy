@@ -33,6 +33,10 @@ assert.match(pricing,/3 extra downloads FREE/,'PAYG launch must advertise three 
 assert.match(pricing,/10% off until 31 December 2026/,'subscription launch saving must show its end date');
 assert.match(checkout,/paygDownloads[\s\S]*"8"[\s\S]*"5"/,'checkout must award 8 downloads during launch and revert to 5');
 assert.match(webhook,/downloads !== 5 && downloads !== 8/,'webhook must accept normal and launch PAYG quantities only');
+assert.match(webhook,/\.rpc\([\s\S]*'credit_purchased_downloads'[\s\S]*p_downloads: downloads/,'PAYG webhook must credit purchases atomically');
+assert.match(migration,/topup_credits\s*=\s*coalesce\(topup_credits,0\)\s*\+\s*p_downloads/i,'PAYG purchase credit RPC must increment atomically');
+assert.match(migration,/grant execute on function public\.credit_purchased_downloads\(uuid, integer\) to service_role/i,'only the webhook service role may credit PAYG purchases');
+assert.match(webhook,/stripe_processed_events'[\s\S]*\.delete\(\)[\s\S]*\.eq\('event_id', event\.id\)/,'failed webhook processing must release its idempotency claim so Stripe retry can recover');
 
 assert.match(builder,/sbClient\.rpc\('consume_download',\{p_label_key:labelKey\|\|null\}\)/,'Builder must consume individual exports through atomic RPC');
 assert.ok(!builder.includes("from('subscriptions').select('plan,status')"),'Builder must not gate PAYG on subscriptions table');
