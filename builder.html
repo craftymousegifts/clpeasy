@@ -2149,22 +2149,11 @@ async function initAuth(){
       currentUser=session.user;
       S.isPro=false;
 
-      // ── CHECK SUBSCRIPTION STATUS ──────────────────────────
-      try{
-        const {data:sub}=await sbClient.from('subscriptions').select('plan,status').eq('user_id',currentUser.id).single();
-        if(sub&&sub.status==='active'){
-          S.isPro=true;
-          // Hide watermark note if subscribed
-          const wmNote=document.querySelector('.watermark-note');
-          if(wmNote)wmNote.style.display='none';
-          updateLabel();
-          // Re-render label without watermark
-          updateLabel();
-        }
-      }catch(e){/* no subscription row yet — trial */}
-
-      // ── DOWNLOAD ALLOWANCE (profiles table) ────────────────
+      // ── DOWNLOAD ALLOWANCE + CLEAN EXPORT ENTITLEMENT ─────
+      // profiles is the canonical billing source for subscriptions and PAYG.
       await loadDownloadAllowance();
+      await refreshProEntitlement();
+      updateLabel();
 
       // ── BETA EXPIRY CHECK ──────────────────────────────────
       const meta=currentUser.user_metadata||{};
@@ -2321,147 +2310,90 @@ function _clpHandleOpenParam(){
 }
 
 // ───────────────────────────────────────────────────────────────
-// DOWNLOAD ALLOWANCE — counts each export against profiles limits
-// ───────────────────────────────────────────────────────────────
+// DOWNLOAD ALLOWANCE — server-authoritative profiles + atomic consumption
+// Purchased PAYG downloads are stored internally in topup_credits so the
+// existing billing schema remains compatible; customer-facing copy always
+// calls them purchased downloads.
 async function loadDownloadAllowance(){
   if(!sbClient||!currentUser) return;
   try{
-    const {data:prof}=await sbClient.from('profiles')
-      .select('downloads_used,downloads_limit,plan,is_pro,downloads_reset_date,topup_credits')
+    const {data:prof,error}=await sbClient.from('profiles')
+      .select('downloads_used,downloads_limit,plan,is_pro,subscription_status,trial_end,downloads_reset_date,topup_credits')
       .eq('id',currentUser.id).single();
-    if(prof){
-      DL.used   = prof.downloads_used||0;
-      DL.limit  = (prof.downloads_limit==null?10:prof.downloads_limit);
-      DL.plan   = prof.plan||'free';
-      DL.is_pro = !!prof.is_pro;
-      DL.credits= prof.topup_credits||0;
-      DL.loaded = true;
-      // Monthly refill: if past the reset date, zero the counter (covers annual plans too)
-      if(prof.downloads_reset_date && new Date(prof.downloads_reset_date) < new Date()){
-        DL.used=0;
-        const next=new Date(); next.setMonth(next.getMonth()+1);
-        try{ await sbClient.from('profiles').update({downloads_used:0,downloads_reset_date:next.toISOString()}).eq('id',currentUser.id); }catch(e){}
-      }
-      updateDlCounter();
-    }
-  }catch(e){ /* no profile row / not loaded — fail open, don't block */ }
+    if(error||!prof) throw error||new Error('profile unavailable');
+    DL.used=prof.downloads_used||0;
+    DL.limit=(prof.downloads_limit==null?10:prof.downloads_limit);
+    DL.plan=prof.plan||'free';
+    DL.is_pro=!!prof.is_pro;
+    DL.credits=prof.topup_credits||0;
+    DL.loaded=true;
+    updateDlCounter();
+  }catch(e){
+    console.error('Download allowance unavailable:',e);
+    DL.loaded=false;
+    updateDlCounter();
+  }
 }
 
 function updateDlCounter(){
-  // Sidebar bottom block (24 Aug 2026, GUI redesign) — reuses the DL state
-  // this function already reads; runs before the #dl-counter early-return
-  // below so it still updates even on steps where that element isn't in the DOM.
   const suUsage=document.getElementById('sidebar-usage');
+  const monthlyLeft=Math.max(0,DL.limit-DL.used);
+  const totalLeft=monthlyLeft+Math.max(0,DL.credits);
   if(suUsage){
-    if(!DL.loaded || !Number.isFinite(DL.limit) || DL.limit<=0){
-      suUsage.style.display='none';
-    } else {
+    if(!DL.loaded){ suUsage.style.display='none'; }
+    else {
       suUsage.style.display='block';
-      const suLeft=Math.max(0,DL.limit-DL.used);
-      document.getElementById('su-count').textContent=suLeft+' of '+DL.limit;
-      document.getElementById('su-fill').style.width=Math.min(100,Math.round((suLeft/DL.limit)*100))+'%';
+      document.getElementById('su-count').textContent=totalLeft+' download'+(totalLeft===1?'':'s');
+      document.getElementById('su-fill').style.width=DL.limit>0?Math.min(100,Math.round((monthlyLeft/DL.limit)*100))+'%':'0%';
     }
   }
-
   const el=document.getElementById('dl-counter');
-  if(!el) return;
-  if(!DL.loaded){ el.style.display='none'; return; }
-  const left=Math.max(0,DL.limit-DL.used);
+  if(!el)return;
+  if(!DL.loaded){el.style.display='none';return;}
   el.style.display='block';
-  el.textContent=left+' of '+DL.limit+' downloads left'+(DL.plan==='free'?' on your trial':' this month')
-    +(DL.credits>0 ? ' · '+DL.credits+' purchased credit'+(DL.credits===1?'':'s')+' available' : '');
-  el.style.color = (left===0 && DL.credits===0) ? '#DC2626' : (left<=2 ? '#D97706' : 'var(--muted)');
+  el.textContent=monthlyLeft+' of '+DL.limit+' plan downloads left'
+    +(DL.credits>0?' · '+DL.credits+' purchased download'+(DL.credits===1?'':'s'):'');
+  el.style.color=(totalLeft===0)?'#DC2626':(totalLeft<=2?'#D97706':'var(--muted)');
 }
 
 function dlGate(){
-  if(!DL.loaded) return true;          // not logged in / no data — don't block
-  if(DL.used < DL.limit || DL.credits > 0) return true;
+  if(!DL.loaded){alert('We could not verify your download allowance. Please refresh and try again.');return false;}
+  if(DL.used<DL.limit||DL.credits>0)return true;
   showDlLimitModal();
   return false;
 }
 
-// SECURITY: fresh, server-verified re-check of Pro entitlement, run
-// immediately before any export function actually builds a downloadable
-// artifact (see wrapDownloads() below). S.isPro is set once at page load
-// and is an ordinary mutable page-global — trivially editable from the
-// browser devtools console — so the watermark decision inside buildSVG()
-// must never trust a stale/tampered value at the moment of export. This
-// repeats the exact subscription query initAuth() already runs at login
-// (RLS-scoped to the authenticated user via Supabase, so it cannot be
-// spoofed by editing client state) and overwrites S.isPro with the real
-// result. Fails closed (isPro=false, watermark applied) on any error,
-// missing session or missing subscription row.
+// A clean preview/export is available to an active paid plan OR to a PAYG
+// customer who has purchased downloads remaining. Trial users remain
+// watermarked. The server profile is the source of truth.
 async function refreshProEntitlement(){
-  if(!currentUser || !sbClient){ S.isPro=false; return false; }
+  if(!currentUser||!sbClient){S.isPro=false;return false;}
   try{
-    const {data:sub}=await sbClient.from('subscriptions').select('plan,status').eq('user_id',currentUser.id).single();
-    S.isPro = !!(sub && sub.status==='active');
+    const {data:prof,error}=await sbClient.from('profiles')
+      .select('subscription_status,trial_end,topup_credits')
+      .eq('id',currentUser.id).single();
+    if(error||!prof)throw error||new Error('profile unavailable');
+    const paidPlan=prof.subscription_status==='active';
+    const purchased=(prof.topup_credits||0)>0;
+    S.isPro=paidPlan||purchased;
   }catch(e){
     S.isPro=false;
   }
   const wmNote=document.querySelector('.watermark-note');
-  if(wmNote) wmNote.style.display = S.isPro ? 'none' : '';
+  if(wmNote)wmNote.style.display=S.isPro?'none':'';
   return S.isPro;
 }
 
-// SECURITY: the on-screen preview must not hand an unpaid/trial user a
-// live, clean vector SVG with the watermark appended as a separate,
-// devtools-deletable node -- verified directly (see
-// tests/preview-watermark-and-export-authorization.js): selecting the
-// watermark <g> (the text elements read "PREVIEW ONLY") and calling
-// .remove() on it left a complete, undamaged clean label behind. Two
-// pieces close this:
-//
-// 1. renderPreviewInto() below never injects the live/clean SVG markup
-//    unless entitlement has been verified. S.isPro=false (the default,
-//    fail-safe state for guest/trial) always renders a FLATTENED RASTER
-//    image instead of live vector markup -- the watermark is burned into
-//    the same pixels as the label content, so there is no separate
-//    element to delete and no vector paths to extract underneath it.
-//    (Rasterising a *preview* only, never an authorised or exported
-//    artifact, is an explicit, accepted quality trade-off -- see
-//    rasterizePreviewSVG() below.)
-// 2. A tampered S.isPro=true (the console bypass this whole feature must
-//    resist) must not immediately unlock the live clean vector preview
-//    either -- that would just move the exploit from "delete a DOM node"
-//    to "set one variable", which is strictly easier. verifiedProForPreview()
-//    re-runs the same fresh, server-verified refreshProEntitlement() check
-//    used for exports before trusting S.isPro===true for the preview, but
-//    throttled (PREVIEW_VERIFY_TTL_MS) so a genuinely paying customer
-//    typing continuously isn't paying a network round-trip per keystroke.
-//    A tampered flag is therefore corrected within one throttle window,
-//    not indefinitely -- the same bounded-trust trade-off already
-//    documented as this architecture's residual limitation.
 const PREVIEW_VERIFY_TTL_MS=10000;
 let _previewVerifiedAt=0;
-// True only once a prior render has FRESHLY, SUCCESSFULLY server-verified
-// Pro status within the trust window -- never true merely because S.isPro
-// happens to read true (that's exactly the tamperable signal this guards
-// against). Read synchronously by renderPreviewInto()'s fast path below.
-function previewTrustIsFresh(){
-  return S.isPro && (Date.now()-_previewVerifiedAt<PREVIEW_VERIFY_TTL_MS);
-}
+function previewTrustIsFresh(){return S.isPro&&(Date.now()-_previewVerifiedAt<PREVIEW_VERIFY_TTL_MS);}
 async function verifiedProForPreview(){
-  if(!S.isPro) return false; // fail-safe default -- no network round-trip needed to stay watermarked
-  if(previewTrustIsFresh()) return S.isPro;
-  try{
-    await refreshProEntitlement();
-  }catch(e){
-    S.isPro=false; // fail closed: an entitlement check that errors must never be trusted
-  }
+  if(previewTrustIsFresh())return true;
+  try{await refreshProEntitlement();}catch(e){S.isPro=false;}
   _previewVerifiedAt=Date.now();
   return S.isPro;
 }
 
-// Flattens a rendered label SVG (watermark already baked in by
-// LabelRenderer.renderLabel when opts.watermark was true) into a single
-// raster <image>, wrapped in a minimal <svg> shell that keeps the same
-// viewBox/width/height the live vector would have had -- so the existing
-// zoom/fit code (recomputePreviewFit()/applyZoomToSVG(), which only ever
-// read/set attributes on the outer <svg>, never inspect its children) keeps
-// working unchanged against a rasterised preview. RASTER_SCALE trades away
-// some on-screen sharpness for an unpaid preview only; it is never used
-// for any authorised render or export path.
 const PREVIEW_RASTER_SCALE=2;
 async function rasterizePreviewSVG(svgStr,vbW,vbH){
   const pxW=Math.max(1,Math.round(vbW*PREVIEW_RASTER_SCALE));
@@ -2472,324 +2404,90 @@ async function rasterizePreviewSVG(svgStr,vbW,vbH){
     const loadPromise=new Promise((resolve,reject)=>{
       const img=new Image();
       img.onload=function(){
-        try{
-          const cvs=document.createElement('canvas');
-          cvs.width=pxW;cvs.height=pxH;
-          const ctx=cvs.getContext('2d');
-          ctx.drawImage(img,0,0,pxW,pxH);
-          resolve(cvs.toDataURL('image/png'));
-        }catch(err){reject(err);}
+        try{const cvs=document.createElement('canvas');cvs.width=pxW;cvs.height=pxH;const ctx=cvs.getContext('2d');ctx.drawImage(img,0,0,pxW,pxH);resolve(cvs.toDataURL('image/png'));}
+        catch(err){reject(err);}
       };
       img.onerror=function(){reject(new Error('preview rasterisation failed to load source SVG'));};
       img.src=svgUrl;
     });
-    // Safety net: an image load that never fires onload/onerror must not
-    // hang the preview forever (renderPreviewInto()'s caller is awaiting
-    // this) -- fall through to the caller's own "preview unavailable"
-    // fallback instead. This should never trigger in a real browser
-    // (Image loading from a blob: URL always settles), but costs nothing.
     const timeoutPromise=new Promise((_,reject)=>setTimeout(()=>reject(new Error('preview rasterisation timed out')),5000));
     const pngDataUri=await Promise.race([loadPromise,timeoutPromise]);
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${vbW} ${vbH}" width="${vbW}" height="${vbH}"><image href="${pngDataUri}" x="0" y="0" width="${vbW}" height="${vbH}" preserveAspectRatio="xMidYMid meet"/></svg>`;
-  }finally{
-    URL.revokeObjectURL(svgUrl);
-  }
+  }finally{URL.revokeObjectURL(svgUrl);}
 }
 
-// Commits rendered markup into the live preview DOM (desktop + mobile
-// sheet containers) and re-runs the zoom/fit pass -- the actual DOM
-// mutation, factored out so both the synchronous fast path and the async
-// verify/rasterise path below funnel through exactly one place. `gen`
-// guards against a slower-finishing older render clobbering a newer one.
 let _previewRenderGen=0;
 function commitPreviewMarkup(markup,gen){
-  if(gen!==_previewRenderGen) return; // superseded by a newer render
-  // Defensive: the async path below can resolve after a test harness (or
-  // a user navigating away mid-render) has already torn the document
-  // down -- nothing meaningful to commit to at that point, so no-op
-  // rather than throw.
+  if(gen!==_previewRenderGen)return;
   try{
     const dc=document.getElementById('label-svg-container');
-    if(dc){
-      dc.innerHTML=markup;
-      if(dc.offsetParent!==null){
-        recomputePreviewFit();
-        applyZoomToSVG();
-      }
-    }
-    const sc=document.getElementById('sheet-label-container');
-    if(sc)sc.innerHTML=markup;
-  }catch(e){/* document/DOM no longer available -- nothing to do */}
+    if(dc){dc.innerHTML=markup;if(dc.offsetParent!==null){recomputePreviewFit();applyZoomToSVG();}}
+    const sc=document.getElementById('sheet-label-container');if(sc)sc.innerHTML=markup;
+  }catch(e){}
 }
-
-// Single choke point for rendering a label into the live preview. Only
-// ever injects the clean, live vector SVG once entitlement has been
-// freshly verified within the trust window; otherwise renders the
-// flattened, watermarked raster instead (see rasterizePreviewSVG()).
-//
-// Deliberately NOT always-async: recomputePreviewFit()/applyZoomToSVG()
-// (and every zoom control that calls them: setPreviewZoom(),
-// fitPreviewToView(), onZoomTrackClick(), the resize handler) have always
-// assumed the preview DOM reflects the current label content the instant
-// updateLabel() returns -- that invariant must hold for a genuinely
-// verified Pro user (previewTrustIsFresh()), so that case commits
-// synchronously, exactly as before this feature existed. Only the
-// unverified/unpaid case -- which never held that invariant safely to
-// begin with, since it must not show clean content regardless of timing
-// -- goes through the async verify-then-rasterise path.
 function renderPreviewInto(svgHtml,pw,ph){
   const gen=++_previewRenderGen;
-  if(previewTrustIsFresh()){
-    commitPreviewMarkup(svgHtml,gen);
-    return;
-  }
+  if(previewTrustIsFresh()){commitPreviewMarkup(svgHtml,gen);return;}
   renderPreviewIntoAsync(svgHtml,pw,ph,gen);
 }
 async function renderPreviewIntoAsync(svgHtml,pw,ph,gen){
-  let isPro=false;
-  try{
-    isPro=await verifiedProForPreview();
-  }catch(e){
-    isPro=false; // fail closed: an entitlement check that errors must never fall back to the clean vector
-  }
-  if(gen!==_previewRenderGen) return; // superseded by a newer render
+  let entitled=false;
+  try{entitled=await verifiedProForPreview();}catch(e){entitled=false;}
+  if(gen!==_previewRenderGen)return;
   let markup;
-  if(isPro){
-    markup=svgHtml;
-  }else{
-    try{
-      markup=await rasterizePreviewSVG(svgHtml,pw,ph);
-    }catch(e){
-      // Fail-safe: rasterisation should never fail in a real browser (every
-      // target browser supports Image/Canvas/Blob), but if it somehow does,
-      // the fallback must never be the clean live vector -- show a neutral
-      // "preview unavailable" placeholder instead.
-      markup=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${pw} ${ph}" width="${pw}" height="${ph}"><rect width="${pw}" height="${ph}" fill="#F3F4F6"/><text x="${pw/2}" y="${ph/2}" text-anchor="middle" font-family="sans-serif" font-size="${Math.max(10,pw*0.05)}" fill="#9CA3AF">Preview unavailable</text></svg>`;
-    }
+  if(entitled)markup=svgHtml;
+  else{
+    try{markup=await rasterizePreviewSVG(svgHtml,pw,ph);}
+    catch(e){markup=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${pw} ${ph}" width="${pw}" height="${ph}"><rect width="${pw}" height="${ph}" fill="#F3F4F6"/><text x="${pw/2}" y="${ph/2}" text-anchor="middle" font-family="sans-serif" font-size="${Math.max(10,pw*0.05)}" fill="#9CA3AF">Preview unavailable</text></svg>`;}
   }
   commitPreviewMarkup(markup,gen);
 }
 
-// Consumes monthly allowance first, then purchased top-up credits. Returns
-// true if the download may proceed, false if it must NOT proceed — the
-// caller (wrapDownloads) must not generate/download the file when this
-// returns false. topup_credits is a server-protected column (only the
-// Stripe webhook can write it directly — see the protect_profile_billing_
-// columns trigger), so spending one goes through the auth.uid()-scoped
-// consume_topup_credit() RPC rather than a client-side table update.
-//
-// Per explicit product decision: never assume the credit was spent. If the
-// RPC errors, or reports nothing left to spend (a race against another tab/
-// device, or a stale local balance), the credit is NOT decremented locally
-// and the download does not proceed — showing a false "success" would let
-// the displayed balance drift from the real one.
-async function dlRecord(){
-  if(!DL.loaded) return true; // not logged in / no data — don't block
-
-  if(DL.used < DL.limit){
-    DL.used=DL.used+1;
-    updateDlCounter();
-    try{
-      await sbClient.from('profiles').update({downloads_used:DL.used}).eq('id',currentUser.id);
-    }catch(e){ console.error('dlRecord write failed:',e); }
-    return true;
-  }
-
-  if(DL.credits > 0){
-    try{
-      const {data,error} = await sbClient.rpc('consume_topup_credit');
-      if(error || typeof data !== 'number' || data < 0){
-        console.error('consume_topup_credit failed:', error || 'no credit available (data='+data+')');
-        alert('Something went wrong recording your download credit. Please try again — you have not been charged a credit.');
-        return false;
-      }
-      DL.credits = data;
-      updateDlCounter();
-      return true;
-    }catch(e){
-      console.error('consume_topup_credit failed:', e);
-      alert('Something went wrong recording your download credit. Please try again — you have not been charged a credit.');
-      return false;
-    }
-  }
-
-  // Neither allowance nor credits available — dlGate() should already have
-  // blocked this, but fail safe rather than silently allow a free download.
-  return false;
-}
-
-function closeDlLimitModal(){
-  const m=document.getElementById('dl-limit-modal');
-  if(m)m.remove();
-}
-
-// ── TOP-UP CHECKOUT ──────────────────────────────────────────
-// RESOLVED (2026-07-28, AUDIT_AND_FIX_LOG.md BLOCKER-2): confirmed by
-// Michaela directly against the CLPeasy Stripe dashboard — these ARE the
-// correct, canonical top-up Price IDs. checkout.html and stripe-webhook have
-// been updated to match this file (they previously referenced a different,
-// incorrect pair, price_1TeBHj.../price_1TeBIK..., which is no longer used
-// anywhere in active logic).
-const TOPUP_PRICES = {
-  topup_5:  'price_1Tdpd7GZLILz5vqUAiSw9udI',
-  topup_10: 'price_1TdpdzGZLILz5vqUYEjn6TZ2',
-};
-const SUPABASE_URL_CHECKOUT = 'https://qvkosdqcryrcfbjtaxic.supabase.co';
-
-async function startTopup(pack){
-  if(!currentUser){ window.location.href='auth.html?next=builder.html'; return; }
-  const checkoutTab=window.open('about:blank','_blank');
-  if(!checkoutTab){alert('Please allow pop-ups for CLPeasy so checkout can open without closing your label.');return;}
-  checkoutTab.opener=null;
-  const priceId = TOPUP_PRICES['topup_'+pack];
-  if(!priceId){ alert('Pack not found — please refresh.'); return; }
-  const btn = document.getElementById('topup-btn-'+pack);
-  if(btn){ btn.textContent='Loading…'; btn.style.opacity='0.7'; btn.disabled=true; }
+// Atomic server-side accounting also performs the 7-day same-label grace.
+// This replaces the old client-side check/update sequence, eliminating races
+// between tabs/devices and making PAYG-only users first-class customers.
+async function consumeBuilderDownload(labelKey){
+  if(!sbClient||!currentUser)return {ok:false,reason:'accounting_error'};
   try{
-    const {data:{session}} = await sbClient.auth.getSession();
-    if(!session){
-      alert('Please sign in again and retry.');
-      if(btn){ btn.textContent=(pack==='5'?'5 downloads — £3.99':'10 downloads — £7.99'); btn.style.opacity='1'; btn.disabled=false; }
-      return;
+    const {data,error}=await sbClient.rpc('consume_download',{p_label_key:labelKey||null});
+    if(error||!data||data.ok!==true){
+      console.error('consume_download failed:',error||data);
+      return {ok:false,reason:(data&&data.reason)||'accounting_error'};
     }
-    const res = await fetch(SUPABASE_URL_CHECKOUT+'/functions/v1/create-checkout-session',{
-      method:'POST',
-      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+session.access_token },
-      body:JSON.stringify({ priceId, mode:'payment' })
-    });
-    const data = await res.json();
-    if(data.url){ checkoutTab.location.href=data.url; }
-    else{ throw new Error(data.error||'No URL'); }
-  } catch(e){
-    try{checkoutTab.close();}catch(_e){}
-    console.error('Top-up checkout error:',e);
-    alert('Something went wrong. Please try again.');
-    if(btn){ btn.textContent=(pack==='5'?'5 downloads — £3.99':'10 downloads — £7.99'); btn.style.opacity='1'; btn.disabled=false; }
+    await loadDownloadAllowance();
+    return {ok:true,source:data.source||'unknown',free:data.source==='redownload'};
+  }catch(e){
+    console.error('consume_download failed:',e);
+    return {ok:false,reason:'accounting_error'};
   }
 }
 
-function showDlLimitModal(){
-  closeDlLimitModal();
-  const btn='display:inline-block;padding:11px 18px;border-radius:10px;font-size:14px;font-weight:700;text-decoration:none;font-family:\'DM Sans\',sans-serif;margin:6px 4px 0;';
-  let title, msg, actions;
-  if(DL.is_pro){
-    title='Monthly downloads used up';
-    msg='You\u2019ve used all '+DL.limit+' downloads this month. Add a top-up pack to keep going — your allowance refills on your next billing date.';
-    actions='<button id="topup-btn-5" onclick="startTopup(\'5\')" style="'+btn+'background:#4C9BB0;color:white;border:none;cursor:pointer;">5 downloads &mdash; &pound;3.99</button>'
-    +'<button id="topup-btn-10" onclick="startTopup(\'10\')" style="'+btn+'background:white;color:#111318;border:1.5px solid #E8EAED;cursor:pointer;">10 downloads &mdash; &pound;7.99</button>';
-  } else if(DL.plan==='easy_start'){
-    title='Monthly downloads used up';
-    msg='You\u2019ve used all '+DL.limit+' downloads this month. Upgrade to Easy Pro for 30 downloads a month, or grab a top-up pack.';
-    actions='<a href="pricing.html" target="_blank" rel="noopener" style="'+btn+'background:#4C9BB0;color:white;">Upgrade to Easy Pro</a>'
-    +'<button id="topup-btn-5" onclick="startTopup(\'5\')" style="'+btn+'background:white;color:#111318;border:1.5px solid #E8EAED;cursor:pointer;">5 downloads &mdash; &pound;3.99</button>'
-    +'<button id="topup-btn-10" onclick="startTopup(\'10\')" style="'+btn+'background:white;color:#111318;border:1.5px solid #E8EAED;cursor:pointer;">10 downloads &mdash; &pound;7.99</button>';
-  } else {
-    title='Trial downloads used up';
-    msg='You\u2019ve used all '+DL.limit+' trial downloads. Subscribe to Easy Start (20/month) or Easy Pro (30/month) to keep downloading.';
-    actions='<a href="pricing.html" target="_blank" rel="noopener" style="'+btn+'background:#4C9BB0;color:white;">Choose a plan \u2192</a>';
-  }
-  const m=document.createElement('div');
-  m.id='dl-limit-modal';
-  m.style.cssText='position:fixed;inset:0;background:rgba(15,23,42,0.55);display:flex;align-items:center;justify-content:center;z-index:99999;padding:20px;';
-  m.innerHTML='<div style="background:white;border-radius:18px;padding:28px 26px;max-width:380px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);font-family:\'DM Sans\',sans-serif;">'
-    +'<div style="font-size:32px;margin-bottom:10px;">\uD83D\uDD52</div>'
-    +'<div style="font-family:\'DM Serif Display\',serif;font-size:22px;margin-bottom:8px;color:#111318;">'+title+'</div>'
-    +'<div style="font-size:14px;color:#6B7280;line-height:1.55;margin-bottom:14px;">'+msg+'</div>'
-    +'<div>'+actions+'</div>'
-    +'<div style="margin-top:14px;"><button onclick="closeDlLimitModal()" style="background:none;border:none;color:#6B7280;font-size:13px;cursor:pointer;font-family:\'DM Sans\',sans-serif;text-decoration:underline;">Close</button></div>'
-    +'</div>';
-  m.addEventListener('click',function(e){ if(e.target===m) closeDlLimitModal(); });
-  document.body.appendChild(m);
-}
-
-// ── 7-DAY RE-DOWNLOAD GRACE ───────────────────────────────────
-// A user's first download of a given label consumes 1 credit. Re-downloading
-// the SAME label within 7 days of its last download is free (0 credits) —
-// re-downloading it again after 7 days consumes another credit. Tracked
-// server-side in Supabase (label_downloads table) so it works across
-// browsers/devices, not just localStorage.
-//
-// "Same label" uses the same identity the app already relies on elsewhere
-// (see the saveLabel → history-matching hook below: `e.scentName===S.scentName
-// && e.productType===S.productType`) — scent name + product type, normalised.
-// This is a stable key: it doesn't change just because the user tweaks size,
-// wording, or batch number on what is still conceptually the same label.
-const REDOWNLOAD_GRACE_DAYS = 7;
-
+// Stable conceptual identity already used by CLPeasy: scent + product type.
+// The RPC owns the grace-window decision and timestamp update.
 function computeLabelKey(){
   const scent=(S.scentName||'').trim().toLowerCase();
   const type=(S.productType||'').trim().toLowerCase();
-  if(!scent || !type) return null; // no stable identity yet — meter normally
+  if(!scent||!type)return null;
   return scent+'::'+type;
 }
 
-// True if this label_key was already downloaded by this user within the
-// last REDOWNLOAD_GRACE_DAYS — i.e. this download should be free.
-async function isWithinRedownloadGrace(labelKey){
-  if(!sbClient || !currentUser || !labelKey) return false;
-  try{
-    const {data,error}=await sbClient.from('label_downloads')
-      .select('last_downloaded_at')
-      .eq('user_id',currentUser.id)
-      .eq('label_key',labelKey)
-      .maybeSingle();
-    if(error || !data || !data.last_downloaded_at) return false;
-    const lastMs=new Date(data.last_downloaded_at).getTime();
-    const graceMs=REDOWNLOAD_GRACE_DAYS*24*60*60*1000;
-    return (Date.now()-lastMs) < graceMs;
-  }catch(e){
-    console.error('isWithinRedownloadGrace check failed:',e);
-    return false; // fail safe: meter normally rather than silently granting free downloads
-  }
-}
-
-// Records/refreshes "last downloaded" for this label_key — always called on
-// a successful download (free or charged) so the 7-day window rolls forward
-// from the most recent download, not just the first.
-async function recordLabelDownload(labelKey){
-  if(!sbClient || !currentUser || !labelKey) return;
-  try{
-    await sbClient.from('label_downloads').upsert({
-      user_id:currentUser.id,
-      label_key:labelKey,
-      last_downloaded_at:new Date().toISOString()
-    },{onConflict:'user_id,label_key'});
-  }catch(e){
-    console.error('recordLabelDownload upsert failed:',e);
-  }
-}
-
-// Wrap every export function so it checks the allowance, then counts — unless
-// this exact label was already downloaded within the last 7 days, in which
-// case it's free. saveLabel is NOT wrapped (saving is unlimited).
 function wrapDownloads(){
   ['downloadPNG','downloadSVG','downloadPDFSheet','downloadPrintReadyPDF','downloadCricutPNGs','printToPDF'].forEach(function(fn){
     const orig=window[fn];
-    if(typeof orig!=='function' || orig.__dlwrapped) return;
+    if(typeof orig!=='function'||orig.__dlwrapped)return;
     const wrapped=async function(){
+      if(!dlGate())return;
+      // Verify clean-export entitlement before doing any expensive work. PAYG
+      // balance qualifies; trials remain watermarked.
+      const entitled=await refreshProEntitlement();
+      if(!entitled){showDlLimitModal();return;}
       const labelKey=computeLabelKey();
-      const freeRedownload = labelKey ? await isWithinRedownloadGrace(labelKey) : false;
-      if(!freeRedownload){
-        if(!dlGate()) return;
+      const charge=await consumeBuilderDownload(labelKey);
+      if(!charge.ok){
+        alert(charge.reason==='accounting_error'?'We could not verify your download allowance. Please try again.':'You have no downloads remaining. Buy downloads or choose a plan to continue.');
+        return;
       }
-      // dlRecord() must be awaited and checked BEFORE generating the file —
-      // if it consumes a top-up credit and that fails, the download must
-      // not happen, or the user would get a free download while the UI
-      // (correctly) still shows the credit as unspent.
-      if(!freeRedownload){
-        const ok = await dlRecord();
-        if(!ok) return;
-      }
-      // SECURITY: re-verify Pro entitlement fresh from the server
-      // immediately before generating the export — never trust the cached
-      // S.isPro (see refreshProEntitlement() above), so console-tampering
-      // it beforehand cannot produce an unwatermarked artifact.
-      await refreshProEntitlement();
-      const r=orig.apply(this,arguments);
-      if(labelKey){
-        recordLabelDownload(labelKey);
-      }
-      return r;
+      return orig.apply(this,arguments);
     };
     wrapped.__dlwrapped=true;
     window[fn]=wrapped;
