@@ -14,6 +14,9 @@ assert.match(migration,/downloads_used\s*=\s*coalesce\(downloads_used,0\)\s*\+\s
 assert.match(migration,/v_profile\.trial_end\s*>\s*v_now/i,'expired trials must not consume trial allowance');
 assert.match(migration,/v_recent\s*>?=\s*v_now\s*-\s*interval '7 days'/i,'same-label 7-day grace must be preserved');
 assert.match(migration,/grant execute on function public\.consume_download\(text\) to authenticated/i,'only authenticated app users should execute accounting RPC');
+assert.match(migration,/add column if not exists clean_export boolean not null default false/i,'re-download history must preserve clean vs watermarked entitlement');
+assert.match(migration,/select last_downloaded_at, clean_export into v_recent, v_clean_export/i,'free re-download must recover original export entitlement');
+assert.match(migration,/'clean_export', v_clean_export/i,'accounting RPC must return the authorised export entitlement');
 
 assert.match(print,/\.from\('profiles'\)[\s\S]*topup_credits/,'Composer entitlement must use profile allowance/purchased downloads');
 assert.ok(!print.includes("from('subscriptions').select('plan,status')"),'Composer must not gate PAYG on subscriptions table');
@@ -38,6 +41,12 @@ assert.match(builder,/const purchased=\(prof\.topup_credits\|\|0\)>0/,'PAYG bala
 assert.match(builder,/return scent\+'::'\+type/,'Builder must pass stable label identity for 7-day grace');
 assert.ok(!builder.includes("sbClient.rpc('consume_topup_credit')"),'Builder must not use legacy non-atomic top-up consumption');
 assert.ok(!builder.includes("from('label_downloads')"),'Builder must leave 7-day grace lookup/update to atomic RPC');
+assert.match(builder,/free:data\.free_redownload===true\|\|data\.source==='redownload'/,'Builder must recognise server-authorised free re-downloads');
+assert.match(builder,/clean:data\.clean_export===true/,'Builder must use server-returned clean/watermarked entitlement');
+const builderWrap=builder.slice(builder.indexOf('function wrapDownloads()'),builder.indexOf('async function signOut()',builder.indexOf('function wrapDownloads()')));
+assert.ok(!builderWrap.includes('if(!dlGate())return'),'cached zero balance must not block a valid 7-day re-download');
+assert.ok(!builderWrap.includes('await refreshProEntitlement()'),'final PAYG download must not be reclassified after its balance reaches zero');
+assert.match(builderWrap,/S\.isPro=charge\.clean===true/,'authorised export must render using the entitlement returned atomically by the server');
 
 assert.match(print,/100% \/ Actual Size/,'printing help must require 100% / Actual Size');
 assert.match(print,/Do not use “Fit to page” or “Scale to fit”/,'printing help must warn against scaling');
