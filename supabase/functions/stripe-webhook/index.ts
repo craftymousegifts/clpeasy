@@ -149,6 +149,29 @@ Deno.serve(async (req) => {
 
         if (!userId) { console.error('No userId in session metadata'); break; }
 
+        // ── PAY AS YOU GO PURCHASE ───────────────────────────────
+        // PAYG uses the same protected non-expiring purchased-download balance
+        // as top-ups, but does not require an active subscription.
+        if (type === 'payg') {
+          const downloads = Number.parseInt(session.metadata?.downloads ?? '0', 10);
+          if (downloads !== 5) { console.error('Invalid PAYG download quantity:', downloads); break; }
+
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('topup_credits')
+            .eq('id', userId)
+            .single();
+
+          const currentDownloads = profile?.topup_credits ?? 0;
+          const { error: paygError } = await supabase.from('profiles').update({
+            topup_credits: currentDownloads + downloads,
+          }).eq('id', userId);
+
+          if (paygError) throw paygError;
+          console.log(`PAYG: +${downloads} downloads (balance ${currentDownloads + downloads}) for user ${userId}`);
+          break;
+        }
+
         // ── ONE-OFF TOP-UP PURCHASE ──────────────────────────────
         // FIX (2026-07-30, top-up credits separation): previously wrote
         // downloads_limit: current + credits, blending the purchased credit
