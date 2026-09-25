@@ -734,8 +734,10 @@ async function consumeComposerDownload(){
   const {data,error}=await sbClient.rpc('consume_download',{p_label_key:null});
   if(error){ console.error('Download accounting failed:',error); return {ok:false,reason:'accounting_error'}; }
   if(!data || data.ok!==true)return data||{ok:false,reason:'no_downloads_remaining'};
-  // Keep the page's clean-export gate in sync after the atomic decrement.
-  await refreshProEntitlement();
+  // Do not refresh the preview/export gate here: if this was the customer's
+  // final download, flipping isPro=false before the renderer runs would
+  // watermark the file they just paid for. The next export attempt performs
+  // a fresh check and will correctly show the zero-balance gate.
   return data;
 }
 function updateProGate(){
