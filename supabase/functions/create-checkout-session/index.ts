@@ -71,6 +71,16 @@ serve(async (req) => {
     // live Stripe price ID. Set PAYG_5_PRICE_ID in Supabase secrets after
     // creating the one-off £4.99 Stripe price.
     const paygPriceId = productKey === "payg_5" ? Deno.env.get("PAYG_5_PRICE_ID") : null;
+    // Fail closed: a PAYG request must never fall back to a browser-supplied
+    // price. Otherwise, if PAYG_5_PRICE_ID were missing, a caller could pair
+    // productKey "payg_5" (stamped as 8 downloads) with any cheaper one-off
+    // price in the Stripe account.
+    if (productKey === "payg_5" && !paygPriceId) {
+      console.error("PAYG_5_PRICE_ID is not configured");
+      return new Response(JSON.stringify({ error: "Pay As You Go is not available right now. Please try again later." }), {
+        status: 503, headers: { ...CORS, "Content-Type": "application/json" },
+      });
+    }
     const priceId = paygPriceId || clientPriceId;
 
     if (!priceId || !userEmail || !userId) {

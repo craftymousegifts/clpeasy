@@ -21,11 +21,30 @@ const corsHeaders = {
 // BREVO_PAID_LIST_ID = the list ID you get from Brevo after creating "CLPeasy Paid Subscribers"
 // BREVO_PAID_AUTOMATION_ID = the automation workflow ID for the paid sequence (set after building in Brevo)
 async function addToBrevoPayList(email: string, firstName: string, planLabel: string): Promise<void> {
+  await upsertBrevoContact(email, firstName, planLabel, 'BREVO_PAID_LIST_ID', 'paid');
+}
+
+// ── PAY AS YOU GO BREVO JOURNEY ─────────────────────────────────
+// PAYG buyers must NOT enter the subscriber onboarding automation (it talks
+// about a subscription, renewal and cancellation). They are added to the
+// list named by BREVO_PAYG_LIST_ID with PLAN = "Pay As You Go". If that
+// secret is not set, PAYG purchases are simply not sent to Brevo — the
+// download credit is unaffected either way. (Pointing BREVO_PAYG_LIST_ID at
+// a dedicated PAYG list, or at another list whose automation branches on
+// PLAN, is a marketing decision — see the unattended development report.)
+// Always called only AFTER the purchased downloads were credited, and never
+// throws: a Brevo problem must never fail or re-run a completed credit.
+async function addToBrevoPaygList(email: string, firstName: string): Promise<void> {
+  await upsertBrevoContact(email, firstName, PAYG_PLAN_LABEL, 'BREVO_PAYG_LIST_ID', 'PAYG');
+}
+const PAYG_PLAN_LABEL = 'Pay As You Go';
+
+async function upsertBrevoContact(email: string, firstName: string, planLabel: string, listEnvName: string, kind: string): Promise<void> {
   const apiKey = Deno.env.get('BREVO_API_KEY');
-  const listId = Deno.env.get('BREVO_PAID_LIST_ID');
+  const listId = Deno.env.get(listEnvName);
 
   if (!apiKey || !listId) {
-    console.warn('Brevo paid list config missing — skipping Brevo upsert');
+    console.warn(`Brevo ${kind} list config missing — skipping Brevo upsert`);
     return;
   }
 
@@ -47,15 +66,15 @@ async function addToBrevoPayList(email: string, firstName: string, planLabel: st
       }),
     });
 
-    console.log(`Brevo paid contact upsert HTTP ${upsertRes.status} for ${email}`);
+    console.log(`Brevo ${kind} contact upsert HTTP ${upsertRes.status} for ${email}`);
 
     if (!upsertRes.ok) {
       const errorText = await upsertRes.text();
-      console.error(`Brevo paid contact upsert failed: ${errorText}`);
+      console.error(`Brevo ${kind} contact upsert failed: ${errorText}`);
     }
   } catch (err) {
-    // Non-fatal — Stripe subscription processing continues
-    console.error('Brevo paid list error (non-fatal):', err);
+    // Non-fatal — Stripe processing continues
+    console.error(`Brevo ${kind} list error (non-fatal):`, err);
   }
 }
 
@@ -153,6 +172,12 @@ Deno.serve(async (req) => {
         // PAYG uses the same protected non-expiring purchased-download balance
         // as top-ups, but does not require an active subscription.
         if (type === 'payg') {
+          // Card-only Checkout completes as 'paid'. Never credit an unpaid
+          // or asynchronous session from this event.
+          if (session.payment_status !== 'paid') {
+            console.error(`PAYG session ${session.id} completed with payment_status=${session.payment_status} — not credited`);
+            break;
+          }
           const downloads = Number.parseInt(session.metadata?.downloads ?? '0', 10);
           if (downloads !== 5 && downloads !== 8) { console.error('Invalid PAYG download quantity:', downloads); break; }
 
@@ -163,6 +188,26 @@ Deno.serve(async (req) => {
 
           if (paygError) throw paygError;
           console.log(`PAYG: +${downloads} downloads (balance ${newBalance}) for user ${userId}`);
+
+          // ── PAYG BREVO (only after a successful credit) ─────────────
+          // Guarded completely: anything thrown after the credit would reach
+          // the catch below, release the idempotency claim and let Stripe's
+          // retry credit the purchase a second time.
+          try {
+            const paygEmail = session.customer_details?.email || session.customer_email || '';
+            // A current subscriber topping up must keep their subscriber
+            // PLAN attribute and must not enter the PAYG journey.
+            const { data: buyer } = await supabase.from('profiles')
+              .select('subscription_status, plan, deletion_date')
+              .eq('id', userId).single();
+            if (paygEmail && !isCurrentSubscriber(buyer)) {
+              await addToBrevoPaygList(paygEmail, (session.customer_details?.name || '').split(' ')[0] || '');
+            } else if (paygEmail) {
+              console.log(`PAYG Brevo skipped for current subscriber ${userId}`);
+            }
+          } catch (brevoErr) {
+            console.error('PAYG Brevo step failed (non-fatal, credit kept):', brevoErr);
+          }
           break;
         }
 
@@ -445,6 +490,16 @@ const TOPUP_CREDITS: Record<string, number> = {
 };
 
 // ── HELPERS ───────────────────────────────────────────────────
+// Active subscription, or a scheduled cancellation still inside its paid
+// period (same rule as consume_download / entitlement.js).
+function isCurrentSubscriber(p: { subscription_status?: string | null; plan?: string | null; deletion_date?: string | null } | null): boolean {
+  if (!p) return false;
+  if (p.subscription_status === 'active' || p.subscription_status === 'paused') return true;
+  if (p.subscription_status !== 'cancelled') return false;
+  const paidPlan = !!p.plan && !['free', 'trial', 'cancelled', 'paused'].includes(p.plan);
+  return paidPlan && (!p.deletion_date || new Date(p.deletion_date).getTime() > Date.now());
+}
+
 function getPlanFromPriceId(priceId: string): string {
   const map: Record<string, string> = {
     // Live price IDs
