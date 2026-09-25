@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CLPeasy™ Pricing — Simple, honest plans for makers selling in Great Britain</title>
-<meta name="description" content="CLPeasy™ pricing. Start free for 14 days, then choose Easy Start or Easy Pro. CLP label generator for makers selling in Great Britain.">
+<meta name="description" content="CLPeasy™ pricing. Start free for 14 days, then choose Pay As You Go, Easy Start or Easy Pro. CLP label generator for makers selling in Great Britain.">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -266,6 +266,21 @@ footer a{color:#6B7280;text-decoration:none;}
     </div>
 
   </div>
+  <section id="payg" style="margin:28px 0 10px;background:white;border:2px solid var(--teal);border-radius:18px;padding:24px 26px;display:flex;gap:24px;align-items:center;justify-content:space-between;flex-wrap:wrap;">
+    <div style="flex:1;min-width:240px;">
+      <div style="font-size:11px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:var(--teal);margin-bottom:5px;">No subscription</div>
+      <h2 style="font-family:'DM Serif Display',serif;font-size:25px;margin-bottom:6px;">Pay As You Go</h2>
+      <p style="font-size:13px;color:var(--muted);line-height:1.6;max-width:620px;">Only make occasionally? Buy 5 downloads and use them whenever you need them. One download means one finished exported file — an individual label or a complete A4 sheet from the Print Sheet Composer.</p>
+      <p style="font-size:12px;color:var(--teal-dark);font-weight:700;margin-top:8px;">Downloads do not expire · No monthly fee · No points or credits system</p>
+    </div>
+    <div style="min-width:210px;text-align:center;">
+      <div style="font-size:36px;font-weight:900;letter-spacing:-1px;">£4.99</div>
+      <div style="font-size:13px;color:var(--muted);margin:2px 0 12px;">5 downloads</div>
+      <button id="btn-payg" onclick="startPaygCheckout()" class="btn btn-outline" style="margin:0;">Buy 5 downloads →</button>
+      <div style="font-size:11px;color:var(--muted);margin-top:9px;">About £1 per download</div>
+    </div>
+  </section>
+
   <div style="text-align:center;margin:28px 0 0;"><h2 style="font-family:'DM Serif Display',serif;font-size:26px;color:#0f2236;">Why move to a paid plan?</h2><p style="font-size:13px;color:var(--muted);line-height:1.6;margin-top:6px;">Both Easy Start and Easy Pro include these everyday maker tools.</p></div>
   <div class="plan-benefits">
     <div class="plan-benefit"><h3>Download labels without a watermark</h3><p>Move beyond the 10 watermarked trial downloads. Paid plans provide clean PNG, SVG and PDF label files, with 20 downloads a month on Easy Start or 30 on Easy Pro.</p></div>
@@ -630,6 +645,37 @@ async function initSupabase(){
 }
 initSupabase();
 
+async function startPaygCheckout(){
+  const btn=document.getElementById('btn-payg');
+  try{
+    const {data:{session}}=await sb.auth.getSession();
+    const currentUser=session?.user;
+    if(!currentUser){
+      sessionStorage.setItem('checkout_payg','1');
+      window.location.href='auth.html?mode=signup&return=pricing.html';
+      return;
+    }
+    btn.disabled=true; btn.textContent='Opening secure checkout…';
+    const res=await fetch(`${SUPABASE_URL}/functions/v1/create-checkout-session`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+session.access_token},
+      body:JSON.stringify({
+        productKey:'payg_5',
+        mode:'payment',
+        successUrl:'https://clpeasy.com/account.html?payg=success',
+        cancelUrl:'https://clpeasy.com/pricing.html?payg=cancelled'
+      })
+    });
+    const data=await res.json();
+    if(!res.ok||!data.url) throw new Error(data.error||'No checkout URL returned');
+    window.location.href=data.url;
+  }catch(e){
+    console.error('PAYG checkout error:',e);
+    alert('Something went wrong starting checkout. Please try again.');
+    btn.disabled=false; btn.textContent='Buy 5 downloads →';
+  }
+}
+
 async function startCheckout(plan){
   // Wait for Supabase to initialise if needed
   if(!sbReady){
@@ -683,7 +729,12 @@ async function startCheckout(plan){
 // Resume the exact plan chosen before authentication. Remove the values before
 // continuing so a refresh can never start a second checkout session.
 window.addEventListener('load',async()=>{
-  const pendingPlan=sessionStorage.getItem('checkout_plan');
+  const pendingPayg=sessionStorage.getItem('checkout_payg');
+  if(pendingPayg){
+    sessionStorage.removeItem('checkout_payg');
+    if(currentUser){ startPaygCheckout(); return; }
+  }
+    const pendingPlan=sessionStorage.getItem('checkout_plan');
   const pendingBilling=sessionStorage.getItem('checkout_billing');
   if(!pendingPlan)return;
   sessionStorage.removeItem('checkout_plan');
