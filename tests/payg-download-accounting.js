@@ -30,4 +30,11 @@ assert.match(pricing,/10% off until 31 December 2026/,'subscription launch savin
 assert.match(checkout,/paygDownloads[\s\S]*"8"[\s\S]*"5"/,'checkout must award 8 downloads during launch and revert to 5');
 assert.match(webhook,/downloads !== 5 && downloads !== 8/,'webhook must accept normal and launch PAYG quantities only');
 
+assert.match(print,/100% \/ Actual Size/,'printing help must require 100% / Actual Size');
+assert.match(print,/Do not use “Fit to page” or “Scale to fit”/,'printing help must warn against scaling');
+assert.match(print,/No download has been used/,'failed PDF rendering/popup must tell customer no download was consumed');
+const zipGenerate=print.indexOf("zip.generateAsync({type:'blob'})");
+const zipCharge=print.indexOf('const charge=await consumeComposerDownload();',zipGenerate);
+assert.ok(zipGenerate>=0 && zipCharge>zipGenerate,'ZIP must be generated before its download is consumed');
+
 console.log('PAYG download accounting checks passed');
