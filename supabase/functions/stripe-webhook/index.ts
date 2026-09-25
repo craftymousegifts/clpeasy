@@ -156,19 +156,13 @@ Deno.serve(async (req) => {
           const downloads = Number.parseInt(session.metadata?.downloads ?? '0', 10);
           if (downloads !== 5 && downloads !== 8) { console.error('Invalid PAYG download quantity:', downloads); break; }
 
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('topup_credits')
-            .eq('id', userId)
-            .single();
-
-          const currentDownloads = profile?.topup_credits ?? 0;
-          const { error: paygError } = await supabase.from('profiles').update({
-            topup_credits: currentDownloads + downloads,
-          }).eq('id', userId);
+          const { data: newBalance, error: paygError } = await supabase.rpc(
+            'credit_purchased_downloads',
+            { p_user_id: userId, p_downloads: downloads },
+          );
 
           if (paygError) throw paygError;
-          console.log(`PAYG: +${downloads} downloads (balance ${currentDownloads + downloads}) for user ${userId}`);
+          console.log(`PAYG: +${downloads} downloads (balance ${newBalance}) for user ${userId}`);
           break;
         }
 
@@ -405,6 +399,16 @@ if (profileStatus) {
     }
   } catch (err) {
     console.error('Error processing webhook:', err);
+    // The event was claimed before side effects began. If processing fails,
+    // release that claim so Stripe's normal retry can actually process the
+    // event instead of being mistaken for an already-completed duplicate.
+    // Without this, a transient database failure could permanently charge a
+    // customer without crediting their account.
+    const { error: releaseError } = await supabase
+      .from('stripe_processed_events')
+      .delete()
+      .eq('event_id', event.id);
+    if (releaseError) console.error('Could not release failed webhook claim:', releaseError);
     return new Response(JSON.stringify({ error: 'Webhook processing failed' }), { status: 500 });
   }
 
