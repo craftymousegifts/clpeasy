@@ -674,19 +674,12 @@ async function initAuth(){
     if(session){
       currentUser=session.user;
       isPro=false;
-      // ── CHECK SUBSCRIPTION STATUS (mirrors builder.html's initAuth) ──
-      try{
-        const {data:sub}=await sbClient.from('subscriptions').select('plan,status').eq('user_id',currentUser.id).single();
-        isPro = !!(sub && sub.status==='active');
-      }catch(e){ isPro=false; }
-      // Sidebar identity block (avatar + email), same element IDs as the
-      // shared shell on dashboard.html/builder.html/my-labels.html/
-      // account.html. This page has never fetched the `profiles` row those
-      // pages use for plan/downloads-remaining data, and does not start
-      // doing so now (that is subscription/download-credit logic, out of
-      // scope here) -- so su-plan and the downloads-remaining sidebar-usage
-      // card are deliberately left at their default hidden/placeholder
-      // state rather than populated with a guess.
+      // Export entitlement is based on an available download, not merely an
+      // active subscription. This lets PAYG customers use purchased downloads
+      // without subscribing, while active trial/subscription allowances still
+      // work exactly as before.
+      try{ await refreshProEntitlement(); }catch(e){ isPro=false; }
+      // Sidebar identity block (avatar + email).
       const suUser=document.getElementById('sidebar-user');
       if(suUser){
         suUser.style.display='flex';
@@ -706,32 +699,56 @@ async function initAuth(){
 }
 async function signOut(){if(sbClient)await sbClient.auth.signOut();window.location.href='auth.html';}
 
-// SECURITY: fresh, server-verified re-check of Pro entitlement, run
-// immediately before any export function actually builds a downloadable
-// artifact (see downloadPDF()/cricutDownloadZip()/cricutDownloadSequential()
-// below). `isPro` is an ordinary mutable page-global — trivially editable
-// from the browser devtools console — so renderSheetPosition()'s watermark
-// decision must never trust a stale/tampered value at the moment of
-// export. This repeats the exact subscription query initAuth() runs at
-// login (RLS-scoped to the authenticated user via Supabase, so it cannot
-// be spoofed by editing client state) and overwrites `isPro` with the
-// real result. Fails closed (isPro=false, watermark applied) on any
-// error, missing session or missing subscription row.
+// Fresh server-backed check of whether this account has at least one download
+// available. The historical variable name isPro is retained to minimise risk
+// across the renderer, but now means "clean export currently entitled".
+function profileHasAvailableDownload(p){
+  if(!p)return false;
+  const purchased=Number(p.topup_credits||0);
+  if(purchased>0)return true;
+  const used=Number(p.downloads_used||0), limit=Number(p.downloads_limit||0);
+  const now=Date.now();
+  const active=p.subscription_status==='active';
+  const trial=p.subscription_status==='trialing' && p.trial_end && new Date(p.trial_end).getTime()>now;
+  return (active||trial) && used<limit;
+}
 async function refreshProEntitlement(){
   if(!currentUser || !sbClient){ isPro=false; updateProGate(); return false; }
   try{
-    const {data:sub}=await sbClient.from('subscriptions').select('plan,status').eq('user_id',currentUser.id).single();
-    isPro = !!(sub && sub.status==='active');
-  }catch(e){
-    isPro=false;
-  }
+    const {data:p,error}=await sbClient.from('profiles')
+      .select('subscription_status,trial_end,downloads_used,downloads_limit,topup_credits')
+      .eq('id',currentUser.id).single();
+    if(error)throw error;
+    isPro=profileHasAvailableDownload(p);
+  }catch(e){ isPro=false; }
   updateProGate();
   return isPro;
 }
+
+// Atomically consumes exactly one finished-file download. Passing null means
+// there is no 7-day same-label grace; that is intentional for Composer sheet
+// exports. The database function locks the profile row so concurrent tabs
+// cannot overspend the same allowance.
+async function consumeComposerDownload(){
+  if(!currentUser || !sbClient)return {ok:false,reason:'not_authenticated'};
+  const {data,error}=await sbClient.rpc('consume_download',{p_label_key:null});
+  if(error){ console.error('Download accounting failed:',error); return {ok:false,reason:'accounting_error'}; }
+  if(!data || data.ok!==true)return data||{ok:false,reason:'no_downloads_remaining'};
+  // Keep the page's clean-export gate in sync after the atomic decrement.
+  await refreshProEntitlement();
+  return data;
+}
 function updateProGate(){
   const gate=document.getElementById('pro-gate');
-  if(isPro){ if(gate)gate.style.display='none'; }
-  else { if(gate)gate.style.display=''; }
+  if(gate){
+    if(isPro){ gate.style.display='none'; }
+    else{
+      gate.style.display='';
+      gate.innerHTML=currentUser
+        ? '<strong>🔒 No downloads remaining</strong> <a href="pricing.html">Buy downloads or choose a plan</a> to export this sheet.'
+        : '<strong>🔒 Sign in to download</strong> Please <a href="auth.html">sign in to your CLPeasy account</a> to download your print sheet.';
+    }
+  }
   updateExportButtonState();
 }
 
@@ -2331,7 +2348,11 @@ async function downloadPDF(){
   // refreshProEntitlement()), so console-tampering it beforehand cannot
   // produce an unwatermarked PDF.
   const verifiedPro=await refreshProEntitlement();
-  if(!verifiedPro){alert('Upgrade to Pro to download print-ready PDFs.');return;}
+  if(!verifiedPro){alert('You have no downloads remaining. Buy downloads or choose a plan to continue.');return;}
+  // One complete A4 sheet is one finished exported file, so consume exactly
+  // one download here regardless of how many labels/fragrances are on it.
+  const charge=await consumeComposerDownload();
+  if(!charge.ok){alert(charge.reason==='accounting_error'?'We could not verify your download allowance. Please try again.':'You have no downloads remaining. Buy downloads or choose a plan to continue.');return;}
 
   const DPI=300,MM2PT=2.8346; // PDF points per mm
   const shWmm=A4_W,shHmm=A4_H;
@@ -2495,7 +2516,10 @@ async function cricutDownloadZip(){
   // calling this function directly, cannot produce clean cutting-machine
   // PNGs for an unentitled user.
   const verifiedPro=await refreshProEntitlement();
-  if(!verifiedPro){alert('Upgrade to Pro to download cutting-machine files.');return;}
+  if(!verifiedPro){alert('You have no downloads remaining. Buy downloads or choose a plan to continue.');return;}
+  // A ZIP is one finished exported file, so the whole ZIP costs one download.
+  const charge=await consumeComposerDownload();
+  if(!charge.ok){alert(charge.reason==='accounting_error'?'We could not verify your download allowance. Please try again.':'You have no downloads remaining. Buy downloads or choose a plan to continue.');return;}
   document.getElementById('modal-options').style.display='none';
   document.getElementById('modal-sub').style.display='none';
   const prog=document.getElementById('modal-progress');
@@ -2545,7 +2569,7 @@ async function cricutDownloadSequential(){
   if(blockMsg){alert(blockMsg);return;}
   // SECURITY: see cricutDownloadZip() above -- same fresh re-check.
   const verifiedPro=await refreshProEntitlement();
-  if(!verifiedPro){alert('Upgrade to Pro to download cutting-machine files.');return;}
+  if(!verifiedPro){alert('You have no downloads remaining. Buy downloads or choose a plan to continue.');return;}
   document.getElementById('modal-options').style.display='none';
   document.getElementById('modal-sub').style.display='none';
   const prog=document.getElementById('modal-progress');
@@ -2572,6 +2596,15 @@ async function cricutDownloadSequential(){
     let finalName=fname;let counter=1;
     while(usedNames.has(finalName)){finalName=fname.replace('.png',`-${counter++}.png`);}
     usedNames.add(finalName);
+    // "Download one by one" creates separate finished PNG files, so each
+    // successful PNG consumes one download. Stop cleanly if the balance ends.
+    const charge=await consumeComposerDownload();
+    if(!charge.ok){
+      txt.textContent=charge.reason==='accounting_error'
+        ? '⚠️ We could not verify your download allowance. Please try again.'
+        : 'You have no downloads remaining. Buy downloads or choose a plan to continue.';
+      break;
+    }
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=finalName;
     document.body.appendChild(a);a.click();
     setTimeout(()=>{URL.revokeObjectURL(a.href);if(a.parentNode)a.parentNode.removeChild(a);},800);
