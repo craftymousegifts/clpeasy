@@ -58,7 +58,7 @@ const LOCATIONS = [
   ['index.html:664 (hero Step 2)', 'index', 'Paste your complete SDS document into Smart Paste — or just Section 2.2 if you prefer. CLPeasy automatically finds the hazard classification section',
     'Copy Section 2.2 (Label elements) from your current SDS into Smart Paste. CLPeasy extracts the available signal word, hazard pictograms, H statements, P statements and sensitiser information to help build your label. Review the extracted information against your SDS before continuing.'],
   ['index.html:704 ("any supplier" statement)', 'index', "use Smart Paste with any supplier's SDS PDF from anywhere in the world",
-    'Use Section 2.2 from your current supplier SDS. Supplier formats can vary, so always review the extracted information against the source document.'],
+    'Use Section 2.2 from your current supplier SDS. Supplier formats can vary, so always review the extracted information against the source document.', '7778094 Remove unreleased supplier library homepage card'],
   ['index.html:709 (feature card)', 'index', 'Paste your complete SDS document — CLPeasy automatically finds Section 2.2 and extracts all hazard data instantly',
     'Copy Section 2.2 (Label elements) from your current supplier SDS and Smart Paste extracts the available hazard information. CLPeasy works from the document you provide rather than a stored fragrance database, so you can review the result against your current SDS.'],
   ['index.html:892 (How it works, Step 3)', 'index', 'Paste your complete SDS document into Smart Paste. CLPeasy™ automatically finds Section 2.2 and extracts signal word',
@@ -70,9 +70,9 @@ const LOCATIONS = [
   ['index.html:1065 (FAQ: Any supplier?)', 'index', 'Paste your complete SDS document into Smart Paste and CLPeasy extracts all hazard data automatically',
     'Copy Section 2.2 (Label elements) from your current supplier SDS into Smart Paste. CLPeasy extracts the available hazard information for you to review against the source document. Supplier formats vary, and the SDS must be applicable to your product, concentration and target market.'],
   ['index.html:1300 (onboarding/signup guide)', 'index', 'copy your complete SDS PDF text, paste it into the box and click',
-    'Copy the complete Section 2.2 (Label elements) from your SDS PDF, paste it into the box and select <strong>Extract hazard data</strong>. CLPeasy fills in the information it can identify; review the result against your SDS before continuing.'],
+    'Copy the complete Section 2.2 (Label elements) from your SDS PDF, paste it into the box and select <strong>Extract hazard data</strong>. CLPeasy fills in the information it can identify; review the result against your SDS before continuing.', '27c976d Polish homepage feature journey and remove remaining future promises'],
   ['index.html:1302 (onboarding/signup guide tip)', 'index', "paste the whole document and CLPeasy does the rest. Works with any supplier worldwide",
-    'Copy Section 2.2 only&#x2014;not the entire SDS. Include the complete Label elements section and review the extracted information against your current supplier document.'],
+    'Copy Section 2.2 only&#x2014;not the entire SDS. Include the complete Label elements section and review the extracted information against your current supplier document.', '27c976d Polish homepage feature journey and remove remaining future promises'],
   ['index.html:1363 (second signup-guide variant)', 'index', 'select all text (Ctrl+A / Cmd+A), copy and paste into the box. CLPeasy extracts everything automatically',
     'Open your current supplier SDS PDF and copy the complete Section 2.2 (Label elements), from its heading through the final hazard, precautionary and supplemental information. Paste that section into <strong>Smart Paste</strong> and review the extracted result against the SDS.'],
   ['index.html:1365 (second signup-guide tip)', 'index', 'Works with any supplier, any fragrance, worldwide. CLPeasy finds Section 2.2 automatically from the full document',
@@ -109,13 +109,16 @@ function run(){
 
   assert.strictEqual(LOCATIONS.length, 19, `expected 19 entries in LOCATIONS (the 20th approved change is the dedicated builder.html pin below), got ${LOCATIONS.length}`);
 
-  for(const [label, fileKey, oldText, newText] of LOCATIONS){
+  // A fifth element records a later, deliberate commit on main that removed the
+  // whole section containing the approved wording. The retired wording must
+  // still be absent; only the "replacement must be present" check is waived.
+  for(const [label, fileKey, oldText, newText, removedBy] of LOCATIONS){
     const source = SOURCES[fileKey];
     const hasOld = source.includes(oldText);
     const hasNew = source.includes(newText);
     results.locations[label] = { hasOld, hasNew };
     assert(!hasOld, `${label}: retired wording must be gone, but the exact old phrase was still found`);
-    assert(hasNew, `${label}: approved replacement wording was not found verbatim`);
+    if(!removedBy) assert(hasNew, `${label}: approved replacement wording was not found verbatim`);
   }
 
   // ── Dedicated pin on the live builder.html Smart Paste instruction ────────
@@ -230,7 +233,8 @@ function run(){
     // tests/builder-regression.js and tests/blocked-overlay-and-download-
     // guard-parity.js download-gate suites, which continue to run against
     // this file unchanged).
-    const step5CheckboxLabel = 'I confirm I have verified all hazard data on this label against my fragrance supplier\'s SDS sheet at my actual fragrance load. I understand I am solely responsible for ensuring this label is accurate and legally compliant before printing and selling.';
+    // Label text deliberately reworded in c5c1d57 / PR #136 ("Improve builder responsibility and CLP Ready wording").
+    const step5CheckboxLabel = 'I confirm I have reviewed the finished label and checked the hazard information against my fragrance supplier\'s current SDS/CLP information for the fragrance load used. CLPeasy has helped extract, organise, check and format the information provided; I understand I remain responsible for the product I place on the market and for reviewing the finished label before printing and selling.';
     results.correction1.step5CheckboxPreserved = builderSource.includes('id="verify-checkbox"') && builderSource.includes(step5CheckboxLabel);
     assert(results.correction1.step5CheckboxPreserved, 'Step 5 verification checkbox and its label text must remain exactly as before');
   }
