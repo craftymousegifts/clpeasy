@@ -25,6 +25,14 @@ declare
   v_clean_export boolean := false;
   v_source text := null;
 begin
+  -- profiles has a billing-field protection trigger that permits billing
+  -- mutations only when the caller JWT is service_role. This RPC is SECURITY
+  -- DEFINER but retains the authenticated caller's JWT, so without a local
+  -- service-role claim the trigger silently restores downloads_used/topup_credits.
+  -- The function itself is executable only by authenticated users and always
+  -- operates on auth.uid(), so scope the bypass to this transaction only.
+  perform set_config('request.jwt.claim.role', 'service_role', true);
+
   if v_user_id is null then
     raise exception 'Not authenticated';
   end if;
@@ -121,6 +129,7 @@ end;
 $$;
 
 revoke all on function public.consume_download(text) from public;
+revoke all on function public.consume_download(text) from anon;
 grant execute on function public.consume_download(text) to authenticated;
 
 
@@ -156,5 +165,6 @@ end;
 $$;
 
 revoke all on function public.credit_purchased_downloads(uuid, integer) from public;
+revoke all on function public.credit_purchased_downloads(uuid, integer) from anon;
 revoke all on function public.credit_purchased_downloads(uuid, integer) from authenticated;
 grant execute on function public.credit_purchased_downloads(uuid, integer) to service_role;
