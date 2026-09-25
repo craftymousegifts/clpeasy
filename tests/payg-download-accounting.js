@@ -18,5 +18,7 @@ assert.match(print,/One complete A4 sheet is one finished exported file[\s\S]*co
 assert.match(print,/A ZIP is one finished exported file[\s\S]*consumeComposerDownload\(\)/,'ZIP export must consume one download');
 assert.match(print,/"Download one by one" creates separate finished PNG files[\s\S]*consumeComposerDownload\(\)/,'sequential PNG export must consume per file');
 assert.match(print,/Buy downloads or choose a plan/,'zero-balance message must work for PAYG and subscriptions');
+const consumeBody=print.slice(print.indexOf('async function consumeComposerDownload'),print.indexOf('function updateProGate'));
+assert.ok(!consumeBody.includes('await refreshProEntitlement()'),'final paid download must not become watermarked before rendering');
 
 console.log('PAYG download accounting checks passed');
