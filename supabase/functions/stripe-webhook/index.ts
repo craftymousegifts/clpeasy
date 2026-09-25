@@ -154,7 +154,7 @@ Deno.serve(async (req) => {
         // as top-ups, but does not require an active subscription.
         if (type === 'payg') {
           const downloads = Number.parseInt(session.metadata?.downloads ?? '0', 10);
-          if (downloads !== 5) { console.error('Invalid PAYG download quantity:', downloads); break; }
+          if (downloads !== 5 && downloads !== 8) { console.error('Invalid PAYG download quantity:', downloads); break; }
 
           const { data: profile } = await supabase
             .from('profiles')
