@@ -2,6 +2,7 @@ const fs=require('fs');
 const assert=require('assert');
 
 const print=fs.readFileSync('print.html','utf8');
+const builder=fs.readFileSync('builder.html','utf8');
 const pricing=fs.readFileSync('pricing.html','utf8');
 const checkout=fs.readFileSync('supabase/functions/create-checkout-session/index.ts','utf8');
 const webhook=fs.readFileSync('supabase/functions/stripe-webhook/index.ts','utf8');
@@ -29,6 +30,14 @@ assert.match(pricing,/3 extra downloads FREE/,'PAYG launch must advertise three 
 assert.match(pricing,/10% off until 31 December 2026/,'subscription launch saving must show its end date');
 assert.match(checkout,/paygDownloads[\s\S]*"8"[\s\S]*"5"/,'checkout must award 8 downloads during launch and revert to 5');
 assert.match(webhook,/downloads !== 5 && downloads !== 8/,'webhook must accept normal and launch PAYG quantities only');
+
+assert.match(builder,/sbClient\.rpc\('consume_download',\{p_label_key:labelKey\|\|null\}\)/,'Builder must consume individual exports through atomic RPC');
+assert.ok(!builder.includes("from('subscriptions').select('plan,status')"),'Builder must not gate PAYG on subscriptions table');
+assert.match(builder,/subscription_status,trial_end,topup_credits/,'Builder clean-export entitlement must use profiles');
+assert.match(builder,/const purchased=\(prof\.topup_credits\|\|0\)>0/,'PAYG balance must unlock clean Builder export');
+assert.match(builder,/return scent\+'::'\+type/,'Builder must pass stable label identity for 7-day grace');
+assert.ok(!builder.includes("sbClient.rpc('consume_topup_credit')"),'Builder must not use legacy non-atomic top-up consumption');
+assert.ok(!builder.includes("from('label_downloads')"),'Builder must leave 7-day grace lookup/update to atomic RPC');
 
 assert.match(print,/100% \/ Actual Size/,'printing help must require 100% / Actual Size');
 assert.match(print,/Do not use “Fit to page” or “Scale to fit”/,'printing help must warn against scaling');
