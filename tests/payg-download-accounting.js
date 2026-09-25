@@ -14,6 +14,9 @@ assert.match(migration,/downloads_used\s*=\s*coalesce\(downloads_used,0\)\s*\+\s
 assert.match(migration,/v_profile\.trial_end\s*>\s*v_now/i,'expired trials must not consume trial allowance');
 assert.match(migration,/v_recent\s*>?=\s*v_now\s*-\s*interval '7 days'/i,'same-label 7-day grace must be preserved');
 assert.match(migration,/grant execute on function public\.consume_download\(text\) to authenticated/i,'only authenticated app users should execute accounting RPC');
+assert.match(migration,/set_config\('request\.jwt\.claim\.role',\s*'service_role',\s*true\)/i,'accounting RPC must locally bypass the billing-field protection trigger');
+assert.match(migration,/revoke all on function public\.consume_download\(text\) from anon/i,'anon must not execute download accounting RPC');
+assert.match(migration,/revoke all on function public\.credit_purchased_downloads\(uuid, integer\) from anon/i,'anon must not execute PAYG credit RPC');
 assert.match(migration,/add column if not exists clean_export boolean not null default false/i,'re-download history must preserve clean vs watermarked entitlement');
 assert.match(migration,/select last_downloaded_at, clean_export into v_recent, v_clean_export/i,'free re-download must recover original export entitlement');
 assert.match(migration,/'clean_export', v_clean_export/i,'accounting RPC must return the authorised export entitlement');
