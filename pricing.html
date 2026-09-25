@@ -651,17 +651,21 @@ initSupabase();
 async function startPaygCheckout(){
   const btn=document.getElementById('btn-payg');
   try{
-    const {data:{session}}=await sb.auth.getSession();
+    // FIX: this used an undefined `sb` and SUPABASE_ANON_KEY, so every click
+    // threw and showed "Something went wrong". Same client/key as startCheckout().
+    if(!sbReady)await initSupabase();
+    const {data:{session}}=await sbClient.auth.getSession();
     const currentUser=session?.user;
     if(!currentUser){
       sessionStorage.setItem('checkout_payg','1');
-      window.location.href='auth.html?mode=signup&return=pricing.html';
+      // auth.html only honours ?next= (same as the subscription path below).
+      window.location.href='auth.html?mode=signup&next=pricing.html';
       return;
     }
     btn.disabled=true; btn.textContent='Opening secure checkout…';
     const res=await fetch(`${SUPABASE_URL}/functions/v1/create-checkout-session`,{
       method:'POST',
-      headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+session.access_token},
+      headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+session.access_token},
       body:JSON.stringify({
         productKey:'payg_5',
         mode:'payment',
@@ -735,6 +739,9 @@ window.addEventListener('load',async()=>{
   const pendingPayg=sessionStorage.getItem('checkout_payg');
   if(pendingPayg){
     sessionStorage.removeItem('checkout_payg');
+    // Wait for the session like the subscription path does; otherwise the
+    // resumed PAYG checkout can be dropped if getSession() resolves after load.
+    if(!sbReady)await initSupabase();
     if(currentUser){ startPaygCheckout(); return; }
   }
     const pendingPlan=sessionStorage.getItem('checkout_plan');
