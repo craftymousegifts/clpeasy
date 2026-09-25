@@ -178,7 +178,10 @@ serve(async (req) => {
       params.set("subscription_data[metadata][priceId]", priceId);
     } else if (productKey === "payg_5") {
       params.set("metadata[type]", "payg");
-      params.set("metadata[downloads]", "5");
+      // 2026 PAYG launch: £4.99 buys 5 + 3 free through 31 Dec 2026.
+      // The webhook validates this server-stamped quantity; the browser cannot choose it.
+      const paygDownloads = new Date() < new Date("2027-01-01T00:00:00Z") ? "8" : "5";
+      params.set("metadata[downloads]", paygDownloads);
     } else {
       params.set("metadata[type]", "topup");
     }
