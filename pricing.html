@@ -226,7 +226,7 @@ footer a{color:#6B7280;text-decoration:none;}
       <span class="card-icon">🕯️</span>
       <div class="card-name">Easy Start™</div>
       <div class="card-desc">Practical tools for makers selling in Great Britain creating organised, print-ready CLP labels from supplier SDS data.</div>
-      <div class="price-row"><div class="price-amount" id="maker-price">&pound;9.99</div><div class="price-period">/mo</div></div>
+      <div class="price-row"><div class="price-amount" id="maker-price">&pound;8.99</div><div class="price-period">/mo</div></div><div style="font-size:12px;color:var(--teal-dark);font-weight:700;margin-top:-5px;margin-bottom:10px;">10% off until 31 December 2026 · then £9.99/month</div>
       <div class="price-sub" id="maker-sub">or &pound;99/year &mdash; pay monthly it&rsquo;s &pound;119.88 &mdash; save &pound;20.88</div>
       <button id="btn-easy_start" onclick="startCheckout('easy_start')" class="btn btn-teal">Get started &#8594;</button>
       <hr class="divider">
@@ -254,7 +254,7 @@ footer a{color:#6B7280;text-decoration:none;}
       <span class="card-icon">&#9889;</span>
       <div class="card-name">Easy Pro™</div>
       <div class="card-desc">Everything in Easy Start, with 10 extra downloads each month and priority support.</div>
-      <div class="price-row"><div class="price-amount" id="pro-price">&pound;14.99</div><div class="price-period">/mo</div></div>
+      <div class="price-row"><div class="price-amount" id="pro-price">&pound;13.49</div><div class="price-period">/mo</div></div><div style="font-size:12px;color:var(--teal-dark);font-weight:700;margin-top:-5px;margin-bottom:10px;">10% off until 31 December 2026 · then £14.99/month</div>
       <div class="price-sub" id="pro-sub">or &pound;149/year &mdash; pay monthly it&rsquo;s &pound;179.88 &mdash; save &pound;30.88</div>
       <button id="btn-easy_pro" onclick="startCheckout('easy_pro')" class="btn btn-glow">Get started &#8594;</button>
       <hr class="divider">
@@ -268,16 +268,19 @@ footer a{color:#6B7280;text-decoration:none;}
   </div>
   <section id="payg" style="margin:28px 0 10px;background:white;border:2px solid var(--teal);border-radius:18px;padding:24px 26px;display:flex;gap:24px;align-items:center;justify-content:space-between;flex-wrap:wrap;">
     <div style="flex:1;min-width:240px;">
-      <div style="font-size:11px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:var(--teal);margin-bottom:5px;">No subscription</div>
-      <h2 style="font-family:'DM Serif Display',serif;font-size:25px;margin-bottom:6px;">Pay As You Go</h2>
-      <p style="font-size:13px;color:var(--muted);line-height:1.6;max-width:620px;">Only make occasionally? Buy 5 downloads and use them whenever you need them. One download means one finished exported file — an individual label or a complete A4 sheet from the Print Sheet Composer.</p>
-      <p style="font-size:12px;color:var(--teal-dark);font-weight:700;margin-top:8px;">Downloads do not expire · No monthly fee · No points or credits system</p>
+      <div style="font-size:11px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:var(--teal);margin-bottom:5px;">2026 launch offer · Ends 31 December</div>
+      <h2 style="font-family:'DM Serif Display',serif;font-size:27px;margin-bottom:6px;">Give your CLP labels a new lease of life for the rest of 2026.</h2>
+      <p style="font-size:13px;color:var(--muted);line-height:1.6;max-width:650px;">To celebrate the launch of <strong>CLPeasy Pay As You Go</strong>, buy 5 downloads for £4.99 and get <strong>3 extra downloads FREE</strong> — 8 downloads in total. Use them whenever you need them.</p>
+      <p style="font-size:13px;color:var(--muted);line-height:1.6;max-width:650px;margin-top:6px;">One download means one finished exported file — an individual label or a complete A4 sheet from the Print Sheet Composer.</p>
+      <p style="font-size:12px;color:var(--teal-dark);font-weight:700;margin-top:8px;">Downloads do not expire · No monthly fee</p>
+      <p style="font-size:12px;color:var(--text);font-weight:700;margin-top:10px;">Making regularly? Easy Start and Easy Pro are 10% off for the rest of 2026.</p>
     </div>
-    <div style="min-width:210px;text-align:center;">
+    <div style="min-width:220px;text-align:center;">
+      <div style="font-size:12px;font-weight:800;color:var(--teal-dark);margin-bottom:2px;">5 + 3 FREE</div>
       <div style="font-size:36px;font-weight:900;letter-spacing:-1px;">£4.99</div>
-      <div style="font-size:13px;color:var(--muted);margin:2px 0 12px;">5 downloads</div>
-      <button id="btn-payg" onclick="startPaygCheckout()" class="btn btn-outline" style="margin:0;">Buy 5 downloads →</button>
-      <div style="font-size:11px;color:var(--muted);margin-top:9px;">About £1 per download</div>
+      <div style="font-size:13px;color:var(--muted);margin:2px 0 12px;">8 downloads · launch offer</div>
+      <button id="btn-payg" onclick="startPaygCheckout()" class="btn btn-outline" style="margin:0;">Get 8 downloads →</button>
+      <div style="font-size:11px;color:var(--muted);margin-top:9px;">Launch offer ends 31 December 2026</div>
     </div>
   </section>
 
@@ -672,7 +675,7 @@ async function startPaygCheckout(){
   }catch(e){
     console.error('PAYG checkout error:',e);
     alert('Something went wrong starting checkout. Please try again.');
-    btn.disabled=false; btn.textContent='Buy 5 downloads →';
+    btn.disabled=false; btn.textContent='Get 8 downloads →';
   }
 }
 
