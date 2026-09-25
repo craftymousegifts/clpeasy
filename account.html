@@ -396,7 +396,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
             <button class="topup-btn" id="topup-btn" style="display:none;" onclick="buyTopup()">+ Buy more downloads</button>
           </div>
           <div id="topup-credits-section" style="display:none;margin-top:10px;font-size:13px;color:var(--teal-dark);font-weight:600;">
-            <span id="topup-credits-count"></span> purchased top-up credits available — never expire, used after your monthly allowance.
+            <span id="topup-credits-count"></span> purchased downloads available — they do not expire.
           </div>
 
           <div class="action-row" id="action-row">
@@ -613,7 +613,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
 <div class="overlay" id="modal-topup">
   <div class="modal">
     <div class="modal-title">Buy more downloads</div>
-    <div class="modal-sub">Top-up packs add to your allowance for the current month. Downloads don't roll over to next month.</div>
+    <div class="modal-sub">Top-up packs add purchased downloads to your account. Purchased downloads do not expire.</div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
       <div class="survey-opt" onclick="selectTopup(5,3.99,this)" style="justify-content:space-between;">
         <span>5 extra downloads</span><strong>£3.99</strong>
@@ -903,7 +903,7 @@ function renderAccount() {
       dlLabelEl.textContent = 'Downloads this month';
       dlNoteEl.textContent = pct >= 100
         ? (u.topup_credits > 0
-          ? `You've reached your monthly limit — now drawing from your ${u.topup_credits} purchased credit(s).`
+          ? `You've reached your monthly limit — now drawing from your ${u.topup_credits} purchased download(s).`
           : "You've reached your monthly limit. Buy a top-up pack or wait until your allowance resets next billing date.")
         : 'Resets on your next billing date. Re-downloading the same label within 7 days is free.';
     }
