@@ -573,7 +573,8 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
       <summary>Printing help</summary>
       <div class="collapsible-body no-pad">
         <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 12px;font-size:12px;color:#166534;line-height:1.6;">
-          <strong>🖨 Home printing / print companies:</strong> Use the PDF sheet — print on A4 sticker paper.<br>
+          <strong>🖨 A4 printing:</strong> Use the PDF sheet. In your printer settings choose <strong>100% / Actual Size</strong> and A4 paper. Do not use “Fit to page” or “Scale to fit”, as these can change the physical label size.<br>
+          <strong>📏 Size check:</strong> Before using label stock, print a test on ordinary A4 paper and measure a known label dimension. The printed measurement should match the size shown in CLPeasy.<br>
           <strong>✂ Cutting machine (Print Then Cut):</strong> Download individual PNGs and upload each one to your cutting machine separately. It cannot split a sheet into individual labels.
         </div>
       </div>
@@ -2345,16 +2346,17 @@ async function downloadPDF(){
   const blockMsg=getSheetFitBlockMessage();
   if(blockMsg){alert(blockMsg);return;}
 
-  // SECURITY: re-verify Pro entitlement fresh from the server immediately
-  // before generating the export — never trust the cached `isPro` (see
-  // refreshProEntitlement()), so console-tampering it beforehand cannot
-  // produce an unwatermarked PDF.
+  // Open the print window while this is still a direct user gesture. If the
+  // browser blocks it, stop before consuming a download.
+  const win=window.open('','_blank');
+  if(!win){alert('Please allow pop-ups for clpeasy.com to print or save your A4 sheet. No download has been used.');return;}
+  win.document.write('<!DOCTYPE html><html><head><title>Preparing CLPeasy Print Sheet…</title></head><body style="font-family:sans-serif;padding:24px">Preparing your A4 print sheet…</body></html>');
+  win.document.close();
+
+  // SECURITY: re-verify entitlement fresh from the server before generating
+  // the clean export. Close the holding window if there is no allowance.
   const verifiedPro=await refreshProEntitlement();
-  if(!verifiedPro){alert('You have no downloads remaining. Buy downloads or choose a plan to continue.');return;}
-  // One complete A4 sheet is one finished exported file, so consume exactly
-  // one download here regardless of how many labels/fragrances are on it.
-  const charge=await consumeComposerDownload();
-  if(!charge.ok){alert(charge.reason==='accounting_error'?'We could not verify your download allowance. Please try again.':'You have no downloads remaining. Buy downloads or choose a plan to continue.');return;}
+  if(!verifiedPro){win.close();alert('You have no downloads remaining. Buy downloads or choose a plan to continue.');return;}
 
   const DPI=300,MM2PT=2.8346; // PDF points per mm
   const shWmm=A4_W,shHmm=A4_H;
@@ -2416,15 +2418,18 @@ async function downloadPDF(){
 
   // Convert SVG→canvas PNG then print — prevents 2-page browser split
   const svgImg=new Image();
-  svgImg.onload=function(){
+  svgImg.onload=async function(){
     const cvs=document.createElement('canvas');
     cvs.width=shWpx;cvs.height=shHpx;
     const ctx=cvs.getContext('2d');
     ctx.fillStyle='white';ctx.fillRect(0,0,shWpx,shHpx);
     ctx.drawImage(svgImg,0,0,shWpx,shHpx);
     const pngDataUri=cvs.toDataURL('image/png');
-    const win=window.open('','_blank');
-    if(!win){alert('Please allow pop-ups for clpeasy.com to download your PDF.');return;}
+    // The artifact is now fully rendered. Consume one download only at the
+    // last safe point before handing the finished A4 sheet to the customer.
+    const charge=await consumeComposerDownload();
+    if(!charge.ok){win.close();alert(charge.reason==='accounting_error'?'We could not verify your download allowance. Please try again.':'You have no downloads remaining. Buy downloads or choose a plan to continue.');return;}
+    win.document.open();
     win.document.write(`<!DOCTYPE html><html><head><title>CLPeasy Print Sheet</title>
     <style>
       *{margin:0;padding:0;box-sizing:border-box;}
@@ -2445,7 +2450,7 @@ async function downloadPDF(){
     </body></html>`);
     win.document.close();
   };
-  svgImg.onerror=function(){alert('Could not render sheet. Please try again.');};
+  svgImg.onerror=function(){win.close();alert('Could not render sheet. No download has been used. Please try again.');};
   svgImg.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(sheetSVG);
 }
 
