@@ -2,6 +2,9 @@ const fs=require('fs');
 const assert=require('assert');
 
 const print=fs.readFileSync('print.html','utf8');
+const pricing=fs.readFileSync('pricing.html','utf8');
+const checkout=fs.readFileSync('supabase/functions/create-checkout-session/index.ts','utf8');
+const webhook=fs.readFileSync('supabase/functions/stripe-webhook/index.ts','utf8');
 const migration=fs.readFileSync('supabase/migrations/20260925000000_atomic_download_accounting.sql','utf8');
 
 assert.match(migration,/for update;/i,'profile row must be locked for atomic consumption');
@@ -20,5 +23,11 @@ assert.match(print,/"Download one by one" creates separate finished PNG files[\s
 assert.match(print,/Buy downloads or choose a plan/,'zero-balance message must work for PAYG and subscriptions');
 const consumeBody=print.slice(print.indexOf('async function consumeComposerDownload'),print.indexOf('function updateProGate'));
 assert.ok(!consumeBody.includes('await refreshProEntitlement()'),'final paid download must not become watermarked before rendering');
+
+assert.match(pricing,/Give your CLP labels a new lease of life for the rest of 2026\./,'launch headline must be present');
+assert.match(pricing,/3 extra downloads FREE/,'PAYG launch must advertise three free downloads');
+assert.match(pricing,/10% off until 31 December 2026/,'subscription launch saving must show its end date');
+assert.match(checkout,/paygDownloads[\s\S]*"8"[\s\S]*"5"/,'checkout must award 8 downloads during launch and revert to 5');
+assert.match(webhook,/downloads !== 5 && downloads !== 8/,'webhook must accept normal and launch PAYG quantities only');
 
 console.log('PAYG download accounting checks passed');
