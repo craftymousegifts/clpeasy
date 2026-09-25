@@ -16,7 +16,14 @@ declare
   v_now timestamptz := now();
   v_recent timestamptz;
   v_subscription_usable boolean := false;
+  v_clean_export boolean := false;
+  v_source text := null;
 begin
+  -- Remember whether a label was originally exported clean or watermarked so
+  -- the 7-day free re-download preserves the same entitlement even after a
+  -- PAYG balance reaches zero or a trial/subscription later changes state.
+  alter table public.label_downloads add column if not exists clean_export boolean not null default false;
+
   if v_user_id is null then
     raise exception 'Not authenticated';
   end if;
@@ -34,7 +41,7 @@ begin
   -- promise is that re-downloading the same label within 7 days is free.
   -- Sheet exports pass NULL, so every finished A4 export consumes exactly one.
   if p_label_key is not null and length(trim(p_label_key)) > 0 then
-    select last_downloaded_at into v_recent
+    select last_downloaded_at, clean_export into v_recent, v_clean_export
     from public.label_downloads
     where user_id = v_user_id and label_key = p_label_key;
 
@@ -47,6 +54,8 @@ begin
         'ok', true,
         'consumed', false,
         'free_redownload', true,
+        'source', 'redownload',
+        'clean_export', v_clean_export,
         'downloads_used', coalesce(v_profile.downloads_used,0),
         'downloads_limit', coalesce(v_profile.downloads_limit,0),
         'purchased_downloads', coalesce(v_profile.topup_credits,0)
@@ -66,11 +75,15 @@ begin
 
   if v_subscription_usable
      and coalesce(v_profile.downloads_used,0) < coalesce(v_profile.downloads_limit,0) then
+    v_clean_export := v_profile.subscription_status = 'active';
+    v_source := 'plan';
     update public.profiles
     set downloads_used = coalesce(downloads_used,0) + 1
     where id = v_user_id
     returning * into v_profile;
   elsif coalesce(v_profile.topup_credits,0) > 0 then
+    v_clean_export := true;
+    v_source := 'purchased';
     update public.profiles
     set topup_credits = coalesce(topup_credits,0) - 1
     where id = v_user_id
@@ -86,16 +99,19 @@ begin
   end if;
 
   if p_label_key is not null and length(trim(p_label_key)) > 0 then
-    insert into public.label_downloads(user_id,label_key,last_downloaded_at)
-    values(v_user_id,p_label_key,v_now)
+    insert into public.label_downloads(user_id,label_key,last_downloaded_at,clean_export)
+    values(v_user_id,p_label_key,v_now,v_clean_export)
     on conflict(user_id,label_key)
-    do update set last_downloaded_at = excluded.last_downloaded_at;
+    do update set last_downloaded_at = excluded.last_downloaded_at,
+                  clean_export = excluded.clean_export;
   end if;
 
   return jsonb_build_object(
     'ok', true,
     'consumed', true,
     'free_redownload', false,
+    'source', v_source,
+    'clean_export', v_clean_export,
     'downloads_used', coalesce(v_profile.downloads_used,0),
     'downloads_limit', coalesce(v_profile.downloads_limit,0),
     'purchased_downloads', coalesce(v_profile.topup_credits,0)
