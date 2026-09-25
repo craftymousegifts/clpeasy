@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "test": "node tests/app-static-audit.js && node tests/builder-regression.js"
+    "test": "node tests/app-static-audit.js && node tests/builder-regression.js && node tests/payg-download-accounting.js"
   },
   "dependencies": {
     "puppeteer": "^25.2.0"
