@@ -6,7 +6,8 @@
 -- Run (26 Sep 2026) via the Supabase SQL runner on CLPeasy Test. Raw outputs
 -- are kept in docs/reports/pr156-final-qa/test-db-rollback/. Paste the whole DO
 -- block; the "error" returned IS the report. From 20260929000000 (owner
--- decision C1) T17 is a PASS check and T17b/T34-T37 cover the new rules.
+-- decision C1) T17 is a PASS check and T17b/T34-T37 cover the new rules;
+-- from 20260930000000 (v13) T38-T41 cover the legacy re-download key transition.
 do $qa$
 declare
   res text[] := '{}';
@@ -244,6 +245,30 @@ begin
   r := public.consume_download('oud::pillar candle::circle::70x70mm');
   select * into p from public.profiles where id = u;
   if (r->>'consumed')::boolean and (r->>'source')='plan' and (r->>'clean_export')::boolean and p.downloads_used=1 and p.downloads_reset_date > current_date then res := res || 'PASS T37 C1 annual: refill applied first, watermarked label charged once from the refilled plan and clean (1/30)'::text; else res := res || ('FAIL T37 '||r::text||' used='||p.downloads_used); fails:=fails+1; end if;
+
+  -- ── 8. v13 transition: re-download history under the OLD key (name::type) ──
+  u := gen_random_uuid();
+  insert into auth.users(id, instance_id, aud, role, email, raw_user_meta_data, created_at, updated_at)
+  values (u, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'qa-rollback-9@example.test', '{}'::jsonb, now(), now());
+  perform set_config('request.jwt.claim.role','service_role',true);
+  perform public.credit_payg_purchase(u, 5);
+  insert into public.label_downloads(user_id,label_key,last_downloaded_at,clean_export) values
+    (u,'legacy clean::scented candle', now() - interval '5 days', true),
+    (u,'legacy wm::scented candle', now() - interval '2 days', false),
+    (u,'legacy old::scented candle', now() - interval '8 days', true);
+  perform set_config('request.jwt.claim.sub',u::text,true);
+  perform set_config('request.jwt.claims',json_build_object('sub',u,'role','authenticated')::text,true);
+  perform set_config('request.jwt.claim.role','authenticated',true);
+  r := public.consume_download('legacy clean::scented candle::circle::52x52mm', 'legacy clean::scented candle');
+  select count(*) into n from public.label_downloads where user_id=u and label_key='legacy clean::scented candle::circle::52x52mm' and last_downloaded_at < now() - interval '4 days';
+  if (r->>'free_redownload')::boolean and (r->>'clean_export')::boolean and (r->>'purchased_downloads')::int=5 and n=1
+     and not exists(select 1 from public.label_downloads where user_id=u and label_key='legacy clean::scented candle') then res := res || 'PASS T38 transition: legacy clean record inside its 7 days -> free, clean, ORIGINAL time kept, legacy record claimed'::text; else res := res || ('FAIL T38 '||r::text||' n='||n); fails:=fails+1; end if;
+  r := public.consume_download('legacy clean::scented candle::circle::70x70mm', 'legacy clean::scented candle');
+  if (r->>'consumed')::boolean and (r->>'purchased_downloads')::int=4 then res := res || 'PASS T39 transition: a different size after the transition is charged'::text; else res := res || ('FAIL T39 '||r::text); fails:=fails+1; end if;
+  r := public.consume_download('legacy wm::scented candle::circle::52x52mm', 'legacy wm::scented candle');
+  if (r->>'consumed')::boolean and (r->>'clean_export')::boolean and (r->>'purchased_downloads')::int=3 then res := res || 'PASS T40 transition: legacy watermarked record + paid downloads -> charged once, clean'::text; else res := res || ('FAIL T40 '||r::text); fails:=fails+1; end if;
+  r := public.consume_download('legacy old::scented candle::circle::52x52mm', 'legacy old::scented candle');
+  if (r->>'consumed')::boolean and (r->>'purchased_downloads')::int=2 then res := res || 'PASS T41 transition: legacy record outside 7 days -> charged'::text; else res := res || ('FAIL T41 '||r::text); fails:=fails+1; end if;
 
   raise exception 'QA_RESULTS fails=% %', fails, E'\n' || array_to_string(res, E'\n');
 end

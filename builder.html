@@ -1601,9 +1601,9 @@ const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',produc
   p280Items:[],p280Other:'',
   // Owner decisions C3/C4: hazardFromExtraction is true only while the hazard
   // data on this label came from a successful Smart Paste extraction (it is
-  // saved with the label). hazardSourceName is the normalised product name the
-  // current hazard data belongs to; hazardSourceLabel is that name as typed.
-  hazardFromExtraction:false,hazardSourceName:null,hazardSourceLabel:''};
+  // saved with the label). hazardSource is the product name, product type and
+  // fragrance load the current hazard data was entered/confirmed for.
+  hazardFromExtraction:false,hazardSource:null};
 // ── PRODUCT TYPE GUIDANCE ─────────────────────────────────────
 const FRAG_LOAD_TIPS={
   'Scented Candle':'Recommended: 6–10%. Your CLP must be for the actual % used — you can overestimate but never underestimate.',
@@ -2484,7 +2484,11 @@ async function renderPreviewIntoAsync(svgHtml,pw,ph,gen){
 async function consumeBuilderDownload(labelKey){
   if(!sbClient||!currentUser)return {ok:false,reason:'accounting_error'};
   try{
-    const {data,error}=await sbClient.rpc('consume_download',{p_label_key:labelKey||null});
+    // v13 transition: also send the label's pre-size-aware key so a download
+    // made just before release keeps its original 7 days (see migration
+    // 20260930000000). Only meaningful with a label key.
+    const legacyKey=labelKey?computeLegacyLabelKey():null;
+    const {data,error}=await sbClient.rpc('consume_download',{p_label_key:labelKey||null,p_legacy_label_key:legacyKey});
     if(error||!data||data.ok!==true){
       console.error('consume_download failed:',error||data);
       return {ok:false,reason:(data&&data.reason)||'accounting_error'};
@@ -2506,6 +2510,12 @@ async function consumeBuilderDownload(labelKey){
 // product type + physical label shape and size (owner decision C1: a
 // materially different label size is a different download). The RPC owns the
 // grace-window decision.
+// Pre-v13 key format (name + type only), used solely for the transition rule.
+function computeLegacyLabelKey(){
+  const scent=(S.scentName||'').trim().toLowerCase();
+  const type=(S.productType||'').trim().toLowerCase();
+  return scent&&type?scent+'::'+type:null;
+}
 function computeLabelKey(){
   const scent=(S.scentName||'').trim().toLowerCase();
   const type=(S.productType||'').trim().toLowerCase();
@@ -2857,7 +2867,7 @@ async function saveLabel(){
   plausible('Label Saved to Library');
   readForm();
   if(!S.scentName){alert('Please enter a scent name before saving.');return;}
-  if(_hazardReviewRequired()){alert(HAZARD_REVIEW_MSG);return;}
+  if(_hazardReviewRequired()){alert(_hazardReviewMessage());return;}
   if(isCustomSizeBelowSupportedMinimum()){alert(getCustomSizeMinMsg());return;}
   removeStaleEditNotice();
   const entry={schemaVersion:LABEL_SCHEMA_VERSION,rendererVersion:LabelRenderer.RENDERER_VERSION,
@@ -2972,9 +2982,9 @@ function loadLabelRecord(e){
   // empties) is the evidence. Manually entered hazard data stays editable.
   S.hazardFromExtraction=e.hazardFromExtraction===true||
     (e.hazardFromExtraction===undefined&&typeof e.sdsSignal==='string'&&e.sdsSignal.trim()!=='');
-  // C4: the reopened hazard data belongs to this label's saved product name.
-  S.hazardSourceName=_normProductName(e.scentName);
-  S.hazardSourceLabel=e.scentName||'';
+  // C4: the reopened hazard data belongs to this label's saved product name,
+  // product type and fragrance load.
+  _snapshotHazardSource({name:e.scentName,type:e.productType,load:e.fragLoad});
   S.bizName=e.bizName||'';S.bizAddress=e.bizAddress||'';S.bizPhone=e.bizPhone||'';
   S.bizWebsite=e.bizWebsite||'';S.netWeight=e.netWeight||'';S.fragLoad=e.fragLoad||'';S.burnTime=e.burnTime||'';S.batchNum=e.batchNum||'';
   S.supplier=e.supplier||'';S.hideEN15494=!!e.hideEN15494;
@@ -3341,7 +3351,7 @@ function init(){
   // Ensure hazard data is always clear on page load — never cached
   S.signal=''; S.sdsSignal=''; S.pictograms=[]; S.hSelected=[]; S.pSelected=[]; S.sensitisers=[];
   S.hStatements=''; S.pStatements='';
-  S.hazardFromExtraction=false; S.hazardSourceName=null; S.hazardSourceLabel='';
+  S.hazardFromExtraction=false; S.hazardSource=null;
   lockHazardFields(false);
   updateLabel();
 }
@@ -3438,7 +3448,7 @@ function _downloadAllowed(){
   return !!checked && !window._labelBlockDownload && !_hazardReviewRequired();
 }
 function _downloadBlockedMessage(){
-  return _hazardReviewRequired()?HAZARD_REVIEW_MSG:'Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.';
+  return _hazardReviewRequired()?_hazardReviewMessage():'Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.';
 }
 
 function toggleDownload(){
@@ -3746,9 +3756,7 @@ function extractSDS(){
   // C3/C4: this hazard data now comes from a successful extraction, for the
   // SDS of the product currently named in Step 2.
   S.hazardFromExtraction=true;
-  const _srcName=document.getElementById('scent-name')?.value??S.scentName;
-  S.hazardSourceName=_normProductName(_srcName);
-  S.hazardSourceLabel=(_srcName||'').trim();
+  _snapshotHazardSource();
   updateLabel();
   lockHazardFields(true);
   showExtractToast(allH.length,pRaw.length,S.sensitisers.length);
@@ -3923,11 +3931,11 @@ function canLeaveApprovedBuilderStep(step){
     const type=document.getElementById('product-type')?.value||'';
     if(!name){alert('Please enter a product name before continuing.');document.getElementById('scent-name')?.focus();return false;}
     if(!type){alert('Please select a product type before continuing.');document.getElementById('product-type')?.focus();return false;}
-    if(_hazardReviewRequired()){alert(HAZARD_REVIEW_MSG);return false;}
+    if(_hazardReviewRequired()){alert(_hazardReviewMessage());return false;}
   }
   if(step===3){
     readForm();
-    if(_hazardReviewRequired()){alert(HAZARD_REVIEW_MSG);return false;}
+    if(_hazardReviewRequired()){alert(_hazardReviewMessage());return false;}
     const confirmed=!!document.getElementById('hazard-confirm')?.checked;
     if(!(S.hStatements||'').trim()){alert('Please extract and review the hazard data from your supplier SDS before continuing.');return false;}
     if(!confirmed){alert('Please confirm that the extracted hazard data matches your supplier SDS before continuing.');document.getElementById('hazard-confirm')?.focus();return false;}
@@ -4165,44 +4173,97 @@ function _hasStep3HazardData(){
 }
 // ── Owner decision C4: hazard data must match the product's SDS ───────────
 // The Builder has no separate fragrance/SDS identity field (the supplier
-// grid is not populated and S.supplier is never set by the UI), so the
-// product name is the only identity it can check. When the name changes after
-// hazard data was entered, extracted or reopened, the maker must say whether
-// it is the same fragrance oil and SDS (keep: one click) or a different one
-// (the old hazard data is cleared and must be extracted again). Until then
-// nothing can be saved, downloaded or continued past Steps 2/3. Case,
-// spacing and punctuation-only edits are not treated as a change.
-const HAZARD_REVIEW_MSG='You changed the product name after the hazard data was entered. Please confirm whether this product uses the same fragrance oil and SDS before continuing.';
+// grid is not populated and S.supplier is never set by the UI), so it checks
+// the three things it does hold that can change which SDS/classification
+// applies: the product name, the product type and the fragrance load. They
+// are recorded (S.hazardSource) when hazard data is extracted, entered or
+// reopened. Any later change must be dealt with before anything can be saved,
+// downloaded or taken past Steps 2/3:
+//  * product name only: "same fragrance oil and SDS" (keep, one click) or
+//    "different fragrance or SDS" (clear and extract again);
+//  * product type and/or fragrance load: "I have re-checked it" (keep; the
+//    final Step 5 verification and the Step 3 confirmation must be ticked
+//    again) or clear and extract again.
+// Case, spacing and punctuation-only name edits are not a change, nor is
+// naming the product (or choosing its type) for the first time. Any change
+// of fragrance load, including adding one, is.
 function _normProductName(v){return String(v||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();}
-// Naming the product for the first time (hazard data entered while the name
-// was still blank) is not a change of SDS; nor is a momentarily empty field.
-function _hazardReviewRequired(){
-  const cur=_normProductName(S.scentName);
-  return _hasStep3HazardData()&&!!S.hazardSourceName&&cur!==''&&cur!==S.hazardSourceName;
+function _normProductType(v){return String(v||'').trim().toLowerCase();}
+function _normFragLoad(v){
+  const t=String(v||'').trim();if(!t)return '';
+  const m=t.replace(',','.').match(/\d+(?:\.\d+)?/);
+  return m?String(parseFloat(m[0])):t.toLowerCase();
+}
+function _currentHazardContext(){
+  const g=(id,f)=>{const el=document.getElementById(id);return el?el.value:f;};
+  return {name:g('scent-name',S.scentName)||'',type:g('product-type',S.productType)||'',load:g('frag-load',S.fragLoad)||''};
+}
+function _snapshotHazardSource(from){
+  const c=from||_currentHazardContext();
+  S.hazardSource={name:_normProductName(c.name),nameLabel:String(c.name||'').trim(),
+    type:_normProductType(c.type),typeLabel:String(c.type||'').trim(),
+    load:_normFragLoad(c.load),loadLabel:String(c.load||'').trim()};
+}
+function _hazardReviewReasons(){
+  const src=S.hazardSource;
+  if(!src||!_hasStep3HazardData())return [];
+  const c=_currentHazardContext(),r=[];
+  const n=_normProductName(c.name),t=_normProductType(c.type);
+  if(src.name&&n&&n!==src.name)r.push('name');
+  if(src.type&&t&&t!==src.type)r.push('type');
+  if(_normFragLoad(c.load)!==src.load)r.push('load');
+  return r;
+}
+function _hazardReviewRequired(){return _hazardReviewReasons().length>0;}
+function _hazardReviewMessage(){
+  const r=_hazardReviewReasons();
+  if(r.length===1&&r[0]==='name')return 'You changed the product name after the hazard data was entered. Please confirm whether this product uses the same fragrance oil and SDS before continuing.';
+  return 'You changed the '+r.map(k=>({name:'product name',type:'product type',load:'fragrance load'})[k]).join(' and ')+' after the hazard data was entered. Please re-check the hazard data against your supplier SDS/CLP information, or clear it and extract again, before continuing.';
 }
 function _refreshHazardReview(){
-  if(!_hasStep3HazardData()){S.hazardSourceName=null;S.hazardSourceLabel='';}
-  else if(!S.hazardSourceName&&_normProductName(S.scentName)!==''){S.hazardSourceName=_normProductName(S.scentName);S.hazardSourceLabel=S.scentName||'';}
-  const need=_hazardReviewRequired();
+  if(!_hasStep3HazardData())S.hazardSource=null;
+  else if(!S.hazardSource)_snapshotHazardSource();
+  else{
+    // Naming the product / choosing its type for the first time is not a change.
+    const c=_currentHazardContext();
+    if(!S.hazardSource.name&&_normProductName(c.name)){S.hazardSource.name=_normProductName(c.name);S.hazardSource.nameLabel=c.name.trim();}
+    if(!S.hazardSource.type&&_normProductType(c.type)){S.hazardSource.type=_normProductType(c.type);S.hazardSource.typeLabel=c.type.trim();}
+  }
+  const reasons=_hazardReviewReasons(),need=reasons.length>0;
+  const src=S.hazardSource||{},cur=_currentHazardContext();
+  const nameOnly=reasons.length===1&&reasons[0]==='name';
   document.querySelectorAll('.hazard-review-notice').forEach(box=>{
     box.style.display=need?'block':'none';
-    if(!need){box.textContent='';return;}
     box.textContent='';
+    if(!need)return;
     const h=document.createElement('strong');h.textContent='Check the hazard data for this product';
     const p=document.createElement('p');p.style.margin='6px 0 10px';
-    p.textContent='The hazard data on this label was entered for "'+(S.hazardSourceLabel||'the previous product')+'". You have changed the product name to "'+(S.scentName||'')+'". If this product uses a different fragrance oil or SDS, that hazard data must not be used.';
+    const parts=[];
+    if(reasons.includes('name'))parts.push('the product name from "'+(src.nameLabel||'the previous product')+'" to "'+cur.name.trim()+'"');
+    if(reasons.includes('type'))parts.push('the product type from "'+(src.typeLabel||'none')+'" to "'+cur.type.trim()+'"');
+    if(reasons.includes('load'))parts.push('the fragrance load from "'+(src.loadLabel||'not entered')+'" to "'+(cur.load.trim()||'not entered')+'"');
+    p.textContent='The hazard data on this label was entered before you changed '+parts.join(' and ')+'. '+
+      (nameOnly?'If this product uses a different fragrance oil or SDS, that hazard data must not be used.'
+        :'The hazard statements, pictograms, signal word, precautionary statements and sensitisers can differ with the product type and fragrance load. Check them against your supplier SDS/CLP information before continuing.');
     const keep=document.createElement('button');keep.type='button';keep.className='hazard-review-keep';
-    keep.textContent='Same fragrance oil and SDS: keep hazard data';keep.onclick=confirmSameHazardSource;
+    keep.textContent=nameOnly?'Same fragrance oil and SDS: keep hazard data':'I have re-checked it: keep hazard data';
+    keep.onclick=confirmSameHazardSource;
     const clear=document.createElement('button');clear.type='button';clear.className='hazard-review-clear';
-    clear.textContent='Different fragrance or SDS: clear hazard data';clear.onclick=useNewHazardSource;
+    clear.textContent=nameOnly?'Different fragrance or SDS: clear hazard data':'Clear hazard data and extract again';
+    clear.onclick=useNewHazardSource;
     [keep,clear].forEach(b=>{b.style.cssText='margin:4px 8px 0 0;padding:7px 12px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;border:1.5px solid var(--teal);background:white;color:var(--teal-dark);';});
     box.append(h,p,keep,clear);
   });
 }
 function confirmSameHazardSource(){
-  const cur=document.getElementById('scent-name')?.value??S.scentName;
-  S.hazardSourceName=_normProductName(cur);
-  S.hazardSourceLabel=(cur||'').trim();
+  const reasons=_hazardReviewReasons();
+  _snapshotHazardSource();
+  if(reasons.includes('type')||reasons.includes('load')){
+    // Keeping hazard data across a product-type/fragrance-load change needs
+    // the maker's confirmations again (Step 3 and the final Step 5 check).
+    const hc=document.getElementById('hazard-confirm');if(hc)hc.checked=false;
+    const vb=document.getElementById('verify-checkbox');if(vb)vb.checked=false;
+  }
   updateLabel();
 }
 function useNewHazardSource(){
@@ -4363,7 +4424,7 @@ function clearHazardData(){
   // an unwanted side effect of clicking Clear.
   const hzCb=document.getElementById('hazard-confirm');
   if(hzCb)hzCb.checked=false;
-  S.hazardFromExtraction=false;S.hazardSourceName=null;S.hazardSourceLabel='';
+  S.hazardFromExtraction=false;S.hazardSource=null;
   // Clear signal word
   S.signal='';
   S.sdsSignal='';

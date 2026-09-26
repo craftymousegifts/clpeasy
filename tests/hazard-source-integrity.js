@@ -253,6 +253,85 @@ function ok(msg){ console.log('PASS: ' + msg); }
   window.confirmSameHazardSource();
   ok('C4: first naming adopts the name; later renames need an answer');
 
+  // ── C4 (v13): product type and fragrance load are regulatory-significant ──
+  function setLoad(v){ document.getElementById('frag-load').value = v; window.updateLabel(); }
+  function setType(v){ document.getElementById('product-type').value = v; window.onProductTypeChange(); window.updateLabel(); }
+  async function freshExtracted(name, load){
+    window.clearHazardData();
+    fillBasics(name);
+    setLoad(load);
+    extract(SDS_A);
+    document.getElementById('hazard-confirm').checked = true;
+    tickVerify();
+    assert.strictEqual(window._hazardReviewRequired(), false, 'setup: freshly extracted label needs no review');
+    return hazardSnapshot();
+  }
+  // Fragrance load change -> review; cosmetic load formatting is not a change.
+  let before = await freshExtracted('Load Test Candle', '10%');
+  setLoad(' 10 % ');
+  assert.strictEqual(window._hazardReviewRequired(), false, 'C4 load: formatting-only edit (10% -> " 10 % ") is not a change');
+  setLoad('12%');
+  assert.deepStrictEqual([...window._hazardReviewReasons()], ['load'], 'C4 load: 10% -> 12% requires review');
+  assert(noticeShown(), 'C4 load: review notice shown');
+  assert(/fragrance load from "10%" to "12%"/.test(notices()[0].textContent), 'C4 load: notice names the old and new load');
+  assert.strictEqual(notices()[0].querySelector('.hazard-review-keep').textContent, 'I have re-checked it: keep hazard data', 'C4 load: keep wording asks for a re-check, not "same SDS"');
+  assert.strictEqual(window._downloadAllowed(), false, 'C4 load: export blocked');
+  let dl0 = downloads; await window.downloadSVG();
+  assert.strictEqual(downloads, dl0, 'C4 load: no file while unanswered');
+  assert(/fragrance load/.test(window.__lastAlert || ''), 'C4 load: download alert explains the fragrance-load review');
+  let n0 = S('getSaved().length'); await window.saveLabel();
+  assert.strictEqual(S('getSaved().length'), n0, 'C4 load: nothing saved while unanswered');
+  assert.strictEqual(window.canLeaveApprovedBuilderStep(2), false, 'C4 load: cannot leave Step 2');
+  // Keep = explicit re-check: hazard data kept, but both confirmations must be given again.
+  notices()[0].querySelector('.hazard-review-keep').click();
+  assert.strictEqual(window._hazardReviewRequired(), false, 'C4 load: re-check resolves the review');
+  assert.deepStrictEqual(hazardSnapshot(), before, 'C4 load: re-check keeps H/EUH/EUH208/P/P280/pictograms/signal/sensitisers unchanged');
+  assert.strictEqual(document.getElementById('verify-checkbox').checked, false, 'C4 load: final Step 5 verification must be ticked again');
+  assert.strictEqual(document.getElementById('hazard-confirm').checked, false, 'C4 load: Step 3 confirmation must be ticked again');
+  assert.strictEqual(window._downloadAllowed(), false, 'C4 load: still blocked until verification is ticked again');
+  tickVerify();
+  assert.strictEqual(window._downloadAllowed(), true, 'C4 load: allowed once re-verified');
+  ok('C4 load: fragrance-load change blocks save/export until re-checked (with both confirmations again) or cleared');
+
+  // Adding a fragrance load where none was entered is a change too.
+  before = await freshExtracted('No Load Candle', '');
+  setLoad('8%');
+  assert.deepStrictEqual([...window._hazardReviewReasons()], ['load'], 'C4 load: adding a load after extraction requires review');
+  notices()[0].querySelector('.hazard-review-clear').click();
+  assert.deepStrictEqual(hazardSnapshot(), { h:'', p:'', signal:'', sdsSignal:'', pictos:[], sens:[], p280:[], p280Other:'' }, 'C4 load: clear removes every old regulatory element');
+  assert.strictEqual(window._downloadAllowed(), false, 'C4 load: export blocked after clear');
+  ok('C4 load: adding a load is a change; "Clear hazard data and extract again" removes all old hazard data');
+
+  // Product type change -> review.
+  before = await freshExtracted('Type Test', '10%');
+  setType('Wax Melt');
+  assert.deepStrictEqual([...window._hazardReviewReasons()], ['type'], 'C4 type: Scented Candle -> Wax Melt requires review');
+  assert(/product type from "Scented Candle" to "Wax Melt"/.test(notices()[0].textContent), 'C4 type: notice names old and new type');
+  assert.strictEqual(window._downloadAllowed(), false, 'C4 type: export blocked');
+  document.getElementById('hazard-confirm').checked = true;
+  assert.strictEqual(window.canLeaveApprovedBuilderStep(3), false, 'C4 type: cannot leave Step 3');
+  notices()[1].querySelector('.hazard-review-clear').click();
+  assert.strictEqual(S('S.hStatements'), '', 'C4 type: clear removes hazard data');
+  extract(SDS_B);
+  assert.strictEqual(window._hazardReviewRequired(), false, 'C4 type: new extraction belongs to the new product type');
+  ok('C4 type: product-type change blocks until re-checked or cleared; re-extraction resolves it');
+
+  // Reopened saved label, then type and load changed together (+ name).
+  window.clearHazardData();
+  window.loadLabelRecord(Object.assign({}, saved, { id:'combo', fragLoad:'10%' }));
+  before = hazardSnapshot();
+  setType('Reed Diffuser'); setLoad('20%');
+  assert.deepStrictEqual([...window._hazardReviewReasons()], ['type','load'], 'C4 combo: reopened label, type + load changed');
+  setName('Diffuser Version');
+  assert.deepStrictEqual([...window._hazardReviewReasons()], ['name','type','load'], 'C4 combo: name + type + load changed');
+  assert.strictEqual(notices()[0].querySelector('.hazard-review-keep').textContent, 'I have re-checked it: keep hazard data', 'C4 combo: a type/load change always needs the re-check wording');
+  setType('Scented Candle'); setLoad('10%');
+  assert.deepStrictEqual([...window._hazardReviewReasons()], ['name'], 'C4 combo: reverting type and load leaves only the name decision');
+  assert.strictEqual(notices()[0].querySelector('.hazard-review-keep').textContent, 'Same fragrance oil and SDS: keep hazard data', 'C4 combo: name-only keeps the same-SDS wording');
+  window.confirmSameHazardSource();
+  assert.deepStrictEqual(hazardSnapshot(), before, 'C4 combo: hazard data unchanged after an answered name change');
+  ok('C4 combo: reopened label with name/type/load changes; each is detected, reverting removes it');
+
   assert.deepStrictEqual(errors, [], 'no page errors');
   console.log('hazard source integrity checks passed (C3 + C4)');
   process.exit(0);

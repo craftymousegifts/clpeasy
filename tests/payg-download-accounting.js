@@ -52,7 +52,7 @@ assert.match(migration,/topup_credits\s*=\s*coalesce\(topup_credits,0\)\s*\+\s*p
 assert.match(migration,/grant execute on function public\.credit_purchased_downloads\(uuid, integer\) to service_role/i,'only the webhook service role may credit PAYG purchases');
 assert.match(webhook,/stripe_processed_events'[\s\S]*\.delete\(\)[\s\S]*\.eq\('event_id', event\.id\)/,'failed webhook processing must release its idempotency claim so Stripe retry can recover');
 
-assert.match(builder,/sbClient\.rpc\('consume_download',\{p_label_key:labelKey\|\|null\}\)/,'Builder must consume individual exports through atomic RPC');
+assert.match(builder,/sbClient\.rpc\('consume_download',\{p_label_key:labelKey\|\|null,p_legacy_label_key:legacyKey\}\)/,'Builder must consume individual exports through atomic RPC (with the v13 transition key)');
 assert.ok(!builder.includes("from('subscriptions').select('plan,status')"),'Builder must not gate PAYG on subscriptions table');
 assert.match(builder,/select\('subscription_status,trial_end,deletion_date,plan,downloads_limit,billing_cycle,downloads_reset_date,topup_credits'\)/,'Builder clean-export entitlement must use profiles');
 assert.match(builder,/S\.isPro=window\.CLPEntitlement\.summarise\(prof\)\.cleanPreview/,'Builder clean preview must use the shared entitlement rules (PAYG balance unlocks it; behaviour covered in tests/entitlement-unit.js)');

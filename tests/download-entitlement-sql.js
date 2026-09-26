@@ -52,12 +52,12 @@ function makeUser(p){
        values(${q(id)},${q(p.plan)},${p.is_pro?'true':'false'},${q(p.subscription_status)},${q(p.trial_end)},${q(p.deletion_date)},${q(p.downloads_used||0)},${q(p.downloads_limit)},${q(p.topup_credits||0)},${q(p.billing_cycle)},${q(p.downloads_reset_date)});`);
   return id;
 }
-function consumeAs(id, key, role){
+function consumeAs(id, key, role, legacy){
   const out = run(`begin;
     set local role ${role||'authenticated'};
     select set_config('request.jwt.claim.sub', ${q(id)}, true);
     select set_config('request.jwt.claim.role', ${q(role||'authenticated')}, true);
-    select public.consume_download(${key==null?'null':q(key)})::text;
+    select public.consume_download(${key==null?'null':q(key)}${legacy===undefined?'':', '+(legacy==null?'null':q(legacy))})::text;
     commit;`);
   return JSON.parse(out.split('\n').filter(Boolean).pop());
 }
@@ -96,7 +96,7 @@ const EXPECT = {
   paygAccount:           [null,               ['purchased',true]],
 };
 
-const MIGRATIONS = ['20260729000000_create_label_downloads.sql','20260925000000_atomic_download_accounting.sql','20260926000000_download_entitlement_lifecycle.sql','20260927000000_payg_trial_conversion_and_annual_refill.sql','20260928000000_protect_download_counters.sql','20260929000000_redownload_upgrade_and_fixed_window.sql'];
+const MIGRATIONS = ['20260729000000_create_label_downloads.sql','20260925000000_atomic_download_accounting.sql','20260926000000_download_entitlement_lifecycle.sql','20260927000000_payg_trial_conversion_and_annual_refill.sql','20260928000000_protect_download_counters.sql','20260929000000_redownload_upgrade_and_fixed_window.sql','20260930000000_redownload_legacy_key_transition.sql'];
 freshDb(MIGRATIONS);
 
 let checks = 0;
@@ -156,7 +156,8 @@ function ageLabel(id, key, days){
   run(`update public.label_downloads set last_downloaded_at = now() - interval '${days} days' where user_id=${q(id)} and label_key=${q(key)};`);
 }
 function labelRow(id, key){
-  return JSON.parse(run(`select row_to_json(l)::text from public.label_downloads l where user_id=${q(id)} and label_key=${q(key)};`));
+  const out = run(`select row_to_json(l)::text from public.label_downloads l where user_id=${q(id)} and label_key=${q(key)};`).trim();
+  return out ? JSON.parse(out) : null;
 }
 // 1. Watermarked (trial) download, then the customer buys downloads: the
 //    re-download is charged once and clean; later re-downloads are free+clean.
@@ -252,6 +253,82 @@ function labelRow(id, key){
   run(`select set_config('request.jwt.claim.role','service_role',false); update public.profiles set downloads_used=20, downloads_reset_date=(now() - interval '1 day')::date where id=${q(id3)};`);
   const r3 = consumeAs(id3, k3);
   assert.deepStrictEqual([r3.free_redownload, r3.clean_export, profile(id3).downloads_used], [true, true, 0], 'C1 annual: a clean re-download is free; the due refill is applied (0 used) and not double-counted');
+  checks += 4;
+}
+// ── v13 transition: re-download history recorded under the OLD key ──────
+// (name::type) stays valid for its ORIGINAL 7 days for the first
+// size-aware download of that label; claimed once; never extended.
+function seedLegacy(id, key, daysAgo, clean){
+  run(`insert into public.label_downloads(user_id,label_key,last_downloaded_at,clean_export) values(${q(id)},${q(key)},now() - interval '${daysAgo} days',${clean?'true':'false'});`);
+}
+const LEG = 'lavender::scented candle', NEW52 = 'lavender::scented candle::circle::52x52mm', NEW70 = 'lavender::scented candle::circle::70x70mm';
+{
+  // Legacy CLEAN record inside its original window: first size-aware download is free and clean.
+  const id = makeUser({ plan:'payg', subscription_status:'payg', trial_end:iso(-9*DAY), downloads_limit:0, downloads_used:0, topup_credits:3 });
+  seedLegacy(id, LEG, 5, true);
+  const r = consumeAs(id, NEW52, null, LEG);
+  assert.deepStrictEqual([r.ok, r.free_redownload, r.clean_export, r.purchased_downloads], [true, true, true, 3], 'transition: legacy clean record inside its 7 days -> free, clean, nothing spent');
+  const row = labelRow(id, NEW52);
+  assert(Date.now() - new Date(row.last_downloaded_at).getTime() > 4.9*DAY, 'transition: the new-key record keeps the ORIGINAL download time (window not restarted)');
+  assert.strictEqual(labelRow(id, LEG), null, 'transition: the legacy record is claimed (removed) so it cannot be reused');
+  // Different size after the transition: charged (the legacy grace was claimed by 52mm).
+  const other = consumeAs(id, NEW70, null, LEG);
+  assert.deepStrictEqual([other.consumed, other.purchased_downloads], [true, 2], 'transition: a different size after the transition is a new charged download');
+  // Fixed, non-rolling: the inherited window ends 7 days after the ORIGINAL download.
+  const again = consumeAs(id, NEW52, null, LEG);
+  assert.deepStrictEqual([again.free_redownload, again.purchased_downloads], [true, 2], 'transition: still free inside the original window');
+  ageLabel(id, NEW52, 7.1);
+  const late = consumeAs(id, NEW52, null, LEG);
+  assert.deepStrictEqual([late.consumed, late.purchased_downloads], [true, 1], 'transition: 7 days after the ORIGINAL legacy download it is charged (not extended by the transition or re-downloads)');
+  checks += 6;
+}
+{
+  // Legacy WATERMARKED record, then a paid upgrade: charged once, clean (C1 rule applies).
+  const id = makeUser({ plan:'payg', subscription_status:'payg', trial_end:iso(-1*DAY), downloads_limit:0, downloads_used:0, topup_credits:4 });
+  seedLegacy(id, LEG, 2, false);
+  const r = consumeAs(id, NEW52, null, LEG);
+  assert.deepStrictEqual([r.consumed, r.source, r.clean_export, r.purchased_downloads], [true, 'purchased', true, 3], 'transition: legacy watermarked + paid upgrade -> charged once and clean');
+  const again = consumeAs(id, NEW52, null, LEG);
+  assert.deepStrictEqual([again.free_redownload, again.clean_export, again.purchased_downloads], [true, true, 3], 'transition: then free and clean');
+  // Legacy watermarked with no clean option: free watermarked copy, original window kept.
+  const id2 = makeUser({ plan:'free', subscription_status:'trialing', trial_end:iso(3*DAY), downloads_limit:10, downloads_used:1, topup_credits:0 });
+  seedLegacy(id2, LEG, 3, false);
+  const t = consumeAs(id2, NEW52, null, LEG);
+  assert.deepStrictEqual([t.free_redownload, t.clean_export, profile(id2).downloads_used], [true, false, 1], 'transition: live trial, legacy watermarked -> free watermarked, no trial download spent');
+  checks += 3;
+}
+{
+  // Legacy record OUTSIDE its 7 days: charged normally; the stale legacy record is removed.
+  const id = makeUser({ plan:'payg', subscription_status:'payg', trial_end:iso(-9*DAY), downloads_limit:0, downloads_used:0, topup_credits:2 });
+  seedLegacy(id, LEG, 8, true);
+  const r = consumeAs(id, NEW52, null, LEG);
+  assert.deepStrictEqual([r.consumed, r.purchased_downloads], [true, 1], 'transition: legacy record outside 7 days -> charged');
+  assert.strictEqual(labelRow(id, LEG), null, 'transition: expired legacy record removed');
+  checks += 2;
+}
+{
+  // New size-aware record: the legacy key is ignored once a new-key record exists.
+  const id = makeUser({ plan:'payg', subscription_status:'payg', trial_end:iso(-9*DAY), downloads_limit:0, downloads_used:0, topup_credits:3 });
+  const first = consumeAs(id, NEW52, null, LEG);
+  assert.deepStrictEqual([first.consumed, first.purchased_downloads], [true, 2], 'new size-aware record: first download charged');
+  seedLegacy(id, LEG, 1, true);
+  ageLabel(id, NEW52, 8);
+  const r = consumeAs(id, NEW52, null, LEG);
+  assert.deepStrictEqual([r.consumed, r.purchased_downloads], [true, 1], 'new size-aware record outside 7 days: charged; a legacy record cannot revive it');
+  checks += 2;
+}
+{
+  // Misuse: a legacy key that is not this label's own key is never honoured.
+  const id = makeUser({ plan:'payg', subscription_status:'payg', trial_end:iso(-9*DAY), downloads_limit:0, downloads_used:0, topup_credits:3 });
+  seedLegacy(id, 'rose::scented candle', 1, true);
+  const r = consumeAs(id, NEW52, null, 'rose::scented candle');
+  assert.deepStrictEqual([r.consumed, r.purchased_downloads], [true, 2], 'transition: another label\'s legacy record is ignored (key must be this label\'s own old key)');
+  assert(labelRow(id, 'rose::scented candle'), 'transition: the unrelated legacy record is left untouched');
+  const r2 = consumeAs(id, 'rose::scented candle::x', null, 'rose::scented candle::x');
+  assert.strictEqual(labelRow(id, 'rose::scented candle') !== null, true, 'transition: a malformed legacy key (not name::type) is ignored');
+  // Composer and callers without the new argument still work.
+  const sheet = consumeAs(id, null);
+  assert.strictEqual(sheet.consumed, true, 'one-argument call (Composer) still works');
   checks += 4;
 }
 // ── D5: a trial customer's successful PAYG purchase ends the trial ────────
