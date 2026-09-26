@@ -3649,8 +3649,12 @@ function _requiredContentCheck(){
 }
 function _downloadBlockedMessage(){
   const rc=_requiredContentCheck();
-  if(!rc.complete) return "This label is missing required content, so it can't be downloaded yet:\n\n"+rc.missing.map(m=>'• '+REQUIRED_CONTENT_MESSAGES[m]).join('\n');
-  return 'Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.';
+  const base='Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.';
+  if(rc.complete) return base;
+  const content="This label is missing required content, so it can't be downloaded yet:\n\n"+rc.missing.map(m=>'• '+REQUIRED_CONTENT_MESSAGES[m]).join('\n');
+  // Unconfirmed or physically blocked: keep the existing message first, then name the missing content.
+  const unconfirmedOrBlocked=!document.getElementById('verify-checkbox')?.checked || !!window._labelBlockDownload;
+  return unconfirmedOrBlocked ? base+'\n\n'+content : content;
 }
 
 function toggleDownload(){
