@@ -1,0 +1,2 @@
+pre-fix-label-render.js {"heavyBlockedSmallestFit":902.7,"short":3.7,"capped":3.4,"blocked":4.1,"smallestFit":3.8}
+label-render.js {"heavyBlockedSmallestFit":829,"short":6,"capped":6.7,"blocked":6.8,"smallestFit":240.8}

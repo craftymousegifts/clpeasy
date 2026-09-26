@@ -1,0 +1,37 @@
+S0 pre-fix NOT FIT 75 reasons [ 'footer-clipped' ]
+S0 new FIT->NOT FIT 13
+   63mm|Aaaaa Bbbbbbbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto                                 arc true smallest fitting 73
+   63mm|Aaaaa Bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto                       arc true smallest fitting 96
+   63mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|auto                             arc true smallest fitting 73
+   63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|auto                 arc true smallest fitting 89
+   63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=The Little Candle Company of Yorkshire|auto arc true smallest fitting 75
+   75mm|Aaaaa Bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto                       arc true smallest fitting 96
+   75mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|auto                 arc true smallest fitting 89
+   63mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{"scentFSOverride":999}          arc true smallest fitting 73
+   63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{"scentFSOverride":999} arc true smallest fitting 89
+   63mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{"scentFSOverride":0}            arc true smallest fitting 73
+   63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{"scentFSOverride":0} arc true smallest fitting 89
+   63mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{"bizNameFSOverride":999}        arc true smallest fitting 73
+   63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{"bizNameFSOverride":999} arc true smallest fitting 89
+S0 FIT both: name size unchanged 129 reduced 126  NOT FIT->FIT 0
+S1 pre-fix NOT FIT 75 reasons [ 'footer-clipped' ]
+S1 new FIT->NOT FIT 18
+   63mm|Aaaaa Bbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto                                      arc true smallest fitting 66
+   63mm|Aaaaa Bbbbbbbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto                                 arc true smallest fitting 74
+   63mm|Aaaaa Bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto                       arc true smallest fitting 96
+   63mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|auto                             arc true smallest fitting 73
+   63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|auto                 arc true smallest fitting 89
+   63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=The Little Candle Company of Yorkshire|auto arc true smallest fitting 75
+   63mm|Christmas Spiced Orange & Cinnamon|biz=(empty)|auto                                        arc true smallest fitting 77
+   63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=(empty)|auto                            arc true smallest fitting 94
+   75mm|Aaaaa Bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto                       arc true smallest fitting 96
+   75mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|auto                 arc true smallest fitting 89
+   75mm|Christmas Spiced Orange & Cinnamon|biz=(empty)|auto                                        arc true smallest fitting 77
+   75mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=(empty)|auto                            arc true smallest fitting 94
+   63mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{"scentFSOverride":999}          arc true smallest fitting 73
+   63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{"scentFSOverride":999} arc true smallest fitting 89
+   63mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{"scentFSOverride":0}            arc true smallest fitting 73
+   63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{"scentFSOverride":0} arc true smallest fitting 89
+   63mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{"bizNameFSOverride":999}        arc true smallest fitting 73
+   63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{"bizNameFSOverride":999} arc true smallest fitting 89
+S1 FIT both: name size unchanged 106 reduced 144  NOT FIT->FIT 0

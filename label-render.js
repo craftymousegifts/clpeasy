@@ -402,6 +402,74 @@ function measureText(txt,sizePx,bold,serif){
   _ctx.font=`${bold?'700':'400'} ${sizePx}px ${serif?'serif':'sans-serif'}`;
   return _ctx.measureText(txt).width;
 }
+// Same as measureText() but with an explicit font-family list, so a width can
+// be measured in the family the SVG actually draws (e.g. the business name's
+// "Georgia,serif" -- Georgia is materially wider than the generic serif where
+// it is installed; where it isn't, both resolve to the same fallback).
+function measureTextFamily(txt,sizePx,bold,family){
+  _ctx.font=`${bold?'700':'400'} ${sizePx}px ${family}`;
+  return _ctx.measureText(txt).width;
+}
+
+// ── HELPER: a character's ink profile (bold), in em ─────────────────────
+// Returns up to GLYPH_BANDS horizontal bands [u0,u1,v0,v1]: ink spans u0..u1
+// horizontally from the pen position and v0..v1 vertically above the
+// alphabetic baseline (negative = below), each padded by 0.02em. Measured once
+// per family+character by drawing it on an offscreen canvas and reading the
+// pixels, then cached. [] for a character with no ink (space); null where
+// canvas pixels are unavailable (e.g. test stubs), so the caller must fall
+// back to a conservative box. Used only by the circular product-name /
+// business-name clearance check in renderLabel().
+const GLYPH_BANDS=8, _glyphInk=new Map();
+let _gCtx=null;
+function glyphInkBands(ch,family){
+  const key=family+'|'+ch;
+  if(_glyphInk.has(key)) return _glyphInk.get(key);
+  let bands=null;
+  try{
+    const W=400,H=300,X=150,Y=200,SZ=100;
+    if(!_gCtx){ const c=document.createElement('canvas'); c.width=W; c.height=H; _gCtx=c.getContext('2d',{willReadFrequently:true}); }
+    const g=_gCtx;
+    g.clearRect(0,0,W,H); g.font=`700 ${SZ}px ${family}`; g.textBaseline='alphabetic'; g.fillStyle='#000'; g.fillText(ch,X,Y);
+    const d=g.getImageData(0,0,W,H).data;
+    if(d && d.length===W*H*4){
+      const rowMin=new Int32Array(H).fill(-1), rowMax=new Int32Array(H).fill(-1);
+      let top=-1, bot=-1;
+      for(let y=0;y<H;y++){ for(let x=0;x<W;x++){ if(d[(y*W+x)*4+3]>0){ if(rowMin[y]<0) rowMin[y]=x; rowMax[y]=x; } } if(rowMin[y]>=0){ if(top<0) top=y; bot=y; } }
+      bands=[];
+      if(top>=0){
+        const rows=bot-top+1, pad=0.02;
+        for(let b=0;b<GLYPH_BANDS;b++){
+          const r0=top+Math.floor(rows*b/GLYPH_BANDS), r1=top+Math.floor(rows*(b+1)/GLYPH_BANDS)-1;
+          let mn=Infinity, mx=-Infinity;
+          for(let y=r0;y<=r1;y++){ if(rowMin[y]>=0){ mn=Math.min(mn,rowMin[y]); mx=Math.max(mx,rowMax[y]); } }
+          if(mx<mn) continue;
+          bands.push([(mn-X)/SZ-pad, (mx+1-X)/SZ+pad, (Y-(r1+1))/SZ-pad, (Y-r0)/SZ+pad]);
+        }
+      }
+    }
+  }catch(e){ bands=null; }
+  _glyphInk.set(key,bands);
+  return bands;
+}
+
+// DM Sans Bold (700) advance widths in 1/1000 em, without kerning, measured
+// from the Google Fonts DM Sans file (v17) that label SVGs @import. The curved
+// product name is drawn in "DM Sans,sans-serif", but pages declare different
+// DM Sans weights (Builder only up to 600) and the web font may not have
+// loaded yet, so DM Sans Bold cannot be measured reliably at run time. Kerning
+// only ever shortens the drawn text, so ignoring it errs on the long side.
+// Used only by the circular product-name / business-name clearance check.
+const DM_SANS_700_ADV_ASCII=[235,309,367,857,604,902,781,197,405,405,513,579,246,576,252,427,704,364,577,603,650,622,634,537,633,635,254,278,579,579,579,538,1046,709,638,738,707,583,556,778,714,272,541,653,558,886,729,784,614,784,631,604,597,685,706,1018,670,635,577,377,427,377,677,725,235,586,655,607,655,602,371,596,618,274,274,578,267,941,617,610,655,655,409,532,433,616,565,820,571,604,490,470,272,470,579]; // U+0020-U+007E
+const DM_SANS_700_ADV_LATIN1=[235,309,607,627,560,650,272,617,339,785,506,514,579,0,510,401,363,579,361,356,235,624,652,252,266,237,486,514,838,873,925,538,709,709,709,709,709,709,945,738,583,583,583,583,272,272,272,272,719,729,784,784,784,784,784,579,777,685,685,685,685,635,614,711,586,586,586,586,586,586,944,607,602,602,602,602,267,267,267,267,640,617,610,610,610,610,610,579,594,616,616,616,616,604,655,604]; // U+00A0-U+00FF
+const DM_SANS_700_ADV_EXTRA={8216:255,8217:255,8220:453,8221:453,8211:696,8212:918,8230:687,8364:790,8482:837,8226:387};
+function dmSansBoldAdvanceEm(ch){
+  const c=ch.codePointAt(0);
+  if(c>=0x20 && c<=0x7E) return DM_SANS_700_ADV_ASCII[c-0x20]/1000;
+  if(c>=0xA0 && c<=0xFF) return DM_SANS_700_ADV_LATIN1[c-0xA0]/1000;
+  if(DM_SANS_700_ADV_EXTRA[c]!=null) return DM_SANS_700_ADV_EXTRA[c]/1000;
+  return null; // not in the table: the caller falls back conservatively
+}
 
 // ── HELPER: fit font size to a max pixel width ────────────────
 function fitFont(txt,maxPx,startPx,minPx,bold=true,serif=false,step=0.5){
@@ -525,11 +593,20 @@ function ghsPicto(key,cx,cy,size,pool){
 // Curved scent-name-on-arc rendering (circular labels)
 // ============================================================
 
+// Radius of the curved product-name baseline as a fraction of the r passed to
+// svgArcText() (renderLabel passes min(pw,ph)/2). Shared with the circle
+// product-name/business-name collision check in renderLabel().
+const ARC_TEXT_RADIUS_FRAC = 0.85;
+// CLPeasy rendering safety clearance kept between the visible curved product
+// name and the visible business name on circular labels. An engineering /
+// rendering tolerance chosen by CLPeasy -- NOT a statutory GB CLP figure.
+const ARC_BIZ_CLEARANCE_MM = 0.5;
+
 function svgArcText(instanceId, text, cx, cy, r, fontSize, color, arcPos){
   if(!text) return '';
   // Arc always near top of circle - fixed proportion regardless of label size
   // startY/endY at cy (centre), arcR slightly less than r so text peaks near top edge
-  const arcR = r * 0.85;
+  const arcR = r * ARC_TEXT_RADIUS_FRAC;
   const startX = (cx - arcR).toFixed(2);
   const startY = cy.toFixed(2);
   const endX   = (cx + arcR).toFixed(2);
@@ -1195,6 +1272,159 @@ function renderLabel(rawData, opts){
   if(_bizFSf < _mandatoryMinFS){
     _bizFSf = _mandatoryMinFS;
     if(measureText(bizName, _bizFSf, true, true) > bizSW*0.84) _bizNameTooSmall = true;
+  }
+
+  // ── CIRCLE: CURVED PRODUCT NAME vs BUSINESS NAME (Builder Label Technical
+  // Audit finding M45) ────────────────────────────────────────────────────
+  // The curved product name sits on a fixed arc (svgArcText): the longer the
+  // name, the further its two ends run round and down that arc. Its size above
+  // was fitted as STRAIGHT serif text to a chord ~2/3 of the diameter, and the
+  // business name is placed without reference to the arc, so names longer than
+  // roughly 0.38-0.41 x the diameter drew over the business name at every
+  // circle size while the label still reported FIT.
+  // Fix: the size chosen above stays the upper bound (short names are
+  // unchanged); on circles only, the name is additionally capped to the
+  // largest size at which its ink stays at least ARC_BIZ_CLEARANCE_MM (a
+  // CLPeasy rendering tolerance, not a statutory figure) clear of the FINAL
+  // business-name ink. Measured in the arc's own fonts (DM Sans Bold and the
+  // device's bold sans-serif fallback -- not as straight serif text); the
+  // business name is measured in its drawn Georgia,serif. The business name,
+  // the arc and everything below are not moved. If even the
+  // existing mandatory minimum size cannot clear it, the complete name is kept
+  // at that minimum and the label is blocked through the existing
+  // _scentTooSmall path (NOT FIT, blocked download, larger-size suggestion).
+  // Model (per glyph, in layout units): every character of both names is
+  // represented by its ink profile -- up to GLYPH_BANDS horizontal bands from
+  // glyphInkBands(), i.e. the letter's real shape, so e.g. the empty lower
+  // corners of a "V" are not treated as ink.
+  //  - business name: bands placed at each character's pen position (cumulative
+  //    advances of the drawn Georgia,serif, centred on cx) on its alphabetic
+  //    baseline, which dominant-baseline="middle" puts half an x-height below y.
+  //  - curved name: textPath sets each glyph upright on the tangent at the
+  //    midpoint of its advance along the arc (text centred on the apex), so
+  //    each band becomes a rotated rectangle there.
+  //  The name clears when every curved-name band is at least the clearance
+  //  (exact Euclidean distance between the two convex shapes) from every
+  //  business-name band. As the size grows the curved text only lengthens,
+  //  deepens and moves round, so a bisection on size finds the largest clear
+  //  size. The curved name is checked in both fonts that can draw it (see
+  //  below).
+  //  Where canvas pixels/metrics are unavailable (e.g. test stubs) each
+  //  character is one conservative box instead: business name 0.58em above /
+  //  0.50em below y (0.80em above for non-ASCII); curved name 1em above and
+  //  0.26em below the baseline for descender/bracket/comma/non-ASCII
+  //  characters, 0.04em otherwise (measured worst cases of Georgia-, Times-,
+  //  DejaVu-, Arial-metric and DM Sans bold faces plus a margin).
+  let _scentArcCollision=false;
+  if(isCircle){
+    const _arcR=Math.min(pw,ph)/2*ARC_TEXT_RADIUS_FRAC;
+    const _clr=ARC_BIZ_CLEARANCE_MM*_pxPerMm;
+    const _nonAscii=/[^\x00-\x7F]/;
+    // Business-name ink boxes [L,R,T,B] (its size/position are final).
+    const _bizBoxes=[];
+    {
+      const fam='Georgia,serif', fs=_bizFSf;
+      const total=measureTextFamily(bizName,fs,true,fam), left=cx-total/2;
+      const xb=glyphInkBands('x',fam);
+      const base=(xb && xb.length) ? _bizYf+Math.max(...xb.map(q=>q[3]))*fs/2 : null;
+      let pre='';
+      for(const ch of bizName){
+        const x0=left+measureTextFamily(pre,fs,true,fam);
+        pre+=ch;
+        const x1=left+measureTextFamily(pre,fs,true,fam);
+        const gb=base!=null ? glyphInkBands(ch,fam) : null;
+        if(gb){ for(const q of gb) _bizBoxes.push([x0+q[0]*fs, x0+q[1]*fs, base-q[3]*fs, base-q[2]*fs]); }
+        else if(!/\s/.test(ch)) _bizBoxes.push([x0, x1, _bizYf-(_nonAscii.test(ch)?0.80:0.58)*fs, _bizYf+0.50*fs]);
+      }
+    }
+    const _ptSeg=(px,py,x1,y1,x2,y2)=>{
+      const dx=x2-x1, dy=y2-y1, l2=dx*dx+dy*dy;
+      const t=l2>0?Math.min(1,Math.max(0,((px-x1)*dx+(py-y1)*dy)/l2)):0;
+      return Math.hypot(px-(x1+t*dx), py-(y1+t*dy));
+    };
+    // Exact distance between convex quad Q (4 points) and box [L,R,T,B].
+    const _quadBox=(Q,L,R,T,B)=>{
+      const P=[[L,T],[R,T],[R,B],[L,B]];
+      // separating-axis test over both shapes' edge normals: overlap -> 0
+      const sep=(A,C)=>{ for(let i=0;i<4;i++){ const a=A[i], b=A[(i+1)%4], nx=b[1]-a[1], ny=a[0]-b[0];
+        let a0=Infinity,a1=-Infinity,c0=Infinity,c1=-Infinity;
+        for(const p of A){ const v=p[0]*nx+p[1]*ny; a0=Math.min(a0,v); a1=Math.max(a1,v); }
+        for(const p of C){ const v=p[0]*nx+p[1]*ny; c0=Math.min(c0,v); c1=Math.max(c1,v); }
+        if(a1<c0 || c1<a0) return true; } return false; };
+      if(!sep(Q,P) && !sep(P,Q)) return 0;
+      let m=Infinity;
+      for(let i=0;i<4;i++){ const a=Q[i], b=Q[(i+1)%4], c=P[i], e=P[(i+1)%4];
+        for(const p of P) m=Math.min(m,_ptSeg(p[0],p[1],a[0],a[1],b[0],b[1]));
+        for(const p of Q) m=Math.min(m,_ptSeg(p[0],p[1],c[0],c[1],e[0],e[1])); }
+      return m;
+    };
+    // The curved name is checked twice, once per font that can draw it, and
+    // must clear the business name in both:
+    //  (1) the device's generic bold sans-serif (drawn wherever DM Sans is
+    //      unavailable: signed-out preview, PNG export, Composer) -- measured
+    //      live, glyph shapes from glyphInkBands();
+    //  (2) DM Sans Bold (Pro preview, PDF, SVG viewers with the web font) --
+    //      advances from the DM Sans table above, glyph shapes from (1)
+    //      stretched to each DM Sans advance, descenders 0.02em deeper
+    //      (DM Sans ~0.23em vs ~0.21em); a character missing from the table
+    //      is taken as 10% wider than in (1).
+    const _arcChars=[...scent];
+    const _genEm=_arcChars.map(ch=>measureText(ch,100,true,false)/100);
+    const _dmEm=_arcChars.map((ch,i)=>{ const d=dmSansBoldAdvanceEm(ch); return d!=null ? d : _genEm[i]*1.10; });
+    const _arcBands=_arcChars.map(ch=>{
+      const gb=glyphInkBands(ch,'sans-serif');
+      if(gb) return gb;
+      if(/\s/.test(ch)) return [];
+      return [[0,null,-((/[gjpqyQ,;()\[\]{}|_@$]/.test(ch)||_nonAscii.test(ch))?0.26:0.04),1.0]]; // null: to the end of the advance
+    });
+    const _arcBandsDM=_arcBands.map((bands,i)=>{
+      const k=_genEm[i]>0 ? _dmEm[i]/_genEm[i] : 1;
+      return bands.map(q=>[q[0]*k, q[1]==null?null:q[1]*k, q[2]<0.05?q[2]-0.02:q[2], q[3]]);
+    });
+    // Clear at size fs for one font: ends[i] = cumulative advance after char i.
+    const _clearFor=(fs,ends,bandsOf)=>{
+      const total=ends[ends.length-1];
+      let s0=-total/2;
+      for(let i=0;i<_arcChars.length;i++){
+        const s1=-total/2+ends[i], sm=(s0+s1)/2;
+        const phi=sm/_arcR, sp=Math.sin(phi), cp=Math.cos(phi);
+        const W=(u,v)=>[cx+(_arcR+v)*sp+u*cp, cy-(_arcR+v)*cp+u*sp];
+        for(const q of bandsOf[i]){
+          const u0=s0-sm+q[0]*fs, u1=q[1]==null ? s1-sm : s0-sm+q[1]*fs, v0=q[2]*fs, v1=q[3]*fs;
+          const Q=[W(u0,v0),W(u1,v0),W(u1,v1),W(u0,v1)];
+          const qx0=Math.min(Q[0][0],Q[1][0],Q[2][0],Q[3][0])-_clr, qx1=Math.max(Q[0][0],Q[1][0],Q[2][0],Q[3][0])+_clr;
+          const qy0=Math.min(Q[0][1],Q[1][1],Q[2][1],Q[3][1])-_clr, qy1=Math.max(Q[0][1],Q[1][1],Q[2][1],Q[3][1])+_clr;
+          for(const bx of _bizBoxes){
+            if(bx[1]<qx0 || bx[0]>qx1 || bx[3]<qy0 || bx[2]>qy1) continue;
+            if(_quadBox(Q,bx[0],bx[1],bx[2],bx[3])<_clr) return false;
+          }
+        }
+        s0=s1;
+      }
+      return true;
+    };
+    const _arcClear=fs=>{
+      if(!_arcChars.length) return true;
+      const e1=[], e2=[]; let pre='', acc=0;
+      for(let i=0;i<_arcChars.length;i++){ pre+=_arcChars[i]; e1.push(measureText(pre,fs,true,false)); acc+=_dmEm[i]*fs; e2.push(acc); }
+      return _clearFor(fs,e1,_arcBands) && _clearFor(fs,e2,_arcBandsDM);
+    };
+    if(!_arcClear(_mandatoryMinFS)){
+      _scentArcCollision=true;
+      _scentTooSmall=true;
+      scentFS=_mandatoryMinFS;
+      _scentFSBounds.max=_mandatoryMinFS;
+    } else {
+      let _lo=_mandatoryMinFS, _hi=Math.max(scentMaxFS,_mandatoryMinFS);
+      if(!_arcClear(_hi)){
+        for(let i=0;i<24;i++){ const m=(_lo+_hi)/2; if(_arcClear(m)) _lo=m; else _hi=m; }
+        // _lo: largest size (to ~1e-6 of the size range) whose ink clears the business name
+        _scentFSBounds.max=_lo;
+        if(scentFS>_lo) scentFS=_lo;
+      }
+    }
+    _scentFSBounds.min=Math.min(_scentFSBounds.min,_scentFSBounds.max);
+    _scentFSBounds.auto=Math.min(_scentFSBounds.auto,_scentFSBounds.max);
   }
 
   // ── HEADER → MID-BAND BREATHING ──────────────────────────────
@@ -2038,6 +2268,10 @@ function renderLabel(rawData, opts){
     // floor and still doesn't fit" flags, exposed for
     // transparency/testing alongside the existing footerClipped/bcfTooSmall.
     scentTooSmall: _scentTooSmall,
+    // Circle only: the complete curved product name cannot clear the business
+    // name by ARC_BIZ_CLEARANCE_MM even at the mandatory minimum size (M45);
+    // always also reported through scentTooSmall, which is what blocks.
+    scentArcCollision: _scentArcCollision,
     businessNameTooSmall: _bizNameTooSmall,
     productTypeTooSmall: _typeTooSmall,
     signalWordTooSmall: _signalTooSmall,

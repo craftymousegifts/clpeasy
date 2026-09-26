@@ -1,0 +1,2 @@
+REPORT pre-fix label-render.js (59faa0c) 
+1029 circle renders (343 cases x 3 font scenarios): 804 FIT, 225 NOT FIT (0 blocked because the complete name cannot clear the business name at the minimum size); renders with any overlap: 472; FIT with overlap: 362; FIT below 0.5mm clearance (tolerance 0.071mm): 399; smallest FIT clearance 0.000mm
