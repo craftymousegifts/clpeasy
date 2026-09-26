@@ -16,6 +16,7 @@
 | M4 | Print Sheet Composer "Print / Save as PDF" as an active Easy Start subscriber (v13 two-argument `consume_download`, Composer sends no label key) | **PASS** | See M4 below. |
 | M5 | V13 C4: changing the fragrance load on a reopened saved label forces a hazard re-check | **PASS** | See M5 below. Used no downloads. |
 | M6 | V13 C4: changing the product type → "Clear hazard data and extract again" | **PASS** | See M6 below. Used no downloads. |
+| M7 | V13 C4: changing the product name; cosmetic name edits ignored | **PASS** | See M7 below. Used no downloads. |
 
 ## M3 details
 
@@ -79,6 +80,24 @@ and was blocked by the v13 re-check.
 - Account stayed at 1 / 20 used, 24 purchased, 43 total.
 
 **Read-only backend check (20:46 UTC):**
+
+- `downloads_used` 1, `downloads_limit` 20, `topup_credits` 24.
+- `label_downloads` still has 4 records, and the newest is still the M3 record from 20:23:01.
+- Nothing was charged or recorded.
+
+## M7 details
+
+Michaela opened **iugigig EDITED** and tested two name changes.
+
+- A cosmetic edit (different case and extra spacing) produced no warning, as designed.
+- A genuine rename to "Lavender Test" produced the hazard-data warning.
+  - She chose "Same fragrance oil and SDS: keep hazard data".
+  - The existing hazard information and pictograms stayed.
+- She left without saving and reopened the label. It returned unchanged: "iugigig EDITED",
+  Scented Candle, original hazard data.
+- Account stayed at 43 (19 / 20 plan downloads left plus 24 purchased).
+
+**Read-only backend check (20:53 UTC):**
 
 - `downloads_used` 1, `downloads_limit` 20, `topup_credits` 24.
 - `label_downloads` still has 4 records, and the newest is still the M3 record from 20:23:01.
