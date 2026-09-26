@@ -2506,7 +2506,7 @@ function wrapDownloads(){
       const labelKey=computeLabelKey();
       const charge=await consumeBuilderDownload(labelKey);
       if(!charge.ok){
-        alert(charge.reason==='accounting_error'?'We could not verify your download allowance. Please try again.':'You have no downloads remaining. Buy downloads or choose a plan to continue.');
+        alert(charge.reason==='accounting_error'?'We could not verify your download allowance. Please try again.':window.CLPEntitlement.outOfDownloadsMessage(DL.summary));
         return;
       }
       // Preserve the entitlement of the authorised export. In particular, the

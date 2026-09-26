@@ -80,6 +80,9 @@
       // scheduled cancellation still inside its paid period. Everyone else
       // (trial, expired trial, PAYG, paused, ended) buys Pay As You Go.
       topupEligible: active || cancelScheduled,
+      // Approved decision 2: current subscribers (the same accounts) cannot
+      // buy Pay As You Go; everyone else can. Enforced by the server.
+      paygAvailable: !(active || cancelScheduled),
       planName: planName({ status, plan, is_pro: p.is_pro, purchased, trialActive, trialExpired, cancelScheduled, paidPlan, payg })
     };
   }
@@ -135,7 +138,16 @@
     doc.querySelectorAll('.su-topup').forEach(a => { a.setAttribute('href', link.href); a.textContent = link.text; a.dataset.route = link.route; });
   }
 
-  const api = { summarise, renderSidebar, purchaseLink, applyPurchaseLinks };
+  // Out-of-downloads wording: current subscribers are pointed at subscriber
+  // top-ups (they cannot buy PAYG — approved decision 2); everyone else at
+  // Pay As You Go or a plan.
+  function outOfDownloadsMessage(ent){
+    return ent && ent.topupEligible
+      ? 'You have no downloads remaining this month. Buy a subscriber top-up from your account page to continue.'
+      : 'You have no downloads remaining. Buy downloads or choose a plan to continue.';
+  }
+
+  const api = { summarise, renderSidebar, purchaseLink, applyPurchaseLinks, outOfDownloadsMessage };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.CLPEntitlement = api;
 })(typeof window !== 'undefined' ? window : null);

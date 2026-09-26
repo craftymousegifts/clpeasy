@@ -163,4 +163,44 @@ await test('D4 a trial customer can still start Pay As You Go', async () => {
   eq(db().tables.profiles[0].subscription_status, 'trialing', 'opening checkout never ends the trial (D5)');
 });
 
+// ── Approved decisions 1 + 2: the complete purchase-route matrix, enforced
+//    by the server (direct endpoint calls, not just hidden buttons). ──
+const MATRIX: [string, Record<string, unknown>, boolean, boolean][] = [
+  // state, profile, PAYG allowed, subscriber top-ups allowed
+  ['trial', { subscription_status: 'trialing', plan: 'free', downloads_limit: 10, trial_end: new Date(Date.now() + 5 * DAY).toISOString() }, true, false],
+  ['expired trial', { subscription_status: 'trialing', plan: 'free', downloads_limit: 10, trial_end: new Date(Date.now() - DAY).toISOString() }, true, false],
+  ['Pay As You Go', { subscription_status: 'payg', plan: 'payg', downloads_limit: 0 }, true, false],
+  ['active Easy Start', { subscription_status: 'active', plan: 'easy_start', downloads_limit: 20 }, false, true],
+  ['active Easy Pro', { subscription_status: 'active', plan: 'easy_pro', downloads_limit: 30 }, false, true],
+  ['cancel at period end, still paid', { subscription_status: 'cancelled', plan: 'easy_pro', downloads_limit: 30, deletion_date: new Date(Date.now() + 9 * DAY).toISOString() }, false, true],
+  ['paused', { subscription_status: 'paused', plan: 'easy_start', downloads_limit: 20 }, true, false],
+  ['fully ended (downgraded)', { subscription_status: 'cancelled', plan: 'free', downloads_limit: 0 }, true, false],
+  ['fully ended (paid period over)', { subscription_status: 'cancelled', plan: 'easy_pro', downloads_limit: 30, deletion_date: new Date(Date.now() - DAY).toISOString() }, true, false],
+];
+for (const [name, profile, paygOk, topupOk] of MATRIX) {
+  await test(`matrix: ${name} -> PAYG ${paygOk ? 'available' : 'refused'}, top-ups ${topupOk ? 'available' : 'refused'}`, async () => {
+    db().tables.profiles.push({ id: 'user-1', ...profile });
+    const r1 = await call(paygBody);
+    const b1 = await r1.json();
+    if (paygOk) { eq(r1.status, 200, 'PAYG status'); eq(stripeRequests[0].get('metadata[type]'), 'payg', 'PAYG session'); }
+    else {
+      eq(r1.status, 403, 'PAYG refused'); eq(b1.code, 'PAYG_NOT_FOR_SUBSCRIBERS', 'code');
+      eq(/subscriber top-ups/.test(b1.error), true, 'directs them to subscriber top-ups');
+      eq(stripeRequests.length, 0, 'no PAYG Stripe session');
+    }
+    stripeRequests.length = 0;
+    const r2 = await call({ priceId: TOPUP5, mode: 'payment' });
+    eq(r2.status, topupOk ? 200 : 403, 'top-up status');
+    eq(db().tables.profiles[0].subscription_status, profile.subscription_status, 'opening/refusing checkout never changes the account');
+  });
+}
+await test('decision 2: an active subscriber cannot reach PAYG by sending mode=subscription or no mode', async () => {
+  db().tables.profiles.push({ id: 'user-1', subscription_status: 'active', plan: 'easy_start', downloads_limit: 20 });
+  for (const body of [{ productKey: 'payg_5', mode: 'subscription' }, { productKey: 'payg_5' }]) {
+    const r = await call(body);
+    eq(r.status, 403, 'refused'); eq((await r.json()).code, 'PAYG_NOT_FOR_SUBSCRIBERS', 'code');
+  }
+  eq(stripeRequests.length, 0, 'no Stripe session');
+});
+
 out(`create-checkout-session offline checks passed (${passed} scenarios)`);

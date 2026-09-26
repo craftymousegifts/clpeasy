@@ -29,6 +29,9 @@ const P = {
   // D5: former trial customer after a PAYG purchase (credit_payg_purchase).
   paygConverted:    { plan:'payg', is_pro:false, subscription_status:'payg', trial_end:iso(-1000), downloads_used:2, downloads_limit:0, topup_credits:8 },
   paygConvertedZero:{ plan:'payg', is_pro:false, subscription_status:'payg', trial_end:iso(-9*DAY), downloads_used:2, downloads_limit:0, topup_credits:0 },
+  pausedNoPurchases:{ plan:'easy_start', is_pro:false, subscription_status:'paused', downloads_used:1, downloads_limit:20, topup_credits:0 },
+  cancelPeriodOver: { plan:'easy_pro', is_pro:true, subscription_status:'cancelled', deletion_date:iso(-DAY), downloads_used:5, downloads_limit:30, topup_credits:0 },
+  activeProLimit:   { plan:'easy_pro', is_pro:true, subscription_status:'active', downloads_used:30, downloads_limit:30, topup_credits:0 },
   activeStartAnnualDue: { plan:'easy_start', is_pro:false, subscription_status:'active', billing_cycle:'annual', downloads_reset_date:iso(-2*DAY), downloads_used:20, downloads_limit:20, topup_credits:0 },
 };
 
@@ -217,6 +220,7 @@ const text = (doc, id) => (doc.getElementById(id) || { textContent:'' }).textCon
       ['activeStart', 'topup'], ['cancelScheduled', 'topup'],
       ['liveTrial', 'payg'], ['expiredTrial', 'payg'], ['paygConverted', 'payg'],
       ['endedWithPayg', 'payg'], ['pausedWithPayg', 'payg'],
+      ['pausedNoPurchases', 'payg'], ['cancelPeriodOver', 'payg'], ['activeProLimit', 'topup'],
     ];
     const rs = fs.readFileSync('label-render.js','utf8'), ls = fs.readFileSync('label-library.js','utf8');
     for (const [key, route] of cases) {
@@ -241,6 +245,30 @@ const text = (doc, id) => (doc.getElementById(id) || { textContent:'' }).textCon
       assert.strictEqual(modalOpen, route === 'topup', `account ${key}: top-up modal only for subscribers`);
     }
     ok('D4: Account, Dashboard, My Labels and Builder all route subscriber top-ups vs Pay As You Go the same way');
+  }
+  // ── Complete entitlement matrix (approved decisions 1-3 + D4) ─────
+  {
+    const M = [
+      // key, PAYG available, subscriber top-ups available, plan name
+      ['liveTrial', true, false, 'Easy Trial'], ['expiredTrial', true, false, 'Easy Trial (Expired)'],
+      ['paygConverted', true, false, 'Pay As You Go'], ['paygConvertedZero', true, false, 'Pay As You Go'],
+      ['activeStart', false, true, 'Easy Start'], ['activeProLimit', false, true, 'Easy Pro'],
+      ['cancelScheduled', false, true, 'Easy Pro (Cancelled)'],
+      ['pausedNoPurchases', true, false, 'Easy Start (Paused)'], ['pausedWithPayg', true, false, 'Easy Start (Paused)'],
+      ['cancelPeriodOver', true, false, 'Easy Pro (Cancelled)'], ['cancelledEnded', true, false, 'Easy Start (Cancelled)'],
+    ];
+    for (const [key, payg, topup, name] of M) {
+      const e = E.summarise(P[key] || { plan:'free', subscription_status:'cancelled', downloads_limit:0 });
+      assert.deepStrictEqual([e.paygAvailable, e.topupEligible, e.planName], [payg, topup, name], `${key}: PAYG/top-up/plan name`);
+      assert.strictEqual(E.outOfDownloadsMessage(e).includes('subscriber top-up'), topup, `${key}: out-of-downloads message route`);
+    }
+    // After a successful PAYG purchase an ended subscription is Pay As You Go
+    // (decision 3) and stays so at zero.
+    const ended = E.summarise({ plan:'payg', subscription_status:'payg', deletion_date:iso(-30*DAY), downloads_limit:0, topup_credits:0, is_pro:false });
+    assert.strictEqual(ended.planName, 'Pay As You Go');
+    const d = await open('dashboard.html', { plan:'payg', subscription_status:'payg', deletion_date:iso(-30*DAY), downloads_limit:0, topup_credits:0 });
+    assert.strictEqual(text(d.doc,'db-plan-name'), 'Pay As You Go', 'converted former subscriber never shows (Cancelled)');
+    ok('complete entitlement matrix: PAYG vs subscriber top-ups vs plan name for every account state');
   }
   // ── Annual monthly refill shown before the next download ──────────
   {

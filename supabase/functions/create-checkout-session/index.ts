@@ -54,6 +54,9 @@ const TOPUP_PRICE_IDS = new Set([
   "price_1Tdpd7GZLILz5vqUAiSw9udI", "price_1TdpdzGZLILz5vqUYEjn6TZ2", // live
   "price_1Tys3JGZLILz5vqUXA6L9jxc", "price_1Tys3qGZLILz5vqUnNlRAF6Q", // test mode
 ]);
+// A CURRENT Easy Start/Pro subscriber: active, or cancel-at-period-end still
+// inside the paid period. Paused and ended subscriptions are not current.
+// (Same rule as entitlement.js topupEligible / consume_download.)
 function topupEligible(p: { subscription_status?: string | null; plan?: string | null; downloads_limit?: number | null; deletion_date?: string | null } | null): boolean {
   if (!p) return false;
   if (p.subscription_status === "active") return true;
@@ -125,7 +128,9 @@ serve(async (req) => {
     }
 
     // mode: 'subscription' (default) or 'payment' (one-off top-up)
-    const checkoutMode = mode === "payment" ? "payment" : "subscription";
+    // PAYG is always a one-off payment, whatever mode the caller sends, so
+    // its checks below can never be skipped by sending mode=subscription.
+    const checkoutMode = (mode === "payment" || productKey === "payg_5") ? "payment" : "subscription";
     const json = (status: number, body: unknown) => new Response(JSON.stringify(body), {
       status, headers: { ...CORS, "Content-Type": "application/json" },
     });
@@ -144,6 +149,26 @@ serve(async (req) => {
         return json(403, {
           error: "Top-up packs are for Easy Start and Easy Pro subscribers. Please use Pay As You Go to buy downloads.",
           code: "TOPUP_SUBSCRIBERS_ONLY",
+        });
+      }
+    }
+
+    // ── Approved decision 2: current subscribers cannot buy PAYG ──
+    // Active Easy Start/Pro (including cancel-at-period-end still inside the
+    // paid period) must use subscriber top-ups. Paused, ended, trial and PAYG
+    // accounts may buy PAYG. Enforced here so the endpoint cannot be called
+    // directly to bypass the pricing page.
+    if (checkoutMode === "payment" && productKey === "payg_5") {
+      const { data: prof } = await supabaseAdmin
+        .from("profiles")
+        .select("subscription_status, plan, downloads_limit, deletion_date")
+        .eq("id", userId)
+        .maybeSingle();
+      if (topupEligible(prof)) {
+        return json(403, {
+          error: "Pay As You Go isn't available while you have an Easy Start or Easy Pro subscription. Please use subscriber top-ups from your account page instead.",
+          code: "PAYG_NOT_FOR_SUBSCRIBERS",
+          topupUrl: "https://clpeasy.com/account.html?topup=1",
         });
       }
     }

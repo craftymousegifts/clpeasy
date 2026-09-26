@@ -10,7 +10,7 @@ const { JSDOM, VirtualConsole } = require('jsdom');
 
 const source = fs.readFileSync('pricing.html', 'utf8').replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
 
-async function open({ signedIn, pending }){
+async function open({ signedIn, pending, response }){
   const calls = [], alerts = [], errors = [];
   const vc = new VirtualConsole();
   vc.on('jsdomError', e => { if (!/navigation/i.test(e.message)) errors.push(e.message); });
@@ -21,7 +21,7 @@ async function open({ signedIn, pending }){
       if (pending) w.sessionStorage.setItem('checkout_payg', '1');
       w.alert = m => alerts.push(String(m));
       w.scrollTo = () => {};
-      w.fetch = async (url, init) => { calls.push({ url, init }); return { ok: true, json: async () => ({ url: 'https://checkout.stripe.com/c/pay/cs_test_x' }) }; };
+      w.fetch = async (url, init) => { calls.push({ url, init }); return response || { ok: true, status: 200, json: async () => ({ url: 'https://checkout.stripe.com/c/pay/cs_test_x' }) }; };
       w.supabase = { createClient: () => ({ auth: {
         getSession: async () => ({ data: { session: signedIn ? { access_token: 'user-jwt', user: { id: 'u1', email: 'q@example.com' } } : null } }),
         onAuthStateChange: () => ({ data: { subscription: { unsubscribe(){} } } }),
@@ -88,6 +88,18 @@ async function open({ signedIn, pending }){
     assert.deepStrictEqual(['maker-price','maker-period','maker-sub','pro-price','pro-period','pro-sub'].map(t), monthly, 'switching back to Monthly restores the promotional prices exactly');
     assert.strictEqual(d.getElementById('maker-promo').style.display, '', 'monthly promotion visible again');
     assert.strictEqual(d.getElementById('maker-annual-eq').style.display, 'none', 'annual equivalent hidden on monthly');
+  }
+  // Approved decision 2: the server refuses PAYG for current subscribers; the
+  // page explains it and sends them to their subscriber top-ups.
+  {
+    const refusal = { ok: false, status: 403, json: async () => ({ code: 'PAYG_NOT_FOR_SUBSCRIBERS', error: "Pay As You Go isn't available while you have an Easy Start or Easy Pro subscription. Please use subscriber top-ups from your account page instead." }) };
+    const { w, calls, alerts } = await open({ signedIn: true, response: refusal });
+    await w.startPaygCheckout();
+    assert.strictEqual(calls.length, 1, 'the server was asked (and refused)');
+    assert.strictEqual(alerts.length, 1);
+    assert(/subscriber top-ups/.test(alerts[0]), 'explains subscriber top-ups');
+    assert(!/Something went wrong/.test(alerts[0]), 'not a generic error');
+    assert.strictEqual(w.document.getElementById('btn-payg').disabled, false, 'button restored');
   }
   console.log('PAYG pricing checkout checks passed');
 })().catch(e => { console.error(e.stack || e.message); process.exitCode = 1; });

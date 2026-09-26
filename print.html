@@ -718,7 +718,7 @@ function composerTrialOnly(){ return !!(composerEnt&&composerEnt.trialActive&&co
 function composerBlockedMessage(){
   return composerTrialOnly()
     ? 'Print Sheet Composer exports need a paid plan or purchased downloads. Buy downloads or choose a plan to continue.'
-    : 'You have no downloads remaining. Buy downloads or choose a plan to continue.';
+    : window.CLPEntitlement.outOfDownloadsMessage(composerEnt);
 }
 // Shared sidebar plan name + downloads-left card (same element IDs as the
 // other signed-in pages).
@@ -776,7 +776,9 @@ function updateProGate(){
       gate.innerHTML=currentUser
         ? (composerTrialOnly()
           ? '<strong>🔒 Print sheets need a paid plan or purchased downloads</strong> <a href="pricing.html">Buy downloads or choose a plan</a> to export this sheet.'
-          : '<strong>🔒 No downloads remaining</strong> <a href="pricing.html">Buy downloads or choose a plan</a> to export this sheet.')
+          : (composerEnt&&composerEnt.topupEligible
+            ? '<strong>🔒 No downloads remaining this month</strong> <a href="account.html?topup=1">Buy a subscriber top-up</a> to export this sheet.'
+            : '<strong>🔒 No downloads remaining</strong> <a href="pricing.html">Buy downloads or choose a plan</a> to export this sheet.'))
         : '<strong>🔒 Sign in to download</strong> Please <a href="auth.html">sign in to your CLPeasy account</a> to download your print sheet.';
     }
   }
@@ -2456,7 +2458,7 @@ async function downloadPDF(){
     // The artifact is now fully rendered. Consume one download only at the
     // last safe point before handing the finished A4 sheet to the customer.
     const charge=await consumeComposerDownload();
-    if(!charge.ok){win.close();alert(charge.reason==='accounting_error'?'We could not verify your download allowance. Please try again.':'You have no downloads remaining. Buy downloads or choose a plan to continue.');return;}
+    if(!charge.ok){win.close();alert(charge.reason==='accounting_error'?'We could not verify your download allowance. Please try again.':window.CLPEntitlement.outOfDownloadsMessage(composerEnt));return;}
     win.document.open();
     win.document.write(`<!DOCTYPE html><html><head><title>CLPeasy Print Sheet</title>
     <style>
@@ -2593,7 +2595,7 @@ async function cricutDownloadZip(){
   // exists, immediately before handing it to the customer.
   const charge=await consumeComposerDownload();
   if(!charge.ok){
-    txt.textContent=charge.reason==='accounting_error'?'We could not verify your download allowance. Please try again.':'You have no downloads remaining. Buy downloads or choose a plan to continue.';
+    txt.textContent=charge.reason==='accounting_error'?'We could not verify your download allowance. Please try again.':window.CLPEntitlement.outOfDownloadsMessage(composerEnt);
     return;
   }
   const a=document.createElement('a');a.href=URL.createObjectURL(zipBlob);a.download='clpeasy-cutting-machine-labels.zip';
@@ -2642,7 +2644,7 @@ async function cricutDownloadSequential(){
     if(!charge.ok){
       txt.textContent=charge.reason==='accounting_error'
         ? '⚠️ We could not verify your download allowance. Please try again.'
-        : 'You have no downloads remaining. Buy downloads or choose a plan to continue.';
+        : window.CLPEntitlement.outOfDownloadsMessage(composerEnt);
       break;
     }
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=finalName;

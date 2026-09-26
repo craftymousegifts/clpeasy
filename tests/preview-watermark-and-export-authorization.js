@@ -693,5 +693,26 @@ function candleFixture(overrides){
     ok('D5: converted trial -> Pay As You Go account gets clean Builder exports from purchased downloads');
   }
 
+  // 12f. Approved decision 2: an active subscriber who has used this month's
+  //      allowance is pointed at subscriber top-ups (never PAYG) in both the
+  //      Builder and the Composer; a PAYG account at zero is pointed at PAYG.
+  {
+    const sub = { plan:'easy_pro', is_pro:true, subscription_status:'active', downloads_limit:30, downloads_used:30, topup_credits:0 };
+    const b = await openBuilder({ session:{ user:{ id:'user-d2-b', email:'x@example.com', user_metadata:{} } }, profile:sub });
+    fillMinimalLabel(b.window);
+    await b.window.downloadSVG();
+    assert.strictEqual(b.capturedHrefs.length, 0, 'blocked');
+    assert(/subscriber top-up/.test(b.window.__lastAlert||''), 'Builder points subscribers to top-ups');
+    const payg = { plan:'payg', subscription_status:'payg', downloads_limit:0, downloads_used:0, topup_credits:0 };
+    const b2 = await openBuilder({ session:{ user:{ id:'user-d2-b2', email:'x@example.com', user_metadata:{} } }, profile:payg });
+    fillMinimalLabel(b2.window);
+    await b2.window.downloadSVG();
+    assert(/Buy downloads or choose a plan/.test(b2.window.__lastAlert||''), 'Builder points PAYG accounts to PAYG');
+    const c = await openComposer({ session:{ user:{ id:'user-d2-c', email:'x@example.com', user_metadata:{} } }, profile:Object.assign({}, sub) });
+    assert(/Buy a subscriber top-up/.test(c.document.getElementById('pro-gate').textContent), 'Composer gate points subscribers to top-ups');
+    assert.strictEqual(c.document.querySelector('#pro-gate a').getAttribute('href'), 'account.html?topup=1');
+    ok('decision 2: out-of-downloads subscribers are sent to top-ups, PAYG accounts to PAYG');
+  }
+
   console.log(`preview watermark and export authorisation checks passed (${passed} assertions)`);
 })().catch(e => { console.error(e.stack || e.message); process.exitCode = 1; });

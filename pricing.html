@@ -694,6 +694,14 @@ async function startPaygCheckout(){
       })
     });
     const data=await res.json();
+    // Easy Start/Pro subscribers use subscriber top-ups, not PAYG (enforced
+    // by the server; this just explains it and sends them to their top-ups).
+    if(res.status===403&&data.code==='PAYG_NOT_FOR_SUBSCRIBERS'){
+      alert(data.error);
+      btn.disabled=false; btn.textContent='Buy 8 downloads — £4.99 →';
+      window.location.href='account.html?topup=1';
+      return;
+    }
     if(!res.ok||!data.url) throw new Error(data.error||'No checkout URL returned');
     window.location.href=data.url;
   }catch(e){
