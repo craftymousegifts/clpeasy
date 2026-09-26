@@ -54,6 +54,18 @@ export function createClient(_url: string, _key: string, _opts?: unknown) {
     rpc: async (name: string, args: any) => {
       db().rpcCalls.push({ name, args });
       if (db().failRpcOnce > 0) { db().failRpcOnce--; return { data: null, error: { message: 'simulated transient database failure' } }; }
+      if (name === 'credit_payg_purchase') {
+        // Mirrors the SQL function (proven on PostgreSQL in download-entitlement-sql.js).
+        const p = db().tables.profiles.find((r: Row) => r.id === args.p_user_id);
+        if (!p) return { data: null, error: { message: 'Profile not found' } };
+        p.topup_credits = (p.topup_credits ?? 0) + args.p_downloads;
+        let converted = false;
+        if (p.subscription_status === 'trialing') {
+          Object.assign(p, { subscription_status: 'payg', plan: 'payg', downloads_limit: 0, trial_end: new Date().toISOString() });
+          converted = true;
+        }
+        return { data: { balance: p.topup_credits, trial_converted: converted, subscription_status: p.subscription_status, plan: p.plan, deletion_date: p.deletion_date ?? null }, error: null };
+      }
       if (name === 'credit_purchased_downloads') {
         const p = db().tables.profiles.find((r: Row) => r.id === args.p_user_id);
         if (!p) return { data: null, error: { message: 'Profile not found' } };

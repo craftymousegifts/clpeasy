@@ -24,18 +24,13 @@ async function addToBrevoPayList(email: string, firstName: string, planLabel: st
   await upsertBrevoContact(email, firstName, planLabel, 'BREVO_PAID_LIST_ID', 'paid');
 }
 
-// ── PAY AS YOU GO BREVO JOURNEY ─────────────────────────────────
-// PAYG buyers must NOT enter the subscriber onboarding automation (it talks
-// about a subscription, renewal and cancellation). They are added to the
-// list named by BREVO_PAYG_LIST_ID with PLAN = "Pay As You Go". If that
-// secret is not set, PAYG purchases are simply not sent to Brevo — the
-// download credit is unaffected either way. (Pointing BREVO_PAYG_LIST_ID at
-// a dedicated PAYG list, or at another list whose automation branches on
-// PLAN, is a marketing decision — see the unattended development report.)
+// ── PAY AS YOU GO BREVO JOURNEY (approved D2) ───────────────────
+// PAYG buyers join the EXISTING paid-customer list (BREVO_PAID_LIST_ID) with
+// PLAN = "Pay As You Go", so the paid automation can branch on PLAN.
 // Always called only AFTER the purchased downloads were credited, and never
 // throws: a Brevo problem must never fail or re-run a completed credit.
 async function addToBrevoPaygList(email: string, firstName: string): Promise<void> {
-  await upsertBrevoContact(email, firstName, PAYG_PLAN_LABEL, 'BREVO_PAYG_LIST_ID', 'PAYG');
+  await upsertBrevoContact(email, firstName, PAYG_PLAN_LABEL, 'BREVO_PAID_LIST_ID', 'PAYG');
 }
 const PAYG_PLAN_LABEL = 'Pay As You Go';
 
@@ -181,13 +176,18 @@ Deno.serve(async (req) => {
           const downloads = Number.parseInt(session.metadata?.downloads ?? '0', 10);
           if (downloads !== 5 && downloads !== 8) { console.error('Invalid PAYG download quantity:', downloads); break; }
 
-          const { data: newBalance, error: paygError } = await supabase.rpc(
-            'credit_purchased_downloads',
+          // One locked transaction: credit the downloads and, for a free-trial
+          // account (live or expired), end the trial and convert the account
+          // to Pay As You Go (approved D5). Subscriber / ended accounts are
+          // credited only. Runs at most once per Stripe event (claim above);
+          // a failure rolls back both the credit and the conversion.
+          const { data: credit, error: paygError } = await supabase.rpc(
+            'credit_payg_purchase',
             { p_user_id: userId, p_downloads: downloads },
           );
 
           if (paygError) throw paygError;
-          console.log(`PAYG: +${downloads} downloads (balance ${newBalance}) for user ${userId}`);
+          console.log(`PAYG: +${downloads} downloads (balance ${credit?.balance}) for user ${userId}${credit?.trial_converted ? ' — free trial ended, account is now Pay As You Go' : ''}`);
 
           // ── PAYG BREVO (only after a successful credit) ─────────────
           // Guarded completely: anything thrown after the credit would reach
@@ -195,12 +195,9 @@ Deno.serve(async (req) => {
           // retry credit the purchase a second time.
           try {
             const paygEmail = session.customer_details?.email || session.customer_email || '';
-            // A current subscriber topping up must keep their subscriber
-            // PLAN attribute and must not enter the PAYG journey.
-            const { data: buyer } = await supabase.from('profiles')
-              .select('subscription_status, plan, deletion_date')
-              .eq('id', userId).single();
-            if (paygEmail && !isCurrentSubscriber(buyer)) {
+            // A current subscriber buying PAYG downloads must keep their
+            // subscriber PLAN attribute and must not enter the PAYG journey.
+            if (paygEmail && !isCurrentSubscriber(credit)) {
               await addToBrevoPaygList(paygEmail, (session.customer_details?.name || '').split(' ')[0] || '');
             } else if (paygEmail) {
               console.log(`PAYG Brevo skipped for current subscriber ${userId}`);
@@ -225,23 +222,29 @@ Deno.serve(async (req) => {
         // starts working; both writes are covered by the idempotency guard
         // above, so a redelivered event cannot double-credit either field.
         if (type === 'topup') {
+          if (session.payment_status !== 'paid') {
+            console.error(`Top-up session ${session.id} completed with payment_status=${session.payment_status} — not credited`);
+            break;
+          }
           const credits = TOPUP_CREDITS[priceId ?? ''] ?? 0;
           if (credits === 0) { console.error('Unknown top-up priceId:', priceId); break; }
 
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('topup_credits, topup_months')
-            .eq('id', userId)
-            .single();
+          // Atomic credit (same RPC as PAYG used before D5): a read-then-write
+          // update could lose a concurrent purchase, and its error was ignored.
+          const { data: newBalance, error: topupError } = await supabase.rpc(
+            'credit_purchased_downloads',
+            { p_user_id: userId, p_downloads: credits },
+          );
+          if (topupError) throw topupError;
 
-          const currentCredits = profile?.topup_credits ?? 0;
-          const currentTopupMonths = profile?.topup_months ?? 0;
-          await supabase.from('profiles').update({
-            topup_credits: currentCredits + credits,
-            topup_months: currentTopupMonths + 1,
-          }).eq('id', userId);
+          // Best-effort Easy Pro nudge counter. Never throw after the credit:
+          // that would release the event claim and let Stripe re-credit.
+          try {
+            const { data: profile } = await supabase.from('profiles').select('topup_months').eq('id', userId).single();
+            await supabase.from('profiles').update({ topup_months: (profile?.topup_months ?? 0) + 1 }).eq('id', userId);
+          } catch (e) { console.error('topup_months update failed (non-fatal):', e); }
 
-          console.log(`Top-up: +${credits} credits (balance ${currentCredits + credits}) for user ${userId}; topup_months now ${currentTopupMonths + 1}`);
+          console.log(`Top-up: +${credits} downloads (balance ${newBalance}) for user ${userId}`);
           break;
         }
 
@@ -439,6 +442,33 @@ if (profileStatus) {
         break;
       }
 
+      // ── 2026 MONTHLY PROMOTION ENDS (approved D3) ──────────────────
+      // create-checkout-session applies the server-configured 2026 coupon to
+      // Easy Start/Pro MONTHLY checkouts. Stripe keeps a coupon until it is
+      // removed, so the first renewal invoice for a service period starting
+      // on/after 1 Jan 2027 (UK) removes the promotion from the subscription
+      // and from that still-draft invoice: £9.99 / £14.99 from then on. Only
+      // the configured promotion coupons are touched (never e.g. the account
+      // save-offer coupon). Safe to re-run: nothing to remove the second time.
+      case 'invoice.created': {
+        const invoice = event.data.object as any;
+        if (invoice.billing_reason !== 'subscription_cycle' || !invoice.subscription) break;
+        const periodStart = invoice.lines?.data?.[0]?.period?.start ?? 0;
+        if (periodStart * 1000 < PROMO_2026_END_MS) break;
+        const promoCoupons = promoCouponIds();
+        if (promoCoupons.size === 0) break;
+
+        const sub = await stripe.subscriptions.retrieve(invoice.subscription as string) as any;
+        const subPromo = !!sub?.discount?.coupon?.id && promoCoupons.has(sub.discount.coupon.id);
+        if (subPromo) await stripe.subscriptions.deleteDiscount(sub.id);
+        const invoicePromo = !!invoice.discount?.coupon?.id && promoCoupons.has(invoice.discount.coupon.id);
+        if (invoice.status === 'draft' && (invoicePromo || subPromo)) {
+          await stripe.invoices.update(invoice.id, { discounts: '' } as any);
+        }
+        if (subPromo || invoicePromo) console.log(`2026 monthly promotion ended for subscription ${sub.id} (invoice ${invoice.id})`);
+        break;
+      }
+
       default:
         console.log(`Unhandled event type: ${event.type}`);
     }
@@ -490,6 +520,14 @@ const TOPUP_CREDITS: Record<string, number> = {
 };
 
 // ── HELPERS ───────────────────────────────────────────────────
+// 2026 monthly subscription promotion: ends 31 Dec 2026 UK time
+// (GMT = UTC in winter). Same boundary as create-checkout-session.
+const PROMO_2026_END_MS = Date.UTC(2027, 0, 1);
+function promoCouponIds(): Set<string> {
+  return new Set(['PROMO_2026_EASY_START_MONTHLY_COUPON_ID', 'PROMO_2026_EASY_PRO_MONTHLY_COUPON_ID']
+    .map(k => Deno.env.get(k) || '').filter(Boolean));
+}
+
 // Active subscription, or a scheduled cancellation still inside its paid
 // period (same rule as consume_download / entitlement.js).
 function isCurrentSubscriber(p: { subscription_status?: string | null; plan?: string | null; deletion_date?: string | null } | null): boolean {
