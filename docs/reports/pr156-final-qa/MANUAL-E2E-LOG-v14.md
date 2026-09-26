@@ -17,6 +17,7 @@
 | M5 | V13 C4: changing the fragrance load on a reopened saved label forces a hazard re-check | **PASS** | See M5 below. Used no downloads. |
 | M6 | V13 C4: changing the product type → "Clear hazard data and extract again" | **PASS** | See M6 below. Used no downloads. |
 | M7 | V13 C4: changing the product name; cosmetic name edits ignored | **PASS** | See M7 below. Used no downloads. |
+| M8 | Free same-label re-download in other formats (SVG + PDF) within the 7-day window | **PASS** | See M8 below. Used no downloads. |
 
 ## M3 details
 
@@ -102,6 +103,21 @@ Michaela opened **iugigig EDITED** and tested two name changes.
 - `downloads_used` 1, `downloads_limit` 20, `topup_credits` 24.
 - `label_downloads` still has 4 records, and the newest is still the M3 record from 20:23:01.
 - Nothing was charged or recorded.
+
+## M8 details
+
+Michaela downloaded **iugigig EDITED** (80 × 95 mm, unchanged) as SVG and as PDF within its
+existing 7-day window. Afterwards Account showed 1 / 20 monthly used, 24 purchased, 43 total.
+Neither format used a download.
+
+**Read-only backend check (20:58 UTC):**
+
+- `downloads_used` 1, `downloads_limit` 20, `topup_credits` 24.
+- `label_downloads` still has 4 records.
+- The `iugigig edited::scented candle::rectangle::80x95mm` record is unchanged:
+  - `last_downloaded_at` is still 13:58:58 UTC, so free re-downloads do not extend the window
+    (v12 fixed-window rule).
+  - `clean_export` is true.
 
 ## UX finding F1 (recorded, not changed)
 
