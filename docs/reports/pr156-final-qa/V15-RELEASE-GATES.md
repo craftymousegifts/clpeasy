@@ -180,3 +180,35 @@ Inspected before any change:
 5. **Production release checklist:** unchanged from the v14 report, plus deploying the fixed
    `stripe-webhook`. Needs authorisation.
 6. **Owner-only:** the real iPhone Safari/WebKit check.
+
+## 9. v15 iPhone Safari check — FAIL, fixed in v16
+
+- **Symptom (owner, real iPhone Safari, v15 Test site):**
+  - on the logged-out homepage the mobile menu opens and shows Sign in;
+  - tapping Sign in does nothing, and Safari stays on the homepage.
+- **Origin:** pre-existing on `main` since `418fc50` (19 Sep 2026), which added the mobile menu.
+  PR #156 did not touch it. `index.html` on this branch differed from `main` only by one Setup
+  Guide wording line.
+- **Cause (in the page):** the mobile Sign in link was the only sign-in route on mobile.
+  - It opened a **new tab** (`target="_blank"`).
+  - The menu's own click handler hid the whole menu (`display:none`) **inside the same click**.
+  - Nothing overlays the link (hit-tested). No script intercepts `auth.html` links for signed-out
+    visitors.
+  - The iPhone-emulated Chromium test shows the original tab never leaves the homepage, matching
+    the symptom.
+- **Not proven:** WebKit itself cannot be installed in this environment, so I haven't proven which
+  of the two Safari acts on. It could be dropping a new-tab navigation from a link hidden
+  mid-click, or opening the tab in the background.
+- **Fix (`index.html`, mobile menu only):**
+  - Sign in opens in the same tab, like "Start free trial" next to it;
+  - in-menu link taps close the menu after the click (`setTimeout 0`), never during it;
+  - desktop header Sign in, Escape and tap-outside closing are unchanged.
+- **Test:** `tests/homepage-mobile-nav-signin.js`, iPhone-emulated Chromium with touch taps plus
+  static checks.
+  - It fails on the old code and passes on the fix.
+  - It also passes against the built v16 package.
+- **Suite:** 61/61 test files exit 0 (the GHS image-framing check is still skipped: environment),
+  `npm test` PASS, SQL 126 groups, Deno 96 scenarios.
+- **v16 package:** built from `d1d5fc5`; it differs from v15 only in `index.html`. Audit clean.
+  SHA-256 `b1e552b068d76ffa9d70aebbace600da901cd1a3062f332da2a92a0a66e59a36`.
+- **Needed:** upload v16 to the Test site, then repeat the iPhone Safari check once.
