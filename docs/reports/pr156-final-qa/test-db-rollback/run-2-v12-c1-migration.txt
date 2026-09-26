@@ -1,0 +1,56 @@
+CLPeasy Test (wwjhvpphlbgtywxskqnf) — rollback-only lifecycle suite, RUN 2 (v12, after applying the C1 migration)
+Date: 2026-09-26 ~16:32 UTC.
+Before this run, migration 20260929000000_redownload_upgrade_and_fixed_window.sql was applied to CLPeasy Test only
+(Supabase migration name: redownload_upgrade_and_fixed_window_pr156_c1). It replaces consume_download() and adds a
+column comment; no data was changed. The Test function body matches the repo migration (comment-insensitive md5
+97adbbd2c486c89dee23e5c94c3df241 in both). credit_payg_purchase / credit_purchased_downloads /
+protect_profile_billing_columns are unchanged (md5s identical to run 1). Grants are unchanged: authenticated and
+service_role may execute consume_download; anon and public may not.
+Script: tests/sql/test-env-lifecycle-rollback.sql as committed in v12 (DO block run verbatim via the Supabase SQL runner;
+comment lines omitted). T17 is now a PASS check (it was INFO before C1); T17b and T34–T37 are new C1 checks.
+Post-run check (16:32:49 UTC): qa-rollback-* auth users = 0, orphan label_downloads rows = 0, auth users = 1,
+profiles = 1 (Michaela's QA account only, untouched).
+
+Summary: 38 PASS, 0 FAIL.
+
+RAW OUTPUT (exception message returned by the SQL runner):
+ERROR:  P0001: QA_RESULTS fails=0 
+PASS T01 expired trial, 0 purchased: download blocked
+PASS T02 expired trial + PAYG(8): converted to Pay As You Go, 8 purchased, trial allowance 0
+PASS T03 first export: clean, purchased 8 -> 7
+PASS T04 same label within 7 days: free, clean, stays 7
+PASS T05 renamed label: charged 7 -> 6
+PASS T06 same name, different product type: charged 6 -> 5
+PASS T07 Composer sheet (no label key): always charged 5 -> 4
+PASS T08 same label after 7 days: charged 4 -> 3
+PASS T09 signed-in customer cannot write credits/limit/plan/status/counters directly
+PASS T10 customer cannot call credit_payg_purchase / credit themselves
+PASS T11 customer cannot call credit_purchased_downloads
+PASS T12 PAYG at 0: blocked, account remains Pay As You Go
+PASS T13 late Stripe deletion statements leave Pay As You Go intact
+PASS T14 PAYG buys again at 0: +8, still Pay As You Go
+PASS T15 live trial: download uses trial allowance and is watermarked
+PASS T16 live trial + PAYG: trial ends now, remaining trial allowance forfeited, 8 purchased
+PASS T17 C1: trial-watermarked label re-downloaded after buying PAYG is charged once (8 -> 7) and clean
+PASS T17b C1: that clean download then re-downloads free and clean
+PASS T18 converted trial: new label is clean from purchased downloads
+PASS T19 5-download top-up credits exactly 5
+PASS T20 10-download top-up credits exactly 10 (5+10=15)
+PASS T21 Easy Start at 20/20: spends one purchased download, clean; monthly plan NOT refilled by a past reset date
+PASS T22 subscriber with allowance left uses plan allowance first, purchased untouched
+PASS T23 cancel-at-period-end inside paid period behaves as active (clean plan download)
+PASS T24 cancel-scheduled subscriber credited by PAYG webhook is NOT converted (checkout refuses them anyway)
+PASS T25 paid period over + PAYG: converts to Pay As You Go, subscription allowance removed
+PASS T26 conversion keeps download history (3 label records)
+PASS T27 paused subscriber with no purchased downloads: blocked (allowance not usable while paused)
+PASS T28 paused + PAYG: credited, remains paused Easy Pro (not converted)
+PASS T29 paused: exports from purchased downloads, clean
+PASS T30 fully ended subscriber + PAYG: current plan becomes Pay As You Go
+PASS T31 annual Pro at 30/30 with reset 40 days ago: first download refills to 30, uses 1, next reset 2026-10-17
+PASS T32 annual: no double refill on the next download (2 used)
+PASS T33 paused annual plan is not refilled
+PASS T34 C1: day-6 re-download is free and does NOT move the charged-download time
+PASS T35 C1: 8 days after the charged download it is charged again (window fixed, not extended by the day-6 re-download)
+PASS T36 C1: same label at another physical size is a new charged download
+PASS T37 C1 annual: refill applied first, watermarked label charged once from the refilled plan and clean (1/30)
+CONTEXT:  PL/pgSQL function inline_code_block line 209 at RAISE
