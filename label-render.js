@@ -455,6 +455,44 @@ function wrapText(txt,maxPx,sizePx,bold=false,serif=false){
   return lines;
 }
 
+// ── HELPER: wrap text where each line has its OWN maximum width ─────
+// Circular-label containment fix (2026-09, Builder Label Technical Audit
+// finding M44): on a circle the usable width changes line by line, so a
+// single maxPx for a whole block (wrapText() above) let later lines in the
+// lower half of the circle run past the edge. maxPxForLine(i) returns the
+// width available to line i (0-based, in the order lines are produced).
+// Same greedy word wrapping and the same character-level split of an
+// over-long single word as wrapText() -- nothing is ever truncated or
+// dropped. Like wrapText(), a line that cannot hold even one character is
+// still emitted (so no content disappears); the caller must measure every
+// returned line against its own width and treat any excess as not fitting.
+// Used for circles only -- squares/rectangles keep wrapText() unchanged.
+function wrapTextPerLine(txt,maxPxForLine,sizePx,bold=false,serif=false){
+  if(!txt)return[];
+  const words=txt.split(/\s+/);
+  const lines=[];let cur='';
+  const maxPx=()=>maxPxForLine(lines.length);
+  function splitLongWord(word){
+    for(const ch of word){
+      const test=cur+ch;
+      if(cur && measureText(test,sizePx,bold,serif)>maxPx()){lines.push(cur);cur=ch;}
+      else{cur=test;}
+    }
+  }
+  for(const w of words){
+    const test=cur?cur+' '+w:w;
+    if(measureText(test,sizePx,bold,serif)<=maxPx()){cur=test;continue;}
+    if(cur){lines.push(cur);cur='';}
+    if(measureText(w,sizePx,bold,serif)<=maxPx()){
+      cur=w;
+    } else {
+      splitLongWord(w);
+    }
+  }
+  if(cur)lines.push(cur);
+  return lines;
+}
+
 // ── HELPER: SVG text escape ────────────────────────────────────
 function xe(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
@@ -1384,11 +1422,42 @@ function renderLabel(rawData, opts){
     // EU/NI-mode information, not an active GB requirement.
     const hLH=fs*1.25, sLH=fs*1.25, pLH=fs*1.15;
     const _edgeMargin=2*pxPerMm; // fixed 2mm from the label edge, both sides
+    // Circular-label containment fix (2026-09, Builder Label Technical
+    // Audit finding M44). Previously every block (H, sensitiser/EUH208, P)
+    // on a circle was wrapped to ONE width, taken from the chord at the
+    // centre of the block's FIRST line -- so in the lower half of the
+    // circle, where the chord narrows line by line, later lines ran past
+    // the label edge and were silently hidden by the circle clip-path while
+    // the fit test (vertical only) still reported fits:true. Circles now
+    // give every line its own safe width -- the chord at whichever edge of
+    // that line's own band (centre +/- half its line spacing) lies farther
+    // from the circle centre, minus the SAME existing 2mm edge margin each
+    // side -- and verify every produced line against it (hOk). hOk feeds
+    // the fit test, the manual-override ceiling, the vertical-centring
+    // step and the final overflow flag below, so a circle label can only
+    // report fits:true when every hazard/sensitiser/P line is genuinely
+    // inside its safe width. Squares/rectangles (constant width) keep the
+    // original wrapText() path below, byte-for-byte unchanged.
+    let hOk=true;
+    function _circleSafeW(lineCentreY, lh){
+      const dy=Math.max(Math.abs(lineCentreY-lh*0.5-cy), Math.abs(lineCentreY+lh*0.5-cy));
+      if(dy>=r) return 0;
+      return 2*Math.sqrt(r*r-dy*dy)-_edgeMargin*2;
+    }
+    function _wrapCircleBlock(txt, firstCentreY, lh){
+      const lines=wrapTextPerLine(txt, i=>Math.max(0,_circleSafeW(firstCentreY+i*lh, lh)), fs, false, false);
+      lines.forEach((ln,i)=>{ if(measureText(ln,fs,false,false) > _circleSafeW(firstCentreY+i*lh, lh)) hOk=false; });
+      return lines;
+    }
     let y=y0;
     let hLines=[];
     if(hText){
-      const sw=Math.max(fs*3, chordW(y+hLH*0.5,0)-_edgeMargin*2);
-      hLines=wrapText(hText,sw,fs,false,false);
+      if(isCircle){
+        hLines=_wrapCircleBlock(hText, y+hLH*0.5, hLH);
+      } else {
+        const sw=Math.max(fs*3, chordW(y+hLH*0.5,0)-_edgeMargin*2);
+        hLines=wrapText(hText,sw,fs,false,false);
+      }
     }
     const hStartY=y+hLH*0.5;
     y+=hLines.length*hLH;
@@ -1396,9 +1465,16 @@ function renderLabel(rawData, opts){
 
     let sLines=[],eLines=[];
     if(sensText){
-      const sw=Math.max(fs*3, chordW(y+sLH*0.5,0)-_edgeMargin*2);
-      sLines=_sensBase?wrapText(_sensBase,sw,fs,false,false):[];
-      eLines=_euhSuffix?wrapText(_euhSuffix,sw,fs,false,false):[];
+      if(isCircle){
+        sLines=_sensBase?_wrapCircleBlock(_sensBase, y+sLH*0.5, sLH):[];
+        // The EUH208 sentence continues directly below the sensitiser
+        // lines (rendered as one block -- see allS/sStartY below).
+        eLines=_euhSuffix?_wrapCircleBlock(_euhSuffix, y+sLH*0.5+sLines.length*sLH, sLH):[];
+      } else {
+        const sw=Math.max(fs*3, chordW(y+sLH*0.5,0)-_edgeMargin*2);
+        sLines=_sensBase?wrapText(_sensBase,sw,fs,false,false):[];
+        eLines=_euhSuffix?wrapText(_euhSuffix,sw,fs,false,false):[];
+      }
     }
     const sStartY=y+sLH*0.5;
     const allS=[...sLines,...eLines];
@@ -1407,13 +1483,17 @@ function renderLabel(rawData, opts){
 
     let pLines=[];
     if(pText){
-      const sw=Math.max(fs*3, chordW(y+pLH*0.5,0)-_edgeMargin*2);
-      pLines=wrapText(pText,sw,fs,false,false);
+      if(isCircle){
+        pLines=_wrapCircleBlock(pText, y+pLH*0.5, pLH);
+      } else {
+        const sw=Math.max(fs*3, chordW(y+pLH*0.5,0)-_edgeMargin*2);
+        pLines=wrapText(pText,sw,fs,false,false);
+      }
     }
     const pStartY=y+pLH*0.5;
     y+=pLines.length*pLH;
 
-    return {fs,hLH,sLH,pLH,hLines,hStartY,allS,sStartY,pLines,pStartY,endY:y};
+    return {fs,hLH,sLH,pLH,hLines,hStartY,allS,sStartY,pLines,pStartY,endY:y,hOk};
   }
 
   // Fit = block laid from the top of the avail zone ends at/above botY minus a
@@ -1421,7 +1501,10 @@ function renderLabel(rawData, opts){
   // this margin only governs aesthetics/warning, not overflow — keep it modest
   // so a block that genuinely fits doesn't trip a false legibility warning.)
   const _fitMargin=(fs)=> fs*0.3;
-  const _fits=(fs)=> _layoutHazard(fs,_curY0).endY <= _hardBot - _fitMargin(fs);
+  // hOk (circles only -- always true for squares/rectangles): every line is
+  // also inside its own per-line safe width (see _layoutHazard()), so a fit
+  // now requires horizontal AND vertical containment.
+  const _fits=(fs)=>{ const L=_layoutHazard(fs,_curY0); return L.hOk && L.endY <= _hardBot - _fitMargin(fs); };
 
   // Binary search for the largest fitting font size.
   let _bsLo=_minLegibleFS, _bsHi=clamp(BASE*0.13,8,28);
@@ -1440,10 +1523,17 @@ function renderLabel(rawData, opts){
   let _sharedFS=_bsLo;
   // Manual override gets its own ceiling using zero breathing margin — right up
   // to the label boundary itself, not auto-fit's cautious buffer.
-  const _fitsExact=(fs)=> _layoutHazard(fs,_curY0).endY <= _hardBot;
+  // Horizontal containment has no breathing margin to relax, so the manual
+  // ceiling must include it too -- a manual override can never reintroduce
+  // circle-edge overflow.
+  const _fitsExact=(fs)=>{ const L=_layoutHazard(fs,_curY0); return L.hOk && L.endY <= _hardBot; };
   let _manualHi=_bsHi;
   if(_fitsAtMin){
-    let _mLo=_bsHi, _mHi=clamp(BASE*0.30,8,60);
+    // The search below assumes its lower bound fits exactly. _bsHi always
+    // did for the vertical-only test; on a circle it may not satisfy the
+    // horizontal check, so start from the verified auto-fit size instead.
+    // (Squares/rectangles keep _bsHi, unchanged.)
+    let _mLo=(isCircle && !_fitsExact(_bsHi)) ? _bsLo : _bsHi, _mHi=clamp(BASE*0.30,8,60);
     if(_fitsExact(_mHi)){
       _manualHi=_mHi;
     } else {
@@ -1473,12 +1563,16 @@ function renderLabel(rawData, opts){
   // Step the offset back toward 0 until it fits, rather than snapping the
   // whole way to top-aligned — keeps the control visibly responsive.
   let _yTries=0;
-  while(_L.endY > _hardBot && _yFrac>0 && _yTries<20){
+  // Circles: a lower offset also moves lines into a narrower part of the
+  // circle, so the offset must keep every line horizontally inside (hOk)
+  // as well -- re-centring can never introduce overflow after the fit
+  // search above succeeded.
+  while((_L.endY > _hardBot || !_L.hOk) && _yFrac>0 && _yTries<20){
     _yFrac=Math.max(0,_yFrac-0.05);
     _L=_layoutHazard(_sharedFS,_curY0+_slack*_yFrac);
     _yTries++;
   }
-  if(_L.endY > _hardBot) _L=_topLayout;
+  if(_L.endY > _hardBot || !_L.hOk) _L=_topLayout;
 
   // Derive render variables from the chosen layout.
   const hFS=_sharedFS, hLH=_L.hLH;
@@ -1494,7 +1588,10 @@ function renderLabel(rawData, opts){
   // If the full layout exceeds the available area, block it. The preview shows
   // an unmistakable non-exportable state instead of replacing mandatory text
   // with dots or silently omitting statements.
-  const _labelLegibilityWarn = !_fitsAtMin || _L.endY>_hardBot;
+  // !_L.hOk: a circle line outside its safe width (only reachable when even
+  // the legibility floor can't fit) is treated as overflow -- fits:false,
+  // blocked overlay, download blocked -- never left for the clip to hide.
+  const _labelLegibilityWarn = !_fitsAtMin || _L.endY>_hardBot || !_L.hOk;
 
   const showP   = pLines.length > 0;
 
