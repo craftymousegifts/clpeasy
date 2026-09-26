@@ -491,7 +491,7 @@ function candleFixture(overrides){
     await window.downloadSVG();
     const calls = rpcCalls.filter(c=>c.name==='consume_download');
     assert.strictEqual(calls.length, 1, 'exactly one consume_download call');
-    assert.strictEqual(calls[0].args.p_label_key, 'security test candle::scented candle', 'the stable label key is passed for the 7-day grace');
+    assert.strictEqual(calls[0].args.p_label_key, 'security test candle::scented candle::circle::63x63mm', 'the stable label key (name, type, shape and size) is passed for the 7-day grace');
     assert.strictEqual(profile.topup_credits, 2, 'one purchased download is spent');
     assert.strictEqual(profile.downloads_used, 20, 'the exhausted plan allowance is untouched');
     assert(!/PREVIEW ONLY/.test(decodeDataUri(capturedHrefs[0])), 'the export is clean');

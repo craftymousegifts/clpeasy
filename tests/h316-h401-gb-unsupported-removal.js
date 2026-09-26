@@ -84,6 +84,8 @@ function pasteAndExtract(text){
   document.getElementById('custom-h').value = '100';
   window.onDimInput();
   window.setApprovedBuilderStep(3);
+  // Real flow: the product is named in Step 2 before Smart Paste in Step 3.
+  document.getElementById('scent-name').value = 'Test Scent';
   document.getElementById('smart-paste-input').value = text;
   window.extractSDS();
   return {

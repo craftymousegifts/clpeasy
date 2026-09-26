@@ -96,7 +96,7 @@ const EXPECT = {
   paygAccount:           [null,               ['purchased',true]],
 };
 
-const MIGRATIONS = ['20260729000000_create_label_downloads.sql','20260925000000_atomic_download_accounting.sql','20260926000000_download_entitlement_lifecycle.sql','20260927000000_payg_trial_conversion_and_annual_refill.sql','20260928000000_protect_download_counters.sql'];
+const MIGRATIONS = ['20260729000000_create_label_downloads.sql','20260925000000_atomic_download_accounting.sql','20260926000000_download_entitlement_lifecycle.sql','20260927000000_payg_trial_conversion_and_annual_refill.sql','20260928000000_protect_download_counters.sql','20260929000000_redownload_upgrade_and_fixed_window.sql'];
 freshDb(MIGRATIONS);
 
 let checks = 0;
@@ -147,22 +147,114 @@ for (const [name, base] of Object.entries(STATES)){
   assert.strictEqual(sheet.ok, false, 'a Composer sheet (no label key) at zero is blocked');
   checks += 4;
 }
-// A live-trial watermarked re-download stays watermarked even after buying PAYG.
-{
-  const id = makeUser({ plan:'free', subscription_status:'trialing', trial_end:iso(3*DAY), downloads_limit:10, downloads_used:0, topup_credits:0 });
-  const first = consumeAs(id, 'rose::scented candle');
-  assert.deepStrictEqual([first.source, first.clean_export], ['plan', false], 'trial download is watermarked');
-  run(`select set_config('request.jwt.claim.role','service_role',false); update public.profiles set topup_credits=5 where id=${q(id)};`);
-  const again = consumeAs(id, 'rose::scented candle');
-  assert.deepStrictEqual([again.free_redownload, again.clean_export], [true, false], 'free re-download keeps the original watermarked entitlement');
-  assert.strictEqual(profile(id).topup_credits, 5, 'a free re-download never spends a purchased download');
-  checks += 3;
-}
-// ── D5: a trial customer's successful PAYG purchase ends the trial ────────
 function creditPayg(id, n){
   const out = run(`begin; set local role service_role; select set_config('request.jwt.claim.role','service_role',true); select public.credit_payg_purchase(${q(id)}, ${n})::text; commit;`);
   return JSON.parse(out.split('\n').filter(l=>l.startsWith('{')).pop());
 }
+// ── Owner decision C1 (20260929000000): same-label re-download rules ─────
+function ageLabel(id, key, days){
+  run(`update public.label_downloads set last_downloaded_at = now() - interval '${days} days' where user_id=${q(id)} and label_key=${q(key)};`);
+}
+function labelRow(id, key){
+  return JSON.parse(run(`select row_to_json(l)::text from public.label_downloads l where user_id=${q(id)} and label_key=${q(key)};`));
+}
+// 1. Watermarked (trial) download, then the customer buys downloads: the
+//    re-download is charged once and clean; later re-downloads are free+clean.
+{
+  const id = makeUser({ plan:'free', subscription_status:'trialing', trial_end:iso(3*DAY), downloads_limit:10, downloads_used:0, topup_credits:0 });
+  const key = 'rose::scented candle::circle::52x52mm';
+  const first = consumeAs(id, key);
+  assert.deepStrictEqual([first.source, first.clean_export], ['plan', false], 'C1: trial download is watermarked');
+  // Still on the trial with no clean option: the re-download stays free and watermarked.
+  const trialAgain = consumeAs(id, key);
+  assert.deepStrictEqual([trialAgain.free_redownload, trialAgain.clean_export, profile(id).downloads_used], [true, false, 1], 'C1: without a clean option the watermarked re-download stays free and never spends another trial download');
+  creditPayg(id, 8);
+  const upgraded = consumeAs(id, key);
+  assert.deepStrictEqual([upgraded.consumed, upgraded.free_redownload, upgraded.source, upgraded.clean_export, upgraded.purchased_downloads], [true, false, 'purchased', true, 7], 'C1: after buying PAYG the watermarked label is charged once and delivered clean');
+  const cleanAgain = consumeAs(id, key);
+  assert.deepStrictEqual([cleanAgain.free_redownload, cleanAgain.clean_export, cleanAgain.purchased_downloads], [true, true, 7], 'C1: the resulting clean download then re-downloads free and clean');
+  checks += 4;
+}
+// 1b. Same, but the upgrade is a subscription (active Easy Start with allowance).
+{
+  const id = makeUser({ plan:'free', subscription_status:'trialing', trial_end:iso(3*DAY), downloads_limit:10, downloads_used:0, topup_credits:0 });
+  const key = 'fig::soy candle::circle::52x52mm';
+  consumeAs(id, key);
+  run(`select set_config('request.jwt.claim.role','service_role',false); update public.profiles set plan='easy_start', subscription_status='active', downloads_limit=20, downloads_used=0 where id=${q(id)};`);
+  const up = consumeAs(id, key);
+  assert.deepStrictEqual([up.consumed, up.source, up.clean_export, up.downloads_used], [true, 'plan', true, 1], 'C1: after subscribing the watermarked label is charged once from the plan and delivered clean');
+  checks += 1;
+}
+// 2. The 7 days are FIXED from the charged download.
+{
+  const id = makeUser({ plan:'payg', subscription_status:'payg', trial_end:iso(-1*DAY), downloads_limit:0, downloads_used:0, topup_credits:5 });
+  const key = 'amber::wax melt::square::40x40mm';
+  const first = consumeAs(id, key);
+  assert.strictEqual(first.purchased_downloads, 4, 'C1 fixed window: first download charged 5 -> 4');
+  const chargedAt = labelRow(id, key).last_downloaded_at;
+  ageLabel(id, key, 6);
+  const day6 = consumeAs(id, key);
+  assert.deepStrictEqual([day6.free_redownload, day6.purchased_downloads], [true, 4], 'C1 fixed window: day 6 re-download is free');
+  const row6 = labelRow(id, key);
+  assert(new Date(row6.last_downloaded_at).getTime() < new Date(chargedAt).getTime() - 5*DAY, 'C1 fixed window: a free re-download does not move the charged-download time');
+  ageLabel(id, key, 8);
+  const day8 = consumeAs(id, key);
+  assert.deepStrictEqual([day8.consumed, day8.purchased_downloads], [true, 3], 'C1 fixed window: after 7 days from the CHARGED download it is charged again, even though it was re-downloaded on day 6');
+  const again = consumeAs(id, key);
+  assert.deepStrictEqual([again.free_redownload, again.purchased_downloads], [true, 3], 'C1 fixed window: the new charged download starts a new 7 days');
+  checks += 5;
+}
+// 3. A clean download stays free and clean within its 7 days even at zero
+//    (ended/zero balance), but no longer indefinitely.
+{
+  const id = makeUser({ plan:'payg', subscription_status:'payg', trial_end:iso(-1*DAY), downloads_limit:0, downloads_used:0, topup_credits:1 });
+  const key = 'cedar::reed diffuser::rectangle::63x44mm';
+  consumeAs(id, key);
+  ageLabel(id, key, 5);
+  const z = consumeAs(id, key);
+  assert.deepStrictEqual([z.ok, z.free_redownload, z.clean_export], [true, true, true], 'C1: clean re-download at zero inside the 7 days is free and clean');
+  ageLabel(id, key, 8);
+  const late = consumeAs(id, key);
+  assert.deepStrictEqual([late.ok, late.reason], [false, 'no_downloads_remaining'], 'C1: at zero, after 7 days from the charged download, it is no longer free (no indefinite extension)');
+  checks += 2;
+}
+// 4. Label size is part of the Builder key: another size is a new download.
+{
+  const id = makeUser({ plan:'payg', subscription_status:'payg', trial_end:iso(-1*DAY), downloads_limit:0, downloads_used:0, topup_credits:5 });
+  consumeAs(id, 'lime::scented candle::circle::52x52mm');
+  const other = consumeAs(id, 'lime::scented candle::circle::70x70mm');
+  assert.deepStrictEqual([other.consumed, other.purchased_downloads], [true, 3], 'C1: the same label at a different physical size is charged as a new download');
+  checks += 1;
+}
+// 5. Annual corner case (the recovered B1 proposal got this wrong): an annual
+//    plan at its limit whose monthly refill is due CAN download clean, so a
+//    watermarked earlier download is charged once from the refilled plan.
+{
+  const id = makeUser({ plan:'free', subscription_status:'trialing', trial_end:iso(3*DAY), downloads_limit:10, downloads_used:0, topup_credits:0 });
+  const key = 'oud::pillar candle::circle::70x70mm';
+  consumeAs(id, key);
+  run(`select set_config('request.jwt.claim.role','service_role',false); update public.profiles set plan='easy_pro', is_pro=true, subscription_status='active', billing_cycle='annual', downloads_limit=30, downloads_used=30, downloads_reset_date=(now() - interval '2 days')::date where id=${q(id)};`);
+  const r = consumeAs(id, key);
+  const p = profile(id);
+  assert.deepStrictEqual([r.consumed, r.source, r.clean_export, p.downloads_used], [true, 'plan', true, 1], 'C1 annual: refill due -> refilled first, then the watermarked label is charged once and clean (1 of 30 used)');
+  assert(new Date(p.downloads_reset_date).getTime() > Date.now(), 'C1 annual: next reset moved into the future');
+  // Annual plan at its limit with NO refill due and nothing purchased: no clean
+  // option, so the watermarked copy is re-issued free (never charged, never clean).
+  const id2 = makeUser({ plan:'free', subscription_status:'trialing', trial_end:iso(3*DAY), downloads_limit:10, downloads_used:0, topup_credits:0 });
+  consumeAs(id2, key);
+  run(`select set_config('request.jwt.claim.role','service_role',false); update public.profiles set plan='easy_pro', is_pro=true, subscription_status='active', billing_cycle='annual', downloads_limit=30, downloads_used=30, downloads_reset_date=(now() + interval '10 days')::date where id=${q(id2)};`);
+  const r2 = consumeAs(id2, key);
+  assert.deepStrictEqual([r2.free_redownload, r2.clean_export, profile(id2).downloads_used], [true, false, 30], 'C1 annual: no allowance left and no refill due -> free watermarked copy, nothing spent');
+  // A free re-download that coincides with a due refill applies the refill once.
+  const id3 = makeUser({ plan:'easy_start', subscription_status:'active', billing_cycle:'annual', downloads_limit:20, downloads_used:5, downloads_reset_date:iso(10*DAY), topup_credits:0 });
+  const k3 = 'sage::wax melt::square::40x40mm';
+  consumeAs(id3, k3);
+  run(`select set_config('request.jwt.claim.role','service_role',false); update public.profiles set downloads_used=20, downloads_reset_date=(now() - interval '1 day')::date where id=${q(id3)};`);
+  const r3 = consumeAs(id3, k3);
+  assert.deepStrictEqual([r3.free_redownload, r3.clean_export, profile(id3).downloads_used], [true, true, 0], 'C1 annual: a clean re-download is free; the due refill is applied (0 used) and not double-counted');
+  checks += 4;
+}
+// ── D5: a trial customer's successful PAYG purchase ends the trial ────────
 {
   // Live trial with unused trial downloads buys PAYG.
   const id = makeUser({ plan:'free', subscription_status:'trialing', trial_end:iso(5*DAY), downloads_limit:10, downloads_used:2, topup_credits:0 });
@@ -284,6 +376,15 @@ function creditPayg(id, n){
     assert.strictEqual(profile(id).topup_credits, 0, 'balance never goes negative under concurrency');
     checks += 2;
 
+    // Show what the pre-C1 function (up to 20260928000000) did.
+    freshDb(MIGRATIONS.slice(0,5));
+    const wm = makeUser({ plan:'free', subscription_status:'trialing', trial_end:iso(3*DAY), downloads_limit:10, downloads_used:0, topup_credits:0 });
+    consumeAs(wm, 'rose::scented candle');
+    run(`select set_config('request.jwt.claim.role','service_role',false); update public.profiles set topup_credits=5 where id=${q(wm)};`);
+    const wmAgain = consumeAs(wm, 'rose::scented candle');
+    assert.deepStrictEqual([wmAgain.free_redownload, wmAgain.clean_export], [true, false], 'baseline check: before C1 a paying customer got the old watermarked copy free (fixed by 20260929000000)');
+    ageLabel(wm, 'rose::scented candle', 6); consumeAs(wm, 'rose::scented candle');
+    assert(Date.now() - new Date(labelRow(wm, 'rose::scented candle').last_downloaded_at).getTime() < DAY, 'baseline check: before C1 a free re-download restarted the 7 days (fixed by 20260929000000)');
     // Show what the ORIGINAL PR #156 function does for the corrected states.
     freshDb(MIGRATIONS.slice(0,2));
     const annual = makeUser({ plan:'easy_start', subscription_status:'active', billing_cycle:'annual', downloads_limit:20, downloads_used:20, downloads_reset_date:iso(-2*DAY), topup_credits:0 });
@@ -297,6 +398,6 @@ function creditPayg(id, n){
     assert.strictEqual(oldCs.ok, false, 'baseline check: original PR function blocks a scheduled cancellation (the bug fixed by 20260926000000)');
     assert.deepStrictEqual([oldTl.source, oldTl.clean_export], ['plan', false], 'baseline check: original PR function spends a watermarked trial download despite purchased downloads');
     run(`drop database if exists ${DB};`, 'postgres');
-    console.log(`download entitlement SQL checks passed (${checks+2} groups; real migrations on local PostgreSQL)`);
+    console.log(`download entitlement SQL checks passed (${checks+4} groups; real migrations on local PostgreSQL)`);
   }).catch(e => { console.error(e); process.exitCode = 1; });
 }

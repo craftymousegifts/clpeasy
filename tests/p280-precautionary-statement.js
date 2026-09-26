@@ -200,6 +200,7 @@ const emptyQuery = {
     const bdocument = bwindow.document;
 
     // 1. Smart Paste must still NOT auto-add P280.
+    bdocument.getElementById('scent-name').value = 'Lavender Fields'; // named in Step 2 before Smart Paste
     bdocument.getElementById('smart-paste-input').value = 'Warning H317 P102 P261 P280 P501 Contains Linalool';
     bwindow.extractSDS();
     assert(!bwindow.eval('S.pSelected').includes('P280'), 'Smart Paste must still exclude P280 -- occupational PPE wording must not auto-transfer to a finished consumer product label');
@@ -351,6 +352,7 @@ const emptyQuery = {
     // escaped, mangled, or stripped at rest.
     bdocument.getElementById('scent-name').value = 'XSS Test Label';
     bwindow.eval(`S.scentName='XSS Test Label';`);
+    bwindow.confirmSameHazardSource(); // C4: same hazard data, new product name
     // Checkpoint B: saveLabel() is now async -- await before reading getSaved().
     await bwindow.saveLabel();
     const savedXss = bwindow.eval('getSaved()').find(e => e.scentName === 'XSS Test Label');

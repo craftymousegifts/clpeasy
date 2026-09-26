@@ -3,8 +3,10 @@
 -- every row it creates (synthetic auth users, profiles, downloads) is rolled
 -- back. The exception message carries the PASS/FAIL lines. Never run against
 -- production. Synthetic users only: qa-rollback-*@example.test.
--- Run (26 Sep 2026) via the Supabase SQL runner on CLPeasy Test: 34/34 PASS
--- (+1 INFO). Paste the whole DO block; the "error" returned IS the report.
+-- Run (26 Sep 2026) via the Supabase SQL runner on CLPeasy Test. Raw outputs
+-- are kept in docs/reports/pr156-final-qa/test-db-rollback/. Paste the whole DO
+-- block; the "error" returned IS the report. From 20260929000000 (owner
+-- decision C1) T17 is a PASS check and T17b/T34-T37 cover the new rules.
 do $qa$
 declare
   res text[] := '{}';
@@ -108,9 +110,12 @@ begin
   if p.subscription_status='payg' and p.downloads_limit=0 and p.trial_end <= now() and p.topup_credits=8 then res := res || 'PASS T16 live trial + PAYG: trial ends now, remaining trial allowance forfeited, 8 purchased'::text; else res := res || ('FAIL T16 '||r::text); fails:=fails+1; end if;
   perform set_config('request.jwt.claim.role','authenticated',true);
   r := public.consume_download('trial rose::scented candle');
-  res := res || ('INFO T17 trial-watermarked label re-downloaded within 7 days after buying PAYG -> '||r::text);
+  -- Owner decision C1 (20260929000000): no longer re-issued free+watermarked.
+  if (r->>'consumed')::boolean and (r->>'clean_export')::boolean and (r->>'source')='purchased' and (r->>'purchased_downloads')::int=7 then res := res || 'PASS T17 C1: trial-watermarked label re-downloaded after buying PAYG is charged once (8 -> 7) and clean'::text; else res := res || ('FAIL T17 '||r::text); fails:=fails+1; end if;
+  r := public.consume_download('trial rose::scented candle');
+  if (r->>'free_redownload')::boolean and (r->>'clean_export')::boolean and (r->>'purchased_downloads')::int=7 then res := res || 'PASS T17b C1: that clean download then re-downloads free and clean'::text; else res := res || ('FAIL T17b '||r::text); fails:=fails+1; end if;
   r := public.consume_download('new label::scented candle');
-  if (r->>'source')='purchased' and (r->>'clean_export')::boolean then res := res || 'PASS T18 converted trial: new label is clean from purchased downloads'::text; else res := res || ('FAIL T18 '||r::text); fails:=fails+1; end if;
+  if (r->>'source')='purchased' and (r->>'clean_export')::boolean and (r->>'purchased_downloads')::int=6 then res := res || 'PASS T18 converted trial: new label is clean from purchased downloads'::text; else res := res || ('FAIL T18 '||r::text); fails:=fails+1; end if;
 
   -- ── 3. active Easy Start monthly at limit, top-ups ─────────────────
   u := gen_random_uuid();
@@ -201,6 +206,44 @@ begin
   r := public.consume_download('annual3::candle');
   select * into p from public.profiles where id = u;
   if (r->>'ok')::boolean=false and p.downloads_used=30 then res := res || 'PASS T33 paused annual plan is not refilled'::text; else res := res || ('FAIL T33 '||r::text); fails:=fails+1; end if;
+
+  -- ── 7. C1 fixed 7-day window, size in key, annual corner case ─────
+  u := gen_random_uuid();
+  insert into auth.users(id, instance_id, aud, role, email, raw_user_meta_data, created_at, updated_at)
+  values (u, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'qa-rollback-7@example.test', '{}'::jsonb, now(), now());
+  perform set_config('request.jwt.claim.role','service_role',true);
+  perform public.credit_payg_purchase(u, 5);
+  perform set_config('request.jwt.claim.sub',u::text,true);
+  perform set_config('request.jwt.claims',json_build_object('sub',u,'role','authenticated')::text,true);
+  perform set_config('request.jwt.claim.role','authenticated',true);
+  r := public.consume_download('amber::wax melt::square::40x40mm');
+  perform set_config('request.jwt.claim.role','service_role',true);
+  update public.label_downloads set last_downloaded_at = now() - interval '6 days' where user_id=u and label_key='amber::wax melt::square::40x40mm';
+  perform set_config('request.jwt.claim.role','authenticated',true);
+  r := public.consume_download('amber::wax melt::square::40x40mm');
+  select count(*) into n from public.label_downloads where user_id=u and label_key='amber::wax melt::square::40x40mm' and last_downloaded_at < now() - interval '5 days';
+  if (r->>'free_redownload')::boolean and (r->>'purchased_downloads')::int=4 and n=1 then res := res || 'PASS T34 C1: day-6 re-download is free and does NOT move the charged-download time'::text; else res := res || ('FAIL T34 '||r::text||' n='||n); fails:=fails+1; end if;
+  perform set_config('request.jwt.claim.role','service_role',true);
+  update public.label_downloads set last_downloaded_at = now() - interval '8 days' where user_id=u and label_key='amber::wax melt::square::40x40mm';
+  perform set_config('request.jwt.claim.role','authenticated',true);
+  r := public.consume_download('amber::wax melt::square::40x40mm');
+  if (r->>'consumed')::boolean and (r->>'purchased_downloads')::int=3 then res := res || 'PASS T35 C1: 8 days after the charged download it is charged again (window fixed, not extended by the day-6 re-download)'::text; else res := res || ('FAIL T35 '||r::text); fails:=fails+1; end if;
+  r := public.consume_download('amber::wax melt::square::60x60mm');
+  if (r->>'consumed')::boolean and (r->>'purchased_downloads')::int=2 then res := res || 'PASS T36 C1: same label at another physical size is a new charged download'::text; else res := res || ('FAIL T36 '||r::text); fails:=fails+1; end if;
+  -- annual corner case: trial watermarked label, then annual Pro at 30/30 with the monthly refill due
+  u := gen_random_uuid();
+  insert into auth.users(id, instance_id, aud, role, email, raw_user_meta_data, created_at, updated_at)
+  values (u, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'qa-rollback-8@example.test', '{}'::jsonb, now(), now());
+  perform set_config('request.jwt.claim.sub',u::text,true);
+  perform set_config('request.jwt.claims',json_build_object('sub',u,'role','authenticated')::text,true);
+  perform set_config('request.jwt.claim.role','authenticated',true);
+  r := public.consume_download('oud::pillar candle::circle::70x70mm');
+  perform set_config('request.jwt.claim.role','service_role',true);
+  update public.profiles set plan='easy_pro', is_pro=true, subscription_status='active', billing_cycle='annual', downloads_limit=30, downloads_used=30, downloads_reset_date=(current_date - 2) where id=u;
+  perform set_config('request.jwt.claim.role','authenticated',true);
+  r := public.consume_download('oud::pillar candle::circle::70x70mm');
+  select * into p from public.profiles where id = u;
+  if (r->>'consumed')::boolean and (r->>'source')='plan' and (r->>'clean_export')::boolean and p.downloads_used=1 and p.downloads_reset_date > current_date then res := res || 'PASS T37 C1 annual: refill applied first, watermarked label charged once from the refilled plan and clean (1/30)'::text; else res := res || ('FAIL T37 '||r::text||' used='||p.downloads_used); fails:=fails+1; end if;
 
   raise exception 'QA_RESULTS fails=% %', fails, E'\n' || array_to_string(res, E'\n');
 end

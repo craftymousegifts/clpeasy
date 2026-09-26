@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "test": "node tests/app-static-audit.js && node tests/builder-regression.js && node tests/payg-download-accounting.js && node tests/payg-account-display.js && node tests/payg-pricing-checkout.js && node tests/account-next-payment.js && node tests/preview-watermark-and-export-authorization.js && node tests/download-entitlement-sql.js && node tests/post-download-print-guidance.js && node tests/deno/run.js"
+    "test": "node tests/app-static-audit.js && node tests/builder-regression.js && node tests/payg-download-accounting.js && node tests/payg-account-display.js && node tests/payg-pricing-checkout.js && node tests/account-next-payment.js && node tests/preview-watermark-and-export-authorization.js && node tests/download-entitlement-sql.js && node tests/post-download-print-guidance.js && node tests/hazard-source-integrity.js && node tests/deno/run.js"
   },
   "dependencies": {
     "puppeteer": "^25.2.0"

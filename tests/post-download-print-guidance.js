@@ -58,7 +58,7 @@ function stub(profile, rpcResult) {
 // Records file hand-over without changing page behaviour.
 const RECORDER = `window.__downloads=[];window.__opened=[];
 (function(){var oc=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){if(this.download)window.__downloads.push(this.download);return oc.apply(this,arguments);};
-window.open=function(u){window.__opened.push(String(u||''));if(window.__popupBlocked)return null;return {closed:false,close:function(){this.closed=true;},focus:function(){},document:{open:function(){},write:function(){},close:function(){}}};};})();`;
+window.open=function(u){window.__opened.push(String(u||''));if(window.__popupBlocked)return null;var w={closed:false,close:function(){this.closed=true;},focus:function(){},written:0,location:{replace:function(x){w.navigated=String(x);}},document:{open:function(){},write:function(){w.written++;},close:function(){}}};window.__lastPopup=w;return w;};})();`;
 
 const SDS = '2.2 Label elements\\nSignal word: Warning\\nH317 May cause an allergic skin reaction.\\nH412 Harmful to aquatic life with long lasting effects.\\nP261 P302+P352 P501';
 
@@ -156,8 +156,8 @@ const server = http.createServer((req, res) => {
       await new Promise(r => setTimeout(r, 400));
       s = await state(t);
       assert.strictEqual(s.opened, 1, 'print window opened');
-      assert.ok(s.shown && s.text.startsWith('✓ Label ready to print') && s.text.includes(BODY), s.text); assert.strictEqual(s.rpc, 3);
-      ok('3: successful Builder PDF (print window) shows the guidance, headed "Label ready to print"');
+      assert.ok(s.shown && s.text.startsWith('✓ Label downloaded') && s.text.includes(BODY), s.text); assert.strictEqual(s.rpc, 3);
+      ok('3: successful Builder PDF (print window) shows the guidance, headed "Label downloaded" (approved wording)');
       assert.deepStrictEqual(t.errs, [], 'no console errors: ' + t.errs.join(' | '));
       ok('14a: no console errors on the Builder success paths');
       await t.close();
@@ -184,9 +184,51 @@ const server = http.createServer((req, res) => {
       await new Promise(r => setTimeout(r, 500));
       s = await state(t2);
       assert.strictEqual(s.shown, false, 'no guidance when the print window was blocked');
-      console.log('INFO: Builder PDF with pop-up blocked -> consume_download calls = ' + s.rpc + ' (existing behaviour, reported separately)');
-      ok('4b: PDF with the pop-up blocked (no print window) shows no guidance');
+      // Owner decision C6: the print window is opened before any download is
+      // consumed, so a blocked pop-up costs nothing and explains itself.
+      assert.strictEqual(s.rpc, 0, 'C6: a blocked pop-up must not consume a download');
+      assert.ok(await t2.evaluate(() => !!document.getElementById('print-popup-warn')), 'C6: the pop-up-blocked warning is shown');
+      ok('4b: PDF with the pop-up blocked: no guidance, no download consumed, pop-up warning shown (C6)');
+      // Customer allows pop-ups and tries again: charged once, file handed over.
+      await t2.evaluate(() => { window.__popupBlocked = false; });
+      await t2.evaluate(() => printToPDF());
+      await new Promise(r => setTimeout(r, 500));
+      s = await state(t2);
+      const pop = await t2.evaluate(() => ({ nav: (window.__lastPopup || {}).navigated || '', closed: (window.__lastPopup || {}).closed, args: (window.__rpc || []).filter(x => x[0] === 'consume_download').map(x => x[1].p_label_key) }));
+      assert.strictEqual(s.rpc, 1, 'C6: retry after allowing pop-ups is charged exactly once');
+      assert.ok(pop.nav.startsWith('blob:') && pop.closed === false, 'C6: the label is delivered into the window opened before charging');
+      assert.ok(s.shown && s.text.startsWith('✓ Label downloaded'), 'C6: guidance after the successful retry');
+      assert.ok(/::circle::|::rectangle::|::square::/.test(pop.args[0] || ''), 'C1: label key carries shape and size: ' + pop.args[0]);
+      ok('4c: after allowing pop-ups the PDF is charged once and delivered into the pre-opened window (C6)');
       await t2.close();
+      // A label with no label key (no product name): blocked pop-up still costs nothing.
+      const t3 = await open('builder.html', 'payg', 'charged', undefined, { popupBlocked: true });
+      await readyBuilder(t3);
+      await t3.evaluate(() => { document.getElementById('scent-name').value = ''; readForm(); });
+      assert.strictEqual(await t3.evaluate(() => computeLabelKey()), null, 'setup: no label key');
+      await t3.evaluate(() => printToPDF());
+      await new Promise(r => setTimeout(r, 500));
+      s = await state(t3);
+      assert.strictEqual(s.rpc, 0, 'C6: no-key label with blocked pop-up is not charged');
+      await t3.evaluate(() => { window.__popupBlocked = false; });
+      await t3.evaluate(() => printToPDF());
+      await new Promise(r => setTimeout(r, 500));
+      s = await state(t3);
+      const k = await t3.evaluate(() => (window.__rpc || []).filter(x => x[0] === 'consume_download').map(x => x[1].p_label_key));
+      assert.deepStrictEqual(k, [null], 'C6: no-key label is charged once, with no label key, only when the window exists');
+      ok('4d: label without a key: blocked pop-up free, successful PDF charged once (C6)');
+      await t3.close();
+      // Download refused by the server: the pre-opened window is closed, nothing delivered.
+      const t4 = await open('builder.html', 'zero', 'none');
+      await readyBuilder(t4);
+      await t4.evaluate(() => printToPDF());
+      await new Promise(r => setTimeout(r, 500));
+      const z = await t4.evaluate(() => ({ closed: (window.__lastPopup || {}).closed, nav: (window.__lastPopup || {}).navigated || '' }));
+      s = await state(t4);
+      assert.ok(z.closed === true && z.nav === '', 'C6: when the download is refused the pre-opened window is closed and gets no label');
+      assert.strictEqual(s.shown, false, 'no guidance when refused');
+      ok('4e: refused PDF download closes the pre-opened window without a label (C6)');
+      await t4.close();
     }
     // 5: zero entitlement and accounting error
     {
@@ -283,7 +325,7 @@ const server = http.createServer((req, res) => {
       await t.evaluate(() => downloadPDF());
       assert.ok(await waitFor(t, () => { const g = document.getElementById('sheet-print-guidance'); return !g.hidden; }, 8000), 'guidance appears after the sheet is written');
       s = await cstate(t);
-      assert.ok(s.text.startsWith('✓ Print sheet ready'), s.text);
+      assert.ok(s.text.startsWith('✓ Print sheet downloaded'), s.text);
       assert.ok(s.text.includes('Load the matching label sheet or printable material into your printer. Check your paper size and printer settings, then print at 100% / Actual Size to preserve the label dimensions.'), s.text);
       assert.strictEqual(s.role, 'status'); assert.strictEqual(s.rpc, 1, 'one charge'); assert.strictEqual(s.hScroll, false);
       const help = await t.evaluate(async () => { const a = document.querySelector('#sheet-print-guidance .spg-help-link'); if (!a) return 'no link'; a.click(); await new Promise(r => setTimeout(r, 300)); return { text: a.textContent, open: document.getElementById('printing-help').open, rpc: window.__rpc.filter(x => x[0] === 'consume_download').length }; });

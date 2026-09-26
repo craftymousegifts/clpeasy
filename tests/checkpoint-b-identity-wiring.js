@@ -254,6 +254,11 @@ async function openMyLabels(opts){
     const { window, document } = await openBuilder({ seed, search:`?label=${idA}` });
     document.getElementById('scent-name').value = 'Renamed Scent';
     window.eval("S.scentName='Renamed Scent';");
+    // Owner decision C4: renaming a label that carries hazard data must first
+    // be answered (same fragrance oil/SDS or not); an unanswered rename is not saved.
+    await window.saveLabel();
+    assert.strictEqual(window.eval('getSaved()')[0].scentName, 'Original Name', 'C4: a rename with unanswered hazard review must not be saved');
+    window.confirmSameHazardSource();
     await window.saveLabel();
     const arr = window.eval('getSaved()');
     assert.strictEqual(arr.length, 1, 'renaming and resaving an explicitly-edited record must update it in place, never create a second record');
@@ -282,6 +287,7 @@ async function openMyLabels(opts){
     await window.LabelLibrary.mutate(current => current.filter(x => x.id !== idA));
     document.getElementById('scent-name').value = 'Edited After Deletion';
     window.eval("S.scentName='Edited After Deletion';");
+    window.confirmSameHazardSource(); // C4: rename answered as "same SDS"
     await window.saveLabel();
     assert.strictEqual(window.eval('getSaved().length'), 0, 'saving over a since-deleted record must never silently recreate it');
     const notice = document.getElementById('stale-edit-notice');

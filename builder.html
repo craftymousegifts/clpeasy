@@ -1105,6 +1105,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <h2 class="step-heading">Product details</h2>
     <p class="step-sub">This information appears directly on your label.</p>
     <div class="form-group"><label>Product Name</label><input type="text" id="scent-name" placeholder="e.g. Lemongrass &amp; Lime Candle" autocomplete="off" oninput="updateLabel()"></div>
+    <div class="hazard-review-notice field-alert field-alert-warn" role="alert" style="display:none;margin-bottom:14px;font-size:13px;"></div>
     <div class="form-row">
       <div class="form-group"><label>Product type</label><select id="product-type" onchange="onProductTypeChange();updateLabel();saveProdDetails()">
         <option value="" disabled selected>— Choose product type —</option>
@@ -1231,6 +1232,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <span class="library-toggle" onclick="toggleLib('s-library',this)">▼ Show sensitiser library</span>
     <div id="s-library" style="display:none;margin-bottom:10px;"><div class="sensitiser-grid" id="sensitiser-chips"></div></div>
     <div class="allergen-tags" id="allergen-tags"></div>
+    <div class="hazard-review-notice field-alert field-alert-warn" role="alert" style="display:none;margin-top:14px;font-size:13px;"></div>
     <div id="hazard-confirm-block" class="field-alert field-alert-warn" style="margin-top:14px;margin-bottom:4px;">
       <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:var(--text);font-weight:500;line-height:1.5;">
         <input type="checkbox" id="hazard-confirm" style="width:18px;height:18px;margin-top:1px;flex-shrink:0;accent-color:var(--teal);" onchange="toggleHazardNext()">
@@ -1336,6 +1338,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <!-- Visible on Step 5 (unlike #label-warn, which lives in Step 3's hidden panel) so the
          download-block reason is shown right next to the disabled buttons it explains. -->
     <div id="label-warn-step5" class="field-alert field-alert-danger" style="display:none;margin-bottom:16px;font-size:13px;"></div>
+    <div class="hazard-review-notice field-alert field-alert-warn" role="alert" style="display:none;margin-bottom:16px;font-size:13px;"></div>
 
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
       <div class="review-download-grid">
@@ -1595,7 +1598,12 @@ const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',produc
   // P280's own selected protection items (see openP280Modal()/buildP280Wording
   // in label-render.js). p280Items: subset of LabelRenderer.P280_ITEMS keys;
   // p280Other: optional free-text extra item. Empty = no valid selection yet.
-  p280Items:[],p280Other:''};
+  p280Items:[],p280Other:'',
+  // Owner decisions C3/C4: hazardFromExtraction is true only while the hazard
+  // data on this label came from a successful Smart Paste extraction (it is
+  // saved with the label). hazardSourceName is the normalised product name the
+  // current hazard data belongs to; hazardSourceLabel is that name as typed.
+  hazardFromExtraction:false,hazardSourceName:null,hazardSourceLabel:''};
 // ── PRODUCT TYPE GUIDANCE ─────────────────────────────────────
 const FRAG_LOAD_TIPS={
   'Scented Candle':'Recommended: 6–10%. Your CLP must be for the actual % used — you can overestimate but never underestimate.',
@@ -1685,7 +1693,7 @@ function setBorder(show){
 
 // ── PRINT TO PDF ──────────────────────────────────────────────
 function printToPDF(){
-  if(!_downloadAllowed()){alert('Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.');return;}
+  if(!_downloadAllowed()){alert(_downloadBlockedMessage());return;}
   readForm();
   const{mmW,mmH,pw,ph}=getDims();
   const svgStr=buildSVG(true);
@@ -1715,10 +1723,26 @@ function printToPDF(){
   // Use Blob URL — avoids document.write() quirks and template literal breakage
   const blob=new Blob([html],{type:'text/html;charset=utf-8'});
   const blobUrl=URL.createObjectURL(blob);
-  const win=window.open(blobUrl,'_blank');
+  // C6: for a signed-in customer the print window was already opened (inside
+  // the click, before the download was consumed) by wrapDownloads().
+  const prepared=_takePreparedPopup();
+  const win=prepared||window.open(blobUrl,'_blank');
+  if(prepared){
+    try{prepared.location.replace(blobUrl);}
+    catch(e){prepared.document.open();prepared.document.write(html);prepared.document.close();}
+  }
   if(!win){
     URL.revokeObjectURL(blobUrl);
-    // Pop-up was blocked — show inline amber warning
+    _showPopupBlockedWarning();
+    return;
+  }
+  // Revoke blob URL after window has had time to load it
+  setTimeout(function(){URL.revokeObjectURL(blobUrl);},10000);
+  showPrintGuidance('pdf');
+  setTimeout(()=>showLabelDoneSplash('pdf'),1000);
+}
+// Pop-up was blocked — show inline amber warning
+function _showPopupBlockedWarning(){
     let warn=document.getElementById('print-popup-warn');
     if(!warn){
       warn=document.createElement('div');
@@ -1737,13 +1761,11 @@ function printToPDF(){
       document.body.appendChild(warn);
       setTimeout(function(){if(warn.parentNode)warn.remove();},8000);
     }
-    return;
-  }
-  // Revoke blob URL after window has had time to load it
-  setTimeout(function(){URL.revokeObjectURL(blobUrl);},10000);
-  showPrintGuidance('pdf');
-  setTimeout(()=>showLabelDoneSplash('pdf'),1000);
 }
+// C6: the print window opened by wrapDownloads() before charging; each PDF
+// export takes it at most once.
+let _preparedPopup=null;
+function _takePreparedPopup(){const w=_preparedPopup;_preparedPopup=null;return w;}
 
 
 // ── PDF SHEET DOWNLOAD (A4 grid of repeated labels) ──────────
@@ -1800,7 +1822,7 @@ function labelToCanvas(cb){
 
 // ── PDF SHEET — Avery-aligned home printing ───────────────────
 async function downloadPDFSheet(){
-  if(!_downloadAllowed()){alert('Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.');return;}
+  if(!_downloadAllowed()){alert(_downloadBlockedMessage());return;}
   plausible('Label Downloaded',{props:{format:'PDF Sheet'}});
   await ensureFontsLoaded(); // wait for DM Sans before rasterising
   readForm();
@@ -1827,7 +1849,7 @@ async function downloadPDFSheet(){
       }
       const sheetUri=sheet.toDataURL('image/png');
       const slug=(S.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-      const win=window.open('','_blank');
+      const win=_takePreparedPopup()||window.open('','_blank');
       if(!win){alert('Please allow pop-ups for clpeasy.com to print.');return;}
       const averyNote=AVERY_LAYOUTS[Math.round(mmW)] ? `Aligned to Avery ${mmW}mm round labels (${layout.total}/sheet)` : `${layout.total} labels per sheet`;
       win.document.write(`<!DOCTYPE html><html><head><title>CLPeasy Sheet — ${slug}</title>
@@ -1854,7 +1876,7 @@ async function downloadPDFSheet(){
 // Exports a single label with 3mm bleed on all sides + crop marks
 // Print shops accept this directly — 300 DPI, bleed included
 async function downloadPrintReadyPDF(){
-  if(!_downloadAllowed()){alert('Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.');return;}
+  if(!_downloadAllowed()){alert(_downloadBlockedMessage());return;}
   plausible('Label Downloaded',{props:{format:'Print-Ready PDF'}});
   await ensureFontsLoaded(); // wait for DM Sans before rasterising
   readForm();
@@ -1899,7 +1921,7 @@ async function downloadPrintReadyPDF(){
     ctx.beginPath();ctx.moveTo(bleedPx+eW,bleedPx+eH+offset);ctx.lineTo(bleedPx+eW,bleedPx+eH+offset+markLen);ctx.stroke();
     const pngUri=cvs.toDataURL('image/png');
     const slug=(S.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-    const win=window.open('','_blank');
+    const win=_takePreparedPopup()||window.open('','_blank');
     if(!win){alert('Please allow pop-ups for clpeasy.com.');return;}
     win.document.write(`<!DOCTYPE html><html><head><title>CLPeasy Print-Ready — ${slug}</title>
     <style>*{margin:0;padding:0;}body{background:#e8e8e8;display:flex;flex-direction:column;align-items:center;padding:20px;font-family:Arial,sans-serif;}
@@ -1953,7 +1975,7 @@ async function downloadPrintReadyPDF(){
 
 // ── CUTTING MACHINE PNGs — download as ZIP ──────────────────
 function downloadCricutPNGs(){
-  if(!_downloadAllowed()){alert('Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.');return;}
+  if(!_downloadAllowed()){alert(_downloadBlockedMessage());return;}
   plausible('Label Downloaded',{props:{format:'Cricut PNGs'}});
   readForm();
   const qtyEl=document.getElementById('sheet-qty');
@@ -2480,13 +2502,16 @@ async function consumeBuilderDownload(labelKey){
   }
 }
 
-// Stable conceptual identity already used by CLPeasy: scent + product type.
-// The RPC owns the grace-window decision and timestamp update.
+// Same-label identity for the 7-day free re-download: product name +
+// product type + physical label shape and size (owner decision C1: a
+// materially different label size is a different download). The RPC owns the
+// grace-window decision.
 function computeLabelKey(){
   const scent=(S.scentName||'').trim().toLowerCase();
   const type=(S.productType||'').trim().toLowerCase();
   if(!scent||!type)return null;
-  return scent+'::'+type;
+  const d=getDims();
+  return scent+'::'+type+'::'+(S.shape||'circle')+'::'+d.mmW+'x'+d.mmH+'mm';
 }
 
 // Post-download printing guidance (approved 26 Sep 2026). Shown only from
@@ -2497,8 +2522,7 @@ function computeLabelKey(){
 function showPrintGuidance(kind){
   const el=document.getElementById('dl-print-guidance');
   if(!el||!currentUser)return;
-  const title=kind==='pdf'?'Label ready to print':'Label downloaded';
-  el.innerHTML='<span class="dl-pg-icon" aria-hidden="true">✓</span><div><strong>'+title+'</strong>'+
+  el.innerHTML='<span class="dl-pg-icon" aria-hidden="true">✓</span><div><strong>Label downloaded</strong>'+
     '<p>Now load your chosen label paper or sheet into your printer. Print at <strong>100% / Actual Size</strong> to preserve the label dimensions.</p></div>';
   el.hidden=false;
 }
@@ -2507,6 +2531,7 @@ function hidePrintGuidance(){
   if(el)el.hidden=true;
 }
 
+const POPUP_EXPORTS=['printToPDF','downloadPDFSheet','downloadPrintReadyPDF'];
 function wrapDownloads(){
   ['downloadPNG','downloadSVG','downloadPDFSheet','downloadPrintReadyPDF','downloadCricutPNGs','printToPDF'].forEach(function(fn){
     const orig=window[fn];
@@ -2517,7 +2542,7 @@ function wrapDownloads(){
       // a customer with zero remaining downloads may still have a valid free
       // 7-day re-download for this exact label.
       if(!_downloadAllowed()){
-        alert('Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.');
+        alert(_downloadBlockedMessage());
         return;
       }
       // Signed-out guests keep the long-standing Builder behaviour: a
@@ -2530,9 +2555,20 @@ function wrapDownloads(){
         if(wmGuest)wmGuest.style.display='';
         return orig.apply(this,arguments);
       }
+      // C6 (owner decision): a PDF export needs a print window. Open it now,
+      // synchronously inside the customer's click and BEFORE any download is
+      // consumed (the Composer's approach). A blocked pop-up therefore costs
+      // nothing: the customer sees the pop-up warning and can try again.
+      let popup=null;
+      if(POPUP_EXPORTS.includes(fn)){
+        popup=window.open('','_blank');
+        if(!popup){_showPopupBlockedWarning();return;}
+        try{popup.document.write('<!DOCTYPE html><title>CLPeasy</title><p style="font-family:sans-serif;padding:24px;color:#555">Preparing your label…</p>');}catch(e){}
+      }
       const labelKey=computeLabelKey();
       const charge=await consumeBuilderDownload(labelKey);
       if(!charge.ok){
+        if(popup){try{popup.close();}catch(e){}}
         alert(charge.reason==='accounting_error'?'We could not verify your download allowance. Please try again.':window.CLPEntitlement.outOfDownloadsMessage(DL.summary));
         return;
       }
@@ -2543,7 +2579,14 @@ function wrapDownloads(){
       S.isPro=charge.clean===true;
       const wmNote=document.querySelector('.watermark-note');
       if(wmNote)wmNote.style.display=S.isPro?'none':'';
-      return orig.apply(this,arguments);
+      if(!popup)return orig.apply(this,arguments);
+      _preparedPopup=popup;
+      try{return await orig.apply(this,arguments);}
+      finally{
+        // Generation failed before the window was used: close the placeholder
+        // (existing failed-generation accounting is unchanged).
+        if(_preparedPopup===popup){_preparedPopup=null;try{popup.close();}catch(e){}}
+      }
     };
     wrapped.__dlwrapped=true;
     window[fn]=wrapped;
@@ -2814,6 +2857,7 @@ async function saveLabel(){
   plausible('Label Saved to Library');
   readForm();
   if(!S.scentName){alert('Please enter a scent name before saving.');return;}
+  if(_hazardReviewRequired()){alert(HAZARD_REVIEW_MSG);return;}
   if(isCustomSizeBelowSupportedMinimum()){alert(getCustomSizeMinMsg());return;}
   removeStaleEditNotice();
   const entry={schemaVersion:LABEL_SCHEMA_VERSION,rendererVersion:LabelRenderer.RENDERER_VERSION,
@@ -2821,6 +2865,7 @@ async function saveLabel(){
     hStatements:S.hStatements,pictograms:[...S.pictograms],sensitisers:[...S.sensitisers],bizName:S.bizName,bizAddress:S.bizAddress,
     bizPhone:S.bizPhone,bizWebsite:S.bizWebsite,netWeight:S.netWeight,fragLoad:S.fragLoad,burnTime:S.burnTime,batchNum:S.batchNum,
     supplier:S.supplier||'',hideEN15494:!!S.hideEN15494,
+    hazardFromExtraction:!!S.hazardFromExtraction,
     bgColour:(document.getElementById('label-bg-colour')?.value)||'#ffffff',
     pStatements:S.pStatements||'',textColour:S.textColour||'dark',showBorder:S.showBorder!==false,
     labelLang:document.getElementById('label-lang')?.value||'en',
@@ -2921,6 +2966,15 @@ function loadLabelRecord(e){
   // rather than silently showing every protection item.
   S.p280Items=Array.isArray(e.p280Items)?[...e.p280Items]:[];
   S.p280Other=e.p280Other||'';
+  // C3: restore the processed-extraction state. Labels saved from v12 carry
+  // hazardFromExtraction. Older labels do not; for them the one field only a
+  // successful Smart Paste extraction ever writes (sdsSignal, which Clear
+  // empties) is the evidence. Manually entered hazard data stays editable.
+  S.hazardFromExtraction=e.hazardFromExtraction===true||
+    (e.hazardFromExtraction===undefined&&typeof e.sdsSignal==='string'&&e.sdsSignal.trim()!=='');
+  // C4: the reopened hazard data belongs to this label's saved product name.
+  S.hazardSourceName=_normProductName(e.scentName);
+  S.hazardSourceLabel=e.scentName||'';
   S.bizName=e.bizName||'';S.bizAddress=e.bizAddress||'';S.bizPhone=e.bizPhone||'';
   S.bizWebsite=e.bizWebsite||'';S.netWeight=e.netWeight||'';S.fragLoad=e.fragLoad||'';S.burnTime=e.burnTime||'';S.batchNum=e.batchNum||'';
   S.supplier=e.supplier||'';S.hideEN15494=!!e.hideEN15494;
@@ -2954,6 +3008,9 @@ function loadLabelRecord(e){
     syncPictogramsFromH();
   }
   onProductTypeChange();renderTags();updateLabel();
+  // C3: same lock state as straight after a successful extraction (and
+  // unlocked for manual or no hazard data, even if another label was locked).
+  lockHazardFields(!!S.hazardFromExtraction&&_hasStep3HazardData());
   goToStep(1);
   // Regression fix (2026-09-05, reported against Preview #105 commit 6087b05):
   // renderSaved() is the ONLY place that computes and applies the contextual
@@ -3284,6 +3341,7 @@ function init(){
   // Ensure hazard data is always clear on page load — never cached
   S.signal=''; S.sdsSignal=''; S.pictograms=[]; S.hSelected=[]; S.pSelected=[]; S.sensitisers=[];
   S.hStatements=''; S.pStatements='';
+  S.hazardFromExtraction=false; S.hazardSourceName=null; S.hazardSourceLabel='';
   lockHazardFields(false);
   updateLabel();
 }
@@ -3377,7 +3435,10 @@ function buildSensitiserChips(){
 // were previously never gated at all — can bypass either check.
 function _downloadAllowed(){
   const checked=document.getElementById('verify-checkbox')?.checked;
-  return !!checked && !window._labelBlockDownload;
+  return !!checked && !window._labelBlockDownload && !_hazardReviewRequired();
+}
+function _downloadBlockedMessage(){
+  return _hazardReviewRequired()?HAZARD_REVIEW_MSG:'Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.';
 }
 
 function toggleDownload(){
@@ -3682,6 +3743,12 @@ function extractSDS(){
   renderTags();
 
   // ── LOCK & FINISH ─────────────────────────────────────────────────────────
+  // C3/C4: this hazard data now comes from a successful extraction, for the
+  // SDS of the product currently named in Step 2.
+  S.hazardFromExtraction=true;
+  const _srcName=document.getElementById('scent-name')?.value??S.scentName;
+  S.hazardSourceName=_normProductName(_srcName);
+  S.hazardSourceLabel=(_srcName||'').trim();
   updateLabel();
   lockHazardFields(true);
   showExtractToast(allH.length,pRaw.length,S.sensitisers.length);
@@ -3856,9 +3923,11 @@ function canLeaveApprovedBuilderStep(step){
     const type=document.getElementById('product-type')?.value||'';
     if(!name){alert('Please enter a product name before continuing.');document.getElementById('scent-name')?.focus();return false;}
     if(!type){alert('Please select a product type before continuing.');document.getElementById('product-type')?.focus();return false;}
+    if(_hazardReviewRequired()){alert(HAZARD_REVIEW_MSG);return false;}
   }
   if(step===3){
     readForm();
+    if(_hazardReviewRequired()){alert(HAZARD_REVIEW_MSG);return false;}
     const confirmed=!!document.getElementById('hazard-confirm')?.checked;
     if(!(S.hStatements||'').trim()){alert('Please extract and review the hazard data from your supplier SDS before continuing.');return false;}
     if(!confirmed){alert('Please confirm that the extracted hazard data matches your supplier SDS before continuing.');document.getElementById('hazard-confirm')?.focus();return false;}
@@ -4094,6 +4163,52 @@ function _hasStep3HazardData(){
     S.signal
   );
 }
+// ── Owner decision C4: hazard data must match the product's SDS ───────────
+// The Builder has no separate fragrance/SDS identity field (the supplier
+// grid is not populated and S.supplier is never set by the UI), so the
+// product name is the only identity it can check. When the name changes after
+// hazard data was entered, extracted or reopened, the maker must say whether
+// it is the same fragrance oil and SDS (keep: one click) or a different one
+// (the old hazard data is cleared and must be extracted again). Until then
+// nothing can be saved, downloaded or continued past Steps 2/3. Case,
+// spacing and punctuation-only edits are not treated as a change.
+const HAZARD_REVIEW_MSG='You changed the product name after the hazard data was entered. Please confirm whether this product uses the same fragrance oil and SDS before continuing.';
+function _normProductName(v){return String(v||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();}
+// Naming the product for the first time (hazard data entered while the name
+// was still blank) is not a change of SDS; nor is a momentarily empty field.
+function _hazardReviewRequired(){
+  const cur=_normProductName(S.scentName);
+  return _hasStep3HazardData()&&!!S.hazardSourceName&&cur!==''&&cur!==S.hazardSourceName;
+}
+function _refreshHazardReview(){
+  if(!_hasStep3HazardData()){S.hazardSourceName=null;S.hazardSourceLabel='';}
+  else if(!S.hazardSourceName&&_normProductName(S.scentName)!==''){S.hazardSourceName=_normProductName(S.scentName);S.hazardSourceLabel=S.scentName||'';}
+  const need=_hazardReviewRequired();
+  document.querySelectorAll('.hazard-review-notice').forEach(box=>{
+    box.style.display=need?'block':'none';
+    if(!need){box.textContent='';return;}
+    box.textContent='';
+    const h=document.createElement('strong');h.textContent='Check the hazard data for this product';
+    const p=document.createElement('p');p.style.margin='6px 0 10px';
+    p.textContent='The hazard data on this label was entered for "'+(S.hazardSourceLabel||'the previous product')+'". You have changed the product name to "'+(S.scentName||'')+'". If this product uses a different fragrance oil or SDS, that hazard data must not be used.';
+    const keep=document.createElement('button');keep.type='button';keep.className='hazard-review-keep';
+    keep.textContent='Same fragrance oil and SDS: keep hazard data';keep.onclick=confirmSameHazardSource;
+    const clear=document.createElement('button');clear.type='button';clear.className='hazard-review-clear';
+    clear.textContent='Different fragrance or SDS: clear hazard data';clear.onclick=useNewHazardSource;
+    [keep,clear].forEach(b=>{b.style.cssText='margin:4px 8px 0 0;padding:7px 12px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;border:1.5px solid var(--teal);background:white;color:var(--teal-dark);';});
+    box.append(h,p,keep,clear);
+  });
+}
+function confirmSameHazardSource(){
+  const cur=document.getElementById('scent-name')?.value??S.scentName;
+  S.hazardSourceName=_normProductName(cur);
+  S.hazardSourceLabel=(cur||'').trim();
+  updateLabel();
+}
+function useNewHazardSource(){
+  clearHazardData();
+  if(approvedBuilderStep>3)forceGoToStep(3);
+}
 function _applyHazardBlockGate(){
   const blocked=!!window._labelBlockDownload&&approvedBuilderStep>=4;
   const confirmBlock=document.getElementById('hazard-confirm-block');
@@ -4248,6 +4363,7 @@ function clearHazardData(){
   // an unwanted side effect of clicking Clear.
   const hzCb=document.getElementById('hazard-confirm');
   if(hzCb)hzCb.checked=false;
+  S.hazardFromExtraction=false;S.hazardSourceName=null;S.hazardSourceLabel='';
   // Clear signal word
   S.signal='';
   S.sdsSignal='';
@@ -4684,6 +4800,7 @@ function updateLabel(){
   });
   // U5 fix (2026-08-03): Step 3 shouldn't offer a confirm-and-continue path when
   // the label is already known to be undownloadable at this size.
+  if(typeof _refreshHazardReview==='function')_refreshHazardReview();
   if(typeof _applyHazardBlockGate==='function')_applyHazardBlockGate();
   // Refresh download-button enabled/disabled state every time content
   // changes (not just on checkbox click) — U2/U3/U4 fix, so a label that
@@ -4958,7 +5075,7 @@ async function ensureFontsLoaded(){
 }
 
 async function downloadPNG(){
-  if(!_downloadAllowed()){alert('Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.');return;}
+  if(!_downloadAllowed()){alert(_downloadBlockedMessage());return;}
   plausible('Label Downloaded',{props:{format:'PNG'}});
   await ensureFontsLoaded();
   readForm();
@@ -5029,7 +5146,7 @@ async function downloadPNG(){
 
 // ── SVG DOWNLOAD ──────────────────────────────────────────────
 function downloadSVG(){
-  if(!_downloadAllowed()){alert('Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.');return;}
+  if(!_downloadAllowed()){alert(_downloadBlockedMessage());return;}
   plausible('Label Downloaded',{props:{format:'SVG'}});
   try{
     readForm();
