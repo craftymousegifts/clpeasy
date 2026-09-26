@@ -294,3 +294,37 @@ Branch `claude/optimistic-knuth-ayey91` — **not merged, no PR opened, nothing 
    - a trial account opening the Composer (D1).
 8. Configure the subscription promotion (D3) and verify a £8.99 Sandbox subscription checkout.
 9. Separately, schedule the security remediation above.
+
+---
+
+## ADDENDUM (26 Sep 2026) — v9 reconciliation
+
+Source: `clpeasy-pr156-payg-test-site-v9.zip` supplied by Michaela, which is the deployed test build of commit `3fd342e` (its `TEST-ENVIRONMENT.txt` says so). Before comparing, I put back the production values the test build had changed:
+
+- the test Supabase project and its public anon key (no service-role key was in the zip)
+- the `noindex` meta tags and `[TEST]` page titles
+- the test-site Stripe return URLs
+- the Plausible analytics tags the test build had removed
+- the test-only `_headers`, `_redirects` and `robots.txt`
+- `TEST-ENVIRONMENT.txt`
+
+**Imported:**
+- **pricing.html:** the v9 approved design and behaviour, taken as-is from the zip. It includes:
+  - four cards in the order Easy Trial, Pay As You Go, Easy Start, Easy Pro
+  - the PAYG card, its "Buy 8 downloads — £4.99" button and the "when it makes sense" text
+  - the 2026 offer blocks
+  - the billing selector label and note
+  - annual savings of up to 17% versus standard monthly prices
+  - the Annual view hiding the monthly promotion
+  - the Monthly view restoring the promotional prices exactly
+  - the readability changes
+
+  The merged cards render **pixel-identical** to v9 in Chromium (desktop and mobile, Monthly and Annual).
+- **index.html:** the setup-guide annual saving now reads "save up to 17% vs standard monthly".
+- **builder.html:** v9's zero-balance counter wording, "No downloads remaining".
+
+**Kept from the audited PR instead of v9 (same intent, newer and more complete):**
+- The v9 display fixes in account.html, dashboard.html, builder.html and my-labels.html. These are the expired-trial count and the "Pay As You Go" plan name. PR #156 already does the same through `entitlement.js`, which also covers scheduled cancellation and paused subscriptions, and is tested.
+- The pricing-page PAYG button code. v9 still has the broken `sb` / `SUPABASE_ANON_KEY` / `?return=` code, so the audited fix from `5492166` was kept on top of the v9 design.
+
+**Test updates:** `payg-download-accounting.js` now checks v9's approved wording (the removed launch-banner headline is replaced by checks on the card order, the PAYG CTA and the explanation of annual savings). `payg-pricing-checkout.js` gained a test for the Monthly/Annual selector.

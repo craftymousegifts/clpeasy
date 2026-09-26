@@ -36,17 +36,29 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
 .billing-toggle{display:inline-flex;background:var(--off);border:1.5px solid var(--border);border-radius:40px;padding:4px;gap:2px;margin-bottom:0;}
 .toggle-btn{padding:8px 22px;border-radius:36px;border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;background:transparent;color:var(--muted);display:flex;align-items:center;gap:6px;}
 .toggle-btn.active{background:var(--teal);color:white;}
+.billing-toggle-label{font-size:13px;font-weight:700;color:var(--muted);margin:0 0 8px;}
+.billing-toggle-note{font-size:13.5px;color:var(--muted);line-height:1.6;max-width:520px;margin:10px auto 0;}
 .save-badge{background:#FEF3C7;color:#92400E;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;}
 
 /* CARDS SECTION */
 .pricing-section{padding:48px 24px 0;max-width:1080px;margin:0 auto;}
-.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:start;margin-bottom:16px;}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;align-items:start;margin-bottom:16px;width:min(1240px,calc(100vw - 48px));margin-left:calc((100% - min(1240px,calc(100vw - 48px)))/2);}
 
 .card{background:white;border:1.5px solid var(--border);border-radius:20px;padding:32px 26px;position:relative;transition:transform .2s,box-shadow .2s;}
 .card:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(0,0,0,0.08);}
 .card.featured{border-color:var(--teal);box-shadow:0 6px 24px rgba(13,148,136,0.14);}
 .card.featured:hover{box-shadow:0 14px 40px rgba(13,148,136,0.2);}
 .card.pro-card{border-color:#1E293B;background:#0F172A;}
+.card.payg-card{border:2px solid var(--teal);background:#F3FAFC;}
+.payg-badge-pill{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--teal);color:white;font-size:11px;font-weight:800;padding:4px 14px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
+.offer-block{margin:6px 0 12px;}
+.offer-badge{display:inline-block;background:#FEF3C7;color:#92400E;border:1px solid #F59E0B;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-bottom:6px;white-space:nowrap;}
+.offer-main{font-size:15px;font-weight:800;color:var(--text);line-height:1.35;}
+.offer-then{font-size:12px;font-weight:600;color:var(--muted);margin-top:2px;}
+.pro-card .offer-main{color:#fff;}
+.pro-card .offer-then{color:rgba(255,255,255,0.55);}
+.offer-free{display:inline-block;background:#DCFCE7;color:#166534;border-radius:6px;padding:1px 7px;font-weight:900;}
+.payg-fit{margin-top:18px;padding:14px 16px;border:1px solid rgba(76,155,176,0.35);border-radius:10px;background:white;color:var(--text);font-size:12px;line-height:1.6;}
 
 .popular-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--teal);color:white;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.5px;white-space:nowrap;}
 .pro-badge-pill{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#D97706,#DC2626);color:white;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.5px;white-space:nowrap;}
@@ -143,6 +155,9 @@ footer{background:#0A0F1A;padding:24px;text-align:center;}
 footer p{font-size:12px;color:#4B5563;}
 footer a{color:#6B7280;text-decoration:none;}
 
+@media(max-width:1180px){
+  .cards{grid-template-columns:repeat(2,minmax(0,1fr));width:auto;margin-left:0;row-gap:32px;}
+}
 @media(max-width:768px){
   .cards{grid-template-columns:1fr;max-width:420px;margin:0 auto 16px;}
   .plan-benefits{grid-template-columns:1fr;max-width:420px;margin:22px auto 12px;}
@@ -180,11 +195,13 @@ footer a{color:#6B7280;text-decoration:none;}
   <h1>CLP labels sorted.<br><em>No stress.</em></h1>
   <div class="hero-eyebrow">🕯️ Built by a maker, for makers</div>
   <p>I&#39;m a candle and wax melt maker and I built CLPeasy™ because I wanted a clearer way to create, update and print GB CLP labels from the supplier SDS information makers already work with.</p>
-      <p style="margin-top:8px;font-size:13px;">Create labels yourself, save them in your current browser, update them when your product or supplier data changes, and download files for home printing, Cricut or a print company. Try free for 14 days, no card needed.</p>
-  <div class="billing-toggle">
+      <p style="margin-top:8px;font-size:14.5px;line-height:1.65;">Create labels yourself, save them in your current browser, update them when your product or supplier data changes, and download files for home printing, Cricut or a print company. Try free for 14 days, no card needed.</p>
+  <div class="billing-toggle-label" id="billing-toggle-label">Choose billing for Easy Start &amp; Easy Pro</div>
+  <div class="billing-toggle" role="group" aria-labelledby="billing-toggle-label">
     <button class="toggle-btn active" onclick="setBilling('monthly',this)">Monthly</button>
-    <button class="toggle-btn" onclick="setBilling('annual',this)">Annual <span class="save-badge">SAVE 30%</span></button>
+    <button class="toggle-btn" onclick="setBilling('annual',this)">Annual <span class="save-badge">SAVE UP TO 17%</span></button>
   </div>
+  <div class="billing-toggle-note">Annual saving is compared with standard monthly prices <span style="white-space:nowrap;">(£9.99 / £14.99)</span>. Monthly plans are separately 10% off until 31&nbsp;December&nbsp;2026.</div>
   <div id="annual-savings-bar" style="display:none;margin-top:14px;background:linear-gradient(135deg,#F0FDF4,#d1fae5);border:1.5px solid #22C55E;border-radius:10px;padding:10px 18px;font-size:13px;color:#166534;font-weight:600;text-align:center;">
     🎉 Annual plan savings: &nbsp;<strong>Save £20.88/year on Easy Start</strong> &nbsp;·&nbsp; <strong>Save £30.88/year on Easy Pro</strong>
   </div>
@@ -221,13 +238,32 @@ footer a{color:#6B7280;text-decoration:none;}
       
     </div>
 
-    <!-- 2: EASY START -->
+    <!-- 2: PAY AS YOU GO -->
+    <div class="card payg-card" id="payg" aria-labelledby="payg-label">
+      <div class="payg-badge-pill" id="payg-label">Pay As You Go</div>
+      <span class="card-icon">&#127991;&#65039;</span>
+      <div class="card-name">Pay As You Go</div>
+      <div class="card-desc">Buy downloads only when you need them. One-off payment. No subscription.</div>
+      <div class="price-row"><div class="price-amount">&pound;4.99</div><div class="price-period">one-off</div></div>
+      <div class="offer-block"><span class="offer-badge">2026 launch offer</span><div class="offer-main" style="font-size:18px;font-weight:900;">8 downloads for £4.99</div><div style="font-size:14px;font-weight:800;color:var(--text);margin-top:4px;">5 downloads + <span class="offer-free">3 FREE</span></div><div class="offer-then" style="margin-top:4px;">Ends 31 December 2026</div></div>
+      <button id="btn-payg" onclick="startPaygCheckout()" class="btn btn-teal">Buy 8 downloads — £4.99 →</button>
+      <hr class="divider">
+      <div class="features-label">What you get</div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>One-off payment<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">You pay once at checkout. There is no subscription, no monthly fee and nothing to cancel.</div></div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>No subscription<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Buy another pack whenever you need more downloads. Nothing renews automatically.</div></div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Downloads do not expire<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Purchased downloads stay on your account until you use them.</div></div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>5 downloads + 3 FREE<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">To celebrate the launch of CLPeasy Pay As You Go, buy 5 downloads for £4.99 and get 3 extra downloads FREE — 8 downloads in total. Launch offer ends 31 December 2026.</div></div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>One download = one finished file<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">One download means one finished exported file — an individual label or a complete A4 sheet from the Print Sheet Composer. Re-downloading the same label within 7 days is free.</div></div>
+      <p class="payg-fit"><strong>When Pay As You Go makes sense:</strong> If you only need labels now and then — a new scent, a seasonal range or a one-off batch — buy downloads when you need them instead of paying monthly. Making regularly? Easy Start and Easy Pro are 10% off for the rest of 2026.</p>
+    </div>
+
+    <!-- 3: EASY START -->
     <div class="card featured">
       <span class="card-icon">🕯️</span>
       <div class="card-name">Easy Start™</div>
       <div class="card-desc">Practical tools for makers selling in Great Britain creating organised, print-ready CLP labels from supplier SDS data.</div>
-      <div class="price-row"><div class="price-amount" id="maker-price">&pound;8.99</div><div class="price-period">/mo</div></div><div style="font-size:12px;color:var(--teal-dark);font-weight:700;margin-top:-5px;margin-bottom:10px;">10% off until 31 December 2026 · then £9.99/month</div>
-      <div class="price-sub" id="maker-sub">or &pound;99/year &mdash; pay monthly it&rsquo;s &pound;119.88 &mdash; save &pound;20.88</div>
+      <div class="price-row"><div class="price-amount" id="maker-price">&pound;8.99</div><div class="price-period" id="maker-period">/mo</div></div><div id="maker-promo" class="offer-block"><span class="offer-badge">2026 offer · 10% off</span><div class="offer-main">£8.99/month until <span style="white-space:nowrap;">31 December 2026</span></div><div class="offer-then">Then £9.99/month</div></div><div id="maker-annual-eq" style="font-size:12px;color:var(--teal-dark);font-weight:700;margin-top:-5px;margin-bottom:10px;display:none;"></div>
+      <div class="price-sub" id="maker-sub">or &pound;99/year &mdash; save &pound;20.88 vs standard monthly</div>
       <button id="btn-easy_start" onclick="startCheckout('easy_start')" class="btn btn-teal">Get started &#8594;</button>
       <hr class="divider">
       <div class="features-label">What&#39;s included</div>
@@ -248,14 +284,14 @@ footer a{color:#6B7280;text-decoration:none;}
       
     </div>
 
-    <!-- 3: EASY PRO -->
+    <!-- 4: EASY PRO -->
     <div class="card pro-card">
       <div class="pro-badge-pill">&#128640; More downloads + support</div>
       <span class="card-icon">&#9889;</span>
       <div class="card-name">Easy Pro™</div>
       <div class="card-desc">Everything in Easy Start, with 10 extra downloads each month and priority support.</div>
-      <div class="price-row"><div class="price-amount" id="pro-price">&pound;13.49</div><div class="price-period">/mo</div></div><div style="font-size:12px;color:var(--teal-dark);font-weight:700;margin-top:-5px;margin-bottom:10px;">10% off until 31 December 2026 · then £14.99/month</div>
-      <div class="price-sub" id="pro-sub">or &pound;149/year &mdash; pay monthly it&rsquo;s &pound;179.88 &mdash; save &pound;30.88</div>
+      <div class="price-row"><div class="price-amount" id="pro-price">&pound;13.49</div><div class="price-period" id="pro-period">/mo</div></div><div id="pro-promo" class="offer-block"><span class="offer-badge">2026 offer · 10% off</span><div class="offer-main">£13.49/month until <span style="white-space:nowrap;">31 December 2026</span></div><div class="offer-then">Then £14.99/month</div></div><div id="pro-annual-eq" style="font-size:12px;color:var(--teal-dark);font-weight:700;margin-top:-5px;margin-bottom:10px;display:none;"></div>
+      <div class="price-sub" id="pro-sub">or &pound;149/year &mdash; save &pound;30.88 vs standard monthly</div>
       <button id="btn-easy_pro" onclick="startCheckout('easy_pro')" class="btn btn-glow">Get started &#8594;</button>
       <hr class="divider">
       <div class="features-label">Everything in Easy Start, plus two extras</div>
@@ -265,24 +301,8 @@ footer a{color:#6B7280;text-decoration:none;}
       <p class="pro-fit"><strong>When Pro makes sense:</strong> If you regularly add new scents or seasonal ranges and expect to download more than 20 label files a month, Pro gives you 30 downloads and priority help. The label builder and Smart Paste are included in Easy Start too.</p>
     </div>
 
+
   </div>
-  <section id="payg" style="margin:28px 0 10px;background:white;border:2px solid var(--teal);border-radius:18px;padding:24px 26px;display:flex;gap:24px;align-items:center;justify-content:space-between;flex-wrap:wrap;">
-    <div style="flex:1;min-width:240px;">
-      <div style="font-size:11px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:var(--teal);margin-bottom:5px;">2026 launch offer · Ends 31 December</div>
-      <h2 style="font-family:'DM Serif Display',serif;font-size:27px;margin-bottom:6px;">Give your CLP labels a new lease of life for the rest of 2026.</h2>
-      <p style="font-size:13px;color:var(--muted);line-height:1.6;max-width:650px;">To celebrate the launch of <strong>CLPeasy Pay As You Go</strong>, buy 5 downloads for £4.99 and get <strong>3 extra downloads FREE</strong> — 8 downloads in total. Use them whenever you need them.</p>
-      <p style="font-size:13px;color:var(--muted);line-height:1.6;max-width:650px;margin-top:6px;">One download means one finished exported file — an individual label or a complete A4 sheet from the Print Sheet Composer.</p>
-      <p style="font-size:12px;color:var(--teal-dark);font-weight:700;margin-top:8px;">Downloads do not expire · No monthly fee</p>
-      <p style="font-size:12px;color:var(--text);font-weight:700;margin-top:10px;">Making regularly? Easy Start and Easy Pro are 10% off for the rest of 2026.</p>
-    </div>
-    <div style="min-width:220px;text-align:center;">
-      <div style="font-size:12px;font-weight:800;color:var(--teal-dark);margin-bottom:2px;">5 + 3 FREE</div>
-      <div style="font-size:36px;font-weight:900;letter-spacing:-1px;">£4.99</div>
-      <div style="font-size:13px;color:var(--muted);margin:2px 0 12px;">8 downloads · launch offer</div>
-      <button id="btn-payg" onclick="startPaygCheckout()" class="btn btn-outline" style="margin:0;">Get 8 downloads →</button>
-      <div style="font-size:11px;color:var(--muted);margin-top:9px;">Launch offer ends 31 December 2026</div>
-    </div>
-  </section>
 
   <div style="text-align:center;margin:28px 0 0;"><h2 style="font-family:'DM Serif Display',serif;font-size:26px;color:#0f2236;">Why move to a paid plan?</h2><p style="font-size:13px;color:var(--muted);line-height:1.6;margin-top:6px;">Both Easy Start and Easy Pro include these everyday maker tools.</p></div>
   <div class="plan-benefits">
@@ -679,7 +699,7 @@ async function startPaygCheckout(){
   }catch(e){
     console.error('PAYG checkout error:',e);
     alert('Something went wrong starting checkout. Please try again.');
-    btn.disabled=false; btn.textContent='Get 8 downloads →';
+    btn.disabled=false; btn.textContent='Buy 8 downloads — £4.99 →';
   }
 }
 
@@ -755,22 +775,33 @@ window.addEventListener('load',async()=>{
 });
 
 
+// Monthly figures are whatever the page ships with (currently the 2026 launch
+// prices), captured once so switching Annual -> Monthly restores them exactly.
+const MONTHLY_PRICE_TEXT={};
+['maker-price','maker-period','maker-sub','pro-price','pro-period','pro-sub'].forEach(id=>{const e=document.getElementById(id);if(e)MONTHLY_PRICE_TEXT[id]=e.textContent;});
 function setBilling(type,btn){
   billing=type;
   document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   if(type==='annual'){
-    document.getElementById('maker-price').textContent='£8.33';
-    document.getElementById('maker-sub').textContent='£99/year — pay monthly it\'s £119.88 — save £20.88';
-    document.getElementById('pro-price').textContent='£12.49';
-    document.getElementById('pro-sub').textContent='£149/year — pay monthly it\'s £179.88 — save £30.88';
+    // Annual: yearly price, its monthly equivalent, and the saving vs the
+    // standard monthly price. The monthly 2026 promotional line is hidden.
+    const ANNUAL={
+      maker:{price:'£99',eq:'£8.25/mo equivalent',sub:'Save £20.88/year vs standard monthly (£119.88/year)'},
+      pro:{price:'£149',eq:'£12.42/mo equivalent',sub:'Save £30.88/year vs standard monthly (£179.88/year)'}
+    };
+    Object.entries(ANNUAL).forEach(([k,a])=>{
+      document.getElementById(k+'-price').textContent=a.price;
+      document.getElementById(k+'-period').textContent='/year';
+      document.getElementById(k+'-sub').textContent=a.sub;
+      const eq=document.getElementById(k+'-annual-eq'); eq.textContent=a.eq; eq.style.display='';
+      document.getElementById(k+'-promo').style.display='none';
+    });
     var sb=document.getElementById('annual-savings-bar');if(sb)sb.style.display='block';
   } else {
     var sb=document.getElementById('annual-savings-bar');if(sb)sb.style.display='none';
-    document.getElementById('maker-price').textContent='£9.99';
-    document.getElementById('maker-sub').textContent='or £99/year — pay monthly it\'s £119.88 — save £20.88';
-    document.getElementById('pro-price').textContent='£14.99';
-    document.getElementById('pro-sub').textContent='or £149/year — pay monthly it\'s £179.88 — save £30.88';
+    ['maker-price','maker-period','maker-sub','pro-price','pro-period','pro-sub'].forEach(id=>{const e=document.getElementById(id);if(e&&id in MONTHLY_PRICE_TEXT)e.textContent=MONTHLY_PRICE_TEXT[id];});
+    ['maker','pro'].forEach(k=>{document.getElementById(k+'-promo').style.display='';document.getElementById(k+'-annual-eq').style.display='none';});
   }
 }
 

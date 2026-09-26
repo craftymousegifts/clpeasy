@@ -69,5 +69,25 @@ async function open({ signedIn, pending }){
     assert.strictEqual(JSON.parse(calls[0].init.body).productKey, 'payg_5');
     assert.strictEqual(w.sessionStorage.getItem('checkout_payg'), null, 'pending flag cleared so a refresh cannot start a second checkout');
   }
+  // v9 billing selector: Annual shows yearly prices and hides the monthly 2026
+  // promotion; switching back to Monthly restores the promotional prices
+  // exactly (the pre-v9 code reset them to £9.99/£14.99).
+  {
+    const { w } = await open({ signedIn: false });
+    const d = w.document, t = id => d.getElementById(id).textContent.trim();
+    const monthly = ['maker-price','maker-period','maker-sub','pro-price','pro-period','pro-sub'].map(t);
+    assert.deepStrictEqual([t('maker-price'), t('pro-price')], ['£8.99', '£13.49'], 'monthly shows 2026 promotional prices');
+    const [mBtn, aBtn] = d.querySelectorAll('.toggle-btn');
+    w.setBilling('annual', aBtn);
+    assert.deepStrictEqual([t('maker-price'), t('maker-period'), t('pro-price'), t('pro-period')], ['£99', '/year', '£149', '/year']);
+    assert(/Save £20\.88\/year vs standard monthly \(£119\.88\/year\)/.test(t('maker-sub')), 'Easy Start annual saving vs standard monthly');
+    assert(/Save £30\.88\/year vs standard monthly \(£179\.88\/year\)/.test(t('pro-sub')), 'Easy Pro annual saving vs standard monthly');
+    assert.strictEqual(d.getElementById('maker-promo').style.display, 'none', 'annual view hides the monthly promotion');
+    assert.strictEqual(d.getElementById('pro-promo').style.display, 'none');
+    w.setBilling('monthly', mBtn);
+    assert.deepStrictEqual(['maker-price','maker-period','maker-sub','pro-price','pro-period','pro-sub'].map(t), monthly, 'switching back to Monthly restores the promotional prices exactly');
+    assert.strictEqual(d.getElementById('maker-promo').style.display, '', 'monthly promotion visible again');
+    assert.strictEqual(d.getElementById('maker-annual-eq').style.display, 'none', 'annual equivalent hidden on monthly');
+  }
   console.log('PAYG pricing checkout checks passed');
 })().catch(e => { console.error(e.stack || e.message); process.exitCode = 1; });

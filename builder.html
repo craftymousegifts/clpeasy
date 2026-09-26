@@ -2360,7 +2360,7 @@ function updateDlCounter(){
   if(!DL.loaded){el.style.display='none';return;}
   el.style.display='block';
   el.textContent=(ent&&!ent.planUsable)
-    ? DL.credits+' purchased download'+(DL.credits===1?'':'s')+' left'
+    ? (DL.credits>0?DL.credits+' purchased download'+(DL.credits===1?'':'s'):'No downloads remaining')
     : monthlyLeft+' of '+DL.limit+' plan downloads left'
       +(DL.credits>0?' · '+DL.credits+' purchased download'+(DL.credits===1?'':'s'):'');
   el.style.color=(totalLeft===0)?'#DC2626':(totalLeft<=2?'#D97706':'var(--muted)');
