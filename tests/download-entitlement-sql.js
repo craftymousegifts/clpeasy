@@ -96,7 +96,7 @@ const EXPECT = {
   paygAccount:           [null,               ['purchased',true]],
 };
 
-const MIGRATIONS = ['20260729000000_create_label_downloads.sql','20260925000000_atomic_download_accounting.sql','20260926000000_download_entitlement_lifecycle.sql','20260927000000_payg_trial_conversion_and_annual_refill.sql'];
+const MIGRATIONS = ['20260729000000_create_label_downloads.sql','20260925000000_atomic_download_accounting.sql','20260926000000_download_entitlement_lifecycle.sql','20260927000000_payg_trial_conversion_and_annual_refill.sql','20260928000000_protect_download_counters.sql'];
 freshDb(MIGRATIONS);
 
 let checks = 0;
@@ -265,6 +265,11 @@ function creditPayg(id, n){
   assert.strictEqual(bal.split('\n').pop(), '8', 'service_role credits purchased downloads');
   run(`begin; set local role authenticated; select set_config('request.jwt.claim.sub', ${q(id)}, true); select set_config('request.jwt.claim.role','authenticated',true); update public.profiles set topup_credits=99 where id=${q(id)}; commit;`);
   assert.strictEqual(profile(id).topup_credits, 8, 'direct client update must not change the purchased balance');
+  // 20260928000000: the plan counters are protected too (production's trigger
+  // left downloads_used / downloads_reset_date writable by the customer).
+  const before = profile(id);
+  run(`begin; set local role authenticated; select set_config('request.jwt.claim.sub', ${q(id)}, true); select set_config('request.jwt.claim.role','authenticated',true); update public.profiles set downloads_used=0, downloads_reset_date='2000-01-01' where id=${q(id)}; commit;`);
+  assert.deepStrictEqual([profile(id).downloads_used, profile(id).downloads_reset_date], [before.downloads_used, before.downloads_reset_date], 'a customer cannot reset their own download counter or reset date');
   checks += 5;
 }
 // Concurrency: two sessions racing for the final purchased download.
@@ -283,6 +288,9 @@ function creditPayg(id, n){
     freshDb(MIGRATIONS.slice(0,2));
     const annual = makeUser({ plan:'easy_start', subscription_status:'active', billing_cycle:'annual', downloads_limit:20, downloads_used:20, downloads_reset_date:iso(-2*DAY), topup_credits:0 });
     assert.strictEqual(consumeAs(annual, null).ok, false, 'baseline check: original PR function never refills an annual plan monthly (the bug fixed by 20260927000000)');
+    const exploit = makeUser({ plan:'easy_start', subscription_status:'active', downloads_limit:20, downloads_used:20, topup_credits:0 });
+    run(`begin; set local role authenticated; select set_config('request.jwt.claim.sub', ${q(exploit)}, true); select set_config('request.jwt.claim.role','authenticated',true); update public.profiles set downloads_used=0 where id=${q(exploit)}; commit;`);
+    assert.strictEqual(profile(exploit).downloads_used, 0, 'baseline check: with the production trigger a customer CAN reset their own downloads_used (fixed by 20260928000000)');
     const cs = makeUser(STATES.cancelScheduled);
     const tl = makeUser(Object.assign({}, STATES.trialLive, { topup_credits:3 }));
     const oldCs = consumeAs(cs, null), oldTl = consumeAs(tl, null);

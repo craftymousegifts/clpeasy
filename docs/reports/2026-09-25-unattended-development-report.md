@@ -380,3 +380,11 @@ It was a genuine bug. The only monthly reset was in the browser, the billing-pro
 | Cancel at period end, still paid | ✗ (403) | ✓ | n/a |
 | Paused | ✓ | ✗ | credited; stays paused |
 | Fully ended | ✓ | ✗ | converts to Pay As You Go |
+
+---
+
+## ADDENDUM (26 Sep 2026) — Findings while preparing CLPeasy Test
+
+**Correction to the annual-refill finding.** The real `protect_profile_billing_columns()` trigger, read from CLPeasy Test (baselined from production), does **not** protect `downloads_used` or `downloads_reset_date`. So main's browser-side monthly reset in the Builder did work. The annual-refill gap was **introduced by PR #156**, which removed that reset; it did not already exist on main. The server-side refill in `20260927000000` is still the right fix.
+
+**Security fix: `20260928000000_protect_download_counters.sql`.** RLS lets a signed-in user update their own profile row. Because those two columns weren't protected, any customer could set their own `downloads_used` back to 0 through the public REST API and get unlimited plan downloads. This was already the case on main. The migration adds both columns to the protected list and leaves the rest of the function exactly as it is in production. No page writes these columns. The local test database now mirrors the real trigger and column types, and it proves both that the hole existed and that the fix closes it.
