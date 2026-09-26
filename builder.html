@@ -1314,7 +1314,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="step-panel" id="step-4">
     <h2 class="step-heading">Your business details</h2>
     <p class="step-sub">Required on CLP labels — your name and address as the responsible person.</p>
-    <div class="form-group"><label>Business / Brand name</label><input type="text" id="biz-name" placeholder="As you want it to appear on the label" oninput="updateLabel();saveBizDetails()"></div>
+    <div class="form-group"><label>Business / Brand name <span>(required)</span></label><input type="text" id="biz-name" placeholder="As you want it to appear on the label" oninput="updateLabel();saveBizDetails()"></div>
     <div class="form-group"><label>Address <span>(town, county or full address)</span></label><input type="text" id="biz-address" placeholder="e.g. Scottish Borders, Scotland" oninput="updateLabel();saveBizDetails()"></div>
     <div class="form-group"><label>Phone number <span>(required for CLP compliance)</span></label><input type="tel" id="biz-phone" placeholder="e.g. 07700 900000" oninput="updateLabel();saveBizDetails()"></div>
     <div class="form-row">
@@ -1395,6 +1395,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <!-- Visible on Step 5 (unlike #label-warn, which lives in Step 3's hidden panel) so the
          download-block reason is shown right next to the disabled buttons it explains. -->
     <div id="label-warn-step5" class="field-alert field-alert-danger" style="display:none;margin-bottom:16px;font-size:13px;"></div>
+    <div id="content-warn-step5" class="field-alert field-alert-danger" style="display:none;margin-bottom:16px;font-size:13px;"></div>
     <div id="sds-doc-export-note" class="field-alert field-alert-warn" role="status" style="display:none;margin-bottom:16px;font-size:13px;"><span class="sds-doc-export-text"></span> <button type="button" onclick="setApprovedBuilderStep(3)" style="margin-top:6px;display:inline-block;background:none;border:none;padding:0;color:var(--teal-dark);text-decoration:underline;font:inherit;font-weight:600;cursor:pointer;">Go to Step 3 (Hazards)</button></div>
     <div class="hazard-review-notice field-alert field-alert-warn" role="alert" style="display:none;margin-bottom:16px;font-size:13px;"></div>
 
@@ -3598,19 +3599,57 @@ function buildSensitiserChips(){
 // were previously never gated at all — can bypass either check.
 function _downloadAllowed(){
   const checked=document.getElementById('verify-checkbox')?.checked;
-  return !!checked && !window._labelBlockDownload && !_hazardReviewRequired() && SdsDocCheck.isVerified(_sdsDocRecord());
+  return !!checked && !window._labelBlockDownload && !_hazardReviewRequired() && _requiredContentCheck().complete && SdsDocCheck.isVerified(_sdsDocRecord());
+}
+// Required label content (Builder Label Technical Audit M09/M31), kept
+// separate from physical fit (window._labelBlockDownload): the live preview
+// may show "Your Scent Name" / "Your Brand" / "Contains: sensitising
+// substance" while the label is being built, but placeholder or missing
+// content must never be exportable. Re-read from the form fields on EVERY
+// call -- never from which steps were passed, the Step 5 confirmation, or
+// the visible step -- so a field cleared after confirming (e.g. going back
+// from Step 5) is caught by every export route, including the mobile sheet.
+// Phase 2 integration (3 Oct 2026): this sits alongside the hazard-review
+// gate (C4) and the supplier-document gate; every one must pass to export.
+const REQUIRED_CONTENT_MESSAGES={
+  'product-name':'Add your product name (Step 2).',
+  'business-name':'Add your business name (Step 4).',
+  'euh208-substance':'EUH208 needs the named sensitising substance(s). Check your current supplier SDS and paste the complete relevant EUH208/Contains information.',
+};
+function _requiredContentCheck(){
+  const val=id=>document.getElementById(id)?.value||'';
+  return LabelRenderer.checkRequiredContent({
+    scentName:val('scent-name'), bizName:val('biz-name'),
+    hStatements:document.getElementById('h-statements')?val('h-statements'):S.hStatements,
+    sensitisers:S.sensitisers,
+  });
 }
 function _downloadBlockedMessage(){
   if(_hazardReviewRequired())return _hazardReviewMessage();
+  const base='Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.';
+  const unconfirmedOrBlocked=!document.getElementById('verify-checkbox')?.checked || !!window._labelBlockDownload;
+  const rc=_requiredContentCheck();
+  const content=rc.complete?'':"This label is missing required content, so it can't be downloaded yet:\n\n"+rc.missing.map(m=>'• '+REQUIRED_CONTENT_MESSAGES[m]).join('\n');
+  // Unconfirmed or physically blocked: keep the existing message first, then name the missing content.
+  if(unconfirmedOrBlocked) return content?base+'\n\n'+content:base;
   // Existing reasons keep their existing message; the document check (also
   // shown as a Step 5 notice) is reported once those are satisfied.
   const _sdsMsg=SdsDocCheck.exportBlockMessage(_sdsDocRecord());
-  if(_sdsMsg&&document.getElementById('verify-checkbox')?.checked&&!window._labelBlockDownload)return _sdsMsg;
+  if(content) return _sdsMsg?content+'\n\n'+_sdsMsg:content;
+  if(_sdsMsg)return _sdsMsg;
   return 'Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.';
 }
 
 function toggleDownload(){
   const allowed=_downloadAllowed();
+  // Saving to the library is not an export: the Save button keeps its own
+  // rule below (draft saving), without the required-content check.
+  const rc=_requiredContentCheck();
+  const contentWarn=document.getElementById('content-warn-step5');
+  if(contentWarn){
+    contentWarn.style.display=rc.complete?'none':'block';
+    contentWarn.innerHTML=rc.complete?'':'<strong>⚠️ Download unavailable — required label content is missing</strong><br><br>'+rc.missing.map(m=>escapeBuilderText(REQUIRED_CONTENT_MESSAGES[m])).join('<br>');
+  }
   // Hotfix: the live preview panel has its own PNG/SVG/PDF row
   // (#preview-dl-row) calling the exact same download functions -- it was
   // missing from this list, so those buttons stayed visually enabled
@@ -4231,8 +4270,16 @@ function canLeaveApprovedBuilderStep(step){
       alert('P280 needs at least one applicable protection item selected before continuing. Click the P280 chip to choose.');
       return false;
     }
+    // M31: EUH208 must name the sensitising substance(s) -- the renderer's
+    // "Contains: sensitising substance" placeholder is never finished content.
+    if(LabelRenderer.checkRequiredContent({hStatements:S.hStatements,sensitisers:S.sensitisers,scentName:'-',bizName:'-'}).missing.includes('euh208-substance')){
+      alert(REQUIRED_CONTENT_MESSAGES['euh208-substance']);
+      return false;
+    }
   }
   if(step===4){
+    const bizName=(document.getElementById('biz-name')?.value||'').trim();
+    if(!bizName){alert('Add your business name before continuing.');document.getElementById('biz-name')?.focus();return false;}
     const phone=(document.getElementById('biz-phone')?.value||'').trim();
     if(!phone){alert('Please enter the required business phone number before final review.');document.getElementById('biz-phone')?.focus();return false;}
   }
@@ -4567,6 +4614,14 @@ function _applyHazardBlockGate(){
 }
 function prevStep(){if(approvedBuilderStep>1)setApprovedBuilderStep(approvedBuilderStep-1);}
 function checkStep4AndNext(){
+  const bizName=(document.getElementById('biz-name')?.value||'').trim();
+  if(!bizName){
+    document.getElementById('biz-name').style.border='1.5px solid #EF4444';
+    document.getElementById('biz-name').focus();
+    alert('Add your business name before continuing.');
+    return;
+  }
+  document.getElementById('biz-name').style.border='';
   const phone=(document.getElementById('biz-phone')?.value||'').trim();
   if(!phone){
     document.getElementById('biz-phone').style.border='1.5px solid #EF4444';

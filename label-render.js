@@ -181,6 +181,37 @@ function normalizeLabel(data){
   };
 }
 
+// ── REQUIRED LABEL CONTENT (Builder Label Technical Audit M09 / M31) ──────
+// Content completeness, deliberately kept SEPARATE from physical fit: it
+// never changes the SVG, the layout, `fits` or the blocked overlay, so an
+// unfinished label still previews normally (with normalizeLabel()'s
+// placeholder text) while the maker fills it in. Every export route must
+// check it independently: placeholder or missing required content must
+// never be treated as finished, exportable label content.
+// Works on the RAW record (before normalizeLabel()'s placeholders), trims
+// every value, and treats whitespace-only as missing. Returns
+// {complete, missing} where missing lists, in label order:
+//   'product-name'     -- blank product name ("Your Scent Name" placeholder)
+//   'business-name'    -- blank business name ("Your Brand" placeholder)
+//   'euh208-substance' -- EUH208 present but no named sensitising substance
+//                         ("Contains: sensitising substance" placeholder);
+//                         a name must contain at least one letter or digit.
+// Supplier address is NOT checked here (separate audit finding M10).
+function checkRequiredContent(rawData){
+  const d = rawData || {};
+  const txt = v => (v == null ? '' : String(v)).trim();
+  const missing = [];
+  if(!txt(d.scentName)) missing.push('product-name');
+  if(!txt(d.bizName)) missing.push('business-name');
+  // same code test renderLabel() uses to add the EUH208 sentence/placeholder
+  const codes = txt(d.hStatements).split(',').map(c => c.trim()).filter(Boolean);
+  if(codes.includes('EUH208')){
+    const names = Array.isArray(d.sensitisers) ? d.sensitisers : [];
+    if(!names.some(n => /[A-Za-z0-9]/.test(txt(n)))) missing.push('euh208-substance');
+  }
+  return {complete: missing.length === 0, missing};
+}
+
 // ── LABEL PHYSICAL DIMENSIONS ──────────────────────────────────────────
 // Merges builder.html's getDims() and print.html's getLabelDimsMM() — the
 // two were already computing the same mm values with slightly different
@@ -1981,6 +2012,9 @@ function renderLabel(rawData, opts){
   return {
     svg, fits, blocked: _contentBlocked,
     blockReason: _blockReason, blockReasonCodes: _blockReasonCodes.slice(),
+    // Required-content completeness (M09/M31) -- separate from fit, never
+    // affects svg/fits/blocked; see checkRequiredContent().
+    requiredContent: checkRequiredContent(rawData),
     regulatoryProfile: ACTIVE_REGULATORY_PROFILE,
     unsupportedCodes: _unsupportedCodesFound.slice(),
     unrecognizedCodesGeneric: _genericUnrecognizedFound.slice(),
@@ -2306,7 +2340,7 @@ function isCustomSizeBelowSupportedMinimum(shape, w, h){
 }
 
   const LabelRenderer = {
-    renderLabel, normalizeLabel, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, GB_UNSUPPORTED_CODES, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
+    renderLabel, normalizeLabel, checkRequiredContent, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, GB_UNSUPPORTED_CODES, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
     // GHS pictogram geometry -- exposed so tests/consumers measuring
     // compliance never have to re-derive or hardcode the sqrt(2)
     // square<->bounding-box relationship themselves.
