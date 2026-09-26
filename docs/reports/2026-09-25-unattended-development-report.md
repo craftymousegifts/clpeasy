@@ -349,3 +349,34 @@ Source: `clpeasy-pr156-payg-test-site-v9.zip` supplied by Michaela, which is the
 - main's Builder reset was commented "covers annual plans too".
 
 It was a genuine bug. The only monthly reset was in the browser, the billing-protection trigger silently reverted it, and PR #156 removed it. So annual customers refilled only at their yearly `invoice.paid`. Fixed server-side in `consume_download()` for annual plans only; monthly plans are still refilled by `invoice.paid`, so there's no double refill. The pages show the refilled allowance. A test proves the original PR function never refilled annual plans.
+
+---
+
+## ADDENDUM (26 Sep 2026) — Four further approved decisions
+
+| Decision | Implementation |
+|---|---|
+| **1. Paused subscribers use PAYG** | Top-ups are only for active or cancel-at-period-end Easy Start/Pro. This is enforced by the server (403) and in every UI entry point. Paused subscribers are routed to PAYG. Top-ups become available again as soon as the status is `active`. |
+| **2. Current subscribers cannot buy PAYG** | `create-checkout-session` refuses PAYG for active and cancel-at-period-end-but-still-paid Easy Start/Pro, returning 403 `PAYG_NOT_FOR_SUBSCRIBERS` with a message pointing to subscriber top-ups. PAYG requests are always payment mode, so the check can't be skipped by sending `mode=subscription`. The pricing page shows the explanation and sends the customer to `account.html?topup=1`. The Builder and Composer "no downloads" messages point subscribers to top-ups and everyone else to PAYG. |
+| **3. Fully ended subscription becomes Pay As You Go** | `credit_payg_purchase()` converts `cancelled` + (plan `free` / no allowance, or `deletion_date` passed) in the same locked transaction as the credit. The old subscription stays in `subscriptions` as history. `downgradeToFree()` no longer reverts a converted account when Stripe's final `subscription.deleted` event arrives late. |
+| **4. Account page shows the actual next charge** | New `billing-status` Edge Function, described below. |
+
+**Architecture for decision 4:**
+- The browser sends only its Supabase session token.
+- The function looks up **that user's** `stripe_customer_id` and `stripe_subscription_id` with the service role. It checks that the subscription belongs to that customer.
+- It returns Stripe's own `invoices/upcoming` `amount_due`. That already includes the 2026 coupon, the save-offer, customer credit and anything else Stripe applies.
+- Stripe can't know that the webhook will remove the 2026 coupon at the first renewal from 1 Jan 2027. For that single case the preview is requested with `discounts=''`, so Stripe still does the calculation.
+- No Stripe secret or ID ever reaches the browser.
+- On any failure the page shows **no amount** and links to the billing portal.
+- The old guessed amounts (list price, and £4.99/£7.49 for the save-offer) have been removed.
+
+**Complete matrix (tested at the server, in the database and in the UI):**
+
+| Account | PAYG | Subscriber top-ups | After a PAYG purchase |
+|---|---|---|---|
+| Trial / expired trial | ✓ | ✗ | converts to Pay As You Go |
+| Pay As You Go | ✓ | ✗ | stays Pay As You Go |
+| Active Easy Start / Easy Pro | ✗ (403) | ✓ | n/a |
+| Cancel at period end, still paid | ✗ (403) | ✓ | n/a |
+| Paused | ✓ | ✗ | credited; stays paused |
+| Fully ended | ✓ | ✗ | converts to Pay As You Go |
