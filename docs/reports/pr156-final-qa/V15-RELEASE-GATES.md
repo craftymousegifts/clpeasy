@@ -257,3 +257,28 @@ Inspected before any change:
   SQL 126 groups, Deno 96 scenarios.
 - **v17 package:** built from `3f377c8`; it differs from v16 only in `index.html`. Audit clean.
   SHA-256 `4bef12d48498de05bda94aae14bb6734c155a9956983c7b6de800d6bef1c9170`.
+
+## 11. Real iPhone Safari check on v17 — PASS (owner, 26 Sep 2026)
+
+The owner tested v17 on the v10 Test site with a real iPhone in Safari. All of the following
+worked:
+
+- mobile menu → Sign in → signed in as the QA user;
+- Account renders correctly, and the Easy Start / billing / download information is correct;
+- Builder steps and validation;
+- Print Sheet Composer usable on mobile;
+- My Labels (0 labels is expected: labels live in each browser's localStorage);
+- Builder export.
+
+**Backend check (read-only, CLPeasy Test)** for QA account `33333333-…0156`:
+
+| | Before the Safari run | After |
+|---|---|---|
+| Plan downloads used | 1 / 20 | **2 / 20** (18 left) |
+| Purchased downloads | 24 | 24 (unchanged) |
+| `label_downloads` records | 4 | 5 |
+
+- **New record:** `safari test::scented candle::circle::70x70mm`, clean export, 26 Sep 2026
+  23:32:03 UTC.
+- **Result:** the Safari export used **exactly one plan download**. Purchased downloads were not
+  touched, and the new record uses the size-aware key.
