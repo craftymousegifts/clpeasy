@@ -397,7 +397,7 @@ if (profileStatus) {
 
       case 'invoice.paid': {
         const invoice = event.data.object as Stripe.Invoice;
-        const subId   = invoice.subscription as string | null;
+        const subId   = invoiceSubscriptionId(invoice);
         if (!subId) break;
 
         const subscription = await stripe.subscriptions.retrieve(subId);
@@ -452,14 +452,18 @@ if (profileStatus) {
       // the configured promotion coupons are touched (never e.g. the account
       // save-offer coupon). Safe to re-run: nothing to remove the second time.
       case 'invoice.created': {
-        const invoice = event.data.object as any;
-        if (invoice.billing_reason !== 'subscription_cycle' || !invoice.subscription) break;
-        const periodStart = invoice.lines?.data?.[0]?.period?.start ?? 0;
+        const eventInvoice = event.data.object as any;
+        if (eventInvoice.billing_reason !== 'subscription_cycle' || !invoiceSubscriptionId(eventInvoice)) break;
+        const periodStart = eventInvoice.lines?.data?.[0]?.period?.start ?? 0;
         if (periodStart * 1000 < PROMO_2026_END_MS) break;
         const promoCoupons = promoCouponIds();
         if (promoCoupons.size === 0) break;
 
-        const sub = await stripe.subscriptions.retrieve(invoice.subscription as string) as any;
+        // Re-read the invoice through the API version this function is pinned
+        // to, so `subscription` / `discount` have the shape used below whatever
+        // API version the webhook endpoint sends its event payloads in.
+        const invoice = await stripe.invoices.retrieve(eventInvoice.id) as any;
+        const sub = await stripe.subscriptions.retrieve(invoiceSubscriptionId(invoice) as string) as any;
         const subPromo = !!sub?.discount?.coupon?.id && promoCoupons.has(sub.discount.coupon.id);
         if (subPromo) await stripe.subscriptions.deleteDiscount(sub.id);
         const invoicePromo = !!invoice.discount?.coupon?.id && promoCoupons.has(invoice.discount.coupon.id);
@@ -595,6 +599,17 @@ function addOneMonth(from = new Date()): string {
 }
 function addOneYear(from = new Date()): string {
   const d = new Date(from); d.setFullYear(d.getFullYear() + 1); return d.toISOString();
+}
+
+// Webhook event payloads use the webhook ENDPOINT's API version, not the
+// version this function's Stripe client is pinned to. From API 2025-03-31
+// onwards an invoice no longer has `subscription`; it is under
+// `parent.subscription_details.subscription`. Accept both shapes.
+function invoiceSubscriptionId(invoice: any): string | null {
+  const direct = invoice?.subscription;
+  const nested = invoice?.parent?.subscription_details?.subscription;
+  const id = direct ?? nested ?? null;
+  return typeof id === 'string' ? id : (id?.id ?? null);
 }
 
 async function applyProfilePlan(userId: string, priceId: string): Promise<void> {

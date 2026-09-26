@@ -122,6 +122,22 @@ function notices(){ return [...document.querySelectorAll('.hazard-review-notice'
 function noticeShown(){ return notices().every(n => n.style.display === 'block'); }
 function tickVerify(){ const v = document.getElementById('verify-checkbox'); v.checked = true; window.toggleDownload(); }
 function ok(msg){ console.log('PASS: ' + msg); }
+// F1 (owner-approved 26 Sep 2026): the Step 3 confirmation must describe what
+// is actually on screen for both a fresh extraction and a reopened saved label.
+const F1_WORDING = "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used.";
+function f1Check(context){
+  const block = document.getElementById('hazard-confirm-block');
+  const text = block.textContent.replace(/\s+/g, ' ').trim();
+  assert.strictEqual(text, F1_WORDING, context + ': approved F1 wording');
+  assert(!/smart paste/i.test(text), context + ': the confirmation no longer points at the Smart Paste box');
+  const step3 = document.getElementById('step-3');
+  for (const sel of ['#hazard-confirm-block', '.signal-row', '.picto-grid', '#h-statements', '#p-statements', '#allergen-tags'])
+    assert(step3.querySelector(sel), context + ': ' + sel + ' is in the same step as the confirmation ("shown in this step")');
+  // The hazard data the maker confirms is visibly present in this step.
+  assert(document.getElementById('h-statements').value.includes('H317'), context + ': H statements shown in this step');
+  assert(document.getElementById('signal-warning').classList.contains('sel-warn'), context + ': signal word shown as selected in this step');
+  assert(document.querySelector('.picto-btn[data-picto="exclamation"]').classList.contains('selected'), context + ': pictogram shown as selected in this step');
+}
 
 (async () => {
   await new Promise(r => setTimeout(r, 80));
@@ -141,6 +157,10 @@ function ok(msg){ console.log('PASS: ' + msg); }
   const saved = S('getSaved()').find(e => e.scentName === 'Lavender Candle');
   assert(saved && saved.hazardFromExtraction === true, 'the saved label records hazardFromExtraction:true');
   ok('C3: successful extraction locks Step 3 and the saved label records the processed-extraction flag');
+  f1Check('F1 fresh extraction');
+  assert.strictEqual(document.getElementById('smart-paste-input').value.includes('Label elements'), true, 'F1 fresh extraction: the pasted text is still visible in the box');
+  assert(!JSON.stringify(saved).includes('Label elements') && !JSON.stringify(saved).includes('May produce an allergic reaction'), 'F1: the saved label does not store the raw Section 2.2 text');
+  ok('F1: fresh extraction shows the approved "hazard data shown in this step" confirmation next to the extracted data; raw SDS text is not stored');
 
   // Reopen in a fresh state (Clear first, so nothing is carried in memory).
   window.clearHazardData();
@@ -151,6 +171,9 @@ function ok(msg){ console.log('PASS: ' + msg); }
   assert.strictEqual(document.getElementById('smart-paste-input').value, '', 'raw SDS text is still not stored (unchanged design)');
   assert.deepStrictEqual(hazardSnapshot(), extracted, 'reopened label restores the same processed hazard state');
   ok('C3/SDS-06: reopened extracted label is locked exactly like straight after extraction');
+  f1Check('F1 reopened saved label');
+  assert.strictEqual(document.getElementById('hazard-confirm').checked, false, 'F1 reopened: the confirmation must be ticked again');
+  ok('F1: reopened saved label (blank Smart Paste box) shows the same accurate confirmation; the hazard data it refers to is displayed in Step 3');
 
   // Legacy label (saved before v12, no flag) with a saved sdsSignal: locked.
   const legacyExtracted = Object.assign({}, saved, { id:'legacy-extracted' });

@@ -265,8 +265,19 @@ await test('unpaid top-up session is never credited', async () => {
 
 // ── D3: 2026 monthly promotion removed at the first 2027 renewal ─────
 function renewal(id: string, periodStartIso: string, over: Record<string, any> = {}) {
-  return { id, type: 'invoice.created', data: { object: { id: 'in_' + id, status: 'draft', billing_reason: 'subscription_cycle', subscription: 'sub_promo',
-    discount: { coupon: { id: 'coupon_promo_start' } }, lines: { data: [{ period: { start: Math.floor(new Date(periodStartIso).getTime() / 1000) } }] }, ...over } } };
+  const object = { id: 'in_' + id, status: 'draft', billing_reason: 'subscription_cycle', subscription: 'sub_promo',
+    discount: { coupon: { id: 'coupon_promo_start' } }, lines: { data: [{ period: { start: Math.floor(new Date(periodStartIso).getTime() / 1000) } }] }, ...over };
+  // what stripe.invoices.retrieve returns through the function's pinned API version
+  ((globalThis as any).__stripeInvoices ??= {})[object.id] = object;
+  return { id, type: 'invoice.created', data: { object } };
+}
+// The same invoice as sent by a webhook endpoint on API 2025-03-31 or later
+// (e.g. 2026-05-27.dahlia): no `subscription` / `discount` on the invoice.
+function renewalNewApi(id: string, periodStartIso: string) {
+  const pinned = renewal(id, periodStartIso).data.object as any;
+  const { subscription: _s, discount: _d, ...rest } = pinned;
+  return { id, type: 'invoice.created', data: { object: { ...rest, discounts: ['di_test_1'],
+    parent: { type: 'subscription_details', subscription_details: { subscription: 'sub_promo' } } } } };
 }
 const calls = () => ((globalThis as any).__stripeCalls ??= []);
 await test('D3 renewal for a period starting 15 Dec 2026 keeps the promotion', async () => {
@@ -289,5 +300,32 @@ await test('D3 other coupons (e.g. account save-offer) are never removed', async
   await send(renewal('evt_other', '2027-01-15T10:00:00Z', { discount: { coupon: { id: 'coupon_save_offer_50' } } }));
   eq(calls(), [], 'untouched');
 });
+
+await test('D3 works when the endpoint sends new-API invoice payloads (parent.subscription_details)', async () => {
+  (globalThis as any).__stripeCalls = []; (globalThis as any).__stripeSubscriptions = { sub_promo: { id: 'sub_promo', discount: { coupon: { id: 'coupon_promo_start' } } } };
+  await send(renewalNewApi('evt_jan_new', '2027-01-15T10:00:00Z'));
+  eq(calls().map((c: any[]) => c[0]), ['subscriptions.deleteDiscount', 'invoices.update'], 'both removed');
+  (globalThis as any).__stripeCalls = []; (globalThis as any).__stripeSubscriptions = { sub_promo: { id: 'sub_promo', discount: { coupon: { id: 'coupon_promo_start' } } } };
+  await send(renewalNewApi('evt_dec_new', '2026-12-15T10:00:00Z'));
+  eq(calls(), [], 'nothing removed in 2026');
+});
+
+// ── Monthly allowance refill on invoice.paid (both payload shapes) ────
+function paidInvoice(id: string, shape: 'pinned' | 'new') {
+  const base: Record<string, any> = { id: 'in_' + id, status: 'paid', billing_reason: 'subscription_cycle' };
+  if (shape === 'pinned') base.subscription = 'sub_refill';
+  else base.parent = { type: 'subscription_details', subscription_details: { subscription: 'sub_refill' } };
+  return { id, type: 'invoice.paid', data: { object: base } };
+}
+for (const shape of ['pinned', 'new'] as const) {
+  await test(`invoice.paid refills the monthly allowance (${shape === 'new' ? 'new-API' : 'pinned-API'} payload)`, async () => {
+    seedProfile({ subscription_status: 'active', plan: 'easy_start', downloads_used: 14, downloads_limit: 20, topup_credits: 6 });
+    (globalThis as any).__stripeSubscriptions = { sub_refill: { id: 'sub_refill', metadata: { userId: 'user-1' }, items: { data: [{ price: { id: 'price_1Tdd5SKF3jvQfgEaclfSUxn5' } }] } } };
+    const r = await send(paidInvoice('evt_refill_' + shape, shape));
+    eq(r.status, 200, 'status');
+    const p: any = db().tables.profiles.find((x: any) => x.id === 'user-1');
+    eq([p.downloads_used, p.downloads_limit, p.plan, p.subscription_status, p.topup_credits], [0, 20, 'easy_start', 'active', 6], 'refilled, purchased credits kept');
+  });
+}
 
 out(`stripe-webhook offline checks passed (${passed} scenarios)`);
