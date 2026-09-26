@@ -591,7 +591,7 @@
   <a href="showcase.html" target="_blank" rel="noopener">Label Showcase</a>
   <a href="support.html" target="_blank" rel="noopener">Support</a>
   <a href="#" onclick="closeMobileNav();openGuide();return false;">Setup Guide</a>
-  <a href="auth.html?mode=signin" target="_blank" rel="noopener">Sign in</a>
+  <a href="auth.html?mode=signin">Sign in</a>
   <a href="auth.html?mode=signup" class="nav-mobile-menu-cta">Start free trial</a>
 </div>
 
@@ -623,8 +623,13 @@ function closeMobileNav(){
   document.getElementById('nav-mobile-toggle').setAttribute('aria-expanded', 'false');
   document.getElementById('nav-mobile-menu').setAttribute('hidden', '');
 }
+// Close only AFTER the tapped link's own navigation has started, never by
+// hiding the menu (display:none) inside the same click: on iOS Safari the
+// mobile "Sign in" tap (then a new-tab link) did nothing (PR #156 v15 QA).
+// Sign in now also opens in the same tab on mobile, like "Start free trial"
+// beside it, so no new-tab hand-off is involved.
 document.getElementById('nav-mobile-menu').addEventListener('click', function(e){
-  if (e.target.tagName === 'A') closeMobileNav();
+  if (e.target.closest && e.target.closest('a')) setTimeout(closeMobileNav, 0);
 });
 document.addEventListener('click', function(e){
   const menu = document.getElementById('nav-mobile-menu');
