@@ -328,3 +328,24 @@ Source: `clpeasy-pr156-payg-test-site-v9.zip` supplied by Michaela, which is the
 - The pricing-page PAYG button code. v9 still has the broken `sb` / `SUPABASE_ANON_KEY` / `?return=` code, so the audited fix from `5492166` was kept on top of the v9 design.
 
 **Test updates:** `payg-download-accounting.js` now checks v9's approved wording (the removed launch-banner headline is replaced by checks on the card order, the PAYG CTA and the explanation of annual savings). `payg-pricing-checkout.js` gained a test for the Monthly/Annual selector.
+
+---
+
+## ADDENDUM (26 Sep 2026) — Approved decisions D1–D5 implemented
+
+| Decision | Implementation | Tests |
+|---|---|---|
+| **D1** Composer export only for Easy Start, Easy Pro and PAYG | Composer requires a *clean* download (`entitlement.js` `cleanAvailable`, mirroring `consume_download`). A trial-only account is blocked with no charge. So are an expired trial, a paused plan with no purchases, an ended subscription and PAYG at zero. | Composer matrix (9 account states) in `preview-watermark-and-export-authorization.js` |
+| **D2** PAYG buyers join the **existing** paid list with `PLAN = Pay As You Go` | `stripe-webhook`: after a successful credit only, the buyer is upserted to `BREVO_PAID_LIST_ID`. Current subscribers are skipped so their PLAN isn't overwritten. Brevo errors are fully contained. | Deno: new and existing contact, duplicate, retry, Brevo HTTP 500 and network failure, list not configured, subscriber buyer |
+| **D3** 2026 monthly promotion via server-side Stripe coupon | `create-checkout-session`: Easy Start/Pro **monthly** price IDs (live, test-mode and legacy sandbox, as already mapped in the webhook) get `discounts[0][coupon]` from `PROMO_2026_EASY_START_MONTHLY_COUPON_ID` / `PROMO_2026_EASY_PRO_MONTHLY_COUPON_ID` before 1 Jan 2027 00:00 UK. If a coupon is missing it fails closed with a 503. Annual is never discounted. Coupons, discounts or promotion codes sent by the browser are ignored. `stripe-webhook` `invoice.created` removes **only** those coupons from the subscription and its draft invoice for the first renewal period starting on or after 1 Jan 2027. | Deno: Start and Pro monthly, both annuals, injection, missing configuration, 31 Dec 23:59:59, 2027 standard price, 2026 renewal kept, 2027 renewal removed, save-offer coupon untouched |
+| **D4** Top-ups only for active or cancel-at-period-end Easy Start/Pro | Enforced in three places: server (403 `TOPUP_SUBSCRIBERS_ONLY`, known top-up prices only); `entitlement.js` `topupEligible`; and the UI (sidebar link on every signed-in page, Account `buyTopup()` and `?topup=1`, Dashboard action). Everyone else is sent to `pricing.html#payg`. The top-up webhook now uses the atomic credit RPC and only credits paid sessions. | Deno: 9 account states plus unknown price; jsdom: routing for 7 states on 4 pages |
+| **D5** Trial ends when a PAYG payment has been verified and credited | New `credit_payg_purchase()` (service_role only). It locks the profile, credits the downloads and, for a trial (live or expired), sets `subscription_status = plan = 'payg'`, `downloads_limit = 0` and `trial_end = now` in **one** transaction. It is only called from the verified, paid, event-deduplicated webhook. Opening checkout, cancelling it or an unpaid session never call it. | PostgreSQL: conversion, 8→7 clean, free re-download, A4 sheet, zero balance (no trial reappears), grace at zero, re-buy, expired trial, subscribers and ended accounts untouched, permissions. Deno: success, duplicate, unpaid, failure then retry, expired trial, re-buy, subscriber. jsdom and Chromium: Account, Dashboard, Builder, Composer, My Labels |
+
+**Active subscriber using the PAYG endpoint:** no new product rule was invented. The purchase is allowed and credited as purchased downloads. The subscription (status, plan, allowance) and the Brevo PLAN are never changed. **Paused subscribers** aren't in the approved top-up list, so they are routed to PAYG. Please confirm both.
+
+**Annual refill:** the rule is established:
+- pricing.html sells "£99/year · 20 downloads/month";
+- `applyProfilePlan()` sets `downloads_reset_date` one month ahead even for annual plans;
+- main's Builder reset was commented "covers annual plans too".
+
+It was a genuine bug. The only monthly reset was in the browser, the billing-protection trigger silently reverted it, and PR #156 removed it. So annual customers refilled only at their yearly `invoice.paid`. Fixed server-side in `consume_download()` for annual plans only; monthly plans are still refilled by `invoice.paid`, so there's no double refill. The pages show the refilled allowance. A test proves the original PR function never refilled annual plans.
