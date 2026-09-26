@@ -51,15 +51,20 @@ const server=http.createServer((req,res)=>{let f=decodeURIComponent(req.url.spli
  rec('SDS-08','Extract with empty textarea on reopened label','Alert "Please paste…", hazard data unchanged',JSON.stringify({dialogs:b.dialogs,h:emp.h,s:emp.signal}),b.dialogs.some(d=>/paste SDS Section 2\.2/i.test(d))&&emp.h==='H317, H412'&&emp.signal==='Warning');
  // 4. manual edit on reopened label: add H319 via field
  const ed=await b.evaluate(async(ST)=>{const h=document.getElementById('h-statements');h.value='H317, H412, H319';h.dispatchEvent(new Event('input',{bubbles:true}));h.dispatchEvent(new Event('change',{bubbles:true}));if(typeof readForm==='function')readForm();if(typeof updateLabel==='function')updateLabel();await new Promise(r=>setTimeout(r,500));return eval(ST);},ST);
- rec('SDS-09','Reopened label: hazard fields are editable by hand (not locked)','Documented behaviour; preview must follow edit','h='+ed.h+' S.h='+JSON.stringify(ed)+'',true);
+ rec('SDS-09','Reopened extracted label: hazard fields locked (v12 C3), like a fresh extraction','hRO=true, Extract disabled until Clear','h='+ed.h+' hRO='+ed.hRO+' exDisabled='+ed.exDisabled,ed.hRO===true&&ed.exDisabled===true);
  const prevFollows=await b.evaluate(()=>{const txt=document.body.innerHTML;return {state:S.hStatements, eye:/eye irritation/i.test(txt)};});
  rec('SDS-10','Preview/export state follows a manual hazard edit (no stale preview)','S.hStatements and preview include H319',JSON.stringify(prevFollows),/H319/.test(prevFollows.state)&&prevFollows.eye);
  // 5. Save again -> same id, edited content
  const sv=await b.evaluate(async()=>{await saveLabel();await new Promise(r=>setTimeout(r,400));const arr=JSON.parse(localStorage.getItem('clpeasy_labels__u_u1'));return {n:arr.length,id:arr[0].id,h:arr[0].hStatements};});
  rec('SDS-11','Save again after edit on reopened label','Same id updated, no duplicate, H319 stored',JSON.stringify(sv),sv.n===1&&sv.id===id&&/H319/.test(sv.h));
  // 6. Rename + Save updates same record (Michaela's manual finding)
- const rn=await b.evaluate(async()=>{document.getElementById('scent-name').value='iugigig EDITED';await saveLabel();await new Promise(r=>setTimeout(r,400));const arr=JSON.parse(localStorage.getItem('clpeasy_labels__u_u1'));return {n:arr.length,name:arr[0].scentName,id:arr[0].id};});
- rec('LIB-01','Rename + Save on an opened label','Updates same record (no duplicate)',JSON.stringify(rn),rn.n===1&&rn.id===id&&rn.name==='iugigig EDITED');
+ const rn=await b.evaluate(async()=>{document.getElementById('scent-name').value='iugigig EDITED';readForm();updateLabel();
+   // v13 C4: a genuine rename must be answered before Save; save is refused until then.
+   await saveLabel();await new Promise(r=>setTimeout(r,300));
+   window.__blockedName=JSON.parse(localStorage.getItem('clpeasy_labels__u_u1'))[0].scentName;
+   if(typeof confirmSameHazardSource==='function')confirmSameHazardSource();
+   await saveLabel();await new Promise(r=>setTimeout(r,400));const arr=JSON.parse(localStorage.getItem('clpeasy_labels__u_u1'));return {n:arr.length,name:arr[0].scentName,id:arr[0].id,blockedBeforeAnswer:window.__blockedName};});
+ rec('LIB-01','Rename + Save on an opened label (v13 C4: blocked until "Same fragrance oil and SDS: keep")','Save refused before the answer; then updates the same record (no duplicate)',JSON.stringify(rn),rn.n===1&&rn.id===id&&rn.name==='iugigig EDITED'&&rn.blockedBeforeAnswer==='iugigig');
  // 7. Clear hazard data on reopened label
  b=await open('builder.html?label='+id);
  const cl=await b.evaluate(async(ST)=>{clearHazardData();await new Promise(r=>setTimeout(r,300));return eval(ST);},ST);
@@ -100,7 +105,7 @@ const server=http.createServer((req,res)=>{let f=decodeURIComponent(req.url.spli
  // 13. download key: label key uses scent+type
  b=await open('builder.html?label='+id);
  const key=await b.evaluate(()=>computeLabelKey());
- rec('ENT-KEY','Same-label free re-download key','scent::type (hazard edits do not change the key)',key,key==='iugigig edited::scented candle');
+ rec('ENT-KEY','Same-label free re-download key (v12 C1: includes shape and physical size)','name::type::shape::size',key,key==='iugigig edited::scented candle::circle::52x52mm');
  const errs=[];for(const t of [b,ml,pr,ml2])errs.push(...t.errs);
  rec('CON-SDS','Console errors across these journeys','none',JSON.stringify(errs.slice(0,5)),errs.length===0);
  await browser.close();server.close();
