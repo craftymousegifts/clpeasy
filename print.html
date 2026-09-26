@@ -243,6 +243,13 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 .pro-gate{background:var(--amber-light);border:1.5px solid var(--amber);border-radius:10px;padding:12px 14px;font-size:12px;color:#92400E;margin-bottom:8px;line-height:1.6;text-align:center;}
 .pro-gate strong{display:block;font-size:13px;margin-bottom:4px;}
 .pro-gate a{color:var(--teal-dark);font-weight:700;}
+/* Post-export printing guidance (approved 26 Sep 2026): shown only after the
+   A4 sheet has genuinely been handed to the print window. Informational only. */
+.sheet-print-guidance{display:flex;gap:10px;align-items:flex-start;background:var(--teal-light);border:1.5px solid var(--teal);border-radius:10px;padding:10px 12px;font-size:12.5px;color:var(--teal-dark);margin-top:8px;line-height:1.55;text-align:left;}
+.sheet-print-guidance[hidden]{display:none;}
+.sheet-print-guidance .spg-icon{font-weight:800;font-size:15px;line-height:1.3;flex-shrink:0;}
+.sheet-print-guidance p{margin:2px 0 0;}
+.sheet-print-guidance .spg-help-link{display:inline-block;margin-top:4px;color:var(--teal-dark);font-weight:700;text-decoration:underline;}
 
 /* RIGHT PANEL — SHEET PREVIEW -- Correction batch (compaction item 5): the
    right-panel is already a fixed-height (via .two-col height:100vh above)
@@ -573,7 +580,8 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
       <summary>Printing help</summary>
       <div class="collapsible-body no-pad">
         <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 12px;font-size:12px;color:#166534;line-height:1.6;">
-          <strong>🖨 Home printing / print companies:</strong> Use the PDF sheet — print on A4 sticker paper.<br>
+          <strong>🖨 A4 printing:</strong> Use the PDF sheet. In your printer settings choose <strong>100% / Actual Size</strong> and A4 paper. Do not use “Fit to page” or “Scale to fit”, as these can change the physical label size.<br>
+          <strong>📏 Size check:</strong> Before using label stock, print a test on ordinary A4 paper and measure a known label dimension. The printed measurement should match the size shown in CLPeasy.<br>
           <strong>✂ Cutting machine (Print Then Cut):</strong> Download individual PNGs and upload each one to your cutting machine separately. It cannot split a sheet into individual labels.
         </div>
       </div>
@@ -642,6 +650,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
       </div>
       <button class="btn-primary" id="btn-pdf" onclick="downloadPDF()">🖨 Print / Save as PDF</button>
       <button class="btn-secondary" id="btn-png-all" onclick="openCricutModal()">✂️ Download for cutting machine</button>
+      <div id="sheet-print-guidance" class="sheet-print-guidance" role="status" aria-live="polite" hidden></div>
     </div>
   </div><!-- /right-panel -->
 
@@ -659,12 +668,13 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
      top-level names. -->
 <script src="label-render.js"></script>
 <script src="label-library.js"></script>
+<script src="entitlement.js"></script>
 
 <script>
 // ── SUPABASE AUTH ─────────────────────────────────────────────
 const SUPABASE_URL='https://qvkosdqcryrcfbjtaxic.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
-let sbClient=null,currentUser=null,isPro=false;
+let sbClient=null,currentUser=null,isPro=false,composerEnt=null;
 
 async function initAuth(){
   try{
@@ -674,19 +684,12 @@ async function initAuth(){
     if(session){
       currentUser=session.user;
       isPro=false;
-      // ── CHECK SUBSCRIPTION STATUS (mirrors builder.html's initAuth) ──
-      try{
-        const {data:sub}=await sbClient.from('subscriptions').select('plan,status').eq('user_id',currentUser.id).single();
-        isPro = !!(sub && sub.status==='active');
-      }catch(e){ isPro=false; }
-      // Sidebar identity block (avatar + email), same element IDs as the
-      // shared shell on dashboard.html/builder.html/my-labels.html/
-      // account.html. This page has never fetched the `profiles` row those
-      // pages use for plan/downloads-remaining data, and does not start
-      // doing so now (that is subscription/download-credit logic, out of
-      // scope here) -- so su-plan and the downloads-remaining sidebar-usage
-      // card are deliberately left at their default hidden/placeholder
-      // state rather than populated with a guess.
+      // Export entitlement is based on an available CLEAN download, not merely
+      // an active subscription. PAYG customers can use purchased downloads
+      // without subscribing. Trial-only accounts remain unable to export a
+      // Composer sheet, exactly as before PR #156 (see entitlement.js).
+      try{ await refreshProEntitlement(); }catch(e){ isPro=false; }
+      // Sidebar identity block (avatar + email).
       const suUser=document.getElementById('sidebar-user');
       if(suUser){
         suUser.style.display='flex';
@@ -706,32 +709,87 @@ async function initAuth(){
 }
 async function signOut(){if(sbClient)await sbClient.auth.signOut();window.location.href='auth.html';}
 
-// SECURITY: fresh, server-verified re-check of Pro entitlement, run
-// immediately before any export function actually builds a downloadable
-// artifact (see downloadPDF()/cricutDownloadZip()/cricutDownloadSequential()
-// below). `isPro` is an ordinary mutable page-global — trivially editable
-// from the browser devtools console — so renderSheetPosition()'s watermark
-// decision must never trust a stale/tampered value at the moment of
-// export. This repeats the exact subscription query initAuth() runs at
-// login (RLS-scoped to the authenticated user via Supabase, so it cannot
-// be spoofed by editing client state) and overwrites `isPro` with the
-// real result. Fails closed (isPro=false, watermark applied) on any
-// error, missing session or missing subscription row.
+// Fresh server-backed check of whether this account's next download would be
+// a clean one. The historical variable name isPro is retained to minimise risk
+// across the renderer, but now means "clean export currently entitled".
+// Mirrors consume_download(): paid plan allowance (active, or a scheduled
+// cancellation inside its paid period) or purchased downloads. A live trial's
+// allowance is watermarked, so it does not unlock a clean Composer sheet.
+function profileHasAvailableDownload(p){
+  if(!p)return false;
+  composerEnt=window.CLPEntitlement.summarise(p);
+  return composerEnt.cleanAvailable;
+}
+// A live trial still has (watermarked) trial downloads, so "no downloads
+// remaining" would be untrue for it.
+function composerTrialOnly(){ return !!(composerEnt&&composerEnt.trialActive&&composerEnt.purchased===0); }
+function composerBlockedMessage(){
+  return composerTrialOnly()
+    ? 'Print Sheet Composer exports need a paid plan or purchased downloads. Buy downloads or choose a plan to continue.'
+    : window.CLPEntitlement.outOfDownloadsMessage(composerEnt);
+}
+// Shared sidebar plan name + downloads-left card (same element IDs as the
+// other signed-in pages).
+function renderComposerSidebar(p){
+  window.CLPEntitlement.renderSidebar(document,window.CLPEntitlement.summarise(p));
+}
+// Refresh only the sidebar after a successful export. Deliberately does NOT
+// touch isPro (see consumeComposerDownload()).
+async function refreshComposerSidebar(){
+  if(!currentUser||!sbClient)return;
+  try{
+    const {data:p,error}=await sbClient.from('profiles')
+      .select('subscription_status,trial_end,deletion_date,plan,is_pro,downloads_used,downloads_limit,billing_cycle,downloads_reset_date,topup_credits')
+      .eq('id',currentUser.id).single();
+    if(!error&&p)renderComposerSidebar(p);
+  }catch(e){}
+}
 async function refreshProEntitlement(){
+  composerEnt=null;
   if(!currentUser || !sbClient){ isPro=false; updateProGate(); return false; }
   try{
-    const {data:sub}=await sbClient.from('subscriptions').select('plan,status').eq('user_id',currentUser.id).single();
-    isPro = !!(sub && sub.status==='active');
-  }catch(e){
-    isPro=false;
-  }
+    const {data:p,error}=await sbClient.from('profiles')
+      .select('subscription_status,trial_end,deletion_date,plan,is_pro,downloads_used,downloads_limit,billing_cycle,downloads_reset_date,topup_credits')
+      .eq('id',currentUser.id).single();
+    if(error)throw error;
+    isPro=profileHasAvailableDownload(p);
+    try{ renderComposerSidebar(p); }catch(e){}
+  }catch(e){ isPro=false; }
   updateProGate();
   return isPro;
 }
+
+// Atomically consumes exactly one finished-file download. Passing null means
+// there is no 7-day same-label grace; that is intentional for Composer sheet
+// exports. The database function locks the profile row so concurrent tabs
+// cannot overspend the same allowance.
+async function consumeComposerDownload(){
+  if(!currentUser || !sbClient)return {ok:false,reason:'not_authenticated'};
+  const {data,error}=await sbClient.rpc('consume_download',{p_label_key:null});
+  if(error){ console.error('Download accounting failed:',error); return {ok:false,reason:'accounting_error'}; }
+  if(!data || data.ok!==true)return data||{ok:false,reason:'no_downloads_remaining'};
+  // Do not refresh the preview/export gate here: if this was the customer's
+  // final download, flipping isPro=false before the renderer runs would
+  // watermark the file they just paid for. The next export attempt performs
+  // a fresh check and will correctly show the zero-balance gate.
+  refreshComposerSidebar();
+  return data;
+}
 function updateProGate(){
   const gate=document.getElementById('pro-gate');
-  if(isPro){ if(gate)gate.style.display='none'; }
-  else { if(gate)gate.style.display=''; }
+  if(gate){
+    if(isPro){ gate.style.display='none'; }
+    else{
+      gate.style.display='';
+      gate.innerHTML=currentUser
+        ? (composerTrialOnly()
+          ? '<strong>🔒 Print sheets need a paid plan or purchased downloads</strong> <a href="pricing.html">Buy downloads or choose a plan</a> to export this sheet.'
+          : (composerEnt&&composerEnt.topupEligible
+            ? '<strong>🔒 No downloads remaining this month</strong> <a href="account.html?topup=1">Buy a subscriber top-up</a> to export this sheet.'
+            : '<strong>🔒 No downloads remaining</strong> <a href="pricing.html">Buy downloads or choose a plan</a> to export this sheet.'))
+        : '<strong>🔒 Sign in to download</strong> Please <a href="auth.html">sign in to your CLPeasy account</a> to download your print sheet.';
+    }
+  }
   updateExportButtonState();
 }
 
@@ -2315,7 +2373,26 @@ function buildLabelSVGFromData(e,pw,ph,opts){
 function buildMiniSVG(e){return buildLabelSVGFromData(e,36);}
 
 // ── PDF EXPORT (print-sheet quality) ─────────────────────────
+function showSheetPrintGuidance(){
+  const el=document.getElementById('sheet-print-guidance');
+  if(!el)return;
+  el.innerHTML='<span class="spg-icon" aria-hidden="true">✓</span><div><strong>Print sheet downloaded</strong>'+
+    '<p>Load the matching label sheet or printable material into your printer. Check your paper size and printer settings, then print at <strong>100% / Actual Size</strong> to preserve the label dimensions.</p>'+
+    '<a href="#printing-help" class="spg-help-link" onclick="return openPrintingHelp()">Printing tips →</a></div>';
+  el.hidden=false;
+}
+// Opens the existing in-page "Printing help" section and scrolls to it.
+function openPrintingHelp(){
+  const d=document.getElementById('printing-help');
+  if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'});}
+  return false;
+}
+function hideSheetPrintGuidance(){
+  const el=document.getElementById('sheet-print-guidance');
+  if(el)el.hidden=true;
+}
 async function downloadPDF(){
+  hideSheetPrintGuidance();
   const t=getTplConfig();
   if(getTotalQty()===0){alert('Add at least one label to the sheet before downloading.');return;}
 
@@ -2326,12 +2403,17 @@ async function downloadPDF(){
   const blockMsg=getSheetFitBlockMessage();
   if(blockMsg){alert(blockMsg);return;}
 
-  // SECURITY: re-verify Pro entitlement fresh from the server immediately
-  // before generating the export — never trust the cached `isPro` (see
-  // refreshProEntitlement()), so console-tampering it beforehand cannot
-  // produce an unwatermarked PDF.
+  // Open the print window while this is still a direct user gesture. If the
+  // browser blocks it, stop before consuming a download.
+  const win=window.open('','_blank');
+  if(!win){alert('Please allow pop-ups for clpeasy.com to print or save your A4 sheet. No download has been used.');return;}
+  win.document.write('<!DOCTYPE html><html><head><title>Preparing CLPeasy Print Sheet…</title></head><body style="font-family:sans-serif;padding:24px">Preparing your A4 print sheet…</body></html>');
+  win.document.close();
+
+  // SECURITY: re-verify entitlement fresh from the server before generating
+  // the clean export. Close the holding window if there is no allowance.
   const verifiedPro=await refreshProEntitlement();
-  if(!verifiedPro){alert('Upgrade to Pro to download print-ready PDFs.');return;}
+  if(!verifiedPro){win.close();alert(composerBlockedMessage());return;}
 
   const DPI=300,MM2PT=2.8346; // PDF points per mm
   const shWmm=A4_W,shHmm=A4_H;
@@ -2393,15 +2475,18 @@ async function downloadPDF(){
 
   // Convert SVG→canvas PNG then print — prevents 2-page browser split
   const svgImg=new Image();
-  svgImg.onload=function(){
+  svgImg.onload=async function(){
     const cvs=document.createElement('canvas');
     cvs.width=shWpx;cvs.height=shHpx;
     const ctx=cvs.getContext('2d');
     ctx.fillStyle='white';ctx.fillRect(0,0,shWpx,shHpx);
     ctx.drawImage(svgImg,0,0,shWpx,shHpx);
     const pngDataUri=cvs.toDataURL('image/png');
-    const win=window.open('','_blank');
-    if(!win){alert('Please allow pop-ups for clpeasy.com to download your PDF.');return;}
+    // The artifact is now fully rendered. Consume one download only at the
+    // last safe point before handing the finished A4 sheet to the customer.
+    const charge=await consumeComposerDownload();
+    if(!charge.ok){win.close();alert(charge.reason==='accounting_error'?'We could not verify your download allowance. Please try again.':window.CLPEntitlement.outOfDownloadsMessage(composerEnt));return;}
+    win.document.open();
     win.document.write(`<!DOCTYPE html><html><head><title>CLPeasy Print Sheet</title>
     <style>
       *{margin:0;padding:0;box-sizing:border-box;}
@@ -2421,8 +2506,9 @@ async function downloadPDF(){
       <button class="print-btn" onclick="window.print()">🖨 Print / Save as PDF</button>
     </body></html>`);
     win.document.close();
+    showSheetPrintGuidance();
   };
-  svgImg.onerror=function(){alert('Could not render sheet. Please try again.');};
+  svgImg.onerror=function(){win.close();alert('Could not render sheet. No download has been used. Please try again.');};
   svgImg.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(sheetSVG);
 }
 
@@ -2465,6 +2551,7 @@ function getFileName(e,dims){
   return `clpeasy-${slug}-${sizeLabel}.png`;
 }
 function openCricutModal(){
+  hideSheetPrintGuidance();
   if(!sheetItems.length){alert('Add at least one label to the sheet first.');return;}
   // Non-fitting-label export block (blocker #3): the cutting-machine path
   // (ZIP or one-by-one) is just as much an export as Print/PDF -- block it
@@ -2495,7 +2582,8 @@ async function cricutDownloadZip(){
   // calling this function directly, cannot produce clean cutting-machine
   // PNGs for an unentitled user.
   const verifiedPro=await refreshProEntitlement();
-  if(!verifiedPro){alert('Upgrade to Pro to download cutting-machine files.');return;}
+  if(!verifiedPro){alert(composerBlockedMessage());return;}
+  // Build the ZIP first. A failed generation must never consume a download.
   document.getElementById('modal-options').style.display='none';
   document.getElementById('modal-sub').style.display='none';
   const prog=document.getElementById('modal-progress');
@@ -2532,6 +2620,13 @@ async function cricutDownloadZip(){
   }
   txt.textContent='Creating ZIP...';fill.style.width='95%';
   const zipBlob=await zip.generateAsync({type:'blob'});
+  // A ZIP is one finished exported file. Consume only after the finished ZIP
+  // exists, immediately before handing it to the customer.
+  const charge=await consumeComposerDownload();
+  if(!charge.ok){
+    txt.textContent=charge.reason==='accounting_error'?'We could not verify your download allowance. Please try again.':window.CLPEntitlement.outOfDownloadsMessage(composerEnt);
+    return;
+  }
   const a=document.createElement('a');a.href=URL.createObjectURL(zipBlob);a.download='clpeasy-cutting-machine-labels.zip';
   document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(a.href);if(a.parentNode)a.parentNode.removeChild(a);},1000);
@@ -2545,7 +2640,7 @@ async function cricutDownloadSequential(){
   if(blockMsg){alert(blockMsg);return;}
   // SECURITY: see cricutDownloadZip() above -- same fresh re-check.
   const verifiedPro=await refreshProEntitlement();
-  if(!verifiedPro){alert('Upgrade to Pro to download cutting-machine files.');return;}
+  if(!verifiedPro){alert(composerBlockedMessage());return;}
   document.getElementById('modal-options').style.display='none';
   document.getElementById('modal-sub').style.display='none';
   const prog=document.getElementById('modal-progress');
@@ -2572,6 +2667,15 @@ async function cricutDownloadSequential(){
     let finalName=fname;let counter=1;
     while(usedNames.has(finalName)){finalName=fname.replace('.png',`-${counter++}.png`);}
     usedNames.add(finalName);
+    // "Download one by one" creates separate finished PNG files, so each
+    // successful PNG consumes one download. Stop cleanly if the balance ends.
+    const charge=await consumeComposerDownload();
+    if(!charge.ok){
+      txt.textContent=charge.reason==='accounting_error'
+        ? '⚠️ We could not verify your download allowance. Please try again.'
+        : window.CLPEntitlement.outOfDownloadsMessage(composerEnt);
+      break;
+    }
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=finalName;
     document.body.appendChild(a);a.click();
     setTimeout(()=>{URL.revokeObjectURL(a.href);if(a.parentNode)a.parentNode.removeChild(a);},800);

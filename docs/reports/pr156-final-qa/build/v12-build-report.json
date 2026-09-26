@@ -1,0 +1,182 @@
+{
+ "account": {
+  "key": 2,
+  "ref": 8,
+  "prices": 4,
+  "return": 0,
+  "plausible": 1,
+  "title": 1,
+  "noindex": 1
+ },
+ "auth": {
+  "key": 1,
+  "ref": 2,
+  "prices": 0,
+  "return": 0,
+  "plausible": 1,
+  "title": 1,
+  "noindex": 1
+ },
+ "builder": {
+  "key": 1,
+  "ref": 2,
+  "prices": 0,
+  "return": 0,
+  "plausible": 1,
+  "title": 1,
+  "noindex": 1
+ },
+ "checkout": {
+  "key": 1,
+  "ref": 1,
+  "prices": 6,
+  "return": 0,
+  "plausible": 0,
+  "title": 1,
+  "noindex": 1
+ },
+ "compliance": {
+  "key": 0,
+  "ref": 0,
+  "prices": 0,
+  "return": 0,
+  "plausible": 0,
+  "title": 1,
+  "noindex": 1
+ },
+ "cookie-policy": {
+  "key": 0,
+  "ref": 0,
+  "prices": 0,
+  "return": 0,
+  "plausible": 0,
+  "title": 1,
+  "noindex": 1
+ },
+ "dashboard": {
+  "key": 1,
+  "ref": 1,
+  "prices": 0,
+  "return": 0,
+  "plausible": 0,
+  "title": 1,
+  "noindex": 1
+ },
+ "faq": {
+  "key": 0,
+  "ref": 0,
+  "prices": 0,
+  "return": 0,
+  "plausible": 0,
+  "title": 1,
+  "noindex": 1
+ },
+ "index": {
+  "key": 1,
+  "ref": 1,
+  "prices": 0,
+  "return": 0,
+  "plausible": 1,
+  "title": 1,
+  "noindex": 1
+ },
+ "knowledge": {
+  "key": 1,
+  "ref": 2,
+  "prices": 0,
+  "return": 0,
+  "plausible": 0,
+  "title": 1,
+  "noindex": 1
+ },
+ "my-labels": {
+  "key": 1,
+  "ref": 1,
+  "prices": 0,
+  "return": 0,
+  "plausible": 0,
+  "title": 1,
+  "noindex": 1
+ },
+ "plan-picker": {
+  "key": 0,
+  "ref": 0,
+  "prices": 0,
+  "return": 0,
+  "plausible": 0,
+  "title": 1,
+  "noindex": 1
+ },
+ "pricing": {
+  "key": 1,
+  "ref": 1,
+  "prices": 4,
+  "return": 2,
+  "plausible": 1,
+  "title": 1,
+  "noindex": 1
+ },
+ "print": {
+  "key": 1,
+  "ref": 1,
+  "prices": 0,
+  "return": 0,
+  "plausible": 0,
+  "title": 1,
+  "noindex": 1
+ },
+ "privacy": {
+  "key": 0,
+  "ref": 0,
+  "prices": 0,
+  "return": 0,
+  "plausible": 1,
+  "title": 1,
+  "noindex": 1
+ },
+ "refund": {
+  "key": 0,
+  "ref": 0,
+  "prices": 0,
+  "return": 0,
+  "plausible": 0,
+  "title": 1,
+  "noindex": 1
+ },
+ "release-notes": {
+  "key": 0,
+  "ref": 0,
+  "prices": 0,
+  "return": 0,
+  "plausible": 0,
+  "title": 1,
+  "noindex": 1
+ },
+ "showcase": {
+  "key": 0,
+  "ref": 0,
+  "prices": 0,
+  "return": 0,
+  "plausible": 0,
+  "title": 1,
+  "noindex": 1
+ },
+ "support": {
+  "key": 0,
+  "ref": 1,
+  "prices": 0,
+  "return": 0,
+  "plausible": 1,
+  "title": 1,
+  "noindex": 1
+ },
+ "terms": {
+  "key": 0,
+  "ref": 0,
+  "prices": 0,
+  "return": 0,
+  "plausible": 0,
+  "title": 1,
+  "noindex": 1
+ }
+}

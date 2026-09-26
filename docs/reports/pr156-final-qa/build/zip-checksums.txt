@@ -1,0 +1,3 @@
+588af9c37b172c60cf83a29feb5988da9f4088596d362c7fac5084dd104aba00  clpeasy-pr156-payg-test-site-v11.zip
+59f1c1fcda2ad7c06b31bd76abd3f0e15202dde02960c6181fbadd0d73b7f94e  clpeasy-pr156-payg-test-site-v10.zip
+52ba58a5bc155f5375a66dbf63c9d12d94782986b1309204f7a4d197affba632  clpeasy-pr156-payg-test-site-v12.zip (built from a86d0b8; not committed, rebuild with build/build-v12.py)

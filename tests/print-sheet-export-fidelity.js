@@ -118,12 +118,12 @@ async function openComposerForExport(opts){
       stubCanvas(window);
       try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
       window.eval(labelRendererSource);
-      window.eval(labelLibrarySource);
+      window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
       window.scrollTo = () => {};
       window.fetch = async () => ({ ok:true, json:async()=>({}) });
-      window.open = () => ({ document:{ write(){}, close(){} }, location:{ href:'' }, close(){}, opener:null });
+      window.open = () => ({ document:{ open(){}, write(){}, close(){} }, location:{ href:'' }, close(){}, opener:null });
       window.URL.createObjectURL = () => 'blob:test';
       window.URL.revokeObjectURL = () => {};
       window.HTMLAnchorElement.prototype.click = function(){};
@@ -161,7 +161,7 @@ function decodeSheetSVG(dataUri){
     const { window, capturedImgSrcs } = await openComposerForExport({ seed });
     window.eval(`selectTemplate('custom', document.querySelector('.tpl-card[data-tpl="custom"]'))`);
     window.eval(`addToSheet('${idA}')`);
-    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser={id:'test-pro-user'};");
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active',subscription_status:'active',trial_end:null,downloads_used:0,downloads_limit:30,topup_credits:0},error:null});}}),rpc:()=>Promise.resolve({data:{ok:true,consumed:true,free_redownload:false,source:'plan',clean_export:true},error:null})}; currentUser={id:'test-pro-user'};");
     // addToSheet()/selectTemplate() above kicked off the Composer's own
     // guest-mode background preview rasterisation (Sep 2026 unpaid-preview
     // watermark fix) -- let it fully settle and clear its captured image
@@ -188,7 +188,7 @@ function decodeSheetSVG(dataUri){
     window.eval(`selectTemplate('custom', document.querySelector('.tpl-card[data-tpl="custom"]'))`);
     window.eval(`addToSheet('${idA}')`);
     window.eval(`setQty('${idA}','3')`); // 3 identical positions, same pictogram/icons
-    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser={id:'test-pro-user'};");
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active',subscription_status:'active',trial_end:null,downloads_used:0,downloads_limit:30,topup_credits:0},error:null});}}),rpc:()=>Promise.resolve({data:{ok:true,consumed:true,free_redownload:false,source:'plan',clean_export:true},error:null})}; currentUser={id:'test-pro-user'};");
     // addToSheet()/selectTemplate() above kicked off the Composer's own
     // guest-mode background preview rasterisation (Sep 2026 unpaid-preview
     // watermark fix) -- let it fully settle and clear its captured image
@@ -316,7 +316,7 @@ function decodeSheetSVG(dataUri){
     const { window, capturedImgSrcs } = await openComposerForExport({ seed });
     window.eval(`selectTemplate('custom', document.querySelector('.tpl-card[data-tpl="custom"]'))`);
     window.eval(`addToSheet('${idA}')`);
-    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser={id:'test-pro-user'};");
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active',subscription_status:'active',trial_end:null,downloads_used:0,downloads_limit:30,topup_credits:0},error:null});}}),rpc:()=>Promise.resolve({data:{ok:true,consumed:true,free_redownload:false,source:'plan',clean_export:true},error:null})}; currentUser={id:'test-pro-user'};");
     // addToSheet()/selectTemplate() above kicked off the Composer's own
     // guest-mode background preview rasterisation (Sep 2026 unpaid-preview
     // watermark fix) -- let it fully settle and clear its captured image

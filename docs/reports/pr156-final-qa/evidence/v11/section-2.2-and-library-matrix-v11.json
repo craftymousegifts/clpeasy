@@ -1,0 +1,170 @@
+[
+ {
+  "id": "SDS-01",
+  "scenario": "Extract fills H/P/signal/pictograms/sensitisers and locks Step 3",
+  "expected": "H317,H412 · Warning · exclamation · 2 sensitisers · locked",
+  "actual": "{\"h\":\"H317, H412\",\"s\":\"Warning\",\"p\":[\"exclamation\"],\"n\":2,\"ro\":true,\"ex\":true}",
+  "pass": true
+ },
+ {
+  "id": "SDS-02",
+  "scenario": "What raw SDS source is stored in the saved label",
+  "expected": "No raw Section 2.2 field (by current design)",
+  "actual": "keys: schemaVersion,rendererVersion,scentName,productType,shape,size,customW,customH,signal,sdsSignal,hStatements,pictograms,sensitisers,bizName,bizAddress,bizPhone,bizWebsite,netWeight,fragLoad,burnTime,batchNum,supplier,hideEN15494,bgColour,pStatements,textColour,showBorder,labelLang,p280Items,p28",
+  "pass": true
+ },
+ {
+  "id": "SDS-03",
+  "scenario": "What parsed hazard state is stored",
+  "expected": "hStatements, pStatements, signal, sdsSignal, pictograms, sensitisers, p280Items/Other",
+  "actual": "{\"h\":\"H317, H412\",\"p\":\"P261, P302+P352, P501\",\"signal\":\"Warning\",\"sds\":\"Warning\",\"pictos\":[\"exclamation\"],\"sens\":[\"Linalool\",\"Limonene\"]}",
+  "pass": true
+ },
+ {
+  "id": "SDS-04",
+  "scenario": "Reopen: parsed hazard data + preview restored",
+  "expected": "H317,H412/Warning/pictogram/sensitisers; preview shows them",
+  "actual": "{\"h\":\"H317, H412\",\"s\":\"Warning\",\"p\":[\"exclamation\"],\"n\":2,\"prevH317\":true,\"prevW\":true}",
+  "pass": true
+ },
+ {
+  "id": "SDS-05",
+  "scenario": "Reopen: Section 2.2 textarea",
+  "expected": "Empty (raw text not stored) — confirms Michaela's finding",
+  "actual": "box length 0",
+  "pass": true
+ },
+ {
+  "id": "SDS-06",
+  "scenario": "Reopen: Step 3 lock state matches a fresh extraction",
+  "expected": "Locked like after Extract (consistency)",
+  "actual": "boxRO=false hRO=false extractDisabled=false",
+  "pass": false
+ },
+ {
+  "id": "SDS-07",
+  "scenario": "Reopen: compliance confirmations must be re-ticked before export",
+  "expected": "hazard-confirm and verify unchecked",
+  "actual": "hazardConfirm=false verify=false",
+  "pass": true
+ },
+ {
+  "id": "SDS-08",
+  "scenario": "Extract with empty textarea on reopened label",
+  "expected": "Alert \"Please paste…\", hazard data unchanged",
+  "actual": "{\"dialogs\":[\"Please paste SDS Section 2.2 text first.\"],\"h\":\"H317, H412\",\"s\":\"Warning\"}",
+  "pass": true
+ },
+ {
+  "id": "SDS-09",
+  "scenario": "Reopened label: hazard fields are editable by hand (not locked)",
+  "expected": "Documented behaviour; preview must follow edit",
+  "actual": "h=H317, H412, H319 S.h={\"box\":\"\",\"boxRO\":false,\"exDisabled\":false,\"h\":\"H317, H412, H319\",\"hRO\":false,\"p\":\"P261, P302+P352, P501\",\"signal\":\"Warning\",\"sdsSignal\":\"Warning\",\"pictos\":[\"exclamation\"],\"sens\":[\"Linalool\",\"Limonene\"],\"scent\":\"iugigig\",\"type\":\"Scented Candle\",\"clear\":\"inline-block\",\"id\":\"c11",
+  "pass": true
+ },
+ {
+  "id": "SDS-10",
+  "scenario": "Preview/export state follows a manual hazard edit (no stale preview)",
+  "expected": "S.hStatements and preview include H319",
+  "actual": "{\"state\":\"H317, H412, H319\",\"eye\":true}",
+  "pass": true
+ },
+ {
+  "id": "SDS-11",
+  "scenario": "Save again after edit on reopened label",
+  "expected": "Same id updated, no duplicate, H319 stored",
+  "actual": "{\"n\":1,\"id\":\"c117633c-4f76-4563-9e0a-f6dd91b74c87\",\"h\":\"H317, H412, H319\"}",
+  "pass": true
+ },
+ {
+  "id": "LIB-01",
+  "scenario": "Rename + Save on an opened label",
+  "expected": "Updates same record (no duplicate)",
+  "actual": "{\"n\":1,\"name\":\"iugigig EDITED\",\"id\":\"c117633c-4f76-4563-9e0a-f6dd91b74c87\"}",
+  "pass": true
+ },
+ {
+  "id": "SDS-12",
+  "scenario": "Clear hazard data on reopened label",
+  "expected": "All hazard state + textarea cleared, fields unlocked, preview has no signal word",
+  "actual": "{\"h\":\"\",\"s\":\"\",\"p\":[],\"n\":0,\"box\":0,\"hRO\":false}",
+  "pass": true
+ },
+ {
+  "id": "SDS-13",
+  "scenario": "Clear without Save does not alter the saved library copy",
+  "expected": "Library copy still has hazards",
+  "actual": "H317, H412, H319",
+  "pass": true
+ },
+ {
+  "id": "SDS-14",
+  "scenario": "Paste a different SDS on reopened label and Extract",
+  "expected": "Old hazard data fully replaced (no stale H317/sensitisers)",
+  "actual": "{\"h\":\"H318\",\"s\":\"Danger\",\"p\":[\"corrosive\"],\"n\":[]}",
+  "pass": true
+ },
+ {
+  "id": "SDS-15",
+  "scenario": "Reopen label, change scent name only (new product)",
+  "expected": "Hazard data from the OLD SDS is carried over silently; no prompt to re-check",
+  "actual": "{\"scent\":\"Different Fragrance\",\"h\":\"H317, H412, H319\",\"sens\":[\"Linalool\",\"Limonene\"],\"warnShown\":false}",
+  "pass": true
+ },
+ {
+  "id": "SDS-16",
+  "scenario": "Wax Melt label: reopen restores product type + hazards; Section 2.2 empty",
+  "expected": "type Wax Melt, H317/H412, box empty",
+  "actual": "{\"t\":\"Wax Melt\",\"h\":\"H317, H412\",\"box\":0}",
+  "pass": true
+ },
+ {
+  "id": "LIB-02",
+  "scenario": "My Labels lists saved labels (All Labels count)",
+  "expected": "2 labels: iugigig EDITED + Wax QA",
+  "actual": "{\"tabs\":\"📋 All Labels 2 🕯️ Candles 1 🌸 Wax Melts 1\",\"grid\":\"I iugigig EDITED Scented Candle Circle · 52 mm Updated 26/09/2026 Open Print multiple Duplicate Delete W Wax QA Wax Melt Circle · 52 mm Updated 26/09/2026 Open Print multiple Duplicate Delete\"}",
+  "pass": true
+ },
+ {
+  "id": "LIB-03",
+  "scenario": "Duplicate in My Labels",
+  "expected": "New record with new id",
+  "actual": "[\"iugigig EDITED|c117633c\",\"Wax QA|b407b056\",\"iugigig EDITED (Copy)|1ba185bf\"]",
+  "pass": true
+ },
+ {
+  "id": "LIB-04",
+  "scenario": "Delete in My Labels (confirm dialog)",
+  "expected": "Record removed after confirmation (dialog dismissed here = kept)",
+  "actual": "{\"afterDismiss\":3,\"dialogs\":[\"Delete this saved label?\"]}",
+  "pass": true
+ },
+ {
+  "id": "LIB-05",
+  "scenario": "Composer lists saved labels and preloads ?label=",
+  "expected": "iugigig EDITED listed",
+  "actual": "{\"list\":\"📌 LABEL YOU CHOSE iugigig EDITED Your Brand SCENTED CANDLE WARNING May cause an allergic skin reaction. Harmful to aquatic life with long lasting effects.Causes serious eye irritation. Contains: Lina\"}",
+  "pass": true
+ },
+ {
+  "id": "LIB-06",
+  "scenario": "Same account in a different browser/profile",
+  "expected": "Saved labels are NOT visible (browser-only storage, pre-existing design)",
+  "actual": "📋 All Labels 0",
+  "pass": true
+ },
+ {
+  "id": "ENT-KEY",
+  "scenario": "Same-label free re-download key",
+  "expected": "scent::type (hazard edits do not change the key)",
+  "actual": "iugigig edited::scented candle",
+  "pass": true
+ },
+ {
+  "id": "CON-SDS",
+  "scenario": "Console errors across these journeys",
+  "expected": "none",
+  "actual": "[]",
+  "pass": true
+ }
+]

@@ -96,7 +96,7 @@ function buildDom(){
         drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
       });
       window.eval(labelRendererSource);
-      window.eval(labelLibrarySource);
+      window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
       window.scrollTo = () => {};
@@ -142,7 +142,8 @@ setTimeout(() => {
     // scrolling, which needs a real browser).
     assert(document.getElementById('builder-stepper'), 'sticky horizontal stepper element is missing');
     assert(document.querySelector('.compliance-card'), 'Compliance card was removed rather than made compact');
-    assert(/GB CLP aligned/.test(document.querySelector('.compliance-card').textContent), 'Compliance card content changed');
+    // Wording deliberately updated in c5c1d57 / PR #136 ("Improve builder responsibility and CLP Ready wording").
+    assert(/CLP Ready checks/.test(document.querySelector('.compliance-card').textContent) && /Built around GB CLP label requirements/.test(document.querySelector('.compliance-card').textContent), 'Compliance card content changed');
 
     // Step 5 fine-tune relocation (explicitly protected -- "preserve the
     // successful Step 5 Fine-tune arrangement") still functions exactly

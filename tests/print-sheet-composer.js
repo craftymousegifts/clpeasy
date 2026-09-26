@@ -97,12 +97,12 @@ const dom = new JSDOM(source, {
     // label-library.js is evaluated below.
     try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
     window.eval(labelRendererSource);
-    window.eval(labelLibrarySource);
+    window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
     window.scrollTo = () => {};
     window.fetch = async () => ({ ok:true, json:async()=>({}) });
-    window.open = () => ({ document:{ write(){}, close(){} }, location:{ href:'' }, close(){}, opener:null });
+    window.open = () => ({ document:{ open(){}, write(){}, close(){} }, location:{ href:'' }, close(){}, opener:null });
     window.URL.createObjectURL = () => 'blob:test';
     window.URL.revokeObjectURL = () => {};
     // Capture the SVG the PDF export builds (width/height reveal the true
@@ -144,7 +144,7 @@ setTimeout(async () => {
     // synchronous live-vector path used before that feature existed --
     // otherwise the checks below would be inspecting an opaque raster
     // image's markup instead of the label's actual rendered text.
-    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser={id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active',subscription_status:'active',trial_end:null,downloads_used:0,downloads_limit:30,topup_credits:0},error:null});}}),rpc:()=>Promise.resolve({data:{ok:true,consumed:true,free_redownload:false,source:'plan',clean_export:true},error:null})}; currentUser={id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
     // ── Resolve each fixture's stable LabelLibrary-assigned id at runtime
     // -- these fixtures are intentionally id-less (legitimate pre-stable-ID
     // saved labels put through LabelLibrary's legacy migration on init()),
@@ -332,7 +332,7 @@ setTimeout(async () => {
     // Simulate an active subscription so downloadPDF()'s entitlement
     // re-check (refreshProEntitlement()) passes -- this test is about PDF
     // page geometry, not entitlement.
-    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser={id:'test-pro-user'};");
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active',subscription_status:'active',trial_end:null,downloads_used:0,downloads_limit:30,topup_credits:0},error:null});}}),rpc:()=>Promise.resolve({data:{ok:true,consumed:true,free_redownload:false,source:'plan',clean_export:true},error:null})}; currentUser={id:'test-pro-user'};");
     await window.eval('downloadPDF()');
     const svgDims = window.eval('window.__capturedSvg');
     assert(svgDims, 'downloadPDF did not build a sheet SVG');
