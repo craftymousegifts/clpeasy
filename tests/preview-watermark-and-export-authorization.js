@@ -145,6 +145,12 @@ function fillMinimalLabel(window){
   window.setApprovedBuilderStep(2);
   window.document.getElementById('scent-name').value = 'Security Test Candle';
   window.document.getElementById('product-type').value = 'Scented Candle';
+  // A business name is required content (audit finding M09): without it the
+  // label printed the "Your Brand" placeholder and is now, correctly, not
+  // exportable. This test is about watermarking/export authorisation, so its
+  // minimal label must be complete -- same business name as the print.html
+  // fixture below.
+  window.document.getElementById('biz-name').value = 'Test Biz';
   window.onProductTypeChange();
   window.updateLabel();
   const cb = window.document.getElementById('verify-checkbox');

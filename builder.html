@@ -1249,7 +1249,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="step-panel" id="step-4">
     <h2 class="step-heading">Your business details</h2>
     <p class="step-sub">Required on CLP labels — your name and address as the responsible person.</p>
-    <div class="form-group"><label>Business / Brand name</label><input type="text" id="biz-name" placeholder="As you want it to appear on the label" oninput="updateLabel();saveBizDetails()"></div>
+    <div class="form-group"><label>Business / Brand name <span>(required)</span></label><input type="text" id="biz-name" placeholder="As you want it to appear on the label" oninput="updateLabel();saveBizDetails()"></div>
     <div class="form-group"><label>Address <span>(town, county or full address)</span></label><input type="text" id="biz-address" placeholder="e.g. Scottish Borders, Scotland" oninput="updateLabel();saveBizDetails()"></div>
     <div class="form-group"><label>Phone number <span>(required for CLP compliance)</span></label><input type="tel" id="biz-phone" placeholder="e.g. 07700 900000" oninput="updateLabel();saveBizDetails()"></div>
     <div class="form-row">
@@ -1330,6 +1330,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <!-- Visible on Step 5 (unlike #label-warn, which lives in Step 3's hidden panel) so the
          download-block reason is shown right next to the disabled buttons it explains. -->
     <div id="label-warn-step5" class="field-alert field-alert-danger" style="display:none;margin-bottom:16px;font-size:13px;"></div>
+    <div id="content-warn-step5" class="field-alert field-alert-danger" style="display:none;margin-bottom:16px;font-size:13px;"></div>
 
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
       <div class="review-download-grid">
@@ -1674,7 +1675,7 @@ function setBorder(show){
 
 // ── PRINT TO PDF ──────────────────────────────────────────────
 function printToPDF(){
-  if(!_downloadAllowed()){alert('Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.');return;}
+  if(!_downloadAllowed()){alert(_downloadBlockedMessage());return;}
   readForm();
   const{mmW,mmH,pw,ph}=getDims();
   const svgStr=buildSVG(true);
@@ -1788,7 +1789,7 @@ function labelToCanvas(cb){
 
 // ── PDF SHEET — Avery-aligned home printing ───────────────────
 async function downloadPDFSheet(){
-  if(!_downloadAllowed()){alert('Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.');return;}
+  if(!_downloadAllowed()){alert(_downloadBlockedMessage());return;}
   plausible('Label Downloaded',{props:{format:'PDF Sheet'}});
   await ensureFontsLoaded(); // wait for DM Sans before rasterising
   readForm();
@@ -1842,7 +1843,7 @@ async function downloadPDFSheet(){
 // Exports a single label with 3mm bleed on all sides + crop marks
 // Print shops accept this directly — 300 DPI, bleed included
 async function downloadPrintReadyPDF(){
-  if(!_downloadAllowed()){alert('Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.');return;}
+  if(!_downloadAllowed()){alert(_downloadBlockedMessage());return;}
   plausible('Label Downloaded',{props:{format:'Print-Ready PDF'}});
   await ensureFontsLoaded(); // wait for DM Sans before rasterising
   readForm();
@@ -1941,7 +1942,7 @@ async function downloadPrintReadyPDF(){
 
 // ── CUTTING MACHINE PNGs — download as ZIP ──────────────────
 function downloadCricutPNGs(){
-  if(!_downloadAllowed()){alert('Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.');return;}
+  if(!_downloadAllowed()){alert(_downloadBlockedMessage());return;}
   plausible('Label Downloaded',{props:{format:'Cricut PNGs'}});
   readForm();
   const qtyEl=document.getElementById('sheet-qty');
@@ -3623,11 +3624,46 @@ function buildSensitiserChips(){
 // were previously never gated at all — can bypass either check.
 function _downloadAllowed(){
   const checked=document.getElementById('verify-checkbox')?.checked;
-  return !!checked && !window._labelBlockDownload;
+  return !!checked && !window._labelBlockDownload && _requiredContentCheck().complete;
+}
+// Required label content (Builder Label Technical Audit M09/M31), kept
+// separate from physical fit (window._labelBlockDownload): the live preview
+// may show "Your Scent Name" / "Your Brand" / "Contains: sensitising
+// substance" while the label is being built, but placeholder or missing
+// content must never be exportable. Re-read from the form fields on EVERY
+// call -- never from which steps were passed, the Step 5 confirmation, or
+// the visible step -- so a field cleared after confirming (e.g. going back
+// from Step 5) is caught by every export route, including the mobile sheet.
+const REQUIRED_CONTENT_MESSAGES={
+  'product-name':'Add your product name (Step 2).',
+  'business-name':'Add your business name (Step 4).',
+  'euh208-substance':'EUH208 needs the named sensitising substance(s). Check your current supplier SDS and paste the complete relevant EUH208/Contains information.',
+};
+function _requiredContentCheck(){
+  const val=id=>document.getElementById(id)?.value||'';
+  return LabelRenderer.checkRequiredContent({
+    scentName:val('scent-name'), bizName:val('biz-name'),
+    hStatements:document.getElementById('h-statements')?val('h-statements'):S.hStatements,
+    sensitisers:S.sensitisers,
+  });
+}
+function _downloadBlockedMessage(){
+  const rc=_requiredContentCheck();
+  if(!rc.complete) return "This label is missing required content, so it can't be downloaded yet:\n\n"+rc.missing.map(m=>'• '+REQUIRED_CONTENT_MESSAGES[m]).join('\n');
+  return 'Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.';
 }
 
 function toggleDownload(){
   const allowed=_downloadAllowed();
+  // Saving to the library is not an export: its button keeps its existing
+  // gate (confirmation + fit), without the required-content check.
+  const saveAllowed=!!document.getElementById('verify-checkbox')?.checked && !window._labelBlockDownload;
+  const rc=_requiredContentCheck();
+  const contentWarn=document.getElementById('content-warn-step5');
+  if(contentWarn){
+    contentWarn.style.display=rc.complete?'none':'block';
+    contentWarn.innerHTML=rc.complete?'':'<strong>⚠️ Download unavailable — required label content is missing</strong><br><br>'+rc.missing.map(m=>escapeBuilderText(REQUIRED_CONTENT_MESSAGES[m])).join('<br>');
+  }
   // Hotfix: the live preview panel has its own PNG/SVG/PDF row
   // (#preview-dl-row) calling the exact same download functions -- it was
   // missing from this list, so those buttons stayed visually enabled
@@ -3639,8 +3675,9 @@ function toggleDownload(){
   btns.forEach(id=>{
     const btn=document.getElementById(id);
     if(!btn)return;
-    btn.style.opacity=allowed?'1':'0.4';
-    btn.style.pointerEvents=allowed?'auto':'none';
+    const ok=id==='btn-save'?saveAllowed:allowed;
+    btn.style.opacity=ok?'1':'0.4';
+    btn.style.pointerEvents=ok?'auto':'none';
   });
 }
 function toggleLib(id,tog){
@@ -4137,8 +4174,16 @@ function canLeaveApprovedBuilderStep(step){
       alert('P280 needs at least one applicable protection item selected before continuing. Click the P280 chip to choose.');
       return false;
     }
+    // M31: EUH208 must name the sensitising substance(s) -- the renderer's
+    // "Contains: sensitising substance" placeholder is never finished content.
+    if(LabelRenderer.checkRequiredContent({hStatements:S.hStatements,sensitisers:S.sensitisers,scentName:'-',bizName:'-'}).missing.includes('euh208-substance')){
+      alert(REQUIRED_CONTENT_MESSAGES['euh208-substance']);
+      return false;
+    }
   }
   if(step===4){
+    const bizName=(document.getElementById('biz-name')?.value||'').trim();
+    if(!bizName){alert('Add your business name before continuing.');document.getElementById('biz-name')?.focus();return false;}
     const phone=(document.getElementById('biz-phone')?.value||'').trim();
     if(!phone){alert('Please enter the required business phone number before final review.');document.getElementById('biz-phone')?.focus();return false;}
   }
@@ -4367,6 +4412,14 @@ function _applyHazardBlockGate(){
 }
 function prevStep(){if(approvedBuilderStep>1)setApprovedBuilderStep(approvedBuilderStep-1);}
 function checkStep4AndNext(){
+  const bizName=(document.getElementById('biz-name')?.value||'').trim();
+  if(!bizName){
+    document.getElementById('biz-name').style.border='1.5px solid #EF4444';
+    document.getElementById('biz-name').focus();
+    alert('Add your business name before continuing.');
+    return;
+  }
+  document.getElementById('biz-name').style.border='';
   const phone=(document.getElementById('biz-phone')?.value||'').trim();
   if(!phone){
     document.getElementById('biz-phone').style.border='1.5px solid #EF4444';
@@ -5204,7 +5257,7 @@ async function ensureFontsLoaded(){
 }
 
 async function downloadPNG(){
-  if(!_downloadAllowed()){alert('Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.');return;}
+  if(!_downloadAllowed()){alert(_downloadBlockedMessage());return;}
   plausible('Label Downloaded',{props:{format:'PNG'}});
   await ensureFontsLoaded();
   readForm();
@@ -5274,7 +5327,7 @@ async function downloadPNG(){
 
 // ── SVG DOWNLOAD ──────────────────────────────────────────────
 function downloadSVG(){
-  if(!_downloadAllowed()){alert('Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.');return;}
+  if(!_downloadAllowed()){alert(_downloadBlockedMessage());return;}
   plausible('Label Downloaded',{props:{format:'SVG'}});
   try{
     readForm();
