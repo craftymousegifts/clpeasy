@@ -731,7 +731,7 @@ async function refreshComposerSidebar(){
   if(!currentUser||!sbClient)return;
   try{
     const {data:p,error}=await sbClient.from('profiles')
-      .select('subscription_status,trial_end,deletion_date,plan,is_pro,downloads_used,downloads_limit,topup_credits')
+      .select('subscription_status,trial_end,deletion_date,plan,is_pro,downloads_used,downloads_limit,billing_cycle,downloads_reset_date,topup_credits')
       .eq('id',currentUser.id).single();
     if(!error&&p)renderComposerSidebar(p);
   }catch(e){}
@@ -741,7 +741,7 @@ async function refreshProEntitlement(){
   if(!currentUser || !sbClient){ isPro=false; updateProGate(); return false; }
   try{
     const {data:p,error}=await sbClient.from('profiles')
-      .select('subscription_status,trial_end,deletion_date,plan,is_pro,downloads_used,downloads_limit,topup_credits')
+      .select('subscription_status,trial_end,deletion_date,plan,is_pro,downloads_used,downloads_limit,billing_cycle,downloads_reset_date,topup_credits')
       .eq('id',currentUser.id).single();
     if(error)throw error;
     isPro=profileHasAvailableDownload(p);

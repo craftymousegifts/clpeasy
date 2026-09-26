@@ -602,7 +602,7 @@ async function initPage(){
       // library-loading try/catch above already does for guests.
       try{
         const { data:prof } = await sb.from('profiles')
-          .select('full_name, plan, is_pro, subscription_status, trial_end, deletion_date, downloads_used, downloads_limit, topup_credits')
+          .select('full_name, plan, is_pro, subscription_status, trial_end, deletion_date, downloads_used, downloads_limit, billing_cycle, downloads_reset_date, topup_credits')
           .eq('id', currentUser.id).maybeSingle();
         const ent=prof?window.CLPEntitlement.summarise(prof):null;
         if(ent)window.CLPEntitlement.renderSidebar(document, ent);

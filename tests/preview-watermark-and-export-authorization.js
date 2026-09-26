@@ -642,5 +642,56 @@ function candleFixture(overrides){
     ok('Composer: live trial alone cannot export (no charge, never clean); PAYG exports a clean sheet for exactly one download and the sidebar shows plan + balance');
   }
 
+  // 12d. D1 (approved): Composer export requires Easy Start, Easy Pro or Pay
+  //      As You Go. Trial-only / expired / paused-without-purchases / ended
+  //      accounts cannot export and are never charged; every paid account
+  //      exports a clean sheet for exactly one download.
+  {
+    const DAY=86400000, iso=ms=>new Date(Date.now()+ms).toISOString();
+    const cases = [
+      ['live trial only',          { plan:'free', subscription_status:'trialing', trial_end:iso(5*DAY), downloads_limit:10, downloads_used:0, topup_credits:0 }, false],
+      ['expired trial',            { plan:'free', subscription_status:'trialing', trial_end:iso(-DAY), downloads_limit:10, downloads_used:0, topup_credits:0 }, false],
+      ['paused, no purchases',     { plan:'easy_start', subscription_status:'paused', downloads_limit:20, downloads_used:0, topup_credits:0 }, false],
+      ['subscription ended',       { plan:'free', subscription_status:'cancelled', downloads_limit:0, downloads_used:0, topup_credits:0 }, false],
+      ['PAYG at zero',             { plan:'payg', subscription_status:'payg', downloads_limit:0, downloads_used:0, topup_credits:0 }, false],
+      ['Easy Start active',        { plan:'easy_start', subscription_status:'active', downloads_limit:20, downloads_used:3, topup_credits:0 }, true],
+      ['Easy Pro active',          { plan:'easy_pro', is_pro:true, subscription_status:'active', downloads_limit:30, downloads_used:3, topup_credits:0 }, true],
+      ['Easy Pro, cancel at period end', { plan:'easy_pro', is_pro:true, subscription_status:'cancelled', deletion_date:iso(9*DAY), downloads_limit:30, downloads_used:3, topup_credits:0 }, true],
+      ['Pay As You Go (converted trial)', { plan:'payg', subscription_status:'payg', trial_end:iso(-DAY), downloads_limit:0, downloads_used:2, topup_credits:8 }, true],
+    ];
+    let n = 0;
+    for (const [name, profile, allowed] of cases) {
+      const session = { user:{ id:'user-d1-'+(n++), email:'d1@example.com', user_metadata:{} } };
+      const id = `aaaaaaaa-0000-4000-8000-0000000001${String(n).padStart(2,'0')}`;
+      const c = await openComposer({ session, profile, seed:[candleFixture({ id })] });
+      c.window.eval(`selectTemplate('custom', document.querySelector('.tpl-card[data-tpl="custom"]'))`);
+      c.window.eval(`addToSheet('${id}')`);
+      await c.window.eval('downloadPDF()');
+      await new Promise(r=>setTimeout(r,30));
+      const consumed = c.rpcCalls.filter(x=>x.name==='consume_download').length;
+      const cleanSheet = c.capturedImgSrcs.some(src => /Security Sheet Candle/.test(decodeURIComponent(src)) && !/PREVIEW ONLY/.test(decodeURIComponent(src)));
+      assert.strictEqual(consumed, allowed ? 1 : 0, `${name}: downloads consumed`);
+      assert.strictEqual(cleanSheet, allowed, `${name}: ${allowed ? 'clean sheet exported' : 'no sheet exported'}`);
+    }
+    ok('D1: Composer exports only for Easy Start, Easy Pro (incl. scheduled cancellation) and Pay As You Go');
+  }
+
+  // 12e. D5: after a trial customer buys PAYG, Builder exports are clean
+  //      purchased downloads and the sidebar reads Pay As You Go.
+  {
+    const DAY=86400000, iso=ms=>new Date(Date.now()+ms).toISOString();
+    const profile = { plan:'payg', subscription_status:'payg', trial_end:iso(-1000), downloads_limit:0, downloads_used:2, topup_credits:8 };
+    const session = { user:{ id:'user-d5-builder', email:'d5@example.com', user_metadata:{} } };
+    const { window, capturedHrefs, rpcCalls } = await openBuilder({ session, profile });
+    fillMinimalLabel(window);
+    assert.strictEqual(window.document.getElementById('su-plan').textContent, 'Pay As You Go');
+    await window.downloadSVG();
+    assert.strictEqual(rpcCalls.filter(c=>c.name==='consume_download').length, 1, 'one download consumed');
+    assert.strictEqual(profile.topup_credits, 7, 'PAYG 8 -> 7');
+    assert.strictEqual(profile.downloads_used, 2, 'no trial/plan allowance used');
+    assert(!/PREVIEW ONLY/.test(decodeDataUri(capturedHrefs[0])), 'clean export');
+    ok('D5: converted trial -> Pay As You Go account gets clean Builder exports from purchased downloads');
+  }
+
   console.log(`preview watermark and export authorisation checks passed (${passed} assertions)`);
 })().catch(e => { console.error(e.stack || e.message); process.exitCode = 1; });

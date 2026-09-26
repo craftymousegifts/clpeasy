@@ -2322,7 +2322,7 @@ async function loadDownloadAllowance(){
   if(!sbClient||!currentUser) return;
   try{
     const {data:prof,error}=await sbClient.from('profiles')
-      .select('downloads_used,downloads_limit,plan,is_pro,subscription_status,trial_end,deletion_date,downloads_reset_date,topup_credits')
+      .select('downloads_used,downloads_limit,plan,is_pro,subscription_status,trial_end,deletion_date,billing_cycle,downloads_reset_date,topup_credits')
       .eq('id',currentUser.id).single();
     if(error||!prof) throw error||new Error('profile unavailable');
     DL.summary=window.CLPEntitlement.summarise(prof);
@@ -2347,6 +2347,8 @@ function updateDlCounter(){
   const ent=DL.summary;
   const monthlyLeft=ent?ent.planLeft:Math.max(0,DL.limit-DL.used);
   const totalLeft=monthlyLeft+Math.max(0,DL.credits);
+  // Approved D4: sidebar purchase link -> subscriber top-up or Pay As You Go.
+  if(ent)window.CLPEntitlement.applyPurchaseLinks(document,ent);
   if(suUsage){
     if(!DL.loaded){ suUsage.style.display='none'; }
     else {
@@ -2375,7 +2377,7 @@ async function refreshProEntitlement(){
   if(!currentUser||!sbClient){S.isPro=false;return false;}
   try{
     const {data:prof,error}=await sbClient.from('profiles')
-      .select('subscription_status,trial_end,deletion_date,plan,downloads_limit,topup_credits')
+      .select('subscription_status,trial_end,deletion_date,plan,downloads_limit,billing_cycle,downloads_reset_date,topup_credits')
       .eq('id',currentUser.id).single();
     if(error||!prof)throw error||new Error('profile unavailable');
     S.isPro=window.CLPEntitlement.summarise(prof).cleanPreview;

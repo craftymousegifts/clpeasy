@@ -42,14 +42,19 @@ assert.match(pricing,/10% off until 31&nbsp;December&nbsp;2026/,'subscription la
 assert.match(pricing,/Annual saving is compared with standard monthly prices/,'annual savings must be explained against standard monthly prices');
 assert.match(checkout,/paygDownloads[\s\S]*"8"[\s\S]*"5"/,'checkout must award 8 downloads during launch and revert to 5');
 assert.match(webhook,/downloads !== 5 && downloads !== 8/,'webhook must accept normal and launch PAYG quantities only');
-assert.match(webhook,/\.rpc\([\s\S]*'credit_purchased_downloads'[\s\S]*p_downloads: downloads/,'PAYG webhook must credit purchases atomically');
+// D5: PAYG credit + trial->PAYG conversion in one locked transaction.
+const d5=fs.readFileSync('supabase/migrations/20260927000000_payg_trial_conversion_and_annual_refill.sql','utf8');
+assert.match(webhook,/\.rpc\([\s\S]*'credit_payg_purchase'[\s\S]*p_downloads: downloads/,'PAYG webhook must credit purchases atomically (and end a trial in the same transaction)');
+assert.match(d5,/for update;/i,'PAYG credit/conversion must lock the profile row');
+assert.match(d5,/grant execute on function public\.credit_payg_purchase\(uuid, integer\) to service_role/i,'only the webhook service role may credit/convert');
+assert.match(d5,/revoke all on function public\.credit_payg_purchase\(uuid, integer\) from authenticated/i,'authenticated users must not credit/convert');
 assert.match(migration,/topup_credits\s*=\s*coalesce\(topup_credits,0\)\s*\+\s*p_downloads/i,'PAYG purchase credit RPC must increment atomically');
 assert.match(migration,/grant execute on function public\.credit_purchased_downloads\(uuid, integer\) to service_role/i,'only the webhook service role may credit PAYG purchases');
 assert.match(webhook,/stripe_processed_events'[\s\S]*\.delete\(\)[\s\S]*\.eq\('event_id', event\.id\)/,'failed webhook processing must release its idempotency claim so Stripe retry can recover');
 
 assert.match(builder,/sbClient\.rpc\('consume_download',\{p_label_key:labelKey\|\|null\}\)/,'Builder must consume individual exports through atomic RPC');
 assert.ok(!builder.includes("from('subscriptions').select('plan,status')"),'Builder must not gate PAYG on subscriptions table');
-assert.match(builder,/select\('subscription_status,trial_end,deletion_date,plan,downloads_limit,topup_credits'\)/,'Builder clean-export entitlement must use profiles');
+assert.match(builder,/select\('subscription_status,trial_end,deletion_date,plan,downloads_limit,billing_cycle,downloads_reset_date,topup_credits'\)/,'Builder clean-export entitlement must use profiles');
 assert.match(builder,/S\.isPro=window\.CLPEntitlement\.summarise\(prof\)\.cleanPreview/,'Builder clean preview must use the shared entitlement rules (PAYG balance unlocks it; behaviour covered in tests/entitlement-unit.js)');
 assert.match(builder,/return scent\+'::'\+type/,'Builder must pass stable label identity for 7-day grace');
 assert.ok(!builder.includes("sbClient.rpc('consume_topup_credit')"),'Builder must not use legacy non-atomic top-up consumption');

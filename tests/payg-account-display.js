@@ -26,6 +26,10 @@ const P = {
   cancelScheduled:  { plan:'easy_pro', is_pro:true, subscription_status:'cancelled', deletion_date:iso(12*DAY), downloads_used:5, downloads_limit:30, topup_credits:0 },
   endedWithPayg:    { plan:'free', is_pro:false, subscription_status:'cancelled', deletion_date:iso(-2*DAY), downloads_used:5, downloads_limit:0, topup_credits:3 },
   pausedWithPayg:   { plan:'easy_start', is_pro:false, subscription_status:'paused', downloads_used:1, downloads_limit:20, topup_credits:2 },
+  // D5: former trial customer after a PAYG purchase (credit_payg_purchase).
+  paygConverted:    { plan:'payg', is_pro:false, subscription_status:'payg', trial_end:iso(-1000), downloads_used:2, downloads_limit:0, topup_credits:8 },
+  paygConvertedZero:{ plan:'payg', is_pro:false, subscription_status:'payg', trial_end:iso(-9*DAY), downloads_used:2, downloads_limit:0, topup_credits:0 },
+  activeStartAnnualDue: { plan:'easy_start', is_pro:false, subscription_status:'active', billing_cycle:'annual', downloads_reset_date:iso(-2*DAY), downloads_used:20, downloads_limit:20, topup_credits:0 },
 };
 
 let passed = 0;
@@ -176,6 +180,76 @@ const text = (doc, id) => (doc.getElementById(id) || { textContent:'' }).textCon
     assert.strictEqual(text(m.doc,'su-plan'), 'Easy Start (Paused)');
     assert.strictEqual(text(m.doc,'su-count'), '2 downloads');
     ok('my-labels.html: sidebar shows paused plan with purchased balance');
+  }
+  // ── D5: trial -> Pay As You Go account display ────────────────────
+  {
+    const { doc, errors } = await open('account.html', P.paygConverted);
+    assert.strictEqual(errors.length, 0, errors.join('; '));
+    assert.strictEqual(text(doc,'plan-name'), 'Pay As You Go');
+    assert.strictEqual(text(doc,'plan-badge'), 'Active');
+    assert.strictEqual(text(doc,'acct-status'), 'pay as you go');
+    assert.strictEqual(text(doc,'renewal-line'), 'No subscription · purchased downloads do not expire');
+    assert.strictEqual(text(doc,'topup-credits-count'), '8');
+    assert(!/Trial/i.test(text(doc,'renewal-line')), 'the old trial never reappears');
+    assert.strictEqual(text(doc,'su-count'), '8 downloads');
+    assert.strictEqual(text(doc,'billing-plan'), '—');
+    assert(/Buy more downloads/.test(doc.getElementById('action-row').textContent));
+    const z = await open('account.html', P.paygConvertedZero);
+    assert.strictEqual(text(z.doc,'plan-name'), 'Pay As You Go', 'at zero the account stays Pay As You Go');
+    assert.strictEqual(text(z.doc,'su-count'), '0 downloads');
+    assert(!/Trial/i.test(text(z.doc,'renewal-line')), 'the trial does not return at zero');
+    ok('account.html: trial -> Pay As You Go conversion, including at zero balance');
+  }
+  {
+    const { doc } = await open('dashboard.html', P.paygConverted);
+    assert.strictEqual(text(doc,'db-plan-name'), 'Pay As You Go');
+    assert.strictEqual(text(doc,'db-plan-badge'), 'Active');
+    assert.strictEqual(text(doc,'db-dl-count'), '8 remaining');
+    assert(/Buy more downloads/.test(doc.getElementById('db-action-row').textContent));
+    const z = await open('dashboard.html', P.paygConvertedZero);
+    assert.strictEqual(text(z.doc,'db-plan-name'), 'Pay As You Go');
+    assert.strictEqual(text(z.doc,'db-dl-count'), '0 remaining', 'shows 0 downloads rather than hiding the card');
+    ok('dashboard.html: trial -> Pay As You Go conversion, including at zero balance');
+  }
+  // ── D4: one purchase route rule everywhere ────────────────────────
+  {
+    const cases = [
+      ['activeStart', 'topup'], ['cancelScheduled', 'topup'],
+      ['liveTrial', 'payg'], ['expiredTrial', 'payg'], ['paygConverted', 'payg'],
+      ['endedWithPayg', 'payg'], ['pausedWithPayg', 'payg'],
+    ];
+    const rs = fs.readFileSync('label-render.js','utf8'), ls = fs.readFileSync('label-library.js','utf8');
+    for (const [key, route] of cases) {
+      for (const page of ['account.html', 'dashboard.html', 'my-labels.html', 'builder.html']) {
+        const extra = page === 'my-labels.html' || page === 'builder.html' ? (w => { w.eval(rs); w.eval(ls); }) : null;
+        const { doc } = await open(page, P[key], extra);
+        const link = doc.querySelector('.su-topup');
+        assert(link, `${page}: sidebar purchase link exists`);
+        assert.strictEqual(link.getAttribute('href'), route === 'topup' ? 'account.html?topup=1' : 'pricing.html#payg', `${page} ${key}: sidebar link -> ${route}`);
+      }
+      const d = await open('dashboard.html', P[key]);
+      const hasTopup = /Buy top-up downloads/.test(d.doc.getElementById('db-action-row').textContent);
+      assert.strictEqual(hasTopup, route === 'topup', `dashboard ${key}: top-up action only for subscribers`);
+    }
+    // account.html ?topup=1 / buyTopup(): ineligible accounts go to PAYG, never the top-up modal.
+    for (const [key, route] of cases) {
+      const { window: w, doc } = await open('account.html', P[key]);
+      let went = null;
+      w.eval('window.__go = null');
+      try { w.buyTopup(); } catch (e) { went = String(e); }
+      const modalOpen = doc.getElementById('modal-topup').classList.contains('open');
+      assert.strictEqual(modalOpen, route === 'topup', `account ${key}: top-up modal only for subscribers`);
+    }
+    ok('D4: Account, Dashboard, My Labels and Builder all route subscriber top-ups vs Pay As You Go the same way');
+  }
+  // ── Annual monthly refill shown before the next download ──────────
+  {
+    const { doc } = await open('account.html', P.activeStartAnnualDue);
+    assert.strictEqual(text(doc,'su-count'), '20 of 20', 'annual plan past its monthly reset date shows the refilled allowance');
+    assert.strictEqual(text(doc,'dl-count'), '0 / 20', 'account main card shows the refilled allowance too');
+    const d = await open('dashboard.html', P.activeStartAnnualDue);
+    assert.strictEqual(text(d.doc,'db-dl-count'), '20 of 20 remaining', 'dashboard shows the refilled allowance');
+    ok('annual plan monthly refill is reflected in the sidebar');
   }
   console.log(`PAYG account display checks passed (${passed} groups)`);
 })().catch(e => { console.error(e.stack || e.message); process.exitCode = 1; });

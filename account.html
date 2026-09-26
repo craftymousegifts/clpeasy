@@ -717,7 +717,8 @@ async function fetchProfile(userId) {
       ? new Date(data.next_payment).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})
       : null,
     card_last4: data.card_last4 || null,
-    downloads_used: data.downloads_used || 0,
+    // Refill-adjusted for annual plans (entitlement.js / consume_download).
+    downloads_used: window.CLPEntitlement.summarise(data).used,
     // FIX (2026-07-27): this previously hardcoded 40 for Pro / 20 for Start,
     // discarding the real downloads_limit value already fetched above (the
     // Stripe webhook sets 20/30, not 20/40 — see AUDIT_AND_FIX_LOG.md Phase 10).
@@ -802,7 +803,7 @@ function renderAccount() {
   // it) -- so an expired trial's own Account Details table contradicted
   // the "Trial expired" messaging shown just above it on the same page.
   document.getElementById('acct-status').textContent =
-    u.status === 'trialing' && u.trial_expired ? 'trial expired' : u.status;
+    u.status === 'trialing' && u.trial_expired ? 'trial expired' : u.ent.payg ? 'pay as you go' : u.status;
   document.getElementById('acct-since').textContent = u.created_at;
 
   // Sidebar bottom block (24 Aug 2026, GUI redesign) — reuses the same
@@ -822,12 +823,12 @@ function renderAccount() {
 
   const badge = document.getElementById('plan-badge');
   badge.textContent = u.status === 'trialing' ? (u.trial_expired ? 'Trial expired' : 'Free trial') :
-    u.status === 'active' ? 'Active' :
+    (u.status === 'active' || u.ent.payg) ? 'Active' :
     u.status === 'paused' ? 'Paused' : 'Cancelled';
   // 'lapsed' (red) is the existing badge style already used for a cancelled
   // plan -- reused here for an expired trial rather than inventing a new
   // badge colour/class for the same "needs action" meaning.
-  badge.className = 'plan-badge ' + (u.status === 'trialing' && u.trial_expired ? 'lapsed' : u.status);
+  badge.className = 'plan-badge ' + (u.status === 'trialing' && u.trial_expired ? 'lapsed' : u.ent.payg ? 'active' : u.status);
 
   // Renewal line
   const renewLine = document.getElementById('renewal-line');
@@ -846,6 +847,9 @@ function renderAccount() {
       : `Next payment: <strong>${billingPrice}${billingPeriod}</strong>${u.next_payment ? ` on ${u.next_payment}` : ''}`;
   } else if (u.status === 'paused') {
     renewLine.innerHTML = `Subscription paused · <a href="#" onclick="openModal('resubscribe');return false;" style="color:var(--teal);">Reactivate →</a>`;
+  } else if (u.ent.payg) {
+    // Pay As You Go (a trial customer who bought downloads — approved D5).
+    renewLine.innerHTML = 'No subscription · purchased downloads do not expire';
   } else if (u.status === 'cancelled') {
     // FIX: this used to call fmtDate(u.renewal_date) -- neither exists, so
     // every cancelled account threw here and the rest of the page (purchased
@@ -932,15 +936,15 @@ function renderAccount() {
   // misleading "Easy Start · Monthly" here even though billing-next and
   // billing-card correctly show "—" for the same trial state below. Gated
   // the same way so all four Billing fields agree during trial.
-  document.getElementById('billing-plan').textContent = u.status === 'trialing' ? '—' : planLabel + ' · ' + (u.billing_cycle === 'annual' ? 'Annual' : 'Monthly');
-  document.getElementById('billing-cycle').textContent = u.status === 'trialing' ? '—' : (u.billing_cycle === 'annual' ? 'Annual (paid yearly)' : 'Monthly');
+  document.getElementById('billing-plan').textContent = (u.status === 'trialing' || u.ent.payg) ? '—' : planLabel + ' · ' + (u.billing_cycle === 'annual' ? 'Annual' : 'Monthly');
+  document.getElementById('billing-cycle').textContent = (u.status === 'trialing' || u.ent.payg) ? '—' : (u.billing_cycle === 'annual' ? 'Annual (paid yearly)' : 'Monthly');
   document.getElementById('billing-next').textContent = u.status === 'active' ? u.next_payment : '—';
   document.getElementById('billing-card').textContent = u.card_last4 ? `Visa ending ${u.card_last4}` : '—';
   document.getElementById('stripe-portal-link').style.display =
     ['active', 'paused', 'cancelled'].includes(u.status) ? 'inline' : 'none';
 
   // Action buttons
-  renderActionRow(u.status);
+  renderActionRow(u.ent.payg ? 'payg' : u.status);
 
   // Sidebar top-up links arrive here in a separate tab. Open the existing
   // top-up picker directly instead of sending the customer to Pricing.
@@ -978,6 +982,11 @@ function renderActionRow(status) {
   } else if (status === 'cancelled') {
     row.innerHTML = `
       <button class="btn btn-teal" onclick="openModal('resubscribe')">Reactivate my account</button>
+    `;
+  } else if (status === 'payg') {
+    row.innerHTML = `
+      <a href="pricing.html#payg" target="_blank" rel="noopener" class="btn btn-teal">Buy more downloads</a>
+      <a href="pricing.html" target="_blank" rel="noopener" class="btn btn-outline">Choose a plan</a>
     `;
   }
 }
@@ -1174,6 +1183,13 @@ async function confirmCancel() {
 
 // ── TOP-UP ────────────────────────────────────────────────────────
 function buyTopup() {
+  // Approved D4: top-up packs are only for active Easy Start/Pro subscribers
+  // (or a scheduled cancellation still inside its paid period). Everyone
+  // else buys Pay As You Go downloads instead. Also enforced server-side.
+  if (!userProfile || !userProfile.ent || !userProfile.ent.topupEligible) {
+    window.location.href = 'pricing.html#payg';
+    return;
+  }
   const showNudge = userProfile.topup_months >= 2;
   document.getElementById('topup-upgrade-nudge').style.display = showNudge ? 'block' : 'none';
   openModal('topup');

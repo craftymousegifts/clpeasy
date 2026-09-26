@@ -463,7 +463,8 @@ async function fetchProfile(userId) {
     next_payment: data.next_payment
       ? new Date(data.next_payment).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})
       : null,
-    downloads_used: data.downloads_used || 0,
+    // Refill-adjusted for annual plans (entitlement.js / consume_download).
+    downloads_used: window.CLPEntitlement.summarise(data).used,
     downloads_limit: data.downloads_limit ?? (data.is_pro ? 30 : 20),
     trial_active: trialState.trialActive,
     trial_expired: trialState.trialExpired,
@@ -529,14 +530,14 @@ function renderDashboard() {
 
   const dbBadge = document.getElementById('db-plan-badge');
   dbBadge.textContent = u.status === 'trialing' ? (u.trial_expired ? 'Trial expired' : 'Free trial') :
-    u.status === 'active' ? 'Active' :
+    (u.status === 'active' || u.ent.payg) ? 'Active' :
     u.status === 'paused' ? 'Paused' :
     u.status === 'cancelled' ? 'Cancelled' : u.status;
   // NOTE: CSS only defines .plan-badge.lapsed (not .cancelled) — same
   // pre-existing naming mismatch found in account.html's own badge, mapped
   // here so this new card doesn't render an unstyled "Cancelled" pill.
   // An expired trial reuses the same 'lapsed' (red, "needs action") style.
-  dbBadge.className = 'plan-badge ' + (u.status === 'cancelled' || (u.status === 'trialing' && u.trial_expired) ? 'lapsed' : u.status);
+  dbBadge.className = 'plan-badge ' + (u.status === 'cancelled' || (u.status === 'trialing' && u.trial_expired) ? 'lapsed' : u.ent.payg ? 'active' : u.status);
 
   const dbRenewal = document.getElementById('db-renewal-line');
   if (u.status === 'trialing') {
@@ -554,6 +555,8 @@ function renderDashboard() {
     }
   } else if (u.status === 'active') {
     dbRenewal.innerHTML = u.next_payment ? `Next payment on <strong>${u.next_payment}</strong>` : '';
+  } else if (u.ent.payg) {
+    dbRenewal.innerHTML = 'No subscription · purchased downloads do not expire';
   } else if (u.status === 'paused') {
     dbRenewal.innerHTML = 'Subscription paused';
   } else if (u.status === 'cancelled') {
@@ -577,13 +580,13 @@ function renderDashboard() {
     const dbBar = document.getElementById('db-dl-bar');
     dbBar.style.width = dbPct + '%';
     dbBar.className = 'dl-bar ' + (dbPct >= 100 ? 'full' : dbPct >= 75 ? 'warn' : 'ok');
-  } else if (u.ent.purchased > 0) {
+  } else if (u.ent.purchased > 0 || u.ent.payg) {
     dbDlSection.style.display = '';
     document.getElementById('db-dl-label-text').textContent = 'Purchased downloads';
     document.getElementById('db-dl-count').textContent = u.ent.purchased + ' remaining';
     const dbBar = document.getElementById('db-dl-bar');
-    dbBar.style.width = '100%';
-    dbBar.className = 'dl-bar ok';
+    dbBar.style.width = u.ent.purchased > 0 ? '100%' : '0%';
+    dbBar.className = 'dl-bar ' + (u.ent.purchased > 0 ? 'ok' : 'full');
   } else {
     dbDlSection.style.display = 'none';
   }
@@ -594,10 +597,16 @@ function renderDashboard() {
   const dbActions = document.getElementById('db-action-row');
   if (u.status === 'trialing') {
     dbActions.innerHTML = `<a href="pricing.html" target="_blank" rel="noopener" class="btn btn-teal">Choose a plan</a>`;
-  } else if (u.status === 'active') {
+  } else if (u.ent.topupEligible) {
+    // Approved D4: active or scheduled-cancellation Easy Start/Pro only.
     dbActions.innerHTML = `
       <a href="account.html" target="_blank" rel="noopener" class="btn btn-outline">Manage account &amp; billing</a>
       <a href="account.html?topup=1" target="_blank" rel="noopener" class="btn btn-outline">Buy top-up downloads</a>
+    `;
+  } else if (u.ent.payg) {
+    dbActions.innerHTML = `
+      <a href="pricing.html#payg" target="_blank" rel="noopener" class="btn btn-teal">Buy more downloads</a>
+      <a href="account.html" target="_blank" rel="noopener" class="btn btn-outline">Manage account</a>
     `;
   } else {
     dbActions.innerHTML = `<a href="account.html" target="_blank" rel="noopener" class="btn btn-outline">Manage account &amp; billing</a>`;
