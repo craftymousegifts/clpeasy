@@ -206,6 +206,12 @@ function rectOf(svg){
 
       const readStyle = id => { const el = document.getElementById(id); return { opacity: el.style.opacity, pe: el.style.pointerEvents }; };
       const cb = document.getElementById('verify-checkbox');
+      // Required label content (product + business name) so this test isolates
+      // the physical-fit/confirmation gate. Since the M09/M31 required-content
+      // fix, a label with no names is never exportable -- the "allowed" state
+      // below used to pass only because the placeholders were accepted.
+      document.getElementById('scent-name').value = 'Test Scent';
+      document.getElementById('biz-name').value = 'Test Biz';
 
       // ── Blocked state: ALL seven buttons (both rows) must be dimmed/inert ──
       window.eval('window._labelBlockDownload = true;');

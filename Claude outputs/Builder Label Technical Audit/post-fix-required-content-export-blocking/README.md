@@ -58,7 +58,11 @@ The Builder gate checked only the Step 5 confirmation and physical fit, and was 
   - clearing the business name, setting it to spaces, clearing the product name, or removing the EUH208 names **after confirming** disables every export button, and 32 attempts across all routes (including the mobile sheet) were refused with nothing downloaded;
   - physical fit is unaffected; restoring the content makes the label exportable again.
 - **Issue #1, #2 and #3 regression tests:** pass unchanged (`data/`).
-- **One existing test fixture updated:** `tests/preview-watermark-and-export-authorization.js` gained a business name in its minimal Builder label. The label was only exportable before because the "Your Brand" placeholder was accepted. The test is about watermarking and export authorisation, and it passes (19 assertions) on both the old and new code.
+- **Refusal wording:** if content is missing on a confirmed label that fits, the refusal names the missing content. If the label is also unconfirmed or physically blocked, the existing "confirm … fits at a readable size" message comes first and the missing content follows.
+- **Two existing test fixtures updated** (each passes on both the old and new code): 
+  - `tests/preview-watermark-and-export-authorization.js` gained a business name in its minimal Builder label. That label was only exportable before because the "Your Brand" placeholder was accepted. The test is about watermarking and export authorisation (19 assertions).
+  - `tests/blocked-overlay-and-download-guard-parity.js` gained a product and business name, so it still isolates the physical-fit/confirmation gate. Its "allowed" state had used an empty label.
+- **Full suite:** 52 pass. The 5 failures are the same pre-existing ones present before Issue #1 (builder-desktop-scroll-model, builder-step-navigation-layout, footer-and-compliance-wording, lifecycle-reminder-accuracy, smart-paste-user-guidance-wording).
 
 ## Folder contents
 
