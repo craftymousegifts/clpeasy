@@ -5,8 +5,11 @@
 // page, so it never shows a guessed list price (e.g. £9.99 to a customer on
 // the 2026 £8.99 promotion, or on the account save-offer).
 //
-// The amount is Stripe's own upcoming-invoice calculation (price, coupons,
-// customer balance), never recalculated here. The browser sends only its
+// The amount is Stripe's own invoice preview (price, coupons, customer
+// balance), never recalculated here. It uses Create Preview Invoice
+// (POST /v1/invoices/create_preview), which works for every subscription:
+// the older Upcoming Invoice API rejects billing_mode=flexible subscriptions,
+// which Stripe Checkout now creates. The browser sends only its
 // Supabase session token; the Stripe customer/subscription are looked up
 // server-side for THAT user. No Stripe secret or ID is returned.
 //
@@ -36,6 +39,18 @@ async function stripeGet(path: string, params: URLSearchParams, key: string) {
   const res = await fetch(`https://api.stripe.com/v1/${path}?${params.toString()}`, {
     headers: { "Authorization": `Bearer ${key}`, "Stripe-Version": STRIPE_API_VERSION },
   });
+  return stripeResult(res);
+}
+// Read-only despite POST: create_preview computes an invoice without creating one.
+async function stripePost(path: string, params: URLSearchParams, key: string) {
+  const res = await fetch(`https://api.stripe.com/v1/${path}`, {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${key}`, "Stripe-Version": STRIPE_API_VERSION, "Content-Type": "application/x-www-form-urlencoded" },
+    body: params.toString(),
+  });
+  return stripeResult(res);
+}
+async function stripeResult(res: Response) {
   const body = await res.json();
   if (!res.ok) throw Object.assign(new Error(body?.error?.message || `Stripe ${res.status}`), { stripeCode: body?.error?.code });
   return body;
@@ -77,7 +92,7 @@ serve(async (req) => {
     const promoEndsBeforeNextPeriod = promoAttached && (sub.current_period_end ?? 0) * 1000 >= PROMO_2026_END_MS;
     if (promoEndsBeforeNextPeriod) params.set("discounts", "");
 
-    const inv = await stripeGet("invoices/upcoming", params, stripeKey);
+    const inv = await stripePost("invoices/create_preview", params, stripeKey);
     const recurring = sub.items?.data?.[0]?.price?.recurring;
     return json({
       available: true,
