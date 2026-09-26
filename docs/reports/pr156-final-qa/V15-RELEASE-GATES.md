@@ -133,7 +133,9 @@ Inspected before any change:
 
 **Local suite (head):**
 
-- Node test files **60/60 PASS**;
+- Node test files **60/60 exit 0**: 59 ran and passed, and 1 was **skipped**
+  (`correction-batch-ghs-asset-framing.js` needs a Python/Pillow/numpy toolchain that fails in this
+  container). This is an environment limitation; no GHS asset changed;
 - Deno Edge Function scenarios **34 + 36 + 26 = 96 PASS**;
 - `npm test` PASS;
 - SQL groups on real migrations included (local PostgreSQL 16).
@@ -154,8 +156,17 @@ Inspected before any change:
 
 **Michaela's QA account:** unchanged (Easy Start active, 1/20, 24 purchased, 4 download records).
 
-**Site:** `builder.html` changed (F1), so the v15 Test package is built from this commit with
+**Site:** `builder.html` changed (F1), so the v15 Test package is built from `5d8531a` with
 `build/build-v15.py`.
+
+- **Contents:** the package differs from v14 only by the F1 line in `builder.html` (and
+  `TEST-ENVIRONMENT.txt`).
+- **Audit:** no production project refs, no Live price IDs, no Plausible loader; `[TEST]` title and
+  noindex on every page.
+- **Browser check (Chromium, 1366 and 390 px):** the new wording is inside Step 3, with no
+  horizontal overflow and no page errors.
+- **Zip checksum:** SHA-256 `9b05e5988c193314f685270950cf698ed40b8571220c02ae5a8f7e36553845cb`
+  (see `build/zip-checksums.txt`).
 
 ## 8. Remaining before release
 

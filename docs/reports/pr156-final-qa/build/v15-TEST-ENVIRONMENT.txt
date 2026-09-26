@@ -1,0 +1,2 @@
+CLPeasy PR #156 isolated test candidate v15 (commit 5d8531a), deployed to the v10 test site.
+Supabase: CLPeasy Test (wwjhvpphlbgtywxskqnf). Stripe: Sandbox (acct_1TdczqKF3jvQfgEa). Not production.
