@@ -33,12 +33,12 @@
     p = p || {};
     const status = p.subscription_status || null;
     const plan = p.plan || null;
-    const used = Math.max(0, num(p.downloads_used));
+    const rawUsed = Math.max(0, num(p.downloads_used));
     const limit = Math.max(0, num(p.downloads_limit));
     const purchased = Math.max(0, Math.floor(num(p.topup_credits)));
     const trialEnd = time(p.trial_end);
     const deletionDate = time(p.deletion_date);
-    const paidPlan = !!plan && !['free','trial','cancelled','paused'].includes(plan) && limit > 0;
+    const paidPlan = !!plan && !['free','trial','cancelled','paused','payg'].includes(plan) && limit > 0;
 
     const active = status === 'active';
     const cancelScheduled = status === 'cancelled' && paidPlan && (deletionDate === null || deletionDate > now);
@@ -47,8 +47,17 @@
     const trialActive = trialing && trialEnd !== null && trialEnd > now;
     const trialExpired = trialing && !trialActive;
 
+    // Pay As You Go account: a trial customer who bought PAYG (D5). The trial
+    // allowance is forfeited; only purchased downloads are usable.
+    const payg = !active && !paused && !cancelScheduled && (status === 'payg' || plan === 'payg');
+
     const planUsable = active || cancelScheduled || trialActive;
     const planClean = planUsable && !trialActive;
+    // Annual plans refill monthly; consume_download() applies the reset at the
+    // first download after downloads_reset_date. Show the refilled allowance.
+    const resetDate = time(p.downloads_reset_date);
+    const annualRefillDue = p.billing_cycle === 'annual' && planClean && resetDate !== null && resetDate <= now;
+    const used = annualRefillDue ? 0 : rawUsed;
     const planLeft = planUsable ? Math.max(0, limit - used) : 0;
 
     let nextSource = null, nextClean = false;
@@ -57,7 +66,7 @@
 
     return {
       status, plan, used, limit, purchased,
-      active, cancelScheduled, paused, trialActive, trialExpired,
+      active, cancelScheduled, paused, trialActive, trialExpired, payg,
       planUsable, planClean, planLeft,
       totalLeft: planLeft + purchased,
       nextSource, nextClean,
@@ -67,7 +76,11 @@
       // Builder shows a clean live preview to paying customers: a paid plan
       // (even once this month's allowance is used) or purchased downloads.
       cleanPreview: planClean || purchased > 0,
-      planName: planName({ status, plan, is_pro: p.is_pro, purchased, trialActive, trialExpired, cancelScheduled, paidPlan })
+      // D4: subscriber top-up packs are only for active Easy Start/Pro, or a
+      // scheduled cancellation still inside its paid period. Everyone else
+      // (trial, expired trial, PAYG, paused, ended) buys Pay As You Go.
+      topupEligible: active || cancelScheduled,
+      planName: planName({ status, plan, is_pro: p.is_pro, purchased, trialActive, trialExpired, cancelScheduled, paidPlan, payg })
     };
   }
 
@@ -80,7 +93,7 @@
     if (s.status === 'paused') return subscriptionName(s) + ' (Paused)';
     if (s.cancelScheduled) return subscriptionName(s) + ' (Cancelled)';
     if (s.trialActive) return 'Easy Trial';
-    if (s.purchased > 0) return 'Pay As You Go';
+    if (s.payg || s.purchased > 0) return 'Pay As You Go';
     if (s.trialExpired) return 'Easy Trial (Expired)';
     if (s.status === 'cancelled') return subscriptionName(s) + ' (Cancelled)';
     if (s.status) return subscriptionName(s);
@@ -106,9 +119,23 @@
     if (fill) fill.style.width = (ent.planUsable && ent.limit > 0)
       ? Math.min(100, Math.round((ent.planLeft / ent.limit) * 100)) + '%'
       : (ent.purchased > 0 ? '100%' : '0%');
+    applyPurchaseLinks(doc, ent);
   }
 
-  const api = { summarise, renderSidebar };
+  // Where "buy more downloads" goes for this account (D4).
+  function purchaseLink(ent){
+    return ent && ent.topupEligible
+      ? { href: 'account.html?topup=1', text: 'Buy Top-Up →', route: 'topup' }
+      : { href: 'pricing.html#payg', text: 'Buy downloads →', route: 'payg' };
+  }
+  // Points every sidebar "Buy Top-Up" link at the correct purchase route.
+  function applyPurchaseLinks(doc, ent){
+    if (!doc || !ent) return;
+    const link = purchaseLink(ent);
+    doc.querySelectorAll('.su-topup').forEach(a => { a.setAttribute('href', link.href); a.textContent = link.text; a.dataset.route = link.route; });
+  }
+
+  const api = { summarise, renderSidebar, purchaseLink, applyPurchaseLinks };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.CLPEntitlement = api;
 })(typeof window !== 'undefined' ? window : null);

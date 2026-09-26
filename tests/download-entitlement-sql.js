@@ -48,8 +48,8 @@ const q = v => v===null||v===undefined ? 'null' : typeof v==='number' ? String(v
 function makeUser(p){
   const id = uid();
   run(`insert into auth.users(id) values(${q(id)});
-       insert into public.profiles(id,plan,is_pro,subscription_status,trial_end,deletion_date,downloads_used,downloads_limit,topup_credits)
-       values(${q(id)},${q(p.plan)},${p.is_pro?'true':'false'},${q(p.subscription_status)},${q(p.trial_end)},${q(p.deletion_date)},${q(p.downloads_used||0)},${q(p.downloads_limit)},${q(p.topup_credits||0)});`);
+       insert into public.profiles(id,plan,is_pro,subscription_status,trial_end,deletion_date,downloads_used,downloads_limit,topup_credits,billing_cycle,downloads_reset_date)
+       values(${q(id)},${q(p.plan)},${p.is_pro?'true':'false'},${q(p.subscription_status)},${q(p.trial_end)},${q(p.deletion_date)},${q(p.downloads_used||0)},${q(p.downloads_limit)},${q(p.topup_credits||0)},${q(p.billing_cycle)},${q(p.downloads_reset_date)});`);
   return id;
 }
 function consumeAs(id, key, role){
@@ -77,6 +77,7 @@ const STATES = {
   pastDue:              { plan:'easy_start', subscription_status:'past_due', downloads_limit:20, downloads_used:1 },
   trialLive:            { plan:'free', subscription_status:'trialing', trial_end:iso(5*DAY), downloads_limit:10, downloads_used:2 },
   trialExpired:         { plan:'free', subscription_status:'trialing', trial_end:iso(-1*DAY), downloads_limit:10, downloads_used:2 },
+  paygAccount:          { plan:'payg', subscription_status:'payg', trial_end:iso(-1*DAY), downloads_limit:0, downloads_used:2 },
 };
 
 // Expected result of ONE new-label export, with and without PAYG downloads.
@@ -92,9 +93,10 @@ const EXPECT = {
   pastDue:               [null,               ['purchased',true]],
   trialLive:             [['plan',false],     ['purchased',true]],
   trialExpired:          [null,               ['purchased',true]],
+  paygAccount:           [null,               ['purchased',true]],
 };
 
-const MIGRATIONS = ['20260729000000_create_label_downloads.sql','20260925000000_atomic_download_accounting.sql','20260926000000_download_entitlement_lifecycle.sql'];
+const MIGRATIONS = ['20260729000000_create_label_downloads.sql','20260925000000_atomic_download_accounting.sql','20260926000000_download_entitlement_lifecycle.sql','20260927000000_payg_trial_conversion_and_annual_refill.sql'];
 freshDb(MIGRATIONS);
 
 let checks = 0;
@@ -156,6 +158,87 @@ for (const [name, base] of Object.entries(STATES)){
   assert.strictEqual(profile(id).topup_credits, 5, 'a free re-download never spends a purchased download');
   checks += 3;
 }
+// ── D5: a trial customer's successful PAYG purchase ends the trial ────────
+function creditPayg(id, n){
+  const out = run(`begin; set local role service_role; select set_config('request.jwt.claim.role','service_role',true); select public.credit_payg_purchase(${q(id)}, ${n})::text; commit;`);
+  return JSON.parse(out.split('\n').filter(l=>l.startsWith('{')).pop());
+}
+{
+  // Live trial with unused trial downloads buys PAYG.
+  const id = makeUser({ plan:'free', subscription_status:'trialing', trial_end:iso(5*DAY), downloads_limit:10, downloads_used:2, topup_credits:0 });
+  const r = creditPayg(id, 8);
+  assert.deepStrictEqual([r.balance, r.trial_converted, r.subscription_status, r.plan], [8, true, 'payg', 'payg'], 'live trial converts to Pay As You Go with 8 downloads');
+  const p = profile(id);
+  assert.strictEqual(p.downloads_limit, 0, 'remaining trial allowance forfeited');
+  assert(new Date(p.trial_end).getTime() <= Date.now() + 1000, 'trial_end moved to the purchase time');
+  // Every next download is a clean PURCHASED download, never a trial one.
+  const d1 = consumeAs(id, 'lavender::scented candle');
+  assert.deepStrictEqual([d1.source, d1.clean_export, d1.purchased_downloads], ['purchased', true, 7], 'first export after conversion: clean, 8 -> 7');
+  const again = consumeAs(id, 'lavender::scented candle');
+  assert.deepStrictEqual([again.free_redownload, again.clean_export, again.purchased_downloads], [true, true, 7], 'eligible 7-day re-download is free and clean');
+  const sheet = consumeAs(id, null);
+  assert.deepStrictEqual([sheet.source, sheet.clean_export, sheet.purchased_downloads], ['purchased', true, 6], 'Composer A4 sheet consumes one purchased download');
+  // Spend to zero: the trial never returns.
+  for (let i = 0; i < 6; i++) consumeAs(id, null);
+  const zero = consumeAs(id, 'vanilla::wax melt');
+  assert.deepStrictEqual([zero.ok, zero.reason], [false, 'no_downloads_remaining'], 'at zero a new label is blocked (no trial downloads reappear)');
+  const zp = profile(id);
+  assert.deepStrictEqual([zp.subscription_status, zp.plan, zp.topup_credits], ['payg', 'payg', 0], 'account stays Pay As You Go with 0 downloads');
+  const graceAtZero = consumeAs(id, 'lavender::scented candle');
+  assert.deepStrictEqual([graceAtZero.ok, graceAtZero.free_redownload, graceAtZero.clean_export], [true, true, true], 'eligible re-download at zero stays free and clean');
+  // Buying again: stays PAYG, only the balance changes.
+  const r2 = creditPayg(id, 8);
+  assert.deepStrictEqual([r2.balance, r2.trial_converted, r2.subscription_status], [8, false, 'payg'], 'existing PAYG buys again: +8, no further state change');
+  checks += 11;
+}
+{
+  // Expired trial buys PAYG.
+  const id = makeUser({ plan:'free', subscription_status:'trialing', trial_end:iso(-9*DAY), downloads_limit:10, downloads_used:10, topup_credits:0 });
+  const r = creditPayg(id, 8);
+  assert.deepStrictEqual([r.trial_converted, r.subscription_status, r.balance], [true, 'payg', 8], 'expired trial converts to Pay As You Go');
+  // Subscribers and ended subscriptions are credited only; status untouched.
+  for (const st of ['active', 'paused', 'cancelScheduled', 'cancelledEnded']) {
+    const u = makeUser(STATES[st]);
+    const before = profile(u);
+    const rr = creditPayg(u, 8);
+    const after = profile(u);
+    assert.strictEqual(rr.trial_converted, false, `${st}: never converted`);
+    assert.deepStrictEqual([after.subscription_status, after.plan, after.downloads_limit, after.downloads_used], [before.subscription_status, before.plan, before.downloads_limit, before.downloads_used], `${st}: subscription state untouched`);
+    assert.strictEqual(after.topup_credits, before.topup_credits + 8, `${st}: credited`);
+  }
+  // Only the webhook's service role may call it.
+  const u = makeUser(STATES.trialLive);
+  assert.throws(() => run(`begin; set local role authenticated; select set_config('request.jwt.claim.sub', ${q(u)}, true); select public.credit_payg_purchase(${q(u)}, 8); commit;`), /permission denied/, 'authenticated users cannot credit/convert');
+  assert.throws(() => run(`begin; set local role anon; select public.credit_payg_purchase(${q(u)}, 8); commit;`), /permission denied/, 'anon cannot credit/convert');
+  assert.strictEqual(profile(u).subscription_status, 'trialing', 'a rejected call changes nothing');
+  checks += 7;
+}
+// ── Annual plans refill monthly (pricing: "£99/year · 20 downloads/month") ──
+{
+  const id = makeUser({ plan:'easy_start', subscription_status:'active', billing_cycle:'annual', downloads_limit:20, downloads_used:20, downloads_reset_date:iso(-2*DAY), topup_credits:0 });
+  const r = consumeAs(id, null);
+  assert.deepStrictEqual([r.ok, r.source, r.clean_export, r.downloads_used], [true, 'plan', true, 1], 'annual plan past its monthly reset date is refilled, then counts this download');
+  const p = profile(id);
+  const next = new Date(p.downloads_reset_date).getTime();
+  assert(next > Date.now() && next < Date.now() + 32*DAY, 'next reset date moves one month ahead');
+  const r2 = consumeAs(id, null);
+  assert.strictEqual(r2.downloads_used, 2, 'no second refill before the next reset date');
+  // Several missed months: advances to the first future reset date, one refill.
+  const late = makeUser({ plan:'easy_pro', subscription_status:'active', billing_cycle:'annual', downloads_limit:30, downloads_used:30, downloads_reset_date:iso(-75*DAY), topup_credits:0 });
+  consumeAs(late, null);
+  const lp = profile(late);
+  assert(new Date(lp.downloads_reset_date).getTime() > Date.now(), 'reset date catches up to the future');
+  assert.strictEqual(lp.downloads_used, 1, 'one refill only');
+  // Monthly plans are left to invoice.paid (no early double refill).
+  const monthly = makeUser({ plan:'easy_start', subscription_status:'active', billing_cycle:'monthly', downloads_limit:20, downloads_used:20, downloads_reset_date:iso(-1*DAY), topup_credits:0 });
+  assert.strictEqual(consumeAs(monthly, null).ok, false, 'monthly plan is not refilled here (invoice.paid refills it)');
+  // Paused annual plan is not refilled or usable.
+  const paused = makeUser({ plan:'easy_start', subscription_status:'paused', billing_cycle:'annual', downloads_limit:20, downloads_used:20, downloads_reset_date:iso(-2*DAY), topup_credits:0 });
+  assert.strictEqual(consumeAs(paused, null).ok, false, 'paused annual plan is not refilled');
+  const E2 = require('../entitlement.js');
+  assert.strictEqual(E2.summarise({ plan:'easy_start', subscription_status:'active', billing_cycle:'annual', downloads_limit:20, downloads_used:20, downloads_reset_date:iso(-2*DAY) }).planLeft, 20, 'entitlement.js shows the refilled allowance');
+  checks += 8;
+}
 // Permissions (unchanged from 20260925000000; re-checked after the replace).
 {
   const id = makeUser(STATES.active);
@@ -179,8 +262,10 @@ for (const [name, base] of Object.entries(STATES)){
     assert.strictEqual(profile(id).topup_credits, 0, 'balance never goes negative under concurrency');
     checks += 2;
 
-    // Show what the ORIGINAL PR #156 function does for the two corrected states.
+    // Show what the ORIGINAL PR #156 function does for the corrected states.
     freshDb(MIGRATIONS.slice(0,2));
+    const annual = makeUser({ plan:'easy_start', subscription_status:'active', billing_cycle:'annual', downloads_limit:20, downloads_used:20, downloads_reset_date:iso(-2*DAY), topup_credits:0 });
+    assert.strictEqual(consumeAs(annual, null).ok, false, 'baseline check: original PR function never refills an annual plan monthly (the bug fixed by 20260927000000)');
     const cs = makeUser(STATES.cancelScheduled);
     const tl = makeUser(Object.assign({}, STATES.trialLive, { topup_credits:3 }));
     const oldCs = consumeAs(cs, null), oldTl = consumeAs(tl, null);

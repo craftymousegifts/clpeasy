@@ -39,7 +39,9 @@ create table if not exists public.profiles (
   deletion_date timestamptz,
   downloads_used integer default 0,
   downloads_limit integer,
-  topup_credits integer default 0
+  topup_credits integer default 0,
+  billing_cycle text,
+  downloads_reset_date timestamptz
 );
 
 create or replace function public.protect_profile_billing_columns()
@@ -52,6 +54,9 @@ begin
     new.plan := old.plan;
     new.is_pro := old.is_pro;
     new.subscription_status := old.subscription_status;
+    new.trial_end := old.trial_end;
+    new.billing_cycle := old.billing_cycle;
+    new.downloads_reset_date := old.downloads_reset_date;
   end if;
   return new;
 end $$;
