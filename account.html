@@ -590,16 +590,16 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
       <div style="border:1.5px solid var(--border);border-radius:12px;padding:18px 20px;cursor:pointer;transition:border-color .15s;" onclick="selectResub('start')" id="resub-start">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
           <div style="font-size:15px;font-weight:700;">Easy Start</div>
-          <div style="font-size:15px;font-weight:800;">£9.99<span style="font-size:12px;font-weight:400;color:var(--muted);">/mo</span></div>
+          <div style="font-size:15px;font-weight:800;"><span id="resub-start-price">£9.99</span><span style="font-size:12px;font-weight:400;color:var(--muted);">/mo</span></div>
         </div>
-        <div style="font-size:12px;color:var(--muted);">20 downloads/month · Full label library · All builders</div>
+        <div style="font-size:12px;color:var(--muted);">20 downloads/month · Full label library · All builders<span class="resub-promo-note"></span></div>
       </div>
       <div style="border:1.5px solid var(--border);border-radius:12px;padding:18px 20px;cursor:pointer;transition:border-color .15s;" onclick="selectResub('pro')" id="resub-pro">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
           <div style="font-size:15px;font-weight:700;">Easy Pro</div>
-          <div style="font-size:15px;font-weight:800;">£14.99<span style="font-size:12px;font-weight:400;color:var(--muted);">/mo</span></div>
+          <div style="font-size:15px;font-weight:800;"><span id="resub-pro-price">£14.99</span><span style="font-size:12px;font-weight:400;color:var(--muted);">/mo</span></div>
         </div>
-        <div style="font-size:12px;color:var(--muted);">30 downloads/month · Priority support</div>
+        <div style="font-size:12px;color:var(--muted);">30 downloads/month · Priority support<span class="resub-promo-note"></span></div>
       </div>
     </div>
     <div class="modal-actions">
@@ -842,9 +842,11 @@ function renderAccount() {
       renewLine.innerHTML = `Trial ends <strong>${daysLabel}</strong>${u.trial_end_date ? ` (${u.trial_end_date})` : ''}. No card required until you choose a plan.`;
     }
   } else if (u.status === 'active') {
-    renewLine.innerHTML = u.discount_active
-      ? `Next payment: <strong>${planPrice === '£9.99' ? '£4.99' : '£7.49'}/mo</strong> (discount active until ${u.discount_ends}) · then ${planPrice}/mo`
-      : `Next payment: <strong>${billingPrice}${billingPeriod}</strong>${u.next_payment ? ` on ${u.next_payment}` : ''}`;
+    // Approved decision 4: never show a guessed list price. The amount comes
+    // from Stripe's own upcoming-invoice calculation via billing-status
+    // (includes the 2026 promotion, save-offer or any other discount).
+    renewLine.innerHTML = 'Next payment: <span id="next-payment-amount">checking…</span>';
+    loadActualNextPayment(u);
   } else if (u.status === 'paused') {
     renewLine.innerHTML = `Subscription paused · <a href="#" onclick="openModal('resubscribe');return false;" style="color:var(--teal);">Reactivate →</a>`;
   } else if (u.ent.payg) {
@@ -991,8 +993,60 @@ function renderActionRow(status) {
   }
 }
 
+// ── ACTUAL NEXT PAYMENT (approved decision 4) ─────────────────────
+// Asks the billing-status Edge Function (server-side Stripe lookup for this
+// signed-in user) for the real next charge. If it can't be determined, no
+// amount is shown — the customer is pointed to the billing portal instead.
+function formatMoney(minor, currency) {
+  try {
+    const whole = minor % 100 === 0;
+    return new Intl.NumberFormat('en-GB', { style: 'currency', currency: String(currency || '').toUpperCase(),
+      minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: whole ? 0 : 2 }).format(minor / 100);
+  } catch (e) { return null; }
+}
+async function loadActualNextPayment(u) {
+  const line = document.getElementById('renewal-line');
+  const fallback = () => {
+    line.innerHTML = `Next payment${u.next_payment ? ` due <strong>${u.next_payment}</strong>` : ''} · see the amount in your <a href="#" onclick="openStripePortal();return false;" style="color:var(--teal);">billing portal</a>`;
+  };
+  try {
+    const { data: { session } } = await _sb.auth.getSession();
+    if (!session) return fallback();
+    const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/billing-status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+      body: '{}'
+    });
+    const b = await res.json();
+    const amount = (res.ok && b && b.available === true && Number.isInteger(b.amount_due)) ? formatMoney(b.amount_due, b.currency) : null;
+    if (!amount) return fallback();
+    const date = Number.isFinite(b.next_payment_at)
+      ? new Date(b.next_payment_at * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+      : null;
+    const note = b.promo_2026 ? ' · 2026 offer applied' : (b.discounted ? ' · discount applied' : '');
+    line.innerHTML = `Next payment: <strong>${amount}</strong>${date ? ` on ${date}` : ''}${note}`;
+    if (date) document.getElementById('billing-next').textContent = date;
+  } catch (e) {
+    console.error('billing-status unavailable:', e);
+    fallback();
+  }
+}
+
 // ── MODAL HELPERS ─────────────────────────────────────────────────
+// Resubscribe modal: a NEW monthly checkout before 1 Jan 2027 (UK) gets the
+// 2026 promotion coupon server-side (create-checkout-session), so quote what
+// Stripe will actually charge. Same boundary the server uses.
+function applyResubPromoPrices() {
+  if (Date.now() >= Date.UTC(2027, 0, 1)) return;
+  const s = document.getElementById('resub-start-price'), p = document.getElementById('resub-pro-price');
+  if (s) s.textContent = '£8.99';
+  if (p) p.textContent = '£13.49';
+  document.querySelectorAll('.resub-promo-note').forEach((el, i) => {
+    el.textContent = ' · 2026 offer until 31 December 2026, then ' + (i === 0 ? '£9.99' : '£14.99') + '/month';
+  });
+}
 function openModal(name) {
+  if (name === 'resubscribe') applyResubPromoPrices();
   closeAllModals();
   document.getElementById('modal-' + name).classList.add('open');
 }
