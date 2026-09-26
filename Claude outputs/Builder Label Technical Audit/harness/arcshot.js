@@ -1,0 +1,6 @@
+const path=require('path');const {chromium}=require('/opt/node22/lib/node_modules/playwright');
+(async()=>{const b=await chromium.launch();const p=await b.newPage({deviceScaleFactor:2});await p.goto('file://'+path.join(__dirname,'harness.html'));await p.waitForTimeout(1500);
+await p.evaluate(()=>{const s=document.getElementById('stage');s.innerHTML='';for(const n of ['Lavender Fields','Midnight Blackberry','Fresh Linen & White Cotton','Midnight Blackberry, Bay Leaf & Smoked Vanilla']){
+ const r=LabelRenderer.renderLabel({shape:'circle',size:'custom',customW:63,customH:63,scentName:n,productType:'Scented Candle',bizName:'Crafty Test Studio',bizAddress:'12 Mill Lane',bizPhone:'01234 567890',signal:'Warning',hStatements:'H317',pStatements:'P102',sensitisers:['Linalool'],pictograms:['exclamation']},{instanceId:'x'+n.length});
+ const d=document.createElement('div');d.style.cssText='display:inline-block;margin:6px';d.innerHTML=r.svg.replace(/width="[\d.]+" height="[\d.]+" viewBox/,'width="360" height="360" viewBox');s.appendChild(d);}});
+await p.waitForTimeout(500);await (await p.$('#stage')).screenshot({path:path.resolve(__dirname,'../screenshots/EVIDENCE__arc-product-name-vs-business-name__circle-63.png')});await b.close();})();
