@@ -24,8 +24,9 @@ class Query {
   delete() { this.op = 'delete'; return this; }
   eq(k: string, v: any) { this.filters.push([k, v, 'eq']); return this; }
   lt(k: string, v: any) { this.filters.push([k, v, 'lt']); return this; }
+  neq(k: string, v: any) { this.filters.push([k, v, 'neq']); return this; }
   private rows() { return db().tables[this.table] ?? (db().tables[this.table] = []); }
-  private match(r: Row) { return this.filters.every(([k, v, op]) => op === 'eq' ? r[k] === v : r[k] < v); }
+  private match(r: Row) { return this.filters.every(([k, v, op]) => op === 'eq' ? r[k] === v : op === 'neq' ? r[k] !== v : r[k] < v); }
   private exec(): { data: any; error: any } {
     const rows = this.rows();
     if (this.op === 'insert') {
@@ -58,13 +59,16 @@ export function createClient(_url: string, _key: string, _opts?: unknown) {
         // Mirrors the SQL function (proven on PostgreSQL in download-entitlement-sql.js).
         const p = db().tables.profiles.find((r: Row) => r.id === args.p_user_id);
         if (!p) return { data: null, error: { message: 'Profile not found' } };
+        const previous = p.subscription_status;
         p.topup_credits = (p.topup_credits ?? 0) + args.p_downloads;
         let converted = false;
-        if (p.subscription_status === 'trialing') {
-          Object.assign(p, { subscription_status: 'payg', plan: 'payg', downloads_limit: 0, trial_end: new Date().toISOString() });
+        const paidPlan = !!p.plan && !['free', 'trial', 'cancelled', 'paused', 'payg'].includes(p.plan) && (p.downloads_limit ?? 0) > 0;
+        const ended = p.subscription_status === 'cancelled' && !(paidPlan && (!p.deletion_date || new Date(p.deletion_date).getTime() > Date.now()));
+        if (p.subscription_status === 'trialing' || ended) {
+          Object.assign(p, { subscription_status: 'payg', plan: 'payg', is_pro: false, downloads_limit: 0, trial_end: p.subscription_status === 'trialing' ? new Date().toISOString() : p.trial_end });
           converted = true;
         }
-        return { data: { balance: p.topup_credits, trial_converted: converted, subscription_status: p.subscription_status, plan: p.plan, deletion_date: p.deletion_date ?? null }, error: null };
+        return { data: { balance: p.topup_credits, trial_converted: converted, previous_status: previous, subscription_status: p.subscription_status, plan: p.plan, deletion_date: p.deletion_date ?? null }, error: null };
       }
       if (name === 'credit_purchased_downloads') {
         const p = db().tables.profiles.find((r: Row) => r.id === args.p_user_id);

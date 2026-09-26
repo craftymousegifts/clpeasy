@@ -202,6 +202,43 @@ await test('active Easy Pro subscriber buys PAYG: downloads credited, subscripti
   eq(brevoCalls.length, 0, 'no PLAN overwrite');
 });
 
+// ── Approved decision 3: fully ended subscription -> Pay As You Go ─────
+await test('decision 3: fully ended subscriber buys PAYG -> current plan Pay As You Go', async () => {
+  seedProfile({ subscription_status: 'cancelled', plan: 'free', is_pro: true, downloads_limit: 0, topup_credits: 0 });
+  await send(paygEvent('evt_ended_buy'));
+  eq([prof().subscription_status, prof().plan, prof().is_pro, prof().downloads_limit, prof().topup_credits], ['payg', 'payg', false, 0, 8], 'converted');
+  eq(brevoCalls.length, 1, 'PAYG Brevo journey'); eq(brevoCalls[0].body.attributes.PLAN, 'Pay As You Go', 'PLAN');
+});
+await test('decision 3: paid period over but Stripe deletion not yet processed -> converts; the late deletion keeps Pay As You Go', async () => {
+  seedProfile({ subscription_status: 'cancelled', plan: 'easy_pro', is_pro: true, downloads_limit: 30, deletion_date: new Date(Date.now() - 3600e3).toISOString(), topup_credits: 0 });
+  await send(paygEvent('evt_period_over_buy'));
+  eq([prof().subscription_status, prof().plan], ['payg', 'payg'], 'converted');
+  const deleted = { id: 'evt_late_delete', type: 'customer.subscription.deleted', data: { object: { id: 'sub_old', metadata: { userId: 'user-1' } } } };
+  eq((await send(deleted)).status, 200, 'deletion processed');
+  eq([prof().subscription_status, prof().plan, prof().downloads_limit, prof().topup_credits], ['payg', 'payg', 0, 8], 'never reverts to Easy Pro (Cancelled)');
+  eq(db().tables.subscriptions[0]?.status, 'cancelled', 'old subscription kept as history');
+});
+await test('decision 3: unpaid PAYG session never converts an ended subscription', async () => {
+  seedProfile({ subscription_status: 'cancelled', plan: 'free', downloads_limit: 0 });
+  await send(paygEvent('evt_ended_unpaid', { payment_status: 'unpaid' }));
+  eq([prof().subscription_status, prof().plan, prof().topup_credits], ['cancelled', 'free', 0], 'unchanged');
+});
+await test('decision 3: duplicate delivery converts/credits once', async () => {
+  seedProfile({ subscription_status: 'cancelled', plan: 'free', downloads_limit: 0 });
+  await send(paygEvent('evt_ended_dup')); await send(paygEvent('evt_ended_dup'));
+  eq([prof().subscription_status, prof().topup_credits], ['payg', 8], 'once');
+});
+await test('paused subscriber buys PAYG: credited, stays paused (not converted)', async () => {
+  seedProfile({ subscription_status: 'paused', plan: 'easy_start', downloads_limit: 20, topup_credits: 0 });
+  await send(paygEvent('evt_paused_buy'));
+  eq([prof().subscription_status, prof().plan, prof().topup_credits], ['paused', 'easy_start', 8], 'credited only');
+});
+await test('a normal subscription deletion (no PAYG) still downgrades as before', async () => {
+  seedProfile({ subscription_status: 'cancelled', plan: 'easy_start', downloads_limit: 20 });
+  await send({ id: 'evt_plain_delete', type: 'customer.subscription.deleted', data: { object: { id: 'sub_x', metadata: { userId: 'user-1' } } } });
+  eq([prof().subscription_status, prof().plan, prof().downloads_limit], ['cancelled', 'free', 0], 'downgraded');
+});
+
 // ── Subscriber top-up webhook: atomic, paid-only ──────────────────────
 function topupEvent(id: string, over: Record<string, any> = {}) {
   return { id, type: 'checkout.session.completed', data: { object: { id: 'cs_test_' + id, payment_status: 'paid', customer: 'cus_1', subscription: null,

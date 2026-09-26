@@ -177,9 +177,10 @@ Deno.serve(async (req) => {
           if (downloads !== 5 && downloads !== 8) { console.error('Invalid PAYG download quantity:', downloads); break; }
 
           // One locked transaction: credit the downloads and, for a free-trial
-          // account (live or expired), end the trial and convert the account
-          // to Pay As You Go (approved D5). Subscriber / ended accounts are
-          // credited only. Runs at most once per Stripe event (claim above);
+          // account (live or expired, approved D5) or a FULLY ENDED
+          // subscription (approved decision 3), convert the account to Pay As
+          // You Go. Current subscribers are credited only (and cannot start a
+          // PAYG checkout — create-checkout-session refuses them). Runs at most once per Stripe event (claim above);
           // a failure rolls back both the credit and the conversion.
           const { data: credit, error: paygError } = await supabase.rpc(
             'credit_payg_purchase',
@@ -187,7 +188,7 @@ Deno.serve(async (req) => {
           );
 
           if (paygError) throw paygError;
-          console.log(`PAYG: +${downloads} downloads (balance ${credit?.balance}) for user ${userId}${credit?.trial_converted ? ' — free trial ended, account is now Pay As You Go' : ''}`);
+          console.log(`PAYG: +${downloads} downloads (balance ${credit?.balance}) for user ${userId}${credit?.trial_converted ? ` — ${credit?.previous_status === 'trialing' ? 'free trial' : 'ended subscription'} converted, account is now Pay As You Go` : ''}`);
 
           // ── PAYG BREVO (only after a successful credit) ─────────────
           // Guarded completely: anything thrown after the credit would reach
@@ -644,11 +645,20 @@ async function applyProfilePlan(userId: string, priceId: string): Promise<void> 
 // purchase and survive cancellation per "Credits never expire" (see
 // checkout.html, index.html, refund.html).
 async function downgradeToFree(userId: string): Promise<void> {
+  // Approved decision 3: an account that already converted to Pay As You Go
+  // (e.g. it bought PAYG after its paid period ended but before Stripe's
+  // final customer.subscription.deleted arrived) must stay Pay As You Go —
+  // never revert to "Easy Start/Pro (Cancelled)". Its subscription allowance
+  // is still removed.
   await supabase.from('profiles').update({
     plan: 'free',
     is_pro: false,
     downloads_limit: 0,
     billing_cycle: 'monthly',
     subscription_status: 'cancelled',
-  }).eq('id', userId);
+  }).eq('id', userId).neq('subscription_status', 'payg');
+  await supabase.from('profiles').update({
+    is_pro: false,
+    downloads_limit: 0,
+  }).eq('id', userId).eq('subscription_status', 'payg');
 }

@@ -11,6 +11,9 @@
 --    subscriptions are credited only; their status is never changed.
 -- 2. consume_download(): unchanged from 20260926000000 except the annual
 --    monthly refill and 'payg' being excluded from paid plans.
+-- 3. credit_payg_purchase() also converts a FULLY ENDED Easy Start/Pro
+--    subscription to Pay As You Go (approved decision 3, 26 Sep 2026). The
+--    old subscription remains in public.subscriptions as history.
 
 create or replace function public.consume_download(p_label_key text default null)
 returns jsonb
@@ -188,6 +191,7 @@ declare
   v_after public.profiles%rowtype;
   v_now timestamptz := now();
   v_converted boolean := false;
+  v_sub_ended boolean := false;
 begin
   if p_user_id is null or p_downloads is null or p_downloads <= 0 then
     raise exception 'Invalid purchased download credit';
@@ -198,11 +202,25 @@ begin
     raise exception 'Profile not found';
   end if;
 
-  if v_before.subscription_status = 'trialing' then
+  -- Approved decision 3: a subscription that has FULLY ENDED (downgraded by
+  -- the webhook to plan 'free' / no allowance, or its paid period is over)
+  -- converts to Pay As You Go exactly like a trial. A cancel-at-period-end
+  -- subscription still inside its paid period is NOT ended (and cannot buy
+  -- PAYG: create-checkout-session refuses current subscribers).
+  v_sub_ended :=
+    v_before.subscription_status = 'cancelled'
+    and not (
+      coalesce(v_before.plan,'free') not in ('free','trial','cancelled','paused','payg')
+      and coalesce(v_before.downloads_limit,0) > 0
+      and (v_before.deletion_date is null or v_before.deletion_date > v_now)
+    );
+
+  if v_before.subscription_status = 'trialing' or v_sub_ended then
     update public.profiles
     set topup_credits = coalesce(topup_credits,0) + p_downloads,
         subscription_status = 'payg',
         plan = 'payg',
+        is_pro = false,
         downloads_limit = 0,
         trial_end = least(coalesce(trial_end, v_now), v_now)
     where id = p_user_id
@@ -218,6 +236,7 @@ begin
   return jsonb_build_object(
     'balance', v_after.topup_credits,
     'trial_converted', v_converted,
+    'previous_status', v_before.subscription_status,
     'subscription_status', v_after.subscription_status,
     'plan', v_after.plan,
     'deletion_date', v_after.deletion_date

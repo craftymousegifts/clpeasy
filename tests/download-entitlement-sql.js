@@ -197,7 +197,7 @@ function creditPayg(id, n){
   const r = creditPayg(id, 8);
   assert.deepStrictEqual([r.trial_converted, r.subscription_status, r.balance], [true, 'payg', 8], 'expired trial converts to Pay As You Go');
   // Subscribers and ended subscriptions are credited only; status untouched.
-  for (const st of ['active', 'paused', 'cancelScheduled', 'cancelledEnded']) {
+  for (const st of ['active', 'paused', 'cancelScheduled']) {
     const u = makeUser(STATES[st]);
     const before = profile(u);
     const rr = creditPayg(u, 8);
@@ -206,12 +206,29 @@ function creditPayg(id, n){
     assert.deepStrictEqual([after.subscription_status, after.plan, after.downloads_limit, after.downloads_used], [before.subscription_status, before.plan, before.downloads_limit, before.downloads_used], `${st}: subscription state untouched`);
     assert.strictEqual(after.topup_credits, before.topup_credits + 8, `${st}: credited`);
   }
+  // Decision 3: a FULLY ENDED subscription converts to Pay As You Go on a
+  // successful PAYG purchase (downgraded account, or paid period over).
+  for (const st of ['cancelledEnded', 'cancelPeriodPassed']) {
+    const u = makeUser(STATES[st]);
+    const rr = creditPayg(u, 8);
+    const after = profile(u);
+    assert.deepStrictEqual([rr.trial_converted, after.subscription_status, after.plan, after.downloads_limit, after.is_pro, after.topup_credits],
+      [true, 'payg', 'payg', 0, false, 8], `${st}: ended subscription converts to Pay As You Go`);
+    const d = consumeAs(u, 'rose::scented candle');
+    assert.deepStrictEqual([d.source, d.clean_export, d.purchased_downloads], ['purchased', true, 7], `${st}: clean purchased download`);
+    for (let i = 0; i < 7; i++) consumeAs(u, null);
+    assert.strictEqual(consumeAs(u, null).ok, false, `${st}: blocked at zero`);
+    assert.deepStrictEqual([profile(u).subscription_status, profile(u).plan], ['payg', 'payg'], `${st}: stays Pay As You Go at zero`);
+    assert.strictEqual(E.summarise(profile(u)).planName, 'Pay As You Go', `${st}: never reverts to Easy Start/Pro (Cancelled)`);
+    const g = consumeAs(u, 'rose::scented candle');
+    assert.deepStrictEqual([g.free_redownload, g.clean_export], [true, true], `${st}: free re-download at zero stays clean`);
+  }
   // Only the webhook's service role may call it.
   const u = makeUser(STATES.trialLive);
   assert.throws(() => run(`begin; set local role authenticated; select set_config('request.jwt.claim.sub', ${q(u)}, true); select public.credit_payg_purchase(${q(u)}, 8); commit;`), /permission denied/, 'authenticated users cannot credit/convert');
   assert.throws(() => run(`begin; set local role anon; select public.credit_payg_purchase(${q(u)}, 8); commit;`), /permission denied/, 'anon cannot credit/convert');
   assert.strictEqual(profile(u).subscription_status, 'trialing', 'a rejected call changes nothing');
-  checks += 7;
+  checks += 14;
 }
 // ── Annual plans refill monthly (pricing: "£99/year · 20 downloads/month") ──
 {
