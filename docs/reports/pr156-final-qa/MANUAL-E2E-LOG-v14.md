@@ -13,6 +13,7 @@
 | M1 | Active Easy Start → Pricing → Annual → Easy Pro £149 "Get started" | **PASS** | Stripe Checkout did not open. The server's message was shown: "You already have an active subscription. Manage or change your plan from your account's billing portal instead of starting a new checkout." The generic "Something went wrong" is gone (fix `9e00b40`). |
 | M2 | Account "Next payment" for a `billing_mode=flexible` Sandbox subscription | **PASS** | Shows "£8.99 on 26 Oct 2026 · 2026 offer applied" (fix `51447d5`, Test `billing-status` v2). Also shows 0 / 20 monthly used, 24 purchased, 44 total in the sidebar. The refresh used no downloads. |
 | M3 | V13 C1: first size-aware download of a label last downloaded under the old `name::type` key within 7 days | **PASS** | See M3 below. |
+| M4 | Print Sheet Composer "Print / Save as PDF" as an active Easy Start subscriber (v13 two-argument `consume_download`, Composer sends no label key) | **PASS** | See M4 below. |
 
 ## M3 details
 
@@ -33,3 +34,20 @@ was unchanged: 0 / 20 used, 24 purchased, 44 total.
   - `gfxgfxx::…::76x77mm` and `gfxgfxx::…::76x72mm` are unchanged.
   - `iugigig::scented candle` is unchanged. It's a different label name, so it was correctly not
     claimed.
+
+## M4 details
+
+Michaela exported **iugigig EDITED** once from Print Sheet Composer with "Print / Save as PDF".
+Account afterwards showed 1 / 20 monthly used, 24 purchased (unchanged), 43 total.
+
+**Read-only backend check (20:29 UTC):**
+
+- `profiles`: `downloads_used` went from 0 to 1, `downloads_limit` is 20, and `topup_credits`
+  stays at 24.
+  - Exactly one download was charged, from the monthly allowance first, as designed.
+  - The purchased balance was untouched.
+- `label_downloads` still has 4 records, and the newest is still the M3 record from 20:23:01.
+  - As designed, a Composer sheet export records no label and has no free re-download.
+- This confirms the Composer's call works against the v13 function signature on the real Test
+  database: `consume_download(p_label_key text default null, p_legacy_label_key text default
+  null)`.
