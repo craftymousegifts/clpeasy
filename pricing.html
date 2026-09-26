@@ -751,6 +751,12 @@ async function startCheckout(plan){
     const data=await res.json();
     if(data.url){
       window.location.href=data.url;
+    } else if((data.code==='ALREADY_SUBSCRIBED'||data.code==='CHECKOUT_IN_PROGRESS')&&data.error){
+      // Expected server refusals (an active subscription already exists, or
+      // a checkout was just started): show the server's explanation, as
+      // account.html already does, instead of a generic failure.
+      alert(data.error);
+      if(btn){btn.textContent='Get started →';btn.style.opacity='1';btn.disabled=false;}
     } else {
       throw new Error(data.error||'No checkout URL returned');
     }

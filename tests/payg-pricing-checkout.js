@@ -101,5 +101,36 @@ async function open({ signedIn, pending, response }){
     assert(!/Something went wrong/.test(alerts[0]), 'not a generic error');
     assert.strictEqual(w.document.getElementById('btn-payg').disabled, false, 'button restored');
   }
+  // V13 manual E2E regression (26 Sep 2026): an ACTIVE subscriber clicking
+  // a plan's "Get started" (e.g. Easy Start monthly -> Easy Pro annual) is
+  // refused by the server's existing duplicate-subscription guard (409
+  // ALREADY_SUBSCRIBED). The page used to replace that explanation with a
+  // generic "Something went wrong starting checkout". It must show the
+  // server's message (as account.html already does) and restore the button.
+  for (const [code, pattern] of [['ALREADY_SUBSCRIBED', /billing portal/], ['CHECKOUT_IN_PROGRESS', /already in progress/]]) {
+    const refusal = { ok: false, status: 409, json: async () => ({ code, error: code === 'ALREADY_SUBSCRIBED'
+      ? "You already have an active subscription. Manage or change your plan from your account's billing portal instead of starting a new checkout."
+      : 'A checkout is already in progress for this account. Please wait a moment and try again.' }) };
+    const { w, calls, alerts, errors } = await open({ signedIn: true, response: refusal });
+    w.eval("setBilling('annual', document.querySelector('[onclick*=\"annual\"]'))");
+    await w.startCheckout('easy_pro');
+    assert.strictEqual(calls.length, 1, code + ': the server was asked (and refused)');
+    assert(/create-checkout-session/.test(calls[0].url));
+    assert.strictEqual(JSON.parse(calls[0].init.body).priceId, 'price_1TdoEXGZLILz5vqUFgTznTUT', code + ': Easy Pro ANNUAL price was requested');
+    assert.strictEqual(alerts.length, 1, code + ': one message');
+    assert(pattern.test(alerts[0]), code + ': shows the server explanation, got: ' + alerts[0]);
+    assert(!/Something went wrong/.test(alerts[0]), code + ': not the generic error');
+    const btn = w.document.getElementById('btn-easy_pro');
+    if (btn) { assert.strictEqual(btn.disabled, false, code + ': button restored'); assert(/Get started/.test(btn.textContent), code + ': button label restored'); }
+    assert.deepStrictEqual(errors, []);
+  }
+  // A genuine failure (network/unknown) still shows the generic message.
+  {
+    const broken = { ok: false, status: 500, json: async () => ({ error: 'boom' }) };
+    const { w, alerts } = await open({ signedIn: true, response: broken });
+    await w.startCheckout('easy_start');
+    assert.strictEqual(alerts.length, 1);
+    assert(/Something went wrong starting checkout/.test(alerts[0]), 'unknown failures keep the generic message');
+  }
   console.log('PAYG pricing checkout checks passed');
 })().catch(e => { console.error(e.stack || e.message); process.exitCode = 1; });
