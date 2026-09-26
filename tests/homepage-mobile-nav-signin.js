@@ -1,14 +1,18 @@
 // Homepage mobile navigation: "Sign in" must reach the sign-in page.
 //
-// Regression for the PR #156 v15 iPhone Safari failure: with the mobile menu
-// open, tapping "Sign in" did nothing. That link opened in a new tab and the
-// menu's own click handler hid the whole menu (display:none) inside the same
-// click. The fix keeps the menu rendered until after the link's navigation has
-// started and makes mobile "Sign in" a same-tab link like "Start free trial".
+// Regression for the PR #156 v15/v16 iPhone Safari failure: the mobile menu
+// opened and showed "Sign in", but tapping (or press-and-holding) it did
+// nothing. v16 made Sign in a same-tab link and stopped hiding the menu
+// inside the click; iPhone Safari still failed. v17 removes the panel-level
+// structure instead: the panel is no longer a second position:fixed layer
+// that is its own scroll container (overflow-y:auto + max-height in vh), and
+// no menu link or the panel has any click/touch handler -- links are plain
+// native <a href> elements.
 //
-// Real Chromium with iPhone emulation (touch, 390x844, iOS Safari UA). WebKit
-// itself is not available in this environment, so this proves the page no
-// longer does either of the two things involved, plus that the tap navigates.
+// Real Chromium with iPhone emulation (touch). WebKit itself is not
+// available in this environment, so these checks pin down the page
+// STRUCTURE iOS depends on (no fixed scroll-container ancestor, no
+// listeners, no pointer-events/pseudo-element interference) plus the tap.
 //
 // Needs Chromium: $PUPPETEER_EXECUTABLE_PATH, /opt/pw-browsers, or
 // puppeteer's own download. Prints SKIP and exits 0 if none is available.
@@ -26,10 +30,15 @@ const HTML = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const menuHtml = (HTML.match(/<div class="nav-mobile-menu" id="nav-mobile-menu"[^>]*>([\s\S]*?)<\/div>\s*\n\s*<script>/) || [])[1];
 assert(menuHtml, 'mobile menu markup found');
 const signin = (menuHtml.match(/<a [^>]*href="auth\.html\?mode=signin"[^>]*>Sign in<\/a>/) || [])[0];
-assert(signin, 'mobile menu has a Sign in link to auth.html?mode=signin');
-assert(!/target=/.test(signin), 'mobile Sign in opens in the same tab (no target attribute)');
-assert(!/if \(e\.target\.tagName === 'A'\) closeMobileNav\(\);/.test(HTML), 'menu is not hidden synchronously inside the link click');
-console.log('PASS: static: mobile Sign in is a same-tab link to auth.html?mode=signin; no synchronous menu hide on link click');
+assert.strictEqual(signin, '<a href="auth.html?mode=signin">Sign in</a>', 'mobile Sign in is a plain native link (href only)');
+const css = (HTML.match(/\n  \.nav-mobile-menu \{([\s\S]*?)\}/) || [])[1];
+assert(css, '.nav-mobile-menu rule found');
+assert(!/position:\s*fixed/.test(css), 'menu panel is not a position:fixed layer');
+assert(!/overflow(-y)?:\s*(auto|scroll)/.test(css), 'menu panel is not its own scroll container');
+assert(!/max-height/.test(css), 'menu panel has no vh max-height');
+assert(!/\.nav-mobile-menu[^{]*::(before|after)/.test(HTML), 'no pseudo-elements on the menu or its links');
+assert(!/getElementById\('nav-mobile-menu'\)\.addEventListener\('click'/.test(HTML), 'no click handler on the menu panel');
+console.log('PASS: static: plain native Sign in link; panel not fixed / not a scroll container / no pseudo-elements / no click handler');
 
 let puppeteer;
 try { puppeteer = require('puppeteer'); } catch (e) { console.log('SKIP homepage-mobile-nav-signin browser checks: puppeteer not installed'); process.exit(0); }
@@ -79,58 +88,68 @@ async function openHome(browser, base, emulate) {
     try { await fn(); console.log('PASS:', name); } catch (e) { failed = true; console.log('FAIL:', name, '\n ', e.message); }
   };
   try {
-    await check('iPhone: tapping Sign in in the open mobile menu loads the sign-in page in the same tab', async () => {
-      const page = await openHome(browser, base, IPHONE);
-      const newTabs = [];
-      const onTarget = t => { if (t.type() === 'page') newTabs.push(t.url()); };
-      browser.on('targetcreated', onTarget);
-      await page.tap('#nav-mobile-toggle');
-      const open = await page.evaluate(() => ({
-        hidden: document.getElementById('nav-mobile-menu').hasAttribute('hidden'),
-        expanded: document.getElementById('nav-mobile-toggle').getAttribute('aria-expanded'),
-      }));
-      assert.deepStrictEqual(open, { hidden: false, expanded: 'true' }, 'menu opens');
-      // Record, after the click has finished dispatching (window bubble
-      // listener, added last), whether the tapped link was still rendered.
-      await page.evaluate(() => {
-        window.__signinRenderedAtClickEnd = null;
-        window.addEventListener('click', e => {
-          const a = e.target.closest && e.target.closest('a');
-          if (a && a.textContent.trim() === 'Sign in') window.__signinRenderedAtClickEnd = a.getClientRects().length > 0;
-        });
-      });
-      const hit = await page.evaluate(() => {
-        const a = [...document.querySelectorAll('#nav-mobile-menu a')].find(x => x.textContent.trim() === 'Sign in');
-        const r = a.getBoundingClientRect();
-        const el = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
-        return { onLink: el === a, inView: r.bottom <= innerHeight };
-      });
-      assert.deepStrictEqual(hit, { onLink: true, inView: true }, 'nothing overlays the Sign in link and it is on screen');
-      const rendered = page.evaluate(() => new Promise(r => setTimeout(() => r(window.__signinRenderedAtClickEnd), 0)));
-      const nav = page.waitForNavigation({ waitUntil: 'domcontentloaded' });
-      const box = await page.evaluate(() => {
-        const a = [...document.querySelectorAll('#nav-mobile-menu a')].find(x => x.textContent.trim() === 'Sign in');
-        const r = a.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-      });
-      await page.touchscreen.tap(box.x, box.y);
-      const renderedAtClickEnd = await rendered.catch(() => 'navigated-before-read');
-      await nav;
-      browser.off('targetcreated', onTarget);
-      const u = new URL(page.url());
-      assert.strictEqual(u.pathname + u.search, '/auth.html?mode=signin', 'same tab is now on the sign-in page');
-      assert.deepStrictEqual(newTabs, [], 'no new tab was opened');
-      assert.notStrictEqual(renderedAtClickEnd, false, 'Sign in link was not hidden during its own click');
-      await page.close();
-    });
+    for (const [label, vp] of [['iPhone 390x664 (Safari toolbars shown)', { width: 390, height: 664 }], ['iPhone SE 375x548', { width: 375, height: 548 }]]) {
+      await check(`${label}: menu opens under the header even after scrolling; Sign in has no fixed/scroll-container ancestor, no listeners, and a tap loads the sign-in page in the same tab`, async () => {
+        const page = await openHome(browser, base, { viewport: Object.assign({ deviceScaleFactor: 3, isMobile: true, hasTouch: true }, vp), userAgent: IPHONE.userAgent });
+        await page.evaluate(() => window.scrollTo({ top: 1500, behavior: 'instant' })); // the page uses smooth scrolling
+        await page.tap('#nav-mobile-toggle');
+        const place = await page.evaluate(() => ({
+          hidden: document.getElementById('nav-mobile-menu').hasAttribute('hidden'),
+          menuTop: Math.round(document.getElementById('nav-mobile-menu').getBoundingClientRect().top),
+          navBottom: Math.round(document.querySelector('nav').getBoundingClientRect().bottom),
+        }));
+        assert.strictEqual(place.hidden, false, 'menu opens');
+        assert.strictEqual(place.menuTop, place.navBottom, 'menu sits directly under the header at the current scroll position');
 
-    await check('iPhone: an in-page menu link still closes the menu (after the click)', async () => {
+        const chain = await page.evaluate(() => {
+          const a = [...document.querySelectorAll('#nav-mobile-menu a')].find(x => x.textContent.trim() === 'Sign in');
+          const bad = [];
+          for (let el = a; el && el !== document.documentElement; el = el.parentElement) {
+            const cs = getComputedStyle(el);
+            if (cs.pointerEvents === 'none') bad.push(el.tagName + ' pointer-events:none');
+            if (el !== a && cs.position === 'fixed') bad.push(el.tagName + '#' + el.id + ' position:fixed');
+            if (/(auto|scroll)/.test(cs.overflowY) && el !== document.body) bad.push(el.tagName + '#' + el.id + ' overflow-y:' + cs.overflowY);
+          }
+          const pseudo = ['::before', '::after'].map(p => getComputedStyle(a, p).content).filter(c => c && c !== 'none' && c !== 'normal');
+          return { bad, pseudo, attrs: [...a.attributes].map(x => x.name) };
+        });
+        assert.deepStrictEqual(chain, { bad: [], pseudo: [], attrs: ['href'] }, 'plain link, no fixed / scroll-container / pointer-events:none ancestor, no pseudo-elements');
+
+        const cdp = await page.target().createCDPSession();
+        const listenersOf = async sel => {
+          const { result } = await cdp.send('Runtime.evaluate', { expression: sel });
+          const { listeners } = await cdp.send('DOMDebugger.getEventListeners', { objectId: result.objectId });
+          return listeners.map(l => l.type).filter(t => /^(click|touch|pointer|mouse)/.test(t));
+        };
+        assert.deepStrictEqual(await listenersOf("[...document.querySelectorAll('#nav-mobile-menu a')].find(x => x.textContent.trim() === 'Sign in')"), [], 'no listeners on Sign in');
+        assert.deepStrictEqual(await listenersOf("document.getElementById('nav-mobile-menu')"), [], 'no listeners on the menu panel');
+
+        // Reach Sign in by scrolling the PAGE (no inner scroll container), then tap it.
+        await page.evaluate(() => [...document.querySelectorAll('#nav-mobile-menu a')].find(x => x.textContent.trim() === 'Sign in').scrollIntoView({ block: 'center', behavior: 'instant' }));
+        const box = await page.evaluate(() => {
+          const a = [...document.querySelectorAll('#nav-mobile-menu a')].find(x => x.textContent.trim() === 'Sign in');
+          const r = a.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height / 2;
+          return { x, y, onLink: document.elementFromPoint(x, y) === a };
+        });
+        assert.strictEqual(box.onLink, true, 'nothing overlays Sign in');
+        const newTabs = [];
+        const onTarget = t => { if (t.type() === 'page') newTabs.push(t.url()); };
+        browser.on('targetcreated', onTarget);
+        const nav = page.waitForNavigation({ waitUntil: 'domcontentloaded' });
+        await page.touchscreen.tap(box.x, box.y);
+        await nav;
+        browser.off('targetcreated', onTarget);
+        const u = new URL(page.url());
+        assert.strictEqual(u.pathname + u.search, '/auth.html?mode=signin', 'same tab is now on the sign-in page');
+        assert.deepStrictEqual(newTabs, [], 'no new tab was opened');
+        await page.close();
+      });
+    }
+
+    await check('iPhone: an in-page menu link (FAQ) closes the menu', async () => {
       const page = await openHome(browser, base, IPHONE);
       await page.tap('#nav-mobile-toggle');
-      const atClickEnd = await page.evaluate(() => new Promise(resolve => {
-        window.addEventListener('click', () => resolve(document.getElementById('nav-mobile-menu').hasAttribute('hidden')), { once: true });
-        [...document.querySelectorAll('#nav-mobile-menu a')].find(x => x.textContent.trim() === 'FAQ').click();
-      }));
-      assert.strictEqual(atClickEnd, false, 'menu still rendered while the click is dispatched');
+      await page.evaluate(() => [...document.querySelectorAll('#nav-mobile-menu a')].find(x => x.textContent.trim() === 'FAQ').click());
       await page.waitForFunction(() => document.getElementById('nav-mobile-menu').hasAttribute('hidden'), { timeout: 2000 });
       const expanded = await page.$eval('#nav-mobile-toggle', b => b.getAttribute('aria-expanded'));
       assert.strictEqual(expanded, 'false', 'toggle reports closed');
