@@ -212,3 +212,48 @@ Inspected before any change:
 - **v16 package:** built from `d1d5fc5`; it differs from v15 only in `index.html`. Audit clean.
   SHA-256 `b1e552b068d76ffa9d70aebbace600da901cd1a3062f332da2a92a0a66e59a36`.
 - **Needed:** upload v16 to the Test site, then repeat the iPhone Safari check once.
+
+## 10. v16 iPhone Safari check — still FAIL; revised cause, fixed in v17
+
+- **Owner evidence (v16 confirmed deployed):**
+  - desktop Chrome at mobile width: Sign in works;
+  - real iPhone Safari: the menu opens and Sign in is visible, but a tap does nothing, and
+    press-and-hold shows no link menu.
+- **Revised cause:** the menu panel, not the link.
+  - After v16, Sign in was already a bare `<a href="auth.html?mode=signin">`, styled by the same
+    `.nav-mobile-menu a` rule as every other menu link.
+  - There is no `pointer-events`, pseudo-element, `touch-action`, 3D transform or overlay involved.
+    Every positioned element with z-index ≥ 99 was checked; the only bottom-fixed ones are the
+    cookie banner and the seasonal banner, both visible when shown.
+  - What was unusual is the panel itself: a second `position:fixed` layer that was also its own
+    scroll container (`overflow-y:auto` + `max-height: calc(100vh - 68px)`). On iOS, `100vh` is
+    taller than the visible area.
+  - The fixed header also uses `position:fixed` and `backdrop-filter`, but is not a scroll
+    container, and it takes taps on the same iPhone (the hamburger works).
+  - So the panel-as-fixed-scroll-container is the one structural difference left, and it's what was
+    removed.
+- **Not reproducible here:** WebKit can't be installed in this environment (its download hosts are
+  blocked), so this is the best-supported cause, not a WebKit reproduction. The real-iPhone check
+  remains the proof.
+- **Press-and-hold:** the homepage cancels `contextmenu` on the whole document (existing content
+  protection), which can also suppress a long-press menu. So on its own it doesn't prove the link
+  wasn't hit.
+- **Fix (`index.html`, mobile menu only):**
+  - The panel is `position:absolute`, placed directly under the header at the current scroll position
+    when opened (`openMobileNav`). It has no `overflow`/`max-height`, so lower items are reached by
+    scrolling the page.
+  - It looks the same (backdrop blur kept; screenshot compared with v16).
+  - The click handler on the panel is removed, so all menu links are plain native links. In-page links
+    close the menu on `hashchange`; Escape and tap-outside closing are unchanged.
+- **Tests:** `tests/homepage-mobile-nav-signin.js` checks, at 390×664 and at an iPhone SE-sized
+  375×548 with the page scrolled first:
+  - no fixed, scroll-container or `pointer-events:none` ancestor, and no pseudo-elements;
+  - no click/touch/pointer/mouse listeners on the link or the panel, read through the Chrome DevTools
+    protocol;
+  - placement under the header;
+  - a tap on Sign in loads it in the same tab.
+  - It fails on v16 and passes on v17, including against the built v17 package.
+- **Suite:** 61/61 test files exit 0 (the GHS framing check is still skipped: environment), `npm test`,
+  SQL 126 groups, Deno 96 scenarios.
+- **v17 package:** built from `3f377c8`; it differs from v16 only in `index.html`. Audit clean.
+  SHA-256 `4bef12d48498de05bda94aae14bb6734c155a9956983c7b6de800d6bef1c9170`.
