@@ -251,6 +251,12 @@ await test('subscriber top-up: +5 via the atomic credit RPC, duplicate ignored',
   eq(prof().topup_credits, 6, 'credited once'); eq(prof().topup_months, 1, 'nudge counter once');
   eq(db().rpcCalls.map((c: any) => c.name), ['credit_purchased_downloads'], 'atomic RPC');
 });
+await test('CLPeasy sandbox top-up prices credit 5 and 10', async () => {
+  seedProfile({ subscription_status: 'active', plan: 'easy_start', topup_credits: 0, topup_months: 0 });
+  await send(topupEvent('evt_sb5', { metadata: { userId: 'user-1', priceId: 'price_1TeBHjKF3jvQfgEaX2aPZX6E', type: 'topup' } }));
+  await send(topupEvent('evt_sb10', { metadata: { userId: 'user-1', priceId: 'price_1TeBIKKF3jvQfgEaxU4TjPHu', type: 'topup' } }));
+  eq(prof().topup_credits, 15, '5 + 10');
+});
 await test('unpaid top-up session is never credited', async () => {
   seedProfile({ subscription_status: 'active', plan: 'easy_start', topup_credits: 0 });
   await send(topupEvent('evt_topup_unpaid', { payment_status: 'unpaid' }));

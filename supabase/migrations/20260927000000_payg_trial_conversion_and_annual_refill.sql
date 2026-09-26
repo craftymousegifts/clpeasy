@@ -99,10 +99,11 @@ begin
 
   -- Annual plans are sold as "20/30 downloads per month" (pricing.html), and
   -- stripe-webhook sets downloads_reset_date one month ahead even for annual
-  -- billing, but the only monthly refill that ever existed was a browser-side
-  -- reset that the billing-protection trigger silently blocks (and PR #156
-  -- removed). invoice.paid refills monthly plans; annual plans are refilled
-  -- here, atomically, at the first download after each monthly reset date.
+  -- billing. The only monthly refill for annual plans was a browser-side
+  -- reset in builder.html, which PR #156 removed (and which let customers
+  -- write their own counter — closed by 20260928000000). invoice.paid refills
+  -- monthly plans; annual plans are refilled here, atomically, at the first
+  -- download after each monthly reset date.
   if coalesce(v_profile.billing_cycle,'') = 'annual'
      and v_plan_clean
      and v_profile.downloads_reset_date is not null

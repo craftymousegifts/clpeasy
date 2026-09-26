@@ -53,6 +53,7 @@ const MONTHLY_PROMO_PLAN_BY_PRICE: Record<string, "EASY_START" | "EASY_PRO"> = {
 const TOPUP_PRICE_IDS = new Set([
   "price_1Tdpd7GZLILz5vqUAiSw9udI", "price_1TdpdzGZLILz5vqUYEjn6TZ2", // live
   "price_1Tys3JGZLILz5vqUXA6L9jxc", "price_1Tys3qGZLILz5vqUnNlRAF6Q", // test mode
+  "price_1TeBHjKF3jvQfgEaX2aPZX6E", "price_1TeBIKKF3jvQfgEaxU4TjPHu", // CLPeasy sandbox (verified 26 Sep 2026)
 ]);
 // A CURRENT Easy Start/Pro subscriber: active, or cancel-at-period-end still
 // inside the paid period. Paused and ended subscriptions are not current.

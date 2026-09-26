@@ -152,6 +152,13 @@ for (const [name, profile, status] of topupCases) {
     else { eq((await r.json()).code, 'TOPUP_SUBSCRIBERS_ONLY', 'code'); eq(stripeRequests.length, 0, 'no Stripe session'); }
   });
 }
+for (const sandboxTopup of ['price_1TeBHjKF3jvQfgEaX2aPZX6E', 'price_1TeBIKKF3jvQfgEaxU4TjPHu']) {
+  await test(`D4 CLPeasy sandbox top-up price ${sandboxTopup} is accepted for a subscriber`, async () => {
+    db().tables.profiles.push({ id: 'user-1', subscription_status: 'active', plan: 'easy_start', downloads_limit: 20 });
+    eq((await call({ priceId: sandboxTopup, mode: 'payment' })).status, 200, 'accepted');
+    eq(stripeRequests[0].get('line_items[0][price]'), sandboxTopup, 'price');
+  });
+}
 await test('D4 unknown one-off price is rejected (cannot buy an arbitrary price as a top-up)', async () => {
   db().tables.profiles.push({ id: 'user-1', subscription_status: 'active', plan: 'easy_start', downloads_limit: 20 });
   const r = await call({ priceId: 'price_something_else', mode: 'payment' });

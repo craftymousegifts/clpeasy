@@ -518,6 +518,11 @@ const TOPUP_CREDITS: Record<string, number> = {
   // Test Mode price IDs (correct, currently active)
   'price_1Tys3JGZLILz5vqUXA6L9jxc': 5,   // 5 downloads £3.99
   'price_1Tys3qGZLILz5vqUnNlRAF6Q': 10,  // 10 downloads £7.99
+
+  // CLPeasy sandbox account (acct_1TdczqKF3jvQfgEa) — verified against the
+  // Sandbox on 26 Sep 2026 for isolated QA (5 £3.99, 10 £7.99).
+  'price_1TeBHjKF3jvQfgEaX2aPZX6E': 5,
+  'price_1TeBIKKF3jvQfgEaxU4TjPHu': 10,
 };
 
 // ── HELPERS ───────────────────────────────────────────────────
