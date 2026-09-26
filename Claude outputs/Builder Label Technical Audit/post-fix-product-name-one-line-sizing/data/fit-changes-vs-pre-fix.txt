@@ -1,0 +1,10 @@
+
+S0: 432 labels; product name bigger 106, smaller 0, same 326; FIT->NOT FIT 3; NOT FIT->FIT 0
+  F->N square 52x52 128ch biz=Crafty Mouse Gifts: 1.2->1.2mm now hazard-text-overflow
+  F->N square 52x52 128ch biz=CMG: 1.2->1.2mm now hazard-text-overflow
+  F->N square 52x52 128ch biz=(empty): 1.2->1.2mm now hazard-text-overflow
+
+S1: 432 labels; product name bigger 105, smaller 0, same 327; FIT->NOT FIT 3; NOT FIT->FIT 0
+  F->N square 52x52 128ch biz=Crafty Mouse Gifts: 1.2->1.2mm now hazard-text-overflow
+  F->N square 52x52 128ch biz=CMG: 1.2->1.2mm now hazard-text-overflow
+  F->N square 52x52 128ch biz=(empty): 1.2->1.2mm now hazard-text-overflow

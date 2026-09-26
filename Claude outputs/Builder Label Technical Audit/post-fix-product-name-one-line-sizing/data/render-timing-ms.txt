@@ -1,0 +1,2 @@
+before (a092f05) {"squareShort":1.7,"square69ch":1.5,"squareWrapped128ch":1.6,"circle69ch":9.4,"smallestFitWrapped":1.4}
+after {"squareShort":1.6,"square69ch":2.2,"squareWrapped128ch":5.8,"circle69ch":9.5,"smallestFitWrapped":4.8}

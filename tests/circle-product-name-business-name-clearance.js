@@ -35,7 +35,8 @@
 //   - squares/rectangles are byte-identical to main
 //     (tests/fixtures/square-rect-render-baseline.json);
 //   - the manual product-name "+" (pushed past its maximum) still clears the
-//     business name, and stepping it up never makes the drawn name smaller;
+//     business name, and stepping it up never makes the drawn name smaller
+//     (no exemption since the M43 fix);
 //   - Builder's download gate and Composer's message read the flag used.
 // Issue #1 (per-line hazard text containment) has its own test:
 // tests/circle-per-line-text-containment.js.
@@ -93,19 +94,16 @@ async function analyseInPage(c, pxPerMm, families) {
     arcText: arc ? arc.textContent : null, bizFound: !!biz,
   };
   // Manual product-name "+" (scentFSOverride), stepped from the fine-tune
-  // minimum to its maximum: the drawn size must never go DOWN as "+" goes up.
-  // Two exceptions, neither caused by this fix: bisection rounding (<1e-4 layout
-  // units), and the pre-existing collapse of a requested size that no longer
-  // fits as ONE straight line to the mandatory minimum (audit finding M43, out
-  // of scope here; it happens identically in the pre-fix renderer).
+  // minimum to its maximum: the drawn size must never go DOWN as "+" goes up
+  // (only bisection rounding, <1e-4 layout units, is tolerated). The former
+  // exemption for the M43 collapse to the minimum was removed with the M43 fix.
   if (c.opts && c.opts.scentFSOverride === 999) {
     const b = r.metrics.fsBounds.scent; let prev = -Infinity; out.plusMonotone = true;
-    const floor = Math.max(1.2 * k, 3.2); // label-render.js _mandatoryMinFS
     for (let i = 0; i <= 24; i++) {
       const v = b.min + (b.max - b.min) * i / 24;
       const rr = LR.renderLabel(c.data, { instanceId: 'm' + i, scentFSOverride: v });
       const fs = rr.metrics.fontSizes.scent;
-      if (fs < prev - 1e-4 && Math.abs(fs - floor) > 1e-6) out.plusMonotone = false;
+      if (fs < prev - 1e-4) out.plusMonotone = false;
       prev = fs;
     }
   }

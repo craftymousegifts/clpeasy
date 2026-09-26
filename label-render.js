@@ -453,6 +453,40 @@ function glyphInkBands(ch,family){
   return bands;
 }
 
+// ── HELPER: ink boxes of one line of straight bold text ─────────────────
+// Drawn as svgWrapped() draws it: centred on cx (text-anchor="middle"),
+// dominant-baseline="middle" at y, which puts the alphabetic baseline half an
+// x-height below y. Returns one box [L,R,T,B] per glyphInkBands() band of each
+// character; where canvas pixels are unavailable (e.g. test stubs), one
+// conservative box per character: 0.58em above / 0.50em below y (0.80em above
+// for non-ASCII) across its advance. Used by the wrapped product-name /
+// business-name clearance check in renderLabel() (audit finding M43).
+function straightTextInkBoxes(txt,cx,y,fs,family){
+  const out=[], total=measureTextFamily(txt,fs,true,family), left=cx-total/2;
+  const xb=glyphInkBands('x',family);
+  const base=(xb && xb.length) ? y+Math.max(...xb.map(q=>q[3]))*fs/2 : null;
+  let pre='';
+  for(const ch of txt){
+    const x0=left+measureTextFamily(pre,fs,true,family);
+    pre+=ch;
+    const x1=left+measureTextFamily(pre,fs,true,family);
+    const gb=base!=null ? glyphInkBands(ch,family) : null;
+    if(gb){ for(const q of gb) out.push([x0+q[0]*fs, x0+q[1]*fs, base-q[3]*fs, base-q[2]*fs]); }
+    else if(!/\s/.test(ch)) out.push([x0, x1, y-(/[^\x00-\x7F]/.test(ch)?0.80:0.58)*fs, y+0.50*fs]);
+  }
+  return out;
+}
+// Smallest Euclidean distance between two sets of axis-aligned boxes (0 if any
+// pair touches or overlaps).
+function boxSetsMinDistance(A,B){
+  let m=Infinity;
+  for(const a of A) for(const b of B){
+    const dx=Math.max(a[0]-b[1], b[0]-a[1], 0), dy=Math.max(a[2]-b[3], b[2]-a[3], 0);
+    m=Math.min(m, Math.hypot(dx,dy));
+  }
+  return m;
+}
+
 // DM Sans Bold (700) advance widths in 1/1000 em, without kerning, measured
 // from the Google Fonts DM Sans file (v17) that label SVGs @import. The curved
 // product name is drawn in "DM Sans,sans-serif", but pages declare different
@@ -601,6 +635,10 @@ const ARC_TEXT_RADIUS_FRAC = 0.85;
 // name and the visible business name on circular labels. An engineering /
 // rendering tolerance chosen by CLPeasy -- NOT a statutory GB CLP figure.
 const ARC_BIZ_CLEARANCE_MM = 0.5;
+// The same CLPeasy rendering safety clearance between a WRAPPED straight
+// product name (squares/rectangles) and the business name. Again an
+// engineering / rendering tolerance -- NOT a statutory GB CLP figure.
+const PRODUCT_NAME_BIZ_CLEARANCE_MM = 0.5;
 
 function svgArcText(instanceId, text, cx, cy, r, fontSize, color, arcPos){
   if(!text) return '';
@@ -1207,11 +1245,43 @@ function renderLabel(rawData, opts){
   }
   const _scentFSBounds={min:scentMinFS,max:scentMaxFS,auto:_scentFSAuto};
   let scentLines   = wrapText(scent, scentSW*0.90, scentFS, true, true);
-  // If wrapping to 2 lines, reduce font size so 2 lines fit in slot
-  if(scentLines.length > 1){
-    const fs2 = Math.min(scentFS, slot.scent * 0.42);
-    scentLines = wrapText(scent, scentSW*0.90, fs2, true, true);
-    scentFS = fs2;
+  // One-line product-name sizing (Builder Label Technical Audit finding M43).
+  // Previously, when the requested size (automatic, or the manual +/- fine-
+  // tune) no longer fitted on one line, the name was "wrapped" at
+  // min(scentFS, slot.scent*0.42) -- but slot.scent is 0 (the name moved to
+  // the top band), so that was always 0 and the name dropped straight to the
+  // mandatory minimum below, even when a much larger one-line size existed
+  // (e.g. 2.69mm -> 1.23mm on a 100mm square), and pressing "+" past the
+  // one-line limit made the name collapse. Now the complete name stays on one
+  // line at the largest size (bisection) between the mandatory minimum and
+  // the requested size at which it fits; only a name that cannot fit on one
+  // line even at the minimum still wraps there (existing fallback, below).
+  // The fine-tune bounds are capped to that one-line limit, so "+" stops
+  // there. The limit depends only on the name and label width -- never on the
+  // business name's position -- so it cannot feed back into the header guard.
+  // A name that already fits at the requested size is unchanged.
+  {
+    const _oneLine=fs=>wrapText(scent, scentSW*0.90, fs, true, true).length<=1;
+    // search up to the larger of the fine-tune maximum and the requested size
+    // (on very wide, short rectangles the automatic size can exceed the
+    // fine-tune maximum)
+    const _top=Math.max(scentMaxFS, scentFS);
+    if(!_oneLine(_top)){
+      if(_oneLine(_mandatoryMinFS)){
+        // largest one-line size in [minimum, _top]
+        let _lo=_mandatoryMinFS, _hi=_top;
+        for(let i=0;i<24;i++){ const m=(_lo+_hi)/2; if(_oneLine(m)) _lo=m; else _hi=m; }
+        _scentFSBounds.max=Math.min(_scentFSBounds.max,_lo);
+        _scentFSBounds.min=Math.min(_scentFSBounds.min,_scentFSBounds.max);
+        _scentFSBounds.auto=Math.min(_scentFSBounds.auto,_scentFSBounds.max);
+        if(scentLines.length>1){
+          scentFS=Math.min(scentFS,_lo);
+          scentLines=wrapText(scent, scentSW*0.90, scentFS, true, true);
+        }
+      } else if(scentLines.length>1){
+        scentFS=_mandatoryMinFS-1e-9; // cannot fit on one line even at the minimum: existing fallback wrap below
+      }
+    }
   }
   // Regression fix (2026-09-06): the product name/identifier must never
   // render below the GB legibility floor (CLPeasy's own conservative standard, not a genuine x-height) -- clamp up to it
@@ -1240,23 +1310,52 @@ function renderLabel(rawData, opts){
   // scent → biz → web, shrinking only the biz/web fonts when the band is too
   // short to hold all three. Roomy labels keep their original positions/sizes.
   let _bizFSf = bizFS, _webFSf = webFS, _bizYf = bizY, _webYf = webY;
+  // Wrapped straight product name (only when it cannot fit on one line even at
+  // the mandatory minimum -- see the one-line sizing above; audit finding M43):
+  // svgWrapped() draws the FIRST line centred at scentTopY and each further
+  // line one line-height lower, so the block's real bottom is
+  // (lines-1) x lineH + lineH/2 below scentTopY -- not scentBlock/2, which
+  // placed the business name as if the block were centred on its first line
+  // and let the last line(s) run into it. For wrapped names the scent -> biz
+  // gap is also made large enough for PRODUCT_NAME_BIZ_CLEARANCE_MM between
+  // the visible ink of the last product-name line and of the business name
+  // (checked per glyph after the business-name floor below). Single-line
+  // names and circles (whose curved name is one line) are unchanged.
+  const _scentWrapped = !isCircle && scentLines.length > 1;
+  let _wrapInkGap = null;
+  if(_scentWrapped){
+    const fam='Georgia,serif', xb=glyphInkBands('x',fam);
+    const xh=(xb && xb.length) ? Math.max(...xb.map(q=>q[3])) : null;
+    const inkEm=(txt,which)=>{ // ink above / below the dominant-baseline="middle" y, in em
+      if(xh==null) return null;
+      let top=0, bot=0;
+      for(const ch of txt){ const gb=glyphInkBands(ch,fam); if(!gb) return null; for(const q of gb){ top=Math.max(top,q[3]); bot=Math.max(bot,-q[2]); } }
+      return which==='above' ? top-xh/2 : bot+xh/2;
+    };
+    const _below=inkEm(scentLines[scentLines.length-1],'below'), _above=inkEm(bizName,'above');
+    const scentBelowEm=_below!=null ? _below : 0.50;
+    const bizAboveEm=_above!=null ? _above : (/[^\x00-\x7F]/.test(bizName) ? 0.80 : 0.58);
+    const _clrPx=PRODUCT_NAME_BIZ_CLEARANCE_MM*_pxPerMm;
+    _wrapInkGap=bf=>scentBelowEm*scentFS - scentLH*0.5 + _clrPx + (bizAboveEm-0.5)*bf;
+  }
   {
     const _bandBot   = midY - topH * 0.06;
-    const _scentHalf = scentBlock * 0.5;
+    const _scentHalf = _scentWrapped ? (scentLines.length-1)*scentLH + scentLH*0.5 : scentBlock * 0.5;
     const _gap       = Math.max(2, Math.min(bizFS, scentFS) * 0.28);
     const _nGap      = webLine ? 2 : 1;
-    _bizYf = Math.max(bizY, scentTopY + _scentHalf + _gap + _bizFSf * 0.5);
+    const _gapS      = _scentWrapped ? Math.max(_gap, _wrapInkGap(_bizFSf)) : _gap;
+    _bizYf = Math.max(bizY, scentTopY + _scentHalf + _gapS + _bizFSf * 0.5);
     _webYf = webLine ? Math.max(webY, _bizYf + _bizFSf * 0.5 + _gap + _webFSf * 0.5) : webY;
     const _stackBot = webLine ? _webYf + _webFSf * 0.5 : _bizYf + _bizFSf * 0.5;
     if(_stackBot > _bandBot){
       // Not enough room — shrink biz/web to fit and tight-stack below the scent.
-      const _R   = _bandBot - scentTopY - _scentHalf - _gap * _nGap;
+      const _R   = _bandBot - scentTopY - _scentHalf - (_scentWrapped ? _gapS + (webLine ? _gap : 0) : _gap * _nGap);
       const _sum = _bizFSf + (webLine ? _webFSf : 0);
       if(_sum > _R){
         const _k = Math.max(_R / _sum, 0.5);
         _bizFSf *= _k; _webFSf *= _k;
       }
-      _bizYf = scentTopY + _scentHalf + _gap + _bizFSf * 0.5;
+      _bizYf = scentTopY + _scentHalf + (_scentWrapped ? Math.max(_gap, _wrapInkGap(_bizFSf)) : _gap) + _bizFSf * 0.5;
       _webYf = _bizYf + _bizFSf * 0.5 + _gap + _webFSf * 0.5;
     }
   }
@@ -1272,6 +1371,19 @@ function renderLabel(rawData, opts){
   if(_bizFSf < _mandatoryMinFS){
     _bizFSf = _mandatoryMinFS;
     if(measureText(bizName, _bizFSf, true, true) > bizSW*0.84) _bizNameTooSmall = true;
+  }
+  // Wrapped straight product name: verify the visible ink of every product-name
+  // line keeps PRODUCT_NAME_BIZ_CLEARANCE_MM from the visible business name
+  // (per-glyph ink boxes at their final sizes and positions). If the complete
+  // wrapped name cannot keep it (at the mandatory minimum -- a wrapped name is
+  // always at the minimum), block through the existing _scentTooSmall path:
+  // NOT FIT, blocked download, the whole name still drawn, nothing removed.
+  let _scentWrapCollision = false;
+  if(_scentWrapped){
+    const fam='Georgia,serif', A=[];
+    scentLines.forEach((ln,i)=>A.push(...straightTextInkBoxes(ln, cx, scentTopY+i*scentLH, scentFS, fam)));
+    const B=straightTextInkBoxes(bizName, cx, _bizYf, _bizFSf, fam);
+    if(boxSetsMinDistance(A,B) < PRODUCT_NAME_BIZ_CLEARANCE_MM*_pxPerMm){ _scentWrapCollision=true; _scentTooSmall=true; }
   }
 
   // ── CIRCLE: CURVED PRODUCT NAME vs BUSINESS NAME (Builder Label Technical
@@ -2272,6 +2384,11 @@ function renderLabel(rawData, opts){
     // name by ARC_BIZ_CLEARANCE_MM even at the mandatory minimum size (M45);
     // always also reported through scentTooSmall, which is what blocks.
     scentArcCollision: _scentArcCollision,
+    // Square/rectangle only: a product name that has to wrap (it cannot fit on
+    // one line even at the mandatory minimum) cannot keep
+    // PRODUCT_NAME_BIZ_CLEARANCE_MM from the business name (M43); always also
+    // reported through scentTooSmall, which is what blocks.
+    scentWrapCollision: _scentWrapCollision,
     businessNameTooSmall: _bizNameTooSmall,
     productTypeTooSmall: _typeTooSmall,
     signalWordTooSmall: _signalTooSmall,

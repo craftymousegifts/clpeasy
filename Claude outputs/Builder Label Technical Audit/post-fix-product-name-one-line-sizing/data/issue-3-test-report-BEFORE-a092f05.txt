@@ -1,0 +1,2 @@
+REPORT label-render.js (a092f05, before the fix) 
+1008 measured renders (12 geometries x 2 font scenarios): 637 FIT, 371 NOT FIT; growth steps 480, collapses 36; "+" sweeps 144, shrinks 29, one-line->wrapped 0; wrapped names 128 (94 FIT, 0 blocked for clearance), FIT wrapped below 0.5mm (tolerance 0.071mm): 11, smallest FIT wrapped clearance 0.000mm, smallest FIT single-line (square/rect) clearance 1.100mm; FIT with overlap 10; incomplete names 0; Builder/Composer mismatches 0
