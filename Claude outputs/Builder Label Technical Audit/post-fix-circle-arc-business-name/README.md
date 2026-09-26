@@ -21,7 +21,9 @@ On circles the product name is drawn on a fixed arc. Its size was fitted as stra
    - the full name is kept at that size;
    - the label is blocked through the existing `scentTooSmall` path: NOT FIT, red overlay, blocked download;
    - Builder's "smallest size that fits" suggestion is shown.
-4. **Manual "+" limit.** The product-name "+" adjustment cannot exceed the capped size (`fsBounds.scent.max`).
+4. **Manual "+" limit.** The cap applies to the automatic size and to the manual product-name "+"/"−" size alike, so "+" can never draw the name closer than 0.5 mm.
+   - The Builder's fine-tune range (`fsBounds.scent`) is left as before. Reporting the cap as the "+" maximum fed back through the existing header spacing and made "+" shrink the name slightly; signed-out QA found this and it was corrected before sign-off.
+   - Stepping "+" up never makes the drawn name smaller, except the pre-existing collapse to the minimum when a requested size no longer fits as one straight line (audit finding M43, out of scope). That happens in 8 of 32 sweeps, down from 12 before the fix.
 5. **Not changed:**
    - business-name position and size;
    - arc radius;
@@ -43,6 +45,7 @@ Pixel test: 343 circle cases × 3 font scenarios = 1,029 renders at 52, 63, 75, 
 | FIT renders with visible product-name/business-name overlap | **362** | **0** |
 | FIT renders closer than 0.5 mm (tolerance 0.071 mm = one pixel diagonal at 20 px/mm) | 399 | **0** |
 | Smallest clearance on a FIT label | 0.000 mm | **0.570 mm** |
+| Manual "+" sweeps checked (never shrinking the name, M43 aside) | — | 96 |
 | NOT FIT because the complete name cannot clear at the minimum size | 0 | 118 |
 
 **FIT → NOT FIT changes** (`data/fit-changes-vs-pre-fix.txt`):

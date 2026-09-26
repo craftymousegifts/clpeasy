@@ -34,7 +34,8 @@
 //     baseline.json), except the block flags/overlay on newly blocked labels;
 //   - squares/rectangles are byte-identical to main
 //     (tests/fixtures/square-rect-render-baseline.json);
-//   - the manual product-name "+" cannot exceed the collision-safe size;
+//   - the manual product-name "+" (pushed past its maximum) still clears the
+//     business name, and stepping it up never makes the drawn name smaller;
 //   - Builder's download gate and Composer's message read the flag used.
 // Issue #1 (per-line hazard text containment) has its own test:
 // tests/circle-per-line-text-containment.js.
@@ -91,6 +92,23 @@ async function analyseInPage(c, pxPerMm, families) {
     scentMaxMm: r.metrics.fsBounds.scent.max / k, floorMm: null,
     arcText: arc ? arc.textContent : null, bizFound: !!biz,
   };
+  // Manual product-name "+" (scentFSOverride), stepped from the fine-tune
+  // minimum to its maximum: the drawn size must never go DOWN as "+" goes up.
+  // Two exceptions, neither caused by this fix: bisection rounding (<1e-4 layout
+  // units), and the pre-existing collapse of a requested size that no longer
+  // fits as ONE straight line to the mandatory minimum (audit finding M43, out
+  // of scope here; it happens identically in the pre-fix renderer).
+  if (c.opts && c.opts.scentFSOverride === 999) {
+    const b = r.metrics.fsBounds.scent; let prev = -Infinity; out.plusMonotone = true;
+    const floor = Math.max(1.2 * k, 3.2); // label-render.js _mandatoryMinFS
+    for (let i = 0; i <= 24; i++) {
+      const v = b.min + (b.max - b.min) * i / 24;
+      const rr = LR.renderLabel(c.data, { instanceId: 'm' + i, scentFSOverride: v });
+      const fs = rr.metrics.fontSizes.scent;
+      if (fs < prev - 1e-4 && Math.abs(fs - floor) > 1e-6) out.plusMonotone = false;
+      prev = fs;
+    }
+  }
   if (!arc || !biz) return out;
   // Complete name drawn: its advance must fit on the arc path (textPath drops
   // glyphs that run past the path's end).
@@ -194,7 +212,7 @@ async function analyseInPage(c, pxPerMm, families) {
   // ── 4. Real-browser pixel checks ─────────────────────────────────────
   const cases = circleArcCases();
   const browser = await puppeteer.launch({ executablePath: chromiumPath(), args: ['--no-sandbox'] });
-  const stats = { renders: 0, fit: 0, notFit: 0, fitWithOverlap: 0, fitBelowClearance: 0, arcBlocked: 0, minGapMm: Infinity, overlapRenders: 0, maxOverrideExcessMm: 0 };
+  const stats = { renders: 0, fit: 0, notFit: 0, fitWithOverlap: 0, fitBelowClearance: 0, arcBlocked: 0, minGapMm: Infinity, overlapRenders: 0, plusSweeps: 0 };
   const failures = [];
   try {
     for (const [scen, families] of Object.entries(SCENARIOS)) {
@@ -216,6 +234,7 @@ async function analyseInPage(c, pxPerMm, families) {
         // Complete product name present and fully drawn, on every render.
         check(res.bizFound, 'business name element not found');
         check(res.arcText === c.data.scentName, `curved product name is not the complete name (got ${JSON.stringify(res.arcText)})`);
+        if (res.plusMonotone !== undefined) { stats.plusSweeps++; check(res.plusMonotone, 'pressing "+" (larger scentFSOverride) made the drawn product name smaller'); }
         check(res.arcAdvance <= res.arcPathLen + 0.01, `curved product name runs past the end of its arc (glyphs dropped): ${res.arcAdvance} > ${res.arcPathLen}`);
         if (res.fits) {
           stats.fit++;
@@ -226,9 +245,10 @@ async function analyseInPage(c, pxPerMm, families) {
           check(res.overlapPx === 0, `FIT label with ${res.overlapPx} px of product-name/business-name overlap`);
           check(res.gapMm >= CLEARANCE_MM - TOL_MM, `FIT label with only ${res.gapMm.toFixed(3)}mm between product name and business name`);
           check(!res.overlay && !res.blocked, 'FIT label is blocked');
-          // "+" can never exceed the collision-safe size.
-          check(res.scentMm <= res.scentMaxMm + 1e-9, `product-name size ${res.scentMm} exceeds its reported maximum ${res.scentMaxMm}`);
-          if (c.opts && c.opts.scentFSOverride === 999) stats.maxOverrideExcessMm = Math.max(stats.maxOverrideExcessMm, res.scentMm - res.scentMaxMm);
+          // "+" pushed past its maximum is covered by the clearance checks above
+          // (the case with scentFSOverride 999); the drawn size never exceeds
+          // the fine-tune maximum either.
+          check(res.scentMm <= res.scentMaxMm + 1e-9, `product-name size ${res.scentMm} exceeds its fine-tune maximum ${res.scentMaxMm}`);
         } else {
           stats.notFit++;
           check(res.blocked && res.overlay, 'NOT FIT label is not blocked with the overlay');
@@ -245,7 +265,7 @@ async function analyseInPage(c, pxPerMm, families) {
     await browser.close();
   }
 
-  const summary = `${stats.renders} circle renders (${cases.length} cases x ${Object.keys(SCENARIOS).length} font scenarios): ${stats.fit} FIT, ${stats.notFit} NOT FIT (${stats.arcBlocked} blocked because the complete name cannot clear the business name at the minimum size); renders with any overlap: ${stats.overlapRenders}; FIT with overlap: ${stats.fitWithOverlap}; FIT below ${CLEARANCE_MM}mm clearance (tolerance ${TOL_MM.toFixed(3)}mm): ${stats.fitBelowClearance}; smallest FIT clearance ${stats.minGapMm.toFixed(3)}mm`;
+  const summary = `${stats.renders} circle renders (${cases.length} cases x ${Object.keys(SCENARIOS).length} font scenarios): ${stats.fit} FIT, ${stats.notFit} NOT FIT (${stats.arcBlocked} blocked because the complete name cannot clear the business name at the minimum size); renders with any overlap: ${stats.overlapRenders}; FIT with overlap: ${stats.fitWithOverlap}; FIT below ${CLEARANCE_MM}mm clearance (tolerance ${TOL_MM.toFixed(3)}mm): ${stats.fitBelowClearance}; smallest FIT clearance ${stats.minGapMm.toFixed(3)}mm; "+" sweeps never shrinking the name: ${stats.plusSweeps}`;
   if (REPORT) { console.log('REPORT', rendererPath, '\n' + summary); return; }
   if (failures.length) { console.error(failures.slice(0, 40).join('\n')); throw new Error(`${failures.length} failures\n${summary}`); }
   assert(stats.fit >= 300 && stats.arcBlocked > 0, `expected a meaningful mix of FIT and arc-blocked renders: ${summary}`);

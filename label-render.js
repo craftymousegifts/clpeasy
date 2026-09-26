@@ -1409,22 +1409,22 @@ function renderLabel(rawData, opts){
       for(let i=0;i<_arcChars.length;i++){ pre+=_arcChars[i]; e1.push(measureText(pre,fs,true,false)); acc+=_dmEm[i]*fs; e2.push(acc); }
       return _clearFor(fs,e1,_arcBands) && _clearFor(fs,e2,_arcBandsDM);
     };
+    // The cap applies to whatever size was asked for -- automatic or the
+    // manual +/- fine-tune (scentFSOverride) -- so "+" can never draw the name
+    // beyond it. The fine-tune bounds reported to the Builder are deliberately
+    // left as they were: the cap depends on the business name's final
+    // position, which the header guard above derives from the requested size,
+    // so reporting the cap as the "+" maximum would feed back into a smaller
+    // requested size and make "+" shrink the name.
     if(!_arcClear(_mandatoryMinFS)){
       _scentArcCollision=true;
       _scentTooSmall=true;
       scentFS=_mandatoryMinFS;
-      _scentFSBounds.max=_mandatoryMinFS;
-    } else {
-      let _lo=_mandatoryMinFS, _hi=Math.max(scentMaxFS,_mandatoryMinFS);
-      if(!_arcClear(_hi)){
-        for(let i=0;i<24;i++){ const m=(_lo+_hi)/2; if(_arcClear(m)) _lo=m; else _hi=m; }
-        // _lo: largest size (to ~1e-6 of the size range) whose ink clears the business name
-        _scentFSBounds.max=_lo;
-        if(scentFS>_lo) scentFS=_lo;
-      }
+    } else if(scentFS>_mandatoryMinFS && !_arcClear(scentFS)){
+      let _lo=_mandatoryMinFS, _hi=scentFS;
+      for(let i=0;i<24;i++){ const m=(_lo+_hi)/2; if(_arcClear(m)) _lo=m; else _hi=m; }
+      scentFS=_lo; // largest size (to ~1e-6 of the range) whose ink clears the business name
     }
-    _scentFSBounds.min=Math.min(_scentFSBounds.min,_scentFSBounds.max);
-    _scentFSBounds.auto=Math.min(_scentFSBounds.auto,_scentFSBounds.max);
   }
 
   // ── HEADER → MID-BAND BREATHING ──────────────────────────────
