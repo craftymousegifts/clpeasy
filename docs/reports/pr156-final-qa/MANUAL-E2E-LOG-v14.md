@@ -15,6 +15,7 @@
 | M3 | V13 C1: first size-aware download of a label last downloaded under the old `name::type` key within 7 days | **PASS** | See M3 below. |
 | M4 | Print Sheet Composer "Print / Save as PDF" as an active Easy Start subscriber (v13 two-argument `consume_download`, Composer sends no label key) | **PASS** | See M4 below. |
 | M5 | V13 C4: changing the fragrance load on a reopened saved label forces a hazard re-check | **PASS** | See M5 below. Used no downloads. |
+| M6 | V13 C4: changing the product type → "Clear hazard data and extract again" | **PASS** | See M6 below. Used no downloads. |
 
 ## M3 details
 
@@ -65,6 +66,23 @@ Michaela opened **iugigig EDITED** (saved fragrance load: blank), changed the fr
   - The Step 3 hazard confirmation reset to unticked.
 - She left without saving and reopened the label. The fragrance load was blank again, so the
   temporary change was not saved.
+
+## M6 details
+
+Michaela opened **iugigig EDITED**, changed the product type from Scented Candle to Wax Melt,
+and was blocked by the v13 re-check.
+
+- She chose "Clear hazard data and extract again". All hazard information was cleared and the
+  preview became hazard-free.
+- She left without saving and reopened the label. The saved copy returned unchanged: Scented
+  Candle, DANGER, all four pictograms and the original hazard information.
+- Account stayed at 1 / 20 used, 24 purchased, 43 total.
+
+**Read-only backend check (20:46 UTC):**
+
+- `downloads_used` 1, `downloads_limit` 20, `topup_credits` 24.
+- `label_downloads` still has 4 records, and the newest is still the M3 record from 20:23:01.
+- Nothing was charged or recorded.
 
 ## UX finding F1 (recorded, not changed)
 
