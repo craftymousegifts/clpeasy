@@ -1,0 +1,29 @@
+circle renders 90 orig FIT 39 new FIT 39
+FIT circles with a line outside circle: orig 14 new 0
+min edge distance on new FIT circles (mm): 0.11
+square/rect renders 108 differing (svg hash or fits): 0
+changes:
+01-short-simple | circle-100 | FIT -> FIT | hazard 3.78 -> 3.52 mm | worst edge -1.05 -> 0.95 mm | 
+01-short-simple | circle-75 | FIT -> FIT | hazard 2.56 -> 2.49 mm | worst edge 0.72 -> 0.72 mm | 
+02-long-product-name | circle-63 | FIT -> FIT | hazard 1.35 -> 1.31 mm | worst edge 0.47 -> 0.47 mm | 
+02-long-product-name | circle-75 | FIT -> FIT | hazard 1.67 -> 1.64 mm | worst edge 0.69 -> 0.74 mm | 
+03-long-supplier-address | circle-75 | BLOCK -> BLOCK | hazard 1.64 -> 1.59 mm | worst edge -18.32 -> -18.32 mm | footer-clipped
+04-max-H | circle-100 | FIT -> FIT | hazard 2.05 -> 2.01 mm | worst edge 0.98 -> 0.98 mm | 
+05-max-P | circle-100 | FIT -> FIT | hazard 1.51 -> 1.47 mm | worst edge -2.64 -> 0.98 mm | 
+06-several-EUH | circle-100 | FIT -> FIT | hazard 2.16 -> 2.14 mm | worst edge 0.98 -> 0.98 mm | 
+07-multi-sensitisers | circle-100 | FIT -> FIT | hazard 2.27 -> 2.22 mm | worst edge 0.42 -> 0.98 mm | 
+08-long-sensitiser-names | circle-100 | FIT -> FIT | hazard 2.16 -> 2.09 mm | worst edge 0.82 -> 0.98 mm | 
+09-one-pictogram | circle-63 | FIT -> FIT | hazard 1.33 -> 1.31 mm | worst edge 0.47 -> 0.47 mm | 
+09-one-pictogram | circle-75 | FIT -> FIT | hazard 1.67 -> 1.63 mm | worst edge 0.65 -> 0.74 mm | 
+10-two-pictograms | circle-63 | FIT -> FIT | hazard 1.33 -> 1.31 mm | worst edge 0.47 -> 0.47 mm | 
+10-two-pictograms | circle-75 | FIT -> FIT | hazard 1.67 -> 1.63 mm | worst edge 0.65 -> 0.74 mm | 
+11-three-plus-pictograms | circle-100 | FIT -> FIT | hazard 2.27 -> 2.22 mm | worst edge 0.42 -> 0.98 mm | 
+13-special-chars | circle-63 | FIT -> FIT | hazard 1.37 -> 1.33 mm | worst edge 0.47 -> 0.47 mm | 
+14-missing-optional | circle-100 | FIT -> FIT | hazard 8.14 -> 7.55 mm | worst edge -0.63 -> 2.74 mm | 
+15-long-candle | circle-100 | FIT -> FIT | hazard 2.16 -> 2.03 mm | worst edge -1.94 -> 0.35 mm | 
+15-long-candle | circle-75 | BLOCK -> BLOCK | hazard 1.51 -> 1.47 mm | worst edge -0.13 -> -0.13 mm | footer-clipped
+16-long-wax-melt | circle-100 | FIT -> FIT | hazard 2.24 -> 2.16 mm | worst edge -1.84 -> 0.37 mm | 
+16-long-wax-melt | circle-75 | FIT -> FIT | hazard 1.55 -> 1.52 mm | worst edge -0.82 -> 0.28 mm | 
+17-long-diffuser | circle-100 | FIT -> FIT | hazard 1.98 -> 1.9 mm | worst edge -2.27 -> 0.39 mm | 
+18-long-room-spray | circle-100 | FIT -> FIT | hazard 2.03 -> 1.96 mm | worst edge -4.51 -> 0.39 mm | 
+18-long-room-spray | circle-75 | FIT -> FIT | hazard 1.39 -> 1.32 mm | worst edge -0.97 -> 0.29 mm | 

@@ -1,0 +1,19 @@
+01-short-simple            smallest fitting circle: orig 52 mm, new 52 mm 
+02-long-product-name       smallest fitting circle: orig 56 mm, new 58 mm  changes: 56F→B 57F→B
+03-long-supplier-address   smallest fitting circle: orig none mm, new none mm 
+04-max-H                   smallest fitting circle: orig 88 mm, new 88 mm 
+05-max-P                   smallest fitting circle: orig 82 mm, new 83 mm  changes: 82F→B
+06-several-EUH             smallest fitting circle: orig 66 mm, new 66 mm 
+07-multi-sensitisers       smallest fitting circle: orig 61 mm, new 61 mm 
+08-long-sensitiser-names   smallest fitting circle: orig 66 mm, new 66 mm 
+09-one-pictogram           smallest fitting circle: orig 56 mm, new 58 mm  changes: 56F→B 57F→B
+10-two-pictograms          smallest fitting circle: orig 56 mm, new 58 mm  changes: 56F→B 57F→B
+11-three-plus-pictograms   smallest fitting circle: orig 88 mm, new 88 mm 
+12-heavy-combined          smallest fitting circle: orig none mm, new none mm 
+13-special-chars           smallest fitting circle: orig 56 mm, new 57 mm  changes: 56F→B
+14-missing-optional        smallest fitting circle: orig 52 mm, new 52 mm 
+15-long-candle             smallest fitting circle: orig 88 mm, new 88 mm 
+16-long-wax-melt           smallest fitting circle: orig 62 mm, new 62 mm 
+17-long-diffuser           smallest fitting circle: orig 88 mm, new 88 mm 
+18-long-room-spray         smallest fitting circle: orig 66 mm, new 68 mm  changes: 66F→B 67F→B
+renders per version 1062 fit-state changes 10

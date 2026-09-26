@@ -1,0 +1,10 @@
+02-long-product-name 56mm {"fits":true,"minClearanceMm":1} inside but < existing 2mm margin
+02-long-product-name 57mm {"fits":true,"minClearanceMm":1.29} inside but < existing 2mm margin
+05-max-P 82mm {"fits":true,"minClearanceMm":-2.61} CLIPPED
+09-one-pictogram 56mm {"fits":true,"minClearanceMm":1.01} inside but < existing 2mm margin
+09-one-pictogram 57mm {"fits":true,"minClearanceMm":1.09} inside but < existing 2mm margin
+10-two-pictograms 56mm {"fits":true,"minClearanceMm":1.01} inside but < existing 2mm margin
+10-two-pictograms 57mm {"fits":true,"minClearanceMm":1.09} inside but < existing 2mm margin
+13-special-chars 56mm {"fits":true,"minClearanceMm":1.03} inside but < existing 2mm margin
+18-long-room-spray 66mm {"fits":true,"minClearanceMm":-0.78} CLIPPED
+18-long-room-spray 67mm {"fits":true,"minClearanceMm":-2.15} CLIPPED
