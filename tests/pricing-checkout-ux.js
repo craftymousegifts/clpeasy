@@ -127,6 +127,7 @@ server.listen(0, '127.0.0.1', async () => {
     total: document.getElementById('summary-total').textContent,
     note: getComputedStyle(document.getElementById('summary-promo-note')).display !== 'none' ? document.getElementById('summary-promo-note').textContent : '',
   }));
+  const planCards = t => t.evaluate(() => [...document.querySelectorAll('#plan-grid .plan-card')].map(card => card.textContent.replace(/\s+/g, ' ').trim()));
   const startOn = async (t, page, plan, billing) => {
     if (page === 'pricing.html') {
       await t.evaluate(b => { const btn = [...document.querySelectorAll('.toggle-btn')].find(x => x.getAttribute('onclick').includes(`'${b}'`)); setBilling(b, btn); }, billing);
@@ -144,6 +145,16 @@ server.listen(0, '127.0.0.1', async () => {
 
   try {
     // ── 2. checkout.html promotional order summary ──
+    await check('checkout.html: monthly plan-choice cards show the same 2026 offer prices as the summary', async () => {
+      const ctx = await browser.createBrowserContext();
+      const t = await open(ctx, 'checkout.html', { nowIso: '2026-09-27T12:00:00Z', cookies: false });
+      await t.evaluate(() => setBilling('monthly'));
+      const cards = await planCards(t);
+      assert(cards[0].includes('£8.99/mo') && cards[0].includes('Normally £9.99/month') && cards[0].includes('10% launch offer until 31 Dec 2026'), cards[0]);
+      assert(cards[1].includes('£13.49/mo') && cards[1].includes('Normally £14.99/month') && cards[1].includes('10% launch offer until 31 Dec 2026'), cards[1]);
+      await ctx.close();
+    });
+
     await check('checkout.html: Easy Start MONTHLY summary = standard £9.99, 2026 offer −£1.00, due today £8.99/month', async () => {
       const ctx = await newCustomer();
       const t = await open(ctx, 'checkout.html', { nowIso: '2026-10-01T12:00:00Z', cookies: false });
@@ -192,6 +203,9 @@ server.listen(0, '127.0.0.1', async () => {
       await t.evaluate(() => { setBilling('monthly'); selectPlan('easy_start'); });
       const s = await summary(t);
       assert.deepStrictEqual([s.price, s.promoRow, s.total, s.note], ['£9.99/mo', false, '£9.99', '']);
+      const cards = await planCards(t);
+      assert(cards[0].includes('£9.99/mo') && !cards[0].includes('launch offer'), cards[0]);
+      assert(cards[1].includes('£14.99/mo') && !cards[1].includes('launch offer'), cards[1]);
       await t.evaluate(() => selectPlan('easy_pro'));
       assert.strictEqual((await summary(t)).total, '£14.99');
       await ctx.close();
