@@ -130,9 +130,17 @@ Owner-confirmed configuration; runtime verification pending the first Live event
 - **Database:** the migrations have no automatic down-migration and the old `consume_download(text)` was dropped. Rolling back the site without the database would break downloads, so roll back the site and database together, or fix forward.
 
 ## Result
-**RELEASE PASS — QUALIFIED: FAILED LIVE SMOKE TEST (see 13), unresolved.** The deployment steps (migrations, functions, merge, site) passed. The first signed-in live smoke test failed because of a production configuration error.
+**RELEASE PASS — QUALIFIED: live smoke tests not all passed (see 13–14).** The deployment steps (migrations, functions, merge, site) passed.
 
-## 13. Post-release live smoke test failure — 27 Sep 2026 11:08 UTC — OPEN
+Live checkout smoke tests (no payments made):
+
+| Test | Result |
+|---|---|
+| PAYG | **PASS** |
+| Easy Start monthly | **PASS** |
+| Easy Pro monthly | **FAIL — pending resolution**. Most likely cause: CLPeasy's own 5-minute duplicate-checkout lock (see 14). |
+
+## 13. Post-release live smoke test failure — 27 Sep 2026 11:08 UTC — RESOLVED (owner replaced STRIPE_SECRET_KEY with the genuine sk_live secret)
 
 **What the owner saw:** signed in on clpeasy.com → Pricing → "Buy 8 downloads — £4.99". The button showed "Opening secure checkout...", then the alert "Something went wrong starting checkout. Please try again." Stripe Checkout did not open. No payment was made.
 
@@ -174,3 +182,33 @@ The earlier gate recorded this secret as OWNER-CONFIRMED. The pre-merge probes (
 No code change, redeploy or rollback is required: functions read the secret on each cold start. A rollback would not help, because the pre-release functions read the same secret.
 
 **After the fix:** repeat the PAYG smoke test (open Checkout, confirm £4.99 Live, close without paying), then check the logs for a `POST 200` from create-checkout-session.
+
+## 14. Live checkout smoke tests after the key correction — 27 Sep 2026
+
+Owner-run in Live mode; no payment made in any test.
+
+| Test | Result | Evidence |
+|---|---|---|
+| PAYG | **PASS** | Live Checkout opened: "CLPeasy Pay As You Go downloads", £4.99, 5 + 3 FREE = 8. `create-checkout-session` POST 200 at 11:23:39Z. |
+| Easy Start monthly | **PASS** | Live Checkout opened: £9.99/month, "CLPeasy 2026 Launch Offer – 10% Off" −£1.00, due today £8.99. Function booted 11:24:25Z; `checkout_locks` row created 11:24:26Z (written only after the JWT check and before Stripe is called). The POST line had not arrived in the log stream at the time of writing. |
+| Easy Pro monthly (checkout.html) | **FAIL — pending resolution** | "Something went wrong starting checkout." Function booted 11:26:08Z. No new `checkout_locks` row. No "Stripe error" logged (this function logs every Stripe rejection; log ingestion for this window was still incomplete). |
+
+**Diagnosis (strongly supported; final confirmation needs the retry below):**
+- `create-checkout-session` has a deliberate duplicate-subscription guard, in place since 28 Jul 2026 and unchanged in behaviour by PR #156. After a subscription Checkout Session is created successfully, it keeps a `checkout_locks` row for that user for **5 minutes**. This stops two subscriptions being started from two tabs.
+- The Easy Start test created that lock at 11:24:26. The Easy Pro attempt, about 1 min 42 s later on the same account, could not take the lock. The function therefore returned `409 CHECKOUT_IN_PROGRESS` ("A checkout is already in progress for this account. Please wait a moment and try again.") without calling Stripe.
+- `checkout.html` ignores the server's message and shows the generic "Something went wrong starting checkout" alert. This handling is pre-existing (checkout.html is unchanged by PR #156); pricing.html already shows the server's message for this code.
+
+**Requested checks:**
+
+| # | Check | Result |
+|---|---|---|
+| 1 | Price ID sent | `checkout.html` sends `price_1TdoEXGZLILz5vqUvZKB1RQw` for Easy Pro monthly. The function maps it to the Easy Pro promo coupon secret. |
+| 2, 3, 4, 6 | Price exists/active in Live at £14.99; coupon `tdO6j8q7` applies to it; coupon product restrictions | **NOT DIRECTLY VERIFIABLE** from this environment: no Stripe API access, and the secret is not readable. If the diagnosis holds, Stripe was never called, so these are not the cause. The retry below exercises them. |
+| 5 | Session parameters, Easy Start vs Easy Pro monthly | Identical apart from the price ID and which promo secret is read. Both promo secrets hold the same coupon (owner-confirmed). |
+| 7 | Scope | The lock applies to every **subscription** checkout (Easy Start/Pro, monthly and annual) for 5 minutes after a successful subscription checkout by the same account. PAYG and subscriber top-ups (payment mode) do not use it. |
+
+**Customer impact:** a customer who opens one plan's Checkout, abandons it and picks another plan within 5 minutes gets a misleading generic error on checkout.html. After 5 minutes it works. No charge and no data change result.
+
+**Confirming test (owner, no payment):** after 11:29:26Z (the lock expires 5 minutes after it was created), retry Easy Pro monthly on checkout.html. If Live Checkout opens at £14.99 with −£1.50 and £13.49 due today, the diagnosis is confirmed and Easy Pro monthly is PASS. If it still fails, the Stripe error will now be in the logs.
+
+**Optional follow-up (code change, needs approval, not a release blocker):** make checkout.html show the server's message for `CHECKOUT_IN_PROGRESS` / `ALREADY_SUBSCRIBED`, as pricing.html does.
