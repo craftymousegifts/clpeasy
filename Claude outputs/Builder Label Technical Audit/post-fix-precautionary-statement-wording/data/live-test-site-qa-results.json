@@ -1,0 +1,198 @@
+{
+ "site": "https://clpeasy-circle-fit-test.netlify.app",
+ "deploy": "6ab8c14dcdaaa08b59c5f62a",
+ "commit": "b88fad2",
+ "signedOut": true,
+ "rows": [
+  {
+   "id": "A Nikura Section 2.2",
+   "cards": [
+    [
+     "P261",
+     false,
+     "✓ From your pasted SDS — check it matches"
+    ],
+    [
+     "P302+P352",
+     false,
+     "✓ From your pasted SDS — check it matches"
+    ],
+    [
+     "P501",
+     false,
+     "✓ From your pasted SDS — check it matches"
+    ]
+   ],
+   "hasSupplierWording": [
+    true,
+    true,
+    true,
+    true
+   ],
+   "furniture": false,
+   "stepAfter3": 4,
+   "alerts": []
+  },
+  {
+   "id": "B codes only -> maker completes",
+   "cards": [
+    {
+     "code": "P261",
+     "incomplete": true,
+     "emptyInputs": true,
+     "ticked": 0,
+     "reason": "Smart Paste couldn't find this statement's wording next to its code in your pasted text."
+    },
+    {
+     "code": "P370+P378",
+     "incomplete": true,
+     "emptyInputs": true,
+     "ticked": 0,
+     "reason": "Smart Paste couldn't find this statement's wording next to its code in your pasted text."
+    },
+    {
+     "code": "P501",
+     "incomplete": true,
+     "emptyInputs": true,
+     "ticked": 0,
+     "reason": "Smart Paste couldn't find this statement's wording next to its code in your pasted text."
+    }
+   ],
+   "p305Full": true,
+   "invented": false,
+   "stepAfter3": 3,
+   "step3Alert": "Complete the supplier wording for P261, P370+P378, P501 (Step 3). Copy it from the matching precautionary statement in Section 2.2 of your current supplier SDS.",
+   "stepAfterCompleting": 4,
+   "printed": [
+    true,
+    true,
+    true
+   ]
+  },
+  {
+   "id": "C contaminated P501",
+   "cards": [
+    {
+     "code": "P501",
+     "incomplete": true,
+     "reason": "The text next to this code included page, document or company details, so it wasn't used."
+    }
+   ],
+   "contaminationPrinted": false
+  },
+  {
+   "id": "D P280 picker unchanged",
+   "modalOpened": true,
+   "printed": true,
+   "cards": 0
+  },
+  {
+   "id": "E DESKTOP go-back, P501 cleared",
+   "before": {
+    "step": 5,
+    "allowed": true
+   },
+   "after": {
+    "step": 3,
+    "allowed": false,
+    "png": false,
+    "svg": false,
+    "pdf": false,
+    "pngPrev": false,
+    "save": true,
+    "physical": false,
+    "warn": "⚠️ Download unavailable — required label content is missingComplete the supplier wording for P501 (Step 3). Copy it from the matching precautionary statement in Section 2.2 of your current supplier SDS."
+   },
+   "downloadsOrOpens": {
+    "anchor": 0,
+    "open": 0
+   },
+   "refusals": 8,
+   "allNameP501": true,
+   "sample": "This label is missing required content, so it can't be downloaded yet: • Complete the supplier wording for P501 (Step 3). Copy it from the matching precautionary statement in Section 2.2 of your curre"
+  },
+  {
+   "id": "E MOBILE go-back, P501 cleared",
+   "before": {
+    "step": 5,
+    "allowed": true
+   },
+   "after": {
+    "step": 3,
+    "allowed": false,
+    "png": false,
+    "svg": false,
+    "pdf": false,
+    "pngPrev": false,
+    "save": true,
+    "physical": false,
+    "warn": "⚠️ Download unavailable — required label content is missingComplete the supplier wording for P501 (Step 3). Copy it from the matching precautionary statement in Section 2.2 of your current supplier SDS."
+   },
+   "downloadsOrOpens": {
+    "anchor": 0,
+    "open": 0
+   },
+   "refusals": 8,
+   "allNameP501": true,
+   "sample": "This label is missing required content, so it can't be downloaded yet: • Complete the supplier wording for P501 (Step 3). Copy it from the matching precautionary statement in Section 2.2 of your curre"
+  },
+  {
+   "id": "F v1 saved label at Step 5",
+   "recordUntouched": true,
+   "gate": {
+    "step": 5,
+    "allowed": false,
+    "png": false,
+    "svg": false,
+    "pdf": false,
+    "pngPrev": false,
+    "save": true,
+    "physical": false,
+    "warn": "⚠️ Download unavailable — required label content is missing Complete the supplier wording for P261, P501 (Step 3). Copy it from the matching precautionary statement in Section 2.2 of your current supplier SDS."
+   },
+   "p305Full": true,
+   "genericFallback": false,
+   "downloadsOrOpens": {
+    "anchor": 0,
+    "open": 0
+   },
+   "refusals": 8
+  },
+  {
+   "id": "G Composer (guest)",
+   "res": [
+    {
+     "label": "OK",
+     "contentIssues": [],
+     "exportBlocked": false,
+     "cellMarked": 0
+    },
+    {
+     "label": "DONE",
+     "contentIssues": [],
+     "exportBlocked": false,
+     "cellMarked": 0
+    },
+    {
+     "label": "V1",
+     "contentIssues": [
+      "P501 needs its supplier-specific wording. Open this label in the Builder and complete it in Step 3 from the supplier SDS."
+     ],
+     "exportBlocked": true,
+     "cellMarked": 1
+    },
+    {
+     "label": "FIRE",
+     "contentIssues": [
+      "P370+P378 needs its supplier-specific wording. Open this label in the Builder and complete it in Step 3 from the supplier SDS."
+     ],
+     "exportBlocked": true,
+     "cellMarked": 1
+    }
+   ],
+   "unchanged": "[[\"QA Fixed Only\",\"P102, P305+P351+P338\",null,null],[\"QA Completed P501\",\"P102, P501\",{\"P501\":{\"scope\":\"both\",\"text\":\"an approved waste site\",\"source\":\"maker\"}},2],[\"QA Old v1 P501\",\"P102, P501\",null,1],[\"QA No Media\",\"P370, P378\",null,null]]"
+  }
+ ],
+ "pageErrors": [],
+ "blockedWrites": []
+}
