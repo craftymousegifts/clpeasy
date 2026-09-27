@@ -2,6 +2,7 @@
 // jsdom baseline (tests/fixtures/generate-product-name-sizing-baseline.js).
 // No production/customer data. Covers Builder Label Technical Audit finding
 // M43: product-name sizing when the name no longer fits on one line.
+const { FIXTURE_P_CHOICES } = require('./p-statement-choices'); // Issue #5: supplier P completions (test data)
 const crypto = require('crypto');
 const { JSDOM } = require('jsdom');
 
@@ -20,7 +21,7 @@ const REALISTIC = ['Rose', 'Vanilla Bean', 'Lavender Fields', 'Midnight Blackber
 const content = (shape, w, h, name, bizName) => ({
   shape, size: 'custom', customW: w, customH: h, scentName: name, productType: 'Scented Candle', signal: 'Warning',
   bizName: bizName === undefined ? 'Crafty Mouse Gifts' : bizName, bizAddress: '12 Mill Lane', bizPhone: '01234 567890',
-  hStatements: 'H317', pStatements: 'P102, P501', sensitisers: ['Geraniol'], pictograms: ['exclamation'], textColour: 'dark', showBorder: true,
+  hStatements: 'H317', pStatements: 'P102, P501', pChoices: FIXTURE_P_CHOICES, sensitisers: ['Geraniol'], pictograms: ['exclamation'], textColour: 'dark', showBorder: true,
 });
 
 // Every jsdom baseline case: automatic sizing only.

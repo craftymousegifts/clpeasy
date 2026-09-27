@@ -2,10 +2,11 @@
 // the square/rectangle no-change baseline (tests/fixtures/
 // generate-square-rect-baseline.js). No production/customer data.
 // Content mirrors the Builder Label Technical Audit (Sept 2026) stress set.
+const { FIXTURE_P_CHOICES } = require('./p-statement-choices'); // Issue #5: supplier P completions (test data)
 const BIZ = { bizName: 'Crafty Test Studio', bizAddress: '12 Mill Lane, Testville, TE1 2ST', bizPhone: '01234 567890' };
 const base = (o) => Object.assign({
   scentName: 'Lavender', productType: 'Scented Candle', signal: 'Warning',
-  hStatements: 'H317, H412', pStatements: 'P101, P102, P261, P273, P302+P352, P333+P313, P501',
+  hStatements: 'H317, H412', pStatements: 'P101, P102, P261, P273, P302+P352, P333+P313, P501', pChoices: FIXTURE_P_CHOICES,
   sensitisers: ['Linalool', 'Limonene'], pictograms: ['exclamation'],
   netWeight: '200g', textColour: 'dark', showBorder: true,
 }, BIZ, o);
@@ -39,10 +40,14 @@ const FIXTURES = {
 
 // FIT/NOT FIT boundary sweeps (whole mm) -- each range is chosen to span the
 // point where that content stops fitting on a circle.
+// Issue #5: the corrected P wording plus the fixtures' supplier completions
+// (longer than the old invented text) moved each boundary; the windows were
+// re-centred on the new boundaries (onePictogram fits from 61mm, multiP
+// from 88mm, heavy from 73mm) -- the sweep logic itself is unchanged.
 const BOUNDARY_SWEEPS = [
-  ['onePictogram', 54, 60],
-  ['multiP', 80, 85],
-  ['heavy', 64, 70],
+  ['onePictogram', 57, 63],
+  ['multiP', 85, 90],
+  ['heavy', 70, 76],
 ];
 
 const CIRCLE_SIZES = [52, 63, 75, 100];

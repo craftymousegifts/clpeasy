@@ -19,10 +19,9 @@
 //      unrecognised/incomplete, never silently expanded to every item.
 //   6. The ordinary fit gate still applies with a valid P280 selection
 //      present -- P280 is not a special case that bypasses fits:false.
-//   7. builder.html's and label-render.js's P_LIB entries for P280 are
-//      byte-identical (drift check -- Codex's "Final P280 review
-//      correction" #1: builder.html still had the old fixed full-sentence
-//      desc after the selectable rewrite; fixed, and pinned here).
+//   7. builder.html uses label-render.js's single P_LIB (Issue #5 removed
+//      its separate copy, the drift risk Codex's "Final P280 review
+//      correction" #1 found), and the P280 placeholder desc is unchanged.
 //   8. p280Other (free text) is safe at every HTML/XML output boundary --
 //      it is never interpreted as markup or script, only ever displayed as
 //      plain text, in the SVG (shared renderer), the Builder Step 5
@@ -82,14 +81,15 @@ const emptyQuery = {
     // shared-renderer behaviour could silently describe P280 differently.
     // A prior pass fixed label-render.js's desc but missed builder.html's
     // own copy (still the old fixed full sentence) -- this pins both. ────
-    const builderPLibMatch = builderSource.match(/const P_LIB=\[.*?\];/s);
-    assert(builderPLibMatch, 'could not locate builder.html\'s inline P_LIB declaration');
-    const builderP280Match = builderPLibMatch[0].match(/\{code:'P280',desc:'([^']*)'\}/);
-    assert(builderP280Match, 'builder.html\'s P_LIB does not contain a P280 entry in the expected {code:\'P280\',desc:\'...\'} shape');
+    // Issue #5: builder.html no longer keeps its own P_LIB copy -- it uses
+    // the ONE library in label-render.js, so the two can no longer drift.
+    // Pin that (no inline array), and pin the P280 entry itself unchanged.
+    assert(/const P_LIB=LabelRenderer\.P_LIB;/.test(builderSource), 'builder.html must use LabelRenderer.P_LIB, the single precautionary-statement library');
+    assert(!/const P_LIB=\[/.test(builderSource), 'builder.html must not declare its own inline P_LIB copy');
     const rendererP280Entry = LR.P_LIB.find(p => p.code === 'P280');
     assert(rendererP280Entry, 'label-render.js\'s P_LIB is missing a P280 entry');
-    assert.strictEqual(builderP280Match[1], rendererP280Entry.desc, 'builder.html\'s P280 P_LIB desc must be byte-identical to label-render.js\'s -- they drifted (builder.html still had the old fixed full-sentence text)');
-    assert(!/Wear protective gloves\/protective clothing\/eye protection\/face protection\/hearing protection'\}/.test(builderPLibMatch[0]), 'builder.html\'s P_LIB must not contain the old unconditional full-sentence P280 text');
+    assert.strictEqual(rendererP280Entry.desc, 'Wear the applicable protective equipment (select which items apply when adding this code)', 'P280\'s neutral placeholder desc must be unchanged');
+    assert(!/Wear protective gloves\/protective clothing\/eye protection\/face protection\/hearing protection'\}/.test(labelRendererSource), 'the old unconditional full-sentence P280 text must not return');
 
     // ── Shared renderer: renderLabel() end-to-end ───────────────────────
     const baseLabel = {

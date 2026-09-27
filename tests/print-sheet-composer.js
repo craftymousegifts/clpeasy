@@ -2,6 +2,8 @@
 // and mixed-label rendering. Follows the same jsdom pattern as
 // tests/builder-regression.js. Run from the repo root: node tests/print-sheet-composer.js
 const fs = require('fs');
+// Issue #5: supplier completions for P-statements that need them (test data, never an app default).
+const { FIXTURE_P_CHOICES } = require('./fixtures/p-statement-choices');
 const assert = require('assert');
 const { JSDOM, VirtualConsole } = require('jsdom');
 const { webcrypto } = require('crypto');
@@ -33,7 +35,7 @@ const labelLavender = {
   scentName:'Lavender Candle', productType:'Scented Candle', signal:'WARNING',
   shape:'rectangle', size:'custom', customW:99.1, customH:57.3,
   bizName:'Test Biz', hStatements:'H315,H319',
-  pStatements:'P302+P352,P305+P351+P338',
+  pChoices:FIXTURE_P_CHOICES, pStatements:'P302+P352,P305+P351+P338',
   sensitisers:['Linalool','Limonene'],
   pictograms:['exclamation']
 };
@@ -49,13 +51,13 @@ const labelVanilla = {
   scentName:'Vanilla Candle', productType:'Scented Candle', signal:'WARNING',
   shape:'rectangle', size:'custom', customW:99.1, customH:57.3,
   bizName:'Test Biz', hStatements:'H317,H411,H315',
-  pStatements:'P302+P352,P333+P313,P305+P351+P338,P273,P280',
+  pChoices:FIXTURE_P_CHOICES, pStatements:'P302+P352,P333+P313,P305+P351+P338,P273,P280',
   p280Items:['gloves','eye'],
   sensitisers:['Linalool','Limonene','Citral','Geraniol','Eugenol','Coumarin'],
   pictograms:['exclamation','aquatic']
 };
-const labelWrongShape = { scentName:'Rose Candle', productType:'Scented Candle', signal:'WARNING', shape:'circle', size:63.5, bizName:'Test Biz', hStatements:'H315', pStatements:'', sensitisers:[], pictograms:['exclamation'] };
-const labelWrongSize = { scentName:'Cinnamon Wax Melt', productType:'Wax Melt', signal:'WARNING', shape:'rectangle', size:'custom', customW:70, customH:68, bizName:'Test Biz', hStatements:'H315', pStatements:'', sensitisers:[], pictograms:['exclamation'] };
+const labelWrongShape = { scentName:'Rose Candle', productType:'Scented Candle', signal:'WARNING', shape:'circle', size:63.5, bizName:'Test Biz', hStatements:'H315', pChoices:FIXTURE_P_CHOICES, pStatements:'', sensitisers:[], pictograms:['exclamation'] };
+const labelWrongSize = { scentName:'Cinnamon Wax Melt', productType:'Wax Melt', signal:'WARNING', shape:'rectangle', size:'custom', customW:70, customH:68, bizName:'Test Biz', hStatements:'H315', pChoices:FIXTURE_P_CHOICES, pStatements:'', sensitisers:[], pictograms:['exclamation'] };
 // Sept 2026 correction (genuine 1.2mm mandatory-text floor): added for the
 // "PDF export stays true A4" check further below only. Lavender/Vanilla
 // (the real 29 Aug 2026 dense stress-case content) no longer fit
@@ -67,7 +69,7 @@ const labelWrongSize = { scentName:'Cinnamon Wax Melt', productType:'Wax Melt', 
 // directly against the corrected renderer to fit 99.1x57.3mm with zero
 // warnings, used only to swap onto the sheet immediately before the
 // PDF/A4 geometry check.
-const labelSimple = { scentName:'Rosemary Candle', productType:'Scented Candle', signal:'WARNING', shape:'rectangle', size:'custom', customW:99.1, customH:57.3, bizName:'Test Biz', hStatements:'H315', pStatements:'P273', sensitisers:[], pictograms:['exclamation'] };
+const labelSimple = { scentName:'Rosemary Candle', productType:'Scented Candle', signal:'WARNING', shape:'rectangle', size:'custom', customW:99.1, customH:57.3, bizName:'Test Biz', hStatements:'H315', pChoices:FIXTURE_P_CHOICES, pStatements:'P273', sensitisers:[], pictograms:['exclamation'] };
 
 const dom = new JSDOM(source, {
   url: 'https://local.clpeasy.test/print.html',
@@ -290,23 +292,18 @@ setTimeout(async () => {
     // real, correctly-wrapped output. Check the part that stays intact on
     // one line rather than the full string (or a substring straddling the
     // wrap point).
-    assert(canvasHTML.includes(P_LIB.find(p => p.code === 'P302+P352').desc), `combined P-code P302+P352 truncated/missing from sheet render`);
-    // Sept 2026 correction (genuine 1.2mm mandatory-text floor): the
-    // corrected floor is a real physical x-height roughly double the old,
-    // uncorrected nominal-font-size figure, so at this dense 5-P-statement
-    // fixture (now genuinely too dense for 99.1x57.3mm -- see the
-    // filledCount/invalidCount note above) the auto-fit engine lands on a
-    // LARGER minimum font than before, which wraps fewer characters per
-    // line. P333+P313's own description now legitimately straddles a
-    // <tspan> wrap point ("...get medical" / "advice. IF IN EYES...") --
-    // real, correct word-wrapping, not truncation (nothing is dropped; see
-    // the P305+P351+P338 check just below, which already documents this
-    // same category of wrap-point split). Checked the same way: the part
-    // that stays intact on one line, plus the wrapped continuation.
-    assert(canvasHTML.includes('occurs: get medical'), `combined P-code P333+P313 truncated/missing from sheet render (opening clause)`);
-    assert(canvasHTML.includes('advice. IF IN EYES'), `combined P-code P333+P313 truncated/missing from sheet render (wrapped continuation)`);
-    assert(canvasHTML.includes('IF IN EYES: rinse'), `combined P-code P305+P351+P338 truncated/missing from sheet render (opening clause)`);
-    assert(canvasHTML.includes('cautiously with water for several minutes'), `combined P-code P305+P351+P338 truncated/missing from sheet render (wrapped continuation)`);
+    // Issue #5: every statement must appear COMPLETE in the sheet render.
+    // Wrapping splits text only at spaces into <tspan> lines, so joining the
+    // lines with a space recovers the printed text -- this checks the full
+    // wording (no truncation) wherever the wrap points fall.
+    const flatSheetText = canvasHTML.replace(/<tspan[^>]*>/g,' ').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/\s+/g,' ');
+    for (const full of [
+      window.LabelRenderer.resolvePChoice('P302+P352', FIXTURE_P_CHOICES['P302+P352']),
+      window.LabelRenderer.P_DEFS.find(p => p.code === 'P333+P313').text,
+      window.LabelRenderer.P_DEFS.find(p => p.code === 'P305+P351+P338').text,
+    ]) {
+      assert(full && flatSheetText.includes(full), `P statement truncated/missing from sheet render: "${full}"`);
+    }
     // NOTE: buildLabelSVGFromData() (pre-existing, unmodified by Phase 1)
     // caps sensitisers at sensArr.slice(0,5) — the label above intentionally
     // supplies 6 to document that real, pre-existing cap rather than assert

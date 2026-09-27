@@ -13,6 +13,8 @@
 // produce anything while blocked regardless of which button row is used.
 // Run from the repo root: node tests/blocked-overlay-and-download-guard-parity.js
 const fs = require('fs');
+// Issue #5: supplier completions for P-statements that need them (test data, never an app default).
+const { FIXTURE_P_CHOICES } = require('./fixtures/p-statement-choices');
 const assert = require('assert');
 const { JSDOM, VirtualConsole } = require('jsdom');
 
@@ -52,7 +54,7 @@ function rectOf(svg){
     sensitisers:["Benzyl Salicylate","Hydroxycitronellal","Linalool","Limonene","2-acetoxy-2,3,8,8-tetramethyloctahydronaphthalene"],
     bizName:"CLPeasy",bizAddress:"CLPeasy",bizPhone:"01234567890",bizWebsite:"www.clpeasy.com",
     netWeight:"200g",fragLoad:"",burnTime:"35hrs",batchNum:"",supplier:"",hideEN15494:false,
-    bgColour:"#ffffff",pStatements:"P261, P273, P302+P352, P333+P313, P501",textColour:"dark",
+    bgColour:"#ffffff",pChoices:FIXTURE_P_CHOICES, pStatements:"P261, P273, P302+P352, P333+P313, P501",textColour:"dark",
     showBorder:true,labelLang:"en"
   };
 
@@ -101,7 +103,7 @@ function rectOf(svg){
       scentName:'Test', productType:'Room Spray', bizName:'Test Biz', bizAddress:'', bizPhone:'',
       signal:'Danger', hStatements:'H226, H315, H319, H335, H304, H411, H412', pictograms:['flame','exclamation','health','aquatic'],
       sensitisers:['Linalool','Limonene','Citral','Geraniol','Citronellol','Eugenol'],
-      pStatements:'P210, P211, P233, P260, P261, P271, P273, P312, P313, P314, P321, P330, P331, P391, P501',
+      pChoices:FIXTURE_P_CHOICES, pStatements:'P210, P211, P233, P260, P261, P271, P273, P312, P313, P314, P321, P330, P331, P391, P501',
       netWeight:'', fragLoad:'', burnTime:'', batchNum:'', supplier:'', hideEN15494:true, bgColour:'#ffffff', textColour:'dark', showBorder:true, labelLang:'en'
     }, {instanceId:'hazard-only'});
     assert.strictEqual(hazardOnly.fits, false, 'hazard-only fixture must be blocked');
@@ -117,7 +119,7 @@ function rectOf(svg){
       scentName:'Test', productType:'Candle',
       bizName:'A Genuinely Extremely Long Business Trading Name Limited Partnership LLP',
       bizAddress:'x', bizPhone:'01234567890', signal:'Warning', hStatements:'H315', pictograms:['exclamation'],
-      sensitisers:[], pStatements:'', netWeight:'', fragLoad:'', burnTime:'', batchNum:'', supplier:'',
+      sensitisers:[], pChoices:FIXTURE_P_CHOICES, pStatements:'', netWeight:'', fragLoad:'', burnTime:'', batchNum:'', supplier:'',
       hideEN15494:true, bgColour:'#ffffff', textColour:'dark', showBorder:true, labelLang:'en'
     }, {instanceId:'bizname'});
     if (!bizNameTooSmall.fits && bizNameTooSmall.warnings.some(w => /business-name|biz-name|bizName/i.test(w) || bizNameTooSmall.metrics?.businessNameTooSmall)) {
@@ -136,7 +138,7 @@ function rectOf(svg){
     const fine = LR.renderLabel({
       shape:'circle', size:'custom', customW:63, customH:63, scentName:'Ordinary Candle', productType:'Candle',
       bizName:'CLPeasy', bizAddress:'Borders', bizPhone:'01234567890', signal:'Warning',
-      hStatements:'H315', pictograms:['exclamation'], sensitisers:['Linalool'], pStatements:'P302+P352',
+      hStatements:'H315', pictograms:['exclamation'], sensitisers:['Linalool'], pChoices:FIXTURE_P_CHOICES, pStatements:'P302+P352',
       netWeight:'', fragLoad:'', burnTime:'', batchNum:'', supplier:'', hideEN15494:false,
       bgColour:'#ffffff', textColour:'dark', showBorder:true, labelLang:'en'
     }, {instanceId:'fine'});

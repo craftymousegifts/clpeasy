@@ -32,6 +32,8 @@
 //     single render, never just on the ones that pass.
 // Run from the repo root: node tests/fail-closed-size-boundaries.js
 const fs = require('fs');
+// Issue #5: supplier completions for P-statements that need them (test data, never an app default).
+const { FIXTURE_P_CHOICES } = require('./fixtures/p-statement-choices');
 const assert = require('assert');
 const { JSDOM } = require('jsdom');
 
@@ -123,7 +125,7 @@ try {
     const data = {
       shape:'rectangle', size:'custom', customW:99.1, customH:57.3,
       scentName:'Order Check', productType:'Scented Candle', bizName:'Crafty Mouse Gifts',
-      signal:'Warning', hStatements:'H315', pStatements:'P273', sensitisers:[],
+      signal:'Warning', hStatements:'H315', pChoices:FIXTURE_P_CHOICES, pStatements:'P273', sensitisers:[],
       pictograms:['exclamation'], bizAddress:'12 High Street, Kelso, Scottish Borders, TD5 7AB',
       bizPhone:'01573 000000', netWeight:'220g',
     };
@@ -153,7 +155,7 @@ try {
     const lightCircle = {
       shape:'circle', size:'custom', customW:52, customH:52,
       scentName:'Rose Garden', productType:'Scented Candle', bizName:'Crafty Mouse Gifts',
-      signal:'Warning', hStatements:'H315, H317, H412', pStatements:'P302+P352, P273, P501',
+      signal:'Warning', hStatements:'H315, H317, H412', pChoices:FIXTURE_P_CHOICES, pStatements:'P302+P352, P273, P501',
       sensitisers:['Linalool','Limonene'],
       pictograms:['exclamation'], bizAddress:'Stable Lodge', bizPhone:'07702451104',
     };
@@ -197,7 +199,7 @@ try {
     const heavyCircleFooter = {
       shape:'circle', size:'custom', customW:52, customH:52,
       scentName:'Rose Garden', productType:'Scented Candle', bizName:'Crafty Mouse Gifts',
-      signal:'Warning', hStatements:'H315', pStatements:'P302+P352', sensitisers:['Linalool'],
+      signal:'Warning', hStatements:'H315', pChoices:FIXTURE_P_CHOICES, pStatements:'P302+P352', sensitisers:['Linalool'],
       pictograms:['exclamation'], bizAddress:'12 High Street, Kelso, Scottish Borders, TD5 7AB',
       bizPhone:'01573 000000', bizWebsite:'www.craftymousegifts.com',
       netWeight:'180g', burnTime:'35 hrs approx', batchNum:'B015', hideEN15494:false,
@@ -227,7 +229,7 @@ try {
     }
     const ordinaryContent = (extra) => Object.assign({
       scentName:'Ordinary Scent', productType:'Scented Candle', bizName:'Crafty Mouse Gifts',
-      signal:'Warning', hStatements:'H315', pStatements:'P273', sensitisers:[],
+      signal:'Warning', hStatements:'H315', pChoices:FIXTURE_P_CHOICES, pStatements:'P273', sensitisers:[],
       pictograms:['exclamation'], bizAddress:'Stable Lodge', bizPhone:'07702451104',
       hideEN15494:false,
     }, extra);
@@ -288,7 +290,7 @@ try {
       signal:'Warning', hStatements:'H317', pictograms:['exclamation'], sensitisers:[],
       bizName:'Crafty Mouse Gifts', bizAddress:'Stable Lodge', bizPhone:'07702451104',
       bizWebsite:'www.clpeasy.com', netWeight:'', burnTime:'', batchNum:'',
-      hideEN15494:false, pStatements:'P273', textColour:'dark', showBorder:true, labelLang:'en',
+      hideEN15494:false, pChoices:FIXTURE_P_CHOICES, pStatements:'P273', textColour:'dark', showBorder:true, labelLang:'en',
     };
     const qaResult = LR.renderLabel(qaTestCandle6344, {instanceId:'qa6344'});
     checkFloors(qaResult, 'QA Test Candle 6344 (real record)');

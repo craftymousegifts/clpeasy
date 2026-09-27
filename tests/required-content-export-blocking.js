@@ -195,8 +195,10 @@ async function partThree() {
       confirmHazards: () => page.evaluate(() => { const c = document.getElementById('hazard-confirm'); c.checked = true; c.dispatchEvent(new Event('change', { bubbles: true })); }),
       tick: () => page.evaluate(() => { const c = document.getElementById('verify-checkbox'); c.checked = true; c.dispatchEvent(new Event('change', { bubbles: true })); }),
     };
-    const SDS_OK = 'H317 May cause an allergic skin reaction. H412 Harmful to aquatic life. EUH208 Contains: Linalool, Citral. May produce an allergic reaction. P102, P501';
-    const SDS_NO_NAMES = 'H412 Harmful to aquatic life with long lasting effects. EUH208 May produce an allergic reaction. P102, P501';
+    // Issue #5: P501 needs the supplier's completion, so the pasted Section 2.2
+    // carries its wording (real Nikura form) as a supplier SDS would.
+    const SDS_OK = 'H317 May cause an allergic skin reaction. H412 Harmful to aquatic life. EUH208 Contains: Linalool, Citral. May produce an allergic reaction. P102 Keep out of reach of children.\nP501 Dispose of contents/container to approved disposal site, in accordance with local regulations.';
+    const SDS_NO_NAMES = 'H412 Harmful to aquatic life with long lasting effects. EUH208 May produce an allergic reaction. P102 Keep out of reach of children.\nP501 Dispose of contents/container to approved disposal site, in accordance with local regulations.';
     const toStep3 = async () => { await page.evaluate(() => { selectShape('circle'); }); await H.set('custom-w', '75'); await page.evaluate(() => onDimInput()); await H.step(2); await H.set('scent-name', 'Lavender Fields'); await H.set('product-type', 'Scented Candle', 'change'); await H.step(3); };
     const toStep5Complete = async () => { await toStep3(); await H.paste(SDS_OK); await H.confirmHazards(); await H.step(4); await H.set('biz-name', 'Crafty Mouse Gifts'); await H.set('biz-address', '12 Mill Lane'); await H.set('biz-phone', '01234 567890'); await H.step(5); await H.tick(); };
     const gateState = () => page.evaluate(() => {

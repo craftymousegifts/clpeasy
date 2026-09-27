@@ -1,7 +1,7 @@
 {
  "52mm|Rose|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "2b4ab9e1ef0b789a2aee2121682eae4d35b9b829af8a20ba34eeb50e1dd40e11",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "9a4f8f8ad48ec5b93f36f67a3d9164af83dee5a5fe272d10dbabf04157499eed",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -9,8 +9,8 @@
   "arcCollision": false
  },
  "52mm|Aaaaa Bbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "47e63caac642e6b6fa6b1d40f70b0241e9a6466cecdd41281ab5a3d5e8e6ebf7",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "fe8e956a3d63d019eb89f48568703427b793715eb58eb623707e7d3f2e87a49a",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -18,8 +18,8 @@
   "arcCollision": false
  },
  "52mm|Aaaaa Bbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "aab2b275cdcc8f341b528ab3490701c01bf81c21c9623e6cd3085b9d0c60535a",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "1d2f9378681fb82323e52f87acd127233c548ce843ca68c29daadd009a535e0f",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -27,8 +27,8 @@
   "arcCollision": false
  },
  "52mm|Aaaaa Bbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "b7c0b22a9dc34758959e50ea82054f30aaf83b30e8c8b581b12cfc913166cc06",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "2d2a10bcbd21ffb962ea35ddbfffbc81cdc65b5af45ccdeedf5c0b035ec4f15c",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -36,44 +36,48 @@
   "arcCollision": false
  },
  "52mm|Aaaaa Bbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "8fa6efc9d8ffe5a6d685bc182228f5e14b73b22a9decaf5a102d5757a45371da",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "a6bb1de6d33258c15628610b2b438b2c9857775ba736d205e64521ad59e3ef8c",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|Aaaaa Bbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "1409f870a6b96f8ad2d2f869d820c6e821ce8a81b6c7fb345167608843183d5e",
-  "full": "031f6ce3232e85181747d494f0643d3c6a6f8790a6022ac89acdf89a6bc11909",
+  "nonArc": "2a0178ee062ac2fcfce38f35eda01bd8fc982882e54814f8b10592b57562cb79",
+  "full": "60dd92ae5b51d16e5c853d42163bdb1735c7d18a99673c39aef6fa49e322c64c",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|Aaaaa Bbbbbbbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "1409f870a6b96f8ad2d2f869d820c6e821ce8a81b6c7fb345167608843183d5e",
-  "full": "a86d8f81b22905bd866c50d5b1d5db28df6cb96ba43cb512c3b58accf78023ae",
+  "nonArc": "2a0178ee062ac2fcfce38f35eda01bd8fc982882e54814f8b10592b57562cb79",
+  "full": "8fec1987a6865a05ce049886d08463a34b2b05940e898f679c1e86c0913c73c9",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|Aaaaa Bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "1409f870a6b96f8ad2d2f869d820c6e821ce8a81b6c7fb345167608843183d5e",
-  "full": "8580601cc486b8b04a84826ba4c6eda749d2b8b4ea7e832419ac01974819d94a",
+  "nonArc": "2a0178ee062ac2fcfce38f35eda01bd8fc982882e54814f8b10592b57562cb79",
+  "full": "b510e4ff6100ab1c5b6cf078fc4f7cdd1a1997e3f21c7328b2a41fe79459d284",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|illi lill iilll|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "c18bd7debe803ed86ab1a71eccf773086fdb81ffdcda9621ada123e126590adc",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "2adbea6bc85a98443f71735c456c613637210063ef9431f9c9ae04b3a5ca4c50",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -81,17 +85,18 @@
   "arcCollision": false
  },
  "52mm|WWMM WWMM WMWMW|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "e95cd0c190c1174685a59184c0354eb92fa80b26974cf972729ecba5729b5014",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "a6999071aa7e7cf36428f112eb12a5ca828112933d783c72f8129379cde18bc4",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|Vanilla Bean|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "9f11604b1745418199e0ee6548a88fe1faa6adaa74378b9c320df392320f8798",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "e34ba8f07673a3d36c9fc27d902a2ebe4bfae28df94e480f9e09fa2ac18218a0",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -99,8 +104,8 @@
   "arcCollision": false
  },
  "52mm|Lavender Fields|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "7c0450d82cea72cb2bd77d38dab87efb893339ee8cdb35f5739ce2c8b8c4257c",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "1b3a84f3af37bcf40b85a2613df11bc1b0d4239a7543cc2262abd9be0353093d",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -108,8 +113,8 @@
   "arcCollision": false
  },
  "52mm|Pomegranate Noir|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "13cb31fef896b5833c29239ca4c20a21aa254d20f8378d042f7b7fc3375c2dba",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "82d36e702a3e495e9787d5b9dfbd53243017885ae9646593dee9847c3d521411",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -117,8 +122,8 @@
   "arcCollision": false
  },
  "52mm|Midnight Blackberry|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "ab7dc975d242ebcef44078ac86d6b26e1f11e23c62e67f84edc3472f55fb29e2",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "fe0bb2b446062ccb3a6c08e3deb48b250a37813a7755f503d010a068632374c5",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -126,8 +131,8 @@
   "arcCollision": false
  },
  "52mm|Sea Salt & Driftwood|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "c3de5732e08ec4d4da6e8a58d7e0c06cfc26638acc3e89794819fea0c8c01f51",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "b8405065568b753607afb31ae972b1f1cba0fffd2fe6079e2cc5e3322a6e93f6",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -135,35 +140,38 @@
   "arcCollision": false
  },
  "52mm|Fresh Linen & White Cotton|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "ff0a6cef2361a3e2ffa182c124186ea7ca0355e5bcfcffe2c0254005f60d9e5a",
-  "full": "74e391697fa20cccd320e84f26c6f168bcfe05f6ea65a1a8ce86e023f6f9edac",
+  "nonArc": "3fddeec816c54d0fd3f89c4f64dafed1bc6b0e1b82bf4dbf96785ec654b7ac50",
+  "full": "db0eec11d71e46060e18c6f09c811812ef35554ec036a0540c860b1b106b7504",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "1409f870a6b96f8ad2d2f869d820c6e821ce8a81b6c7fb345167608843183d5e",
-  "full": "e526bd1eacae6f75e91136b23a026ee0fd2a433accc393c06cec2d151910fbbe",
+  "nonArc": "2a0178ee062ac2fcfce38f35eda01bd8fc982882e54814f8b10592b57562cb79",
+  "full": "9e5a057c327bcee9541d7e84d2ff7476a0737655f3798e8920d6a85e978d14ad",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "1409f870a6b96f8ad2d2f869d820c6e821ce8a81b6c7fb345167608843183d5e",
-  "full": "de40d7ab3a2625dcdc63f53fef591851af52f4047d98f02950c494f6cec5f609",
+  "nonArc": "2a0178ee062ac2fcfce38f35eda01bd8fc982882e54814f8b10592b57562cb79",
+  "full": "3500558772e8e02b69bd83eccab8b85219aea4ed993e388d24c528ab54152133",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|Crème Brûlée & Tonka|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "39b28bc110d2b7ba0587472df724cec0b09d4af5bafcdac79ddcbe502500763a",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "91b1688222ec17131104225961cd1354badc19ecccc4b8f01c8f5e5400f54cc1",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -171,8 +179,8 @@
   "arcCollision": false
  },
  "52mm|Vanilla Bean|biz=CMG|auto": {
-  "nonArc": "68cb18cc4dccd9793fe60fab10430de6744e2feffdbb66949d54046f562aa0e8",
-  "full": "792976b77bd4ee059ff1d4b37c22c9b32b5604e098864e007e480a8bddea0111",
+  "nonArc": "1334101d41c110b643b5667bfd0ee8405ac94868dfa0255a7fa56e8090348225",
+  "full": "9dc49a12d3fff388d30dfc8298b43f984fb44cfcdc000073cef0254229ca6724",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -180,8 +188,8 @@
   "arcCollision": false
  },
  "52mm|Lavender Fields|biz=CMG|auto": {
-  "nonArc": "68cb18cc4dccd9793fe60fab10430de6744e2feffdbb66949d54046f562aa0e8",
-  "full": "8af9d50454c41a488309921fcaa13f6697ba8ba0a21b65da3c6ede4040026ad0",
+  "nonArc": "1334101d41c110b643b5667bfd0ee8405ac94868dfa0255a7fa56e8090348225",
+  "full": "4ea6950a4f99a1e3a47003306e77aa72ecb064a1adc6aaf379005da5bc6f5afa",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -189,8 +197,8 @@
   "arcCollision": false
  },
  "52mm|Pomegranate Noir|biz=CMG|auto": {
-  "nonArc": "68cb18cc4dccd9793fe60fab10430de6744e2feffdbb66949d54046f562aa0e8",
-  "full": "1c31d19c8c4f740dee6ca3864f718409f3e6d92ab06e097ce84bc4bb8ad1fca0",
+  "nonArc": "1334101d41c110b643b5667bfd0ee8405ac94868dfa0255a7fa56e8090348225",
+  "full": "1f9a46e74c7fca290ab8ca5623289f8ee5f434042396aad6bf083f5166fdc7d8",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -198,8 +206,8 @@
   "arcCollision": false
  },
  "52mm|Midnight Blackberry|biz=CMG|auto": {
-  "nonArc": "68cb18cc4dccd9793fe60fab10430de6744e2feffdbb66949d54046f562aa0e8",
-  "full": "d99c662f2aa493ecd48e84407737de3126099a0202f9c9a41327da523fc1e9eb",
+  "nonArc": "1334101d41c110b643b5667bfd0ee8405ac94868dfa0255a7fa56e8090348225",
+  "full": "0a04810e33f704e8a14e22b4d31a60eb40e120374bcd8c9ef6aaf3e6bce45683",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -207,8 +215,8 @@
   "arcCollision": false
  },
  "52mm|Fresh Linen & White Cotton|biz=CMG|auto": {
-  "nonArc": "0de0ef3a373e799aa27d5555a1fc222fd668d20fdfb1cf7a0c422d0cac1402e0",
-  "full": "bab42be52ccc63793c32ddd7ea96cf47d1fcd0fc62b54ddd949e83dfa3d89de9",
+  "nonArc": "1aa9d468a87f8551842f48287f0a57bf52aff88fc99e5cd961a4cfb011b316d1",
+  "full": "de7263bfa9705dff8b63dc4e14e6e41438c78be0d119eadb76f3c2cc668aca3f",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -216,8 +224,8 @@
   "arcCollision": false
  },
  "52mm|Christmas Spiced Orange & Cinnamon|biz=CMG|auto": {
-  "nonArc": "cb4af671710d8e7f4b737fc71fd9ae1cb003d548aef1215f115c04e5b7b73498",
-  "full": "7c372bbae540c4217361df559f9d7f10b605413498616e403b24079487c9ce15",
+  "nonArc": "874ccd55e2bc518f7f80359860c421eb5489cfde100238186dfec16050377f1a",
+  "full": "b0fcd46f97e5e7120b55cae3ad1bd32e92cb9696efd585f491ffaf6aafec6658",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -225,8 +233,8 @@
   "arcCollision": false
  },
  "52mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=CMG|auto": {
-  "nonArc": "cb4af671710d8e7f4b737fc71fd9ae1cb003d548aef1215f115c04e5b7b73498",
-  "full": "fcafd801da3b588bc3978eb7913617cc0b33e243dcb833fcd8c3db6c14572140",
+  "nonArc": "874ccd55e2bc518f7f80359860c421eb5489cfde100238186dfec16050377f1a",
+  "full": "283b90ea9f5f00b5cb5d8551cd6f56fed6832de73b54d3c45b75749e5cf2b23b",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -234,8 +242,8 @@
   "arcCollision": false
  },
  "52mm|WWMM WWMM WMWMW|biz=CMG|auto": {
-  "nonArc": "68cb18cc4dccd9793fe60fab10430de6744e2feffdbb66949d54046f562aa0e8",
-  "full": "51746f9fa30755c094baf1df67392b38f531faf26aa8e6f11e40bc62ae8faedd",
+  "nonArc": "1334101d41c110b643b5667bfd0ee8405ac94868dfa0255a7fa56e8090348225",
+  "full": "bad0df0478348ed2217da77a47c8d455280916a6a3228547d070fd4ab8c8429c",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -243,8 +251,8 @@
   "arcCollision": false
  },
  "52mm|Vanilla Bean|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "9b8952829f249c773a6aec6fb14789b6e65ecb39ce32c8c030063d4134198683",
-  "full": "ec8193132382329292271448ce7af8f5d5f8b4c5c2658e05d6bad51b3aa7f00c",
+  "nonArc": "ea6b5471c24081df87b7b27602b950bc873dcf60c17c777022a120b1599d714a",
+  "full": "b559727f888a6d38ef789743892c01d8d44e669db242a011c8022d7e0ca68d06",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -252,8 +260,8 @@
   "arcCollision": false
  },
  "52mm|Lavender Fields|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "9b8952829f249c773a6aec6fb14789b6e65ecb39ce32c8c030063d4134198683",
-  "full": "d9d4062e5fbd23d414e46ab8e433dfd5af8cdcb88d18c188fe14a5901a7310c4",
+  "nonArc": "ea6b5471c24081df87b7b27602b950bc873dcf60c17c777022a120b1599d714a",
+  "full": "4f288f608e24d9a37265b98389fb42c8f48f799dc34cfc6795e48afe67b1fc5d",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -261,8 +269,8 @@
   "arcCollision": false
  },
  "52mm|Pomegranate Noir|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "9b8952829f249c773a6aec6fb14789b6e65ecb39ce32c8c030063d4134198683",
-  "full": "8c59b824ee9cb6c9ff446fc08b86410ea165166f08ff248ed8927082fa352b3c",
+  "nonArc": "ea6b5471c24081df87b7b27602b950bc873dcf60c17c777022a120b1599d714a",
+  "full": "eb2aea939559280bdbf529d790dedbe693081a7e03b8d98162bfa3f8ac880dae",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -270,8 +278,8 @@
   "arcCollision": false
  },
  "52mm|Midnight Blackberry|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "9b8952829f249c773a6aec6fb14789b6e65ecb39ce32c8c030063d4134198683",
-  "full": "0a3e607f7fa8be2d81817755249b2ea6b6d8db1bf6834dbbe11ceaf050ae7064",
+  "nonArc": "ea6b5471c24081df87b7b27602b950bc873dcf60c17c777022a120b1599d714a",
+  "full": "d868bdce806032bf661c25027c0e66a5b0ac82e06cc7a833ab017f554e88b572",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -279,8 +287,8 @@
   "arcCollision": false
  },
  "52mm|Fresh Linen & White Cotton|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "9b8952829f249c773a6aec6fb14789b6e65ecb39ce32c8c030063d4134198683",
-  "full": "b37e97bb8c75255a99e2f502e345922a8584d3b5acd2395d6969e1e28babd622",
+  "nonArc": "ea6b5471c24081df87b7b27602b950bc873dcf60c17c777022a120b1599d714a",
+  "full": "611f0185eb3cd155c686a05b04c63b01d699a02bbaf0232d41339d3c8c130b2b",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -288,26 +296,28 @@
   "arcCollision": false
  },
  "52mm|Christmas Spiced Orange & Cinnamon|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "9b8952829f249c773a6aec6fb14789b6e65ecb39ce32c8c030063d4134198683",
-  "full": "321535e9709d45452c6841175fc9e4730fb0ca33eeb61cfb5838e3a092dd760a",
+  "nonArc": "ea6b5471c24081df87b7b27602b950bc873dcf60c17c777022a120b1599d714a",
+  "full": "dc1f63aa4f61a31e1230e33b0985c23e2e3d9ae2259cfb8420c1f27f93991d5f",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "9b8952829f249c773a6aec6fb14789b6e65ecb39ce32c8c030063d4134198683",
-  "full": "d8d174bd9b59e67972bc8a6d52344e8c07a230c6a543c4fd58dbab1984b0f109",
+  "nonArc": "ea6b5471c24081df87b7b27602b950bc873dcf60c17c777022a120b1599d714a",
+  "full": "b6e2bad030af9458d0246410dfd2f740e620c0140111037b265ee662923c31b4",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|WWMM WWMM WMWMW|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "9b8952829f249c773a6aec6fb14789b6e65ecb39ce32c8c030063d4134198683",
-  "full": "26b07889b36396a83a89cca7bbf4b0581e4d0365c451390f2f5f94990a1a8267",
+  "nonArc": "ea6b5471c24081df87b7b27602b950bc873dcf60c17c777022a120b1599d714a",
+  "full": "b0296ae575b6f9ed35d9a221a541ca005b0965b586ccd434dd460025d02076ce",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -315,8 +325,8 @@
   "arcCollision": false
  },
  "52mm|Vanilla Bean|biz=(empty)|auto": {
-  "nonArc": "d551bf1a6a6d76691168e84bb19bdc25fc6af501c8902aca70212c38e9532a92",
-  "full": "97f8050a877024b17a67f2fab7386ed2e270e690b21e2f3e9603268f4dcd4a3b",
+  "nonArc": "74e6d88a2aede110657ab0702a0c5d73eedd04f4ceb1e5a853006be6700ea84b",
+  "full": "b8d5320513d6f2099a13dbad62f9a40f39038e71ecf7f236cb841c8d7d0267e0",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -324,8 +334,8 @@
   "arcCollision": false
  },
  "52mm|Lavender Fields|biz=(empty)|auto": {
-  "nonArc": "d551bf1a6a6d76691168e84bb19bdc25fc6af501c8902aca70212c38e9532a92",
-  "full": "073d20738bfd4746de31239cee1b60ad3e71359ee8122c00fd595561abbf75a8",
+  "nonArc": "74e6d88a2aede110657ab0702a0c5d73eedd04f4ceb1e5a853006be6700ea84b",
+  "full": "53ff08a7a5cc0f7de240a96b3ffa5201a69586cb254cd896693b1e734ee4ba34",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -333,8 +343,8 @@
   "arcCollision": false
  },
  "52mm|Pomegranate Noir|biz=(empty)|auto": {
-  "nonArc": "d551bf1a6a6d76691168e84bb19bdc25fc6af501c8902aca70212c38e9532a92",
-  "full": "4f8c11a7df16bf6a384872e374dbc5c565daa705628000650728d818bccea39e",
+  "nonArc": "74e6d88a2aede110657ab0702a0c5d73eedd04f4ceb1e5a853006be6700ea84b",
+  "full": "bc50f0a2cfa4e494581b3bbd4f01fb021c41defb4c97cce1e9e8a2b5aa23632a",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -342,8 +352,8 @@
   "arcCollision": false
  },
  "52mm|Midnight Blackberry|biz=(empty)|auto": {
-  "nonArc": "d551bf1a6a6d76691168e84bb19bdc25fc6af501c8902aca70212c38e9532a92",
-  "full": "d2bac412675545daf26ecf690a556bfb5c9ee14ac995ba81df9af397e721aad4",
+  "nonArc": "74e6d88a2aede110657ab0702a0c5d73eedd04f4ceb1e5a853006be6700ea84b",
+  "full": "9e636a1ef1153ad521fa26b8145a7ad01e8d3038e499b6e9bb73ab12f1b31941",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -351,35 +361,38 @@
   "arcCollision": false
  },
  "52mm|Fresh Linen & White Cotton|biz=(empty)|auto": {
-  "nonArc": "0032da55f28e2709b91ed3d347631f587e4c253118c00e2f0a724b9bd6eac502",
-  "full": "2cbeae9cd7b18d5138cd3544b05a6fb394216d0bcfa0b7e2048712351c01d706",
+  "nonArc": "7fd8be3490cf1d27d5e3c5415b6c0d4fb7cfe5a4dc7b0dccd25be2f0fdb1ccdd",
+  "full": "b760790448cb942e7f1911b06bde2f954f9c34ec62a847352e17d9f6f8478798",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|Christmas Spiced Orange & Cinnamon|biz=(empty)|auto": {
-  "nonArc": "084cb7a3799647b49c471df7e86ffec4ee7369da90dfbf19179f633518c4d00c",
-  "full": "5ceab705e06e66de24e8d55bb87a811f0abd1b7f2bb67a94ea44142c22aacfe2",
+  "nonArc": "3971ae4fde435ca71be0c831d6c10931a23c4527a3f1e5259d561394edc50082",
+  "full": "548e5d38f10325ea02d8dea9e9b3c616da3369b2806d1afb996d162758a08927",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=(empty)|auto": {
-  "nonArc": "084cb7a3799647b49c471df7e86ffec4ee7369da90dfbf19179f633518c4d00c",
-  "full": "026573aa7bf64aed0b893752abeec7d76289b28b1a0918f88046feecfd108c14",
+  "nonArc": "3971ae4fde435ca71be0c831d6c10931a23c4527a3f1e5259d561394edc50082",
+  "full": "c2cb26afc4f8b1d13b9e867fcf3f35c6c1dfa60245edd12c40945b35d3e64324",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|WWMM WWMM WMWMW|biz=(empty)|auto": {
-  "nonArc": "d551bf1a6a6d76691168e84bb19bdc25fc6af501c8902aca70212c38e9532a92",
-  "full": "cd9abff3d26a80e0896c761badc30a476d57ecd5bdf7a01c87d79f9702666e93",
+  "nonArc": "74e6d88a2aede110657ab0702a0c5d73eedd04f4ceb1e5a853006be6700ea84b",
+  "full": "1c08043783d08fd49c3dd4f5ffc5faa9acad3d566cb1e8bfb1f5987b7a63eb4a",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -387,1212 +400,1242 @@
   "arcCollision": false
  },
  "63mm|Rose|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "4ae5e4558e059e9f474b44e542c1162245362850e5c0ba08edc0f3afff093ccd",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "8b419c68cbb50c63bad5eb197de780a7a100df44f770e8fcd55778744f649afe",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Aaaaa Bbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "456b708b60575467810752e22ccca770d523e96d950da2b2c87f420d800d93aa",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "b8dddf5321cb6518accc2612937c86b04e359a6e5c1e4039a830010a460a8ef9",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Aaaaa Bbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "431eb7cad7ace9fbb22d8f52007dcc9c4a7406945809d2ad4ecac9e17336876b",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "f8c761792a88b14707d829057ae0a9f3fb967804dd8b40353598010c6e2d2cd9",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Aaaaa Bbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "90989ea23e02aeadc7213418e20e09c257cc7a4b3e31563d4e35d59fea06f9c1",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "44046800e88097363ca779688e54831d6ed42f6f57e46fc51119cd9830266813",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Aaaaa Bbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "5d429b15a38ce0526dd086a97cb0903db266aaec10335fc568cbc2c0d0570b0a",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "c9362b13e0e62c64273114bfa0c15ff7536069522f3b6b5a3594361d9eee132c",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Aaaaa Bbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "21aaa0af6bd306a5990abd8f57e4644c98c00215c9e4ea531511786a1284e027",
-  "full": "30179a5e6b849cdefc089fb5459fdf12b7124415b69825f18e5ed27bc5b3f878",
-  "fits": true,
-  "warnings": [],
-  "arcCollision": false
+  "nonArc": "6e0a1bc29a0a1c07bc944bfa04459d5446b5a0739b00736ff8bd9cac712c0f4b",
+  "full": "7d0a914f94d8ccd7964851eb6a13f37efbc78d0a00ce14ae759d64c55e32ac59",
+  "fits": false,
+  "warnings": [
+   "scent-name-too-small"
+  ],
+  "arcCollision": true
  },
  "63mm|Aaaaa Bbbbbbbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "21aaa0af6bd306a5990abd8f57e4644c98c00215c9e4ea531511786a1284e027",
-  "full": "dd31bab2b2a7bcbad71c70f9d79a3b1558952e85a5f9700bb56f4b039f3f64ca",
-  "fits": true,
-  "warnings": [],
-  "arcCollision": false
+  "nonArc": "6e0a1bc29a0a1c07bc944bfa04459d5446b5a0739b00736ff8bd9cac712c0f4b",
+  "full": "d4b4f33792fd7a6921df7309705ea1ca9217e37ac653209b64a86f63af351888",
+  "fits": false,
+  "warnings": [
+   "scent-name-too-small"
+  ],
+  "arcCollision": true
  },
  "63mm|Aaaaa Bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "21aaa0af6bd306a5990abd8f57e4644c98c00215c9e4ea531511786a1284e027",
-  "full": "4cedea7308f043f2019ba44680bafe33be944a8feeb2fd812fb6f179f987a998",
-  "fits": true,
-  "warnings": [],
-  "arcCollision": false
+  "nonArc": "6e0a1bc29a0a1c07bc944bfa04459d5446b5a0739b00736ff8bd9cac712c0f4b",
+  "full": "8a7fd8f833cedddcb37e203d05e54d148c13915509223b7122f876aa3eeac039",
+  "fits": false,
+  "warnings": [
+   "scent-name-too-small"
+  ],
+  "arcCollision": true
  },
  "63mm|illi lill iilll|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "ba20cdc2a4a973011e9618703862da456a30c7c2cc01c069b1086f2248abcb87",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "32a96131675526fea90120dcce743bc7dd526b52f7ea79f49e08484e9f8996bb",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|WWMM WWMM WMWMW|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "5410bc103651822644caf961736c998de67c745760de15df8086db3d2ef4a98d",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "e654acc11ccb5acfee9722849d116a56f4a6e7d7c580e8cb9f7b435187c91b2b",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Vanilla Bean|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "bea02a272f15c931302d287cb110b75b0603a224bfa23775f5b73ff19cb7f8bd",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "45f465b0aea1457a5cdb62e990df4256710d6ff83129215ff004db7ad565755f",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Lavender Fields|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "d93bc5add728563530ec872d6a01acee14056af1433adb5419ab8a0602112bdb",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "c17430c549e498d933d52151867fa1b6662899e5348dc90d22d9c1acc77e1b5f",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Pomegranate Noir|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "e588ae0497a7ebfb5aedb7d868f7cd9ab99c2e6b031c122eac349c647cae7c6e",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "7b059fca222a429a9483e91f2a791564effc32fa3d0da623c9ba7de40e3ca724",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Midnight Blackberry|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "0d42b4b221e6584286647247894d7fa96e57dbdccac11d76382c4829cadc4d8b",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "3ea3211c230e9a3929676ee9a2c34c950b8fedaf3fb804df6ddee220e7c22701",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Sea Salt & Driftwood|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "b4c0115946ca85603fba0dc3941daf18aadcbe4f0135b19f5e5cf99ca1a4763d",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "b04ebd54fe9d20fa96f22152cb030af69935f0ae18c6219072e6d8abb9c56694",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Fresh Linen & White Cotton|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "a45f074d4e7c8a38367637cffc3ef5d671f84219052099cc93b862788dbd2117",
-  "full": "69766147274d2e113b247f250c9e84fb475f83a82543cc10d93ca96e3351d455",
+  "nonArc": "353548daafc9b5ecfa5dbe1923f019272fdadc777c2156f77ade8192b7778952",
+  "full": "efafbcba5a024db840b653ce13380a8337b3e45f517547acd53199522bc9dc0c",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "21aaa0af6bd306a5990abd8f57e4644c98c00215c9e4ea531511786a1284e027",
-  "full": "223f40a51700874e05bcc5cffa404170cb60f0890a1a231057a51d74f8fd2a7b",
-  "fits": true,
-  "warnings": [],
-  "arcCollision": false
+  "nonArc": "6e0a1bc29a0a1c07bc944bfa04459d5446b5a0739b00736ff8bd9cac712c0f4b",
+  "full": "e89bbd29866078e3fbd26bed9ce6d0321a572d17336d9b2f8129ccda56fb38e1",
+  "fits": false,
+  "warnings": [
+   "scent-name-too-small"
+  ],
+  "arcCollision": true
  },
  "63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "21aaa0af6bd306a5990abd8f57e4644c98c00215c9e4ea531511786a1284e027",
-  "full": "4c7c0b26b4d4790d723c15aa12f39be0e8ba710b5a7525f03c2bd788f4fb509f",
-  "fits": true,
-  "warnings": [],
-  "arcCollision": false
+  "nonArc": "6e0a1bc29a0a1c07bc944bfa04459d5446b5a0739b00736ff8bd9cac712c0f4b",
+  "full": "b216ec549de56cc947f480263f8164f6fbdafa64e38fa2123b81c73c92b5b29c",
+  "fits": false,
+  "warnings": [
+   "scent-name-too-small"
+  ],
+  "arcCollision": true
  },
  "63mm|Crème Brûlée & Tonka|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "2443048f071088557e827a3a6cb8c6b3ea1f0a17529f7967afc3d61074d0c599",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "ac5b0b9eb0ec4ce7ea1ca385f040d9e43965fb31f5e45df3136cc01140207ce9",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Vanilla Bean|biz=CMG|auto": {
-  "nonArc": "7d58c05507a6dde485c3434d124f558f83f6b62d1e27c8141542660980d9bfe2",
-  "full": "cc101ea6df836cbb295335867e748edde0a69c09092f85a8fc16bf915722c705",
+  "nonArc": "4ddd93221537f59041e50e0a2190b3bd9278a487de19997817cfcf82be6d4951",
+  "full": "b4d668dfc20cecc8651be6eebf25e2959864b4fe9c07fec2910d9975fa19607d",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Lavender Fields|biz=CMG|auto": {
-  "nonArc": "7d58c05507a6dde485c3434d124f558f83f6b62d1e27c8141542660980d9bfe2",
-  "full": "687137e3afec3b77c42c39392fd395c5842bdbfe59248314c5970425beef3ebb",
+  "nonArc": "4ddd93221537f59041e50e0a2190b3bd9278a487de19997817cfcf82be6d4951",
+  "full": "19edde368203131c80ba71e4bea2ac81bc8a598b5d292724cca5a833a30cb3a5",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Pomegranate Noir|biz=CMG|auto": {
-  "nonArc": "7d58c05507a6dde485c3434d124f558f83f6b62d1e27c8141542660980d9bfe2",
-  "full": "ea12d5b280850f8148a6600d9cb0b4489bfc43861cc2add66e1030dc7afbf2f2",
+  "nonArc": "4ddd93221537f59041e50e0a2190b3bd9278a487de19997817cfcf82be6d4951",
+  "full": "9d425fe9b547a5f2b6ee415f9729356dadfc99f5fe770f9d3ed07d86f5315f4f",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Midnight Blackberry|biz=CMG|auto": {
-  "nonArc": "7d58c05507a6dde485c3434d124f558f83f6b62d1e27c8141542660980d9bfe2",
-  "full": "5d03cbeedbfab13d463ed113238a5cf15f112ba214f91fcbf3a81666dd4325b2",
+  "nonArc": "4ddd93221537f59041e50e0a2190b3bd9278a487de19997817cfcf82be6d4951",
+  "full": "ed1394ec8e96aeaba5faf4c402c9d0c261820bd66147f022809400cc5771621b",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Fresh Linen & White Cotton|biz=CMG|auto": {
-  "nonArc": "9da93c4c364ede1e309abf98b7ec79d9ba10a86610c9637bb7f1a6a82d45aeaa",
-  "full": "73e871900ddc9e301b39c26457b154fa42fc6182b1dd8f01dfef72d63d10b4b0",
+  "nonArc": "9df875c162aef2748e07b4008a1124cf0456d7ccb1f6ad1bbd2817328bebd4d9",
+  "full": "8fe5631c830813b9293001a1d461203d20319cac3ef6190931e283aab9051097",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Christmas Spiced Orange & Cinnamon|biz=CMG|auto": {
-  "nonArc": "f4a7878db8901ddd53577a0aacb68d93e72a713e60d05504c20e6cb37f084d55",
-  "full": "59070ff0883b06ea1f8952ff5188f5ac980459de4bb05f7fc1d00f6f83192462",
+  "nonArc": "e4211f6c223541ece14ab5f1b82483caa8239bf420d0b3a15abfb5960d19744a",
+  "full": "6d0561584b7b20ed6129d42ab1e506e93448ea8eaa82cd0d1b96d7a8e843ee44",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=CMG|auto": {
-  "nonArc": "f4a7878db8901ddd53577a0aacb68d93e72a713e60d05504c20e6cb37f084d55",
-  "full": "d504db8013e34e297d92c0f353a217c35e2b009a597fdd0c82c648824d09f6a0",
+  "nonArc": "e4211f6c223541ece14ab5f1b82483caa8239bf420d0b3a15abfb5960d19744a",
+  "full": "de05fbe3354d4ae55ad54d12ab243a18dd268c387365975510f8131d42072351",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|WWMM WWMM WMWMW|biz=CMG|auto": {
-  "nonArc": "7d58c05507a6dde485c3434d124f558f83f6b62d1e27c8141542660980d9bfe2",
-  "full": "aa1fd2b9b11a24e9aedb3a10ece8d6573c80ed6bbee7914cb0f089c6ff1bf032",
+  "nonArc": "4ddd93221537f59041e50e0a2190b3bd9278a487de19997817cfcf82be6d4951",
+  "full": "2ab3f94e794776718f964a50ce1bf9bf8a482bad6f892d2a2b3aabb6777e0802",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Vanilla Bean|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "1b302acffe12e6023e7206aa0c372183c40edf73189cfa867385eaaec8c1cc3f",
-  "full": "533d3c126a25ceb4c67b6baa9c3e42ec7da0c385f749c874e9008fdf6f411018",
+  "nonArc": "48ca04dd7fc7e5169b93300f11dd9d8f5df07f2a0ca892840d9d6aee7a9b130f",
+  "full": "45c31bb481eae85d1f45980100b0eb0649c52d418af837adf39abcaf459a966f",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Lavender Fields|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "1b302acffe12e6023e7206aa0c372183c40edf73189cfa867385eaaec8c1cc3f",
-  "full": "e5491a3198a163a38ad16d7434bd4bc08e694474ce8f4be6d7a21547f092c723",
+  "nonArc": "48ca04dd7fc7e5169b93300f11dd9d8f5df07f2a0ca892840d9d6aee7a9b130f",
+  "full": "af504e2cefe9411cea40593d43065704a60904bf30778d3e563bf0c314568f6a",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Pomegranate Noir|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "1b302acffe12e6023e7206aa0c372183c40edf73189cfa867385eaaec8c1cc3f",
-  "full": "b0dbe1adcef4e46ca9d5bae646ea4dec2db4e10213d5fa8a75f1ad7a2a1545b0",
+  "nonArc": "48ca04dd7fc7e5169b93300f11dd9d8f5df07f2a0ca892840d9d6aee7a9b130f",
+  "full": "163919ef6674776349f53775323786c294e58bca73f0138b435935eb2488185c",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Midnight Blackberry|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "1b302acffe12e6023e7206aa0c372183c40edf73189cfa867385eaaec8c1cc3f",
-  "full": "8c7ca9b2011b5a0993af1b1ad08eca14d419f92112214d08f7012c35bfe6fbec",
+  "nonArc": "48ca04dd7fc7e5169b93300f11dd9d8f5df07f2a0ca892840d9d6aee7a9b130f",
+  "full": "b605521e357d0c25e2261dc24032b6c9e4a1c03298f4fab58dd97147ba1f43c6",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Fresh Linen & White Cotton|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "1b302acffe12e6023e7206aa0c372183c40edf73189cfa867385eaaec8c1cc3f",
-  "full": "cb6c62c7d9d71829d84dd7ad0d8d6d8f75bfdd4f58f456099c4685a2476c0463",
+  "nonArc": "48ca04dd7fc7e5169b93300f11dd9d8f5df07f2a0ca892840d9d6aee7a9b130f",
+  "full": "c87d7384a407f588aaeb6a8a931d2aa1bc9897d57f6c30e6e363609d7c0f4d17",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Christmas Spiced Orange & Cinnamon|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "1b302acffe12e6023e7206aa0c372183c40edf73189cfa867385eaaec8c1cc3f",
-  "full": "f332ab5606b5b076620bf518f556f3ae2a8cfbe719ef776c4eb7b2a9a5911f79",
-  "fits": true,
-  "warnings": [],
-  "arcCollision": false
+  "nonArc": "01f87f4a5c6fbf6c4e32e30359d4e746690f07c6ce59e3f8645056a667fea6b7",
+  "full": "a8036a650204dd3464fe5f4f31b2133587b885886def6f6a85e4f4feeac73d39",
+  "fits": false,
+  "warnings": [
+   "scent-name-too-small"
+  ],
+  "arcCollision": true
  },
  "63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "1b302acffe12e6023e7206aa0c372183c40edf73189cfa867385eaaec8c1cc3f",
-  "full": "7e6a5f04858cfb2568e9dbacd1de69df636623a1b767578f5257948cdda2d960",
-  "fits": true,
-  "warnings": [],
-  "arcCollision": false
+  "nonArc": "01f87f4a5c6fbf6c4e32e30359d4e746690f07c6ce59e3f8645056a667fea6b7",
+  "full": "f3d3b965dcc7cf6d1af18859dcafe22b7628777771a7a941bf73ae81d9e29017",
+  "fits": false,
+  "warnings": [
+   "scent-name-too-small"
+  ],
+  "arcCollision": true
  },
  "63mm|WWMM WWMM WMWMW|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "1b302acffe12e6023e7206aa0c372183c40edf73189cfa867385eaaec8c1cc3f",
-  "full": "ffb825d38390363df26fc155e727e8b778ad1172ad2fc86ebafee84c7663cc8a",
+  "nonArc": "48ca04dd7fc7e5169b93300f11dd9d8f5df07f2a0ca892840d9d6aee7a9b130f",
+  "full": "4d6fd2d27abd082de1872bc58bb2866f9016ee7c4e3fb6b60d652d877d8fb268",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Vanilla Bean|biz=(empty)|auto": {
-  "nonArc": "debc427a87093580c29d679aebbbcf8314f6b6d8f6fd215831d9f54ddb385360",
-  "full": "bf58182a0e6feb610f66c67c3b8e445386e892792e519f9e242b80aa4825a5ee",
+  "nonArc": "87d2185fa831e2679877b9a259ba89222eda954703696fd6c33d8da3327bdc9e",
+  "full": "ef5bb5e8d9135eeb729ab72faab073962980f4bd61eb59fa12bdf6826d61c3c9",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Lavender Fields|biz=(empty)|auto": {
-  "nonArc": "debc427a87093580c29d679aebbbcf8314f6b6d8f6fd215831d9f54ddb385360",
-  "full": "65662908aaaacd658e26888e63dadd2cfa74d397258bc6159e67fd4f6ac17cfb",
+  "nonArc": "87d2185fa831e2679877b9a259ba89222eda954703696fd6c33d8da3327bdc9e",
+  "full": "926f376ccac9023f2870de4fed5f06c105909ea119d4b256a6879251263e47fe",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Pomegranate Noir|biz=(empty)|auto": {
-  "nonArc": "debc427a87093580c29d679aebbbcf8314f6b6d8f6fd215831d9f54ddb385360",
-  "full": "ef4145b4355efd212a50b0b76ba24f1aa24447beba99d47ec68665e311dab8e8",
+  "nonArc": "87d2185fa831e2679877b9a259ba89222eda954703696fd6c33d8da3327bdc9e",
+  "full": "f3cbd1933ab45b0aff234b2e1571e5016a7043d399f5459c94313e02ae9c2473",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Midnight Blackberry|biz=(empty)|auto": {
-  "nonArc": "debc427a87093580c29d679aebbbcf8314f6b6d8f6fd215831d9f54ddb385360",
-  "full": "f825616fd0d0c035d0381addc2c5591d957ffef3bd80708a1e0fb87b0fb59907",
+  "nonArc": "87d2185fa831e2679877b9a259ba89222eda954703696fd6c33d8da3327bdc9e",
+  "full": "40be2bef48ec58e6fb9a0a745ceaa1b90b9958a27d512448014a541da1ab56cc",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Fresh Linen & White Cotton|biz=(empty)|auto": {
-  "nonArc": "f77d2465c7daaf3c03f87d5af577d236cb2462b20f69f78843dfcf774c93b729",
-  "full": "b5df834d14f915df93e673c8de1a95b86e7a0e143e0c17b6d9f431b519022de4",
+  "nonArc": "85bd0f18c1745df52556e242cef0110240f3afa0efc99ca9888a5d9504caf6df",
+  "full": "22c0c9ad808804c89f3328a166cda97f268196a8317f6b2c4b3e5e990dc21d4f",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Christmas Spiced Orange & Cinnamon|biz=(empty)|auto": {
-  "nonArc": "3acd24583e83dcff06c72d2e845d987347fd4f23d8ec5b179490955b6fd85f7e",
-  "full": "615b70d6d7aceae1096aa19f35d087d4f0a0284da93954392f3af2bdf8faa0e3",
+  "nonArc": "36b2c9cf77aebccdea678df643a91cd181a4c96b7e5f86ceab8c248de8fa8511",
+  "full": "381d760031b6513811670e28798efd0d6c2f4ce5658063a3f0f275d16da3c0e1",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=(empty)|auto": {
-  "nonArc": "3acd24583e83dcff06c72d2e845d987347fd4f23d8ec5b179490955b6fd85f7e",
-  "full": "8d1e7be46f06c0835297c3b7c9645aa7cf897a9f86e04102c79aafcf47cc85a8",
+  "nonArc": "36b2c9cf77aebccdea678df643a91cd181a4c96b7e5f86ceab8c248de8fa8511",
+  "full": "ce16113c0030ef63c2839fb28c63aadcfc00f4563ba2b965b84aa635c0480e40",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|WWMM WWMM WMWMW|biz=(empty)|auto": {
-  "nonArc": "debc427a87093580c29d679aebbbcf8314f6b6d8f6fd215831d9f54ddb385360",
-  "full": "7b94d58d5800bc4dae6307b5258dd30902ae8e512c2922929b5aa680280d64ab",
+  "nonArc": "87d2185fa831e2679877b9a259ba89222eda954703696fd6c33d8da3327bdc9e",
+  "full": "76202d49b3f4bf858f205abf029ee9468350272dcbd655042b0f0a1147ab40d0",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Rose|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "be83b996aaed934a62e9646c77d60e0e6ed655e85514c92ffecdba0f1715b165",
-  "full": "c7fff0ac71f2aa88ad61943f4e77f5a4745b4c4713b5366866d3e6afba0fc484",
+  "nonArc": "773a1a83769c0b236b777f4318b1b2c660e754f055a42cb075ff087aa88955e6",
+  "full": "9b967eb186f5330ebbab0ffb0f5cf8287d404fde485c89e7f7ab8a93f44744b9",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Aaaaa Bbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "be83b996aaed934a62e9646c77d60e0e6ed655e85514c92ffecdba0f1715b165",
-  "full": "57cd661bb854eb1fc36f33ea4d838c2924f455d893d6a237ad9255ff6bef1c21",
+  "nonArc": "773a1a83769c0b236b777f4318b1b2c660e754f055a42cb075ff087aa88955e6",
+  "full": "01f6bc7d0242eb8c63831dd1651e86ecd827db1b67e191115ca709ab85878ebe",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Aaaaa Bbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "be83b996aaed934a62e9646c77d60e0e6ed655e85514c92ffecdba0f1715b165",
-  "full": "a4b4ef4f03fd8c91bcf91b7e9c1378a793a96be3558eebdb01623488772e56e5",
+  "nonArc": "773a1a83769c0b236b777f4318b1b2c660e754f055a42cb075ff087aa88955e6",
+  "full": "b88526ae2f863ce5ad731bc82fb383a04da1b5d0244565cd0ac96eae6d4d87b0",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Aaaaa Bbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "be83b996aaed934a62e9646c77d60e0e6ed655e85514c92ffecdba0f1715b165",
-  "full": "97564544c80a075b6c38bb0aa0a15e851ff3aa6e48692a575380e2c33f4ca802",
+  "nonArc": "773a1a83769c0b236b777f4318b1b2c660e754f055a42cb075ff087aa88955e6",
+  "full": "c037d9d65aaa4379c040e22b2e44df3d99b479c0fd22845d92476b31d343e287",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Aaaaa Bbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "be83b996aaed934a62e9646c77d60e0e6ed655e85514c92ffecdba0f1715b165",
-  "full": "ae5a58cac02b341c284f23ebb261c6baf7daca23e4be194ee37ed006ac69567e",
+  "nonArc": "773a1a83769c0b236b777f4318b1b2c660e754f055a42cb075ff087aa88955e6",
+  "full": "1a5416ed166cb901fb6811279e878f1ff3b85f1f0efc0f7e3492c476304d913d",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Aaaaa Bbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "d64ab631fff1944afb0b1401deebd5463e6c4f6a649c6f8e0bd851b70f3d31b7",
-  "full": "96fc2123c312b88646a2128833710976dd7cec4ae3c981b0568bafb8a4992f6f",
+  "nonArc": "710b9a3ad7d610cde0aead3f86bef05e1af0dad393d3739923f8990eb28223f5",
+  "full": "1567c3e6a5dda6aec1fa2e0082fd2f82ab7d253f76776797bd2e345c9340ac60",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Aaaaa Bbbbbbbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "d64ab631fff1944afb0b1401deebd5463e6c4f6a649c6f8e0bd851b70f3d31b7",
-  "full": "2d26c6f97716c0bfa5aafcef910ba8a5285651ba1c8dc64667a42e8d44815ed4",
-  "fits": true,
-  "warnings": [],
-  "arcCollision": false
+  "nonArc": "06f16217c24bcdcc69c48dac759a01674e370ed409986261552346246f22d40f",
+  "full": "58c1514ebd9968634fb8c3e04b99765764dd4cba40ed1c288f399fda623108ca",
+  "fits": false,
+  "warnings": [
+   "scent-name-too-small"
+  ],
+  "arcCollision": true
  },
  "75mm|Aaaaa Bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "d64ab631fff1944afb0b1401deebd5463e6c4f6a649c6f8e0bd851b70f3d31b7",
-  "full": "11fbbf5de2cd118684d1a720696c5d8b7ef61e16f42a0eaeaf078eddbec2b0b7",
-  "fits": true,
-  "warnings": [],
-  "arcCollision": false
+  "nonArc": "06f16217c24bcdcc69c48dac759a01674e370ed409986261552346246f22d40f",
+  "full": "242dafd683dcf47050bc006141b01b0c523abe2a559dc951563fe83325104825",
+  "fits": false,
+  "warnings": [
+   "scent-name-too-small"
+  ],
+  "arcCollision": true
  },
  "75mm|illi lill iilll|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "be83b996aaed934a62e9646c77d60e0e6ed655e85514c92ffecdba0f1715b165",
-  "full": "c595cb2a13583fc0d8bea0c691f4042664c68330bb5abffb9e91b0d07c844249",
+  "nonArc": "773a1a83769c0b236b777f4318b1b2c660e754f055a42cb075ff087aa88955e6",
+  "full": "7ca4e6873fda9a0c6c27f28063de417b27058fa0309c7f4fcf83faeb21c83ae3",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|WWMM WWMM WMWMW|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "be83b996aaed934a62e9646c77d60e0e6ed655e85514c92ffecdba0f1715b165",
-  "full": "fd0b1dc7a623188204507a6f30b4e3935246c301fb39d7871ba5847dfda27bd2",
+  "nonArc": "773a1a83769c0b236b777f4318b1b2c660e754f055a42cb075ff087aa88955e6",
+  "full": "180f2881c19ca20d42c239a0f9c87991309e0084b76ee7f766e9d6c9aa32a097",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Vanilla Bean|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "be83b996aaed934a62e9646c77d60e0e6ed655e85514c92ffecdba0f1715b165",
-  "full": "963882250d3691484232fbe29036a50b2d7c84754d74bed08d7386221b87728d",
+  "nonArc": "773a1a83769c0b236b777f4318b1b2c660e754f055a42cb075ff087aa88955e6",
+  "full": "2b3c8c4660ef218d26b3f7e6eff958d988c76659f91d1f694d57e020b083979f",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Lavender Fields|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "be83b996aaed934a62e9646c77d60e0e6ed655e85514c92ffecdba0f1715b165",
-  "full": "e9e65d5f4782b6e340e0fbbf233e8af6dea201a87b13ee33a1261ec9c4147f44",
+  "nonArc": "773a1a83769c0b236b777f4318b1b2c660e754f055a42cb075ff087aa88955e6",
+  "full": "058eb9a4101d93bd75f77dec0708029c6f6372ada66938a559ffc919b590b0da",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Pomegranate Noir|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "be83b996aaed934a62e9646c77d60e0e6ed655e85514c92ffecdba0f1715b165",
-  "full": "c314d08a6f6dba73dd20592163b4dc309b26fa813c5158fa1bbf31fed7a1c5e9",
+  "nonArc": "773a1a83769c0b236b777f4318b1b2c660e754f055a42cb075ff087aa88955e6",
+  "full": "a5aec0011ae73910a7876e39926b1425e39e4182c54b90a3574c345aa1585cc5",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Midnight Blackberry|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "be83b996aaed934a62e9646c77d60e0e6ed655e85514c92ffecdba0f1715b165",
-  "full": "506f021e965d4f9215f8789c569a310adb137ed931b2d590ec31d6b0b55ae60d",
+  "nonArc": "773a1a83769c0b236b777f4318b1b2c660e754f055a42cb075ff087aa88955e6",
+  "full": "435c1729f6220b5233599828f0dba6061f22ddba05d7fdfed0dbc7980524b858",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Sea Salt & Driftwood|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "be83b996aaed934a62e9646c77d60e0e6ed655e85514c92ffecdba0f1715b165",
-  "full": "79588260fd78c32d032fe3e2312b4e9cd257697de5cf04171d069c960d74f452",
+  "nonArc": "773a1a83769c0b236b777f4318b1b2c660e754f055a42cb075ff087aa88955e6",
+  "full": "b04a18a8aa6bbaf219fd446cad9bf76e46e76a56dfd8b78031d73a9c15209da0",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Fresh Linen & White Cotton|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "d90cb5256d80f08b3617854b63b304aade5241ff044cb02f3e08e3265f9c7d9d",
-  "full": "218493ce5d794d56f9d34927c290bd1efc06f3c52d59da242b4e13f638a87f48",
+  "nonArc": "1b44267376a80a2838614fe2666634f49bfeb47aea3ae52b307c082bff2314ba",
+  "full": "9d07d2ff8d715a81b6a0adbf94551d96060be4f3fe1ed8d5dd4a78ace7939301",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "d64ab631fff1944afb0b1401deebd5463e6c4f6a649c6f8e0bd851b70f3d31b7",
-  "full": "bddd3d96be3c2a9a4d8f6b78b444a42f806cc192a6204cbd4e6833e4b64a3f51",
-  "fits": true,
-  "warnings": [],
-  "arcCollision": false
+  "nonArc": "06f16217c24bcdcc69c48dac759a01674e370ed409986261552346246f22d40f",
+  "full": "dc703f1e649bf2dfac1b7f107f9c0b0f5e2092b4bfa9b24ac34d6bf1b8353f18",
+  "fits": false,
+  "warnings": [
+   "scent-name-too-small"
+  ],
+  "arcCollision": true
  },
  "75mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "d64ab631fff1944afb0b1401deebd5463e6c4f6a649c6f8e0bd851b70f3d31b7",
-  "full": "e2fc3b52b0d0a91c595e0ffa37e764b7790e9fb629116cc4fd145b2fecaa3701",
-  "fits": true,
-  "warnings": [],
-  "arcCollision": false
+  "nonArc": "06f16217c24bcdcc69c48dac759a01674e370ed409986261552346246f22d40f",
+  "full": "ef44a5706fa0ed8285e71d534505c94c73a55b115f4144db4c59a2416de037c9",
+  "fits": false,
+  "warnings": [
+   "scent-name-too-small"
+  ],
+  "arcCollision": true
  },
  "75mm|Crème Brûlée & Tonka|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "be83b996aaed934a62e9646c77d60e0e6ed655e85514c92ffecdba0f1715b165",
-  "full": "9eb0748103463b7883682a6228325d2bb1694f46feb753638e4d837a63001a34",
+  "nonArc": "773a1a83769c0b236b777f4318b1b2c660e754f055a42cb075ff087aa88955e6",
+  "full": "2ec37f425ae122b1b49e3fdfd0487bd7cafca4865b58d26d00e952dc8c0e9b57",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Vanilla Bean|biz=CMG|auto": {
-  "nonArc": "5c6e9fc439146db5a45c6acff4b15e1e7e81c5e0b48335aaf04aae0c5eec00cc",
-  "full": "dced16a8edfbffc9d363bf361282aefa7b8df71afe93a5da99611a8482c9aeba",
+  "nonArc": "4143f181e1b7b8ea019a82d730be34be91b6657a1af39be269ee8eba6093f0b2",
+  "full": "a51e1dd923758acb7a8cd53772a819ae7fb8cf67c37a528a67502fcb492665cb",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Lavender Fields|biz=CMG|auto": {
-  "nonArc": "5c6e9fc439146db5a45c6acff4b15e1e7e81c5e0b48335aaf04aae0c5eec00cc",
-  "full": "fb920aea29c93227b176a37e12debbc3e5f97e7c901ec5de8d57330a48ff3859",
+  "nonArc": "4143f181e1b7b8ea019a82d730be34be91b6657a1af39be269ee8eba6093f0b2",
+  "full": "f332e5a9ff85e71ccf9b4cb326c302f8cafc44baa62422faff06002094ae6caa",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Pomegranate Noir|biz=CMG|auto": {
-  "nonArc": "5c6e9fc439146db5a45c6acff4b15e1e7e81c5e0b48335aaf04aae0c5eec00cc",
-  "full": "dc2ad6adc863730979dc0f2b09a37e8716a2408d947794e2419fb0d88584bf44",
+  "nonArc": "4143f181e1b7b8ea019a82d730be34be91b6657a1af39be269ee8eba6093f0b2",
+  "full": "16a30da58d805f8bd8152037920b0f711113f276e152d692f4d35ecbf94a5808",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Midnight Blackberry|biz=CMG|auto": {
-  "nonArc": "5c6e9fc439146db5a45c6acff4b15e1e7e81c5e0b48335aaf04aae0c5eec00cc",
-  "full": "96b9a19049566d80d1e0872966088ca036460bb1d46668d82f2be47ec7d61ba6",
+  "nonArc": "4143f181e1b7b8ea019a82d730be34be91b6657a1af39be269ee8eba6093f0b2",
+  "full": "9539dccd19543cdbb71138854d0cdedd9d501d8b847f59cdcec9ce14b0e53624",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Fresh Linen & White Cotton|biz=CMG|auto": {
-  "nonArc": "e2504cd11b4c37d9e0542cc7ea82856c3979ac81b7d68abdfcb1e53045f48ff4",
-  "full": "9361dadf08f22011363062ab9b14404e378c2c8809949ac028dfc037718e811d",
+  "nonArc": "0659fc8bb48781ff5c8fe650087d5a0ee2d822fe61361e4f3455545587b2e5a0",
+  "full": "78ac809596b9b6bb85d7ce1fee6e0d71d857aa806a9555549524b1ae8054a9f7",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Christmas Spiced Orange & Cinnamon|biz=CMG|auto": {
-  "nonArc": "b0810e150808e41e381a4681c772f502ee64c0ee9b71fd2e2fbb696dfb7f8dfe",
-  "full": "044c658fe4b2677b5c94c84ae1f82f9b76f2a6af16b12c3a2fa3fc99746a6cb1",
+  "nonArc": "0593be0ed87438a98095b45934aeb7392c3876bfc21fdd7ffb78eb51d9d47b3d",
+  "full": "6e8b3e501f98f423cb8fa6aa816b4a0f33608634c9a8b3b72a983b988b0e76b7",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=CMG|auto": {
-  "nonArc": "b0810e150808e41e381a4681c772f502ee64c0ee9b71fd2e2fbb696dfb7f8dfe",
-  "full": "f22c93dd09a5023dfe413879edf744f1e8dcd1a746aeeefab77add3b2ecf9e89",
+  "nonArc": "0593be0ed87438a98095b45934aeb7392c3876bfc21fdd7ffb78eb51d9d47b3d",
+  "full": "6ef9915b9751ccd682059dc885eae8452c95dd75a3deaef90954029e42cdb39d",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|WWMM WWMM WMWMW|biz=CMG|auto": {
-  "nonArc": "5c6e9fc439146db5a45c6acff4b15e1e7e81c5e0b48335aaf04aae0c5eec00cc",
-  "full": "527d64b99204a5e25c792dd43476fb11ee96f7d4674bb89853c49e34ae536cb0",
+  "nonArc": "4143f181e1b7b8ea019a82d730be34be91b6657a1af39be269ee8eba6093f0b2",
+  "full": "5b9594efd561a9d4f22650a54a0513cd2ac241893c8a3a3da0ca0efa179101ed",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Vanilla Bean|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "7e0b3938a48c6e3cc69a123f41a4ba63764254d9e5cc4945272d2091a1b4de9d",
-  "full": "bfcfe3323cfbc0d9f6ebcf663d2bb7cb1f72c1ca969c0f67d169cc5deeb992dc",
+  "nonArc": "a8d0d8dd79bea95c7749dcedf89cf63d87f406d387de2f7af27c3587b6229df3",
+  "full": "97122d2f349d878c04f6f1f7dc9198ab193996ef1c4d5e41f30829a526b76d71",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Lavender Fields|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "7e0b3938a48c6e3cc69a123f41a4ba63764254d9e5cc4945272d2091a1b4de9d",
-  "full": "53ac3392131313a566428f2b816e2fc7b95f3894a9884e6599a3023043e0f5c9",
+  "nonArc": "a8d0d8dd79bea95c7749dcedf89cf63d87f406d387de2f7af27c3587b6229df3",
+  "full": "ebde6c39a5c3b036d943d2a656f6bd99d060c974dd82366f8c3d6fd1baa73469",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Pomegranate Noir|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "7e0b3938a48c6e3cc69a123f41a4ba63764254d9e5cc4945272d2091a1b4de9d",
-  "full": "cc3b6cd98ffed792da596c32335f7c8cca0d5832aeab6c824541366371d428dd",
+  "nonArc": "a8d0d8dd79bea95c7749dcedf89cf63d87f406d387de2f7af27c3587b6229df3",
+  "full": "42eed9efe4e60a38f357829c52f818a4fa0bf736888cbebcb3e5a18698755225",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Midnight Blackberry|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "7e0b3938a48c6e3cc69a123f41a4ba63764254d9e5cc4945272d2091a1b4de9d",
-  "full": "85260ad4be5697510ebffa2e382aa060bec19affc00e4dfdd690f3229d1285a2",
+  "nonArc": "a8d0d8dd79bea95c7749dcedf89cf63d87f406d387de2f7af27c3587b6229df3",
+  "full": "1a6cb4b992cf7e58a829a632f249603db6ddabf2bb13bd03b6d826604b66bfd6",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Fresh Linen & White Cotton|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "7e0b3938a48c6e3cc69a123f41a4ba63764254d9e5cc4945272d2091a1b4de9d",
-  "full": "82c8557883b6a1a694fa69a1e75e097d39830dd27805f833a34c07859e6450c8",
+  "nonArc": "a8d0d8dd79bea95c7749dcedf89cf63d87f406d387de2f7af27c3587b6229df3",
+  "full": "4ea261f8f370338675b3378d246bcf068100fe13f3878e3e070c45d3080b6835",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Christmas Spiced Orange & Cinnamon|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "7e0b3938a48c6e3cc69a123f41a4ba63764254d9e5cc4945272d2091a1b4de9d",
-  "full": "de60cc8c3195d3a1cd7552e5b41c886c53dd820c032b9ed40cd19296435b3103",
+  "nonArc": "a8d0d8dd79bea95c7749dcedf89cf63d87f406d387de2f7af27c3587b6229df3",
+  "full": "20bdb8faee0bb0f2fb318b8448a908577231b9253478745d0e316ea9c9cd2d74",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "7e0b3938a48c6e3cc69a123f41a4ba63764254d9e5cc4945272d2091a1b4de9d",
-  "full": "d46f15a5c578d471da16c9561837826c95433a3cf7bf87446f79c7809863f792",
-  "fits": true,
-  "warnings": [],
-  "arcCollision": false
+  "nonArc": "cfa4bfc6196e8a13e594af4e00fc7aace621f666ec55b5c2f80829780789ce0f",
+  "full": "8a7db8f7189b06bc5bcbc56a7a86cf8ae5ffe7bc730e0ade26a06876431c41a9",
+  "fits": false,
+  "warnings": [
+   "scent-name-too-small"
+  ],
+  "arcCollision": true
  },
  "75mm|WWMM WWMM WMWMW|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "7e0b3938a48c6e3cc69a123f41a4ba63764254d9e5cc4945272d2091a1b4de9d",
-  "full": "e9a237cdecfba569e8c5a7b4e21176b2e537efe7a55c25b48c841bb3e31549f6",
+  "nonArc": "a8d0d8dd79bea95c7749dcedf89cf63d87f406d387de2f7af27c3587b6229df3",
+  "full": "483de3cdb62962da4d04f5d5525f4cccab3013162e7b06166a0bf4803542bb1e",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Vanilla Bean|biz=(empty)|auto": {
-  "nonArc": "df709155e15315c3dc8e2ed38f40d17cd0af7555e628739031c54d2a6ee4bbf2",
-  "full": "9b02e300fb0cf477cd017b1adb82cb2adbb5d64dabd1d7a06a02fd2f56c4bcca",
+  "nonArc": "3865ce742cfba30d64a08528ff5d8926d455209253a007671fa7298b27714f13",
+  "full": "6333e30eada2d746b0e4a03a86518081b74e570afc07d3c21ce94b1c6c1dea21",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Lavender Fields|biz=(empty)|auto": {
-  "nonArc": "df709155e15315c3dc8e2ed38f40d17cd0af7555e628739031c54d2a6ee4bbf2",
-  "full": "8646ebdafb5cc9332d1141a20c478bcf067752a20b08b5a08fe1d983859d042c",
+  "nonArc": "3865ce742cfba30d64a08528ff5d8926d455209253a007671fa7298b27714f13",
+  "full": "f0a5b3230244708aa74e017c97667cae193477ef536172e389d6ead0bf37f535",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Pomegranate Noir|biz=(empty)|auto": {
-  "nonArc": "df709155e15315c3dc8e2ed38f40d17cd0af7555e628739031c54d2a6ee4bbf2",
-  "full": "38eff37b0949112be5867252dc0834b26f79cea9fe0177a9eaddf7c28df8e3cd",
+  "nonArc": "3865ce742cfba30d64a08528ff5d8926d455209253a007671fa7298b27714f13",
+  "full": "f1c8b714e42db03958ccf2f0105e3d2eabea5441b0e427d8b8dc5f42feb743da",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Midnight Blackberry|biz=(empty)|auto": {
-  "nonArc": "df709155e15315c3dc8e2ed38f40d17cd0af7555e628739031c54d2a6ee4bbf2",
-  "full": "c791cc7fe418cf8f32631fb1e1ab3123fb9f185812a9173ad74fcef5d0a5bf9a",
+  "nonArc": "3865ce742cfba30d64a08528ff5d8926d455209253a007671fa7298b27714f13",
+  "full": "115d3ffa5270f80e587899e1985b868d071dbe3f4a91a9d0ce9c863c4b0b38b5",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Fresh Linen & White Cotton|biz=(empty)|auto": {
-  "nonArc": "79b7c1b0af7751c32f8964bb8910899a6ae811b3bb6dccfcd4b3345752d2dffd",
-  "full": "5a3a0b2f701d16eaac3afe9cd2200c147e74f703600d554e15405a2a7bd5ec5e",
+  "nonArc": "fb1e6bd8b8fa356ee091d3c134002e66e19ed34afb55bf330b1a7ebc902d027f",
+  "full": "a0de8f51c517909db9861e0f8b10a42b389838e8f51cdc7c9ec318ece2155af0",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Christmas Spiced Orange & Cinnamon|biz=(empty)|auto": {
-  "nonArc": "86bc78923c7d72d37f032d2916d38f26c7f612216f52c26456593ee3ae9006e5",
-  "full": "4423c715c2c48bb9bde7496b3935162c1479fc57aba5963703fabdba2ded80c2",
+  "nonArc": "3b78e274908922e7e444691660bc47c50e195fe492042c30f3b3a69fba08ed7f",
+  "full": "defbd45e42c1b12b2e5e0574374a03f3559a8a0f06dd7255a986e726728f1fde",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "75mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=(empty)|auto": {
-  "nonArc": "86bc78923c7d72d37f032d2916d38f26c7f612216f52c26456593ee3ae9006e5",
-  "full": "43e4b1a0a9fe418c0413be141b9a4e62b38d60a9e0883e1af2a0bbc394ff82d3",
-  "fits": true,
-  "warnings": [],
-  "arcCollision": false
+  "nonArc": "9876f0d4c6b4fcffb920cc0b639e2484fa2d137266b107c4c87e76f766ba971c",
+  "full": "a4fbd6fa8c2be5ba361de424c4dfbc3ca42efdb8ed7b72bca93f8c4cf42fb164",
+  "fits": false,
+  "warnings": [
+   "scent-name-too-small"
+  ],
+  "arcCollision": true
  },
  "75mm|WWMM WWMM WMWMW|biz=(empty)|auto": {
-  "nonArc": "df709155e15315c3dc8e2ed38f40d17cd0af7555e628739031c54d2a6ee4bbf2",
-  "full": "4e4dd47eb4c7d32278038a11043eda188290352c980434387c961c7097f6f115",
+  "nonArc": "3865ce742cfba30d64a08528ff5d8926d455209253a007671fa7298b27714f13",
+  "full": "2a91511d73813ac14e981087c2b43ade4190e71fcaf43e649ec220dccb7c546b",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Rose|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "41f2a387163abde31987ad4b26783bdbdb66020bbf6658570c1117489e8ad1f9",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "152cbf532eb55520b4cdfe6689960805c9ec009dfafe4dee660fb42ed0945455",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Aaaaa Bbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "4e52dcfdf0b2866637990c5529e38452cb20e633043223fe2ce960b171f1b114",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "502b915dbb1e9678b53cb5d3a1e48089887d8355e2557037eab0803310b0c9e7",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Aaaaa Bbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "3ad521157b59292cda576f91ee0e723fbe3bf84dff666139f68e8f8910ca8627",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "e5bf22011bc1dd878b6afd77ff5e4dfbacfe0ea33d0d0faae1024c6aa0417de5",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Aaaaa Bbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "2e06d0e364ab2e418e1e2e8383c01bcd122b285635e4fda7a762bd39e01fdbe3",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "9943c0edd666c378284a211db492571e6bfa57bcd54429509ecc851e63dfb571",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Aaaaa Bbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "cecee92c21140861a79579da51dcd7861b2f1721b9180de622e09c54e6055cbd",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "94384d94e5be0169667ea3dcbf92e1a5af7cdafc181fab89b26f379fa6aca4ab",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Aaaaa Bbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "20c50941b181768499ccf45c9f102aaf2bea5731fa98fc328c05e39ef98a1a5a",
-  "full": "78229a763f0e53843c63a78f17d5bb282ca9535a866fb7d5a024cea3d98f8e60",
+  "nonArc": "c3053862774cbf24e605c349ff283e81d81613a24dadbd870b171f388d30943c",
+  "full": "ed2fc4599b89edf57424efbcf059234db04eef5bb483304cfbda463e568a9d1b",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Aaaaa Bbbbbbbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "20c50941b181768499ccf45c9f102aaf2bea5731fa98fc328c05e39ef98a1a5a",
-  "full": "5e0fdf18c46338c2d81a9efff5032e4c9d21665b0bb8f33ffcde5f0c4857760d",
+  "nonArc": "c3053862774cbf24e605c349ff283e81d81613a24dadbd870b171f388d30943c",
+  "full": "2b2fb2c644a2a2df43e2c873c22743e1f04e69647846f68911416888462a15f8",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Aaaaa Bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "20c50941b181768499ccf45c9f102aaf2bea5731fa98fc328c05e39ef98a1a5a",
-  "full": "498f7c4f733fee7a25b57f719127cba17c5dce8eacc5dd7ad690a2fda69a8ec7",
-  "fits": true,
-  "warnings": [],
-  "arcCollision": false
+  "nonArc": "1cc89d69e56b0c593bcfa23b7a639614993e548529ad11a5e1725d053ac5f624",
+  "full": "09bda2152d4adad2396c81030825e340f723952c7c7168b29f83753d1832f7f7",
+  "fits": false,
+  "warnings": [
+   "scent-name-too-small"
+  ],
+  "arcCollision": true
  },
  "100mm|illi lill iilll|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "716c3da206dc07a837c873d97c851a2cb7cde2254cb991229ce315710327c9e9",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "5fcfa1d734b6cc10998d58e0f74ae09cbe8554a89ca796d11f6d08b088fc8feb",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|WWMM WWMM WMWMW|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "d57fbfbff29a818e05857a01d7fda2e85f201f39a2737bec8e096e626f8c761e",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "67d9ae1b18523cd3f0d24c292180bf61cf697fd72ff8f28a8236e4666ecb836c",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Vanilla Bean|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "762d6af5a62984036cae24d2128901eb48d3fcbdd15055d69bf2fff52f1ae49a",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "bf1677197092cbec47df477c5bc6cd4ce09e4b1b864c7adbce67def8ebbb1df3",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Lavender Fields|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "711f7d3c2841a9842e2f047e713eedca11bace381a7608ca81a7f42530adc7f2",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "073e4be75dd48199d8ba73490088c79c41c89979b8a4d8c1bb11bd3971bc3b49",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Pomegranate Noir|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "e4a98500ed23aeb99b1d8361b66650b48f5c0a353259dba8d6210ad85e2eec89",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "2add08f2ea0ea7ddd7fd46d92083896123a9c8e084a0f595dcad565fa8994e37",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Midnight Blackberry|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "385bf4651957128439866cbf869a9e3e9021281d9b0038f870f6547f4542e3dd",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "8a8439d2d1e49de86fb786dc5279f323f9154bbb26ab2c857b7570175c9388a4",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Sea Salt & Driftwood|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "ef2ff13741c3adb946acd93dea37a3496a4b17d1b3add862dd5b5e8f647307ab",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "a17c9e6f12d0e583e061b34da3d142b3056eb1803f951c53d2252049ccba768a",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Fresh Linen & White Cotton|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "b0f6d039b28b85b34b9e2d3ab335bed4bd9406ed6d1ec17d7888785f601ecff5",
-  "full": "b1ae1a891bd66ccf2395646bab74d1906ae856aff2ee7502a6998bdcf655b1ac",
+  "nonArc": "f27fc4040265d719f339e01032333feebe61f12cd1f7c876d333440cddeaaf52",
+  "full": "38c6cd4ad574311eb23705670dc028ff55668defd28b4c952b8a83046a592e88",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "20c50941b181768499ccf45c9f102aaf2bea5731fa98fc328c05e39ef98a1a5a",
-  "full": "dc1e72e23c2a0ab9d1c407404f6b781fbb816f2df39893cb897efc45af1e0ee3",
+  "nonArc": "c3053862774cbf24e605c349ff283e81d81613a24dadbd870b171f388d30943c",
+  "full": "0f9ea55d7737c07045f02316e5cc40eafdb36f70355241dd921d6e5f933b5248",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "20c50941b181768499ccf45c9f102aaf2bea5731fa98fc328c05e39ef98a1a5a",
-  "full": "1bc00178d028834595ee6574714718ae0e47079b29452b1d02a38a5815af5160",
+  "nonArc": "c3053862774cbf24e605c349ff283e81d81613a24dadbd870b171f388d30943c",
+  "full": "851be2aedc9763b734baf40b2347f31a7ae9a5c577d3c5456099bfcfa471e677",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Crème Brûlée & Tonka|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "1c1e9437603a8890fe3179608b1118d89043e1ec362c50e43d44a2db8c1b64cf",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "927c074a25fa0c12ebf804e6771999867f10fec9fb594a42413ac1390304d768",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Vanilla Bean|biz=CMG|auto": {
-  "nonArc": "ab1a8ff9a3dcb9ea4e6aed49f175375c46c401265796a5f1142850d51c3fd136",
-  "full": "2a418407fc9c375042f90bf9d12e454ff38c5a76112ee77f9d476a501ac366cb",
+  "nonArc": "ee19cd382f9faab5a4fe1d9709baa0bfca2aaea47809d0c1309d3b28e6f3bd6d",
+  "full": "20150587bac2cce51d6b5613707139fe2d70b38c1bbf0864888d39ab0ce2f518",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Lavender Fields|biz=CMG|auto": {
-  "nonArc": "ab1a8ff9a3dcb9ea4e6aed49f175375c46c401265796a5f1142850d51c3fd136",
-  "full": "e37ac83cba722141f266ddf67d1b8c012fa91720208379fa452b33d47a520034",
+  "nonArc": "ee19cd382f9faab5a4fe1d9709baa0bfca2aaea47809d0c1309d3b28e6f3bd6d",
+  "full": "42ba2ef33bc146040db20010a52a4e9c9f9195350057500626184a3cc65c2a53",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Pomegranate Noir|biz=CMG|auto": {
-  "nonArc": "ab1a8ff9a3dcb9ea4e6aed49f175375c46c401265796a5f1142850d51c3fd136",
-  "full": "3bed473f6ac2568c77d63d037f672bc40119c228dfe39b4b08745cc8c943ba21",
+  "nonArc": "ee19cd382f9faab5a4fe1d9709baa0bfca2aaea47809d0c1309d3b28e6f3bd6d",
+  "full": "e4050aa3459809884656ac488a6c443fa877d60d8e3d1db49fa51dbe5d5aee75",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Midnight Blackberry|biz=CMG|auto": {
-  "nonArc": "ab1a8ff9a3dcb9ea4e6aed49f175375c46c401265796a5f1142850d51c3fd136",
-  "full": "10c2baecc5acab3a390bb71af411904beab31b80cf1c090ecd2a7943b912b0bc",
+  "nonArc": "ee19cd382f9faab5a4fe1d9709baa0bfca2aaea47809d0c1309d3b28e6f3bd6d",
+  "full": "fb2966556c70f7d6e1522e4a59f6cee3c03526921a1542f3e1fd5132084bb2a5",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Fresh Linen & White Cotton|biz=CMG|auto": {
-  "nonArc": "3d004a5309250b7f473b91d77e681ac58861335a1bc2756a79f1857c35f7c6d6",
-  "full": "bec932653288fef046cdf7fa29685a9dea34112cfabf6dba5eadb2c86502f01a",
+  "nonArc": "093c6226f0fa92f4507447505e48cc963addde8f2b3cf3ec6371aee7f9aabfbd",
+  "full": "08dabcc0b2658330d8b562a44a2037b28ef01a8ff93252c0b9456fd8c7aa3fd3",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Christmas Spiced Orange & Cinnamon|biz=CMG|auto": {
-  "nonArc": "e0c1f7d75b9d5428b8e85df3e61368dadee19693b57f5c9efe8ee75a17ff6254",
-  "full": "d7424c1edba335dc7189efad194e325fa6c60b8e6e53a64e8253592e0570fe44",
+  "nonArc": "7fa90a365b923780a2b9371915cae1ecd7afb83f8df064c27174941a18226cd7",
+  "full": "26d3dfe3bb41ed5571643d63bfdbbaf5c21aac39679fd52ceb8ba05a779ca3ab",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=CMG|auto": {
-  "nonArc": "e0c1f7d75b9d5428b8e85df3e61368dadee19693b57f5c9efe8ee75a17ff6254",
-  "full": "1d7de7be9b624d667cc678de92622a7800e7f7622be8ed107cc30f3065bc43c6",
+  "nonArc": "7fa90a365b923780a2b9371915cae1ecd7afb83f8df064c27174941a18226cd7",
+  "full": "1e8c5c1131daafdfc03dc19e97a808cf27936a43eb0450755e27fdd522f35961",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|WWMM WWMM WMWMW|biz=CMG|auto": {
-  "nonArc": "ab1a8ff9a3dcb9ea4e6aed49f175375c46c401265796a5f1142850d51c3fd136",
-  "full": "12f663afb78bccf4aeb83ab26128821fc9021faf817b7ec411f8514cb63272f4",
+  "nonArc": "ee19cd382f9faab5a4fe1d9709baa0bfca2aaea47809d0c1309d3b28e6f3bd6d",
+  "full": "145d3dcbc4d88c963ff09ce3cd7d87016c88cd751ac06055e23438d3c88dcd3c",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Vanilla Bean|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "92ce0f9b2bf8fed07388c0eb3ec054a806dd443d67ba97fc3b5ef204e3685127",
-  "full": "382df46d97d3e0d5fbc2a349b5bf67506d3a0023cd09fe9900f3f5b375105710",
+  "nonArc": "c948c03b209b1feb33f51db4a2c93c9d8f4dabdd3d2840a6310867c479db5a1a",
+  "full": "5ea3b895c11204804b4c2c375a94e6762a7483757b521a2f0dd69defafae23d9",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Lavender Fields|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "92ce0f9b2bf8fed07388c0eb3ec054a806dd443d67ba97fc3b5ef204e3685127",
-  "full": "9dde1be3bf175ad5f017157919757f8311b38bf01ef72ac7edfe5f12369348b6",
+  "nonArc": "c948c03b209b1feb33f51db4a2c93c9d8f4dabdd3d2840a6310867c479db5a1a",
+  "full": "6c61fd76d1d9e896974b1fe1ae2481f796c07a7c8928ca04270d6fa2feef1f7a",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Pomegranate Noir|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "92ce0f9b2bf8fed07388c0eb3ec054a806dd443d67ba97fc3b5ef204e3685127",
-  "full": "b7f5920f5dcbb10085db8127a048b1371ae0c02bae0b0871391a99274d2489ff",
+  "nonArc": "c948c03b209b1feb33f51db4a2c93c9d8f4dabdd3d2840a6310867c479db5a1a",
+  "full": "ecb229dc4e934931d6ee124fe0b27be8dbd5f109e6796a30497450497304c2c8",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Midnight Blackberry|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "92ce0f9b2bf8fed07388c0eb3ec054a806dd443d67ba97fc3b5ef204e3685127",
-  "full": "3c660500a45e4d724fe2a954b92650a750dc62b7e86d14474ee99961f75f7c63",
+  "nonArc": "c948c03b209b1feb33f51db4a2c93c9d8f4dabdd3d2840a6310867c479db5a1a",
+  "full": "84551a888991e499ab24f34168e18332bee370d57d4deccb81c182914bffe755",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Fresh Linen & White Cotton|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "92ce0f9b2bf8fed07388c0eb3ec054a806dd443d67ba97fc3b5ef204e3685127",
-  "full": "75b01939ae63168704a9cfe546d444e6679cb81933a51d467d552a7f96c81da4",
+  "nonArc": "c948c03b209b1feb33f51db4a2c93c9d8f4dabdd3d2840a6310867c479db5a1a",
+  "full": "4aaf4aca4e4e47edba914a9d039d0d25badf62a6b082bd7af3da2bbe155399cb",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Christmas Spiced Orange & Cinnamon|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "92ce0f9b2bf8fed07388c0eb3ec054a806dd443d67ba97fc3b5ef204e3685127",
-  "full": "9992ddb220c8b3e01eef49617e42ecec546a9f03c07f91282503eb93236db086",
+  "nonArc": "c948c03b209b1feb33f51db4a2c93c9d8f4dabdd3d2840a6310867c479db5a1a",
+  "full": "de4c2d5bda0e9d696883638418fc0ef5f945736ca2735ac02ec4da26ab854803",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "92ce0f9b2bf8fed07388c0eb3ec054a806dd443d67ba97fc3b5ef204e3685127",
-  "full": "7c3c638c14eb9182aee0576deb94f87516f711f0d92e7387d9623debe9a0405d",
+  "nonArc": "c948c03b209b1feb33f51db4a2c93c9d8f4dabdd3d2840a6310867c479db5a1a",
+  "full": "ca54f378f99771a7cfbf7ff62a2916225afab3b326fa2e22044f80b01fe3a300",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|WWMM WWMM WMWMW|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "92ce0f9b2bf8fed07388c0eb3ec054a806dd443d67ba97fc3b5ef204e3685127",
-  "full": "d629d824f2a2e10f3380da1c978e4909e550725018457f17cbde2955da120f59",
+  "nonArc": "c948c03b209b1feb33f51db4a2c93c9d8f4dabdd3d2840a6310867c479db5a1a",
+  "full": "6d4e4a055f1a0bd80cb5f952f03d58ecd7ede14fc881bcca06f339d9479417d5",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Vanilla Bean|biz=(empty)|auto": {
-  "nonArc": "59fc86960ee32f880c631dafa367b21170799921ba001e9053ea611cc41502fa",
-  "full": "449a2ae33d565ef31c08e4d4fc087cced8f418b455644562fd0610cc424c9fc3",
+  "nonArc": "c9c683999551cc3f0a145d2298a9bfd016d1ed973179c3227fa86ef126ec750a",
+  "full": "4991e88f78eabd10b2a5e22afaaf65ad4dafaa3ca254000affedaf464b796f83",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Lavender Fields|biz=(empty)|auto": {
-  "nonArc": "59fc86960ee32f880c631dafa367b21170799921ba001e9053ea611cc41502fa",
-  "full": "e64b44654a44d8d091988d4637e5c3006fec14519fe0e529cd16f0adcb73b596",
+  "nonArc": "c9c683999551cc3f0a145d2298a9bfd016d1ed973179c3227fa86ef126ec750a",
+  "full": "63881e54300638e3e07fe34e8907d7f2026895fd042a3bcae67fd420e238acdf",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Pomegranate Noir|biz=(empty)|auto": {
-  "nonArc": "59fc86960ee32f880c631dafa367b21170799921ba001e9053ea611cc41502fa",
-  "full": "4afbe42e8f79d2b408a9dd84dd53eaf5ef3c556be77d63b1f00b19ee850f0470",
+  "nonArc": "c9c683999551cc3f0a145d2298a9bfd016d1ed973179c3227fa86ef126ec750a",
+  "full": "2a42bbd913b5648fe96c945a92bf4f2094f576c9578145aea1ba11d04894b557",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Midnight Blackberry|biz=(empty)|auto": {
-  "nonArc": "59fc86960ee32f880c631dafa367b21170799921ba001e9053ea611cc41502fa",
-  "full": "d3b190c316407c801240537613016a0094d957608c9aeed49de64778075384fb",
+  "nonArc": "c9c683999551cc3f0a145d2298a9bfd016d1ed973179c3227fa86ef126ec750a",
+  "full": "7fd0a5644a9754e28dc290df5b0335b62cc04612ebb50dfb3288bbae81c1063d",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Fresh Linen & White Cotton|biz=(empty)|auto": {
-  "nonArc": "29a0db70dc1d174059f7a8dc883f63acade481b7ab3f98a56de9fb52aa50cd27",
-  "full": "332a4cece71702c7588d4d7b878e39d84a8d8ae7fb9397d7e44c47858c3ebb42",
+  "nonArc": "ea49071af01c318dd73472ae1be6faac90b0a6165a39b276c2e655a4681be63b",
+  "full": "4b2fa8bbfaae627653229e491b9c831b2419ad9b760892bef39f39b8cbe9f9c6",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Christmas Spiced Orange & Cinnamon|biz=(empty)|auto": {
-  "nonArc": "0c3c3722b8b92b9622e406dee980f559f49fe95e91b37b985165d3a62efea1f4",
-  "full": "dad9b7119ea499861747a86d67682a3cb61ec2fa86b49d6cacb5cef16c23763f",
+  "nonArc": "8073fa9fb29b620d1bf89aa1a64ac8bb7b9ba378391c52bca245794c75354ecf",
+  "full": "a606a3d8e75b93dacb28e45d3b21edf94acc8833001997e593d3ba9f3138de59",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=(empty)|auto": {
-  "nonArc": "0c3c3722b8b92b9622e406dee980f559f49fe95e91b37b985165d3a62efea1f4",
-  "full": "0828c8c57f1065aba5e19d81befcffcbbf8d94a30581b57b547c00a6ff1588b9",
+  "nonArc": "8073fa9fb29b620d1bf89aa1a64ac8bb7b9ba378391c52bca245794c75354ecf",
+  "full": "675d3fb85cabf5106486bd8d07ace380cddd14027ec7278a3ed97486e6027b50",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|WWMM WWMM WMWMW|biz=(empty)|auto": {
-  "nonArc": "59fc86960ee32f880c631dafa367b21170799921ba001e9053ea611cc41502fa",
-  "full": "e8ece9ac11c13991a6dc28a2bb2215b25d551363e6c85291c2ca2ca24d773302",
+  "nonArc": "c9c683999551cc3f0a145d2298a9bfd016d1ed973179c3227fa86ef126ec750a",
+  "full": "437b8d147412fd9e3639154aca7f0083a09090bfddee030beb6fe045ff63523b",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Rose|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "5c799d6d5f616d54458f54bc42e81bd0ceb8c0c772ecad797dd80325229083bb",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "de192813a4aa2749497490ecbab7176592fd64608295c0d6881a3ccba576d32c",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Aaaaa Bbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "d2d3bb66c9ef3787a9d1502741fb1927a83db0ed3a5163f8d95a297b31bd68e6",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "e0e4167acf70747d9a74584498bfd8ed246ee66e15f874d86bf1d0bb2d74c144",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Aaaaa Bbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "91bd48b18a1f54a357c89bcd7fce7b2bd1aecac91518b5e231b123a62b20d9cb",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "d8bc6d26fc0b8642cbfc1e81fee1f3e19b6da573b458a2ba1f7af37913dcc0c5",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Aaaaa Bbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "f8dc6331625f89e864527b0fe633e9064558b1820039963828d55bdacbb7b0e0",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "e84393d55785da74031b0f84536b8b2835189d93aa874e3606a721b4dffe4886",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Aaaaa Bbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "5fce4cbb9d4fb18dceb239d69f1aa9d92a8ad317f8868b2116b8c556b8570354",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "b752d48fef85b9a4c3c76f157704a2a33de7944eb034fc01e5c08ec0230fa4d4",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Aaaaa Bbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "00379e2580f0b4b8c6c53a209f3be0726643fc1b61258bdc74a0bcfac334efc4",
-  "full": "43d9b530ff7d79cd551aa6cc3faf41c15523d94c62dfb59b05980c5ad43b611d",
+  "nonArc": "b8424a94d115f26f69de64e53527909cb84f0e299b3d69b8156bb3d071fce83d",
+  "full": "1bc9025280081f21f28d8615c69a46a1071713481dedba0d53aad7e9d32a2b61",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Aaaaa Bbbbbbbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "00379e2580f0b4b8c6c53a209f3be0726643fc1b61258bdc74a0bcfac334efc4",
-  "full": "b151c774e7442def71350d509f505b5957dac6a29fc83edcd5299631fd38c1ac",
+  "nonArc": "b8424a94d115f26f69de64e53527909cb84f0e299b3d69b8156bb3d071fce83d",
+  "full": "5db7f9e04ad2d27d8c2bfa890ac46268856228abaa0bb6d9df6bdd53d8ec05b1",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Aaaaa Bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "00379e2580f0b4b8c6c53a209f3be0726643fc1b61258bdc74a0bcfac334efc4",
-  "full": "ee32ff069099fadb3ecebd6e1d818954fb8d25dcc7be9d4632f603452edb54d4",
-  "fits": true,
-  "warnings": [],
-  "arcCollision": false
+  "nonArc": "a0720e2c1e31a05d302730b40504762ba9a38916e61c18b4b94f812a52f067b6",
+  "full": "3e883d9aa92b4b0bec3c662f7493f6ef4577429417da33b5f7c154610bf0798f",
+  "fits": false,
+  "warnings": [
+   "scent-name-too-small"
+  ],
+  "arcCollision": true
  },
  "150mm|illi lill iilll|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "b5e26f7bed46cc746f346ed67ac31fcd8c53d176d506348fa873e5c87947c147",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "b8bd4c7466bbaaef5f198ae99c593ef4c795564d0714654920eefea514a2f8e0",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|WWMM WWMM WMWMW|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "c56efb4ceb488a786fba2e767be8b7c9dde66a98a27adf1a9ed2e6a82e53cb8a",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "1222fb4c962398795f51c39cc24cebe5189b27b04382a8567995f86273ff6961",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Vanilla Bean|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "76bc24bf5b189e0818406faa3afb863eacfd8818d126f2703c49c30939fed365",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "f19a54e647b0178e347be354032955411bf1b2a5eed3fe256d11fe3d225169e0",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Lavender Fields|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "86180f7a3bd05a35babd21ae1dadec851d88f1cd05078f221d2aaf5fbfd9fe0f",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "6b9c1915e9ae97dd768a818f1322e2973ae4bfb0e9b3e7c8d151ed2df13027af",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Pomegranate Noir|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "4f8b26be82dc9377205ce217cfa807c67fe4ab0f51a5c0b0d596991a1986e464",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "4dc2abb21b86cdcf10cb700a692a485c2789b805461ba306968158e9daf1b29d",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Midnight Blackberry|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "47d6478edeb337a9d49682d680b35f3305c569b417821a77ad203dd18177429b",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "cf1c5f15165ca814a99de3012acc12e334a639b5a65cb28fe119e5a83bf561a9",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Sea Salt & Driftwood|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "aa0c8e6ce8587ab0a116feee8fcc5103cafe3712bb98e1d3b63c8a025f03e8c2",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "14b5819e2ba5560378bb35257accc8bdf7acc9ba13d6c0c82b26b269e9a56b49",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Fresh Linen & White Cotton|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "76096fcb496a19f1082ab2f1444878eb7a6c4ff3660348909c4fdb8c9984ac04",
-  "full": "0f12ff69e52cd1f6bb5489c9cd460695d08dd7e4cbba2aabbfba2dde3d5b9f0f",
+  "nonArc": "c5277792562d0885f8a228e3bdd01489942cf742e83f12e7f5f0141c05696eb7",
+  "full": "9e35b6dc7847f4c0da8a450f73bb3ecf9d9b0b91e48707a1b7a3758f21ba1b6f",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "00379e2580f0b4b8c6c53a209f3be0726643fc1b61258bdc74a0bcfac334efc4",
-  "full": "faa1270a50c877c9054f9c4c080a8d132989fc4a9fc383f67a5277eae0d6e73f",
+  "nonArc": "b8424a94d115f26f69de64e53527909cb84f0e299b3d69b8156bb3d071fce83d",
+  "full": "15075fd4695cd1a3a42dab8b87eedd7a50c0c94466280b754ce467219e91c272",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "00379e2580f0b4b8c6c53a209f3be0726643fc1b61258bdc74a0bcfac334efc4",
-  "full": "f3fb57699b00a422fff60fb4b3b219713d40355722e0a3463fa79017f389410e",
+  "nonArc": "b8424a94d115f26f69de64e53527909cb84f0e299b3d69b8156bb3d071fce83d",
+  "full": "c3c72129335f641802cf5b349bf4a140bfe7eb12777d5b9c572fea38aa262f67",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Crème Brûlée & Tonka|biz=Crafty Mouse Gifts|auto": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "8812473e1a1ababb9ed3c485925c61570093b6c686178bfdcf3b26d60fe964f0",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "1bea6358a09e52acd0b7cb083e09dbcf90e507d8e0c2014e26137ef19ea75fac",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Vanilla Bean|biz=CMG|auto": {
-  "nonArc": "2b4e98b680b280c323b95c5ced83e29d37286bd4c2403e820796f43757203158",
-  "full": "7f44064da1aae8200fde6786f785c630b6b1545754fb087125e830816b407712",
+  "nonArc": "defd56a5abfe8ec8f820171a361bb485fee23b948bb443e2fe5657b5670860bc",
+  "full": "31076ceb971bbb7ad8bd4fb3a0963114f0329826ad9db5dd38248cdce718e87e",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Lavender Fields|biz=CMG|auto": {
-  "nonArc": "2b4e98b680b280c323b95c5ced83e29d37286bd4c2403e820796f43757203158",
-  "full": "19c1879f5488303079b54407e7452289db19b1760a2454011d59d6723ef7ffba",
+  "nonArc": "defd56a5abfe8ec8f820171a361bb485fee23b948bb443e2fe5657b5670860bc",
+  "full": "3cbe897b689566c2065f4644483d30a3fc2cca474e0b37dd7cb85a98700cc367",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Pomegranate Noir|biz=CMG|auto": {
-  "nonArc": "2b4e98b680b280c323b95c5ced83e29d37286bd4c2403e820796f43757203158",
-  "full": "39d325d7beb99ad59dd9b16f37d973a39fee51e43d5d95706a613643409e7aa3",
+  "nonArc": "defd56a5abfe8ec8f820171a361bb485fee23b948bb443e2fe5657b5670860bc",
+  "full": "12a8e1edf07af0649e1f4cd9bfa1e113cc380d7d8128227e9e1f1a914657d21d",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Midnight Blackberry|biz=CMG|auto": {
-  "nonArc": "2b4e98b680b280c323b95c5ced83e29d37286bd4c2403e820796f43757203158",
-  "full": "29c69d487972d40df54ce6793097082d2fb64779410c10a491a5f841f16a71f8",
+  "nonArc": "defd56a5abfe8ec8f820171a361bb485fee23b948bb443e2fe5657b5670860bc",
+  "full": "17afcbf35825384b1664ff9c2126b93cbb71e00442ce04c292024d116d22aa33",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Fresh Linen & White Cotton|biz=CMG|auto": {
-  "nonArc": "772070b39feed291bb26766842930afbbac8c1dc3d9b23fe758d163b412a49cc",
-  "full": "6d35a9f9fe032ff66961f27bee40376c1d1b2a6b954ae18c74e755d6eab8f907",
+  "nonArc": "57c13e2de15437e61470662a2140b855f491889c98401c2cab3fa508f4bce8fc",
+  "full": "3fc0afae25d81e56e646ee445d710cb333d86a18dd5b0883a17fb315f221998f",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Christmas Spiced Orange & Cinnamon|biz=CMG|auto": {
-  "nonArc": "3949738291e76ec11ba951462aad5f8b14080fac9d6b1e13ed163eadd49b7c5c",
-  "full": "26f16a61bdd4680a06c8d247743b2bd2a105144ebf19405d3f1badf93d6e6a63",
+  "nonArc": "c600e4df8763813db812453b595219a92bd4e28f1bf31ef573876f53377830e7",
+  "full": "b73337ae59a11948435328388e0113135b21c849e93e6d0e51bbda8a81b222f9",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=CMG|auto": {
-  "nonArc": "3949738291e76ec11ba951462aad5f8b14080fac9d6b1e13ed163eadd49b7c5c",
-  "full": "e0a641983febe9f942cb2224546e9f5b8bcf634956b4c47a880e67536a0659ab",
+  "nonArc": "c600e4df8763813db812453b595219a92bd4e28f1bf31ef573876f53377830e7",
+  "full": "d0a9a53c9546493e57aabf617741f31c4e138795ee1e527cd35a7c6e8da4108c",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|WWMM WWMM WMWMW|biz=CMG|auto": {
-  "nonArc": "2b4e98b680b280c323b95c5ced83e29d37286bd4c2403e820796f43757203158",
-  "full": "d8421e5d5d1288217358d36120f36cf56af5b4c4c0e31169dd0d84dba195b954",
+  "nonArc": "defd56a5abfe8ec8f820171a361bb485fee23b948bb443e2fe5657b5670860bc",
+  "full": "a52a5d34553f2d221e8ccd366ef0f342fb42616b0de49a5ee60b2f101320a469",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Vanilla Bean|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "e6b2079d2aa0f6f55ac35b05025257c48f47c69836857cf4d1c6b8f93d587fcf",
-  "full": "8fd473d71dc9d00ade6acad41358ef853f5a55afd4b4c54a335e6b3e27b95dee",
+  "nonArc": "345b394ee6736d9b5f8e980d3bb61b1f6ac9cdc2f73024300a2e23daab31ccad",
+  "full": "ef4afeadef7f1b38fe168fd6ea9bacf395fffc26d45f5e0cd80aba628394e4fd",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Lavender Fields|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "e6b2079d2aa0f6f55ac35b05025257c48f47c69836857cf4d1c6b8f93d587fcf",
-  "full": "0f3d1b609b939c70aac87f21a7fcaa09ab78dd771fceb900dbc6b9aca1dc8b88",
+  "nonArc": "345b394ee6736d9b5f8e980d3bb61b1f6ac9cdc2f73024300a2e23daab31ccad",
+  "full": "94039f50c207f3b3ffa202522ff6bbfa3b6746b2abc9e7c16a67b9e13b85a6cb",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Pomegranate Noir|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "e6b2079d2aa0f6f55ac35b05025257c48f47c69836857cf4d1c6b8f93d587fcf",
-  "full": "64ede905f924afdb6b130dde29c579e9fbd90710c90a507d55cb853c38f5a2a6",
+  "nonArc": "345b394ee6736d9b5f8e980d3bb61b1f6ac9cdc2f73024300a2e23daab31ccad",
+  "full": "954319f4bb78b713a56d1b1c19346e0728598e38de2a4bc9f2fa5116325101ec",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Midnight Blackberry|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "e6b2079d2aa0f6f55ac35b05025257c48f47c69836857cf4d1c6b8f93d587fcf",
-  "full": "5e218ce9459ffa017e3b7a4cbfc09d9335c35aa7c68d5598bd65b1f3f0ef8e61",
+  "nonArc": "345b394ee6736d9b5f8e980d3bb61b1f6ac9cdc2f73024300a2e23daab31ccad",
+  "full": "7f80c50e6a53600c4efe41f3568389ba2b658f3d66881d59977f942fedc5381f",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Fresh Linen & White Cotton|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "e6b2079d2aa0f6f55ac35b05025257c48f47c69836857cf4d1c6b8f93d587fcf",
-  "full": "ac92ff11ff4918c62e0d043e28fd5abc8e3479dee43fa36604b4190cca183498",
+  "nonArc": "345b394ee6736d9b5f8e980d3bb61b1f6ac9cdc2f73024300a2e23daab31ccad",
+  "full": "d7773ca30a4797f005849929775d8cdddace940fa582c7d00f63f94b7e4ed3c2",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Christmas Spiced Orange & Cinnamon|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "e6b2079d2aa0f6f55ac35b05025257c48f47c69836857cf4d1c6b8f93d587fcf",
-  "full": "ab9fb94c0feed5d62c97250089d7e804c3190e16760863bceb7c87a61bee31f3",
+  "nonArc": "345b394ee6736d9b5f8e980d3bb61b1f6ac9cdc2f73024300a2e23daab31ccad",
+  "full": "92f7c7e6480c4c553d92bd875cf2e772aefa77ac8a3086511653de4c44b70eb3",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "e6b2079d2aa0f6f55ac35b05025257c48f47c69836857cf4d1c6b8f93d587fcf",
-  "full": "2611644e731b8a9a25b3e9f923dcaeacdc737445d42f341646b92aa119ee58ba",
+  "nonArc": "345b394ee6736d9b5f8e980d3bb61b1f6ac9cdc2f73024300a2e23daab31ccad",
+  "full": "ca54406b972d1a13fb4db720804c6f4df774b050778f1c15eeb940220ecddc52",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|WWMM WWMM WMWMW|biz=The Little Candle Company of Yorkshire|auto": {
-  "nonArc": "e6b2079d2aa0f6f55ac35b05025257c48f47c69836857cf4d1c6b8f93d587fcf",
-  "full": "341adf14b070f2ffb38cf7c025be1673b88994d8f157d097b9ebaf49a9ae17fb",
+  "nonArc": "345b394ee6736d9b5f8e980d3bb61b1f6ac9cdc2f73024300a2e23daab31ccad",
+  "full": "f46db33524af688674abe0cdee62b86df4c24216ef9e1ed0606fbd75f41519da",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Vanilla Bean|biz=(empty)|auto": {
-  "nonArc": "6eb927736bf7ab21bb71264cc5972d3ca55b1780c8f381a92504ba1040dd01a1",
-  "full": "d299e6fa99530dc21095a6024684f7ee178965eaf91ce980b819346996a9b14a",
+  "nonArc": "d5b64f994388904035d511e4bf90e54811a7711fd771b09f2a43255372e2a27f",
+  "full": "8dfd711bcefcf52767b1b9b62d8cc7eab50c2cf42ffda6834d9450279d259814",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Lavender Fields|biz=(empty)|auto": {
-  "nonArc": "6eb927736bf7ab21bb71264cc5972d3ca55b1780c8f381a92504ba1040dd01a1",
-  "full": "c5af704441a57721f90a76fb2e81b24e926c9e519adb8de6e618afc59a6a38be",
+  "nonArc": "d5b64f994388904035d511e4bf90e54811a7711fd771b09f2a43255372e2a27f",
+  "full": "27eeb01295b969a4f61789570c2ccb45e9a886b8daf29c96372dbc4d3e7f0715",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Pomegranate Noir|biz=(empty)|auto": {
-  "nonArc": "6eb927736bf7ab21bb71264cc5972d3ca55b1780c8f381a92504ba1040dd01a1",
-  "full": "f47af884df6712a934dadd84338c3dc7ab8f3a9c5d474eed79ab0e2f64c2a8cf",
+  "nonArc": "d5b64f994388904035d511e4bf90e54811a7711fd771b09f2a43255372e2a27f",
+  "full": "710e6517d21802010e094d892559bd80874a56a299f312cf0dccbf23b8a24cce",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Midnight Blackberry|biz=(empty)|auto": {
-  "nonArc": "6eb927736bf7ab21bb71264cc5972d3ca55b1780c8f381a92504ba1040dd01a1",
-  "full": "011ba6fa219495e1f140a4aa06c035f5968e4c32ea8f5e0d7c862535e1f673b7",
+  "nonArc": "d5b64f994388904035d511e4bf90e54811a7711fd771b09f2a43255372e2a27f",
+  "full": "69ed9038e6fdd55b443302eced8cca78efc7752c2415c8126e381e00ea34f3d3",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Fresh Linen & White Cotton|biz=(empty)|auto": {
-  "nonArc": "2facf9cb7106eac497373582fc515e325aa3edb4894891393afdd6973aadaf28",
-  "full": "f3a4de681b30794557f07be75dad930f1ce40c4ed893c9e777561302c7ebf177",
+  "nonArc": "7294c815027551d8065cc9ff327a1582acf2ed4e58d30135565b17d905471bce",
+  "full": "2e2c6eb7bed989d7df241b52f3d52e78d2b34fb9ebd30389b2bce1ff0655d796",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Christmas Spiced Orange & Cinnamon|biz=(empty)|auto": {
-  "nonArc": "99514acd4a2ceed531d74410fe2095e5c2b5e1056f0f3b95e8ed69aaf2eb3752",
-  "full": "302c17b799b4224e8b135a63f10a1daa28e0832fe7a1bcd3b39b2acfc44f0841",
+  "nonArc": "bd992f0117410de473941470acd41299ad8f547a2da5a0ea13bcc02f67f038b7",
+  "full": "87fa84cf154fdd0cea1392c64e9876010b036091af14a36d72cbdede82fc2ca5",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=(empty)|auto": {
-  "nonArc": "99514acd4a2ceed531d74410fe2095e5c2b5e1056f0f3b95e8ed69aaf2eb3752",
-  "full": "c0df0ab371304534c35ba6836369b5e4e3ce2d14eb8d20823ae15c92c99d0476",
+  "nonArc": "bd992f0117410de473941470acd41299ad8f547a2da5a0ea13bcc02f67f038b7",
+  "full": "2286c2d3b85b3c13258da04aecc141e5f161ee2ffc8536056132c2d8057c4075",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|WWMM WWMM WMWMW|biz=(empty)|auto": {
-  "nonArc": "6eb927736bf7ab21bb71264cc5972d3ca55b1780c8f381a92504ba1040dd01a1",
-  "full": "19de17e9084759258d3ccf8fd24364ca9346084682e6c617cfb0b9742026c905",
+  "nonArc": "d5b64f994388904035d511e4bf90e54811a7711fd771b09f2a43255372e2a27f",
+  "full": "1cc17dba47d4805884e47e1119e46585df443559f9b619554a30d94af395eb42",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "52mm|Vanilla Bean|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "9f11604b1745418199e0ee6548a88fe1faa6adaa74378b9c320df392320f8798",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "e34ba8f07673a3d36c9fc27d902a2ebe4bfae28df94e480f9e09fa2ac18218a0",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -1600,8 +1643,8 @@
   "arcCollision": false
  },
  "52mm|Lavender Fields|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "7c0450d82cea72cb2bd77d38dab87efb893339ee8cdb35f5739ce2c8b8c4257c",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "1b3a84f3af37bcf40b85a2613df11bc1b0d4239a7543cc2262abd9be0353093d",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -1609,8 +1652,8 @@
   "arcCollision": false
  },
  "52mm|Pomegranate Noir|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "13cb31fef896b5833c29239ca4c20a21aa254d20f8378d042f7b7fc3375c2dba",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "82d36e702a3e495e9787d5b9dfbd53243017885ae9646593dee9847c3d521411",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -1618,8 +1661,8 @@
   "arcCollision": false
  },
  "52mm|Midnight Blackberry|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "ab7dc975d242ebcef44078ac86d6b26e1f11e23c62e67f84edc3472f55fb29e2",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "fe0bb2b446062ccb3a6c08e3deb48b250a37813a7755f503d010a068632374c5",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -1627,44 +1670,48 @@
   "arcCollision": false
  },
  "52mm|Fresh Linen & White Cotton|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "1409f870a6b96f8ad2d2f869d820c6e821ce8a81b6c7fb345167608843183d5e",
-  "full": "43ff8b31e0c6d045a34c6500221461b906527ab0dce35e65004576bbfdccafbf",
+  "nonArc": "bc58f4dd370bd7056954cc687c2eeb23fea52cba763cde8cf3f23d5846569eb0",
+  "full": "a7a0dc9765b61c3b6922e292efb90850e7e575b2304b5efe9c204219af7738fa",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "1409f870a6b96f8ad2d2f869d820c6e821ce8a81b6c7fb345167608843183d5e",
-  "full": "28c345a6f3aabbd77d7379533fb04e6d0197d3e30eb52f37a9276b327d6c8e03",
+  "nonArc": "2a0178ee062ac2fcfce38f35eda01bd8fc982882e54814f8b10592b57562cb79",
+  "full": "9e5a057c327bcee9541d7e84d2ff7476a0737655f3798e8920d6a85e978d14ad",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "1409f870a6b96f8ad2d2f869d820c6e821ce8a81b6c7fb345167608843183d5e",
-  "full": "aef1718bf5eef6c17d21184b9f9e4ad2a4cc130bec1633000bde0eda58f65c7a",
+  "nonArc": "2a0178ee062ac2fcfce38f35eda01bd8fc982882e54814f8b10592b57562cb79",
+  "full": "3500558772e8e02b69bd83eccab8b85219aea4ed993e388d24c528ab54152133",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|WWMM WWMM WMWMW|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "e95cd0c190c1174685a59184c0354eb92fa80b26974cf972729ecba5729b5014",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "a6999071aa7e7cf36428f112eb12a5ca828112933d783c72f8129379cde18bc4",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|Vanilla Bean|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "1409f870a6b96f8ad2d2f869d820c6e821ce8a81b6c7fb345167608843183d5e",
-  "full": "60b02e4e53171dc4ad1fafd77ed8b305c586df59963017912dc62b166cbe3162",
+  "nonArc": "2a0178ee062ac2fcfce38f35eda01bd8fc982882e54814f8b10592b57562cb79",
+  "full": "b8512526e45444eb6d916de51ba1be90dffbbe111b416bc9374a0ffa4b14bc6b",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -1672,8 +1719,8 @@
   "arcCollision": false
  },
  "52mm|Lavender Fields|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "1409f870a6b96f8ad2d2f869d820c6e821ce8a81b6c7fb345167608843183d5e",
-  "full": "04d4d1f904857b6b913dfde728a51beece5be45541cb621c038eca6d6e1d4b7a",
+  "nonArc": "2a0178ee062ac2fcfce38f35eda01bd8fc982882e54814f8b10592b57562cb79",
+  "full": "dc61c8d896103af51bce629c33b4ebc351633af73b24ae573daa31f17f5fc6d7",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -1681,8 +1728,8 @@
   "arcCollision": false
  },
  "52mm|Pomegranate Noir|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "1409f870a6b96f8ad2d2f869d820c6e821ce8a81b6c7fb345167608843183d5e",
-  "full": "47f1e178b0030a626f65e6cb0760e99046ada7600cbf869f4f8d288105fdd830",
+  "nonArc": "2a0178ee062ac2fcfce38f35eda01bd8fc982882e54814f8b10592b57562cb79",
+  "full": "0f2367d36e9a23cc5cfd970b8ff24d28a974e5340d5739bbfc01e8936e588d81",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -1690,53 +1737,58 @@
   "arcCollision": false
  },
  "52mm|Midnight Blackberry|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "1409f870a6b96f8ad2d2f869d820c6e821ce8a81b6c7fb345167608843183d5e",
-  "full": "2f22ee4918398f6f5969742f22f61316a2b67d1b49982b3729172ea9231fbfb3",
+  "nonArc": "2a0178ee062ac2fcfce38f35eda01bd8fc982882e54814f8b10592b57562cb79",
+  "full": "f51af60f689b59ab1f422cf5c49379a929250ad4241e66ce79a0d23cd93ff2cf",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|Fresh Linen & White Cotton|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "1409f870a6b96f8ad2d2f869d820c6e821ce8a81b6c7fb345167608843183d5e",
-  "full": "0b6d4649ada4f5a90078a47f30073e53bf3419fd87b04f4faf03bcf499c08c6a",
+  "nonArc": "2a0178ee062ac2fcfce38f35eda01bd8fc982882e54814f8b10592b57562cb79",
+  "full": "57af651fb981a9ce70c79a243b63071542037e095d648e61cd3f064d4c4cc01a",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "1409f870a6b96f8ad2d2f869d820c6e821ce8a81b6c7fb345167608843183d5e",
-  "full": "cb42276aa0e91a7327415caaaad325e4947007462fbfcd60c33d5adcef117b9d",
+  "nonArc": "2a0178ee062ac2fcfce38f35eda01bd8fc982882e54814f8b10592b57562cb79",
+  "full": "9e5a057c327bcee9541d7e84d2ff7476a0737655f3798e8920d6a85e978d14ad",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "1409f870a6b96f8ad2d2f869d820c6e821ce8a81b6c7fb345167608843183d5e",
-  "full": "809b667c0acbd58e4b86f8672749d8772455b4b500f1ef541c1fb0c6726cf45d",
+  "nonArc": "2a0178ee062ac2fcfce38f35eda01bd8fc982882e54814f8b10592b57562cb79",
+  "full": "3500558772e8e02b69bd83eccab8b85219aea4ed993e388d24c528ab54152133",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|WWMM WWMM WMWMW|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "1409f870a6b96f8ad2d2f869d820c6e821ce8a81b6c7fb345167608843183d5e",
-  "full": "116eda80a2b6c7c701330a11f258fc19b9f02a01c4fdaa076d5b750cc049cd66",
+  "nonArc": "2a0178ee062ac2fcfce38f35eda01bd8fc982882e54814f8b10592b57562cb79",
+  "full": "d7dc9964db41699e98741e65daf907929b6f4b5d5512efc0b91d714513fde212",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|Vanilla Bean|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "9f11604b1745418199e0ee6548a88fe1faa6adaa74378b9c320df392320f8798",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "e34ba8f07673a3d36c9fc27d902a2ebe4bfae28df94e480f9e09fa2ac18218a0",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -1744,8 +1796,8 @@
   "arcCollision": false
  },
  "52mm|Lavender Fields|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "7c0450d82cea72cb2bd77d38dab87efb893339ee8cdb35f5739ce2c8b8c4257c",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "1b3a84f3af37bcf40b85a2613df11bc1b0d4239a7543cc2262abd9be0353093d",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -1753,8 +1805,8 @@
   "arcCollision": false
  },
  "52mm|Pomegranate Noir|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "13cb31fef896b5833c29239ca4c20a21aa254d20f8378d042f7b7fc3375c2dba",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "82d36e702a3e495e9787d5b9dfbd53243017885ae9646593dee9847c3d521411",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -1762,8 +1814,8 @@
   "arcCollision": false
  },
  "52mm|Midnight Blackberry|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "ab7dc975d242ebcef44078ac86d6b26e1f11e23c62e67f84edc3472f55fb29e2",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "fe0bb2b446062ccb3a6c08e3deb48b250a37813a7755f503d010a068632374c5",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -1771,44 +1823,48 @@
   "arcCollision": false
  },
  "52mm|Fresh Linen & White Cotton|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "ff0a6cef2361a3e2ffa182c124186ea7ca0355e5bcfcffe2c0254005f60d9e5a",
-  "full": "74e391697fa20cccd320e84f26c6f168bcfe05f6ea65a1a8ce86e023f6f9edac",
+  "nonArc": "3fddeec816c54d0fd3f89c4f64dafed1bc6b0e1b82bf4dbf96785ec654b7ac50",
+  "full": "db0eec11d71e46060e18c6f09c811812ef35554ec036a0540c860b1b106b7504",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "1409f870a6b96f8ad2d2f869d820c6e821ce8a81b6c7fb345167608843183d5e",
-  "full": "e526bd1eacae6f75e91136b23a026ee0fd2a433accc393c06cec2d151910fbbe",
+  "nonArc": "2a0178ee062ac2fcfce38f35eda01bd8fc982882e54814f8b10592b57562cb79",
+  "full": "9e5a057c327bcee9541d7e84d2ff7476a0737655f3798e8920d6a85e978d14ad",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "1409f870a6b96f8ad2d2f869d820c6e821ce8a81b6c7fb345167608843183d5e",
-  "full": "de40d7ab3a2625dcdc63f53fef591851af52f4047d98f02950c494f6cec5f609",
+  "nonArc": "2a0178ee062ac2fcfce38f35eda01bd8fc982882e54814f8b10592b57562cb79",
+  "full": "3500558772e8e02b69bd83eccab8b85219aea4ed993e388d24c528ab54152133",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|WWMM WWMM WMWMW|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "ad657df07d43b6a6c2c157087143d763ff8f00a7deb1c13e5d34ef462c729bea",
-  "full": "e95cd0c190c1174685a59184c0354eb92fa80b26974cf972729ecba5729b5014",
+  "nonArc": "62cdcb85ee23ee25e1b2dd73d4f6c6c9f7c5c8d1741da288f4b8d2b05a20fe8c",
+  "full": "a6999071aa7e7cf36428f112eb12a5ca828112933d783c72f8129379cde18bc4",
   "fits": false,
   "warnings": [
-   "footer-clipped"
+   "footer-clipped",
+   "scent-name-too-small"
   ],
-  "arcCollision": false
+  "arcCollision": true
  },
  "52mm|Vanilla Bean|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "bf1005c68e26a20c5fc74ca87d42c64e39c45236104fa318a1fddd2801e31961",
-  "full": "8995b472c374188cf29e5d59e461687d2a3b6e90c5bf62a235db55f9223b7ab5",
+  "nonArc": "c7b6140459720dd48968b7e938f7265261d7cf33c5f4bb274e3ba2a03c2d18bf",
+  "full": "f708becdb013f901bd05ae082e56fa8cc1840b1b98d8ddc895fcda39c6161160",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -1816,8 +1872,8 @@
   "arcCollision": false
  },
  "52mm|Lavender Fields|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "bf1005c68e26a20c5fc74ca87d42c64e39c45236104fa318a1fddd2801e31961",
-  "full": "cee01ad0f23eba431015500d5109986b6500d6cf88a170f2f95dee8e37e75ec6",
+  "nonArc": "c7b6140459720dd48968b7e938f7265261d7cf33c5f4bb274e3ba2a03c2d18bf",
+  "full": "684b0c6727fa05a8f748fc5c725b2dbca0d3e50c7827e3a09ad11666995d342c",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -1825,8 +1881,8 @@
   "arcCollision": false
  },
  "52mm|Pomegranate Noir|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "bf1005c68e26a20c5fc74ca87d42c64e39c45236104fa318a1fddd2801e31961",
-  "full": "2f76a2f332a5140bf1dd1ed7bdc0061263083352c3d859231ec72ed82f79d612",
+  "nonArc": "c7b6140459720dd48968b7e938f7265261d7cf33c5f4bb274e3ba2a03c2d18bf",
+  "full": "4c02a99d76b6e6553afa335fa64caf29a3f3b3dac2eaf519e7cfb6497a912a27",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -1834,8 +1890,8 @@
   "arcCollision": false
  },
  "52mm|Midnight Blackberry|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "bf1005c68e26a20c5fc74ca87d42c64e39c45236104fa318a1fddd2801e31961",
-  "full": "2d297038df556f941eb832787312cd9a878dda66f752533828dc8465f155d78d",
+  "nonArc": "c7b6140459720dd48968b7e938f7265261d7cf33c5f4bb274e3ba2a03c2d18bf",
+  "full": "6a988544ab92e6b1875cff08436c83e1530d142496ee1ed90309af6dbd3427c4",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -1843,8 +1899,8 @@
   "arcCollision": false
  },
  "52mm|Fresh Linen & White Cotton|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "bf1005c68e26a20c5fc74ca87d42c64e39c45236104fa318a1fddd2801e31961",
-  "full": "af2096dc33b3ac1b968e296536bb181deaa33326bc1c5c730957dc6a750a20f9",
+  "nonArc": "c7b6140459720dd48968b7e938f7265261d7cf33c5f4bb274e3ba2a03c2d18bf",
+  "full": "27aa6f64cb1f4335b73a9f32754c4ea4adefa6a4459498af2f4d1974db257db8",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -1852,8 +1908,8 @@
   "arcCollision": false
  },
  "52mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "bf1005c68e26a20c5fc74ca87d42c64e39c45236104fa318a1fddd2801e31961",
-  "full": "87d54bc6995b448535857fc8ce662d23931749b0e8f74ceba564665335393b68",
+  "nonArc": "c7b6140459720dd48968b7e938f7265261d7cf33c5f4bb274e3ba2a03c2d18bf",
+  "full": "78bdb979a78b7f08306ad0d5e66573455cea7f9265214261b4f536fed4411230",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -1861,8 +1917,8 @@
   "arcCollision": false
  },
  "52mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "bf1005c68e26a20c5fc74ca87d42c64e39c45236104fa318a1fddd2801e31961",
-  "full": "0aefe3b11fd88cc3989f0a7173c63898e2a52b502ec7063d722a0ab97f2b807b",
+  "nonArc": "c7b6140459720dd48968b7e938f7265261d7cf33c5f4bb274e3ba2a03c2d18bf",
+  "full": "564471b092ab600cc075d16e99941bf6aea624d76fd8b9f7a175a29fe042c6d0",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -1870,8 +1926,8 @@
   "arcCollision": false
  },
  "52mm|WWMM WWMM WMWMW|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "bf1005c68e26a20c5fc74ca87d42c64e39c45236104fa318a1fddd2801e31961",
-  "full": "6ab9ebb89f8367ad05ede380a03ef37a601e9890ef6f57873f59d7fb4bac2ef1",
+  "nonArc": "c7b6140459720dd48968b7e938f7265261d7cf33c5f4bb274e3ba2a03c2d18bf",
+  "full": "0d7e5c1895812fb20c2ebc1b15ad7212ba92dc0c371cfa7af2d5caab1b08dbc8",
   "fits": false,
   "warnings": [
    "footer-clipped"
@@ -1879,673 +1935,685 @@
   "arcCollision": false
  },
  "63mm|Vanilla Bean|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "bea02a272f15c931302d287cb110b75b0603a224bfa23775f5b73ff19cb7f8bd",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "45f465b0aea1457a5cdb62e990df4256710d6ff83129215ff004db7ad565755f",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Lavender Fields|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "d93bc5add728563530ec872d6a01acee14056af1433adb5419ab8a0602112bdb",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "c17430c549e498d933d52151867fa1b6662899e5348dc90d22d9c1acc77e1b5f",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Pomegranate Noir|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "e588ae0497a7ebfb5aedb7d868f7cd9ab99c2e6b031c122eac349c647cae7c6e",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "7b059fca222a429a9483e91f2a791564effc32fa3d0da623c9ba7de40e3ca724",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Midnight Blackberry|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "0d42b4b221e6584286647247894d7fa96e57dbdccac11d76382c4829cadc4d8b",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "3ea3211c230e9a3929676ee9a2c34c950b8fedaf3fb804df6ddee220e7c22701",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Fresh Linen & White Cotton|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "d25dbd94f22f8d0ce4cdfc7db4e1d7a2e42dba343cd6f2115dc8f044a58d9d94",
-  "full": "1415772c5d4419c3fc6d01aabb9ada1a45b2c3d1c84da8295f86505ca638c511",
+  "nonArc": "6e2400890b3a9bcbf5dc72707ca84c238e42b1c4d4e131734c7463d00b1f347a",
+  "full": "130844b6248f656bdf5b66276de89c008fe05a1c502858e36e20aa05554027dc",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "21aaa0af6bd306a5990abd8f57e4644c98c00215c9e4ea531511786a1284e027",
-  "full": "678b51e57901eec63071cd9cffaa2ed1bca5cd72503337124c2d70b52f51682a",
-  "fits": true,
-  "warnings": [],
-  "arcCollision": false
+  "nonArc": "6e0a1bc29a0a1c07bc944bfa04459d5446b5a0739b00736ff8bd9cac712c0f4b",
+  "full": "e89bbd29866078e3fbd26bed9ce6d0321a572d17336d9b2f8129ccda56fb38e1",
+  "fits": false,
+  "warnings": [
+   "scent-name-too-small"
+  ],
+  "arcCollision": true
  },
  "63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "21aaa0af6bd306a5990abd8f57e4644c98c00215c9e4ea531511786a1284e027",
-  "full": "11d8d68352a2435e3018ec38fa700f7ff59a940506ec6e156e254a40d71211fa",
-  "fits": true,
-  "warnings": [],
-  "arcCollision": false
+  "nonArc": "6e0a1bc29a0a1c07bc944bfa04459d5446b5a0739b00736ff8bd9cac712c0f4b",
+  "full": "b216ec549de56cc947f480263f8164f6fbdafa64e38fa2123b81c73c92b5b29c",
+  "fits": false,
+  "warnings": [
+   "scent-name-too-small"
+  ],
+  "arcCollision": true
  },
  "63mm|WWMM WWMM WMWMW|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "5410bc103651822644caf961736c998de67c745760de15df8086db3d2ef4a98d",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "e654acc11ccb5acfee9722849d116a56f4a6e7d7c580e8cb9f7b435187c91b2b",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Vanilla Bean|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "21aaa0af6bd306a5990abd8f57e4644c98c00215c9e4ea531511786a1284e027",
-  "full": "81496da1e8ec62b91b5d051db28a8508ee97d924d70497c74f6f33610e269897",
+  "nonArc": "d916ef5b1f8ce225c7005cd4061d81f966d0539c5c837ae8808a1f185bb5b324",
+  "full": "6e5423e3ccf8f3ea49d4196dac97470366c3dd778103938d73ec053926ae3e33",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Lavender Fields|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "21aaa0af6bd306a5990abd8f57e4644c98c00215c9e4ea531511786a1284e027",
-  "full": "1d36152f1748097fa44e106b680b38c9095a6d801f89d61126ebcac0360cd69d",
+  "nonArc": "d916ef5b1f8ce225c7005cd4061d81f966d0539c5c837ae8808a1f185bb5b324",
+  "full": "e852fa068888114735ee51839f1c98d8f5f2e8c650bd1c69a19acdbe49cef67b",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Pomegranate Noir|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "21aaa0af6bd306a5990abd8f57e4644c98c00215c9e4ea531511786a1284e027",
-  "full": "607998397a4965b123f3cc0be8356361bdb4511a1a1330141ecc2f93f9d90d9e",
+  "nonArc": "d916ef5b1f8ce225c7005cd4061d81f966d0539c5c837ae8808a1f185bb5b324",
+  "full": "5342e02e7dea6aa470f2c1e3bd474ebbdb83071c1d267be46003fa12a5673439",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Midnight Blackberry|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "21aaa0af6bd306a5990abd8f57e4644c98c00215c9e4ea531511786a1284e027",
-  "full": "54b4eed1299795bb0e582b8a903c9902626396150274d1a4e53ccaa1ad32ec45",
+  "nonArc": "d916ef5b1f8ce225c7005cd4061d81f966d0539c5c837ae8808a1f185bb5b324",
+  "full": "f0f02b36c829a8baa097421ebb67606fa62577c7c67f00ab08b9f47618a13371",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Fresh Linen & White Cotton|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "21aaa0af6bd306a5990abd8f57e4644c98c00215c9e4ea531511786a1284e027",
-  "full": "dc6539ad14553d8589f1d505a57ffad685a1cd5b1e91919c378fc3ac7c9b3690",
+  "nonArc": "d916ef5b1f8ce225c7005cd4061d81f966d0539c5c837ae8808a1f185bb5b324",
+  "full": "60e450f3f41c45dd7054df2e1a2d2b1e8f25fb8e3cdf30f31004af20018faa1a",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "21aaa0af6bd306a5990abd8f57e4644c98c00215c9e4ea531511786a1284e027",
-  "full": "6a902a0d712554124429cfe9121e929817eb62b18cee14ffe74daab48a31b2dd",
-  "fits": true,
-  "warnings": [],
-  "arcCollision": false
+  "nonArc": "6e0a1bc29a0a1c07bc944bfa04459d5446b5a0739b00736ff8bd9cac712c0f4b",
+  "full": "e89bbd29866078e3fbd26bed9ce6d0321a572d17336d9b2f8129ccda56fb38e1",
+  "fits": false,
+  "warnings": [
+   "scent-name-too-small"
+  ],
+  "arcCollision": true
  },
  "63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "21aaa0af6bd306a5990abd8f57e4644c98c00215c9e4ea531511786a1284e027",
-  "full": "9adc8e878d3a5a263f4a1e24e88d13244c704932d7a5198f732b6f04c523b6ac",
-  "fits": true,
-  "warnings": [],
-  "arcCollision": false
+  "nonArc": "6e0a1bc29a0a1c07bc944bfa04459d5446b5a0739b00736ff8bd9cac712c0f4b",
+  "full": "b216ec549de56cc947f480263f8164f6fbdafa64e38fa2123b81c73c92b5b29c",
+  "fits": false,
+  "warnings": [
+   "scent-name-too-small"
+  ],
+  "arcCollision": true
  },
  "63mm|WWMM WWMM WMWMW|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "21aaa0af6bd306a5990abd8f57e4644c98c00215c9e4ea531511786a1284e027",
-  "full": "706f2a4deb6103633fd9170cade8feebcb1d30b5a7db7123bf0a031c10ab298b",
+  "nonArc": "d916ef5b1f8ce225c7005cd4061d81f966d0539c5c837ae8808a1f185bb5b324",
+  "full": "6aceb733423973047df704aa682e45fffb43ebe1b7f5c742aca6eca300ab2289",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Vanilla Bean|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "bea02a272f15c931302d287cb110b75b0603a224bfa23775f5b73ff19cb7f8bd",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "45f465b0aea1457a5cdb62e990df4256710d6ff83129215ff004db7ad565755f",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Lavender Fields|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "d93bc5add728563530ec872d6a01acee14056af1433adb5419ab8a0602112bdb",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "c17430c549e498d933d52151867fa1b6662899e5348dc90d22d9c1acc77e1b5f",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Pomegranate Noir|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "e588ae0497a7ebfb5aedb7d868f7cd9ab99c2e6b031c122eac349c647cae7c6e",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "7b059fca222a429a9483e91f2a791564effc32fa3d0da623c9ba7de40e3ca724",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Midnight Blackberry|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "0d42b4b221e6584286647247894d7fa96e57dbdccac11d76382c4829cadc4d8b",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "3ea3211c230e9a3929676ee9a2c34c950b8fedaf3fb804df6ddee220e7c22701",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Fresh Linen & White Cotton|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "a45f074d4e7c8a38367637cffc3ef5d671f84219052099cc93b862788dbd2117",
-  "full": "69766147274d2e113b247f250c9e84fb475f83a82543cc10d93ca96e3351d455",
+  "nonArc": "353548daafc9b5ecfa5dbe1923f019272fdadc777c2156f77ade8192b7778952",
+  "full": "efafbcba5a024db840b653ce13380a8337b3e45f517547acd53199522bc9dc0c",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "21aaa0af6bd306a5990abd8f57e4644c98c00215c9e4ea531511786a1284e027",
-  "full": "223f40a51700874e05bcc5cffa404170cb60f0890a1a231057a51d74f8fd2a7b",
-  "fits": true,
-  "warnings": [],
-  "arcCollision": false
+  "nonArc": "6e0a1bc29a0a1c07bc944bfa04459d5446b5a0739b00736ff8bd9cac712c0f4b",
+  "full": "e89bbd29866078e3fbd26bed9ce6d0321a572d17336d9b2f8129ccda56fb38e1",
+  "fits": false,
+  "warnings": [
+   "scent-name-too-small"
+  ],
+  "arcCollision": true
  },
  "63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "21aaa0af6bd306a5990abd8f57e4644c98c00215c9e4ea531511786a1284e027",
-  "full": "4c7c0b26b4d4790d723c15aa12f39be0e8ba710b5a7525f03c2bd788f4fb509f",
-  "fits": true,
-  "warnings": [],
-  "arcCollision": false
+  "nonArc": "6e0a1bc29a0a1c07bc944bfa04459d5446b5a0739b00736ff8bd9cac712c0f4b",
+  "full": "b216ec549de56cc947f480263f8164f6fbdafa64e38fa2123b81c73c92b5b29c",
+  "fits": false,
+  "warnings": [
+   "scent-name-too-small"
+  ],
+  "arcCollision": true
  },
  "63mm|WWMM WWMM WMWMW|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "c3b4382e228a7cc3f6cf3689c7dfeb93c64d007d53e0f89fcf7418a3a84e7050",
-  "full": "5410bc103651822644caf961736c998de67c745760de15df8086db3d2ef4a98d",
+  "nonArc": "ed0411c8de94df3fda6bd00c1e6779d0bb2ea0f12640cc24c7b16a9a5caddabc",
+  "full": "e654acc11ccb5acfee9722849d116a56f4a6e7d7c580e8cb9f7b435187c91b2b",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Vanilla Bean|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "e627b01ff49368e48a96879feafc4172e572aa2a0243323c5948326132f27d46",
-  "full": "c66eb92a2e884e780252c9be393a8cda1e814de5122dd06afd932e69f26c974c",
+  "nonArc": "904c4fb9a5165edcff51d3bc01d46799c2121fe0fb6750b42d6166704920da87",
+  "full": "1edb0bd0a73dfdb4670e45cf911d8e17b21e174bc52517ef9e8a1093853982a5",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Lavender Fields|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "e627b01ff49368e48a96879feafc4172e572aa2a0243323c5948326132f27d46",
-  "full": "5f9c3aec904b16a5903a73fa76917ad8791d55f1f66231e82ec8c758ba52a4a1",
+  "nonArc": "904c4fb9a5165edcff51d3bc01d46799c2121fe0fb6750b42d6166704920da87",
+  "full": "f7bc81fb2774190c7904a4cafcba4ec16ed6d9c97ab297d9dd36ccb49ba25bb4",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Pomegranate Noir|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "e627b01ff49368e48a96879feafc4172e572aa2a0243323c5948326132f27d46",
-  "full": "fd8586c2fe1cc9897fbbebbdd86e340256699c29ca96ea71aecbb1d4c6c8d7e8",
+  "nonArc": "904c4fb9a5165edcff51d3bc01d46799c2121fe0fb6750b42d6166704920da87",
+  "full": "770b3ace394e6434ac8a6266e241d7d54cfe75199591ee47a9163bf70836187d",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Midnight Blackberry|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "e627b01ff49368e48a96879feafc4172e572aa2a0243323c5948326132f27d46",
-  "full": "77eed1586c96c67f59088020357caf0afe41b07ecac5942b93f5c9d77408f496",
+  "nonArc": "904c4fb9a5165edcff51d3bc01d46799c2121fe0fb6750b42d6166704920da87",
+  "full": "d17595a618a7d6385565c455c457f638f1cabcfa0869a4c1e461faaf0db89125",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Fresh Linen & White Cotton|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "e627b01ff49368e48a96879feafc4172e572aa2a0243323c5948326132f27d46",
-  "full": "01fa72a7820af46c2efd396af1e3adadeaa165d12e64c72999598b4c310f10ad",
+  "nonArc": "904c4fb9a5165edcff51d3bc01d46799c2121fe0fb6750b42d6166704920da87",
+  "full": "89542564d0833ebf7956f3034a435e5a10cb0cb21db1b27516710986ddcf3918",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "e627b01ff49368e48a96879feafc4172e572aa2a0243323c5948326132f27d46",
-  "full": "5b53e1df65b6eb28f5ccb04b23ac3cc9715c7ba92fe1eb7533f10078dc6c0f1a",
+  "nonArc": "904c4fb9a5165edcff51d3bc01d46799c2121fe0fb6750b42d6166704920da87",
+  "full": "96b673e12da15c56e96a00e266eb8c9a34c1d6297f19b933e48e581231421253",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "e627b01ff49368e48a96879feafc4172e572aa2a0243323c5948326132f27d46",
-  "full": "bb45e81f415f8910af7b43b9a315efedd455e42dc5e9167a503bba1c4d45358f",
+  "nonArc": "904c4fb9a5165edcff51d3bc01d46799c2121fe0fb6750b42d6166704920da87",
+  "full": "388d8476c8b48e73fd7acc9cd46384942fd5637ce45e809826bfecb8c0c8bf3a",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "63mm|WWMM WWMM WMWMW|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "e627b01ff49368e48a96879feafc4172e572aa2a0243323c5948326132f27d46",
-  "full": "ca7f2d51516ac9dc79edd7251b5958bc06bdd26a9cdf9b4f58b46432e616676b",
+  "nonArc": "904c4fb9a5165edcff51d3bc01d46799c2121fe0fb6750b42d6166704920da87",
+  "full": "86571a224af1d82f87f452973ae0a45c4943d0fb91a7c3153a65f5a881b011a7",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Vanilla Bean|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "762d6af5a62984036cae24d2128901eb48d3fcbdd15055d69bf2fff52f1ae49a",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "bf1677197092cbec47df477c5bc6cd4ce09e4b1b864c7adbce67def8ebbb1df3",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Lavender Fields|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "711f7d3c2841a9842e2f047e713eedca11bace381a7608ca81a7f42530adc7f2",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "073e4be75dd48199d8ba73490088c79c41c89979b8a4d8c1bb11bd3971bc3b49",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Pomegranate Noir|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "e4a98500ed23aeb99b1d8361b66650b48f5c0a353259dba8d6210ad85e2eec89",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "2add08f2ea0ea7ddd7fd46d92083896123a9c8e084a0f595dcad565fa8994e37",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Midnight Blackberry|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "385bf4651957128439866cbf869a9e3e9021281d9b0038f870f6547f4542e3dd",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "8a8439d2d1e49de86fb786dc5279f323f9154bbb26ab2c857b7570175c9388a4",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Fresh Linen & White Cotton|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "3c027bb8f3a56031d19557bffab41d06af16a54fe722269126361abe29c0737b",
-  "full": "30f8973b7aa1632f8adb92b91e0c63f6b54676b34a14aa85a044acc115a97a35",
+  "nonArc": "16a0a96bd02a689e587af3e906177da772c1433172c9acf3ef6d2b1240ddf2c1",
+  "full": "1df534a81034a7d71d0fdf3697068febf89db9a3181fdc1a44827bddbdda85f6",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "20c50941b181768499ccf45c9f102aaf2bea5731fa98fc328c05e39ef98a1a5a",
-  "full": "03eb0d8ae6cdb05032c96b07e34bba95a54987b54c476c16a7d0775af7a3b77b",
+  "nonArc": "c3053862774cbf24e605c349ff283e81d81613a24dadbd870b171f388d30943c",
+  "full": "0f9ea55d7737c07045f02316e5cc40eafdb36f70355241dd921d6e5f933b5248",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "20c50941b181768499ccf45c9f102aaf2bea5731fa98fc328c05e39ef98a1a5a",
-  "full": "3478710de574e492387d20484f66cb79079cb07029da433380689cb6eaa9723e",
+  "nonArc": "c3053862774cbf24e605c349ff283e81d81613a24dadbd870b171f388d30943c",
+  "full": "851be2aedc9763b734baf40b2347f31a7ae9a5c577d3c5456099bfcfa471e677",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|WWMM WWMM WMWMW|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "d57fbfbff29a818e05857a01d7fda2e85f201f39a2737bec8e096e626f8c761e",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "67d9ae1b18523cd3f0d24c292180bf61cf697fd72ff8f28a8236e4666ecb836c",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Vanilla Bean|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "20c50941b181768499ccf45c9f102aaf2bea5731fa98fc328c05e39ef98a1a5a",
-  "full": "8de5f424d322ed7d84401bffc8c0eb21d03b776182e7152955fc770349c93023",
+  "nonArc": "c3053862774cbf24e605c349ff283e81d81613a24dadbd870b171f388d30943c",
+  "full": "464776a3220b2d6c862867331464caa7a1b4922c62f989ee04dceb139b03dbae",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Lavender Fields|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "20c50941b181768499ccf45c9f102aaf2bea5731fa98fc328c05e39ef98a1a5a",
-  "full": "0a691c277564730da87ad70dbacc3952fca9d739cc05efbe84e345ce47b59648",
+  "nonArc": "c3053862774cbf24e605c349ff283e81d81613a24dadbd870b171f388d30943c",
+  "full": "6b4fec73015cd4c7c6c016fc7e5555a1cb0d4badd6e7da721c644b8d77433391",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Pomegranate Noir|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "20c50941b181768499ccf45c9f102aaf2bea5731fa98fc328c05e39ef98a1a5a",
-  "full": "9dd05b721d458460363da99b9afacb329795b978d8e4ffa1ab7f1ce69c2da301",
+  "nonArc": "c3053862774cbf24e605c349ff283e81d81613a24dadbd870b171f388d30943c",
+  "full": "ebaf54b3eca55c98335335e8f956ff94f3ff9ff581afa57a59d3c5592e9953db",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Midnight Blackberry|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "20c50941b181768499ccf45c9f102aaf2bea5731fa98fc328c05e39ef98a1a5a",
-  "full": "01a20ca072f6692efdabaeab27077ee6e55b49791dcc891512f5b1e1a707d2de",
+  "nonArc": "c3053862774cbf24e605c349ff283e81d81613a24dadbd870b171f388d30943c",
+  "full": "f5798f7d7276be98019b5e1a1b52bc534c02cedc43eb0b2b212635425374dad9",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Fresh Linen & White Cotton|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "20c50941b181768499ccf45c9f102aaf2bea5731fa98fc328c05e39ef98a1a5a",
-  "full": "d950bb0004cc84b29ce53e80047bca6875777789884faa0bf8412160a4189abd",
+  "nonArc": "c3053862774cbf24e605c349ff283e81d81613a24dadbd870b171f388d30943c",
+  "full": "cd7a2cd1836bde10291472110c7248f15c9dcf14babd6cf36af2de27c87220a3",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "20c50941b181768499ccf45c9f102aaf2bea5731fa98fc328c05e39ef98a1a5a",
-  "full": "3130e244ed8fc78f8b74d6a2d291144b835fd6685911ae4cb4eeb473eba8a987",
+  "nonArc": "c3053862774cbf24e605c349ff283e81d81613a24dadbd870b171f388d30943c",
+  "full": "0f9ea55d7737c07045f02316e5cc40eafdb36f70355241dd921d6e5f933b5248",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "20c50941b181768499ccf45c9f102aaf2bea5731fa98fc328c05e39ef98a1a5a",
-  "full": "84aabb47ab7a70209d50480ac4087d91e81005a712d1bede1cb0e2b6446ceb86",
+  "nonArc": "c3053862774cbf24e605c349ff283e81d81613a24dadbd870b171f388d30943c",
+  "full": "851be2aedc9763b734baf40b2347f31a7ae9a5c577d3c5456099bfcfa471e677",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|WWMM WWMM WMWMW|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "20c50941b181768499ccf45c9f102aaf2bea5731fa98fc328c05e39ef98a1a5a",
-  "full": "5f0095ca67d60a420ff9247f7760a2b206b780b59a7c44c03a6710ee78a8818a",
+  "nonArc": "c3053862774cbf24e605c349ff283e81d81613a24dadbd870b171f388d30943c",
+  "full": "ef498c3eaaa73c54c4475d6d4c2f9eae7c187366412a22116baeee58b44ce92e",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Vanilla Bean|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "762d6af5a62984036cae24d2128901eb48d3fcbdd15055d69bf2fff52f1ae49a",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "bf1677197092cbec47df477c5bc6cd4ce09e4b1b864c7adbce67def8ebbb1df3",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Lavender Fields|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "711f7d3c2841a9842e2f047e713eedca11bace381a7608ca81a7f42530adc7f2",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "073e4be75dd48199d8ba73490088c79c41c89979b8a4d8c1bb11bd3971bc3b49",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Pomegranate Noir|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "e4a98500ed23aeb99b1d8361b66650b48f5c0a353259dba8d6210ad85e2eec89",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "2add08f2ea0ea7ddd7fd46d92083896123a9c8e084a0f595dcad565fa8994e37",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Midnight Blackberry|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "385bf4651957128439866cbf869a9e3e9021281d9b0038f870f6547f4542e3dd",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "8a8439d2d1e49de86fb786dc5279f323f9154bbb26ab2c857b7570175c9388a4",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Fresh Linen & White Cotton|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "b0f6d039b28b85b34b9e2d3ab335bed4bd9406ed6d1ec17d7888785f601ecff5",
-  "full": "b1ae1a891bd66ccf2395646bab74d1906ae856aff2ee7502a6998bdcf655b1ac",
+  "nonArc": "f27fc4040265d719f339e01032333feebe61f12cd1f7c876d333440cddeaaf52",
+  "full": "38c6cd4ad574311eb23705670dc028ff55668defd28b4c952b8a83046a592e88",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "20c50941b181768499ccf45c9f102aaf2bea5731fa98fc328c05e39ef98a1a5a",
-  "full": "dc1e72e23c2a0ab9d1c407404f6b781fbb816f2df39893cb897efc45af1e0ee3",
+  "nonArc": "c3053862774cbf24e605c349ff283e81d81613a24dadbd870b171f388d30943c",
+  "full": "0f9ea55d7737c07045f02316e5cc40eafdb36f70355241dd921d6e5f933b5248",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "20c50941b181768499ccf45c9f102aaf2bea5731fa98fc328c05e39ef98a1a5a",
-  "full": "1bc00178d028834595ee6574714718ae0e47079b29452b1d02a38a5815af5160",
+  "nonArc": "c3053862774cbf24e605c349ff283e81d81613a24dadbd870b171f388d30943c",
+  "full": "851be2aedc9763b734baf40b2347f31a7ae9a5c577d3c5456099bfcfa471e677",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|WWMM WWMM WMWMW|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "3f07ea30ef93bb59508a7021149afdd394f4dc580e30169d767e6582064a72bf",
-  "full": "d57fbfbff29a818e05857a01d7fda2e85f201f39a2737bec8e096e626f8c761e",
+  "nonArc": "2461fab6bfcf12caab47dbbba8e3d23287e88d49aa41427b978774102cd32a09",
+  "full": "67d9ae1b18523cd3f0d24c292180bf61cf697fd72ff8f28a8236e4666ecb836c",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Vanilla Bean|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "e1dec1570f5153e7cb5764107a7c276a74a14a9318880b1a727c8327d5f727c2",
-  "full": "132f79f04c9f59a9d36481f0c548de100e0c219e0dd6a377cbbc9566d32f4797",
+  "nonArc": "d863c96b6bb0e5c023287beb6c81232ad7427780473a25c1b5813cac35663aad",
+  "full": "d974662520c1b20c1db079718c6ec3157987435a67b18f5a25bdd64091a03bd9",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Lavender Fields|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "e1dec1570f5153e7cb5764107a7c276a74a14a9318880b1a727c8327d5f727c2",
-  "full": "9a2dee393dc3323343ed8620701dbb68b27fe67a0c28ca6dd3b5247582f8e4e1",
+  "nonArc": "d863c96b6bb0e5c023287beb6c81232ad7427780473a25c1b5813cac35663aad",
+  "full": "546ac552c352911706ad8943e53455f5a51fa0d275de12796bf066c1dc385e4f",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Pomegranate Noir|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "e1dec1570f5153e7cb5764107a7c276a74a14a9318880b1a727c8327d5f727c2",
-  "full": "13ba1c5be48c78f6a8bebf387828a08242d5a34d1eeb8d4be63271525f6d6974",
+  "nonArc": "d863c96b6bb0e5c023287beb6c81232ad7427780473a25c1b5813cac35663aad",
+  "full": "faf01460769250995d90a131c88dc3211f4d0aa34cb71fea93cbd7f88dbdc828",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Midnight Blackberry|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "e1dec1570f5153e7cb5764107a7c276a74a14a9318880b1a727c8327d5f727c2",
-  "full": "7d771254c73319ecb59db881c3a765b7a360b15296338bd8aedd9e3270221055",
+  "nonArc": "d863c96b6bb0e5c023287beb6c81232ad7427780473a25c1b5813cac35663aad",
+  "full": "d5152e445afd569f50abd7aa990dbfbccbcf9a0c3b3b2e1016d5a829d2d8975c",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Fresh Linen & White Cotton|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "e1dec1570f5153e7cb5764107a7c276a74a14a9318880b1a727c8327d5f727c2",
-  "full": "56cd637ff507ef63439b4a091d753296d06899089ebe3556e0031ba266e1b341",
+  "nonArc": "d863c96b6bb0e5c023287beb6c81232ad7427780473a25c1b5813cac35663aad",
+  "full": "b04c28f19d0b41304283eac866af32632a9235a5e266cdad5f5e4e6dbefc8a3c",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "e1dec1570f5153e7cb5764107a7c276a74a14a9318880b1a727c8327d5f727c2",
-  "full": "c9f0dea6fa8c0dd622a7a8b11bd3dd33901340c2f0d1450bdc068edb6b9d48c6",
+  "nonArc": "d863c96b6bb0e5c023287beb6c81232ad7427780473a25c1b5813cac35663aad",
+  "full": "6fbb6f394e4b82cb1646a5c2b20ebd513424548e0008a8431015dd89f3ef958c",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "e1dec1570f5153e7cb5764107a7c276a74a14a9318880b1a727c8327d5f727c2",
-  "full": "7f6a1eeaec35e6f1d5ba5540faba8a8df0e659c421f7582b51d6cc8d5561f541",
+  "nonArc": "d863c96b6bb0e5c023287beb6c81232ad7427780473a25c1b5813cac35663aad",
+  "full": "3c1e187911ac42efd732540aaa03c28e05cf370cf1970d301fa7cd6bfbe760f2",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "100mm|WWMM WWMM WMWMW|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "e1dec1570f5153e7cb5764107a7c276a74a14a9318880b1a727c8327d5f727c2",
-  "full": "afec9a5ca6bbcfc4efb3549e397d5508659045f20a41e899e477b61a7851f2d2",
+  "nonArc": "d863c96b6bb0e5c023287beb6c81232ad7427780473a25c1b5813cac35663aad",
+  "full": "e66c6feb85ff2fa4788c00d3dba37325eeb8653cd1cafff3da15265717cb7c2c",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Vanilla Bean|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "76bc24bf5b189e0818406faa3afb863eacfd8818d126f2703c49c30939fed365",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "f19a54e647b0178e347be354032955411bf1b2a5eed3fe256d11fe3d225169e0",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Lavender Fields|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "86180f7a3bd05a35babd21ae1dadec851d88f1cd05078f221d2aaf5fbfd9fe0f",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "6b9c1915e9ae97dd768a818f1322e2973ae4bfb0e9b3e7c8d151ed2df13027af",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Pomegranate Noir|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "4f8b26be82dc9377205ce217cfa807c67fe4ab0f51a5c0b0d596991a1986e464",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "4dc2abb21b86cdcf10cb700a692a485c2789b805461ba306968158e9daf1b29d",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Midnight Blackberry|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "47d6478edeb337a9d49682d680b35f3305c569b417821a77ad203dd18177429b",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "cf1c5f15165ca814a99de3012acc12e334a639b5a65cb28fe119e5a83bf561a9",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Fresh Linen & White Cotton|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "5fcbe57f8242258d2beb032007b6885ca3d47d8c6b873f2299478d4166939fcd",
-  "full": "f6caead78ca4860f7f7fe56b26a30595ae0bc44802ff28a7e3e11c79fd9a7409",
+  "nonArc": "de31bdd947a96b802dc4f47bb8a5fe249b745c987265367e92ec2174f0aa52eb",
+  "full": "09db0dc6c7c2d96860df50983ed35c2c67009aeebad742b5431ab01cb4de3355",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "00379e2580f0b4b8c6c53a209f3be0726643fc1b61258bdc74a0bcfac334efc4",
-  "full": "76652cf95f231ad95a4da19c11b3a54ec7bf7f7ca0bcfebeaab566cec0481653",
+  "nonArc": "b8424a94d115f26f69de64e53527909cb84f0e299b3d69b8156bb3d071fce83d",
+  "full": "15075fd4695cd1a3a42dab8b87eedd7a50c0c94466280b754ce467219e91c272",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "00379e2580f0b4b8c6c53a209f3be0726643fc1b61258bdc74a0bcfac334efc4",
-  "full": "5fa1287ef9ba2f622f42b49f45f4be93a86c26f1f9680ef206a5d3af71e75b3a",
+  "nonArc": "b8424a94d115f26f69de64e53527909cb84f0e299b3d69b8156bb3d071fce83d",
+  "full": "c3c72129335f641802cf5b349bf4a140bfe7eb12777d5b9c572fea38aa262f67",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|WWMM WWMM WMWMW|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "c56efb4ceb488a786fba2e767be8b7c9dde66a98a27adf1a9ed2e6a82e53cb8a",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "1222fb4c962398795f51c39cc24cebe5189b27b04382a8567995f86273ff6961",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Vanilla Bean|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "00379e2580f0b4b8c6c53a209f3be0726643fc1b61258bdc74a0bcfac334efc4",
-  "full": "2f1ea25f1dad026a6e10a1e5ee3bf29ac35f13aa0583cf80de95b2f0cea4b08a",
+  "nonArc": "b8424a94d115f26f69de64e53527909cb84f0e299b3d69b8156bb3d071fce83d",
+  "full": "74e19d685f1468e761147b3d2ee65fc6db3c7e1824f9b57c1e28f7f26c5a2712",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Lavender Fields|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "00379e2580f0b4b8c6c53a209f3be0726643fc1b61258bdc74a0bcfac334efc4",
-  "full": "8dfc65acf05e1072abb4e26f8e012e2fded82c35a82efffeb867e323eb732de1",
+  "nonArc": "b8424a94d115f26f69de64e53527909cb84f0e299b3d69b8156bb3d071fce83d",
+  "full": "d89d254092b996ea1e4cb548059955be05b518f04665eb4e93b8ff4aa4af4858",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Pomegranate Noir|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "00379e2580f0b4b8c6c53a209f3be0726643fc1b61258bdc74a0bcfac334efc4",
-  "full": "da16de3ad92c7eea5fc38e90627a0a12022543da53093514777bedec0c6a817c",
+  "nonArc": "b8424a94d115f26f69de64e53527909cb84f0e299b3d69b8156bb3d071fce83d",
+  "full": "6fa3a87d005b8c3eb8e208e246609dd1d616fa44dc4a6f5accca257a2bf7d839",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Midnight Blackberry|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "00379e2580f0b4b8c6c53a209f3be0726643fc1b61258bdc74a0bcfac334efc4",
-  "full": "348aaa7d6afb17f7c56010b4673f74483057314f01f3ed3d40d5420d4e6971ac",
+  "nonArc": "b8424a94d115f26f69de64e53527909cb84f0e299b3d69b8156bb3d071fce83d",
+  "full": "221030ec4a4344ccb12c60c841a823af42772911b026a6befd3ee204bee6a9a6",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Fresh Linen & White Cotton|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "00379e2580f0b4b8c6c53a209f3be0726643fc1b61258bdc74a0bcfac334efc4",
-  "full": "aa63a5a5497668f435fafcc6ebb5d52fbaadd9f4279c1a70eabeb4f5fbd7b0cd",
+  "nonArc": "b8424a94d115f26f69de64e53527909cb84f0e299b3d69b8156bb3d071fce83d",
+  "full": "1705bf5def52a60b92468226e49b5bf0dcf63c2a529b9debee9695fd165d4573",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "00379e2580f0b4b8c6c53a209f3be0726643fc1b61258bdc74a0bcfac334efc4",
-  "full": "2ef4f465e1034b7bfa021216f5231095b20abcfa217bbbc268505ec75c47651f",
+  "nonArc": "b8424a94d115f26f69de64e53527909cb84f0e299b3d69b8156bb3d071fce83d",
+  "full": "15075fd4695cd1a3a42dab8b87eedd7a50c0c94466280b754ce467219e91c272",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "00379e2580f0b4b8c6c53a209f3be0726643fc1b61258bdc74a0bcfac334efc4",
-  "full": "7d517aa0ac95278d771e814050ec4aa0713dc509c1e22177834df93fca0adc11",
+  "nonArc": "b8424a94d115f26f69de64e53527909cb84f0e299b3d69b8156bb3d071fce83d",
+  "full": "c3c72129335f641802cf5b349bf4a140bfe7eb12777d5b9c572fea38aa262f67",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|WWMM WWMM WMWMW|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}": {
-  "nonArc": "00379e2580f0b4b8c6c53a209f3be0726643fc1b61258bdc74a0bcfac334efc4",
-  "full": "c2b2a68f06c6cbf3ee32336812b26e13015d180463602cd8969f59ca5ac8447a",
+  "nonArc": "b8424a94d115f26f69de64e53527909cb84f0e299b3d69b8156bb3d071fce83d",
+  "full": "4a92e0761e590b82cf3961ef9b209a2d0e455f1ad6889f05224379e476d26b0d",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Vanilla Bean|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "76bc24bf5b189e0818406faa3afb863eacfd8818d126f2703c49c30939fed365",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "f19a54e647b0178e347be354032955411bf1b2a5eed3fe256d11fe3d225169e0",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Lavender Fields|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "86180f7a3bd05a35babd21ae1dadec851d88f1cd05078f221d2aaf5fbfd9fe0f",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "6b9c1915e9ae97dd768a818f1322e2973ae4bfb0e9b3e7c8d151ed2df13027af",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Pomegranate Noir|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "4f8b26be82dc9377205ce217cfa807c67fe4ab0f51a5c0b0d596991a1986e464",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "4dc2abb21b86cdcf10cb700a692a485c2789b805461ba306968158e9daf1b29d",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Midnight Blackberry|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "47d6478edeb337a9d49682d680b35f3305c569b417821a77ad203dd18177429b",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "cf1c5f15165ca814a99de3012acc12e334a639b5a65cb28fe119e5a83bf561a9",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Fresh Linen & White Cotton|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "76096fcb496a19f1082ab2f1444878eb7a6c4ff3660348909c4fdb8c9984ac04",
-  "full": "0f12ff69e52cd1f6bb5489c9cd460695d08dd7e4cbba2aabbfba2dde3d5b9f0f",
+  "nonArc": "c5277792562d0885f8a228e3bdd01489942cf742e83f12e7f5f0141c05696eb7",
+  "full": "9e35b6dc7847f4c0da8a450f73bb3ecf9d9b0b91e48707a1b7a3758f21ba1b6f",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "00379e2580f0b4b8c6c53a209f3be0726643fc1b61258bdc74a0bcfac334efc4",
-  "full": "faa1270a50c877c9054f9c4c080a8d132989fc4a9fc383f67a5277eae0d6e73f",
+  "nonArc": "b8424a94d115f26f69de64e53527909cb84f0e299b3d69b8156bb3d071fce83d",
+  "full": "15075fd4695cd1a3a42dab8b87eedd7a50c0c94466280b754ce467219e91c272",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "00379e2580f0b4b8c6c53a209f3be0726643fc1b61258bdc74a0bcfac334efc4",
-  "full": "f3fb57699b00a422fff60fb4b3b219713d40355722e0a3463fa79017f389410e",
+  "nonArc": "b8424a94d115f26f69de64e53527909cb84f0e299b3d69b8156bb3d071fce83d",
+  "full": "c3c72129335f641802cf5b349bf4a140bfe7eb12777d5b9c572fea38aa262f67",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|WWMM WWMM WMWMW|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}": {
-  "nonArc": "8cbb46f694591d408e75ab1b928ebe6c73a7dfe483a40ea6ecb1384881c02cce",
-  "full": "c56efb4ceb488a786fba2e767be8b7c9dde66a98a27adf1a9ed2e6a82e53cb8a",
+  "nonArc": "c3cafa48efb38522663d54913dce94fa1cb73e7aa4ca66525659d61f78cf8266",
+  "full": "1222fb4c962398795f51c39cc24cebe5189b27b04382a8567995f86273ff6961",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Vanilla Bean|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "af0aa3dae4ba23a150257e3b44f8dd81b6ce570f62e7c7da4aeea53ed0f29207",
-  "full": "7334fc5acb17cfc0681fa3dbd971f1f64ad4373fec50d2d653f824507342e016",
+  "nonArc": "f0b77240854f57e831d4d0cc3e69f7ed21bd320eb8f31d48e0253103f9a495be",
+  "full": "ef639bf1c5073b82d84ae11a9935156bf1e438a295bd4d87661871d89458728e",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Lavender Fields|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "af0aa3dae4ba23a150257e3b44f8dd81b6ce570f62e7c7da4aeea53ed0f29207",
-  "full": "22a2bbdddd185aef95458ac5b84d96a9b5ee5016759aaad3f4a3610f75e7bc2e",
+  "nonArc": "f0b77240854f57e831d4d0cc3e69f7ed21bd320eb8f31d48e0253103f9a495be",
+  "full": "04df27083ed35afd536bfff90cdd537221b697f841def70eebd41536f042eee1",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Pomegranate Noir|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "af0aa3dae4ba23a150257e3b44f8dd81b6ce570f62e7c7da4aeea53ed0f29207",
-  "full": "ef36118f4cf2f4ad7a61796e314cd313acad314319674e027904683251e5db49",
+  "nonArc": "f0b77240854f57e831d4d0cc3e69f7ed21bd320eb8f31d48e0253103f9a495be",
+  "full": "fae8d84e36a0b340fdd1a0e3e9c879647628174cb716e12e5d01fa9e0faf0700",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Midnight Blackberry|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "af0aa3dae4ba23a150257e3b44f8dd81b6ce570f62e7c7da4aeea53ed0f29207",
-  "full": "e6884269f0edea45ce105352f9254e827b8d5d915576dd8790e855583ab87746",
+  "nonArc": "f0b77240854f57e831d4d0cc3e69f7ed21bd320eb8f31d48e0253103f9a495be",
+  "full": "23f9f81cff8f33297e602cc20401567fbc6b2c506897d1782f05b01bb78e98e6",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Fresh Linen & White Cotton|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "af0aa3dae4ba23a150257e3b44f8dd81b6ce570f62e7c7da4aeea53ed0f29207",
-  "full": "553237d3a83a98fe14484c196f20d2de2888f03eafbd845c52504824f8eb27f6",
+  "nonArc": "f0b77240854f57e831d4d0cc3e69f7ed21bd320eb8f31d48e0253103f9a495be",
+  "full": "a4d733046129fbf44f05ae41e5ccafa216936720c8f184d6d550571c8f2e4910",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "af0aa3dae4ba23a150257e3b44f8dd81b6ce570f62e7c7da4aeea53ed0f29207",
-  "full": "8f5f7027e70668ebb25c56c89cf001cf3eade936f957787f8944ae3f9f28ad0d",
+  "nonArc": "f0b77240854f57e831d4d0cc3e69f7ed21bd320eb8f31d48e0253103f9a495be",
+  "full": "6949cdb7cc044043c7e3576002d2a49495a52c2c674f6762c550e31211f73486",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "af0aa3dae4ba23a150257e3b44f8dd81b6ce570f62e7c7da4aeea53ed0f29207",
-  "full": "79b4deb5a61073b1016a13dab02eed1ebc229e72fa91cec581ded0db6fa1c42e",
+  "nonArc": "f0b77240854f57e831d4d0cc3e69f7ed21bd320eb8f31d48e0253103f9a495be",
+  "full": "a137fd07d2eb9f5d89afa564fccd96ceb6eec5c6a4d55733da2d2207f8bbdaf0",
   "fits": true,
   "warnings": [],
   "arcCollision": false
  },
  "150mm|WWMM WWMM WMWMW|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":0}": {
-  "nonArc": "af0aa3dae4ba23a150257e3b44f8dd81b6ce570f62e7c7da4aeea53ed0f29207",
-  "full": "6181e8575e9da2a068a1bf4942dff1f1d34276b47ccfd09bce4a6dc7f40ba7e5",
+  "nonArc": "f0b77240854f57e831d4d0cc3e69f7ed21bd320eb8f31d48e0253103f9a495be",
+  "full": "a61c4edd0e59a114c011b050ed1b466fa735046a664b561cc5f8e080dbba6610",
   "fits": true,
   "warnings": [],
   "arcCollision": false

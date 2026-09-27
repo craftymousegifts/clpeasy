@@ -8,6 +8,8 @@
 // simplified re-implementation).
 // Run from the repo root: node tests/checkpoint-c-composer-identity.js
 const fs = require('fs');
+// Issue #5: supplier completions for P-statements that need them (test data, never an app default).
+const { FIXTURE_P_CHOICES } = require('./fixtures/p-statement-choices');
 const assert = require('assert');
 const { JSDOM, VirtualConsole } = require('jsdom');
 const { webcrypto } = require('crypto');
@@ -82,7 +84,7 @@ function fixture(overrides){
     // Trimmed to a single H-code/P-code and no sensitisers -- confirmed
     // directly to genuinely fit at both 52mm and 63mm circles at the
     // corrected floor -- restoring this fixture's own documented intent.
-    signal:'Warning', hStatements:'H315', pStatements:'P273',
+    signal:'Warning', hStatements:'H315', pChoices:FIXTURE_P_CHOICES, pStatements:'P273',
     sensitisers:[], pictograms:['exclamation'], textColour:'dark', showBorder:true,
     hideEN15494:false, labelLang:'en',
   }, overrides);
@@ -100,7 +102,7 @@ function overflowingFixture(overrides){
     bizWebsite:'www.extremestresstestbusiness.co.uk',
     netWeight:'220g', batchNum:'B009-EXTREME', burnTime:'45 hrs approx',
     signal:'Danger', hStatements:'H319, H317, H411, H412, H315, H336',
-    pStatements:'P101, P102, P103, P210, P233, P260, P261, P271, P273, P302+P352, P305+P351+P338, P312, P501, P211',
+    pChoices:FIXTURE_P_CHOICES, pStatements:'P101, P102, P103, P210, P233, P260, P261, P271, P273, P302+P352, P305+P351+P338, P312, P501, P211',
     sensitisers:['Linalool','Limonene','Citral','Geraniol','Citronellol','Coumarin'],
     pictograms:['exclamation','flame','aquatic'], textColour:'dark', showBorder:true,
     hideEN15494:false, labelLang:'en',
@@ -119,7 +121,7 @@ function eu30009Fixture(overrides){
   return Object.assign({
     scentName:'Registry Fixture', productType:'Scented Candle', signal:'WARNING',
     shape:'rectangle', size:'custom', customW:99.1, customH:57.3,
-    bizName:'Test Biz', hStatements:'H315,H319', pStatements:'P302+P352',
+    bizName:'Test Biz', hStatements:'H315,H319', pChoices:FIXTURE_P_CHOICES, pStatements:'P302+P352',
     sensitisers:[], pictograms:['exclamation'],
   }, overrides);
 }
@@ -147,7 +149,7 @@ function qaTestCandle6344Fixture(overrides){
     signal:'Warning', hStatements:'H317', pictograms:['exclamation'], sensitisers:[],
     bizName:'Crafty Mouse Gifts', bizAddress:'Stable Lodge', bizPhone:'07702451104',
     bizWebsite:'www.clpeasy.com', netWeight:'', fragLoad:'', burnTime:'', batchNum:'', supplier:'',
-    hideEN15494:false, bgColour:'#ffffff', pStatements:'P273', textColour:'dark', showBorder:true,
+    hideEN15494:false, bgColour:'#ffffff', pChoices:FIXTURE_P_CHOICES, pStatements:'P273', textColour:'dark', showBorder:true,
     labelLang:'en', p280Items:[], p280Other:'',
     hazardFSOverride:null, scentFSOverride:null, bizNameFSOverride:null,
     hazardYOffset:null, typeFSOverride:null, sigFSOverride:null,

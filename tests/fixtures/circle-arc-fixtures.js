@@ -2,6 +2,7 @@
 // and its jsdom baseline (tests/fixtures/generate-circle-non-arc-baseline.js).
 // No production/customer data. Covers Builder Label Technical Audit finding
 // M45: curved product name vs business name on circular labels.
+const { FIXTURE_P_CHOICES } = require('./p-statement-choices'); // Issue #5: supplier P completions (test data)
 const CIRCLE_MM = [52, 63, 75, 100, 150];
 
 // Product names: controlled lengths 10-46 characters, a narrow/wide pair of
@@ -44,7 +45,7 @@ const OVERRIDES = [
 const baseContent = (scentName, bizName) => ({
   scentName, productType: 'Scented Candle', signal: 'Warning',
   bizName, bizAddress: '12 Mill Lane, Testville', bizPhone: '01234 567890',
-  hStatements: 'H317', pStatements: 'P102, P501', sensitisers: ['Geraniol'], pictograms: ['exclamation'],
+  hStatements: 'H317', pStatements: 'P102, P501', pChoices: FIXTURE_P_CHOICES, sensitisers: ['Geraniol'], pictograms: ['exclamation'],
   netWeight: '200g', textColour: 'dark', showBorder: true,
 });
 

@@ -166,6 +166,10 @@ function normalizeLabel(data){
     // selection" here, not defaulted to every item.
     p280Items: Array.isArray(data.p280Items) ? data.p280Items : [],
     p280Other: data.p280Other || '',
+    // Issue #5: structured supplier selections/completions for P-statements,
+    // keyed by code. Missing on labels saved before this existed (schema v1):
+    // treated as "not yet completed", never defaulted.
+    pChoices: (data.pChoices && typeof data.pChoices === 'object' && !Array.isArray(data.pChoices)) ? data.pChoices : {},
     sensitisers: data.sensitisers || [],
     pictograms: data.pictograms || [],
     bizName: data.bizName || 'Your Brand',
@@ -196,6 +200,9 @@ function normalizeLabel(data){
 //   'euh208-substance' -- EUH208 present but no named sensitising substance
 //                         ("Contains: sensitising substance" placeholder);
 //                         a name must contain at least one letter or digit.
+//   'p-statement'      -- a precautionary statement needing the supplier's
+//                         selection/completion has none (codes listed in
+//                         incompletePStatements; see P_DEFS).
 // Supplier address is NOT checked here (separate audit finding M10).
 function checkRequiredContent(rawData){
   const d = rawData || {};
@@ -209,7 +216,11 @@ function checkRequiredContent(rawData){
     const names = Array.isArray(d.sensitisers) ? d.sensitisers : [];
     if(!names.some(n => /[A-Za-z0-9]/.test(txt(n)))) missing.push('euh208-substance');
   }
-  return {complete: missing.length === 0, missing};
+  // Issue #5: a precautionary statement whose supplier selection/completion
+  // is missing (see P_DEFS) is never finished content.
+  const incompleteP = incompletePStatements(d);
+  if(incompleteP.length) missing.push('p-statement');
+  return {complete: missing.length === 0, missing, incompletePStatements: incompleteP};
 }
 
 // ── LABEL PHYSICAL DIMENSIONS ──────────────────────────────────────────
@@ -321,7 +332,74 @@ function assetMarkup(src, x, y, size, pool, poolKey){
 // rather than just silently unrecognised. Kept in sync with builder.html's
 // own H_LIB copy -- both must change together.
 const H_LIB=[{code:'H225',desc:'Highly flammable liquid and vapour'},{code:'H226',desc:'Flammable liquid and vapour'},{code:'H228',desc:'Flammable solid'},{code:'H301',desc:'Toxic if swallowed'},{code:'H302',desc:'Harmful if swallowed'},{code:'H304',desc:'May be fatal if swallowed and enters airways'},{code:'H311',desc:'Toxic in contact with skin'},{code:'H312',desc:'Harmful in contact with skin'},{code:'H314',desc:'Causes severe skin burns and eye damage'},{code:'H315',desc:'Causes skin irritation'},{code:'H317',desc:'May cause an allergic skin reaction'},{code:'H318',desc:'Causes serious eye damage'},{code:'H319',desc:'Causes serious eye irritation'},{code:'H331',desc:'Toxic if inhaled'},{code:'H332',desc:'Harmful if inhaled'},{code:'H334',desc:'May cause allergy or asthma symptoms if inhaled'},{code:'H335',desc:'May cause respiratory irritation'},{code:'H336',desc:'May cause drowsiness or dizziness'},{code:'H361',desc:'Suspected of damaging fertility or the unborn child'},{code:'H371',desc:'May cause damage to organs'},{code:'H373',desc:'May cause damage to organs through prolonged or repeated exposure'},{code:'H400',desc:'Very toxic to aquatic life'},{code:'H410',desc:'Very toxic to aquatic life with long lasting effects'},{code:'H411',desc:'Toxic to aquatic life with long lasting effects'},{code:'H412',desc:'Harmful to aquatic life with long lasting effects'},{code:'H413',desc:'May cause long lasting harmful effects to aquatic life'},{code:'EUH066',desc:'Repeated exposure may cause skin dryness or cracking'},{code:'EUH208',desc:'Contains sensitiser — may produce an allergic reaction'},{code:'EUH071',desc:'Corrosive to the respiratory tract'},{code:'EUH210',desc:'Safety data sheet available on request'},{code:'H200',desc:'Unstable explosive'},{code:'H201',desc:'Explosive; mass explosion hazard'},{code:'H202',desc:'Explosive; severe projection hazard'},{code:'H203',desc:'Explosive; fire, blast or projection hazard'},{code:'H204',desc:'Fire or projection hazard'},{code:'H205',desc:'May mass explode in fire'},{code:'H223',desc:'Flammable aerosol'},{code:'H224',desc:'Extremely flammable liquid and vapour'},{code:'H240',desc:'Heating may cause an explosion'},{code:'H241',desc:'Heating may cause a fire or explosion'},{code:'H242',desc:'Heating may cause a fire'},{code:'H250',desc:'Catches fire spontaneously if exposed to air'},{code:'H251',desc:'Self-heating; may catch fire'},{code:'H252',desc:'Self-heating in large quantities; may catch fire'},{code:'H260',desc:'In contact with water releases flammable gases which may ignite spontaneously'},{code:'H261',desc:'In contact with water releases flammable gas'},{code:'H270',desc:'May cause or intensify fire; oxidiser'},{code:'H271',desc:'May cause fire or explosion; strong oxidiser'},{code:'H272',desc:'May intensify fire; oxidiser'},{code:'H280',desc:'Contains gas under pressure; may explode if heated'},{code:'H281',desc:'Contains refrigerated gas; may cause cryogenic burns or injury'},{code:'H282',desc:'Extremely flammable chemical under pressure: may explode if heated'},{code:'H283',desc:'Flammable chemical under pressure: may explode if heated'},{code:'H284',desc:'Chemical under pressure: may explode if heated'},{code:'H290',desc:'May be corrosive to metals'},{code:'H300',desc:'Fatal if swallowed'},{code:'H310',desc:'Fatal in contact with skin'},{code:'H330',desc:'Fatal if inhaled'},{code:'H340',desc:'May cause genetic defects'},{code:'H341',desc:'Suspected of causing genetic defects'},{code:'H350',desc:'May cause cancer'},{code:'H351',desc:'Suspected of causing cancer'},{code:'H360',desc:'May damage fertility or the unborn child'},{code:'H362',desc:'May cause harm to breast-fed children'},{code:'H370',desc:'Causes damage to organs'},{code:'H372',desc:'Causes damage to organs through prolonged or repeated exposure'}];
-const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product container or label at hand'},{code:'P102',desc:'Keep out of reach of children'},{code:'P103',desc:'Read label before use'},{code:'P210',desc:'Keep away from heat and ignition sources. No smoking'},{code:'P233',desc:'Keep container tightly closed'},{code:'P260',desc:'Do not breathe vapours or dust'},{code:'P261',desc:'Avoid breathing vapours and dust'},{code:'P271',desc:'Use only outdoors or in a well-ventilated area'},{code:'P273',desc:'Avoid release to the environment'},{code:'P301+P310',desc:'IF SWALLOWED: immediately call a POISON CENTRE or doctor'},{code:'P301+P312',desc:'IF SWALLOWED: call a POISON CENTRE or doctor if unwell'},{code:'P302+P352',desc:'IF ON SKIN: wash with plenty of water'},{code:'P304+P340',desc:'IF INHALED: remove to fresh air and keep comfortable for breathing'},{code:'P305+P351+P338',desc:'IF IN EYES: rinse cautiously with water for several minutes'},{code:'P312',desc:'Call a POISON CENTRE or doctor if you feel unwell'},{code:'P313',desc:'Get medical advice/attention'},{code:'P314',desc:'Get medical advice if you feel unwell'},{code:'P321',desc:'Specific treatment: see label'},{code:'P330',desc:'Rinse mouth'},{code:'P331',desc:'Do NOT induce vomiting'},{code:'P332+P313',desc:'If skin irritation occurs: get medical advice/attention'},{code:'P333+P313',desc:'If skin irritation or rash occurs: get medical advice'},{code:'P337+P313',desc:'If eye irritation persists: get medical advice'},{code:'P370+P378',desc:'In case of fire: use appropriate media for extinction'},{code:'P391',desc:'Collect spillage'},{code:'P403+P233',desc:'Store in a well-ventilated place. Keep container tightly closed'},{code:'P211',desc:'Do not spray on an open flame or other ignition source'},{code:'P501',desc:'Dispose of contents and container in accordance with local regulations'},
+// ── PRECAUTIONARY STATEMENTS: the single verified library (Issue #5, M19/M20) ──
+// ONE definition of every precautionary statement CLPeasy supports, used by
+// the renderer, the Builder (chips, Step 3 checks, Smart Paste) and the
+// Composer. builder.html no longer keeps its own copy: P_LIB below (the
+// existing {code, desc} shape its consumers use) is derived from P_DEFS.
+//
+// Wording and classification: GB Regulation (EC) No 1272/2008 Annex IV --
+// the statement AND its conditions for use -- as checked against the
+// legislation.gov.uk text and supplied by Michaela (Sept 2026). Three kinds:
+//   fixed      -- the wording itself is fixed and printed verbatim. A
+//                 condition that only governs WHEN the supplier selects the
+//                 code (e.g. P233, P273, P403+P233, P332+P313) is not label
+//                 text and is never asked of the maker: the supplier SDS
+//                 decides which codes apply; CLPeasy never adds, removes or
+//                 re-selects codes itself.
+//   selection  -- the supplier selects from Annex IV's own listed options
+//                 (P260/P261 exposure forms; P280 via its existing picker).
+//   completion -- the supplier completes the "…" (source of emergency
+//                 medical advice, cleansing agent, first-aid reference,
+//                 extinguishing media, disposal instruction and, for P501,
+//                 whether it applies to contents, container or both).
+// A selection/completion statement prints ONLY from a valid structured
+// choice stored on the label (data.pChoices[code]; P280 keeps its own
+// p280Items/p280Other). There is deliberately NO CLPeasy default wording for
+// any of them: without a valid choice the statement is left off the drawn
+// label and checkRequiredContent() reports 'p-statement', which blocks every
+// export route and the Composer (the Issue #4 required-content pattern).
+// `template` is the Annex IV wording shown to the maker (chip tooltip and
+// Step 3 completion card); it is never printed.
+const P_EXPOSURE_FORMS=[
+  {key:'dust',   re:/^dusts?$/i},
+  {key:'fume',   re:/^fumes?$/i},
+  {key:'gas',    re:/^gas(?:es)?$/i},
+  {key:'mist',   re:/^mists?$/i},
+  {key:'vapours',re:/^vapou?rs?$/i},
+  {key:'spray',  re:/^sprays?$/i},
+];
+// P501 "contents/container": Annex IV's own wording is printed when both apply.
+const P501_SCOPES={contents:'contents', container:'container', both:'contents/container'};
+const P_DEFS=[
+  {code:'P101',kind:'fixed',text:'If medical advice is needed, have product container or label at hand.'},
+  {code:'P102',kind:'fixed',text:'Keep out of reach of children.'},
+  {code:'P103',kind:'fixed',text:'Read label before use.'},
+  {code:'P210',kind:'fixed',text:'Keep away from heat, hot surfaces, sparks, open flames and other ignition sources. No smoking.'},
+  {code:'P233',kind:'fixed',text:'Keep container tightly closed.'},
+  {code:'P260',kind:'selection',lead:'Do not breathe',template:'Do not breathe dust/fume/gas/mist/vapours/spray.',ask:'Tick the form(s) your supplier SDS lists for P260.'},
+  {code:'P261',kind:'selection',lead:'Avoid breathing',template:'Avoid breathing dust/fume/gas/mist/vapours/spray.',ask:'Tick the form(s) your supplier SDS lists for P261.'},
+  {code:'P271',kind:'fixed',text:'Use only outdoors or in a well-ventilated area.'},
+  {code:'P273',kind:'fixed',text:'Avoid release to the environment.'},
+  {code:'P301+P310',kind:'completion',before:'IF SWALLOWED: Immediately call',after:'',template:'IF SWALLOWED: Immediately call a POISON CENTER/doctor/…',ask:'Enter the source of emergency medical advice exactly as your supplier SDS gives it.'},
+  {code:'P301+P312',kind:'completion',before:'IF SWALLOWED: Call',after:'if you feel unwell',template:'IF SWALLOWED: Call a POISON CENTRE/doctor/… if you feel unwell.',ask:'Enter the source of emergency medical advice exactly as your supplier SDS gives it.'},
+  {code:'P302+P352',kind:'completion',before:'IF ON SKIN: Wash with plenty of',after:'',template:'IF ON SKIN: Wash with plenty of water/…',ask:'Enter "water", or the cleansing agent your supplier SDS specifies.'},
+  {code:'P304+P340',kind:'fixed',text:'IF INHALED: Remove person to fresh air and keep comfortable for breathing.'},
+  {code:'P305+P351+P338',kind:'fixed',text:'IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.'},
+  {code:'P312',kind:'completion',before:'Call',after:'if you feel unwell',template:'Call a POISON CENTRE/doctor/… if you feel unwell.',ask:'Enter the source of emergency medical advice exactly as your supplier SDS gives it.'},
+  {code:'P313',kind:'fixed',text:'Get medical advice/attention.'},
+  {code:'P314',kind:'fixed',text:'Get medical advice/attention if you feel unwell.'},
+  {code:'P321',kind:'completion',before:'Specific treatment (see',after:'on this label)',template:'Specific treatment (see … on this label).',ask:'Enter the reference to the supplemental first aid instruction exactly as your supplier SDS gives it.'},
+  {code:'P330',kind:'fixed',text:'Rinse mouth.'},
+  {code:'P331',kind:'fixed',text:'Do NOT induce vomiting.'},
+  {code:'P332+P313',kind:'fixed',text:'If skin irritation occurs: Get medical advice/attention.'},
+  {code:'P333+P313',kind:'fixed',text:'If skin irritation or rash occurs: Get medical advice/attention.'},
+  {code:'P337+P313',kind:'fixed',text:'If eye irritation persists: Get medical advice/attention.'},
+  {code:'P370+P378',kind:'completion',before:'In case of fire: Use',after:'to extinguish',template:'In case of fire: Use … to extinguish.',ask:'Enter the extinguishing media exactly as your supplier SDS gives it.'},
+  {code:'P391',kind:'fixed',text:'Collect spillage.'},
+  {code:'P403+P233',kind:'fixed',text:'Store in a well-ventilated place. Keep container tightly closed.'},
+  {code:'P211',kind:'fixed',text:'Do not spray on an open flame or other ignition source.'},
+  {code:'P501',kind:'completion',scoped:true,before:'Dispose of',after:'',template:'Dispose of contents/container to …',ask:'Choose contents, container or both, then enter the disposal instruction exactly as your supplier SDS gives it.'},
 // P280 (verified against the retained GB-CLP Regulation (EC) No 1272/2008,
 // Annex IV, Table 6.2, legislation.gov.uk, current in-force UK text) is a
 // SELECTABLE statement, not one fixed sentence: "Wear protective
@@ -337,7 +415,154 @@ const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product contai
 // builder.html's openP280Modal()) and substituted in during P-text
 // assembly, the same way every other P-code's fixed desc is used, except
 // resolved dynamically per label instead of being a constant.
-{code:'P280',desc:'Wear the applicable protective equipment (select which items apply when adding this code)'}];
+{code:'P280',kind:'selection',picker:'p280',desc:'Wear the applicable protective equipment (select which items apply when adding this code)'}];
+const P_DEFS_BY_CODE=Object.fromEntries(P_DEFS.map(d=>[d.code,d]));
+// Existing {code, desc} consumers (Builder chips/tooltips, unknown-code
+// checks, tests). desc = the fixed wording (without its final full stop, as
+// before) or, for selection/completion, the Annex IV template -- never a
+// completed CLPeasy default.
+const P_LIB=P_DEFS.map(d=>({code:d.code, desc:d.desc || (d.kind==='fixed' ? d.text.replace(/\.$/,'') : d.template)}));
+// Needs a structured supplier choice in data.pChoices (P280 keeps its own picker).
+function pStatementNeedsChoice(code){
+  const d=P_DEFS_BY_CODE[code];
+  return !!d && d.kind!=='fixed' && !d.picker;
+}
+// Combine adjacent codes into a supported combined statement ("P337, P313"
+// -> "P337+P313"), exactly as the renderer always has.
+function normalisePCodes(pStatements){
+  const raw=String(pStatements||'').split(',').map(p=>p.trim()).filter(Boolean);
+  const out=[];
+  for(let i=0;i<raw.length;i++){
+    const comb=i<raw.length-1?raw[i]+'+'+raw[i+1]:null;
+    if(comb&&P_DEFS_BY_CODE[comb]){out.push(comb);i++;}
+    else out.push(raw[i]);
+  }
+  return out;
+}
+// A supplier-completed "…": one clause, no ellipsis, no line breaks.
+function cleanPCompletion(v, def){
+  let t=String(v==null?'':v).replace(/\s+/g,' ').trim().replace(/[\s.;,]+$/,'');
+  if(def && def.scoped) t=t.replace(/^to\s+/i,'');
+  if(!t || t.length>150 || !/[A-Za-z]/.test(t) || /…|\.\.\./.test(t) || /\.\s+\S/.test(t)) return null;
+  return t;
+}
+// The printed wording for a selection/completion statement from its stored
+// choice, or null when the choice is missing/invalid (never a default).
+function resolvePChoice(code, choice){
+  const d=P_DEFS_BY_CODE[code];
+  if(!d || !pStatementNeedsChoice(code)) return null;
+  const c=(choice && typeof choice==='object') ? choice : null;
+  if(!c) return null;
+  if(d.kind==='selection'){
+    const picked=Array.isArray(c.forms)?c.forms:[];
+    const forms=P_EXPOSURE_FORMS.filter(f=>picked.includes(f.key)).map(f=>f.key);
+    return forms.length ? d.lead+' '+forms.join('/')+'.' : null;
+  }
+  const t=cleanPCompletion(c.text, d);
+  if(!t) return null;
+  if(d.scoped){
+    const scope=P501_SCOPES[c.scope];
+    return scope ? d.before+' '+scope+' to '+t+'.' : null;
+  }
+  return d.before+' '+t+(d.after?' '+d.after:'')+'.';
+}
+// Codes on the label whose supplier-specific wording is not yet complete.
+function incompletePStatements(data){
+  const d=data||{};
+  const choices=(d.pChoices && typeof d.pChoices==='object') ? d.pChoices : {};
+  const out=[];
+  normalisePCodes(d.pStatements).forEach(code=>{
+    if(pStatementNeedsChoice(code) && !resolvePChoice(code, choices[code]) && !out.includes(code)) out.push(code);
+  });
+  return out;
+}
+
+// ── Smart Paste: supplier wording for selection/completion statements ──
+// Raw SDS text is NEVER printed. For each selection/completion code found in
+// the pasted Section 2.2, the text following that code is checked against
+// the Annex IV template; only a clean, unambiguous match becomes a
+// structured choice. Anything else is reported (reason per code) and the
+// maker completes it from their SDS -- no guess, no default.
+const P_CODE_TOKEN_RE=/\bP\d{3}(?:\s*[\/+]\s*P?\d{3})*\b/g;
+const P_SEGMENT_STOP_RE=/\bEUH\s*\d{3}\b|\bH\d{3}[A-Za-z]{0,2}\b|\b(?:Supplemental|Signal word|Hazard statements?|Precautionary statements?|Hazard pictograms?|Pictograms?|SECTION\s*\d|Other hazards)\b/i;
+// Page furniture / document metadata / company details that must never
+// become statement text.
+const P_FURNITURE_RE=/\bpage\s*\d|\bissue\s*date\b|\brevision\b|\bversion\b|\brev\.?\s*\d|\b(?:ltd|limited|plc|llc|inc|gmbh)\b|\b[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}\b|\btel(?:ephone)?\b|www\.|https?:|@|\b\d{1,2}[\/.]\d{1,2}[\/.]\d{2,4}\b|\bsection\s*\d/i;
+function _pEsc(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/:\s/g,':\\s*').replace(/\s+/g,'\\s+');}
+function _parseExposureForms(list){
+  const parts=list.split(/\s*(?:\/|,|&|\bor\b|\band\b)\s*/i).filter(Boolean);
+  if(!parts.length) return null;
+  const keys=[];
+  for(const part of parts){
+    const f=P_EXPOSURE_FORMS.find(x=>x.re.test(part));
+    if(!f) return null;
+    if(!keys.includes(f.key)) keys.push(f.key);
+  }
+  return P_EXPOSURE_FORMS.map(f=>f.key).filter(k=>keys.includes(k)); // Annex IV order
+}
+function _matchPTemplate(code, sentence){
+  const d=P_DEFS_BY_CODE[code];
+  const s=sentence.replace(/\s+/g,' ').trim();
+  if(d.kind==='selection'){
+    const m=s.match(new RegExp('^'+_pEsc(d.lead)+'\\s+(.+?)\\.?$','i'));
+    const forms=m && _parseExposureForms(m[1]);
+    return forms ? {forms} : null;
+  }
+  if(d.scoped){
+    const m=s.match(/^Dispose\s+of\s+(contents\s*\/\s*container|contents\s+and\s+container|contents|container)\s+to\s+(.+?)\.?$/i);
+    if(!m) return null;
+    const w=m[1].toLowerCase().replace(/\s+/g,' ');
+    const scope=(w==='contents'||w==='container')?w:'both';
+    const text=cleanPCompletion(m[2], d);
+    return text ? {scope, text} : null;
+  }
+  const m=s.match(new RegExp('^'+_pEsc(d.before)+'\\s+(.+?)'+(d.after?'\\s+'+_pEsc(d.after):'')+'\\.?$','i'));
+  const text=m && cleanPCompletion(m[1], d);
+  return text ? {text} : null;
+}
+// The statement sentence after one code occurrence: up to the first full stop
+// that ends a line (or the segment). Lines after it must be recognisable page
+// furniture (a page break between statements) -- anything else is ambiguous.
+function _pSegmentSentence(seg){
+  const stop=seg.search(P_SEGMENT_STOP_RE);
+  if(stop>=0) seg=seg.slice(0,stop);
+  seg=seg.replace(/^[\s,:;\-–—]+/,'');
+  if(!seg.trim()) return {empty:true};
+  const endRe=/\.[ \t]*(?:\r?\n|$)/g;
+  const m=endRe.exec(seg);
+  const sentence=m ? seg.slice(0,m.index+1) : seg;
+  const rest=m ? seg.slice(m.index+m[0].length) : '';
+  if(/-[ \t]*\r?\n/.test(sentence)) return {reason:'ambiguous'};        // hyphenated line break: can't tell a split word from a real hyphen
+  if(P_FURNITURE_RE.test(sentence)) return {reason:'contaminated'};
+  const restLines=rest.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  if(restLines.some(l=>!P_FURNITURE_RE.test(l))) return {reason:'ambiguous'};
+  return {sentence};
+}
+function extractPChoicesFromText(text, codes){
+  const src=String(text||'');
+  const wanted=(codes||[]).filter(pStatementNeedsChoice);
+  const hits=[...src.matchAll(P_CODE_TOKEN_RE)].map(m=>({code:(m[0].match(/\d{3}/g)||[]).map(n=>'P'+n).join('+'), start:m.index, end:m.index+m[0].length}));
+  const choices={}, unresolved={};
+  wanted.forEach(code=>{
+    const found=[];
+    let reason='not-found';
+    hits.forEach((h,i)=>{
+      if(h.code!==code) return;
+      const seg=src.slice(h.end, i+1<hits.length?hits[i+1].start:src.length);
+      const r=_pSegmentSentence(seg);
+      if(r.empty) return;                                   // a bare code mention (e.g. a code list)
+      if(r.reason){ reason=r.reason; found.push(null); return; }
+      const c=_matchPTemplate(code, r.sentence);
+      if(!c){ reason='not-matching'; found.push(null); return; }
+      found.push(c);
+    });
+    const valid=found.filter(Boolean);
+    const same=valid.length && valid.every(c=>JSON.stringify(c)===JSON.stringify(valid[0]));
+    if(found.length && valid.length===found.length && same){ choices[code]=Object.assign({}, valid[0], {source:'sds'}); }
+    else unresolved[code]=(valid.length && !same) ? 'ambiguous' : reason;
+  });
+  return {choices, unresolved};
+}
 
 // ============================================================
 // Active regulatory profile and confirmed non-GB-CLP hazard codes
@@ -1705,15 +1930,8 @@ function renderLabel(rawData, opts){
   // compliance pattern used elsewhere on this page.
   const _unrecognizedCodes = [];
   const hText   = hCodes.map(c=>{const e=H_LIB.find(x=>x.code===c);if(!e)_unrecognizedCodes.push(c);return e?e.desc:'';}).filter(Boolean).join('. ')+(hCodes.filter(c=>H_LIB.find(x=>x.code===c)).length>0?'.':'') || '';
-  // Normalise P codes
-  const _pNorm=[];
-  const _pRaw=pCodes;
-  for(let _i=0;_i<_pRaw.length;_i++){
-    const _c=_pRaw[_i];
-    const _comb=_i<_pRaw.length-1?_c+'+'+_pRaw[_i+1]:null;
-    if(_comb&&P_LIB.find(x=>x.code===_comb)){_pNorm.push(_comb);_i++;}
-    else _pNorm.push(_c);
-  }
+  // Normalise P codes (adjacent codes combine into a supported combined statement)
+  const _pNorm=normalisePCodes(pCodes.join(','));
   // P280 is resolved to its per-label selected wording (buildP280Wording),
   // not P_LIB's fixed desc -- a label carrying P280 with no valid selection
   // (never configured, or saved before this feature existed) resolves to
@@ -1727,12 +1945,18 @@ function renderLabel(rawData, opts){
       if(!w)_unrecognizedCodes.push(c);
       return w;
     }
-    const e=P_LIB.find(x=>x.code===c);
-    if(!e)_unrecognizedCodes.push(c);
-    return e?e.desc:null;
+    // Issue #5: fixed statements print their verified wording; a
+    // selection/completion statement prints only from the label's own valid
+    // structured choice (never a CLPeasy default). An incomplete one is left
+    // off the drawn label -- checkRequiredContent() reports it ('p-statement')
+    // and every export route blocks, like the Issue #4 required content.
+    const d=P_DEFS_BY_CODE[c];
+    if(!d){_unrecognizedCodes.push(c);return null;}
+    if(d.kind==='fixed') return d.text;
+    return resolvePChoice(c, data.pChoices && data.pChoices[c]);
   });
-  const _pFound = _pResolved.filter(Boolean);
-  const pText = _pFound.join('. ')+(_pFound.length>0?'.':'');
+  const _pFound = _pResolved.filter(Boolean).map(t=>/[.!?]$/.test(t)?t:t+'.');
+  const pText = _pFound.join(' ');
   // U8 fix (19 Aug 2026): sensitisers were previously hard-capped to the first
   // 3 named substances (+ "..."), silently omitting any beyond that -- for a
   // fragrance with 4+ sensitisers above threshold, the printed label would
@@ -2780,7 +3004,7 @@ function isCustomSizeBelowSupportedMinimum(shape, w, h){
 }
 
   const LabelRenderer = {
-    renderLabel, normalizeLabel, checkRequiredContent, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, GB_UNSUPPORTED_CODES, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
+    renderLabel, normalizeLabel, checkRequiredContent, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, P_DEFS, P_EXPOSURE_FORMS, P501_SCOPES, pStatementNeedsChoice, normalisePCodes, resolvePChoice, incompletePStatements, extractPChoicesFromText, GB_UNSUPPORTED_CODES, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
     // GHS pictogram geometry -- exposed so tests/consumers measuring
     // compliance never have to re-derive or hardcode the sqrt(2)
     // square<->bounding-box relationship themselves.

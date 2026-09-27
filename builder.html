@@ -685,6 +685,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .p280-other-input{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;font-size:13px;font-family:'DM Sans',sans-serif;box-sizing:border-box;}
 .p280-other-input:focus{outline:none;border-color:var(--teal);}
 .p280-modal-error{font-size:12px;color:#DC2626;margin-top:10px;display:none;}
+.p-choice-intro{font-size:13px;line-height:1.5;color:var(--text);font-family:'DM Sans',sans-serif;margin:4px 0 8px;}
+.p-choice-card{border:1.5px solid var(--border);border-radius:10px;padding:12px;margin:0 0 8px;font-family:'DM Sans',sans-serif;}
+.p-choice-card.incomplete{border-color:#F59E0B;background:#FFFBEB;}
+.p-choice-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;font-size:13px;margin-bottom:4px;}
+.p-choice-status{font-size:12px;font-weight:700;color:var(--teal-dark);}
+.p-choice-card.incomplete .p-choice-status{color:#B45309;}
+.p-choice-template,.p-choice-hint,.p-choice-reason,.p-choice-preview{font-size:12px;color:var(--muted);line-height:1.5;margin-top:6px;}
+.p-choice-reason{color:#B45309;}
+.p-choice-preview em{color:var(--text);font-style:normal;font-weight:600;}
+.p-choice-opts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.p-choice-opts .p280-item-row{padding:7px 10px;}
+.p-choice-sentence{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:13px;margin-top:8px;}
+.p-choice-sentence input.p280-other-input{flex:1 1 160px;min-width:0;width:auto;}
 .p280-confirm{width:100%;background:var(--teal);color:white;border:none;padding:10px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:14px;margin-bottom:8px;}
 .p280-confirm:hover{background:var(--teal-dark);}
 
@@ -1221,6 +1234,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <span class="library-toggle" onclick="toggleLib('p-library',this)">▼ Show P statement library</span>
     <div id="p-library" style="display:none;margin-bottom:8px;"><div class="chip-library" id="p-chips"></div></div>
     <div class="form-group"><input type="text" id="p-statements" placeholder="Extracted from Smart Paste" readonly style="background:#F8FAFC;color:#64748B;cursor:not-allowed;"></div>
+    <div id="p-choices-panel" style="display:none;margin-bottom:12px;"></div>
     <div class="sdiv">EUH208 Sensitisers <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--muted)">— CLP/REACH skin sensitisers only</span></div>
     <span class="library-toggle" onclick="toggleLib('s-library',this)">▼ Show sensitiser library</span>
     <div id="s-library" style="display:none;margin-bottom:10px;"><div class="sensitiser-grid" id="sensitiser-chips"></div></div>
@@ -1567,25 +1581,24 @@ function resolveGbClpSignalWord(codes, suppliedSignal){
   if(ambiguous)return 'Warning';
   return '';
 }
-const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product container or label at hand'},{code:'P102',desc:'Keep out of reach of children'},{code:'P103',desc:'Read label before use'},{code:'P210',desc:'Keep away from heat and ignition sources. No smoking'},{code:'P233',desc:'Keep container tightly closed'},{code:'P260',desc:'Do not breathe vapours or dust'},{code:'P261',desc:'Avoid breathing vapours and dust'},{code:'P271',desc:'Use only outdoors or in a well-ventilated area'},{code:'P273',desc:'Avoid release to the environment'},{code:'P301+P310',desc:'IF SWALLOWED: immediately call a POISON CENTRE or doctor'},{code:'P301+P312',desc:'IF SWALLOWED: call a POISON CENTRE or doctor if unwell'},{code:'P302+P352',desc:'IF ON SKIN: wash with plenty of water'},{code:'P304+P340',desc:'IF INHALED: remove to fresh air and keep comfortable for breathing'},{code:'P305+P351+P338',desc:'IF IN EYES: rinse cautiously with water for several minutes'},{code:'P312',desc:'Call a POISON CENTRE or doctor if you feel unwell'},{code:'P313',desc:'Get medical advice/attention'},{code:'P314',desc:'Get medical advice if you feel unwell'},{code:'P321',desc:'Specific treatment: see label'},{code:'P330',desc:'Rinse mouth'},{code:'P331',desc:'Do NOT induce vomiting'},{code:'P332+P313',desc:'If skin irritation occurs: get medical advice/attention'},{code:'P333+P313',desc:'If skin irritation or rash occurs: get medical advice'},{code:'P337+P313',desc:'If eye irritation persists: get medical advice'},{code:'P370+P378',desc:'In case of fire: use appropriate media for extinction'},{code:'P391',desc:'Collect spillage'},{code:'P403+P233',desc:'Store in a well-ventilated place. Keep container tightly closed'},{code:'P211',desc:'Do not spray on an open flame or other ignition source'},{code:'P501',desc:'Dispose of contents and container in accordance with local regulations'},
-// P280 (verified against the retained GB-CLP Regulation (EC) No 1272/2008,
-// Annex IV, Table 6.2, legislation.gov.uk, current in-force UK text) is a
-// SELECTABLE statement, not one fixed sentence -- only the items that
-// actually apply to the finished product are printed, chosen via the P280
-// picker (openP280Modal()). `desc` here is deliberately a neutral
-// placeholder, shown only as the chip tooltip -- it is NEVER what gets
-// printed on a label; the real per-label wording comes from
-// LabelRenderer.buildP280Wording(). This entry MUST stay byte-identical to
-// label-render.js's own P_LIB entry for P280 (see
-// tests/p280-precautionary-statement.js's drift-check) -- the two are the
-// only P_LIB definitions in the app; this is not a third copy.
-{code:'P280',desc:'Wear the applicable protective equipment (select which items apply when adding this code)'}];
+// Issue #5 (M19/M20): the ONE precautionary-statement library lives in
+// label-render.js (P_DEFS -- verified GB Annex IV wording plus which
+// statements need the supplier's selection/completion). This page no longer
+// keeps an independent copy; P_LIB keeps its existing {code, desc} shape for
+// the chips, tooltips and unknown-code checks below.
+const P_LIB=LabelRenderer.P_LIB;
 // ── STATE ─────────────────────────────────────────────────────
 const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',sdsSignal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,hazardFSOverride:null,scentFSOverride:null,bizNameFSOverride:null,hazardYOffset:null,typeFSOverride:null,sigFSOverride:null,
   // P280's own selected protection items (see openP280Modal()/buildP280Wording
   // in label-render.js). p280Items: subset of LabelRenderer.P280_ITEMS keys;
   // p280Other: optional free-text extra item. Empty = no valid selection yet.
-  p280Items:[],p280Other:''};
+  p280Items:[],p280Other:'',
+  // Issue #5: structured supplier selections/completions for P-statements
+  // that need them (see LabelRenderer.P_DEFS), keyed by code. pExtract holds
+  // Smart Paste's per-code reason when it could not safely confirm the
+  // supplier wording (not saved).
+  pChoices:{},pExtract:{}};
+let _pChoicesRev=0; // bumped whenever pChoices are replaced wholesale (extract/load/clear) so the Step 3 cards re-render
 // ── PRODUCT TYPE GUIDANCE ─────────────────────────────────────
 const FRAG_LOAD_TIPS={
   'Scented Candle':'Recommended: 6–10%. Your CLP must be for the actual % used — you can overestimate but never underestimate.',
@@ -2984,7 +2997,10 @@ document.addEventListener('click',function(e){
 // existed" (see normalizeLabel's own doc comment). Existing saved labels
 // are never rewritten to this version automatically; they keep loading,
 // editing, saving and printing correctly via normalizeLabel's defaults.
-const LABEL_SCHEMA_VERSION=1;
+// v2 (Issue #5): adds pChoices (structured supplier P-statement
+// selections/completions). A v1 record has none, which means "not yet
+// completed" -- never a default; the record is never rewritten.
+const LABEL_SCHEMA_VERSION=2;
 
 // Checkpoint B, requirement 3: which saved record (if any) the wizard is
 // currently editing. Set when an existing label is opened (loadLabelRecord
@@ -3072,6 +3088,7 @@ async function saveLabel(){
     pStatements:S.pStatements||'',textColour:S.textColour||'dark',showBorder:S.showBorder!==false,
     labelLang:document.getElementById('label-lang')?.value||'en',
     p280Items:Array.isArray(S.p280Items)?[...S.p280Items]:[],p280Other:S.p280Other||'',
+    pChoices:JSON.parse(JSON.stringify(S.pChoices||{})),
     hazardFSOverride:S.hazardFSOverride,scentFSOverride:S.scentFSOverride,
     bizNameFSOverride:S.bizNameFSOverride,hazardYOffset:S.hazardYOffset,
     typeFSOverride:S.typeFSOverride,sigFSOverride:S.sigFSOverride,
@@ -3168,6 +3185,11 @@ function loadLabelRecord(e){
   // rather than silently showing every protection item.
   S.p280Items=Array.isArray(e.p280Items)?[...e.p280Items]:[];
   S.p280Other=e.p280Other||'';
+  // Issue #5: labels saved before pChoices existed (schema v1) have none --
+  // their supplier-specific P-statements load as not yet completed (never
+  // defaulted); the saved record itself is not changed.
+  S.pChoices=(e.pChoices&&typeof e.pChoices==='object'&&!Array.isArray(e.pChoices))?JSON.parse(JSON.stringify(e.pChoices)):{};
+  S.pExtract={};_pChoicesRev++;
   S.bizName=e.bizName||'';S.bizAddress=e.bizAddress||'';S.bizPhone=e.bizPhone||'';
   S.bizWebsite=e.bizWebsite||'';S.netWeight=e.netWeight||'';S.fragLoad=e.fragLoad||'';S.burnTime=e.burnTime||'';S.batchNum=e.batchNum||'';
   S.supplier=e.supplier||'';S.hideEN15494=!!e.hideEN15494;
@@ -3639,19 +3661,25 @@ const REQUIRED_CONTENT_MESSAGES={
   'business-name':'Add your business name (Step 4).',
   'euh208-substance':'EUH208 needs the named sensitising substance(s). Check your current supplier SDS and paste the complete relevant EUH208/Contains information.',
 };
+// One line per missing item; 'p-statement' names the incomplete codes (Issue #5).
+function _requiredContentLine(m,rc){
+  return m==='p-statement'?pStatementIncompleteMessage(rc.incompletePStatements||[]):REQUIRED_CONTENT_MESSAGES[m];
+}
 function _requiredContentCheck(){
   const val=id=>document.getElementById(id)?.value||'';
   return LabelRenderer.checkRequiredContent({
     scentName:val('scent-name'), bizName:val('biz-name'),
     hStatements:document.getElementById('h-statements')?val('h-statements'):S.hStatements,
     sensitisers:S.sensitisers,
+    pStatements:document.getElementById('p-statements')?val('p-statements'):S.pStatements,
+    pChoices:S.pChoices,
   });
 }
 function _downloadBlockedMessage(){
   const rc=_requiredContentCheck();
   const base='Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.';
   if(rc.complete) return base;
-  const content="This label is missing required content, so it can't be downloaded yet:\n\n"+rc.missing.map(m=>'• '+REQUIRED_CONTENT_MESSAGES[m]).join('\n');
+  const content="This label is missing required content, so it can't be downloaded yet:\n\n"+rc.missing.map(m=>'• '+_requiredContentLine(m,rc)).join('\n');
   // Unconfirmed or physically blocked: keep the existing message first, then name the missing content.
   const unconfirmedOrBlocked=!document.getElementById('verify-checkbox')?.checked || !!window._labelBlockDownload;
   return unconfirmedOrBlocked ? base+'\n\n'+content : content;
@@ -3666,7 +3694,7 @@ function toggleDownload(){
   const contentWarn=document.getElementById('content-warn-step5');
   if(contentWarn){
     contentWarn.style.display=rc.complete?'none':'block';
-    contentWarn.innerHTML=rc.complete?'':'<strong>⚠️ Download unavailable — required label content is missing</strong><br><br>'+rc.missing.map(m=>escapeBuilderText(REQUIRED_CONTENT_MESSAGES[m])).join('<br>');
+    contentWarn.innerHTML=rc.complete?'':'<strong>⚠️ Download unavailable — required label content is missing</strong><br><br>'+rc.missing.map(m=>escapeBuilderText(_requiredContentLine(m,rc))).join('<br>');
   }
   // Hotfix: the live preview panel has its own PNG/SVG/PDF row
   // (#preview-dl-row) calling the exact same download functions -- it was
@@ -3748,6 +3776,89 @@ function confirmP280Modal(){
   updateLabel();
 }
 document.addEventListener('click',function(e){if(e.target&&e.target.id==='p280Modal')closeP280Modal();});
+// ── Issue #5: supplier-specific precautionary statements (Step 3) ──────
+// One card per statement on the label that needs the supplier's selection
+// or completion (LabelRenderer.P_DEFS). Nothing is pre-filled with a
+// CLPeasy answer: a card is complete only from a Smart Paste match against
+// the Annex IV template, or from what the maker enters/ticks from their SDS.
+// Built on the P280 picker's styles. Re-rendered only when the set of codes
+// changes or pChoices are replaced (extract/load/clear), so typing never
+// loses focus.
+const P_EXTRACT_REASONS={
+  'not-found':"Smart Paste couldn't find this statement's wording next to its code in your pasted text.",
+  'not-matching':"The wording pasted for this statement didn't match the GB statement it belongs to, so it wasn't used.",
+  'contaminated':'The text next to this code included page, document or company details, so it wasn\'t used.',
+  'ambiguous':"The wording for this statement couldn't be read unambiguously from your pasted text, so it wasn't used.",
+};
+function _pChoiceCodes(){
+  return LabelRenderer.normalisePCodes(S.pStatements).filter((c,i,a)=>LabelRenderer.pStatementNeedsChoice(c)&&a.indexOf(c)===i);
+}
+function _pChoiceCardHtml(code){
+  const d=LabelRenderer.P_DEFS.find(x=>x.code===code);
+  const c=(S.pChoices||{})[code]||{};
+  const e=escapeBuilderText;
+  let body='';
+  if(d.kind==='selection'){
+    body=`<div class="p-choice-opts">${LabelRenderer.P_EXPOSURE_FORMS.map(f=>`<label class="p280-item-row"><input type="checkbox" data-role="form" value="${e(f.key)}" ${(c.forms||[]).includes(f.key)?'checked':''}>${e(f.key)}</label>`).join('')}</div>`;
+  } else if(d.scoped){
+    const scopes=[['contents','Contents'],['container','Container'],['both','Both (contents/container)']];
+    body=`<div class="p-choice-opts">${scopes.map(([k,l])=>`<label class="p280-item-row"><input type="radio" name="p-choice-scope-${e(code)}" data-role="scope" value="${k}" ${c.scope===k?'checked':''}>${e(l)}</label>`).join('')}</div>
+      <div class="p-choice-sentence"><span>Dispose of … to</span><input type="text" class="p280-other-input" data-role="text" maxlength="150" value="${e(c.text||'')}" placeholder="as written in your SDS"><span>.</span></div>`;
+  } else {
+    body=`<div class="p-choice-sentence"><span>${e(d.before)}</span><input type="text" class="p280-other-input" data-role="text" maxlength="150" value="${e(c.text||'')}" placeholder="as written in your SDS"><span>${e(d.after?d.after+'.':'.')}</span></div>`;
+  }
+  const reason=(S.pExtract||{})[code];
+  return `<div class="p-choice-card" data-code="${e(code)}">
+    <div class="p-choice-head"><strong>${e(code)}</strong><span class="p-choice-status"></span></div>
+    <div class="p-choice-template">GB wording: ${e(d.template)}</div>
+    ${body}
+    <div class="p-choice-hint">${e(d.ask)} Copy it from the ${e(code)} statement in Section 2.2 of your current supplier SDS.</div>
+    ${reason&&P_EXTRACT_REASONS[reason]?`<div class="p-choice-reason">${e(P_EXTRACT_REASONS[reason])}</div>`:''}
+    <div class="p-choice-preview"></div>
+  </div>`;
+}
+function _refreshPChoiceCard(card){
+  const code=card.dataset.code;
+  const c=(S.pChoices||{})[code];
+  const printed=LabelRenderer.resolvePChoice(code,c);
+  card.classList.toggle('incomplete',!printed);
+  card.querySelector('.p-choice-status').textContent=printed?(c.source==='sds'?'✓ From your pasted SDS — check it matches':'✓ Complete'):'⚠ Needs your supplier\'s wording';
+  card.querySelector('.p-choice-preview').innerHTML=printed?'Prints as: <em>'+escapeBuilderText(printed)+'</em>':'Not printed until completed — the label can\'t be downloaded until then.';
+}
+function renderPChoicesPanel(){
+  const panel=document.getElementById('p-choices-panel');
+  if(!panel)return;
+  const codes=_pChoiceCodes();
+  const key=codes.join(',')+'|'+_pChoicesRev;
+  if(panel.dataset.key===key)return;
+  panel.dataset.key=key;
+  if(!codes.length){panel.innerHTML='';panel.style.display='none';return;}
+  panel.innerHTML=`<div class="p-choice-intro"><strong>Supplier wording needed.</strong> ${codes.length===1?'This precautionary statement needs':'These precautionary statements need'} wording specific to your product, taken from Section 2.2 of your current supplier SDS. CLPeasy doesn't fill ${codes.length===1?'it':'them'} in for you.</div>`+codes.map(_pChoiceCardHtml).join('');
+  panel.style.display='block';
+  panel.querySelectorAll('.p-choice-card').forEach(_refreshPChoiceCard);
+}
+function _onPChoiceEdit(ev){
+  const card=ev.target.closest&&ev.target.closest('.p-choice-card');
+  if(!card)return;
+  const code=card.dataset.code;
+  const d=LabelRenderer.P_DEFS.find(x=>x.code===code);
+  const next={source:'maker'};
+  if(d.kind==='selection'){
+    next.forms=[...card.querySelectorAll('input[data-role="form"]:checked')].map(i=>i.value);
+  } else {
+    next.text=card.querySelector('input[data-role="text"]')?.value||'';
+    if(d.scoped)next.scope=card.querySelector('input[data-role="scope"]:checked')?.value||'';
+  }
+  S.pChoices=Object.assign({},S.pChoices,{[code]:next});
+  _refreshPChoiceCard(card);
+  updateLabel();
+}
+document.addEventListener('input',_onPChoiceEdit);
+document.addEventListener('change',_onPChoiceEdit);
+// Step 3 / download message naming the incomplete statement(s).
+function pStatementIncompleteMessage(codes){
+  return `Complete the supplier wording for ${codes.join(', ')} (Step 3). Copy it from the matching precautionary statement in Section 2.2 of your current supplier SDS.`;
+}
 
 function renderTags(){
   const tags=document.getElementById('allergen-tags');
@@ -3880,6 +3991,14 @@ function extractSDS(){
     const code=chip.dataset.code||chip.textContent.trim();
     if(pRaw.includes(code)){chip.classList.add('selected');}else{chip.classList.remove('selected');}
   });
+  // Issue #5: supplier wording for statements that need the supplier's
+  // selection/completion. Only a clean match against the Annex IV template
+  // becomes a structured choice; raw pasted text is never printed. A new
+  // paste replaces any earlier choices (they belonged to the previous SDS).
+  {
+    const _px=LabelRenderer.extractPChoicesFromText(text, LabelRenderer.normalisePCodes(S.pStatements));
+    S.pChoices=_px.choices; S.pExtract=_px.unresolved; _pChoicesRev++;
+  }
 
   // ── SIGNAL WORD ───────────────────────────────────────────────────────────
   // Read the supplier's explicit Section 2.2 value for the handful of
@@ -3971,10 +4090,10 @@ function extractSDS(){
   // ── LOCK & FINISH ─────────────────────────────────────────────────────────
   updateLabel();
   lockHazardFields(true);
-  showExtractToast(allH.length,pRaw.length,S.sensitisers.length);
+  showExtractToast(allH.length,pRaw.length,S.sensitisers.length,Object.keys(S.pExtract||{}).length);
 }
 
-function showExtractToast(hCount, pCount, sensCount){
+function showExtractToast(hCount, pCount, sensCount, pNeedCount){
   // Remove any existing toast
   const existing=document.getElementById('extract-toast');
   if(existing)existing.remove();
@@ -3986,6 +4105,7 @@ function showExtractToast(hCount, pCount, sensCount){
     <div class="extract-toast-row">📋 ${hCount} H/EUH statement${hCount!==1?'s':''}</div>
     <div class="extract-toast-row">⚠️ ${pCount} P statement${pCount!==1?'s':''}</div>
     <div class="extract-toast-row">🧪 ${sensCount} CLP sensitiser${sensCount!==1?'s':''}</div>
+    ${pNeedCount?`<div class="extract-toast-row">✍️ ${pNeedCount} P statement${pNeedCount!==1?'s need':' needs'} your supplier's wording — see Step 3</div>`:''}
     <div class="extract-toast-warn">Always verify against your SDS before printing</div>
   `;
   document.body.appendChild(toast);
@@ -4182,6 +4302,14 @@ function canLeaveApprovedBuilderStep(step){
     // "Contains: sensitising substance" placeholder is never finished content.
     if(LabelRenderer.checkRequiredContent({hStatements:S.hStatements,sensitisers:S.sensitisers,scentName:'-',bizName:'-'}).missing.includes('euh208-substance')){
       alert(REQUIRED_CONTENT_MESSAGES['euh208-substance']);
+      return false;
+    }
+    // Issue #5: every precautionary statement needing the supplier's
+    // selection/completion must have it -- CLPeasy never prints a default.
+    const _incompleteP=LabelRenderer.incompletePStatements({pStatements:S.pStatements,pChoices:S.pChoices});
+    if(_incompleteP.length){
+      alert(pStatementIncompleteMessage(_incompleteP));
+      const _pp=document.getElementById('p-choices-panel');if(_pp&&_pp.scrollIntoView)_pp.scrollIntoView({block:'center'});
       return false;
     }
   }
@@ -4572,6 +4700,7 @@ function clearHazardData(){
   // leaving stale precautionary-statement wording selections behind after
   // a Clear even though P statements themselves were reset.
   S.p280Items=[];S.p280Other='';
+  S.pChoices={};S.pExtract={};_pChoicesRev++;
   // Clear pictograms
   S.pictograms=[];
   document.querySelectorAll('.picto-btn').forEach(c=>c.classList.remove('selected'));
@@ -4752,7 +4881,7 @@ function buildSVG(forExport=false){
     sensitisers:S.sensitisers, pictograms:S.pictograms,
     textColour:S.textColour, showBorder:S.showBorder,
     hideEN15494:S.hideEN15494, labelLang:S.labelLang,
-    p280Items:S.p280Items, p280Other:S.p280Other,
+    p280Items:S.p280Items, p280Other:S.p280Other, pChoices:S.pChoices,
   };
   // Exposed so updateLabel()'s fail-closed block message can look up
   // "what size WOULD fit this exact content" via LabelRenderer's own
@@ -4864,6 +4993,7 @@ function nudgeBizNameFS(delta){
 function resetBizNameFS(){S.bizNameFSOverride=null;updateLabel();}
 function updateLabel(){
   readForm();
+  renderPChoicesPanel();
   // Shared GB-CLP resolver: Smart Paste and manual chip changes must never
   // drift into different signal-word rules.
   const _autoH=(S.hStatements||'').split(',').map(h=>h.trim()).filter(Boolean);

@@ -3,13 +3,14 @@
 // No production/customer data. Covers Builder Label Technical Audit findings
 // M09 (blank business name printed as "Your Brand") and M31 (EUH208 without a
 // named substance printed as "Contains: sensitising substance").
+const { FIXTURE_P_CHOICES } = require('./p-statement-choices'); // Issue #5: supplier P completions (test data)
 const crypto = require('crypto');
 const { JSDOM } = require('jsdom');
 
 const complete = {
   scentName: 'Lavender Fields', productType: 'Scented Candle', bizName: 'Crafty Mouse Gifts',
   bizAddress: '12 Mill Lane', bizPhone: '01234 567890', signal: 'Warning',
-  hStatements: 'H317, H412, EUH208', pStatements: 'P102, P501', sensitisers: ['Linalool', 'Citral'],
+  hStatements: 'H317, H412, EUH208', pStatements: 'P102, P501', pChoices: FIXTURE_P_CHOICES, sensitisers: ['Linalool', 'Citral'],
   pictograms: ['exclamation'], textColour: 'dark', showBorder: true,
 };
 const without = (o, key) => { const c = Object.assign({}, o); delete c[key]; return c; };

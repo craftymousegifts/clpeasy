@@ -1,0 +1,73 @@
+{
+ "square-rect-render-baseline.json": {
+  "issue": "Issue #1",
+  "cases": 63,
+  "sameKeySet": true,
+  "changedVsBaseline": 63,
+  "notSolelyWording": [],
+  "fitFlips": [
+   "medium|square-63: FIT -> NOT FIT"
+  ]
+ },
+ "circle-non-arc-render-baseline.json": {
+  "issue": "Issue #2",
+  "cases": 343,
+  "sameKeySet": true,
+  "changedVsBaseline": 343,
+  "notSolelyWording": [],
+  "fitFlips": [
+   "63mm|Aaaaa Bbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto: FIT -> NOT FIT",
+   "63mm|Aaaaa Bbbbbbbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto: FIT -> NOT FIT",
+   "63mm|Aaaaa Bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto: FIT -> NOT FIT",
+   "63mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|auto: FIT -> NOT FIT",
+   "63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|auto: FIT -> NOT FIT",
+   "63mm|Christmas Spiced Orange & Cinnamon|biz=The Little Candle Company of Yorkshire|auto: FIT -> NOT FIT",
+   "63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=The Little Candle Company of Yorkshire|auto: FIT -> NOT FIT",
+   "75mm|Aaaaa Bbbbbbbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto: FIT -> NOT FIT",
+   "75mm|Aaaaa Bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto: FIT -> NOT FIT",
+   "75mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|auto: FIT -> NOT FIT",
+   "75mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|auto: FIT -> NOT FIT",
+   "75mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=The Little Candle Company of Yorkshire|auto: FIT -> NOT FIT",
+   "75mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=(empty)|auto: FIT -> NOT FIT",
+   "100mm|Aaaaa Bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto: FIT -> NOT FIT",
+   "150mm|Aaaaa Bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb|biz=Crafty Mouse Gifts|auto: FIT -> NOT FIT",
+   "63mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}: FIT -> NOT FIT",
+   "63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{\"scentFSOverride\":999}: FIT -> NOT FIT",
+   "63mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}: FIT -> NOT FIT",
+   "63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{\"scentFSOverride\":0}: FIT -> NOT FIT",
+   "63mm|Christmas Spiced Orange & Cinnamon|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}: FIT -> NOT FIT",
+   "63mm|Midnight Blackberry, Bay Leaf & Smoked Vanilla|biz=Crafty Mouse Gifts|{\"bizNameFSOverride\":999}: FIT -> NOT FIT"
+  ]
+ },
+ "product-name-sizing-baseline.json": {
+  "issue": "Issue #3",
+  "cases": 360,
+  "sameKeySet": true,
+  "changedVsBaseline": 360,
+  "notSolelyWording": [],
+  "fitFlips": [
+   "square 52x52|Midnight Blackberry, Bay Leaf, Smoked Vanilla, Warm Amber, Sandalwood: FIT -> NOT FIT",
+   "square 52x52|Midnight Blackberry, Bay Leaf, Smoked Vanilla, Warm Amber, Sandalwood &: FIT -> NOT FIT",
+   "square 52x52|Midnight Blackberry, Bay Leaf, Smoked Vanilla, Warm Amber, Sandalwood & Tonka: FIT -> NOT FIT",
+   "square 52x52|Midnight Blackberry, Bay Leaf, Smoked Vanilla, Warm Amber, Sandalwood & Tonka Bean: FIT -> NOT FIT",
+   "square 52x52|Midnight Blackberry, Bay Leaf, Smoked Vanilla, Warm Amber, Sandalwood & Tonka Bean with: FIT -> NOT FIT",
+   "square 52x52|Midnight Blackberry, Bay Leaf, Smoked Vanilla, Warm Amber, Sandalwood & Tonka Bean with a: FIT -> NOT FIT",
+   "square 52x52|Midnight Blackberry, Bay Leaf, Smoked Vanilla, Warm Amber, Sandalwood & Tonka Bean with a hint: FIT -> NOT FIT",
+   "square 52x52|Midnight Blackberry, Bay Leaf, Smoked Vanilla, Warm Amber, Sandalwood & Tonka Bean with a hint of: FIT -> NOT FIT",
+   "square 52x52|Midnight Blackberry, Bay Leaf, Smoked Vanilla, Warm Amber, Sandalwood & Tonka Bean with a hint of Pink: FIT -> NOT FIT",
+   "square 52x52|Midnight Blackberry, Bay Leaf, Smoked Vanilla, Warm Amber, Sandalwood & Tonka Bean with a hint of Pink Pepper: FIT -> NOT FIT",
+   "square 52x52|Midnight Blackberry, Bay Leaf, Smoked Vanilla, Warm Amber, Sandalwood & Tonka Bean with a hint of Pink Pepper and: FIT -> NOT FIT",
+   "square 52x52|Midnight Blackberry, Bay Leaf, Smoked Vanilla, Warm Amber, Sandalwood & Tonka Bean with a hint of Pink Pepper and Orange: FIT -> NOT FIT",
+   "square 52x52|Midnight Blackberry, Bay Leaf, Smoked Vanilla, Warm Amber, Sandalwood & Tonka Bean with a hint of Pink Pepper and Orange Blossom: FIT -> NOT FIT",
+   "rectangle 100x70|Midnight Blackberry, Bay Leaf, Smoked Vanilla, Warm Amber, Sandalwood & Tonka Bean with a hint of Pink Pepper and Orange Blossom: FIT -> NOT FIT"
+  ]
+ },
+ "required-content-render-baseline.json": {
+  "issue": "Issue #4",
+  "cases": 33,
+  "sameKeySet": true,
+  "changedVsBaseline": 33,
+  "notSolelyWording": [],
+  "fitFlips": []
+ }
+}

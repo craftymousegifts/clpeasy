@@ -37,6 +37,16 @@
 //      confirmed both by source inspection and by measurement (gap stays
 //      exactly 0, matching its pre-existing behaviour).
 const fs = require('fs');
+// Issue #5: supplier completions for P-statements that need them (test data, never an app default).
+const { FIXTURE_P_CHOICES } = require('./fixtures/p-statement-choices');
+// Issue #5: "eryryrty"'s real saved record has no supplier P wording yet
+// (it will show as incomplete until completed). For this LAYOUT test it is
+// given the shortest legitimate supplier completions, so it keeps testing
+// the same geometry. Documented FIT->NOT FIT sensitivity (asserted below):
+// with longer, Nikura-style completions (FIXTURE_P_CHOICES) the corrected
+// wording no longer fits at 63mm (it fits from 66mm) -- existing NOT FIT
+// behaviour applies; the wording is never shortened to fit.
+const ERY_SHORT_P_CHOICES = { 'P261': { forms: ['vapours'] }, 'P302+P352': { text: 'water' }, 'P501': { scope: 'container', text: 'an approved waste site' } };
 const path = require('path');
 const assert = require('assert');
 const { JSDOM } = require('jsdom');
@@ -71,7 +81,7 @@ try {
     shape: 'circle', size: 'custom', customW: 63, customH: 63,
     scentName: 'eryryrty', productType: 'Scented Candle',
     hStatements: 'H317, H412, EUH208',
-    pStatements: 'P261, P273, P302+P352, P333+P313, P501',
+    pChoices:ERY_SHORT_P_CHOICES, pStatements: 'P261, P273, P302+P352, P333+P313, P501',
     sensitisers: ['Geranyl Acetate'],
     pictograms: ['exclamation'], signal: 'Warning',
     bizName: 'CLPeasy', bizAddress: 'CLPeasy', bizPhone: '01234567890', bizWebsite: 'www.clpeasy.com',
@@ -83,7 +93,7 @@ try {
     bizName: 'CLPeasy', bizAddress: 'CLPeasy', bizPhone: '01234567890', bizWebsite: 'www.clpeasy.com',
     netWeight: '200g', burnTime: '35hrs', signal: 'Warning',
     hStatements: 'H317, H412, EUH208',
-    pStatements: 'P261, P273, P302+P352, P333+P313, P501',
+    pChoices:FIXTURE_P_CHOICES, pStatements: 'P261, P273, P302+P352, P333+P313, P501',
     sensitisers: ['Benzyl Salicylate','Hydroxycitronellal','Linalool','Limonene','2-acetoxy-2,3,8,8-tetramethyloctahydronaphthalene'],
     pictograms: ['exclamation'], textColour: 'dark', showBorder: true,
   };
@@ -92,25 +102,25 @@ try {
     scentName: 'Vanilla Bean', productType: 'Scented Candle',
     bizName: 'CLPeasy', bizAddress: '1 Test Street', bizPhone: '01234567890',
     netWeight: '200g', burnTime: '35hrs', signal: 'Warning',
-    hStatements: 'H315', pStatements: 'P273', sensitisers: ['Linalool'],
+    hStatements: 'H315', pChoices:FIXTURE_P_CHOICES, pStatements: 'P273', sensitisers: ['Linalool'],
     pictograms: ['exclamation'], textColour: 'dark', showBorder: true,
   };
   const threePicto = {
     scentName: 'Parity', productType: 'Candle', bizName: 'Biz',
-    signal: 'WARNING', hStatements: 'H317', pStatements: 'P273',
+    signal: 'WARNING', hStatements: 'H317', pChoices:FIXTURE_P_CHOICES, pStatements: 'P273',
     sensitisers: ['Linalool'], pictograms: ['exclamation', 'health', 'corrosive'],
     shape: 'circle', size: '63', customW: 63, customH: 63,
   };
   const squareFixture = {
     shape: 'square', size: '63', customW: 63, customH: 63,
     scentName: 'Parity', productType: 'Candle', bizName: 'Biz',
-    signal: 'WARNING', hStatements: 'H317', pStatements: 'P273',
+    signal: 'WARNING', hStatements: 'H317', pChoices:FIXTURE_P_CHOICES, pStatements: 'P273',
     sensitisers: ['Linalool'], pictograms: ['exclamation'],
   };
   const rectFixture = {
     shape: 'rectangle', size: 'custom', customW: 99.1, customH: 57.3,
     scentName: 'Parity', productType: 'Candle', bizName: 'Biz',
-    signal: 'WARNING', hStatements: 'H317', pStatements: 'P273',
+    signal: 'WARNING', hStatements: 'H317', pChoices:FIXTURE_P_CHOICES, pStatements: 'P273',
     sensitisers: ['Linalool'], pictograms: ['exclamation'],
   };
   const gbActiveMinFsMatch = labelRendererSource.match(/const GB_ACTIVE_MIN_FS_MM\s*=\s*([\d.]+);/);

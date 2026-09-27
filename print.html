@@ -852,8 +852,16 @@ const SHEET_CONTENT_REASONS={
   'business-name':'No business name.',
   'euh208-substance':'EUH208 is listed without the named sensitising substance(s). Check your current supplier SDS and paste the complete relevant EUH208/Contains information in Step 3.',
 };
-function describeMissingContent(missing){
-  return (missing||[]).map(m=>SHEET_CONTENT_REASONS[m]||m).join(' ');
+function describeMissingContent(missing,rc){
+  return (missing||[]).map(m=>{
+    // Issue #5: name the precautionary statement(s) still needing the
+    // supplier's wording. The Composer never completes or guesses them.
+    if(m==='p-statement'){
+      const codes=(rc&&rc.incompletePStatements)||[];
+      return `${codes.join(', ')} ${codes.length===1?'needs its':'need their'} supplier-specific wording. Open this label in the Builder and complete it in Step 3 from the supplier SDS.`;
+    }
+    return SHEET_CONTENT_REASONS[m]||m;
+  }).join(' ');
 }
 function getSheetContentBlockMessage(){
   if(!sheetContentIssues||!sheetContentIssues.length)return null;
@@ -2171,7 +2179,7 @@ function renderSheetCanvas(){
           sheetFitIssues.push({itemId:slot.labelId, scentName:ld.scentName||'Unnamed label', reason:describeFitWarnings(result.warnings, ld)});
         }
         if(!rc.complete && !sheetContentIssues.some(i=>i.itemId===slot.labelId)){
-          sheetContentIssues.push({itemId:slot.labelId, scentName:String(ld.scentName||'').trim()||'Unnamed label', reason:describeMissingContent(rc.missing)});
+          sheetContentIssues.push({itemId:slot.labelId, scentName:String(ld.scentName||'').trim()||'Unnamed label', reason:describeMissingContent(rc.missing,rc)});
         }
         labelIdx++;
       } else {

@@ -15,6 +15,13 @@
 // so it also catches future drift if the renderer's output ever changes
 // without the embedded thumbnails being regenerated.
 const fs = require('fs');
+// Issue #5: supplier completions for P-statements that need them (test data, never an app default).
+const { FIXTURE_P_CHOICES } = require('./fixtures/p-statement-choices');
+// Issue #5: the 63mm circle-candle thumbnail uses the shortest legitimate
+// supplier completions so it still fits its documented size. With the longer
+// Nikura-style completions (FIXTURE_P_CHOICES) the corrected wording needs a
+// 66mm circle -- documented FIT->NOT FIT sensitivity, not shortened to fit.
+const CIRCLE_CANDLE_P_CHOICES = { 'P261': { forms: ['vapours'] }, 'P302+P352': { text: 'water' }, 'P501': { scope: 'container', text: 'an approved waste site' } };
 const path = require('path');
 const assert = require('assert');
 const { JSDOM } = require('jsdom');
@@ -60,20 +67,20 @@ const FIXTURES = [
     shape: 'circle', scentName: 'Vanilla', productType: 'Scented Candle',
     netWeight: '200g', burnTime: '35hrs', signal: 'Warning',
     hStatements: 'H317, H411, EUH208',
-    pStatements: 'P102, P261, P273, P302+P352, P333+P313, P391, P501',
+    pChoices:CIRCLE_CANDLE_P_CHOICES, pStatements: 'P102, P261, P273, P302+P352, P333+P313, P391, P501',
     sensitisers: ['Geraniol', 'Linalool'], pictograms: ['exclamation', 'aquatic'],
     bizName: 'Crafty Mouse Gifts', textColour: 'dark', showBorder: true,
   }},
   { id: 'square-waxmelt', shape: 'square', mm: 63, data: {
     shape: 'square', scentName: 'Sandalwood Dusk', productType: 'Wax Melt',
-    signal: 'WARNING', hStatements: 'H317', pStatements: 'P273',
+    signal: 'WARNING', hStatements: 'H317', pChoices:FIXTURE_P_CHOICES, pStatements: 'P273',
     sensitisers: ['Linalool'], pictograms: ['exclamation'],
     bizName: 'Crafty Mouse Gifts', textColour: 'dark', showBorder: true,
   }},
   { id: 'rectangle-candle', shape: 'rectangle', mmW: 99, mmH: 57, data: {
     shape: 'rectangle', scentName: 'Vanilla Candle', productType: 'Scented Candle',
     signal: 'WARNING', hStatements: 'H317,H411,H315',
-    pStatements: 'P302+P352,P333+P313,P305+P351+P338,P273,P280',
+    pChoices:FIXTURE_P_CHOICES, pStatements: 'P302+P352,P333+P313,P305+P351+P338,P273,P280',
     p280Items: ['gloves', 'eye'],
     sensitisers: ['Linalool', 'Limonene', 'Citral', 'Geraniol', 'Eugenol', 'Coumarin'],
     pictograms: ['exclamation', 'aquatic'],
@@ -81,7 +88,7 @@ const FIXTURES = [
   }},
   { id: 'rectangle-reed-diffuser', shape: 'rectangle', mmW: 70, mmH: 50, data: {
     shape: 'rectangle', scentName: 'Palo Santo', productType: 'Reed Diffuser',
-    signal: 'WARNING', hStatements: 'H317', pStatements: 'P273',
+    signal: 'WARNING', hStatements: 'H317', pChoices:FIXTURE_P_CHOICES, pStatements: 'P273',
     sensitisers: ['Linalool'], pictograms: ['exclamation', 'health', 'corrosive'],
     bizName: 'Crafty Mouse Gifts', textColour: 'dark', showBorder: true,
   }},
@@ -90,7 +97,7 @@ const FIXTURES = [
     signal: 'Danger', hStatements: 'H226, H315, H319, H411',
     pictograms: ['flame', 'exclamation', 'aquatic'],
     sensitisers: ['Linalool', 'Limonene', 'Geraniol'],
-    pStatements: 'P210, P233, P261, P271, P273, P305+P351+P338, P501',
+    pChoices:FIXTURE_P_CHOICES, pStatements: 'P210, P233, P261, P271, P273, P305+P351+P338, P501',
     bizName: 'Crafty Mouse Gifts', hideEN15494: true, textColour: 'dark', showBorder: true,
   }},
 ];

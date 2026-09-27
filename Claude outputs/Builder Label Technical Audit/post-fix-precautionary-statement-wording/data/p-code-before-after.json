@@ -1,0 +1,176 @@
+[
+ {
+  "code": "P101",
+  "classification": "fixed",
+  "before": "If medical advice is needed, have product container or label at hand",
+  "after": "If medical advice is needed, have product container or label at hand."
+ },
+ {
+  "code": "P102",
+  "classification": "fixed",
+  "before": "Keep out of reach of children",
+  "after": "Keep out of reach of children."
+ },
+ {
+  "code": "P103",
+  "classification": "fixed",
+  "before": "Read label before use",
+  "after": "Read label before use."
+ },
+ {
+  "code": "P210",
+  "classification": "fixed",
+  "before": "Keep away from heat and ignition sources. No smoking",
+  "after": "Keep away from heat, hot surfaces, sparks, open flames and other ignition sources. No smoking."
+ },
+ {
+  "code": "P233",
+  "classification": "fixed",
+  "before": "Keep container tightly closed",
+  "after": "Keep container tightly closed."
+ },
+ {
+  "code": "P260",
+  "classification": "supplier selection",
+  "before": "Do not breathe vapours or dust",
+  "after": "template (never printed): Do not breathe dust/fume/gas/mist/vapours/spray. -- prints only from the supplier choice; otherwise not printed and the label is blocked"
+ },
+ {
+  "code": "P261",
+  "classification": "supplier selection",
+  "before": "Avoid breathing vapours and dust",
+  "after": "template (never printed): Avoid breathing dust/fume/gas/mist/vapours/spray. -- prints only from the supplier choice; otherwise not printed and the label is blocked"
+ },
+ {
+  "code": "P271",
+  "classification": "fixed",
+  "before": "Use only outdoors or in a well-ventilated area",
+  "after": "Use only outdoors or in a well-ventilated area."
+ },
+ {
+  "code": "P273",
+  "classification": "fixed",
+  "before": "Avoid release to the environment",
+  "after": "Avoid release to the environment."
+ },
+ {
+  "code": "P301+P310",
+  "classification": "supplier completion",
+  "before": "IF SWALLOWED: immediately call a POISON CENTRE or doctor",
+  "after": "template (never printed): IF SWALLOWED: Immediately call a POISON CENTER/doctor/… -- prints only from the supplier choice; otherwise not printed and the label is blocked"
+ },
+ {
+  "code": "P301+P312",
+  "classification": "supplier completion",
+  "before": "IF SWALLOWED: call a POISON CENTRE or doctor if unwell",
+  "after": "template (never printed): IF SWALLOWED: Call a POISON CENTRE/doctor/… if you feel unwell. -- prints only from the supplier choice; otherwise not printed and the label is blocked"
+ },
+ {
+  "code": "P302+P352",
+  "classification": "supplier completion",
+  "before": "IF ON SKIN: wash with plenty of water",
+  "after": "template (never printed): IF ON SKIN: Wash with plenty of water/… -- prints only from the supplier choice; otherwise not printed and the label is blocked"
+ },
+ {
+  "code": "P304+P340",
+  "classification": "fixed",
+  "before": "IF INHALED: remove to fresh air and keep comfortable for breathing",
+  "after": "IF INHALED: Remove person to fresh air and keep comfortable for breathing."
+ },
+ {
+  "code": "P305+P351+P338",
+  "classification": "fixed",
+  "before": "IF IN EYES: rinse cautiously with water for several minutes",
+  "after": "IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing."
+ },
+ {
+  "code": "P312",
+  "classification": "supplier completion",
+  "before": "Call a POISON CENTRE or doctor if you feel unwell",
+  "after": "template (never printed): Call a POISON CENTRE/doctor/… if you feel unwell. -- prints only from the supplier choice; otherwise not printed and the label is blocked"
+ },
+ {
+  "code": "P313",
+  "classification": "fixed",
+  "before": "Get medical advice/attention",
+  "after": "Get medical advice/attention."
+ },
+ {
+  "code": "P314",
+  "classification": "fixed",
+  "before": "Get medical advice if you feel unwell",
+  "after": "Get medical advice/attention if you feel unwell."
+ },
+ {
+  "code": "P321",
+  "classification": "supplier completion",
+  "before": "Specific treatment: see label",
+  "after": "template (never printed): Specific treatment (see … on this label). -- prints only from the supplier choice; otherwise not printed and the label is blocked"
+ },
+ {
+  "code": "P330",
+  "classification": "fixed",
+  "before": "Rinse mouth",
+  "after": "Rinse mouth."
+ },
+ {
+  "code": "P331",
+  "classification": "fixed",
+  "before": "Do NOT induce vomiting",
+  "after": "Do NOT induce vomiting."
+ },
+ {
+  "code": "P332+P313",
+  "classification": "fixed",
+  "before": "If skin irritation occurs: get medical advice/attention",
+  "after": "If skin irritation occurs: Get medical advice/attention."
+ },
+ {
+  "code": "P333+P313",
+  "classification": "fixed",
+  "before": "If skin irritation or rash occurs: get medical advice",
+  "after": "If skin irritation or rash occurs: Get medical advice/attention."
+ },
+ {
+  "code": "P337+P313",
+  "classification": "fixed",
+  "before": "If eye irritation persists: get medical advice",
+  "after": "If eye irritation persists: Get medical advice/attention."
+ },
+ {
+  "code": "P370+P378",
+  "classification": "supplier completion",
+  "before": "In case of fire: use appropriate media for extinction",
+  "after": "template (never printed): In case of fire: Use … to extinguish. -- prints only from the supplier choice; otherwise not printed and the label is blocked"
+ },
+ {
+  "code": "P391",
+  "classification": "fixed",
+  "before": "Collect spillage",
+  "after": "Collect spillage."
+ },
+ {
+  "code": "P403+P233",
+  "classification": "fixed",
+  "before": "Store in a well-ventilated place. Keep container tightly closed",
+  "after": "Store in a well-ventilated place. Keep container tightly closed."
+ },
+ {
+  "code": "P211",
+  "classification": "fixed",
+  "before": "Do not spray on an open flame or other ignition source",
+  "after": "Do not spray on an open flame or other ignition source."
+ },
+ {
+  "code": "P501",
+  "classification": "supplier completion",
+  "before": "Dispose of contents and container in accordance with local regulations",
+  "after": "template (never printed): Dispose of contents/container to … -- prints only from the supplier choice; otherwise not printed and the label is blocked"
+ },
+ {
+  "code": "P280",
+  "classification": "supplier selection (existing P280 picker)",
+  "before": "Wear the applicable protective equipment (select which items apply when adding this code)",
+  "after": "unchanged: built from the P280 picker selection"
+ }
+]

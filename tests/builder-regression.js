@@ -422,7 +422,10 @@ setTimeout(async () => {
     // earlier rectangle sub-test, netWeight/batchNum/burnTime/website
     // empty, as they are at this point in the flow): blocked at 52mm
     // (hazard-text-overflow) and fits cleanly at 63mm with no warnings.
-    window.eval("S.hSelected=['H315','H411','H373'];S.pSelected=['P273','P302+P352'];S.sensitisers=['Butylphenyl methylpropional']");
+    // Issue #5: P302+P352 needs the supplier's completion ("water/…"); the
+    // maker completes it with "water" (an Annex IV option; same printed
+    // length as the old fixed text, so the fit measurements below hold).
+    window.eval("S.hSelected=['H315','H411','H373'];S.pSelected=['P273','P302+P352'];S.sensitisers=['Butylphenyl methylpropional'];S.pChoices={'P302+P352':{text:'water',source:'maker'}}");
     document.getElementById('h-statements').value='H315, H411, H373, EUH208';
     document.getElementById('p-statements').value='P273, P302+P352';
     window.updateLabel();

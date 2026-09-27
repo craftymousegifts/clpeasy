@@ -10,6 +10,13 @@
 // before the fix is byte-identical after it.
 // Regenerate only deliberately:
 //   node tests/fixtures/generate-product-name-sizing-baseline.js [path/to/label-render.js]
+// Issue #5 (M19/M20, precautionary-statement wording): regenerated from the
+// renderer WITH the corrected P wording; the fixtures now carry supplier
+// P completions (tests/fixtures/p-statement-choices.js). Every changed
+// fingerprint was proven to differ SOLELY by P wording: the pre-Issue-5
+// renderer with only its P_LIB wording replaced produced byte-identical
+// output for every case (evidence: Claude outputs/Builder Label Technical
+// Audit/post-fix-precautionary-statement-wording/data/).
 const fs = require('fs');
 const path = require('path');
 const { renderSizingFingerprints } = require('./product-name-sizing-fixtures');

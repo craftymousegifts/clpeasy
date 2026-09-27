@@ -32,6 +32,8 @@
 //
 // Run from the repo root: node tests/print-sheet-export-fidelity.js
 const fs = require('fs');
+// Issue #5: supplier completions for P-statements that need them (test data, never an app default).
+const { FIXTURE_P_CHOICES } = require('./fixtures/p-statement-choices');
 const assert = require('assert');
 const { JSDOM, VirtualConsole } = require('jsdom');
 const { webcrypto } = require('crypto');
@@ -87,7 +89,7 @@ function candleFixture(overrides){
     scentName:'Export Fidelity Candle', productType:'Scented Candle', bizName:'Crafty Mouse Gifts',
     shape:'rectangle', size:'custom', customW:57, customH:99,
     bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'20 hrs',
-    signal:'Warning', hStatements:'H315, H319', pStatements:'P302+P352, P305+P351+P338',
+    signal:'Warning', hStatements:'H315, H319', pChoices:FIXTURE_P_CHOICES, pStatements:'P302+P352, P305+P351+P338',
     sensitisers:['Linalool','Limonene'], pictograms:['exclamation'], textColour:'dark', showBorder:true,
     hideEN15494:false, labelLang:'en',
   }, overrides);

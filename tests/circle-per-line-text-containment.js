@@ -41,6 +41,7 @@
 // the Playwright Chromium at /opt/pw-browsers (Claude Code cloud sessions).
 const fs = require('fs');
 const path = require('path');
+const { FIXTURE_P_CHOICES } = require('./fixtures/p-statement-choices'); // Issue #5 supplier completions (test data)
 const assert = require('assert');
 const puppeteer = require('puppeteer');
 const { FIXTURES, BOUNDARY_SWEEPS, CIRCLE_SIZES } = require('./fixtures/circle-containment-fixtures');
@@ -160,8 +161,10 @@ function expectedStrings(LR, data) {
   const codes = String(data.hStatements || '').split(',').map(s => s.trim()).filter(Boolean);
   codes.filter(c => c !== 'EUH208').forEach(c => out.push(LR.H_LIB.find(x => x.code === c).desc));
   if (codes.includes('EUH208')) out.push('May produce an allergic reaction.');
+  // Issue #5: the PRINTED wording -- fixed text, or the supplier completion
+  // the fixture carries (LR.P_TEXT, resolved in-page by the real renderer).
   String(data.pStatements || '').split(',').map(s => s.trim()).filter(Boolean)
-    .forEach(c => out.push(LR.P_LIB.find(x => x.code === c).desc));
+    .forEach(c => out.push(LR.P_TEXT[c]));
   (data.sensitisers || []).forEach(s => out.push(s));
   return out.map(s => s.replace(/\s+/g, ''));
 }
@@ -183,7 +186,8 @@ function expectedStrings(LR, data) {
     page.on('request', req => (/fonts\.(googleapis|gstatic)\.com/.test(req.url()) ? req.abort() : req.continue()));
     await page.setContent('<!doctype html><html><head><meta charset="utf-8"></head><body><div id="stage"></div></body></html>');
     await page.addScriptTag({ content: rendererSource });
-    const LR_H = await page.evaluate(() => ({ H_LIB: LabelRenderer.H_LIB, P_LIB: LabelRenderer.P_LIB }));
+    const LR_H = await page.evaluate(choices => ({ H_LIB: LabelRenderer.H_LIB,
+      P_TEXT: Object.fromEntries(LabelRenderer.P_DEFS.filter(d => !d.picker).map(d => [d.code, d.kind === 'fixed' ? d.text : LabelRenderer.resolvePChoice(d.code, choices[d.code])])) }), FIXTURE_P_CHOICES);
 
     let fitCount = 0, notFitCount = 0, hazardLinesChecked = 0, otherLinesChecked = 0, n = 0, maxDrawnIntoMargin = 0;
     async function check(name, data, extraOpts) {

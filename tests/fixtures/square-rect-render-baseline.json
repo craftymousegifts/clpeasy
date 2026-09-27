@@ -1,28 +1,28 @@
 {
  "light|square-52-default": {
-  "sha256": "cf112d8122b3b16caa9977621a91ef528a436058e132b1ad34f74a7b8a904153",
+  "sha256": "9e538f0166f50d6645033ca35337f593afa41e80aba952aa9f71dfbd33d0d408",
   "fits": true,
   "warnings": []
  },
  "light|square-63": {
-  "sha256": "ba57f3aa97efd070b222f6f5b3c7e8d41331aec7da78a93b17a0d8dc909c6ee5",
+  "sha256": "82557b3b37d92f170af798df492949b9f5f0b22c1daf13a2ce5fc7dca6aca69c",
   "fits": true,
   "warnings": []
  },
  "light|square-100": {
-  "sha256": "4bef4dde7f612e667538a237e72781ef570129b6d7e67a4832384db2f6dbb4d1",
+  "sha256": "ee586aa1313c334086999df47af8d946393344d9f8017cab9f6a13a45e5d2765",
   "fits": true,
   "warnings": []
  },
  "light|rect-52x36-default": {
-  "sha256": "70e63361936c6c82eca24f14ef6162bb10b74690ea0322acd6eb61d4d83f03fd",
+  "sha256": "65d0a08b9e3b7384e08807a5a79ce3023d7d174f156817fc501ce5ceb2ef4a6a",
   "fits": false,
   "warnings": [
    "hazard-text-overflow"
   ]
  },
  "light|rect-63x44": {
-  "sha256": "74efac921d8c4885135840030fd9fe94f9b57f295faf499966aaaa6e28525104",
+  "sha256": "815e8879733fd004855efc2a46c021d6b40008f16552ee146d75b2eb4922d43b",
   "fits": false,
   "warnings": [
    "hazard-text-overflow",
@@ -30,12 +30,12 @@
   ]
  },
  "light|rect-80x100": {
-  "sha256": "10d68ace00d008555471c1dc126f0b18ea693b93ec0efb93706aa70c7789a746",
+  "sha256": "5299f81cc88e7959d6238c473903d7ec8cf64fc4848a03a476d250316910bb5a",
   "fits": true,
   "warnings": []
  },
  "light|rect-150x40": {
-  "sha256": "704bdb1517c8033d9f4ddbc7ea9b4428f13e82e8034fba22c878b02a6ad7bd00",
+  "sha256": "9aba127949abc0775fda88b603841b28cc52cc991aae40248058ed337469e0fd",
   "fits": false,
   "warnings": [
    "hazard-text-overflow",
@@ -43,43 +43,45 @@
   ]
  },
  "medium|square-52-default": {
-  "sha256": "7caa85903f19332438c3e322b5f876ba3bf2e3a891a895e397feb2ec62d61afb",
+  "sha256": "fe132a8ebcf06da258b5660bc85a6660c909364f502b33bb10da67821447ab73",
   "fits": false,
   "warnings": [
    "hazard-text-overflow"
   ]
  },
  "medium|square-63": {
-  "sha256": "d09ae06b4dc59d2bac1f3d0686422dea6c6304f0806b67fa9769f5dc29d22e96",
-  "fits": true,
-  "warnings": []
+  "sha256": "46cb39a2a05d7a0c360f0ad5099d7850f54510d08f222b9adef0a1c1f93b28a7",
+  "fits": false,
+  "warnings": [
+   "hazard-text-overflow"
+  ]
  },
  "medium|square-100": {
-  "sha256": "57f5548bc37820f9fd0829c77d258573e2dc387adb517fca9d91ae3125315027",
+  "sha256": "211e527fb55f3ab042e2be4fc82f5afdcd11c24d964b0a3bc1bedaf20bca7fac",
   "fits": true,
   "warnings": []
  },
  "medium|rect-52x36-default": {
-  "sha256": "a0070062ac63439072c05f3c7dc6e9ee0f272e98573e91bd19cfb2398fa2b8ed",
+  "sha256": "50a0e053b9d5083bcbf5275a482230a54a408d091a5e663f8a8272fd8d4296dc",
   "fits": false,
   "warnings": [
    "hazard-text-overflow"
   ]
  },
  "medium|rect-63x44": {
-  "sha256": "72dbd9f014d74e19c42fff72bd1636513656c311880c1a0feca8d2788ee3aa7a",
+  "sha256": "63c97f3358b2db84fdb16d170c17bce691ec019ec1bf36d3fca7186a73832bcf",
   "fits": false,
   "warnings": [
    "hazard-text-overflow"
   ]
  },
  "medium|rect-80x100": {
-  "sha256": "37a34e3b2db4143df8cae2f89c070296add3a006679f75c4c9be8f73bfd048fc",
+  "sha256": "76e7c2007c587aa5a40a212d99cea1d6a916230e421e258b3b38fb5cfcc8346a",
   "fits": true,
   "warnings": []
  },
  "medium|rect-150x40": {
-  "sha256": "2c7054fcfa1ddac6500f935c5e6400a59dc0964d0843dbb53b99cdad13a61f75",
+  "sha256": "6cc7f7a4f8adf5858869d19ca7ef58fc23a982661b724933eb94038193fe4458",
   "fits": false,
   "warnings": [
    "hazard-text-overflow",
@@ -87,45 +89,45 @@
   ]
  },
  "heavy|square-52-default": {
-  "sha256": "e18d3f64ec40944d161281293df2a7298b8ef061e097c48532c262f36fc43341",
+  "sha256": "1c0dc7b22621fef1707067afbcc2e46acc6c122e7656801444f3b70d3cff3f5e",
   "fits": false,
   "warnings": [
    "hazard-text-overflow"
   ]
  },
  "heavy|square-63": {
-  "sha256": "ce77d0ec89367da9676b29de1d94906aaca5f4aedbf0738b25a4dedec5899e02",
+  "sha256": "ac303b597894478c35e27cce0a8cf1439bcd064e9b5b783eec9d46c460593793",
   "fits": false,
   "warnings": [
    "hazard-text-overflow"
   ]
  },
  "heavy|square-100": {
-  "sha256": "ebe52f1f5a507dc49607cce50e8a632c35ca952a646b6701786ce2c9e27d81ee",
+  "sha256": "91369972002fe3e85d6d0f106a32ac26c664cab3502c7aaaa6c0d3c0ed337e6b",
   "fits": true,
   "warnings": []
  },
  "heavy|rect-52x36-default": {
-  "sha256": "415ce471988b4db65e453e38b27f7b96e7e066c56ec349d49d86dcc86772e9d8",
+  "sha256": "37566c090ccac9da53b452af2013e85b1eec9630245bd08dc752169fda6ec82a",
   "fits": false,
   "warnings": [
    "hazard-text-overflow"
   ]
  },
  "heavy|rect-63x44": {
-  "sha256": "32caa38eb4f9d2ffaf9e74031afec2db9450b188bdfe55e6cd46895837679e42",
+  "sha256": "c626c6e697d860cc66256211c704cc161be83ae503984ac3b85c46cc4b51d1c4",
   "fits": false,
   "warnings": [
    "hazard-text-overflow"
   ]
  },
  "heavy|rect-80x100": {
-  "sha256": "75c40cbeee9accbb60e657a38c22ef3dbd7b5884c49bc0f897913967c89a3462",
+  "sha256": "888e46c2a53842b2add4dfffe6f3769f42cbe6649c90a48d5aa8d9032cd35990",
   "fits": true,
   "warnings": []
  },
  "heavy|rect-150x40": {
-  "sha256": "45dfa53236bf4d4dd18941fc472a415be168aa386845e5bfadaf2c99b1e2775b",
+  "sha256": "fd837ce63e8fd1b860d923b544649a007c119c8335ca36bb9741f19936fc7e99",
   "fits": false,
   "warnings": [
    "hazard-text-overflow",
@@ -133,45 +135,45 @@
   ]
  },
  "multiH|square-52-default": {
-  "sha256": "166e2297f73a74872e3f2e28e9b4e811a33c801df6273df5826181e00b30328a",
+  "sha256": "4d91824e108813cd57c041b56c5c30423ac3fead599eef1be5f6e899fafec05d",
   "fits": false,
   "warnings": [
    "hazard-text-overflow"
   ]
  },
  "multiH|square-63": {
-  "sha256": "5733e36b37f2581d36123d7120449eb206f029be9456d96b3c095c9ae1b997b5",
+  "sha256": "c18445c657fe0ecbf1b7605905ef49097cad9ebad3da66ad0dbd1e87f624d136",
   "fits": false,
   "warnings": [
    "hazard-text-overflow"
   ]
  },
  "multiH|square-100": {
-  "sha256": "418ec52819de448af615ebb143f8e3e9bed73f48b170af5ffd761da82180bc0a",
+  "sha256": "a9bafdb3ecd393b6f8b54dace393c4f2d6b9a5bc3883f819290c28c9e6ceb773",
   "fits": true,
   "warnings": []
  },
  "multiH|rect-52x36-default": {
-  "sha256": "79260d0b5e9511f2d69099675e049bb471d6dd81bab08f63abd8c2d5d463fe8d",
+  "sha256": "95214c152efa6b32f50e0b3145ad72a3f76c8b77aed042b3913793e281213661",
   "fits": false,
   "warnings": [
    "hazard-text-overflow"
   ]
  },
  "multiH|rect-63x44": {
-  "sha256": "2a2542e944887d0b1d80bb49344899d6e1aff2ec0f36f3da5371ffb627a14731",
+  "sha256": "f80e870e815fb085954703f746e42660700e930aaea1e243dd696d649710a4b1",
   "fits": false,
   "warnings": [
    "hazard-text-overflow"
   ]
  },
  "multiH|rect-80x100": {
-  "sha256": "13c19fff6659de308c223bf47296b19451480ebe263a3502d8a46a0997a7a11d",
+  "sha256": "8053aba1942e9f2890009f228f6eb4d757a5c4519c55f484582f6aac2e28e462",
   "fits": true,
   "warnings": []
  },
  "multiH|rect-150x40": {
-  "sha256": "98ad3cc56ea8a1130ffe0f6e164c7bd15ada4204fa811c027d14c6379725e70f",
+  "sha256": "7c1bb283ea621fceb0311aa27ccca9e9806de0a920d34e287bdbea751f6fbb7e",
   "fits": false,
   "warnings": [
    "hazard-text-overflow",
@@ -179,7 +181,7 @@
   ]
  },
  "multiP|square-52-default": {
-  "sha256": "a3fe5f466d1c05adf440eb4b062a7abc9e77ad76daab6c444b2bb3c5fedf9366",
+  "sha256": "aaaa013906f899a2417a55a3aa868e48abb69709f79b36571e3eaf1bded34376",
   "fits": false,
   "warnings": [
    "hazard-text-overflow",
@@ -187,26 +189,26 @@
   ]
  },
  "multiP|square-63": {
-  "sha256": "94a0d611f80eaf173d0aaf039b37690dec72a1d8077596d8a30507f0129c4f51",
+  "sha256": "22a9399707540d43ae47dd173427d015a01b8b48212460a76b1430147a065af1",
   "fits": false,
   "warnings": [
    "hazard-text-overflow"
   ]
  },
  "multiP|square-100": {
-  "sha256": "cc8acdb557f664aa6d148a5ba220b9693330ba7a99e21dd7fcb1342308ae82cf",
+  "sha256": "c1fc58c16a3fb5ae91c2af822f97074dbd946e9163625fcf1e27a5cfb575c660",
   "fits": true,
   "warnings": []
  },
  "multiP|rect-52x36-default": {
-  "sha256": "f9fd2fd58c09cb13a22cc76d9862cd085e240edf1fcb0033c6db519ffc8f5f6a",
+  "sha256": "697914a996059ec1395c11513885355908fb6eefff4bbd96ada6ee61986d100e",
   "fits": false,
   "warnings": [
    "hazard-text-overflow"
   ]
  },
  "multiP|rect-63x44": {
-  "sha256": "d6d6e2697a44fa10e2fcda95d0972a90b0518692a25211a9823aace0dcf669be",
+  "sha256": "710c7e0bf7db0d3744f412fe96e2b193dceeea4f7e406772a5c636551c220496",
   "fits": false,
   "warnings": [
    "hazard-text-overflow",
@@ -214,12 +216,12 @@
   ]
  },
  "multiP|rect-80x100": {
-  "sha256": "8a0802e3155c4bc09630c1bfb543230d65b8037b63d9923e51061fb2b1a343a7",
+  "sha256": "21aba22f53d4f3e3be91dcd71e34cf5b46eeba04a95ba1e0138cc975732cc8ce",
   "fits": true,
   "warnings": []
  },
  "multiP|rect-150x40": {
-  "sha256": "86dc658982aa5a17a385aba4383c099f6e0e3a5c4e0b58b34feee5b4b2499bd4",
+  "sha256": "c2b4440914a9043aa0d6ec6ab8c6cd1153f711f426737dcbf2ea6161f833b4f1",
   "fits": false,
   "warnings": [
    "hazard-text-overflow",
@@ -227,7 +229,7 @@
   ]
  },
  "euh|square-52-default": {
-  "sha256": "5641c8d6b0804e947d190870703c52e1c5359033244aaf9ee1f71c9dcf952c19",
+  "sha256": "5e8055225b3ee814ef417046a8cc3e8a62b04ee935f3fe53d28401aaf52c768b",
   "fits": false,
   "warnings": [
    "hazard-text-overflow",
@@ -235,26 +237,26 @@
   ]
  },
  "euh|square-63": {
-  "sha256": "88a1f5533f3a69228cd35b04f52a6b90325b35a86bd88fca9c3442c8650836b6",
+  "sha256": "70059906af55d097c813d107271d368e02973925bde7dbace18dac71a1c6ab5e",
   "fits": false,
   "warnings": [
    "hazard-text-overflow"
   ]
  },
  "euh|square-100": {
-  "sha256": "ec9a74d2ec653c2e5cc87caa44d74f7d3a8d45e9d9beb8dbf339e9f0df769d5b",
+  "sha256": "95331eceeea66674e45aea724e60af74ffad460a70265eec17613491542f12f6",
   "fits": true,
   "warnings": []
  },
  "euh|rect-52x36-default": {
-  "sha256": "9897b8f75f9f91190e7e9e622bd6f87f222d9aaa28f231a1013453097edb2d1f",
+  "sha256": "2a6a3643dd8d65fc63bc6ef1d9bf2e4f5d43f250949a79d28a843479c9c39cb8",
   "fits": false,
   "warnings": [
    "hazard-text-overflow"
   ]
  },
  "euh|rect-63x44": {
-  "sha256": "480eab774ffddd6fced35c37f2ee66b431512c88e15245aa6375309b069e8d43",
+  "sha256": "c64640e13d88630e1598f9fe4cfa4146c7d48c6725937ec6b6e75f66ece9c000",
   "fits": false,
   "warnings": [
    "hazard-text-overflow",
@@ -262,12 +264,12 @@
   ]
  },
  "euh|rect-80x100": {
-  "sha256": "9c2f9540c0fbdd70f0cfd24092db372ed98cae4e949c101674a48df4d723c2e4",
+  "sha256": "48bbb299ac4b64d6ae32fe21f8de032fc465db70b3aaf832cb1bd0d4bfffd9ad",
   "fits": true,
   "warnings": []
  },
  "euh|rect-150x40": {
-  "sha256": "65f219953da520618018f77aa40025ffbcc8c0ed3bda0a7680735845b272d689",
+  "sha256": "9b0f88b8dfcb5bf5236327fa0cf462a0db97e92508d2bed0d01513898dab02b5",
   "fits": false,
   "warnings": [
    "hazard-text-overflow",
@@ -275,7 +277,7 @@
   ]
  },
  "euh208Sensitisers|square-52-default": {
-  "sha256": "b4aaec2437d99da301c927d1b32db4d96961449ccec5a632b48c2593785e8960",
+  "sha256": "277e3015bc2231fd177aee69d7f3265c16231f9478b1401ef4cd2f7f37a8e2c3",
   "fits": false,
   "warnings": [
    "hazard-text-overflow",
@@ -283,26 +285,26 @@
   ]
  },
  "euh208Sensitisers|square-63": {
-  "sha256": "37d07d1c62d745b61b0b261af243ebaa98b0e117beeffc270d014b6829cd66dd",
+  "sha256": "1b0b40c9200dbc0f6b8fb0053fe001e2ce41520bb5b09ae301b2cd514bb5cfdc",
   "fits": false,
   "warnings": [
    "hazard-text-overflow"
   ]
  },
  "euh208Sensitisers|square-100": {
-  "sha256": "414d0ac45cadd789d2d7a8afc7b184f192b78950d5cbdbfa90246d30daa1f4d4",
+  "sha256": "37b18ce12458c4e9c57ff628c297730067c0d94f17ffcd0b4b0c1621fbad86d2",
   "fits": true,
   "warnings": []
  },
  "euh208Sensitisers|rect-52x36-default": {
-  "sha256": "201b9bdd0ef65f82de785cc701f09f1990635979529ec01fa23187bd56c91e4f",
+  "sha256": "aadd25f13d4205d44e0ba22a06bf0426e94c808b4f9048ccb923ebc53276d1e4",
   "fits": false,
   "warnings": [
    "hazard-text-overflow"
   ]
  },
  "euh208Sensitisers|rect-63x44": {
-  "sha256": "3d1f191014e5a06b071091a3aa4134b016be6f7634f1749de252a337b63b5da6",
+  "sha256": "b5cdeca164f8307af2146ecf8c6d3124d9b56976657d5557c7c400056b0c21a1",
   "fits": false,
   "warnings": [
    "hazard-text-overflow",
@@ -310,12 +312,12 @@
   ]
  },
  "euh208Sensitisers|rect-80x100": {
-  "sha256": "52b558d8b85bd4c592314d6812929fac27a5343c5c4c174a4d8a8ad66bf0a16a",
+  "sha256": "99a9aad94267f7349339e3283bf723b055caeae0e68212d3f8adac55bd570fc8",
   "fits": true,
   "warnings": []
  },
  "euh208Sensitisers|rect-150x40": {
-  "sha256": "0c24be0397f08b5fd9d33839dda35b05299d7c4d5cf19af9bbb0e2af1b74ce51",
+  "sha256": "fb5210d5bc13df9780a108dfb5a1756915c398c706351003dee5ba3d748708a5",
   "fits": false,
   "warnings": [
    "hazard-text-overflow",
@@ -323,7 +325,7 @@
   ]
  },
  "longChemicalNames|square-52-default": {
-  "sha256": "59af5858c9f6ee64954de17b26028e71cd1836cdb570e66843918a8165144251",
+  "sha256": "3d4cdbc5c990cf8d03251d39b8b2272af7067dceb43c8bb83ca181f132e4e0f1",
   "fits": false,
   "warnings": [
    "hazard-text-overflow",
@@ -331,26 +333,26 @@
   ]
  },
  "longChemicalNames|square-63": {
-  "sha256": "cce4fd2593911b70d951c121c57f5a2da94872f179769f09d377ee37f1918453",
+  "sha256": "c6e53b014eb13c94424521295d1421780823d4496da509d20b378bf36b84bcbf",
   "fits": false,
   "warnings": [
    "hazard-text-overflow"
   ]
  },
  "longChemicalNames|square-100": {
-  "sha256": "826cef4ac8cde5230fed5aa16e9dc38d6cb30b62d8fc602c3e0e2b87c0c91dd5",
+  "sha256": "f2f40eb97d94b2d4718be63a49e3e9d0e5e86115a2ec204864e651479d0aea48",
   "fits": true,
   "warnings": []
  },
  "longChemicalNames|rect-52x36-default": {
-  "sha256": "86f11302f67b73751f61186e7f6bda74ac76a97f146fba7f624e73970686ff94",
+  "sha256": "af5be33e664f8ff4d241faa16aa23104c013bb7efe778486940eb0559d2dfca4",
   "fits": false,
   "warnings": [
    "hazard-text-overflow"
   ]
  },
  "longChemicalNames|rect-63x44": {
-  "sha256": "a6abf9e61e22a6e06138c6d1705eac74495a710c2beaaa78b72667a7d3b320ef",
+  "sha256": "10a8e7cd7288f91a9e97c946fdd4f5875c32a1c89adbf9b3f723a1d23b6f319a",
   "fits": false,
   "warnings": [
    "hazard-text-overflow",
@@ -358,12 +360,12 @@
   ]
  },
  "longChemicalNames|rect-80x100": {
-  "sha256": "cd79fdc2f885fe57d51f4d021096570434a9c7f3baa6574a8481923728dd05d1",
+  "sha256": "1b4a9de3eb625c90e900653584fd782a8a97667005988cbd97b9f4572438b8c3",
   "fits": true,
   "warnings": []
  },
  "longChemicalNames|rect-150x40": {
-  "sha256": "548029ff7c45033538a168f3e96a8296c80278a37ade8bb38518d60c2030a298",
+  "sha256": "e3734e86339930c8e795e981714eee138d9caef8c8d3bd50f47c4a96b94ef5fd",
   "fits": false,
   "warnings": [
    "hazard-text-overflow",
@@ -371,7 +373,7 @@
   ]
  },
  "onePictogram|square-52-default": {
-  "sha256": "c66a85ff83e9bbb2c580f8afb68840ff96d4e1369dd9907690e475557cb4727f",
+  "sha256": "84c24610e21bfe4bf2e6018b238083ad6c598db442c0ecbfd8b731c04cd7d24a",
   "fits": false,
   "warnings": [
    "hazard-text-overflow",
@@ -379,24 +381,24 @@
   ]
  },
  "onePictogram|square-63": {
-  "sha256": "f24bae0dad516184d40a04e0d35588486fe2546ad85c0ef37d23226a08b1c55c",
+  "sha256": "fcdff408b46aa909661dade446a12cadd5708a4f83578a808f87bf9065d23b61",
   "fits": true,
   "warnings": []
  },
  "onePictogram|square-100": {
-  "sha256": "1e125832ec9b85ff5a26998acffffa5fa206dbeb97e41b2713c8abc51b2a5538",
+  "sha256": "dedc2b726cfc9bd4fbe3096bb4d800c978388bf1e8472e7c0877836cfebd8bec",
   "fits": true,
   "warnings": []
  },
  "onePictogram|rect-52x36-default": {
-  "sha256": "2a34c9ed899423d6145d4bcb60e3d69c566b78b8fc95c85adced30853ee3005c",
+  "sha256": "f65c8118d52da3622959b35abc2fffe8acf9cde2f960f3c177a2fe92976d08f3",
   "fits": false,
   "warnings": [
    "hazard-text-overflow"
   ]
  },
  "onePictogram|rect-63x44": {
-  "sha256": "664b8dcba14867a1b6a22e5ff41e8c91977fade0c54326adf8ca49ca17263f7a",
+  "sha256": "5b253731260ea5f9297c5805ef802d719a354c0ad6bf1a99a31627157e81604b",
   "fits": false,
   "warnings": [
    "hazard-text-overflow",
@@ -404,12 +406,12 @@
   ]
  },
  "onePictogram|rect-80x100": {
-  "sha256": "e6796c963020b21d8ce7f7db5423888aef3e3064b79e74bb653affb1b1e27768",
+  "sha256": "a1157ba3304ef2916f22aa05361902b29e5e1158e9c6da53e53fab2d2f5c407e",
   "fits": true,
   "warnings": []
  },
  "onePictogram|rect-150x40": {
-  "sha256": "b39d9833b9eebd2e4500398b56c254d5c86bf39efb3fd812f38cacdb89bbea33",
+  "sha256": "2a5d3d90f56a82fd4c8c21b3a8d84c347d16847a8981e7fd11f6829d79ae6ecd",
   "fits": false,
   "warnings": [
    "hazard-text-overflow",
