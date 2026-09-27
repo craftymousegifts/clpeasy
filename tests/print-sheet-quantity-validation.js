@@ -159,6 +159,10 @@ setTimeout(async () => {
     // ── Boundary 4: capacity with reserved positions -- reserved slots
     // must count against what setQty() will allow, exactly like Add. ───
     window.eval(`selectTemplate('custom', document.querySelector('.tpl-card[data-tpl="custom"]'))`);
+    // Stage 1 (27 Sep 2026): a Custom sheet grid must now fit inside its
+    // margins for every shape. Five 52mm rows (280mm) need a margin of at
+    // most 8.5mm, so this 10-slot fixture uses a 5mm margin.
+    document.getElementById('cust-margin').value = '5';
     document.getElementById('cust-cols').value = '2';
     document.getElementById('cust-rows').value = '5';
     window.eval('rebuildSheet();');

@@ -373,8 +373,14 @@ async function openComposer(opts){
     const canvasHTML = document.getElementById('sheet-canvas').innerHTML;
     const filledCount = (canvasHTML.match(/class="sheet-cell"/g)||[]).length;
     const emptyCount = (canvasHTML.match(/sheet-cell-empty/g)||[]).length;
-    assert.strictEqual(filledCount, 5, `expected 5 filled positions on the 3x5=15-slot Custom sheet, got ${filledCount}`);
-    assert.strictEqual(emptyCount, 10, `expected 10 blank positions, got ${emptyCount}`);
+    // Stage 1 (27 Sep 2026): the default 3x5 grid does not fit 52mm labels
+    // inside the 10mm margins (5 rows = 280mm > 277mm), so the first label
+    // added re-seeds it to the largest grid that does -- 3 x 4 = 12 slots,
+    // the same grid the approved ?label= journey (section 13 below) uses.
+    assert.strictEqual(window.eval('getTplConfig().cols'), 3, 'a 52mm circle keeps 3 columns');
+    assert.strictEqual(window.eval('getTplConfig().rows'), 4, 'a 52mm circle gets 4 rows -- 5 would run into the bottom margin');
+    assert.strictEqual(filledCount, 5, `expected 5 filled positions on the 3x4=12-slot Custom sheet, got ${filledCount}`);
+    assert.strictEqual(emptyCount, 7, `expected 7 blank positions, got ${emptyCount}`);
     ok('Custom Sheet geometry (template catalogue entry, cols/rows) and quantities are unchanged');
   }
 

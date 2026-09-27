@@ -95,7 +95,9 @@ setTimeout(() => {
     // saved label put through LabelLibrary's legacy migration on init()).
     const idCircle = window.eval('getSaved()')[0].id;
 
-    // 10-position Custom sheet (2 x 5).
+    // 10-position Custom sheet (2 x 5). Stage 1: five 52mm rows (280mm)
+    // only fit inside the margins at a margin of 8.5mm or less, so 5mm.
+    document.getElementById('cust-margin').value = '5';
     document.getElementById('cust-cols').value = '2';
     document.getElementById('cust-rows').value = '5';
     window.eval('rebuildSheet();');
