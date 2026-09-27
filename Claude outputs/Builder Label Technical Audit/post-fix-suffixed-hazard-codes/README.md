@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Branch | `fix/circle-per-line-text-fit`, on top of Issues #1–#5. Interim capture/block commit `fbdae72`; completed in the Issue #6 implementation commit. |
-| Status | For TEST REVIEW ONLY. Not merged to `main`. Not deployed to production. `main` (now `b9d3e32`, PAYG PR #156) was **not** merged into this branch. |
+| Status | **FIXED + QA PASSED + SIGNED OFF** (Michaela, Sept 2026). Application implementation `a762538` (on the test site), live-QA evidence `b8c2764`. Not merged to `main`. Not deployed to production. `main` (now `b9d3e32`, PAYG PR #156) was **not** merged into this branch. |
 | Regulatory source | Statements, classifications, signal words and pictograms verified by Michaela against the CLP material on legislation.gov.uk (Sept 2026). CLPeasy's build environment cannot reach that site; nothing was inferred from neighbouring entries. |
 
 ## Defect (M21, MEDIUM)
