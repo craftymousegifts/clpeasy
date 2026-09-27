@@ -428,6 +428,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .dl-print-guidance[hidden]{display:none;}
 .dl-print-guidance .dl-pg-icon{font-weight:800;font-size:15px;line-height:1.3;flex-shrink:0;}
 .dl-print-guidance p{margin:2px 0 0;}
+/* Stage 2 (27 Sep 2026): format help under the Step 5 buttons, the "How to
+   print" expander and Dismiss inside the download panel, and the save status. */
+.dl-print-guidance>div{flex:1;min-width:0;}
+.dl-pg-more{margin-top:6px;}
+.dl-pg-more summary{cursor:pointer;font-weight:700;text-decoration:underline;}
+.dl-pg-more ul{margin:6px 0 0 18px;padding:0;}
+.dl-pg-more li{margin:2px 0;}
+.dl-pg-note{font-size:12px;opacity:.9;}
+.dl-pg-close{flex-shrink:0;background:none;border:1px solid currentColor;border-radius:6px;color:inherit;font:600 12px 'DM Sans',sans-serif;padding:4px 8px;cursor:pointer;}
+.dl-format-help{margin:10px 0 0;font-size:12px;line-height:1.55;color:var(--muted);}
+.dl-format-help p{margin:0;}
+.dl-format-help ul{margin:4px 0 0 18px;padding:0;}
+.dl-format-help strong{color:var(--text);}
 .sdiv::after{content:'';flex:1;height:1px;background:var(--border);}
 
 /* NAV BUTTONS */
@@ -951,7 +964,18 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="help-step"><div class="help-num">2</div><div class="help-step-text"><strong>Tick the verification checkbox</strong> to confirm you have checked all data against your SDS.</div></div>
       <div class="help-step"><div class="help-num">3</div><div class="help-step-text">Download PNG, PDF or SVG only when the complete label passes the fit check.</div></div>
       <div class="help-step"><div class="help-num">4</div><div class="help-step-text">Click <strong>Save to my label library</strong> to save this label in your current browser for future use on this device.</div></div>
-      <div class="help-warn">The dashed line is a cut guide only — it will not print. Cut along this line after printing.</div>
+      <div class="help-warn">The dashed line is the cut guide border. It marks the outline of your label shape and is part of the downloaded label, so it <strong>does print</strong>. You can turn it off in Step 1 with <strong>Hide border</strong>.</div>
+    </div>
+
+    <!-- Stage 2 (27 Sep 2026): short printing guide. -->
+    <div class="help-section" id="help-printing">
+      <h3>Printing your CLPeasy labels</h3>
+      <details class="help-faq"><summary>Printing a single label</summary><p>Download <strong>PDF</strong> in Step 5 and click <strong>Print / Save as PDF</strong>. In the print settings choose <strong>Actual Size</strong> or <strong>100%</strong>, and turn off <strong>Fit to page</strong>, <strong>Shrink</strong> or <strong>Scale to fit</strong>. The exact wording varies between browsers, PDF viewers and printers.</p></details>
+      <details class="help-faq"><summary>Printing a sheet of labels</summary><p>Save each label, then open the <strong>Print Sheet Composer</strong>. It keeps every label at its saved size and lays them out on A4. Set your printer to <strong>A4</strong> paper and print at <strong>Actual Size / 100%</strong>, not Fit to page or Shrink.</p></details>
+      <details class="help-faq"><summary>Choosing a file format</summary><p><strong>PDF</strong>: best for printing at the label's real size. <strong>SVG</strong>: keeps the size in millimetres, for design and cutting-machine software. <strong>PNG</strong>: a high-resolution image; it doesn't store a print size, so the app you print it from may choose its own size.</p></details>
+      <details class="help-faq"><summary>First print check</summary><p>The first time you print, use ordinary paper and measure one label with a ruler. It should match the size shown in CLPeasy. For a sheet, also hold the test print against your label sheet to check the labels line up before using your label stock.</p></details>
+      <details class="help-faq"><summary>My label printed too large or too small</summary><p>Check the print scale is <strong>Actual Size / 100%</strong> and that Fit to page, Shrink or Scale to fit is turned off. If you printed a PNG, use PDF instead for a more reliable printed size.</p></details>
+      <details class="help-faq"><summary>My sheet doesn't line up with my label sheet</summary><p>Check the printer's paper size is A4 and the scale is Actual Size / 100%, then test on ordinary paper again. CLPeasy creates the file at the correct size, but your browser, PDF viewer and printer settings can still change how it prints.</p></details>
     </div>
 
     <div class="help-section">
@@ -1346,8 +1370,17 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button id="btn-svg" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬡ SVG</button>
       <button id="btn-pdf" onclick="printToPDF()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">▣ PDF</button>
       </div>
+      <!-- Stage 2: which format to choose (PDF for exact-size home printing). -->
+      <div class="dl-format-help" id="dl-format-help">
+        <p><strong>Printing at home?</strong> Choose <strong>PDF</strong> for the most reliable printed size, then print at <strong>Actual Size / 100%</strong>.</p>
+        <ul>
+          <li><strong>SVG</strong> keeps the label's size in millimetres, for design and cutting-machine software.</li>
+          <li><strong>PNG</strong> is a high-resolution image. The app you print it from may choose its own print size, so it isn't the best choice for exact-size printing.</li>
+        </ul>
+      </div>
       <div id="dl-print-guidance" class="field-alert field-alert-success dl-print-guidance" role="status" aria-live="polite" hidden></div>
       <button id="btn-save" onclick="saveLabel()" style="background:var(--off);color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">💾 Save to my label library</button>
+      <div id="save-status" class="field-alert field-alert-success dl-print-guidance" role="status" aria-live="polite" hidden></div>
 
 
     <!-- PRINT SHEET COMPOSER LINK -->
@@ -1456,7 +1489,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div style="margin-top:8px;">
 
     </div>
-    <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.3);text-align:center;">PNG for printing · SVG for cutting machines</div>
+    <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.3);text-align:center;">Printing at home? Use PDF in Step 5 · SVG for cutting machines · PNG as an image</div>
     <div style="margin-top:12px;text-align:center;"><button onclick="closeSheet()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:8px;">Hide label</button></div>
   </div>
 </div>
@@ -1711,13 +1744,24 @@ function printToPDF(){
     'svg{display:block;width:'+mmW+'mm;height:'+mmH+'mm;}'+
     '@page{size:'+mmW+'mm '+mmH+'mm;margin:0;}'+
     '@media print{html,body{width:'+mmW+'mm;height:'+mmH+'mm;}'+
-    'svg{width:'+mmW+'mm;height:'+mmH+'mm;}.print-btn{display:none;}}'+
+    'svg{width:'+mmW+'mm;height:'+mmH+'mm;}.print-btn,.print-note{display:none;}}'+
+    // Stage 2: screen-only printing note (position:fixed, so it never
+    // affects the label's page box; display:none when printing).
+    '.print-note{position:fixed;bottom:64px;right:16px;max-width:300px;background:#fff;border:1.5px solid #0D9488;'+
+    'border-radius:10px;padding:10px 12px;font:13px/1.45 sans-serif;color:#134E4A;box-shadow:0 4px 16px rgba(0,0,0,0.12);}'+
+    '.print-note p{margin:4px 0 0;}'+
     '.print-btn{position:fixed;bottom:16px;right:16px;background:#0D9488;color:white;border:none;'+
     'padding:10px 18px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;'+
     'font-family:sans-serif;box-shadow:0 4px 16px rgba(0,0,0,0.2);}';
-  const html='<!DOCTYPE html><html><head><title>'+title+'</title>'+
+  // Stage 2: viewport meta so phones show the Print button and note on
+  // screen (screen layout only -- print size comes from @page).
+  const html='<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>'+title+'</title>'+
     '<style>'+css+'</style></head>'+
     '<body>'+svgData+
+    '<div class="print-note" role="note"><strong>Important when printing</strong>'+
+    '<p><strong>Use:</strong> Actual Size or 100%.</p>'+
+    '<p><strong>Avoid:</strong> Fit to page, Shrink or Scale to fit.</p>'+
+    '<p>This label is '+mmW+' × '+mmH+' mm. This note does not print.</p></div>'+
     '<button class="print-btn" onclick="window.print()">&#x1F5A8; Print / Save as PDF</button>'+
     '</body></html>';
   // Use Blob URL — avoids document.write() quirks and template literal breakage
@@ -1739,7 +1783,6 @@ function printToPDF(){
   // Revoke blob URL after window has had time to load it
   setTimeout(function(){URL.revokeObjectURL(blobUrl);},10000);
   showPrintGuidance('pdf');
-  setTimeout(()=>showLabelDoneSplash('pdf'),1000);
 }
 // Pop-up was blocked — show inline amber warning
 function _showPopupBlockedWarning(){
@@ -2529,16 +2572,54 @@ function computeLabelKey(){
 // blocked, cancelled or failed) and purely informational: it never charges,
 // never blocks and needs no dismissal. Hidden again at the start of every
 // new download attempt so an earlier success can never look like a new one.
+// Stage 2 (27 Sep 2026): the approved heading and first sentence are kept
+// exactly; a format-specific line, a collapsed "How to print this label
+// correctly" list and a Dismiss button follow. Text only -- nothing here is
+// part of the label or the exported file.
 function showPrintGuidance(kind){
   const el=document.getElementById('dl-print-guidance');
   if(!el||!currentUser)return;
+  const d=getDims(), size=d.mmW+' × '+d.mmH+' mm';
+  const extra={
+    pdf:'<p>Your label is <strong>'+size+'</strong>. First time printing? Test on ordinary paper and measure the label with a ruler before using your label stock.</p>',
+    png:'<p><strong>PNG files don\'t store a print size</strong>, so the app you print from may choose its own size. To print at '+size+', use <strong>PDF</strong>.</p>',
+    svg:'<p>Your SVG is saved at <strong>'+size+'</strong> for design or cutting-machine software. After importing it, check it still shows '+size+'.</p>'
+  }[kind]||'';
   el.innerHTML='<span class="dl-pg-icon" aria-hidden="true">✓</span><div><strong>Label downloaded</strong>'+
-    '<p>Now load your chosen label paper or sheet into your printer. Print at <strong>100% / Actual Size</strong> to preserve the label dimensions.</p></div>';
+    '<p>Now load your chosen label paper or sheet into your printer. Print at <strong>100% / Actual Size</strong> to preserve the label dimensions.</p>'+
+    extra+
+    '<details class="dl-pg-more"><summary>How to print this label correctly</summary><ul>'+
+      '<li>Use <strong>PDF</strong> for the most reliable printed size.</li>'+
+      '<li><strong>Use:</strong> Actual Size or 100% in the print settings. The exact wording varies between browsers, PDF viewers and printers.</li>'+
+      '<li><strong>Avoid:</strong> Fit to page, Shrink or Scale to fit. These can make the label bigger or smaller.</li>'+
+      '<li>Check your paper or label stock is loaded the right way round.</li>'+
+      '<li>First time? Print on ordinary paper and measure the label with a ruler. It should measure '+size+'.</li>'+
+      '<li>Printing several labels on one sheet? Use the <a href="print.html" target="_blank" rel="noopener">Print Sheet Composer</a>.</li>'+
+    '</ul><p class="dl-pg-note">CLPeasy creates the label at the size shown in the Builder. Your browser, PDF viewer and printer settings can still change the printed size.</p></details>'+
+    '</div><button type="button" class="dl-pg-close" onclick="hidePrintGuidance()" aria-label="Dismiss printing guidance">Dismiss</button>';
   el.hidden=false;
 }
 function hidePrintGuidance(){
   const el=document.getElementById('dl-print-guidance');
   if(el)el.hidden=true;
+}
+// Stage 2: visible confirmation after a genuinely committed save (the old
+// full-screen done-splash never displayed -- see showLabelDoneSplash()).
+// Shown only from saveLabel()'s success path; hides itself after 8s.
+let _saveStatusTimer=null;
+function showSaveStatus(){
+  const el=document.getElementById('save-status');
+  if(!el)return;
+  el.innerHTML='<span class="dl-pg-icon" aria-hidden="true">✓</span><div><strong>Label saved</strong>'+
+    '<p>You\'ll find it in <a href="my-labels.html">My Labels</a> in this browser on this device.</p></div>';
+  el.hidden=false;
+  if(_saveStatusTimer)clearTimeout(_saveStatusTimer);
+  _saveStatusTimer=setTimeout(hideSaveStatus,8000);
+}
+function hideSaveStatus(){
+  const el=document.getElementById('save-status');
+  if(el)el.hidden=true;
+  if(_saveStatusTimer){clearTimeout(_saveStatusTimer);_saveStatusTimer=null;}
 }
 
 const POPUP_EXPORTS=['printToPDF','downloadPDFSheet','downloadPrintReadyPDF'];
@@ -2870,6 +2951,7 @@ async function saveLabel(){
   if(_hazardReviewRequired()){alert(_hazardReviewMessage());return;}
   if(isCustomSizeBelowSupportedMinimum()){alert(getCustomSizeMinMsg());return;}
   removeStaleEditNotice();
+  hideSaveStatus();
   const entry={schemaVersion:LABEL_SCHEMA_VERSION,rendererVersion:LabelRenderer.RENDERER_VERSION,
     scentName:S.scentName,productType:S.productType,shape:S.shape,size:S.size,customW:S.customW,customH:S.customH,signal:S.signal,sdsSignal:S.sdsSignal,
     hStatements:S.hStatements,pictograms:[...S.pictograms],sensitisers:[...S.sensitisers],bizName:S.bizName,bizAddress:S.bizAddress,
@@ -2946,7 +3028,7 @@ async function saveLabel(){
     editingLabelId=result.usedId;
     renderSaved();
     if(btn){btn.textContent='✅ Saved!';btn.style.background='#ECFDF5';btn.style.borderColor='var(--teal)';}
-    setTimeout(()=>showLabelDoneSplash('save'),600);
+    showSaveStatus();
     setTimeout(()=>{if(btn){btn.textContent='💾 Save to my label library';btn.style.background='';btn.style.borderColor='';}},2000);
   }catch(err){
     console.log('saveLabel mutate() failed:',err);
@@ -4353,6 +4435,11 @@ function lockHazardFields(lock){
 
 // ── LABEL DONE SPLASH ─────────────────────────────────────────────────────
 let _splashTimer=null;
+// Stage 2 (27 Sep 2026): no longer called. This full-screen splash never
+// displayed (its markup has inline display:none and its CSS sits inside a
+// print-popup template string, not this page's stylesheet). Save and
+// download confirmations are now the in-flow #save-status and
+// #dl-print-guidance panels in Step 5. Kept (with its markup) unchanged.
 function showLabelDoneSplash(actionLabel){
   const splash=document.getElementById('label-done-splash');
   if(!splash)return;
@@ -5202,7 +5289,6 @@ async function downloadPNG(){
   };
   img.onerror=function(){URL.revokeObjectURL(blobUrl);};
   img.src=blobUrl;
-  setTimeout(()=>showLabelDoneSplash('download'),1500);
 }
 
 // ── SVG DOWNLOAD ──────────────────────────────────────────────
@@ -5234,7 +5320,6 @@ function downloadSVG(){
     console.error('SVG download error:',err);
     alert('SVG download failed. Please try again.');
   }
-  setTimeout(()=>showLabelDoneSplash('svg'),600);
 }
 
 // ── MOBILE SHEET ──────────────────────────────────────────────
@@ -5358,13 +5443,12 @@ Your job is to understand what the user wants to make, confirm their requirement
 
 CLPeasy has these features:
 - BUILDER (builder.html): 5-step workflow — Step 1 Label shape, dimensions and appearance; Step 2 Product details; Step 3 Hazards and SDS Section 2.2 extraction; Step 4 Business details; Step 5 Download with PNG, PDF and SVG. Label fit uses the dimensions selected at the beginning in Step 1.
-- PRINT SHEET (print.html): arrange saved labels on A4, choose sheet template, set quantities per label, download PDF or individual PNGs for Cricut
-- DOWNLOAD OPTIONS (all on builder Step 5 and preview panel):
-  • ⬇ PNG — single label, 300 DPI, for home printing on plain paper or uploading to Canva
-  • ⬡ SVG — vector file for cutting machines and design tools
-  • 🖨 Avery Sheet — positions labels exactly on A4 to match real Avery sticker sheets (35mm=35/sheet, 40mm=24/sheet, 51mm=15/sheet, 63mm=12/sheet) — print on Avery blank label sticker paper from Amazon/Ryman/Hobbycraft
-  • 🏭 Print Shop PDF — 300 DPI PNG with 3mm bleed + crop marks — ready to email to a professional print company (Vistaprint, Moo, local printers)
-  • ✂️ Individual PNGs — individual 300 DPI PNGs, one per label, zipped if multiple
+- PRINT SHEET COMPOSER (print.html): arrange saved labels (one shape and size per sheet; different designs allowed) on an A4 sheet — Custom sheet or the EU30009 template — and set quantities. Labels always keep their saved physical size. "Print / Save as PDF" opens the A4 sheet for printing; "Download for cutting machine" gives individual PNGs (one per label, as a ZIP or one by one)
+- DOWNLOAD OPTIONS (builder Step 5 and preview panel) — only these three:
+  • ▣ PDF — opens the label at its exact size for printing or saving as PDF. Recommended for printing a single label at home at its intended size
+  • ⬡ SVG — vector file that keeps the label's size in mm, for design and cutting-machine software
+  • ⬇ PNG — high-resolution image (e.g. for Canva). A PNG does not store a print size, so the app used to print it may choose its own size — not the recommended route for exact-size printing
+- PRINTING AT THE RIGHT SIZE: print at Actual Size / 100% and turn off Fit to page, Shrink or Scale to fit (wording varies by browser, PDF viewer and printer). First time: test on ordinary paper and measure a label with a ruler before using label stock. CLPeasy creates the file at the correct size but cannot control the user's printer settings
 
 CRITICAL RULES:
 1. First message: extract what you can from the user's request. If key info is missing, ask 1-2 focused clarifying questions — NEVER more than 2 at once.
@@ -5377,10 +5461,10 @@ Key things to know:
 - "radius" in common usage often means the circle size (diameter). Clarify if unsure.
 - Multiple different scents = multiple labels = save each one in the library, then use Print Sheet
 - All labels same scent = build once, set quantity in Print Sheet
-- For cutting machines: use ✂️ Individual PNGs or ⬡ SVG — not the Avery Sheet
-- Sending to a print company: use 🏭 Print Shop PDF — it has bleed and crop marks which is what printers need
-- Printing at home on Avery sticker paper: use 🖨 Avery Sheet — it aligns exactly to real Avery sheets
-- Printing at home on plain paper (cut yourself): use ⬇ PNG
+- For cutting machines: use ⬡ SVG, or "Download for cutting machine" (individual PNGs) in the Print Sheet Composer
+- Sending to a print company: CLPeasy has no dedicated print-shop file with bleed or crop marks — the PDF is the exact label size without bleed, so tell them to check what file they need
+- Printing several labels on A4 sticker paper: save each label, then use the Print Sheet Composer and print the sheet at Actual Size / 100% on A4 paper
+- Printing a single label at home: use ▣ PDF and print at Actual Size / 100%
 - Uploading to Canva to add branding first: use ⬇ PNG, then in Canva use "Upload" and overlay brand elements
 - Sizes: 52mm = standard candle (CLP minimum), 63mm = large jar, Custom = any other size including wax melts (below 52mm triggers a compliance warning)
 - Maximum labels on A4 at 75mm: approximately 6 (3×2 grid with margins)
