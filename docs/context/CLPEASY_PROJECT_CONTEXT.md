@@ -58,6 +58,18 @@ The product has dealt with:
 
 The implementation must be careful around UK GB CLP requirements. Current regulatory requirements should be verified when making compliance-sensitive changes.
 
+## Regulatory scope (owner instruction, 27 Sep 2026 — permanent)
+CLPeasy is a **Great Britain CLP** label builder. All regulatory decisions (wording, classifications, pictograms, signal words, H/P statements and other legal label requirements) must be based on the **current GB CLP position** applicable in Great Britain.
+
+Source priority:
+1. GB CLP legislation applicable in Great Britain (current legislation.gov.uk version).
+2. HSE / GB CLP Agency authoritative guidance and information.
+3. The maker's current supplier SDS (especially Section 2) where it supplies the finished mixture's classification/label information.
+
+Current EU CLP, ECHA material, Northern Ireland/EU rules, UN GHS and other jurisdictions may be used for research/context only. They must never override or silently expand CLPeasy's GB requirements. If such material differs from, goes beyond, or cannot be confirmed against the current GB position: **stop and report it** — do not implement it as a CLPeasy requirement.
+
+Product scope stays GB home fragrance: candles, wax melts, reed diffusers, room sprays, car fragrance/car fresheners and closely related home-fragrance products using fragrance oils and essential oils. Not a general/global chemical-labelling system.
+
 ## Label/pictogram sizing
 Michaela has specifically raised concern that GHS pictograms must not fall below applicable minimum dimensions. The exact legal requirement should be verified against current official guidance before coding or changing compliance logic.
 
