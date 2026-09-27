@@ -1,0 +1,34 @@
+{
+ "originalRecordUntouched": true,
+ "before": {
+  "storedRecordUnchangedByOpening": true,
+  "step": 5,
+  "allowed": false,
+  "incomplete": [
+   "P261",
+   "P370+P378",
+   "P501"
+  ]
+ },
+ "step4": 3,
+ "stepNow": 3,
+ "after": {
+  "allowed": true
+ },
+ "printed": [
+  true,
+  true,
+  true,
+  true
+ ],
+ "resaved": {
+  "count": 1,
+  "id": "cd79e7af-829b-fddf-5c2e-7fc983690318",
+  "schemaVersion": 2,
+  "pChoiceCodes": [
+   "P261",
+   "P370+P378",
+   "P501"
+  ]
+ }
+} alerts ["CLP code not recognised\n\nCLPeasy did not recognise the following codes: P370, P378. Check that the SDS text was copied correctly and that you are using the current Great Britain-market SDS or classification documentation. Do not change the SDS code just to make the label generate. For help, contact support@clpeasy.com with the SDS and flagged code.","Please complete each stage in order before continuing."] errors []

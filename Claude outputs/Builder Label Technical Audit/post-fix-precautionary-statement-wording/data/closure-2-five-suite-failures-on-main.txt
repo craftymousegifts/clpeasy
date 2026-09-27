@@ -1,0 +1,22 @@
+Five full-suite failures reproduced on main (e8c1f25) and on the Issue #5 branch (b4c412b / 5cc1962), same assertion each.
+Run: node tests/<name>.js in a git worktree of e8c1f25 (repo node_modules), and on the branch HEAD.
+
+== builder-desktop-scroll-model
+main e8c1f25: AssertionError [ERR_ASSERTION]: Compliance card content changed
+branch HEAD : AssertionError [ERR_ASSERTION]: Compliance card content changed
+
+== builder-step-navigation-layout
+main e8c1f25: AssertionError [ERR_ASSERTION]: Compliance card content changed
+branch HEAD : AssertionError [ERR_ASSERTION]: Compliance card content changed
+
+== footer-and-compliance-wording
+main e8c1f25: AssertionError [ERR_ASSERTION]: showcase.html must describe the template (not the finished, unverified label) as including the required elements
+branch HEAD : AssertionError [ERR_ASSERTION]: showcase.html must describe the template (not the finished, unverified label) as including the required elements
+
+== lifecycle-reminder-accuracy
+main e8c1f25: AssertionError [ERR_ASSERTION]: pricing.html comparison table must still list "Regulation change alerts"
+branch HEAD : AssertionError [ERR_ASSERTION]: pricing.html comparison table must still list "Regulation change alerts"
+
+== smart-paste-user-guidance-wording
+main e8c1f25: AssertionError [ERR_ASSERTION]: index.html:704 ("any supplier" statement): approved replacement wording was not found verbatim
+branch HEAD : AssertionError [ERR_ASSERTION]: index.html:704 ("any supplier" statement): approved replacement wording was not found verbatim

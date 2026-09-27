@@ -1,0 +1,34 @@
+{
+ "originalRecordUntouched": true,
+ "before": {
+  "storedRecordUnchangedByOpening": true,
+  "step": 5,
+  "allowed": false,
+  "incomplete": [
+   "P261",
+   "P370+P378",
+   "P501"
+  ]
+ },
+ "step4": 4,
+ "stepNow": 5,
+ "after": {
+  "allowed": true
+ },
+ "printed": [
+  true,
+  true,
+  true,
+  true
+ ],
+ "resaved": {
+  "count": 1,
+  "id": "a1385cbb-a72d-0fb8-21bd-14ac25b498da",
+  "schemaVersion": 2,
+  "pChoiceCodes": [
+   "P261",
+   "P370+P378",
+   "P501"
+  ]
+ }
+} alerts [] errors []

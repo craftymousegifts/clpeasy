@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Branch | `fix/circle-per-line-text-fit`, on top of Issues #1–#4 (`859333f`) |
-| Status | For TEST REVIEW ONLY. Not merged to `main`. Not deployed to production. |
+| Status | **FIXED + QA PASSED + SIGNED OFF** (Michaela, Sept 2026). Final code `b4c412b`, which is on the test site. Not merged to `main`. Not deployed to production. |
 | Regulatory source | GB Regulation (EC) No 1272/2008 Annex IV, statement and conditions for use. Checked against legislation.gov.uk and supplied by Michaela (Sept 2026). CLPeasy's build environment cannot reach that site, so no wording was inferred from `/` or `…` punctuation. |
 
 ## Defect
@@ -147,6 +147,27 @@ Michaela rechecked Annex IV: "dust/fume/gas/mist/vapours/spray" is the list of a
 - **The Issue #4 test's pasted SDS** now includes the P501 wording.
 - **`builder-regression`:** the maker completes P302+P352 with "water".
 
+## Closure checks (recorded at sign-off)
+
+### 1. Legacy (schema-v1) saved label, end to end
+Run in real Chromium against the branch code (`data/closure-scripts/legacy-v1-label-end-to-end.js`; output in `data/closure-1-legacy-v1-label-end-to-end.txt`). A v1 record with P102, P261, P305+P351+P338, P370+P378 and P501, and no `pChoices`, was stored in the signed-out guest library and opened through the real "open saved label" path:
+- **Opening doesn't change it.** The stored record is byte-identical before and after opening, and so is the original object.
+- **It's blocked.** It lands at Step 5 with export refused, and P261, P370+P378 and P501 are reported incomplete. The fixed statements, including P305+P351+P338, print with the corrected wording.
+- **The maker completes it in Step 3** through the real cards: "vapour or dust", "foam", and both + "an approved waste site". Step 3 then continues.
+- **It becomes exportable,** and all four checked statements print exactly.
+- **Explicit Save upgrades the same record** (same id) to schema v2 with `pChoices` for P261, P370+P378 and P501. Nothing is rewritten until the maker saves.
+
+### 2. The five full-suite failures pre-date Issues #1–#5
+All five were reproduced on `main` at `e8c1f25`, each with the same assertion as on this branch (`data/closure-2-five-suite-failures-on-main.txt`):
+- builder-desktop-scroll-model;
+- builder-step-navigation-layout;
+- footer-and-compliance-wording;
+- lifecycle-reminder-accuracy;
+- smart-paste-user-guidance-wording.
+
+### 3. New separate audit item M62 (pre-existing, not fixed in Issue #5)
+Separately entered codes of a combined statement, e.g. `P370, P378`, are rejected by the existing Step 3 unrecognised-code check. `P370+P378` is recognised, and the renderer itself combines the two codes. Reproduced in `data/closure-3-M62-separate-p-codes-step3-reproduction.txt`. Full record: `../M62-separately-entered-combined-p-codes-step3.md`.
+
 ## Folder contents
 
 | Path | What |
@@ -156,3 +177,4 @@ Michaela rechecked Annex IV: "dust/fume/gas/mist/vapours/spray" is the list of a
 | `data/issue-*-output.txt` | Test outputs on the combined code |
 | `screenshots/local__*.png` | Step 3 cards (desktop and mobile, codes-only and Nikura paste) and the label preview, from local Chromium |
 | `screenshots/live__*.png` | Signed-out QA on the test deployment |
+| `data/closure-*.txt`, `data/closure-scripts/` | Closure checks 1–3 (above) and the scripts that reproduce them |
