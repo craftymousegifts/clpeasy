@@ -347,8 +347,11 @@ const H_LIB=[{code:'H225',desc:'Highly flammable liquid and vapour'},{code:'H226
 //                 text and is never asked of the maker: the supplier SDS
 //                 decides which codes apply; CLPeasy never adds, removes or
 //                 re-selects codes itself.
-//   selection  -- the supplier selects from Annex IV's own listed options
-//                 (P260/P261 exposure forms; P280 via its existing picker).
+//   selection  -- the supplier selects from Annex IV's own listed options:
+//                 P260/P261 exposure forms (dust/fume/gas/mist/vapours/spray
+//                 is the list of alternatives; the supplier's validated
+//                 wording of the selected form(s) is printed as given);
+//                 P280 via its existing picker.
 //   completion -- the supplier completes the "…" (source of emergency
 //                 medical advice, cleansing agent, first-aid reference,
 //                 extinguishing media, disposal instruction and, for P501,
@@ -361,14 +364,6 @@ const H_LIB=[{code:'H225',desc:'Highly flammable liquid and vapour'},{code:'H226
 // export route and the Composer (the Issue #4 required-content pattern).
 // `template` is the Annex IV wording shown to the maker (chip tooltip and
 // Step 3 completion card); it is never printed.
-const P_EXPOSURE_FORMS=[
-  {key:'dust',   re:/^dusts?$/i},
-  {key:'fume',   re:/^fumes?$/i},
-  {key:'gas',    re:/^gas(?:es)?$/i},
-  {key:'mist',   re:/^mists?$/i},
-  {key:'vapours',re:/^vapou?rs?$/i},
-  {key:'spray',  re:/^sprays?$/i},
-];
 // P501 "contents/container": Annex IV's own wording is printed when both apply.
 const P501_SCOPES={contents:'contents', container:'container', both:'contents/container'};
 const P_DEFS=[
@@ -377,8 +372,8 @@ const P_DEFS=[
   {code:'P103',kind:'fixed',text:'Read label before use.'},
   {code:'P210',kind:'fixed',text:'Keep away from heat, hot surfaces, sparks, open flames and other ignition sources. No smoking.'},
   {code:'P233',kind:'fixed',text:'Keep container tightly closed.'},
-  {code:'P260',kind:'selection',lead:'Do not breathe',template:'Do not breathe dust/fume/gas/mist/vapours/spray.',ask:'Tick the form(s) your supplier SDS lists for P260.'},
-  {code:'P261',kind:'selection',lead:'Avoid breathing',template:'Avoid breathing dust/fume/gas/mist/vapours/spray.',ask:'Tick the form(s) your supplier SDS lists for P261.'},
+  {code:'P260',kind:'selection',lead:'Do not breathe',template:'Do not breathe dust/fume/gas/mist/vapours/spray.',ask:'Enter the form(s) exactly as your supplier SDS gives them (dust, fume, gas, mist, vapour(s) or spray, joined by "or", "and", commas or "/").'},
+  {code:'P261',kind:'selection',lead:'Avoid breathing',template:'Avoid breathing dust/fume/gas/mist/vapours/spray.',ask:'Enter the form(s) exactly as your supplier SDS gives them (dust, fume, gas, mist, vapour(s) or spray, joined by "or", "and", commas or "/").'},
   {code:'P271',kind:'fixed',text:'Use only outdoors or in a well-ventilated area.'},
   {code:'P273',kind:'fixed',text:'Avoid release to the environment.'},
   {code:'P301+P310',kind:'completion',before:'IF SWALLOWED: Immediately call',after:'',template:'IF SWALLOWED: Immediately call a POISON CENTER/doctor/…',ask:'Enter the source of emergency medical advice exactly as your supplier SDS gives it.'},
@@ -453,13 +448,13 @@ function resolvePChoice(code, choice){
   if(!d || !pStatementNeedsChoice(code)) return null;
   const c=(choice && typeof choice==='object') ? choice : null;
   if(!c) return null;
-  if(d.kind==='selection'){
-    const picked=Array.isArray(c.forms)?c.forms:[];
-    const forms=P_EXPOSURE_FORMS.filter(f=>picked.includes(f.key)).map(f=>f.key);
-    return forms.length ? d.lead+' '+forms.join('/')+'.' : null;
-  }
   const t=cleanPCompletion(c.text, d);
   if(!t) return null;
+  // P260/P261: the supplier's own validated wording of the selected form(s)
+  // is printed as given ("vapour or dust" stays "vapour or dust") -- never
+  // re-ordered, re-pluralised or re-joined with "/" (Michaela's decision);
+  // it must consist only of Annex IV exposure forms and plain separators.
+  if(d.kind==='selection') return isExposureFormPhrase(t) ? d.lead+' '+t+'.' : null;
   if(d.scoped){
     const scope=P501_SCOPES[c.scope];
     return scope ? d.before+' '+scope+' to '+t+'.' : null;
@@ -489,24 +484,18 @@ const P_SEGMENT_STOP_RE=/\bEUH\s*\d{3}\b|\bH\d{3}[A-Za-z]{0,2}\b|\b(?:Supplement
 // become statement text.
 const P_FURNITURE_RE=/\bpage\s*\d|\bissue\s*date\b|\brevision\b|\bversion\b|\brev\.?\s*\d|\b(?:ltd|limited|plc|llc|inc|gmbh)\b|\b[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}\b|\btel(?:ephone)?\b|www\.|https?:|@|\b\d{1,2}[\/.]\d{1,2}[\/.]\d{2,4}\b|\bsection\s*\d/i;
 function _pEsc(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/:\s/g,':\\s*').replace(/\s+/g,'\\s+');}
-function _parseExposureForms(list){
-  const parts=list.split(/\s*(?:\/|,|&|\bor\b|\band\b)\s*/i).filter(Boolean);
-  if(!parts.length) return null;
-  const keys=[];
-  for(const part of parts){
-    const f=P_EXPOSURE_FORMS.find(x=>x.re.test(part));
-    if(!f) return null;
-    if(!keys.includes(f.key)) keys.push(f.key);
-  }
-  return P_EXPOSURE_FORMS.map(f=>f.key).filter(k=>keys.includes(k)); // Annex IV order
-}
+// P260/P261 completed wording: only Annex IV exposure forms (singular or
+// plural) joined by "/", a comma, "or" or "and" (", or"/", and" allowed).
+const P_EXPOSURE_FORM_WORD='(?:dusts?|fumes?|gas(?:es)?|mists?|vapou?rs?|sprays?)';
+const P_EXPOSURE_PHRASE_RE=new RegExp('^'+P_EXPOSURE_FORM_WORD+'(?:(?:\\s*\\/\\s*|\\s*,\\s*(?:(?:or|and)\\s+)?|\\s+(?:or|and)\\s+)'+P_EXPOSURE_FORM_WORD+')*$','i');
+function isExposureFormPhrase(t){ return P_EXPOSURE_PHRASE_RE.test(String(t||'')); }
 function _matchPTemplate(code, sentence){
   const d=P_DEFS_BY_CODE[code];
   const s=sentence.replace(/\s+/g,' ').trim();
   if(d.kind==='selection'){
     const m=s.match(new RegExp('^'+_pEsc(d.lead)+'\\s+(.+?)\\.?$','i'));
-    const forms=m && _parseExposureForms(m[1]);
-    return forms ? {forms} : null;
+    const text=m && cleanPCompletion(m[1], d);
+    return text && isExposureFormPhrase(text) ? {text} : null;
   }
   if(d.scoped){
     const m=s.match(/^Dispose\s+of\s+(contents\s*\/\s*container|contents\s+and\s+container|contents|container)\s+to\s+(.+?)\.?$/i);
@@ -3004,7 +2993,7 @@ function isCustomSizeBelowSupportedMinimum(shape, w, h){
 }
 
   const LabelRenderer = {
-    renderLabel, normalizeLabel, checkRequiredContent, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, P_DEFS, P_EXPOSURE_FORMS, P501_SCOPES, pStatementNeedsChoice, normalisePCodes, resolvePChoice, incompletePStatements, extractPChoicesFromText, GB_UNSUPPORTED_CODES, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
+    renderLabel, normalizeLabel, checkRequiredContent, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, P_DEFS, P501_SCOPES, pStatementNeedsChoice, normalisePCodes, resolvePChoice, incompletePStatements, extractPChoicesFromText, GB_UNSUPPORTED_CODES, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
     // GHS pictogram geometry -- exposed so tests/consumers measuring
     // compliance never have to re-derive or hardcode the sqrt(2)
     // square<->bounding-box relationship themselves.

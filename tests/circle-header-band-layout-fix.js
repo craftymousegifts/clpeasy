@@ -48,9 +48,9 @@ const { FIXTURE_P_CHOICES } = require('./fixtures/p-statement-choices');
 // given the shortest legitimate supplier completions, so it keeps testing
 // the same geometry. Documented FIT->NOT FIT sensitivity (asserted below):
 // with longer, Nikura-style completions (FIXTURE_P_CHOICES) the corrected
-// wording no longer fits at 63mm (it fits from 66mm) -- existing NOT FIT
+// wording no longer fits at 63mm (it fits from 67mm) -- existing NOT FIT
 // behaviour applies; the wording is never shortened to fit.
-const ERY_SHORT_P_CHOICES = { 'P261': { forms: ['vapours'] }, 'P302+P352': { text: 'water' }, 'P501': { scope: 'container', text: 'an approved waste site' } };
+const ERY_SHORT_P_CHOICES = { 'P261': { text: 'vapours' }, 'P302+P352': { text: 'water' }, 'P501': { scope: 'container', text: 'an approved waste site' } };
 const assert = require('assert');
 const { JSDOM } = require('jsdom');
 
@@ -99,8 +99,8 @@ try {
     // Issue #5 documented FIT->NOT FIT: corrected wording + Nikura-length supplier completions.
     const long63 = LR.renderLabel(Object.assign({}, eryryrty, { pChoices: FIXTURE_P_CHOICES }), { instanceId: 'eryryrty63long' });
     assert.strictEqual(long63.fits, false, 'eryryrty with Nikura-length supplier completions is expected NOT FIT at 63mm (Issue #5 documented change)');
-    const long66 = LR.renderLabel(Object.assign({}, eryryrty, { customW: 66, customH: 66, pChoices: FIXTURE_P_CHOICES }), { instanceId: 'eryryrty66long' });
-    assert.strictEqual(long66.fits, true, 'eryryrty with Nikura-length supplier completions fits at 66mm');
+    const long67 = LR.renderLabel(Object.assign({}, eryryrty, { customW: 67, customH: 67, pChoices: FIXTURE_P_CHOICES }), { instanceId: 'eryryrty67long' });
+    assert.strictEqual(long67.fits, true, 'eryryrty with Nikura-length supplier completions fits at 67mm');
   }
 
   // ── 2: fits with zero warnings ──────────────────────────────────

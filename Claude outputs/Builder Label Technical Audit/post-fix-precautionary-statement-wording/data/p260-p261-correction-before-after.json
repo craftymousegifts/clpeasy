@@ -1,0 +1,44 @@
+[
+ {
+  "sample": "Nikura POSITIVITY",
+  "supplierSection22": "P261, Avoid breathing vapour or dust.",
+  "beforeCorrection_acc7ba9": {
+   "stored": {
+    "forms": [
+     "dust",
+     "vapours"
+    ],
+    "source": "sds"
+   },
+   "printed": "Avoid breathing dust/vapours."
+  },
+  "afterCorrection": {
+   "stored": {
+    "text": "vapour or dust",
+    "source": "sds"
+   },
+   "printed": "Avoid breathing vapour or dust."
+  }
+ },
+ {
+  "sample": "Nikura NAG_CHAMPA",
+  "supplierSection22": "P261, Avoid breathing vapour or dust.",
+  "beforeCorrection_acc7ba9": {
+   "stored": {
+    "forms": [
+     "dust",
+     "vapours"
+    ],
+    "source": "sds"
+   },
+   "printed": "Avoid breathing dust/vapours."
+  },
+  "afterCorrection": {
+   "stored": {
+    "text": "vapour or dust",
+    "source": "sds"
+   },
+   "printed": "Avoid breathing vapour or dust."
+  }
+ }
+]

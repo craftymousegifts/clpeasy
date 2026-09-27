@@ -55,8 +55,8 @@ All 29 are kept.
 | P210 | Fixed | "Keep away from heat, hot surfaces, sparks, open flames and other ignition sources. No smoking." (was abbreviated) |
 | P211 | Fixed | "Do not spray on an open flame or other ignition source." |
 | P233 | Fixed (conditional use) | "Keep container tightly closed." The condition is not asked of the maker. |
-| P260 | Supplier selection | "Do not breathe" + ticked dust/fume/gas/mist/vapours/spray. Blocked until selected. |
-| P261 | Supplier selection | "Avoid breathing" + ticked forms. Blocked until selected. |
+| P260 | Supplier selection | "Do not breathe ___." The supplier's validated exposure-form wording is printed as given (see the P260/P261 correction below). Blocked until completed. |
+| P261 | Supplier selection | "Avoid breathing ___." The supplier's validated wording is printed as given, e.g. "Avoid breathing vapour or dust." Blocked until completed. |
 | P271 | Fixed | "Use only outdoors or in a well-ventilated area." |
 | P273 | Fixed (conditional use) | "Avoid release to the environment." |
 | P280 | Supplier selection | Existing P280 picker, unchanged |
@@ -88,7 +88,7 @@ The totals are 19 fixed, 3 supplier selection and 7 supplier completion.
 ## Smart Paste results (`tests/precautionary-statement-wording.js`, 18 cases)
 
 - **Real Nikura Nag Champa and Positivity:**
-  - P261 → dust + vapours (from "vapour or dust");
+  - P261 → "vapour or dust", printed as "Avoid breathing vapour or dust.";
   - P302+P352 → "soap and water";
   - P501 → both + "approved disposal site, in accordance with local regulations".
 - **Real Nikura Snow Pixie:** P501 accepted. The company address, "Page 2 (8)", issue date and version that follow it on separate lines are recognised as page furniture and never used.
@@ -96,8 +96,22 @@ The totals are 19 fixed, 3 supplier selection and 7 supplier completion.
   - a page header inside a statement, or an address inside one → *contaminated*;
   - unrecognised text after a statement, a column layout, a hyphenated line wrap, or the same code with conflicting wording → *ambiguous*;
   - codes only, or wording without codes → *not found*;
-  - "in accordance with…" without "to", "Wash with water" without "IF ON SKIN:", the template copied with "…", or an unknown exposure form → *not matching*.
+  - "in accordance with…" without "to", "Wash with water" without "IF ON SKIN:", the template copied with "…", or P260/P261 wording that isn't only exposure forms and plain separators → *not matching*.
 - **Accepted:** real supplier completions for P370+P378, P301+P310, P321 and P260, and a spaced combined code ("P370 + P378").
+
+## P260/P261 correction (after final review)
+
+Michaela rechecked Annex IV: "dust/fume/gas/mist/vapours/spray" is the list of alternatives; the supplier specifies the applicable conditions. So CLPeasy now preserves the supplier's validated completed wording instead of rebuilding it from tokens.
+
+| | Real Nikura Section 2.2 (Positivity, Nag Champa) | Stored | Printed |
+|---|---|---|---|
+| Before the correction (`acc7ba9`) | `P261, Avoid breathing vapour or dust.` | `{forms:["dust","vapours"]}` | Avoid breathing dust/vapours. |
+| After the correction | same | `{text:"vapour or dust"}` | **Avoid breathing vapour or dust.** |
+
+- **Validation stays strict.** The wording must be only exposure forms (dust, fume, gas, mist, vapour/vapours, spray, singular or plural) joined by "/", a comma, "or" or "and". Anything else is refused: "&", "smoke", "vapour or or dust", "vapours dust", "…". The page-header, address and ambiguity checks are unchanged. Raw SDS text is never printed, and wording that can't be validated still needs the maker to complete it.
+- **The Step 3 card** for P260/P261 is now a text box, like the other supplier cards. The maker copies the wording from their SDS.
+- **P280** is unchanged.
+- **Baseline effect:** only the Issue #1 square/rectangle baseline changed (56 cases containing P261), proven to differ solely in the P wording, with no fit change. The other three baselines are byte-identical. `data/p260-p261-correction-before-after.json` has the exact before/after.
 
 ## Saved-label migration results
 
@@ -119,8 +133,8 @@ The totals are 19 fixed, 3 supplier selection and 7 supplier completion.
 **How the proof works:** the pre-Issue-5 renderer, with only its P wording replaced by the corrected wording and the fixtures' supplier completions, produces byte-identical output to the new renderer for all 799 cases. The fixtures now carry realistic supplier completions (`tests/fixtures/p-statement-choices.js`, using the real Nikura wording). That P501 wording is longer than the old invented text, which causes most of the flips. **No wording was shortened to make anything fit**; the existing NOT FIT behaviour applies.
 
 **Other documented flips:**
-- the real saved label "eryryrty" at 63 mm fits with the shortest legitimate completions, but not with the Nikura-length ones (it fits from 66 mm);
-- the homepage 63 mm "circle-candle" thumbnail behaves the same way;
+- the real saved label "eryryrty" at 63 mm fits with the shortest legitimate completions, but not with the Nikura-length ones (it fits from 67 mm);
+- the homepage 63 mm "circle-candle" thumbnail behaves the same way (with the Nikura-length completions it fits from 64 mm);
 - the Issue #1 boundary sweeps moved: onePictogram now fits from 61 mm, multiP from 88 mm, heavy from 73 mm.
 
 **Homepage (`index.html`):** the five decorative label thumbnails and the lifecycle centre label are genuine renderer output (enforced by existing tests). They were regenerated so they show the corrected wording. Nothing else on the page changed.

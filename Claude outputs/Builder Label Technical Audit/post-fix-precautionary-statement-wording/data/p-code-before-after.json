@@ -33,13 +33,13 @@
   "code": "P260",
   "classification": "supplier selection",
   "before": "Do not breathe vapours or dust",
-  "after": "template (never printed): Do not breathe dust/fume/gas/mist/vapours/spray. -- prints only from the supplier choice; otherwise not printed and the label is blocked"
+  "after": "template (never printed): Do not breathe dust/fume/gas/mist/vapours/spray. -- prints \"Do not breathe <the supplier's validated exposure-form wording, as given>.\" only when completed; otherwise not printed and the label is blocked"
  },
  {
   "code": "P261",
   "classification": "supplier selection",
   "before": "Avoid breathing vapours and dust",
-  "after": "template (never printed): Avoid breathing dust/fume/gas/mist/vapours/spray. -- prints only from the supplier choice; otherwise not printed and the label is blocked"
+  "after": "template (never printed): Avoid breathing dust/fume/gas/mist/vapours/spray. -- prints \"Avoid breathing <the supplier's validated exposure-form wording, as given>.\" only when completed; otherwise not printed and the label is blocked"
  },
  {
   "code": "P271",

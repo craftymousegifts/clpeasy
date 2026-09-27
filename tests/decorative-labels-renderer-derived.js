@@ -20,8 +20,8 @@ const { FIXTURE_P_CHOICES } = require('./fixtures/p-statement-choices');
 // Issue #5: the 63mm circle-candle thumbnail uses the shortest legitimate
 // supplier completions so it still fits its documented size. With the longer
 // Nikura-style completions (FIXTURE_P_CHOICES) the corrected wording needs a
-// 66mm circle -- documented FIT->NOT FIT sensitivity, not shortened to fit.
-const CIRCLE_CANDLE_P_CHOICES = { 'P261': { forms: ['vapours'] }, 'P302+P352': { text: 'water' }, 'P501': { scope: 'container', text: 'an approved waste site' } };
+// 64mm circle -- documented FIT->NOT FIT sensitivity, not shortened to fit.
+const CIRCLE_CANDLE_P_CHOICES = { 'P261': { text: 'vapours' }, 'P302+P352': { text: 'water' }, 'P501': { scope: 'container', text: 'an approved waste site' } };
 const path = require('path');
 const assert = require('assert');
 const { JSDOM } = require('jsdom');

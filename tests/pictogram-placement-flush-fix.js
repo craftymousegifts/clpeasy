@@ -44,9 +44,9 @@ const { FIXTURE_P_CHOICES } = require('./fixtures/p-statement-choices');
 // given the shortest legitimate supplier completions, so it keeps testing
 // the same geometry. Documented FIT->NOT FIT sensitivity (asserted below):
 // with longer, Nikura-style completions (FIXTURE_P_CHOICES) the corrected
-// wording no longer fits at 63mm (it fits from 66mm) -- existing NOT FIT
+// wording no longer fits at 63mm (it fits from 67mm) -- existing NOT FIT
 // behaviour applies; the wording is never shortened to fit.
-const ERY_SHORT_P_CHOICES = { 'P261': { forms: ['vapours'] }, 'P302+P352': { text: 'water' }, 'P501': { scope: 'container', text: 'an approved waste site' } };
+const ERY_SHORT_P_CHOICES = { 'P261': { text: 'vapours' }, 'P302+P352': { text: 'water' }, 'P501': { scope: 'container', text: 'an approved waste site' } };
 const path = require('path');
 const assert = require('assert');
 const { JSDOM } = require('jsdom');

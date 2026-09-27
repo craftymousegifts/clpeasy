@@ -3799,7 +3799,7 @@ function _pChoiceCardHtml(code){
   const e=escapeBuilderText;
   let body='';
   if(d.kind==='selection'){
-    body=`<div class="p-choice-opts">${LabelRenderer.P_EXPOSURE_FORMS.map(f=>`<label class="p280-item-row"><input type="checkbox" data-role="form" value="${e(f.key)}" ${(c.forms||[]).includes(f.key)?'checked':''}>${e(f.key)}</label>`).join('')}</div>`;
+    body=`<div class="p-choice-sentence"><span>${e(d.lead)}</span><input type="text" class="p280-other-input" data-role="text" maxlength="150" value="${e(c.text||'')}" placeholder="as written in your SDS"><span>.</span></div>`;
   } else if(d.scoped){
     const scopes=[['contents','Contents'],['container','Container'],['both','Both (contents/container)']];
     body=`<div class="p-choice-opts">${scopes.map(([k,l])=>`<label class="p280-item-row"><input type="radio" name="p-choice-scope-${e(code)}" data-role="scope" value="${k}" ${c.scope===k?'checked':''}>${e(l)}</label>`).join('')}</div>
@@ -3843,12 +3843,8 @@ function _onPChoiceEdit(ev){
   const code=card.dataset.code;
   const d=LabelRenderer.P_DEFS.find(x=>x.code===code);
   const next={source:'maker'};
-  if(d.kind==='selection'){
-    next.forms=[...card.querySelectorAll('input[data-role="form"]:checked')].map(i=>i.value);
-  } else {
-    next.text=card.querySelector('input[data-role="text"]')?.value||'';
-    if(d.scoped)next.scope=card.querySelector('input[data-role="scope"]:checked')?.value||'';
-  }
+  next.text=card.querySelector('input[data-role="text"]')?.value||'';
+  if(d.scoped)next.scope=card.querySelector('input[data-role="scope"]:checked')?.value||'';
   S.pChoices=Object.assign({},S.pChoices,{[code]:next});
   _refreshPChoiceCard(card);
   updateLabel();

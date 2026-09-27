@@ -66,8 +66,8 @@ const SELECTION = ['P260', 'P261', 'P280'];
 const COMPLETION = ['P301+P310', 'P301+P312', 'P302+P352', 'P312', 'P321', 'P370+P378', 'P501'];
 // What each supplier choice must print as (FIXTURE_P_CHOICES).
 const COMPLETED = {
-  'P260': 'Do not breathe dust/vapours.',
-  'P261': 'Avoid breathing dust/vapours.',
+  'P260': 'Do not breathe dusts or mists.',
+  'P261': 'Avoid breathing vapour or dust.',
   'P301+P310': 'IF SWALLOWED: Immediately call a POISON CENTRE/doctor.',
   'P301+P312': 'IF SWALLOWED: Call a POISON CENTRE/doctor if you feel unwell.',
   'P302+P352': 'IF ON SKIN: Wash with plenty of soap and water.',
@@ -137,8 +137,13 @@ function partOne() {
   // explicit checks requested for Issue #5
   const P = (code, choice) => LR.resolvePChoice(code, choice);
   assert.strictEqual(P('P312', { text: 'NHS 111 or a doctor' }), 'Call NHS 111 or a doctor if you feel unwell.', 'P312 uses the supplier-selected source');
-  assert.strictEqual(P('P260', { forms: ['mist', 'dust'] }), 'Do not breathe dust/mist.', 'P260 forms follow the supplier selection, in Annex IV order');
-  assert.strictEqual(P('P261', { forms: ['vapours'] }), 'Avoid breathing vapours.', 'P261 does not collapse into the old vapours/dust wording');
+  // P260/P261: the supplier's validated wording is printed as given -- never
+  // re-ordered, re-pluralised or re-joined with "/" (Michaela's decision)
+  for (const [code, t, out] of [
+    ['P261', 'vapour or dust', 'Avoid breathing vapour or dust.'], ['P261', 'vapours', 'Avoid breathing vapours.'], ['P261', 'spray', 'Avoid breathing spray.'],
+    ['P261', 'mist/vapours/spray', 'Avoid breathing mist/vapours/spray.'], ['P261', 'dust, fume, or mist', 'Avoid breathing dust, fume, or mist.'],
+    ['P260', 'dusts or mists', 'Do not breathe dusts or mists.'], ['P260', 'vapours and spray', 'Do not breathe vapours and spray.'],
+  ]) assert.strictEqual(P(code, { text: t }), out, `${code} "${t}" must print exactly as the supplier wrote it`);
   assert.strictEqual(P('P501', { scope: 'container', text: 'a licensed waste contractor' }), 'Dispose of container to a licensed waste contractor.');
   assert.strictEqual(P('P501', { scope: 'contents', text: 'to an approved site' }), 'Dispose of contents to an approved site.', 'a repeated leading "to" is not doubled');
   // invalid / generic choices are rejected -- never a default
@@ -146,7 +151,8 @@ function partOne() {
     ['P501', { text: 'approved site' }], ['P501', { scope: 'all', text: 'approved site' }], ['P501', { scope: 'both', text: '' }],
     ['P370+P378', {}], ['P370+P378', { text: '   ' }], ['P370+P378', { text: '…' }], ['P370+P378', { text: '...' }],
     ['P321', { text: 'label. Rinse skin' }], ['P312', { text: 'x'.repeat(151) }], ['P302+P352', { text: 'water/…' }],
-    ['P260', { forms: [] }], ['P261', { forms: ['smoke'] }], ['P261', null], ['P102', { text: 'anything' }], ['P280', { text: 'gloves' }],
+    ['P260', { text: '' }], ['P261', { text: 'smoke' }], ['P261', { text: 'vapour & dust' }], ['P261', { text: 'vapour or or dust' }], ['P261', { text: 'vapours dust' }],
+    ['P261', { text: 'dust/fume/…' }], ['P261', { forms: ['vapours'] }], ['P261', null], ['P102', { text: 'anything' }], ['P280', { text: 'gloves' }],
   ]) assert.strictEqual(P(code, bad), null, `${code} ${JSON.stringify(bad)} must be rejected`);
   // P370+P378 and P501 can never print a CLPeasy completion
   for (const code of ['P370+P378', 'P501']) {
@@ -199,9 +205,9 @@ function partTwo() {
   };
   // real Nikura fixtures (codes as Smart Paste's existing extraction leaves them)
   expect('Nikura Nag Champa', x(N.NAG_CHAMPA_TEXT, ['P261', 'P273', 'P302+P352', 'P333+P313', 'P501']),
-    { 'P261': { forms: ['dust', 'vapours'], source: 'sds' }, 'P302+P352': { text: 'soap and water', source: 'sds' }, 'P501': NIKURA_P501 }, {});
+    { 'P261': { text: 'vapour or dust', source: 'sds' }, 'P302+P352': { text: 'soap and water', source: 'sds' }, 'P501': NIKURA_P501 }, {});
   expect('Nikura Positivity', x(N.POSITIVITY_TEXT, ['P261', 'P302+P352', 'P333+P313', 'P501']),
-    { 'P261': { forms: ['dust', 'vapours'], source: 'sds' }, 'P302+P352': { text: 'soap and water', source: 'sds' }, 'P501': NIKURA_P501 }, {});
+    { 'P261': { text: 'vapour or dust', source: 'sds' }, 'P302+P352': { text: 'soap and water', source: 'sds' }, 'P501': NIKURA_P501 }, {});
   // Snow Pixie: the page footer (company address, page number, issue date,
   // version) follows P501 on separate lines -- it is recognised and never used
   expect('Nikura Snow Pixie', x(N.SNOW_PIXIE_TEXT, ['P273', 'P501']), { 'P501': NIKURA_P501 }, {});
@@ -224,7 +230,7 @@ function partTwo() {
   expect('supplier completions', x('P370+P378 In case of fire: Use CO2, dry chemical or foam to extinguish.\nP301+P310 IF SWALLOWED: Immediately call a POISON CENTER/doctor.\nP321 Specific treatment (see first aid measures on this label).\nP260 Do not breathe dusts or mists.',
     ['P370+P378', 'P301+P310', 'P321', 'P260']),
     { 'P370+P378': { text: 'CO2, dry chemical or foam', source: 'sds' }, 'P301+P310': { text: 'a POISON CENTER/doctor', source: 'sds' },
-      'P321': { text: 'first aid measures', source: 'sds' }, 'P260': { forms: ['dust', 'mist'], source: 'sds' } }, {});
+      'P321': { text: 'first aid measures', source: 'sds' }, 'P260': { text: 'dusts or mists', source: 'sds' } }, {});
   expect('spaced combined code', x('P370 + P378 In case of fire: Use foam to extinguish.', ['P370+P378']), { 'P370+P378': { text: 'foam', source: 'sds' } }, {});
   expect('fixed codes are never extracted', x('P102 Keep out of reach. P210 Keep away from heat.', ['P102', 'P210']), {}, {});
   // raw SDS text never reaches the label: the Snow Pixie footer is absent
@@ -352,7 +358,6 @@ async function partFour() {
       tick: () => page.evaluate(() => { const c = document.getElementById('verify-checkbox'); c.checked = true; c.dispatchEvent(new Event('change', { bubbles: true })); }),
       // maker completes a card through its real inputs
       fill: (code, v) => page.evaluate((code, v) => { const card = document.querySelector(`.p-choice-card[data-code="${code}"]`); const i = card.querySelector('input[data-role="text"]'); i.value = v; i.dispatchEvent(new Event('input', { bubbles: true })); }, code, v),
-      tickForm: (code, f) => page.evaluate((code, f) => { const card = document.querySelector(`.p-choice-card[data-code="${code}"]`); const i = card.querySelector(`input[data-role="form"][value="${f}"]`); i.checked = true; i.dispatchEvent(new Event('change', { bubbles: true })); }, code, f),
       scope: (code, s) => page.evaluate((code, s) => { const card = document.querySelector(`.p-choice-card[data-code="${code}"]`); const i = card.querySelector(`input[data-role="scope"][value="${s}"]`); i.checked = true; i.dispatchEvent(new Event('change', { bubbles: true })); }, code, s),
       cards: () => page.evaluate(() => [...document.querySelectorAll('.p-choice-card')].map(c => ({ code: c.dataset.code, incomplete: c.classList.contains('incomplete'), status: c.querySelector('.p-choice-status').textContent,
         reason: (c.querySelector('.p-choice-reason') || {}).textContent || '', values: [...c.querySelectorAll('input[type="text"]')].map(i => i.value), checked: c.querySelectorAll('input:checked').length }))),
@@ -386,7 +391,7 @@ async function partFour() {
     assert.deepStrictEqual(cards.map(c => [c.code, c.incomplete]), [['P261', false], ['P302+P352', false], ['P501', false]], `Nikura paste: cards ${JSON.stringify(cards)}`);
     assert(cards.every(c => c.status.includes('From your pasted SDS')), 'SDS-sourced choices are labelled for the maker to check');
     let text = await H.labelText();
-    for (const s of ['Avoid breathing dust/vapours.', 'IF ON SKIN: Wash with plenty of soap and water.', 'If skin irritation or rash occurs: Get medical advice/attention.', COMPLETED['P501']]) assert(text.includes(s), `Nikura paste must print "${s}": ${text}`);
+    for (const s of ['Avoid breathing vapour or dust.', 'IF ON SKIN: Wash with plenty of soap and water.', 'If skin irritation or rash occurs: Get medical advice/attention.', COMPLETED['P501']]) assert(text.includes(s), `Nikura paste must print "${s}": ${text}`);
     assert(!/Nikura|Page 2|Issue date/.test(text), 'page furniture must never print');
     await H.confirmHazards(); await H.step(4);
     assert.strictEqual(await H.at(), 4, 'Step 3 continues when every supplier statement is complete');
@@ -403,7 +408,7 @@ async function partFour() {
     await H.confirmHazards(); let n = alerts.length; await H.step(4);
     assert.strictEqual(await H.at(), 3, 'Step 3 must block while supplier wording is missing');
     assert(alerts[n].includes('Complete the supplier wording for P261, P370+P378, P501'), `Step 3 message: ${alerts[n]}`);
-    await H.tickForm('P261', 'vapours'); await H.fill('P370+P378', 'alcohol-resistant foam'); await H.fill('P501', 'a licensed waste contractor');
+    await H.fill('P261', 'vapours'); await H.fill('P370+P378', 'alcohol-resistant foam'); await H.fill('P501', 'a licensed waste contractor');
     n = alerts.length; await H.step(4);
     assert.strictEqual(await H.at(), 3, 'P501 still needs contents/container/both');
     assert(alerts[n].includes('P501') && !alerts[n].includes('P261'), `only P501 remains: ${alerts[n]}`);

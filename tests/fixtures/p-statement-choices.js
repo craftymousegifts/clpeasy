@@ -5,14 +5,15 @@
 // COMPLETE label keep printing a finished statement. It is never a CLPeasy
 // default -- the app has none.
 //
+// P260 uses the Annex IV condition's own example ("dusts or mists").
 // P261/P302+P352/P501 use the real Nikura Section 2.2 wording already in
 // tests/slash-p-code-normalisation.js ("Avoid breathing vapour or dust.",
 // "IF ON SKIN: Wash with plenty of soap and water.", "Dispose of
 // contents/container to approved disposal site, in accordance with local
 // regulations.").
 const FIXTURE_P_CHOICES = {
-  'P260': { forms: ['dust', 'vapours'], source: 'maker' },
-  'P261': { forms: ['dust', 'vapours'], source: 'maker' },
+  'P260': { text: 'dusts or mists', source: 'maker' },
+  'P261': { text: 'vapour or dust', source: 'maker' },
   'P301+P310': { text: 'a POISON CENTRE/doctor', source: 'maker' },
   'P301+P312': { text: 'a POISON CENTRE/doctor', source: 'maker' },
   'P302+P352': { text: 'soap and water', source: 'maker' },
