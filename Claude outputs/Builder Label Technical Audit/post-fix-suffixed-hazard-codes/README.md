@@ -58,6 +58,20 @@ Reproduction: `data/before-fix-reproduction.json`.
 - **Saved labels:** a saved H317 + H360Fd label keeps the exact code, Danger and the pictograms. Reopening it re-renders the statement.
 - **Composer:** 9 saved labels, one per code. Each renders the complete statement and prints, and the records are unchanged.
 
+## Signed-out QA on the test site (`a762538`, deploy `6ab90a3f8bd9da8f3e8ae3eb`)
+
+Results are in `data/live-test-site-qa-results.json` and `screenshots/live__*.png`.
+
+- **Each of the nine codes, desktop and mobile (18 runs):** Smart Paste keeps the exact code, Step 3 accepts it, and the signal word and pictogram (GHS08 only) are correct. The statement appears in the preview and in both captured exports (SVG and print/PDF).
+- **Combinations:**
+  - H317 + H360FD → **Danger**, exclamation + GHS08;
+  - H317 + H361f → Warning, exclamation + GHS08.
+- **Spaced forms:** "H361 d" → H361d, "H360 FD" → H360FD, "H350 i" → H350i, and Step 3 accepts each.
+- **Unknown suffixes:** H317s, H361F and H360fd are kept exactly and blocked at Step 3, and the message names the code.
+- **Saved label:** H317 + H360Fd is kept exactly, with Danger and exclamation + GHS08. Reopening it re-renders the statement.
+- **Composer:** the live Composer rasterises each label to a PNG, so its sheet has no searchable text. I captured the SVG it rasterises from: it contains the complete H360Fd statement, DANGER and H317. The screenshot shows the same.
+- **No page errors, and no blocked write attempts.**
+
 ## FIT impact (`data/fit-impact-restored-content.json`)
 
 - **Existing baselines are unchanged.** The Issue #1–#4 baselines contain no suffixed codes, and their tests pass unchanged.

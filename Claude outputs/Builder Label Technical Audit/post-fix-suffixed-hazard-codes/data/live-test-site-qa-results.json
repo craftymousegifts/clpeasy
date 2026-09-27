@@ -1,0 +1,345 @@
+{
+ "site": "https://clpeasy-circle-fit-test.netlify.app",
+ "deploy": "6ab90a3f8bd9da8f3e8ae3eb",
+ "commit": "a762538",
+ "signedOut": true,
+ "rows": [
+  {
+   "id": "DESKTOP H350i",
+   "exact": true,
+   "step3Accepted": true,
+   "signalOk": true,
+   "signal": "Danger",
+   "pictograms": [
+    "health"
+   ],
+   "previewHasStatement": true,
+   "exportsHaveStatement": true,
+   "allowed": true
+  },
+  {
+   "id": "DESKTOP H360F",
+   "exact": true,
+   "step3Accepted": true,
+   "signalOk": true,
+   "signal": "Danger",
+   "pictograms": [
+    "health"
+   ],
+   "previewHasStatement": true,
+   "exportsHaveStatement": true,
+   "allowed": true
+  },
+  {
+   "id": "DESKTOP H360D",
+   "exact": true,
+   "step3Accepted": true,
+   "signalOk": true,
+   "signal": "Danger",
+   "pictograms": [
+    "health"
+   ],
+   "previewHasStatement": true,
+   "exportsHaveStatement": true,
+   "allowed": true
+  },
+  {
+   "id": "DESKTOP H360FD",
+   "exact": true,
+   "step3Accepted": true,
+   "signalOk": true,
+   "signal": "Danger",
+   "pictograms": [
+    "health"
+   ],
+   "previewHasStatement": true,
+   "exportsHaveStatement": true,
+   "allowed": true
+  },
+  {
+   "id": "DESKTOP H360Fd",
+   "exact": true,
+   "step3Accepted": true,
+   "signalOk": true,
+   "signal": "Danger",
+   "pictograms": [
+    "health"
+   ],
+   "previewHasStatement": true,
+   "exportsHaveStatement": true,
+   "allowed": true
+  },
+  {
+   "id": "DESKTOP H360Df",
+   "exact": true,
+   "step3Accepted": true,
+   "signalOk": true,
+   "signal": "Danger",
+   "pictograms": [
+    "health"
+   ],
+   "previewHasStatement": true,
+   "exportsHaveStatement": true,
+   "allowed": true
+  },
+  {
+   "id": "DESKTOP H361f",
+   "exact": true,
+   "step3Accepted": true,
+   "signalOk": true,
+   "signal": "Warning",
+   "pictograms": [
+    "health"
+   ],
+   "previewHasStatement": true,
+   "exportsHaveStatement": true,
+   "allowed": true
+  },
+  {
+   "id": "DESKTOP H361d",
+   "exact": true,
+   "step3Accepted": true,
+   "signalOk": true,
+   "signal": "Warning",
+   "pictograms": [
+    "health"
+   ],
+   "previewHasStatement": true,
+   "exportsHaveStatement": true,
+   "allowed": true
+  },
+  {
+   "id": "DESKTOP H361fd",
+   "exact": true,
+   "step3Accepted": true,
+   "signalOk": true,
+   "signal": "Warning",
+   "pictograms": [
+    "health"
+   ],
+   "previewHasStatement": true,
+   "exportsHaveStatement": true,
+   "allowed": true
+  },
+  {
+   "id": "MOBILE H350i",
+   "exact": true,
+   "step3Accepted": true,
+   "signalOk": true,
+   "signal": "Danger",
+   "pictograms": [
+    "health"
+   ],
+   "previewHasStatement": true,
+   "exportsHaveStatement": true,
+   "allowed": true
+  },
+  {
+   "id": "MOBILE H360F",
+   "exact": true,
+   "step3Accepted": true,
+   "signalOk": true,
+   "signal": "Danger",
+   "pictograms": [
+    "health"
+   ],
+   "previewHasStatement": true,
+   "exportsHaveStatement": true,
+   "allowed": true
+  },
+  {
+   "id": "MOBILE H360D",
+   "exact": true,
+   "step3Accepted": true,
+   "signalOk": true,
+   "signal": "Danger",
+   "pictograms": [
+    "health"
+   ],
+   "previewHasStatement": true,
+   "exportsHaveStatement": true,
+   "allowed": true
+  },
+  {
+   "id": "MOBILE H360FD",
+   "exact": true,
+   "step3Accepted": true,
+   "signalOk": true,
+   "signal": "Danger",
+   "pictograms": [
+    "health"
+   ],
+   "previewHasStatement": true,
+   "exportsHaveStatement": true,
+   "allowed": true
+  },
+  {
+   "id": "MOBILE H360Fd",
+   "exact": true,
+   "step3Accepted": true,
+   "signalOk": true,
+   "signal": "Danger",
+   "pictograms": [
+    "health"
+   ],
+   "previewHasStatement": true,
+   "exportsHaveStatement": true,
+   "allowed": true
+  },
+  {
+   "id": "MOBILE H360Df",
+   "exact": true,
+   "step3Accepted": true,
+   "signalOk": true,
+   "signal": "Danger",
+   "pictograms": [
+    "health"
+   ],
+   "previewHasStatement": true,
+   "exportsHaveStatement": true,
+   "allowed": true
+  },
+  {
+   "id": "MOBILE H361f",
+   "exact": true,
+   "step3Accepted": true,
+   "signalOk": true,
+   "signal": "Warning",
+   "pictograms": [
+    "health"
+   ],
+   "previewHasStatement": true,
+   "exportsHaveStatement": true,
+   "allowed": true
+  },
+  {
+   "id": "MOBILE H361d",
+   "exact": true,
+   "step3Accepted": true,
+   "signalOk": true,
+   "signal": "Warning",
+   "pictograms": [
+    "health"
+   ],
+   "previewHasStatement": true,
+   "exportsHaveStatement": true,
+   "allowed": true
+  },
+  {
+   "id": "MOBILE H361fd",
+   "exact": true,
+   "step3Accepted": true,
+   "signalOk": true,
+   "signal": "Warning",
+   "pictograms": [
+    "health"
+   ],
+   "previewHasStatement": true,
+   "exportsHaveStatement": true,
+   "allowed": true
+  },
+  {
+   "id": "COMBO H317 + H360FD",
+   "h": "H317, H360FD",
+   "signal": "Danger",
+   "expected": "Danger",
+   "pictograms": [
+    "exclamation",
+    "health"
+   ],
+   "both": true
+  },
+  {
+   "id": "COMBO H317 + H361f",
+   "h": "H317, H361f",
+   "signal": "Warning",
+   "expected": "Warning",
+   "pictograms": [
+    "exclamation",
+    "health"
+   ],
+   "both": true
+  },
+  {
+   "id": "SPACED H361 d,",
+   "h": "H317, H361d",
+   "ok": true,
+   "step3Accepted": true
+  },
+  {
+   "id": "SPACED H360 FD",
+   "h": "H317, H360FD",
+   "ok": true,
+   "step3Accepted": true
+  },
+  {
+   "id": "SPACED H350 i,",
+   "h": "H317, H350i",
+   "ok": true,
+   "step3Accepted": true
+  },
+  {
+   "id": "UNKNOWN H317s",
+   "h": "H317, H317s",
+   "keptExactly": true,
+   "step3Blocked": true,
+   "messageNamesCode": true
+  },
+  {
+   "id": "UNKNOWN H361F",
+   "h": "H317, H361F",
+   "keptExactly": true,
+   "step3Blocked": true,
+   "messageNamesCode": true
+  },
+  {
+   "id": "UNKNOWN H360fd",
+   "h": "H317, H360fd",
+   "keptExactly": true,
+   "step3Blocked": true,
+   "messageNamesCode": true
+  },
+  {
+   "id": "SAVED H317 + H360Fd",
+   "saved": "H317, H360Fd",
+   "signal": "Danger",
+   "pictograms": [
+    "exclamation",
+    "health"
+   ],
+   "reopenedH": "H317, H360Fd",
+   "reopenedStatement": true
+  },
+  {
+   "id": "COMPOSER H317 + H360Fd",
+   "h": "H317, H360Fd",
+   "statement": false,
+   "danger": false,
+   "fitIssues": 0,
+   "contentIssues": 0,
+   "note": "text check not applicable: the live Composer rasterises each label to PNG -- see composerRasterSourceCheck"
+  }
+ ],
+ "composerRasterSourceCheck": {
+  "rasterSources": 1,
+  "sourceHasStatement": true,
+  "sourceHasDanger": true,
+  "sourceHasH317": true,
+  "hrefStart": "data:image/png;base64,iVBORw0KGgoAAAANSU",
+  "savedH": "H317, H360Fd",
+  "cellHtmlLen": 154355,
+  "tags": [
+   "svg",
+   "image"
+  ],
+  "imgSrc": [],
+  "inText": false,
+  "inDecoded": false,
+  "danger": false,
+  "innerTextHas": false,
+  "fit": 0,
+  "content": 0
+ },
+ "pageErrors": [],
+ "blockedWrites": []
+}
