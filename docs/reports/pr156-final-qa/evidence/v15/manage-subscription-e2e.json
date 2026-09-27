@@ -1,0 +1,19 @@
+{
+  "run": "2026-09-27 05:58-06:05 UTC, CLPeasy Test (wwjhvpphlbgtywxskqnf) + Stripe Sandbox acct_1TdczqKF3jvQfgEa, test clock clock_1UKB6xKF3jvQfgEamTUhXoOC (deleted afterwards)",
+  "source": "production qvkosdqcryrcfbjtaxic manage-subscription v5 (verify_jwt true), retrieved read-only; committed verbatim as supabase/functions/manage-subscription/index.ts",
+  "test_deployment": "CLPeasy Test manage-subscription v1 = repo file with Access-Control-Allow-Origin set to the v10 Test site (only difference)",
+  "calls": "real HTTPS POSTs to the Test function with each disposable user's own login JWT and the exact bodies account.html sends",
+  "results": {
+    "pause (Easy Start, reason quiet)": "200; Stripe pause_collection=mark_uncollectible; profile paused, pause_reason quiet, paused_at set; plan/limit kept",
+    "pause (Easy Pro, reason break), then renewal while paused": "renewal invoice 2026-10-27 £13.49 status UNCOLLECTIBLE (no charge); profile stayed paused, downloads_used 8/30 (no refill)",
+    "reactivate after pause": "200; pause cleared on the SAME subscription; profile active; downloads_used RESET 5 -> 0 (and 8 -> 0) by stripe-webhook 'genuine reactivation' -- see finding MS-1",
+    "cancel (reason price)": "200; Stripe cancel_at_period_end=true, cancel_at 2026-10-27T05:58:55Z; profile cancelled, deletion_date = period end, plan kept; cancel_reason saved as 'price' then overwritten to 'other' by stripe-webhook -- finding MS-2",
+    "reactivate after scheduled cancellation": "200; profile active, deletion_date cleared",
+    "cancel then clock past period end": "Stripe status canceled; customer.subscription.deleted -> profile free / cancelled / 0; subscriptions row cancelled",
+    "reactivate a fully ended subscription": "409 FULLY_ENDED (Account falls back to Checkout)",
+    "reactivate with no linked subscription row": "404 NO_SUBSCRIPTION (Account falls back to Checkout)",
+    "no Authorization header": "401 UNAUTHORIZED_NO_AUTH_HEADER (gateway)"
+  },
+  "cleanup": {"test_clock_deleted": true, "disposable_users_deleted": 3, "qa-lc users left": 0, "pg_net": "dropped", "qa-sandbox-price-check": "410 stub (v15)"},
+  "manual_QA_account": "unchanged: easy_start active, 2/20 used, 24 purchased, 5 download records"
+}

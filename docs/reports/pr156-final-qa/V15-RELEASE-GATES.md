@@ -282,3 +282,69 @@ worked:
   23:32:03 UTC.
 - **Result:** the Safari export used **exactly one plan download**. Purchased downloads were not
   touched, and the new record uses the size-aware key.
+
+## 12. Live webhook API version, and `manage-subscription` brought into the repository
+
+### Live Stripe webhook API version (owner-confirmed)
+
+- **What the owner found:** the active CLPeasy Production webhook in Stripe Live mode (pointing at
+  the production Supabase project) uses API version **`2026-05-27.dahlia`**.
+- **What that means:** this is within the range affected by the invoice-format defect in §3.
+  - Until the corrected `stripe-webhook` is deployed, production `invoice.paid` (monthly allowance
+    refill on renewal) and `invoice.created` (2027 promotion removal) do nothing.
+- **Release consequence:** deploying the corrected `stripe-webhook` is a **required production
+  release item**. No Live or production change was made.
+
+### `manage-subscription`
+
+- **Source:** production `manage-subscription` v5, retrieved **read-only**. Production was not
+  modified or redeployed.
+  - Committed verbatim as `supabase/functions/manage-subscription/index.ts`.
+  - Its header comment still says "NOT YET DEPLOYED"; it is deployed and was kept verbatim.
+- **Behaviour:**
+  - **Sign-in:** the user comes only from the verified login token. The Stripe subscription is
+    looked up server-side for that user; the request body can't choose a user or subscription.
+  - **`pause`:** `pause_collection: mark_uncollectible`, then profile `paused` plus the reason and
+    time.
+  - **`cancel`:** `cancel_at_period_end: true`, then profile `cancelled` with `deletion_date` =
+    Stripe's current period end.
+  - **`reactivate`:** if Stripe says `canceled`, it returns 409 `FULLY_ENDED`. Otherwise it clears
+    pause and cancellation on the **same** subscription, then sets the profile `active`.
+  - **No linked subscription:** 404 `NO_SUBSCRIPTION`. **Stripe error:** 500, and the profile is
+    left unchanged (Stripe is always called first).
+  - **Browser access (CORS):** `https://clpeasy.com` only. That is correct for production; the Test
+    copy allows the Test site instead.
+- **Fit with the Account page and PR #156:**
+  - `account.html` sends exactly `{action:'pause'|'cancel', reason}` / `{action:'reactivate'}` with
+    the user's login token.
+  - On `FULLY_ENDED` or `NO_SUBSCRIPTION` the page falls back to one subscription Checkout.
+  - Paused accounts can't use plan downloads (`consume_download`), consistent with the rules in the
+    PR migrations.
+  - The function needs no change for PR #156.
+- **Test deployment:** CLPeasy Test `manage-subscription` v1. It is the repo file with only the CORS
+  origin changed to the v10 Test site.
+- **Real Test + Sandbox results** (`evidence/v15/manage-subscription-e2e.json`), all as designed:
+  - pause;
+  - a renewal while paused: invoice **uncollectible**, no charge, no refill;
+  - reactivate after pause, and after a scheduled cancellation;
+  - cancellation at period end, then a full downgrade;
+  - `FULLY_ENDED` (409), `NO_SUBSCRIPTION` (404) and no login (401).
+- **Coverage:**
+  - `tests/deno/manage-subscription.test.ts`: 8 offline scenarios on the real function file.
+  - `tests/account-manage-subscription.js`: 6 scenarios driving the real `account.html` Pause /
+    Cancel / Reactivate flows and checking the exact requests, the error handling and the Checkout
+    fallback.
+- **Findings** (both pre-existing: the same `stripe-webhook` logic is on `main`):
+  - **MS-1 (billing policy, owner decision):**
+    - Reactivating after a pause or a scheduled cancellation resets `downloads_used` to 0. The
+      webhook treats it as a "genuine reactivation" and calls `applyProfilePlan`.
+    - A subscriber who has used their allowance can pause (or cancel) and reactivate straight away
+      to get a fresh allowance in the same billing period. Seen on Test: 5 → 0 and 8 → 0.
+    - With pause, the paused period's renewal invoice is marked uncollectible. Reactivating
+      mid-period restores access and a full allowance without paying for that period.
+    - Not fixed: this changes billing and entitlement policy. The suggested fix is that
+      reactivation restores the plan and limit but keeps `downloads_used` (and refills only on a
+      paid renewal).
+  - **MS-2 (low):** the customer's cancellation reason is saved by the function and then
+    overwritten with `'other'` by `stripe-webhook`. Only the reason recorded on the profile is
+    affected.

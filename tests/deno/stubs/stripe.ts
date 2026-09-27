@@ -12,6 +12,13 @@ export default class Stripe {
   };
   subscriptions = {
     retrieve: async (id: string) => (globalThis as any).__stripeSubscriptions?.[id],
+    update: async (id: string, params: Record<string, any>) => {
+      ((globalThis as any).__stripeCalls ??= []).push(['subscriptions.update', id, params]);
+      const s = (globalThis as any).__stripeSubscriptions?.[id];
+      if (!s) throw new Error(`No such subscription: '${id}'`);
+      for (const [k, v] of Object.entries(params)) s[k] = v;
+      return s;
+    },
     deleteDiscount: async (id: string) => { ((globalThis as any).__stripeCalls ??= []).push(['subscriptions.deleteDiscount', id]); const s = (globalThis as any).__stripeSubscriptions?.[id]; if (s) s.discount = null; return { deleted: true }; },
   };
   invoices = { retrieve: async (id: string) => (globalThis as any).__stripeInvoices?.[id], update: async (id: string, params: unknown) => { ((globalThis as any).__stripeCalls ??= []).push(['invoices.update', id, params]); return { id }; } };
