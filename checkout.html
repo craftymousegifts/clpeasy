@@ -329,6 +329,18 @@ function setBilling(mode) {
   updateSummary();
 }
 
+// ── 2026 MONTHLY PROMOTION ────────────────────────────────────
+// create-checkout-session adds the 2026 coupon (10% off) to Easy Start / Easy
+// Pro MONTHLY checkouts before 1 Jan 2027; annual is never discounted.
+const PROMO_2026_END_MS = Date.UTC(2027, 0, 1);
+function monthlyPromo(planData) {
+  if (billing !== 'monthly' || Date.now() >= PROMO_2026_END_MS) return null;
+  const pence = Math.round(planData.priceNum * 100);
+  const off = Math.round(pence * 0.10);
+  return { off, due: pence - off };
+}
+const gbp = pence => '£' + (pence / 100).toFixed(2);
+
 // ── RENDER PLAN CARDS ─────────────────────────────────────────
 function renderPlans() {
   const plans = PRICES[billing];
@@ -370,20 +382,6 @@ function selectTopup(pack) {
   document.getElementById('topup-none').classList.toggle('selected', pack === 'none');
   updateSummary();
 }
-
-// ── 2026 MONTHLY PROMOTION ────────────────────────────────────
-// create-checkout-session adds the 2026 coupon (10% off) to Easy Start / Easy
-// Pro MONTHLY checkouts before 1 Jan 2027 (UK = UTC in winter); annual is never
-// discounted. Same boundary as the server and account.html, so this summary
-// matches what Stripe Checkout charges (£8.99 / £13.49) and reverts on its own.
-const PROMO_2026_END_MS = Date.UTC(2027, 0, 1);
-function monthlyPromo(planData) {
-  if (billing !== 'monthly' || Date.now() >= PROMO_2026_END_MS) return null;
-  const pence = Math.round(planData.priceNum * 100);
-  const off = Math.round(pence * 0.10);
-  return { off, due: pence - off };
-}
-const gbp = pence => '£' + (pence / 100).toFixed(2);
 
 // ── UPDATE ORDER SUMMARY ──────────────────────────────────────
 function updateSummary() {
