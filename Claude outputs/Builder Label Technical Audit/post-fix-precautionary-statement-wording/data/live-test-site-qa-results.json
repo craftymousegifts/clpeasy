@@ -1,7 +1,7 @@
 {
  "site": "https://clpeasy-circle-fit-test.netlify.app",
- "deploy": "6ab8c14dcdaaa08b59c5f62a",
- "commit": "b88fad2",
+ "deploy": "6ab8e5f5658a62a49b9d377b",
+ "commit": "b4c412b",
  "signedOut": true,
  "rows": [
   {
@@ -23,6 +23,7 @@
      "✓ From your pasted SDS — check it matches"
     ]
    ],
+   "slashRewrite": false,
    "hasSupplierWording": [
     true,
     true,
