@@ -507,14 +507,39 @@ function svgWrapped(lines,x,startY,lineH,sizePx,bold,serif,fill,anchor='middle',
 // Pictogram / icon asset rendering (with SharedAssetPool support)
 // ============================================================
 
+// M38 (Issue #7): the nine valid internal pictogram keys are exactly the keys
+// of GHS_IMG. Anything else -- unknown, misspelt, wrong case, a display label
+// such as "GHS06", empty or not a string -- is NOT a pictogram: the label is
+// blocked (never substituted, dropped, corrected or re-cased) and the saved
+// record is left unchanged.
+function isValidPictogramKey(k){
+  return typeof k==='string' && Object.prototype.hasOwnProperty.call(GHS_IMG,k);
+}
+// Maker-facing description of invalid pictogram keys (CLPeasy data-integrity
+// wording, not a regulatory claim). Shared by the renderer overlay, the
+// Builder and the Composer so the wording matches everywhere.
+function describeInvalidPictograms(keys){
+  const list=(keys||[]).map(k=>typeof k==='string'?k:'');
+  const named=[...new Set(list.filter(k=>k.trim()!==''))];
+  const blanks=list.filter(k=>k.trim()==='').length;
+  const q=named.map(k=>"'"+k+"'");
+  let first;
+  if(named.length && blanks) first=(named.length>1?'Pictograms ':'Pictogram ')+q.join(', ')+' and '+(blanks>1?'some blank saved pictograms':'a blank saved pictogram')+' were not recognised.';
+  else if(named.length) first=(named.length>1?'Pictograms '+q.join(', ')+' were':'Pictogram '+q[0]+' was')+' not recognised.';
+  else first=blanks>1?'Some saved pictograms were not recognised.':'A saved pictogram was not recognised.';
+  return first+' Re-check the hazards in Step 3.';
+}
 function ghsPicto(key,cx,cy,size,pool){
   // Use uploaded JPEG pictograms — already contain the correct red diamond border.
   // When `pool` (a SharedAssetPool) is supplied, the image is registered once
   // and referenced via <use> instead of re-embedding its base64 data — used
   // when assembling a multi-label print-sheet export document.
-  const usedKey = GHS_IMG[key] ? key : 'exclamation';
-  const src = GHS_IMG[usedKey];
-  return assetMarkup(src, cx-size*0.5, cy-size*0.5, size, pool, 'ghs-'+usedKey);
+  // M38 (Issue #7): never substitute another pictogram for an unknown key.
+  // renderLabel() validates every key first and blocks the label, so an
+  // unknown key never reaches here; this guard only makes sure nothing is
+  // drawn if one ever did.
+  if(!isValidPictogramKey(key)) return '';
+  return assetMarkup(GHS_IMG[key], cx-size*0.5, cy-size*0.5, size, pool, 'ghs-'+key);
 }
 
 // ============================================================
@@ -760,9 +785,9 @@ function choosePictoMmAndRender(rawData, opts){
 // content-does-not-fit branch, which is BYTE-IDENTICAL to the overlay this
 // replaced, so genuine layout overflow with only recognised, GB-supported
 // codes is completely unaffected by this change.
-function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, genericCodes){
-  unsupportedCodes = unsupportedCodes||[]; genericCodes = genericCodes||[];
-  const hasIssue = unsupportedCodes.length>0 || genericCodes.length>0;
+function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, genericCodes, invalidPictograms){
+  unsupportedCodes = unsupportedCodes||[]; genericCodes = genericCodes||[]; invalidPictograms = invalidPictograms||[];
+  const hasIssue = unsupportedCodes.length>0 || genericCodes.length>0 || invalidPictograms.length>0;
 
   if(!hasIssue){
     // Genuine physical overflow with only recognised/supported codes --
@@ -800,6 +825,9 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
       'Check you pasted Section 2.2 from the correct supplier SDS.',
       'Ask your supplier for current GB CLP information for this product and concentration.'
     ];
+  } else if(!gCodes.length){
+    // M38 (Issue #7): unrecognised pictogram key(s) only.
+    sentences = [];
   } else {
     // Generic/unrecognised code(s) -- must NOT state or imply the code is
     // legally unsupported under GB rules, since that has not been verified.
@@ -810,6 +838,14 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
     ];
   }
 
+  // M38 (Issue #7): name any unrecognised pictogram key (escaped -- untrusted
+  // stored data), with the Step 3 instruction. Appended after any code
+  // sentences so neither issue hides the other.
+  if(invalidPictograms.length){
+    const pictoMsg = xe(describeInvalidPictograms(invalidPictograms));
+    const cut = pictoMsg.lastIndexOf(' Re-check');
+    sentences.push(pictoMsg.slice(0,cut), pictoMsg.slice(cut+1));
+  }
   // Largest safe, genuinely readable font sizes -- materially larger than
   // the previous fixed 8px/6px minimums. chordWFn (the caller's own
   // circle/square/rectangle chord-width function, reused rather than
@@ -1025,7 +1061,14 @@ function renderLabel(rawData, opts){
   const addr=data.bizAddress||'';
   const phone=data.bizPhone||'';
   const detailParts=[data.netWeight, data.burnTime?'Burn: '+data.burnTime:'', data.batchNum?'Batch: '+data.batchNum:''].filter(Boolean);
-  const pictos=data.pictograms.length?[...new Set(data.pictograms)]:[];
+  // M38 (Issue #7): only valid keys are drawn; any other key blocks the label
+  // (see _invalidPictograms below). For a list of valid keys this is exactly
+  // the previous de-duplicated list, so valid labels render unchanged.
+  const _rawPictos=Array.isArray(data.pictograms)?data.pictograms:[data.pictograms];
+  const _invalidPictograms=[];
+  // (a non-text value has no key to show, so it is reported like a blank one)
+  _rawPictos.forEach(k=>{ if(!isValidPictogramKey(k)) _invalidPictograms.push(typeof k==='string'?k:''); });
+  const pictos=[...new Set(_rawPictos.filter(isValidPictogramKey))];
   const clamp=(v,mn,mx)=>Math.min(Math.max(v,mn),mx);
 
   // ── CLIP & BACKGROUND ────────────────────────────────────────
@@ -1712,7 +1755,8 @@ function renderLabel(rawData, opts){
   // condition is ever added, add it to THIS line, not to a second copy.
   const _contentBlocked = _labelLegibilityWarn || _footerLegibilityClipped
     || _unrecognizedCodes.length>0 || _bcfTooSmall || _scentTooSmall
-    || _bizNameTooSmall || _typeTooSmall || _signalTooSmall;
+    || _bizNameTooSmall || _typeTooSmall || _signalTooSmall
+    || _invalidPictograms.length>0;
   // ── STRUCTURED BLOCK REASON -- never inferred from fits:false alone ─────
   // A code absent from H_LIB is either a CONFIRMED code that the ACTIVE
   // regulatory profile (currently Great Britain only -- see
@@ -1749,9 +1793,11 @@ function renderLabel(rawData, opts){
   const _blockReason = !_contentBlocked ? null
     : _unsupportedCodesFound.length>0 ? 'unsupported-gb-clp-code'
     : _genericUnrecognizedFound.length>0 ? 'unrecognised-code'
+    : _invalidPictograms.length>0 ? 'unrecognised-pictogram'
     : 'content-does-not-fit';
   const _blockReasonCodes = _blockReason==='unsupported-gb-clp-code' ? _unsupportedCodesFound
-    : _blockReason==='unrecognised-code' ? _genericUnrecognizedFound : [];
+    : _blockReason==='unrecognised-code' ? _genericUnrecognizedFound
+    : _blockReason==='unrecognised-pictogram' ? _invalidPictograms : [];
   // Full-bleed rect: the existing clip-path (applied to the whole <g> this
   // gets drawn into) already confines it to the label's true circle/rect
   // outline, so covering the entire canonical canvas can never bleed past
@@ -1762,7 +1808,7 @@ function renderLabel(rawData, opts){
   // recognised/supported codes is unaffected by this change. Both code
   // groups are passed through in full (not just the leading-reason one),
   // so a mixed unsupported+generic input shows both in the overlay too.
-  const overflowOverlay=_contentBlocked?buildBlockedOverlaySVG(pw,ph,cx,cy,chordW,_unsupportedCodesFound,_genericUnrecognizedFound):'';
+  const overflowOverlay=_contentBlocked?buildBlockedOverlaySVG(pw,ph,cx,cy,chordW,_unsupportedCodesFound,_genericUnrecognizedFound,_invalidPictograms):'';
   // Y positions already set per-slot — no global recompute needed
   const footerRendered = footerElems.map(elem=>{
     if(elem.slotY > sBot - 1) return '';
@@ -1902,6 +1948,7 @@ function renderLabel(rawData, opts){
 </g></svg>`;
 
   if(_unrecognizedCodes.length) warnings.push(..._unrecognizedCodes.map(c=>'unrecognized-code:'+c));
+  if(_invalidPictograms.length) warnings.push(..._invalidPictograms.map(k=>'unrecognized-pictogram:'+k));
   if(_labelLegibilityWarn) warnings.push('hazard-text-overflow');
   if(_footerLegibilityClipped) warnings.push('footer-clipped');
   if(_bcfTooSmall) warnings.push('candle-safety-symbols-too-small');
@@ -1941,6 +1988,7 @@ function renderLabel(rawData, opts){
     hazardYSlack: _hazardYSlack,
     footerClipped: _footerLegibilityClipped,
     unrecognizedCodes: _unrecognizedCodes.slice(),
+    unrecognizedPictograms: _invalidPictograms.slice(),
     // Structured failure fields: the confirmed-unsupported and generic-
     // unrecognised code groups are each exposed IN FULL and independently
     // -- a caller never has to re-derive either by cross-referencing
@@ -2018,6 +2066,7 @@ function renderLabel(rawData, opts){
     regulatoryProfile: ACTIVE_REGULATORY_PROFILE,
     unsupportedCodes: _unsupportedCodesFound.slice(),
     unrecognizedCodesGeneric: _genericUnrecognizedFound.slice(),
+    unrecognizedPictograms: _invalidPictograms.slice(),
     contentOverflow: _contentOverflow,
     warnings, metrics, rendererVersion: RENDERER_VERSION,
   };
@@ -2340,7 +2389,7 @@ function isCustomSizeBelowSupportedMinimum(shape, w, h){
 }
 
   const LabelRenderer = {
-    renderLabel, normalizeLabel, checkRequiredContent, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, GB_UNSUPPORTED_CODES, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
+    renderLabel, normalizeLabel, checkRequiredContent, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, GB_UNSUPPORTED_CODES, isValidPictogramKey, describeInvalidPictograms, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
     // GHS pictogram geometry -- exposed so tests/consumers measuring
     // compliance never have to re-derive or hardcode the sqrt(2)
     // square<->bounding-box relationship themselves.

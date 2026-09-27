@@ -1,0 +1,362 @@
+[
+ {
+  "storedPictograms": [
+   "flame"
+  ],
+  "before": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "flame"
+   ]
+  },
+  "after": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "flame"
+   ],
+   "unrecognizedPictograms": [],
+   "overlay": ""
+  },
+  "svgIdentical": true
+ },
+ {
+  "storedPictograms": [
+   "exclamation"
+  ],
+  "before": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "exclamation"
+   ]
+  },
+  "after": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "exclamation"
+   ],
+   "unrecognizedPictograms": [],
+   "overlay": ""
+  },
+  "svgIdentical": true
+ },
+ {
+  "storedPictograms": [
+   "aquatic"
+  ],
+  "before": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "aquatic"
+   ]
+  },
+  "after": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "aquatic"
+   ],
+   "unrecognizedPictograms": [],
+   "overlay": ""
+  },
+  "svgIdentical": true
+ },
+ {
+  "storedPictograms": [
+   "explosion"
+  ],
+  "before": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "explosion"
+   ]
+  },
+  "after": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "explosion"
+   ],
+   "unrecognizedPictograms": [],
+   "overlay": ""
+  },
+  "svgIdentical": true
+ },
+ {
+  "storedPictograms": [
+   "oxidiser"
+  ],
+  "before": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "oxidiser"
+   ]
+  },
+  "after": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "oxidiser"
+   ],
+   "unrecognizedPictograms": [],
+   "overlay": ""
+  },
+  "svgIdentical": true
+ },
+ {
+  "storedPictograms": [
+   "gas"
+  ],
+  "before": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "gas"
+   ]
+  },
+  "after": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "gas"
+   ],
+   "unrecognizedPictograms": [],
+   "overlay": ""
+  },
+  "svgIdentical": true
+ },
+ {
+  "storedPictograms": [
+   "health"
+  ],
+  "before": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "health"
+   ]
+  },
+  "after": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "health"
+   ],
+   "unrecognizedPictograms": [],
+   "overlay": ""
+  },
+  "svgIdentical": true
+ },
+ {
+  "storedPictograms": [
+   "skull"
+  ],
+  "before": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "skull"
+   ]
+  },
+  "after": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "skull"
+   ],
+   "unrecognizedPictograms": [],
+   "overlay": ""
+  },
+  "svgIdentical": true
+ },
+ {
+  "storedPictograms": [
+   "corrosive"
+  ],
+  "before": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "corrosive"
+   ]
+  },
+  "after": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "corrosive"
+   ],
+   "unrecognizedPictograms": [],
+   "overlay": ""
+  },
+  "svgIdentical": true
+ },
+ {
+  "storedPictograms": [
+   "nonsense"
+  ],
+  "before": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "exclamation"
+   ]
+  },
+  "after": {
+   "fits": false,
+   "blockReason": "unrecognised-pictogram",
+   "drawn": [],
+   "unrecognizedPictograms": [
+    "nonsense"
+   ],
+   "overlay": "LABEL DATA NEEDS REVIEW Pictogram 'nonsense' was not recognised. Re-check the hazards in Step 3."
+  },
+  "svgIdentical": false
+ },
+ {
+  "storedPictograms": [
+   "skul"
+  ],
+  "before": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "exclamation"
+   ]
+  },
+  "after": {
+   "fits": false,
+   "blockReason": "unrecognised-pictogram",
+   "drawn": [],
+   "unrecognizedPictograms": [
+    "skul"
+   ],
+   "overlay": "LABEL DATA NEEDS REVIEW Pictogram 'skul' was not recognised. Re-check the hazards in Step 3."
+  },
+  "svgIdentical": false
+ },
+ {
+  "storedPictograms": [
+   "Health"
+  ],
+  "before": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "exclamation"
+   ]
+  },
+  "after": {
+   "fits": false,
+   "blockReason": "unrecognised-pictogram",
+   "drawn": [],
+   "unrecognizedPictograms": [
+    "Health"
+   ],
+   "overlay": "LABEL DATA NEEDS REVIEW Pictogram 'Health' was not recognised. Re-check the hazards in Step 3."
+  },
+  "svgIdentical": false
+ },
+ {
+  "storedPictograms": [
+   "GHS06"
+  ],
+  "before": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "exclamation"
+   ]
+  },
+  "after": {
+   "fits": false,
+   "blockReason": "unrecognised-pictogram",
+   "drawn": [],
+   "unrecognizedPictograms": [
+    "GHS06"
+   ],
+   "overlay": "LABEL DATA NEEDS REVIEW Pictogram 'GHS06' was not recognised. Re-check the hazards in Step 3."
+  },
+  "svgIdentical": false
+ },
+ {
+  "storedPictograms": [
+   ""
+  ],
+  "before": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "exclamation"
+   ]
+  },
+  "after": {
+   "fits": false,
+   "blockReason": "unrecognised-pictogram",
+   "drawn": [],
+   "unrecognizedPictograms": [
+    ""
+   ],
+   "overlay": "LABEL DATA NEEDS REVIEW A saved pictogram was not recognised. Re-check the hazards in Step 3."
+  },
+  "svgIdentical": false
+ },
+ {
+  "storedPictograms": [
+   "health",
+   "bogus"
+  ],
+  "before": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "health",
+    "exclamation"
+   ]
+  },
+  "after": {
+   "fits": false,
+   "blockReason": "unrecognised-pictogram",
+   "drawn": [
+    "health"
+   ],
+   "unrecognizedPictograms": [
+    "bogus"
+   ],
+   "overlay": "LABEL DATA NEEDS REVIEW Pictogram 'bogus' was not recognised. Re-check the hazards in Step 3."
+  },
+  "svgIdentical": false
+ },
+ {
+  "storedPictograms": [
+   "exclamation",
+   "bogus"
+  ],
+  "before": {
+   "fits": true,
+   "blockReason": null,
+   "drawn": [
+    "exclamation",
+    "exclamation"
+   ]
+  },
+  "after": {
+   "fits": false,
+   "blockReason": "unrecognised-pictogram",
+   "drawn": [
+    "exclamation"
+   ],
+   "unrecognizedPictograms": [
+    "bogus"
+   ],
+   "overlay": "LABEL DATA NEEDS REVIEW Pictogram 'bogus' was not recognised. Re-check the hazards in Step 3."
+  },
+  "svgIdentical": false
+ }
+]

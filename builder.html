@@ -3626,7 +3626,11 @@ function _requiredContentCheck(){
 }
 function _downloadBlockedMessage(){
   if(_hazardReviewRequired())return _hazardReviewMessage();
-  const base='Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.';
+  // M38 (Issue #7): an unrecognised saved pictogram is named, not described as a fit problem.
+  const _badPictos=window._unrecognizedPictograms||[];
+  const base=_badPictos.length
+    ? 'This label can\'t be downloaded yet. '+LabelRenderer.describeInvalidPictograms(_badPictos)
+    : 'Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.';
   const unconfirmedOrBlocked=!document.getElementById('verify-checkbox')?.checked || !!window._labelBlockDownload;
   const rc=_requiredContentCheck();
   const content=rc.complete?'':"This label is missing required content, so it can't be downloaded yet:\n\n"+rc.missing.map(m=>'• '+REQUIRED_CONTENT_MESSAGES[m]).join('\n');
@@ -4991,6 +4995,8 @@ function buildSVG(forExport=false){
   window._blockReasonCodes=result.blockReasonCodes;
   window._unsupportedCodes=result.unsupportedCodes;
   window._unrecognizedCodesGeneric=result.unrecognizedCodesGeneric;
+  // M38 (Issue #7): unrecognised stored pictogram keys (the renderer blocks them).
+  window._unrecognizedPictograms=result.unrecognizedPictograms||[];
   window._contentOverflow=result.contentOverflow;
   window._labelLegibilityWarn=result.metrics.overflow;
   window._hazardYSlack=result.metrics.hazardYSlack;
@@ -5115,7 +5121,10 @@ function updateLabel(){
   // not fitting must block download exactly like hazard-text-overflow and
   // footer-clipped already do -- see label-render.js's _mandatoryMinFS.
   const _hasMandatoryTextTooSmall = !!(window._scentTooSmall || window._businessNameTooSmall || window._productTypeTooSmall || window._signalWordTooSmall);
-  window._labelBlockDownload = !!(window._labelLegibilityWarn || window._footerLegibilityClipped || _hasUnrecognizedCodes || _isCustomSizeTooSmall || _hasMandatoryTextTooSmall);
+  // M38 (Issue #7): an unrecognised stored pictogram key blocks every export
+  // route too (the renderer never substitutes one).
+  const _hasUnrecognizedPictograms = (window._unrecognizedPictograms||[]).length>0;
+  window._labelBlockDownload = !!(window._labelLegibilityWarn || window._footerLegibilityClipped || _hasUnrecognizedCodes || _isCustomSizeTooSmall || _hasMandatoryTextTooSmall || _hasUnrecognizedPictograms);
   // Fail-closed design (2026-09-07): when the label is blocked for a reason a
   // bigger label might actually fix (not the unrecognised-code or below-
   // minimum-size cases, which have their own specific remedy), tell the
@@ -5123,7 +5132,7 @@ function updateLabel(){
   // renderLabel() result for this exact content via label-render.js's
   // findSmallestFittingSize(). Read-only: this never changes S.size itself:
   // the maker always makes that choice, in Step 1, themselves.
-  const _sizeHelpsIfBlocked = window._labelBlockDownload && !_hasUnrecognizedCodes && !_isCustomSizeTooSmall;
+  const _sizeHelpsIfBlocked = window._labelBlockDownload && !_hasUnrecognizedCodes && !_isCustomSizeTooSmall && !_hasUnrecognizedPictograms;
   const _sizeRec = (_sizeHelpsIfBlocked && window._lastLabelData && typeof LabelRenderer!=='undefined' && LabelRenderer.findSmallestFittingSize)
     ? LabelRenderer.findSmallestFittingSize(window._lastLabelData, {instanceId:'builder-main'})
     : null;
@@ -5153,6 +5162,8 @@ function updateLabel(){
   const _codeBlockParts = clpCombinedCodeBlockMessage(_gbUnsupportedCodesFound, _genericUnrecognizedCodesFound, escapeBuilderText);
   const _blockHeading = _codeBlockParts.length
     ? '⚠️ '+_codeBlockParts.map(p=>p.heading).join(' / ')
+    : _hasUnrecognizedPictograms
+    ? '⚠️ Download unavailable — a saved pictogram was not recognised'
     : _isCustomSizeTooSmall
     ? '⚠️ Download unavailable — custom size below CLPeasy\'s supported minimum'
     : '⚠️ Download unavailable — label size too small for CLP labelling requirements';
@@ -5173,6 +5184,8 @@ function updateLabel(){
       : _gbUnsupportedCodesFound.length
       ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br><strong>CLPeasy has blocked the download rather than remove, replace or print a code it cannot safely resolve for a Great Britain CLP label.</strong>'
       : clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+'<br><br>Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
+    : _hasUnrecognizedPictograms
+    ? escapeBuilderText(LabelRenderer.describeInvalidPictograms(window._unrecognizedPictograms))+'<br><br>CLPeasy has blocked the download rather than print a different pictogram. In Step 3, extract your supplier SDS Section 2.2 again (or change the H statement selection): this rebuilds the pictograms from the label\'s hazard codes.'
     : _isCustomSizeTooSmall
     ? getCustomSizeMinMsg()+'<br><br>To create a downloadable label, return to Step 1 and '+(S.shape==='rectangle'?'set the long side to '+LabelRenderer.CUSTOM_RECT_LONG_MIN_MM+'mm or larger and the short side to '+LabelRenderer.CUSTOM_RECT_SHORT_MIN_MM+'mm or larger':'increase the custom size to '+LabelRenderer.CUSTOM_SIZE_MIN_MM+'mm or larger')+'.'
     : window._footerLegibilityClipped
@@ -5180,11 +5193,14 @@ function updateLabel(){
     : _hasMandatoryTextTooSmall
     ? 'Your '+_mandatoryTextTooSmallLabel+' cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, return to Step 1 and select a larger label size, or shorten the affected text.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
     : 'The required hazard and precautionary information cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, return to Step 1 and select a larger label size. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>';
+  const _blockBodyFull = (_codeBlockParts.length && _hasUnrecognizedPictograms)
+    ? _blockBody+'<br><br>'+escapeBuilderText(LabelRenderer.describeInvalidPictograms(window._unrecognizedPictograms))
+    : _blockBody;
   [document.getElementById('label-warn-stage4'), document.getElementById('label-warn-step5')].forEach(_labelWarnEl=>{
     if(!_labelWarnEl)return;
     if(window._labelBlockDownload){
       _labelWarnEl.style.display='block';
-      _labelWarnEl.innerHTML = '<strong>'+_blockHeading+'</strong><br><br>'+_blockBody;
+      _labelWarnEl.innerHTML = '<strong>'+_blockHeading+'</strong><br><br>'+_blockBodyFull;
     } else {
       _labelWarnEl.style.display='none';
     }
