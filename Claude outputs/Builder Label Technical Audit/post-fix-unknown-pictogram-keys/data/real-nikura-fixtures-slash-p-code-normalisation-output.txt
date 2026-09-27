@@ -1,0 +1,245 @@
+slash-p-code-normalisation checks passed
+{
+  "fixtures": {
+    "positivity": {
+      "extracted": {
+        "pStatements": "P261, P302+P352, P333+P313, P501",
+        "pSelected": [
+          "P261",
+          "P302+P352",
+          "P333+P313",
+          "P501"
+        ],
+        "hStatements": "H317, H402, EUH208",
+        "hSelected": [
+          "H317",
+          "H402",
+          "EUH208"
+        ]
+      },
+      "gate": {
+        "ok": false,
+        "alert": "This code needs supplier confirmation for a Great Britain CLP label\n\nThe following code appears in your supplier SDS: H402. CLPeasy does not recognise it as a hazard statement in the current Great Britain CLP information checked by the service. It may be recognised under another national or international classification system, or the supplier may need to clarify the Great Britain classification. CLPeasy currently supports products placed on the market in Great Britain (England, Scotland and Wales). Please ask your supplier for the current Great Britain-market SDS or classification information applicable to your final formulation and concentration. CLPeasy has not added, removed, translated or substituted this code. Do not change the SDS code just to make the label generate. For help, contact support@clpeasy.com with the SDS and flagged code."
+      }
+    },
+    "nagChampa": {
+      "extracted": {
+        "pStatements": "P261, P273, P302+P352, P333+P313, P501",
+        "pSelected": [
+          "P261",
+          "P273",
+          "P302+P352",
+          "P333+P313",
+          "P501"
+        ],
+        "hStatements": "H317, H412, H316, EUH208",
+        "hSelected": [
+          "H317",
+          "H412",
+          "H316",
+          "EUH208"
+        ]
+      },
+      "gate": {
+        "ok": false,
+        "alert": "This code needs supplier confirmation for a Great Britain CLP label\n\nThe following code appears in your supplier SDS: H316. CLPeasy does not recognise it as a hazard statement in the current Great Britain CLP information checked by the service. It may be recognised under another national or international classification system, or the supplier may need to clarify the Great Britain classification. CLPeasy currently supports products placed on the market in Great Britain (England, Scotland and Wales). Please ask your supplier for the current Great Britain-market SDS or classification information applicable to your final formulation and concentration. CLPeasy has not added, removed, translated or substituted this code. Do not change the SDS code just to make the label generate. For help, contact support@clpeasy.com with the SDS and flagged code."
+      }
+    },
+    "snowPixie": {
+      "extracted": {
+        "pStatements": "P273, P501",
+        "pSelected": [
+          "P273",
+          "P501"
+        ],
+        "hStatements": "H412, EUH208",
+        "hSelected": [
+          "H412",
+          "EUH208"
+        ]
+      },
+      "gate": {
+        "ok": true
+      }
+    }
+  },
+  "unitCases": [
+    {
+      "label": "P302/352 -> P302+P352",
+      "expected": [
+        "P302+P352",
+        "P501"
+      ],
+      "got": [
+        "P302+P352",
+        "P501"
+      ],
+      "pass": true
+    },
+    {
+      "label": "P302/P352 -> P302+P352",
+      "expected": [
+        "P302+P352",
+        "P501"
+      ],
+      "got": [
+        "P302+P352",
+        "P501"
+      ],
+      "pass": true
+    },
+    {
+      "label": "P333/313 -> P333+P313",
+      "expected": [
+        "P333+P313",
+        "P501"
+      ],
+      "got": [
+        "P333+P313",
+        "P501"
+      ],
+      "pass": true
+    },
+    {
+      "label": "P303/361/353 -> P303+P361+P353 (then excluded, unchanged behaviour)",
+      "expected": [
+        "P501"
+      ],
+      "got": [
+        "P501"
+      ],
+      "pass": true
+    },
+    {
+      "label": "optional spaces around / : \"P302 / 352\"",
+      "expected": [
+        "P302+P352",
+        "P501"
+      ],
+      "got": [
+        "P302+P352",
+        "P501"
+      ],
+      "pass": true
+    },
+    {
+      "label": "optional spaces around + : \"P403 + P233\"",
+      "expected": [
+        "P403+P233",
+        "P501"
+      ],
+      "got": [
+        "P403+P233",
+        "P501"
+      ],
+      "pass": true
+    },
+    {
+      "label": "existing \"+\" notation unchanged: \"P302+P352\"",
+      "expected": [
+        "P302+P352",
+        "P501"
+      ],
+      "got": [
+        "P302+P352",
+        "P501"
+      ],
+      "pass": true
+    },
+    {
+      "label": "existing \"+\" notation unchanged: \"P403+P233\"",
+      "expected": [
+        "P403+P233",
+        "P501"
+      ],
+      "got": [
+        "P403+P233",
+        "P501"
+      ],
+      "pass": true
+    },
+    {
+      "label": "single P-code unchanged: \"P261\"",
+      "expected": [
+        "P261",
+        "P501"
+      ],
+      "got": [
+        "P261",
+        "P501"
+      ],
+      "pass": true
+    },
+    {
+      "label": "single P-code unchanged: \"P501\"",
+      "expected": [
+        "P501"
+      ],
+      "got": [
+        "P501"
+      ],
+      "pass": true
+    },
+    {
+      "label": "duplicates deduplicated: same combo, two notations",
+      "expected": [
+        "P302+P352",
+        "P501"
+      ],
+      "got": [
+        "P302+P352",
+        "P501"
+      ],
+      "pass": true
+    },
+    {
+      "label": "duplicates deduplicated: identical slash form twice",
+      "expected": [
+        "P333+P313",
+        "P501"
+      ],
+      "got": [
+        "P333+P313",
+        "P501"
+      ],
+      "pass": true
+    }
+  ],
+  "negativeCases": [
+    {
+      "label": "telephone number",
+      "got": [],
+      "pass": true
+    },
+    {
+      "label": "dimensions",
+      "got": [],
+      "pass": true
+    },
+    {
+      "label": "issue date / version numbers",
+      "got": [],
+      "pass": true
+    },
+    {
+      "label": "percentage / concentration figures",
+      "got": [],
+      "pass": true
+    },
+    {
+      "label": "ordinary prose with no codes at all",
+      "got": [],
+      "pass": true
+    },
+    {
+      "label": "CAS/EC registry numbers",
+      "got": [],
+      "pass": true
+    },
+    {
+      "label": "section/paragraph numbering",
+      "got": [],
+      "pass": true
+    }
+  ]
+}
