@@ -130,4 +130,47 @@ Owner-confirmed configuration; runtime verification pending the first Live event
 - **Database:** the migrations have no automatic down-migration and the old `consume_download(text)` was dropped. Rolling back the site without the database would break downloads, so roll back the site and database together, or fix forward.
 
 ## Result
-**RELEASE PASS.** All gates passed. The remaining NOT DIRECTLY VERIFIABLE items are the signed-in browser checks and the first Live webhook event, listed above for the owner.
+**RELEASE PASS — QUALIFIED: FAILED LIVE SMOKE TEST (see 13), unresolved.** The deployment steps (migrations, functions, merge, site) passed. The first signed-in live smoke test failed because of a production configuration error.
+
+## 13. Post-release live smoke test failure — 27 Sep 2026 11:08 UTC — OPEN
+
+**What the owner saw:** signed in on clpeasy.com → Pricing → "Buy 8 downloads — £4.99". The button showed "Opening secure checkout...", then the alert "Something went wrong starting checkout. Please try again." Stripe Checkout did not open. No payment was made.
+
+**Production logs (create-checkout-session v48):**
+- 11:08:22.271 `OPTIONS 200`.
+- 11:08:23.292 `Stripe error: Invalid API key provided: mk_… This looks like the ID of an API key rather than the key itself. API keys typically start with pk_, rk_, or sk_.` (Stripe masked the value; it is not reproduced here.)
+- 11:08:23.300 `POST 400`.
+
+**Root cause (established):** the `STRIPE_SECRET_KEY` secret in production holds a Stripe API key *identifier* (`mk_…`), not the secret key value (`sk_live_…`). Stripe rejects every API call made with it.
+
+What this rules out:
+- The request passed authentication and user lookup: Stripe was reached, which happens only after the JWT check.
+- It passed the PAYG subscriber rule, and `PAYG_5_PRICE_ID` was present; a missing one returns 503 before Stripe is called.
+- Price, product, tax and checkout parameters were never evaluated, because Stripe refused the key first.
+
+This is a configuration error, not a PR #156 code defect.
+
+The earlier gate recorded this secret as OWNER-CONFIRMED. The pre-merge probes (no-auth 401, unsigned webhook 400) cannot exercise the key, so the error was not detectable without a signed-in Stripe call. That is a gate-methodology gap.
+
+**Scope — every server-side Stripe API call using this secret fails:**
+
+| Area | Effect while the key is wrong |
+|---|---|
+| create-checkout-session | Fails for **all** checkout types: PAYG, Easy Start/Pro monthly/annual, subscriber top-ups. For subscriptions the checkout lock is released on the Stripe error, so users are not locked out. |
+| billing-status | Returns `available:false`; the Account page shows no amount. |
+| manage-subscription (pause/cancel/reactivate), create-portal-session | Would return errors. There are currently 0 subscriptions, so no existing customer can reach these. |
+| stripe-webhook | Signature checks do not use this key, so events are still verified. `checkout.session.completed` crediting (PAYG/top-up/subscription) uses only the database and would work. `invoice.paid`, `invoice.created` and reactivation Brevo lookups call Stripe: they would return 500, release the event claim, and be retried by Stripe once the key is fixed. |
+
+**Customer impact:**
+- No one can buy anything on clpeasy.com until the key is corrected.
+- No charges and no data changes result from the failure: it happens before any Checkout Session exists.
+- No existing paying subscriber is affected (0 subscriptions).
+- Trials, Builder, My Labels and downloads are unaffected.
+
+**Safest fix — configuration only, owner action:**
+1. In Stripe (Live mode) → Developers → API keys, reveal/copy the **Secret key** (`sk_live_…`). Do not copy the key's ID. A restricted `rk_live_…` key also works only if it has the permissions these functions use (Checkout Sessions, Customers, Subscriptions, Invoices, Prices); a standard secret key is simplest.
+2. In Supabase (production) → Edge Functions → Secrets, set `STRIPE_SECRET_KEY` to that value.
+
+No code change, redeploy or rollback is required: functions read the secret on each cold start. A rollback would not help, because the pre-release functions read the same secret.
+
+**After the fix:** repeat the PAYG smoke test (open Checkout, confirm £4.99 Live, close without paying), then check the logs for a `POST 200` from create-checkout-session.
