@@ -150,9 +150,9 @@ setTimeout(async () => {
     assert.strictEqual(tplAfterLock.cellHeightMm, 99, 'cell height must be the real 99mm, not the old labelMM default');
     assert.notStrictEqual(tplAfterLock.cellWidthMm, 52, 'width must not have been coupled to/replaced by the old 52mm square value');
     assert.notStrictEqual(tplAfterLock.cellHeightMm, 52, 'height must not have been coupled to/replaced by the old 52mm square value');
-    // The old single field is left completely alone (still whatever it
-    // defaulted to) -- it is simply not consulted while rectLocked.
-    assert.strictEqual(window.eval("document.getElementById('cust-label-mm').value"), '52', 'cust-label-mm itself must be untouched by the lock');
+    // Stage 1 (27 Sep 2026): the single field is now a disabled, read-only
+    // mirror for circles/squares -- never an input, never read as geometry.
+    assert.strictEqual(document.getElementById('cust-label-mm').disabled, true, 'cust-label-mm must be read-only (disabled) -- it can no longer resize labels');
 
     // ── #2: seeded Cols/Rows are the real A4-valid maximum for 57x99mm at
     // the default 10mm margin / 5mm gaps -- 3 columns x 2 rows (6 labels),
@@ -285,11 +285,28 @@ setTimeout(async () => {
     window.eval('addToSheet(window.__ids[2])'); // circleC, 52mm circle
     const tplCircle = window.eval('getTplConfig()');
     assert.strictEqual(tplCircle.rectLocked, false, 'a circle must never set rectLocked');
-    assert.strictEqual(tplCircle.cellWidthMm, 52, 'circle Custom Sheet must keep using the single Label-mm field (default 52), exactly as before this fix');
+    // Stage 1 (27 Sep 2026): a circle's cell is its own real size (52mm here).
+    assert.strictEqual(tplCircle.cellWidthMm, 52, 'circle Custom Sheet cell must be the label\'s own real 52mm size');
     assert.strictEqual(tplCircle.cellHeightMm, 52);
-    assert.strictEqual(document.getElementById('cust-cols').value, colsBefore, 'adding a circle must never auto-seed/alter Cols -- that only ever happens for a non-square rectangle');
-    assert.strictEqual(document.getElementById('cust-rows').value, rowsBefore, 'adding a circle must never auto-seed/alter Rows -- that only ever happens for a non-square rectangle');
-    assert.strictEqual(window.eval('getCustomGridOverflow()'), null, 'circle/square Custom Sheet must never be subject to the new A4-fit block (pre-existing, unvalidated behaviour preserved)');
+    // Cols/Rows are kept when they already fit this circle inside the
+    // margins, and re-seeded to the largest fitting grid when they don't --
+    // never left laid out off the page (the Stage 1 page-boundary fix).
+    const fitsBefore = (+colsBefore)*52+((+colsBefore)-1)*5 <= 190 && (+rowsBefore)*52+((+rowsBefore)-1)*5 <= 277;
+    if (fitsBefore) {
+      assert.strictEqual(document.getElementById('cust-cols').value, colsBefore, 'a circle must keep the user\'s Cols when they already fit');
+      assert.strictEqual(document.getElementById('cust-rows').value, rowsBefore, 'a circle must keep the user\'s Rows when they already fit');
+    } else {
+      assert.strictEqual(document.getElementById('cust-cols').value, '3', 'a non-fitting grid must be re-seeded to the largest fitting Cols for 52mm');
+      assert.strictEqual(document.getElementById('cust-rows').value, '4', 'a non-fitting grid must be re-seeded to the largest fitting Rows for 52mm');
+    }
+    assert.strictEqual(window.eval('getCustomGridOverflow()'), null, 'the seeded/kept circle grid must fit inside the A4 margins');
+    // ...and circles/squares ARE now subject to the A4-fit block: forcing a
+    // grid too tall for 52mm labels must be flagged, never clipped.
+    document.getElementById('cust-rows').value = '6';
+    window.eval('rebuildSheet()');
+    assert(window.eval('getCustomGridOverflow()'), 'a circle grid too tall for A4 must now be flagged (Stage 1 page-boundary fix)');
+    document.getElementById('cust-rows').value = '4';
+    window.eval('rebuildSheet()');
     assert.strictEqual(document.getElementById('cust-rect-dims-row').style.display, 'none', 'width/height controls must stay hidden for a circle label');
 
     // ── Empty-slot placeholder shape, circle (point #3): a circle-locked

@@ -94,7 +94,11 @@ try {
   // Raised again (26 Sep 2026, approved post-download printing guidance):
   // +~1.9KB for #sheet-print-guidance, its CSS and show/hide helpers.
   // Same ~4KB headroom policy.
-  assert(source.length < 165500,
+  // Raised again (27 Sep 2026, Stage 1 Composer size-integrity fix): +~4KB
+  // for getSheetPlacementsMM()/getSheetGeometryBlockMessage()/
+  // getProspectiveCustomGrid() and the read-only Label size read-out.
+  // Same ~4KB headroom policy.
+  assert(source.length < 171500,
     'print.html should stay close to its current size -- an unexpectedly large increase suggests an accidental duplicate/oversized insertion');
 
   console.log('cutting-machine tip visual-revision checks passed (the #cricut-tip card and all its CSS are completely removed from the sheet-preview area; no replacement card/panel was added; the real "Download for cutting machine" button and its modal wiring are byte-for-byte unchanged; the required guidance sentence now lives inside the existing #cricutModal\'s #modal-sub, alongside its unchanged dynamic count sentence)');

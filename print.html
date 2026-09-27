@@ -500,9 +500,11 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
         </div>
       </div>
       <div class="custom-dims-row">
+        <!-- Stage 1: read-only (editing it used to rescale every label). -->
         <div class="dim-group" id="cust-label-mm-group">
-          <label>Label mm</label>
-          <input type="number" id="cust-label-mm" value="52" min="52" max="150" oninput="rebuildSheet()">
+          <label for="cust-label-mm">Label size mm</label>
+          <input type="number" id="cust-label-mm" value="" placeholder="—" disabled title="Locked to your label's real size. To change it, edit the label in the Label Builder.">
+          <div style="font-size:10.5px;color:var(--muted);line-height:1.3;">Locked to your label's real size</div>
         </div>
         <div class="dim-group">
           <label>Cols</label>
@@ -865,8 +867,62 @@ async function rasterizeCellSVG(svgStr,vbW,vbH){
 // either one alone is enough to disable a button, so this is the single
 // place that reconciles both for every export control rather than letting
 // updateProGate() and renderSheetCanvas() fight over the same attributes.
+// ── STAGE 1: PHYSICAL PLACEMENT AUTHORITY (27 Sep 2026) ─────────────────
+// Every occupied position in mm on the A4 page, in downloadPDF()'s order.
+// w/h are ALWAYS the label's own saved size (getLabelDimsMM()), never the
+// cell or a screen size; cellW/cellH are kept only for the guard below.
+function getSheetPlacementsMM(){
+  const t=getTplConfig();
+  const cell=getCellSizeMM(t);
+  const flat=[];
+  sheetItems.forEach(item=>{
+    const ld=resolveSheetLabel(item.labelId);
+    if(!ld)return;
+    for(let q=0;q<item.qty;q++)flat.push(ld);
+  });
+  const out=[];
+  let idx=0,posIdx=0;
+  for(let row=0;row<t.rows;row++){
+    for(let col=0;col<t.cols;col++){
+      if(posIdx>=reservedUsed && idx<flat.length){
+        const ld=flat[idx];
+        const dims=getLabelDimsMM(ld);
+        out.push({
+          labelData:ld, row, col,
+          x:t.marginL+col*(cell.w+t.gapH),
+          y:t.marginT+row*(cell.h+t.gapV),
+          w:dims.w, h:dims.h, cellW:cell.w, cellH:cell.h,
+        });
+        idx++;
+      }
+      posIdx++;
+    }
+  }
+  return out;
+}
+
+// Belt-and-braces export guard (via getSheetFitBlockMessage()): refuses if
+// any position would be drawn at other than its label's saved size, or fall
+// even partly off the A4 page -- so no future change can silently resize or
+// clip a label. Tolerance is float noise only.
+const SHEET_GEOMETRY_EPS_MM=0.01;
+function getSheetGeometryBlockMessage(){
+  if(currentTpl===null)return null;
+  const E=SHEET_GEOMETRY_EPS_MM;
+  for(const p of getSheetPlacementsMM()){
+    const name=(p.labelData&&p.labelData.scentName)||'Unnamed label';
+    if(Math.abs(p.w-p.cellW)>E||Math.abs(p.h-p.cellH)>E){
+      return `This sheet can't be printed or downloaded: "${name}" is ${p.w}×${p.h}mm but this sheet's label positions are ${p.cellW}×${p.cellH}mm.\n\nCLPeasy never resizes a label to fit a sheet. Choose a sheet that matches this label's size, or remove it.`;
+    }
+    if(p.x<-E||p.y<-E||p.x+p.w>A4_W+E||p.y+p.h>A4_H+E){
+      return `This sheet can't be printed or downloaded: the label in row ${p.row+1}, column ${p.col+1} would extend past the edge of the A4 page.\n\nReduce Cols/Rows, or the margin/gap, so every label fits on the page.`;
+    }
+  }
+  return null;
+}
+
 function updateExportButtonState(){
-  const blockedByFit=((typeof sheetFitIssues!=='undefined')&&sheetFitIssues.length>0)||!!getCustomGridOverflow();
+  const blockedByFit=((typeof sheetFitIssues!=='undefined')&&sheetFitIssues.length>0)||!!getCustomGridOverflow()||!!getSheetGeometryBlockMessage();
   // Correction batch: no longer says "marked below" -- since the export
   // buttons moved into the Sheet Preview pane, the fit-issues list they
   // refer to is no longer spatially below them (desktop: it's in the left
@@ -888,6 +944,9 @@ function getSheetFitBlockMessage(){
   // takes priority -- see getCustomGridOverflowMessage().
   const gridMsg=getCustomGridOverflowMessage();
   if(gridMsg)return gridMsg;
+  // Stage 1: final physical-geometry guard (getSheetGeometryBlockMessage()).
+  const geoMsg=getSheetGeometryBlockMessage();
+  if(geoMsg)return geoMsg;
   if(!sheetFitIssues||!sheetFitIssues.length)return null;
   const list=sheetFitIssues.map(i=>`• ${i.scentName}: ${i.reason}`).join('\n');
   return `This sheet can't be printed or downloaded yet -- ${sheetFitIssues.length} label${sheetFitIssues.length===1?'':'s'} ${sheetFitIssues.length===1?"doesn't":"don't"} fit:\n\n${list}\n\nFix, replace or remove the marked label(s) below, then try again.`;
@@ -914,17 +973,20 @@ function getSheetFitBlockMessage(){
 //     whenever the CURRENT Cols/Rows (the user can still edit them) no
 //     longer fits that real footprint on A4, instead of silently
 //     rendering/exporting a grid that overflows or clips off the page.
-// Circle and square (w===h) Custom Sheet labels are entirely unaffected --
-// t.rectLocked is only ever true for a non-square rectangle (see
-// getTplConfig()), so this returns null for every other case, exactly
-// preserving the pre-existing (unvalidated) circle/square behaviour.
+// Stage 1 (27 Sep 2026): now applies to EVERY Custom Sheet shape -- it used
+// to skip circles/squares, whose grids could run off the page and be
+// clipped. Label size is fixed, so a grid that doesn't fit inside the
+// margins is blocked with a message, never shrunk to fit.
 function getCustomGridOverflow(){
   if(currentTpl!=='custom')return null;
   const t=getTplConfig();
-  if(!t.rectLocked)return null;
+  // Empty sheet (52mm placeholder grid only): nothing to export yet, and
+  // the first label added re-seeds Cols/Rows for its real size.
+  if(!t.sizeLocked)return null;
   const availW=A4_W-t.marginL-t.marginR, availH=A4_H-t.marginT-t.marginB;
-  const maxCols=Math.max(0,Math.floor((availW+t.gapH)/(t.cellWidthMm+t.gapH)));
-  const maxRows=Math.max(0,Math.floor((availH+t.gapV)/(t.cellHeightMm+t.gapV)));
+  // 1e-9: float noise only, so an exact fit is not reported as 2.9999 cols.
+  const maxCols=Math.max(0,Math.floor((availW+t.gapH)/(t.cellWidthMm+t.gapH)+1e-9));
+  const maxRows=Math.max(0,Math.floor((availH+t.gapV)/(t.cellHeightMm+t.gapV)+1e-9));
   if(t.cols>maxCols||t.rows>maxRows){
     return{cols:t.cols,rows:t.rows,maxCols,maxRows,cellW:t.cellWidthMm,cellH:t.cellHeightMm};
   }
@@ -1264,8 +1326,8 @@ function getCustomSheetPreviewSize(){
 // ── CUSTOM SHEET RECTANGLE LOCK (30 Aug 2026 fix) ────────────────────
 // Runs exactly once -- the moment `e` becomes the FIRST label on an
 // otherwise-empty Custom sheet (see addToSheet()'s wasEmpty check). A
-// circle or square (w===h) label is left alone entirely: it keeps using
-// the pre-existing single "Label mm" field, unchanged. A non-square
+// circle or square (w===h) label is handled by initCustomSheetFromReference()
+// below instead (same A4-fitting Cols/Rows seed since Stage 1). A non-square
 // rectangle instead seeds the sheet's Cols/Rows to the largest grid that
 // actually fits THIS label's real size on A4 (so the sheet renders
 // correctly immediately, instead of landing straight in a blocked state)
@@ -1308,9 +1370,30 @@ function initCustomSheetFromReference(e){
   if(shape==='rectangle'&&Math.abs(dims.w-dims.h)>=0.05){
     initCustomRectLockIfNeeded(e);
   } else {
-    const mmEl=document.getElementById('cust-label-mm');
-    if(mmEl)mmEl.value=Math.max(52,Math.round(dims.w*100)/100);
+    // Stage 1: cell size now comes from the label itself (getTplConfig()),
+    // so only Cols/Rows are seeded -- see getProspectiveCustomGrid().
+    const grid=getProspectiveCustomGrid(e);
+    const colsEl=document.getElementById('cust-cols'), rowsEl=document.getElementById('cust-rows');
+    if(colsEl)colsEl.value=grid.cols;
+    if(rowsEl)rowsEl.value=grid.rows;
   }
+}
+
+// Stage 1: Cols/Rows a Custom sheet uses once `e` is its first label. A
+// non-square rectangle always gets the largest fitting grid (unchanged);
+// a circle/square keeps the current Cols/Rows if they fit inside the
+// margins, otherwise the largest fitting grid -- never laid out off-page.
+function getProspectiveCustomGrid(e){
+  const dims=getLabelDimsMM(e);
+  const fitGrid=calcA4GridForCell(dims.w,dims.h);
+  if((e.shape||'circle')==='rectangle'&&Math.abs(dims.w-dims.h)>=0.05)return fitGrid;
+  const cols=parseInt(document.getElementById('cust-cols')?.value)||3;
+  const rows=parseInt(document.getElementById('cust-rows')?.value)||5;
+  const m=Math.max(0,parseFloat(document.getElementById('cust-margin')?.value)||10);
+  const gapH=Math.max(0,parseFloat(document.getElementById('cust-gapH')?.value)||5);
+  const gapV=Math.max(0,parseFloat(document.getElementById('cust-gapV')?.value)||5);
+  const fits=cols*dims.w+(cols-1)*gapH<=A4_W-2*m+1e-9 && rows*dims.h+(rows-1)*gapV<=A4_H-2*m+1e-9;
+  return fits?{cols,rows}:fitGrid;
 }
 
 // The largest Cols x Rows grid of a wMm x hMm cell that actually fits an
@@ -1326,8 +1409,8 @@ function calcA4GridForCell(wMm,hMm){
   const m=Math.max(0,parseFloat(document.getElementById('cust-margin')?.value)||10);
   const gapH=Math.max(0,parseFloat(document.getElementById('cust-gapH')?.value)||5);
   const gapV=Math.max(0,parseFloat(document.getElementById('cust-gapV')?.value)||5);
-  const maxCols=Math.max(1,Math.floor((A4_W-2*m+gapH)/(wMm+gapH)));
-  const maxRows=Math.max(1,Math.floor((A4_H-2*m+gapV)/(hMm+gapV)));
+  const maxCols=Math.max(1,Math.floor((A4_W-2*m+gapH)/(wMm+gapH)+1e-9));
+  const maxRows=Math.max(1,Math.floor((A4_H-2*m+gapV)/(hMm+gapV)+1e-9));
   return {cols:maxCols,rows:maxRows};
 }
 
@@ -1420,6 +1503,10 @@ function syncCustomDimsPanel(){
     const wEl=document.getElementById('cust-label-w'), hEl=document.getElementById('cust-label-h');
     if(wEl)wEl.value=locked.w;
     if(hEl)hEl.value=locked.h;
+  } else {
+    // Read-only display of the label's real size; never read as geometry.
+    const mmEl=document.getElementById('cust-label-mm');
+    if(mmEl)mmEl.value=locked?String(locked.w):'';
   }
 }
 
@@ -1707,10 +1794,19 @@ function canAddToSheet(e,qtyToAdd){
   if(currentTpl===null)return 'Choose a sheet template first, then add this label.';
   // Whole-sheet geometry problem takes priority over any per-label check --
   // see getCustomGridOverflowMessage() (30 Aug 2026 fix).
-  const gridMsg=getCustomGridOverflowMessage();
-  if(gridMsg)return gridMsg;
+  // Stage 1: on an EMPTY Custom sheet the first label re-seeds Cols/Rows,
+  // so judge capacity against that prospective grid, not the current one.
+  const emptyCustom=currentTpl==='custom'&&!sheetItems.length;
+  if(!emptyCustom){
+    const gridMsg=getCustomGridOverflowMessage();
+    if(gridMsg)return gridMsg;
+  }
   const t=getTplConfig();
-  const slots=t.cols*t.rows;
+  let slots=t.cols*t.rows;
+  if(emptyCustom){
+    const g=getProspectiveCustomGrid(e);
+    slots=g.cols*g.rows;
+  }
   const available=slots-reservedUsed-getTotalQty();
   if(qtyToAdd>available){
     const usedNote=reservedUsed?`, ${reservedUsed} already used`:'';
@@ -1791,12 +1887,15 @@ function setQty(labelId,val){
       return;
     }
   }
+  const wasEmpty=sheetItems.length===0;
   if(n===0){
     if(pos>=0)sheetItems.splice(pos,1);
   } else {
     if(pos>=0){sheetItems[pos].qty=n;}
     else if(e){sheetItems.push({labelId,qty:n});}
   }
+  // Same first-label grid seed as addToSheet() (Stage 1).
+  if(wasEmpty&&e&&sheetItems.length)initCustomSheetFromReference(e);
   renderSavedList();
   rebuildSheet();
 }
@@ -1925,23 +2024,30 @@ function getTplConfig(){
     // default only while the sheet is unlocked (empty), preserving the
     // pre-existing look for a blank Custom sheet exactly as before.
     t.shape=locked?(locked.shape||'circle'):(t.shape||'circle');
-    t.labelMM=Math.max(52,parseFloat(document.getElementById('cust-label-mm')?.value)||52);
+    // Stage 1 (27 Sep 2026): every shape's cell is the label's own saved
+    // size -- never the old editable "Label mm" field, which labels were
+    // scaled to fill (70 turned a 60mm label into ~69mm; 52 into ~51.5mm).
+    // TEMPLATES.custom.labelMM (52) is only the empty-sheet placeholder.
+    t.sizeLocked=!!locked;
+    if(locked){ t.labelMM=locked.w; }
     t.cols=parseInt(document.getElementById('cust-cols')?.value)||3;
     t.rows=parseInt(document.getElementById('cust-rows')?.value)||5;
-    const m=parseFloat(document.getElementById('cust-margin')?.value)||10;
+    // Clamped to >= 0 (Stage 1): a negative margin would start labels
+    // before the page edge; a negative gap would overlap them.
+    const m=Math.max(0,parseFloat(document.getElementById('cust-margin')?.value)||10);
     t.marginT=m;t.marginL=m;t.marginR=m;t.marginB=m;
-    t.gapH=parseFloat(document.getElementById('cust-gapH')?.value)||5;
-    t.gapV=parseFloat(document.getElementById('cust-gapV')?.value)||5;
-    if(t.rectLocked){ t.cellWidthMm=locked.w; t.cellHeightMm=locked.h; }
+    t.gapH=Math.max(0,parseFloat(document.getElementById('cust-gapH')?.value)||5);
+    t.gapV=Math.max(0,parseFloat(document.getElementById('cust-gapV')?.value)||5);
+    if(locked){ t.cellWidthMm=locked.w; t.cellHeightMm=locked.h; }
   }
   if(t.cellWidthMm===undefined){ t.cellWidthMm=t.labelMM; t.cellHeightMm=t.labelMM; }
   t.fixedLabelMM=false;
   return t;
 }
 
-// Cell footprint in mm as {w,h} -- square for the user-defined Custom
-// sheet (t.labelMM used for both axes), the label's true fixed footprint
-// for a registry template. Centralises this so the rendering code below
+// Cell footprint in mm as {w,h} -- the placed label's own saved size for
+// Custom sheet (Stage 1; the 52mm placeholder only while the sheet is
+// empty), the label's true fixed footprint for a registry template. Centralises this so the rendering code below
 // never has to branch on which kind of template is active.
 function getCellSizeMM(t){ return {w:t.cellWidthMm, h:t.cellHeightMm}; }
 
@@ -2084,16 +2190,10 @@ function renderSheetCanvas(){
   const MM2PX=3.7795*zoom;
   const shW=Math.round(A4_W*MM2PX);
   const shH=Math.round(A4_H*MM2PX);
-  // Cell footprint -- square for Custom sheet, the label's own fixed w/h
-  // for a registry template (getCellSizeMM/getTplConfig above). boxAspect
-  // generalises the old square-only "fit within the box" formula below;
-  // for a square cell (Custom sheet) boxAspect is always 1, reproducing
-  // the exact previous behaviour (proven by the regression check in
-  // tests/print-sheet-composer.js).
+  // Cell footprint -- since Stage 1 always the placed label's own size.
   const cellMM=getCellSizeMM(t);
   const cellWPX=Math.round(cellMM.w*MM2PX);
   const cellHPX=Math.round(cellMM.h*MM2PX);
-  const boxAspect=cellMM.w/cellMM.h;
   const marginTPX=Math.round(t.marginT*MM2PX);
   const marginLPX=Math.round(t.marginL*MM2PX);
   const gapHPX=Math.round(t.gapH*MM2PX);
@@ -2181,9 +2281,9 @@ function renderSheetCanvas(){
         const slot=flatLabels[labelIdx];
         const ld=slot.labelData;
         const dims=getLabelDimsMM(ld);
-        const aspect=dims.w/dims.h;
-        const cw=aspect>=boxAspect?cellWPX:Math.round(cellHPX*aspect);
-        const ch=aspect>=boxAspect?Math.round(cellWPX/aspect):cellHPX;
+        // Stage 1: label's own saved size (screen zoom only), never the cell.
+        const cw=Math.round(dims.w*MM2PX);
+        const ch=Math.round(dims.h*MM2PX);
         const result=renderSheetPosition(ld,cw,ch);
         const invalidCls=result.fits?'':' sheet-cell-invalid';
         const invalidTitle=result.fits?'':' title="This label does not fit -- see the fit issues list on the left"';
@@ -2422,23 +2522,10 @@ async function downloadPDF(){
   const M2PX=DPI/25.4;
   const shWpx=Math.round(shWmm*M2PX);
   const shHpx=Math.round(shHmm*M2PX);
-  const cellMM=getCellSizeMM(t);
-  const cellWPX2=Math.round(cellMM.w*M2PX);
-  const cellHPX2=Math.round(cellMM.h*M2PX);
-  const boxAspect2=cellMM.w/cellMM.h;
-  const marTPX=Math.round(t.marginT*M2PX);
-  const marLPX=Math.round(t.marginL*M2PX);
-  const gHPX=Math.round(t.gapH*M2PX);
-  const gVPX=Math.round(t.gapV*M2PX);
-
-  // Flatten label order -- resolved fresh by labelId (not cached), so an
-  // item whose label has since been deleted elsewhere is simply skipped.
-  const flatLabels=[];
-  sheetItems.forEach(item=>{
-    const ld=resolveSheetLabel(item.labelId);
-    if(!ld)return;
-    for(let q=0;q<item.qty;q++)flatLabels.push(ld);
-  });
+  // Stage 1: positions and sizes come from getSheetPlacementsMM() in mm --
+  // each label at its own saved size (never scaled to a cell), each
+  // position converted independently (no accumulated rounding).
+  const placements=getSheetPlacementsMM();
 
   // Many labels are about to be assembled into one combined physical <svg>
   // for print/export -- share one SharedAssetPool across the whole sheet so
@@ -2446,26 +2533,11 @@ async function downloadPDF(){
   // per distinct asset instead of once per label position (amendment #4).
   const _sheetAssetPool=new LabelRenderer.SharedAssetPool();
   let cellsHTML='';
-  let idx=0,posIdx2=0;
-  for(let row=0;row<t.rows;row++){
-    for(let col=0;col<t.cols;col++){
-      const x=marLPX+col*(cellWPX2+gHPX);
-      const y=marTPX+row*(cellHPX2+gVPX);
-      // Already-used positions (Phase 1 registry templates) are physically
-      // occupied on the real sheet already -- nothing is printed there.
-      if(posIdx2>=reservedUsed && idx<flatLabels.length){
-        const ld=flatLabels[idx];
-        const dims=getLabelDimsMM(ld);
-        const aspect=dims.w/dims.h;
-        const cw=aspect>=boxAspect2?cellWPX2:Math.round(cellHPX2*aspect);
-        const ch=aspect>=boxAspect2?Math.round(cellWPX2/aspect):cellHPX2;
-        const offX=(cellWPX2-cw)/2, offY=(cellHPX2-ch)/2;
-        cellsHTML+=`<g transform="translate(${x+offX},${y+offY})">${buildLabelSVGFromData(ld,cw,ch,{sharedDefs:_sheetAssetPool})}</g>`;
-        idx++;
-      }
-      posIdx2++;
-    }
-  }
+  placements.forEach(p=>{
+    const x=Math.round(p.x*M2PX), y=Math.round(p.y*M2PX);
+    const cw=Math.round(p.w*M2PX), ch=Math.round(p.h*M2PX);
+    cellsHTML+=`<g transform="translate(${x},${y})">${buildLabelSVGFromData(p.labelData,cw,ch,{sharedDefs:_sheetAssetPool})}</g>`;
+  });
 
   const sheetSVG=`<svg xmlns="http://www.w3.org/2000/svg" width="${shWpx}" height="${shHpx}" viewBox="0 0 ${shWpx} ${shHpx}">
   <defs>${_sheetAssetPool.defsMarkup()}</defs>

@@ -425,3 +425,30 @@ signup trigger still fires correctly after the revoke (tested via a
 rolled-back transaction). Leaked password protection remains disabled --
 confirmed it requires a Supabase Pro-plan upgrade, not actionable on the
 current Free plan.
+
+## Print Sheet Composer size integrity — Stage 1 (27 Sep 2026)
+
+**Fixed (PR, not yet merged):** the Composer could silently resize labels and
+place them off the A4 page.
+
+- Root cause: for circle/square Custom sheets the cell size came from the
+  editable "Label mm" field, and `downloadPDF()` scaled each label to fill
+  its cell (a 60mm label exported at ~69.2mm with Label mm 70, ~51.5mm with
+  52). The A4-fit check (`getCustomGridOverflow()`) only ran for non-square
+  rectangles, so circle/square grids could run off the page and be clipped.
+- Fix: every Custom-sheet cell is now the label's own saved size; "Label mm"
+  is a read-only "Label size" read-out; the A4-fit check covers every shape;
+  export goes through `getSheetPlacementsMM()` (mm positions, label's own
+  size) and a final `getSheetGeometryBlockMessage()` guard that refuses any
+  resize or off-page placement. Margin/gaps clamp to >= 0.
+- Deliberate consequence: the page margin is a hard boundary for all shapes
+  (as it already was for rectangles and the ?label= journey), so a 52mm
+  circle's default Custom sheet is 3 x 4 = 12, not 3 x 5 = 15 (row 5 sat in
+  the 10mm bottom margin). A margin of 8.5mm or less fits 3 x 5.
+- Tests: `tests/print-sheet-size-integrity.js` (new); several existing
+  Composer tests updated where they asserted the old circle/square
+  behaviour.
+- Still open: EU30009 (99.1 x 57.3mm) cannot accept any Builder label,
+  because Builder sizes are whole millimetres (`parseInt`). Labels beyond a
+  sheet's slot count are left off the export (the summary shows
+  "over limit"). Both are recorded for a separate decision.
