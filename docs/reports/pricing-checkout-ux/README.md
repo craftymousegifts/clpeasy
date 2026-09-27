@@ -5,6 +5,8 @@ Screenshots from `node tests/pricing-checkout-ux.js`: real pages in Chromium, Su
 | File | Shows |
 |---|---|
 | `pricing-desktop.png`, `pricing-mobile*.png` | Card icons: Easy Trial ✨ and Easy Pro ⚡ unchanged; new inline-SVG Pay As You Go (contactless card) and Easy Start (clipboard with tick) |
+| `checkout-plan-cards-monthly-{desktop,mobile}.png` | Plan-choice cards during the 2026 offer: Easy Start £8.99/month and Easy Pro £13.49/month, "Normally £9.99/month" / "Normally £14.99/month · 10% launch offer until 31 December 2026" |
+| `checkout-plan-cards-annual-desktop.png` | Annual cards £99/yr and £149/yr, no 2026 offer |
 | `checkout-summary-easy-start-monthly-{desktop,mobile}.png` | £9.99/mo standard price, "2026 offer – 10% off" −£1.00, due today £8.99/month |
 | `checkout-summary-easy-pro-monthly-desktop.png` | £14.99/mo standard price, −£1.50, due today £13.49/month |
 | `indicator-pricing-desktop.png`, `indicator-pricing-mobile.png`, `indicator-checkout-mobile.png` | Header "Checkout in progress" indicator |

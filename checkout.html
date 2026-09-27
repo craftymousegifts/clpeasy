@@ -50,6 +50,8 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.97);backdrop
 .plan-price{font-size:22px;font-weight:900;color:var(--teal);line-height:1.1;}
 .plan-price span{font-size:13px;font-weight:500;color:var(--muted);}
 .plan-desc{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5;}
+.plan-offer-note{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45;}
+.plan-offer-note .nowrap{white-space:nowrap;}
 .plan-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;margin-top:6px;}
 .plan-badge.save{background:#D1FAE5;color:#065F46;}
 .plan-badge.popular{background:var(--amber-light);color:#92400E;}
@@ -347,20 +349,22 @@ function renderPlans() {
   const grid = document.getElementById('plan-grid');
   const startPromo = monthlyPromo(plans.easy_start);
   const proPromo = monthlyPromo(plans.easy_pro);
+  // Offer line sits outside .plan-price so it keeps the card's normal text
+  // weight; the end date is kept on one line.
   const planPrice = (plan, promo) => promo
-    ? gbp(promo.due) + '<span>/mo</span><div style="font-size:11px;color:var(--muted);margin-top:2px;">Normally ' + plan.price + '/month · 10% launch offer until 31 Dec 2026</div>'
-    : plan.price + '<span>' + (billing === 'monthly' ? '/mo' : '/yr') + '</span>';
+    ? '<div class="plan-price">' + gbp(promo.due) + '<span>/month</span></div><div class="plan-offer-note">Normally ' + plan.price + '/month · 10% launch offer until <span class="nowrap">31 December 2026</span></div>'
+    : '<div class="plan-price">' + plan.price + '<span>' + (billing === 'monthly' ? '/mo' : '/yr') + '</span></div>';
   grid.innerHTML = `
     <div class="plan-card ${selectedPlan === 'easy_start' ? 'selected' : ''}" onclick="selectPlan('easy_start')">
       <div class="plan-name">Easy Start</div>
-      <div class="plan-price">${planPrice(plans.easy_start, startPromo)}</div>
+      ${planPrice(plans.easy_start, startPromo)}
       ${billing === 'monthly' ? '' : '<div style="font-size:11px;color:var(--muted);margin-top:2px;">£8.25/mo billed annually</div>'}
       <div class="plan-desc">20 downloads/month. Perfect for makers just starting out.</div>
       ${billing === 'annual' ? '<div class="plan-badge save">Save £20.88/yr</div>' : '<div class="plan-badge popular">Most popular</div>'}
     </div>
     <div class="plan-card ${selectedPlan === 'easy_pro' ? 'selected' : ''}" onclick="selectPlan('easy_pro')">
       <div class="plan-name">Easy Pro</div>
-      <div class="plan-price">${planPrice(plans.easy_pro, proPromo)}</div>
+      ${planPrice(plans.easy_pro, proPromo)}
       ${billing === 'monthly' ? '' : '<div style="font-size:11px;color:var(--muted);margin-top:2px;">£12.42/mo billed annually</div>'}
       <div class="plan-desc">30 downloads/month + priority support.</div>
       ${billing === 'annual' ? '<div class="plan-badge save">Save £30.88/yr</div>' : ''}

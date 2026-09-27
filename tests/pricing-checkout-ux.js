@@ -127,6 +127,10 @@ server.listen(0, '127.0.0.1', async () => {
     total: document.getElementById('summary-total').textContent,
     note: getComputedStyle(document.getElementById('summary-promo-note')).display !== 'none' ? document.getElementById('summary-promo-note').textContent : '',
   }));
+  // Per card: [price line, offer line or null].
+  const cardParts = t => t.evaluate(() => [...document.querySelectorAll('#plan-grid .plan-card')].map(c => [
+    c.querySelector('.plan-price').textContent.trim(),
+    c.querySelector('.plan-offer-note') ? c.querySelector('.plan-offer-note').textContent.replace(/\s+/g, ' ').trim() : null]));
   const planCards = t => t.evaluate(() => [...document.querySelectorAll('#plan-grid .plan-card')].map(card => card.textContent.replace(/\s+/g, ' ').trim()));
   const startOn = async (t, page, plan, billing) => {
     if (page === 'pricing.html') {
@@ -149,11 +153,34 @@ server.listen(0, '127.0.0.1', async () => {
       const ctx = await browser.createBrowserContext();
       const t = await open(ctx, 'checkout.html', { nowIso: '2026-09-27T12:00:00Z', cookies: false });
       await t.evaluate(() => setBilling('monthly'));
-      const cards = await planCards(t);
-      assert(cards[0].includes('£8.99/mo') && cards[0].includes('Normally £9.99/month') && cards[0].includes('10% launch offer until 31 Dec 2026'), cards[0]);
-      assert(cards[1].includes('£13.49/mo') && cards[1].includes('Normally £14.99/month') && cards[1].includes('10% launch offer until 31 Dec 2026'), cards[1]);
+      assert.deepStrictEqual(await cardParts(t), [
+        ['£8.99/month', 'Normally £9.99/month · 10% launch offer until 31 December 2026'],
+        ['£13.49/month', 'Normally £14.99/month · 10% launch offer until 31 December 2026'],
+      ]);
+      const style = await t.evaluate(() => {
+        const n = document.querySelector('.plan-offer-note'), d = document.querySelector('.plan-desc');
+        return { noteWeight: getComputedStyle(n).fontWeight, descWeight: getComputedStyle(d).fontWeight, nowrap: getComputedStyle(n.querySelector('.nowrap')).whiteSpace };
+      });
+      assert.deepStrictEqual(style, { noteWeight: style.descWeight, descWeight: style.descWeight, nowrap: 'nowrap' }, 'offer line uses the card text weight; end date never splits');
       await ctx.close();
     });
+
+    for (const [name, vp] of [['desktop', DESKTOP], ['mobile', IPHONE]]) {
+      await check(`checkout.html (${name}): monthly offer cards fit, the end date stays on one line, screenshot`, async () => {
+        const ctx = await newCustomer();
+        const t = await open(ctx, 'checkout.html', { viewport: vp, nowIso: '2026-10-01T12:00:00Z', cookies: false });
+        await t.evaluate(() => setBilling('monthly'));
+        const g = await t.evaluate(() => ({
+          dateLines: [...document.querySelectorAll('.plan-offer-note .nowrap')].map(e => e.getClientRects().length),
+          overflow: [...document.querySelectorAll('#plan-grid .plan-card')].some(c => c.scrollWidth > c.clientWidth + 1),
+          hscroll: document.documentElement.scrollWidth > window.innerWidth,
+        }));
+        assert.deepStrictEqual(g, { dateLines: [1, 1], overflow: false, hscroll: false });
+        await t.evaluate(() => { document.getElementById('plan-grid').scrollIntoView({ block: 'start', behavior: 'instant' }); window.scrollBy(0, -140); });
+        await t.screenshot({ path: path.join(SHOTS, `checkout-plan-cards-monthly-${name}.png`) });
+        await ctx.close();
+      });
+    }
 
     await check('checkout.html: Easy Start MONTHLY summary = standard £9.99, 2026 offer −£1.00, due today £8.99/month', async () => {
       const ctx = await newCustomer();
@@ -187,13 +214,16 @@ server.listen(0, '127.0.0.1', async () => {
       await ctx.close();
     });
     for (const [plan, label, total] of [['easy_start', 'Easy Start Annual', '£99.00'], ['easy_pro', 'Easy Pro Annual', '£149.00']]) {
-      await check(`checkout.html: ${label} is never discounted (due today ${total})`, async () => {
+      await check(`checkout.html: ${label} card and summary are never discounted (due today ${total})`, async () => {
         const ctx = await newCustomer();
         const t = await open(ctx, 'checkout.html', { nowIso: '2026-10-01T12:00:00Z', cookies: false });
         await t.evaluate(p => { setBilling('annual'); selectPlan(p); }, plan);
         const s = await summary(t);
         assert.deepStrictEqual([s.plan, s.promoRow, s.total, s.note], [label, false, total, '']);
         assert(!/Standard price/.test(s.price));
+        assert.deepStrictEqual(await cardParts(t), [['£99/yr', null], ['£149/yr', null]], 'annual cards: £99 / £149, no 2026 offer');
+        assert(!/launch offer|Normally|2026/.test((await planCards(t)).join(' ')), 'no promotional wording on annual cards');
+        if (plan === 'easy_start') { await new Promise(r => setTimeout(r, 400)); await t.screenshot({ path: path.join(SHOTS, 'checkout-plan-cards-annual-desktop.png') }); } // after the toggle's .2s transition
         await ctx.close();
       });
     }
@@ -204,8 +234,8 @@ server.listen(0, '127.0.0.1', async () => {
       const s = await summary(t);
       assert.deepStrictEqual([s.price, s.promoRow, s.total, s.note], ['£9.99/mo', false, '£9.99', '']);
       const cards = await planCards(t);
-      assert(cards[0].includes('£9.99/mo') && !cards[0].includes('launch offer'), cards[0]);
-      assert(cards[1].includes('£14.99/mo') && !cards[1].includes('launch offer'), cards[1]);
+      assert.deepStrictEqual(await cardParts(t), [['£9.99/mo', null], ['£14.99/mo', null]], '2027: standard monthly cards, no offer');
+      assert(!cards.join(' ').includes('launch offer'));
       await t.evaluate(() => selectPlan('easy_pro'));
       assert.strictEqual((await summary(t)).total, '£14.99');
       await ctx.close();
