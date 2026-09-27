@@ -123,13 +123,17 @@ const server = http.createServer((req, res) => {
     const state = t => t.evaluate(() => {
       const g = document.getElementById('dl-print-guidance');
       const r = g.getBoundingClientRect();
-      return { shown: !g.hidden && g.offsetParent !== null, text: g.innerText.replace(/\s+/g, ' ').trim(), role: g.getAttribute('role'), live: g.getAttribute('aria-live'),
+      return { shown: !g.hidden && g.offsetParent !== null, text: g.innerText.replace(/\s+/g, ' ').trim(), full: g.textContent.replace(/\s+/g, ' '), role: g.getAttribute('role'), live: g.getAttribute('aria-live'),
         rpc: (window.__rpc || []).filter(x => x[0] === 'consume_download').length, downloads: window.__downloads.slice(), opened: window.__opened.length,
         hScroll: document.documentElement.scrollWidth > window.innerWidth + 1, rect: { w: r.width, h: r.height, right: r.right }, vw: window.innerWidth,
-        tick: (g.querySelector('.dl-pg-icon') || {}).textContent || '' };
+        tick: (g.querySelector('.dl-pg-icon') || {}).textContent || '',
+        toast: (() => { const d = document.getElementById('label-done-splash'); const st = d.querySelector('[role=status]');
+          return { shown: d.classList.contains('show') && getComputedStyle(d).visibility === 'visible', text: st.innerText.replace(/\s+/g, ' ').trim(), live: st.getAttribute('aria-live') }; })() };
     });
     const waitFor = async (t, fn, ms = 6000) => { const end = Date.now() + ms; while (Date.now() < end) { if (await t.evaluate(fn)) return true; await new Promise(r => setTimeout(r, 150)); } return false; };
-    const BODY = 'Now load your chosen label paper or sheet into your printer. Print at 100% / Actual Size to preserve the label dimensions.';
+    // Stage 2 wording (concepts, not punctuation): a "What next?" panel with
+    // Actual Size / 100% and Fit-to-page guidance, plus a separate toast.
+    const HOWTO = t => /Actual Size/.test(t) && /100%/.test(t) && /Fit to page/.test(t) && /Test on ordinary paper/.test(t);
 
     // 1-3, 9: PAYG successful PNG / SVG / PDF
     {
@@ -140,24 +144,27 @@ const server = http.createServer((req, res) => {
       await t.evaluate(() => downloadPNG());
       assert.ok(await waitFor(t, () => window.__downloads.some(d => /\.png$/.test(d))), 'PNG file handed over');
       s = await state(t);
-      assert.ok(s.shown, 'guidance shown after PNG'); assert.ok(s.text.startsWith('✓ Label downloaded'), s.text);
-      assert.ok(s.text.includes(BODY), 'exact approved wording: ' + s.text);
-      assert.strictEqual(s.role, 'status'); assert.strictEqual(s.live, 'polite'); assert.strictEqual(s.tick, '✓', 'success is not colour-only (✓ + text)');
+      assert.ok(s.shown, 'guidance shown after PNG'); assert.ok(s.text.startsWith('✓ What next?'), s.text);
+      assert.ok(/high-resolution image/.test(s.text) && /use PDF/.test(s.text) && HOWTO(s.full), 'PNG guidance: image, PDF recommended for size: ' + s.text);
+      assert.ok(!/PNG[^.]*prints? at the correct size/i.test(s.text), 'never claims PNG prints at the correct size');
+      assert.strictEqual(s.role, 'region'); assert.strictEqual(s.tick, '✓', 'success is not colour-only (✓ + text)');
+      assert.ok(s.toast.shown && /^Label downloaded/.test(s.toast.text) && s.toast.live === 'polite', 'confirmation toast announced: ' + JSON.stringify(s.toast));
       assert.strictEqual(s.rpc, 1, 'exactly one charge for the PNG');
-      ok('1/9: PAYG successful Builder PNG download shows the approved guidance (role=status, ✓ + text, one charge)');
+      ok('1/9: PAYG successful Builder PNG download shows the "What next?" guidance (✓ + text) and a status confirmation, one charge');
 
       await t.evaluate(() => downloadSVG());
       assert.ok(await waitFor(t, () => window.__downloads.some(d => /\.svg$/.test(d))), 'SVG file handed over');
       s = await state(t);
-      assert.ok(s.shown && s.text.startsWith('✓ Label downloaded'), s.text); assert.strictEqual(s.rpc, 2);
+      assert.ok(s.shown && s.text.startsWith('✓ What next?') && /millimetres/.test(s.text), s.text); assert.strictEqual(s.rpc, 2);
       ok('2: successful Builder SVG download shows the guidance');
 
       await t.evaluate(() => printToPDF());
       await new Promise(r => setTimeout(r, 400));
       s = await state(t);
       assert.strictEqual(s.opened, 1, 'print window opened');
-      assert.ok(s.shown && s.text.startsWith('✓ Label downloaded') && s.text.includes(BODY), s.text); assert.strictEqual(s.rpc, 3);
-      ok('3: successful Builder PDF (print window) shows the guidance, headed "Label downloaded" (approved wording)');
+      assert.ok(s.shown && s.text.startsWith('✓ What next?') && /new window/.test(s.text) && HOWTO(s.full), s.text); assert.strictEqual(s.rpc, 3);
+      assert.ok(/^Label ready to print/.test(s.toast.text), s.toast.text);
+      ok('3: successful Builder PDF (print window) shows the "What next?" guidance and a "ready to print" confirmation');
       assert.deepStrictEqual(t.errs, [], 'no console errors: ' + t.errs.join(' | '));
       ok('14a: no console errors on the Builder success paths');
       await t.close();
@@ -169,7 +176,7 @@ const server = http.createServer((req, res) => {
       await t.evaluate(() => downloadPNG());
       await new Promise(r => setTimeout(r, 800));
       let s = await state(t);
-      assert.strictEqual(s.shown, false); assert.strictEqual(s.rpc, 0); assert.deepStrictEqual(s.downloads, []);
+      assert.strictEqual(s.shown, false); assert.strictEqual(s.rpc, 0); assert.deepStrictEqual(s.downloads, []); assert.strictEqual(s.toast.shown, false, 'no success toast when blocked');
       await t.evaluate(() => { const v = document.getElementById('verify-checkbox'); v.checked = true; toggleDownload(); window._labelBlockDownload = true; });
       await t.evaluate(() => downloadSVG());
       await new Promise(r => setTimeout(r, 500));
@@ -197,7 +204,7 @@ const server = http.createServer((req, res) => {
       const pop = await t2.evaluate(() => ({ nav: (window.__lastPopup || {}).navigated || '', closed: (window.__lastPopup || {}).closed, args: (window.__rpc || []).filter(x => x[0] === 'consume_download').map(x => x[1].p_label_key) }));
       assert.strictEqual(s.rpc, 1, 'C6: retry after allowing pop-ups is charged exactly once');
       assert.ok(pop.nav.startsWith('blob:') && pop.closed === false, 'C6: the label is delivered into the window opened before charging');
-      assert.ok(s.shown && s.text.startsWith('✓ Label downloaded'), 'C6: guidance after the successful retry');
+      assert.ok(s.shown && s.text.startsWith('✓ What next?'), 'C6: guidance after the successful retry');
       assert.ok(/::circle::|::rectangle::|::square::/.test(pop.args[0] || ''), 'C1: label key carries shape and size: ' + pop.args[0]);
       ok('4c: after allowing pop-ups the PDF is charged once and delivered into the pre-opened window (C6)');
       await t2.close();
@@ -226,7 +233,7 @@ const server = http.createServer((req, res) => {
       const z = await t4.evaluate(() => ({ closed: (window.__lastPopup || {}).closed, nav: (window.__lastPopup || {}).navigated || '' }));
       s = await state(t4);
       assert.ok(z.closed === true && z.nav === '', 'C6: when the download is refused the pre-opened window is closed and gets no label');
-      assert.strictEqual(s.shown, false, 'no guidance when refused');
+      assert.strictEqual(s.shown, false, 'no guidance when refused'); assert.strictEqual(s.toast.shown, false, 'no success toast when refused');
       ok('4e: refused PDF download closes the pre-opened window without a label (C6)');
       await t4.close();
     }
@@ -237,7 +244,7 @@ const server = http.createServer((req, res) => {
       await t.evaluate(() => downloadPNG());
       await new Promise(r => setTimeout(r, 800));
       let s = await state(t);
-      assert.strictEqual(s.shown, false); assert.deepStrictEqual(s.downloads, []); assert.ok(t.dialogs.length >= 1, 'out-of-downloads message shown');
+      assert.strictEqual(s.shown, false); assert.deepStrictEqual(s.downloads, []); assert.ok(t.dialogs.length >= 1, 'out-of-downloads message shown'); assert.strictEqual(s.toast.shown, false);
       ok('5: zero entitlement — export refused, no guidance, no file');
       await t.close();
       const t2 = await open('builder.html', 'payg', 'error');
@@ -245,7 +252,7 @@ const server = http.createServer((req, res) => {
       await t2.evaluate(() => downloadSVG());
       await new Promise(r => setTimeout(r, 600));
       s = await state(t2);
-      assert.strictEqual(s.shown, false); assert.deepStrictEqual(s.downloads, []);
+      assert.strictEqual(s.shown, false); assert.deepStrictEqual(s.downloads, []); assert.strictEqual(s.toast.shown, false);
       ok('5b: accounting failure — no guidance, no file');
       await t2.close();
     }
@@ -280,7 +287,8 @@ const server = http.createServer((req, res) => {
       assert.ok(await waitFor(t, () => window.__downloads.length === 1), 'guest watermarked export still works');
       const s = await state(t);
       assert.strictEqual(s.shown, false);
-      ok('10b: signed-out guest export unchanged (watermarked file, no guidance)');
+      assert.ok(s.toast.shown && /^Label downloaded/.test(s.toast.text), 'guest still gets the download confirmation');
+      ok('10b: signed-out guest export unchanged (watermarked file, no printing panel) and confirmed by the toast');
       await t.close();
     }
     // 11-13: layout desktop + mobile
@@ -325,15 +333,15 @@ const server = http.createServer((req, res) => {
       await t.evaluate(() => downloadPDF());
       assert.ok(await waitFor(t, () => { const g = document.getElementById('sheet-print-guidance'); return !g.hidden; }, 8000), 'guidance appears after the sheet is written');
       s = await cstate(t);
-      assert.ok(s.text.startsWith('✓ Print sheet downloaded'), s.text);
-      assert.ok(s.text.includes('Load the matching label sheet or printable material into your printer. Check your paper size and printer settings, then print at 100% / Actual Size to preserve the label dimensions.'), s.text);
+      assert.ok(s.text.startsWith('✓ Print sheet ready'), s.text);
+      assert.ok(/Actual Size \/ 100%/.test(s.text) && /A4/.test(s.text) && /Fit to page/.test(s.text) && /Shrink/.test(s.text) && /ordinary A4 paper/.test(s.text) && /alignment/.test(s.text), s.text);
       assert.strictEqual(s.role, 'status'); assert.strictEqual(s.rpc, 1, 'one charge'); assert.strictEqual(s.hScroll, false);
       const help = await t.evaluate(async () => { const a = document.querySelector('#sheet-print-guidance .spg-help-link'); if (!a) return 'no link'; a.click(); await new Promise(r => setTimeout(r, 300)); return { text: a.textContent, open: document.getElementById('printing-help').open, rpc: window.__rpc.filter(x => x[0] === 'consume_download').length }; });
-      assert.deepStrictEqual(help, { text: 'Printing tips →', open: true, rpc: 1 }, 'Printing tips opens the existing Printing help, no charge');
+      assert.deepStrictEqual(help, { text: 'How to print this correctly →', open: true, rpc: 1 }, '"How to print this correctly" opens the existing Printing help, no charge');
       if (name === 'mobile') await t.evaluate(() => document.getElementById('sheet-print-guidance').scrollIntoView({ block: 'center' }));
       assert.deepStrictEqual(t.errs, []);
       await t.screenshot({ path: path.join(process.env.QA_SHOTS || require('os').tmpdir(), `print-guidance-composer-${name}.png`) }).catch(() => {});
-      ok(`7/9/12/13: Composer ${name}: successful PAYG print-sheet export shows the sheet guidance + working "Printing tips →", one charge, no overflow, no console errors`);
+      ok(`7/9/12/13: Composer ${name}: successful PAYG print-sheet export shows the sheet guidance + working "How to print this correctly →", one charge, no overflow, no console errors`);
       await t.close();
     }
     // 8: blocked Composer export (trial-only, and zero balance)

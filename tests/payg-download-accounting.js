@@ -66,8 +66,8 @@ assert.ok(!builderWrap.includes('if(!dlGate())return'),'cached zero balance must
 assert.ok(!builderWrap.includes('await refreshProEntitlement()'),'final PAYG download must not be reclassified after its balance reaches zero');
 assert.match(builderWrap,/S\.isPro=charge\.clean===true/,'authorised export must render using the entitlement returned atomically by the server');
 
-assert.match(print,/100% \/ Actual Size/,'printing help must require 100% / Actual Size');
-assert.match(print,/Do not use “Fit to page” or “Scale to fit”/,'printing help must warn against scaling');
+assert.match(print,/Actual Size \/ 100%|100% \/ Actual Size/,'printing help must require 100% / Actual Size');
+assert.match(print,/(Do not use|Avoid) “Fit to page”[^<]*“Scale to fit”/,'printing help must warn against scaling');
 assert.match(print,/No download has been used/,'failed PDF rendering/popup must tell customer no download was consumed');
 const zipGenerate=print.indexOf("zip.generateAsync({type:'blob'})");
 const zipCharge=print.indexOf('const charge=await consumeComposerDownload();',zipGenerate);
