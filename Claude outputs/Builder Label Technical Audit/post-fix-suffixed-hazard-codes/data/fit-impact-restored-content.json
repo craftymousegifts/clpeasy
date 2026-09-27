@@ -1,0 +1,1577 @@
+{
+ "cases": 180,
+ "fitToNotFit": [
+  "light | H360FD | square 52x52",
+  "light | H360Fd | square 52x52",
+  "light | H360Df | square 52x52",
+  "light | H361fd | square 52x52"
+ ],
+ "notFitToFit": 0,
+ "rows": [
+  {
+   "content": "light",
+   "code": "H350i",
+   "geom": "circle 52x52",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H350i",
+   "geom": "circle 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H350i",
+   "geom": "circle 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H350i",
+   "geom": "circle 100x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H350i",
+   "geom": "square 52x52",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H350i",
+   "geom": "square 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H350i",
+   "geom": "square 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H350i",
+   "geom": "rectangle 63x44",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow",
+    "footer-clipped"
+   ]
+  },
+  {
+   "content": "light",
+   "code": "H350i",
+   "geom": "rectangle 100x50",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "footer-clipped"
+   ]
+  },
+  {
+   "content": "light",
+   "code": "H350i",
+   "geom": "rectangle 150x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360F",
+   "geom": "circle 52x52",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360F",
+   "geom": "circle 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360F",
+   "geom": "circle 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360F",
+   "geom": "circle 100x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360F",
+   "geom": "square 52x52",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360F",
+   "geom": "square 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360F",
+   "geom": "square 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360F",
+   "geom": "rectangle 63x44",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow",
+    "footer-clipped"
+   ]
+  },
+  {
+   "content": "light",
+   "code": "H360F",
+   "geom": "rectangle 100x50",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "footer-clipped"
+   ]
+  },
+  {
+   "content": "light",
+   "code": "H360F",
+   "geom": "rectangle 150x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360D",
+   "geom": "circle 52x52",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360D",
+   "geom": "circle 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360D",
+   "geom": "circle 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360D",
+   "geom": "circle 100x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360D",
+   "geom": "square 52x52",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360D",
+   "geom": "square 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360D",
+   "geom": "square 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360D",
+   "geom": "rectangle 63x44",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow",
+    "footer-clipped"
+   ]
+  },
+  {
+   "content": "light",
+   "code": "H360D",
+   "geom": "rectangle 100x50",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "footer-clipped"
+   ]
+  },
+  {
+   "content": "light",
+   "code": "H360D",
+   "geom": "rectangle 150x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360FD",
+   "geom": "circle 52x52",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360FD",
+   "geom": "circle 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360FD",
+   "geom": "circle 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360FD",
+   "geom": "circle 100x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360FD",
+   "geom": "square 52x52",
+   "before": true,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "light",
+   "code": "H360FD",
+   "geom": "square 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360FD",
+   "geom": "square 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360FD",
+   "geom": "rectangle 63x44",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow",
+    "footer-clipped"
+   ]
+  },
+  {
+   "content": "light",
+   "code": "H360FD",
+   "geom": "rectangle 100x50",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "footer-clipped"
+   ]
+  },
+  {
+   "content": "light",
+   "code": "H360FD",
+   "geom": "rectangle 150x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360Fd",
+   "geom": "circle 52x52",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360Fd",
+   "geom": "circle 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360Fd",
+   "geom": "circle 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360Fd",
+   "geom": "circle 100x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360Fd",
+   "geom": "square 52x52",
+   "before": true,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "light",
+   "code": "H360Fd",
+   "geom": "square 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360Fd",
+   "geom": "square 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360Fd",
+   "geom": "rectangle 63x44",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow",
+    "footer-clipped"
+   ]
+  },
+  {
+   "content": "light",
+   "code": "H360Fd",
+   "geom": "rectangle 100x50",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "footer-clipped"
+   ]
+  },
+  {
+   "content": "light",
+   "code": "H360Fd",
+   "geom": "rectangle 150x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360Df",
+   "geom": "circle 52x52",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360Df",
+   "geom": "circle 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360Df",
+   "geom": "circle 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360Df",
+   "geom": "circle 100x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360Df",
+   "geom": "square 52x52",
+   "before": true,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "light",
+   "code": "H360Df",
+   "geom": "square 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360Df",
+   "geom": "square 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H360Df",
+   "geom": "rectangle 63x44",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow",
+    "footer-clipped"
+   ]
+  },
+  {
+   "content": "light",
+   "code": "H360Df",
+   "geom": "rectangle 100x50",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "footer-clipped"
+   ]
+  },
+  {
+   "content": "light",
+   "code": "H360Df",
+   "geom": "rectangle 150x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361f",
+   "geom": "circle 52x52",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361f",
+   "geom": "circle 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361f",
+   "geom": "circle 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361f",
+   "geom": "circle 100x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361f",
+   "geom": "square 52x52",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361f",
+   "geom": "square 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361f",
+   "geom": "square 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361f",
+   "geom": "rectangle 63x44",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow",
+    "footer-clipped"
+   ]
+  },
+  {
+   "content": "light",
+   "code": "H361f",
+   "geom": "rectangle 100x50",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "footer-clipped"
+   ]
+  },
+  {
+   "content": "light",
+   "code": "H361f",
+   "geom": "rectangle 150x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361d",
+   "geom": "circle 52x52",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361d",
+   "geom": "circle 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361d",
+   "geom": "circle 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361d",
+   "geom": "circle 100x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361d",
+   "geom": "square 52x52",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361d",
+   "geom": "square 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361d",
+   "geom": "square 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361d",
+   "geom": "rectangle 63x44",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow",
+    "footer-clipped"
+   ]
+  },
+  {
+   "content": "light",
+   "code": "H361d",
+   "geom": "rectangle 100x50",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "footer-clipped"
+   ]
+  },
+  {
+   "content": "light",
+   "code": "H361d",
+   "geom": "rectangle 150x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361fd",
+   "geom": "circle 52x52",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361fd",
+   "geom": "circle 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361fd",
+   "geom": "circle 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361fd",
+   "geom": "circle 100x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361fd",
+   "geom": "square 52x52",
+   "before": true,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "light",
+   "code": "H361fd",
+   "geom": "square 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361fd",
+   "geom": "square 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "light",
+   "code": "H361fd",
+   "geom": "rectangle 63x44",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow",
+    "footer-clipped"
+   ]
+  },
+  {
+   "content": "light",
+   "code": "H361fd",
+   "geom": "rectangle 100x50",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "footer-clipped"
+   ]
+  },
+  {
+   "content": "light",
+   "code": "H361fd",
+   "geom": "rectangle 150x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H350i",
+   "geom": "circle 52x52",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H350i",
+   "geom": "circle 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H350i",
+   "geom": "circle 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H350i",
+   "geom": "circle 100x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H350i",
+   "geom": "square 52x52",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H350i",
+   "geom": "square 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H350i",
+   "geom": "square 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H350i",
+   "geom": "rectangle 63x44",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H350i",
+   "geom": "rectangle 100x50",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H350i",
+   "geom": "rectangle 150x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360F",
+   "geom": "circle 52x52",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H360F",
+   "geom": "circle 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360F",
+   "geom": "circle 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360F",
+   "geom": "circle 100x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360F",
+   "geom": "square 52x52",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H360F",
+   "geom": "square 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360F",
+   "geom": "square 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360F",
+   "geom": "rectangle 63x44",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H360F",
+   "geom": "rectangle 100x50",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H360F",
+   "geom": "rectangle 150x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360D",
+   "geom": "circle 52x52",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H360D",
+   "geom": "circle 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360D",
+   "geom": "circle 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360D",
+   "geom": "circle 100x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360D",
+   "geom": "square 52x52",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H360D",
+   "geom": "square 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360D",
+   "geom": "square 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360D",
+   "geom": "rectangle 63x44",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H360D",
+   "geom": "rectangle 100x50",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H360D",
+   "geom": "rectangle 150x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360FD",
+   "geom": "circle 52x52",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H360FD",
+   "geom": "circle 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360FD",
+   "geom": "circle 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360FD",
+   "geom": "circle 100x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360FD",
+   "geom": "square 52x52",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H360FD",
+   "geom": "square 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360FD",
+   "geom": "square 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360FD",
+   "geom": "rectangle 63x44",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H360FD",
+   "geom": "rectangle 100x50",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H360FD",
+   "geom": "rectangle 150x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360Fd",
+   "geom": "circle 52x52",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H360Fd",
+   "geom": "circle 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360Fd",
+   "geom": "circle 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360Fd",
+   "geom": "circle 100x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360Fd",
+   "geom": "square 52x52",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H360Fd",
+   "geom": "square 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360Fd",
+   "geom": "square 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360Fd",
+   "geom": "rectangle 63x44",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H360Fd",
+   "geom": "rectangle 100x50",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H360Fd",
+   "geom": "rectangle 150x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360Df",
+   "geom": "circle 52x52",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H360Df",
+   "geom": "circle 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360Df",
+   "geom": "circle 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360Df",
+   "geom": "circle 100x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360Df",
+   "geom": "square 52x52",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H360Df",
+   "geom": "square 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360Df",
+   "geom": "square 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H360Df",
+   "geom": "rectangle 63x44",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H360Df",
+   "geom": "rectangle 100x50",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H360Df",
+   "geom": "rectangle 150x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H361f",
+   "geom": "circle 52x52",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H361f",
+   "geom": "circle 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H361f",
+   "geom": "circle 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H361f",
+   "geom": "circle 100x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H361f",
+   "geom": "square 52x52",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H361f",
+   "geom": "square 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H361f",
+   "geom": "square 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H361f",
+   "geom": "rectangle 63x44",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H361f",
+   "geom": "rectangle 100x50",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H361f",
+   "geom": "rectangle 150x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H361d",
+   "geom": "circle 52x52",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H361d",
+   "geom": "circle 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H361d",
+   "geom": "circle 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H361d",
+   "geom": "circle 100x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H361d",
+   "geom": "square 52x52",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H361d",
+   "geom": "square 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H361d",
+   "geom": "square 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H361d",
+   "geom": "rectangle 63x44",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H361d",
+   "geom": "rectangle 100x50",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H361d",
+   "geom": "rectangle 150x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H361fd",
+   "geom": "circle 52x52",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H361fd",
+   "geom": "circle 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H361fd",
+   "geom": "circle 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H361fd",
+   "geom": "circle 100x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H361fd",
+   "geom": "square 52x52",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H361fd",
+   "geom": "square 63x63",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H361fd",
+   "geom": "square 75x75",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  },
+  {
+   "content": "typical",
+   "code": "H361fd",
+   "geom": "rectangle 63x44",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H361fd",
+   "geom": "rectangle 100x50",
+   "before": false,
+   "after": false,
+   "afterWarnings": [
+    "hazard-text-overflow"
+   ]
+  },
+  {
+   "content": "typical",
+   "code": "H361fd",
+   "geom": "rectangle 150x100",
+   "before": true,
+   "after": true,
+   "afterWarnings": []
+  }
+ ]
+}

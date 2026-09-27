@@ -1,0 +1,126 @@
+[
+ {
+  "id": "A H317 + H361f",
+  "hStatements": "H317, H361f",
+  "pictograms": [
+   "exclamation"
+  ],
+  "signal": "Warning",
+  "reproTextPrinted": false,
+  "healthPicto": false,
+  "step": 3,
+  "exportAllowed": false,
+  "alerts": [
+   "CLP code not recognised CLPeasy did not recognise the following code: H361f. Check that the SDS text was copied correctly and that you are using the current Gre",
+   "Please complete each stage in order before continuing."
+  ]
+ },
+ {
+  "id": "B H317 + H361d",
+  "hStatements": "H317, H361d",
+  "pictograms": [
+   "exclamation"
+  ],
+  "signal": "Warning",
+  "reproTextPrinted": false,
+  "healthPicto": false,
+  "step": 3,
+  "exportAllowed": false,
+  "alerts": [
+   "CLP code not recognised CLPeasy did not recognise the following code: H361d. Check that the SDS text was copied correctly and that you are using the current Gre",
+   "Please complete each stage in order before continuing."
+  ]
+ },
+ {
+  "id": "C H317 + H361fd",
+  "hStatements": "H317, H361fd",
+  "pictograms": [
+   "exclamation"
+  ],
+  "signal": "Warning",
+  "reproTextPrinted": false,
+  "healthPicto": false,
+  "step": 3,
+  "exportAllowed": false,
+  "alerts": [
+   "CLP code not recognised CLPeasy did not recognise the following code: H361fd. Check that the SDS text was copied correctly and that you are using the current Gr",
+   "Please complete each stage in order before continuing."
+  ]
+ },
+ {
+  "id": "D H317 + H360FD (Danger)",
+  "hStatements": "H317, H360FD",
+  "pictograms": [
+   "exclamation"
+  ],
+  "signal": "Warning",
+  "reproTextPrinted": false,
+  "healthPicto": false,
+  "step": 3,
+  "exportAllowed": false,
+  "alerts": [
+   "CLP code not recognised CLPeasy did not recognise the following code: H360FD. Check that the SDS text was copied correctly and that you are using the current Gr",
+   "Please complete each stage in order before continuing."
+  ]
+ },
+ {
+  "id": "E H360Fd only",
+  "hStatements": "H360Fd",
+  "pictograms": [],
+  "signal": "",
+  "reproTextPrinted": false,
+  "healthPicto": false,
+  "step": 3,
+  "exportAllowed": false,
+  "alerts": [
+   "CLP code not recognised CLPeasy did not recognise the following code: H360Fd. Check that the SDS text was copied correctly and that you are using the current Gr",
+   "Please complete each stage in order before continuing."
+  ]
+ },
+ {
+  "id": "F H350i + H317",
+  "hStatements": "H317, H350i",
+  "pictograms": [
+   "exclamation"
+  ],
+  "signal": "Warning",
+  "reproTextPrinted": false,
+  "healthPicto": false,
+  "step": 3,
+  "exportAllowed": false,
+  "alerts": [
+   "CLP code not recognised CLPeasy did not recognise the following code: H350i. Check that the SDS text was copied correctly and that you are using the current Gre",
+   "Please complete each stage in order before continuing."
+  ]
+ },
+ {
+  "id": "G spaced \"H361 d\"",
+  "hStatements": "H317, H361d",
+  "pictograms": [
+   "exclamation"
+  ],
+  "signal": "Warning",
+  "reproTextPrinted": false,
+  "healthPicto": false,
+  "step": 3,
+  "exportAllowed": false,
+  "alerts": [
+   "CLP code not recognised CLPeasy did not recognise the following code: H361d. Check that the SDS text was copied correctly and that you are using the current Gre",
+   "Please complete each stage in order before continuing."
+  ]
+ },
+ {
+  "id": "H control: base H361",
+  "hStatements": "H317, H361",
+  "pictograms": [
+   "exclamation",
+   "health"
+  ],
+  "signal": "Warning",
+  "reproTextPrinted": true,
+  "healthPicto": false,
+  "step": 5,
+  "exportAllowed": true,
+  "alerts": []
+ }
+]

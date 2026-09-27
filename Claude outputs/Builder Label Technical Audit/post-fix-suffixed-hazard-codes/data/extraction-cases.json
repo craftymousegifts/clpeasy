@@ -1,0 +1,209 @@
+[
+ {
+  "pasted": "H350i May cause cancer by inhalation.",
+  "before": [],
+  "after": [
+   "H350i"
+  ],
+  "outcome": "H350i: supported"
+ },
+ {
+  "pasted": "H360F May damage fertility.",
+  "before": [],
+  "after": [
+   "H360F"
+  ],
+  "outcome": "H360F: supported"
+ },
+ {
+  "pasted": "H360D May damage the unborn child.",
+  "before": [],
+  "after": [
+   "H360D"
+  ],
+  "outcome": "H360D: supported"
+ },
+ {
+  "pasted": "H360FD May damage…",
+  "before": [],
+  "after": [
+   "H360FD"
+  ],
+  "outcome": "H360FD: supported"
+ },
+ {
+  "pasted": "H360Fd May damage…",
+  "before": [],
+  "after": [
+   "H360Fd"
+  ],
+  "outcome": "H360Fd: supported"
+ },
+ {
+  "pasted": "H360Df May damage…",
+  "before": [],
+  "after": [
+   "H360Df"
+  ],
+  "outcome": "H360Df: supported"
+ },
+ {
+  "pasted": "H361f Suspected…",
+  "before": [],
+  "after": [
+   "H361f"
+  ],
+  "outcome": "H361f: supported"
+ },
+ {
+  "pasted": "H361d Suspected…",
+  "before": [],
+  "after": [
+   "H361d"
+  ],
+  "outcome": "H361d: supported"
+ },
+ {
+  "pasted": "H361fd Suspected…",
+  "before": [],
+  "after": [
+   "H361fd"
+  ],
+  "outcome": "H361fd: supported"
+ },
+ {
+  "pasted": "H361 d Suspected…",
+  "before": [
+   "H361"
+  ],
+  "after": [
+   "H361d"
+  ],
+  "outcome": "H361d: supported"
+ },
+ {
+  "pasted": "H360 FD May damage…",
+  "before": [
+   "H360"
+  ],
+  "after": [
+   "H360FD"
+  ],
+  "outcome": "H360FD: supported"
+ },
+ {
+  "pasted": "H350 i May cause…",
+  "before": [
+   "H350"
+  ],
+  "after": [
+   "H350i"
+  ],
+  "outcome": "H350i: supported"
+ },
+ {
+  "pasted": "H361 fd Suspected…",
+  "before": [
+   "H361"
+  ],
+  "after": [
+   "H361fd"
+  ],
+  "outcome": "H361fd: supported"
+ },
+ {
+  "pasted": "H317s",
+  "before": [],
+  "after": [
+   "H317s"
+  ],
+  "outcome": "H317s: captured -> BLOCKED as not recognised"
+ },
+ {
+  "pasted": "H361F",
+  "before": [],
+  "after": [
+   "H361F"
+  ],
+  "outcome": "H361F: captured -> BLOCKED as not recognised"
+ },
+ {
+  "pasted": "H360fd",
+  "before": [],
+  "after": [
+   "H360fd"
+  ],
+  "outcome": "H360fd: captured -> BLOCKED as not recognised"
+ },
+ {
+  "pasted": "H317 a skin sensitiser",
+  "before": [
+   "H317"
+  ],
+  "after": [
+   "H317"
+  ],
+  "outcome": "H317: supported"
+ },
+ {
+  "pasted": "H317 d",
+  "before": [
+   "H317"
+  ],
+  "after": [
+   "H317"
+  ],
+  "outcome": "H317: supported"
+ },
+ {
+  "pasted": "H350 i.e. inhalation",
+  "before": [
+   "H350"
+  ],
+  "after": [
+   "H350"
+  ],
+  "outcome": "H350: supported"
+ },
+ {
+  "pasted": "H317 s",
+  "before": [
+   "H317"
+  ],
+  "after": [
+   "H317"
+  ],
+  "outcome": "H317: supported"
+ },
+ {
+  "pasted": "H412Harmful to aquatic life",
+  "before": [],
+  "after": [],
+  "outcome": "nothing captured (M63, unchanged)"
+ },
+ {
+  "pasted": "H317something",
+  "before": [],
+  "after": [],
+  "outcome": "nothing captured (M63, unchanged)"
+ },
+ {
+  "pasted": "H317May cause…",
+  "before": [],
+  "after": [],
+  "outcome": "nothing captured (M63, unchanged)"
+ },
+ {
+  "pasted": "H317, H360FD, EUH208",
+  "before": [
+   "H317",
+   "EUH208"
+  ],
+  "after": [
+   "H317",
+   "H360FD",
+   "EUH208"
+  ],
+  "outcome": "H317: supported; H360FD: supported; EUH208: supported"
+ }
+]
