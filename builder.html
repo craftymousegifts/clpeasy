@@ -3927,9 +3927,10 @@ function extractSDS(){
   if(!text){alert('Please paste SDS Section 2.2 text first.');return;}
 
   // ── H STATEMENTS ──────────────────────────────────────────────────────────
-  const hMatches=[...new Set(text.match(/\bH\d{3}\b/g)||[])];
-  const euhMatches=[...new Set(text.match(/\bEUH\d{3}\b/g)||[])];
-  const allH=[...hMatches,...euhMatches];
+  // M21 (Issue #6): complete suffixed codes are kept exactly (H361f, H360FD,
+  // H350i -- never reduced to the base code); see
+  // LabelRenderer.extractHazardCodesFromText().
+  const allH=LabelRenderer.extractHazardCodesFromText(text);
 
   // Set H statement field and state
   const hEl=document.getElementById('h-statements');

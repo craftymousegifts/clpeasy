@@ -590,6 +590,53 @@ const ACTIVE_REGULATORY_PROFILE = 'GB';
 // current Great Britain-market SDS instead.
 const GB_UNSUPPORTED_CODES=['H316','H401','H402'];
 
+// ── M21 (Issue #6): suffixed hazard-statement codes ──────────────────────
+// Verified against the CLP material on legislation.gov.uk and supplied by
+// Michaela (Sept 2026). Case is significant: F/D = "May damage", f/d =
+// "Suspected of damaging"; i = by inhalation. These are genuine codes and
+// must never be reduced to their base code (H361f is not H361).
+// NOTE: not yet in H_LIB -- they become supported (statement, signal word,
+// pictogram) only once the GB CLP signal-word/pictogram mapping for each is
+// verified. Until then a captured suffixed code is blocked by the existing
+// unrecognised-code fail-safe instead of being dropped or reduced.
+const H_SUFFIXED_VERIFIED={
+  'H350i':'May cause cancer by inhalation',
+  'H360F':'May damage fertility',
+  'H360D':'May damage the unborn child',
+  'H360FD':'May damage fertility. May damage the unborn child',
+  'H360Fd':'May damage fertility. Suspected of damaging the unborn child',
+  'H360Df':'May damage the unborn child. Suspected of damaging fertility',
+  'H361f':'Suspected of damaging fertility',
+  'H361d':'Suspected of damaging the unborn child',
+  'H361fd':'Suspected of damaging fertility. Suspected of damaging the unborn child',
+};
+// Smart Paste hazard-code extraction (shared so it can be tested directly).
+// - H + 3 digits, optionally followed DIRECTLY by 1-2 letters and then a
+//   non-letter/digit boundary: the complete token is kept exactly as written
+//   ("H361f", "H360FD"). An unknown suffix ("H317s") is kept too, so the
+//   existing unrecognised-code check blocks it -- never dropped, never reduced.
+// - A clearly spaced suffix ("H361 d") is joined ONLY when the result is one
+//   of the verified suffixed codes; otherwise the letters are prose and the
+//   base code stands ("H317 a ...", "H350 i.e." stay H317/H350).
+// - A code run straight into longer text ("H412Harmful", "H317May") is NOT
+//   matched here -- that is separate audit item M63 (open), deliberately
+//   left unchanged by M21.
+// - EUH codes: unchanged.
+const H_TOKEN_RE=/\bH(\d{3})(?:([A-Za-z]{1,2})|[ \t]([FfDdi]{1,2}))?(?![A-Za-z0-9_])(?!\.[A-Za-z])/g;
+function extractHazardCodesFromText(text){
+  const src=String(text||'');
+  const h=[];
+  for(const m of src.matchAll(H_TOKEN_RE)){
+    const base='H'+m[1];
+    let code=base;
+    if(m[2]) code=base+m[2];
+    else if(m[3] && H_SUFFIXED_VERIFIED[base+m[3]]) code=base+m[3];
+    if(!h.includes(code)) h.push(code);
+  }
+  const euh=[...new Set(src.match(/\bEUH\d{3}\b/g)||[])];
+  return h.concat(euh);
+}
+
 // The selectable items P280 offers, in the exact order the statutory text
 // lists them -- used both by Builder's picker UI and by buildP280Wording()
 // so the printed order always matches the source regardless of the order
@@ -2993,7 +3040,7 @@ function isCustomSizeBelowSupportedMinimum(shape, w, h){
 }
 
   const LabelRenderer = {
-    renderLabel, normalizeLabel, checkRequiredContent, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, P_DEFS, P501_SCOPES, pStatementNeedsChoice, normalisePCodes, resolvePChoice, incompletePStatements, extractPChoicesFromText, GB_UNSUPPORTED_CODES, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
+    renderLabel, normalizeLabel, checkRequiredContent, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, P_DEFS, P501_SCOPES, pStatementNeedsChoice, normalisePCodes, resolvePChoice, incompletePStatements, extractPChoicesFromText, GB_UNSUPPORTED_CODES, H_SUFFIXED_VERIFIED, extractHazardCodesFromText, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
     // GHS pictogram geometry -- exposed so tests/consumers measuring
     // compliance never have to re-derive or hardcode the sqrt(2)
     // square<->bounding-box relationship themselves.
