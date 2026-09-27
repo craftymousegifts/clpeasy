@@ -7,6 +7,7 @@
 <meta name="robots" content="noindex">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="checkout-notice.js"></script>
 <style>
 :root{
   --white:#fff;--off:#F7F8FA;--border:#E8EAED;--text:#111318;--muted:#6B7280;
@@ -430,6 +431,17 @@ async function startCheckout() {
     const data = await res.json();
     if (data.url) {
       window.location.href = data.url;
+    } else if (data.code === 'CHECKOUT_IN_PROGRESS' || (data.code === 'ALREADY_SUBSCRIBED' && data.error)) {
+      // Expected server refusals, handled like pricing.html instead of the
+      // generic failure: a subscription checkout was started for this
+      // account within the last few minutes (duplicate-subscription lock),
+      // or an active subscription already exists.
+      document.getElementById('loading-overlay').classList.remove('show');
+      btn.disabled = false;
+      btnText.textContent = 'Continue to payment →';
+      spinner.style.display = 'none';
+      if (data.code === 'CHECKOUT_IN_PROGRESS' && window.CLPCheckoutNotice) window.CLPCheckoutNotice.showInProgress({ returnFocus: btn });
+      else alert(data.error || 'A checkout is already in progress for this account. Please wait a moment and try again.');
     } else {
       throw new Error(data.error || 'No checkout URL returned');
     }
