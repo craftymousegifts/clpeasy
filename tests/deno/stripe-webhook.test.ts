@@ -328,4 +328,89 @@ for (const shape of ['pinned', 'new'] as const) {
   });
 }
 
+// ── MS-1 (approved): reactivation never refills the allowance ─────────
+// Lifting a pause or a scheduled cancellation keeps downloads_used; only a
+// successfully paid renewal (invoice.paid) or a genuine plan change starts a
+// new allowance. Purchased downloads are never touched by any of it.
+const PRICE = { start: 'price_1Tdd5SKF3jvQfgEaclfSUxn5', pro: 'price_1Tdd9OKF3jvQfgEaYsCmOwOa', proAnnual: 'price_1TddAyKF3jvQfgEaE7Vwbxl6' };
+const PLAN_OF: Record<string, [string, number]> = { [PRICE.start]: ['easy_start', 20], [PRICE.pro]: ['easy_pro', 30], [PRICE.proAnnual]: ['easy_pro', 30] };
+function subObj(price: string, over: Record<string, any> = {}) {
+  return { id: 'sub_ms1', customer: 'cus_ms1', status: 'active', cancel_at_period_end: false, cancel_at: null, pause_collection: null,
+    metadata: { userId: 'user-1' }, items: { data: [{ price: { id: price } }] }, ...over };
+}
+function subUpdated(id: string, sub: Record<string, any>, prev: Record<string, any>) {
+  return { id, type: 'customer.subscription.updated', data: { object: sub, previous_attributes: prev } };
+}
+const PAUSED = { behavior: 'mark_uncollectible', resumes_at: null };
+const snap = () => { const p: any = prof(); return [p.plan, p.subscription_status, p.downloads_used, p.downloads_limit, p.topup_credits]; };
+
+for (const [label, price] of [['Easy Start', PRICE.start], ['Easy Pro', PRICE.pro]] as const) {
+  const [plan, limit] = PLAN_OF[price];
+  await test(`MS-1 ${label}: 5/${limit} used -> pause -> reactivate keeps 5/${limit}; purchased downloads untouched`, async () => {
+    seedProfile({ subscription_status: 'active', plan, downloads_used: 5, downloads_limit: limit, topup_credits: 7, next_payment: '2026-10-27T00:00:00.000Z', downloads_reset_date: '2026-10-27T00:00:00.000Z' });
+    await send(subUpdated('evt_ms1_pause_' + plan, subObj(price, { pause_collection: PAUSED }), { pause_collection: null }));
+    eq(snap(), [plan, 'paused', 5, limit, 7], 'paused, allowance kept');
+    const r = await send(subUpdated('evt_ms1_resume_' + plan, subObj(price), { pause_collection: PAUSED }));
+    eq(r.status, 200, 'status');
+    eq(snap(), [plan, 'active', 5, limit, 7], 'reactivated: still 5 used, no refill');
+    eq([prof().next_payment, prof().downloads_reset_date], ['2026-10-27T00:00:00.000Z', '2026-10-27T00:00:00.000Z'], 'allowance period dates unchanged');
+  });
+
+  await test(`MS-1 ${label}: cancellation scheduled with usage -> reactivate before the end keeps usage`, async () => {
+    seedProfile({ subscription_status: 'active', plan, downloads_used: 12, downloads_limit: limit, topup_credits: 3 });
+    await send(subUpdated('evt_ms1_cancel_' + plan, subObj(price, { cancel_at_period_end: true, cancel_at: 1793058374 }), { cancel_at_period_end: false }));
+    eq([prof().subscription_status, prof().deletion_date], ['cancelled', new Date(1793058374 * 1000).toISOString()], 'cancel scheduled');
+    await send(subUpdated('evt_ms1_uncancel_' + plan, subObj(price), { cancel_at_period_end: true, cancel_at: 1793058374 }));
+    eq(snap(), [plan, 'active', 12, limit, 3], 'reactivated: usage preserved, not a new allowance period');
+    eq(prof().deletion_date, null, 'deletion date cleared');
+  });
+
+  await test(`MS-1 ${label}: paused across an unpaid (uncollectible) renewal -> reactivate gives no free refill`, async () => {
+    seedProfile({ subscription_status: 'active', plan, downloads_used: limit, downloads_limit: limit, topup_credits: 2 });
+    await send(subUpdated('evt_ms1_p2_' + plan, subObj(price, { pause_collection: PAUSED }), { pause_collection: null }));
+    // The paused period's renewal: Stripe creates the invoice and marks it uncollectible (never paid).
+    (globalThis as any).__stripeInvoices = { in_unpaid: { id: 'in_unpaid', status: 'draft', billing_reason: 'subscription_cycle', subscription: 'sub_ms1', discount: null } };
+    await send({ id: 'evt_ms1_unpaid_created_' + plan, type: 'invoice.created', data: { object: { id: 'in_unpaid', status: 'draft', billing_reason: 'subscription_cycle', subscription: 'sub_ms1', lines: { data: [{ period: { start: 1793058374 } }] } } } });
+    await send({ id: 'evt_ms1_uncollectible_' + plan, type: 'invoice.marked_uncollectible', data: { object: { id: 'in_unpaid', status: 'uncollectible', subscription: 'sub_ms1' } } });
+    // A new period started in Stripe while paused (current_period_* moved) -- still unpaid.
+    await send(subUpdated('evt_ms1_period_' + plan, subObj(price, { pause_collection: PAUSED }), { current_period_start: 1790466374, current_period_end: 1793058374, latest_invoice: 'in_prev' }));
+    eq(snap(), [plan, 'paused', limit, limit, 2], 'unpaid period: nothing refilled while paused');
+    await send(subUpdated('evt_ms1_r2_' + plan, subObj(price), { pause_collection: PAUSED }));
+    eq(snap(), [plan, 'active', limit, limit, 2], 'reactivated: still fully used, no free allowance');
+  });
+
+  await test(`MS-1 ${label}: a successfully paid renewal still refills normally (purchased downloads kept)`, async () => {
+    seedProfile({ subscription_status: 'active', plan, downloads_used: 9, downloads_limit: limit, topup_credits: 4 });
+    (globalThis as any).__stripeSubscriptions = { sub_ms1: subObj(price) };
+    await send({ id: 'evt_ms1_paid_' + plan, type: 'invoice.paid', data: { object: { id: 'in_paid', billing_reason: 'subscription_cycle', parent: { type: 'subscription_details', subscription_details: { subscription: 'sub_ms1' } } } } });
+    eq(snap(), [plan, 'active', 0, limit, 4], 'paid renewal refills');
+  });
+}
+
+await test('MS-1: duplicate delivery and repeated reactivation (retries / double clicks) never refill', async () => {
+  seedProfile({ subscription_status: 'paused', plan: 'easy_start', downloads_used: 6, downloads_limit: 20, topup_credits: 1 });
+  const ev = subUpdated('evt_ms1_dup', subObj(PRICE.start), { pause_collection: PAUSED });
+  await send(ev); await send(ev); // same event delivered twice
+  eq(snap(), ['easy_start', 'active', 6, 20, 1], 'after duplicate delivery');
+  // manage-subscription pressed again on an already-active subscription: Stripe
+  // sends an ordinary update (no pause/cancel transition), or none at all.
+  await send(subUpdated('evt_ms1_again', subObj(PRICE.start), { metadata: {} }));
+  await send(subUpdated('evt_ms1_again2', subObj(PRICE.start), { cancel_at_period_end: false }));
+  eq(snap(), ['easy_start', 'active', 6, 20, 1], 'after repeated reactivation');
+});
+
+await test('MS-1: a genuine plan change (e.g. Easy Pro monthly -> annual) still applies the new plan and allowance (unchanged behaviour)', async () => {
+  seedProfile({ subscription_status: 'active', plan: 'easy_pro', downloads_used: 7, downloads_limit: 30, topup_credits: 5, billing_cycle: 'monthly' });
+  await send(subUpdated('evt_ms1_switch', subObj(PRICE.proAnnual), { items: { data: [{ price: { id: PRICE.pro } }] } }));
+  eq([...snap(), prof().billing_cycle], ['easy_pro', 'active', 0, 30, 5, 'annual'], 'plan change');
+});
+
+await test('MS-1: a fully ended subscription is never turned back into a reactivation', async () => {
+  seedProfile({ subscription_status: 'cancelled', plan: 'easy_start', downloads_used: 4, downloads_limit: 20, topup_credits: 9 });
+  await send(subUpdated('evt_ms1_ended', subObj(PRICE.start, { status: 'canceled' }), { status: 'active', cancel_at_period_end: true }));
+  eq(snap(), ['free', 'cancelled', 4, 0, 9], 'ended: free, allowance removed, purchased kept');
+  await send({ id: 'evt_ms1_deleted', type: 'customer.subscription.deleted', data: { object: subObj(PRICE.start, { status: 'canceled' }) } });
+  eq(snap(), ['free', 'cancelled', 4, 0, 9], 'deleted: still ended, purchased kept');
+});
+
 out(`stripe-webhook offline checks passed (${passed} scenarios)`);

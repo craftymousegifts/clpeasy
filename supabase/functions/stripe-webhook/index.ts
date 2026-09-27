@@ -375,7 +375,12 @@ if (profileStatus) {
           (isGenuineReactivation || priceJustChanged);
 
         if (shouldRefreshPlan) {
-          await applyProfilePlan(userId, priceId!);
+          // MS-1 (approved, PR #156): lifting a pause or a scheduled
+          // cancellation is NOT a new paid billing period, so it restores the
+          // plan but keeps downloads_used. Only a genuine price/plan change
+          // starts a new allowance here; normal refills come from
+          // invoice.paid (a successfully paid renewal).
+          await applyProfilePlan(userId, priceId!, { resetUsage: priceJustChanged });
 
           // Add to Brevo paid list on reactivation / plan change
           const custId = subscription.customer as string;
@@ -612,8 +617,9 @@ function invoiceSubscriptionId(invoice: any): string | null {
   return typeof id === 'string' ? id : (id?.id ?? null);
 }
 
-async function applyProfilePlan(userId: string, priceId: string): Promise<void> {
+async function applyProfilePlan(userId: string, priceId: string, opts: { resetUsage?: boolean } = {}): Promise<void> {
   const info = profileInfoFromPriceId(priceId);
+  const resetUsage = opts.resetUsage ?? true;
 
   console.log('Applying profile plan:', {
     userId,
@@ -622,19 +628,26 @@ async function applyProfilePlan(userId: string, priceId: string): Promise<void> 
     is_pro: info.is_pro,
     downloads_limit: info.limit,
     billing_cycle: info.cycle,
+    resetUsage,
   });
 
+  // resetUsage=false (reactivation): same plan fields, but the current
+  // allowance period -- downloads_used and its reset/next-payment dates --
+  // is left exactly as it was.
+  const planFields = {
+    plan: info.plan,
+    is_pro: info.is_pro,
+    billing_cycle: info.cycle,
+    downloads_limit: info.limit,
+  };
   const { data, error } = await supabase
     .from('profiles')
-    .update({
-      plan: info.plan,
-      is_pro: info.is_pro,
-      billing_cycle: info.cycle,
-      downloads_limit: info.limit,
+    .update(resetUsage ? {
+      ...planFields,
       downloads_used: 0,
       downloads_reset_date: addOneMonth(),
       next_payment: info.cycle === 'annual' ? addOneYear() : addOneMonth(),
-    })
+    } : planFields)
     .eq('id', userId)
     .select('id, plan, is_pro, downloads_limit, billing_cycle, next_payment')
     .single();

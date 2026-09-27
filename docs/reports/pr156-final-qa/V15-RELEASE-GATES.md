@@ -348,3 +348,57 @@ worked:
   - **MS-2 (low):** the customer's cancellation reason is saved by the function and then
     overwritten with `'other'` by `stripe-webhook`. Only the reason recorded on the profile is
     affected.
+
+## 13. MS-1 fixed: reactivation no longer refills the allowance (owner-approved)
+
+- **Root cause (confirmed in code and in the Test logs, not assumed):**
+  - `manage-subscription` never writes `downloads_used`.
+  - In `stripe-webhook`'s `customer.subscription.updated` handler, lifting a pause or a scheduled
+    cancellation counts as a "genuine reactivation". That calls `applyProfilePlan()`, which always
+    set `downloads_used: 0` and new reset/next-payment dates.
+  - Present on `main` too.
+- **Fix** (`supabase/functions/stripe-webhook/index.ts`, narrowest change):
+  - `applyProfilePlan(userId, priceId, { resetUsage })`: with `resetUsage:false` it restores only
+    `plan`, `is_pro`, `billing_cycle` and `downloads_limit`. `downloads_used`,
+    `downloads_reset_date` and `next_payment` are left as they were.
+  - The reactivation path now passes `resetUsage: priceJustChanged`: reactivation alone keeps
+    usage, while a genuine plan change behaves as before.
+  - Unchanged: every other caller (`checkout.session.completed`, `invoice.paid` = paid renewal)
+    still defaults to `resetUsage:true`. `manage-subscription`, migrations and site files are also
+    unchanged.
+- **Idempotency:**
+  - A duplicate Stripe delivery is skipped by the existing event-ID claim.
+  - A repeated reactivation on an already-active subscription produces no reactivation transition
+    (and in Stripe, no event).
+  - Even when a reactivation is processed, it can no longer refill.
+- **Regression tests** (`tests/deno/stripe-webhook.test.ts`, 11 new; 45 scenarios in total). They
+  fail on the old code (5 → 0) and pass on the fix. For both Easy Start and Easy Pro:
+  - pause → reactivate keeps usage;
+  - scheduled cancellation → reactivate keeps usage;
+  - paused across an unpaid (uncollectible) renewal → reactivate gives no free refill;
+  - a paid renewal refills normally;
+  - purchased downloads are never altered.
+  - Also covered: duplicate delivery and repeated reactivation give no refill; a plan change is
+    unchanged; a fully ended subscription is never turned into a reactivation (purchased downloads
+    kept). `FULLY_ENDED` in the function stays covered by `tests/deno/manage-subscription.test.ts`.
+- **Real Test + Sandbox** (`evidence/v15/ms1-reactivation-allowance-e2e.json`): every required
+  case passed through the real Account-page function path and real Stripe events. `stripe-webhook`
+  v8 on Test is the fixed repo file.
+- **Behaviour kept unchanged (for the owner's awareness):**
+  - A genuine plan change (for example Easy Pro monthly → annual via the billing portal) still
+    applies the new plan and starts a new allowance.
+  - The Sandbox portal is set to "proration: none". Whether an unpaid mid-period upgrade should
+    reset usage is a separate policy question, not changed here.
+
+### MS-2 investigation (not fixed: it isn't a one-line isolated change)
+
+- **Cause:** the same handler writes `cancel_reason: isCancelScheduled ? 'other' : null` on every
+  subscription update. So the reason the customer chose in Account (saved by
+  `manage-subscription`) is overwritten with `'other'` moments later, and cleared on any later
+  non-cancel update.
+- **Proposed change:** the webhook should stop writing `cancel_reason` while a cancellation is
+  scheduled, keeping the Account reason. For cancellations made in the Stripe billing portal, where
+  there is no Account reason, it could fall back to Stripe's
+  `cancellation_details.feedback`/`'other'` only if the field is empty.
+  - That needs a read-then-write, or a small SQL `coalesce`, plus tests.
+  - Only the recorded reason is affected; entitlement and billing are not.

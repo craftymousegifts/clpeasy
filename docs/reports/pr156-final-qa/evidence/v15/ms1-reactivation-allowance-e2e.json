@@ -1,0 +1,15 @@
+{
+  "run": "2026-09-27 06:19-06:27 UTC, CLPeasy Test (wwjhvpphlbgtywxskqnf) stripe-webhook v8 (MS-1 fix) + manage-subscription v1, Stripe Sandbox acct_1TdczqKF3jvQfgEa, test clocks clock_1UKBR1KF3jvQfgEaYXEgXBMc / clock_1UKBR2KF3jvQfgEaWsjCsoZk (both deleted)",
+  "calls": "real manage-subscription POSTs with each disposable user's own login JWT; profile changes come from real Stripe events processed by the Test stripe-webhook",
+  "results": [
+    {"case": "Easy Start 5/20 used (+7 purchased) -> pause -> reactivate", "result": "active, 5/20, purchased 7; webhook log: reactivation true, planRefreshed true, resetUsage false"},
+    {"case": "Easy Pro 12/30 used (+3) -> scheduled cancellation -> reactivate before the end", "result": "active, 12/30, purchased 3, deletion_date cleared; resetUsage false"},
+    {"case": "reactivate pressed again on the already-active Easy Start subscription", "result": "200; Stripe had nothing to change so no reactivation event; still 5/20"},
+    {"case": "Easy Start 20/20 used (+2) paused across the 2026-10-27 renewal", "result": "renewal invoice £9.99 UNCOLLECTIBLE (unpaid); profile stayed paused 20/20; reactivate -> active 20/20, purchased 2 (no free allowance)"},
+    {"case": "Easy Pro 9/30 used (+4) genuine paid renewal 2026-10-27", "result": "invoice £14.99 PAID -> 0/30, purchased 4 (normal refill)"},
+    {"case": "Easy Start (previously paused + reactivated at 5/20) genuine paid renewal 2026-10-27", "result": "invoice £9.99 PAID -> 0/20, purchased 7 (normal refill only on payment)"},
+    {"case": "Easy Pro scheduled cancellation -> period end -> reactivate", "result": "Stripe canceled; profile free / cancelled / limit 0, purchased 3 kept; reactivate -> 409 FULLY_ENDED"}
+  ],
+  "cleanup": {"test_clocks_deleted": 2, "qa_clocks_left": 0, "disposable_users_deleted": 4, "pg_net": "dropped", "qa-sandbox-price-check": "410 stub (v18)"},
+  "manual_QA_account": "unchanged: easy_start active, 2/20 used, 24 purchased, 5 download records"
+}
