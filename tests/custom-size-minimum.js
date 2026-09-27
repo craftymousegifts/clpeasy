@@ -74,7 +74,7 @@ const EXPECTED_RECT_MSG = 'CLPeasy supports custom rectangle labels from 52mm on
     beforeParse(window) {
       stubCanvas(window);
       window.eval(labelRendererSource);
-      window.eval(labelLibrarySource);
+      window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
       window.scrollTo = () => {};
@@ -112,6 +112,9 @@ const EXPECTED_RECT_MSG = 'CLPeasy supports custom rectangle labels from 52mm on
     bdocument.getElementById('biz-phone').value = '01234 567890';
     bwindow.eval(`S.scentName=${JSON.stringify(name)}; S.productType='Candle'; S.bizName='Crafty Mouse Gifts'; S.bizPhone='01234 567890'; S.signal='Warning'; S.hSelected=['H317']; S.hStatements='H317'; S.sensitisers=['Linalool']; S.pictograms=['exclamation'];`);
     bdocument.getElementById('h-statements').value = 'H317';
+    // Each call is a new product name with the same test hazard data: answer
+    // the owner-decision C4 review as "same SDS" so only the size gate is tested.
+    bwindow.confirmSameHazardSource();
   }
 
   function setCustomDims(shape, w, h){
@@ -365,7 +368,7 @@ const EXPECTED_RECT_MSG = 'CLPeasy supports custom rectangle labels from 52mm on
       // label-library.js for getSaved()/canAddToSheet() in print.html.
       try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
       window.eval(labelRendererSource);
-      window.eval(labelLibrarySource);
+      window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
       window.scrollTo = () => {};

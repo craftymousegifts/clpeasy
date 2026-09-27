@@ -66,9 +66,12 @@ assert(!/CLPeasy.{0,5}(™)?\s*Easy Pro includes regulation update alerts/i.test
 // explicitly labelled as a future feature wherever it is mentioned in the
 // pricing comparison table (it must not read as an active, checked-off
 // Easy Pro benefit).
+// e7151e9 ("Remove unreleased feature promises from public pricing", on main) deliberately
+// removed the pricing roadmap/coming-soon items. The rule these checks protect is
+// unchanged: a planned feature must never read as an active benefit. They now apply
+// only if the planned feature is mentioned again.
 const regAlertsRowMatch = pricing.match(/Regulation change alerts[\s\S]{0,800}?<\/tr>/);
-assert(regAlertsRowMatch, 'pricing.html comparison table must still list "Regulation change alerts"');
-assert(/Coming soon|Soon/.test(regAlertsRowMatch[0]),
+if (regAlertsRowMatch) assert(/Coming soon|Soon/.test(regAlertsRowMatch[0]),
   'pricing.html comparison table "Regulation change alerts" row must be labelled coming soon/not yet active, consistently with its checkmark cell');
 
 // ── Plan picker must not recommend a plan based on unavailable features ───
@@ -133,11 +136,11 @@ assert(!/multi-language labels/i.test(planPicker) && !/multilingual/i.test(planP
 // unambiguously presented as a future feature: the feature-list item
 // carries its own "COMING SOON" badge, and the "What's coming to
 // CLPeasy™" panel entry sits under that panel's own coming-soon heading.
-assert(/Sell to Europe — multilingual labels<span[^>]*>COMING SOON</.test(pricing),
+if (/Sell to Europe — multilingual labels/.test(pricing)) assert(/Sell to Europe — multilingual labels<span[^>]*>COMING SOON</.test(pricing),
   'pricing.html feature list "multilingual labels" item must carry its own COMING SOON badge');
 const whatsComingIdx = pricing.indexOf("What's coming to CLPeasy");
 const multilingualPanelIdx = pricing.indexOf('>Multilingual labels<');
-assert(whatsComingIdx !== -1 && multilingualPanelIdx > whatsComingIdx && multilingualPanelIdx < whatsComingIdx + 2000,
+if (multilingualPanelIdx !== -1) assert(whatsComingIdx !== -1 && multilingualPanelIdx > whatsComingIdx && multilingualPanelIdx < whatsComingIdx + 2000,
   'pricing.html "Multilingual labels" panel card must sit under the "What\'s coming to CLPeasy™" heading, not read as an active benefit');
 
 // "compliant output" / "fully compliant" must not appear on customer-facing
@@ -148,9 +151,11 @@ for (const file of [['index.html', html], ['pricing.html', pricing], ['plan-pick
   assert(!/compliant output|fully compliant|guaranteed compliant|correctly labelled and compliant/i.test(source),
     `${name} must not claim "compliant output"/"fully compliant"/"guaranteed compliant" (implies a compliance guarantee)`);
 }
-assert(pricing.includes('CLPeasy™ gives you the same print-ready GB CLP label output for £9.99–£14.99/month'),
+// 63e631b ("Remove unsupported pricing FAQ estimates") deliberately removed this FAQ; only guard it if it returns.
+if (/gives you the same .{0,40}label output for/.test(pricing)) assert(pricing.includes('CLPeasy™ gives you the same print-ready GB CLP label output for £9.99–£14.99/month'),
   'pricing.html cost-comparison FAQ must use the accurate "print-ready GB CLP label output" wording');
-assert(showcase.includes('Every shape.<br><em>Every size.</em> CLP ready.'),
+// 6de95cf ("Correct Showcase GB CLP wording and supported sizes") changed "Every size." to "Every supported size.".
+assert(showcase.includes('Every shape.<br><em>Every supported size.</em> CLP ready.'),
   'showcase.html hero must use the approved "CLP ready" status wording instead of "Fully compliant"');
 
 // Regulation-change alerts: detailed ECHA-monitoring claims must be gone
@@ -158,14 +163,14 @@ assert(showcase.includes('Every shape.<br><em>Every size.</em> CLP ready.'),
 // feature must still be clearly presented as a future ("Coming soon")
 // feature, not removed outright.
 assert(!/\bECHA\b/.test(pricing), 'pricing.html must not make detailed claims about monitoring ECHA (no such system is implemented)');
-assert(/Automatic regulation change alerts<span[^>]*>COMING SOON</.test(pricing),
+if (/Automatic regulation change alerts/.test(pricing)) assert(/Automatic regulation change alerts<span[^>]*>COMING SOON</.test(pricing),
   'pricing.html feature list "Regulation change alerts" item must carry its own COMING SOON badge');
-assert(/Regulation change alerts <span[^>]*>Coming soon</.test(pricing),
+if (/Regulation change alerts <span/.test(pricing)) assert(/Regulation change alerts <span[^>]*>Coming soon</.test(pricing),
   'pricing.html comparison-table "Regulation change alerts" row must carry its own Coming soon badge');
 const regAlertsPanelIdx = pricing.indexOf('>Regulation change alerts<');
-assert(whatsComingIdx !== -1 && regAlertsPanelIdx > whatsComingIdx && regAlertsPanelIdx < whatsComingIdx + 2000,
+if (regAlertsPanelIdx !== -1) assert(whatsComingIdx !== -1 && regAlertsPanelIdx > whatsComingIdx && regAlertsPanelIdx < whatsComingIdx + 2000,
   'pricing.html "Regulation change alerts" panel card must sit under the "What\'s coming to CLPeasy™" heading, not read as an active benefit');
-assert(pricing.includes('Planned feature. Regulation-change monitoring and notifications are not currently available.'),
+if (regAlertsPanelIdx !== -1) assert(pricing.includes('Planned feature. Regulation-change monitoring and notifications are not currently available.'),
   'pricing.html must describe regulation-change alerts with neutral "planned feature, not currently available" wording (not a confirmed ECHA-monitoring implementation)');
 
 // ── Round 3: stale size-preset claims and the showcase absolute claim ──
@@ -178,7 +183,8 @@ assert(pricing.includes('Planned feature. Regulation-change monitoring and notif
 // stale and must be corrected to describe the real mm-entry workflow.
 assert(!/Circle presets cover|Rectangle presets cover/i.test(html),
   'homepage Setup Guide must not claim circle/rectangle presets cover specific product categories (no preset picker exists)');
-assert(html.includes('Choose Circle, Rectangle or Square, then enter the dimensions you need in millimetres.'),
+// 27c976d ("Polish homepage feature journey and remove remaining future promises") reworded this step.
+assert(html.includes('Choose a circle, rectangle or square, then enter the dimensions you need in millimetres.'),
   'homepage Setup Guide "Open the label builder" step must describe the real shape-then-mm-entry workflow');
 assert(!/four standard preset sizes/i.test(html),
   'homepage FAQ must not claim CLPeasy includes four standard preset sizes (no such preset picker exists)');
@@ -223,15 +229,17 @@ for (const file of [['index.html', html], ['plan-picker.html', planPicker], ['ac
 // included/active Easy Pro benefit.
 assert(!/adds SDS Smart Import/i.test(pricing) && !/plus SDS Smart Import/i.test(pricing) && !/such as SDS Smart Import/i.test(pricing) && !/including SDS Smart Import/i.test(pricing),
   'pricing.html must not describe SDS Smart Import as an active/included Easy Pro benefit');
-assert(/Drop entire SDS PDF in — hands-free hazard data extraction <span[^>]*>Coming soon</.test(pricing),
+// e7151e9 deliberately removed the unreleased PDF-import row; guard only applies if it returns.
+if (/Drop entire SDS PDF in/.test(pricing)) assert(/Drop entire SDS PDF in — hands-free hazard data extraction <span[^>]*>Coming soon</.test(pricing),
   'pricing.html comparison-table "Drop entire SDS PDF in" row must carry its own Coming soon badge');
-assert(pricing.includes('Coming soon — not currently available. Planned for Easy Pro: drop your complete SDS PDF directly into CLPeasy™ instead of pasting Section 2.2 with Smart Paste.'),
+if (/Drop entire SDS PDF in/.test(pricing)) assert(pricing.includes('Coming soon — not currently available. Planned for Easy Pro: drop your complete SDS PDF directly into CLPeasy™ instead of pasting Section 2.2 with Smart Paste.'),
   'pricing.html must describe the PDF-import row as "Coming soon — not currently available"');
 
 // Smart Paste itself (pasting Section 2.2 text) remains correctly described
 // as a real, currently-available feature -- and no longer has a PDF
 // drop-in claim tacked onto its description.
-assert(pricing.includes("Paste Section 2.2 from your fragrance supplier's SDS and CLPeasy™ extracts all the relevant hazard data automatically"),
+// c370053 (#149, "Correct Easy Start and Easy Pro feature claims") reworded the Smart Paste description.
+assert(pricing.includes("Copy Section 2.2 from your fragrance supplier's SDS PDF and paste it into CLPeasy™."),
   'pricing.html must still correctly describe Smart Paste as pasting Section 2.2 text');
 assert(!/Smart Paste[\s\S]{0,400}dropping in your complete SDS PDF/i.test(pricing),
   'pricing.html Smart Paste description must not have a PDF drop-in claim appended to it');
@@ -289,7 +297,8 @@ assert(pricing.includes("browser-saved labels organised automatically by product
   'pricing.html "Easy Start vs Easy Pro" FAQ must describe automatic product-type grouping, not bare "folders"');
 assert(pricing.includes("they're organised automatically by product type"),
   'pricing.html saved-label FAQ must describe automatic product-type grouping, not "organise them into folders"');
-assert(pricing.includes('Saved labels (organised automatically by product type) and local version history are stored in your current browser'),
+// b8945ae (#152, "Explain browser-saved labels plainly") reworded the storage disclaimer.
+assert(pricing.includes('Save labels (organised automatically by product type) and local version history in your current browser. They are available on that device unless its site data is cleared.'),
   'pricing.html storage disclaimer must describe automatic product-type grouping, not bare "folders"');
 assert(pricing.includes('Save labels (organised automatically by product type) and local version history in your current browser'),
   'pricing.html comparison-table "Saved label library" row must describe automatic product-type grouping, not bare "folders"');

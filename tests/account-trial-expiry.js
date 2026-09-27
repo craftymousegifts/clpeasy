@@ -115,6 +115,8 @@ async function openPage(source, opts) {
     runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole,
     beforeParse(window) {
       window.supabase = stub;
+      // Shared plan/download summary loaded by <script src="entitlement.js">.
+      window.eval(fs.readFileSync('entitlement.js', 'utf8'));
       window.alert = () => {};
       window.confirm = () => true;
       window.scrollTo = () => {};
@@ -429,7 +431,7 @@ async function openPage(source, opts) {
           drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data: [] }; },
         });
         window.eval(labelRendererSource);
-        window.eval(labelLibrarySource);
+        window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
         window.alert = () => {}; window.confirm = () => true; window.scrollTo = () => {};
         window.fetch = async () => ({ ok: true, json: async () => ({}) });
         window.open = () => ({ location: { href: '' }, close(){}, opener: null });

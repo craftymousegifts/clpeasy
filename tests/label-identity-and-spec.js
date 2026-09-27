@@ -62,12 +62,12 @@ function makeWindow(){
 function loadInto(window){
   window.__LABEL_LIBRARY_TEST__ = true;
   window.eval(labelRendererSource);
-  window.eval(labelLibrarySource);
+  window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
   return window;
 }
 function loadIntoProductionMode(window){
   window.eval(labelRendererSource);
-  window.eval(labelLibrarySource);
+  window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
   return window;
 }
 

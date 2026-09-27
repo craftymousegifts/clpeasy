@@ -396,7 +396,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
             <button class="topup-btn" id="topup-btn" style="display:none;" onclick="buyTopup()">+ Buy more downloads</button>
           </div>
           <div id="topup-credits-section" style="display:none;margin-top:10px;font-size:13px;color:var(--teal-dark);font-weight:600;">
-            <span id="topup-credits-count"></span> purchased top-up credits available — never expire, used after your monthly allowance.
+            <span id="topup-credits-count"></span> purchased downloads available — they do not expire.
           </div>
 
           <div class="action-row" id="action-row">
@@ -590,16 +590,16 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
       <div style="border:1.5px solid var(--border);border-radius:12px;padding:18px 20px;cursor:pointer;transition:border-color .15s;" onclick="selectResub('start')" id="resub-start">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
           <div style="font-size:15px;font-weight:700;">Easy Start</div>
-          <div style="font-size:15px;font-weight:800;">£9.99<span style="font-size:12px;font-weight:400;color:var(--muted);">/mo</span></div>
+          <div style="font-size:15px;font-weight:800;"><span id="resub-start-price">£9.99</span><span style="font-size:12px;font-weight:400;color:var(--muted);">/mo</span></div>
         </div>
-        <div style="font-size:12px;color:var(--muted);">20 downloads/month · Full label library · All builders</div>
+        <div style="font-size:12px;color:var(--muted);">20 downloads/month · Full label library · All builders<span class="resub-promo-note"></span></div>
       </div>
       <div style="border:1.5px solid var(--border);border-radius:12px;padding:18px 20px;cursor:pointer;transition:border-color .15s;" onclick="selectResub('pro')" id="resub-pro">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
           <div style="font-size:15px;font-weight:700;">Easy Pro</div>
-          <div style="font-size:15px;font-weight:800;">£14.99<span style="font-size:12px;font-weight:400;color:var(--muted);">/mo</span></div>
+          <div style="font-size:15px;font-weight:800;"><span id="resub-pro-price">£14.99</span><span style="font-size:12px;font-weight:400;color:var(--muted);">/mo</span></div>
         </div>
-        <div style="font-size:12px;color:var(--muted);">30 downloads/month · Priority support</div>
+        <div style="font-size:12px;color:var(--muted);">30 downloads/month · Priority support<span class="resub-promo-note"></span></div>
       </div>
     </div>
     <div class="modal-actions">
@@ -613,7 +613,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
 <div class="overlay" id="modal-topup">
   <div class="modal">
     <div class="modal-title">Buy more downloads</div>
-    <div class="modal-sub">Top-up packs add to your allowance for the current month. Downloads don't roll over to next month.</div>
+    <div class="modal-sub">Top-up packs add purchased downloads to your account. Purchased downloads do not expire.</div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
       <div class="survey-opt" onclick="selectTopup(5,3.99,this)" style="justify-content:space-between;">
         <span>5 extra downloads</span><strong>£3.99</strong>
@@ -633,6 +633,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="entitlement.js"></script>
 <script>
 const _sb = window.supabase.createClient(
   'https://qvkosdqcryrcfbjtaxic.supabase.co',
@@ -716,7 +717,8 @@ async function fetchProfile(userId) {
       ? new Date(data.next_payment).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})
       : null,
     card_last4: data.card_last4 || null,
-    downloads_used: data.downloads_used || 0,
+    // Refill-adjusted for annual plans (entitlement.js / consume_download).
+    downloads_used: window.CLPEntitlement.summarise(data).used,
     // FIX (2026-07-27): this previously hardcoded 40 for Pro / 20 for Start,
     // discarding the real downloads_limit value already fetched above (the
     // Stripe webhook sets 20/30, not 20/40 — see AUDIT_AND_FIX_LOG.md Phase 10).
@@ -730,6 +732,9 @@ async function fetchProfile(userId) {
     trial_days_left: trialState.daysLeft,
     trial_end_date: trialState.trialEndDateFormatted,
     cancelled_days_remaining: cancelledDaysRemaining,
+    access_until: deletionDate
+      ? deletionDate.toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})
+      : null,
     created_at: new Date(data.created_at).toLocaleDateString('en-GB', {month:'long',year:'numeric'}),
     discount_active: data.discount_active || false,
     discount_ends: data.discount_ends
@@ -738,6 +743,9 @@ async function fetchProfile(userId) {
     email: data.email,
     full_name: data.full_name,
     is_beta: data.is_beta || false,
+    // Shared plan/download summary (entitlement.js) -- mirrors the server
+    // consume_download() rules, including Pay As You Go balances.
+    ent: window.CLPEntitlement.summarise(data),
   };
 }
 
@@ -788,74 +796,71 @@ function renderAccount() {
   // Same "Easy Trial" / planLabel value already used for the plan-name/badge
   // above — no new data, just also surfaced in the Account Details rows to
   // match the approved reference design.
-  document.getElementById('acct-plan').textContent =
-    u.status === 'trialing' ? 'Easy Trial™' : planLabel;
+  document.getElementById('acct-plan').textContent = u.ent.planName.replace('Easy Trial', 'Easy Trial™');
   // FIX (2026-09-22): this used to print the raw subscription_status
   // column ("trialing") verbatim, which stays "trialing" in the database
   // forever even after the trial has actually ended (nothing transitions
   // it) -- so an expired trial's own Account Details table contradicted
   // the "Trial expired" messaging shown just above it on the same page.
   document.getElementById('acct-status').textContent =
-    u.status === 'trialing' && u.trial_expired ? 'trial expired' : u.status;
+    u.status === 'trialing' && u.trial_expired ? 'trial expired' : u.ent.payg ? 'pay as you go' : u.status;
   document.getElementById('acct-since').textContent = u.created_at;
 
   // Sidebar bottom block (24 Aug 2026, GUI redesign) — reuses the same
   // userProfile/currentUser values already fetched above; no new fetch.
-  const suUsage=document.getElementById('sidebar-usage');
-  if(suUsage){
-    if(!Number.isFinite(u.downloads_limit) || u.downloads_limit<=0){
-      suUsage.style.display='none';
-    } else {
-      suUsage.style.display='block';
-      const suLeft=Math.max(0,u.downloads_limit-u.downloads_used);
-      document.getElementById('su-count').textContent=suLeft+' of '+u.downloads_limit;
-      document.getElementById('su-fill').style.width=Math.min(100,Math.round((suLeft/u.downloads_limit)*100))+'%';
-    }
-  }
+  window.CLPEntitlement.renderSidebar(document, u.ent);
   const suUser=document.getElementById('sidebar-user');
   if(suUser){
     suUser.style.display='flex';
     const suDisplayName=u.full_name || currentUser.email || 'Account';
     document.getElementById('su-avatar').textContent=(u.full_name||currentUser.email||'?').charAt(0).toUpperCase();
     document.getElementById('su-name').textContent=suDisplayName;
-    document.getElementById('su-plan').textContent=
-      u.status==='cancelled' ? planLabel+' (Cancelled)' :
-      u.status==='paused' ? planLabel+' (Paused)' :
-      u.status==='trialing' ? (u.trial_expired ? 'Easy Trial (Expired)' : 'Easy Trial') : planLabel;
   }
 
-  // Plan name & badge
-  document.getElementById('plan-name').textContent =
-    u.status === 'cancelled' ? planLabel + ' (Cancelled)' :
-    u.status === 'paused' ? planLabel + ' (Paused)' :
-    u.status === 'trialing' ? (u.trial_expired ? 'Easy Trial (Expired)' : 'Easy Trial') : planLabel;
+  // Plan name & badge (a Pay As You Go balance after the trial reads
+  // "Pay As You Go"; every other state is named exactly as before).
+  document.getElementById('plan-name').textContent = u.ent.planName;
 
   const badge = document.getElementById('plan-badge');
   badge.textContent = u.status === 'trialing' ? (u.trial_expired ? 'Trial expired' : 'Free trial') :
-    u.status === 'active' ? 'Active' :
+    (u.status === 'active' || u.ent.payg) ? 'Active' :
     u.status === 'paused' ? 'Paused' : 'Cancelled';
   // 'lapsed' (red) is the existing badge style already used for a cancelled
   // plan -- reused here for an expired trial rather than inventing a new
   // badge colour/class for the same "needs action" meaning.
-  badge.className = 'plan-badge ' + (u.status === 'trialing' && u.trial_expired ? 'lapsed' : u.status);
+  badge.className = 'plan-badge ' + (u.status === 'trialing' && u.trial_expired ? 'lapsed' : u.ent.payg ? 'active' : u.status);
 
   // Renewal line
   const renewLine = document.getElementById('renewal-line');
   if (u.status === 'trialing') {
     if (u.trial_expired) {
-      renewLine.innerHTML = `Trial expired${u.trial_end_date ? ` on <strong>${u.trial_end_date}</strong>` : ''}. Choose a plan to continue creating labels.`;
+      renewLine.innerHTML = `Trial expired${u.trial_end_date ? ` on <strong>${u.trial_end_date}</strong>` : ''}.` + (u.ent.purchased > 0
+        ? ' Your purchased downloads are ready to use.'
+        : ' Choose a plan to continue creating labels.');
     } else {
       const daysLabel = u.trial_days_left === 0 ? 'today' : u.trial_days_left === 1 ? 'tomorrow' : `in ${u.trial_days_left} days`;
       renewLine.innerHTML = `Trial ends <strong>${daysLabel}</strong>${u.trial_end_date ? ` (${u.trial_end_date})` : ''}. No card required until you choose a plan.`;
     }
   } else if (u.status === 'active') {
-    renewLine.innerHTML = u.discount_active
-      ? `Next payment: <strong>${planPrice === '£9.99' ? '£4.99' : '£7.49'}/mo</strong> (discount active until ${u.discount_ends}) · then ${planPrice}/mo`
-      : `Next payment: <strong>${billingPrice}${billingPeriod}</strong>${u.next_payment ? ` on ${u.next_payment}` : ''}`;
+    // Approved decision 4: never show a guessed list price. The amount comes
+    // from Stripe's own upcoming-invoice calculation via billing-status
+    // (includes the 2026 promotion, save-offer or any other discount).
+    renewLine.innerHTML = 'Next payment: <span id="next-payment-amount">checking…</span>';
+    loadActualNextPayment(u);
   } else if (u.status === 'paused') {
     renewLine.innerHTML = `Subscription paused · <a href="#" onclick="openModal('resubscribe');return false;" style="color:var(--teal);">Reactivate →</a>`;
+  } else if (u.ent.payg) {
+    // Pay As You Go (a trial customer who bought downloads — approved D5).
+    renewLine.innerHTML = 'No subscription · purchased downloads do not expire';
   } else if (u.status === 'cancelled') {
-    renewLine.innerHTML = `Cancellation scheduled · Access continues until <strong>${fmtDate(u.renewal_date)}</strong> · <a href="#" onclick="openModal('resubscribe');return false;" style="color:var(--teal);">Reactivate →</a>`;
+    // FIX: this used to call fmtDate(u.renewal_date) -- neither exists, so
+    // every cancelled account threw here and the rest of the page (purchased
+    // downloads, billing details, Reactivate button) never rendered. The
+    // date is the Stripe cancel_at the webhook stores as deletion_date.
+    const reactivate = `<a href="#" onclick="openModal('resubscribe');return false;" style="color:var(--teal);">Reactivate →</a>`;
+    renewLine.innerHTML = u.ent.cancelScheduled
+      ? `Cancellation scheduled · Access continues${u.access_until ? ` until <strong>${u.access_until}</strong>` : ' until the end of your billing period'} · ${reactivate}`
+      : `Subscription cancelled · ${reactivate}`;
   }
 
   // Win-back banner
@@ -872,7 +877,8 @@ function renderAccount() {
   }
 
   // Download bar
-  if (u.status === 'active' || u.status === 'trialing') {
+  // A scheduled cancellation keeps its paid allowance until the period ends.
+  if (u.status === 'active' || u.status === 'trialing' || u.ent.cancelScheduled) {
     const pct = Math.min(Math.round(u.downloads_used / u.downloads_limit * 100), 100);
     const bar = document.getElementById('dl-bar');
     bar.style.width = pct + '%';
@@ -891,11 +897,15 @@ function renderAccount() {
     if (u.status === 'trialing') {
       dlLabelEl.textContent = 'Trial downloads';
       if (pct >= 100) {
-        dlNoteEl.textContent = u.trial_expired
+        dlNoteEl.textContent = u.ent.purchased > 0
+          ? (u.trial_expired ? 'Your trial has ended. Your purchased downloads can still be used.' : "You've used all your trial downloads. Your purchased downloads can still be used.")
+          : u.trial_expired
           ? "Your trial has ended and you've used all your trial downloads. Choose a plan to keep downloading."
           : "You've used all your trial downloads. Choose a plan to keep downloading.";
       } else if (u.trial_expired) {
-        dlNoteEl.textContent = 'Your trial has ended. Choose a plan to continue downloading.';
+        dlNoteEl.textContent = u.ent.purchased > 0
+          ? 'Your trial has ended. Your purchased downloads can still be used.'
+          : 'Your trial has ended. Choose a plan to continue downloading.';
       } else {
         dlNoteEl.textContent = 'Included with your 14-day trial. Re-downloading the same label within 7 days is free.';
       }
@@ -903,7 +913,7 @@ function renderAccount() {
       dlLabelEl.textContent = 'Downloads this month';
       dlNoteEl.textContent = pct >= 100
         ? (u.topup_credits > 0
-          ? `You've reached your monthly limit — now drawing from your ${u.topup_credits} purchased credit(s).`
+          ? `You've reached your monthly limit — now drawing from your ${u.topup_credits} purchased download(s).`
           : "You've reached your monthly limit. Buy a top-up pack or wait until your allowance resets next billing date.")
         : 'Resets on your next billing date. Re-downloading the same label within 7 days is free.';
     }
@@ -928,15 +938,15 @@ function renderAccount() {
   // misleading "Easy Start · Monthly" here even though billing-next and
   // billing-card correctly show "—" for the same trial state below. Gated
   // the same way so all four Billing fields agree during trial.
-  document.getElementById('billing-plan').textContent = u.status === 'trialing' ? '—' : planLabel + ' · ' + (u.billing_cycle === 'annual' ? 'Annual' : 'Monthly');
-  document.getElementById('billing-cycle').textContent = u.status === 'trialing' ? '—' : (u.billing_cycle === 'annual' ? 'Annual (paid yearly)' : 'Monthly');
+  document.getElementById('billing-plan').textContent = (u.status === 'trialing' || u.ent.payg) ? '—' : planLabel + ' · ' + (u.billing_cycle === 'annual' ? 'Annual' : 'Monthly');
+  document.getElementById('billing-cycle').textContent = (u.status === 'trialing' || u.ent.payg) ? '—' : (u.billing_cycle === 'annual' ? 'Annual (paid yearly)' : 'Monthly');
   document.getElementById('billing-next').textContent = u.status === 'active' ? u.next_payment : '—';
   document.getElementById('billing-card').textContent = u.card_last4 ? `Visa ending ${u.card_last4}` : '—';
   document.getElementById('stripe-portal-link').style.display =
     ['active', 'paused', 'cancelled'].includes(u.status) ? 'inline' : 'none';
 
   // Action buttons
-  renderActionRow(u.status);
+  renderActionRow(u.ent.payg ? 'payg' : u.status);
 
   // Sidebar top-up links arrive here in a separate tab. Open the existing
   // top-up picker directly instead of sending the customer to Pricing.
@@ -975,11 +985,68 @@ function renderActionRow(status) {
     row.innerHTML = `
       <button class="btn btn-teal" onclick="openModal('resubscribe')">Reactivate my account</button>
     `;
+  } else if (status === 'payg') {
+    row.innerHTML = `
+      <a href="pricing.html#payg" target="_blank" rel="noopener" class="btn btn-teal">Buy more downloads</a>
+      <a href="pricing.html" target="_blank" rel="noopener" class="btn btn-outline">Choose a plan</a>
+    `;
+  }
+}
+
+// ── ACTUAL NEXT PAYMENT (approved decision 4) ─────────────────────
+// Asks the billing-status Edge Function (server-side Stripe lookup for this
+// signed-in user) for the real next charge. If it can't be determined, no
+// amount is shown — the customer is pointed to the billing portal instead.
+function formatMoney(minor, currency) {
+  try {
+    const whole = minor % 100 === 0;
+    return new Intl.NumberFormat('en-GB', { style: 'currency', currency: String(currency || '').toUpperCase(),
+      minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: whole ? 0 : 2 }).format(minor / 100);
+  } catch (e) { return null; }
+}
+async function loadActualNextPayment(u) {
+  const line = document.getElementById('renewal-line');
+  const fallback = () => {
+    line.innerHTML = `Next payment${u.next_payment ? ` due <strong>${u.next_payment}</strong>` : ''} · see the amount in your <a href="#" onclick="openStripePortal();return false;" style="color:var(--teal);">billing portal</a>`;
+  };
+  try {
+    const { data: { session } } = await _sb.auth.getSession();
+    if (!session) return fallback();
+    const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/billing-status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
+      body: '{}'
+    });
+    const b = await res.json();
+    const amount = (res.ok && b && b.available === true && Number.isInteger(b.amount_due)) ? formatMoney(b.amount_due, b.currency) : null;
+    if (!amount) return fallback();
+    const date = Number.isFinite(b.next_payment_at)
+      ? new Date(b.next_payment_at * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+      : null;
+    const note = b.promo_2026 ? ' · 2026 offer applied' : (b.discounted ? ' · discount applied' : '');
+    line.innerHTML = `Next payment: <strong>${amount}</strong>${date ? ` on ${date}` : ''}${note}`;
+    if (date) document.getElementById('billing-next').textContent = date;
+  } catch (e) {
+    console.error('billing-status unavailable:', e);
+    fallback();
   }
 }
 
 // ── MODAL HELPERS ─────────────────────────────────────────────────
+// Resubscribe modal: a NEW monthly checkout before 1 Jan 2027 (UK) gets the
+// 2026 promotion coupon server-side (create-checkout-session), so quote what
+// Stripe will actually charge. Same boundary the server uses.
+function applyResubPromoPrices() {
+  if (Date.now() >= Date.UTC(2027, 0, 1)) return;
+  const s = document.getElementById('resub-start-price'), p = document.getElementById('resub-pro-price');
+  if (s) s.textContent = '£8.99';
+  if (p) p.textContent = '£13.49';
+  document.querySelectorAll('.resub-promo-note').forEach((el, i) => {
+    el.textContent = ' · 2026 offer until 31 December 2026, then ' + (i === 0 ? '£9.99' : '£14.99') + '/month';
+  });
+}
 function openModal(name) {
+  if (name === 'resubscribe') applyResubPromoPrices();
   closeAllModals();
   document.getElementById('modal-' + name).classList.add('open');
 }
@@ -1170,6 +1237,13 @@ async function confirmCancel() {
 
 // ── TOP-UP ────────────────────────────────────────────────────────
 function buyTopup() {
+  // Approved D4: top-up packs are only for active Easy Start/Pro subscribers
+  // (or a scheduled cancellation still inside its paid period). Everyone
+  // else buys Pay As You Go downloads instead. Also enforced server-side.
+  if (!userProfile || !userProfile.ent || !userProfile.ent.topupEligible) {
+    window.location.href = 'pricing.html#payg';
+    return;
+  }
   const showNudge = userProfile.topup_months >= 2;
   document.getElementById('topup-upgrade-nudge').style.display = showNudge ? 'block' : 'none';
   openModal('topup');

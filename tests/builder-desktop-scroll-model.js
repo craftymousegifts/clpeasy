@@ -96,7 +96,7 @@ function buildDom(){
         drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
       });
       window.eval(labelRendererSource);
-      window.eval(labelLibrarySource);
+      window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
       window.scrollTo = () => {};
@@ -142,7 +142,8 @@ setTimeout(() => {
     // scrolling, which needs a real browser).
     assert(document.getElementById('builder-stepper'), 'sticky horizontal stepper element is missing');
     assert(document.querySelector('.compliance-card'), 'Compliance card was removed rather than made compact');
-    assert(/GB CLP aligned/.test(document.querySelector('.compliance-card').textContent), 'Compliance card content changed');
+    // Wording deliberately updated in c5c1d57 / PR #136 ("Improve builder responsibility and CLP Ready wording").
+    assert(/CLP Ready checks/.test(document.querySelector('.compliance-card').textContent) && /Built around GB CLP label requirements/.test(document.querySelector('.compliance-card').textContent), 'Compliance card content changed');
 
     // Step 5 fine-tune relocation (explicitly protected -- "preserve the
     // successful Step 5 Fine-tune arrangement") still functions exactly
@@ -292,10 +293,12 @@ setTimeout(() => {
     assert(sdsNote, 'Step 3 SDS / GB CLP guidance note is missing');
     assert(/CLP information for the percentage you actually use/.test(sdsNote.textContent), 'SDS note must still cover finished-product / fragrance-concentration guidance');
     assert.strictEqual(smartPasteBox.nextElementSibling, sdsNote, 'the SDS note must sit directly after the Smart Paste box');
-    // The existing mandatory confirmation checkbox (a distinct, binding
-    // "I confirm..." gate) must be completely unchanged by this correction.
+    // The mandatory confirmation checkbox (a distinct, binding "I confirm..."
+    // gate). Owner-approved wording (26 Sep 2026, F1): it refers to the hazard
+    // data shown in this step, not to the Smart Paste box, which is blank on a
+    // reopened saved label (the raw SDS text is never stored).
     const confirmLabel = document.getElementById('hazard-confirm-block');
-    assert(confirmLabel && /I confirm the hazard data shown in the Smart Paste section above is correct/.test(confirmLabel.textContent), 'existing Step 3 hazard-confirm checkbox text was altered');
+    assert(confirmLabel && confirmLabel.textContent.replace(/\s+/g, ' ').includes("I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."), 'Step 3 hazard-confirm checkbox text must be the approved F1 wording');
 
     console.log('DOM structure / Smart Paste / fine-tune regression checks passed');
   } catch (error) {

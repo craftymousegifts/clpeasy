@@ -409,6 +409,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
 </div><!-- /shell-main -->
 </div><!-- /app-shell -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="entitlement.js"></script>
 <script>
 const _sb = window.supabase.createClient(
   'https://qvkosdqcryrcfbjtaxic.supabase.co',
@@ -462,7 +463,8 @@ async function fetchProfile(userId) {
     next_payment: data.next_payment
       ? new Date(data.next_payment).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})
       : null,
-    downloads_used: data.downloads_used || 0,
+    // Refill-adjusted for annual plans (entitlement.js / consume_download).
+    downloads_used: window.CLPEntitlement.summarise(data).used,
     downloads_limit: data.downloads_limit ?? (data.is_pro ? 30 : 20),
     trial_active: trialState.trialActive,
     trial_expired: trialState.trialExpired,
@@ -471,6 +473,8 @@ async function fetchProfile(userId) {
     created_at: new Date(data.created_at).toLocaleDateString('en-GB', {month:'long',year:'numeric'}),
     email: data.email,
     full_name: data.full_name,
+    // Shared plan/download summary (entitlement.js), including PAYG.
+    ent: window.CLPEntitlement.summarise(data),
   };
 }
 
@@ -522,19 +526,18 @@ function renderDashboard() {
   // Plan & Billing card (redesigned 28 Aug 2026 — Michaela: free trial accounts
   // must not mention billing at all; only an active subscription sees billing
   // management + top-ups. Mirrors account.html's Subscription-card pattern.)
-  document.getElementById('db-plan-name').textContent =
-    u.status === 'trialing' ? (u.trial_expired ? 'Easy Trial™ (Expired)' : 'Easy Trial™') : planLabel;
+  document.getElementById('db-plan-name').textContent = u.ent.planName.replace('Easy Trial', 'Easy Trial™');
 
   const dbBadge = document.getElementById('db-plan-badge');
   dbBadge.textContent = u.status === 'trialing' ? (u.trial_expired ? 'Trial expired' : 'Free trial') :
-    u.status === 'active' ? 'Active' :
+    (u.status === 'active' || u.ent.payg) ? 'Active' :
     u.status === 'paused' ? 'Paused' :
     u.status === 'cancelled' ? 'Cancelled' : u.status;
   // NOTE: CSS only defines .plan-badge.lapsed (not .cancelled) — same
   // pre-existing naming mismatch found in account.html's own badge, mapped
   // here so this new card doesn't render an unstyled "Cancelled" pill.
   // An expired trial reuses the same 'lapsed' (red, "needs action") style.
-  dbBadge.className = 'plan-badge ' + (u.status === 'cancelled' || (u.status === 'trialing' && u.trial_expired) ? 'lapsed' : u.status);
+  dbBadge.className = 'plan-badge ' + (u.status === 'cancelled' || (u.status === 'trialing' && u.trial_expired) ? 'lapsed' : u.ent.payg ? 'active' : u.status);
 
   const dbRenewal = document.getElementById('db-renewal-line');
   if (u.status === 'trialing') {
@@ -543,13 +546,17 @@ function renderDashboard() {
     // happens for an EXPIRED trial just as much as a missing one, so an
     // 84-day-old expired trial still read "Trial ends in 14 days" here.
     if (u.trial_expired) {
-      dbRenewal.innerHTML = `Trial expired${u.trial_end_date ? ` on <strong>${u.trial_end_date}</strong>` : ''}. Choose a plan to continue.`;
+      dbRenewal.innerHTML = `Trial expired${u.trial_end_date ? ` on <strong>${u.trial_end_date}</strong>` : ''}.` + (u.ent.purchased > 0
+        ? ' Your purchased downloads are ready to use.'
+        : ' Choose a plan to continue.');
     } else {
       const daysLabel = u.trial_days_left === 0 ? 'today' : u.trial_days_left === 1 ? 'tomorrow' : `in ${u.trial_days_left} days`;
       dbRenewal.innerHTML = `Trial ends <strong>${daysLabel}</strong>${u.trial_end_date ? ` (${u.trial_end_date})` : ''}. No card required until you choose a plan.`;
     }
   } else if (u.status === 'active') {
     dbRenewal.innerHTML = u.next_payment ? `Next payment on <strong>${u.next_payment}</strong>` : '';
+  } else if (u.ent.payg) {
+    dbRenewal.innerHTML = 'No subscription · purchased downloads do not expire';
   } else if (u.status === 'paused') {
     dbRenewal.innerHTML = 'Subscription paused';
   } else if (u.status === 'cancelled') {
@@ -559,17 +566,27 @@ function renderDashboard() {
   }
 
   // Download bar — only meaningful while actively consuming an allowance
+  // Remaining counts only a USABLE plan allowance (an expired trial's unused
+  // downloads cannot be spent) and adds purchased Pay As You Go downloads.
   const dbDlSection = document.getElementById('db-dl-section');
-  if (u.status === 'active' || u.status === 'trialing') {
+  const purchasedNote = u.ent.purchased > 0 ? ' · ' + u.ent.purchased + ' purchased' : '';
+  if (u.status === 'active' || u.status === 'trialing' || u.ent.cancelScheduled) {
     dbDlSection.style.display = '';
     document.getElementById('db-dl-label-text').textContent =
       u.status === 'trialing' ? 'Trial downloads' : 'Downloads this month';
-    const dbLeft = Math.max(0, u.downloads_limit - u.downloads_used);
+    const dbLeft = u.ent.planLeft;
     const dbPct = Math.min(Math.round(u.downloads_used / u.downloads_limit * 100), 100);
-    document.getElementById('db-dl-count').textContent = dbLeft + ' of ' + u.downloads_limit + ' remaining';
+    document.getElementById('db-dl-count').textContent = dbLeft + ' of ' + u.downloads_limit + ' remaining' + purchasedNote;
     const dbBar = document.getElementById('db-dl-bar');
     dbBar.style.width = dbPct + '%';
     dbBar.className = 'dl-bar ' + (dbPct >= 100 ? 'full' : dbPct >= 75 ? 'warn' : 'ok');
+  } else if (u.ent.purchased > 0 || u.ent.payg) {
+    dbDlSection.style.display = '';
+    document.getElementById('db-dl-label-text').textContent = 'Purchased downloads';
+    document.getElementById('db-dl-count').textContent = u.ent.purchased + ' remaining';
+    const dbBar = document.getElementById('db-dl-bar');
+    dbBar.style.width = u.ent.purchased > 0 ? '100%' : '0%';
+    dbBar.className = 'dl-bar ' + (u.ent.purchased > 0 ? 'ok' : 'full');
   } else {
     dbDlSection.style.display = 'none';
   }
@@ -580,10 +597,16 @@ function renderDashboard() {
   const dbActions = document.getElementById('db-action-row');
   if (u.status === 'trialing') {
     dbActions.innerHTML = `<a href="pricing.html" target="_blank" rel="noopener" class="btn btn-teal">Choose a plan</a>`;
-  } else if (u.status === 'active') {
+  } else if (u.ent.topupEligible) {
+    // Approved D4: active or scheduled-cancellation Easy Start/Pro only.
     dbActions.innerHTML = `
       <a href="account.html" target="_blank" rel="noopener" class="btn btn-outline">Manage account &amp; billing</a>
       <a href="account.html?topup=1" target="_blank" rel="noopener" class="btn btn-outline">Buy top-up downloads</a>
+    `;
+  } else if (u.ent.payg) {
+    dbActions.innerHTML = `
+      <a href="pricing.html#payg" target="_blank" rel="noopener" class="btn btn-teal">Buy more downloads</a>
+      <a href="account.html" target="_blank" rel="noopener" class="btn btn-outline">Manage account</a>
     `;
   } else {
     dbActions.innerHTML = `<a href="account.html" target="_blank" rel="noopener" class="btn btn-outline">Manage account &amp; billing</a>`;
@@ -605,29 +628,13 @@ function renderDashboard() {
   }
 
   // Sidebar bottom block — same shared shell logic as account.html
-  const suUsage=document.getElementById('sidebar-usage');
-  if(suUsage){
-    if(u.status==='trialing'){
-      suUsage.style.display='none';
-    } else if(!Number.isFinite(u.downloads_limit) || u.downloads_limit<=0){
-      suUsage.style.display='none';
-    } else {
-      suUsage.style.display='block';
-      const suLeft=Math.max(0,u.downloads_limit-u.downloads_used);
-      document.getElementById('su-count').textContent=suLeft+' of '+u.downloads_limit;
-      document.getElementById('su-fill').style.width=Math.min(100,Math.round((suLeft/u.downloads_limit)*100))+'%';
-    }
-  }
+  window.CLPEntitlement.renderSidebar(document, u.ent);
   const suUser=document.getElementById('sidebar-user');
   if(suUser){
     suUser.style.display='flex';
     const suDisplayName=u.full_name || currentUser.email || 'Account';
     document.getElementById('su-avatar').textContent=(u.full_name||currentUser.email||'?').charAt(0).toUpperCase();
     document.getElementById('su-name').textContent=suDisplayName;
-    document.getElementById('su-plan').textContent=
-      u.status==='cancelled' ? planLabel+' (Cancelled)' :
-      u.status==='paused' ? planLabel+' (Paused)' :
-      u.status==='trialing' ? 'Easy Trial' : planLabel;
   }
 }
 

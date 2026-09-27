@@ -1,0 +1,81 @@
+download entitlement SQL checks passed (93 groups; real migrations on local PostgreSQL)
+PASS: Brevo failure (throw) never fails or repeats the credit
+PASS: Brevo paid list not configured: credit still succeeds, Brevo skipped
+PASS: current subscriber buying PAYG: credited, subscriber PLAN attribute not overwritten
+PASS: unpaid Checkout session is never credited
+PASS: unexpected PAYG quantity is never credited
+PASS: subscription purchase still uses the subscriber Brevo list (unchanged)
+PASS: D5 live trial + successful PAYG: trial ends, account becomes Pay As You Go, 8 downloads
+PASS: D5 duplicate successful webhook: no second credit, no second conversion or Brevo call
+PASS: D5 unpaid/failed payment: trial untouched, nothing credited
+PASS: D5 credit failure: trial untouched; Stripe retry converts exactly once
+PASS: D5 expired trial buys PAYG: converted
+PASS: D5 existing PAYG buys again: +8, stays Pay As You Go
+PASS: active Easy Pro subscriber buys PAYG: downloads credited, subscription and Brevo PLAN untouched
+PASS: decision 3: fully ended subscriber buys PAYG -> current plan Pay As You Go
+PASS: decision 3: paid period over but Stripe deletion not yet processed -> converts; the late deletion keeps Pay As You Go
+PASS: decision 3: unpaid PAYG session never converts an ended subscription
+PASS: decision 3: duplicate delivery converts/credits once
+PASS: paused subscriber buys PAYG: credited, stays paused (not converted)
+PASS: a normal subscription deletion (no PAYG) still downgrades as before
+PASS: subscriber top-up: +5 via the atomic credit RPC, duplicate ignored
+PASS: CLPeasy sandbox top-up prices credit 5 and 10
+PASS: unpaid top-up session is never credited
+PASS: D3 renewal for a period starting 15 Dec 2026 keeps the promotion
+PASS: D3 first renewal from 1 Jan 2027 removes the promotion from subscription and draft invoice (standard price)
+PASS: D3 other coupons (e.g. account save-offer) are never removed
+stripe-webhook offline checks passed (31 scenarios)
+PASS: PAYG uses the server-side price, stamps type=payg and 8 downloads during 2026, ignores any browser price
+PASS: PAYG fails closed when PAYG_5_PRICE_ID is missing (never falls back to a browser price)
+PASS: from 1 January 2027 the same PAYG purchase is stamped 5 downloads
+PASS: 31 December 2026 23:59 UTC is still the launch offer
+PASS: D3 Easy Start MONTHLY checkout gets the server-configured 2026 coupon (£9.99 price → £8.99)
+PASS: D3 Easy Pro MONTHLY checkout gets the Pro coupon (£14.99 price → £13.49)
+PASS: D3 live-mode monthly price IDs are recognised too
+PASS: D3 Easy Start ANNUAL has no discount
+PASS: D3 Easy Pro ANNUAL has no discount
+PASS: D3 the browser cannot inject or choose a discount
+PASS: D3 missing promotion configuration fails closed (no checkout at the standard price)
+PASS: D3 the promotion applies through 31 December 2026 (23:59:59 UK)
+PASS: D3 from 1 January 2027 monthly checkout is standard price (no coupon needed or applied)
+PASS: D4 top-up for active Easy Start -> 200
+PASS: D4 top-up for active Easy Pro -> 200
+PASS: D4 top-up for cancellation scheduled, still paid -> 200
+PASS: D4 top-up for cancellation period ended -> 403
+PASS: D4 top-up for subscription ended (downgraded) -> 403
+PASS: D4 top-up for live trial -> 403
+PASS: D4 top-up for Pay As You Go -> 403
+PASS: D4 top-up for paused -> 403
+PASS: D4 top-up for no profile -> 403
+PASS: D4 CLPeasy sandbox top-up price price_1TeBHjKF3jvQfgEaX2aPZX6E is accepted for a subscriber
+PASS: D4 CLPeasy sandbox top-up price price_1TeBIKKF3jvQfgEaxU4TjPHu is accepted for a subscriber
+PASS: D4 unknown one-off price is rejected (cannot buy an arbitrary price as a top-up)
+PASS: D4 a trial customer can still start Pay As You Go
+PASS: matrix: trial -> PAYG available, top-ups refused
+PASS: matrix: expired trial -> PAYG available, top-ups refused
+PASS: matrix: Pay As You Go -> PAYG available, top-ups refused
+PASS: matrix: active Easy Start -> PAYG refused, top-ups available
+PASS: matrix: active Easy Pro -> PAYG refused, top-ups available
+PASS: matrix: cancel at period end, still paid -> PAYG refused, top-ups available
+PASS: matrix: paused -> PAYG available, top-ups refused
+PASS: matrix: fully ended (downgraded) -> PAYG available, top-ups refused
+PASS: matrix: fully ended (paid period over) -> PAYG available, top-ups refused
+PASS: decision 2: an active subscriber cannot reach PAYG by sending mode=subscription or no mode
+create-checkout-session offline checks passed (36 scenarios)
+PASS: Easy Start 2026 promotion: actual next payment £8.99
+PASS: Easy Pro 2026 promotion (10% coupon): actual next payment £13.49
+PASS: Easy Start standard: £9.99
+PASS: Easy Pro standard: £14.99
+PASS: Easy Start annual: £99/year
+PASS: Easy Pro annual: £149/year
+PASS: promotion ends before the next period (renewal on/after 1 Jan 2027): standard £9.99, not £8.99
+PASS: promotion already removed by the webhook: standard price
+PASS: other legitimate Stripe discount (account save-offer 50%) is shown as Stripe calculates it
+PASS: Stripe unavailable: no amount
+PASS: no linked subscription: no amount
+PASS: cancel-at-period-end / paused: no upcoming charge
+PASS: subscription belonging to another customer is never reported
+PASS: Stripe not configured: no amount
+PASS: not signed in: 401 and no Stripe call
+PASS: no Stripe IDs or secrets are returned to the browser
+billing-status offline checks passed (16 scenarios)

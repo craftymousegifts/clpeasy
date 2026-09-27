@@ -65,7 +65,7 @@ const dom = new JSDOM(printSource, {
     stubCanvas(window);
     try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
     window.eval(labelRendererSource);
-    window.eval(labelLibrarySource);
+    window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
     window.scrollTo = () => {};
@@ -121,7 +121,7 @@ setTimeout(() => {
       beforeParse(w){
         stubCanvas(w);
         try{ w.crypto.subtle = webcrypto.subtle; }catch(e){}
-        w.eval(labelRendererSource); w.eval(labelLibrarySource);
+        w.eval(labelRendererSource); w.eval(labelLibrarySource); w.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
         w.alert=()=>{}; w.confirm=()=>true; w.scrollTo=()=>{};
         w.fetch=async()=>({ok:true,json:async()=>({})});
         w.supabase={ createClient:()=>({ auth:{ getSession:async()=>({data:{session:null}}), onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}}), signOut:async()=>({}) }, from:()=>Object.create(emptyQuery), rpc:async()=>({data:false,error:null}) }) };
@@ -172,7 +172,7 @@ setTimeout(() => {
         beforeParse(w){
           stubCanvas(w);
           try{ w.crypto.subtle = webcrypto.subtle; }catch(e){}
-          w.eval(labelRendererSource); w.eval(labelLibrarySource);
+          w.eval(labelRendererSource); w.eval(labelLibrarySource); w.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
           w.alert=()=>{}; w.confirm=()=>true; w.scrollTo=()=>{};
           w.fetch=async()=>({ok:true,json:async()=>({})});
           // my-labels.html has no guest mode -- it redirects to sign-in

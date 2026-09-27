@@ -37,7 +37,7 @@ const emptyQuery = {
 };
 const activeSubQuery = {
   select(){ return this; }, eq(){ return this; },
-  single(){ return Promise.resolve({ data:{ plan:'pro', status:'active' }, error:null }); }
+  single(){ return Promise.resolve({ data:{ plan:'pro', status:'active', subscription_status:'active', trial_end:null, downloads_used:0, downloads_limit:30, topup_credits:0 }, error:null }); }
 };
 function makeSupabaseStub(session, activeSub){
   return { createClient: () => ({
@@ -172,12 +172,12 @@ async function openComposer(opts){
       // tests/label-identity-and-spec.js already uses.
       try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
       window.eval(labelRendererSource);
-      window.eval(labelLibrarySource);
+      window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
       window.scrollTo = () => {};
       window.fetch = async () => ({ ok:true, json:async()=>({}) });
-      window.open = () => { windowOpenCalls.count++; return { document:{ write(){}, close(){} }, location:{ href:'' }, close(){}, opener:null }; };
+      window.open = () => { windowOpenCalls.count++; return { document:{ open(){}, write(){}, close(){} }, location:{ href:'' }, close(){}, opener:null }; };
       window.URL.createObjectURL = () => 'blob:test';
       window.URL.revokeObjectURL = () => {};
       window.HTMLAnchorElement.prototype.click = function(){};
@@ -312,7 +312,7 @@ async function openComposer(opts){
     const idA = fakeId();
     const seed = [overflowingFixture({ id:idA })];
     const { window, document } = await openComposer({ seed });
-    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active',subscription_status:'active',trial_end:null,downloads_used:0,downloads_limit:30,topup_credits:0},error:null});}}),rpc:()=>Promise.resolve({data:{ok:true,consumed:true,free_redownload:false,source:'plan',clean_export:true},error:null})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
     window.eval(`addToSheet('${idA}')`);
     const issues = window.eval('sheetFitIssues');
     assert.strictEqual(issues.length, 1, 'setup: the overflowing fixture must produce exactly one fit issue');
@@ -353,7 +353,7 @@ async function openComposer(opts){
     const idA = fakeId(), idB = fakeId();
     const seed = [fixture({ id:idA, scentName:'Custom A' }), fixture({ id:idB, scentName:'Custom B' })];
     const { window, document } = await openComposer({ seed });
-    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active',subscription_status:'active',trial_end:null,downloads_used:0,downloads_limit:30,topup_credits:0},error:null});}}),rpc:()=>Promise.resolve({data:{ok:true,consumed:true,free_redownload:false,source:'plan',clean_export:true},error:null})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
     // JSON round-trip normalises the cross-realm jsdom object (a raw
     // deepStrictEqual across realms can spuriously fail on [[Prototype]]
     // identity even when the own-enumerable-property content is identical).
@@ -384,7 +384,7 @@ async function openComposer(opts){
     const idA = fakeId(), idB = fakeId();
     const seed = [eu30009Fixture({ id:idA, scentName:'Registry A' }), eu30009Fixture({ id:idB, scentName:'Registry B' })];
     const { window, document } = await openComposer({ seed });
-    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active',subscription_status:'active',trial_end:null,downloads_used:0,downloads_limit:30,topup_credits:0},error:null});}}),rpc:()=>Promise.resolve({data:{ok:true,consumed:true,free_redownload:false,source:'plan',clean_export:true},error:null})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
     const reg = window.eval("getRegistryTemplate('eu30009')");
     assert.strictEqual(reg.columns, 2); assert.strictEqual(reg.rows, 5); assert.strictEqual(reg.labelsPerSheet, 10);
     assert.strictEqual(reg.labelWidthMm, 99.1); assert.strictEqual(reg.labelHeightMm, 57.3); assert.strictEqual(reg.cornerRadiusMm, 2);
@@ -413,7 +413,7 @@ async function openComposer(opts){
     const idFits = fakeId(), idFails = fakeId();
     const seed = [fixture({ id:idFits, scentName:'Fits Fine' }), overflowingFixture({ id:idFails })];
     const { window, document, windowOpenCalls } = await openComposer({ seed });
-    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active',subscription_status:'active',trial_end:null,downloads_used:0,downloads_limit:30,topup_credits:0},error:null});}}),rpc:()=>Promise.resolve({data:{ok:true,consumed:true,free_redownload:false,source:'plan',clean_export:true},error:null})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
     window.eval(`addToSheet('${idFits}')`);
     window.eval(`addToSheet('${idFails}')`);
     assert.strictEqual(window.eval('sheetFitIssues.length'), 1, 'setup: the sheet should have exactly one fit issue');

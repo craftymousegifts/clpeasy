@@ -1,0 +1,2 @@
+CLPeasy PR #156 isolated test copy v10 (commit 946ae8e).
+Supabase: CLPeasy Test (wwjhvpphlbgtywxskqnf). Stripe: Sandbox (acct_1TdczqKF3jvQfgEa). Not production.

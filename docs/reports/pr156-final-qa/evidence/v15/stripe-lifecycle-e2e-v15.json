@@ -1,0 +1,36 @@
+{
+  "run": "2026-09-26 21:44-22:04 UTC, CLPeasy Test (wwjhvpphlbgtywxskqnf) + Stripe Sandbox acct_1TdczqKF3jvQfgEa, test clock clock_1UK3QAKF3jvQfgEa4Gao1dT5 (deleted after the run)",
+  "webhook_endpoints_at_inspection_before_any_change": {
+    "we_1TddU7KF3jvQfgEa3jvQZY0z": {"url": "https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/stripe-webhook (PRODUCTION)", "livemode": false, "created": "2026-06-01T21:34:59Z", "api_version": "2026-05-27.dahlia", "enabled_events": ["customer.subscription.deleted", "customer.subscription.updated", "checkout.session.completed"], "status": "disabled (already disabled when inspected; not changed by this run)"},
+    "we_1UJZJ5KF3jvQfgEahDqXnOEL": {"url": "https://wwjhvpphlbgtywxskqnf.supabase.co/functions/v1/stripe-webhook (CLPeasy Test)", "livemode": false, "created": "2026-09-25T13:36:55Z", "api_version": "2026-05-27.dahlia", "enabled_events": ["checkout.session.completed", "invoice.created", "invoice.paid", "customer.subscription.updated", "customer.subscription.deleted"], "status": "enabled (lifecycle events already present when inspected; not changed by this run)"},
+    "events_with_failed_deliveries": ["evt_1UJZcIKF3jvQfgEa8vIvnwGZ checkout.session.completed 2026-09-25T13:56:46Z pending_webhooks=1", "evt_1UJZmzKF3jvQfgEaoxcjCXRC checkout.session.completed 2026-09-25T14:07:48Z pending_webhooks=1", "evt_1UJvjgKF3jvQfgEaN40KkvtO checkout.session.completed 2026-09-26T13:33:52Z pending_webhooks=1"]
+  },
+  "billing_portal": {
+    "configuration": {"id": "bpc_1TduilKF3jvQfgEasnxtrTSA", "default": true, "subscription_cancel": "enabled, at_period_end, proration none", "subscription_pause": "disabled", "subscription_update": "enabled, price changes, proration none, billing_cycle_anchor unchanged", "allowed_products": "not returned without expand; not verified"},
+    "create-portal-session v1 (Test variant, return_url = v10 Test account.html)": {"signed-in Easy Start subscriber": "200, https://billing.stripe.com/p/session?secret=test_... (Sandbox)", "no Authorization header": "401 UNAUTHORIZED_NO_AUTH_HEADER"}
+  },
+  "defect_found_and_fixed": "invoice.paid / invoice.created read invoice.subscription, which endpoints on API >= 2025-03-31 no longer send (it is parent.subscription_details.subscription). Before the fix: invoice.paid for the 3 new subscriptions returned 200 but did nothing (profiles stayed trial). Fixed in stripe-webhook, deployed to Test as v7.",
+  "subscriptions": {
+    "promo":  "Easy Start monthly + 2026 coupon gWcEql0d",
+    "other":  "Easy Start monthly + unrelated coupon QA_OTHER_SAVE50 (50%)",
+    "life":   "Easy Pro monthly + 2026 coupon gWcEql0d"
+  },
+  "renewals": [
+    {"period": "2026-10-26", "invoices": {"promo": 899, "life": 1349, "other": 499}, "downloads_used_before_to_after": {"promo": "7 -> 0", "life": "12 -> 0"}, "profiles": "trial -> easy_start/easy_pro active via invoice.paid"},
+    {"period": "2026-11-26", "invoices": {"promo": 899, "life": 1349, "other": 499}},
+    {"period": "2026-12-26", "invoices": {"promo": 899, "life": 1349, "other": 499}, "downloads_used_before_to_after": {"promo": "9 -> 0", "other": "17 -> 0", "life": "25 -> 0"}},
+    {"period": "2027-01-26 (first 2027 renewal)", "draft_after_invoice.created": {"promo": "999, coupon removed from subscription and draft", "life": "1499, coupon removed (after one re-delivery, see note)", "other": "499, QA_OTHER_SAVE50 kept"}, "paid": {"promo": 999, "life": 1499, "other": 499}, "downloads_used_before_to_after": {"promo": "4 -> 0", "life": "11 -> 0"}}
+  ],
+  "note_test_clock": "2 of 3 invoice.created deliveries arrived while Stripe was still advancing the test clock; Stripe refused the change ('Test clock advancement underway'), the webhook returned 500 and released its idempotency claim. Stripe's own retry fixed promo; life was re-delivered to the Test endpoint with POST /v1/events/evt_1UK3XvKF3jvQfgEarqvFQRdt/retry and then processed. Only possible with test clocks.",
+  "lifecycle": {
+    "upgrade Easy Pro monthly -> Easy Pro annual (price change)": "profile easy_pro, annual, 30, downloads_used 7 -> 0, subscriptions row easy_pro_annual",
+    "pause": "profile paused, plan/allowance kept",
+    "resume": "profile active",
+    "scheduled cancellation": "profile cancelled, deletion_date 2027-02-26T21:46:14Z (= Stripe period end), plan easy_start/20 kept",
+    "reactivate": "profile active, deletion_date cleared",
+    "scheduled cancellation then clock past period end": "customer.subscription.deleted -> plan free, cancelled, 0 downloads; subscriptions row cancelled/free",
+    "immediate cancellation": "plan free, cancelled, 0 downloads"
+  },
+  "cleanup": {"test_clock_deleted": true, "coupon_QA_OTHER_SAVE50_deleted": true, "disposable_users_deleted": 3, "qa-lc users left": 0, "pg_net": "dropped", "qa-sandbox-price-check": "410 stub again (v13, verify_jwt on)"},
+  "manual_QA_account_33333333-...0156": "unchanged: easy_start active, 1/20 used, 24 purchased, 4 download records, 1 subscriptions row"
+}

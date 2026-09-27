@@ -16,6 +16,7 @@
      LabelRenderer.getPhysicalSpec() (requirement 6) -- it is not used
      for label rendering/export here. -->
 <script src="label-library.js"></script>
+<script src="entitlement.js"></script>
 <script src="label-render.js"></script>
 <style>
 :root{
@@ -601,22 +602,17 @@ async function initPage(){
       // library-loading try/catch above already does for guests.
       try{
         const { data:prof } = await sb.from('profiles')
-          .select('full_name, plan, is_pro, downloads_used, downloads_limit')
+          .select('full_name, plan, is_pro, subscription_status, trial_end, deletion_date, downloads_used, downloads_limit, billing_cycle, downloads_reset_date, topup_credits')
           .eq('id', currentUser.id).maybeSingle();
-        const suUsage=document.getElementById('sidebar-usage');
-        if(suUsage && prof && Number.isFinite(prof.downloads_limit) && prof.downloads_limit>0){
-          suUsage.style.display='block';
-          const suLeft=Math.max(0,prof.downloads_limit-(prof.downloads_used||0));
-          document.getElementById('su-count').textContent=suLeft+' of '+prof.downloads_limit;
-          document.getElementById('su-fill').style.width=Math.min(100,Math.round((suLeft/prof.downloads_limit)*100))+'%';
-        }
+        const ent=prof?window.CLPEntitlement.summarise(prof):null;
+        if(ent)window.CLPEntitlement.renderSidebar(document, ent);
         const suUser=document.getElementById('sidebar-user');
         if(suUser){
           suUser.style.display='flex';
           const suDisplayName=(prof&&prof.full_name)||currentUser.email||'Account';
           document.getElementById('su-avatar').textContent=((prof&&prof.full_name)||currentUser.email||'?').charAt(0).toUpperCase();
           document.getElementById('su-name').textContent=suDisplayName;
-          document.getElementById('su-plan').textContent=(prof&&prof.is_pro)?'Easy Pro':(prof&&prof.plan==='easy_start'?'Easy Start':'Easy Trial');
+          document.getElementById('su-plan').textContent=ent?ent.planName:'Easy Trial';
         }
       }catch(e){ /* sidebar card stays hidden — non-blocking */ }
     }

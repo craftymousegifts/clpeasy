@@ -104,14 +104,14 @@ const dom = new JSDOM(source, {
     // label-library.js is evaluated below.
     try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
     window.eval(labelRendererSource);
-    window.eval(labelLibrarySource);
+    window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
     window.scrollTo = () => {};
     window.fetch = async () => ({ ok:true, json:async()=>({}) });
     // A blocked downloadPDF() must never reach this -- counted so the test
     // can prove zero side effect / nothing "consumed" by a blocked attempt.
-    window.open = () => { windowOpenCalls++; return { document:{ write(){}, close(){} }, location:{ href:'' }, close(){}, opener:null }; };
+    window.open = () => { windowOpenCalls++; return { document:{ open(){}, write(){}, close(){} }, location:{ href:'' }, close(){}, opener:null }; };
     window.URL.createObjectURL = () => 'blob:test';
     window.URL.revokeObjectURL = () => {};
     // A blocked cutting-machine export must never trigger an actual
@@ -155,7 +155,7 @@ setTimeout(async () => {
   try {
     // Force Pro status on so the pre-existing, unrelated subscription gate
     // can't mask what this test is actually checking (the fit-block).
-    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
+    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active',subscription_status:'active',trial_end:null,downloads_used:0,downloads_limit:30,topup_credits:0},error:null});}}),rpc:()=>Promise.resolve({data:{ok:true,consumed:true,free_redownload:false,source:'plan',clean_export:true},error:null})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
 
     // ── Resolve each fixture's stable LabelLibrary-assigned id at runtime
     // -- these fixtures are intentionally id-less (legitimate pre-stable-ID

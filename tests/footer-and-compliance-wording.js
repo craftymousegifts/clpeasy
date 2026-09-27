@@ -26,9 +26,11 @@ assert(!/All CLPeasy labels comply with/i.test(showcaseHtml),
   'showcase.html must not claim CLPeasy labels unconditionally "comply" with UK CLP Regulation');
 assert(!/cannot be omitted/i.test(showcaseHtml),
   'showcase.html must not claim required elements "cannot be omitted" (an absolute guarantee CLPeasy does not make)');
-assert(showcaseHtml.includes('Every CLPeasy label template includes the elements required under UK CLP Regulation (EC) No 1272/2008'),
+// Showcase wording deliberately rewritten by Michaela in 6de95cf ("Correct Showcase GB CLP wording and supported sizes");
+// these positive checks track the current approved wording. The negative overclaim guards are unchanged.
+assert(showcaseHtml.includes('CLPeasy provides fields for the core GB CLP labelling elements and applies them from the information you provide. Which elements are required depends on the product and its classification.'),
   'showcase.html must describe the template (not the finished, unverified label) as including the required elements');
-assert(showcaseHtml.includes('You remain responsible for verifying hazard data against your actual SDS at your specific fragrance load before printing'),
+assert(showcaseHtml.includes('You remain responsible for verifying the label against your current SDS at the fragrance load you use before printing.'),
   'showcase.html must retain the user-responsibility disclaimer alongside the CLP Regulation note');
 
 // ── builder.html: "let CLPeasy handle the compliance" overclaim ─────────
@@ -43,19 +45,19 @@ assert(builderHtml.includes('Build your CLP label step by step. Add your product
 // compliance-law-note, not the four c-desc/section-sub items above it)
 assert(!/you never have to look anything up manually/i.test(showcaseHtml),
   'showcase.html must not claim the user never has to check anything (CLPeasy assists extraction, it does not remove the need to verify)');
-assert(showcaseHtml.includes('CLPeasy helps you extract and format them from your SDS Section 2.2 data — always check the result against your current SDS before printing'),
+assert(showcaseHtml.includes('CLPeasy helps you extract and format applicable information from your SDS data — always check the result against your current SDS at the fragrance load you use before printing.'),
   'showcase.html intro must describe CLPeasy as helping extract/format data, with an explicit check-before-printing instruction');
 assert(!/The correct hazard diamond symbols auto-selected/i.test(showcaseHtml),
   'showcase.html must not claim pictogram selection is unconditionally "correct" (implies infallibility)');
-assert(showcaseHtml.includes('Hazard diamond symbols selected to match your SDS Section 2.2 data'),
+assert(showcaseHtml.includes('Hazard pictograms selected from the SDS data you provide, where applicable to the product\'s classification'),
   'showcase.html must describe pictograms as matching the SDS data provided, not as guaranteed "correct"');
 assert(!/CLPeasy will never apply the wrong signal word/i.test(showcaseHtml),
   'showcase.html must not claim CLPeasy will "never" get the signal word wrong (an infallibility guarantee)');
-assert(showcaseHtml.includes('WARNING or DANGER — determined from your SDS data using the GB CLP signal-word rules. Always verify against your current SDS'),
+assert(showcaseHtml.includes('WARNING or DANGER where applicable — determined from the SDS data you provide using the GB CLP signal-word rules. Always verify against your current SDS'),
   'showcase.html must describe the signal word as rule-derived, with a verify instruction, not an infallibility claim');
 assert(!/EUH208 "Contains \[allergen\]" added automatically when your SDS requires it/i.test(showcaseHtml),
   'showcase.html must not claim CLPeasy infallibly knows when your SDS "requires" EUH208');
-assert(showcaseHtml.includes('EUH208 "Contains [allergen]" added based on the sensitiser data you provide'),
+assert(showcaseHtml.includes('EUH208 supplemental information added where applicable from the sensitiser data you provide'),
   'showcase.html must describe EUH208 as driven by the sensitiser data the user provides');
 
 // ── plan-picker.html: "always correct" quiz-result overclaim ────────────
