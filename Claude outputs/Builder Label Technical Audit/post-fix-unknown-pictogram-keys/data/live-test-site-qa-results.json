@@ -1,0 +1,90 @@
+{
+ "site": "https://clpeasy-circle-fit-test.netlify.app",
+ "deploy": "6ab9478eb824cd05f6ed64a0",
+ "commit": "e1c0a32",
+ "signedOut": true,
+ "rows": [
+  {
+   "id": "BUILDER desktop",
+   "opened": {
+    "step": 5,
+    "pictos": [
+     "exclamation",
+     "skul"
+    ],
+    "allowed": false,
+    "anyExportEnabled": false,
+    "note": "⚠️ Download unavailable — a saved pictogram was not recognised Pictogram 'skul' was not recognised. Re-check the hazards in Step 3. CLPeasy has blocked the download rather than print a different pictogram. In Step 3, extract your supplier SDS Section 2.2 again",
+    "overlay": true
+   },
+   "refusals": 8,
+   "allNameKey": true,
+   "downloadsOrOpens": {
+    "anchor": 0,
+    "open": 0
+   },
+   "repaired": {
+    "step": 5,
+    "pictos": [
+     "exclamation",
+     "skull"
+    ],
+    "allowed": true,
+    "storedStillUnchanged": true
+   }
+  },
+  {
+   "id": "BUILDER mobile",
+   "opened": {
+    "step": 5,
+    "pictos": [
+     "exclamation",
+     "skul"
+    ],
+    "allowed": false,
+    "anyExportEnabled": false,
+    "note": "⚠️ Download unavailable — a saved pictogram was not recognised Pictogram 'skul' was not recognised. Re-check the hazards in Step 3. CLPeasy has blocked the download rather than print a different pictogram. In Step 3, extract your supplier SDS Section 2.2 again",
+    "overlay": true
+   },
+   "refusals": 8,
+   "allNameKey": true,
+   "downloadsOrOpens": {
+    "anchor": 0,
+    "open": 0
+   },
+   "repaired": {
+    "step": 5,
+    "pictos": [
+     "exclamation",
+     "skull"
+    ],
+    "allowed": true,
+    "storedStillUnchanged": true
+   }
+  },
+  {
+   "id": "COMPOSER",
+   "out": [
+    {
+     "label": "Old Label",
+     "fitIssues": [
+      "Pictogram 'skul' was not recognised. Open this label in the Builder and re-check the hazards in Step 3."
+     ],
+     "exportBlocked": true,
+     "panel": "⚠ 1 label on this sheet doesn't fit and must be fixed before you can print or download this sheet. Old Label Pictogram 'skul' was not recognised. Open this label in the Builder and re-check the hazard"
+    },
+    {
+     "label": "Valid Label",
+     "fitIssues": [
+      "Pictogram 'skul' was not recognised. Open this label in the Builder and re-check the hazards in Step 3."
+     ],
+     "exportBlocked": true,
+     "panel": "⚠ 1 label on this sheet doesn't fit and must be fixed before you can print or download this sheet. Old Label Pictogram 'skul' was not recognised. Open this label in the Builder and re-check the hazard"
+    }
+   ],
+   "recordsUnchanged": true
+  }
+ ],
+ "pageErrors": [],
+ "blockedWrites": []
+}

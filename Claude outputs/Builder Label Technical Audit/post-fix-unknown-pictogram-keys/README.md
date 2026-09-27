@@ -52,6 +52,22 @@ Before and after: `data/before-after-renderer.json`.
   - the stored record stays unchanged **until the maker explicitly saves**. Saving then stores the repaired list.
 - **Composer:** corrupted labels (`'skul'` and blank) are blocked and named ("Open this label in the Builder and re-check the hazards in Step 3."), with no size advice. PDF, ZIP and PNG all refuse, a valid control label prints, and the records are unchanged.
 
+## Signed-out QA on the test site (`e1c0a32`, deploy `6ab9478eb824cd05f6ed64a0`)
+
+Results are in `data/live-test-site-qa-results.json` and `screenshots/live__*.png`.
+
+- **Builder, desktop and mobile.** A corrupted saved label (H301 + H317, `['exclamation','skul']`) in the signed-out guest library, opened the real way:
+  - it lands at Step 5, **blocked**, with every export button disabled;
+  - the note and the preview overlay name `'skul'`;
+  - **8 of 8** export attempts were refused, each naming the key, with 0 downloads or windows opened;
+  - opening it doesn't repair the list.
+  - **Recovery:** Step 3 → clear hazard data, extract Section 2.2 again. The list becomes skull + exclamation, and the label reaches Step 5 exportable. The stored record is unchanged until an explicit save.
+- **Composer:** the corrupted label is blocked with "Pictogram 'skul' was not recognised. Open this label in the Builder and re-check the hazards in Step 3." There's no size advice, export is blocked, the valid control label has no issue of its own, and the records are unchanged.
+- **No page errors, and no blocked write attempts.**
+- **Observed, pre-existing and unchanged:**
+  - the Composer's issues-panel heading ("…doesn't fit and must be fixed…") is its generic heading for every blocked label, including the existing unknown-H-code blocks; the per-label reason underneath is specific;
+  - "Save to my label library" is disabled while a label is blocked (the existing save rule). It works again once the label is repaired.
+
 ## Regression
 
 - **Issues #1–#6:** all pass, as do the real Nikura fixtures (`data/*-output.txt`).
