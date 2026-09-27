@@ -64,6 +64,10 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
 .pro-badge-pill{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#D97706,#DC2626);color:white;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.5px;white-space:nowrap;}
 
 .card-icon{font-size:26px;margin-bottom:12px;display:block;}
+/* Repo-native SVG card icons (Pay As You Go, Easy Start): same 31px box as the
+   emoji icons so card names stay aligned. */
+.card-icon-svg{height:31px;line-height:0;}
+.card-icon-svg svg{display:block;width:33px;height:33px;margin-top:-1px;overflow:visible;}
 .card-name{font-family:'DM Serif Display',serif;font-size:23px;margin-bottom:5px;color:var(--text);}
 .pro-card .card-name{color:white;}
 .card-desc{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.5;}
@@ -241,7 +245,7 @@ footer a{color:#6B7280;text-decoration:none;}
     <!-- 2: PAY AS YOU GO -->
     <div class="card payg-card" id="payg" aria-labelledby="payg-label">
       <div class="payg-badge-pill" id="payg-label">Pay As You Go</div>
-      <span class="card-icon">&#127991;&#65039;</span>
+      <span class="card-icon card-icon-svg"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="1.5" y="7" width="21.5" height="18" rx="3" fill="#D6EEF4" stroke="#3A7D8F" stroke-width="2"/><rect x="2.5" y="11" width="19.5" height="3.2" fill="#3A7D8F"/><rect x="5" y="17.6" width="6.2" height="4" rx="1" fill="#4C9BB0"/><path d="M25.4 13a4.3 4.3 0 0 1 0 6M28 10.6a7.6 7.6 0 0 1 0 10.8M30.6 8.2a11 11 0 0 1 0 15.6" fill="none" stroke="#4C9BB0" stroke-width="2.2" stroke-linecap="round"/></svg></span>
       <div class="card-name">Pay As You Go</div>
       <div class="card-desc">Buy downloads only when you need them. One-off payment. No subscription.</div>
       <div class="price-row"><div class="price-amount">&pound;4.99</div><div class="price-period">one-off</div></div>
@@ -259,7 +263,7 @@ footer a{color:#6B7280;text-decoration:none;}
 
     <!-- 3: EASY START -->
     <div class="card featured">
-      <span class="card-icon">🕯️</span>
+      <span class="card-icon card-icon-svg"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="5" y="5" width="22" height="25" rx="3" fill="#D6EEF4" stroke="#3A7D8F" stroke-width="2"/><rect x="10.5" y="2.4" width="11" height="6" rx="1.8" fill="#FFFFFF" stroke="#3A7D8F" stroke-width="2"/><path d="M10.2 18.4l4 4 7.6-8.2" fill="none" stroke="#4C9BB0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
       <div class="card-name">Easy Start™</div>
       <div class="card-desc">Practical tools for makers selling in Great Britain creating organised, print-ready CLP labels from supplier SDS data.</div>
       <div class="price-row"><div class="price-amount" id="maker-price">&pound;8.99</div><div class="price-period" id="maker-period">/mo</div></div><div id="maker-promo" class="offer-block"><span class="offer-badge">2026 offer · 10% off</span><div class="offer-main">£8.99/month until <span style="white-space:nowrap;">31 December 2026</span></div><div class="offer-then">Then £9.99/month</div></div><div id="maker-annual-eq" style="font-size:12px;color:var(--teal-dark);font-weight:700;margin-top:-5px;margin-bottom:10px;display:none;"></div>
@@ -666,6 +670,12 @@ async function initSupabase(){
   const {data:{session}}=await sbClient.auth.getSession();
   if(session){currentUser=session.user;}
   sbReady=true;
+  // Header "Checkout in progress" indicator (checkout-notice.js): shown only
+  // while this browser knows a subscription checkout was started for this
+  // account within the last 5 minutes.
+  if(window.CLPCheckoutNotice&&!document.getElementById('clp-checkout-indicator')){
+    window.CLPCheckoutNotice.mountIndicator(document.querySelector('nav .nav-actions'),()=>currentUser&&currentUser.id);
+  }
 }
 initSupabase();
 
@@ -751,8 +761,10 @@ async function startCheckout(plan){
     });
     const data=await res.json();
     if(data.url){
+      if(window.CLPCheckoutNotice) window.CLPCheckoutNotice.markStarted(currentUser.id);
       window.location.href=data.url;
     } else if(data.code==='CHECKOUT_IN_PROGRESS'){
+      if(window.CLPCheckoutNotice) window.CLPCheckoutNotice.markStarted(currentUser.id);
       // A subscription checkout was started for this account within the last
       // few minutes (server-side duplicate-subscription lock): explain the
       // wait in the shared CLPeasy dialog instead of a browser alert.

@@ -24,6 +24,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.97);backdrop
 .nav-easy{font-size:26px;font-weight:900;color:var(--teal);margin-left:4px;letter-spacing:-1px;}
 .nav-back{font-size:13px;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);transition:all .2s;}
 .nav-back:hover{color:var(--teal);border-color:var(--teal);}
+.nav-actions{display:flex;align-items:center;gap:8px;}
 
 /* LAYOUT */
 .page{max-width:1040px;margin:0 auto;padding:32px 20px 80px;}
@@ -80,6 +81,11 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.97);backdrop
 .summary-amount.free{color:var(--green);font-weight:700;}
 .summary-total-amount{font-size:22px;font-weight:900;color:var(--teal);}
 .summary-note{font-size:11px;color:var(--muted);margin-top:12px;line-height:1.5;text-align:center;}
+.summary-std{display:block;font-size:11px;font-weight:600;color:var(--muted);text-align:right;}
+.summary-row.promo .summary-label{color:#92400E;font-weight:700;}
+.summary-row.promo .summary-amount{color:#166534;font-weight:700;}
+.summary-per{font-size:13px;font-weight:700;}
+.summary-promo-note{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5;}
 .summary-note a{color:var(--teal);}
 .btn-checkout{width:100%;padding:16px;background:var(--teal);color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:16px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
 .btn-checkout:hover{background:var(--teal-dark);}
@@ -114,7 +120,9 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.97);backdrop
     <div class="nav-badge">CLP</div>
     <span class="nav-easy">easy</span>
   </a>
-  <a href="pricing.html" class="nav-back">← Back to pricing</a>
+  <div class="nav-actions">
+    <a href="pricing.html" class="nav-back">← Back to pricing</a>
+  </div>
 </nav>
 
 <div id="loading-overlay" class="loading-overlay">
@@ -196,6 +204,10 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.97);backdrop
           <span class="summary-label plan" id="summary-plan-name">Easy Start Monthly</span>
           <span class="summary-amount" id="summary-plan-price">£9.99/mo</span>
         </div>
+        <div class="summary-row promo" id="summary-promo-row" style="display:none;">
+          <span class="summary-label">2026 offer – 10% off</span>
+          <span class="summary-amount" id="summary-promo-amount">−£1.00</span>
+        </div>
         <div class="summary-row" id="summary-topup-row" style="display:none;">
           <span class="summary-label" id="summary-topup-name">Top-up pack</span>
           <span class="summary-amount" id="summary-topup-price">£3.99</span>
@@ -204,6 +216,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.97);backdrop
           <span>Due today</span>
           <span class="summary-total-amount" id="summary-total">£9.99</span>
         </div>
+        <div class="summary-promo-note" id="summary-promo-note" style="display:none;"></div>
 
         <ul class="feat-list" id="feat-list">
           <!-- Filled by JS -->
@@ -289,6 +302,8 @@ async function init() {
   const { data: { session } } = await sbClient.auth.getSession();
   if (session) {
     currentUser = session.user;
+    // Header "Checkout in progress" indicator (checkout-notice.js).
+    if (window.CLPCheckoutNotice) window.CLPCheckoutNotice.mountIndicator(document.querySelector('nav .nav-actions'), () => currentUser && currentUser.id);
   } else {
     document.getElementById('auth-check').style.display = 'block';
     document.getElementById('btn-checkout').disabled = true;
@@ -351,11 +366,33 @@ function selectTopup(pack) {
   updateSummary();
 }
 
+// ── 2026 MONTHLY PROMOTION ────────────────────────────────────
+// create-checkout-session adds the 2026 coupon (10% off) to Easy Start / Easy
+// Pro MONTHLY checkouts before 1 Jan 2027 (UK = UTC in winter); annual is never
+// discounted. Same boundary as the server and account.html, so this summary
+// matches what Stripe Checkout charges (£8.99 / £13.49) and reverts on its own.
+const PROMO_2026_END_MS = Date.UTC(2027, 0, 1);
+function monthlyPromo(planData) {
+  if (billing !== 'monthly' || Date.now() >= PROMO_2026_END_MS) return null;
+  const pence = Math.round(planData.priceNum * 100);
+  const off = Math.round(pence * 0.10);
+  return { off, due: pence - off };
+}
+const gbp = pence => '£' + (pence / 100).toFixed(2);
+
 // ── UPDATE ORDER SUMMARY ──────────────────────────────────────
 function updateSummary() {
   const planData = PRICES[billing][selectedPlan];
+  const promo = monthlyPromo(planData);
   document.getElementById('summary-plan-name').textContent = planData.label;
-  document.getElementById('summary-plan-price').textContent = planData.monthly;
+  document.getElementById('summary-plan-price').innerHTML = promo
+    ? planData.monthly + '<span class="summary-std">Standard price</span>'
+    : planData.monthly;
+  document.getElementById('summary-promo-row').style.display = promo ? 'flex' : 'none';
+  if (promo) document.getElementById('summary-promo-amount').textContent = '−' + gbp(promo.off);
+  const promoNote = document.getElementById('summary-promo-note');
+  promoNote.style.display = promo ? 'block' : 'none';
+  if (promo) promoNote.textContent = gbp(promo.due) + '/month until 31 December 2026, then ' + planData.price + '/month.';
 
   // Top-up row
   const topupRow = document.getElementById('summary-topup-row');
@@ -368,12 +405,12 @@ function updateSummary() {
     topupRow.style.display = 'none';
   }
 
-  // Due today = plan price + topup (if selected)
-  let total = planData.priceNum;
+  // Due today = plan price (after the 2026 monthly offer) + topup (if selected)
+  let total = promo ? promo.due / 100 : planData.priceNum;
   if (selectedTopup !== 'none') {
     total += TOPUP_PRICES[selectedTopup].price;
   }
-  document.getElementById('summary-total').textContent = '£' + total.toFixed(2);
+  document.getElementById('summary-total').innerHTML = '£' + total.toFixed(2) + (promo && selectedTopup === 'none' ? '<span class="summary-per">/month</span>' : '');
 
   // Feature list
   const feats = FEATURES[selectedPlan];
@@ -430,8 +467,10 @@ async function startCheckout() {
 
     const data = await res.json();
     if (data.url) {
+      if (window.CLPCheckoutNotice) window.CLPCheckoutNotice.markStarted(currentUser.id);
       window.location.href = data.url;
     } else if (data.code === 'CHECKOUT_IN_PROGRESS' || (data.code === 'ALREADY_SUBSCRIBED' && data.error)) {
+      if (data.code === 'CHECKOUT_IN_PROGRESS' && window.CLPCheckoutNotice) window.CLPCheckoutNotice.markStarted(currentUser.id);
       // Expected server refusals, handled like pricing.html instead of the
       // generic failure: a subscription checkout was started for this
       // account within the last few minutes (duplicate-subscription lock),
