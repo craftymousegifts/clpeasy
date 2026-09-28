@@ -204,7 +204,8 @@ const server = http.createServer((req, res) => {
       const more = await t.evaluate(() => { const d = document.querySelector('#dl-print-guidance details'); d.open = true; return d.innerText.replace(/\s+/g, ' '); });
       assert(/How to print this label correctly/.test(more) && /Use: Actual Size or 100%/.test(more) && /Avoid: Fit to page, Shrink or Scale to fit/.test(more), 'expander: Use / Avoid spelled out in words: ' + more);
       assert(/CLPeasy creates the label at the size shown in the Builder\. Your browser, PDF viewer and printer settings can still change the printed size\./.test(more), 'expander: control-boundary note');
-      assert(/Printing this individual label\? Use PDF and print at Actual Size \/ 100%/.test(more) && /Printing several labels on A4\? Use the Print Sheet Composer/.test(more), 'expander: both routes named: ' + more);
+      assert(/Printing this individual label\? Use PDF and print at Actual Size \/ 100%/.test(more), 'expander: individual PDF route: ' + more);
+      assert(!/Printing several labels on A4/.test(more), 'expander must not repeat the Composer line shown in the panel above it');
       assert(!/most reliable printed size/.test(more), 'expander: PDF not presented as the universal route');
       await t.evaluate(() => document.querySelector('#dl-print-guidance .dl-pg-close').click());
       g = await panel(t, 'dl-print-guidance');
