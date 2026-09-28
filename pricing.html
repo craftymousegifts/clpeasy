@@ -181,6 +181,15 @@ footer a{color:#6B7280;text-decoration:none;}
   window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
   plausible.init()
 </script>
+<style>
+/* Signed-in CTAs: while a stored session is being confirmed, hide the trial
+   CTAs so a signed-in visitor never sees "Start free trial" flash. Signed-out
+   visitors (no stored session) never get this class. */
+html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
+</style>
+<script>
+  try { if (localStorage.getItem('sb-qvkosdqcryrcfbjtaxic-auth-token')) document.documentElement.classList.add('clp-auth-pending'); } catch (e) {}
+</script>
 </head>
 <body>
 
@@ -190,7 +199,7 @@ footer a{color:#6B7280;text-decoration:none;}
     <a href="index.html" class="nav-link nav-home">Home</a>
     <a href="compliance.html" class="nav-link" target="_blank" rel="noopener">Compliance</a>
     <a href="support.html" class="nav-link" target="_blank" rel="noopener">Support</a>
-    <a href="auth.html?mode=signup" class="nav-cta">Start free trial</a>
+    <a href="auth.html?mode=signup" class="nav-cta" data-trial-cta="nav">Start free trial</a>
   </div>
 </nav>
 
@@ -225,7 +234,7 @@ footer a{color:#6B7280;text-decoration:none;}
       <div class="card-desc">Full access for 14 days so you can try everything before you commit.</div>
       <div class="price-row"><div class="price-amount">Free</div></div>
       <div class="price-sub">14-day trial &nbsp;&#183;&nbsp; No card needed</div>
-      <a href="auth.html?mode=signup" class="btn btn-outline">Start free trial &#8594;</a>
+      <a href="auth.html?mode=signup" class="btn btn-outline" data-trial-cta>Start free trial &#8594;</a>
       <a href="plan-picker.html" style="display:block;text-decoration:none;background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:2px solid #F59E0B;border-radius:12px;padding:16px 18px;margin-bottom:16px;transition:transform .15s,box-shadow .15s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(245,158,11,0.25)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
         <div style="font-size:13px;font-weight:800;color:#92400E;margin-bottom:4px;">&#129300; Not sure which plan suits you?</div>
         <div style="font-size:12px;color:#78350F;line-height:1.55;margin-bottom:8px;">Answer 5 quick questions about how you work and we'll point you straight to the right plan. Takes less than a minute.</div>
@@ -331,7 +340,7 @@ footer a{color:#6B7280;text-decoration:none;}
     <div style="background:rgba(76,155,176,0.15);border:1px solid rgba(76,155,176,0.3);border-radius:16px;padding:24px 28px;margin-bottom:32px;">
       <p style="font-size:18px;color:white;font-style:italic;line-height:1.7;margin:0;">"Your whole dream shouldn't fall down at the last hurdle because of a label. Relax, design, and create — <strong>we've got you.</strong>"</p>
     </div>
-    <a href="auth.html?mode=signup" style="display:inline-block;background:var(--teal);color:white;padding:14px 32px;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;transition:background .2s;">Start your free 14-day trial →</a>
+    <a href="auth.html?mode=signup" data-trial-cta style="display:inline-block;background:var(--teal);color:white;padding:14px 32px;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;transition:background .2s;">Start your free 14-day trial →</a>
     <p style="font-size:13px;color:rgba(255,255,255,0.4);margin-top:12px;">No credit card required &nbsp;·&nbsp; Cancel anytime</p>
   </div>
 </div>
@@ -486,7 +495,7 @@ footer a{color:#6B7280;text-decoration:none;}
         <div style="font-size:18px;font-weight:700;color:white;margin-bottom:6px;">Practical label tools for less than £2.50 a week.</div>
         <div style="font-size:14px;color:rgba(255,255,255,0.8);line-height:1.6;">That&rsquo;s less than a cup of coffee &mdash; for practical tools that help you build and check labels against your current supplier SDS.</div>
       </div>
-      <a href="auth.html?mode=signup" style="background:white;color:var(--teal);padding:13px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;white-space:nowrap;flex-shrink:0;">Start free trial →</a>
+      <a href="auth.html?mode=signup" data-trial-cta style="background:white;color:var(--teal);padding:13px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;white-space:nowrap;flex-shrink:0;">Start free trial →</a>
     </div>
 
   </div>
@@ -640,6 +649,33 @@ footer a{color:#6B7280;text-decoration:none;}
   <p style="margin-top:8px;">&copy; 2026 CLPeasy™</p>
 </footer>
 
+<script>
+// ── Signed-in trial CTAs (same rule as index.html / knowledge.html) ──
+// A signed-in visitor is never invited to "Start free trial": the header CTA
+// becomes "My account" (account.html) and every other trial CTA becomes
+// "Go to builder →" (builder.html), for every account state. Plan and Pay As
+// You Go buttons are unchanged (the server already enforces who can buy
+// what). Links are marked with data-trial-cta rather than matched by href,
+// because Netlify rewrites auth.html?mode=signup to /auth?mode=signup.
+function applySignedInCtas(signedIn){
+  document.querySelectorAll('[data-trial-cta]').forEach(a=>{
+    if(!a.dataset.origHref){ a.dataset.origHref=a.getAttribute('href'); a.dataset.origHtml=a.innerHTML; }
+    if(signedIn){
+      const nav=a.dataset.trialCta==='nav';
+      a.setAttribute('href',nav?'account.html':'builder.html');
+      a.textContent=nav?'My account':'Go to builder →';
+    } else {
+      a.setAttribute('href',a.dataset.origHref);
+      a.innerHTML=a.dataset.origHtml;
+    }
+  });
+  document.documentElement.classList.remove('clp-auth-pending');
+}
+// A stored session exists: show the signed-in CTAs straight away (no
+// dependency on the Supabase script loading); initSupabase() confirms or
+// reverts them once the session is checked.
+if(document.documentElement.classList.contains('clp-auth-pending')) applySignedInCtas(true);
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="checkout-notice.js"></script>
 <script>
@@ -670,6 +706,7 @@ async function initSupabase(){
   const {data:{session}}=await sbClient.auth.getSession();
   if(session){currentUser=session.user;}
   sbReady=true;
+  applySignedInCtas(!!session);
   // Header "Checkout in progress" indicator (checkout-notice.js): shown only
   // while this browser knows a subscription checkout was started for this
   // account within the last 5 minutes.
