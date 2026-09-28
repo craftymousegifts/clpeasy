@@ -1392,9 +1392,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </details>
       </div>
       <div class="review-download-grid">
-      <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ PNG</button>
+      <button id="btn-png" onclick="downloadPNG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬇ PNG</button>
       <button id="btn-svg" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬡ SVG</button>
-      <button id="btn-pdf" onclick="printToPDF()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">▣ PDF</button>
+      <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-pdf" onclick="printToPDF()">▣ PDF</button>
       </div>
       <div id="dl-print-guidance" class="field-alert field-alert-success dl-print-guidance" role="region" aria-label="What next: printing guidance" hidden></div>
       <button id="btn-save" onclick="saveLabel()" style="background:var(--off);color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">💾 Save to my label library</button>
@@ -1443,7 +1443,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <button type="button" id="clp-code-help-btn" class="clp-code-help-btn" onclick="openClpCodeHelp()">Why is this label blocked?</button>
     <div class="preview-size-info" id="preview-size-info">Print size: 35 × 35mm</div>
     <div class="dl-row" id="preview-dl-row" style="display:none;">
-      <button class="btn-dl" id="btn-png-preview" onclick="downloadPNG()" style="opacity:0.4;pointer-events:none;">⬇ PNG</button>
+      <button class="btn-dl-svg" id="btn-png-preview" onclick="downloadPNG()" style="opacity:0.4;pointer-events:none;">⬇ PNG</button>
       <button class="btn-dl" id="btn-pdf-preview" onclick="printToPDF()" style="opacity:0.4;pointer-events:none;">▣ PDF</button>
       <button class="btn-dl-svg" id="btn-svg-preview" onclick="downloadSVG()" style="opacity:0.4;pointer-events:none;">⬡ SVG</button>
     </div>
@@ -1986,19 +1986,6 @@ async function downloadPrintReadyPDF(){
     .info{font-size:12px;color:#555;line-height:1.6;max-width:500px;text-align:center;}
     .dl{margin-top:12px;padding:10px 20px;background:#4C9BB0;color:white;border:none;border-radius:6px;font-size:14px;cursor:pointer;font-family:Arial;}
     @media print{body{background:white;padding:0;}.info,.dl{display:none;}.card{box-shadow:none;padding:0;}}
-.label-done-splash{position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;background:rgba(13,17,27,0.92);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .35s;pointer-events:none;font-family:'DM Sans',sans-serif;}
-.label-done-splash.show{opacity:1;pointer-events:auto;}
-.label-done-box{background:#1a1f2e;border:1.5px solid rgba(76,155,176,0.4);border-radius:20px;padding:32px 28px 24px;max-width:340px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
-.label-done-icon{font-size:48px;margin-bottom:12px;}
-.label-done-title{font-size:20px;font-weight:700;color:white;margin-bottom:6px;}
-.label-done-sub{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:20px;}
-.label-done-actions{display:flex;flex-direction:column;gap:10px;}
-.label-done-btn{padding:13px 16px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;border:none;transition:all .2s;}
-.label-done-btn.primary{background:var(--teal);color:white;}
-.label-done-btn.primary:hover{background:var(--teal-dark);}
-.label-done-btn.secondary{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.8);border:1px solid rgba(255,255,255,0.12);}
-.label-done-btn.secondary:hover{background:rgba(255,255,255,0.12);}
-.label-done-dismiss{margin-top:14px;font-size:12px;color:rgba(255,255,255,0.25);cursor:pointer;}
 .extract-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1E3A5F;color:white;border-radius:14px;padding:16px 22px;min-width:280px;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,0.25);z-index:9999;opacity:0;transition:all .3s ease;pointer-events:none;font-family:'DM Sans',sans-serif;}
 .extract-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .extract-toast-title{font-size:15px;font-weight:700;color:#4ADE80;margin-bottom:8px;}

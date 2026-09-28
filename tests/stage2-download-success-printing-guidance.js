@@ -40,6 +40,14 @@ assert.ok(/PNG<\/strong> — a high-resolution image[^<]*isn't the best choice f
 for (const src of [builder, print]) assert.ok(!/PNG[^.<]{0,60}prints? at the correct size/i.test(src), 'never says PNG prints at the correct size');
 ok('Step 5 format guidance: PDF recommended, SVG for design/cutting software, PNG not the exact-size print route');
 
+// Visual hierarchy agrees with the guidance: PDF is the primary (filled) action,
+// PNG a secondary (outlined) one -- in Step 5 and in the preview-panel row.
+const tagOf = id => (builder.match(new RegExp('<button[^>]*id="' + id + '"[^>]*>')) || [''])[0];
+assert.ok(/class="btn-next"/.test(tagOf('btn-pdf')), 'Step 5 PDF uses the primary button style');
+assert.ok(!/btn-next/.test(tagOf('btn-png')) && /background:white/.test(tagOf('btn-png')), 'Step 5 PNG uses the secondary (outlined) style');
+assert.ok(/class="btn-dl"/.test(tagOf('btn-pdf-preview')) && /class="btn-dl-svg"/.test(tagOf('btn-png-preview')), 'preview row: PDF primary, PNG secondary');
+ok('PDF is the visually primary print action; PNG is secondary (Step 5 + preview row)');
+
 assert.ok(!/will not print/i.test(builder), 'old "will not print" cut-line wording gone');
 assert.ok(/dashed line is a cut guide and it <strong>does print<\/strong>/.test(builder), 'cut line described as printing');
 ok('Help: dashed cut line is described accurately (it prints)');
