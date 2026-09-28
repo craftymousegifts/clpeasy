@@ -5,7 +5,8 @@
 // and drives the REAL builder.html / print.html. Proves:
 //   - a successful save shows a visible, accessible confirmation that goes
 //     away by itself, and a failed save shows none;
-//   - download guidance is format-specific (PDF recommended; PNG explicitly
+//   - download guidance is format-specific (two neutral routes: PDF for a
+//     single label, Print Sheet Composer for several on A4; PNG explicitly
 //     NOT presented as the exact-size print route; SVG keeps mm) and can be
 //     dismissed;
 //   - Step 5 format help, Help Guide printing section and Guide Me prompt say
@@ -46,10 +47,12 @@ function ok(label) { passed++; console.log('PASS:', label); }
   assert(!/Avery Sheet/i.test(prompt), 'Guide Me must not offer the removed "Avery Sheet" export');
   assert(!/Print Shop PDF/i.test(prompt), 'Guide Me must not offer the removed "Print Shop PDF" export');
   assert(!/PNG[^\n]*(home printing|printing at home|plain paper)/i.test(prompt), 'Guide Me must not recommend PNG for home printing');
-  assert(/PDF[^\n]*Recommended for printing a single label at home/i.test(prompt), 'Guide Me must recommend PDF for exact-size home printing');
+  assert(/PDF[^\n]*individual label file/i.test(prompt) && /one individual label → ▣ PDF/.test(prompt) && /several labels arranged on A4 → Print Sheet Composer/.test(prompt), 'Guide Me must distinguish single label (PDF) from several on A4 (Composer)');
+  assert(/neither is the default for everyone/i.test(prompt), 'Guide Me must not present either route as the universal default');
+  assert(!/Recommended for printing a single label at home/i.test(prompt), 'Guide Me must not present PDF as the home-printing route');
   assert(/PNG[^\n]*does not store a print size/i.test(prompt), 'Guide Me must explain PNG has no stored print size');
   assert(/Actual Size \/ 100%/.test(prompt) && /Fit to page/.test(prompt), 'Guide Me must know the Actual Size / avoid Fit to page rule');
-  ok('Guide Me: obsolete Avery Sheet / Print Shop PDF / PNG-for-printing advice gone; PDF recommended; scaling rule present');
+  ok('Guide Me: obsolete Avery Sheet / Print Shop PDF / PNG-for-printing advice gone; two routes (PDF single / Composer several on A4); scaling rule present');
 
   assert(!/will not print/i.test(builderSrc), 'the Help Guide must no longer say the dashed line "will not print"');
   assert(/dashed line is the cut guide border[^<]*<strong>does print<\/strong>/i.test(builderSrc), 'the Help Guide must say the dashed cut guide does print');
@@ -145,11 +148,13 @@ const server = http.createServer((req, res) => {
       await readyBuilder(t);
       const fh = await t.evaluate(() => { const e = document.getElementById('dl-format-help'); return { shown: e.offsetParent !== null, text: e.innerText.replace(/\s+/g, ' ') }; });
       assert(fh.shown, 'Step 5 format help visible');
-      assert(/Printing at home\? Choose PDF/.test(fh.text), 'PDF recommended for printing at home: ' + fh.text);
+      assert(/Printing your labels\? For a single label, use PDF\. For several labels on A4, use the Print Sheet Composer\. Always print at Actual Size \/ 100%/.test(fh.text), 'two neutral routes: ' + fh.text);
+      assert(!/most reliable printed size|Printing at home\? Choose PDF/.test(fh.text), 'PDF must not be presented as the home-printing route');
+      assert(/PDF is an individual label file/.test(fh.text), 'PDF described as an individual label file');
       assert(/Actual Size \/ 100%/.test(fh.text), 'Step 5 mentions Actual Size / 100%');
-      assert(/PNG[^.]*high-resolution image/.test(fh.text) && /may choose its own print size/.test(fh.text) && /isn't the best choice for exact-size printing/.test(fh.text), 'PNG explained, not preferred: ' + fh.text);
+      assert(/PNG[^.]*high-resolution image/.test(fh.text) && /may choose its own print size/.test(fh.text), 'PNG explained (app may choose print size): ' + fh.text);
       assert(!/PNG[^.]*(prints at the correct size|correct print size)/i.test(fh.text), 'PNG never claimed to print at the correct size');
-      ok('Step 5 format help: PDF recommended, SVG keeps mm, PNG explicitly not the exact-size route');
+      ok('Step 5 format help: single label → PDF, several on A4 → Composer, Actual Size / 100%; SVG keeps mm; PNG size set by the app');
 
       // ── Save: visible confirmation, auto-hides ───────────────────────
       let s = await panel(t, 'save-status');
@@ -179,7 +184,7 @@ const server = http.createServer((req, res) => {
       assert(await waitFor(t, () => window.__downloads.some(d => /\.png$/.test(d))), 'PNG handed over');
       let g = await panel(t, 'dl-print-guidance');
       assert(g.shown && g.text.startsWith('✓ Label downloaded'), g.text);
-      assert(/PNG files don't store a print size/.test(g.text) && /use PDF/.test(g.text), 'PNG guidance points to PDF: ' + g.text);
+      assert(/PNG files don't store a print size/.test(g.text) && /For an individual exact-size print, use PDF\. For several labels on A4, use the Print Sheet Composer\./.test(g.text), 'PNG guidance names both routes: ' + g.text);
       ok('PNG download: approved confirmation + "PNG files don\'t store a print size ... use PDF"');
 
       await t.evaluate(() => downloadSVG());
@@ -193,10 +198,14 @@ const server = http.createServer((req, res) => {
       const pop = await popupP;
       await sleep(800);
       g = await panel(t, 'dl-print-guidance');
-      assert(/Your label is 60 × 60 mm/.test(g.text) && /ordinary paper/.test(g.text) && /ruler/.test(g.text), 'PDF guidance: size + test print: ' + g.text);
+      assert(/This PDF is an individual label file at 60 × 60 mm/.test(g.text) && /ordinary paper/.test(g.text) && /ruler/.test(g.text), 'PDF guidance: individual file + size + test print: ' + g.text);
+      assert(/Printing several labels on A4\? Use the Print Sheet Composer\./.test(g.text), 'PDF panel mentions the Composer for several labels: ' + g.text);
+      assert(!/should have used|instead of PDF/i.test(g.text), 'PDF panel must not tell the user they chose wrongly');
       const more = await t.evaluate(() => { const d = document.querySelector('#dl-print-guidance details'); d.open = true; return d.innerText.replace(/\s+/g, ' '); });
       assert(/How to print this label correctly/.test(more) && /Use: Actual Size or 100%/.test(more) && /Avoid: Fit to page, Shrink or Scale to fit/.test(more), 'expander: Use / Avoid spelled out in words: ' + more);
       assert(/CLPeasy creates the label at the size shown in the Builder\. Your browser, PDF viewer and printer settings can still change the printed size\./.test(more), 'expander: control-boundary note');
+      assert(/Printing this individual label\? Use PDF and print at Actual Size \/ 100%/.test(more) && /Printing several labels on A4\? Use the Print Sheet Composer/.test(more), 'expander: both routes named: ' + more);
+      assert(!/most reliable printed size/.test(more), 'expander: PDF not presented as the universal route');
       await t.evaluate(() => document.querySelector('#dl-print-guidance .dl-pg-close').click());
       g = await panel(t, 'dl-print-guidance');
       assert.strictEqual(g.shown, false, 'Dismiss hides the guidance');

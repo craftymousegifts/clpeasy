@@ -467,8 +467,11 @@ place them off the A4 page.
   stored print size so use PDF; SVG keeps mm), a collapsed "How to print
   this label correctly" list, the "CLPeasy creates the label at the size
   shown..." note, and a Dismiss button.
-- Step 5 `#dl-format-help`: PDF recommended for printing at home; SVG for
-  design/cutting software; PNG not the exact-size route.
+- Step 5 `#dl-format-help` (revised 28 Sep 2026, owner decision): two
+  neutral routes — single label: PDF; several labels on A4: Print Sheet
+  Composer; always Actual Size / 100%. Neither is presented as the default.
+  SVG for design/cutting software; PNG's print size is set by the app.
+  Composer-first (a Step 5 "Print labels" action) is deferred to Stage 3.
 - Print windows (single label and Composer A4): screen-only
   "Important when printing" note (hidden in `@media print`) plus a viewport
   meta (and, for the A4 window, screen-only fit-to-screen CSS) so phones
@@ -480,5 +483,5 @@ place them off the A4 page.
 - Help Guide: dashed cut line now described as printing (was "will not
   print"); new "Printing your CLPeasy labels" section.
 - Guide Me prompt: removed Avery Sheet / Print Shop PDF / PNG-for-printing
-  advice; PDF recommended; Composer and cutting-machine PNGs described.
+  advice; distinguishes single label (PDF) from several on A4 (Composer); cutting-machine PNGs described.
 - Tests: `tests/stage2-print-guidance.js` (new, in `npm test`).

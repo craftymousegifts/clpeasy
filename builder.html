@@ -970,11 +970,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <!-- Stage 2 (27 Sep 2026): short printing guide. -->
     <div class="help-section" id="help-printing">
       <h3>Printing your CLPeasy labels</h3>
-      <details class="help-faq"><summary>Printing a single label</summary><p>Download <strong>PDF</strong> in Step 5 and click <strong>Print / Save as PDF</strong>. In the print settings choose <strong>Actual Size</strong> or <strong>100%</strong>, and turn off <strong>Fit to page</strong>, <strong>Shrink</strong> or <strong>Scale to fit</strong>. The exact wording varies between browsers, PDF viewers and printers.</p></details>
-      <details class="help-faq"><summary>Printing a sheet of labels</summary><p>Save each label, then open the <strong>Print Sheet Composer</strong>. It keeps every label at its saved size and lays them out on A4. Set your printer to <strong>A4</strong> paper and print at <strong>Actual Size / 100%</strong>, not Fit to page or Shrink.</p></details>
-      <details class="help-faq"><summary>Choosing a file format</summary><p><strong>PDF</strong>: best for printing at the label's real size. <strong>SVG</strong>: keeps the size in millimetres, for design and cutting-machine software. <strong>PNG</strong>: a high-resolution image; it doesn't store a print size, so the app you print it from may choose its own size.</p></details>
+      <details class="help-faq"><summary>Printing a single label</summary><p>For a single label, download <strong>PDF</strong> in Step 5 and click <strong>Print / Save as PDF</strong>. In the print settings choose <strong>Actual Size</strong> or <strong>100%</strong>, and turn off <strong>Fit to page</strong>, <strong>Shrink</strong> or <strong>Scale to fit</strong>. The exact wording varies between browsers, PDF viewers and printers.</p></details>
+      <details class="help-faq"><summary>Printing a sheet of labels</summary><p>For several labels on A4, save each label, then open the <strong>Print Sheet Composer</strong> and choose how many of each you need. It keeps every label at its saved size and lays them out on A4. Set your printer to <strong>A4</strong> paper and print at <strong>Actual Size / 100%</strong>, not Fit to page or Shrink.</p></details>
+      <details class="help-faq"><summary>Choosing a file format</summary><p><strong>PDF</strong>: an individual label file at its exact size, for printing a single label. For several labels on A4, use the <strong>Print Sheet Composer</strong>. <strong>SVG</strong>: keeps the size in millimetres, for design and cutting-machine software. <strong>PNG</strong>: a high-resolution image; it doesn't store a print size, so the app you print it from may choose its own size.</p></details>
       <details class="help-faq"><summary>First print check</summary><p>The first time you print, use ordinary paper and measure one label with a ruler. It should match the size shown in CLPeasy. For a sheet, also hold the test print against your label sheet to check the labels line up before using your label stock.</p></details>
-      <details class="help-faq"><summary>My label printed too large or too small</summary><p>Check the print scale is <strong>Actual Size / 100%</strong> and that Fit to page, Shrink or Scale to fit is turned off. If you printed a PNG, use PDF instead for a more reliable printed size.</p></details>
+      <details class="help-faq"><summary>My label printed too large or too small</summary><p>Check the print scale is <strong>Actual Size / 100%</strong> and that Fit to page, Shrink or Scale to fit is turned off. If you printed a PNG, use PDF (single label) or the Print Sheet Composer (several labels on A4) instead for a more reliable printed size.</p></details>
       <details class="help-faq"><summary>My sheet doesn't line up with my label sheet</summary><p>Check the printer's paper size is A4 and the scale is Actual Size / 100%, then test on ordinary paper again. CLPeasy creates the file at the correct size, but your browser, PDF viewer and printer settings can still change how it prints.</p></details>
     </div>
 
@@ -1370,12 +1370,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button id="btn-svg" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬡ SVG</button>
       <button id="btn-pdf" onclick="printToPDF()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">▣ PDF</button>
       </div>
-      <!-- Stage 2: which format to choose (PDF for exact-size home printing). -->
+      <!-- Stage 2: the two current printing routes (single label: PDF; several on A4: Print Sheet Composer). -->
       <div class="dl-format-help" id="dl-format-help">
-        <p><strong>Printing at home?</strong> Choose <strong>PDF</strong> for the most reliable printed size, then print at <strong>Actual Size / 100%</strong>.</p>
+        <p><strong>Printing your labels?</strong> For a single label, use <strong>PDF</strong>. For several labels on A4, use the <strong>Print Sheet Composer</strong>. Always print at <strong>Actual Size / 100%</strong>.</p>
         <ul>
+          <li><strong>PDF</strong> is an individual label file at the label's exact size.</li>
           <li><strong>SVG</strong> keeps the label's size in millimetres, for design and cutting-machine software.</li>
-          <li><strong>PNG</strong> is a high-resolution image. The app you print it from may choose its own print size, so it isn't the best choice for exact-size printing.</li>
+          <li><strong>PNG</strong> is a high-resolution image. The app you open it in may choose its own print size.</li>
         </ul>
       </div>
       <div id="dl-print-guidance" class="field-alert field-alert-success dl-print-guidance" role="status" aria-live="polite" hidden></div>
@@ -1489,7 +1490,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div style="margin-top:8px;">
 
     </div>
-    <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.3);text-align:center;">Printing at home? Use PDF in Step 5 · SVG for cutting machines · PNG as an image</div>
+    <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.3);text-align:center;">Single label: PDF in Step 5 · Several on A4: Print Sheet Composer · SVG for cutting machines</div>
     <div style="margin-top:12px;text-align:center;"><button onclick="closeSheet()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:8px;">Hide label</button></div>
   </div>
 </div>
@@ -2581,20 +2582,21 @@ function showPrintGuidance(kind){
   if(!el||!currentUser)return;
   const d=getDims(), size=d.mmW+' × '+d.mmH+' mm';
   const extra={
-    pdf:'<p>Your label is <strong>'+size+'</strong>. First time printing? Test on ordinary paper and measure the label with a ruler before using your label stock.</p>',
-    png:'<p><strong>PNG files don\'t store a print size</strong>, so the app you print from may choose its own size. To print at '+size+', use <strong>PDF</strong>.</p>',
+    pdf:'<p>This PDF is an individual label file at <strong>'+size+'</strong>. First time printing? Test on ordinary paper and measure the label with a ruler before using your label stock.</p>'+
+      '<p>Printing several labels on A4? Use the <a href="print.html" target="_blank" rel="noopener">Print Sheet Composer</a>.</p>',
+    png:'<p><strong>PNG files don\'t store a print size</strong>, so the app you print from may choose its own size. For an individual exact-size print, use <strong>PDF</strong>. For several labels on A4, use the <strong>Print Sheet Composer</strong>.</p>',
     svg:'<p>Your SVG is saved at <strong>'+size+'</strong> for design or cutting-machine software. After importing it, check it still shows '+size+'.</p>'
   }[kind]||'';
   el.innerHTML='<span class="dl-pg-icon" aria-hidden="true">✓</span><div><strong>Label downloaded</strong>'+
     '<p>Now load your chosen label paper or sheet into your printer. Print at <strong>100% / Actual Size</strong> to preserve the label dimensions.</p>'+
     extra+
     '<details class="dl-pg-more"><summary>How to print this label correctly</summary><ul>'+
-      '<li>Use <strong>PDF</strong> for the most reliable printed size.</li>'+
+      '<li>Printing this individual label? Use <strong>PDF</strong> and print at Actual Size / 100%.</li>'+
+      '<li>Printing several labels on A4? Use the <a href="print.html" target="_blank" rel="noopener">Print Sheet Composer</a>.</li>'+
       '<li><strong>Use:</strong> Actual Size or 100% in the print settings. The exact wording varies between browsers, PDF viewers and printers.</li>'+
       '<li><strong>Avoid:</strong> Fit to page, Shrink or Scale to fit. These can make the label bigger or smaller.</li>'+
       '<li>Check your paper or label stock is loaded the right way round.</li>'+
       '<li>First time? Print on ordinary paper and measure the label with a ruler. It should measure '+size+'.</li>'+
-      '<li>Printing several labels on one sheet? Use the <a href="print.html" target="_blank" rel="noopener">Print Sheet Composer</a>.</li>'+
     '</ul><p class="dl-pg-note">CLPeasy creates the label at the size shown in the Builder. Your browser, PDF viewer and printer settings can still change the printed size.</p></details>'+
     '</div><button type="button" class="dl-pg-close" onclick="hidePrintGuidance()" aria-label="Dismiss printing guidance">Dismiss</button>';
   el.hidden=false;
@@ -5445,9 +5447,10 @@ CLPeasy has these features:
 - BUILDER (builder.html): 5-step workflow — Step 1 Label shape, dimensions and appearance; Step 2 Product details; Step 3 Hazards and SDS Section 2.2 extraction; Step 4 Business details; Step 5 Download with PNG, PDF and SVG. Label fit uses the dimensions selected at the beginning in Step 1.
 - PRINT SHEET COMPOSER (print.html): arrange saved labels (one shape and size per sheet; different designs allowed) on an A4 sheet — Custom sheet or the EU30009 template — and set quantities. Labels always keep their saved physical size. "Print / Save as PDF" opens the A4 sheet for printing; "Download for cutting machine" gives individual PNGs (one per label, as a ZIP or one by one)
 - DOWNLOAD OPTIONS (builder Step 5 and preview panel) — only these three:
-  • ▣ PDF — opens the label at its exact size for printing or saving as PDF. Recommended for printing a single label at home at its intended size
+  • ▣ PDF — an individual label file at its exact size (opens for printing or saving as PDF). Use it for a single label, a label printer, or when one label file is needed
   • ⬡ SVG — vector file that keeps the label's size in mm, for design and cutting-machine software
   • ⬇ PNG — high-resolution image (e.g. for Canva). A PNG does not store a print size, so the app used to print it may choose its own size — not the recommended route for exact-size printing
+- CHOOSING A PRINTING ROUTE: neither is the default for everyone — one individual label → ▣ PDF; several labels arranged on A4 → Print Sheet Composer; design or cutting-machine workflow → ⬡ SVG or the Composer's "Download for cutting machine" PNGs
 - PRINTING AT THE RIGHT SIZE: print at Actual Size / 100% and turn off Fit to page, Shrink or Scale to fit (wording varies by browser, PDF viewer and printer). First time: test on ordinary paper and measure a label with a ruler before using label stock. CLPeasy creates the file at the correct size but cannot control the user's printer settings
 
 CRITICAL RULES:
