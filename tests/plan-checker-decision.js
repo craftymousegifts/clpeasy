@@ -1,10 +1,13 @@
-// Plan Checker (Sep 2026 audit, approved 3-question model).
-//  1. All 36 answer combinations → exact recommended plan and rule.
-//  2. Invariants: explicit PAYG preference never overridden; "not sure" and
-//     occasional use never give Easy Pro; promotions and account state never
-//     change the recommendation.
+// Plan Checker (Sep 2026 audit, approved branching model).
+//  1. Branching: path(), prune(), complete(), usage() and all 27 valid paths
+//     → exact recommended plan and rule.
+//  2. Invariants: explicit PAYG preference never overridden; "just getting
+//     started" and occasional use never give Easy Pro; promotions and account
+//     state never change the recommendation.
 //  3. Account-state calls-to-action from the shared CLPEntitlement summary.
-//  4. The real plan-picker.html page, driven in jsdom with a mocked Supabase.
+//  4. The real plan-picker.html page in jsdom with a mocked Supabase:
+//     auto-advance, no Next buttons, Back along the real branch, cleared
+//     downstream answers, no premature result, CTAs per account state.
 // Run from repo root: node tests/plan-checker-decision.js
 'use strict';
 const fs = require('fs');
@@ -16,70 +19,100 @@ const ENT = require('../entitlement.js');
 const DAY = 86400000;
 const future = new Date(Date.now() + 10 * DAY).toISOString();
 const past = new Date(Date.now() - 2 * DAY).toISOString();
+const key = a => [a.frequency, a.labels || '-', a.printing || '-', a.payment].join('|');
 
-// ── 1. Exact 36-combination table (final proof pass) ────────────────────
-// key: volume|frequency|payment → [plan, rule]
+// ── 1. Branching ─────────────────────────────────────────────────────────
+assert.deepStrictEqual(PC.path({}), ['frequency', 'payment']);
+assert.deepStrictEqual(PC.path({ frequency: 'notsure' }), ['frequency', 'payment'], 'just starting: no usage questions');
+assert.deepStrictEqual(PC.path({ frequency: 'occasional' }), ['frequency', 'payment'], 'occasional: no usage questions');
+assert.deepStrictEqual(PC.path({ frequency: 'ongoing' }), ['frequency', 'labels', 'payment']);
+assert.deepStrictEqual(PC.path({ frequency: 'ongoing', labels: 'upto10' }), ['frequency', 'labels', 'payment'], 'up to 10: no printing question');
+assert.deepStrictEqual(PC.path({ frequency: 'ongoing', labels: '11to20' }), ['frequency', 'labels', 'printing', 'payment']);
+assert.deepStrictEqual(PC.path({ frequency: 'ongoing', labels: 'over20' }), ['frequency', 'labels', 'printing', 'payment']);
+assert.deepStrictEqual(PC.prune({ frequency: 'occasional', labels: 'over20', printing: 'separate', payment: 'none' }), { frequency: 'occasional', payment: 'none' },
+  'changing to occasional clears the usage answers');
+assert.deepStrictEqual(PC.prune({ frequency: 'ongoing', labels: 'upto10', printing: 'separate', payment: 'none' }), { frequency: 'ongoing', labels: 'upto10', payment: 'none' },
+  'changing to up to 10 clears the printing answer');
+assert.strictEqual(PC.complete({ frequency: 'ongoing', payment: 'none' }), false);
+assert.strictEqual(PC.complete({ frequency: 'ongoing', labels: 'over20', payment: 'none' }), false, 'printing required for more than 10');
+assert.strictEqual(PC.complete({ frequency: 'ongoing', labels: 'over20', printing: 'separate', payment: 'none' }), true);
+assert.throws(() => PC.decide({ frequency: 'ongoing', labels: '11to20', payment: 'none' }), /incomplete/, 'no result before every required answer');
+assert.throws(() => PC.decide({ frequency: 'weekly', payment: 'none' }), /incomplete/);
+
+// Derived usage levels (approved mapping).
+const u = (labels, printing) => PC.usage({ frequency: 'ongoing', labels, printing });
+assert.strictEqual(u('upto10').level, 'low');
+assert.strictEqual(u('11to20', 'combined').level, 'low');
+assert.strictEqual(u('over20', 'combined').level, 'low');
+assert.strictEqual(u('11to20', 'separate').level, 'medium');
+assert.strictEqual(u('11to20', 'notsure').level, 'medium');
+assert.strictEqual(u('over20', 'separate').level, 'high');
+assert.strictEqual(u('over20', 'notsure').level, 'medium');
+assert.strictEqual(u('over20', 'notsure').maybePro, true);
+assert.strictEqual(PC.usage({ frequency: 'occasional' }), null);
+assert.strictEqual(PC.usage({ frequency: 'notsure' }), null);
+
+// Every valid path → [plan, rule]
 const EXPECTED = {
-  'upto5|occasional|payg': ['payg', 'R1'], 'upto5|occasional|subscription': ['start', 'R2-occasional'], 'upto5|occasional|none': ['payg', 'R3-occasional'],
-  'upto5|ongoing|payg': ['payg', 'R1'], 'upto5|ongoing|subscription': ['start', 'R2-ongoing'], 'upto5|ongoing|none': ['payg', 'R3-ongoing'],
-  '6to10|occasional|payg': ['payg', 'R1'], '6to10|occasional|subscription': ['start', 'R2-occasional'], '6to10|occasional|none': ['payg', 'R3-occasional'],
-  '6to10|ongoing|payg': ['payg', 'R1'], '6to10|ongoing|subscription': ['start', 'R2-ongoing'], '6to10|ongoing|none': ['payg', 'R3-ongoing'],
-  '11to20|occasional|payg': ['payg', 'R1'], '11to20|occasional|subscription': ['start', 'R2-occasional'], '11to20|occasional|none': ['payg', 'R3-occasional'],
-  '11to20|ongoing|payg': ['payg', 'R1'], '11to20|ongoing|subscription': ['start', 'R2-ongoing'], '11to20|ongoing|none': ['start', 'R3-ongoing'],
-  '21to30|occasional|payg': ['payg', 'R1'], '21to30|occasional|subscription': ['start', 'R2-occasional'], '21to30|occasional|none': ['payg', 'R3-occasional'],
-  '21to30|ongoing|payg': ['payg', 'R1'], '21to30|ongoing|subscription': ['pro', 'R2-ongoing'], '21to30|ongoing|none': ['pro', 'R3-ongoing'],
-  'over30|occasional|payg': ['payg', 'R1'], 'over30|occasional|subscription': ['start', 'R2-occasional'], 'over30|occasional|none': ['payg', 'R3-occasional'],
-  'over30|ongoing|payg': ['payg', 'R1'], 'over30|ongoing|subscription': ['pro', 'R2-ongoing'], 'over30|ongoing|none': ['pro', 'R3-ongoing'],
-  'notsure|occasional|payg': ['payg', 'R1'], 'notsure|occasional|subscription': ['start', 'R2-notsure'], 'notsure|occasional|none': ['payg', 'R3-notsure'],
-  'notsure|ongoing|payg': ['payg', 'R1'], 'notsure|ongoing|subscription': ['start', 'R2-notsure'], 'notsure|ongoing|none': ['payg', 'R3-notsure'],
+  'notsure|-|-|payg': ['payg', 'R1'], 'notsure|-|-|subscription': ['start', 'R2-notsure'], 'notsure|-|-|none': ['payg', 'R3-notsure'],
+  'occasional|-|-|payg': ['payg', 'R1'], 'occasional|-|-|subscription': ['start', 'R2-occasional'], 'occasional|-|-|none': ['payg', 'R3-occasional'],
+  'ongoing|upto10|-|payg': ['payg', 'R1'], 'ongoing|upto10|-|subscription': ['start', 'R2-low'], 'ongoing|upto10|-|none': ['payg', 'R3-low'],
+  'ongoing|11to20|combined|payg': ['payg', 'R1'], 'ongoing|11to20|combined|subscription': ['start', 'R2-low'], 'ongoing|11to20|combined|none': ['payg', 'R3-low'],
+  'ongoing|11to20|separate|payg': ['payg', 'R1'], 'ongoing|11to20|separate|subscription': ['start', 'R2-medium'], 'ongoing|11to20|separate|none': ['start', 'R3-medium'],
+  'ongoing|11to20|notsure|payg': ['payg', 'R1'], 'ongoing|11to20|notsure|subscription': ['start', 'R2-medium'], 'ongoing|11to20|notsure|none': ['start', 'R3-medium'],
+  'ongoing|over20|combined|payg': ['payg', 'R1'], 'ongoing|over20|combined|subscription': ['start', 'R2-low'], 'ongoing|over20|combined|none': ['payg', 'R3-low'],
+  'ongoing|over20|separate|payg': ['payg', 'R1'], 'ongoing|over20|separate|subscription': ['pro', 'R2-high'], 'ongoing|over20|separate|none': ['pro', 'R3-high'],
+  'ongoing|over20|notsure|payg': ['payg', 'R1'], 'ongoing|over20|notsure|subscription': ['start', 'R2-medium'], 'ongoing|over20|notsure|none': ['start', 'R3-medium'],
 };
-const combos = [];
-for (const volume of PC.VOLUMES) for (const frequency of PC.FREQUENCIES) for (const payment of PC.PAYMENTS) combos.push({ volume, frequency, payment });
-assert.strictEqual(combos.length, 36, '6 × 2 × 3 = 36 combinations');
-assert.strictEqual(Object.keys(EXPECTED).length, 36);
+const paths = PC.allPaths();
+assert.strictEqual(paths.length, 27, '27 valid answer paths');
+assert.strictEqual(Object.keys(EXPECTED).length, 27);
+assert.deepStrictEqual(paths.map(key).sort(), Object.keys(EXPECTED).sort(), 'allPaths() covers exactly the expected paths');
 const counts = { payg: 0, start: 0, pro: 0 };
-for (const a of combos) {
-  const key = a.volume + '|' + a.frequency + '|' + a.payment;
+for (const a of paths) {
   const r = PC.decide(a);
-  assert.deepStrictEqual([r.plan, r.rule], EXPECTED[key], 'combination ' + key);
-  assert(r.reasons.length >= 1, 'every result has a reason: ' + key);
+  assert.deepStrictEqual([r.plan, r.rule], EXPECTED[key(a)], 'path ' + key(a));
+  assert(r.reasons.length >= 1, 'every result has a reason: ' + key(a));
+  assert.strictEqual(r.exportNote, "You only use a download when you export a label file. Printing more copies of a file you've already downloaded is free.");
+  assert.strictEqual(!!r.estimateNote, a.frequency === 'ongoing', 'reprint/estimate note only when usage is estimated from label volume: ' + key(a));
   counts[r.plan]++;
 }
-assert.deepStrictEqual(counts, { payg: 21, start: 11, pro: 4 }, 'approved distribution');
-assert.throws(() => PC.decide({ volume: 'upto5', frequency: 'ongoing' }), /incomplete/);
+assert.deepStrictEqual(counts, { payg: 14, start: 11, pro: 2 });
 
 // Specific approved wording/caveats
-const d = (volume, frequency, payment) => PC.decide({ volume, frequency, payment });
-assert(/Easy Start \(£9\.99\/month for 20 downloads\) would usually cost less/.test(d('11to20', 'ongoing', 'payg').warning), 'PAYG 11–20 ongoing cost warning');
-assert(/Easy Pro \(£14\.99\/month for 30 downloads\) would usually cost less/.test(d('21to30', 'ongoing', 'payg').warning), 'PAYG 21–30 ongoing cost warning');
-assert(/£13\.98/.test(d('21to30', 'ongoing', 'none').note), 'Start + top-up comparison is shown for 21–30');
-assert(/Pay As You Go \(about £5\) would normally cost less/.test(d('upto5', 'ongoing', 'subscription').warning), 'G2 warning');
-assert(/Easy Start \(£9\.99\/month for 20 downloads\) is worth considering/.test(d('6to10', 'ongoing', 'none').note), 'G3 alternative');
-assert.strictEqual(d('notsure', 'ongoing', 'none').trialEmphasis, true, 'not sure → trial emphasised');
-assert(!/cancel/i.test(JSON.stringify(combos.map(a => PC.decide(a)))), 'never suggests subscribing and cancelling (G1)');
+const d = a => PC.decide(a);
+assert(/Easy Start \(£9\.99\/month for 20 downloads\) would usually cost less/.test(d({ frequency: 'ongoing', labels: '11to20', printing: 'separate', payment: 'payg' }).warning));
+assert(/Easy Pro \(£14\.99\/month for 30 downloads/.test(d({ frequency: 'ongoing', labels: 'over20', printing: 'separate', payment: 'payg' }).warning));
+assert(!d({ frequency: 'ongoing', labels: 'over20', printing: 'combined', payment: 'payg' }).warning, 'combined sheets: no high-usage cost warning');
+assert(/£13\.98/.test(d({ frequency: 'ongoing', labels: 'over20', printing: 'separate', payment: 'none' }).note), 'Start + top-up comparison for high usage');
+assert(/Easy Pro includes 30/.test(d({ frequency: 'ongoing', labels: 'over20', printing: 'notsure', payment: 'none' }).note), 'more than 20 + not sure → maybe-Pro note');
+assert(!d({ frequency: 'ongoing', labels: '11to20', printing: 'notsure', payment: 'none' }).note, '11–20 + not sure has no maybe-Pro note');
+assert(/Pay As You Go would usually cost the same as or less/.test(d({ frequency: 'ongoing', labels: 'upto10', payment: 'subscription' }).warning), 'low usage + subscription preference warning');
+assert(/Pay As You Go would usually cost less than a year-round subscription/.test(d({ frequency: 'occasional', payment: 'subscription' }).warning));
+assert(/combine several different labels/.test(d({ frequency: 'ongoing', labels: '11to20', printing: 'combined', payment: 'none' }).reasons[0]));
+assert.strictEqual(d({ frequency: 'notsure', payment: 'none' }).trialEmphasis, true);
+assert(!/cancel/i.test(JSON.stringify(paths.map(d))), 'never suggests subscribing and cancelling');
 
 // ── 2. Invariants ────────────────────────────────────────────────────────
-for (const a of combos) {
-  const r = PC.decide(a);
+for (const a of paths) {
+  const r = d(a);
   if (a.payment === 'payg') assert.strictEqual(r.plan, 'payg', 'explicit PAYG preference never overridden');
-  if (a.volume === 'notsure') assert.notStrictEqual(r.plan, 'pro', '"not sure" never gives Easy Pro');
-  if (a.frequency === 'occasional') assert.notStrictEqual(r.plan, 'pro', 'occasional use never gives Easy Pro');
+  if (a.frequency === 'notsure') assert.notStrictEqual(r.plan, 'pro', 'just starting never gives Easy Pro');
+  if (a.frequency === 'occasional') assert.notStrictEqual(r.plan, 'pro', 'occasional never gives Easy Pro');
+  if (a.printing === 'combined' || a.printing === 'notsure') assert.notStrictEqual(r.plan, 'pro', 'uncertain or combined printing never gives Easy Pro');
   assert(!/reduce risk|trading standards|anxi|confiden|SDS update/i.test(JSON.stringify(r)), 'no anxiety/compliance-worry reasoning');
 }
-// Promotions never drive the rules: decide() takes no clock and its output is
-// identical either side of the offer end date.
 const realNow = Date.now;
-const before = combos.map(a => PC.decide(a));
+const before = paths.map(d);
 Date.now = () => PC.PROMO_END_MS + 30 * DAY;
-const afterPromo = combos.map(a => PC.decide(a));
+const afterPromo = paths.map(d);
 Date.now = realNow;
 assert.deepStrictEqual(afterPromo, before, 'promotion dates never change the recommendation');
 assert(!/£8\.99|£13\.49|8 downloads|offer/i.test(PC.decide.toString()), 'decide() never reads promotional prices');
-// Offer visibility ends with the server's PROMO_2026_END_MS (1 Jan 2027 UTC).
 assert.strictEqual(PC.offerVisible(Date.UTC(2026, 11, 31, 23, 59)), true);
 assert.strictEqual(PC.offerVisible(Date.UTC(2027, 0, 1)), false);
-const serverPromo = fs.readFileSync('supabase/functions/create-checkout-session/index.ts', 'utf8');
-assert(/PROMO_2026_END_MS = Date\.UTC\(2027, 0, 1\)/.test(serverPromo), 'client offer end matches the server boundary');
+assert(/PROMO_2026_END_MS = Date\.UTC\(2027, 0, 1\)/.test(fs.readFileSync('supabase/functions/create-checkout-session/index.ts', 'utf8')),
+  'client offer end matches the server boundary');
 
 // ── 3. Account-state calls-to-action ─────────────────────────────────────
 const PROFILES = {
@@ -91,93 +124,78 @@ const PROFILES = {
   cancelScheduled: { subscription_status: 'cancelled', plan: 'easy_pro', is_pro: true, downloads_limit: 30, deletion_date: future },
   paused: { subscription_status: 'paused', plan: 'easy_start', downloads_limit: 20 },
 };
+const STATES = ['signedOut', ...Object.keys(PROFILES)];
 const entFor = s => s === 'signedOut' ? null : ENT.summarise(PROFILES[s]);
-for (const s of ['signedOut', ...Object.keys(PROFILES)]) assert.strictEqual(PC.accountState(entFor(s)), s, 'account state ' + s);
+for (const s of STATES) assert.strictEqual(PC.accountState(entFor(s)), s, 'account state ' + s);
 
-const PAYG = d('upto5', 'ongoing', 'none'), START = d('11to20', 'ongoing', 'none'), PRO = d('21to30', 'ongoing', 'none'), NOTSURE = d('notsure', 'ongoing', 'none');
+const A_PAYG = { frequency: 'ongoing', labels: 'upto10', payment: 'none' };
+const A_START = { frequency: 'ongoing', labels: '11to20', printing: 'separate', payment: 'none' };
+const A_PRO = { frequency: 'ongoing', labels: 'over20', printing: 'separate', payment: 'none' };
+const A_NOTSURE = { frequency: 'notsure', payment: 'none' };
+const PAYG = d(A_PAYG), START = d(A_START), PRO = d(A_PRO), NOTSURE = d(A_NOTSURE);
 const cta = (res, s) => PC.ctas(res, entFor(s));
 const msgs = c => c.messages.join(' ');
 
-// Signed out: plan link + trial as the secondary route.
 for (const [res, href] of [[PAYG, 'pricing.html#payg'], [START, 'pricing.html#easy-start'], [PRO, 'pricing.html#easy-pro']]) {
   const c = cta(res, 'signedOut');
   assert.strictEqual(c.primary.href, href);
   assert.strictEqual(c.secondary.href, 'auth.html?mode=signup', 'trial is the secondary CTA when signed out');
 }
-assert(/Try CLPeasy free for 14 days/.test(msgs(cta(NOTSURE, 'signedOut'))), 'not sure → trial prominently offered');
-// Signed-in visitors never get a trial CTA.
+assert(/Try CLPeasy free for 14 days/.test(msgs(cta(NOTSURE, 'signedOut'))), 'just starting → trial prominently offered');
 for (const s of Object.keys(PROFILES)) for (const res of [PAYG, START, PRO]) {
   const c = cta(res, s);
   for (const l of [c.primary, c.secondary]) if (l) assert(!/auth\.html\?mode=signup/.test(l.href), 'no trial CTA for signed-in ' + s);
 }
-// Active trial + PAYG: the confirmed trial-ending disclosure.
 {
   const c = cta(PAYG, 'trialActive');
   assert(msgs(c).includes("Buying Pay As You Go ends your free trial now. Any unused trial downloads won't carry over."));
   assert.strictEqual(c.primary.href, 'pricing.html#payg');
 }
-assert(!/ends your free trial/.test(msgs(cta(PAYG, 'trialExpired'))), 'no trial disclosure once the trial has ended');
-assert.strictEqual(cta(PAYG, 'trialExpired').primary.href, 'pricing.html#payg');
-// PAYG customer: buy more, with balance; subscribing keeps purchased downloads.
+assert(!/ends your free trial/.test(msgs(cta(PAYG, 'trialExpired'))));
 {
   const c = cta(PAYG, 'payg');
   assert.strictEqual(c.primary.text, 'Buy more downloads →');
   assert(/You have 3 purchased downloads remaining/.test(msgs(c)));
-  for (const res of [START, PRO]) {
-    const s = cta(res, 'payg');
-    assert(msgs(s).includes("Your unused purchased downloads stay on your account. They're used once your monthly allowance runs out, and they never expire."));
-    assert.strictEqual(s.primary.href, res === START ? 'pricing.html#easy-start' : 'pricing.html#easy-pro');
-  }
+  for (const res of [START, PRO]) assert(msgs(cta(res, 'payg')).includes("Your unused purchased downloads stay on your account. They're used once your monthly allowance runs out, and they never expire."));
 }
-// Current subscribers: never a working PAYG purchase CTA (server refuses it).
 for (const s of ['activeStart', 'activePro', 'cancelScheduled']) {
   const c = cta(PAYG, s);
   for (const l of [c.primary, c.secondary]) if (l) assert(!/#payg/.test(l.href), 'no PAYG purchase for ' + s);
   assert.strictEqual(c.primary.href, 'account.html?topup=1');
 }
-// Already on the suitable plan.
 assert(/You're already on Easy Start\./.test(msgs(cta(START, 'activeStart'))));
 assert(/You're already on Easy Pro\./.test(msgs(cta(PRO, 'activePro'))));
-// Subscriber plan change: temporary support fallback, never pricing.html or Stripe.
 {
   const up = cta(PRO, 'activeStart'), down = cta(START, 'activePro');
   assert(msgs(up).includes('Easy Pro would better match your current usage. To change your plan, contact CLPeasy Support.'));
   assert(msgs(down).includes('Easy Start would cover your current usage. To change your plan, contact CLPeasy Support.'));
-  for (const c of [up, down]) {
-    assert.strictEqual(c.primary.href, 'support.html');
-    assert.strictEqual(c.secondary, null);
-  }
+  for (const c of [up, down]) { assert.strictEqual(c.primary.href, 'support.html'); assert.strictEqual(c.secondary, null); }
 }
-// Cancellation in paid period / paused: manage in account; paused may buy PAYG.
 assert.strictEqual(cta(START, 'cancelScheduled').primary.href, 'account.html');
 assert.strictEqual(cta(PRO, 'paused').primary.href, 'account.html');
 assert.strictEqual(cta(PAYG, 'paused').primary.href, 'pricing.html#payg');
-// No CTA anywhere offers a self-service Stripe plan change.
-for (const s of ['signedOut', ...Object.keys(PROFILES)]) for (const res of [PAYG, START, PRO, NOTSURE]) {
-  const c = cta(res, s);
-  assert(!/stripe|change plan in/i.test(JSON.stringify(c)), 'no Stripe plan-change CTA (' + s + ')');
-}
-// Account state never changes the recommendation object.
-for (const a of combos) {
-  const r = PC.decide(a), snapshot = JSON.stringify(r);
-  for (const s of ['signedOut', ...Object.keys(PROFILES)]) PC.ctas(r, entFor(s));
+for (const s of STATES) for (const res of [PAYG, START, PRO, NOTSURE]) assert(!/stripe|change plan in/i.test(JSON.stringify(cta(res, s))), 'no Stripe plan-change CTA');
+for (const a of paths) {
+  const r = d(a), snapshot = JSON.stringify(r);
+  for (const s of STATES) PC.ctas(r, entFor(s));
   assert.strictEqual(JSON.stringify(r), snapshot, 'ctas() never mutates the recommendation');
 }
 
 // ── 4. The real page ─────────────────────────────────────────────────────
 const html = fs.readFileSync('plan-picker.html', 'utf8');
-assert(!/5 quick questions|of 5\b/.test(html), 'no "5 questions" copy left on the page');
-assert(/Question 1 of 3/.test(html));
-assert(!/q4|q5/.test(html.replace(/<style[\s\S]*?<\/style>/g, '')), 'only three questions');
-assert(!/4 or fewer|4 months/i.test(html), 'no "4 months or fewer" in customer copy');
-// .btn-cta sets display:block, so hidden CTAs need an explicit rule or an
-// empty outlined button is still drawn.
+assert(!/btn-next|Next →|See my recommendation/.test(html), 'no Next buttons');
+assert(!/quick questions and CLPeasy will recommend|3 quick questions|of [2-5]\b/.test(html.replace('Answer a few quick questions and CLPeasy will recommend', '')), 'no fixed question totals');
+assert(/A few quick questions/.test(html));
 assert(/\.btn-cta\[hidden\][^{]*\{display:none;\}/.test(html), 'hidden result CTAs are not rendered');
+assert(/@media \(prefers-reduced-motion: reduce\)\{[^}]*\.question-card,\.result-card\{animation:none;\}/.test(html), 'reduced motion disables the transitions');
+assert(!/4 or fewer|4 months/i.test(html), 'no "4 months or fewer" in customer copy');
+for (const m of html.match(/<button[^>]*class="option"[^>]*>/g)) assert(/type="button"/.test(m) && /aria-pressed="false"/.test(m), 'options are keyboard-operable buttons with pressed state');
 const pageSource = html
   .replace(/<script src="https:\/\/cdn\.jsdelivr\.net\/npm\/@supabase\/supabase-js@2"><\/script>/, '')
   .replace('<script src="entitlement.js"></script>', '<script>' + fs.readFileSync('entitlement.js', 'utf8') + '</script>')
   .replace('<script src="plan-checker.js"></script>', '<script>' + fs.readFileSync('plan-checker.js', 'utf8') + '</script>');
 
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 async function openPage(state, opts = {}){
   const errors = [];
   const vc = new VirtualConsole();
@@ -185,7 +203,9 @@ async function openPage(state, opts = {}){
   const dom = new JSDOM(pageSource, {
     url: 'https://clpeasy.com/plan-picker.html', runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: vc,
     beforeParse(w){
-      w.scrollTo = () => {};
+      w.__scrolls = [];
+      w.scrollTo = o => w.__scrolls.push(o);
+      if (opts.reducedMotion !== undefined) w.matchMedia = q => ({ matches: /prefers-reduced-motion: reduce/.test(q) && opts.reducedMotion, addListener(){}, removeListener(){} });
       if (opts.now) { const N = opts.now; w.Date.now = () => N; }
       w.fetch = async () => { throw new Error('no network in tests'); };
       if (opts.noSupabase) return;
@@ -200,73 +220,177 @@ async function openPage(state, opts = {}){
   });
   return { w: dom.window, errors };
 }
-async function answer(w, q1, q2, q3){
-  const click = (q, v) => w.document.querySelector('#' + q + ' .option[data-value="' + v + '"]').click();
-  click('q1', q1); w.nextQuestion(2); click('q2', q2); w.nextQuestion(3); click('q3', q3);
-  await w.showResult();
-  const $ = id => w.document.getElementById(id);
+const $ = (w, id) => w.document.getElementById(id);
+const activeQ = w => { const c = w.document.querySelector('.question-card.active'); return c ? c.dataset.q : null; };
+const pressed = (w, q) => [...w.document.querySelectorAll('#q-' + q + ' .option[aria-pressed="true"]')].map(o => o.dataset.value);
+function click(w, q, v){ w.document.querySelector('#q-' + q + ' .option[data-value="' + v + '"]').click(); }
+async function pick(w, q, v){ click(w, q, v); await sleep(300); }
+async function run(w, a){
+  const seen = [];
+  for (;;) {
+    const q = activeQ(w);
+    if (!q) break;
+    seen.push(q);
+    await pick(w, q, a[q]);
+  }
+  await sleep(30);
+  return seen;
+}
+function readResult(w){
   return {
-    plan: $('result-card').dataset.plan, account: $('result-card').dataset.account,
-    name: $('result-plan').textContent, primary: $('result-primary').getAttribute('href'), primaryText: $('result-primary').textContent,
-    secondary: $('result-secondary').hidden ? null : $('result-secondary').getAttribute('href'),
-    account_msgs: $('result-account').textContent, boxes: $('result-boxes').textContent,
-    offerHidden: $('result-offer').hidden, offer: $('result-offer-text').textContent,
-    features: $('result-features').textContent, text: $('result-card').textContent,
+    shown: $(w, 'result-card').classList.contains('show'),
+    plan: $(w, 'result-card').dataset.plan, account: $(w, 'result-card').dataset.account,
+    name: $(w, 'result-plan').textContent, primary: $(w, 'result-primary').getAttribute('href'),
+    secondary: $(w, 'result-secondary').hidden ? null : $(w, 'result-secondary').getAttribute('href'),
+    account_msgs: $(w, 'result-account').textContent, boxes: $(w, 'result-boxes').textContent,
+    offerHidden: $(w, 'result-offer').hidden, offer: $(w, 'result-offer-text').textContent,
+    footnotes: $(w, 'result-footnotes').textContent, features: $(w, 'result-features').textContent, text: $(w, 'result-card').textContent,
   };
 }
 
 (async () => {
-  // Every combination through the real page, signed out.
-  for (const a of combos) {
+  // Every valid path through real clicks, signed out: only the questions on
+  // that customer's path are shown, and the progress label never shows a total.
+  for (const a of paths) {
     const { w, errors } = await openPage('signedOut');
-    const r = await answer(w, a.volume, a.frequency, a.payment);
-    assert.strictEqual(r.plan, EXPECTED[a.volume + '|' + a.frequency + '|' + a.payment][0], 'page result ' + JSON.stringify(a));
+    const labels = [];
+    const seen = [];
+    for (;;) {
+      const q = activeQ(w);
+      if (!q) break;
+      seen.push(q);
+      labels.push($(w, 'progress-label').textContent);
+      assert.strictEqual(w.document.querySelector('#q-' + q + ' .q-number').textContent, 'Question ' + seen.length);
+      await pick(w, q, a[q]);
+    }
+    await sleep(30);
+    assert.deepStrictEqual(seen, PC.path(a), 'questions shown for ' + key(a));
+    assert.deepStrictEqual(labels, seen.map((_, i) => 'Question ' + (i + 1)));
+    const r = readResult(w);
+    assert.strictEqual(r.shown, true);
+    assert.strictEqual(r.plan, EXPECTED[key(a)][0], 'page result ' + key(a));
     assert.strictEqual(r.name, PC.PLANS[r.plan].name);
     assert.strictEqual(r.secondary, 'auth.html?mode=signup');
+    assert(r.footnotes.includes("You only use a download when you export a label file."));
     assert.deepStrictEqual(errors, [], errors.join('; '));
   }
-  // The original light-use mobile test now gives Pay As You Go.
+
+  // Auto-advance: selection shows first, the next question follows ~250ms
+  // later, repeated clicks during the transition are ignored, focus moves.
   {
     const { w } = await openPage('signedOut');
-    const r = await answer(w, '6to10', 'occasional', 'none');
-    assert.strictEqual(r.plan, 'payg');
+    click(w, 'frequency', 'ongoing');
+    assert.deepStrictEqual(pressed(w, 'frequency'), ['ongoing'], 'answer visibly selected immediately');
+    assert.strictEqual(activeQ(w), 'frequency', 'no instant jump');
+    click(w, 'frequency', 'occasional');
+    await sleep(120);
+    assert.strictEqual(activeQ(w), 'frequency');
+    await sleep(200);
+    assert.strictEqual(activeQ(w), 'labels', 'advanced automatically to the volume question');
+    assert.deepStrictEqual(pressed(w, 'frequency'), ['ongoing'], 'repeated click during the transition ignored');
+    assert.strictEqual(w.document.activeElement, w.document.querySelector('#q-labels .q-text'), 'focus moves to the new question');
+    assert.strictEqual(w.document.querySelectorAll('.btn-next').length, 0);
+    assert(![...w.document.querySelectorAll('button')].some(b => /^\s*Next/.test(b.textContent)), 'no Next button anywhere');
   }
+
+  // Back follows the actual branch and keeps the previous selection; a
+  // changed answer advances again; answers that no longer apply are cleared.
+  {
+    const { w } = await openPage('signedOut');
+    await pick(w, 'frequency', 'ongoing');
+    await pick(w, 'labels', 'over20');
+    await pick(w, 'printing', 'separate');
+    assert.strictEqual(activeQ(w), 'payment');
+    assert.strictEqual($(w, 'progress-label').textContent, 'Question 4');
+    w.document.querySelector('#q-payment .btn-back').click();
+    assert.strictEqual(activeQ(w), 'printing');
+    assert.deepStrictEqual(pressed(w, 'printing'), ['separate'], 'previous selection shown on Back');
+    w.document.querySelector('#q-printing .btn-back').click();
+    assert.strictEqual(activeQ(w), 'labels');
+    await pick(w, 'labels', 'upto10');
+    assert.strictEqual(activeQ(w), 'payment', 'up to 10 skips the printing question');
+    assert.strictEqual($(w, 'progress-label').textContent, 'Question 3');
+    w.document.querySelector('#q-payment .btn-back').click();
+    assert.strictEqual(activeQ(w), 'labels', 'Back from payment returns to the volume question on this branch');
+    w.document.querySelector('#q-labels .btn-back').click();
+    assert.strictEqual(activeQ(w), 'frequency');
+    assert.deepStrictEqual(pressed(w, 'frequency'), ['ongoing']);
+    await pick(w, 'frequency', 'occasional');
+    assert.strictEqual(activeQ(w), 'payment', 'occasional goes straight to payment');
+    assert.strictEqual($(w, 'progress-label').textContent, 'Question 2');
+    w.document.querySelector('#q-payment .btn-back').click();
+    assert.strictEqual(activeQ(w), 'frequency', 'Back from payment returns to Q1 on the occasional branch');
+    await pick(w, 'frequency', 'ongoing');
+    assert.deepStrictEqual(pressed(w, 'labels'), [], 'usage answer cleared after switching to occasional and back');
+    await pick(w, 'labels', '11to20');
+    assert.deepStrictEqual(pressed(w, 'printing'), [], 'printing answer cleared');
+    // Result cannot appear before every required answer.
+    await w.showResult();
+    assert.strictEqual($(w, 'result-card').classList.contains('show'), false, 'no premature result');
+    await pick(w, 'printing', 'combined');
+    await pick(w, 'payment', 'none');
+    await sleep(30);
+    const r = readResult(w);
+    assert.strictEqual(r.plan, 'payg', '11–20 combined on sheets → low usage → Pay As You Go');
+    assert(r.footnotes.includes("If you mostly reprint label files you've already downloaded"));
+    assert.strictEqual(w.document.activeElement, $(w, 'result-plan'), 'focus moves to the result');
+    w.retake();
+    assert.strictEqual(activeQ(w), 'frequency');
+    assert.strictEqual(w.document.querySelectorAll('.option.selected').length, 0);
+    assert.strictEqual($(w, 'progress-label').textContent, 'Question 1');
+  }
+
+  // Reduced motion: scrolling is instant (CSS removes the fade, asserted above).
+  {
+    const { w } = await openPage('signedOut', { reducedMotion: true });
+    await pick(w, 'frequency', 'notsure');
+    assert.strictEqual(w.__scrolls.pop().behavior, 'auto');
+    const { w: w2 } = await openPage('signedOut', { reducedMotion: false });
+    await pick(w2, 'frequency', 'notsure');
+    assert.strictEqual(w2.__scrolls.pop().behavior, 'smooth');
+  }
+
   // Easy Pro card: factual proposition only.
   {
     const { w } = await openPage('signedOut');
-    const r = await answer(w, '21to30', 'ongoing', 'none');
+    await run(w, A_PRO);
+    const r = readResult(w);
+    assert.strictEqual(r.plan, 'pro');
     assert(/30 downloads a month/.test(r.features) && /Priority support — we aim to reply within 1 working day\./.test(r.features) && /Top-ups/.test(r.features));
     assert(!/reduce risk|confidence|Trading Standards|SDS/i.test(r.text));
     assert(/£13\.98/.test(r.boxes));
   }
   // Offer box: shown before the end date, hidden after; recommendation unchanged.
   {
-    const a = await answer((await openPage('signedOut', { now: Date.UTC(2026, 9, 1) })).w, '11to20', 'ongoing', 'none');
-    const b = await answer((await openPage('signedOut', { now: Date.UTC(2027, 0, 2) })).w, '11to20', 'ongoing', 'none');
+    const w1 = (await openPage('signedOut', { now: Date.UTC(2026, 9, 1) })).w; await run(w1, A_START);
+    const w2 = (await openPage('signedOut', { now: Date.UTC(2027, 0, 2) })).w; await run(w2, A_START);
+    const a = readResult(w1), b = readResult(w2);
     assert.strictEqual(a.offerHidden, false);
     assert.strictEqual(a.offer, '£8.99/month until 31 December 2026, then £9.99/month.');
     assert.strictEqual(b.offerHidden, true, 'expired offer copy is not shown');
     assert.strictEqual(a.plan, b.plan);
-    const p = await answer((await openPage('signedOut', { now: Date.UTC(2026, 9, 1) })).w, 'upto5', 'ongoing', 'none');
+    const w3 = (await openPage('signedOut', { now: Date.UTC(2026, 9, 1) })).w; await run(w3, A_PAYG);
+    const p = readResult(w3);
     assert.strictEqual(p.offer, 'Get 8 downloads for £4.99 until 31 December 2026.');
-    assert(!/8 downloads/.test(p.text.replace(p.offer, '')), 'PAYG offer appears only in the separate offer box');
+    assert(!/8 downloads/.test(p.text.replace(p.offer, '')), 'PAYG offer only in the separate offer box');
   }
   // Account states through the page: CTA changes, recommendation never does.
   const pageCases = [
-    ['trialActive', 'upto5', 'pricing.html#payg', /ends your free trial now/],
-    ['trialExpired', 'upto5', 'pricing.html#payg', null],
-    ['payg', '11to20', 'pricing.html#easy-start', /purchased downloads stay on your account/],
-    ['activeStart', '21to30', 'support.html', /Easy Pro would better match your current usage/],
-    ['activePro', '11to20', 'support.html', /Easy Start would cover your current usage/],
-    ['activeStart', 'upto5', 'account.html?topup=1', /isn't available while you have an Easy Start or Easy Pro subscription/],
-    ['cancelScheduled', 'upto5', 'account.html?topup=1', /isn't available/],
-    ['paused', '21to30', 'account.html', /currently paused/],
+    ['trialActive', A_PAYG, 'pricing.html#payg', /ends your free trial now/],
+    ['trialExpired', A_PAYG, 'pricing.html#payg', null],
+    ['payg', A_START, 'pricing.html#easy-start', /purchased downloads stay on your account/],
+    ['activeStart', A_PRO, 'support.html', /Easy Pro would better match your current usage/],
+    ['activePro', A_START, 'support.html', /Easy Start would cover your current usage/],
+    ['activeStart', A_PAYG, 'account.html?topup=1', /isn't available while you have an Easy Start or Easy Pro subscription/],
+    ['cancelScheduled', A_PAYG, 'account.html?topup=1', /isn't available/],
+    ['paused', A_PRO, 'account.html', /currently paused/],
   ];
-  for (const [state, vol, href, re] of pageCases) {
+  for (const [state, a, href, re] of pageCases) {
     const { w, errors } = await openPage(state);
-    const r = await answer(w, vol, 'ongoing', 'none');
+    await run(w, a);
+    const r = readResult(w);
     assert.strictEqual(r.account, state, 'page account state ' + state);
-    assert.strictEqual(r.plan, EXPECTED[vol + '|ongoing|none'][0], 'account state never changes the plan (' + state + ')');
+    assert.strictEqual(r.plan, EXPECTED[key(a)][0], 'account state never changes the plan (' + state + ')');
     assert.strictEqual(r.primary, href, 'primary CTA for ' + state);
     assert.notStrictEqual(r.secondary, 'auth.html?mode=signup', 'no trial CTA when signed in');
     if (re) assert(re.test(r.account_msgs), state + ' message');
@@ -275,27 +399,12 @@ async function answer(w, q1, q2, q3){
   // Lookup failure / missing Supabase → signed-out CTAs, same plan.
   for (const opts of [{ throwSession: true }, { noSupabase: true }]) {
     const { w, errors } = await openPage('activePro', opts);
-    const r = await answer(w, '21to30', 'ongoing', 'none');
+    await run(w, A_PRO);
+    const r = readResult(w);
     assert.strictEqual(r.account, 'signedOut');
     assert.strictEqual(r.plan, 'pro');
     assert.strictEqual(r.primary, 'pricing.html#easy-pro');
     assert.deepStrictEqual(errors, [], errors.join('; '));
   }
-  // Back and Retake.
-  {
-    const { w } = await openPage('signedOut');
-    const $ = id => w.document.getElementById(id);
-    w.document.querySelector('#q1 .option[data-value="upto5"]').click(); w.nextQuestion(2);
-    assert.strictEqual($('progress-label').textContent, 'Question 2 of 3');
-    w.prevQuestion(1);
-    assert($('q1').classList.contains('active'));
-    assert.strictEqual($('progress-label').textContent, 'Question 1 of 3');
-    await answer(w, 'upto5', 'ongoing', 'none');
-    w.retake();
-    assert(!$('result-card').classList.contains('show'));
-    assert($('q1').classList.contains('active'));
-    assert.strictEqual(w.document.querySelectorAll('.option.selected').length, 0);
-    assert.strictEqual($('progress-label').textContent, 'Question 1 of 3');
-  }
-  console.log('plan checker checks passed (36 combinations, invariants, ' + pageCases.length + ' account-state page cases, CTA matrix, offer expiry, Back/Retake)');
+  console.log('plan checker checks passed (27 branching paths, invariants, auto-advance, Back/branch clearing, ' + pageCases.length + ' account-state page cases, CTA matrix, offer expiry)');
 })().catch(e => { console.error(e); process.exit(1); });
