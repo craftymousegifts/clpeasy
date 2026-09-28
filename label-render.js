@@ -1439,7 +1439,7 @@ function renderLabel(rawData, opts){
   const botY  = sTop + topH + midH; // absolute Y: bottom band starts
 
   // ── GATHER CONTENT ────────────────────────────────────────────
-  const bgCol=opts.bgColour||'#ffffff';
+  // M55: bgColour is interpolated into SVG markup, so accept only the\n  // six-digit hex format produced by CLPeasy's colour picker. Stored label\n  // data is untrusted at this boundary; invalid/tampered values fall back to\n  // the renderer's existing safe default without mutating the saved record.\n  const bgCol=(typeof opts.bgColour==='string' && /^#[0-9a-fA-F]{6}$/.test(opts.bgColour))\n    ? opts.bgColour : '#ffffff';
   const txtCol=data.textColour==='light'?'#ffffff':'#111111';
   const mutedCol=data.textColour==='light'?'rgba(255,255,255,0.60)':'#666666';
   const showBdr=data.showBorder!==false;
