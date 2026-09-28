@@ -311,6 +311,12 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 .preview-export-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,0.07);position:sticky;bottom:0;z-index:2;background:var(--dark);}
 .preview-export-footer .btn-primary,.preview-export-footer .btn-secondary{margin-bottom:8px;}
 .preview-export-footer .btn-secondary:last-child{margin-bottom:0;}
+/* Stage 2 (27 Sep 2026): always-visible one-line print hint in the dark footer. */
+.export-print-hint{margin:2px 0 0;font-size:12px;line-height:1.5;color:rgba(255,255,255,0.78);}
+.export-print-hint strong{color:#fff;}
+.export-print-hint a{color:#9FD8E6;font-weight:700;}
+.spg-close{flex-shrink:0;background:none;border:1px solid currentColor;border-radius:6px;color:inherit;font:600 12px 'DM Sans',sans-serif;padding:4px 8px;cursor:pointer;}
+.sheet-print-guidance>div{flex:1;min-width:0;}
 
 /* EMPTY STATE */
 .empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center;}
@@ -583,7 +589,11 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
       <div class="collapsible-body no-pad">
         <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 12px;font-size:12px;color:#166534;line-height:1.6;">
           <strong>🖨 A4 printing:</strong> Use the PDF sheet. In your printer settings choose <strong>100% / Actual Size</strong> and A4 paper. Do not use “Fit to page” or “Scale to fit”, as these can change the physical label size.<br>
+          <strong>📐 Label size:</strong> The Composer keeps every label at the size it was saved in the Label Builder. It never resizes labels to fit the sheet.<br>
+          <strong>⚙ Printer settings:</strong> Set the paper size to <strong>A4</strong> and the scale to <strong>Actual Size</strong> or <strong>100%</strong>. Turn off <strong>Fit to page</strong>, <strong>Shrink</strong> or any automatic scaling. The exact wording varies between browsers, PDF viewers and printers.<br>
           <strong>📏 Size check:</strong> Before using label stock, print a test on ordinary A4 paper and measure a known label dimension. The printed measurement should match the size shown in CLPeasy.<br>
+          <strong>🔎 Alignment check:</strong> Hold the test print against your label sheet (for example, up to a window) to check the labels line up before printing on the label sheet.<br>
+          <strong>ℹ Good to know:</strong> CLPeasy creates the sheet at the correct size. Your browser, PDF viewer and printer settings can still change how it prints.<br>
           <strong>✂ Cutting machine (Print Then Cut):</strong> Download individual PNGs and upload each one to your cutting machine separately. It cannot split a sheet into individual labels.
         </div>
       </div>
@@ -652,6 +662,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
       </div>
       <button class="btn-primary" id="btn-pdf" onclick="downloadPDF()">🖨 Print / Save as PDF</button>
       <button class="btn-secondary" id="btn-png-all" onclick="openCricutModal()">✂️ Download for cutting machine</button>
+      <p class="export-print-hint" id="export-print-hint">Prints on <strong>A4</strong> with every label at its saved size. Use <strong>Actual Size / 100%</strong>; avoid Fit to page or Shrink. <a href="#printing-help" onclick="return openPrintingHelp()">Printing help</a></p>
       <div id="sheet-print-guidance" class="sheet-print-guidance" role="status" aria-live="polite" hidden></div>
     </div>
   </div><!-- /right-panel -->
@@ -2478,7 +2489,9 @@ function showSheetPrintGuidance(){
   if(!el)return;
   el.innerHTML='<span class="spg-icon" aria-hidden="true">✓</span><div><strong>Print sheet downloaded</strong>'+
     '<p>Load the matching label sheet or printable material into your printer. Check your paper size and printer settings, then print at <strong>100% / Actual Size</strong> to preserve the label dimensions.</p>'+
-    '<a href="#printing-help" class="spg-help-link" onclick="return openPrintingHelp()">Printing tips →</a></div>';
+    '<p>First time? Test on ordinary A4 paper and hold it against your label sheet to check the labels line up.</p>'+
+    '<a href="#printing-help" class="spg-help-link" onclick="return openPrintingHelp()">Printing tips →</a></div>'+
+    '<button type="button" class="spg-close" onclick="hideSheetPrintGuidance()" aria-label="Dismiss printing guidance">Dismiss</button>';
   el.hidden=false;
 }
 // Opens the existing in-page "Printing help" section and scrolls to it.
@@ -2559,7 +2572,7 @@ async function downloadPDF(){
     const charge=await consumeComposerDownload();
     if(!charge.ok){win.close();alert(charge.reason==='accounting_error'?'We could not verify your download allowance. Please try again.':window.CLPEntitlement.outOfDownloadsMessage(composerEnt));return;}
     win.document.open();
-    win.document.write(`<!DOCTYPE html><html><head><title>CLPeasy Print Sheet</title>
+    win.document.write(`<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>CLPeasy Print Sheet</title>
     <style>
       *{margin:0;padding:0;box-sizing:border-box;}
       html,body{width:210mm;height:297mm;max-height:297mm;overflow:hidden;background:white;}
@@ -2568,13 +2581,17 @@ async function downloadPDF(){
       @media print{
         html,body{width:210mm;height:297mm;max-height:297mm;overflow:hidden;}
         img{display:block;width:210mm;height:297mm;max-height:297mm;page-break-after:avoid;page-break-before:avoid;page-break-inside:avoid;}
-        .print-btn{display:none;}
+        .print-btn,.print-note{display:none;}
       }
+      @media screen and (max-width:840px){html,body{width:auto;height:auto;max-height:none;overflow:auto;}img{width:100%;max-height:none;}}
+      .print-note{position:fixed;bottom:72px;right:20px;max-width:300px;background:#fff;border:1.5px solid #4C9BB0;border-radius:10px;padding:10px 12px;font:13px/1.45 sans-serif;color:#1e3a44;box-shadow:0 4px 16px rgba(0,0,0,0.15);}
+      .print-note p{margin:4px 0 0;}
       .print-btn{position:fixed;bottom:20px;right:20px;background:#4C9BB0;color:white;border:none;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:sans-serif;box-shadow:0 4px 16px rgba(0,0,0,0.2);}
       .print-btn:hover{background:#3a7d8f;}
     </style></head>
     <body>
       <img src="${pngDataUri}"/>
+      <div class="print-note" role="note"><strong>Important when printing</strong><p><strong>Paper:</strong> A4.</p><p><strong>Use:</strong> Actual Size or 100%.</p><p><strong>Avoid:</strong> Fit to page, Shrink or Scale to fit.</p><p>This note does not print.</p></div>
       <button class="print-btn" onclick="window.print()">🖨 Print / Save as PDF</button>
     </body></html>`);
     win.document.close();

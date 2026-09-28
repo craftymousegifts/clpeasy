@@ -452,3 +452,36 @@ place them off the A4 page.
   because Builder sizes are whole millimetres (`parseInt`). Labels beyond a
   sheet's slot count are left off the export (the summary shows
   "over limit"). Both are recorded for a separate decision.
+
+## Download success + beginner printing guidance — Stage 2 (27 Sep 2026)
+
+**PR open, not merged.** Builds on the approved 26 Sep post-download panel.
+
+- Save confirmation: the full-screen "done" splash never displayed (inline
+  `display:none`; its CSS sits inside a print-popup template string). Saves
+  now show an in-flow `#save-status` ("Label saved", link to My Labels),
+  hidden again after 8s; never shown on a failed or stale save. The splash
+  function/markup is kept but no longer called.
+- Download panel (`#dl-print-guidance`): approved heading and sentence kept;
+  added a format-specific line (PDF size + first test print; PNG has no
+  stored print size so use PDF; SVG keeps mm), a collapsed "How to print
+  this label correctly" list, the "CLPeasy creates the label at the size
+  shown..." note, and a Dismiss button.
+- Step 5 `#dl-format-help` (revised 28 Sep 2026, owner decision): two
+  neutral routes — single label: PDF; several labels on A4: Print Sheet
+  Composer; always Actual Size / 100%. Neither is presented as the default.
+  SVG for design/cutting software; PNG's print size is set by the app.
+  Composer-first (a Step 5 "Print labels" action) is deferred to Stage 3.
+- Print windows (single label and Composer A4): screen-only
+  "Important when printing" note (hidden in `@media print`) plus a viewport
+  meta (and, for the A4 window, screen-only fit-to-screen CSS) so phones
+  show the note and Print button. Printed output proven pixel-identical to
+  main.
+- Composer: always-visible export hint; Printing help extended (saved size
+  kept, A4, Actual Size / 100%, avoid Fit/Shrink, test print, alignment);
+  sheet guidance gains a first-test line and Dismiss.
+- Help Guide: dashed cut line now described as printing (was "will not
+  print"); new "Printing your CLPeasy labels" section.
+- Guide Me prompt: removed Avery Sheet / Print Shop PDF / PNG-for-printing
+  advice; distinguishes single label (PDF) from several on A4 (Composer); cutting-machine PNGs described.
+- Tests: `tests/stage2-print-guidance.js` (new, in `npm test`).
