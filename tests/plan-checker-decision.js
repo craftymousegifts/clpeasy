@@ -204,7 +204,8 @@ async function openPage(state, opts = {}){
     url: 'https://clpeasy.com/plan-picker.html', runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: vc,
     beforeParse(w){
       w.__scrolls = [];
-      w.scrollTo = o => w.__scrolls.push(o);
+      w.scrollTo = (...args) => w.__scrolls.push(['scrollTo', args]);
+      w.scrollBy = (...args) => w.__scrolls.push(['scrollBy', args]);
       if (opts.reducedMotion !== undefined) w.matchMedia = q => ({ matches: /prefers-reduced-motion: reduce/.test(q) && opts.reducedMotion, addListener(){}, removeListener(){} });
       if (opts.now) { const N = opts.now; w.Date.now = () => N; }
       w.fetch = async () => { throw new Error('no network in tests'); };
@@ -212,6 +213,7 @@ async function openPage(state, opts = {}){
       w.supabase = { createClient: () => ({
         auth: { getSession: async () => {
           if (opts.throwSession) throw new Error('offline');
+          if (state === 'slow') { await new Promise(r => setTimeout(r, 3000)); return { data: { session: null } }; } // lookup starts at page load
           return { data: { session: state === 'signedOut' ? null : { user: { id: 'u1' } } } };
         } },
         from: () => ({ select: () => ({ eq: () => ({ single: async () => ({ data: PROFILES[state] || null, error: null }) }) }) }),
@@ -224,7 +226,8 @@ const $ = (w, id) => w.document.getElementById(id);
 const activeQ = w => { const c = w.document.querySelector('.question-card.active'); return c ? c.dataset.q : null; };
 const pressed = (w, q) => [...w.document.querySelectorAll('#q-' + q + ' .option[aria-pressed="true"]')].map(o => o.dataset.value);
 function click(w, q, v){ w.document.querySelector('#q-' + q + ' .option[data-value="' + v + '"]').click(); }
-async function pick(w, q, v){ click(w, q, v); await sleep(300); }
+// 250ms selection + 300ms fade-in before the next question accepts a tap.
+async function pick(w, q, v){ click(w, q, v); await sleep(600); }
 async function run(w, a){
   const seen = [];
   for (;;) {
@@ -340,14 +343,82 @@ function readResult(w){
     assert.strictEqual($(w, 'progress-label').textContent, 'Question 1');
   }
 
-  // Reduced motion: scrolling is instant (CSS removes the fade, asserted above).
+  // Never scrolls the page to the top: no scrollTo(0) / smooth scrolling;
+  // only small instant corrections (browser QA checks real positions).
+  {
+    const { w } = await openPage('signedOut');
+    await run(w, A_PRO);
+    w.retake();
+    for (const [fn, args] of w.__scrolls) {
+      assert.strictEqual(fn, 'scrollBy', 'only small scrollBy corrections, never scrollTo');
+      assert(typeof args[1] === 'number' && Math.abs(args[1]) < 100, 'no large jump: ' + JSON.stringify(args));
+    }
+    const src = fs.readFileSync('plan-picker.html', 'utf8');
+    assert(!/behavior:\s*'smooth'|scrollIntoView|scrollTo\(\{\s*top:\s*0/.test(src), 'no smooth or to-top scrolling in the page');
+  }
+  // Reduced motion: the next question accepts a tap as soon as it appears.
   {
     const { w } = await openPage('signedOut', { reducedMotion: true });
-    await pick(w, 'frequency', 'notsure');
-    assert.strictEqual(w.__scrolls.pop().behavior, 'auto');
-    const { w: w2 } = await openPage('signedOut', { reducedMotion: false });
-    await pick(w2, 'frequency', 'notsure');
-    assert.strictEqual(w2.__scrolls.pop().behavior, 'smooth');
+    click(w, 'frequency', 'notsure');
+    await sleep(300);
+    assert.strictEqual(activeQ(w), 'payment');
+    click(w, 'payment', 'none');
+    await sleep(300);
+    assert.strictEqual($(w, 'result-card').classList.contains('show'), true);
+  }
+
+  // Regression (Michaela's preview test): Most or all months → 11–20 →
+  // several labels on one sheet or file → no preference = Pay As You Go,
+  // through the real page.
+  {
+    const { w, errors } = await openPage('signedOut');
+    await pick(w, 'frequency', 'ongoing');
+    assert.strictEqual(activeQ(w), 'labels');
+    await pick(w, 'labels', '11to20');
+    assert.strictEqual(activeQ(w), 'printing');
+    await pick(w, 'printing', 'combined');
+    assert.strictEqual(activeQ(w), 'payment');
+    await pick(w, 'payment', 'none');
+    await sleep(30);
+    const r = readResult(w);
+    assert.strictEqual(r.plan, 'payg', 'Most months → 11–20 → combined → no preference must be Pay As You Go');
+    assert.strictEqual(r.name, 'Pay As You Go');
+    assert.strictEqual($(w, 'result-card').dataset.rule, 'R3-low');
+    assert(/combine several different labels/.test(r.text));
+    assert.deepStrictEqual(errors, [], errors.join('; '));
+  }
+
+  // A tap that lands on the next question while it is still appearing (a
+  // quick double tap) is ignored, so it can't silently answer that question.
+  {
+    const { w } = await openPage('signedOut');
+    await pick(w, 'frequency', 'ongoing');
+    click(w, 'labels', '11to20');
+    await sleep(260);
+    assert.strictEqual(activeQ(w), 'printing');
+    click(w, 'printing', 'separate');          // double-tap spill-over, 10ms after it appears
+    await sleep(400);
+    assert.strictEqual(activeQ(w), 'printing', 'tap during the fade-in ignored');
+    assert.deepStrictEqual(pressed(w, 'printing'), []);
+    await pick(w, 'printing', 'combined');
+    await pick(w, 'payment', 'none');
+    await sleep(30);
+    assert.strictEqual(readResult(w).plan, 'payg');
+  }
+
+  // Retaking while an earlier result's account lookup is still pending never
+  // lets that earlier result reappear.
+  {
+    const { w } = await openPage('slow');
+    await pick(w, 'frequency', 'ongoing');
+    await pick(w, 'labels', 'over20');
+    await pick(w, 'printing', 'separate');
+    click(w, 'payment', 'none');
+    await sleep(300);                           // result computed, account lookup still pending
+    assert.strictEqual($(w, 'result-card').classList.contains('show'), false);
+    w.retake();
+    await sleep(1500);                          // lookup resolves (~3s after load) after the Retake
+    assert.strictEqual($(w, 'result-card').classList.contains('show'), false, 'stale result not shown after Retake');
   }
 
   // Easy Pro card: factual proposition only.

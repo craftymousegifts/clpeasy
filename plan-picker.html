@@ -44,7 +44,7 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 24px;height
 
 .options{display:flex;flex-direction:column;gap:10px;}
 .option{background:var(--off);border:2px solid var(--border);border-radius:14px;padding:16px 18px;cursor:pointer;transition:all .2s;text-align:left;font-family:'DM Sans',sans-serif;display:flex;align-items:flex-start;gap:14px;}
-.option:hover{border-color:var(--teal);background:var(--teal-light);}
+@media (hover:hover){.option:hover{border-color:var(--teal);background:var(--teal-light);}}
 .option.selected{border-color:var(--teal);background:var(--teal-light);}
 .option-icon{font-size:22px;flex-shrink:0;margin-top:1px;}
 .option-label{font-size:15px;font-weight:600;color:var(--text);margin-bottom:3px;}
@@ -225,14 +225,33 @@ const ICONS = { payg: '💳', start: '🕯️', pro: '⚡' };
 // Answer → next question: the chosen answer stays visibly selected for this
 // long before the next applicable question appears (no Next buttons).
 const SELECT_DELAY_MS = 250;
+// A new question fades in over this long (the .3s fadeUp); taps are ignored
+// until it has appeared, so a quick double tap can't answer the next question.
+const FADE_MS = 300;
 let answers = {};
 let current = 'frequency';
 let busy = false;
+let readyAt = 0;
+let resultGen = 0;
 
 function reducedMotion() {
   try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; }
 }
-function scrollTop() { window.scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' }); }
+// The questionnaire stays where the customer is looking: questions replace
+// each other in the same place, so no page scroll is needed. Only if the new
+// card's top would be above the viewport (e.g. after a tall card on a phone)
+// is the page moved -- instantly and just far enough to show it.
+function keepInView(el) {
+  const top = el.getBoundingClientRect().top;
+  if (top < 8) window.scrollBy(0, top - 16);
+}
+// Moves keyboard/screen-reader focus without scrolling. Browsers that ignore
+// preventScroll are put back where they were.
+function focusWithoutScroll(el) {
+  const x = window.scrollX, y = window.scrollY;
+  try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); }
+  if (window.scrollX !== x || window.scrollY !== y) window.scrollTo(x, y);
+}
 
 // ── Account state (CTAs only; never the recommendation) ─────────────────
 // Same public project/anon key as pricing.html. Reads only the visitor's own
@@ -279,12 +298,15 @@ function showQuestion(q, opts) {
   document.getElementById('progress-label').textContent = 'Question ' + n;
   document.getElementById('progress-fill').style.width = (((n - 1) / p.length) * 100) + '%';
   current = q;
-  if (!opts || opts.focus !== false) card.querySelector('.q-text').focus({ preventScroll: true });
-  scrollTop();
+  // Only after an answer auto-advances: a tap carrying over from that answer
+  // must not land on the new question while it is still appearing.
+  readyAt = (opts && opts.guard) ? performance.now() + (reducedMotion() ? 0 : FADE_MS) : 0;
+  keepInView(card);
+  if (!opts || opts.focus !== false) focusWithoutScroll(card.querySelector('.q-text'));
 }
 
 function choose(q, value) {
-  if (busy || q !== current) return;
+  if (busy || q !== current || performance.now() < readyAt) return;
   busy = true;
   answers = PC.prune(Object.assign({}, answers, { [q]: value }));
   markSelected(q);
@@ -292,7 +314,7 @@ function choose(q, value) {
     busy = false;
     const p = PC.path(answers);
     const next = p[p.indexOf(q) + 1];
-    if (next) showQuestion(next);
+    if (next) showQuestion(next, { guard: true });
     else if (PC.complete(answers)) showResult();
   }, SELECT_DELAY_MS);
 }
@@ -322,6 +344,7 @@ function addBox(parent, cls, text) {
 }
 
 async function showResult() {
+  const gen = ++resultGen;
   // Never before every question on this customer's path has an answer.
   if (!PC.complete(answers)) return;
   const res = PC.decide(answers);
@@ -372,6 +395,7 @@ async function showResult() {
   current = null;
 
   const ent = await accountWithTimeout(5000);
+  if (gen !== resultGen) return; // retaken while the account lookup was pending
   const c = PC.ctas(res, ent);
   const account = document.getElementById('result-account');
   account.textContent = '';
@@ -385,11 +409,12 @@ async function showResult() {
   card.dataset.rule = res.rule;
   card.dataset.account = c.state;
   card.classList.add('show');
-  nameEl.focus({ preventScroll: true });
-  scrollTop();
+  keepInView(card);
+  focusWithoutScroll(nameEl);
 }
 
 function retake() {
+  resultGen++;
   answers = {};
   busy = false;
   document.querySelectorAll('.option').forEach(o => { o.classList.remove('selected'); o.setAttribute('aria-pressed', 'false'); });
