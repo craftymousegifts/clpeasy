@@ -203,13 +203,16 @@ function normalizeLabel(data){
 //   'p-statement'      -- a precautionary statement needing the supplier's
 //                         selection/completion has none (codes listed in
 //                         incompletePStatements; see P_DEFS).
-// Supplier address is NOT checked here (separate audit finding M10).
+// M10: supplier address is required GB CLP label content (Article 17(1)(a)).
+// Keep this as a non-blank content gate only: CLPeasy does not attempt to
+// certify postal-address syntax or silently alter a maker's saved address.
 function checkRequiredContent(rawData){
   const d = rawData || {};
   const txt = v => (v == null ? '' : String(v)).trim();
   const missing = [];
   if(!txt(d.scentName)) missing.push('product-name');
   if(!txt(d.bizName)) missing.push('business-name');
+  if(!txt(d.bizAddress)) missing.push('business-address');
   // same code test renderLabel() uses to add the EUH208 sentence/placeholder
   const codes = txt(d.hStatements).split(',').map(c => c.trim()).filter(Boolean);
   if(codes.includes('EUH208')){
