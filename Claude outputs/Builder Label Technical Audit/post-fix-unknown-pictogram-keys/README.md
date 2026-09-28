@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Branch | `fix/circle-per-line-text-fit`, on top of Issues #1–#6 (application code `a762538` before this fix) |
-| Status | For TEST REVIEW ONLY. Not merged to `main`. Not deployed to production. `main` (`b9d3e32`, PAYG PR #156) was **not** merged into this branch. |
+| Status | **FIXED + QA PASSED + SIGNED OFF** (signed off by Michaela; recorded 28 Sep 2026). Not merged to `main`. Not deployed to production. `main` was **not** merged into this branch. |
 
 ## Defect (M38, MEDIUM)
 
