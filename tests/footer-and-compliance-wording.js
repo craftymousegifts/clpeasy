@@ -63,8 +63,20 @@ assert(showcaseHtml.includes('EUH208 supplemental information added where applic
 // ── plan-picker.html: "always correct" quiz-result overclaim ────────────
 assert(!/give you confidence your labels are always correct/i.test(planPickerHtml),
   'plan-picker.html Easy Pro result must not claim labels are "always correct" (CLPeasy does not guarantee accuracy)');
-assert(planPickerHtml.includes('Based on how you work, Easy Pro will save you time, reduce risk and help you review your labels with confidence.'),
-  'plan-picker.html Easy Pro result must use the corrected "help you review your labels with confidence" wording');
+// Plan Checker audit (Sep 2026): the old Easy Pro tagline ("save you time,
+// reduce risk ... confidence") belonged to the retired points model. Easy Pro
+// is now recommended only on its factual proposition: 30 downloads a month,
+// priority support and top-ups -- never compliance risk or anxiety.
+const planCheckerJs = fs.readFileSync('plan-checker.js', 'utf8');
+for (const [name, src] of [['plan-picker.html', planPickerHtml], ['plan-checker.js', planCheckerJs]]) {
+  assert(!/reduce risk/i.test(src), name + ' must not sell Easy Pro as reducing risk');
+  assert(!/Trading Standards/i.test(src), name + ' must not use Trading Standards confidence to recommend a plan');
+  assert(!/review your labels with confidence/i.test(src), name + ' must not use the retired confidence tagline');
+}
+assert(planCheckerJs.includes("tagline: '30 downloads every month, plus priority support.'"),
+  'plan-checker.js Easy Pro result must use the factual 30 downloads + priority support tagline');
+assert(planCheckerJs.includes("'Priority support — we aim to reply within 1 working day.'"),
+  'plan-checker.js Easy Pro result must use the approved priority-support wording');
 
 // ── Sitewide guard: no absolute/misleading compliance-guarantee phrases ──
 // Customer-facing pages must never claim CLPeasy guarantees, ensures or
@@ -73,7 +85,7 @@ assert(planPickerHtml.includes('Based on how you work, Easy Pro will save you ti
 const customerFacingFiles = [
   'index.html', 'pricing.html', 'faq.html', 'compliance.html', 'knowledge.html',
   'plan-picker.html', 'terms.html', 'privacy.html', 'builder.html', 'my-labels.html',
-  'dashboard.html', 'account.html', 'checkout.html', 'support.html',
+  'dashboard.html', 'account.html', 'checkout.html', 'support.html', 'plan-checker.js',
   'cookie-policy.html', 'refund.html', 'auth.html', 'coming-soon.html', 'showcase.html',
   'release-notes.html',
 ];
