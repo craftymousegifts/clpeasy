@@ -437,7 +437,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .dl-pg-more li{margin:2px 0;}
 .dl-pg-note{font-size:12px;opacity:.9;}
 .dl-pg-close{flex-shrink:0;background:none;border:1px solid currentColor;border-radius:6px;color:inherit;font:600 12px 'DM Sans',sans-serif;padding:4px 8px;cursor:pointer;}
-.dl-format-help{margin:10px 0 0;font-size:12px;line-height:1.55;color:var(--muted);}
+.dl-format-help{margin:10px 0 0;font-size:13.5px;line-height:1.55;color:var(--muted);}
 .dl-format-help p{margin:0;}
 .dl-format-help ul{margin:4px 0 0 18px;padding:0;}
 .dl-format-help strong{color:var(--text);}
@@ -1366,9 +1366,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
       <div class="review-download-grid">
-      <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ PNG</button>
-      <button id="btn-svg" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬡ SVG</button>
-      <button id="btn-pdf" onclick="printToPDF()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">▣ PDF</button>
+      <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" style="order:3" onclick="downloadPNG()">⬇ PNG</button>
+      <button id="btn-svg" style="order:2" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬡ SVG</button>
+      <button id="btn-pdf" style="order:1" onclick="printToPDF()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">▣ PDF</button>
       </div>
       <!-- Stage 2: the two current printing routes (single label: PDF; several on A4: Print Sheet Composer). -->
       <div class="dl-format-help" id="dl-format-help">
