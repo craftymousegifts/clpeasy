@@ -27,3 +27,8 @@ the exact GB hazard-statement wording, the GB classification/category, the signa
 ## Rules
 - Do not change these mappings unless GB verification shows something is wrong.
 - Record any discrepancy here and **stop for owner review** before changing application code.
+
+## Final integration QA (recorded 28 Sep 2026)
+**Status: OPEN.** The audit branch is deliberately isolated from `main` (PAYG PR #156, Stage 1 PR #159 and later). Before production, the completed audit work must be integrated with current `main` and re-tested there, including:
+- the PR #159 Composer size-integrity protections (`tests/print-sheet-size-integrity.js`) together with M03's Composer fine-tune overrides;
+- the full suite on the integrated result.

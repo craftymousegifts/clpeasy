@@ -4,7 +4,7 @@
 |---|---|
 | Branch | `fix/circle-per-line-text-fit`, on top of Issues #1–#7 |
 | Implementation | `ff16261` (print.html only, plus a new test) |
-| Status | **FIXED + QA PASSED**. Awaiting Michaela's sign-off. Not merged to `main`. Not deployed to production. `main` was **not** merged into this branch. |
+| Status | **FIXED + QA PASSED + SIGNED OFF** (Michaela, 28 Sep 2026). Approved implementation `ff16261`, approved evidence `4bff2da`. Not merged to `main`. Not deployed to production. `main` was **not** merged into this branch. |
 | Classification | CLPeasy consistency/technical defect (source B). Not a GB CLP regulatory issue. |
 
 ## Defect (M03, MEDIUM)
@@ -56,7 +56,7 @@ Mutation check: with the pre-M03 `print.html` the browser checks fail ("hazardFS
 | 60 mm circle, fine-tuned (3) | identical | changed (content only, as intended) | same size, content changed |
 
 - **Builder:** unchanged (no Builder code touched).
-- **Stage 1 (PR #159):** not on this branch (main was not merged in), so its size-integrity test does not exist here. Geometry was instead proven unchanged by the comparison above.
+- **Stage 1 (PR #159):** not on this branch (main was not merged in), so its size-integrity test does not exist here. Geometry was instead proven unchanged by the comparison above. Michaela accepted this for the audit-stage sign-off. **Final integration QA must re-test M03 against current `main`, including the PR #159 Composer size-integrity protections** (see `PRE-PRODUCTION-GB-REGULATORY-VERIFICATION-CHECKPOINT.md`, integration section).
 
 ## Suite
 - Full suite: 56 pass, 5 fail. The 5 are the audit-branch baseline failures already recorded for Issue #7: builder-desktop-scroll-model, builder-step-navigation-layout, footer-and-compliance-wording, lifecycle-reminder-accuracy, smart-paste-user-guidance-wording. **No new failures.**
