@@ -891,7 +891,10 @@ function wrapTextPerLine(txt,maxPxForLine,sizePx,bold=false,serif=false){
 }
 
 // ── HELPER: SVG text escape ────────────────────────────────────
-function xe(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+// M56: XML 1.0 does not permit most C0 control characters. Strip only
+// those invalid code points before entity-escaping; preserve TAB/LF/CR.
+function stripXmlControls(s){return String(s==null?'':s).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'');}
+function xe(s){return stripXmlControls(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 // ── HELPER: render wrapped lines as SVG <text>/<tspan> ────────
 function svgWrapped(lines,x,startY,lineH,sizePx,bold,serif,fill,anchor='middle',letterSpacing=''){
