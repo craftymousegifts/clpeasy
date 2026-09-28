@@ -1264,7 +1264,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <h2 class="step-heading">Your business details</h2>
     <p class="step-sub">Required on CLP labels — your name and address as the responsible person.</p>
     <div class="form-group"><label>Business / Brand name <span>(required)</span></label><input type="text" id="biz-name" placeholder="As you want it to appear on the label" oninput="updateLabel();saveBizDetails()"></div>
-    <div class="form-group"><label>Address <span>(town, county or full address)</span></label><input type="text" id="biz-address" placeholder="e.g. Scottish Borders, Scotland" oninput="updateLabel();saveBizDetails()"></div>
+    <div class="form-group"><label>Address <span>(required)</span></label><input type="text" id="biz-address" placeholder="Enter the supplier address shown on your label" oninput="updateLabel();saveBizDetails()"></div>
     <div class="form-group"><label>Phone number <span>(required for CLP compliance)</span></label><input type="tel" id="biz-phone" placeholder="e.g. 07700 900000" oninput="updateLabel();saveBizDetails()"></div>
     <div class="form-row">
       <div class="form-group"><label>Website <span>(optional)</span></label><input type="text" id="biz-website" placeholder="e.g. clpeasy.com" oninput="updateLabel();saveBizDetails()"></div>
@@ -3670,6 +3670,7 @@ function _downloadAllowed(){
 const REQUIRED_CONTENT_MESSAGES={
   'product-name':'Add your product name (Step 2).',
   'business-name':'Add your business name (Step 4).',
+  'business-address':'Add your supplier address (Step 4).',
   'euh208-substance':'EUH208 needs the named sensitising substance(s). Check your current supplier SDS and paste the complete relevant EUH208/Contains information.',
 };
 // One line per missing item; 'p-statement' names the incomplete codes (Issue #5).
@@ -3679,7 +3680,7 @@ function _requiredContentLine(m,rc){
 function _requiredContentCheck(){
   const val=id=>document.getElementById(id)?.value||'';
   return LabelRenderer.checkRequiredContent({
-    scentName:val('scent-name'), bizName:val('biz-name'),
+    scentName:val('scent-name'), bizName:val('biz-name'), bizAddress:val('biz-address'),
     hStatements:document.getElementById('h-statements')?val('h-statements'):S.hStatements,
     sensitisers:S.sensitisers,
     pStatements:document.getElementById('p-statements')?val('p-statements'):S.pStatements,
@@ -4564,6 +4565,14 @@ function checkStep4AndNext(){
     return;
   }
   document.getElementById('biz-name').style.border='';
+  const address=(document.getElementById('biz-address')?.value||'').trim();
+  if(!address){
+    document.getElementById('biz-address').style.border='1.5px solid #EF4444';
+    document.getElementById('biz-address').focus();
+    alert('Add your supplier address before continuing.');
+    return;
+  }
+  document.getElementById('biz-address').style.border='';
   const phone=(document.getElementById('biz-phone')?.value||'').trim();
   if(!phone){
     document.getElementById('biz-phone').style.border='1.5px solid #EF4444';
