@@ -428,7 +428,10 @@ function pStatementNeedsChoice(code){
 // Combine adjacent codes into a supported combined statement ("P337, P313"
 // -> "P337+P313"), exactly as the renderer always has.
 function normalisePCodes(pStatements){
-  const raw=String(pStatements||'').split(',').map(p=>p.trim()).filter(Boolean);
+  // M24: preserve first-seen supplier order but never print the same code
+  // twice. De-duplicate before adjacent-code combination so a duplicate
+  // cannot manufacture or disturb a combined P statement.
+  const raw=[...new Set(String(pStatements||'').split(',').map(p=>p.trim()).filter(Boolean))];
   const out=[];
   for(let i=0;i<raw.length;i++){
     const comb=i<raw.length-1?raw[i]+'+'+raw[i+1]:null;
@@ -1463,7 +1466,10 @@ function renderLabel(rawData, opts){
   const _containsParts=[];
   _langs.forEach(l=>{const t=l==='fr'?'Contient:':l==='de'?'Enthält:':'Contains:';if(!_containsParts.includes(t))_containsParts.push(t);});
   const _containsPrefix=_containsParts.join(' / ');
-  const _allCodes=(data.hStatements||'').split(',').map(h=>h.trim()).filter(Boolean);
+  // M24: duplicate H/EUH codes add no information and must not duplicate
+  // statutory wording. Keep the first occurrence so supplier/input order is
+  // otherwise unchanged.
+  const _allCodes=[...new Set((data.hStatements||'').split(',').map(h=>h.trim()).filter(Boolean))];
   const hasEUH208=_allCodes.includes('EUH208');
   const hCodes=_allCodes.filter(h=>h!=='EUH208');
   const pCodes=(data.pStatements||'').split(',').map(p=>p.trim()).filter(Boolean);
