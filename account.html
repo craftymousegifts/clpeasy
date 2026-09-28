@@ -634,6 +634,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="entitlement.js"></script>
+<script src="checkout-notice.js"></script>
 <script>
 const _sb = window.supabase.createClient(
   'https://qvkosdqcryrcfbjtaxic.supabase.co',
@@ -1352,7 +1353,25 @@ async function confirmResub() {
       body: JSON.stringify({ priceId, mode: 'subscription' })
     });
     const data = await res.json();
-    if (data.url) { window.location.href = data.url; }
+    if (data.url) {
+      // Record the started subscription checkout (checkout-notice.js), so the
+      // "Checkout in progress" indicator shows on checkout.html / pricing.html,
+      // where Stripe's cancel link returns the customer.
+      if (window.CLPCheckoutNotice) window.CLPCheckoutNotice.markStarted(currentUser.id);
+      window.location.href = data.url;
+    }
+    else if (data.code === 'CHECKOUT_IN_PROGRESS') {
+      // Server duplicate-subscription lock (a subscription checkout was started
+      // for this account within the last 5 minutes): same shared dialog as
+      // pricing.html and checkout.html, instead of the generic failure.
+      btn.textContent = originalText; btn.disabled = false; btn.style.opacity = '1';
+      if (window.CLPCheckoutNotice) {
+        window.CLPCheckoutNotice.markStarted(currentUser.id);
+        window.CLPCheckoutNotice.showInProgress({ returnFocus: btn });
+      } else {
+        alert(data.error || 'A checkout is already in progress for this account. Please wait a moment and try again.');
+      }
+    }
     else if (data.code === 'ALREADY_SUBSCRIBED') {
       alert(data.error);
       btn.textContent = originalText; btn.disabled = false; btn.style.opacity = '1';
