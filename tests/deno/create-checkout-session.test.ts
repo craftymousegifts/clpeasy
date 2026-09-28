@@ -210,4 +210,47 @@ await test('decision 2: an active subscriber cannot reach PAYG by sending mode=s
   eq(stripeRequests.length, 0, 'no Stripe session');
 });
 
+// ── Duplicate-subscription checkout lock (checkout_locks, 5 minutes) ──
+// What pricing.html / checkout.html receive when a customer comes back from a
+// Stripe Checkout they did not finish and picks a plan again. The response
+// carries no plan, price, session or remaining time (the lock stores none).
+const LIVE_START_M = 'price_1TdoEYGZLILz5vqUIqlEsf4X', LIVE_PRO_M = 'price_1TdoEXGZLILz5vqUvZKB1RQw', LIVE_PRO_A = 'price_1TdoEXGZLILz5vqUFgTznTUT';
+const T0 = '2026-10-01T12:00:00.000Z';
+const plus = (ms: number) => new Date(new Date(T0).getTime() + ms).toISOString();
+await test('lock: Easy Start opens; an immediate second Easy Start, Easy Pro monthly or Easy Pro annual attempt gets 409 CHECKOUT_IN_PROGRESS without calling Stripe', async () => {
+  db().tables.profiles.push({ id: 'user-1', subscription_status: 'trialing', plan: 'free', downloads_limit: 10 });
+  eq((await callAt(T0, { priceId: LIVE_START_M, mode: 'subscription' })).status, 200, 'Easy Start checkout opens');
+  eq(db().tables.checkout_locks.length, 1, 'lock held after a successful session');
+  for (const [label, priceId, at] of [['Easy Start again', LIVE_START_M, plus(5_000)], ['Easy Pro monthly', LIVE_PRO_M, plus(102_000)], ['Easy Pro annual', LIVE_PRO_A, plus(4 * 60_000 + 59_000)]] as const) {
+    const r = await callAt(at, { priceId, mode: 'subscription' });
+    const b = await r.json();
+    eq([r.status, b.code], [409, 'CHECKOUT_IN_PROGRESS'], label);
+    eq(Object.keys(b).sort(), ['code', 'error'], label + ': response has only code + message (no plan, price, session or time)');
+  }
+  eq(stripeRequests.length, 1, 'only the first attempt reached Stripe');
+});
+await test('lock: after 5 minutes the stale lock is cleared and Easy Pro monthly opens normally', async () => {
+  db().tables.profiles.push({ id: 'user-1', subscription_status: 'trialing', plan: 'free', downloads_limit: 10 });
+  await callAt(T0, { priceId: LIVE_START_M, mode: 'subscription' });
+  eq((await callAt(plus(5 * 60_000 + 1_000), { priceId: LIVE_PRO_M, mode: 'subscription' })).status, 200, 'Easy Pro opens after expiry');
+  eq(stripeRequests[1].get('line_items[0][price]'), LIVE_PRO_M, 'Easy Pro monthly price');
+  eq(db().tables.checkout_locks.length, 1, 'one fresh lock for the new checkout');
+});
+await test('lock: Pay As You Go is not blocked by a subscription checkout lock', async () => {
+  db().tables.profiles.push({ id: 'user-1', subscription_status: 'trialing', plan: 'free', downloads_limit: 10 });
+  await callAt(T0, { priceId: LIVE_START_M, mode: 'subscription' });
+  eq((await callAt(plus(30_000), paygBody)).status, 200, 'PAYG opens during the lock');
+  eq(stripeRequests[1].get('metadata[type]'), 'payg', 'PAYG session');
+});
+await test('lock: subscriber top-ups are not blocked by a checkout lock', async () => {
+  db().tables.profiles.push({ id: 'user-1', subscription_status: 'active', plan: 'easy_start', downloads_limit: 20 });
+  db().tables.checkout_locks.push({ user_id: 'user-1', created_at: plus(0) });
+  eq((await callAt(plus(30_000), { priceId: TOPUP5, mode: 'payment' })).status, 200, 'top-up opens during the lock');
+  eq(stripeRequests[0].get('metadata[type]'), 'topup', 'top-up session');
+});
+await test("lock: one customer's lock never blocks another customer", async () => {
+  db().tables.checkout_locks.push({ user_id: 'someone-else', created_at: plus(0) });
+  eq((await callAt(plus(10_000), { priceId: LIVE_PRO_M, mode: 'subscription' })).status, 200, 'user-1 unaffected');
+});
+
 out(`create-checkout-session offline checks passed (${passed} scenarios)`);

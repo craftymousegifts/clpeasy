@@ -61,9 +61,21 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
 .payg-fit{margin-top:18px;padding:14px 16px;border:1px solid rgba(76,155,176,0.35);border-radius:10px;background:white;color:var(--text);font-size:12px;line-height:1.6;}
 
 .popular-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--teal);color:white;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.5px;white-space:nowrap;}
-.pro-badge-pill{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#D97706,#DC2626);color:white;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.5px;white-space:nowrap;}
+.pro-badge-pill{position:absolute;top:-12.5px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#D97706,#DC2626);color:white;font-size:11px;font-weight:800;padding:4px 14px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
+/* Plan-name pills on the Easy Trial and Easy Start cards: same geometry and
+   type as the Pay As You Go pill, coloured to match each card (borders drawn
+   with an inset shadow so every pill is exactly the same height). top is
+   0.5px higher than the PAYG pill's because its card border is 2px, not
+   1.5px, so all four pills sit at the same height on the cards' outer edge. */
+.plan-pill{position:absolute;top:-12.5px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;padding:4px 14px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
+.trial-pill{background:white;color:#4B5563;box-shadow:inset 0 0 0 1.5px #D1D5DB;}
+.start-pill{background:white;color:var(--teal-dark);box-shadow:inset 0 0 0 1.5px var(--teal);}
 
 .card-icon{font-size:26px;margin-bottom:12px;display:block;}
+/* Repo-native SVG card icons (Pay As You Go, Easy Start): same 31px box as the
+   emoji icons so card names stay aligned. */
+.card-icon-svg{height:31px;line-height:0;}
+.card-icon-svg svg{display:block;width:33px;height:33px;margin-top:-1px;overflow:visible;}
 .card-name{font-family:'DM Serif Display',serif;font-size:23px;margin-bottom:5px;color:var(--text);}
 .pro-card .card-name{color:white;}
 .card-desc{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.5;}
@@ -177,6 +189,15 @@ footer a{color:#6B7280;text-decoration:none;}
   window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
   plausible.init()
 </script>
+<style>
+/* Signed-in CTAs: while a stored session is being confirmed, hide the trial
+   CTAs so a signed-in visitor never sees "Start free trial" flash. Signed-out
+   visitors (no stored session) never get this class. */
+html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
+</style>
+<script>
+  try { if (localStorage.getItem('sb-qvkosdqcryrcfbjtaxic-auth-token')) document.documentElement.classList.add('clp-auth-pending'); } catch (e) {}
+</script>
 </head>
 <body>
 
@@ -186,7 +207,7 @@ footer a{color:#6B7280;text-decoration:none;}
     <a href="index.html" class="nav-link nav-home">Home</a>
     <a href="compliance.html" class="nav-link" target="_blank" rel="noopener">Compliance</a>
     <a href="support.html" class="nav-link" target="_blank" rel="noopener">Support</a>
-    <a href="auth.html?mode=signup" class="nav-cta">Start free trial</a>
+    <a href="auth.html?mode=signup" class="nav-cta" data-trial-cta="nav">Start free trial</a>
   </div>
 </nav>
 
@@ -216,12 +237,13 @@ footer a{color:#6B7280;text-decoration:none;}
 
     <!-- 1: EASY TRIAL -->
     <div class="card">
+      <div class="plan-pill trial-pill" aria-hidden="true">Easy Trial</div>
       <span class="card-icon">✨</span>
       <div class="card-name">Easy Trial™</div>
       <div class="card-desc">Full access for 14 days so you can try everything before you commit.</div>
       <div class="price-row"><div class="price-amount">Free</div></div>
       <div class="price-sub">14-day trial &nbsp;&#183;&nbsp; No card needed</div>
-      <a href="auth.html?mode=signup" class="btn btn-outline">Start free trial &#8594;</a>
+      <a href="auth.html?mode=signup" class="btn btn-outline" data-trial-cta>Start free trial &#8594;</a>
       <a href="plan-picker.html" style="display:block;text-decoration:none;background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:2px solid #F59E0B;border-radius:12px;padding:16px 18px;margin-bottom:16px;transition:transform .15s,box-shadow .15s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(245,158,11,0.25)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
         <div style="font-size:13px;font-weight:800;color:#92400E;margin-bottom:4px;">&#129300; Not sure which plan suits you?</div>
         <div style="font-size:12px;color:#78350F;line-height:1.55;margin-bottom:8px;">Answer 5 quick questions about how you work and we'll point you straight to the right plan. Takes less than a minute.</div>
@@ -241,7 +263,7 @@ footer a{color:#6B7280;text-decoration:none;}
     <!-- 2: PAY AS YOU GO -->
     <div class="card payg-card" id="payg" aria-labelledby="payg-label">
       <div class="payg-badge-pill" id="payg-label">Pay As You Go</div>
-      <span class="card-icon">&#127991;&#65039;</span>
+      <span class="card-icon card-icon-svg"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="1.5" y="7" width="21.5" height="18" rx="3" fill="#D6EEF4" stroke="#3A7D8F" stroke-width="2"/><rect x="2.5" y="11" width="19.5" height="3.2" fill="#3A7D8F"/><rect x="5" y="17.6" width="6.2" height="4" rx="1" fill="#4C9BB0"/><path d="M25.4 13a4.3 4.3 0 0 1 0 6M28 10.6a7.6 7.6 0 0 1 0 10.8M30.6 8.2a11 11 0 0 1 0 15.6" fill="none" stroke="#4C9BB0" stroke-width="2.2" stroke-linecap="round"/></svg></span>
       <div class="card-name">Pay As You Go</div>
       <div class="card-desc">Buy downloads only when you need them. One-off payment. No subscription.</div>
       <div class="price-row"><div class="price-amount">&pound;4.99</div><div class="price-period">one-off</div></div>
@@ -259,7 +281,8 @@ footer a{color:#6B7280;text-decoration:none;}
 
     <!-- 3: EASY START -->
     <div class="card featured">
-      <span class="card-icon">🕯️</span>
+      <div class="plan-pill start-pill" aria-hidden="true">Easy Start</div>
+      <span class="card-icon card-icon-svg"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="5" y="5" width="22" height="25" rx="3" fill="#D6EEF4" stroke="#3A7D8F" stroke-width="2"/><rect x="10.5" y="2.4" width="11" height="6" rx="1.8" fill="#FFFFFF" stroke="#3A7D8F" stroke-width="2"/><path d="M10.2 18.4l4 4 7.6-8.2" fill="none" stroke="#4C9BB0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
       <div class="card-name">Easy Start™</div>
       <div class="card-desc">Practical tools for makers selling in Great Britain creating organised, print-ready CLP labels from supplier SDS data.</div>
       <div class="price-row"><div class="price-amount" id="maker-price">&pound;8.99</div><div class="price-period" id="maker-period">/mo</div></div><div id="maker-promo" class="offer-block"><span class="offer-badge">2026 offer · 10% off</span><div class="offer-main">£8.99/month until <span style="white-space:nowrap;">31 December 2026</span></div><div class="offer-then">Then £9.99/month</div></div><div id="maker-annual-eq" style="font-size:12px;color:var(--teal-dark);font-weight:700;margin-top:-5px;margin-bottom:10px;display:none;"></div>
@@ -286,7 +309,7 @@ footer a{color:#6B7280;text-decoration:none;}
 
     <!-- 4: EASY PRO -->
     <div class="card pro-card">
-      <div class="pro-badge-pill">&#128640; More downloads + support</div>
+      <div class="pro-badge-pill" aria-hidden="true">Easy Pro</div>
       <span class="card-icon">&#9889;</span>
       <div class="card-name">Easy Pro™</div>
       <div class="card-desc">Everything in Easy Start, with 10 extra downloads each month and priority support.</div>
@@ -327,7 +350,7 @@ footer a{color:#6B7280;text-decoration:none;}
     <div style="background:rgba(76,155,176,0.15);border:1px solid rgba(76,155,176,0.3);border-radius:16px;padding:24px 28px;margin-bottom:32px;">
       <p style="font-size:18px;color:white;font-style:italic;line-height:1.7;margin:0;">"Your whole dream shouldn't fall down at the last hurdle because of a label. Relax, design, and create — <strong>we've got you.</strong>"</p>
     </div>
-    <a href="auth.html?mode=signup" style="display:inline-block;background:var(--teal);color:white;padding:14px 32px;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;transition:background .2s;">Start your free 14-day trial →</a>
+    <a href="auth.html?mode=signup" data-trial-cta style="display:inline-block;background:var(--teal);color:white;padding:14px 32px;border-radius:12px;font-size:15px;font-weight:700;text-decoration:none;transition:background .2s;">Start your free 14-day trial →</a>
     <p style="font-size:13px;color:rgba(255,255,255,0.4);margin-top:12px;">No credit card required &nbsp;·&nbsp; Cancel anytime</p>
   </div>
 </div>
@@ -482,7 +505,7 @@ footer a{color:#6B7280;text-decoration:none;}
         <div style="font-size:18px;font-weight:700;color:white;margin-bottom:6px;">Practical label tools for less than £2.50 a week.</div>
         <div style="font-size:14px;color:rgba(255,255,255,0.8);line-height:1.6;">That&rsquo;s less than a cup of coffee &mdash; for practical tools that help you build and check labels against your current supplier SDS.</div>
       </div>
-      <a href="auth.html?mode=signup" style="background:white;color:var(--teal);padding:13px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;white-space:nowrap;flex-shrink:0;">Start free trial →</a>
+      <a href="auth.html?mode=signup" data-trial-cta style="background:white;color:var(--teal);padding:13px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;white-space:nowrap;flex-shrink:0;">Start free trial →</a>
     </div>
 
   </div>
@@ -636,7 +659,35 @@ footer a{color:#6B7280;text-decoration:none;}
   <p style="margin-top:8px;">&copy; 2026 CLPeasy™</p>
 </footer>
 
+<script>
+// ── Signed-in trial CTAs (same rule as index.html / knowledge.html) ──
+// A signed-in visitor is never invited to "Start free trial": the header CTA
+// becomes "My account" (account.html) and every other trial CTA becomes
+// "Go to builder →" (builder.html), for every account state. Plan and Pay As
+// You Go buttons are unchanged (the server already enforces who can buy
+// what). Links are marked with data-trial-cta rather than matched by href,
+// because Netlify rewrites auth.html?mode=signup to /auth?mode=signup.
+function applySignedInCtas(signedIn){
+  document.querySelectorAll('[data-trial-cta]').forEach(a=>{
+    if(!a.dataset.origHref){ a.dataset.origHref=a.getAttribute('href'); a.dataset.origHtml=a.innerHTML; }
+    if(signedIn){
+      const nav=a.dataset.trialCta==='nav';
+      a.setAttribute('href',nav?'account.html':'builder.html');
+      a.textContent=nav?'My account':'Go to builder →';
+    } else {
+      a.setAttribute('href',a.dataset.origHref);
+      a.innerHTML=a.dataset.origHtml;
+    }
+  });
+  document.documentElement.classList.remove('clp-auth-pending');
+}
+// A stored session exists: show the signed-in CTAs straight away (no
+// dependency on the Supabase script loading); initSupabase() confirms or
+// reverts them once the session is checked.
+if(document.documentElement.classList.contains('clp-auth-pending')) applySignedInCtas(true);
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="checkout-notice.js"></script>
 <script>
 const SUPABASE_URL='https://qvkosdqcryrcfbjtaxic.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
@@ -665,6 +716,13 @@ async function initSupabase(){
   const {data:{session}}=await sbClient.auth.getSession();
   if(session){currentUser=session.user;}
   sbReady=true;
+  applySignedInCtas(!!session);
+  // Header "Checkout in progress" indicator (checkout-notice.js): shown only
+  // while this browser knows a subscription checkout was started for this
+  // account within the last 5 minutes.
+  if(window.CLPCheckoutNotice&&!document.getElementById('clp-checkout-indicator')){
+    window.CLPCheckoutNotice.mountIndicator(document.querySelector('nav .nav-actions'),()=>currentUser&&currentUser.id);
+  }
 }
 initSupabase();
 
@@ -750,11 +808,20 @@ async function startCheckout(plan){
     });
     const data=await res.json();
     if(data.url){
+      if(window.CLPCheckoutNotice) window.CLPCheckoutNotice.markStarted(currentUser.id);
       window.location.href=data.url;
-    } else if((data.code==='ALREADY_SUBSCRIBED'||data.code==='CHECKOUT_IN_PROGRESS')&&data.error){
-      // Expected server refusals (an active subscription already exists, or
-      // a checkout was just started): show the server's explanation, as
-      // account.html already does, instead of a generic failure.
+    } else if(data.code==='CHECKOUT_IN_PROGRESS'){
+      if(window.CLPCheckoutNotice) window.CLPCheckoutNotice.markStarted(currentUser.id);
+      // A subscription checkout was started for this account within the last
+      // few minutes (server-side duplicate-subscription lock): explain the
+      // wait in the shared CLPeasy dialog instead of a browser alert.
+      if(btn){btn.textContent='Get started →';btn.style.opacity='1';btn.disabled=false;}
+      if(window.CLPCheckoutNotice) window.CLPCheckoutNotice.showInProgress({returnFocus:btn});
+      else alert(data.error||'A checkout is already in progress for this account. Please wait a moment and try again.');
+    } else if(data.code==='ALREADY_SUBSCRIBED'&&data.error){
+      // Expected server refusal (an active subscription already exists):
+      // show the server's explanation, as account.html already does,
+      // instead of a generic failure.
       alert(data.error);
       if(btn){btn.textContent='Get started →';btn.style.opacity='1';btn.disabled=false;}
     } else {

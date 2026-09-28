@@ -10,7 +10,7 @@ const { JSDOM, VirtualConsole } = require('jsdom');
 
 const source = fs.readFileSync('pricing.html', 'utf8').replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
 
-async function open({ signedIn, pending, response }){
+async function open({ signedIn, pending, response, notice }){
   const calls = [], alerts = [], errors = [];
   const vc = new VirtualConsole();
   vc.on('jsdomError', e => { if (!/navigation/i.test(e.message)) errors.push(e.message); });
@@ -19,6 +19,7 @@ async function open({ signedIn, pending, response }){
     url: 'https://clpeasy.com/pricing.html', runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: vc,
     beforeParse(w){
       if (pending) w.sessionStorage.setItem('checkout_payg', '1');
+      if (notice) w.eval(fs.readFileSync('checkout-notice.js', 'utf8')); // <script src> tags are stripped above
       w.alert = m => alerts.push(String(m));
       w.scrollTo = () => {};
       w.fetch = async (url, init) => { calls.push({ url, init }); return response || { ok: true, status: 200, json: async () => ({ url: 'https://checkout.stripe.com/c/pay/cs_test_x' }) }; };
@@ -111,18 +112,34 @@ async function open({ signedIn, pending, response }){
     const refusal = { ok: false, status: 409, json: async () => ({ code, error: code === 'ALREADY_SUBSCRIBED'
       ? "You already have an active subscription. Manage or change your plan from your account's billing portal instead of starting a new checkout."
       : 'A checkout is already in progress for this account. Please wait a moment and try again.' }) };
-    const { w, calls, alerts, errors } = await open({ signedIn: true, response: refusal });
+    const { w, calls, alerts, errors } = await open({ signedIn: true, response: refusal, notice: true });
     w.eval("setBilling('annual', document.querySelector('[onclick*=\"annual\"]'))");
     await w.startCheckout('easy_pro');
     assert.strictEqual(calls.length, 1, code + ': the server was asked (and refused)');
     assert(/create-checkout-session/.test(calls[0].url));
     assert.strictEqual(JSON.parse(calls[0].init.body).priceId, 'price_1TdoEXGZLILz5vqUFgTznTUT', code + ': Easy Pro ANNUAL price was requested');
-    assert.strictEqual(alerts.length, 1, code + ': one message');
-    assert(pattern.test(alerts[0]), code + ': shows the server explanation, got: ' + alerts[0]);
-    assert(!/Something went wrong/.test(alerts[0]), code + ': not the generic error');
+    if (code === 'CHECKOUT_IN_PROGRESS') {
+      // Shown in the shared CLPeasy dialog (checkout-notice.js), not an alert;
+      // tests/checkout-in-progress-notice.js covers it in Chromium.
+      assert.deepStrictEqual(alerts, [], code + ': no browser alert');
+      const d = w.document.querySelector('.clp-cn-dialog[role="dialog"]');
+      assert(d && /Checkout already in progress/.test(d.textContent), code + ': in-progress dialog shown');
+    } else {
+      assert.strictEqual(alerts.length, 1, code + ': one message');
+      assert(pattern.test(alerts[0]), code + ': shows the server explanation, got: ' + alerts[0]);
+      assert(!/Something went wrong/.test(alerts[0]), code + ': not the generic error');
+    }
     const btn = w.document.getElementById('btn-easy_pro');
     if (btn) { assert.strictEqual(btn.disabled, false, code + ': button restored'); assert(/Get started/.test(btn.textContent), code + ': button label restored'); }
     assert.deepStrictEqual(errors, []);
+  }
+  // If checkout-notice.js failed to load, the refusal still shows the
+  // server's explanation (never the generic failure).
+  {
+    const refusal = { ok: false, status: 409, json: async () => ({ code: 'CHECKOUT_IN_PROGRESS', error: 'A checkout is already in progress for this account. Please wait a moment and try again.' }) };
+    const { w, alerts } = await open({ signedIn: true, response: refusal });
+    await w.startCheckout('easy_start');
+    assert.deepStrictEqual(alerts, ['A checkout is already in progress for this account. Please wait a moment and try again.'], 'fallback message');
   }
   // A genuine failure (network/unknown) still shows the generic message.
   {
