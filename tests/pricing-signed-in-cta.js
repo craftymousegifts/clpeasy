@@ -7,6 +7,9 @@
 // While a stored session is still being confirmed the trial CTAs are hidden,
 // so a signed-in visitor never sees "Start free trial" flash.
 //
+// Also: all four plan cards carry the same top-border plan-name pill as the
+// Pay As You Go card (EASY TRIAL / PAY AS YOU GO / EASY START / EASY PRO).
+//
 // Real pricing.html in Chromium; supabase-js is stubbed per scenario.
 // Screenshots: docs/reports/pricing-signed-in-cta/*.png
 //   node tests/pricing-signed-in-cta.js
@@ -28,6 +31,9 @@ const unmarkedTrial = [...HTML.matchAll(/<a [^>]*href="auth\.html\?mode=signup"[
 assert.strictEqual(unmarkedTrial.length, 0, 'every signup link in the markup is a marked trial CTA');
 assert(!/data-trial-cta[^>]*(btn-payg|btn-easy_)/.test(HTML), 'plan and PAYG buttons are not trial CTAs');
 console.log('PASS: static: exactly the four "Start free trial" CTAs are marked; plan and PAYG buttons untouched');
+const pills = [...HTML.matchAll(/<div class="(plan-pill [a-z-]+|payg-badge-pill|pro-badge-pill)"[^>]*>([^<]*)<\/div>/g)].map(m => m[2]);
+assert.deepStrictEqual(pills, ['Easy Trial', 'Pay As You Go', 'Easy Start', 'Easy Pro'], 'one plan-name pill per card, in card order');
+console.log('PASS: static: one plan-name pill per card (Easy Trial, Pay As You Go, Easy Start, Easy Pro)');
 
 let puppeteer;
 try { puppeteer = require('puppeteer'); } catch (e) { console.log('SKIP pricing-signed-in-cta browser checks: puppeteer not installed'); process.exit(0); }
@@ -174,6 +180,51 @@ server.listen(0, '127.0.0.1', async () => {
         if (name === 'mobile') {
           await t.evaluate(() => document.querySelector('.card').scrollIntoView({ block: 'start', behavior: 'instant' }));
           await t.screenshot({ path: path.join(SHOTS, 'signed-in-mobile-trial-card.png') });
+        }
+        await t.close();
+      });
+    }
+    for (const [name, vp] of [['desktop', DESKTOP], ['mobile', IPHONE]]) {
+      await check(`plan pills (${name}): EASY TRIAL / PAY AS YOU GO / EASY START / EASY PRO, same size and type, centred on the top border, not clipped or overlapping`, async () => {
+        const t = await open({ signedIn: false, viewport: vp });
+        const g = await t.evaluate(() => {
+          const cards = [...document.querySelectorAll('.cards > .card')];
+          return {
+            vw: window.innerWidth,
+            hscroll: document.documentElement.scrollWidth > window.innerWidth,
+            pills: cards.map((c, i) => {
+              const pill = c.querySelector(':scope > .plan-pill, :scope > .payg-badge-pill, :scope > .pro-badge-pill');
+              if (!pill) return null;
+              const cr = c.getBoundingClientRect(), pr = pill.getBoundingClientRect(), cs = getComputedStyle(pill);
+              const prev = i ? cards[i - 1].getBoundingClientRect() : null;
+              const icon = c.querySelector('.card-icon').getBoundingClientRect();
+              return {
+                text: pill.innerText.trim(), h: pr.height, font: [cs.fontSize, cs.fontWeight, cs.letterSpacing, cs.textTransform, cs.paddingTop, cs.paddingLeft, cs.borderRadius].join(' '),
+                topFromCard: +(pr.top - cr.top).toFixed(2), centreOffset: Math.abs((pr.left + pr.right) / 2 - (cr.left + cr.right) / 2),
+                inside: pr.left >= 0 && pr.right <= window.innerWidth, clearOfIcon: pr.bottom <= icon.top,
+                // Stacked (mobile): the pill must not touch the card above it.
+                clearOfPrev: !prev || prev.bottom <= cr.top - 1 ? (!prev || prev.bottom <= pr.top || prev.right <= pr.left || prev.left >= pr.right) : true,
+                bg: [cs.backgroundImage !== 'none' ? 'gradient' : cs.backgroundColor, cs.boxShadow, cs.color].join(' | '),
+              };
+            }),
+          };
+        });
+        assert(g.pills.every(Boolean), 'every card has a pill');
+        assert.deepStrictEqual(g.pills.map(p => p.text), ['EASY TRIAL', 'PAY AS YOU GO', 'EASY START', 'EASY PRO']);
+        assert(g.pills.every(p => p.font === g.pills[1].font), 'same typography/padding as the PAYG pill: ' + JSON.stringify(g.pills.map(p => p.font)));
+        assert(g.pills.every(p => Math.abs(p.h - g.pills[1].h) < 0.5), 'same height: ' + g.pills.map(p => p.h));
+        assert(g.pills.every(p => Math.abs(p.topFromCard - g.pills[1].topFromCard) <= 0.5), 'same position over the top border: ' + g.pills.map(p => p.topFromCard));
+        assert(g.pills.every(p => p.centreOffset < 1), 'centred on the card');
+        assert(g.pills.every(p => p.inside && p.clearOfIcon && p.clearOfPrev), 'not clipped, clear of the icon and of the card above: ' + JSON.stringify(g.pills));
+        assert.strictEqual(new Set(g.pills.map(p => p.bg)).size, 4, 'each plan keeps its own colour treatment (background, outline, text colour)');
+        assert.strictEqual(g.hscroll, false);
+        await t.evaluate(() => { document.querySelector('.cards').scrollIntoView({ block: 'start', behavior: 'instant' }); window.scrollBy(0, -40); });
+        await t.screenshot({ path: path.join(SHOTS, `plan-pills-${name}.png`) });
+        if (name === 'mobile') {
+          for (const [i, shot] of [[2, 'plan-pills-mobile-easy-start'], [3, 'plan-pills-mobile-easy-pro']]) {
+            await t.evaluate(n => { document.querySelectorAll('.cards > .card')[n].scrollIntoView({ block: 'start', behavior: 'instant' }); window.scrollBy(0, -60); }, i);
+            await t.screenshot({ path: path.join(SHOTS, shot + '.png') });
+          }
         }
         await t.close();
       });

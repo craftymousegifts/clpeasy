@@ -61,7 +61,15 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
 .payg-fit{margin-top:18px;padding:14px 16px;border:1px solid rgba(76,155,176,0.35);border-radius:10px;background:white;color:var(--text);font-size:12px;line-height:1.6;}
 
 .popular-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--teal);color:white;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.5px;white-space:nowrap;}
-.pro-badge-pill{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#D97706,#DC2626);color:white;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.5px;white-space:nowrap;}
+.pro-badge-pill{position:absolute;top:-12.5px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#D97706,#DC2626);color:white;font-size:11px;font-weight:800;padding:4px 14px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
+/* Plan-name pills on the Easy Trial and Easy Start cards: same geometry and
+   type as the Pay As You Go pill, coloured to match each card (borders drawn
+   with an inset shadow so every pill is exactly the same height). top is
+   0.5px higher than the PAYG pill's because its card border is 2px, not
+   1.5px, so all four pills sit at the same height on the cards' outer edge. */
+.plan-pill{position:absolute;top:-12.5px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;padding:4px 14px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
+.trial-pill{background:white;color:#4B5563;box-shadow:inset 0 0 0 1.5px #D1D5DB;}
+.start-pill{background:white;color:var(--teal-dark);box-shadow:inset 0 0 0 1.5px var(--teal);}
 
 .card-icon{font-size:26px;margin-bottom:12px;display:block;}
 /* Repo-native SVG card icons (Pay As You Go, Easy Start): same 31px box as the
@@ -229,6 +237,7 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
 
     <!-- 1: EASY TRIAL -->
     <div class="card">
+      <div class="plan-pill trial-pill" aria-hidden="true">Easy Trial</div>
       <span class="card-icon">✨</span>
       <div class="card-name">Easy Trial™</div>
       <div class="card-desc">Full access for 14 days so you can try everything before you commit.</div>
@@ -272,6 +281,7 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
 
     <!-- 3: EASY START -->
     <div class="card featured">
+      <div class="plan-pill start-pill" aria-hidden="true">Easy Start</div>
       <span class="card-icon card-icon-svg"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="5" y="5" width="22" height="25" rx="3" fill="#D6EEF4" stroke="#3A7D8F" stroke-width="2"/><rect x="10.5" y="2.4" width="11" height="6" rx="1.8" fill="#FFFFFF" stroke="#3A7D8F" stroke-width="2"/><path d="M10.2 18.4l4 4 7.6-8.2" fill="none" stroke="#4C9BB0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
       <div class="card-name">Easy Start™</div>
       <div class="card-desc">Practical tools for makers selling in Great Britain creating organised, print-ready CLP labels from supplier SDS data.</div>
@@ -299,7 +309,7 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
 
     <!-- 4: EASY PRO -->
     <div class="card pro-card">
-      <div class="pro-badge-pill">&#128640; More downloads + support</div>
+      <div class="pro-badge-pill" aria-hidden="true">Easy Pro</div>
       <span class="card-icon">&#9889;</span>
       <div class="card-name">Easy Pro™</div>
       <div class="card-desc">Everything in Easy Start, with 10 extra downloads each month and priority support.</div>
