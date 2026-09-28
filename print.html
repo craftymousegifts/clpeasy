@@ -2346,6 +2346,7 @@ function xe(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').r
 // print/export path) so repeated pictogram artwork is embedded once, not
 // once per label -- see downloadPrintSheet()/buildSheetSVG() below.
 let _renderSeq=0;
+const SAVED_RENDER_OVERRIDES=['hazardFSOverride','scentFSOverride','bizNameFSOverride','typeFSOverride','sigFSOverride','hazardYOffset'];
 function renderSheetPosition(e,pw,ph,opts){
   opts=opts||{};
   const instanceId=opts.instanceId||('sheet-'+(_renderSeq++));
@@ -2358,14 +2359,24 @@ function renderSheetPosition(e,pw,ph,opts){
   // (renderSheetCanvas()'s async cell fill, once verifiedProForPreview()
   // has run) pass an explicit opts.watermark so this never re-reads a
   // possibly-since-changed `isPro` and produces a mismatch.
-  return LabelRenderer.renderLabel(e,{
+  const renderOpts={
     instanceId,
     pw,
     ph:(ph===undefined?pw:ph),
     bgColour:e&&e.bgColour,
     sharedDefs:opts.sharedDefs,
     watermark:(typeof opts.watermark==='boolean')?opts.watermark:!isPro,
+  };
+  // M03: the Builder's saved "Fine-tune your label" adjustments, so every
+  // Composer preview, fit check and export draws the label the maker saved
+  // (the Builder passes the same six options to the same renderer). Only a
+  // finite number is passed; anything else leaves that element on the
+  // renderer's automatic sizing.
+  SAVED_RENDER_OVERRIDES.forEach(k=>{
+    const v=e&&e[k];
+    if(typeof v==='number'&&Number.isFinite(v))renderOpts[k]=v;
   });
+  return LabelRenderer.renderLabel(e,renderOpts);
 }
 function buildLabelSVGFromData(e,pw,ph,opts){
   return renderSheetPosition(e,pw,ph,opts).svg;
