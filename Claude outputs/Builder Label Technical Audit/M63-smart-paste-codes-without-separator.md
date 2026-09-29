@@ -4,7 +4,7 @@
 |---|---|
 | ID | **M63** (new; continues the audit matrix after M62) |
 | Area | Builder: Smart Paste code extraction (`extractSDS()` in `builder.html`; H/EUH via `LabelRenderer.extractHazardCodesFromText()`, P via the P-code pattern) |
-| Status | **OPEN**. Found during the Issue #6 (M21) investigation; recording approved by Michaela. **Not fixed as part of Issue #6.** |
+| Status | **FIXED + QA PASSED + SIGNED OFF (29 Sep 2026).** Smart Paste now fails closed before changing hazard state when a CLP code is unambiguously joined directly to following statement text; it never guesses/splits the code. |
 | Origin | Pre-existing (same behaviour on `main` `e8c1f25`). |
 | Severity | Not yet assessed; to be decided in its own audit item. |
 
@@ -32,3 +32,25 @@ M21 changed H-code extraction to keep verified suffixed codes (H361f, H360FD, H3
 - **The fix, if any, must not invent codes from prose.** Options include blocking with a "check the pasted text" message, or splitting code from text where the code is unambiguous.
 
 **Do not fix without approval.**
+
+
+## Resolution — 29 Sep 2026
+
+Implemented on audit branch `fix/circle-per-line-text-fit`.
+
+- Joined examples such as `H317May...`, `EUH208Contains...` and `P102Keep...` are detected before Smart Paste changes current hazard data.
+- CLPeasy shows a check-the-SDS message and does not guess, split, remove or substitute the code.
+- Normal separated codes continue to extract.
+- Verified suffixed H codes such as `H350i` continue through the existing M21 path unchanged.
+- Saved-label schema, renderer, Composer, fit rules, label geometry and golden snapshot were not changed.
+
+Executable GitHub Actions QA: run **36549151885**.
+- M63 targeted regression: PASS.
+- M21 suffixed-code regression: PASS, including real Chromium desktop/mobile and Composer coverage.
+- Builder Safety Baseline: PASS (10 labels; golden snapshot unchanged).
+- Full audit suite: **63 PASS / 5 FAIL**.
+- The five failures are the same known long-standing audit-branch failures: builder-desktop-scroll-model, builder-step-navigation-layout, footer-and-compliance-wording, lifecycle-reminder-accuracy, smart-paste-user-guidance-wording.
+- No unexpected failures.
+- Temporary QA workflow was removed after the run and restored byte-identically to its pre-QA blob.
+
+**RESULT: M63 FIXED + QA PASSED + SIGNED OFF.**
