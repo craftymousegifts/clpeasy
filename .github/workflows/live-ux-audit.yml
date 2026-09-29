@@ -1,0 +1,53 @@
+name: Temporary live UX accessibility audit
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - name: Audit live informational pages at desktop and mobile
+        run: |
+          node <<'NODE'
+          const puppeteer=require('puppeteer');
+          const pages=['/','/pricing.html','/faq.html','/compliance.html','/privacy.html','/terms.html','/refund.html','/cookie-policy.html','/support.html','/showcase.html','/knowledge.html','/auth.html'];
+          (async()=>{
+            const browser=await puppeteer.launch({headless:true,args:['--no-sandbox']});
+            let failures=[];
+            for(const width of [1280,390]){
+              const p=await browser.newPage();
+              await p.setViewport({width,height:844});
+              for(const path of pages){
+                const url='https://clpeasy.com'+path;
+                const res=await p.goto(url,{waitUntil:'networkidle2',timeout:45000});
+                const data=await p.evaluate(()=>({
+                  title:document.title,
+                  lang:document.documentElement.lang,
+                  h1:document.querySelectorAll('h1').length,
+                  overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
+                  duplicateIds:[...document.querySelectorAll('[id]')].map(x=>x.id).filter((x,i,a)=>a.indexOf(x)!==i),
+                  imgMissingAlt:[...document.images].filter(i=>!i.hasAttribute('alt')).length,
+                  unnamedButtons:[...document.querySelectorAll('button')].filter(b=>!(b.innerText||b.getAttribute('aria-label')||b.getAttribute('title')||'').trim()).length,
+                  blankLinks:[...document.querySelectorAll('a')].filter(a=>!(a.innerText||a.getAttribute('aria-label')||a.getAttribute('title')||'').trim()).length
+                }));
+                console.log(width,path,JSON.stringify(data));
+                if(!res||res.status()>=400) failures.push(width+' '+path+' HTTP '+(res&&res.status()));
+                if(data.overflow>2) failures.push(width+' '+path+' horizontal overflow '+data.overflow+'px');
+                if(data.h1!==1) failures.push(width+' '+path+' h1 count '+data.h1);
+                if(data.duplicateIds.length) failures.push(width+' '+path+' duplicate IDs '+data.duplicateIds.join(','));
+                if(data.imgMissingAlt) failures.push(width+' '+path+' images missing alt '+data.imgMissingAlt);
+                if(data.unnamedButtons) failures.push(width+' '+path+' unnamed buttons '+data.unnamedButtons);
+                if(data.blankLinks) failures.push(width+' '+path+' unnamed links '+data.blankLinks);
+              }
+              await p.close();
+            }
+            await browser.close();
+            if(failures.length){ console.error('\nAUDIT FINDINGS\n'+failures.join('\n')); process.exit(1); }
+            console.log('LIVE UX ACCESSIBILITY AUDIT: PASS');
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
