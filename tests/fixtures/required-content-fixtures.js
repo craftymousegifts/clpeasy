@@ -24,10 +24,10 @@ const RECORDS = [
   ['undefined-business-name', without(complete, 'bizName'), ['business-name']],
   ['empty-product-name', Object.assign({}, complete, { scentName: '' }), ['product-name']],
   ['whitespace-product-name', Object.assign({}, complete, { scentName: '  ' }), ['product-name']],
-  ['euh208-no-names', Object.assign({}, complete, { hStatements: 'H412, EUH208', sensitisers: [] }), ['euh208-substance']],
-  ['euh208-blank-names', Object.assign({}, complete, { hStatements: 'H412, EUH208', sensitisers: ['  ', '', ' . '] }), ['euh208-substance']],
-  ['euh208-valid-names', Object.assign({}, complete, { hStatements: 'H412, EUH208', sensitisers: ['Citral'] }), []],
-  ['everything-missing', Object.assign({}, complete, { scentName: ' ', bizName: '', hStatements: 'EUH208', sensitisers: [] }), ['product-name', 'business-name', 'euh208-substance']],
+  ['euh208-no-names', Object.assign({}, complete, { hStatements: 'H412, EUH208', sensitisers: [] }), ['euh208-substance','pictogram-consistency']],
+  ['euh208-blank-names', Object.assign({}, complete, { hStatements: 'H412, EUH208', sensitisers: ['  ', '', ' . '] }), ['euh208-substance','pictogram-consistency']],
+  ['euh208-valid-names', Object.assign({}, complete, { hStatements: 'H412, EUH208', sensitisers: ['Citral'] }), ['pictogram-consistency']],
+  ['everything-missing', Object.assign({}, complete, { scentName: ' ', bizName: '', hStatements: 'EUH208', sensitisers: [] }), ['product-name', 'business-name', 'euh208-substance','pictogram-consistency']],
 ];
 const GEOMS = [['circle', 75, 75], ['square', 63, 63], ['rectangle', 80, 100]];
 
