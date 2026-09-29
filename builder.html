@@ -3585,13 +3585,12 @@ const H_PICTO_MAP = {
 
 // Sync pictograms from current hSelected — called after H chips change
 function syncPictogramsFromH(){
-  const needed = [...new Set(S.hSelected.map(h => H_PICTO_MAP[h]).filter(Boolean))];
-  // Add needed pictograms not already selected
-  needed.forEach(k => { if(!S.pictograms.includes(k)) addPicto(k); });
-  // Remove pictograms no longer needed by any selected H-code
-  S.pictograms = S.pictograms.filter(k => needed.includes(k));
+  // M37: shared reason-aware Article 26 resolver.  Do not reproduce
+  // precedence locally: Builder, renderer and Composer must agree.
+  const needed = LabelRenderer.expectedPictogramsForHazardCodes(S.hSelected);
+  S.pictograms = needed.slice();
   document.querySelectorAll('.picto-btn').forEach(b => {
-    if(!needed.includes(b.dataset.picto)) b.classList.remove('selected');
+    b.classList.toggle('selected',needed.includes(b.dataset.picto));
   });
   updateLabel();
 }
@@ -3629,6 +3628,7 @@ const REQUIRED_CONTENT_MESSAGES={
   'business-name':'Add your business name (Step 4).',
   'business-address':'Add your supplier address (Step 4).',
   'euh208-substance':'EUH208 needs the named sensitising substance(s). Check your current supplier SDS and paste the complete relevant EUH208/Contains information.',
+  'pictogram-consistency':'The saved hazard pictograms do not match the selected hazard statements. Re-check and confirm the hazards in Step 3 before downloading.',
 };
 // One line per missing item; 'p-statement' names the incomplete codes (Issue #5).
 function _requiredContentLine(m,rc){
@@ -3640,6 +3640,7 @@ function _requiredContentCheck(){
     scentName:val('scent-name'), bizName:val('biz-name'), bizAddress:val('biz-address'),
     hStatements:document.getElementById('h-statements')?val('h-statements'):S.hStatements,
     sensitisers:S.sensitisers,
+    pictograms:S.pictograms,
     pStatements:document.getElementById('p-statements')?val('p-statements'):S.pStatements,
     pChoices:S.pChoices,
   });
@@ -4301,6 +4302,14 @@ function canLeaveApprovedBuilderStep(step){
       const _pp=document.getElementById('p-choices-panel');if(_pp&&_pp.scrollIntoView)_pp.scrollIntoView({block:'center'});
       return false;
     }
+    // M64 recovery: reaching this point means the maker has explicitly
+    // checked the SDS and ticked the Step 3 confirmation.  Only now may an
+    // old/corrupt saved pictogram list be rebuilt.  Merely loading/rendering
+    // a saved label never mutates it.
+    const _expectedPictograms=LabelRenderer.expectedPictogramsForHazardCodes(hCodes);
+    S.pictograms=_expectedPictograms.slice();
+    document.querySelectorAll('.picto-btn').forEach(b=>b.classList.toggle('selected',_expectedPictograms.includes(b.dataset.picto)));
+    updateLabel();
   }
   if(step===4){
     const bizName=(document.getElementById('biz-name')?.value||'').trim();
