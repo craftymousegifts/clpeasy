@@ -769,20 +769,19 @@ function showTopic(id, card) {
   section.style.display = 'block';
   card.classList.add('active');
 
-  // Reveal the selected topic without forcing the page to the document bottom
-  // when the chosen section is short and sits near the end of the page.
+  // Put the selected topic at a predictable, readable position below
+  // the fixed navigation (and sticky search bar when it is active).
   setTimeout(() => {
     const rect = section.getBoundingClientRect();
     const nav = document.querySelector('nav');
     const search = document.querySelector('.search-section');
     const topOffset = (nav?.offsetHeight || 0) + (search && getComputedStyle(search).position === 'sticky' ? search.offsetHeight : 0) + 16;
-    const viewportBottom = window.innerHeight - 24;
+    const targetTop = Math.max(0, window.scrollY + rect.top - topOffset);
 
-    if (rect.top < topOffset) {
-      window.scrollBy({ top: rect.top - topOffset, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-    } else if (rect.top > viewportBottom) {
-      window.scrollBy({ top: rect.top - viewportBottom, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-    }
+    window.scrollTo({
+      top: targetTop,
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+    });
   }, 50);
 }
 
