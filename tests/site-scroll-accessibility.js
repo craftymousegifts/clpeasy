@@ -58,6 +58,9 @@ for (const name of backToTopPages) {
   assert(/<script src="back-to-top\.js"><\/script>/.test(read(name)), name + ' missing shared Back to top control');
 }
 assert(/window\.scrollY > 600/.test(backToTop), 'shared Back to top visibility threshold missing');
+assert(/skip-to-content/.test(backToTop), 'shared informational pages need a keyboard skip link');
+assert(/Skip to main content/.test(backToTop), 'skip link needs a clear accessible label');
+assert(/mainTarget\.focus/.test(backToTop), 'skip link must move keyboard focus to main content');
 assert(/prefers-reduced-motion: reduce/.test(backToTop), 'shared Back to top must respect reduced motion');
 assert(/window\.scrollTo\(\{/.test(backToTop) && /top: 0/.test(backToTop), 'shared Back to top action missing');
 assert(/document\.documentElement\.style\.scrollBehavior = 'auto'/.test(backToTop), 'shared Back to top reduced-motion path must override page smooth scrolling');
