@@ -33,7 +33,7 @@ jobs:
                   duplicateIds:[...document.querySelectorAll('[id]')].map(x=>x.id).filter((x,i,a)=>a.indexOf(x)!==i),
                   imgMissingAlt:[...document.images].filter(i=>!i.hasAttribute('alt')).length,
                   unnamedButtons:[...document.querySelectorAll('button')].filter(b=>!(b.innerText||b.getAttribute('aria-label')||b.getAttribute('title')||'').trim()).length,
-                  blankLinks:[...document.querySelectorAll('a')].filter(a=>!(a.innerText||a.getAttribute('aria-label')||a.getAttribute('title')||'').trim()).length
+                  blankLinks:[...document.querySelectorAll('a')].filter(a=>!(a.innerText||a.getAttribute('aria-label')||a.getAttribute('title')||'').trim()).map(a=>a.outerHTML),\n                  unnamedButtonHtml:[...document.querySelectorAll('button')].filter(b=>!(b.innerText||b.getAttribute('aria-label')||b.getAttribute('title')||'').trim()).map(b=>b.outerHTML)
                 }));
                 console.log(width,path,JSON.stringify(data));
                 if(!res||res.status()>=400) failures.push(width+' '+path+' HTTP '+(res&&res.status()));
@@ -42,7 +42,7 @@ jobs:
                 if(data.duplicateIds.length) failures.push(width+' '+path+' duplicate IDs '+data.duplicateIds.join(','));
                 if(data.imgMissingAlt) failures.push(width+' '+path+' images missing alt '+data.imgMissingAlt);
                 if(data.unnamedButtons) failures.push(width+' '+path+' unnamed buttons '+data.unnamedButtons);
-                if(data.blankLinks) failures.push(width+' '+path+' unnamed links '+data.blankLinks);
+                if(data.blankLinks.length) failures.push(width+' '+path+' unnamed links '+data.blankLinks.join(' | '));\n                if(data.unnamedButtonHtml.length) failures.push(width+' '+path+' unnamed button HTML '+data.unnamedButtonHtml.join(' | '));
               }
               await p.close();
             }
