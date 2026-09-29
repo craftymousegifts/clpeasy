@@ -23,6 +23,8 @@ assert(!/btn\.scrollIntoView\(\{ behavior: 'smooth'/.test(knowledge));
 assert(/prefers-reduced-motion: reduce/.test(knowledge));
 assert(/behavior: window\.matchMedia/.test(knowledge));
 assert(!/section\.scrollIntoView\(/.test(knowledge), 'Knowledge topic navigation must not force the selected section to the document edge');
+assert(/const targetTop = Math\.max\(0, window\.scrollY \+ rect\.top - topOffset\)/.test(knowledge), 'Knowledge topic navigation must align the selected heading below fixed navigation');
+assert(/window\.scrollTo\(\{ top: targetTop, behavior: window\.matchMedia/.test(knowledge), 'Knowledge topic navigation must use reduced-motion-aware top alignment');
 assert(/id="back-to-top"/.test(knowledge), 'Knowledge Base missing Back to top control');
 assert(/window\.scrollY > 600/.test(knowledge), 'Back to top visibility threshold missing');
 assert(/window\.scrollTo\(\{ top: 0, behavior: window\.matchMedia/.test(knowledge), 'Back to top reduced-motion-aware scroll missing');
@@ -58,6 +60,17 @@ for (const name of backToTopPages) {
 assert(/window\.scrollY > 600/.test(backToTop), 'shared Back to top visibility threshold missing');
 assert(/prefers-reduced-motion: reduce/.test(backToTop), 'shared Back to top must respect reduced motion');
 assert(/window\.scrollTo\(\{/.test(backToTop) && /top: 0/.test(backToTop), 'shared Back to top action missing');
+assert(/document\.getElementById\('cookie-banner'\)/.test(backToTop), 'shared Back to top must detect the cookie banner');
+assert(/getBoundingClientRect\(\)\.height/.test(backToTop), 'shared Back to top must clear the visible cookie banner height');
+assert(/MutationObserver/.test(backToTop), 'shared Back to top must react when cookie banner visibility changes');
+
+const cookiePolicy = read('cookie-policy.html');
+assert(/@media\(max-width:600px\)/.test(cookiePolicy), 'Cookie Policy missing mobile layout rule');
+assert(/table\{display:block;max-width:100%;overflow-x:auto;/.test(cookiePolicy), 'Cookie Policy table must contain its own mobile horizontal overflow');
+
+const home = read('index.html');
+assert(/@media \(prefers-reduced-motion: reduce\)/.test(home), 'Homepage missing reduced-motion CSS');
+assert(/html \{ scroll-behavior: auto !important; \}/.test(home), 'Homepage must disable smooth CSS scrolling for reduced motion');
 
 // Workflow pages deliberately remain untouched by the site-wide informational-page control.
 for (const name of ['builder.html', 'print.html', 'checkout.html', 'plan-picker.html']) {
