@@ -12,6 +12,8 @@ jobs:
         with:
           node-version: '22'
       - run: npm ci
+      - name: Install Chromium for browser QA
+        run: npx puppeteer browsers install chrome
       - name: Targeted M37 M64
         run: node tests/m37-m64-pictogram-precedence.js
       - name: Builder Safety Baseline
