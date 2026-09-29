@@ -8,7 +8,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2?target=deno
 const BREVO_API_KEY       = Deno.env.get("BREVO_API_KEY")!;
 const ALERT_TO            = "support@clpeasy.com";
 const FROM_EMAIL          = "support@clpeasy.com";
-const FROM_NAME           = "CLPeasy™";
+const FROM_NAME           = "CLPeasy®";
 const BREVO_AUTOMATION_ID = Deno.env.get("BREVO_AUTOMATION_ID") ?? "";
 const BREVO_LIST_ID       = parseInt(Deno.env.get("BREVO_LIST_ID") ?? "2");
 
@@ -125,7 +125,7 @@ serve(async (req) => {
     // ── STEP 3: Admin alert email ─────────────────────────────
     const subject = is_beta
       ? `🧪 Beta tester signed up — ${email}`
-      : `🎉 New CLPeasy™ trial signup — ${email}`;
+      : `🎉 New CLPeasy® trial signup — ${email}`;
 
     const htmlContent = `
       <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;">
@@ -151,7 +151,7 @@ serve(async (req) => {
             </a>
           </div>
         </div>
-        <p style="text-align:center;font-size:11px;color:#9CA3AF;margin-top:12px;">CLPeasy™ automated alert · clpeasy.com</p>
+        <p style="text-align:center;font-size:11px;color:#9CA3AF;margin-top:12px;">CLPeasy® automated alert · clpeasy.com</p>
       </div>`;
 
     const alertResp = await fetch("https://api.brevo.com/v3/smtp/email", {

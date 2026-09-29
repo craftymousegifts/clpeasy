@@ -21,7 +21,7 @@ const account = fs.readFileSync('account.html', 'utf8');
 assert(html.includes('7:{t:"Review when something changes",d:"If your supplier issues a revised SDS, you change the formulation or fragrance concentration, or applicable GB CLP requirements change, reassess the finished product and update the label where needed."'),
   'lifecycle Step 7 must use the approved "Review when something changes" title/description');
 
-assert(html.includes('8:{t:"Check the current information",d:"Before reprinting or continuing to use a label, compare it with the latest supplier SDS and applicable official GB CLP guidance. CLPeasy™ does not currently monitor supplier SDS revisions or regulatory changes for you."'),
+assert(html.includes('8:{t:"Check the current information",d:"Before reprinting or continuing to use a label, compare it with the latest supplier SDS and applicable official GB CLP guidance. CLPeasy® does not currently monitor supplier SDS revisions or regulatory changes for you."'),
   'lifecycle Step 8 must use the approved "Check the current information" title/description and must state CLPeasy does not currently monitor SDS/regulatory changes');
 
 assert(html.includes('9:{t:"Update and reprint",d:"Open your saved label, update the information where needed and generate a new version. Always verify the finished label against the current supplier SDS and applicable official GB CLP guidance before sale."'),
@@ -32,7 +32,7 @@ assert(!/CLPeasy.{0,5}(™)?\s*handles every stage automatically/i.test(html),
   'lifecycle intro must not claim CLPeasy handles every stage automatically');
 assert(!/CLPeasy.{0,5}(™)?\s*supports every stage of this lifecycle\s*—?\s*automatically/i.test(html),
   'lifecycle closing statement must not claim CLPeasy supports every stage automatically');
-assert(html.includes('CLPeasy™ helps you build, update and reprint your label using the information you provide.'),
+assert(html.includes('CLPeasy® helps you build, update and reprint your label using the information you provide.'),
   'lifecycle must use the accurate "helps you build, update and reprint" wording in place of the automation claims');
 
 // ── No duplicated reminder/regulation-alert claims presented as active ────
@@ -135,13 +135,13 @@ assert(!/multi-language labels/i.test(planPicker) && !/multilingual/i.test(planP
 // The two remaining pricing.html multi-language mentions must each be
 // unambiguously presented as a future feature: the feature-list item
 // carries its own "COMING SOON" badge, and the "What's coming to
-// CLPeasy™" panel entry sits under that panel's own coming-soon heading.
+// CLPeasy®" panel entry sits under that panel's own coming-soon heading.
 if (/Sell to Europe — multilingual labels/.test(pricing)) assert(/Sell to Europe — multilingual labels<span[^>]*>COMING SOON</.test(pricing),
   'pricing.html feature list "multilingual labels" item must carry its own COMING SOON badge');
 const whatsComingIdx = pricing.indexOf("What's coming to CLPeasy");
 const multilingualPanelIdx = pricing.indexOf('>Multilingual labels<');
 if (multilingualPanelIdx !== -1) assert(whatsComingIdx !== -1 && multilingualPanelIdx > whatsComingIdx && multilingualPanelIdx < whatsComingIdx + 2000,
-  'pricing.html "Multilingual labels" panel card must sit under the "What\'s coming to CLPeasy™" heading, not read as an active benefit');
+  'pricing.html "Multilingual labels" panel card must sit under the "What\'s coming to CLPeasy®" heading, not read as an active benefit');
 
 // "compliant output" / "fully compliant" must not appear on customer-facing
 // pages (index.html, pricing.html, plan-picker.html, showcase.html) -- they
@@ -152,7 +152,7 @@ for (const file of [['index.html', html], ['pricing.html', pricing], ['plan-pick
     `${name} must not claim "compliant output"/"fully compliant"/"guaranteed compliant" (implies a compliance guarantee)`);
 }
 // 63e631b ("Remove unsupported pricing FAQ estimates") deliberately removed this FAQ; only guard it if it returns.
-if (/gives you the same .{0,40}label output for/.test(pricing)) assert(pricing.includes('CLPeasy™ gives you the same print-ready GB CLP label output for £9.99–£14.99/month'),
+if (/gives you the same .{0,40}label output for/.test(pricing)) assert(pricing.includes('CLPeasy® gives you the same print-ready GB CLP label output for £9.99–£14.99/month'),
   'pricing.html cost-comparison FAQ must use the accurate "print-ready GB CLP label output" wording');
 // 6de95cf ("Correct Showcase GB CLP wording and supported sizes") changed "Every size." to "Every supported size.".
 assert(showcase.includes('Every shape.<br><em>Every supported size.</em> CLP ready.'),
@@ -169,7 +169,7 @@ if (/Regulation change alerts <span/.test(pricing)) assert(/Regulation change al
   'pricing.html comparison-table "Regulation change alerts" row must carry its own Coming soon badge');
 const regAlertsPanelIdx = pricing.indexOf('>Regulation change alerts<');
 if (regAlertsPanelIdx !== -1) assert(whatsComingIdx !== -1 && regAlertsPanelIdx > whatsComingIdx && regAlertsPanelIdx < whatsComingIdx + 2000,
-  'pricing.html "Regulation change alerts" panel card must sit under the "What\'s coming to CLPeasy™" heading, not read as an active benefit');
+  'pricing.html "Regulation change alerts" panel card must sit under the "What\'s coming to CLPeasy®" heading, not read as an active benefit');
 if (regAlertsPanelIdx !== -1) assert(pricing.includes('Planned feature. Regulation-change monitoring and notifications are not currently available.'),
   'pricing.html must describe regulation-change alerts with neutral "planned feature, not currently available" wording (not a confirmed ECHA-monitoring implementation)');
 
@@ -232,14 +232,14 @@ assert(!/adds SDS Smart Import/i.test(pricing) && !/plus SDS Smart Import/i.test
 // e7151e9 deliberately removed the unreleased PDF-import row; guard only applies if it returns.
 if (/Drop entire SDS PDF in/.test(pricing)) assert(/Drop entire SDS PDF in — hands-free hazard data extraction <span[^>]*>Coming soon</.test(pricing),
   'pricing.html comparison-table "Drop entire SDS PDF in" row must carry its own Coming soon badge');
-if (/Drop entire SDS PDF in/.test(pricing)) assert(pricing.includes('Coming soon — not currently available. Planned for Easy Pro: drop your complete SDS PDF directly into CLPeasy™ instead of pasting Section 2.2 with Smart Paste.'),
+if (/Drop entire SDS PDF in/.test(pricing)) assert(pricing.includes('Coming soon — not currently available. Planned for Easy Pro: drop your complete SDS PDF directly into CLPeasy® instead of pasting Section 2.2 with Smart Paste.'),
   'pricing.html must describe the PDF-import row as "Coming soon — not currently available"');
 
 // Smart Paste itself (pasting Section 2.2 text) remains correctly described
 // as a real, currently-available feature -- and no longer has a PDF
 // drop-in claim tacked onto its description.
 // c370053 (#149, "Correct Easy Start and Easy Pro feature claims") reworded the Smart Paste description.
-assert(pricing.includes("Copy Section 2.2 from your fragrance supplier's SDS PDF and paste it into CLPeasy™."),
+assert(pricing.includes("Copy Section 2.2 from your fragrance supplier's SDS PDF and paste it into CLPeasy®."),
   'pricing.html must still correctly describe Smart Paste as pasting Section 2.2 text');
 assert(!/Smart Paste[\s\S]{0,400}dropping in your complete SDS PDF/i.test(pricing),
   'pricing.html Smart Paste description must not have a PDF drop-in claim appended to it');
