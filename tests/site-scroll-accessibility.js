@@ -22,7 +22,9 @@ assert(/window\.scrollBy\(0, delta\)/.test(knowledge));
 assert(!/btn\.scrollIntoView\(\{ behavior: 'smooth'/.test(knowledge));
 assert(/prefers-reduced-motion: reduce/.test(knowledge));
 assert(/behavior: window\.matchMedia/.test(knowledge));
-assert(!/section\.scrollIntoView\(/.test(knowledge), 'Knowledge topic navigation must not force the selected section to the document edge');
+assert(!/section\.scrollIntoView\(/.test(knowledge), 'Knowledge topic navigation must not use scrollIntoView');
+assert(/const targetTop = window\.scrollY \+ rect\.top - topOffset/.test(knowledge), 'Knowledge topic navigation must target below the fixed header');
+assert(/content\.style\.paddingBottom/.test(knowledge), 'Knowledge short topics need end-of-page breathing room');
 assert(/id="back-to-top"/.test(knowledge), 'Knowledge Base missing Back to top control');
 assert(/window\.scrollY > 600/.test(knowledge), 'Back to top visibility threshold missing');
 assert(/window\.scrollTo\(\{ top: 0, behavior: window\.matchMedia/.test(knowledge), 'Back to top reduced-motion-aware scroll missing');
@@ -58,6 +60,11 @@ for (const name of backToTopPages) {
 assert(/window\.scrollY > 600/.test(backToTop), 'shared Back to top visibility threshold missing');
 assert(/prefers-reduced-motion: reduce/.test(backToTop), 'shared Back to top must respect reduced motion');
 assert(/window\.scrollTo\(\{/.test(backToTop) && /top: 0/.test(backToTop), 'shared Back to top action missing');
+assert(/document\.documentElement\.style\.scrollBehavior = 'auto'/.test(backToTop), 'shared Back to top reduced-motion path must override page smooth scrolling');
+assert(/getElementById\('cookie-banner'\)/.test(backToTop) && /getBoundingClientRect\(\)\.height/.test(backToTop), 'shared Back to top must clear a visible cookie banner');
+
+const cookiePolicy = read('cookie-policy.html');
+assert(/@media\(max-width:600px\)[\s\S]*table\{display:block;max-width:100%;overflow-x:auto/.test(cookiePolicy), 'Cookie Policy table must be contained on mobile');
 
 // Workflow pages deliberately remain untouched by the site-wide informational-page control.
 for (const name of ['builder.html', 'print.html', 'checkout.html', 'plan-picker.html']) {
