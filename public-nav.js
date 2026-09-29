@@ -2,7 +2,6 @@
   function init(){
     var nav=document.querySelector('.public-site-nav');
     if(!nav)return;
-
     var toggle=nav.querySelector('.public-nav-toggle');
     var links=nav.querySelector('.public-nav-links');
     if(toggle&&links){
@@ -23,25 +22,19 @@
     var file=(location.pathname.split('/').pop()||'index.html').toLowerCase();
     var mode=new URLSearchParams(location.search).get('mode');
 
-    /* Keep the menu useful instead of repeating the page the visitor is already on.
-       The logo remains the Home route everywhere, and internal pages also retain
-       the explicit Home item. */
+    /* Keep the current section visible for orientation; mark it accessibly. */
     nav.querySelectorAll('[data-page]').forEach(function(a){
-      var page=(a.getAttribute('data-page')||'').toLowerCase();
-      if(page===file){
-        a.setAttribute('aria-current','page');
-        if(file!=='auth.html')a.hidden=true;
-      }
+      if((a.getAttribute('data-page')||'').toLowerCase()===file)a.setAttribute('aria-current','page');
     });
 
-    /* Home does not need a second Home control beside the logo. */
+    /* On Home the logo already provides the Home route, so avoid duplication. */
     if(file==='index.html'){
       var home=nav.querySelector('[data-page="index.html"]');
       if(home)home.hidden=true;
     }
 
-    /* On auth screens, offer the useful opposite action rather than linking
-       the visitor back to the auth mode they are already viewing. */
+    /* Authentication is the only context where showing the action the visitor
+       is already completing is redundant. Offer the opposite useful action. */
     if(file==='auth.html'){
       var signIn=nav.querySelector('a[href*="mode=signin"]');
       var signUp=nav.querySelector('a[href*="mode=signup"]');
