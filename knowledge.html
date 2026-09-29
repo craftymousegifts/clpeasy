@@ -163,6 +163,13 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,
 .help-cta a{background:white;color:var(--teal);font-weight:700;padding:10px 22px;border-radius:8px;text-decoration:none;font-size:14px;display:inline-block;transition:opacity .2s;}
 .help-cta a:hover{opacity:.9;}
 
+/* BACK TO TOP */
+.back-to-top{position:fixed;right:24px;bottom:24px;z-index:120;border:0;border-radius:999px;background:var(--teal);color:white;padding:11px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,.18);opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity .2s,transform .2s,visibility .2s;}
+.back-to-top.visible{opacity:1;visibility:visible;transform:translateY(0);}
+.back-to-top:hover{background:var(--teal-dark);}
+.back-to-top:focus-visible{outline:3px solid var(--teal-light);outline-offset:3px;}
+@media(max-width:768px){.back-to-top{right:16px;bottom:16px;padding:10px 14px;}}
+
 /* FOOTER */
 footer{background:#0A0F1A;padding:28px 24px;text-align:center;border-top:1px solid #1F2937;}
 footer p{font-size:12px;color:#4B5563;}
@@ -679,7 +686,7 @@ footer a:hover{color:var(--teal);}
       <a href="https://www.hse.gov.uk/chemical-classification/labelling-packaging/hazard-precautionary-statements-signal-words.htm" target="_blank" rel="noopener noreferrer" class="link-card"><span>⚠️</span><div><strong>HSE — Hazard and precautionary statements</strong><span>Official guidance on statements and signal words</span></div><span class="link-arrow">↗</span></a>
       <a href="https://www.hse.gov.uk/chemical-classification/legal/enforcement-clp-regulation.htm" target="_blank" rel="noopener noreferrer" class="link-card"><span>📋</span><div><strong>HSE — GB CLP enforcement</strong><span>How GB CLP duties are enforced</span></div><span class="link-arrow">↗</span></a>
       <a href="https://www.hse.gov.uk/reach/" target="_blank" rel="noopener" class="link-card"><span>🧪</span><div><strong>HSE — UK REACH</strong><span>hse.gov.uk — UK REACH chemical regulation</span></div><span class="link-arrow">↗</span></a>
-      <a href="https://www.businesscompanion.info/en/quick-guides/good-practice/candles-diffusers-oil-heaters-and-incense" target="_blank" rel="noopener" class="link-card"><span>🕯️</span><div><strong>Business Companion — Candles & diffusers guide</strong><span>businesscompanion.info — Trading Standards plain English guide</span></div><span class="link-arrow">↗</span></a>
+      <a href="https://www.businesscompanion.info/en/quick-guides/product-safety/candles-diffusers-oil-heaters-etc" target="_blank" rel="noopener" class="link-card"><span>🕯️</span><div><strong>Business Companion — Candles & diffusers guide</strong><span>businesscompanion.info — Trading Standards plain English guide</span></div><span class="link-arrow">↗</span></a>
     </div>
   </div>
   <button type="button" class="accordion-trigger" aria-expanded="false" onclick="toggleAcc(this)">
@@ -735,6 +742,8 @@ footer a:hover{color:var(--teal);}
 </main>
 </div>
 
+<button type="button" class="back-to-top" id="back-to-top" aria-label="Back to top">↑ Back to top</button>
+
 <!-- FOOTER -->
 <footer>
   <p style="margin-bottom:8px;">CLPeasy Knowledge Base — for general information only. Not legal advice.</p>
@@ -760,11 +769,21 @@ function showTopic(id, card) {
   section.style.display = 'block';
   card.classList.add('active');
 
-  // Scroll to section
-  setTimeout(() => section.scrollIntoView({
-    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-    block: 'start'
-  }), 50);
+  // Reveal the selected topic without forcing the page to the document bottom
+  // when the chosen section is short and sits near the end of the page.
+  setTimeout(() => {
+    const rect = section.getBoundingClientRect();
+    const nav = document.querySelector('nav');
+    const search = document.querySelector('.search-section');
+    const topOffset = (nav?.offsetHeight || 0) + (search && getComputedStyle(search).position === 'sticky' ? search.offsetHeight : 0) + 16;
+    const viewportBottom = window.innerHeight - 24;
+
+    if (rect.top < topOffset) {
+      window.scrollBy({ top: rect.top - topOffset, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    } else if (rect.top > viewportBottom) {
+      window.scrollBy({ top: rect.top - viewportBottom, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    }
+  }, 50);
 }
 
 function toggleAcc(btn) {
@@ -791,6 +810,16 @@ function toggleAcc(btn) {
 }
 
 
+
+const backToTop = document.getElementById('back-to-top');
+function updateBackToTop() {
+  backToTop?.classList.toggle('visible', window.scrollY > 600);
+}
+window.addEventListener('scroll', updateBackToTop, { passive: true });
+updateBackToTop();
+backToTop?.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+});
 
 // AI Search
 async function askCLP() {
