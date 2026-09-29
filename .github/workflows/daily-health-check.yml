@@ -6,13 +6,9 @@ on:
     - cron: '0 6 * * *'
   workflow_dispatch:
     # Manual trigger available anytime from GitHub Actions tab
-  push:
-    branches:
-      - fix/circle-per-line-text-fit
 
 jobs:
   health-check:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
     steps:
@@ -43,80 +39,3 @@ jobs:
         env:
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
           REPORT_TO:     support@clpeasy.com
-
-  m04-audit-qa:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/fix/circle-per-line-text-fit'
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-
-    steps:
-      - name: Checkout audit branch
-        uses: actions/checkout@v4
-
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Install Chromium for browser tests
-        shell: bash
-        run: |
-          npx puppeteer browsers install chrome
-          chrome_path=$(find "$HOME/.cache/puppeteer/chrome" -type f -path '*/chrome-linux64/chrome' | head -1)
-          test -n "$chrome_path"
-          echo "PUPPETEER_EXECUTABLE_PATH=$chrome_path" >> "$GITHUB_ENV"
-
-      - name: M04 targeted regression
-        run: node tests/m04-composer-signal-word-consistency.js
-
-      - name: Signal-word regression tests
-        run: |
-          node tests/gb-clp-signal-word-resolution.js
-          node tests/suffixed-hazard-codes.js
-
-      - name: Builder Safety Baseline
-        run: node tests/builder-safety-baseline.js
-
-      - name: Full audit suite with known-failure gate
-        shell: bash
-        run: |
-          set +e
-          pass=0
-          fail=0
-          unexpected=0
-          known="builder-desktop-scroll-model.js builder-step-navigation-layout.js footer-and-compliance-wording.js lifecycle-reminder-accuracy.js smart-paste-user-guidance-wording.js"
-          : > /tmp/failures.txt
-          for f in tests/*.js; do
-            echo "::group::$f"
-            node "$f"
-            rc=$?
-            echo "::endgroup::"
-            if [ $rc -eq 0 ]; then
-              pass=$((pass+1))
-            else
-              fail=$((fail+1))
-              base=$(basename "$f")
-              echo "$base" >> /tmp/failures.txt
-              case " $known " in
-                *" $base "*) ;;
-                *) unexpected=$((unexpected+1));;
-              esac
-            fi
-          done
-          echo "FULL_SUITE_PASS=$pass"
-          echo "FULL_SUITE_FAIL=$fail"
-          echo "Failures:"
-          cat /tmp/failures.txt
-          if [ $unexpected -ne 0 ]; then
-            echo "Unexpected failures: $unexpected"
-            exit 1
-          fi
-          if [ $fail -ne 5 ]; then
-            echo "Expected exactly 5 known failures, got $fail"
-            exit 1
-          fi
-          echo "Only the 5 known baseline failures remain."
