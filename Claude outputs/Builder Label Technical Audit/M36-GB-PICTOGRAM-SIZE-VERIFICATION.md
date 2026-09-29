@@ -1,6 +1,20 @@
 # M36: GB pictogram size regulatory verification
 
-**Status (29 Sep 2026): BLOCKED, primary GB sources not accessible from the audit environment.** No application code changed.
+**Status: OPEN — GB PRIMARY-SOURCE REGULATORY VERIFICATION REQUIRED BEFORE PRODUCTION** (Michaela, 29 Sep 2026). The investigation was accepted as incomplete because the primary GB sources were not accessible from the audit environment. M36 must not be marked FIXED, PASSED or NOT APPLICABLE.
+
+**No pictogram-size change is approved.** Do not change:
+- the 10 mm red-square floor or the 16 mm target;
+- pictogram geometry or fit calculations;
+- minimum label sizes;
+- the golden snapshot.
+
+Unresolved (do not infer):
+1. the exact denominator for the Annex I one-fifteenth calculation;
+2. whether Table 1.3 pictogram dimensions refer to the red-frame square side or the rotated diamond's outer bounding box;
+3. how "if possible" operates for packages up to 3 litres;
+4. whether and how non-CLP content affects the relevant surface area.
+
+Business Companion is practical GB guidance, not authoritative legislation.
 
 The environment's network policy denies:
 - `www.legislation.gov.uk`

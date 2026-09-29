@@ -50,3 +50,12 @@ the exact GB hazard-statement wording, the GB classification/category, the signa
 **Status: OPEN.** The audit branch is deliberately isolated from `main` (PAYG PR #156, Stage 1 PR #159 and later). Before production, the completed audit work must be integrated with current `main` and re-tested there, including:
 - the PR #159 Composer size-integrity protections (`tests/print-sheet-size-integrity.js`) together with M03's Composer fine-tune overrides;
 - the full suite on the integrated result.
+
+## M36: pictogram size (OPEN, required before production)
+Verify against the current GB text of Annex I 1.2.1 and Table 1.3 on legislation.gov.uk, and HSE:
+1. the one-fifteenth denominator;
+2. whether the Table 1.3 dimensions are the red-frame side or the diamond's outer box;
+3. how "if possible" operates for packages up to 3 litres;
+4. whether non-CLP content affects the relevant area.
+
+See `M36-GB-PICTOGRAM-SIZE-VERIFICATION.md`. No pictogram-size change is approved until this is complete. Business Companion is practical guidance only.
