@@ -34,10 +34,10 @@ assert(builder.includes('const resolveGbClpSignalWord=LabelRenderer.resolveGbClp
 assert(print.includes('renderData.signal=LabelRenderer.resolveGbClpSignalWord(signalCodes,suppliedSignal);'),'Composer must derive signal through shared resolver');
 assert(print.includes('const renderData=Object.assign({},e||{});'),'Composer must render a copy, not mutate saved data');
 
-const record={hSelected:['H304','H317'],signal:'Warning',sdsSignal:'',marker:{keep:true}};
+const record={hStatements:'H304, H317',signal:'Warning',sdsSignal:'',marker:{keep:true}};
 const before=JSON.stringify(record);
 const copy=Object.assign({},record);
-copy.signal=LR.resolveGbClpSignalWord(copy.hSelected,copy.sdsSignal!==undefined?copy.sdsSignal:(copy.signal||''));
+copy.signal=LR.resolveGbClpSignalWord(copy.hStatements,copy.sdsSignal!==undefined?copy.sdsSignal:(copy.signal||''));
 assert.strictEqual(copy.signal,'Danger');
 assert.strictEqual(JSON.stringify(record),before,'render-only correction must not mutate saved record');
 
