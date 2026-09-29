@@ -203,16 +203,21 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
 <script>
   try { if (localStorage.getItem('sb-qvkosdqcryrcfbjtaxic-auth-token')) document.documentElement.classList.add('clp-auth-pending'); } catch (e) {}
 </script>
-</head>
+<link rel="stylesheet" href="public-nav.css">\n<script src="public-nav.js" defer></script>\n</head>
 <body>
 
-<nav>
-  <a href="index.html" class="nav-logo"><div class="nav-badge">CLP</div><span class="nav-easy">easy</span><sup style="font-size:9px;font-weight:700;color:#4C9BB0;vertical-align:super;line-height:0;margin-left:1px;">®</sup></a>
-  <div class="nav-actions">
-    <a href="index.html" class="nav-link nav-home">Home</a>
-    <a href="compliance.html" class="nav-link" target="_blank" rel="noopener">Compliance</a>
-    <a href="support.html" class="nav-link" target="_blank" rel="noopener">Support</a>
-    <a href="auth.html?mode=signup" class="nav-cta" data-trial-cta="nav">Start free trial</a>
+<nav class="public-site-nav" aria-label="Main navigation">
+  <a href="index.html" class="nav-logo" aria-label="CLPeasy home"><span class="nav-badge">CLP</span><span class="nav-easy">easy</span><sup class="nav-mark">®</sup></a>
+  <button class="public-nav-toggle" type="button" aria-expanded="false" aria-controls="public-nav-links" aria-label="Menu">☰</button>
+  <div class="public-nav-links" id="public-nav-links">
+    <a href="index.html" data-page="index.html">Home</a>
+    <a href="pricing.html" data-page="pricing.html">Pricing</a>
+    <a href="index.html#features">How it works</a>
+    <a href="knowledge.html" data-page="knowledge.html">Knowledge Base</a>
+    <a href="faq.html" data-page="faq.html">FAQ</a>
+    <a href="support.html" data-page="support.html">Support</a>
+    <a href="auth.html?mode=signin" data-page="auth.html">Sign in</a>
+    <a href="auth.html?mode=signup" class="public-nav-cta">Start free trial</a>
   </div>
 </nav>
 

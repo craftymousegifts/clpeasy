@@ -113,14 +113,15 @@ footer a:hover{color:white;}
   window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
   plausible.init()
 </script>
-</head>
+<link rel="stylesheet" href="public-nav.css">\n<script src="public-nav.js" defer></script>\n</head>
 <body>
 
-<nav>
-  <a href="index.html" class="nav-logo">
-    <div class="nav-badge">CLP</div><span class="nav-easy">easy™</span>
-  </a>
-  <a href="index.html" class="nav-back">← Home</a>
+<nav class="public-site-nav" aria-label="Main navigation">
+  <a href="index.html" class="nav-logo" aria-label="CLPeasy home"><span class="nav-badge">CLP</span><span class="nav-easy">easy</span><sup class="nav-mark">®</sup></a>
+  <button class="public-nav-toggle" type="button" aria-expanded="false" aria-controls="public-nav-links" aria-label="Menu">☰</button>
+  <div class="public-nav-links" id="public-nav-links">
+    <a href="index.html" data-page="index.html">Home</a><a href="pricing.html" data-page="pricing.html">Pricing</a><a href="index.html#features">How it works</a><a href="knowledge.html" data-page="knowledge.html">Knowledge Base</a><a href="faq.html" data-page="faq.html">FAQ</a><a href="support.html" data-page="support.html">Support</a><a href="auth.html?mode=signin" data-page="auth.html">Sign in</a><a href="auth.html?mode=signup" class="public-nav-cta">Start free trial</a>
+  </div>
 </nav>
 
 <!-- HERO -->

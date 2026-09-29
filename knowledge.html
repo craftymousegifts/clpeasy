@@ -217,21 +217,15 @@ footer a:hover{color:var(--teal);}
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
 </style>
-</head>
+<link rel="stylesheet" href="public-nav.css">\n<script src="public-nav.js" defer></script>\n</head>
 <body>
 
 <!-- NAV -->
-<nav>
-  <a href="index.html" class="nav-logo">
-    <div class="nav-badge">CLP</div><span class="nav-easy">easy</span><sup style="font-size:9px;font-weight:700;color:#4C9BB0;vertical-align:super;line-height:0;margin-left:1px;">™</sup>
-  </a>
-  <div class="nav-links">
-    <a href="index.html#features" target="_blank" rel="noopener">Features</a>
-    <a href="index.html#pricing" target="_blank" rel="noopener">Pricing</a>
-    <a href="knowledge.html" class="active">Knowledge Base</a>
-    <a href="auth.html?mode=signin" target="_blank" rel="noopener">Sign in</a>
-    <a href="support.html" target="_blank" rel="noopener" style="font-size:13px;color:#6B7280;text-decoration:none;padding:6px 12px;border-radius:8px;transition:all .2s;" onmouseover="this.style.color='#4C9BB0'" onmouseout="this.style.color=''">Support</a>
-    <a href="auth.html" class="btn-nav">Get started free</a>
+<nav class="public-site-nav" aria-label="Main navigation">
+  <a href="index.html" class="nav-logo" aria-label="CLPeasy home"><span class="nav-badge">CLP</span><span class="nav-easy">easy</span><sup class="nav-mark">®</sup></a>
+  <button class="public-nav-toggle" type="button" aria-expanded="false" aria-controls="public-nav-links" aria-label="Menu">☰</button>
+  <div class="public-nav-links" id="public-nav-links">
+    <a href="index.html" data-page="index.html">Home</a><a href="pricing.html" data-page="pricing.html">Pricing</a><a href="index.html#features">How it works</a><a href="knowledge.html" data-page="knowledge.html">Knowledge Base</a><a href="faq.html" data-page="faq.html">FAQ</a><a href="support.html" data-page="support.html">Support</a><a href="auth.html?mode=signin" data-page="auth.html">Sign in</a><a href="auth.html?mode=signup" class="public-nav-cta">Start free trial</a>
   </div>
 </nav>
 
