@@ -2382,7 +2382,7 @@ function renderSheetPosition(e,pw,ph,opts){
   // never mutate the saved record. For ambiguous physical-hazard codes,
   // preserve the Builder's existing SDS/saved-word fallback semantics.
   const renderData=Object.assign({},e||{});
-  const signalCodes=renderData.hSelected!==undefined?renderData.hSelected:renderData.hStatements;
+  const signalCodes=renderData.hStatements!==undefined?renderData.hStatements:renderData.hSelected;
   const suppliedSignal=renderData.sdsSignal!==undefined?renderData.sdsSignal:(renderData.signal||'');
   renderData.signal=LabelRenderer.resolveGbClpSignalWord(signalCodes,suppliedSignal);
   return LabelRenderer.renderLabel(renderData,renderOpts);
