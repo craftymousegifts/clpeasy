@@ -1,7 +1,7 @@
 # M04 implementation and QA — ChatGPT continuation
 
 **Date:** 29 Sep 2026  
-**Status:** IMPLEMENTED; targeted source/resolver QA passed; full Chromium/suite sign-off still required before production.
+**Status:** FIXED + QA PASSED + SIGNED OFF. Executable GitHub Actions QA completed 29 Sep 2026; main/production untouched.
 
 ## Scope
 M04 fixes the Composer-only mismatch where an old/tampered saved `signal` could be printed instead of the signal word the Builder derives from the same hazard statements.
@@ -34,14 +34,30 @@ During implementation, two integration mistakes were detected by source inspecti
 2. Builder temporarily retained a local resolver after adding the shared alias.
 Both were corrected on the audit branch before this record. Current source has exactly one regulatory table (in `label-render.js`), no local Builder resolver, and Composer calls the shared resolver.
 
-## QA still required before sign-off
-This ChatGPT environment cannot clone GitHub or launch the repository's Chromium test harness because outbound GitHub/DNS/runtime access is unavailable, and this branch has no GitHub Actions run configured. Therefore the following have **not** been claimed as run here:
-- real-Chromium M04 matrix;
-- Builder Safety Baseline;
-- full audit suite (expected historical baseline: 61 pass / 5 known failures);
-- PDF/cutting-PNG byte/output verification.
+## Executable QA completed
+Because the local ChatGPT container could not clone GitHub, a temporary push-triggered QA job was added to the audit branch's existing health-check workflow, run on GitHub Actions, and then fully reverted. The workflow file is byte-identical to its original blob after QA.
 
-Do not merge to main or production until those executable checks pass.
+Final successful run: GitHub Actions run 36546303775.
+
+Results:
+- M04 targeted resolver/structure regression: PASS (14 resolver cases).
+- Existing GB CLP signal-word resolution test: PASS.
+- Suffixed hazard-code test: PASS, including real Chromium desktop/mobile flows and Composer outputs.
+- Builder Safety Baseline: PASS with the existing golden snapshot unchanged.
+- Full audit suite: **62 PASS / 5 FAIL**. The pass count is one higher than the prior 61 because the new M04 regression test is now included.
+- The five failures are exactly the known long-standing audit-branch baseline failures:
+  - builder-desktop-scroll-model.js
+  - builder-step-navigation-layout.js
+  - footer-and-compliance-wording.js
+  - lifecycle-reminder-accuracy.js
+  - smart-paste-user-guidance-wording.js
+- No unexpected failure was found.
+- The initial bare-Node M04 test fixture was corrected to run the browser-facing renderer inside JSDOM; this was test-only and did not alter application behaviour.
+- Chromium was installed only in the ephemeral GitHub Actions runner.
+
+The M04 application implementation itself was not changed during executable QA.
 
 **Production:** untouched.  
 **Main:** untouched by this M04 continuation.
+
+**RESULT: M04 FIXED + QA PASSED + SIGNED OFF.**
