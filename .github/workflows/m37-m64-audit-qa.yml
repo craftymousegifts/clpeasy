@@ -1,0 +1,26 @@
+name: Temporary M37 M64 audit QA
+on:
+  push:
+    branches:
+      - audit/m37-m64-pictogram-precedence
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - name: Targeted M37 M64
+        run: node tests/m37-m64-pictogram-precedence.js
+      - name: Builder Safety Baseline
+        run: node tests/builder-safety-baseline.js
+      - name: Existing pictogram regressions
+        run: |
+          node tests/unknown-pictogram-keys.js
+          node tests/pictogram-parity.js
+          node tests/suffixed-hazard-codes.js
+          node tests/required-content-export-blocking.js
+      - name: Core suite
+        run: npm test
