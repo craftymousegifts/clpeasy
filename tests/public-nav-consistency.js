@@ -13,13 +13,14 @@ for(const page of pages){
 }
 const js=fs.readFileSync('public-nav.js','utf8');
 if(!js.includes("file==='index.html'")||!js.includes('home.hidden=true')) throw new Error('Homepage must suppress redundant Home menu item');
-if(!js.includes("if(file!=='auth.html')a.hidden=true")) throw new Error('Current public page must be removed from its own menu');
+if(!js.includes("setAttribute('aria-current','page')")) throw new Error('Current public section must remain visibly identified');
 if(!js.includes("mode==='signup'")) throw new Error('Auth menu must be mode-aware');
 const css=fs.readFileSync('public-nav.css','utf8');
-if(!css.includes('.public-nav-links a[hidden]')) throw new Error('Hidden contextual links must remain removed at desktop/mobile widths');
+if(css.includes('border-radius:15px!important')||css.includes('background:linear-gradient(180deg,#FBFDFD')) throw new Error('Desktop nav links must not be enclosed in a decorative pill/container');
+if(!css.includes('a:not(.public-nav-cta)::after')) throw new Error('Subtle active/hover navigation indicator missing');
 if(!css.includes('--nav-coral:#EF4444')||!css.includes('--nav-teal:#4C9BB0')) throw new Error('CLPeasy brand accents missing from shared nav');
 for(const page of ['checkout.html','plan-picker.html','builder.html','print.html','dashboard.html','account.html','my-labels.html']){
  const html=fs.readFileSync(page,'utf8');
  if(html.includes('public-site-nav')) throw new Error(page+': protected/transactional navigation changed');
 }
-console.log('Public navigation consistency: PASS ('+pages.length+' pages, contextual display rules verified)');
+console.log('Public navigation consistency: PASS ('+pages.length+' pages, clean contextual display rules verified)');
