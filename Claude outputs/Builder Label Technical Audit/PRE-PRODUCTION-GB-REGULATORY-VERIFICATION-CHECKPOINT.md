@@ -5,6 +5,24 @@
 
 Issues #1–#7 are **not** reopened by this checkpoint.
 
+## Reference set (priority order)
+1. Current applicable GB CLP legislation on legislation.gov.uk.
+2. HSE / GB CLP Agency.
+3. Business Companion / Trading Standards: "Candles, diffusers, oil heaters, etc.", https://www.businesscompanion.info/en/quick-guides/product-safety/candles-diffusers-oil-heaters-etc (added 29 Sep 2026). A practical GB interpretation check for candles, wax/fragrance products, diffusers and room sprays; it does not override 1–2.
+4. The maker's current supplier SDS (Section 2) for the finished product's classification and label information, where applicable.
+
+Cross-reference the Business Companion guide during this verification for:
+- required GB CLP label information;
+- supplier information;
+- nominal quantity;
+- sensitiser / EUH208 behaviour;
+- hazard labelling;
+- label visibility and legibility;
+- candle safety labelling versus GB CLP labelling;
+- product-specific assumptions for candles, diffusers and room sprays.
+
+Its general product-safety content is not a reason to change the Builder. Only flag items within CLPeasy's CLP-label scope that are supported by the applicable GB requirements.
+
 ## Requirement
 Before production approval, verify that every regulatory wording/mapping introduced or changed during this audit is supported by the **current GB CLP position** (GB CLP legislation on legislation.gov.uk, then HSE / GB CLP Agency guidance). EU CLP, ECHA, NI/EU and UN GHS material is context only and must not be used to add or expand requirements.
 

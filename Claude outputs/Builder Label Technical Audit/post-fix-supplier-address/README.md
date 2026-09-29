@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | Implementation | `6f70631` (shared content gate), `21a83d1` (Builder), `9eff958` (Composer message); pushed separately. Not changed here. |
-| Status | **Regression investigation COMPLETE; automated QA PASSED** (29 Sep 2026). Awaiting Michaela's review. No M10 application defect found. |
+| Status | **FIXED + QA PASSED + SIGNED OFF** (Michaela, 29 Sep 2026). Regression investigation complete; no M10 application defect found. |
 | Decision basis | GB CLP Article 17 requires the supplier's name, address and telephone number. An exportable hazardous label must not omit the address (Michaela's decision). |
 
 ## The 12 failures from `6f70631`

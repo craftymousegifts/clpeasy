@@ -64,7 +64,10 @@ CLPeasy is a **Great Britain CLP** label builder. All regulatory decisions (word
 Source priority:
 1. GB CLP legislation applicable in Great Britain (current legislation.gov.uk version).
 2. HSE / GB CLP Agency authoritative guidance and information.
-3. The maker's current supplier SDS (especially Section 2) where it supplies the finished mixture's classification/label information.
+3. Business Companion / Trading Standards guidance: "Candles, diffusers, oil heaters, etc." (https://www.businesscompanion.info/en/quick-guides/product-safety/candles-diffusers-oil-heaters-etc). A strong secondary, practical GB reference for candles, wax/fragrance products, diffusers and room sprays in England, Scotland and Wales (added 29 Sep 2026). It helps interpret and check the practical application; it never overrides legislation or HSE.
+4. The maker's current supplier SDS (especially Section 2) where it supplies the finished mixture's classification/label information.
+
+Legislation and HSE remain controlling for implementation decisions. General product-safety content in the Business Companion guide is not a reason to change the Builder. Only items within CLPeasy's CLP-label scope and supported by the applicable GB requirements may be flagged for implementation.
 
 Current EU CLP, ECHA material, Northern Ireland/EU rules, UN GHS and other jurisdictions may be used for research/context only. They must never override or silently expand CLPeasy's GB requirements. If such material differs from, goes beyond, or cannot be confirmed against the current GB position: **stop and report it** — do not implement it as a CLPeasy requirement.
 

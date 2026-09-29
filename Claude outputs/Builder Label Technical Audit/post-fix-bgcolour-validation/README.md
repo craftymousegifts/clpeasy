@@ -1,6 +1,6 @@
 # M55 — bgColour validation
 
-Status: FIXED + QA PASSED (29 Sep 2026) — awaiting Michaela's sign-off
+Status: FIXED + QA PASSED + SIGNED OFF (Michaela, 29 Sep 2026). Repair `6865d89`, test `b192a9c`.
 
 ## Scope
 
@@ -52,7 +52,7 @@ Branch: `fix/circle-per-line-text-fit`
 No merge to `main`.
 No production deployment.
 
-## Remaining QA before sign-off
+## Remaining QA before sign-off (historical — completed 29 Sep 2026; see the QA sections below)
 
 This execution environment cannot run the repository's Chromium/browser suite and the repository has no GitHub Actions workflow attached to this audit-branch push.
 
