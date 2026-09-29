@@ -57,7 +57,11 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
 .offer-then{font-size:12px;font-weight:600;color:var(--muted);margin-top:2px;}
 .pro-card .offer-main{color:#fff;}
 .pro-card .offer-then{color:rgba(255,255,255,0.55);}
-.offer-free{display:inline-block;background:#DCFCE7;color:#166534;border-radius:6px;padding:1px 7px;font-weight:900;}
+.offer-free{display:inline-block;background:#DCFCE7;color:#166534;border-radius:6px;padding:1px 7px;font-weight:900;white-space:nowrap;}
+.paid-offer{min-height:49px;margin-bottom:0;}
+.paid-offer .offer-main{min-height:23px;display:flex;align-items:center;}
+.paid-offer .offer-then{white-space:nowrap;}
+.paid-sub{min-height:18px;margin-top:0;margin-bottom:22px;}
 .payg-fit{margin-top:18px;padding:14px 16px;border:1px solid rgba(76,155,176,0.35);border-radius:10px;background:white;color:var(--text);font-size:12px;line-height:1.6;}
 
 .popular-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--teal);color:white;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.5px;white-space:nowrap;}
@@ -249,7 +253,7 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
     <div class="card">
       <div class="plan-pill trial-pill" aria-hidden="true">Easy Trial</div>
       <span class="card-icon">✨</span>
-      <div class="card-name">Easy Trial™</div>
+      <div class="card-name">Easy Trial</div>
       <div class="card-desc">Full access for 14 days so you can try everything before you commit.</div>
       <div class="price-row"><div class="price-amount">Free</div></div>
       <div class="price-sub">14-day trial &nbsp;&#183;&nbsp; No card needed</div>
@@ -277,7 +281,7 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
       <div class="card-name">Pay As You Go</div>
       <div class="card-desc">Buy downloads only when you need them. No subscription — buy another pack whenever you need more.</div>
       <div class="price-row"><div class="price-amount">&pound;4.99</div></div>
-      <div class="offer-block"><div class="offer-main" style="font-size:18px;font-weight:900;">🎉 8 downloads</div><div style="font-size:14px;font-weight:800;color:var(--text);margin-top:4px;">5 downloads + <span class="offer-free">3 FREE one-off launch bonus</span></div><div class="offer-then" style="margin-top:4px;">Offer ends 31 December 2026</div></div>
+      <div class="offer-block paid-offer"><div class="offer-main"><span class="offer-free">🎉 5 downloads + 3 FREE</span></div><div class="offer-then">One-off launch bonus · Ends 31 Dec 2026</div></div><div class="price-sub paid-sub">&nbsp;</div>
       <button id="btn-payg" onclick="startPaygCheckout()" class="btn btn-teal">Buy 8 downloads — £4.99 →</button>
       <hr class="divider">
       <div class="features-label">What you get</div>
@@ -295,8 +299,8 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
       <span class="card-icon card-icon-svg"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="5" y="5" width="22" height="25" rx="3" fill="#D6EEF4" stroke="#3A7D8F" stroke-width="2"/><rect x="10.5" y="2.4" width="11" height="6" rx="1.8" fill="#FFFFFF" stroke="#3A7D8F" stroke-width="2"/><path d="M10.2 18.4l4 4 7.6-8.2" fill="none" stroke="#4C9BB0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
       <div class="card-name">Easy Start</div>
       <div class="card-desc">Practical tools for makers selling in Great Britain creating organised, print-ready CLP labels from supplier SDS data.</div>
-      <div class="price-row"><div class="price-amount" id="maker-price">&pound;8.99</div><div class="price-period" id="maker-period">/mo</div></div><div id="maker-promo" class="offer-block"><div class="offer-main"><span class="offer-free">🎉 10% OFF until 31 December 2026</span></div><div class="offer-then">Then £9.99/month</div></div><div id="maker-annual-eq" style="font-size:12px;color:var(--teal-dark);font-weight:700;margin-top:-5px;margin-bottom:10px;display:none;"></div>
-      <div class="price-sub" id="maker-sub">&pound;99/year available</div>
+      <div class="price-row"><div class="price-amount" id="maker-price">&pound;8.99</div><div class="price-period" id="maker-period">/mo</div></div><div id="maker-promo" class="offer-block paid-offer"><div class="offer-main"><span class="offer-free">🎉 10% OFF</span></div><div class="offer-then">Until 31 Dec 2026 · Then £9.99/mo</div></div><div id="maker-annual-eq" style="font-size:12px;color:var(--teal-dark);font-weight:700;margin-top:-5px;margin-bottom:10px;display:none;"></div>
+      <div class="price-sub paid-sub" id="maker-sub">&pound;99/year available</div>
       <button id="btn-easy_start" onclick="startCheckout('easy_start')" class="btn btn-teal">Get started &#8594;</button>
       <hr class="divider">
       <div class="features-label">What&#39;s included</div>
@@ -323,8 +327,8 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
       <span class="card-icon">&#9889;</span>
       <div class="card-name">Easy Pro</div>
       <div class="card-desc">Everything in Easy Start, with 10 extra downloads each month and priority support.</div>
-      <div class="price-row"><div class="price-amount" id="pro-price">&pound;13.49</div><div class="price-period" id="pro-period">/mo</div></div><div id="pro-promo" class="offer-block"><div class="offer-main"><span class="offer-free">🎉 10% OFF until 31 December 2026</span></div><div class="offer-then">Then £14.99/month</div></div><div id="pro-annual-eq" style="font-size:12px;color:var(--teal-dark);font-weight:700;margin-top:-5px;margin-bottom:10px;display:none;"></div>
-      <div class="price-sub" id="pro-sub">&pound;149/year available</div>
+      <div class="price-row"><div class="price-amount" id="pro-price">&pound;13.49</div><div class="price-period" id="pro-period">/mo</div></div><div id="pro-promo" class="offer-block paid-offer"><div class="offer-main"><span class="offer-free">🎉 10% OFF</span></div><div class="offer-then">Until 31 Dec 2026 · Then £14.99/mo</div></div><div id="pro-annual-eq" style="font-size:12px;color:var(--teal-dark);font-weight:700;margin-top:-5px;margin-bottom:10px;display:none;"></div>
+      <div class="price-sub paid-sub" id="pro-sub">&pound;149/year available</div>
       <button id="btn-easy_pro" onclick="startCheckout('easy_pro')" class="btn btn-glow">Get started &#8594;</button>
       <hr class="divider">
       <div class="features-label">Everything in Easy Start, plus two extras</div>
