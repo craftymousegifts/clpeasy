@@ -2,7 +2,24 @@
 // Run from repo root: node tests/m04-composer-signal-word-consistency.js
 const fs=require('fs');
 const assert=require('assert');
-const LR=require('../label-render.js');
+const {JSDOM}=require('jsdom');
+
+// label-render.js creates its measurement canvas at load time, so exercise the
+// real browser-facing renderer in a DOM rather than requiring it in bare Node.
+const dom=new JSDOM('<!doctype html><html><body></body></html>',{
+  runScripts:'dangerously',
+  pretendToBeVisual:true,
+  beforeParse(window){
+    window.HTMLCanvasElement.prototype.getContext=()=>({
+      font:'',
+      measureText(text){return {width:String(text).length*7};},
+      drawImage(){},fillRect(){},clearRect(){},getImageData(){return {data:[]};}
+    });
+  }
+});
+dom.window.eval(fs.readFileSync('label-render.js','utf8'));
+const LR=dom.window.LabelRenderer;
+assert(LR&&typeof LR.resolveGbClpSignalWord==='function','shared signal resolver must be exported');
 
 const cases=[
   {name:'current H317',codes:['H317'],supplied:'Warning',want:'Warning'},
@@ -41,4 +58,5 @@ copy.signal=LR.resolveGbClpSignalWord(copy.hStatements,copy.sdsSignal!==undefine
 assert.strictEqual(copy.signal,'Danger');
 assert.strictEqual(JSON.stringify(record),before,'render-only correction must not mutate saved record');
 
+dom.window.close();
 console.log('M04 Composer signal-word consistency checks passed:',cases.length,'resolver cases');
