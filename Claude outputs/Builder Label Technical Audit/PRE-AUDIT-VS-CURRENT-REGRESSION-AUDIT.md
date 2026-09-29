@@ -1,5 +1,7 @@
 # Pre-audit vs current Builder regression audit (29 Sep 2026)
 
+**ACCEPTED by Michaela (29 Sep 2026):** RESULT: EXISTING AUDIT CHANGES REGRESSION-CHECKED — NO UNEXPLAINED BUILDER BREAKAGE FOUND.
+
 - **Pre-audit:** `e8c1f25`, the commit the audit branch starts from, directly before the first audit fix `79b0cd3`.
 - **Current:** `fix/circle-per-line-text-fit` at `d7a0ec2`; the application code is unchanged since.
 - **Method:** the same 16 labels driven through the real Builder journey (Smart Paste, Steps 1–5, SVG/PNG/PDF, save, reopen, Composer A4 PDF, cutting PNG) on both versions, compared field by field. Every difference was then bisected: each label's exact renderer input was rendered through `label-render.js` at the base and after every one of the 15 audit commits that touched it. For the bisect only, the three commits carrying the broken M55 line (`6f70631`, `0b4e039`, `ee80aa0`) had that one line's formatting corrected.
