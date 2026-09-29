@@ -237,6 +237,66 @@ function normalizeLabel(data){
   };
 }
 
+// ── M37/M64: GB Article 26 pictogram precedence + saved-data consistency ──
+// This mapping mirrors Builder Step 3.  The resolver keeps the REASON each
+// GHS07 pictogram is needed long enough to apply Article 26 contextually;
+// it never performs a blanket "GHS05/GHS08 means remove GHS07" operation.
+const H_PICTO_MAP=Object.freeze({
+  H224:'flame',H223:'flame',H225:'flame',H226:'flame',H228:'flame',H242:'flame',H250:'flame',H251:'flame',H252:'flame',H260:'flame',H261:'flame',
+  H302:'exclamation',H312:'exclamation',H315:'exclamation',H316:'exclamation',H317:'exclamation',H319:'exclamation',H332:'exclamation',H335:'exclamation',H336:'exclamation',
+  H304:'health',H334:'health',H340:'health',H341:'health',H350:'health',H351:'health',H360:'health',H361:'health',H362:'health',H370:'health',H371:'health',H372:'health',H373:'health',
+  H350i:'health',H360F:'health',H360D:'health',H360FD:'health',H360Fd:'health',H360Df:'health',H361f:'health',H361d:'health',H361fd:'health',
+  H400:'aquatic',H410:'aquatic',H411:'aquatic',
+  H290:'corrosive',H314:'corrosive',H318:'corrosive',
+  H300:'skull',H301:'skull',H310:'skull',H311:'skull',H330:'skull',H331:'skull',
+  H270:'oxidiser',H271:'oxidiser',H272:'oxidiser',
+  H280:'gas',H281:'gas',H282:'gas',H283:'gas',H284:'gas',
+  H200:'explosion',H201:'explosion',H202:'explosion',H203:'explosion',H204:'explosion',H205:'explosion',H240:'explosion',H241:'explosion'
+});
+const GHS07_SKIN_EYE_IRRITATION_CODES=Object.freeze(['H315','H319']);
+const GHS07_SKIN_SENS_OR_SKIN_EYE_IRRITATION_CODES=Object.freeze(['H315','H317','H319']);
+function expectedPictogramsForHazardCodes(codes){
+  const clean=[...new Set((Array.isArray(codes)?codes:String(codes||'').split(',')).map(v=>String(v).trim()).filter(Boolean))];
+  const reasons=new Map();
+  clean.forEach(code=>{
+    const pic=H_PICTO_MAP[code];
+    if(!pic)return;
+    if(!reasons.has(pic))reasons.set(pic,new Set());
+    reasons.get(pic).add(code);
+  });
+  // Article 26(1)(b): GHS06 -> GHS07 shall not appear.
+  if(reasons.has('skull'))reasons.delete('exclamation');
+  else if(reasons.has('exclamation')){
+    const exReasons=reasons.get('exclamation');
+    // Article 26(1)(c): GHS05 suppresses GHS07 only for skin/eye irritation.
+    if(reasons.has('corrosive')) GHS07_SKIN_EYE_IRRITATION_CODES.forEach(c=>exReasons.delete(c));
+    // Article 26(1)(d): GHS08 suppresses the listed GHS07 reasons only when
+    // GHS08 applies FOR respiratory sensitisation (H334), not merely because
+    // some other GHS08 hazard is present.
+    if(clean.includes('H334')) GHS07_SKIN_SENS_OR_SKIN_EYE_IRRITATION_CODES.forEach(c=>exReasons.delete(c));
+    if(!exReasons.size)reasons.delete('exclamation');
+  }
+  // Article 26(1)(a)/(e) make certain additional pictograms optional rather
+  // than forbidden.  M37 deliberately does not silently choose those options.
+  return [...reasons.keys()];
+}
+function checkPictogramConsistency(rawData){
+  const d=rawData||{};
+  const expected=expectedPictogramsForHazardCodes(d.hStatements||[]);
+  const stored=Array.isArray(d.pictograms)?d.pictograms.slice():[];
+  const uniq=a=>[...new Set(a)];
+  const a=uniq(expected).sort(), b=uniq(stored).sort();
+  const consistent=a.length===b.length&&a.every((v,i)=>v===b[i]);
+  return {consistent,expected,stored,missing:a.filter(v=>!b.includes(v)),extra:b.filter(v=>!a.includes(v))};
+}
+function describePictogramMismatch(result){
+  const r=result||{};
+  const parts=[];
+  if((r.missing||[]).length)parts.push('missing '+r.missing.join(', '));
+  if((r.extra||[]).length)parts.push('unexpected '+r.extra.join(', '));
+  return 'The saved hazard pictograms do not match the selected hazard statements'+(parts.length?' ('+parts.join('; ')+')':'')+'. Re-check the hazards in Step 3 before downloading.';
+}
+
 // ── REQUIRED LABEL CONTENT (Builder Label Technical Audit M09 / M31) ──────
 // Content completeness, deliberately kept SEPARATE from physical fit: it
 // never changes the SVG, the layout, `fits` or the blocked overlay, so an
@@ -3158,7 +3218,7 @@ function isCustomSizeBelowSupportedMinimum(shape, w, h){
 }
 
   const LabelRenderer = {
-    renderLabel, normalizeLabel, checkRequiredContent, getLabelDims, GB_CLP_SIGNAL_WORD_BY_CODE, GB_CLP_SIGNAL_WORD_AMBIGUOUS_CODES, normaliseSdsSignalWord, resolveGbClpSignalWord, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, P_DEFS, P501_SCOPES, pStatementNeedsChoice, normalisePCodes, resolvePChoice, incompletePStatements, extractPChoicesFromText, GB_UNSUPPORTED_CODES, H_SUFFIXED_VERIFIED, isValidPictogramKey, describeInvalidPictograms, extractHazardCodesFromText, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
+    renderLabel, normalizeLabel, checkRequiredContent, checkPictogramConsistency, expectedPictogramsForHazardCodes, describePictogramMismatch, getLabelDims, GB_CLP_SIGNAL_WORD_BY_CODE, GB_CLP_SIGNAL_WORD_AMBIGUOUS_CODES, normaliseSdsSignalWord, resolveGbClpSignalWord, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, P_DEFS, P501_SCOPES, pStatementNeedsChoice, normalisePCodes, resolvePChoice, incompletePStatements, extractPChoicesFromText, GB_UNSUPPORTED_CODES, H_SUFFIXED_VERIFIED, isValidPictogramKey, describeInvalidPictograms, extractHazardCodesFromText, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
     // GHS pictogram geometry -- exposed so tests/consumers measuring
     // compliance never have to re-derive or hardcode the sqrt(2)
     // square<->bounding-box relationship themselves.
