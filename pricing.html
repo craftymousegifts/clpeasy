@@ -50,7 +50,7 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
 .card.featured:hover{box-shadow:0 14px 40px rgba(13,148,136,0.2);}
 .card.pro-card{border-color:#1E293B;background:#0F172A;}
 .card.payg-card{border:2px solid var(--teal);background:#F3FAFC;}
-.payg-badge-pill{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--teal);color:white;font-size:11px;font-weight:800;padding:4px 14px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
+.payg-badge-pill{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--teal);color:white;font-size:11px;font-weight:800;width:118px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:20px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
 .offer-block{margin:6px 0 12px;}
 .offer-badge{display:inline-block;background:#FEF3C7;color:#92400E;border:1px solid #F59E0B;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-bottom:6px;white-space:nowrap;}
 .offer-main{font-size:15px;font-weight:800;color:var(--text);line-height:1.35;}
@@ -62,16 +62,21 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
 .paid-offer .offer-main{min-height:23px;display:flex;align-items:center;}
 .paid-offer .offer-then{white-space:nowrap;}
 .paid-sub{min-height:18px;margin-top:0;margin-bottom:22px;}
+@media (min-width:981px){
+  .payg-card .btn,.featured .btn,.pro-card .btn{margin-top:0;}
+  .payg-card .divider,.featured .divider,.pro-card .divider{margin-top:0;}
+  .payg-card .features-label,.featured .features-label,.pro-card .features-label{min-height:30px;}
+}
 .payg-fit{margin-top:18px;padding:14px 16px;border:1px solid rgba(76,155,176,0.35);border-radius:10px;background:white;color:var(--text);font-size:12px;line-height:1.6;}
 
 .popular-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--teal);color:white;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.5px;white-space:nowrap;}
-.pro-badge-pill{position:absolute;top:-12.5px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#D97706,#DC2626);color:white;font-size:11px;font-weight:800;padding:4px 14px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
+.pro-badge-pill{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#D97706,#DC2626);color:white;font-size:11px;font-weight:800;width:118px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:20px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
 /* Plan-name pills on the Easy Trial and Easy Start cards: same geometry and
    type as the Pay As You Go pill, coloured to match each card (borders drawn
    with an inset shadow so every pill is exactly the same height). top is
    0.5px higher than the PAYG pill's because its card border is 2px, not
    1.5px, so all four pills sit at the same height on the cards' outer edge. */
-.plan-pill{position:absolute;top:-12.5px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;padding:4px 14px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
+.plan-pill{position:absolute;top:-13px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;width:118px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:20px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
 .trial-pill{background:white;color:#4B5563;box-shadow:inset 0 0 0 1.5px #D1D5DB;}
 .start-pill{background:white;color:var(--teal-dark);box-shadow:inset 0 0 0 1.5px var(--teal);}
 
@@ -82,7 +87,7 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
 .card-icon-svg svg{display:block;width:33px;height:33px;margin-top:-1px;overflow:visible;}
 .card-name{font-family:'DM Serif Display',serif;font-size:23px;margin-bottom:5px;color:var(--text);}
 .pro-card .card-name{color:white;}
-.card-desc{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.5;}
+.card-desc{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.5;min-height:78px;}
 .pro-card .card-desc{color:rgba(255,255,255,0.5);}
 
 .price-row{display:flex;align-items:baseline;gap:4px;margin-bottom:3px;}
@@ -103,7 +108,7 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
 
 .divider{border:none;border-top:1px solid var(--border);margin-bottom:18px;}
 .pro-card .divider{border-color:rgba(255,255,255,0.1);}
-.features-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:10px;}
+.features-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:10px;min-height:30px;display:flex;align-items:flex-start;}
 .pro-card .features-label{color:#fff;}
 .pro-fit{margin-top:18px;padding:14px 16px;border:1px solid rgba(255,255,255,0.2);border-radius:10px;background:rgba(76,155,176,0.14);color:#fff;font-size:12px;line-height:1.6;}
 .plan-benefits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:22px 0 12px;}
@@ -284,7 +289,7 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
       <div class="offer-block paid-offer"><div class="offer-main"><span class="offer-free">🎉 5 downloads + 3 FREE</span></div><div class="offer-then">One-off launch bonus · Ends 31 Dec 2026</div></div><div class="price-sub paid-sub">&nbsp;</div>
       <button id="btn-payg" onclick="startPaygCheckout()" class="btn btn-teal">Buy 8 downloads — £4.99 →</button>
       <hr class="divider">
-      <div class="features-label">What you get</div>
+      <div class="features-label">What&#39;s included</div>
       <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>One-off payment<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">You pay once at checkout. There is no subscription, no monthly fee and nothing to cancel.</div></div>
       <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>No subscription<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Buy another pack whenever you need more downloads. Nothing renews automatically.</div></div>
       <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Downloads do not expire<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Purchased downloads stay on your account until you use them.</div></div>
@@ -331,7 +336,7 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
       <div class="price-sub paid-sub" id="pro-sub">&pound;149/year available</div>
       <button id="btn-easy_pro" onclick="startCheckout('easy_pro')" class="btn btn-glow">Get started &#8594;</button>
       <hr class="divider">
-      <div class="features-label">Everything in Easy Start, plus two extras</div>
+      <div class="features-label">What&#39;s included</div>
       <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick-gold" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>10 extra downloads each month (30 total)<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Easy Start includes 20 downloads per month; Easy Pro includes 30. Downloads do not roll over. Re-downloading the same label within 7 days does not count towards your allowance. Top-up packs are available on both plans.</div></div>
 
 <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick-gold" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Priority support<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Priority support — we aim to reply within 1 working day.</div></div>
