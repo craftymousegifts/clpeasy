@@ -6,9 +6,13 @@ on:
     - cron: '0 6 * * *'
   workflow_dispatch:
     # Manual trigger available anytime from GitHub Actions tab
+  push:
+    branches:
+      - fix/circle-per-line-text-fit
 
 jobs:
   health-check:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
 
     steps:
@@ -39,3 +43,46 @@ jobs:
         env:
           BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
           REPORT_TO:     support@clpeasy.com
+
+  m63-audit-qa:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/fix/circle-per-line-text-fit'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm install
+      - name: Install Chromium
+        shell: bash
+        run: |
+          npx puppeteer browsers install chrome
+          chrome_path=$(find "$HOME/.cache/puppeteer/chrome" -type f -path '*/chrome-linux64/chrome' | head -1)
+          test -n "$chrome_path"
+          echo "PUPPETEER_EXECUTABLE_PATH=$chrome_path" >> "$GITHUB_ENV"
+      - name: M63 targeted regression
+        run: node tests/m63-smart-paste-joined-codes.js
+      - name: M21 suffixed-code regression
+        run: node tests/suffixed-hazard-codes.js
+      - name: Builder Safety Baseline
+        run: node tests/builder-safety-baseline.js
+      - name: Full audit suite gate
+        shell: bash
+        run: |
+          set +e
+          pass=0; fail=0; unexpected=0
+          known="builder-desktop-scroll-model.js builder-step-navigation-layout.js footer-and-compliance-wording.js lifecycle-reminder-accuracy.js smart-paste-user-guidance-wording.js"
+          : > /tmp/failures.txt
+          for f in tests/*.js; do
+            echo "::group::$f"
+            node "$f"; rc=$?
+            echo "::endgroup::"
+            if [ $rc -eq 0 ]; then pass=$((pass+1)); else
+              fail=$((fail+1)); base=$(basename "$f"); echo "$base" >> /tmp/failures.txt
+              case " $known " in *" $base "*) ;; *) unexpected=$((unexpected+1));; esac
+            fi
+          done
+          echo "FULL_SUITE_PASS=$pass"; echo "FULL_SUITE_FAIL=$fail"; cat /tmp/failures.txt
+          [ $unexpected -eq 0 ] && [ $fail -eq 5 ]
