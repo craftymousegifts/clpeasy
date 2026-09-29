@@ -1,6 +1,10 @@
 'use strict';
 const assert=require('assert');
-const R=require('../label-render.js');
+const fs=require('fs');
+const path=require('path');
+const {stubRenderer}=require('./fixtures/required-content-fixtures');
+const rendererSource=fs.readFileSync(path.join(__dirname,'..','label-render.js'),'utf8');
+const R=stubRenderer(rendererSource);
 
 function eq(codes, expected){
   assert.deepStrictEqual(R.expectedPictogramsForHazardCodes(codes).slice().sort(), expected.slice().sort(), codes.join(','));
