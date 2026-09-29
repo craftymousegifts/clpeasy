@@ -2377,7 +2377,15 @@ function renderSheetPosition(e,pw,ph,opts){
     const v=e&&e[k];
     if(typeof v==='number'&&Number.isFinite(v))renderOpts[k]=v;
   });
-  return LabelRenderer.renderLabel(e,renderOpts);
+  // M04: Composer must never trust a stale/tampered saved signal word.
+  // Derive a render-only copy using the same shared resolver as Builder;
+  // never mutate the saved record. For ambiguous physical-hazard codes,
+  // preserve the Builder's existing SDS/saved-word fallback semantics.
+  const renderData=Object.assign({},e||{});
+  const signalCodes=renderData.hSelected!==undefined?renderData.hSelected:renderData.hStatements;
+  const suppliedSignal=renderData.sdsSignal!==undefined?renderData.sdsSignal:(renderData.signal||'');
+  renderData.signal=LabelRenderer.resolveGbClpSignalWord(signalCodes,suppliedSignal);
+  return LabelRenderer.renderLabel(renderData,renderOpts);
 }
 function buildLabelSVGFromData(e,pw,ph,opts){
   return renderSheetPosition(e,pw,ph,opts).svg;
