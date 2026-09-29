@@ -246,7 +246,7 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
       <a href="auth.html?mode=signup" class="btn btn-outline" data-trial-cta>Start free trial &#8594;</a>
       <a href="plan-picker.html" style="display:block;text-decoration:none;background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:2px solid #F59E0B;border-radius:12px;padding:16px 18px;margin-bottom:16px;transition:transform .15s,box-shadow .15s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(245,158,11,0.25)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
         <div style="font-size:13px;font-weight:800;color:#92400E;margin-bottom:4px;">&#129300; Not sure which plan suits you?</div>
-        <div style="font-size:12px;color:#78350F;line-height:1.55;margin-bottom:8px;">Answer 5 quick questions about how you work and we'll point you straight to the right plan. Takes less than a minute.</div>
+        <div style="font-size:12px;color:#78350F;line-height:1.55;margin-bottom:8px;">Answer a few quick questions about how you work and we'll point you straight to the right plan. Takes less than a minute.</div>
         <div style="display:inline-flex;align-items:center;gap:6px;background:#F59E0B;color:white;font-size:12px;font-weight:700;padding:6px 14px;border-radius:8px;">Find your perfect plan &#8594;</div>
       </a>
       <hr class="divider">
@@ -280,7 +280,7 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
     </div>
 
     <!-- 3: EASY START -->
-    <div class="card featured">
+    <div class="card featured" id="easy-start">
       <div class="plan-pill start-pill" aria-hidden="true">Easy Start</div>
       <span class="card-icon card-icon-svg"><svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="5" y="5" width="22" height="25" rx="3" fill="#D6EEF4" stroke="#3A7D8F" stroke-width="2"/><rect x="10.5" y="2.4" width="11" height="6" rx="1.8" fill="#FFFFFF" stroke="#3A7D8F" stroke-width="2"/><path d="M10.2 18.4l4 4 7.6-8.2" fill="none" stroke="#4C9BB0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
       <div class="card-name">Easy Start™</div>
@@ -308,7 +308,7 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
     </div>
 
     <!-- 4: EASY PRO -->
-    <div class="card pro-card">
+    <div class="card pro-card" id="easy-pro">
       <div class="pro-badge-pill" aria-hidden="true">Easy Pro</div>
       <span class="card-icon">&#9889;</span>
       <div class="card-name">Easy Pro™</div>
@@ -320,7 +320,7 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
       <div class="features-label">Everything in Easy Start, plus two extras</div>
       <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick-gold" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>10 extra downloads each month (30 total)<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Easy Start includes 20 downloads per month; Easy Pro includes 30. Downloads do not roll over. Re-downloading the same label within 7 days does not count towards your allowance. Top-up packs are available on both plans.</div></div>
 
-<div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick-gold" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Priority support<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Easy Pro support questions go to the front of the queue. We aim to reply within 1 working day.</div></div>
+<div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick-gold" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Priority support<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Priority support — we aim to reply within 1 working day.</div></div>
       <p class="pro-fit"><strong>When Pro makes sense:</strong> If you regularly add new scents or seasonal ranges and expect to download more than 20 label files a month, Pro gives you 30 downloads and priority help. The label builder and Smart Paste are included in Easy Start too.</p>
     </div>
 
@@ -396,13 +396,13 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
         </td><td style="padding:12px 18px;text-align:center;border-bottom:1px solid var(--border);color:var(--teal);font-weight:700;">✓</td><td style="padding:12px 18px;text-align:center;border-bottom:1px solid var(--border);background:#f8fbfc;color:var(--teal);font-weight:700;">✓</td></tr>
         <tr style="background:var(--off);"><td style="padding:12px 18px;border-bottom:1px solid var(--border);font-weight:600;color:var(--text);">
           <button class="table-row-trigger" onclick="this.classList.toggle('open')">Priority support<span class="table-row-chevron">&#9660;</span></button>
-          <div class="table-row-desc">Easy Pro subscribers go to the front of the queue. Questions answered within 1 working day.</div>
+          <div class="table-row-desc">Priority support — we aim to reply within 1 working day.</div>
         </td><td style="padding:12px 18px;text-align:center;border-bottom:1px solid var(--border);color:var(--muted);">—</td><td style="padding:12px 18px;text-align:center;border-bottom:1px solid var(--border);background:#f3f8f9;color:var(--teal);font-weight:700;">✓</td></tr>
         
         
       </tbody>
     </table>
-    <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:16px;">Not sure which is right for you? <a href="plan-picker.html" style="color:var(--teal);font-weight:600;">Answer 5 questions and we'll tell you →</a></p>
+    <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:16px;">Not sure which is right for you? <a href="plan-picker.html" style="color:var(--teal);font-weight:600;">Answer a few quick questions and we'll tell you →</a></p>
   </div>
 </div>
 
@@ -527,14 +527,14 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
           <h4>What happens after the trial?</h4>
           <span class="faq-chevron">&#9660;</span>
         </button>
-        <div class="faq-body"><p>Your trial gives you full access to every feature. When it ends you choose a plan — Easy Start or Easy Pro. Not sure which? Answer 5 quick questions and we&#39;ll recommend the right one. <a href="plan-picker.html" style="color:var(--teal);">Find your perfect plan &rarr;</a></p><p>If you don&#39;t subscribe, your labels are kept safely for 30 days but downloads are paused until you choose a plan.</p></div>
+        <div class="faq-body"><p>Your trial gives you full access to every feature. When it ends you can buy Pay As You Go downloads or choose a plan — Easy Start or Easy Pro. Not sure which? Answer a few quick questions and we&#39;ll recommend the right one. <a href="plan-picker.html" style="color:var(--teal);">Find your perfect plan &rarr;</a></p><p>If you don&#39;t subscribe, your labels are kept safely for 30 days but downloads are paused until you buy Pay As You Go downloads or choose a plan.</p></div>
       </div>
       <div class="faq-item">
         <button class="faq-trigger" onclick="toggleFAQ(this)">
           <h4>What&#39;s the difference between Easy Start and Easy Pro?</h4>
           <span class="faq-chevron">&#9660;</span>
         </button>
-        <div class="faq-body"><p><strong>Easy Start</strong> includes the full label builder, Smart Paste, 20 downloads/month, browser-saved labels organised automatically by product type, local version history, print sheet composer and Cricut download.</p><p><strong>Easy Pro</strong> gives you 30 downloads/month and priority support.</p><p>Both plans work from your own supplier's SDS. Saved-label data currently remains in the browser and device used to create it.</p><p>Not sure which suits you? <a href="plan-picker.html" style="color:var(--teal);">Try our 5-question plan finder &rarr;</a></p></div>
+        <div class="faq-body"><p><strong>Easy Start</strong> includes the full label builder, Smart Paste, 20 downloads/month, browser-saved labels organised automatically by product type, local version history, print sheet composer and Cricut download.</p><p><strong>Easy Pro</strong> gives you 30 downloads/month and priority support.</p><p>Both plans work from your own supplier's SDS. Saved-label data currently remains in the browser and device used to create it.</p><p>Not sure which suits you? <a href="plan-picker.html" style="color:var(--teal);">Try our quick plan finder &rarr;</a></p></div>
       </div>
       <div class="faq-item">
         <button class="faq-trigger" onclick="toggleFAQ(this)">
@@ -576,7 +576,7 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
           <h4>Not sure which plan is right for me?</h4>
           <span class="faq-chevron">&#9660;</span>
         </button>
-        <div class="faq-body"><p>Answer 5 quick questions based on how you actually work and we&#39;ll recommend the right plan for your business. <a href="plan-picker.html" style="color:var(--teal);">Find your perfect plan &rarr;</a></p></div>
+        <div class="faq-body"><p>Answer a few quick questions based on how you actually work and we&#39;ll recommend the right plan for your business. <a href="plan-picker.html" style="color:var(--teal);">Find your perfect plan &rarr;</a></p></div>
       </div>
       <div class="faq-item">
         <button class="faq-trigger" onclick="toggleFAQ(this)">

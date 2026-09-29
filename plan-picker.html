@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Find Your Perfect Plan — CLPeasy</title>
-<meta name="description" content="Answer 5 quick questions and CLPeasy will recommend the right plan for your business.">
+<meta name="description" content="Answer a few quick questions and CLPeasy will recommend the right plan for your business.">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
 <style>
 :root{--teal:#4C9BB0;--teal-dark:#3a7d8f;--teal-light:#d6eef4;--gold:#D97706;--gold-light:#FEF3C7;--border:#E8EAED;--text:#111318;--muted:#6B7280;--off:#F7F8FA;}
@@ -44,7 +44,7 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 24px;height
 
 .options{display:flex;flex-direction:column;gap:10px;}
 .option{background:var(--off);border:2px solid var(--border);border-radius:14px;padding:16px 18px;cursor:pointer;transition:all .2s;text-align:left;font-family:'DM Sans',sans-serif;display:flex;align-items:flex-start;gap:14px;}
-.option:hover{border-color:var(--teal);background:var(--teal-light);}
+@media (hover:hover){.option:hover{border-color:var(--teal);background:var(--teal-light);}}
 .option.selected{border-color:var(--teal);background:var(--teal-light);}
 .option-icon{font-size:22px;flex-shrink:0;margin-top:1px;}
 .option-label{font-size:15px;font-weight:600;color:var(--text);margin-bottom:3px;}
@@ -53,9 +53,6 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 24px;height
 .q-nav{display:flex;align-items:center;justify-content:space-between;margin-top:24px;}
 .btn-back{background:none;border:1.5px solid var(--border);color:var(--muted);padding:10px 18px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
 .btn-back:hover{border-color:var(--muted);color:var(--text);}
-.btn-next{background:var(--teal);color:white;border:none;padding:10px 24px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;opacity:0.4;pointer-events:none;}
-.btn-next.ready{opacity:1;pointer-events:all;}
-.btn-next:hover{background:var(--teal-dark);}
 
 /* RESULT */
 .result-card{background:white;border:1.5px solid var(--border);border-radius:20px;padding:36px 28px;display:none;text-align:center;animation:fadeUp .4s ease;}
@@ -91,6 +88,38 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 24px;height
   nav{padding:0 14px;}
   .nav-link{display:none;}
 }
+
+/* Plan Checker (Sep 2026): branching model — help text, notes, offer and account messages */
+.option-example{font-size:12px;color:var(--muted);line-height:1.4;margin-top:2px;}
+.result-plan.payg{color:var(--teal-dark);}
+.result-card{text-align:left;}
+.result-card .result-icon,.result-card .result-plan,.result-card .result-tagline{text-align:center;}
+.price-line{font-size:14px;color:var(--text);font-weight:600;text-align:center;margin-bottom:20px;line-height:1.5;}
+.result-box{border-radius:12px;padding:12px 14px;font-size:13px;line-height:1.55;margin-bottom:12px;overflow-wrap:anywhere;}
+.result-box.warn{background:#FFFBEB;border:1px solid #F59E0B;color:#78350F;}
+.result-box.note{background:var(--teal-light);border:1px solid #b9dde6;color:var(--teal-dark);}
+.result-box.account{background:#F3F4F6;border:1px solid var(--border);color:var(--text);}
+.result-box.offer{background:var(--gold-light);border:1px dashed var(--gold);color:#92400E;}
+.offer-label{display:block;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:2px;}
+.feature-list{list-style:none;margin:0 0 16px;padding:0;}
+.feature-list li{font-size:13px;color:var(--muted);padding:4px 0 4px 20px;position:relative;line-height:1.5;}
+.feature-list li::before{content:'✓';position:absolute;left:0;color:var(--teal);font-weight:700;}
+.btn-cta.secondary{background:white;color:var(--teal-dark);border:2px solid var(--teal);}
+.btn-cta.secondary:hover{background:var(--teal-light);}
+.btn-cta{text-align:center;}
+.btn-cta[hidden],.result-box[hidden]{display:none;}
+h2.q-text,h2.result-plan{font-weight:400;}
+.q-text:focus,.result-plan:focus{outline:none;}
+.q-text:focus-visible,.result-plan:focus-visible{outline:2px solid var(--teal);outline-offset:4px;border-radius:4px;}
+.option:focus-visible,.btn-back:focus-visible,.btn-retake:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+.result-footnote{font-size:12px;color:var(--muted);line-height:1.55;text-align:center;margin:4px 0 8px;}
+.result-footnote:empty{display:none;}
+.q-text + .options{margin-top:20px;}
+@media (prefers-reduced-motion: reduce){
+  .question-card,.result-card{animation:none;}
+  .option,.progress-fill,.btn-cta{transition:none;}
+}
+.result-links{text-align:center;}
 </style>
 </head>
 <body>
@@ -104,279 +133,292 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 24px;height
 <div class="hero">
   <div class="hero-eyebrow">🎯 Plan finder</div>
   <h1>Find your <em>perfect</em> plan</h1>
-  <p>5 quick questions based on how you actually work — we'll recommend the right plan for your business.</p>
+  <p>A few quick questions based on how you actually work — we'll recommend the right plan for your business.</p>
 </div>
 
 <div class="progress-wrap">
   <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
-  <div class="progress-label" id="progress-label">Question 1 of 5</div>
+  <div class="progress-label" id="progress-label" aria-live="polite">Question 1</div>
 </div>
 
 <div class="quiz-wrap">
 
-  <!-- Q1 -->
-  <div class="question-card active" id="q1">
-    <div class="q-number">Question 1 of 5</div>
-    <div class="q-text">How many labels do you expect to download in a typical month?</div>
-    <div class="q-sub">Easy Start includes 20 downloads/month; Easy Pro includes 30.</div>
+  <!-- Always asked -->
+  <div class="question-card active" id="q-frequency" data-q="frequency">
+    <div class="q-number">Question 1</div>
+    <h2 class="q-text" tabindex="-1">How often do you make or update labels?</h2>
     <div class="options">
-      <button class="option" onclick="selectOption(this,'q1','pro')" data-value="pro">
-        <span class="option-icon">📈</span>
-        <div><div class="option-label">30 or more — I have a large or growing range</div><div class="option-desc">I regularly need more than the Easy Start allowance.</div></div>
-      </button>
-      <button class="option" onclick="selectOption(this,'q1','start')" data-value="start">
-        <span class="option-icon">🕯️</span>
-        <div><div class="option-label">20 or fewer — that comfortably covers me</div><div class="option-desc">My range is smaller, or I don't download that often.</div></div>
-      </button>
-    </div>
-    <div class="q-nav">
-      <div></div>
-      <button class="btn-next" id="next-q1" onclick="nextQuestion(2)">Next →</button>
+      <button type="button" class="option" data-q="frequency" data-value="notsure" aria-pressed="false"><span class="option-icon">🌱</span><div><div class="option-label">I'm just getting started / not sure yet</div></div></button>
+      <button type="button" class="option" data-q="frequency" data-value="occasional" aria-pressed="false"><span class="option-icon">📅</span><div><div class="option-label">Now and then, or seasonally</div><div class="option-example">For example, a Christmas range</div></div></button>
+      <button type="button" class="option" data-q="frequency" data-value="ongoing" aria-pressed="false"><span class="option-icon">🔁</span><div><div class="option-label">Most or all months</div></div></button>
     </div>
   </div>
 
-  <!-- Q2 -->
-  <div class="question-card" id="q2">
-    <div class="q-number">Question 2 of 5</div>
-    <div class="q-text">How often do you create labels for new fragrances?</div>
-    <div class="q-sub">The more fragrances you add, the more downloads you'll typically need each month.</div>
+  <!-- Regular makers only -->
+  <div class="question-card" id="q-labels" data-q="labels">
+    <div class="q-number">Question 2</div>
+    <h2 class="q-text" tabindex="-1">About how many different CLP labels do you usually need in a month?</h2>
+    <div class="q-sub">Count each fragrance and product type separately. For example, 5 fragrances sold as candles and wax melts = 10 different labels.</div>
     <div class="options">
-      <button class="option" onclick="selectOption(this,'q2','pro')" data-value="pro">
-        <span class="option-icon">🚀</span>
-        <div><div class="option-label">Regularly — I'm always adding new scents</div><div class="option-desc">My range is growing and I'm frequently creating labels for new fragrances.</div></div>
-      </button>
-      <button class="option" onclick="selectOption(this,'q2','mid')" data-value="mid">
-        <span class="option-icon">📅</span>
-        <div><div class="option-label">Occasionally — a few new ones each season</div><div class="option-desc">I add new scents a few times a year but my core range stays fairly stable.</div></div>
-      </button>
-      <button class="option" onclick="selectOption(this,'q2','start')" data-value="start">
-        <span class="option-icon">🕯️</span>
-        <div><div class="option-label">Rarely — I have a fixed range that doesn't change much</div><div class="option-desc">My scents are established and I mostly just reprint existing labels.</div></div>
-      </button>
+      <button type="button" class="option" data-q="labels" data-value="upto10" aria-pressed="false"><span class="option-icon">🕯️</span><div><div class="option-label">Up to 10</div></div></button>
+      <button type="button" class="option" data-q="labels" data-value="11to20" aria-pressed="false"><span class="option-icon">📦</span><div><div class="option-label">11–20</div></div></button>
+      <button type="button" class="option" data-q="labels" data-value="over20" aria-pressed="false"><span class="option-icon">📈</span><div><div class="option-label">More than 20</div></div></button>
     </div>
-    <div class="q-nav">
-      <button class="btn-back" onclick="prevQuestion(1)">← Back</button>
-      <button class="btn-next" id="next-q2" onclick="nextQuestion(3)">Next →</button>
-    </div>
+    <div class="q-nav"><button type="button" class="btn-back">← Back</button></div>
   </div>
 
-  <!-- Q3 -->
-  <div class="question-card" id="q3">
-    <div class="q-number">Question 3 of 5</div>
-    <div class="q-text">Do you sell on multiple platforms or supply stockists?</div>
-    <div class="q-sub">More sales channels means more scrutiny and more compliance pressure.</div>
+  <!-- Only when more than 10 labels a month -->
+  <div class="question-card" id="q-printing" data-q="printing">
+    <div class="q-number">Question 3</div>
+    <h2 class="q-text" tabindex="-1">How do you usually print them?</h2>
     <div class="options">
-      <button class="option" onclick="selectOption(this,'q3','pro')" data-value="pro">
-        <span class="option-icon">🛍️</span>
-        <div><div class="option-label">Yes — Etsy, my own website, markets and/or stockists</div><div class="option-desc">My products are in multiple places and I need to be confident everything is correct.</div></div>
-      </button>
-      <button class="option" onclick="selectOption(this,'q3','start')" data-value="start">
-        <span class="option-icon">🏡</span>
-        <div><div class="option-label">Just one or two places</div><div class="option-desc">I sell mainly through one channel and keep things simple.</div></div>
-      </button>
+      <button type="button" class="option" data-q="printing" data-value="combined" aria-pressed="false"><span class="option-icon">🧩</span><div><div class="option-label">Several different labels together on one sheet or file</div></div></button>
+      <button type="button" class="option" data-q="printing" data-value="separate" aria-pressed="false"><span class="option-icon">🗂️</span><div><div class="option-label">A separate sheet or file for each label</div><div class="option-example">Including one cutting-machine file per label</div></div></button>
+      <button type="button" class="option" data-q="printing" data-value="notsure" aria-pressed="false"><span class="option-icon">🤔</span><div><div class="option-label">Not sure yet</div></div></button>
     </div>
-    <div class="q-nav">
-      <button class="btn-back" onclick="prevQuestion(2)">← Back</button>
-      <button class="btn-next" id="next-q3" onclick="nextQuestion(4)">Next →</button>
-    </div>
+    <div class="q-nav"><button type="button" class="btn-back">← Back</button></div>
   </div>
 
-  <!-- Q4 -->
-  <div class="question-card" id="q4">
-    <div class="q-number">Question 4 of 5</div>
-    <div class="q-text">Has a fragrance supplier ever updated their SDS and you weren't sure if your labels were still correct?</div>
-    <div class="q-sub">SDS data changes more often than most makers realise.</div>
+  <!-- Always asked, last -->
+  <div class="question-card" id="q-payment" data-q="payment">
+    <div class="q-number">Question 2</div>
+    <h2 class="q-text" tabindex="-1">How would you like to pay?</h2>
     <div class="options">
-      <button class="option" onclick="selectOption(this,'q4','pro')" data-value="pro">
-        <span class="option-icon">😬</span>
-        <div><div class="option-label">Yes — it's happened and it's stressful</div><div class="option-desc">I've had to go back and check labels or I'm not always sure my data is current.</div></div>
-      </button>
-      <button class="option" onclick="selectOption(this,'q4','pro')" data-value="pro">
-        <span class="option-icon">🤔</span>
-        <div><div class="option-label">I didn't know I needed to check</div><div class="option-desc">I wasn't aware supplier SDS data gets updated — this is new to me.</div></div>
-      </button>
-      <button class="option" onclick="selectOption(this,'q4','start')" data-value="start">
-        <span class="option-icon">✅</span>
-        <div><div class="option-label">I check regularly and stay on top of it</div><div class="option-desc">I have a process for checking my SDS data and I'm confident my labels are current.</div></div>
-      </button>
+      <button type="button" class="option" data-q="payment" data-value="payg" aria-pressed="false"><span class="option-icon">💳</span><div><div class="option-label">Only when I need downloads — no subscription</div></div></button>
+      <button type="button" class="option" data-q="payment" data-value="subscription" aria-pressed="false"><span class="option-icon">🗓️</span><div><div class="option-label">I'd prefer a monthly or annual subscription</div></div></button>
+      <button type="button" class="option" data-q="payment" data-value="none" aria-pressed="false"><span class="option-icon">⚖️</span><div><div class="option-label">No preference — recommend what fits</div></div></button>
     </div>
-    <div class="q-nav">
-      <button class="btn-back" onclick="prevQuestion(3)">← Back</button>
-      <button class="btn-next" id="next-q4" onclick="nextQuestion(5)">Next →</button>
-    </div>
+    <div class="q-nav"><button type="button" class="btn-back">← Back</button></div>
   </div>
 
-  <!-- Q5 -->
-  <div class="question-card" id="q5">
-    <div class="q-number">Question 5 of 5</div>
-    <div class="q-text">If Trading Standards inspected your products tomorrow, how confident would you feel?</div>
-    <div class="q-sub">Be honest — this one matters most.</div>
-    <div class="options">
-      <button class="option" onclick="selectOption(this,'q5','start')" data-value="start">
-        <span class="option-icon">💪</span>
-        <div><div class="option-label">Very confident — my labels are correct and up to date</div><div class="option-desc">I know my hazard data is right and I keep good records.</div></div>
-      </button>
-      <button class="option" onclick="selectOption(this,'q5','mid')" data-value="mid">
-        <span class="option-icon">🤞</span>
-        <div><div class="option-label">Fairly confident — I think they're right but I'm not 100% sure</div><div class="option-desc">I try to keep on top of it but it's hard to be certain.</div></div>
-      </button>
-      <button class="option" onclick="selectOption(this,'q5','pro')" data-value="pro">
-        <span class="option-icon">😰</span>
-        <div><div class="option-label">Honestly not sure — I'd be nervous</div><div class="option-desc">I'm not confident everything is correct and I'd benefit from more help.</div></div>
-      </button>
-    </div>
-    <div class="q-nav">
-      <button class="btn-back" onclick="prevQuestion(4)">← Back</button>
-      <button class="btn-next" id="next-q5" onclick="showResult()">See my recommendation →</button>
-    </div>
-  </div>
-
-  <!-- RESULT: EASY START -->
-  <div class="result-card" id="result-start">
-    <div class="result-icon">🕯️</div>
-    <div class="result-plan start">Easy Start</div>
-    <div class="result-tagline">Based on how you work, Easy Start has everything you need — without paying for features you won't use.</div>
+  <!-- RESULT (one card, filled from CLPPlanChecker.decide / .ctas) -->
+  <div class="result-card" id="result-card" aria-live="polite">
+    <div class="result-icon" id="result-icon"></div>
+    <h2 class="result-plan" id="result-plan" tabindex="-1"></h2>
+    <div class="result-tagline" id="result-tagline"></div>
+    <div class="price-line" id="result-price"></div>
     <div class="reason-list">
-      <div class="reason-title">Why Easy Start suits you</div>
-      <div id="start-reasons"></div>
+      <div class="reason-title">Why this suits you</div>
+      <div id="result-reasons"></div>
     </div>
-    <div class="price-display">From <strong>£9.99</strong>/month &nbsp;·&nbsp; or £99/year</div>
-    <a href="auth.html" class="btn-cta">Get started with Easy Start →</a>
-    <a href="pricing.html" class="btn-see-all">Compare all plans</a>
-    <div class="retake"><button class="btn-retake" onclick="retake()">← Retake the quiz</button></div>
-  </div>
-
-  <!-- RESULT: EASY PRO -->
-  <div class="result-card" id="result-pro">
-    <div class="result-icon">⚡</div>
-    <div class="result-plan pro">Easy Pro</div>
-    <div class="result-tagline">Based on how you work, Easy Pro will save you time, reduce risk and help you review your labels with confidence.</div>
-    <div class="reason-list">
-      <div class="reason-title">Why Easy Pro suits you</div>
-      <div id="pro-reasons"></div>
+    <div id="result-boxes"></div>
+    <ul class="feature-list" id="result-features"></ul>
+    <div class="result-box offer" id="result-offer" hidden><span class="offer-label">Current offer</span><span id="result-offer-text"></span></div>
+    <div id="result-account"></div>
+    <a href="pricing.html" class="btn-cta" id="result-primary"></a>
+    <a href="pricing.html" class="btn-cta secondary" id="result-secondary" hidden></a>
+    <p class="result-footnote" id="result-footnotes"></p>
+    <div class="result-links">
+      <a href="pricing.html" class="btn-see-all">Compare all plans</a>
+      <div class="retake"><button type="button" class="btn-retake" onclick="retake()">← Retake the quiz</button></div>
     </div>
-    <div class="price-display">From <strong>£14.99</strong>/month &nbsp;·&nbsp; or £149/year</div>
-    <a href="auth.html" class="btn-cta pro-cta">Get started with Easy Pro →</a>
-    <a href="pricing.html" class="btn-see-all">Compare all plans</a>
-    <div class="retake"><button class="btn-retake" onclick="retake()">← Retake the quiz</button></div>
   </div>
 
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="entitlement.js"></script>
+<script src="plan-checker.js"></script>
 <script>
-const answers = {};
+const PC = window.CLPPlanChecker;
+const ICONS = { payg: '💳', start: '🕯️', pro: '⚡' };
+// Answer → next question: the chosen answer stays visibly selected for this
+// long before the next applicable question appears (no Next buttons).
+const SELECT_DELAY_MS = 250;
+// A new question fades in over this long (the .3s fadeUp); taps are ignored
+// until it has appeared, so a quick double tap can't answer the next question.
+const FADE_MS = 300;
+let answers = {};
+let current = 'frequency';
+let busy = false;
+let readyAt = 0;
+let resultGen = 0;
 
-const PRO_REASONS = {
-  q1: '📈 You need more than 20 downloads a month — Easy Pro\'s 30/month allowance covers a larger or growing range.',
-  q2_pro: '🚀 You add new fragrances regularly — Easy Pro\'s extra downloads each month keep pace with a growing range.',
-  q2_mid: '📅 Even occasional new fragrances add up — the extra downloads on Easy Pro give you headroom.',
-  q3: '🛍️ Selling across multiple channels increases compliance scrutiny — Easy Pro\'s priority support means quicker help when you need it.',
-  q4_happened: '😬 You\'ve had SDS updates catch you out before — CLPeasy doesn\'t monitor this for you on either plan yet, but Easy Pro\'s priority support means quicker help if you\'re ever unsure.',
-  q4_didnt_know: '🤔 SDS data changes regularly — CLPeasy doesn\'t monitor this for you on either plan yet, so it\'s worth checking your supplier\'s SDS regularly; Easy Pro\'s priority support is there if you need a hand.',
-  q5: '😰 Easy Pro\'s priority support will give you somewhere to turn when you\'re not sure.',
-};
-
-const START_REASONS = {
-  q1: '🕯️ 20 downloads a month comfortably covers your range — Easy Start gives you everything you need without paying for extras you won\'t use.',
-  q2: '🕯️ With a stable range you\'re not creating labels constantly — Easy Start handles your needs without extras you won\'t use.',
-  q3: '🏡 Selling through one or two channels keeps things manageable — Easy Start is built for exactly this.',
-  q4: '✅ You already have a process for checking your SDS data — Easy Start keeps your labels organised and print-ready.',
-  q5: '💪 You\'re on top of your compliance — Easy Start gives you 20 downloads/month, unlimited saved labels, and a tidy library.',
-};
-
-function selectOption(el, qId, value) {
-  el.closest('.options').querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
-  el.classList.add('selected');
-  answers[qId] = value;
-  document.getElementById('next-' + qId).classList.add('ready');
+function reducedMotion() {
+  try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; }
+}
+// The questionnaire stays where the customer is looking: questions replace
+// each other in the same place, so no page scroll is needed. Only if the new
+// card's top would be above the viewport (e.g. after a tall card on a phone)
+// is the page moved -- instantly and just far enough to show it.
+function keepInView(el) {
+  const top = el.getBoundingClientRect().top;
+  if (top < 8) window.scrollBy(0, top - 16);
+}
+// Moves keyboard/screen-reader focus without scrolling. Browsers that ignore
+// preventScroll are put back where they were.
+function focusWithoutScroll(el) {
+  const x = window.scrollX, y = window.scrollY;
+  try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); }
+  if (window.scrollX !== x || window.scrollY !== y) window.scrollTo(x, y);
 }
 
-function nextQuestion(num) {
+// ── Account state (CTAs only; never the recommendation) ─────────────────
+// Same public project/anon key as pricing.html. Reads only the visitor's own
+// profile row, then the shared CLPEntitlement summary. Any failure, or no
+// session, falls back to the signed-out calls-to-action.
+const SUPABASE_URL='https://qvkosdqcryrcfbjtaxic.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
+const accountReady = (async () => {
+  try {
+    if (!window.supabase || !window.CLPEntitlement) return null;
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return null;
+    const { data: prof, error } = await sb.from('profiles')
+      .select('subscription_status,trial_end,deletion_date,plan,is_pro,downloads_used,downloads_limit,billing_cycle,downloads_reset_date,topup_credits')
+      .eq('id', session.user.id).single();
+    if (error || !prof) return null;
+    return window.CLPEntitlement.summarise(prof);
+  } catch (e) { return null; }
+})();
+function accountWithTimeout(ms){
+  return Promise.race([accountReady, new Promise(r => setTimeout(() => r(null), ms))]).catch(() => null);
+}
+
+// ── Questions ───────────────────────────────────────────────────────────
+function markSelected(q) {
+  document.querySelectorAll('#q-' + q + ' .option').forEach(o => {
+    const on = answers[q] === o.dataset.value;
+    o.classList.toggle('selected', on);
+    o.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
+
+// Shows question q with its position in THIS customer's path.
+function showQuestion(q, opts) {
+  const p = PC.path(answers);
+  const n = p.indexOf(q) + 1;
+  document.getElementById('result-card').classList.remove('show');
   document.querySelectorAll('.question-card').forEach(c => c.classList.remove('active'));
-  document.getElementById('q' + num).classList.add('active');
-  updateProgress(num);
-  window.scrollTo({top: 0, behavior: 'smooth'});
+  const card = document.getElementById('q-' + q);
+  card.querySelector('.q-number').textContent = 'Question ' + n;
+  card.classList.add('active');
+  markSelected(q);
+  document.getElementById('progress-label').textContent = 'Question ' + n;
+  document.getElementById('progress-fill').style.width = (((n - 1) / p.length) * 100) + '%';
+  current = q;
+  // Only after an answer auto-advances: a tap carrying over from that answer
+  // must not land on the new question while it is still appearing.
+  readyAt = (opts && opts.guard) ? performance.now() + (reducedMotion() ? 0 : FADE_MS) : 0;
+  keepInView(card);
+  if (!opts || opts.focus !== false) focusWithoutScroll(card.querySelector('.q-text'));
 }
 
-function prevQuestion(num) {
-  document.querySelectorAll('.question-card').forEach(c => c.classList.remove('active'));
-  document.getElementById('q' + num).classList.add('active');
-  updateProgress(num);
-  window.scrollTo({top: 0, behavior: 'smooth'});
+function choose(q, value) {
+  if (busy || q !== current || performance.now() < readyAt) return;
+  busy = true;
+  answers = PC.prune(Object.assign({}, answers, { [q]: value }));
+  markSelected(q);
+  setTimeout(() => {
+    busy = false;
+    const p = PC.path(answers);
+    const next = p[p.indexOf(q) + 1];
+    if (next) showQuestion(next, { guard: true });
+    else if (PC.complete(answers)) showResult();
+  }, SELECT_DELAY_MS);
 }
 
-function updateProgress(num) {
-  const pct = ((num - 1) / 5) * 100;
-  document.getElementById('progress-fill').style.width = pct + '%';
-  document.getElementById('progress-label').textContent = 'Question ' + num + ' of 5';
+function back() {
+  if (busy) return;
+  const p = PC.path(answers);
+  const i = p.indexOf(current);
+  if (i > 0) showQuestion(p[i - 1]);
 }
 
-function showResult() {
-  // Score: count pro vs start signals
-  let proScore = 0;
-  let startScore = 0;
-  const proReasons = [];
-  const startReasons = [];
+document.querySelectorAll('.option').forEach(o => o.addEventListener('click', () => choose(o.dataset.q, o.dataset.value)));
+document.querySelectorAll('.btn-back').forEach(b => b.addEventListener('click', back));
 
-  // Q1 — strongest signal
-  if (answers.q1 === 'pro') { proScore += 3; proReasons.push(PRO_REASONS.q1); }
-  else { startScore += 2; startReasons.push(START_REASONS.q1); }
+// ── Result ──────────────────────────────────────────────────────────────
+function setLink(el, link) {
+  if (!link) { el.hidden = true; el.removeAttribute('href'); return; }
+  el.hidden = false;
+  el.setAttribute('href', link.href);
+  el.textContent = link.text;
+}
+function addBox(parent, cls, text) {
+  const d = document.createElement('div');
+  d.className = 'result-box ' + cls;
+  d.textContent = text;
+  parent.appendChild(d);
+}
 
-  // Q2
-  if (answers.q2 === 'pro') { proScore += 2; proReasons.push(PRO_REASONS.q2_pro); }
-  else if (answers.q2 === 'mid') { proScore += 1; proReasons.push(PRO_REASONS.q2_mid); }
-  else { startScore += 2; startReasons.push(START_REASONS.q2); }
+async function showResult() {
+  const gen = ++resultGen;
+  // Never before every question on this customer's path has an answer.
+  if (!PC.complete(answers)) return;
+  const res = PC.decide(answers);
+  const plan = PC.PLANS[res.plan];
 
-  // Q3
-  if (answers.q3 === 'pro') { proScore += 2; proReasons.push(PRO_REASONS.q3); }
-  else { startScore += 1; startReasons.push(START_REASONS.q3); }
+  document.getElementById('result-icon').textContent = ICONS[res.plan];
+  const nameEl = document.getElementById('result-plan');
+  nameEl.textContent = plan.name;
+  nameEl.className = 'result-plan ' + res.plan;
+  document.getElementById('result-tagline').textContent = plan.tagline;
+  document.getElementById('result-price').textContent = plan.price;
 
-  // Q4
-  if (answers.q4 === 'pro') {
-    proScore += 2;
-    // Distinguish which option
-    const sel = document.querySelector('#q4 .option.selected .option-label');
-    if (sel && sel.textContent.includes("didn't know")) proReasons.push(PRO_REASONS.q4_didnt_know);
-    else proReasons.push(PRO_REASONS.q4_happened);
-  } else { startScore += 1; startReasons.push(START_REASONS.q4); }
+  const reasons = document.getElementById('result-reasons');
+  reasons.textContent = '';
+  res.reasons.forEach(r => {
+    const item = document.createElement('div');
+    item.className = 'reason-item';
+    const tick = document.createElement('span'); tick.className = 'reason-tick'; tick.textContent = '✅';
+    const txt = document.createElement('span'); txt.textContent = r;
+    item.appendChild(tick); item.appendChild(txt);
+    reasons.appendChild(item);
+  });
 
-  // Q5 — strong signal
-  if (answers.q5 === 'pro') { proScore += 3; proReasons.push(PRO_REASONS.q5); }
-  else if (answers.q5 === 'mid') { proScore += 1; }
-  else { startScore += 2; startReasons.push(START_REASONS.q5); }
+  const boxes = document.getElementById('result-boxes');
+  boxes.textContent = '';
+  if (res.warning) addBox(boxes, 'warn', res.warning);
+  if (res.note) addBox(boxes, 'note', res.note);
 
-  // Hide quiz, show result
+  const features = document.getElementById('result-features');
+  features.textContent = '';
+  plan.features.forEach(f => { const li = document.createElement('li'); li.textContent = f; features.appendChild(li); });
+
+  // Promotional information is separate from the reason and hidden once the
+  // 2026 offers have ended.
+  const offer = document.getElementById('result-offer');
+  if (PC.offerVisible()) {
+    document.getElementById('result-offer-text').textContent = plan.offer;
+    offer.hidden = false;
+  } else {
+    offer.hidden = true;
+  }
+
+  document.getElementById('result-footnotes').textContent = [res.estimateNote, res.exportNote].filter(Boolean).join(' ');
+
   document.querySelectorAll('.question-card').forEach(c => c.classList.remove('active'));
   document.getElementById('progress-fill').style.width = '100%';
   document.getElementById('progress-label').textContent = 'Complete ✓';
+  current = null;
 
-  const showPro = proScore >= startScore;
-  const reasons = showPro ? proReasons : startReasons;
-  const reasonsEl = document.getElementById(showPro ? 'pro-reasons' : 'start-reasons');
-
-  reasonsEl.innerHTML = reasons.map(r =>
-    (() => {
-      const spaceIdx = r.indexOf(' ');
-      const icon = spaceIdx > 0 ? r.substring(0, spaceIdx) : '✅';
-      const text = spaceIdx > 0 ? r.substring(spaceIdx + 1) : r;
-      return `<div class="reason-item"><span class="reason-tick" style="font-size:18px;">${icon}</span><span>${text}</span></div>`;
-    })()
-  ).join('');
-
-  document.getElementById(showPro ? 'result-pro' : 'result-start').classList.add('show');
-  window.scrollTo({top: 0, behavior: 'smooth'});
+  const ent = await accountWithTimeout(5000);
+  if (gen !== resultGen) return; // retaken while the account lookup was pending
+  const c = PC.ctas(res, ent);
+  const account = document.getElementById('result-account');
+  account.textContent = '';
+  c.messages.forEach(m => addBox(account, 'account', m));
+  const primary = document.getElementById('result-primary');
+  setLink(primary, c.primary);
+  primary.classList.toggle('pro-cta', res.plan === 'pro' && c.primary && c.primary.href === 'pricing.html#easy-pro');
+  setLink(document.getElementById('result-secondary'), c.secondary);
+  const card = document.getElementById('result-card');
+  card.dataset.plan = res.plan;
+  card.dataset.rule = res.rule;
+  card.dataset.account = c.state;
+  card.classList.add('show');
+  keepInView(card);
+  focusWithoutScroll(nameEl);
 }
 
 function retake() {
-  document.querySelectorAll('.result-card').forEach(c => c.classList.remove('show'));
-  document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
-  document.querySelectorAll('.btn-next').forEach(b => b.classList.remove('ready'));
-  Object.keys(answers).forEach(k => delete answers[k]);
-  document.querySelectorAll('.question-card').forEach(c => c.classList.remove('active'));
-  document.getElementById('q1').classList.add('active');
-  document.getElementById('progress-fill').style.width = '0%';
-  document.getElementById('progress-label').textContent = 'Question 1 of 5';
-  window.scrollTo({top: 0, behavior: 'smooth'});
+  resultGen++;
+  answers = {};
+  busy = false;
+  document.querySelectorAll('.option').forEach(o => { o.classList.remove('selected'); o.setAttribute('aria-pressed', 'false'); });
+  showQuestion('frequency');
 }
 </script>
 <style>
