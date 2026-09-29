@@ -543,56 +543,26 @@
 
 </style>
   <script defer data-domain="clpeasy.com" src="https://plausible.io/js/script.js"></script>
-</head>
+<link rel="stylesheet" href="public-nav.css">\n<script src="public-nav.js" defer></script>\n</head>
 <body>
 
 <!-- NAV -->
-<nav>
-  <a href="#" class="nav-logo">
-    <div class="nav-badge">CLP</div><span class="nav-easy">easy</span><sup style="font-size:9px;font-weight:700;color:#4C9BB0;vertical-align:super;line-height:0;margin-left:1px;">®</sup>
-  </a>
-  <div class="nav-links">
-    <a href="#features">Features</a>
-    <a href="pricing.html" target="_blank" rel="noopener">Pricing</a>
-    <a href="#faq">FAQ</a>
-    <div class="nav-dropdown" id="nav-resources">
-      <button type="button" class="nav-dropdown-trigger" onclick="toggleNavResources(event)">Resources <span class="nav-dropdown-chevron">▾</span></button>
-      <div class="nav-dropdown-menu">
-        <a href="#about">Our story</a>
-        <a href="knowledge.html" target="_blank" rel="noopener">Knowledge Base</a>
-        <a href="compliance.html" target="_blank" rel="noopener">Compliance</a>
-        <a href="showcase.html" target="_blank" rel="noopener">Label Showcase</a>
-        <a href="support.html" target="_blank" rel="noopener">Support</a>
-        <a href="#" onclick="openGuide();return false;">Setup Guide</a>
-      </div>
-    </div>
-    <a href="auth.html?mode=signin" class="nav-signin" target="_blank" rel="noopener" style="font-size:14px;font-weight:500;color:var(--muted);text-decoration:none;padding:6px 12px;">Sign in</a>
-    <a href="auth.html?mode=signup" class="btn-nav">Start free trial</a>
+<nav class="public-site-nav" aria-label="Main navigation">
+  <a href="index.html" class="nav-logo" aria-label="CLPeasy home"><span class="nav-badge">CLP</span><span class="nav-easy">easy</span><sup class="nav-mark">®</sup></a>
+  <button class="public-nav-toggle" type="button" aria-expanded="false" aria-controls="public-nav-links" aria-label="Menu">☰</button>
+  <div class="public-nav-links" id="public-nav-links">
+    <a href="index.html" data-page="index.html">Home</a>
+    <a href="pricing.html" data-page="pricing.html">Pricing</a>
+    <a href="index.html#features">How it works</a>
+    <a href="knowledge.html" data-page="knowledge.html">Knowledge Base</a>
+    <a href="faq.html" data-page="faq.html">FAQ</a>
+    <a href="support.html" data-page="support.html">Support</a>
+    <a href="auth.html?mode=signin" data-page="auth.html">Sign in</a>
+    <a href="auth.html?mode=signup" class="public-nav-cta">Start free trial</a>
   </div>
-  <!-- Mobile-only menu toggle: display:none on desktop/tablet (see the
-       .nav-mobile-toggle rule near the other nav CSS), so it's never
-       focusable or clickable there. Real <button>, accurate aria-expanded,
-       aria-controls pointing at the panel below. -->
-  <button type="button" class="nav-mobile-toggle" id="nav-mobile-toggle" aria-expanded="false" aria-controls="nav-mobile-menu" aria-label="Menu" onclick="toggleMobileNav()">
-    <span class="nav-mobile-toggle-bar"></span>
-    <span class="nav-mobile-toggle-bar"></span>
-    <span class="nav-mobile-toggle-bar"></span>
-  </button>
 </nav>
 
-<!-- Mobile nav menu panel: reuses the same destinations as the desktop
-     nav-links/Resources dropdown (flattened into one list rather than a
-     nested toggle, for a simpler, fully keyboard-reachable mobile menu),
-     plus Sign in and Start free trial since both are hidden from the
-     mobile header itself to keep it from crowding. Starts hidden via the
-     `hidden` attribute -- the single source of truth toggleMobileNav()
-     flips, in step with the button's aria-expanded. -->
-<div class="nav-mobile-menu" id="nav-mobile-menu" hidden>
-  <a href="#features">Features</a>
-  <a href="pricing.html" target="_blank" rel="noopener">Pricing</a>
-  <a href="#faq">FAQ</a>
-  <div class="nav-mobile-menu-heading">Resources</div>
-  <a href="#about">Our story</a>
+<a href="#about">Our story</a>
   <a href="knowledge.html" target="_blank" rel="noopener">Knowledge Base</a>
   <a href="compliance.html" target="_blank" rel="noopener">Compliance</a>
   <a href="showcase.html" target="_blank" rel="noopener">Label Showcase</a>
