@@ -137,6 +137,22 @@ function normaliseSdsSignalWord(value){
   if(v==='none'||v==='no signal word'||v==='no signal word is used')return '';
   return '';
 }
+function resolveGbClpSignalWord(codes, suppliedSignal){
+  const list=Array.isArray(codes)?codes:String(codes||'').split(',');
+  const clean=[...new Set(list.map(v=>String(v).trim().toUpperCase()).filter(Boolean))];
+  const supplied=normaliseSdsSignalWord(suppliedSignal);
+  const ambiguous=clean.some(code=>GB_CLP_SIGNAL_WORD_AMBIGUOUS_CODES.includes(code));
+  if(clean.some(code=>GB_CLP_SIGNAL_WORD_BY_CODE[code]==='Danger'))return 'Danger';
+  // An ambiguous physical-hazard statement may genuinely require Danger.
+  if(ambiguous&&supplied==='Danger')return 'Danger';
+  if(clean.some(code=>GB_CLP_SIGNAL_WORD_BY_CODE[code]==='Warning'))return 'Warning';
+  if(ambiguous&&supplied==='Warning')return 'Warning';
+  // Preserve the previous Warning fallback for a manually selected ambiguous
+  // code where no Section 2.2 signal word is available; Smart Paste always
+  // supplies the actual value when the SDS prints one.
+  if(ambiguous)return 'Warning';
+  return '';
+}
 
 // ============================================================
 // Normalisation, dimension, and asset-pool helpers
