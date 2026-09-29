@@ -62,6 +62,11 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
 .paid-offer .offer-main{min-height:23px;display:flex;align-items:center;}
 .paid-offer .offer-then{white-space:nowrap;}
 .paid-sub{min-height:18px;margin-top:0;margin-bottom:22px;}
+.trial-offer-spacer{height:49px;}
+.plan-picker-wide{max-width:760px;margin:28px auto 0;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:18px;text-decoration:none;background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:2px solid #F59E0B;border-radius:12px;color:#78350F;font-size:12px;line-height:1.5;}
+.plan-picker-wide strong{display:block;font-size:13px;color:#92400E;margin-bottom:2px;}
+.plan-picker-wide span{flex-shrink:0;background:#F59E0B;color:white;font-size:12px;font-weight:700;padding:8px 14px;border-radius:8px;}
+@media(max-width:700px){.plan-picker-wide{display:block}.plan-picker-wide span{display:inline-block;margin-top:10px}}
 @media (min-width:981px){
   .payg-card .btn,.featured .btn,.pro-card .btn{margin-top:0;}
   .payg-card .divider,.featured .divider,.pro-card .divider{margin-top:0;}
@@ -262,14 +267,10 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
       <div class="card-desc">Full access for 14 days so you can try everything before you commit.</div>
       <div class="price-row"><div class="price-amount">Free</div></div>
       <div class="price-sub">14-day trial &nbsp;&#183;&nbsp; No card needed</div>
+      <div class="trial-offer-spacer" aria-hidden="true"></div>
       <a href="auth.html?mode=signup" class="btn btn-outline" data-trial-cta>Start free trial &#8594;</a>
-      <a href="plan-picker.html" style="display:block;text-decoration:none;background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:2px solid #F59E0B;border-radius:12px;padding:16px 18px;margin-bottom:16px;transition:transform .15s,box-shadow .15s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(245,158,11,0.25)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
-        <div style="font-size:13px;font-weight:800;color:#92400E;margin-bottom:4px;">&#129300; Not sure which plan suits you?</div>
-        <div style="font-size:12px;color:#78350F;line-height:1.55;margin-bottom:8px;">Answer a few quick questions about how you work and we'll point you straight to the right plan. Takes less than a minute.</div>
-        <div style="display:inline-flex;align-items:center;gap:6px;background:#F59E0B;color:white;font-size:12px;font-weight:700;padding:6px 14px;border-radius:8px;">Find your perfect plan &#8594;</div>
-      </a>
       <hr class="divider">
-      <div class="features-label">Includes during trial</div>
+      <div class="features-label">What&#39;s included</div>
       <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Full label builder &mdash; all shapes &amp; sizes<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Build round, square or rectangular CLP labels within CLPeasy&#39;s supported size rules. Circles and squares start at 52mm; supported rectangular layouts include 52×36mm and larger sizes, subject to content-fit checks.</div></div>
       <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>All download formats<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">PNG, SVG and PDF &mdash; download your label for home printing, Cricut or a print company.</div></div>
       <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>All hazard data &amp; product types<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Candles, wax melts, reed diffusers, room sprays and more &mdash; all product types with their associated GHS hazard and precautionary statements.</div></div>
@@ -345,6 +346,11 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
 
 
   </div>
+
+  <a href="plan-picker.html" class="plan-picker-wide">
+    <div><strong>&#129300; Not sure which plan suits you?</strong> Answer a few quick questions about how you work and we&#39;ll point you straight to the right option.</div>
+    <span>Find your perfect plan &#8594;</span>
+  </a>
 
   <div style="text-align:center;margin:28px 0 0;"><h2 style="font-family:'DM Serif Display',serif;font-size:26px;color:#0f2236;">Why move to a paid plan?</h2><p style="font-size:13px;color:var(--muted);line-height:1.6;margin-top:6px;">Both Easy Start and Easy Pro include these everyday maker tools.</p></div>
   <div class="plan-benefits">
