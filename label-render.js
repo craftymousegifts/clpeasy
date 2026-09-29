@@ -102,6 +102,42 @@ const GB_ACTIVE_MIN_FS_MM = 1.2;
 // ============================================================
 (function(root){
 
+// M04: one shared GB CLP signal-word resolver for Builder and Composer.
+// Regulatory values/logic moved unchanged from builder.html; the underlying
+// table remains subject to the final GB-primary pre-production verification.
+const GB_CLP_SIGNAL_WORD_BY_CODE=Object.freeze({
+  H200:'Danger',H201:'Danger',H202:'Danger',H203:'Danger',H204:'Warning',H205:'Danger',
+  H223:'Warning',H224:'Danger',H225:'Danger',H226:'Warning',
+  H240:'Danger',H241:'Danger',H250:'Danger',H251:'Danger',H252:'Warning',H260:'Danger',
+  H270:'Danger',H271:'Danger',H280:'Warning',H281:'Warning',H290:'Warning',
+  H300:'Danger',H301:'Danger',H302:'Warning',H304:'Danger',
+  H310:'Danger',H311:'Danger',H312:'Warning',H314:'Danger',H315:'Warning',H317:'Warning',
+  H318:'Danger',H319:'Warning',H330:'Danger',H331:'Danger',H332:'Warning',H334:'Danger',
+  H335:'Warning',H336:'Warning',H340:'Danger',H341:'Warning',H350:'Danger',H351:'Warning',
+  H360:'Danger',H361:'Warning',H362:'',H370:'Danger',H371:'Warning',H372:'Danger',H373:'Warning',
+  H400:'Warning',H410:'Warning',H411:'',H412:'',H413:'',
+  EUH066:'',EUH071:'',EUH208:'',EUH210:'',
+  // M21 (Issue #6): suffixed codes, verified label elements supplied by
+  // Michaela (Sept 2026): Carc. 1A/1B and Repr. 1A/1B = Danger (H360Fd and
+  // H360Df use the Category 1 elements); Repr. 2 = Warning. Keys are
+  // UPPER-CASE because resolveGbClpSignalWord() upper-cases codes before
+  // lookup (H361f -> H361F, H360Df -> H360DF, H360Fd -> H360FD). Only the
+  // exact-case codes in H_LIB ever reach a label; any other case is blocked.
+  H350I:'Danger',H360F:'Danger',H360D:'Danger',H360FD:'Danger',H360DF:'Danger',
+  H361F:'Warning',H361D:'Warning',H361FD:'Warning'
+});
+// H228/H242/H261/H272 span categories with different signal words. The
+// pre-existing H282-H284 entries are also supplier-signal-dependent here:
+// their separate GB-profile status remains outside this focused bugfix.
+const GB_CLP_SIGNAL_WORD_AMBIGUOUS_CODES=Object.freeze(['H228','H242','H261','H272','H282','H283','H284']);
+function normaliseSdsSignalWord(value){
+  const v=String(value||'').trim().toLowerCase();
+  if(v==='danger')return 'Danger';
+  if(v==='warning')return 'Warning';
+  if(v==='none'||v==='no signal word'||v==='no signal word is used')return '';
+  return '';
+}
+
 // ============================================================
 // Normalisation, dimension, and asset-pool helpers
 // ============================================================
@@ -3106,7 +3142,7 @@ function isCustomSizeBelowSupportedMinimum(shape, w, h){
 }
 
   const LabelRenderer = {
-    renderLabel, normalizeLabel, checkRequiredContent, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, P_DEFS, P501_SCOPES, pStatementNeedsChoice, normalisePCodes, resolvePChoice, incompletePStatements, extractPChoicesFromText, GB_UNSUPPORTED_CODES, H_SUFFIXED_VERIFIED, isValidPictogramKey, describeInvalidPictograms, extractHazardCodesFromText, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
+    renderLabel, normalizeLabel, checkRequiredContent, getLabelDims, GB_CLP_SIGNAL_WORD_BY_CODE, GB_CLP_SIGNAL_WORD_AMBIGUOUS_CODES, normaliseSdsSignalWord, resolveGbClpSignalWord, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, P_DEFS, P501_SCOPES, pStatementNeedsChoice, normalisePCodes, resolvePChoice, incompletePStatements, extractPChoicesFromText, GB_UNSUPPORTED_CODES, H_SUFFIXED_VERIFIED, isValidPictogramKey, describeInvalidPictograms, extractHazardCodesFromText, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
     // GHS pictogram geometry -- exposed so tests/consumers measuring
     // compliance never have to re-derive or hardcode the sqrt(2)
     // square<->bounding-box relationship themselves.
