@@ -23,6 +23,8 @@ assert(!/btn\.scrollIntoView\(\{ behavior: 'smooth'/.test(knowledge));
 assert(/prefers-reduced-motion: reduce/.test(knowledge));
 assert(/behavior: window\.matchMedia/.test(knowledge));
 assert(!/section\.scrollIntoView\(/.test(knowledge), 'Knowledge topic navigation must not force the selected section to the document edge');
+assert(/const targetTop = Math\.max\(0, window\.scrollY \+ rect\.top - topOffset\)/.test(knowledge), 'Knowledge topic navigation must calculate a visible landing position below fixed UI');
+assert(/window\.scrollTo\(\{[\s\S]{0,160}top: targetTop/.test(knowledge), 'Knowledge topic navigation must scroll to its calculated landing position');
 assert(/id="back-to-top"/.test(knowledge), 'Knowledge Base missing Back to top control');
 assert(/window\.scrollY > 600/.test(knowledge), 'Back to top visibility threshold missing');
 assert(/window\.scrollTo\(\{ top: 0, behavior: window\.matchMedia/.test(knowledge), 'Back to top reduced-motion-aware scroll missing');
@@ -58,6 +60,12 @@ for (const name of backToTopPages) {
 assert(/window\.scrollY > 600/.test(backToTop), 'shared Back to top visibility threshold missing');
 assert(/prefers-reduced-motion: reduce/.test(backToTop), 'shared Back to top must respect reduced motion');
 assert(/window\.scrollTo\(\{/.test(backToTop) && /top: 0/.test(backToTop), 'shared Back to top action missing');
+assert(/html\{scroll-behavior:auto!important\}/.test(backToTop), 'shared Back to top reduced-motion CSS override missing');
+assert(/cookieBanner\.getBoundingClientRect\(\)\.height \+ 16/.test(backToTop), 'shared Back to top must clear a visible cookie banner');
+
+const cookiePolicy = read('cookie-policy.html');
+assert(/table-layout:fixed/.test(cookiePolicy), 'Cookie Policy table must stay within the mobile content width');
+assert(/overflow-wrap:anywhere/.test(cookiePolicy), 'Cookie Policy table cells must wrap long values');
 
 // Workflow pages deliberately remain untouched by the site-wide informational-page control.
 for (const name of ['builder.html', 'print.html', 'checkout.html', 'plan-picker.html']) {
