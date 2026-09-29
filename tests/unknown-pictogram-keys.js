@@ -174,10 +174,11 @@ async function partTwo() {
         return result;
       }, SDS);
       assert.strictEqual(rec.step, 5, `${tag}: after re-checking hazards the label proceeds`);
-      assert.deepStrictEqual(rec.pictos, ['exclamation', 'skull'], `${tag}: pictograms rebuilt from H301/H317`);
+      // M37 Article 26(1)(b): H301 requires GHS06/skull, so GHS07 must not appear.
+      assert.deepStrictEqual(rec.pictos, ['skull'], `${tag}: pictograms rebuilt from H301/H317 with GHS06 precedence`);
       assert(rec.allowed, `${tag}: the repaired label is exportable`);
       assert(rec.unchangedBeforeSave, `${tag}: the saved record stays unchanged until the maker saves`);
-      assert.deepStrictEqual(rec.savedPictos, ['exclamation', 'skull'], `${tag}: an explicit save stores the repaired list`);
+      assert.deepStrictEqual(rec.savedPictos, ['skull'], `${tag}: an explicit save stores the precedence-correct repaired list`);
       assert.deepStrictEqual(errors, [], `${tag}: no page errors`);
       stats.flows++;
       await page.close();
