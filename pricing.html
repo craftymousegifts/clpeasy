@@ -75,10 +75,12 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
   .cards>.card>.price-row{height:48px;min-height:48px;align-items:flex-end;margin-bottom:3px;}
   .cards>.card>.paid-offer{height:49px;min-height:49px;margin:0;}
   .cards>.card>.trial-offer-spacer{height:49px;min-height:49px;}
+  .cards>.card>.price-sub:not(.paid-sub){order:0;}
+  .cards>.card>.trial-offer-spacer{order:0;}
   .cards>.card>.paid-sub{height:18px;min-height:18px;margin:0 0 22px;}
+  .cards>.card>.trial-offer-spacer + .btn{margin-top:40px;}
   .cards>.card>.btn{height:48px;min-height:48px;margin:0 0 24px;padding:0 12px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;}
   .cards>.card>.price-sub:not(.paid-sub){height:18px;min-height:18px;margin:0 0 22px;}
-  .cards>.card>.trial-offer-spacer + .btn{margin-top:0;}
   .cards>.card>.divider{width:100%;margin:0 0 18px;}
   .cards>.card>.features-label{height:30px;min-height:30px;margin:0 0 10px;align-items:flex-start;}
 }
