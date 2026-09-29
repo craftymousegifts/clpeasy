@@ -3899,6 +3899,25 @@ function extractSDS(){
   const text=document.getElementById('smart-paste-input').value.trim();
   if(!text){alert('Please paste SDS Section 2.2 text first.');return;}
 
+  // M63: PDF text extraction can occasionally join a CLP code directly to
+  // its following statement text (for example H317May, EUH208Contains or
+  // P102Keep). Do not silently lose such a code and do not guess where the
+  // code ends. A genuine standalone suffixed H-code (including an unknown
+  // suffix that must later fail closed) is left to the shared H extractor;
+  // only longer joined tokens are blocked here before any state is changed.
+  const _joinedCodeTokens=text.match(/\b(?:EUH|H|P)\d{3}[A-Za-z][A-Za-z0-9]*/g)||[];
+  const _joinedCodeProblems=[...new Set(_joinedCodeTokens.filter(token=>{
+    if(/^H\d{3}/.test(token)){
+      const parsed=LabelRenderer.extractHazardCodesFromText(token);
+      if(parsed.length===1 && parsed[0]===token)return false;
+    }
+    return true;
+  }))];
+  if(_joinedCodeProblems.length){
+    alert('Smart Paste found a CLP code joined directly to statement text: '+_joinedCodeProblems.join(', ')+'. Please check the copied Section 2.2 text and add a space or line break after the code exactly as shown in your SDS, then extract again. CLPeasy has not guessed or removed the code.');
+    return;
+  }
+
   // ── H STATEMENTS ──────────────────────────────────────────────────────────
   // M21 (Issue #6): complete suffixed codes are kept exactly (H361f, H360FD,
   // H350i -- never reduced to the base code); see
