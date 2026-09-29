@@ -45,4 +45,19 @@ for (const [name, source] of Object.entries({pricing, knowledge, auth, faq, comp
   assert(/scroll-behavior: auto !important/.test(source), name + ' missing reduced-motion scroll override');
 }
 
+const sharedBackToTop = read('back-to-top.js');
+const longPublicPages = [
+  'index.html', 'pricing.html', 'faq.html', 'compliance.html', 'privacy.html',
+  'terms.html', 'refund.html', 'cookie-policy.html', 'support.html', 'showcase.html'
+];
+for (const name of longPublicPages) {
+  assert(/<script src="back-to-top\\.js"><\\/script>/.test(read(name)), name + ' missing shared Back to top control');
+}
+assert(/window\\.scrollY>600/.test(sharedBackToTop), 'shared Back to top visibility threshold missing');
+assert(/prefers-reduced-motion: reduce/.test(sharedBackToTop), 'shared Back to top reduced-motion support missing');
+assert(/window\\.scrollTo\\(\\{top:0/.test(sharedBackToTop), 'shared Back to top action missing');
+for (const name of ['builder.html', 'print.html', 'checkout.html', 'plan-picker.html']) {
+  assert(!/back-to-top\\.js/.test(read(name)), name + ' must keep its workflow-specific navigation');
+}
+
 console.log('site scroll/accessibility regression checks: PASS');
