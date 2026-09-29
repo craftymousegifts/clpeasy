@@ -20,11 +20,18 @@ jobs:
         run: node tests/m37-m64-pictogram-precedence.js
       - name: Builder Safety Baseline
         run: node tests/builder-safety-baseline.js
-      - name: Existing pictogram regressions
-        run: |
-          node tests/unknown-pictogram-keys.js
-          node tests/pictogram-parity.js
-          node tests/suffixed-hazard-codes.js
-          node tests/required-content-export-blocking.js
+      - name: M38 unknown pictogram regression
+        timeout-minutes: 3
+        run: node tests/unknown-pictogram-keys.js
+      - name: Pictogram parity regression
+        timeout-minutes: 3
+        run: node tests/pictogram-parity.js
+      - name: M21 suffixed hazard regression
+        timeout-minutes: 5
+        run: node tests/suffixed-hazard-codes.js
+      - name: Required-content export regression
+        timeout-minutes: 5
+        run: node tests/required-content-export-blocking.js
       - name: Core suite
+        if: always()
         run: npm test
