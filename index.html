@@ -572,57 +572,6 @@
   <a href="auth.html?mode=signup" class="nav-mobile-menu-cta">Start free trial</a>
 </div>
 
-<script>
-function toggleNavResources(e){
-  e.stopPropagation();
-  document.getElementById('nav-resources').classList.toggle('open');
-}
-document.addEventListener('click', function(e){
-  const d = document.getElementById('nav-resources');
-  if(d && !d.contains(e.target)) d.classList.remove('open');
-});
-
-// Mobile nav menu: real <button>, accurate aria-expanded, aria-controls,
-// Escape to close (returning focus to the toggle), click-outside to
-// close, and closing after any in-menu link is chosen. No focus trap --
-// Tab moves through the menu's links in normal DOM order and can leave it
-// like any other page content.
-function toggleMobileNav(){
-  const btn = document.getElementById('nav-mobile-toggle');
-  const isOpen = btn.getAttribute('aria-expanded') === 'true';
-  if (isOpen) closeMobileNav(); else openMobileNav();
-}
-function openMobileNav(){
-  // Place the (non-fixed) panel directly under the fixed header at the
-  // current scroll position.
-  const menu = document.getElementById('nav-mobile-menu');
-  menu.style.top = (window.scrollY + document.querySelector('nav').getBoundingClientRect().bottom) + 'px';
-  document.getElementById('nav-mobile-toggle').setAttribute('aria-expanded', 'true');
-  menu.removeAttribute('hidden');
-}
-function closeMobileNav(){
-  document.getElementById('nav-mobile-toggle').setAttribute('aria-expanded', 'false');
-  document.getElementById('nav-mobile-menu').setAttribute('hidden', '');
-}
-// Menu links are plain native links with no click handler of their own:
-// leaving the page closes the menu naturally, and an in-page link
-// (#features, #faq, #about) closes it when the hash changes.
-window.addEventListener('hashchange', closeMobileNav);
-document.addEventListener('click', function(e){
-  const menu = document.getElementById('nav-mobile-menu');
-  const btn = document.getElementById('nav-mobile-toggle');
-  if (btn.getAttribute('aria-expanded') === 'true' && !menu.contains(e.target) && !btn.contains(e.target)) {
-    closeMobileNav();
-  }
-});
-document.addEventListener('keydown', function(e){
-  if (e.key === 'Escape' && document.getElementById('nav-mobile-toggle').getAttribute('aria-expanded') === 'true') {
-    closeMobileNav();
-    document.getElementById('nav-mobile-toggle').focus();
-  }
-});
-</script>
-
 <!-- LAPSED USER WIN-BACK BANNER (shown only when logged in + cancelled/lapsed) -->
 <div id="lapsed-banner" style="display:none;background:linear-gradient(90deg,#0f2236,#1a3a50);padding:12px 24px;text-align:center;position:relative;">
   <span style="font-size:13px;color:rgba(255,255,255,0.85);">👋 Welcome back — your labels are still here.
