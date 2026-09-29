@@ -214,6 +214,8 @@ function rectOf(svg){
       // below used to pass only because the placeholders were accepted.
       document.getElementById('scent-name').value = 'Test Scent';
       document.getElementById('biz-name').value = 'Test Biz';
+      // M10: the supplier address is also required label content.
+      document.getElementById('biz-address').value = '12 Mill Lane';
 
       // ── Blocked state: ALL seven buttons (both rows) must be dimmed/inert ──
       window.eval('window._labelBlockDownload = true;');

@@ -244,7 +244,7 @@ function partTwo() {
 function partThree() {
   const source = fs.readFileSync(path.join(ROOT, 'print.html'), 'utf8').replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
   const librarySource = fs.readFileSync(path.join(ROOT, 'label-library.js'), 'utf8');
-  const base = { productType: 'Candle', shape: 'circle', size: 'custom', customW: 63, customH: 63, bizName: 'Crafty Mouse Gifts', bizAddress: '', bizPhone: '01234 567890', bizWebsite: '',
+  const base = { productType: 'Candle', shape: 'circle', size: 'custom', customW: 63, customH: 63, bizName: 'Crafty Mouse Gifts', bizAddress: '12 Mill Lane', bizPhone: '01234 567890', bizWebsite: '',
     netWeight: '220g', burnTime: '', signal: 'Warning', hStatements: 'H315', pictograms: ['exclamation'], sensitisers: [], textColour: 'dark', showBorder: true, hideEN15494: false, labelLang: 'en' };
   const saved = [
     ['OK', { scentName: 'Fixed Only', pStatements: 'P102, P305+P351+P338' }, null],

@@ -382,7 +382,7 @@ const emptyQuery = {
     const p280LabelValid = {
       scentName:'Lavender Fields', productType:'Candle', bizName:'Crafty Mouse Gifts',
       shape:'circle', size:'custom', customW:75, customH:75,
-      bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'',
+      bizAddress:'12 Mill Lane', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'',
       signal:'Warning', hStatements:'H317', pStatements:'P280', p280Items:['gloves','eye'],
       sensitisers:['Linalool'], pictograms:['exclamation'], textColour:'dark', showBorder:true,
       hideEN15494:false, labelLang:'en',

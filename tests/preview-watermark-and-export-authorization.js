@@ -151,6 +151,8 @@ function fillMinimalLabel(window){
   // minimal label must be complete -- same business name as the print.html
   // fixture below.
   window.document.getElementById('biz-name').value = 'Test Biz';
+  // M10: the supplier address is also required label content.
+  window.document.getElementById('biz-address').value = '12 Mill Lane';
   window.onProductTypeChange();
   window.updateLabel();
   const cb = window.document.getElementById('verify-checkbox');
@@ -212,7 +214,7 @@ function candleFixture(overrides){
   return Object.assign({
     scentName:'Security Sheet Candle', productType:'Scented Candle', bizName:'Test Biz',
     shape:'rectangle', size:'custom', customW:57, customH:99,
-    bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'20 hrs',
+    bizAddress:'12 Mill Lane', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'20 hrs',
     signal:'Warning', hStatements:'H315', pStatements:'', sensitisers:[], pictograms:['exclamation'],
     textColour:'dark', showBorder:true, hideEN15494:false, labelLang:'en',
   }, overrides);

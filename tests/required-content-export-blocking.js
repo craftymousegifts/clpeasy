@@ -59,7 +59,8 @@ function partOne() {
     assert.deepStrictEqual([...rc.missing], missing, `${id}: checkRequiredContent().missing`);
     assert.strictEqual(rc.complete, missing.length === 0, `${id}: checkRequiredContent().complete`);
   }
-  assert.deepStrictEqual([...LR.checkRequiredContent(undefined).missing], ['product-name', 'business-name']);
+  // M10: a blank supplier address is also missing required content.
+  assert.deepStrictEqual([...LR.checkRequiredContent(undefined).missing], ['product-name', 'business-name', 'business-address']);
   for (const c of renderCases()) {
     const r = LR.renderLabel(c.data, { instanceId: 'rc' });
     assert.deepStrictEqual([...r.requiredContent.missing], c.missing, `${c.key}: renderLabel().requiredContent`);
@@ -80,7 +81,7 @@ function partOne() {
 function partTwo() {
   const source = fs.readFileSync(path.join(ROOT, 'print.html'), 'utf8').replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
   const librarySource = fs.readFileSync(path.join(ROOT, 'label-library.js'), 'utf8');
-  const base = { productType: 'Candle', shape: 'circle', size: 'custom', customW: 52, customH: 52, bizAddress: '', bizPhone: '', bizWebsite: '',
+  const base = { productType: 'Candle', shape: 'circle', size: 'custom', customW: 52, customH: 52, bizAddress: '12 Mill Lane', bizPhone: '', bizWebsite: '',
     netWeight: '220g', batchNum: 'B001', burnTime: '', signal: 'Warning', pStatements: 'P273', pictograms: ['exclamation'], textColour: 'dark', showBorder: true, hideEN15494: false, labelLang: 'en' };
   // 52mm content verified to FIT physically, so only content can block
   const saved = [

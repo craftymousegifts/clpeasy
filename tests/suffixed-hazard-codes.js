@@ -235,7 +235,7 @@ async function partTwo() {
 function partThree() {
   const source = fs.readFileSync(path.join(ROOT, 'print.html'), 'utf8').replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
   const librarySource = fs.readFileSync(path.join(ROOT, 'label-library.js'), 'utf8');
-  const base = { productType: 'Reed Diffuser', shape: 'rectangle', size: 'custom', customW: 150, customH: 100, bizName: 'Crafty Mouse Gifts', bizAddress: '', bizPhone: '01234 567890', bizWebsite: '',
+  const base = { productType: 'Reed Diffuser', shape: 'rectangle', size: 'custom', customW: 150, customH: 100, bizName: 'Crafty Mouse Gifts', bizAddress: '12 Mill Lane', bizPhone: '01234 567890', bizWebsite: '',
     netWeight: '', burnTime: '', pStatements: 'P102', sensitisers: [], textColour: 'dark', showBorder: true, hideEN15494: true, labelLang: 'en', schemaVersion: 2 };
   const saved = Object.entries(CODES).map(([c, w]) => Object.assign({}, base, { scentName: 'Oil ' + c, hStatements: `H317, ${c}`, signal: w.signal, pictograms: ['exclamation', 'health'], batchNum: c }));
   const counts = { open: 0 };

@@ -192,7 +192,7 @@ async function partTwo() {
 function partThree() {
   const source = fs.readFileSync(path.join(ROOT, 'print.html'), 'utf8').replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
   const librarySource = fs.readFileSync(path.join(ROOT, 'label-library.js'), 'utf8');
-  const base = { productType: 'Candle', shape: 'circle', size: 'custom', customW: 75, customH: 75, bizName: 'Crafty Mouse Gifts', bizAddress: '', bizPhone: '01234 567890', bizWebsite: '',
+  const base = { productType: 'Candle', shape: 'circle', size: 'custom', customW: 75, customH: 75, bizName: 'Crafty Mouse Gifts', bizAddress: '12 Mill Lane', bizPhone: '01234 567890', bizWebsite: '',
     netWeight: '', burnTime: '', hStatements: 'H317', pStatements: 'P102', signal: 'Warning', sensitisers: [], textColour: 'dark', showBorder: true, hideEN15494: false, labelLang: 'en', schemaVersion: 2 };
   const saved = [
     ['OK', Object.assign({}, base, { scentName: 'Valid Label', pictograms: ['exclamation'] }), null],
