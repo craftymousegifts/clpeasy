@@ -1,6 +1,6 @@
 # M55 — bgColour validation
 
-Status: IMPLEMENTED — DIRECT SECURITY CONTRACT VERIFIED; FULL BROWSER/FULL-SUITE QA PENDING
+Status: FIXED + QA PASSED (29 Sep 2026) — awaiting Michaela's sign-off
 
 ## Scope
 
@@ -67,3 +67,32 @@ Before sign-off, run:
 - full audit-branch suite.
 
 Expected final status after those pass: `FIXED + QA PASSED`.
+
+## Formatting defect found in QA and repaired (29 Sep 2026)
+
+Browser QA of `70a4392` found that the change had been written with literal `\n` sequences on a single `//` comment line. The `const bgCol=...` declaration was therefore commented out, and **every** `renderLabel()` call threw `ReferenceError: bgCol is not defined`. No label rendered in the Builder or Composer, and the full suite was 17 pass / 48 fail.
+
+The original test (`10921b5`) only checked source text and a copied validation function, so it passed anyway.
+
+- **Repair `6865d89`:** real line breaks. The approved logic is unchanged: a string matching `^#[0-9a-fA-F]{6}$` is used exactly as given; anything else becomes `#ffffff`. Saved data is not changed.
+- **Test `b192a9c`:** `tests/m55-bgcolour-validation.js` now runs the real `label-render.js` and `print.html` in Chromium. Verified to fail on the broken `70a4392` renderer, both on its static check and on `bgCol is not defined`.
+
+## QA results (branch at `82fa124`, real Chromium)
+
+- **Valid colours** `#ffffff`, `#ffe4e1`, `#FFE4E1`, `#000000`, `#123456`, `#a1b2c3`: used exactly as given (case preserved); valid SVG.
+- **24 invalid/tampered values** (including missing, empty, null, `#fff`, `red`, `rgb(10,20,30)`, `123`, NaN, ±Infinity, objects, arrays, booleans, spaces, 7-digit values, bad hex, a newline, script markup, the attribute and element/event-handler payloads, and `#fff&x<`): each renders byte-identically to `#ffffff`, as valid SVG, with nothing injected and the same fit and font sizes. Checked for circle, square and rectangle.
+- **Original attack reproductions in the Composer:**
+
+| Payload | Before M55 | After |
+|---|---|---|
+| attribute | injected into thumbnail and preview | none |
+| element/`onerror` | script ran twice | nothing injected or run |
+| `#fff&x<` | invalid SVG; A4 PDF and cutting PNG failed | valid; PDF and PNG succeed |
+
+  The thumbnail and preview cell are safe for every value; the A4 PDF is written and the cutting PNG generated (709×709); placement is identical to a white control.
+- **Legitimate labels, before vs after M55:** 16 cases / 73 fields, 0 differences.
+  - Builder: circle, square and 63×44 rectangle × `#ffffff`, `#ffe4e1`, `#a1b2c3` (preview, export SVG, PDF window, downloaded SVG).
+  - Composer: all six valid colours plus missing (preview cells and positions, thumbnail, A4 PDF sheet, cutting PNG).
+- **Not affected:** fit, layout, dimensions, saved data, accounting, GB CLP logic.
+- **Full suite:** 60 pass, 5 fail. The 5 are the long-standing audit-branch baseline failures, with no new failures. The Issues #1–#8 tests pass.
+- **Builder context:** the Builder's colour picker shows a non-`#rrggbb` stored value as black. This is existing browser behaviour; no separate finding is recorded (Michaela's decision).
