@@ -335,7 +335,13 @@ function checkRequiredContent(rawData){
   // is missing (see P_DEFS) is never finished content.
   const incompleteP = incompletePStatements(d);
   if(incompleteP.length) missing.push('p-statement');
-  return {complete: missing.length === 0, missing, incompletePStatements: incompleteP};
+  // M64: a saved list can contain only valid pictogram keys and still be
+  // wrong for its H-codes.  When pictogram data is present, fail closed until
+  // the maker explicitly re-confirms Step 3; never silently repair it here.
+  const pictogramConsistency = Object.prototype.hasOwnProperty.call(d,'pictograms')
+    ? checkPictogramConsistency(d) : null;
+  if(pictogramConsistency && !pictogramConsistency.consistent) missing.push('pictogram-consistency');
+  return {complete: missing.length === 0, missing, incompletePStatements: incompleteP, pictogramConsistency};
 }
 
 // ── LABEL PHYSICAL DIMENSIONS ──────────────────────────────────────────
