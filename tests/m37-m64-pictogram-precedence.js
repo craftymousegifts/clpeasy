@@ -7,7 +7,7 @@ const rendererSource=fs.readFileSync(path.join(__dirname,'..','label-render.js')
 const R=stubRenderer(rendererSource);
 
 function eq(codes, expected){
-  assert.deepStrictEqual(R.expectedPictogramsForHazardCodes(codes).slice().sort(), expected.slice().sort(), codes.join(','));
+  assert.deepStrictEqual(Array.from(R.expectedPictogramsForHazardCodes(codes)).sort(), expected.slice().sort(), codes.join(','));
 }
 
 // M37 Article 26 mandatory precedence: reason-aware, never blanket suppression.
@@ -35,11 +35,11 @@ r=R.checkPictogramConsistency({hStatements:'H301,H400',pictograms:['aquatic','sk
 assert.strictEqual(r.consistent,true);
 r=R.checkPictogramConsistency({hStatements:'H301',pictograms:['exclamation']});
 assert.strictEqual(r.consistent,false);
-assert.deepStrictEqual(r.missing,['skull']);
-assert.deepStrictEqual(r.extra,['exclamation']);
+assert.deepStrictEqual(Array.from(r.missing),['skull']);
+assert.deepStrictEqual(Array.from(r.extra),['exclamation']);
 r=R.checkPictogramConsistency({hStatements:'H314,H319',pictograms:['corrosive','exclamation']});
 assert.strictEqual(r.consistent,false);
-assert.deepStrictEqual(r.extra,['exclamation']);
+assert.deepStrictEqual(Array.from(r.extra),['exclamation']);
 
 // Pure/read-only: resolver and consistency check must not mutate saved arrays.
 const saved={hStatements:'H334,H317',pictograms:['health','exclamation']};
