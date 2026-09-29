@@ -45,4 +45,22 @@ for (const [name, source] of Object.entries({pricing, knowledge, auth, faq, comp
   assert(/scroll-behavior: auto !important/.test(source), name + ' missing reduced-motion scroll override');
 }
 
-console.log('site scroll/accessibility regression checks: PASS');
+
+const backToTop = read('back-to-top.js');
+const backToTopPages = [
+  'index.html', 'pricing.html', 'faq.html', 'compliance.html', 'privacy.html',
+  'terms.html', 'refund.html', 'cookie-policy.html', 'support.html', 'showcase.html'
+];
+
+for (const name of backToTopPages) {
+  assert(/<script src="back-to-top\.js"><\/script>/.test(read(name)), name + ' missing shared Back to top control');
+}
+assert(/window\.scrollY > 600/.test(backToTop), 'shared Back to top visibility threshold missing');
+assert(/prefers-reduced-motion: reduce/.test(backToTop), 'shared Back to top must respect reduced motion');
+assert(/window\.scrollTo\(\{/.test(backToTop) && /top: 0/.test(backToTop), 'shared Back to top action missing');
+
+// Workflow pages deliberately remain untouched by the site-wide informational-page control.
+for (const name of ['builder.html', 'print.html', 'checkout.html', 'plan-picker.html']) {
+  assert(!/back-to-top\.js/.test(read(name)), name + ' should not gain the generic Back to top control');
+}
+\nconsole.log('site scroll/accessibility regression checks: PASS');
