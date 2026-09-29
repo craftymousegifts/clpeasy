@@ -68,26 +68,17 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
 .plan-picker-wide span{flex-shrink:0;background:#F59E0B;color:white;font-size:12px;font-weight:700;padding:8px 14px;border-radius:8px;}
 @media(max-width:700px){.plan-picker-wide{display:block}.plan-picker-wide span{display:inline-block;margin-top:10px}}
 @media (min-width:981px){
-  .cards>.card{
-    display:grid;
-    grid-template-rows:31px auto 78px 48px 67px 48px 1px 40px auto;
-    align-content:start;
-  }
-  .cards>.card>.card-icon{grid-row:1;margin-bottom:0;}
-  .cards>.card>.card-name{grid-row:2;margin-top:12px;}
-  .cards>.card>.card-desc{grid-row:3;min-height:0;margin-bottom:0;}
-  .cards>.card>.price-row{grid-row:4;align-self:end;margin-bottom:3px;}
-  .cards>.card>.price-sub,
-  .cards>.card>.paid-offer,
-  .cards>.card>.trial-offer-spacer,
-  .cards>.card>[id$="-annual-eq"]{grid-row:5;}
-  .cards>.card>.paid-offer{align-self:start;}
-  .cards>.card>.paid-sub{grid-row:5;align-self:end;margin:0 0 4px;}
-  .cards>.card>.btn{grid-row:6;align-self:start;margin:0;}
-  .cards>.card>.divider{grid-row:7;width:100%;margin:0;}
-  .cards>.card>.features-label{grid-row:8;min-height:0;margin:0;align-items:center;}
-  .cards>.card>.feature-item:first-of-type{grid-row:9;}
-  .trial-offer-spacer{height:auto;}
+  .cards>.card{display:flex;flex-direction:column;}
+  .cards>.card>.card-icon{margin-bottom:14px;}
+  .cards>.card>.card-name{margin-bottom:4px;}
+  .cards>.card>.card-desc{height:78px;min-height:78px;margin-bottom:0;}
+  .cards>.card>.price-row{height:48px;min-height:48px;align-items:flex-end;margin-bottom:3px;}
+  .cards>.card>.paid-offer{height:49px;min-height:49px;margin:0;}
+  .cards>.card>.trial-offer-spacer{height:49px;min-height:49px;}
+  .cards>.card>.paid-sub{height:18px;min-height:18px;margin:0 0 22px;}
+  .cards>.card>.btn{height:48px;min-height:48px;margin:0 0 24px;}
+  .cards>.card>.divider{width:100%;margin:0 0 18px;}
+  .cards>.card>.features-label{height:30px;min-height:30px;margin:0 0 10px;align-items:flex-start;}
 }
 .payg-fit{margin-top:18px;padding:14px 16px;border:1px solid rgba(76,155,176,0.35);border-radius:10px;background:white;color:var(--text);font-size:12px;line-height:1.6;}
 
