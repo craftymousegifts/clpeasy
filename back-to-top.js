@@ -17,7 +17,7 @@
     '.site-back-to-top:hover{background:#3a7d8f}' +
     '.site-back-to-top:focus-visible{outline:3px solid #d6eef4;outline-offset:3px}' +
     '@media(max-width:768px){.site-back-to-top{right:16px;bottom:16px;padding:10px 14px}}' +
-    '@media(prefers-reduced-motion:reduce){.site-back-to-top{transition:none}}';
+    '@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}.site-back-to-top{transition:none}}';
 
   document.head.appendChild(style);
   document.body.appendChild(button);
@@ -26,8 +26,21 @@
     button.classList.toggle('visible', window.scrollY > 600);
   }
 
+  // Keep the control clear of any visible fixed cookie banner.
+  var cookieBanner = document.getElementById('cookie-banner');
+  function updateBottomOffset() {
+    if (!cookieBanner) return;
+    var visible = getComputedStyle(cookieBanner).display !== 'none';
+    button.style.bottom = visible ? (cookieBanner.getBoundingClientRect().height + 16) + 'px' : '';
+  }
+
   window.addEventListener('scroll', updateVisibility, { passive: true });
+  window.addEventListener('resize', updateBottomOffset, { passive: true });
+  if (cookieBanner) {
+    new MutationObserver(updateBottomOffset).observe(cookieBanner, { attributes: true, attributeFilter: ['style', 'class'] });
+  }
   updateVisibility();
+  updateBottomOffset();
 
   button.addEventListener('click', function () {
     window.scrollTo({
