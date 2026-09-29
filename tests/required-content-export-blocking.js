@@ -86,13 +86,13 @@ function partTwo() {
   // 52mm content verified to FIT physically, so only content can block
   const saved = [
     ['C1', { scentName: 'Complete One', bizName: 'Crafty Mouse Gifts', hStatements: 'H315', sensitisers: [] }, null],
-    ['C2', { scentName: 'Complete EUH208', bizName: 'Crafty Mouse Gifts', hStatements: 'EUH208', sensitisers: ['Citral'] }, null],
+    ['C2', { scentName: 'Complete EUH208', bizName: 'Crafty Mouse Gifts', hStatements: 'EUH208', sensitisers: ['Citral'], pictograms: [] }, null],
     ['B1', { scentName: 'Blank Business', bizName: '', hStatements: 'H315', sensitisers: [] }, 'No business name.'],
     ['B2', { scentName: 'Spaces Business', bizName: '    ', hStatements: 'H315', sensitisers: [] }, 'No business name.'],
     ['B3', { scentName: 'Undefined Business', hStatements: 'H315', sensitisers: [] }, 'No business name.'],
     ['P1', { scentName: '   ', bizName: 'Crafty Mouse Gifts', hStatements: 'H315', sensitisers: [] }, 'No product name.'],
-    ['E1', { scentName: 'EUH208 No Names', bizName: 'Crafty Mouse Gifts', hStatements: 'EUH208', sensitisers: [] }, 'EUH208 is listed without'],
-    ['E2', { scentName: 'EUH208 Blank Names', bizName: 'Crafty Mouse Gifts', hStatements: 'EUH208', sensitisers: ['  ', ''] }, 'EUH208 is listed without'],
+    ['E1', { scentName: 'EUH208 No Names', bizName: 'Crafty Mouse Gifts', hStatements: 'EUH208', sensitisers: [], pictograms: [] }, 'EUH208 is listed without'],
+    ['E2', { scentName: 'EUH208 Blank Names', bizName: 'Crafty Mouse Gifts', hStatements: 'EUH208', sensitisers: ['  ', ''], pictograms: [] }, 'EUH208 is listed without'],
   ].map(([tag, o, reason]) => ({ tag, reason, rec: Object.assign({}, base, o, { batchNum: tag }) }));
   const counts = { open: 0, anchor: 0, zip: 0 };
   const errors = []; const vc = new VirtualConsole(); vc.on('jsdomError', e => errors.push(e.message));
