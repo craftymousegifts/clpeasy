@@ -62,12 +62,14 @@
   }
 
   .faq-q {
-    padding: 18px 22px; font-size: 14.5px; font-weight: 600;
+    width: 100%; border: 0; background: transparent; text-align: left;
+    padding: 18px 22px; font-family: inherit; font-size: 14.5px; font-weight: 600;
     color: var(--text); cursor: pointer; display: flex;
     justify-content: space-between; align-items: center; gap: 12px;
     user-select: none; transition: background 0.15s;
   }
   .faq-q:hover { background: var(--bg); }
+  .faq-q:focus-visible { outline: 3px solid var(--teal); outline-offset: -3px; }
   .faq-q.open { color: var(--teal); }
 
   .faq-chevron { font-size: 12px; color: var(--text-light); transition: transform 0.2s; flex-shrink: 0; }
@@ -106,6 +108,11 @@
   footer a { color: var(--teal); text-decoration: none; }
 
   @media(max-width:600px) { .nav-links { display:none; } main { padding: 32px 16px 60px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
 </style>
 </head>
 <body>
@@ -132,16 +139,14 @@
   <div class="faq-section-title">Getting Started</div>
 
   <div class="faq-item">
-    <div class="faq-q" onclick="toggle(this)">What is a CLP label and do I need one? <span class="faq-chevron">▼</span></div>
-    <div class="faq-a">
+    <button type="button" class="faq-q" aria-expanded="false" onclick="toggle(this)">What is a CLP label and do I need one? <span class="faq-chevron">▼</span></button>\n    <div class="faq-a">
       <p>CLP stands for Classification, Labelling and Packaging. Under GB CLP Regulation (the UK's retained version of EU CLP), you must apply a hazard label to any product you supply that contains substances classified as hazardous — including fragrance oils above certain concentration thresholds.</p>
       <p>For most candle, wax melt, and reed diffuser makers using fragrance oils, a CLP label is a legal requirement before you can sell your products.</p>
     </div>
   </div>
 
   <div class="faq-item">
-    <div class="faq-q" onclick="toggle(this)">What products does CLPeasy support? <span class="faq-chevron">▼</span></div>
-    <div class="faq-a">
+    <button type="button" class="faq-q" aria-expanded="false" onclick="toggle(this)">What products does CLPeasy support? <span class="faq-chevron">▼</span></button>\n    <div class="faq-a">
       <p>CLPeasy supports CLP label generation for fragranced products including candles, wax melts, reed diffusers, room sprays, and other fragrance or essential oil-based products where a CLP hazard label is required.</p>
       <div class="note">
         <strong>Bath bombs, soaps &amp; cosmetic products:</strong> These products may require a CLP hazard label <em>and</em> a separate cosmetic product label under UK Cosmetics Regulation. CLPeasy covers the CLP label requirement only. See the question below for more detail.
@@ -152,8 +157,7 @@
   <div class="faq-section-title">Compliance &amp; Regulation</div>
 
   <div class="faq-item">
-    <div class="faq-q" onclick="toggle(this)">Is CLPeasy recognised or approved by HSE? <span class="faq-chevron">▼</span></div>
-    <div class="faq-a">
+    <button type="button" class="faq-q" aria-expanded="false" onclick="toggle(this)">Is CLPeasy recognised or approved by HSE? <span class="faq-chevron">▼</span></button>\n    <div class="faq-a">
       <div class="highlight">
         <strong>CLPeasy proactively contacted the HSE CLP Helpdesk before launch</strong> to ensure responsible operation. HSE confirmed that no specific regulatory obligations apply to software tools of this nature — responsibility for label accuracy and compliance sits with the supplier or other duty holder according to their role under GB CLP, which CLPeasy clearly communicates throughout the tool.
       </div>
@@ -162,16 +166,14 @@
   </div>
 
   <div class="faq-item">
-    <div class="faq-q" onclick="toggle(this)">Who is responsible for a GB CLP label? <span class="faq-chevron">▼</span></div>
-    <div class="faq-a">
+    <button type="button" class="faq-q" aria-expanded="false" onclick="toggle(this)">Who is responsible for a GB CLP label? <span class="faq-chevron">▼</span></button>\n    <div class="faq-a">
       <p>HSE describes manufacturers, importers, downstream users and distributors that place chemicals on the Great Britain market as <strong>suppliers</strong>, with duties depending on their role in the supply chain. Makers who formulate mixtures can be downstream users and have duties to classify, label and package those mixtures before placing them on the GB market.</p>
       <p>CLPeasy supports the practical label-building process by extracting, organising, checking and formatting the information you provide. You still need to review the finished label and make sure the source information and classification are appropriate for the product you place on the market.</p>
     </div>
   </div>
 
   <div class="faq-item">
-    <div class="faq-q" onclick="toggle(this)">I make bath bombs and soaps — do I need a CLP label? <span class="faq-chevron">▼</span></div>
-    <div class="faq-a">
+    <button type="button" class="faq-q" aria-expanded="false" onclick="toggle(this)">I make bath bombs and soaps — do I need a CLP label? <span class="faq-chevron">▼</span></button>\n    <div class="faq-a">
       <p>Possibly yes — and there is an important distinction to understand here.</p>
       <p>If a bath bomb, soap or other product is a <strong>cosmetic product in its finished state intended for the final user</strong>, HSE states that GB CLP does not apply to that finished cosmetic. Cosmetic products are instead subject to the applicable cosmetics rules.</p>
       <div class="note">
@@ -183,8 +185,7 @@
   </div>
 
   <div class="faq-item">
-    <div class="faq-q" onclick="toggle(this)">Does CLPeasy classify my fragrance for me? <span class="faq-chevron">▼</span></div>
-    <div class="faq-a">
+    <button type="button" class="faq-q" aria-expanded="false" onclick="toggle(this)">Does CLPeasy classify my fragrance for me? <span class="faq-chevron">▼</span></button>\n    <div class="faq-a">
       <p>No — and this is an important distinction. CLPeasy <strong>does not independently classify substances</strong>. It assists you in applying the hazard classifications already provided by your fragrance supplier in their Safety Data Sheet (Section 2.2).</p>
       <p>Your fragrance supplier is responsible for classifying their fragrance oil. Your SDS contains that classification data. CLPeasy takes that data and renders the <strong>full written hazard statements and precautionary statements</strong> on your label — not codes alone — formatted correctly at your specific fragrance load percentage.</p>
     </div>
@@ -193,16 +194,14 @@
   <div class="faq-section-title">Using CLPeasy</div>
 
   <div class="faq-item">
-    <div class="faq-q" onclick="toggle(this)">Where do I find the hazard classification data for my fragrance? <span class="faq-chevron">▼</span></div>
-    <div class="faq-a">
+    <button type="button" class="faq-q" aria-expanded="false" onclick="toggle(this)">Where do I find the hazard classification data for my fragrance? <span class="faq-chevron">▼</span></button>\n    <div class="faq-a">
       <p>Safety Data Sheets are required under UK REACH in specified circumstances, including for hazardous chemicals supplied for use at work and some mixtures containing hazardous substances. Where an SDS is supplied, <strong>Section 2.2</strong> contains the label elements for that supplied chemical or mixture.</p>
       <p>For CLPeasy, use the current supplier information that is applicable to your finished product and fragrance load. Smart Paste lets you paste the relevant Section 2.2 text and extracts available label information for you to review.</p>
     </div>
   </div>
 
   <div class="faq-item">
-    <div class="faq-q" onclick="toggle(this)">Can I save and reuse my labels? <span class="faq-chevron">▼</span></div>
-    <div class="faq-a">
+    <button type="button" class="faq-q" aria-expanded="false" onclick="toggle(this)">Can I save and reuse my labels? <span class="faq-chevron">▼</span></button>\n    <div class="faq-a">
       <p>Yes. CLPeasy lets you save labels to your browser-based library and reload them on the same device. This means once you have set up a product, generating a new label or reprinting an existing one takes seconds.</p>
       <p>We recommend reviewing your saved labels whenever your fragrance supplier updates their SDS, as hazard classifications can change between batches or supplier reformulations.</p>
     </div>
@@ -211,15 +210,13 @@
   <div class="faq-section-title">Account &amp; Pricing</div>
 
   <div class="faq-item">
-    <div class="faq-q" onclick="toggle(this)">What is included in the free trial? <span class="faq-chevron">▼</span></div>
-    <div class="faq-a">
+    <button type="button" class="faq-q" aria-expanded="false" onclick="toggle(this)">What is included in the free trial? <span class="faq-chevron">▼</span></button>\n    <div class="faq-a">
       <p>Your 14-day free trial gives you full access to CLPeasy — build labels, save to your library, and download print-ready PDFs. No credit card required to start. At the end of your trial you can choose an Easy Start or Easy Pro plan to continue.</p>
     </div>
   </div>
 
   <div class="faq-item">
-    <div class="faq-q" onclick="toggle(this)">What is the difference between Easy Start and Easy Pro? <span class="faq-chevron">▼</span></div>
-    <div class="faq-a">
+    <button type="button" class="faq-q" aria-expanded="false" onclick="toggle(this)">What is the difference between Easy Start and Easy Pro? <span class="faq-chevron">▼</span></button>\n    <div class="faq-a">
       <p><strong>Easy Start</strong> (£9.99/month or £99/year) is designed for makers building up their product range — ideal if you have a smaller number of products or are just getting started with CLP compliance.</p>
       <p><strong>Easy Pro</strong> (£14.99/month or £149/year) is for established makers with a larger product range who need more downloads per month. It includes everything in Easy Start plus priority support.</p>
       <p>Top-up packs are also available if you need extra downloads in any month: 5 downloads for £3.99 or 10 downloads for £7.99.</p>
@@ -235,9 +232,11 @@
 
 <script>
 function toggle(el) {
-  el.classList.toggle('open');
+  const opening = !el.classList.contains('open');
+  el.classList.toggle('open', opening);
+  el.setAttribute('aria-expanded', String(opening));
   const answer = el.nextElementSibling;
-  answer.classList.toggle('open');
+  answer.classList.toggle('open', opening);
 }
 </script>
 </body>
