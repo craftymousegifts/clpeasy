@@ -204,6 +204,11 @@ footer a:hover{color:var(--teal);}
   z-index: 10;
   background: transparent;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
 </style>
 </head>
 <body>
@@ -284,7 +289,7 @@ footer a:hover{color:var(--teal);}
     </div>
   </div>
   
-  <button class="accordion-trigger" onclick="toggleAcc(this)">
+  <button type="button" class="accordion-trigger" aria-expanded="false" onclick="toggleAcc(this)">
     <span class="acc-label">📖 What CLP means and how it works</span>
     <span class="accordion-icon">+</span>
   </button>
@@ -316,7 +321,7 @@ footer a:hover{color:var(--teal);}
     </div>
   </div>
   
-  <button class="accordion-trigger" onclick="toggleAcc(this)">
+  <button type="button" class="accordion-trigger" aria-expanded="false" onclick="toggleAcc(this)">
     <span class="acc-label">📖 UK CLP details — differences from EU CLP</span>
     <span class="accordion-icon">+</span>
   </button>
@@ -345,7 +350,7 @@ footer a:hover{color:var(--teal);}
     </div>
   </div>
   
-  <button class="accordion-trigger" onclick="toggleAcc(this)">
+  <button type="button" class="accordion-trigger" aria-expanded="false" onclick="toggleAcc(this)">
     <span class="acc-label">📖 EU CLP full details — selling into the EU</span>
     <span class="accordion-icon">+</span>
   </button>
@@ -376,7 +381,7 @@ footer a:hover{color:var(--teal);}
     </div>
   </div>
   
-  <button class="accordion-trigger" onclick="toggleAcc(this)">
+  <button type="button" class="accordion-trigger" aria-expanded="false" onclick="toggleAcc(this)">
     <span class="acc-label">📖 Practical guidance for selling into Northern Ireland</span>
     <span class="accordion-icon">+</span>
   </button>
@@ -403,7 +408,7 @@ footer a:hover{color:var(--teal);}
       <p class="section-summary">Depending on the classification, a GB CLP label may need the following elements. Verify current requirements against authoritative guidance.</p>
     </div>
   </div>
-  <button class="accordion-trigger" onclick="toggleAcc(this)">
+  <button type="button" class="accordion-trigger" aria-expanded="false" onclick="toggleAcc(this)">
     <span class="acc-label">📋 View all 10 required label elements</span>
     <span class="accordion-icon">+</span>
   </button>
@@ -432,7 +437,7 @@ footer a:hover{color:var(--teal);}
       <p class="section-summary">Standardised codes and phrases that describe hazards (H) and safe handling instructions (P). Hazard statements are found in Section 2.2 (Label elements) of your SDS. Copy that complete section into Smart Paste and review the extracted information against the source document.</p>
     </div>
   </div>
-  <button class="accordion-trigger" onclick="toggleAcc(this)">
+  <button type="button" class="accordion-trigger" aria-expanded="false" onclick="toggleAcc(this)">
     <span class="acc-label">📋 Common H statements for product makers</span>
     <span class="accordion-icon">+</span>
   </button>
@@ -459,7 +464,7 @@ footer a:hover{color:var(--teal);}
       <p>Copy the complete Section 2.2 (Label elements) into Smart Paste. Do not paste the rest of the document, as later sections can contain codes or terminology that do not belong on the product label. Always use the current SDS applicable to the exact fragrance load, finished-product concentration and target market.</p>
     </div>
   </div>
-  <button class="accordion-trigger" onclick="toggleAcc(this)">
+  <button type="button" class="accordion-trigger" aria-expanded="false" onclick="toggleAcc(this)">
     <span class="acc-label">💡 Why CLPeasy uses your own SDS rather than a stored list</span>
     <span class="accordion-icon">+</span>
   </button>
@@ -484,7 +489,7 @@ footer a:hover{color:var(--teal);}
     </div>
   </div>
   
-  <button class="accordion-trigger" onclick="toggleAcc(this)">
+  <button type="button" class="accordion-trigger" aria-expanded="false" onclick="toggleAcc(this)">
     <span class="acc-label">🌿 Common sensitisers found in product fragrances</span>
     <span class="accordion-icon">+</span>
   </button>
@@ -511,7 +516,7 @@ footer a:hover{color:var(--teal);}
       <p class="section-summary">Governs chemical substances. As a product maker you are typically a downstream user — your fragrance supplier handles REACH registration.</p>
     </div>
   </div>
-  <button class="accordion-trigger" onclick="toggleAcc(this)">
+  <button type="button" class="accordion-trigger" aria-expanded="false" onclick="toggleAcc(this)">
     <span class="acc-label">🧪 What REACH means for product makers</span>
     <span class="accordion-icon">+</span>
   </button>
@@ -538,7 +543,7 @@ footer a:hover{color:var(--teal);}
     </div>
   </div>
   
-  <button class="accordion-trigger" onclick="toggleAcc(this)">
+  <button type="button" class="accordion-trigger" aria-expanded="false" onclick="toggleAcc(this)">
     <span class="acc-label">🛡️ What GPSR requires for product makers</span>
     <span class="accordion-icon">+</span>
   </button>
@@ -565,7 +570,7 @@ footer a:hover{color:var(--teal);}
       <p class="section-summary">International Fragrance Association standards set maximum usage levels for fragrance ingredients by product category.</p>
     </div>
   </div>
-  <button class="accordion-trigger" onclick="toggleAcc(this)">
+  <button type="button" class="accordion-trigger" aria-expanded="false" onclick="toggleAcc(this)">
     <span class="acc-label">🌸 IFRA, product makers and how to get certificates</span>
     <span class="accordion-icon">+</span>
   </button>
@@ -592,7 +597,7 @@ footer a:hover{color:var(--teal);}
     </div>
   </div>
   
-  <button class="accordion-trigger" onclick="toggleAcc(this)">
+  <button type="button" class="accordion-trigger" aria-expanded="false" onclick="toggleAcc(this)">
     <span class="acc-label">🌍 International chemical-labelling reference — 12 markets at a glance</span>
     <span class="accordion-icon">+</span>
   </button>
@@ -641,7 +646,7 @@ footer a:hover{color:var(--teal);}
     </div>
   </div>
   
-  <button class="accordion-trigger" onclick="toggleAcc(this)">
+  <button type="button" class="accordion-trigger" aria-expanded="false" onclick="toggleAcc(this)">
     <span class="acc-label">🇬🇧 UK legislation & guidance</span>
     <span class="accordion-icon">+</span>
   </button>
@@ -677,7 +682,7 @@ footer a:hover{color:var(--teal);}
       <a href="https://www.businesscompanion.info/en/quick-guides/good-practice/candles-diffusers-oil-heaters-and-incense" target="_blank" rel="noopener" class="link-card"><span>🕯️</span><div><strong>Business Companion — Candles & diffusers guide</strong><span>businesscompanion.info — Trading Standards plain English guide</span></div><span class="link-arrow">↗</span></a>
     </div>
   </div>
-  <button class="accordion-trigger" onclick="toggleAcc(this)">
+  <button type="button" class="accordion-trigger" aria-expanded="false" onclick="toggleAcc(this)">
     <span class="acc-label">🇪🇺 EU legislation & guidance</span>
     <span class="accordion-icon">+</span>
   </button>
@@ -688,7 +693,7 @@ footer a:hover{color:var(--teal);}
       <a href="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32023R0988" target="_blank" rel="noopener" class="link-card"><span>🛡️</span><div><strong>EU GPSR — Regulation 2023/988</strong><span>eur-lex.europa.eu — General Product Safety Regulation</span></div><span class="link-arrow">↗</span></a>
     </div>
   </div>
-  <button class="accordion-trigger" onclick="toggleAcc(this)">
+  <button type="button" class="accordion-trigger" aria-expanded="false" onclick="toggleAcc(this)">
     <span class="acc-label">🌍 Global resources</span>
     <span class="accordion-icon">+</span>
   </button>
@@ -700,7 +705,7 @@ footer a:hover{color:var(--teal);}
       <a href="https://www.canada.ca/en/health-canada/services/chemical-substances/canada-approach-chemicals/workplace-hazardous-materials-information-system.html" target="_blank" rel="noopener" class="link-card"><span>🇨🇦</span><div><strong>Canada — WHMIS guidance</strong><span>canada.ca — Canadian hazardous materials system</span></div><span class="link-arrow">↗</span></a>
     </div>
   </div>
-  <button class="accordion-trigger" onclick="toggleAcc(this)">
+  <button type="button" class="accordion-trigger" aria-expanded="false" onclick="toggleAcc(this)">
     <span class="acc-label">🕯️ Industry bodies & product specific guidance</span>
     <span class="accordion-icon">+</span>
   </button>
@@ -756,27 +761,33 @@ function showTopic(id, card) {
   card.classList.add('active');
 
   // Scroll to section
-  setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  setTimeout(() => section.scrollIntoView({
+    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+    block: 'start'
+  }), 50);
 }
 
 function toggleAcc(btn) {
   const body = btn.nextElementSibling;
   const isOpen = btn.classList.contains('open');
+  const selectedTop = btn.getBoundingClientRect().top;
 
-  // Close all other open accordions
-  document.querySelectorAll('.accordion-trigger.open').forEach(b => {
-    if (b !== btn) {
-      b.classList.remove('open');
-      b.nextElementSibling.classList.remove('open');
+  // Keep the one-open-at-a-time behaviour, but do not scroll the chosen
+  // accordion away after content above it collapses.
+  document.querySelectorAll('.accordion-trigger.open').forEach(other => {
+    if (other !== btn) {
+      other.classList.remove('open');
+      other.setAttribute('aria-expanded', 'false');
+      other.nextElementSibling.classList.remove('open');
     }
   });
 
   btn.classList.toggle('open', !isOpen);
   body.classList.toggle('open', !isOpen);
+  btn.setAttribute('aria-expanded', String(!isOpen));
 
-  if (!isOpen) {
-    setTimeout(() => btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
-  }
+  const delta = btn.getBoundingClientRect().top - selectedTop;
+  if (Math.abs(delta) > 1) window.scrollBy(0, delta);
 }
 
 
