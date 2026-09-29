@@ -63,7 +63,12 @@ jobs:
         run: npm install
 
       - name: Install Chromium for browser tests
-        run: npx puppeteer browsers install chrome
+        shell: bash
+        run: |
+          npx puppeteer browsers install chrome
+          chrome_path=$(find "$HOME/.cache/puppeteer/chrome" -type f -path '*/chrome-linux64/chrome' | head -1)
+          test -n "$chrome_path"
+          echo "PUPPETEER_EXECUTABLE_PATH=$chrome_path" >> "$GITHUB_ENV"
 
       - name: M04 targeted regression
         run: node tests/m04-composer-signal-word-consistency.js
