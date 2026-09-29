@@ -22,6 +22,12 @@ assert(/window\.scrollBy\(0, delta\)/.test(knowledge));
 assert(!/btn\.scrollIntoView\(\{ behavior: 'smooth'/.test(knowledge));
 assert(/prefers-reduced-motion: reduce/.test(knowledge));
 assert(/behavior: window\.matchMedia/.test(knowledge));
+assert(!/section\.scrollIntoView\(/.test(knowledge), 'Knowledge topic navigation must not force the selected section to the document edge');
+assert(/id="back-to-top"/.test(knowledge), 'Knowledge Base missing Back to top control');
+assert(/window\.scrollY > 600/.test(knowledge), 'Back to top visibility threshold missing');
+assert(/window\.scrollTo\(\{ top: 0, behavior: window\.matchMedia/.test(knowledge), 'Back to top reduced-motion-aware scroll missing');
+assert(/product-safety\/candles-diffusers-oil-heaters-etc/.test(knowledge), 'Current Business Companion candles/diffusers link missing');
+assert(!/good-practice\/candles-diffusers-oil-heaters-and-incense/.test(knowledge), 'Obsolete Business Companion URL still present');
 
 // Sign-in: Forgot password is an action, not meaningless hash navigation.
 assert(!/<a href="#" onclick="resetPassword\(\)">Forgot password\?<\/a>/.test(auth));
