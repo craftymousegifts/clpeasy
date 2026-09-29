@@ -63,4 +63,9 @@ assert(/window\.scrollTo\(\{/.test(backToTop) && /top: 0/.test(backToTop), 'shar
 for (const name of ['builder.html', 'print.html', 'checkout.html', 'plan-picker.html']) {
   assert(!/back-to-top\.js/.test(read(name)), name + ' should not gain the generic Back to top control');
 }
-\nconsole.log('site scroll/accessibility regression checks: PASS');
+
+for (const name of backToTopPages) {
+  assert(!read(name).includes('\\n</body>'), name + ' contains a literal \\n before </body>');
+}
+
+console.log('site scroll/accessibility regression checks: PASS');
