@@ -769,20 +769,27 @@ function showTopic(id, card) {
   section.style.display = 'block';
   card.classList.add('active');
 
-  // Reveal the selected topic without forcing the page to the document bottom
-  // when the chosen section is short and sits near the end of the page.
+  // Put the selected topic clearly below the fixed navigation. Short topics
+  // near the end of the document need temporary breathing room so the browser
+  // can reach the requested position instead of leaving only a sliver visible.
   setTimeout(() => {
     const rect = section.getBoundingClientRect();
     const nav = document.querySelector('nav');
     const search = document.querySelector('.search-section');
     const topOffset = (nav?.offsetHeight || 0) + (search && getComputedStyle(search).position === 'sticky' ? search.offsetHeight : 0) + 16;
-    const viewportBottom = window.innerHeight - 24;
+    const targetTop = window.scrollY + rect.top - topOffset;
+    const content = document.querySelector('.content');
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
 
-    if (rect.top < topOffset) {
-      window.scrollBy({ top: rect.top - topOffset, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-    } else if (rect.top > viewportBottom) {
-      window.scrollBy({ top: rect.top - viewportBottom, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    if (content && targetTop > maxScroll) {
+      const currentPadding = parseFloat(getComputedStyle(content).paddingBottom) || 0;
+      content.style.paddingBottom = (currentPadding + targetTop - maxScroll + 24) + 'px';
     }
+
+    window.scrollTo({
+      top: targetTop,
+      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+    });
   }, 50);
 }
 
