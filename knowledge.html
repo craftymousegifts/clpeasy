@@ -776,12 +776,12 @@ function showTopic(id, card) {
     const nav = document.querySelector('nav');
     const search = document.querySelector('.search-section');
     const topOffset = (nav?.offsetHeight || 0) + (search && getComputedStyle(search).position === 'sticky' ? search.offsetHeight : 0) + 16;
-    const viewportBottom = window.innerHeight - 24;
-
-    if (rect.top < topOffset) {
-      window.scrollBy({ top: rect.top - topOffset, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-    } else if (rect.top > viewportBottom) {
-      window.scrollBy({ top: rect.top - viewportBottom, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    // Always place the selected topic heading near the top of the useful
+    // viewport. This avoids leaving a newly selected card peeking from the
+    // bottom edge while still clearing the fixed/sticky navigation.
+    const targetTop = Math.max(0, window.scrollY + rect.top - topOffset);
+    if (Math.abs(rect.top - topOffset) > 1) {
+      window.scrollTo({ top: targetTop, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     }
   }, 50);
 }
