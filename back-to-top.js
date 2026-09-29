@@ -26,13 +26,32 @@
     button.classList.toggle('visible', window.scrollY > 600);
   }
 
+  function updateBottomOffset() {
+    var banner = document.getElementById('cookie-banner');
+    var bannerVisible = banner && getComputedStyle(banner).display !== 'none';
+    var baseBottom = window.matchMedia('(max-width: 768px)').matches ? 16 : 24;
+    button.style.bottom = (baseBottom + (bannerVisible ? banner.getBoundingClientRect().height + 12 : 0)) + 'px';
+  }
+
   window.addEventListener('scroll', updateVisibility, { passive: true });
+  window.addEventListener('resize', updateBottomOffset, { passive: true });
   updateVisibility();
+  updateBottomOffset();
+
+  var cookieBanner = document.getElementById('cookie-banner');
+  if (cookieBanner && window.MutationObserver) {
+    new MutationObserver(updateBottomOffset).observe(cookieBanner, { attributes: true, attributeFilter: ['style', 'class', 'hidden'] });
+  }
 
   button.addEventListener('click', function () {
-    window.scrollTo({
-      top: 0,
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
-    });
+    var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion) {
+      var previousScrollBehavior = document.documentElement.style.scrollBehavior;
+      document.documentElement.style.scrollBehavior = 'auto';
+      window.scrollTo(0, 0);
+      document.documentElement.style.scrollBehavior = previousScrollBehavior;
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 })();
