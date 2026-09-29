@@ -22,11 +22,24 @@
   document.head.appendChild(style);
   document.body.appendChild(button);
 
+  function updatePosition() {
+    var banner = document.getElementById('cookie-banner');
+    var bannerVisible = banner && getComputedStyle(banner).display !== 'none' && banner.getBoundingClientRect().height > 0;
+    var baseBottom = window.matchMedia('(max-width: 768px)').matches ? 16 : 24;
+    button.style.bottom = (bannerVisible ? Math.ceil(banner.getBoundingClientRect().height) + baseBottom : baseBottom) + 'px';
+  }
+
   function updateVisibility() {
     button.classList.toggle('visible', window.scrollY > 600);
+    updatePosition();
   }
 
   window.addEventListener('scroll', updateVisibility, { passive: true });
+  window.addEventListener('resize', updatePosition);
+  var cookieBanner = document.getElementById('cookie-banner');
+  if (cookieBanner && window.MutationObserver) {
+    new MutationObserver(updatePosition).observe(cookieBanner, { attributes: true, attributeFilter: ['style', 'class'] });
+  }
   updateVisibility();
 
   button.addEventListener('click', function () {
