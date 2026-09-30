@@ -13,3 +13,12 @@
 .public-site-nav .public-nav-links>.public-nav-cta,
 .public-site-nav .public-nav-links>.public-nav-cta:hover,
 .public-site-nav .public-nav-links>.public-nav-cta:focus-visible{color:#fff!important}
+
+/* PR #202 mobile homepage: keep launch offer below fixed nav and enlarge the image-led hero for phone readability. */
+@media(max-width:480px){
+  #homepage-offer-banner{margin-top:70px!important;padding:10px 18px!important;font-size:13px!important;line-height:1.45!important}
+  #homepage-offer-banner span{display:inline!important}
+  #homepage-offer-banner a{display:inline-block!important;margin-left:6px!important}
+  .homepage-image-hero{overflow:hidden!important}
+  .homepage-image-hero>.homepage-hero-banner{width:125%!important;margin-left:-12.5%!important;margin-right:-12.5%!important}
+}
