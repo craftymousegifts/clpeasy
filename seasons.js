@@ -481,55 +481,11 @@
   }
 
   // ── FLOATING SEASONAL ICON ─────────────────────────────────────
+  // Removed from the homepage: the inline seasonal strip below the hero is
+  // now the single seasonal CTA, avoiding a duplicate Halloween/season pill.
   function applySeasonIcon(m) {
     const existing = document.getElementById('clpeasy-season-icon');
     if (existing) existing.remove();
-    const hero = document.querySelector('section.hero, .hero');
-    if (!hero) return;
-    const icon = document.createElement('a');
-    icon.id = 'clpeasy-season-icon';
-    // Safe default until the real auth state resolves just below --
-    // never assume signed-in.
-    icon.href = resolveCtaUrl(m, false);
-    icon.setAttribute('aria-label', m.iconLabel);
-    icon.style.cssText = `
-      display:inline-flex;align-items:center;gap:6px;
-      background:${m.pillBg};
-      border:1px solid ${m.accent};
-      color:${m.pillColor};
-      padding:4px 12px 4px 8px;
-      border-radius:20px;
-      font-size:12px;font-weight:700;
-      margin-bottom:12px;
-      font-family:'DM Sans',sans-serif;
-      animation:clpeasy-float 3s ease-in-out infinite;
-      text-decoration:none;
-      cursor:pointer;
-    `;
-    icon.innerHTML = `<span style="font-size:16px">${m.icon}</span><span>${m.iconLabel}</span>`;
-    // Insert after the hero pill (below "BUILT BY A MAKER, FOR MAKERS")
-    const pill = document.getElementById('hero-pill') ||
-                 Array.from(hero.querySelectorAll('div')).find(el => el.textContent.includes('BUILT BY A MAKER'));
-    if (pill && pill.parentNode) {
-      pill.parentNode.insertBefore(icon, pill.nextSibling);
-    } else {
-      const h1 = hero.querySelector('h1');
-      if (h1) hero.insertBefore(icon, h1);
-    }
-    // Add float animation
-    if (!document.getElementById('clpeasy-float-style')) {
-      const style = document.createElement('style');
-      style.id = 'clpeasy-float-style';
-      style.textContent = `
-        @keyframes clpeasy-float {
-          0%,100% { transform: translateY(0px); }
-          50% { transform: translateY(-4px); }
-        }
-      `;
-      document.head.appendChild(style);
-    }
-    // Correct the CTA once the real session state resolves.
-    getAuthState().then(signedIn => { icon.href = resolveCtaUrl(m, signedIn); });
   }
 
   // ── FOOTER SEASONAL BANNER ─────────────────────────────────────
