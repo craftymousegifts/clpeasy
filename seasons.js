@@ -420,9 +420,9 @@
       });
     };
     window.addEventListener('resize', particleResizeHandler);
-    // Stop the effect after 60s even if the banner never appears/dismisses
-    // (e.g. it was already dismissed earlier this session).
-    particleStopTimer = setTimeout(stopParticles, 60000);
+    // Keep seasonal particles brief so leaves/pumpkins add atmosphere
+    // without continuing over the page for an extended period.
+    particleStopTimer = setTimeout(stopParticles, 12000);
   }
 
   // ── TOP STRIPE ─────────────────────────────────────────────────
