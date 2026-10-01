@@ -1169,10 +1169,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label>Fragrance load % <span>(optional)</span>
+        <label>Fragrance load %
           <button type="button" onclick="toggleFragCalc()" style="margin-left:8px;font-size:11px;background:var(--teal-light);border:1px solid rgba(13,148,136,0.3);color:var(--teal);padding:2px 8px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;">🧮 Calculate</button>
         </label>
-        <input type="text" id="frag-load" placeholder="e.g. 10%" oninput="updateLabel();saveProdDetails()">
+        <input type="text" id="frag-load" placeholder="e.g. 10%" oninput="updateLabel();saveProdDetails();updateSdsPercentageCheck()">
         <div id="frag-calc-panel" style="display:none;margin-top:8px;background:var(--off);border:1.5px solid var(--border);border-radius:10px;padding:12px;">
           <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;">Calculate from weights</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
@@ -1213,8 +1213,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="smart-paste-box">
       <h4>✨ Smart Paste — paste SDS Section 2.2</h4>
       <p>Copy the complete Section 2.2 (Label elements) from your current supplier SDS PDF and paste it here. CLPeasy extracts the information it can identify; review the result against your SDS before continuing.</p>
-      <textarea id="smart-paste-input" placeholder="Paste SDS Section 2.2 text here..."></textarea>
-      <br><br><button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
+      <textarea id="smart-paste-input" placeholder="Paste SDS Section 2.2 text here..." oninput="detectSdsPercentageFromText()"></textarea>
+      <div style="margin-top:12px;padding:12px;border:1.5px solid var(--border);border-radius:10px;background:var(--off);">
+        <label for="sds-frag-load" style="margin-bottom:4px;">SDS / CLP fragrance percentage</label>
+        <div style="font-size:11.5px;color:var(--muted);line-height:1.45;margin-bottom:8px;">Enter the percentage this supplier SDS/CLP information was prepared for (for example, 10% in candle wax). If this is a neat / 100% fragrance-oil SDS, enter 100.</div>
+        <input type="text" id="sds-frag-load" placeholder="e.g. 10%" inputmode="decimal" oninput="updateSdsPercentageCheck()">
+        <div id="sds-percentage-check" style="margin-top:8px;font-size:12px;line-height:1.5;"></div>
+      </div>
+      <br><button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
       <button type="button" id="hazard-clear-link" onclick="clearHazardData()" style="display:none;margin-left:14px;font-size:12px;color:var(--teal-dark);text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">Clear hazard data and start again</button>
     </div>
     <aside class="sds-gb-note" aria-label="About supplier SDS information for Great Britain">
@@ -1222,7 +1228,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <p>If you place a fragrance mixture on the market in Great Britain (England, Scotland or Wales), you are responsible for checking that the classification and label for your finished product are accurate and meet the applicable GB CLP requirements. Two things to check:</p>
       <ul>
         <li><strong>GB CLP, not GHS or another country's rules.</strong> Some SDSs are written for the worldwide GHS system or another country's rules, not GB CLP. These can include hazard codes that aren't used in Great Britain. If your SDS contains a code like this, CLPeasy cannot create the label until you have the correct GB CLP information. Ask your supplier for GB CLP information for your product.</li>
-        <li><strong>Your fragrance percentage.</strong> Your supplier's SDS usually describes the fragrance oil on its own, at 100%. Your finished product, such as a candle, wax melt, reed diffuser or any other product made with fragrance oil, contains a lower percentage, for example 10%, so its hazards and label warnings may be different. Use your supplier's CLP information for the percentage you actually use, not the information for the undiluted oil.</li>
+        <li><strong>Your fragrance percentage.</strong> Check what concentration the supplier's SDS/CLP information was prepared for and compare it with the fragrance load you actually use. A 10% formulation is not automatically valid for an 8% or 12% product, and CLPeasy does not recalculate a finished-mixture classification from a neat / 100% fragrance SDS. Use supplier classification information for the percentage you actually use.</li>
       </ul>
       <p>Why it matters: an incorrect classification could leave warnings, pictograms or precautions wrong or missing. That can put people or the environment at risk and may lead to enforcement action under GB CLP.</p>
       <p><a href="mailto:support@clpeasy.com?subject=SDS%20classification%20query">Email CLPeasy Support</a> with the SDS and the flagged code. We can investigate what CLPeasy identified and, where appropriate, help you seek clarification from your supplier. <a href="https://www.hse.gov.uk/chemical-classification/legal/clp-regulation.htm" target="_blank" rel="noopener noreferrer">Read the official HSE GB CLP guidance ↗</a></p>
@@ -3675,6 +3681,69 @@ function parseBoundedSubstanceList(raw){
   });
   return out;
 }
+function _parsePercentage(value){
+  const m=String(value||'').replace(',','.').match(/(?:^|[^\d.])(100(?:\.0+)?|\d{1,2}(?:\.\d+)?)(?:\s*%|\s*$)/);
+  if(!m)return null;
+  const n=Number(m[1]);
+  return Number.isFinite(n)&&n>0&&n<=100?n:null;
+}
+function detectSdsPercentageFromText(){
+  const text=document.getElementById('smart-paste-input')?.value||'';
+  const field=document.getElementById('sds-frag-load');
+  if(!field||field.value.trim())return updateSdsPercentageCheck();
+  const patterns=[
+    /(?:fragrance|fragrance oil|essential oil|oil|blend)[^\n]{0,45}?\b(100|\d{1,2}(?:[.,]\d+)?)\s*%/i,
+    /\b(100|\d{1,2}(?:[.,]\d+)?)\s*%\s+(?:in|of)\s+(?:candle\s+)?wax\b/i,
+    /\((100|\d{1,2}(?:[.,]\d+)?)\s*%\s+in\s+[^)]+\)/i
+  ];
+  for(const re of patterns){
+    const m=text.match(re);
+    if(m){field.value=m[1].replace(',','.')+'%';break;}
+  }
+  updateSdsPercentageCheck();
+}
+function updateSdsPercentageCheck(){
+  const out=document.getElementById('sds-percentage-check');
+  if(!out)return true;
+  const actual=_parsePercentage(document.getElementById('frag-load')?.value);
+  const sds=_parsePercentage(document.getElementById('sds-frag-load')?.value);
+  out.dataset.status='unknown';
+  if(actual===null||sds===null){
+    out.style.color='var(--muted)';
+    out.textContent='Enter both percentages to check that the supplier information matches your formulation.';
+    return false;
+  }
+  if(Math.abs(actual-sds)<0.001){
+    out.dataset.status='match';out.style.color='#166534';
+    out.textContent='✓ Percentage match: this SDS/CLP information is for the '+actual+'% fragrance load you entered.';
+    return true;
+  }
+  if(sds===100){
+    out.dataset.status='neat';out.style.color='#991B1B';
+    out.textContent='⛔ This is a neat / 100% fragrance SDS, but your finished product uses '+actual+'%. CLPeasy does not currently calculate a finished-mixture classification from a neat SDS. Obtain supplier CLP/classification information for the percentage you actually use.';
+    return false;
+  }
+  out.dataset.status=actual>sds?'higher':'lower';out.style.color=actual>sds?'#991B1B':'#92400E';
+  out.textContent=(actual>sds?'⛔ Your fragrance load ('+actual+'%) is higher than this SDS/CLP formulation ('+sds+'%). ':'⚠️ Your fragrance load ('+actual+'%) does not match this SDS/CLP formulation ('+sds+'%). ')+
+    'CLPeasy will not assume the classification is the same. Obtain supplier CLP/classification information for the percentage you actually use.';
+  return false;
+}
+function _requireSdsPercentageMatch(){
+  const actual=_parsePercentage(document.getElementById('frag-load')?.value);
+  const sds=_parsePercentage(document.getElementById('sds-frag-load')?.value);
+  if(actual===null||sds===null){
+    alert('Enter the percentage this SDS/CLP information was prepared for, then check it against your actual fragrance load.');
+    document.getElementById(actual===null?'frag-load':'sds-frag-load')?.focus();
+    return false;
+  }
+  if(Math.abs(actual-sds)>=0.001){
+    updateSdsPercentageCheck();
+    alert('The fragrance percentage you use does not match this SDS/CLP information. CLPeasy cannot treat a different concentration as equivalent. Please use supplier classification information for your actual fragrance load.');
+    document.getElementById('sds-frag-load')?.focus();
+    return false;
+  }
+  return true;
+}
 function extractSDS(){
   // NOTE (2026-08-02, reversal — see smart-paste-pro-gating / reverify):
   // A plan gate was added here believing Smart Paste was Easy-Pro-exclusive.
@@ -3685,6 +3754,8 @@ function extractSDS(){
   // fresh, explicit product-rules confirmation.
   const text=document.getElementById('smart-paste-input').value.trim();
   if(!text){alert('Please paste SDS Section 2.2 text first.');return;}
+  detectSdsPercentageFromText();
+  if(!_requireSdsPercentageMatch())return;
 
   // ── H STATEMENTS ──────────────────────────────────────────────────────────
   const hMatches=[...new Set(text.match(/\bH\d{3}\b/g)||[])];
@@ -4204,6 +4275,12 @@ function checkStep2Next(){
   if(!ptype){
     alert('Please select a product type before continuing.');
     document.getElementById('product-type')?.focus();
+    return;
+  }
+  const frag=_parsePercentage(document.getElementById('frag-load')?.value);
+  if(frag===null){
+    alert('Please enter the fragrance load you actually use before continuing. This lets CLPeasy check that your SDS/CLP information matches your formulation.');
+    document.getElementById('frag-load')?.focus();
     return;
   }
   nextStep();
