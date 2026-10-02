@@ -91,3 +91,38 @@ change.** This is software implementation, not legal advice.
     code gives the 3 extra downloads on **every** pack bought in 2026.
   - Either the wording should say "with every pack" / "when you buy a pack", or the code should limit
     the bonus to the first purchase.
+
+## Continuation (2 Oct 2026, evening)
+- **Bonus wording (owner decision: keep the code, fix the wording).** Every £4.99 pack bought before
+  1 Jan 2027 UTC gets 8 downloads (5 + 3 bonus). "One-off launch bonus" and "3 FREE" are removed:
+  - **pricing.html:**
+    - card: "🎉 8 downloads · includes 3 bonus" / "+3 bonus with every pack · Ends 31 Dec 2026";
+    - feature: "£4.99 for 8 downloads — includes 3 bonus downloads with every pack until 31 December
+      2026. From 1 January 2027 a pack is 5 downloads for £4.99 …";
+    - comparison table: "£4.99 · 8 downloads (includes 3 bonus with every pack until 31 Dec 2026)".
+  - **faq.html:** "£4.99 buys 8 downloads — includes 3 bonus downloads with every pack until 31 December
+    2026 (5 downloads per pack from 1 January 2027)."
+  - **PR #202 (`9891228`):**
+    - offer bar "+ 3 bonus downloads with every PAYG pack";
+    - intro "(£4.99 for 8 downloads — includes 3 bonus downloads with every pack until 31 December
+      2026)";
+    - FAQ "£4.99 for 8 downloads, including 3 bonus downloads with every pack until 31 December 2026";
+    - guide "£4.99 for 8 downloads (includes 3 bonus downloads with every pack until 31 Dec 2026)";
+    - offer-bar size unchanged at 360/390/768/1366 px.
+- **Terms clause 6:** "Access to CLPeasy requires registration and a paid subscription or active free
+  trial." → "… a paid subscription, purchased Pay As You Go download credits, or an active free
+  trial."
+- **Test deployment:** CLPeasy Test `create-checkout-session` **v9** (verify_jwt true). It is the repo
+  code plus the existing Test-only adjustments (`build/create-checkout-session.test-deploy.diff`).
+  The deployed source was byte-checked: sha256 `08fb2434…`.
+- **Test site pages not redeployed.** The Test build inserts the Test Supabase public key from a
+  file whose reading was previously blocked by the session's safety check, and Netlify serves
+  rewritten pages, so the site cannot be rebuilt faithfully from what it serves. The Test site
+  still runs v18 pages, whose PAYG button sends no consent, so **PAYG checkout on the Test site
+  now returns PAYG_CONSENT_REQUIRED** until the Test pages are redeployed.
+- **Browser journey:** blocked. This environment cannot reach Test Supabase, Stripe Checkout or
+  jsDelivr.
+- **Stripe Live "Successful payments" email setting:** not readable through the Stripe API or tools
+  available here (Dashboard only). Not changed.
+- **Invoice fee:** Stripe's pricing and support pages are blocked by this environment's network
+  policy, so the exact fee was not verified here.

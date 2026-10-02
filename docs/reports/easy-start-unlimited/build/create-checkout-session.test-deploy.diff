@@ -1,5 +1,5 @@
---- supabase/functions/create-checkout-session/index.ts	2026-10-02 12:09:00.010050443 +0000
-+++ /tmp/claude-0/-home-user-clpeasy/86d27313-a9b8-58a9-a666-27f0ed3fed66/scratchpad/fn-test/create-checkout-session.ts	2026-10-02 12:24:57.417104455 +0000
+--- supabase/functions/create-checkout-session/index.ts	2026-10-02 21:45:02.343526919 +0000
++++ /tmp/claude-0/-home-user-clpeasy/86d27313-a9b8-58a9-a666-27f0ed3fed66/scratchpad/fn-test2/create-checkout-session.ts	2026-10-02 21:45:12.470035913 +0000
 @@ -11,14 +11,15 @@
  // cancelUrl were silently ignored and everything was hard-coded to
  // builder.html?topup=success regardless of mode; now we honour the caller's
@@ -30,7 +30,7 @@
  }
  
  // Subscriber top-up packs (5 for £3.99 / 10 for £7.99) are retired from new
-@@ -265,11 +269,11 @@
+@@ -288,11 +292,11 @@
      }
  
      const defaultSuccess = checkoutMode === "subscription"
