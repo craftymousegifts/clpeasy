@@ -1,3 +1,5 @@
+> **Superseded for approval status** by `STRANDED-BUILDER-FIX-REGISTER-2026-10-02.md`. The circle and overlap fixes (M44/M45) are listed as "signed off" in the branch's classification document (approver not named), so they are NEEDS OWNER REVIEW rather than "not owner-approved".
+
 # Stranded Builder fixes — reconciliation (2 Oct 2026, read-only)
 
 **Context**
