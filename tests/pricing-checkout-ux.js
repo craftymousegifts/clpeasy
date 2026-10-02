@@ -245,7 +245,7 @@ server.listen(0, '127.0.0.1', async () => {
         assert(g.every(x => Math.abs(x.gap - g[0].gap) <= 1), 'card name sits the same distance below every icon');
         assert(g[1].svg && g[2].svg && g[1].svg[0] >= 30 && g[1].svg[0] <= 36, 'SVG icons rendered at emoji size');
         const txt = await t.evaluate(() => document.body.innerText);
-        for (const s of ['8 downloads for £4.99', '5 downloads + 3 FREE', '£8.99/month until']) assert(txt.includes(s), 'missing: ' + s);
+        for (const s of ['8 downloads for £4.99', '+3 bonus with every pack', '£8.99/month until']) assert(txt.includes(s), 'missing: ' + s);
         assert.strictEqual(await t.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, 'no horizontal scroll');
         await t.evaluate(() => document.querySelector('.cards').scrollIntoView({ block: 'start', behavior: 'instant' }));
         await t.screenshot({ path: path.join(SHOTS, `pricing-${name}.png`) });
