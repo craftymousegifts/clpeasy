@@ -129,25 +129,26 @@ Deno.serve(async (req) => {
   // pattern already used for checkout_locks: claim event.id first: a second
   // insert for the same id fails outright rather than racing, so only one
   // invocation ever proceeds past this point.
-  const { error: dedupeError } = await supabase
-    .from('stripe_processed_events')
-    .insert({ event_id: event.id, event_type: event.type });
-
-  if (dedupeError) {
-    if (dedupeError.code === '23505') {
-      // Genuine duplicate delivery of an already-processed event — skip all
-      // side effects, but still return 200 so Stripe does not keep retrying.
-      console.log(`Duplicate event ${event.id} (${event.type}) — already processed, skipping.`);
-      return new Response(JSON.stringify({ received: true, duplicate: true }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-    // Any other error claiming the dedupe marker (e.g. a transient DB issue)
-    // — don't risk silently dropping a legitimate event. Log and fall
-    // through to process normally; worst case is a rare double-process
-    // rather than a silently skipped webhook.
-    console.error('stripe_processed_events insert error (non-duplicate):', dedupeError);
+  //
+  // FIX (2 Oct 2026, CLPeasy Test): a transient claim failure (PostgREST
+  // PGRST303 "JWT issued at future" on a cold start) used to fall through and
+  // process the event WITHOUT a recorded claim, so a later redelivery of the
+  // same PAYG event could credit the purchase a second time. The claim is now
+  // retried; if it still cannot be recorded, nothing is processed and Stripe
+  // gets a 500 so it retries the delivery later (fail closed).
+  const claim = await claimEvent(event.id, event.type);
+  if (claim === 'duplicate') {
+    // Genuine duplicate delivery of an already-processed event — skip all
+    // side effects, but still return 200 so Stripe does not keep retrying.
+    console.log(`Duplicate event ${event.id} (${event.type}) — already processed, skipping.`);
+    return new Response(JSON.stringify({ received: true, duplicate: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+  if (claim === 'unavailable') {
+    console.error(`Could not record the duplicate-protection claim for ${event.id} (${event.type}) — not processed; Stripe will retry.`);
+    return new Response(JSON.stringify({ error: 'Temporarily unable to record event; retry later' }), { status: 500 });
   }
 
   try {
@@ -502,6 +503,30 @@ if (profileStatus) {
     headers: { 'Content-Type': 'application/json' },
   });
 });
+
+// ── DUPLICATE-PROTECTION CLAIM ─────────────────────────────────
+// 'claimed'     — this invocation owns the event and may process it.
+// 'duplicate'   — the event was already claimed by an earlier delivery.
+// 'unavailable' — the claim could not be recorded; do not process.
+// An error WITH a code (e.g. PostgREST PGRST303, 401/5xx) means the row was
+// not written, so a 23505 on a later attempt is a genuine duplicate. An error
+// WITHOUT a code (network failure, lost response) is ambiguous: the row may
+// have been written by this invocation, so a 23505 after it is our own claim.
+async function claimEvent(eventId: string, eventType: string): Promise<'claimed' | 'duplicate' | 'unavailable'> {
+  const delays = [250, 500, 1000];
+  let ambiguous = false;
+  for (let attempt = 0; ; attempt++) {
+    const { error } = await supabase
+      .from('stripe_processed_events')
+      .insert({ event_id: eventId, event_type: eventType });
+    if (!error) return 'claimed';
+    if (error.code === '23505') return ambiguous ? 'claimed' : 'duplicate';
+    if (!error.code) ambiguous = true;
+    console.error(`stripe_processed_events insert error (attempt ${attempt + 1}):`, error);
+    if (attempt >= delays.length) return 'unavailable';
+    await new Promise((r) => setTimeout(r, delays[attempt]));
+  }
+}
 
 // ── TOP-UP CREDIT MAP ─────────────────────────────────────────
 // FIX (2026-07-28, AUDIT_AND_FIX_LOG.md BLOCKER-2, resolved): this map

@@ -91,6 +91,47 @@ await test('duplicate Stripe delivery: no second credit and no second Brevo call
   eq(balance(), 8, 'still 8'); eq(brevoCalls.length, 1, 'Brevo once');
 });
 
+// ── Duplicate-protection claim failures (CLPeasy Test, 2 Oct 2026: PostgREST
+// rejected one claim insert with PGRST303 "JWT issued at future" on a cold
+// start). The webhook must never credit PAYG without a recorded claim, or a
+// later redelivery of the same event could credit it a second time.
+await test('claim insert rejected once (PGRST303 clock skew): retried, credited once, claim recorded; redelivery is a duplicate', async () => {
+  seedProfile({});
+  db().failClaimInsert = 1;
+  const r = await send(paygEvent('evt_skew_once'));
+  eq(r.status, 200, 'processed after a successful retry'); eq(balance(), 8, 'credited once');
+  eq(db().tables.stripe_processed_events.map((e: any) => e.event_id), ['evt_skew_once'], 'claim recorded');
+  const again = await send(paygEvent('evt_skew_once'));
+  eq((await again.json()).duplicate, true, 'redelivery skipped'); eq(balance(), 8, 'NO double credit');
+});
+await test('claim insert keeps failing: 500 to Stripe, NOTHING credited, nothing claimed; Stripe retry later credits exactly once', async () => {
+  seedProfile({});
+  db().failClaimInsert = 10;
+  const r1 = await send(paygEvent('evt_skew_down'));
+  eq(r1.status, 500, 'fail closed: Stripe will retry'); eq(balance(), 0, 'no credit without a claim');
+  eq(db().tables.stripe_processed_events.length, 0, 'nothing claimed'); eq(db().rpcCalls.length, 0, 'credit function never called'); eq(brevoCalls.length, 0, 'no Brevo');
+  db().failClaimInsert = 0;
+  const r2 = await send(paygEvent('evt_skew_down'));
+  eq(r2.status, 200, 'retry ok'); eq(balance(), 8, 'credited exactly once');
+  const r3 = await send(paygEvent('evt_skew_down'));
+  eq((await r3.json()).duplicate, true, 'later resend ignored'); eq(balance(), 8, 'still 8');
+});
+await test('claim written but response lost (no error code): the retry sees our own claim and processes ONCE (no lost purchase)', async () => {
+  seedProfile({});
+  db().claimWritesThenErrors = 1;
+  const r = await send(paygEvent('evt_ambiguous'));
+  eq(r.status, 200, 'processed'); eq(balance(), 8, 'credited once, not lost');
+  const again = await send(paygEvent('evt_ambiguous'));
+  eq((await again.json()).duplicate, true, 'redelivery skipped'); eq(balance(), 8, 'no double credit');
+});
+await test('a genuine duplicate is still recognised after a definite (coded) claim failure', async () => {
+  seedProfile({});
+  await send(paygEvent('evt_dup_after_skew'));
+  db().failClaimInsert = 1;
+  const r = await send(paygEvent('evt_dup_after_skew'));
+  eq((await r.json()).duplicate, true, 'duplicate'); eq(balance(), 8, 'still 8');
+});
+
 await test('credit failure: 500, claim released, NO Brevo; Stripe retry credits once and Brevo runs once; later resend ignored', async () => {
   seedProfile({});
   db().failRpcOnce = 1;
