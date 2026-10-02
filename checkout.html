@@ -134,7 +134,7 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.97);backdrop
 
 <div class="page">
   <h1 class="page-title">Checkout</h1>
-  <p class="page-sub">Choose your plan, add a top-up pack if you need it, then head to secure payment.</p>
+  <p class="page-sub">Choose monthly or annual Easy Start Unlimited, then head to secure payment.</p>
 
   <!-- UK-only notice -->
   <div style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:8px;padding:10px 14px;font-size:13px;color:#0369A1;margin-bottom:16px;line-height:1.5;">
@@ -157,41 +157,11 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.97);backdrop
 
         <div class="billing-toggle">
           <button class="billing-btn active" id="toggle-monthly" onclick="setBilling('monthly')">Monthly</button>
-          <button class="billing-btn" id="toggle-annual" onclick="setBilling('annual')">Annual <span style="font-size:11px;background:#D1FAE5;color:#065F46;padding:1px 6px;border-radius:10px;margin-left:4px;">Save 17%</span></button>
+          <button class="billing-btn" id="toggle-annual" onclick="setBilling('annual')">Annual <span style="font-size:11px;background:#D1FAE5;color:#065F46;padding:1px 6px;border-radius:10px;margin-left:4px;">Save £30.88</span></button>
         </div>
 
-        <div class="plan-grid" id="plan-grid">
+        <div class="plan-grid" id="plan-grid" style="grid-template-columns:1fr;">
           <!-- Filled by JS -->
-        </div>
-      </div>
-
-      <!-- STEP 2: TOP-UP (optional) —
-           TEMPORARILY DISABLED 2026-07-27 (AUDIT_AND_FIX_LOG.md, Phase 7):
-           bundling a top-up with a new subscription here only ever created a
-           single-line-item Stripe Checkout Session for the subscription price —
-           the top-up was displayed in the total but never actually charged or
-           credited. Hidden until it's wired up as a real second line item (or a
-           real second Checkout Session) AND the top-up Price ID mismatch
-           (BLOCKER-2 in the log) is resolved. selectedTopup is forced to 'none'
-           below so startCheckout() can never send a top-up through this page. -->
-      <div class="card" style="display:none;">
-        <div class="card-title"><div class="step-num">2</div> Add a top-up pack <span style="font-size:12px;font-weight:500;color:var(--muted);margin-left:6px;">(optional)</span></div>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5;">Top-up credits never expire and stack on top of your monthly allowance. Handy for busy periods.</p>
-        <div class="topup-grid">
-          <div class="topup-card" id="topup-5" onclick="selectTopup('5')">
-            <div style="font-size:13px;font-weight:700;margin-bottom:4px;">+5 downloads</div>
-            <div style="font-size:20px;font-weight:900;color:var(--teal);">£3.99</div>
-            <div style="font-size:11px;color:var(--muted);margin-top:4px;">79p per download</div>
-          </div>
-          <div class="topup-card" id="topup-10" onclick="selectTopup('10')">
-            <div style="font-size:13px;font-weight:700;margin-bottom:4px;">+10 downloads</div>
-            <div style="font-size:20px;font-weight:900;color:var(--teal);">£7.99</div>
-            <div style="font-size:11px;color:var(--muted);margin-top:4px;">79p per download</div>
-            <div class="plan-badge save" style="margin-top:6px;">Best value</div>
-          </div>
-        </div>
-        <div class="topup-none selected" id="topup-none" onclick="selectTopup('none')" style="margin-top:10px;">
-          No top-up — my monthly allowance is enough
         </div>
       </div>
 
@@ -203,16 +173,12 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.97);backdrop
         <div class="summary-title">📋 Order summary</div>
 
         <div class="summary-row">
-          <span class="summary-label plan" id="summary-plan-name">Easy Start Monthly</span>
+          <span class="summary-label plan" id="summary-plan-name">Easy Start Unlimited Monthly</span>
           <span class="summary-amount" id="summary-plan-price">£9.99/mo</span>
         </div>
         <div class="summary-row promo" id="summary-promo-row" style="display:none;">
           <span class="summary-label">2026 offer – 10% off</span>
           <span class="summary-amount" id="summary-promo-amount">−£1.00</span>
-        </div>
-        <div class="summary-row" id="summary-topup-row" style="display:none;">
-          <span class="summary-label" id="summary-topup-name">Top-up pack</span>
-          <span class="summary-amount" id="summary-topup-price">£3.99</span>
         </div>
         <div class="summary-row total">
           <span>Due today</span>
@@ -248,35 +214,23 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.97);backdrop
 const SUPABASE_URL = 'https://qvkosdqcryrcfbjtaxic.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
 
-// ── LIVE PRICE IDs ────────────────────────────────────────────
+// ── EASY START UNLIMITED (2 Oct 2026) ─────────────────────────
+// The only subscription sold. Monthly uses the live Easy Start monthly price
+// (the server adds the 2026 coupon); the £89 annual price is chosen by the
+// server (productKey easy_start_annual / EASY_START_ANNUAL_PRICE_ID). Easy
+// Pro, the old £99 annual price and subscriber top-ups are no longer sold.
 const PRICES = {
   monthly: {
-    easy_start: { id: 'price_1TdoEYGZLILz5vqUIqlEsf4X', label: 'Easy Start Monthly', price: '£9.99', priceNum: 9.99, monthly: '£9.99/mo' },
-    easy_pro:   { id: 'price_1TdoEXGZLILz5vqUvZKB1RQw', label: 'Easy Pro Monthly',   price: '£14.99', priceNum: 14.99, monthly: '£14.99/mo' },
+    easy_start: { id: 'price_1TdoEYGZLILz5vqUIqlEsf4X', label: 'Easy Start Unlimited Monthly', price: '£9.99', priceNum: 9.99, monthly: '£9.99/mo' },
   },
   annual: {
-    easy_start: { id: 'price_1TdoEXGZLILz5vqUQj5n6Zri', label: 'Easy Start Annual', price: '£99', priceNum: 99, monthly: '£8.25/mo' },
-    easy_pro:   { id: 'price_1TdoEXGZLILz5vqUFgTznTUT', label: 'Easy Pro Annual',   price: '£149', priceNum: 149, monthly: '£12.42/mo' },
+    easy_start: { productKey: 'easy_start_annual', label: 'Easy Start Unlimited Annual', price: '£89', priceNum: 89, monthly: '£89/yr' },
   },
-};
-
-// FIX (2026-07-28, AUDIT_AND_FIX_LOG.md BLOCKER-2, resolved): this used to
-// reference a different, incorrect pair of top-up Price IDs
-// (price_1TeBHj.../price_1TeBIK...) than builder.html/account.html. Michaela
-// confirmed directly against the CLPeasy Stripe dashboard that the IDs below
-// (matching builder.html/account.html) are the correct, canonical ones — the
-// old pair has been removed from active logic, not just added alongside.
-// NOTE: the Step 2 top-up card that uses this map is still hidden (see the
-// comment above it) — the underlying single-line-item bundling issue (Phase 7)
-// is a separate, still-unresolved problem from the Price ID mismatch.
-const TOPUP_PRICES = {
-  '5':  { id: 'price_1Tdpd7GZLILz5vqUAiSw9udI', label: '+5 downloads', price: 3.99 },
-  '10': { id: 'price_1TdpdzGZLILz5vqUYEjn6TZ2', label: '+10 downloads', price: 7.99 },
 };
 
 const FEATURES = {
   easy_start: [
-    '20 label downloads per month',
+    'Unlimited label downloads while subscribed',
     'PNG, SVG and PDF formats',
     'GHS pictograms & H/P statements',
     'Smart Paste — paste your SDS, extract hazard data',
@@ -284,16 +238,10 @@ const FEATURES = {
     'Label library (save & reuse)',
     'Email support',
   ],
-  easy_pro: [
-    '30 label downloads per month',
-    'All Easy Start features',
-    'Priority support',
-  ],
 };
 
 let billing = 'monthly';
 let selectedPlan = 'easy_start';
-let selectedTopup = 'none';
 let currentUser = null;
 let sbClient = null;
 
@@ -311,12 +259,11 @@ async function init() {
     document.getElementById('btn-checkout').disabled = true;
   }
 
-  // Pre-select plan from URL param ?plan=easy_pro or ?plan=easy_start
+  // Pre-select billing from URL param ?billing=annual. Easy Pro is no longer
+  // sold, so ?plan=easy_pro simply shows Easy Start Unlimited.
   const params = new URLSearchParams(window.location.search);
-  const planParam = params.get('plan');
   const billingParam = params.get('billing');
   if (billingParam === 'annual') setBilling('annual');
-  if (planParam === 'easy_pro') selectedPlan = 'easy_pro';
 
   renderPlans();
   updateSummary();
@@ -332,8 +279,8 @@ function setBilling(mode) {
 }
 
 // ── 2026 MONTHLY PROMOTION ────────────────────────────────────
-// create-checkout-session adds the 2026 coupon (10% off) to Easy Start / Easy
-// Pro MONTHLY checkouts before 1 Jan 2027; annual is never discounted.
+// create-checkout-session adds the 2026 coupon (10% off) to Easy Start
+// MONTHLY checkouts before 1 Jan 2027; annual is never discounted.
 const PROMO_2026_END_MS = Date.UTC(2027, 0, 1);
 function monthlyPromo(planData) {
   if (billing !== 'monthly' || Date.now() >= PROMO_2026_END_MS) return null;
@@ -348,25 +295,17 @@ function renderPlans() {
   const plans = PRICES[billing];
   const grid = document.getElementById('plan-grid');
   const startPromo = monthlyPromo(plans.easy_start);
-  const proPromo = monthlyPromo(plans.easy_pro);
   // Offer line sits outside .plan-price so it keeps the card's normal text
   // weight; the end date is kept on one line.
   const planPrice = (plan, promo) => promo
     ? '<div class="plan-price">' + gbp(promo.due) + '<span>/month</span></div><div class="plan-offer-note">Normally ' + plan.price + '/month · 10% launch offer until <span class="nowrap">31 December 2026</span></div>'
     : '<div class="plan-price">' + plan.price + '<span>' + (billing === 'monthly' ? '/mo' : '/yr') + '</span></div>';
   grid.innerHTML = `
-    <div class="plan-card ${selectedPlan === 'easy_start' ? 'selected' : ''}" onclick="selectPlan('easy_start')">
-      <div class="plan-name">Easy Start</div>
+    <div class="plan-card selected" onclick="selectPlan('easy_start')">
+      <div class="plan-name">Easy Start Unlimited</div>
       ${planPrice(plans.easy_start, startPromo)}
-      ${billing === 'monthly' ? '' : '<div style="font-size:11px;color:var(--muted);margin-top:2px;">£8.25/mo billed annually</div>'}
-      <div class="plan-desc">20 downloads/month. Perfect for makers just starting out.</div>
-      ${billing === 'annual' ? '<div class="plan-badge save">Save £20.88/yr</div>' : '<div class="plan-badge popular">Most popular</div>'}
-    </div>
-    <div class="plan-card ${selectedPlan === 'easy_pro' ? 'selected' : ''}" onclick="selectPlan('easy_pro')">
-      <div class="plan-name">Easy Pro</div>
-      ${planPrice(plans.easy_pro, proPromo)}
-      ${billing === 'monthly' ? '' : '<div style="font-size:11px;color:var(--muted);margin-top:2px;">£12.42/mo billed annually</div>'}
-      <div class="plan-desc">30 downloads/month + priority support.</div>
+      ${billing === 'monthly' ? '' : '<div style="font-size:11px;color:var(--muted);margin-top:2px;">About £7.42/mo billed annually</div>'}
+      <div class="plan-desc">Unlimited downloads while subscribed.</div>
       ${billing === 'annual' ? '<div class="plan-badge save">Save £30.88/yr</div>' : ''}
     </div>
   `;
@@ -375,15 +314,6 @@ function renderPlans() {
 function selectPlan(plan) {
   selectedPlan = plan;
   renderPlans();
-  updateSummary();
-}
-
-// ── TOP-UP SELECTION ──────────────────────────────────────────
-function selectTopup(pack) {
-  selectedTopup = pack;
-  document.getElementById('topup-5').classList.toggle('selected', pack === '5');
-  document.getElementById('topup-10').classList.toggle('selected', pack === '10');
-  document.getElementById('topup-none').classList.toggle('selected', pack === 'none');
   updateSummary();
 }
 
@@ -401,23 +331,9 @@ function updateSummary() {
   promoNote.style.display = promo ? 'block' : 'none';
   if (promo) promoNote.textContent = gbp(promo.due) + '/month until 31 December 2026, then ' + planData.price + '/month.';
 
-  // Top-up row
-  const topupRow = document.getElementById('summary-topup-row');
-  if (selectedTopup !== 'none') {
-    const t = TOPUP_PRICES[selectedTopup];
-    document.getElementById('summary-topup-name').textContent = t.label;
-    document.getElementById('summary-topup-price').textContent = '£' + t.price.toFixed(2);
-    topupRow.style.display = 'flex';
-  } else {
-    topupRow.style.display = 'none';
-  }
-
-  // Due today = plan price (after the 2026 monthly offer) + topup (if selected)
-  let total = promo ? promo.due / 100 : planData.priceNum;
-  if (selectedTopup !== 'none') {
-    total += TOPUP_PRICES[selectedTopup].price;
-  }
-  document.getElementById('summary-total').innerHTML = '£' + total.toFixed(2) + (promo && selectedTopup === 'none' ? '<span class="summary-per">/month</span>' : '');
+  // Due today = plan price (after the 2026 monthly offer)
+  const total = promo ? promo.due / 100 : planData.priceNum;
+  document.getElementById('summary-total').innerHTML = '£' + total.toFixed(2) + (promo ? '<span class="summary-per">/month</span>' : '');
 
   // Feature list
   const feats = FEATURES[selectedPlan];
@@ -448,15 +364,7 @@ async function startCheckout() {
   const planData = PRICES[billing][selectedPlan];
 
   try {
-    // If top-up selected, we need two checkout sessions back-to-back.
-    // For simplicity (Stripe doesn't support mixed subscription + one-time in one session),
-    // we do the subscription first, then redirect to top-up checkout after success.
-    // The top-up priceId is stored in sessionStorage so checkout-success can trigger it.
-    if (selectedTopup !== 'none') {
-      sessionStorage.setItem('pending_topup', selectedTopup);
-    } else {
-      sessionStorage.removeItem('pending_topup');
-    }
+    sessionStorage.removeItem('pending_topup');
 
     const res = await fetch(SUPABASE_URL + '/functions/v1/create-checkout-session', {
       method: 'POST',
@@ -465,9 +373,9 @@ async function startCheckout() {
         'Authorization': 'Bearer ' + session.access_token,
       },
       body: JSON.stringify({
-        priceId: planData.id,
+        ...(planData.productKey ? { productKey: planData.productKey } : { priceId: planData.id }),
         mode: 'subscription',
-        successUrl: window.location.origin + '/builder.html?subscribed=true' + (selectedTopup !== 'none' ? '&topup_pending=' + selectedTopup : ''),
+        successUrl: window.location.origin + '/builder.html?subscribed=true',
         cancelUrl: window.location.origin + '/checkout.html?cancelled=true',
       }),
     });
@@ -476,7 +384,7 @@ async function startCheckout() {
     if (data.url) {
       if (window.CLPCheckoutNotice) window.CLPCheckoutNotice.markStarted(currentUser.id);
       window.location.href = data.url;
-    } else if (data.code === 'CHECKOUT_IN_PROGRESS' || (data.code === 'ALREADY_SUBSCRIBED' && data.error)) {
+    } else if (data.code === 'CHECKOUT_IN_PROGRESS' || (['ALREADY_SUBSCRIBED', 'ANNUAL_NOT_CONFIGURED', 'PLAN_NOT_AVAILABLE'].includes(data.code) && data.error)) {
       if (data.code === 'CHECKOUT_IN_PROGRESS' && window.CLPCheckoutNotice) window.CLPCheckoutNotice.markStarted(currentUser.id);
       // Expected server refusals, handled like pricing.html instead of the
       // generic failure: a subscription checkout was started for this

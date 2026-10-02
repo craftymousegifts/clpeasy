@@ -46,18 +46,33 @@ const MONTHLY_PROMO_PLAN_BY_PRICE: Record<string, "EASY_START" | "EASY_PRO"> = {
   "price_1Tdd9OKF3jvQfgEaYsCmOwOa": "EASY_PRO",   // legacy sandbox Easy Pro monthly
 };
 
-// ── SUBSCRIBER TOP-UPS (approved D4) ──
-// 5 for £3.99 / 10 for £7.99 are only for active Easy Start/Pro subscribers,
-// or a scheduled cancellation still inside its paid period. Everyone else
-// uses Pay As You Go. Only the top-up prices stripe-webhook can credit.
-const TOPUP_PRICE_IDS = new Set([
-  "price_1Tdpd7GZLILz5vqUAiSw9udI", "price_1TdpdzGZLILz5vqUYEjn6TZ2", // live
-  "price_1Tys3JGZLILz5vqUXA6L9jxc", "price_1Tys3qGZLILz5vqUnNlRAF6Q", // test mode
-  "price_1TeBHjKF3jvQfgEaX2aPZX6E", "price_1TeBIKKF3jvQfgEaxU4TjPHu", // CLPeasy sandbox (verified 26 Sep 2026)
+// ── NEW SUBSCRIPTIONS: EASY START UNLIMITED ONLY (owner decision, 2 Oct 2026) ──
+// New subscription checkouts may only start Easy Start Unlimited:
+//  * monthly: the established Easy Start monthly prices below (the 2026
+//    promotion coupon is applied server-side, unchanged);
+//  * annual £89: the price in the EASY_START_ANNUAL_PRICE_ID secret (a NEW
+//    Stripe Price -- Stripe prices are immutable, so the old £99 annual
+//    price cannot be edited). Requested by productKey "easy_start_annual";
+//    fails closed while the secret is not configured.
+// Easy Pro (retired from new sales), the old £99 annual prices and any other
+// recurring price are refused. stripe-webhook keeps recognising the old
+// prices so existing/historical subscriptions still work.
+const EASY_START_MONTHLY_PRICE_IDS = new Set([
+  "price_1TdoEYGZLILz5vqUIqlEsf4X", // live Easy Start monthly
+  "price_1TyDuRGZLILz5vqU3RIuVFJD", // test-mode Easy Start monthly
+  "price_1Tdd5SKF3jvQfgEaclfSUxn5", // CLPeasy sandbox Easy Start monthly
 ]);
+function easyStartAnnualPriceId(): string | null {
+  return Deno.env.get("EASY_START_ANNUAL_PRICE_ID") || null;
+}
+
+// Subscriber top-up packs (5 for £3.99 / 10 for £7.99) are retired from new
+// sales (2 Oct 2026): Easy Start Unlimited needs none, and everyone else uses
+// Pay As You Go. Any one-off payment checkout other than PAYG is refused.
+
 // A CURRENT Easy Start/Pro subscriber: active, or cancel-at-period-end still
 // inside the paid period. Paused and ended subscriptions are not current.
-// (Same rule as entitlement.js topupEligible / consume_download.)
+// (Same rule as consume_download()'s unlimited subscription.)
 function topupEligible(p: { subscription_status?: string | null; plan?: string | null; downloads_limit?: number | null; deletion_date?: string | null } | null): boolean {
   if (!p) return false;
   if (p.subscription_status === "active") return true;
@@ -110,6 +125,13 @@ serve(async (req) => {
     // live Stripe price ID. Set PAYG_5_PRICE_ID in Supabase secrets after
     // creating the one-off £4.99 Stripe price.
     const paygPriceId = productKey === "payg_5" ? Deno.env.get("PAYG_5_PRICE_ID") : null;
+    // Easy Start Unlimited annual (£89): server-side price only.
+    if (productKey === "easy_start_annual" && !easyStartAnnualPriceId()) {
+      console.error("EASY_START_ANNUAL_PRICE_ID is not configured");
+      return new Response(JSON.stringify({ error: "Annual Easy Start Unlimited is not available right now. Please try again later or choose monthly.", code: "ANNUAL_NOT_CONFIGURED" }), {
+        status: 503, headers: { ...CORS, "Content-Type": "application/json" },
+      });
+    }
     // Fail closed: a PAYG request must never fall back to a browser-supplied
     // price. Otherwise, if PAYG_5_PRICE_ID were missing, a caller could pair
     // productKey "payg_5" (stamped as 8 downloads) with any cheaper one-off
@@ -120,7 +142,7 @@ serve(async (req) => {
         status: 503, headers: { ...CORS, "Content-Type": "application/json" },
       });
     }
-    const priceId = paygPriceId || clientPriceId;
+    const priceId = paygPriceId || (productKey === "easy_start_annual" ? easyStartAnnualPriceId() : null) || clientPriceId;
 
     if (!priceId || !userEmail || !userId) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
@@ -136,28 +158,31 @@ serve(async (req) => {
       status, headers: { ...CORS, "Content-Type": "application/json" },
     });
 
-    // ── D4: subscriber top-ups are server-enforced ──
+    // ── Subscriber top-ups are retired (2 Oct 2026) ──
+    // The only one-off payment CLPeasy now sells is Pay As You Go.
     if (checkoutMode === "payment" && productKey !== "payg_5") {
-      if (!TOPUP_PRICE_IDS.has(priceId)) {
-        return json(400, { error: "Unknown download pack.", code: "UNKNOWN_TOPUP" });
-      }
-      const { data: prof } = await supabaseAdmin
-        .from("profiles")
-        .select("subscription_status, plan, downloads_limit, deletion_date")
-        .eq("id", userId)
-        .maybeSingle();
-      if (!topupEligible(prof)) {
-        return json(403, {
-          error: "Top-up packs are for Easy Start and Easy Pro subscribers. Please use Pay As You Go to buy downloads.",
-          code: "TOPUP_SUBSCRIBERS_ONLY",
+      return json(410, {
+        error: "Top-up packs are no longer sold. Easy Start Unlimited includes unlimited downloads, or you can buy Pay As You Go downloads.",
+        code: "TOPUPS_RETIRED",
+      });
+    }
+
+    // ── New subscriptions: Easy Start Unlimited only ──
+    if (checkoutMode === "subscription") {
+      const annual = easyStartAnnualPriceId();
+      const allowed = EASY_START_MONTHLY_PRICE_IDS.has(priceId) || (!!annual && priceId === annual);
+      if (!allowed) {
+        return json(400, {
+          error: "That plan is no longer available. Please choose Easy Start Unlimited (monthly or annual) or Pay As You Go.",
+          code: "PLAN_NOT_AVAILABLE",
         });
       }
     }
 
     // ── Approved decision 2: current subscribers cannot buy PAYG ──
     // Active Easy Start/Pro (including cancel-at-period-end still inside the
-    // paid period) must use subscriber top-ups. Paused, ended, trial and PAYG
-    // accounts may buy PAYG. Enforced here so the endpoint cannot be called
+    // paid period) already have unlimited downloads. Paused, ended, trial and
+    // PAYG accounts may buy PAYG (repeat purchases included). Enforced here so the endpoint cannot be called
     // directly to bypass the pricing page.
     if (checkoutMode === "payment" && productKey === "payg_5") {
       const { data: prof } = await supabaseAdmin
@@ -167,9 +192,8 @@ serve(async (req) => {
         .maybeSingle();
       if (topupEligible(prof)) {
         return json(403, {
-          error: "Pay As You Go isn't available while you have an Easy Start or Easy Pro subscription. Please use subscriber top-ups from your account page instead.",
+          error: "You don't need Pay As You Go downloads: your Easy Start Unlimited subscription already includes unlimited downloads.",
           code: "PAYG_NOT_FOR_SUBSCRIBERS",
-          topupUrl: "https://clpeasy.com/account.html?topup=1",
         });
       }
     }

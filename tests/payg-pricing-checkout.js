@@ -70,35 +70,57 @@ async function open({ signedIn, pending, response, notice }){
     assert.strictEqual(JSON.parse(calls[0].init.body).productKey, 'payg_5');
     assert.strictEqual(w.sessionStorage.getItem('checkout_payg'), null, 'pending flag cleared so a refresh cannot start a second checkout');
   }
-  // v9 billing selector: Annual shows yearly prices and hides the monthly 2026
-  // promotion; switching back to Monthly restores the promotional prices
-  // exactly (the pre-v9 code reset them to £9.99/£14.99).
+  // Billing selector (Easy Start Unlimited, 2 Oct 2026): Annual shows £89/year
+  // and hides the monthly 2026 promotion; switching back to Monthly restores
+  // the promotional price exactly. Easy Pro is no longer on the page.
   {
     const { w } = await open({ signedIn: false });
     const d = w.document, t = id => d.getElementById(id).textContent.trim();
-    const monthly = ['maker-price','maker-period','maker-sub','pro-price','pro-period','pro-sub'].map(t);
-    assert.deepStrictEqual([t('maker-price'), t('pro-price')], ['£8.99', '£13.49'], 'monthly shows 2026 promotional prices');
+    const IDS = ['maker-price','maker-period','maker-sub'];
+    const monthly = IDS.map(t);
+    assert.strictEqual(t('maker-price'), '£8.99', 'monthly shows the 2026 promotional price');
+    assert(/£89\/year available · Save £30\.88/.test(t('maker-sub')), 'monthly view mentions the £89 annual option');
+    assert.strictEqual(d.getElementById('easy-pro'), null, 'no Easy Pro card');
+    assert.strictEqual(d.getElementById('pro-price'), null);
     const [mBtn, aBtn] = d.querySelectorAll('.toggle-btn');
+    assert(/SAVE £30\.88/.test(aBtn.textContent), 'annual toggle shows the £30.88 saving');
     w.setBilling('annual', aBtn);
-    assert.deepStrictEqual([t('maker-price'), t('maker-period'), t('pro-price'), t('pro-period')], ['£99', '/year', '£149', '/year']);
-    assert(/Save £20\.88\/year vs standard monthly \(£119\.88\/year\)/.test(t('maker-sub')), 'Easy Start annual saving vs standard monthly');
-    assert(/Save £30\.88\/year vs standard monthly \(£179\.88\/year\)/.test(t('pro-sub')), 'Easy Pro annual saving vs standard monthly');
+    assert.deepStrictEqual([t('maker-price'), t('maker-period')], ['£89', '/year']);
+    assert(/Save £30\.88\/year vs standard monthly \(£119\.88\/year\)/.test(t('maker-sub')), 'annual saving vs standard monthly');
+    assert(/£7\.42\/mo/.test(t('maker-annual-eq')), 'about £7.42 a month');
     assert.strictEqual(d.getElementById('maker-promo').style.display, 'none', 'annual view hides the monthly promotion');
-    assert.strictEqual(d.getElementById('pro-promo').style.display, 'none');
     w.setBilling('monthly', mBtn);
-    assert.deepStrictEqual(['maker-price','maker-period','maker-sub','pro-price','pro-period','pro-sub'].map(t), monthly, 'switching back to Monthly restores the promotional prices exactly');
+    assert.deepStrictEqual(IDS.map(t), monthly, 'switching back to Monthly restores the promotional price exactly');
     assert.strictEqual(d.getElementById('maker-promo').style.display, '', 'monthly promotion visible again');
     assert.strictEqual(d.getElementById('maker-annual-eq').style.display, 'none', 'annual equivalent hidden on monthly');
   }
-  // Approved decision 2: the server refuses PAYG for current subscribers; the
-  // page explains it and sends them to their subscriber top-ups.
+  // Easy Start Unlimited checkout requests: monthly sends the monthly price
+  // (server adds the coupon); annual sends productKey easy_start_annual so the
+  // SERVER chooses the £89 price -- never the old £99 price.
   {
-    const refusal = { ok: false, status: 403, json: async () => ({ code: 'PAYG_NOT_FOR_SUBSCRIBERS', error: "Pay As You Go isn't available while you have an Easy Start or Easy Pro subscription. Please use subscriber top-ups from your account page instead." }) };
+    const { w, calls } = await open({ signedIn: true });
+    await w.startCheckout('easy_start');
+    assert.deepStrictEqual(JSON.parse(calls[0].init.body).priceId, 'price_1TdoEYGZLILz5vqUIqlEsf4X', 'monthly price');
+    const { w: w2, calls: c2 } = await open({ signedIn: true });
+    w2.eval("setBilling('annual', document.querySelector('[onclick*=\"annual\"]'))");
+    await w2.startCheckout('easy_start');
+    const b = JSON.parse(c2[0].init.body);
+    assert.deepStrictEqual([b.productKey, b.mode, b.priceId], ['easy_start_annual', 'subscription', undefined], 'annual uses the server-side price');
+    assert(!fs.readFileSync('pricing.html', 'utf8').includes('price_1TdoEXGZLILz5vqUQj5n6Zri'), 'old £99 annual price not on the page');
+    const { w: w3, calls: c3, alerts: a3 } = await open({ signedIn: true });
+    await w3.startCheckout('easy_pro');
+    assert.deepStrictEqual([c3.length, a3.length], [0, 1], 'Easy Pro cannot be started from the page');
+  }
+  // Approved decision 2: the server refuses PAYG for current subscribers; the
+  // page explains they already have unlimited downloads (no top-up redirect).
+  {
+    const refusal = { ok: false, status: 403, json: async () => ({ code: 'PAYG_NOT_FOR_SUBSCRIBERS', error: "You don't need Pay As You Go downloads: your Easy Start Unlimited subscription already includes unlimited downloads." }) };
     const { w, calls, alerts } = await open({ signedIn: true, response: refusal });
     await w.startPaygCheckout();
     assert.strictEqual(calls.length, 1, 'the server was asked (and refused)');
     assert.strictEqual(alerts.length, 1);
-    assert(/subscriber top-ups/.test(alerts[0]), 'explains subscriber top-ups');
+    assert(/unlimited downloads/.test(alerts[0]), 'explains the subscription is unlimited');
+    assert(!/topup/.test(w.location.href), 'no redirect to the retired top-ups');
     assert(!/Something went wrong/.test(alerts[0]), 'not a generic error');
     assert.strictEqual(w.document.getElementById('btn-payg').disabled, false, 'button restored');
   }
@@ -114,10 +136,10 @@ async function open({ signedIn, pending, response, notice }){
       : 'A checkout is already in progress for this account. Please wait a moment and try again.' }) };
     const { w, calls, alerts, errors } = await open({ signedIn: true, response: refusal, notice: true });
     w.eval("setBilling('annual', document.querySelector('[onclick*=\"annual\"]'))");
-    await w.startCheckout('easy_pro');
+    await w.startCheckout('easy_start');
     assert.strictEqual(calls.length, 1, code + ': the server was asked (and refused)');
     assert(/create-checkout-session/.test(calls[0].url));
-    assert.strictEqual(JSON.parse(calls[0].init.body).priceId, 'price_1TdoEXGZLILz5vqUFgTznTUT', code + ': Easy Pro ANNUAL price was requested');
+    assert.strictEqual(JSON.parse(calls[0].init.body).productKey, 'easy_start_annual', code + ': Easy Start Unlimited ANNUAL was requested');
     if (code === 'CHECKOUT_IN_PROGRESS') {
       // Shown in the shared CLPeasy dialog (checkout-notice.js), not an alert;
       // tests/checkout-in-progress-notice.js covers it in Chromium.
@@ -129,7 +151,7 @@ async function open({ signedIn, pending, response, notice }){
       assert(pattern.test(alerts[0]), code + ': shows the server explanation, got: ' + alerts[0]);
       assert(!/Something went wrong/.test(alerts[0]), code + ': not the generic error');
     }
-    const btn = w.document.getElementById('btn-easy_pro');
+    const btn = w.document.getElementById('btn-easy_start');
     if (btn) { assert.strictEqual(btn.disabled, false, code + ': button restored'); assert(/Get started/.test(btn.textContent), code + ': button label restored'); }
     assert.deepStrictEqual(errors, []);
   }

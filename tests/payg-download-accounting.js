@@ -31,10 +31,11 @@ assert.match(print,/Buy downloads or choose a plan/,'zero-balance message must w
 const consumeBody=print.slice(print.indexOf('async function consumeComposerDownload'),print.indexOf('function updateProGate'));
 assert.ok(!consumeBody.includes('await refreshProEntitlement()'),'final paid download must not become watermarked before rendering');
 
-// v9 approved pricing design (four cards: Easy Trial | Pay As You Go | Easy Start | Easy Pro)
-// replaced the earlier standalone launch banner and its headline.
-const cardOrder=['<!-- 1: EASY TRIAL -->','<!-- 2: PAY AS YOU GO -->','<!-- 3: EASY START -->','<!-- 4: EASY PRO -->'].map(m=>pricing.indexOf(m));
-assert.ok(cardOrder.every((v,i)=>v>0&&(i===0||v>cardOrder[i-1])),'pricing cards must be ordered Easy Trial, Pay As You Go, Easy Start, Easy Pro');
+// Pricing design: three cards (Easy Trial | Pay As You Go | Easy Start
+// Unlimited). Easy Pro is retired from new sales (2 Oct 2026).
+const cardOrder=['<!-- 1: EASY TRIAL -->','<!-- 2: PAY AS YOU GO -->','<!-- 3: EASY START -->'].map(m=>pricing.indexOf(m));
+assert.ok(cardOrder.every((v,i)=>v>0&&(i===0||v>cardOrder[i-1])),'pricing cards must be ordered Easy Trial, Pay As You Go, Easy Start Unlimited');
+assert.ok(!pricing.includes('<!-- 4: EASY PRO -->')&&!pricing.includes('id="easy-pro"'),'Easy Pro card must not be offered');
 assert.match(pricing,/8 downloads for £4\.99/,'PAYG card must show the 2026 launch allowance');
 assert.match(pricing,/id="btn-payg" onclick="startPaygCheckout\(\)"[^>]*>Buy 8 downloads — £4\.99/,'PAYG CTA must start PAYG checkout');
 assert.match(pricing,/3 extra downloads FREE/,'PAYG launch must advertise three free downloads');

@@ -91,11 +91,12 @@ const ok = (amount_due, interval, extra = {}) => ({ body: Object.assign({ availa
     const cancelled = { plan:'free', subscription_status:'cancelled', downloads_limit:0 };
     const a = await open(cancelled, ok(999,'month'), { now: '2026-11-01T12:00:00Z' });
     a.w.openModal('resubscribe');
-    assert.strictEqual(a.t('resub-start-price'), '£8.99'); assert.strictEqual(a.t('resub-pro-price'), '£13.49');
+    assert.strictEqual(a.t('resub-start-price'), '£8.99');
+    assert.strictEqual(a.w.document.getElementById('resub-pro'), null, 'Easy Pro is not offered when reactivating (retired from new sales)');
     assert(/2026 offer until 31 December 2026, then £9\.99\/month/.test(a.t('resub-start')));
     const b = await open(cancelled, ok(999,'month'), { now: '2027-01-02T12:00:00Z' });
     b.w.openModal('resubscribe');
-    assert.strictEqual(b.t('resub-start-price'), '£9.99'); assert.strictEqual(b.t('resub-pro-price'), '£14.99');
+    assert.strictEqual(b.t('resub-start-price'), '£9.99');
   }
   console.log('PASS: resubscribe modal matches the server-side 2026 promotion');
   console.log('account next-payment checks passed');

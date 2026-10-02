@@ -819,7 +819,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div class="su-label">Downloads remaining</div>
         <div class="su-count" id="su-count">—</div>
         <div class="su-bar"><span id="su-fill" style="width:0%"></span></div>
-        <a href="account.html?topup=1" target="_blank" rel="noopener" class="su-topup">Buy Top-Up →</a>
+        <a href="pricing.html#payg" target="_blank" rel="noopener" class="su-topup">Buy downloads →</a>
       </div>
       <div class="sidebar-profile">
         <button type="button" class="sidebar-user" id="sidebar-user" style="display:none;" aria-haspopup="true" aria-expanded="false">
@@ -986,7 +986,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <details class="help-faq"><summary>What size label should I use?</summary><p>52mm is the CLP minimum and suits most standard candle jars — enter 63mm for larger jars. For wax melt clamshells or other small formats below 52mm, enter that size and check the compliance warning that appears — your CLP text may need a larger label or a fold-out leaflet to stay legible.</p></details>
       <details class="help-faq"><summary>Smart Paste didn't extract everything correctly</summary><p>Make sure you copied only Section 2.2 of the SDS. If it still doesn't work, use the H statement chips and sensitiser library to enter the data manually.</p></details>
       <details class="help-faq"><summary>Can I use this on my phone?</summary><p>Yes — CLPeasy works on iPhone and Android. PNG files save to your camera roll and SVG files save to your Files app.</p></details>
-      <details class="help-faq"><summary>What's the difference between Easy Start and Easy Pro?</summary><p>Easy Start (£9.99/mo or £99/year) gives you 20 downloads a month, no watermark, the full label builder, and A4 print sheets. Easy Pro (£14.99/mo or £149/year) adds 30 downloads a month plus Smart Paste. Both plans start with a 14-day free trial — no card needed.</p></details>
+      <details class="help-faq"><summary>What's the difference between Pay As You Go and Easy Start Unlimited?</summary><p>Pay As You Go is a one-off £4.99 pack of downloads (5 + 3 free during the 2026 launch offer) that never expire — buy another pack whenever you need more. Easy Start Unlimited gives you unlimited downloads while you're subscribed: £9.99/month (£8.99/month until 31 December 2026) or £89/year. Both give clean, watermark-free labels, the full label builder and A4 print sheets. Every account starts with a 14-day free trial — no card needed.</p></details>
     </div>
 
   </div>
@@ -2189,7 +2189,7 @@ async function initAuth(){
     setTimeout(function(){
       const toast = document.createElement('div');
       toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#0D9488;color:white;padding:14px 24px;border-radius:12px;font-size:15px;font-weight:700;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);text-align:center;';
-      toast.innerHTML = '✅ Top-up added! Your extra downloads are ready.';
+      toast.innerHTML = '✅ Purchase complete! Your downloads are ready.';
       document.body.appendChild(toast);
       setTimeout(() => toast.remove(), 5000);
     }, 800);
@@ -2213,7 +2213,7 @@ async function initAuth(){
       window.history.replaceState({},'',window.location.pathname);
       setTimeout(()=>{
         const toast=document.createElement('div');
-        toast.innerHTML='✅ Top-up added! Your extra downloads are ready.';
+        toast.innerHTML='✅ Purchase complete! Your downloads are ready.';
         toast.style.cssText='position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#0D9488;color:white;padding:14px 24px;border-radius:12px;font-size:15px;font-weight:700;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.2);';
         document.body.appendChild(toast);
         setTimeout(()=>toast.remove(),5000);
@@ -2421,8 +2421,24 @@ function updateDlCounter(){
   const ent=DL.summary;
   const monthlyLeft=ent?ent.planLeft:Math.max(0,DL.limit-DL.used);
   const totalLeft=monthlyLeft+Math.max(0,DL.credits);
-  // Approved D4: sidebar purchase link -> subscriber top-up or Pay As You Go.
+  // Sidebar purchase link: Pay As You Go, or hidden for Easy Start Unlimited.
   if(ent)window.CLPEntitlement.applyPurchaseLinks(document,ent);
+  // Easy Start Unlimited: no finite allowance to count or warn about.
+  if(ent&&ent.unlimited&&DL.loaded){
+    if(suUsage){
+      suUsage.style.display='block';
+      document.getElementById('su-count').textContent='Unlimited';
+      document.getElementById('su-fill').style.width='100%';
+    }
+    const elU=document.getElementById('dl-counter');
+    if(elU){
+      elU.style.display='block';
+      elU.textContent='Unlimited downloads with Easy Start Unlimited'
+        +(DL.credits>0?' · '+DL.credits+' purchased download'+(DL.credits===1?'':'s')+' kept for later':'');
+      elU.style.color='var(--muted)';
+    }
+    return;
+  }
   if(suUsage){
     if(!DL.loaded){ suUsage.style.display='none'; }
     else {

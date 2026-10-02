@@ -44,19 +44,22 @@ function ok(label){ passed++; console.log('PASS:', label); }
   assert.strictEqual(n('paygExpiredTrial'), 'Pay As You Go');
   assert.strictEqual(n('expiredTrial'), 'Easy Trial (Expired)');
   assert.strictEqual(n('liveTrial'), 'Easy Trial');
-  assert.strictEqual(n('activeStart'), 'Easy Start', 'an active Easy Start subscriber is not "Easy Pro"');
+  assert.strictEqual(n('activeStart'), 'Easy Start Unlimited', 'an active Easy Start subscriber is Easy Start Unlimited, not "Easy Pro"');
   assert.strictEqual(n('activeProPlusPayg'), 'Easy Pro');
   assert.strictEqual(n('cancelScheduled'), 'Easy Pro (Cancelled)');
   assert.strictEqual(n('endedWithPayg'), 'Pay As You Go');
-  assert.strictEqual(n('pausedWithPayg'), 'Easy Start (Paused)');
+  assert.strictEqual(n('pausedWithPayg'), 'Easy Start Unlimited (Paused)');
   const t = k => E.summarise(P[k]).totalLeft;
-  assert.deepStrictEqual(['paygExpiredTrial','expiredTrial','liveTrial','activeStart','activeProPlusPayg','cancelScheduled','endedWithPayg','pausedWithPayg'].map(t), [8,0,7,17,2,25,3,2],
-    'totals count only usable plan allowance plus purchased downloads');
+  assert.deepStrictEqual(['paygExpiredTrial','expiredTrial','liveTrial','endedWithPayg','pausedWithPayg'].map(t), [8,0,7,3,2],
+    'finite totals count only usable plan allowance plus purchased downloads');
+  const u = k => E.summarise(P[k]).unlimited;
+  assert.deepStrictEqual(['activeStart','activeProPlusPayg','cancelScheduled','activeProLimit','activeStartAnnualDue'].map(u), [true,true,true,true,true], 'current Easy Start (and legacy Easy Pro) subscriptions are unlimited');
+  assert.deepStrictEqual(['paygExpiredTrial','expiredTrial','liveTrial','endedWithPayg','pausedWithPayg','paygConverted','pausedNoPurchases','cancelPeriodOver'].map(u), [false,false,false,false,false,false,false,false], 'trial, PAYG, paused and ended accounts are never unlimited');
   assert.strictEqual(E.summarise(P.liveTrial).cleanAvailable, false, 'a live trial has no clean download');
   assert.strictEqual(E.summarise(P.liveTrial).cleanPreview, false, 'a live trial keeps a watermarked preview');
   assert.strictEqual(E.summarise(P.activeProPlusPayg).cleanAvailable, true);
   assert.strictEqual(E.summarise(Object.assign({}, P.activeStart, { downloads_used:20 })).cleanPreview, true, 'an active subscriber at their limit keeps a clean preview');
-  assert.strictEqual(E.summarise(Object.assign({}, P.activeStart, { downloads_used:20 })).cleanAvailable, false, '...but has no clean download left');
+  assert.strictEqual(E.summarise(Object.assign({}, P.activeStart, { downloads_used:20 })).cleanAvailable, true, '...and, being unlimited, a clean download is always available');
   assert.strictEqual(E.summarise(Object.assign({}, P.cancelScheduled, { deletion_date:iso(-DAY) })).planUsable, false, 'a scheduled cancellation ends at its deletion date');
   assert.strictEqual(E.summarise(null).totalLeft, 0, 'a missing profile has nothing available');
   ok('entitlement.js plan names, totals and clean-export rules');
@@ -116,8 +119,10 @@ const text = (doc, id) => (doc.getElementById(id) || { textContent:'' }).textCon
     const { doc } = await open('account.html', P.cancelScheduled);
     assert.strictEqual(text(doc,'plan-name'), 'Easy Pro (Cancelled)');
     assert.notStrictEqual(doc.getElementById('dl-section').style.display, 'none', 'a scheduled cancellation still shows its remaining paid allowance');
-    assert.strictEqual(text(doc,'su-count'), '25 of 30');
-    ok('account.html: scheduled cancellation keeps showing its paid allowance until the period ends');
+    assert.strictEqual(text(doc,'su-count'), 'Unlimited');
+    assert.strictEqual(text(doc,'dl-count'), 'Unlimited');
+    assert(/until your subscription ends/.test(text(doc,'dl-note')));
+    ok('account.html: scheduled cancellation stays unlimited until the period ends');
   }
   {
     // Pre-existing crash (also on main): any cancelled account threw
@@ -135,9 +140,12 @@ const text = (doc, id) => (doc.getElementById(id) || { textContent:'' }).textCon
   }
   {
     const { doc } = await open('account.html', P.activeStart);
-    assert.strictEqual(text(doc,'plan-name'), 'Easy Start');
-    assert.strictEqual(text(doc,'su-count'), '17 of 20', 'plan-only balances keep the existing "X of Y" sidebar wording');
-    ok('account.html: active Easy Start display unchanged');
+    assert.strictEqual(text(doc,'plan-name'), 'Easy Start Unlimited');
+    assert.strictEqual(text(doc,'su-count'), 'Unlimited', 'an unlimited subscriber never sees an "X of 20" allowance');
+    assert.strictEqual(text(doc,'dl-count'), 'Unlimited');
+    assert(!/of 20|of 30|monthly limit/.test(doc.getElementById('dl-section').textContent), 'no finite allowance wording');
+    assert.strictEqual(doc.querySelector('.su-topup').style.display, 'none', 'no "buy downloads" link for an unlimited subscriber');
+    ok('account.html: active Easy Start Unlimited shows unlimited downloads');
   }
   // ── 2b. dashboard.html ────────────────────────────────────────────
   {
@@ -172,15 +180,16 @@ const text = (doc, id) => (doc.getElementById(id) || { textContent:'' }).textCon
     assert.strictEqual(text(b1.doc,'su-count'), '8 downloads');
     assert.strictEqual(b1.window.eval('DL.summary.planUsable'), false);
     const b2 = await open('builder.html', P.activeStart, extra);
-    assert.strictEqual(text(b2.doc,'su-plan'), 'Easy Start', 'Builder must not label an Easy Start subscriber "Easy Pro"');
-    assert.strictEqual(text(b2.doc,'su-count'), '17 downloads');
+    assert.strictEqual(text(b2.doc,'su-plan'), 'Easy Start Unlimited', 'Builder must not label an Easy Start subscriber "Easy Pro"');
+    assert.strictEqual(text(b2.doc,'su-count'), 'Unlimited');
+    assert.strictEqual(text(b2.doc,'dl-counter'), 'Unlimited downloads with Easy Start Unlimited');
     ok('builder.html: sidebar plan name and balance use the shared rules');
   }
   // ── 2d. my-labels.html sidebar ────────────────────────────────────
   {
     const ls = fs.readFileSync('label-library.js','utf8'), rs = fs.readFileSync('label-render.js','utf8');
     const m = await open('my-labels.html', P.pausedWithPayg, w => { w.eval(ls); w.eval(rs); });
-    assert.strictEqual(text(m.doc,'su-plan'), 'Easy Start (Paused)');
+    assert.strictEqual(text(m.doc,'su-plan'), 'Easy Start Unlimited (Paused)');
     assert.strictEqual(text(m.doc,'su-count'), '2 downloads');
     ok('my-labels.html: sidebar shows paused plan with purchased balance');
   }
@@ -216,11 +225,13 @@ const text = (doc, id) => (doc.getElementById(id) || { textContent:'' }).textCon
   }
   // ── D4: one purchase route rule everywhere ────────────────────────
   {
+    // Subscriber top-ups are retired (2 Oct 2026): current subscribers are
+    // unlimited and see no purchase link; everyone else is routed to PAYG.
     const cases = [
-      ['activeStart', 'topup'], ['cancelScheduled', 'topup'],
+      ['activeStart', 'none'], ['cancelScheduled', 'none'],
       ['liveTrial', 'payg'], ['expiredTrial', 'payg'], ['paygConverted', 'payg'],
       ['endedWithPayg', 'payg'], ['pausedWithPayg', 'payg'],
-      ['pausedNoPurchases', 'payg'], ['cancelPeriodOver', 'payg'], ['activeProLimit', 'topup'],
+      ['pausedNoPurchases', 'payg'], ['cancelPeriodOver', 'payg'], ['activeProLimit', 'none'],
     ];
     const rs = fs.readFileSync('label-render.js','utf8'), ls = fs.readFileSync('label-library.js','utf8');
     for (const [key, route] of cases) {
@@ -229,11 +240,12 @@ const text = (doc, id) => (doc.getElementById(id) || { textContent:'' }).textCon
         const { doc } = await open(page, P[key], extra);
         const link = doc.querySelector('.su-topup');
         assert(link, `${page}: sidebar purchase link exists`);
-        assert.strictEqual(link.getAttribute('href'), route === 'topup' ? 'account.html?topup=1' : 'pricing.html#payg', `${page} ${key}: sidebar link -> ${route}`);
+        if (route === 'none') assert.strictEqual(link.style.display, 'none', `${page} ${key}: no purchase link for an unlimited subscriber`);
+        else assert.strictEqual(link.getAttribute('href'), 'pricing.html#payg', `${page} ${key}: sidebar link -> PAYG`);
       }
       const d = await open('dashboard.html', P[key]);
-      const hasTopup = /Buy top-up downloads/.test(d.doc.getElementById('db-action-row').textContent);
-      assert.strictEqual(hasTopup, route === 'topup', `dashboard ${key}: top-up action only for subscribers`);
+      const hasTopup = /top-up/i.test(d.doc.getElementById('db-action-row').textContent);
+      assert.strictEqual(hasTopup, false, `dashboard ${key}: no subscriber top-up action (retired)`);
     }
     // account.html ?topup=1 / buyTopup(): ineligible accounts go to PAYG, never the top-up modal.
     for (const [key, route] of cases) {
@@ -241,10 +253,10 @@ const text = (doc, id) => (doc.getElementById(id) || { textContent:'' }).textCon
       let went = null;
       w.eval('window.__go = null');
       try { w.buyTopup(); } catch (e) { went = String(e); }
-      const modalOpen = doc.getElementById('modal-topup').classList.contains('open');
-      assert.strictEqual(modalOpen, route === 'topup', `account ${key}: top-up modal only for subscribers`);
+      assert.strictEqual(doc.getElementById('modal-topup'), null, `account ${key}: the retired top-up modal no longer exists`);
+      assert.strictEqual(typeof w.confirmTopup, 'undefined', `account ${key}: no top-up checkout code remains`);
     }
-    ok('D4: Account, Dashboard, My Labels and Builder all route subscriber top-ups vs Pay As You Go the same way');
+    ok('Account, Dashboard, My Labels and Builder: no subscriber top-ups; unlimited subscribers see no purchase link, everyone else is routed to Pay As You Go');
   }
   // ── Complete entitlement matrix (approved decisions 1-3 + D4) ─────
   {
@@ -252,10 +264,10 @@ const text = (doc, id) => (doc.getElementById(id) || { textContent:'' }).textCon
       // key, PAYG available, subscriber top-ups available, plan name
       ['liveTrial', true, false, 'Easy Trial'], ['expiredTrial', true, false, 'Easy Trial (Expired)'],
       ['paygConverted', true, false, 'Pay As You Go'], ['paygConvertedZero', true, false, 'Pay As You Go'],
-      ['activeStart', false, true, 'Easy Start'], ['activeProLimit', false, true, 'Easy Pro'],
-      ['cancelScheduled', false, true, 'Easy Pro (Cancelled)'],
-      ['pausedNoPurchases', true, false, 'Easy Start (Paused)'], ['pausedWithPayg', true, false, 'Easy Start (Paused)'],
-      ['cancelPeriodOver', true, false, 'Easy Pro (Cancelled)'], ['cancelledEnded', true, false, 'Easy Start (Cancelled)'],
+      ['activeStart', false, false, 'Easy Start Unlimited'], ['activeProLimit', false, false, 'Easy Pro'],
+      ['cancelScheduled', false, false, 'Easy Pro (Cancelled)'],
+      ['pausedNoPurchases', true, false, 'Easy Start Unlimited (Paused)'], ['pausedWithPayg', true, false, 'Easy Start Unlimited (Paused)'],
+      ['cancelPeriodOver', true, false, 'Easy Pro (Cancelled)'], ['cancelledEnded', true, false, 'Easy Start Unlimited (Cancelled)'],
     ];
     for (const [key, payg, topup, name] of M) {
       const e = E.summarise(P[key] || { plan:'free', subscription_status:'cancelled', downloads_limit:0 });
@@ -270,14 +282,14 @@ const text = (doc, id) => (doc.getElementById(id) || { textContent:'' }).textCon
     assert.strictEqual(text(d.doc,'db-plan-name'), 'Pay As You Go', 'converted former subscriber never shows (Cancelled)');
     ok('complete entitlement matrix: PAYG vs subscriber top-ups vs plan name for every account state');
   }
-  // ── Annual monthly refill shown before the next download ──────────
+  // ── Annual Easy Start Unlimited (the old monthly refill no longer matters) ──
   {
     const { doc } = await open('account.html', P.activeStartAnnualDue);
-    assert.strictEqual(text(doc,'su-count'), '20 of 20', 'annual plan past its monthly reset date shows the refilled allowance');
-    assert.strictEqual(text(doc,'dl-count'), '0 / 20', 'account main card shows the refilled allowance too');
+    assert.strictEqual(text(doc,'su-count'), 'Unlimited', 'annual Easy Start is unlimited');
+    assert.strictEqual(text(doc,'dl-count'), 'Unlimited');
     const d = await open('dashboard.html', P.activeStartAnnualDue);
-    assert.strictEqual(text(d.doc,'db-dl-count'), '20 of 20 remaining', 'dashboard shows the refilled allowance');
-    ok('annual plan monthly refill is reflected in the sidebar');
+    assert(/^Unlimited/.test(text(d.doc,'db-dl-count')), 'dashboard shows unlimited for an annual subscriber');
+    ok('annual Easy Start Unlimited shows unlimited downloads everywhere');
   }
   console.log(`PAYG account display checks passed (${passed} groups)`);
 })().catch(e => { console.error(e.stack || e.message); process.exitCode = 1; });

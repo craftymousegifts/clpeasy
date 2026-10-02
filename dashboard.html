@@ -312,7 +312,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
         <div class="su-label">Downloads remaining</div>
         <div class="su-count" id="su-count">—</div>
         <div class="su-bar"><span id="su-fill" style="width:0%"></span></div>
-        <a href="account.html?topup=1" target="_blank" rel="noopener" class="su-topup">Buy Top-Up →</a>
+        <a href="pricing.html#payg" target="_blank" rel="noopener" class="su-topup">Buy downloads →</a>
       </div>
       <div class="sidebar-profile">
         <button type="button" class="sidebar-user" id="sidebar-user" style="display:none;" aria-haspopup="true" aria-expanded="false">
@@ -516,7 +516,7 @@ function renderDashboard() {
   document.getElementById('dashboard-content').style.display = 'block';
 
   const u = userProfile;
-  const planLabel = u.plan === 'pro' ? 'Easy Pro' : 'Easy Start';
+  const planLabel = u.plan === 'pro' ? 'Easy Pro' : 'Easy Start Unlimited';
 
   document.getElementById('nav-email').textContent = currentUser.email;
 
@@ -570,7 +570,15 @@ function renderDashboard() {
   // downloads cannot be spent) and adds purchased Pay As You Go downloads.
   const dbDlSection = document.getElementById('db-dl-section');
   const purchasedNote = u.ent.purchased > 0 ? ' · ' + u.ent.purchased + ' purchased' : '';
-  if (u.status === 'active' || u.status === 'trialing' || u.ent.cancelScheduled) {
+  if (u.ent.unlimited) {
+    // Easy Start Unlimited: no monthly allowance to count down.
+    dbDlSection.style.display = '';
+    document.getElementById('db-dl-label-text').textContent = 'Downloads';
+    document.getElementById('db-dl-count').textContent = 'Unlimited' + (u.ent.purchased > 0 ? ' · ' + u.ent.purchased + ' purchased kept for later' : '');
+    const dbBar = document.getElementById('db-dl-bar');
+    dbBar.style.width = '100%';
+    dbBar.className = 'dl-bar ok';
+  } else if (u.status === 'active' || u.status === 'trialing' || u.ent.cancelScheduled) {
     dbDlSection.style.display = '';
     document.getElementById('db-dl-label-text').textContent =
       u.status === 'trialing' ? 'Trial downloads' : 'Downloads this month';
@@ -592,17 +600,12 @@ function renderDashboard() {
   }
 
   // Action buttons — trial: no billing mention, just the upgrade CTA.
-  // Active: billing management + top-ups. Paused/cancelled: billing
-  // management only (matches account.html's stripe-portal-link gating).
+  // PAYG: buy more downloads. Subscribers (Easy Start Unlimited; top-ups are
+  // retired) and paused/cancelled: billing management only (matches
+  // account.html's stripe-portal-link gating).
   const dbActions = document.getElementById('db-action-row');
   if (u.status === 'trialing') {
     dbActions.innerHTML = `<a href="pricing.html" target="_blank" rel="noopener" class="btn btn-teal">Choose a plan</a>`;
-  } else if (u.ent.topupEligible) {
-    // Approved D4: active or scheduled-cancellation Easy Start/Pro only.
-    dbActions.innerHTML = `
-      <a href="account.html" target="_blank" rel="noopener" class="btn btn-outline">Manage account &amp; billing</a>
-      <a href="account.html?topup=1" target="_blank" rel="noopener" class="btn btn-outline">Buy top-up downloads</a>
-    `;
   } else if (u.ent.payg) {
     dbActions.innerHTML = `
       <a href="pricing.html#payg" target="_blank" rel="noopener" class="btn btn-teal">Buy more downloads</a>

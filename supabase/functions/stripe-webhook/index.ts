@@ -98,6 +98,7 @@ function getPlanLabel(priceId: string): string {
     'price_1TyrwjGZLILz5vqUjYaiQtfL': 'Easy Start Annual',
     'price_1TyryIGZLILz5vqU5OaMB0jG': 'Easy Pro Annual',
   };
+  if (isEasyStartAnnualEnvPrice(priceId)) return 'Easy Start Unlimited Annual';
   return map[priceId] ?? 'Unknown Plan';
 }
 
@@ -553,6 +554,15 @@ function isCurrentSubscriber(p: { subscription_status?: string | null; plan?: st
   return paidPlan && (!p.deletion_date || new Date(p.deletion_date).getTime() > Date.now());
 }
 
+// Easy Start Unlimited annual (£89, 2 Oct 2026): a NEW Stripe Price per
+// environment, configured in the EASY_START_ANNUAL_PRICE_ID secret (the same
+// secret create-checkout-session uses). The old £99 annual prices stay mapped
+// below for existing subscriptions.
+function isEasyStartAnnualEnvPrice(priceId: string): boolean {
+  const id = Deno.env.get('EASY_START_ANNUAL_PRICE_ID');
+  return !!id && priceId === id;
+}
+
 function getPlanFromPriceId(priceId: string): string {
   const map: Record<string, string> = {
     // Live price IDs
@@ -572,6 +582,7 @@ function getPlanFromPriceId(priceId: string): string {
     'price_1TyrwjGZLILz5vqUjYaiQtfL': 'easy_start_annual',
     'price_1TyryIGZLILz5vqU5OaMB0jG': 'easy_pro_annual',
   };
+  if (isEasyStartAnnualEnvPrice(priceId)) return 'easy_start_annual';
   return map[priceId] ?? 'unknown';
 }
 
@@ -596,6 +607,7 @@ function profileInfoFromPriceId(priceId: string): ProfilePlan {
     'price_1TyrwjGZLILz5vqUjYaiQtfL': { plan: 'easy_start', is_pro: false, limit: 20, cycle: 'annual'  },
     'price_1TyryIGZLILz5vqU5OaMB0jG': { plan: 'easy_pro',   is_pro: true,  limit: 30, cycle: 'annual'  },
   };
+  if (isEasyStartAnnualEnvPrice(priceId)) return { plan: 'easy_start', is_pro: false, limit: 20, cycle: 'annual' };
   return map[priceId] ?? { plan: 'free', is_pro: false, limit: 0, cycle: 'monthly' };
 }
 

@@ -316,7 +316,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
         <div class="su-label">Downloads remaining</div>
         <div class="su-count" id="su-count">—</div>
         <div class="su-bar"><span id="su-fill" style="width:0%"></span></div>
-        <a href="account.html?topup=1" target="_blank" rel="noopener" class="su-topup">Buy Top-Up →</a>
+        <a href="pricing.html#payg" target="_blank" rel="noopener" class="su-topup">Buy downloads →</a>
       </div>
       <div class="sidebar-profile">
         <button type="button" class="sidebar-user" id="sidebar-user" style="display:none;" aria-haspopup="true" aria-expanded="false">
@@ -349,10 +349,10 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
     <!-- WIN-BACK BANNER (shown only when lapsed/cancelled) -->
     <div class="winback-banner" id="winback-banner" style="display:none;">
       <h3>👋 Welcome back — your labels are still here</h3>
-      <p>Your account is currently inactive. Labels saved in this browser remain available unless its site data is cleared. A lot has changed since you left — we've increased download allowances across all plans.</p>
+      <p>Your account is currently inactive. Labels saved in this browser remain available unless its site data is cleared. A lot has changed since you left — Easy Start now includes unlimited downloads.</p>
       <div class="winback-pills">
-        <span class="winback-pill">✓ Easy Start now 20 downloads/month</span>
-        <span class="winback-pill">✓ Easy Pro now 30 downloads/month</span>
+        <span class="winback-pill">✓ Easy Start Unlimited: unlimited downloads</span>
+        <span class="winback-pill">✓ Or Pay As You Go when you need it</span>
         <span class="winback-pill">✓ 7-day re-download grace</span>
       </div>
       <button class="winback-btn" onclick="openModal('resubscribe')">Reactivate my account →</button>
@@ -589,45 +589,16 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);-w
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
       <div style="border:1.5px solid var(--border);border-radius:12px;padding:18px 20px;cursor:pointer;transition:border-color .15s;" onclick="selectResub('start')" id="resub-start">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-          <div style="font-size:15px;font-weight:700;">Easy Start</div>
+          <div style="font-size:15px;font-weight:700;">Easy Start Unlimited</div>
           <div style="font-size:15px;font-weight:800;"><span id="resub-start-price">£9.99</span><span style="font-size:12px;font-weight:400;color:var(--muted);">/mo</span></div>
         </div>
-        <div style="font-size:12px;color:var(--muted);">20 downloads/month · Full label library · All builders<span class="resub-promo-note"></span></div>
+        <div style="font-size:12px;color:var(--muted);">Unlimited downloads · Full label library · All builders<span class="resub-promo-note"></span></div>
       </div>
-      <div style="border:1.5px solid var(--border);border-radius:12px;padding:18px 20px;cursor:pointer;transition:border-color .15s;" onclick="selectResub('pro')" id="resub-pro">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-          <div style="font-size:15px;font-weight:700;">Easy Pro</div>
-          <div style="font-size:15px;font-weight:800;"><span id="resub-pro-price">£14.99</span><span style="font-size:12px;font-weight:400;color:var(--muted);">/mo</span></div>
-        </div>
-        <div style="font-size:12px;color:var(--muted);">30 downloads/month · Priority support<span class="resub-promo-note"></span></div>
-      </div>
+      <!-- Easy Pro retired from new sales (2 Oct 2026). -->
     </div>
     <div class="modal-actions">
       <button class="modal-btn ghost" onclick="closeModal('modal-resubscribe')">Not yet</button>
       <button class="modal-btn primary" id="resub-confirm-btn" onclick="confirmResub()" disabled style="opacity:0.5;">Reactivate →</button>
-    </div>
-  </div>
-</div>
-
-<!-- TOP-UP MODAL -->
-<div class="overlay" id="modal-topup">
-  <div class="modal">
-    <div class="modal-title">Buy more downloads</div>
-    <div class="modal-sub">Top-up packs add purchased downloads to your account. Purchased downloads do not expire.</div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
-      <div class="survey-opt" onclick="selectTopup(5,3.99,this)" style="justify-content:space-between;">
-        <span>5 extra downloads</span><strong>£3.99</strong>
-      </div>
-      <div class="survey-opt" onclick="selectTopup(10,7.99,this)" style="justify-content:space-between;">
-        <span>10 extra downloads</span><strong>£7.99</strong>
-      </div>
-    </div>
-    <div style="background:var(--teal-light);border-radius:10px;padding:12px 16px;font-size:12px;color:var(--teal-dark);line-height:1.6;margin-bottom:20px;" id="topup-upgrade-nudge" style="display:none;">
-      💡 You've bought top-ups before. Upgrading to Easy Pro gives you 30 downloads/month — 50% more than Easy Start — for £5 more per month. <a href="pricing.html" target="_blank" rel="noopener" style="color:var(--teal);font-weight:600;">Compare plans →</a>
-    </div>
-    <div class="modal-actions">
-      <button class="modal-btn ghost" onclick="closeModal('modal-topup')">Cancel</button>
-      <button class="modal-btn primary" id="topup-confirm-btn" onclick="confirmTopup()" disabled style="opacity:0.5;">Pay via Stripe →</button>
     </div>
   </div>
 </div>
@@ -644,7 +615,6 @@ const _sb = window.supabase.createClient(
 // ── STATE ────────────────────────────────────────────────────────
 let currentUser = null;
 let userProfile = null; // from Supabase users/subscriptions table
-let selectedTopupQty = 0, selectedTopupPrice = 0;
 let selectedResub = null;
 let cancelReason = '';
 
@@ -786,11 +756,10 @@ function renderAccount() {
   document.getElementById('account-content').style.display = 'block';
 
   const u = userProfile;
-  const planLabel = u.plan === 'pro' ? 'Easy Pro' : 'Easy Start';
-  const planPrice = u.plan === 'pro' ? '£14.99' : '£9.99';
-  const annualPrice = u.plan === 'pro' ? '£149' : '£99';
-  const billingPrice = u.billing_cycle === 'annual' ? annualPrice : planPrice;
-  const billingPeriod = u.billing_cycle === 'annual' ? '/year' : '/mo';
+  // Legacy Easy Pro subscriptions keep their name; Easy Pro is retired from
+  // new sales (2 Oct 2026). Prices are not quoted here (the actual next
+  // charge comes from billing-status).
+  const planLabel = u.plan === 'pro' ? 'Easy Pro' : 'Easy Start Unlimited';
 
   document.getElementById('nav-email').textContent = currentUser.email;
   document.getElementById('acct-email').textContent = currentUser.email;
@@ -879,7 +848,17 @@ function renderAccount() {
 
   // Download bar
   // A scheduled cancellation keeps its paid allowance until the period ends.
-  if (u.status === 'active' || u.status === 'trialing' || u.ent.cancelScheduled) {
+  if (u.ent.unlimited) {
+    // Easy Start Unlimited: nothing to count down (2 Oct 2026).
+    const bar = document.getElementById('dl-bar');
+    bar.style.width = '100%';
+    bar.className = 'dl-bar ok';
+    document.getElementById('dl-count').textContent = 'Unlimited';
+    document.getElementById('dl-label-text').textContent = 'Downloads';
+    document.getElementById('dl-note').textContent = u.ent.cancelScheduled
+      ? 'Unlimited downloads until your subscription ends. Re-downloading the same label within 7 days is free.'
+      : 'Unlimited downloads while your Easy Start Unlimited subscription is active.';
+  } else if (u.status === 'active' || u.status === 'trialing' || u.ent.cancelScheduled) {
     const pct = Math.min(Math.round(u.downloads_used / u.downloads_limit * 100), 100);
     const bar = document.getElementById('dl-bar');
     bar.style.width = pct + '%';
@@ -915,7 +894,7 @@ function renderAccount() {
       dlNoteEl.textContent = pct >= 100
         ? (u.topup_credits > 0
           ? `You've reached your monthly limit — now drawing from your ${u.topup_credits} purchased download(s).`
-          : "You've reached your monthly limit. Buy a top-up pack or wait until your allowance resets next billing date.")
+          : "You've reached your monthly limit. Buy Pay As You Go downloads or wait until your allowance resets next billing date.")
         : 'Resets on your next billing date. Re-downloading the same label within 7 days is free.';
     }
   } else {
@@ -949,8 +928,8 @@ function renderAccount() {
   // Action buttons
   renderActionRow(u.ent.payg ? 'payg' : u.status);
 
-  // Sidebar top-up links arrive here in a separate tab. Open the existing
-  // top-up picker directly instead of sending the customer to Pricing.
+  // Old sidebar/email top-up links (?topup=1): top-ups are retired, so this
+  // routes to Pay As You Go (or does nothing for an unlimited subscriber).
   const pageParams = new URLSearchParams(window.location.search);
   if (pageParams.get('topup') === '1') {
     buyTopup();
@@ -1039,11 +1018,10 @@ async function loadActualNextPayment(u) {
 // Stripe will actually charge. Same boundary the server uses.
 function applyResubPromoPrices() {
   if (Date.now() >= Date.UTC(2027, 0, 1)) return;
-  const s = document.getElementById('resub-start-price'), p = document.getElementById('resub-pro-price');
+  const s = document.getElementById('resub-start-price');
   if (s) s.textContent = '£8.99';
-  if (p) p.textContent = '£13.49';
-  document.querySelectorAll('.resub-promo-note').forEach((el, i) => {
-    el.textContent = ' · 2026 offer until 31 December 2026, then ' + (i === 0 ? '£9.99' : '£14.99') + '/month';
+  document.querySelectorAll('.resub-promo-note').forEach(el => {
+    el.textContent = ' · 2026 offer until 31 December 2026, then £9.99/month';
   });
 }
 function openModal(name) {
@@ -1238,72 +1216,20 @@ async function confirmCancel() {
 
 // ── TOP-UP ────────────────────────────────────────────────────────
 function buyTopup() {
-  // Approved D4: top-up packs are only for active Easy Start/Pro subscribers
-  // (or a scheduled cancellation still inside its paid period). Everyone
-  // else buys Pay As You Go downloads instead. Also enforced server-side.
-  if (!userProfile || !userProfile.ent || !userProfile.ent.topupEligible) {
-    window.location.href = 'pricing.html#payg';
-    return;
-  }
-  const showNudge = userProfile.topup_months >= 2;
-  document.getElementById('topup-upgrade-nudge').style.display = showNudge ? 'block' : 'none';
-  openModal('topup');
+  // Subscriber top-ups are retired (2 Oct 2026): Easy Start Unlimited needs
+  // none, and everyone else buys Pay As You Go on the pricing page.
+  if (userProfile && userProfile.ent && userProfile.ent.unlimited) return;
+  window.location.href = 'pricing.html#payg';
 }
-function selectTopup(qty, price, el) {
-  document.querySelectorAll('#modal-topup .survey-opt').forEach(o => o.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedTopupQty = qty; selectedTopupPrice = price;
-  const btn = document.getElementById('topup-confirm-btn');
-  btn.disabled = false; btn.style.opacity = '1';
-  btn.textContent = `Pay £${price} via Stripe →`;
-}
-// RESOLVED (2026-07-28, AUDIT_AND_FIX_LOG.md BLOCKER-2): confirmed by
-// Michaela directly against the CLPeasy Stripe dashboard — these ARE the
-// correct, canonical top-up Price IDs, matching builder.html. checkout.html
-// and stripe-webhook have been updated to match (they previously referenced a
-// different, incorrect pair, which is no longer used anywhere in active logic).
-const TOPUP_PRICES = {
-  5:  'price_1Tdpd7GZLILz5vqUAiSw9udI',
-  10: 'price_1TdpdzGZLILz5vqUYEjn6TZ2',
-};
 const PLAN_PRICES = {
   start: 'price_1TdoEYGZLILz5vqUIqlEsf4X',
-  pro:   'price_1TdoEXGZLILz5vqUvZKB1RQw',
 };
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
-
-async function confirmTopup() {
-  const priceId = TOPUP_PRICES[selectedTopupQty];
-  const btn = document.getElementById('topup-confirm-btn');
-  const originalText = btn.textContent;
-  if (!priceId || !currentUser) { alert('Something went wrong — please refresh and try again.'); return; }
-  const checkoutTab = window.open('about:blank', '_blank');
-  if (!checkoutTab) { alert('Please allow pop-ups for CLPeasy so checkout can open without closing your account page.'); return; }
-  checkoutTab.opener = null;
-  const { data: { session } } = await _sb.auth.getSession();
-  if (!session) { alert('Please sign in again and retry.'); return; }
-  btn.textContent = 'Loading…'; btn.disabled = true; btn.style.opacity = '0.7';
-  try {
-    const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/create-checkout-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + session.access_token },
-      body: JSON.stringify({ priceId, mode: 'payment' })
-    });
-    const data = await res.json();
-    if (data.url) { checkoutTab.location.href = data.url; }
-    else { throw new Error(data.error || 'No checkout URL returned'); }
-  } catch (e) {
-    try { checkoutTab.close(); } catch (_error) {}
-    console.error('Top-up checkout error:', e);
-    alert('Something went wrong starting checkout. Please try again.');
-    btn.textContent = originalText; btn.disabled = false; btn.style.opacity = '1';
-  }
-}
 
 // ── RESUBSCRIBE ───────────────────────────────────────────────────
 function selectResub(plan) {
   selectedResub = plan;
-  ['start','pro'].forEach(p => {
+  ['start'].forEach(p => {
     document.getElementById('resub-' + p).style.borderColor = p === plan ? 'var(--teal)' : 'var(--border)';
     document.getElementById('resub-' + p).style.background = p === plan ? 'var(--teal-light)' : 'white';
   });

@@ -73,10 +73,12 @@ for (const [name, src] of [['plan-picker.html', planPickerHtml], ['plan-checker.
   assert(!/Trading Standards/i.test(src), name + ' must not use Trading Standards confidence to recommend a plan');
   assert(!/review your labels with confidence/i.test(src), name + ' must not use the retired confidence tagline');
 }
-assert(planCheckerJs.includes("tagline: '30 downloads every month, plus priority support.'"),
-  'plan-checker.js Easy Pro result must use the factual 30 downloads + priority support tagline');
-assert(planCheckerJs.includes("'Priority support — we aim to reply within 1 working day.'"),
-  'plan-checker.js Easy Pro result must use the approved priority-support wording');
+// Easy Pro is retired from new sales (2 Oct 2026): the checker recommends
+// only Pay As You Go or Easy Start Unlimited, on its factual proposition.
+assert(planCheckerJs.includes("tagline: 'Unlimited downloads while you’re subscribed.'"),
+  'plan-checker.js Easy Start Unlimited result must use the factual unlimited-downloads tagline');
+assert(!/name: 'Easy Pro'|priority support/i.test(planCheckerJs),
+  'plan-checker.js must not offer Easy Pro or its priority support');
 
 // ── Sitewide guard: no absolute/misleading compliance-guarantee phrases ──
 // Customer-facing pages must never claim CLPeasy guarantees, ensures or

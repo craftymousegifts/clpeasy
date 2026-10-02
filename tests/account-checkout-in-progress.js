@@ -102,7 +102,8 @@ server.listen(0, '127.0.0.1', async () => {
     await new Promise(r => setTimeout(r, 1200));
     return t;
   }
-  const reactivate = t => t.evaluate(() => { openModal('resubscribe'); selectResub('pro'); return confirmResub(); });
+  // Easy Pro is retired from new sales (2 Oct 2026): reactivation offers Easy Start Unlimited only.
+  const reactivate = t => t.evaluate(() => { openModal('resubscribe'); selectResub('start'); return confirmResub(); });
   const dialog = t => t.evaluate(() => {
     const d = document.querySelector('.clp-cn-dialog');
     return d ? { code: d.dataset.code, title: document.getElementById('clp-cn-title').textContent, role: d.getAttribute('role'), modal: d.getAttribute('aria-modal'), focused: document.activeElement === d.querySelector('.clp-cn-btn'), button: d.querySelector('.clp-cn-btn').textContent } : null;
@@ -127,7 +128,7 @@ server.listen(0, '127.0.0.1', async () => {
       await reactivate(t);
       await t.waitForSelector('.clp-cn-dialog');
       assert.deepStrictEqual(t.calls.manage, [{ action: 'reactivate' }], 'tries to resume the same subscription first');
-      assert.deepStrictEqual(t.calls.checkout.map(c => [c.priceId, c.mode]), [['price_1TdoEXGZLILz5vqUvZKB1RQw', 'subscription']]);
+      assert.deepStrictEqual(t.calls.checkout.map(c => [c.priceId, c.mode]), [['price_1TdoEYGZLILz5vqUIqlEsf4X', 'subscription']]);
       assert.deepStrictEqual(await dialog(t), { code: 'CHECKOUT_IN_PROGRESS', title: 'Checkout already in progress', role: 'dialog', modal: 'true', focused: true, button: 'Back to plans' });
       assert.deepStrictEqual(t.alerts, [], 'no browser alert');
       assert.deepStrictEqual(await btnState(t), RESET, 'Reactivate button usable again');
@@ -190,7 +191,7 @@ server.listen(0, '127.0.0.1', async () => {
       const nav = t.waitForNavigation({ waitUntil: 'domcontentloaded' });
       await reactivate(t); await nav;
       assert(t.url().endsWith('/__stripe_checkout'), t.url());
-      assert.deepStrictEqual(t.calls.checkout, [{ priceId: 'price_1TdoEXGZLILz5vqUvZKB1RQw', mode: 'subscription' }], 'request body unchanged');
+      assert.deepStrictEqual(t.calls.checkout, [{ priceId: 'price_1TdoEYGZLILz5vqUIqlEsf4X', mode: 'subscription' }], 'request body unchanged');
       const s = await t.evaluate(k => JSON.parse(localStorage.getItem(k) || 'null'), KEY);
       assert(s && s.userId === 'u1', 'recorded for the indicator');
       await ctx.close();
@@ -211,13 +212,14 @@ server.listen(0, '127.0.0.1', async () => {
       await ctx.close();
     });
 
-    await check('6. top-ups and Pay As You Go unaffected: a recorded subscription checkout does not block a subscriber top-up (payment mode); a non-subscriber\'s Buy more downloads still goes to Pay As You Go (pricing.html#payg)', async () => {
+    await check('6. top-ups retired and Pay As You Go unaffected: an unlimited subscriber has no top-up checkout (no modal, no request); a non-subscriber\'s Buy more downloads still goes to Pay As You Go (pricing.html#payg)', async () => {
       const ctx = await browser.createBrowserContext();
       const t = await open(ctx, { profileKey: 'active' });
       await t.evaluate(k => localStorage.setItem(k, JSON.stringify({ userId: 'u1', until: Date.now() + 60000 })), KEY);
-      await t.evaluate(() => { window.open = () => ({ location: {}, close() {}, opener: null }); openModal('topup'); selectTopup(5, '3.99', document.querySelector('#modal-topup .survey-opt')); return confirmTopup(); });
-      assert.deepStrictEqual(t.calls.checkout, [{ priceId: 'price_1Tdpd7GZLILz5vqUAiSw9udI', mode: 'payment' }], 'top-up request sent unchanged');
-      assert.deepStrictEqual([t.alerts, await dialog(t)], [[], null]);
+      const before = t.url();
+      await t.evaluate(() => buyTopup());
+      assert.deepStrictEqual([await t.evaluate(() => [!!document.getElementById('modal-topup'), typeof confirmTopup]), t.url() === before], [[false, 'undefined'], true], 'no top-up modal or checkout; stays on Account');
+      assert.deepStrictEqual([t.calls.checkout, t.alerts, await dialog(t)], [[], [], null]);
       await ctx.close();
       // A non-subscriber's "Buy more downloads" still goes to Pay As You Go on
       // the pricing page, even with a subscription checkout recorded.

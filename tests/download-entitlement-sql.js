@@ -83,10 +83,12 @@ const STATES = {
 // Expected result of ONE new-label export, with and without PAYG downloads.
 // [source, clean] or null for blocked.
 const EXPECT = {
-  active:                [['plan',true],      ['plan',true]],
-  activeAtLimit:         [null,               ['purchased',true]],
-  cancelScheduled:       [['plan',true],      ['plan',true]],
-  cancelScheduledNoDate: [['plan',true],      ['plan',true]],
+  // Easy Start Unlimited (20261002000000): current subscriptions consume
+  // nothing -- not the plan counter, not purchased downloads.
+  active:                [['subscription',true], ['subscription',true]],
+  activeAtLimit:         [['subscription',true], ['subscription',true]],
+  cancelScheduled:       [['subscription',true], ['subscription',true]],
+  cancelScheduledNoDate: [['subscription',true], ['subscription',true]],
   cancelPeriodPassed:    [null,               ['purchased',true]],
   cancelledEnded:        [null,               ['purchased',true]],
   paused:                [null,               ['purchased',true]],
@@ -96,7 +98,7 @@ const EXPECT = {
   paygAccount:           [null,               ['purchased',true]],
 };
 
-const MIGRATIONS = ['20260729000000_create_label_downloads.sql','20260925000000_atomic_download_accounting.sql','20260926000000_download_entitlement_lifecycle.sql','20260927000000_payg_trial_conversion_and_annual_refill.sql','20260928000000_protect_download_counters.sql','20260929000000_redownload_upgrade_and_fixed_window.sql','20260930000000_redownload_legacy_key_transition.sql'];
+const MIGRATIONS = ['20260729000000_create_label_downloads.sql','20260925000000_atomic_download_accounting.sql','20260926000000_download_entitlement_lifecycle.sql','20260927000000_payg_trial_conversion_and_annual_refill.sql','20260928000000_protect_download_counters.sql','20260929000000_redownload_upgrade_and_fixed_window.sql','20260930000000_redownload_legacy_key_transition.sql','20261002000000_easy_start_unlimited.sql'];
 freshDb(MIGRATIONS);
 
 let checks = 0;
@@ -117,7 +119,11 @@ for (const [name, base] of Object.entries(STATES)){
       assert.strictEqual(r.ok, true, `${label}: must be allowed`);
       assert.strictEqual(r.source, exp[0], `${label}: source`);
       assert.strictEqual(r.clean_export, exp[1], `${label}: clean_export`);
-      if (exp[0]==='plan'){
+      if (exp[0]==='subscription'){
+        assert.strictEqual(r.unlimited, true, `${label}: unlimited subscription download`);
+        assert.strictEqual(r.consumed, false, `${label}: an unlimited download consumes nothing`);
+        assert.deepStrictEqual([after.downloads_used, after.topup_credits], [before.downloads_used, before.topup_credits], `${label}: neither the plan counter nor purchased downloads change`);
+      } else if (exp[0]==='plan'){
         assert.strictEqual(after.downloads_used, before.downloads_used+1, `${label}: plan download counted once`);
         assert.strictEqual(after.topup_credits, before.topup_credits, `${label}: purchased untouched`);
       } else {
@@ -183,7 +189,7 @@ function labelRow(id, key){
   consumeAs(id, key);
   run(`select set_config('request.jwt.claim.role','service_role',false); update public.profiles set plan='easy_start', subscription_status='active', downloads_limit=20, downloads_used=0 where id=${q(id)};`);
   const up = consumeAs(id, key);
-  assert.deepStrictEqual([up.consumed, up.source, up.clean_export, up.downloads_used], [true, 'plan', true, 1], 'C1: after subscribing the watermarked label is charged once from the plan and delivered clean');
+  assert.deepStrictEqual([up.consumed, up.unlimited, up.source, up.clean_export, profile(id).downloads_used], [false, true, 'subscription', true, 0], 'C1 + Unlimited: after subscribing, the watermarked label is delivered clean from the unlimited subscription (nothing consumed)');
   checks += 1;
 }
 // 2. The 7 days are FIXED from the charged download.
@@ -227,32 +233,22 @@ function labelRow(id, key){
   assert.deepStrictEqual([other.consumed, other.purchased_downloads], [true, 3], 'C1: the same label at a different physical size is charged as a new download');
   checks += 1;
 }
-// 5. Annual corner case (the recovered B1 proposal got this wrong): an annual
-//    plan at its limit whose monthly refill is due CAN download clean, so a
-//    watermarked earlier download is charged once from the refilled plan.
+// 5. Annual Easy Start/Pro subscriptions are unlimited (20261002000000).
+//    The C1 annual corner case (refill due) no longer arises for them: a
+//    watermarked earlier download is delivered clean and nothing is
+//    consumed, whether or not the old monthly refill date has passed.
 {
-  const id = makeUser({ plan:'free', subscription_status:'trialing', trial_end:iso(3*DAY), downloads_limit:10, downloads_used:0, topup_credits:0 });
   const key = 'oud::pillar candle::circle::70x70mm';
-  consumeAs(id, key);
-  run(`select set_config('request.jwt.claim.role','service_role',false); update public.profiles set plan='easy_pro', is_pro=true, subscription_status='active', billing_cycle='annual', downloads_limit=30, downloads_used=30, downloads_reset_date=(now() - interval '2 days')::date where id=${q(id)};`);
-  const r = consumeAs(id, key);
-  const p = profile(id);
-  assert.deepStrictEqual([r.consumed, r.source, r.clean_export, p.downloads_used], [true, 'plan', true, 1], 'C1 annual: refill due -> refilled first, then the watermarked label is charged once and clean (1 of 30 used)');
-  assert(new Date(p.downloads_reset_date).getTime() > Date.now(), 'C1 annual: next reset moved into the future');
-  // Annual plan at its limit with NO refill due and nothing purchased: no clean
-  // option, so the watermarked copy is re-issued free (never charged, never clean).
-  const id2 = makeUser({ plan:'free', subscription_status:'trialing', trial_end:iso(3*DAY), downloads_limit:10, downloads_used:0, topup_credits:0 });
-  consumeAs(id2, key);
-  run(`select set_config('request.jwt.claim.role','service_role',false); update public.profiles set plan='easy_pro', is_pro=true, subscription_status='active', billing_cycle='annual', downloads_limit=30, downloads_used=30, downloads_reset_date=(now() + interval '10 days')::date where id=${q(id2)};`);
-  const r2 = consumeAs(id2, key);
-  assert.deepStrictEqual([r2.free_redownload, r2.clean_export, profile(id2).downloads_used], [true, false, 30], 'C1 annual: no allowance left and no refill due -> free watermarked copy, nothing spent');
-  // A free re-download that coincides with a due refill applies the refill once.
-  const id3 = makeUser({ plan:'easy_start', subscription_status:'active', billing_cycle:'annual', downloads_limit:20, downloads_used:5, downloads_reset_date:iso(10*DAY), topup_credits:0 });
-  const k3 = 'sage::wax melt::square::40x40mm';
-  consumeAs(id3, k3);
-  run(`select set_config('request.jwt.claim.role','service_role',false); update public.profiles set downloads_used=20, downloads_reset_date=(now() - interval '1 day')::date where id=${q(id3)};`);
-  const r3 = consumeAs(id3, k3);
-  assert.deepStrictEqual([r3.free_redownload, r3.clean_export, profile(id3).downloads_used], [true, true, 0], 'C1 annual: a clean re-download is free; the due refill is applied (0 used) and not double-counted');
+  for (const [due, label] of [[true, 'refill date passed'], [false, 'no refill due, counter at its old limit']]) {
+    const id = makeUser({ plan:'free', subscription_status:'trialing', trial_end:iso(3*DAY), downloads_limit:10, downloads_used:0, topup_credits:0 });
+    consumeAs(id, key);
+    run(`select set_config('request.jwt.claim.role','service_role',false); update public.profiles set plan='easy_pro', is_pro=true, subscription_status='active', billing_cycle='annual', downloads_limit=30, downloads_used=30, downloads_reset_date=(now() ${due?'-':'+'} interval '${due?2:10} days')::date where id=${q(id)};`);
+    const before = profile(id);
+    const r = consumeAs(id, key);
+    const after = profile(id);
+    assert.deepStrictEqual([r.ok, r.consumed, r.unlimited, r.clean_export], [true, false, true, true], `Unlimited annual (${label}): watermarked label delivered clean, nothing consumed`);
+    assert.deepStrictEqual([after.downloads_used, after.downloads_reset_date, after.topup_credits], [before.downloads_used, before.downloads_reset_date, before.topup_credits], `Unlimited annual (${label}): no counter, reset date or purchased change`);
+  }
   checks += 4;
 }
 // ── v13 transition: re-download history recorded under the OLD key ──────
@@ -399,31 +395,36 @@ const LEG = 'lavender::scented candle', NEW52 = 'lavender::scented candle::circl
   assert.strictEqual(profile(u).subscription_status, 'trialing', 'a rejected call changes nothing');
   checks += 14;
 }
-// ── Annual plans refill monthly (pricing: "£99/year · 20 downloads/month") ──
+// ── Easy Start Unlimited (20261002000000): annual and monthly plans are no
+//    longer finite, so the old monthly refill and the 20/30 limit never block
+//    a current subscriber. Paused and ended plans are still not usable.
 {
-  const id = makeUser({ plan:'easy_start', subscription_status:'active', billing_cycle:'annual', downloads_limit:20, downloads_used:20, downloads_reset_date:iso(-2*DAY), topup_credits:0 });
-  const r = consumeAs(id, null);
-  assert.deepStrictEqual([r.ok, r.source, r.clean_export, r.downloads_used], [true, 'plan', true, 1], 'annual plan past its monthly reset date is refilled, then counts this download');
-  const p = profile(id);
-  const next = new Date(p.downloads_reset_date).getTime();
-  assert(next > Date.now() && next < Date.now() + 32*DAY, 'next reset date moves one month ahead');
-  const r2 = consumeAs(id, null);
-  assert.strictEqual(r2.downloads_used, 2, 'no second refill before the next reset date');
-  // Several missed months: advances to the first future reset date, one refill.
-  const late = makeUser({ plan:'easy_pro', subscription_status:'active', billing_cycle:'annual', downloads_limit:30, downloads_used:30, downloads_reset_date:iso(-75*DAY), topup_credits:0 });
-  consumeAs(late, null);
-  const lp = profile(late);
-  assert(new Date(lp.downloads_reset_date).getTime() > Date.now(), 'reset date catches up to the future');
-  assert.strictEqual(lp.downloads_used, 1, 'one refill only');
-  // Monthly plans are left to invoice.paid (no early double refill).
-  const monthly = makeUser({ plan:'easy_start', subscription_status:'active', billing_cycle:'monthly', downloads_limit:20, downloads_used:20, downloads_reset_date:iso(-1*DAY), topup_credits:0 });
-  assert.strictEqual(consumeAs(monthly, null).ok, false, 'monthly plan is not refilled here (invoice.paid refills it)');
-  // Paused annual plan is not refilled or usable.
+  for (const [plan, cycle, used, reset] of [['easy_start','annual',20,-2], ['easy_pro','annual',30,-75], ['easy_start','monthly',20,-1], ['easy_start','monthly',999,30]]) {
+    const id = makeUser({ plan, is_pro: plan==='easy_pro', subscription_status:'active', billing_cycle:cycle, downloads_limit: plan==='easy_pro'?30:20, downloads_used:used, downloads_reset_date:iso(reset*DAY), topup_credits:2 });
+    const before = profile(id);
+    for (let i = 0; i < 3; i++) {
+      const r = consumeAs(id, null);
+      assert.deepStrictEqual([r.ok, r.source, r.unlimited, r.clean_export, r.consumed], [true, 'subscription', true, true, false], `Unlimited ${plan} ${cycle} (used ${used}): download ${i+1} allowed, clean, nothing consumed`);
+    }
+    const after = profile(id);
+    assert.deepStrictEqual([after.downloads_used, after.topup_credits, after.downloads_reset_date], [before.downloads_used, before.topup_credits, before.downloads_reset_date], `Unlimited ${plan} ${cycle}: counter, purchased downloads and reset date untouched`);
+  }
+  // Paused (any cycle) is not unlimited and not usable without purchases.
   const paused = makeUser({ plan:'easy_start', subscription_status:'paused', billing_cycle:'annual', downloads_limit:20, downloads_used:20, downloads_reset_date:iso(-2*DAY), topup_credits:0 });
-  assert.strictEqual(consumeAs(paused, null).ok, false, 'paused annual plan is not refilled');
+  assert.strictEqual(consumeAs(paused, null).ok, false, 'paused Easy Start is not unlimited');
+  // Cancel-at-period-end: unlimited until the paid period ends, then not.
+  const cs = makeUser({ plan:'easy_start', subscription_status:'cancelled', deletion_date:iso(5*DAY), downloads_limit:20, downloads_used:20, topup_credits:0 });
+  assert.strictEqual(consumeAs(cs, null).unlimited, true, 'cancel-at-period-end inside the paid period stays unlimited');
+  const csOver = makeUser({ plan:'easy_start', subscription_status:'cancelled', deletion_date:iso(-1*DAY), downloads_limit:20, downloads_used:0, topup_credits:0 });
+  assert.strictEqual(consumeAs(csOver, null).ok, false, 'after the paid period ends the subscription is no longer unlimited');
+  // Active status on a plan that is not Easy Start/Pro (e.g. an unknown price
+  // mapped to 'free') is never unlimited.
+  const odd = makeUser({ plan:'free', subscription_status:'active', downloads_limit:0, downloads_used:0, topup_credits:0 });
+  assert.strictEqual(consumeAs(odd, null).ok, false, 'status active on a non-subscription plan is not unlimited');
   const E2 = require('../entitlement.js');
-  assert.strictEqual(E2.summarise({ plan:'easy_start', subscription_status:'active', billing_cycle:'annual', downloads_limit:20, downloads_used:20, downloads_reset_date:iso(-2*DAY) }).planLeft, 20, 'entitlement.js shows the refilled allowance');
-  checks += 8;
+  const s2 = E2.summarise({ plan:'easy_start', subscription_status:'active', billing_cycle:'annual', downloads_limit:20, downloads_used:20, downloads_reset_date:iso(-2*DAY) });
+  assert.deepStrictEqual([s2.unlimited, s2.nextSource, s2.cleanAvailable, s2.topupEligible, s2.paygAvailable], [true, 'subscription', true, false, false], 'entitlement.js mirrors Unlimited (no top-ups, no PAYG for a current subscriber)');
+  checks += 16;
 }
 // Permissions (unchanged from 20260925000000; re-checked after the replace).
 {

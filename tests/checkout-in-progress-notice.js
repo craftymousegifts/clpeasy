@@ -35,10 +35,11 @@ if (!EXE) { console.log('SKIP checkout-in-progress-notice: no Chromium available
 
 const SERVER_MSG = 'A checkout is already in progress for this account. Please wait a moment and try again.';
 const LOCK_MS = 5 * 60 * 1000;
-const PRICES = {
-  start_m: 'price_1TdoEYGZLILz5vqUIqlEsf4X', pro_m: 'price_1TdoEXGZLILz5vqUvZKB1RQw',
-  start_a: 'price_1TdoEXGZLILz5vqUQj5n6Zri', pro_a: 'price_1TdoEXGZLILz5vqUFgTznTUT',
-};
+// Easy Start Unlimited only (2 Oct 2026): monthly sends the Easy Start
+// monthly price; annual sends productKey easy_start_annual (the server picks
+// the £89 price). Easy Pro is no longer sold.
+const PRICES = { start_m: 'price_1TdoEYGZLILz5vqUIqlEsf4X', start_a: 'easy_start_annual' };
+const reqId = r => r.priceId || r.productKey;
 
 // ── Emulated server lock (same rule as create-checkout-session) ──
 const srv = { now: Date.parse('2026-10-01T12:00:00Z'), lockAt: null, requests: [], force: null };
@@ -140,7 +141,7 @@ server.listen(0, '127.0.0.1', async () => {
       await check(`${page}: 1. Easy Start monthly checkout opens normally`, async () => {
         const t = await open(page);
         await expectOpensCheckout(t, () => start(t, page, 'easy_start', 'monthly'));
-        assert.strictEqual(srv.requests.at(-1).priceId, PRICES.start_m);
+        assert.strictEqual(reqId(srv.requests.at(-1)), PRICES.start_m);
         assert.deepStrictEqual([t.alerts, t.errs], [[], []]);
         await t.close();
       });
@@ -180,25 +181,25 @@ server.listen(0, '127.0.0.1', async () => {
         await t.close();
       });
 
-      await check(`${page}: 3. immediate Easy Pro monthly attempt after Easy Start shows the dialog; "Back to plans" closes it`, async () => {
+      await check(`${page}: 3. immediate Easy Start annual attempt after monthly shows the dialog; "Back to plans" closes it`, async () => {
         srv.now += 97000;
         const t = await open(page);
-        await start(t, page, 'easy_pro', 'monthly');
+        await start(t, page, 'easy_start', 'annual');
         await waitNotice(t);
-        assert.strictEqual(srv.requests.at(-1).priceId, PRICES.pro_m);
+        assert.strictEqual(reqId(srv.requests.at(-1)), PRICES.start_a);
         await t.click('.clp-cn-btn');
         assert.strictEqual(await notice(t), null, 'button closes');
         assert.deepStrictEqual(t.alerts, []);
         await t.close();
       });
 
-      await check(`${page}: 7. switching to Easy Pro ANNUAL (and Easy Start annual) still respects the lock; backdrop click closes`, async () => {
+      await check(`${page}: 7. switching between Easy Start annual and monthly still respects the lock; backdrop click closes`, async () => {
         srv.now += 60000;
         const t = await open(page);
-        for (const [plan, price] of [['easy_pro', PRICES.pro_a], ['easy_start', PRICES.start_a]]) {
-          await start(t, page, plan, 'annual');
+        for (const [billing, price] of [['annual', PRICES.start_a], ['monthly', PRICES.start_m]]) {
+          await start(t, page, 'easy_start', billing);
           await waitNotice(t);
-          assert.strictEqual(srv.requests.at(-1).priceId, price);
+          assert.strictEqual(reqId(srv.requests.at(-1)), price);
           await t.mouse.click(5, 5);
           assert.strictEqual(await notice(t), null, 'backdrop click closes');
         }
@@ -208,7 +209,7 @@ server.listen(0, '127.0.0.1', async () => {
 
       await check(`${page}: 10. mobile (iPhone 390x844): dialog fits with 16px gutters and a full-width button`, async () => {
         const t = await open(page, { width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
-        await start(t, page, 'easy_pro', 'monthly');
+        await start(t, page, 'easy_start', 'annual');
         await waitNotice(t);
         const n = await notice(t);
         assert(n.left >= 16 && n.right >= 16, `side gutters ${n.left}/${n.right}`);
@@ -220,11 +221,11 @@ server.listen(0, '127.0.0.1', async () => {
         await t.close();
       });
 
-      await check(`${page}: 4. after the lock expires, Easy Pro monthly checkout opens normally`, async () => {
+      await check(`${page}: 4. after the lock expires, Easy Start annual checkout opens normally`, async () => {
         srv.now = srv.lockAt + LOCK_MS + 1000;
         const t = await open(page);
-        await expectOpensCheckout(t, () => start(t, page, 'easy_pro', 'monthly'));
-        assert.strictEqual(srv.requests.at(-1).priceId, PRICES.pro_m);
+        await expectOpensCheckout(t, () => start(t, page, 'easy_start', 'annual'));
+        assert.strictEqual(reqId(srv.requests.at(-1)), PRICES.start_a);
         assert.deepStrictEqual([t.alerts, t.errs], [[], []]);
         await t.close();
       });
@@ -246,7 +247,7 @@ server.listen(0, '127.0.0.1', async () => {
     await check('checkout.html: ALREADY_SUBSCRIBED now shows the server explanation (as pricing.html does), not the generic error', async () => {
       srv.force = { status: 409, body: { code: 'ALREADY_SUBSCRIBED', error: "You already have an active subscription. Manage or change your plan from your account's billing portal instead of starting a new checkout." } };
       const t = await open('checkout.html');
-      await start(t, 'checkout.html', 'easy_pro', 'monthly');
+      await start(t, 'checkout.html', 'easy_start', 'monthly');
       await t.waitForFunction(() => !document.getElementById('btn-checkout').disabled);
       await new Promise(r => setTimeout(r, 200));
       assert.strictEqual(t.alerts.length, 1); assert(/billing portal/.test(t.alerts[0]), t.alerts[0]);

@@ -82,6 +82,9 @@ function consumeRpc(profile, calls){
     if (name !== 'consume_download' || !profile) return { data:false, error:null };
     const e = Ent.summarise(profile);
     if (!e.nextSource) return { data:{ ok:false, reason:'no_downloads_remaining' }, error:null };
+    // Easy Start Unlimited (20261002000000): clean, consumes nothing.
+    if (e.nextSource === 'subscription') return { data:{ ok:true, consumed:false, free_redownload:false, unlimited:true, source:'subscription', clean_export:true,
+                    downloads_used:profile.downloads_used, downloads_limit:profile.downloads_limit, purchased_downloads:profile.topup_credits }, error:null };
     if (e.nextSource === 'plan') profile.downloads_used = (profile.downloads_used||0)+1;
     else profile.topup_credits = profile.topup_credits-1;
     return { data:{ ok:true, consumed:true, free_redownload:false, source:e.nextSource, clean_export:e.nextClean,
@@ -492,10 +495,10 @@ function candleFixture(overrides){
     const calls = rpcCalls.filter(c=>c.name==='consume_download');
     assert.strictEqual(calls.length, 1, 'exactly one consume_download call');
     assert.strictEqual(calls[0].args.p_label_key, 'security test candle::scented candle::circle::63x63mm', 'the stable label key (name, type, shape and size) is passed for the 7-day grace');
-    assert.strictEqual(profile.topup_credits, 2, 'one purchased download is spent');
-    assert.strictEqual(profile.downloads_used, 20, 'the exhausted plan allowance is untouched');
+    assert.strictEqual(profile.topup_credits, 3, 'Easy Start Unlimited: purchased downloads are never spent');
+    assert.strictEqual(profile.downloads_used, 20, 'Easy Start Unlimited: no plan counter is used');
     assert(!/PREVIEW ONLY/.test(decodeDataUri(capturedHrefs[0])), 'the export is clean');
-    ok('an active subscriber at their limit spends exactly one purchased download and receives a clean export');
+    ok('an Easy Start Unlimited subscriber past the old 20-download limit still exports clean and consumes nothing');
   }
 
   // ── print.html ─────────────────────────────────────────────────────
@@ -693,25 +696,24 @@ function candleFixture(overrides){
     ok('D5: converted trial -> Pay As You Go account gets clean Builder exports from purchased downloads');
   }
 
-  // 12f. Approved decision 2: an active subscriber who has used this month's
-  //      allowance is pointed at subscriber top-ups (never PAYG) in both the
-  //      Builder and the Composer; a PAYG account at zero is pointed at PAYG.
+  // 12f. Easy Start Unlimited (2 Oct 2026): a subscriber past the old 30/20
+  //      limit is never blocked and never pointed at (retired) top-ups, in
+  //      the Builder or the Composer; a PAYG account at zero is pointed at PAYG.
   {
     const sub = { plan:'easy_pro', is_pro:true, subscription_status:'active', downloads_limit:30, downloads_used:30, topup_credits:0 };
     const b = await openBuilder({ session:{ user:{ id:'user-d2-b', email:'x@example.com', user_metadata:{} } }, profile:sub });
     fillMinimalLabel(b.window);
     await b.window.downloadSVG();
-    assert.strictEqual(b.capturedHrefs.length, 0, 'blocked');
-    assert(/subscriber top-up/.test(b.window.__lastAlert||''), 'Builder points subscribers to top-ups');
+    assert.strictEqual(b.capturedHrefs.length, 1, 'unlimited subscriber at the old limit still gets the file');
+    assert(!/top-up/i.test(b.window.__lastAlert||''), 'never pointed at subscriber top-ups');
     const payg = { plan:'payg', subscription_status:'payg', downloads_limit:0, downloads_used:0, topup_credits:0 };
     const b2 = await openBuilder({ session:{ user:{ id:'user-d2-b2', email:'x@example.com', user_metadata:{} } }, profile:payg });
     fillMinimalLabel(b2.window);
     await b2.window.downloadSVG();
-    assert(/Buy downloads or choose a plan/.test(b2.window.__lastAlert||''), 'Builder points PAYG accounts to PAYG');
+    assert(/Buy Pay As You Go downloads or choose Easy Start Unlimited/.test(b2.window.__lastAlert||''), 'Builder points PAYG accounts to PAYG or Easy Start Unlimited');
     const c = await openComposer({ session:{ user:{ id:'user-d2-c', email:'x@example.com', user_metadata:{} } }, profile:Object.assign({}, sub) });
-    assert(/Buy a subscriber top-up/.test(c.document.getElementById('pro-gate').textContent), 'Composer gate points subscribers to top-ups');
-    assert.strictEqual(c.document.querySelector('#pro-gate a').getAttribute('href'), 'account.html?topup=1');
-    ok('decision 2: out-of-downloads subscribers are sent to top-ups, PAYG accounts to PAYG');
+    assert(!/top-up/i.test(c.document.getElementById('pro-gate').textContent), 'Composer never offers subscriber top-ups');
+    ok('Unlimited: subscribers past the old limit keep exporting; PAYG accounts at zero are sent to PAYG; no top-ups anywhere');
   }
 
   console.log(`preview watermark and export authorisation checks passed (${passed} assertions)`);

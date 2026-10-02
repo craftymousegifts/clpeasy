@@ -415,7 +415,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
         <div class="su-label">Downloads remaining</div>
         <div class="su-count" id="su-count">—</div>
         <div class="su-bar"><span id="su-fill" style="width:0%"></span></div>
-        <a href="account.html?topup=1" target="_blank" rel="noopener" class="su-topup">Buy Top-Up →</a>
+        <a href="pricing.html#payg" target="_blank" rel="noopener" class="su-topup">Buy downloads →</a>
       </div>
       <div class="sidebar-profile">
         <button type="button" class="sidebar-user" id="sidebar-user" style="display:none;" aria-haspopup="true" aria-expanded="false">
@@ -797,9 +797,9 @@ function updateProGate(){
       gate.innerHTML=currentUser
         ? (composerTrialOnly()
           ? '<strong>🔒 Print sheets need a paid plan or purchased downloads</strong> <a href="pricing.html">Buy downloads or choose a plan</a> to export this sheet.'
-          : (composerEnt&&composerEnt.topupEligible
-            ? '<strong>🔒 No downloads remaining this month</strong> <a href="account.html?topup=1">Buy a subscriber top-up</a> to export this sheet.'
-            : '<strong>🔒 No downloads remaining</strong> <a href="pricing.html">Buy downloads or choose a plan</a> to export this sheet.'))
+          // Subscriber top-ups retired (2 Oct 2026): Easy Start Unlimited never
+          // runs out; everyone else buys Pay As You Go or chooses a plan.
+          : '<strong>🔒 No downloads remaining</strong> <a href="pricing.html">Buy downloads or choose a plan</a> to export this sheet.')
         : '<strong>🔒 Sign in to download</strong> Please <a href="auth.html">sign in to your CLPeasy account</a> to download your print sheet.';
     }
   }

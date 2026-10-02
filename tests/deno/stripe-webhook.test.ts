@@ -12,6 +12,7 @@ const env: Record<string, string> = {
   SUPABASE_URL: 'http://offline.invalid', SUPABASE_SERVICE_ROLE_KEY: 'offline',
   BREVO_API_KEY: 'offline-brevo-key', BREVO_PAID_LIST_ID: '11',
   PROMO_2026_EASY_START_MONTHLY_COUPON_ID: 'coupon_promo_start', PROMO_2026_EASY_PRO_MONTHLY_COUPON_ID: 'coupon_promo_pro',
+  EASY_START_ANNUAL_PRICE_ID: 'price_easy_start_annual_89_env',
 };
 for (const [k, v] of Object.entries(env)) Deno.env.set(k, v);
 
@@ -411,6 +412,17 @@ await test('MS-1: a fully ended subscription is never turned back into a reactiv
   eq(snap(), ['free', 'cancelled', 4, 0, 9], 'ended: free, allowance removed, purchased kept');
   await send({ id: 'evt_ms1_deleted', type: 'customer.subscription.deleted', data: { object: subObj(PRICE.start, { status: 'canceled' }) } });
   eq(snap(), ['free', 'cancelled', 4, 0, 9], 'deleted: still ended, purchased kept');
+});
+
+await test('Easy Start Unlimited £89 annual (EASY_START_ANNUAL_PRICE_ID): monthly -> annual switch is mapped to easy_start annual; purchased kept', async () => {
+  seedProfile({ subscription_status: 'active', plan: 'easy_start', downloads_used: 3, downloads_limit: 20, topup_credits: 4, billing_cycle: 'monthly' });
+  await send(subUpdated('evt_es_annual_89', subObj('price_easy_start_annual_89_env'), { items: { data: [{ price: { id: PRICE.start } }] } }));
+  eq([...snap(), prof().billing_cycle], ['easy_start', 'active', 0, 20, 4, 'annual'], 'annual Easy Start');
+});
+await test('historical prices stay recognised: old £99 Easy Start annual and Easy Pro still map (existing subscribers)', async () => {
+  seedProfile({ subscription_status: 'active', plan: 'easy_start', downloads_used: 1, downloads_limit: 20, topup_credits: 0, billing_cycle: 'monthly' });
+  await send(subUpdated('evt_old_annual', subObj('price_1Tdd7pKF3jvQfgEa8DxgQHEW'), { items: { data: [{ price: { id: PRICE.start } }] } }));
+  eq([prof().plan, prof().billing_cycle], ['easy_start', 'annual'], 'old annual');
 });
 
 out(`stripe-webhook offline checks passed (${passed} scenarios)`);

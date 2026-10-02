@@ -23,13 +23,14 @@
 //  - ctas(result, account) → the call-to-action for THIS visitor, from the shared
 //                            CLPEntitlement.summarise() output. CTA only.
 //
-// Permanent prices behind the rules (pricing.html):
+// Permanent prices behind the rules (pricing.html, 2 Oct 2026):
 //   Pay As You Go £4.99 for 5 downloads (about £1 each, never expire)
-//   Easy Start £9.99/month for 20 · Easy Pro £14.99/month for 30
-//   Subscriber top-ups 5 for £3.99 / 10 for £7.99
-// When the usage estimate is uncertain the rules lean to the lower
-// commitment: Pay As You Go downloads never expire and are kept on the
-// account if the customer later subscribes.
+//   Easy Start Unlimited £9.99/month or £89/year, unlimited downloads
+// Easy Pro and subscriber top-ups are retired from new sales, so the
+// checker only ever recommends Pay As You Go or Easy Start Unlimited. The
+// break-even is about 10 downloads a month. When the usage estimate is
+// uncertain the rules lean to the lower commitment: Pay As You Go downloads
+// never expire and are kept on the account if the customer later subscribes.
 (function(root){
   'use strict';
 
@@ -43,7 +44,6 @@
   // PROMO_2026_END_MS): the 2026 offers end at the end of 31 Dec 2026 UK time.
   const PROMO_END_MS = Date.UTC(2027, 0, 1);
 
-  const TOPUPS = 'top-ups (5 for £3.99 or 10 for £7.99)';
   const EXPORT_NOTE = "You only use a download when you export a label file. Printing more copies of a file you've already downloaded is free.";
   const REPRINT_NOTE = "This is an estimate. If you mostly reprint label files you've already downloaded, you'll use fewer downloads.";
 
@@ -57,24 +57,16 @@
       offer: 'Get 8 downloads for £4.99 until 31 December 2026.'
     },
     start: {
-      name: 'Easy Start',
-      tagline: '20 downloads every month for regular label-making.',
-      price: '£9.99/month or £99/year',
-      features: ['20 downloads a month', 'Top-ups if you need more (5 for £3.99 or 10 for £7.99)'],
+      name: 'Easy Start Unlimited',
+      tagline: 'Unlimited downloads while you’re subscribed.',
+      price: '£9.99/month or £89/year (save £30.88)',
+      features: ['Unlimited downloads while your subscription is active', 'Pay monthly, or £89/year (about £7.42 a month)'],
       offer: '£8.99/month until 31 December 2026, then £9.99/month.'
-    },
-    pro: {
-      name: 'Easy Pro',
-      tagline: '30 downloads every month, plus priority support.',
-      price: '£14.99/month or £149/year',
-      features: ['30 downloads a month', 'Priority support — we aim to reply within 1 working day.', 'Top-ups if you need more (5 for £3.99 or 10 for £7.99)'],
-      offer: '£13.49/month until 31 December 2026, then £14.99/month.'
     }
   };
 
-  const PRO_NOTE = 'If you reliably need 25 or fewer downloads a month, Easy Start plus a 5-download top-up (£9.99 + £3.99 = £13.98) costs slightly less than Easy Pro (£14.99). Above 30 a month, add ' + TOPUPS + '.';
-  const MAYBE_PRO_NOTE = 'If you download a separate file for each label, you may need more than 20 downloads a month — Easy Pro includes 30.';
-  const OCCASIONAL_SUB_WARNING = 'Because you only make labels some of the time, Pay As You Go would usually cost less than a year-round subscription. In busier months, ' + TOPUPS + ' cover anything beyond your 20.';
+  const UNLIMITED = 'Easy Start Unlimited (£9.99/month for unlimited downloads)';
+  const OCCASIONAL_SUB_WARNING = 'Because you only make labels some of the time, Pay As You Go would usually cost less than a year-round subscription.';
   const OCCASIONAL_NOTE = 'If your label-making becomes regular, a subscription can be better value.';
 
   // The questions this customer must answer, in order, given the answers so far.
@@ -105,7 +97,7 @@
   //   more than 10, combined on shared sheets → low   (one sheet = one download)
   //   11–20, separate or not sure             → medium
   //   more than 20, separate                  → high
-  //   more than 20, not sure                  → medium (+ maybe-Pro note)
+  //   more than 20, not sure                  → medium
   function usage(answers){
     const a = answers || {};
     if (a.frequency !== 'ongoing') return null;
@@ -113,7 +105,7 @@
     if (a.printing === 'combined') return { level: 'low', source: 'combined' };
     if (a.labels === '11to20') return { level: 'medium', source: 'count' };
     if (a.printing === 'separate') return { level: 'high', source: 'count' };
-    return { level: 'medium', source: 'count', maybePro: true };
+    return { level: 'medium', source: 'count' };
   }
 
   function result(plan, rule, reasons, extra){
@@ -121,7 +113,7 @@
   }
 
   const LOW_REASON = {
-    count: 'At up to about 10 downloads a month, Pay As You Go usually costs no more than Easy Start.',
+    count: 'At up to about 10 downloads a month, Pay As You Go usually costs no more than Easy Start Unlimited.',
     combined: 'You combine several different labels on one sheet or file, so you should only need a few downloads a month.'
   };
 
@@ -136,24 +128,23 @@
     // R1 — an explicit "only when I need downloads" answer is never overridden.
     if (a.payment === 'payg') {
       const r = result('payg', 'R1', ["You told us you'd rather pay only when you need downloads."], est);
-      if (u && u.level === 'low' && u.source === 'count') r.note = 'If you regularly need close to 10 downloads a month, Easy Start (£9.99/month for 20) costs about the same.';
-      if (u && u.level === 'medium') r.warning = 'At about 11–20 downloads a month, Pay As You Go costs about £11–£20 a month. Easy Start (£9.99/month for 20 downloads) would usually cost less.';
-      if (u && u.level === 'high') r.warning = 'At more than 20 downloads a month, Pay As You Go costs over £20 a month. Easy Pro (£14.99/month for 30 downloads, plus ' + TOPUPS + ') would usually cost less.';
+      if (u && u.level === 'low' && u.source === 'count') r.note = 'If you regularly need close to 10 downloads a month, ' + UNLIMITED + ' costs about the same.';
+      if (u && u.level === 'medium') r.warning = 'At about 11–20 downloads a month, Pay As You Go costs about £11–£20 a month. ' + UNLIMITED + ' would usually cost less.';
+      if (u && u.level === 'high') r.warning = 'At more than 20 downloads a month, Pay As You Go costs over £20 a month. ' + UNLIMITED + ' would usually cost less.';
       return r;
     }
 
     // R2 — a stated subscription preference is respected, with honest notes.
     if (a.payment === 'subscription') {
       const pref = "You told us you'd prefer a subscription.";
-      if (notSure) return result('start', 'R2-notsure', [pref, 'Easy Start is the entry subscription, with 20 downloads a month.'],
+      const what = 'Easy Start Unlimited gives you unlimited downloads while you’re subscribed.';
+      if (notSure) return result('start', 'R2-notsure', [pref, what],
         { note: "Not sure how many you'll need yet? Pay As You Go (£4.99 for 5 downloads) is the lower-commitment option." });
-      if (occasional) return result('start', 'R2-occasional', [pref, 'Easy Start is the entry subscription, with 20 downloads a month.'],
-        { warning: OCCASIONAL_SUB_WARNING });
-      if (u.level === 'low') return result('start', 'R2-low', [pref, 'Easy Start includes 20 downloads a month.'],
-        Object.assign({ warning: 'At up to about 10 downloads a month, Pay As You Go would usually cost the same as or less than Easy Start (£9.99).' }, est));
-      if (u.level === 'medium') return result('start', 'R2-medium', [pref, "Easy Start's 20 downloads a month should cover your labels."],
-        Object.assign({ note: u.maybePro ? MAYBE_PRO_NOTE : null }, est));
-      return result('pro', 'R2-high', ['You need more than 20 downloads a month — Easy Pro includes 30.'], Object.assign({ note: PRO_NOTE }, est));
+      if (occasional) return result('start', 'R2-occasional', [pref, what], { warning: OCCASIONAL_SUB_WARNING });
+      if (u.level === 'low') return result('start', 'R2-low', [pref, what],
+        Object.assign({ warning: 'At up to about 10 downloads a month, Pay As You Go would usually cost the same as or less than Easy Start Unlimited (£9.99/month).' }, est));
+      if (u.level === 'medium') return result('start', 'R2-medium', [pref, 'Unlimited downloads cover your labels without counting downloads.'], est);
+      return result('start', 'R2-high', [pref, 'You need more than 20 downloads a month — Easy Start Unlimited has no download limit.'], est);
     }
 
     // R3 — no payment preference: recommend what fits the usage, leaning to
@@ -161,10 +152,9 @@
     if (notSure) return result('payg', 'R3-notsure', ["You're not sure yet how much you'll use CLPeasy, so the lowest-commitment option makes sense."], { trialEmphasis: true });
     if (occasional) return result('payg', 'R3-occasional', ['You only make labels some of the time, so paying when you need downloads avoids a year-round subscription.'], { note: OCCASIONAL_NOTE });
     if (u.level === 'low') return result('payg', 'R3-low', [LOW_REASON[u.source]],
-      Object.assign({ note: u.source === 'count' ? "If you regularly need close to 10 a month, Easy Start (£9.99/month for 20 downloads) is worth considering." : null }, est));
-    if (u.level === 'medium') return result('start', 'R3-medium', ["Easy Start's 20 downloads a month should cover your labels for less than Pay As You Go."],
-      Object.assign({ note: u.maybePro ? MAYBE_PRO_NOTE : null }, est));
-    return result('pro', 'R3-high', ['You need more than 20 downloads a month — Easy Pro includes 30.'], Object.assign({ note: PRO_NOTE }, est));
+      Object.assign({ note: u.source === 'count' ? 'If you regularly need close to 10 a month, ' + UNLIMITED + ' is worth considering.' : null }, est));
+    if (u.level === 'medium') return result('start', 'R3-medium', ['Easy Start Unlimited covers your labels for less than Pay As You Go, with no download limit.'], est);
+    return result('start', 'R3-high', ['You need more than 20 downloads a month — Easy Start Unlimited has no download limit.'], est);
   }
 
   // Every valid answer path (27), for tests and QA.
@@ -200,14 +190,12 @@
   const SUPPORT_URL = 'support.html';
   const LINKS = {
     payg: { href: 'pricing.html#payg', text: 'Buy downloads →' },
-    start: { href: 'pricing.html#easy-start', text: 'Choose Easy Start →' },
-    pro: { href: 'pricing.html#easy-pro', text: 'Choose Easy Pro →' },
+    start: { href: 'pricing.html#easy-start', text: 'Choose Easy Start Unlimited →' },
     trial: { href: 'auth.html?mode=signup', text: 'Start your free 14-day trial →' },
-    topup: { href: 'account.html?topup=1', text: 'Buy a top-up →' },
     account: { href: 'account.html', text: 'Manage your subscription →' },
     support: { href: SUPPORT_URL, text: 'Contact CLPeasy Support →' }
   };
-  const PURCHASED_KEPT = "Your unused purchased downloads stay on your account. They're used once your monthly allowance runs out, and they never expire.";
+  const PURCHASED_KEPT = "Your unused purchased downloads stay on your account and never expire. You won't need them while Easy Start Unlimited is active.";
   const TRIAL_ENDS = "Buying Pay As You Go ends your free trial now. Any unused trial downloads won't carry over.";
 
   // Returns { state, messages:[], primary, secondary } — links only; the
@@ -216,7 +204,6 @@
     const plan = res.plan;
     const state = accountState(ent);
     const out = { state, messages: [], primary: null, secondary: null };
-    const subName = state === 'activePro' ? 'Easy Pro' : 'Easy Start';
 
     if (state === 'signedOut') {
       out.primary = LINKS[plan];
@@ -227,9 +214,8 @@
 
     if (plan === 'payg') {
       if (state === 'activeStart' || state === 'activePro' || state === 'cancelScheduled') {
-        out.messages.push("Pay As You Go isn't available while you have an Easy Start or Easy Pro subscription. Subscriber top-ups cover extra downloads.");
-        out.primary = LINKS.topup;
-        out.secondary = LINKS.account;
+        out.messages.push("Your subscription already includes unlimited downloads, so you don't need Pay As You Go.");
+        out.primary = LINKS.account;
         return out;
       }
       if (state === 'trialActive') out.messages.push(TRIAL_ENDS);
@@ -244,19 +230,13 @@
       return out;
     }
 
-    // Easy Start / Easy Pro recommendation
-    const recName = plan === 'pro' ? 'Easy Pro' : 'Easy Start';
+    // Easy Start Unlimited recommendation (legacy Easy Pro subscriptions are
+    // unlimited too).
     if (state === 'activeStart' || state === 'activePro') {
-      const current = state === 'activePro' ? 'pro' : 'start';
-      if (current === plan) {
-        out.messages.push("You're already on " + recName + '.');
-        out.primary = { href: 'account.html', text: 'View your account →' };
-      } else {
-        out.messages.push(plan === 'pro'
-          ? 'Easy Pro would better match your current usage. To change your plan, contact CLPeasy Support.'
-          : 'Easy Start would cover your current usage. To change your plan, contact CLPeasy Support.');
-        out.primary = LINKS.support;
-      }
+      out.messages.push(state === 'activePro'
+        ? 'Your Easy Pro subscription already includes unlimited downloads.'
+        : "You're already on Easy Start Unlimited.");
+      out.primary = { href: 'account.html', text: 'View your account →' };
       return out;
     }
     if (state === 'cancelScheduled' || state === 'paused') {

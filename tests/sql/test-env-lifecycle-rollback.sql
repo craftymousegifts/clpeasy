@@ -7,7 +7,9 @@
 -- are kept in docs/reports/pr156-final-qa/test-db-rollback/. Paste the whole DO
 -- block; the "error" returned IS the report. From 20260929000000 (owner
 -- decision C1) T17 is a PASS check and T17b/T34-T37 cover the new rules;
--- from 20260930000000 (v13) T38-T41 cover the legacy re-download key transition.
+-- from 20260930000000 (v13) T38-T41 cover the legacy re-download key transition;
+-- from 20261002000000 (Easy Start Unlimited) T21-T23, T31, T32 and T37 expect
+-- unlimited subscription downloads and T42-T47 cover the unlimited rules.
 do $qa$
 declare
   res text[] := '{}';
@@ -134,18 +136,19 @@ begin
   perform set_config('request.jwt.claims',json_build_object('sub',u,'role','authenticated')::text,true);
   perform set_config('request.jwt.claim.role','authenticated',true);
   r := public.consume_download('start::candle');
-  if (r->>'source')='purchased' and (r->>'clean_export')::boolean and (r->>'downloads_used')::int=20 then res := res || 'PASS T21 Easy Start at 20/20: spends one purchased download, clean; monthly plan NOT refilled by a past reset date'::text; else res := res || ('FAIL T21 '||r::text); fails:=fails+1; end if;
+  if (r->>'source')='subscription' and (r->>'unlimited')::boolean and (r->>'clean_export')::boolean and not (r->>'consumed')::boolean and (r->>'downloads_used')::int=20 and (r->>'purchased_downloads')::int=15 then res := res || 'PASS T21 Easy Start Unlimited at old 20/20: clean, consumes nothing (no counter, purchased kept 15)'::text; else res := res || ('FAIL T21 '||r::text); fails:=fails+1; end if;
   perform set_config('request.jwt.claim.role','service_role',true);
   update public.profiles set downloads_used=3 where id=u;
   perform set_config('request.jwt.claim.role','authenticated',true);
   r := public.consume_download('start2::candle');
-  if (r->>'source')='plan' and (r->>'clean_export')::boolean and (r->>'purchased_downloads')::int=14 then res := res || 'PASS T22 subscriber with allowance left uses plan allowance first, purchased untouched'::text; else res := res || ('FAIL T22 '||r::text); fails:=fails+1; end if;
+  select * into p from public.profiles where id = u;
+  if (r->>'source')='subscription' and (r->>'clean_export')::boolean and (r->>'purchased_downloads')::int=15 and p.downloads_used=3 then res := res || 'PASS T22 Easy Start Unlimited: counter never moves (3 stays 3), purchased untouched'::text; else res := res || ('FAIL T22 '||r::text); fails:=fails+1; end if;
   -- cancel at period end, still paid
   perform set_config('request.jwt.claim.role','service_role',true);
   update public.profiles set subscription_status='cancelled', deletion_date=now()+interval '10 days' where id=u;
   perform set_config('request.jwt.claim.role','authenticated',true);
   r := public.consume_download('start3::candle');
-  if (r->>'source')='plan' and (r->>'clean_export')::boolean then res := res || 'PASS T23 cancel-at-period-end inside paid period behaves as active (clean plan download)'::text; else res := res || ('FAIL T23 '||r::text); fails:=fails+1; end if;
+  if (r->>'source')='subscription' and (r->>'unlimited')::boolean and (r->>'clean_export')::boolean and not (r->>'consumed')::boolean then res := res || 'PASS T23 cancel-at-period-end inside paid period stays unlimited'::text; else res := res || ('FAIL T23 '||r::text); fails:=fails+1; end if;
   perform set_config('request.jwt.claim.role','service_role',true);
   r := public.credit_payg_purchase(u, 8);
   if not (r->>'trial_converted')::boolean and (r->>'subscription_status')='cancelled' then res := res || 'PASS T24 cancel-scheduled subscriber credited by PAYG webhook is NOT converted (checkout refuses them anyway)'::text; else res := res || ('FAIL T24 '||r::text); fails:=fails+1; end if;
@@ -197,10 +200,10 @@ begin
   perform set_config('request.jwt.claim.role','authenticated',true);
   r := public.consume_download('annual::candle');
   select * into p from public.profiles where id = u;
-  if (r->>'source')='plan' and p.downloads_used=1 and p.downloads_reset_date > current_date and p.downloads_reset_date <= current_date + 31 then res := res || ('PASS T31 annual Pro at 30/30 with reset 40 days ago: first download refills to 30, uses 1, next reset '||p.downloads_reset_date)::text; else res := res || ('FAIL T31 '||r::text||' reset='||p.downloads_reset_date); fails:=fails+1; end if;
+  if (r->>'source')='subscription' and (r->>'unlimited')::boolean and p.downloads_used=30 then res := res || ('PASS T31 annual (legacy Pro) at old 30/30: unlimited, nothing consumed, no refill needed')::text; else res := res || ('FAIL T31 '||r::text||' reset='||p.downloads_reset_date); fails:=fails+1; end if;
   r := public.consume_download('annual2::candle');
   select * into p from public.profiles where id = u;
-  if p.downloads_used=2 then res := res || 'PASS T32 annual: no double refill on the next download (2 used)'::text; else res := res || ('FAIL T32 used='||p.downloads_used); fails:=fails+1; end if;
+  if p.downloads_used=30 and (r->>'unlimited')::boolean then res := res || 'PASS T32 annual: next download also unlimited, counter unchanged'::text; else res := res || ('FAIL T32 used='||p.downloads_used); fails:=fails+1; end if;
   perform set_config('request.jwt.claim.role','service_role',true);
   update public.profiles set subscription_status='paused', downloads_used=30, downloads_reset_date=(current_date - 5) where id=u;
   perform set_config('request.jwt.claim.role','authenticated',true);
@@ -244,7 +247,7 @@ begin
   perform set_config('request.jwt.claim.role','authenticated',true);
   r := public.consume_download('oud::pillar candle::circle::70x70mm');
   select * into p from public.profiles where id = u;
-  if (r->>'consumed')::boolean and (r->>'source')='plan' and (r->>'clean_export')::boolean and p.downloads_used=1 and p.downloads_reset_date > current_date then res := res || 'PASS T37 C1 annual: refill applied first, watermarked label charged once from the refilled plan and clean (1/30)'::text; else res := res || ('FAIL T37 '||r::text||' used='||p.downloads_used); fails:=fails+1; end if;
+  if not (r->>'consumed')::boolean and (r->>'source')='subscription' and (r->>'clean_export')::boolean and p.downloads_used=30 then res := res || 'PASS T37 trial-watermarked label after subscribing: re-issued clean by the unlimited subscription, nothing consumed'::text; else res := res || ('FAIL T37 '||r::text); fails:=fails+1; end if;
 
   -- ── 8. v13 transition: re-download history under the OLD key (name::type) ──
   u := gen_random_uuid();
@@ -269,6 +272,50 @@ begin
   if (r->>'consumed')::boolean and (r->>'clean_export')::boolean and (r->>'purchased_downloads')::int=3 then res := res || 'PASS T40 transition: legacy watermarked record + paid downloads -> charged once, clean'::text; else res := res || ('FAIL T40 '||r::text); fails:=fails+1; end if;
   r := public.consume_download('legacy old::scented candle::circle::52x52mm', 'legacy old::scented candle');
   if (r->>'consumed')::boolean and (r->>'purchased_downloads')::int=2 then res := res || 'PASS T41 transition: legacy record outside 7 days -> charged'::text; else res := res || ('FAIL T41 '||r::text); fails:=fails+1; end if;
+
+  -- ── 9. Easy Start Unlimited (2 Oct 2026) ───────────────────────────
+  u := gen_random_uuid();
+  insert into auth.users(id, instance_id, aud, role, email, raw_user_meta_data, created_at, updated_at)
+  values (u, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'qa-rollback-10@example.test', '{}'::jsonb, now(), now());
+  perform set_config('request.jwt.claim.role','service_role',true);
+  update public.profiles set plan='easy_start', is_pro=false, subscription_status='active', downloads_limit=20, downloads_used=20, billing_cycle='annual', downloads_reset_date=(current_date - 40) where id=u;
+  perform public.credit_payg_purchase(u, 8);
+  perform set_config('request.jwt.claim.sub',u::text,true);
+  perform set_config('request.jwt.claims',json_build_object('sub',u,'role','authenticated')::text,true);
+  perform set_config('request.jwt.claim.role','authenticated',true);
+  for n in 1..25 loop r := public.consume_download('unl'||n||'::candle::circle::60x60mm'); end loop;
+  r := public.consume_download(null);
+  select * into p from public.profiles where id = u;
+  if (r->>'unlimited')::boolean and p.downloads_used=20 and p.topup_credits=8 and p.downloads_reset_date=(current_date - 40) then res := res || 'PASS T42 annual Easy Start Unlimited: 25 labels + a Composer sheet, nothing consumed, PAYG kept (8), no refill write'::text; else res := res || ('FAIL T42 '||r::text||' used='||p.downloads_used||' purchased='||p.topup_credits); fails:=fails+1; end if;
+  select count(*) into n from public.label_downloads where user_id=u and clean_export;
+  if n=25 then res := res || 'PASS T43 unlimited downloads are recorded clean (25 label records)'::text; else res := res || ('FAIL T43 n='||n); fails:=fails+1; end if;
+  -- paid period over but not yet downgraded by the webhook: NOT unlimited, PAYG used
+  perform set_config('request.jwt.claim.role','service_role',true);
+  update public.profiles set subscription_status='cancelled', deletion_date=now()-interval '1 hour' where id=u;
+  perform set_config('request.jwt.claim.role','authenticated',true);
+  r := public.consume_download('after::candle::circle::60x60mm');
+  if (r->>'unlimited') is null and (r->>'source')='purchased' and (r->>'purchased_downloads')::int=7 then res := res || 'PASS T44 cancelled past the paid period: unlimited ends, Pay As You Go used (8 -> 7)'::text; else res := res || ('FAIL T44 '||r::text); fails:=fails+1; end if;
+  -- paused: NOT unlimited
+  perform set_config('request.jwt.claim.role','service_role',true);
+  update public.profiles set subscription_status='paused', deletion_date=null where id=u;
+  perform set_config('request.jwt.claim.role','authenticated',true);
+  r := public.consume_download(null);
+  if (r->>'unlimited') is null and (r->>'source')='purchased' and (r->>'purchased_downloads')::int=6 then res := res || 'PASS T45 paused: not unlimited, purchased download used (7 -> 6)'::text; else res := res || ('FAIL T45 '||r::text); fails:=fails+1; end if;
+  -- ended (downgraded to free): NOT unlimited
+  perform set_config('request.jwt.claim.role','service_role',true);
+  update public.profiles set plan='free', subscription_status='cancelled', downloads_limit=0 where id=u;
+  perform set_config('request.jwt.claim.role','authenticated',true);
+  r := public.consume_download(null);
+  if (r->>'unlimited') is null and (r->>'source')='purchased' and (r->>'purchased_downloads')::int=5 then res := res || 'PASS T46 ended subscription: not unlimited, purchased download used (6 -> 5)'::text; else res := res || ('FAIL T46 '||r::text); fails:=fails+1; end if;
+  -- customer cannot make themselves unlimited (same model as T09)
+  perform set_config('request.jwt.claim.role','authenticated',true);
+  execute 'set local role authenticated';
+  update public.profiles set plan='easy_start', subscription_status='active', deletion_date=null where id=u;
+  execute 'reset role';
+  select * into p from public.profiles where id = u;
+  perform set_config('request.jwt.claim.role','authenticated',true);
+  r := public.consume_download(null);
+  if p.plan='free' and (r->>'unlimited') is null and (r->>'purchased_downloads')::int=4 then res := res || 'PASS T47 customer cannot write plan/status to become unlimited'::text; else res := res || ('FAIL T47 plan='||p.plan||' '||r::text); fails:=fails+1; end if;
 
   raise exception 'QA_RESULTS fails=% %', fails, E'\n' || array_to_string(res, E'\n');
 end

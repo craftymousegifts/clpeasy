@@ -1,9 +1,10 @@
 // Plan Checker (Sep 2026 audit, approved branching model).
 //  1. Branching: path(), prune(), complete(), usage() and all 27 valid paths
 //     → exact recommended plan and rule.
-//  2. Invariants: explicit PAYG preference never overridden; "just getting
-//     started" and occasional use never give Easy Pro; promotions and account
-//     state never change the recommendation.
+//  2. Invariants: explicit PAYG preference never overridden; only Pay As You
+//     Go or Easy Start Unlimited is ever recommended (Easy Pro and top-ups are
+//     retired, 2 Oct 2026); promotions and account state never change the
+//     recommendation.
 //  3. Account-state calls-to-action from the shared CLPEntitlement summary.
 //  4. The real plan-picker.html page in jsdom with a mocked Supabase:
 //     auto-advance, no Next buttons, Back along the real branch, cleared
@@ -48,7 +49,6 @@ assert.strictEqual(u('11to20', 'separate').level, 'medium');
 assert.strictEqual(u('11to20', 'notsure').level, 'medium');
 assert.strictEqual(u('over20', 'separate').level, 'high');
 assert.strictEqual(u('over20', 'notsure').level, 'medium');
-assert.strictEqual(u('over20', 'notsure').maybePro, true);
 assert.strictEqual(PC.usage({ frequency: 'occasional' }), null);
 assert.strictEqual(PC.usage({ frequency: 'notsure' }), null);
 
@@ -61,14 +61,14 @@ const EXPECTED = {
   'ongoing|11to20|separate|payg': ['payg', 'R1'], 'ongoing|11to20|separate|subscription': ['start', 'R2-medium'], 'ongoing|11to20|separate|none': ['start', 'R3-medium'],
   'ongoing|11to20|notsure|payg': ['payg', 'R1'], 'ongoing|11to20|notsure|subscription': ['start', 'R2-medium'], 'ongoing|11to20|notsure|none': ['start', 'R3-medium'],
   'ongoing|over20|combined|payg': ['payg', 'R1'], 'ongoing|over20|combined|subscription': ['start', 'R2-low'], 'ongoing|over20|combined|none': ['payg', 'R3-low'],
-  'ongoing|over20|separate|payg': ['payg', 'R1'], 'ongoing|over20|separate|subscription': ['pro', 'R2-high'], 'ongoing|over20|separate|none': ['pro', 'R3-high'],
+  'ongoing|over20|separate|payg': ['payg', 'R1'], 'ongoing|over20|separate|subscription': ['start', 'R2-high'], 'ongoing|over20|separate|none': ['start', 'R3-high'],
   'ongoing|over20|notsure|payg': ['payg', 'R1'], 'ongoing|over20|notsure|subscription': ['start', 'R2-medium'], 'ongoing|over20|notsure|none': ['start', 'R3-medium'],
 };
 const paths = PC.allPaths();
 assert.strictEqual(paths.length, 27, '27 valid answer paths');
 assert.strictEqual(Object.keys(EXPECTED).length, 27);
 assert.deepStrictEqual(paths.map(key).sort(), Object.keys(EXPECTED).sort(), 'allPaths() covers exactly the expected paths');
-const counts = { payg: 0, start: 0, pro: 0 };
+const counts = { payg: 0, start: 0 };
 for (const a of paths) {
   const r = PC.decide(a);
   assert.deepStrictEqual([r.plan, r.rule], EXPECTED[key(a)], 'path ' + key(a));
@@ -77,16 +77,15 @@ for (const a of paths) {
   assert.strictEqual(!!r.estimateNote, a.frequency === 'ongoing', 'reprint/estimate note only when usage is estimated from label volume: ' + key(a));
   counts[r.plan]++;
 }
-assert.deepStrictEqual(counts, { payg: 14, start: 11, pro: 2 });
+assert.deepStrictEqual(counts, { payg: 14, start: 13 });
 
 // Specific approved wording/caveats
 const d = a => PC.decide(a);
-assert(/Easy Start \(£9\.99\/month for 20 downloads\) would usually cost less/.test(d({ frequency: 'ongoing', labels: '11to20', printing: 'separate', payment: 'payg' }).warning));
-assert(/Easy Pro \(£14\.99\/month for 30 downloads/.test(d({ frequency: 'ongoing', labels: 'over20', printing: 'separate', payment: 'payg' }).warning));
+assert(/Easy Start Unlimited \(£9\.99\/month for unlimited downloads\) would usually cost less/.test(d({ frequency: 'ongoing', labels: '11to20', printing: 'separate', payment: 'payg' }).warning));
+assert(/over £20 a month\. Easy Start Unlimited \(£9\.99\/month for unlimited downloads\) would usually cost less/.test(d({ frequency: 'ongoing', labels: 'over20', printing: 'separate', payment: 'payg' }).warning));
 assert(!d({ frequency: 'ongoing', labels: 'over20', printing: 'combined', payment: 'payg' }).warning, 'combined sheets: no high-usage cost warning');
-assert(/£13\.98/.test(d({ frequency: 'ongoing', labels: 'over20', printing: 'separate', payment: 'none' }).note), 'Start + top-up comparison for high usage');
-assert(/Easy Pro includes 30/.test(d({ frequency: 'ongoing', labels: 'over20', printing: 'notsure', payment: 'none' }).note), 'more than 20 + not sure → maybe-Pro note');
-assert(!d({ frequency: 'ongoing', labels: '11to20', printing: 'notsure', payment: 'none' }).note, '11–20 + not sure has no maybe-Pro note');
+assert(/no download limit/.test(d({ frequency: 'ongoing', labels: 'over20', printing: 'separate', payment: 'none' }).reasons[0]), 'high usage → unlimited');
+assert(!d({ frequency: 'ongoing', labels: 'over20', printing: 'notsure', payment: 'none' }).note, 'no Easy Pro note any more');
 assert(/Pay As You Go would usually cost the same as or less/.test(d({ frequency: 'ongoing', labels: 'upto10', payment: 'subscription' }).warning), 'low usage + subscription preference warning');
 assert(/Pay As You Go would usually cost less than a year-round subscription/.test(d({ frequency: 'occasional', payment: 'subscription' }).warning));
 assert(/combine several different labels/.test(d({ frequency: 'ongoing', labels: '11to20', printing: 'combined', payment: 'none' }).reasons[0]));
@@ -97,11 +96,14 @@ assert(!/cancel/i.test(JSON.stringify(paths.map(d))), 'never suggests subscribin
 for (const a of paths) {
   const r = d(a);
   if (a.payment === 'payg') assert.strictEqual(r.plan, 'payg', 'explicit PAYG preference never overridden');
-  if (a.frequency === 'notsure') assert.notStrictEqual(r.plan, 'pro', 'just starting never gives Easy Pro');
-  if (a.frequency === 'occasional') assert.notStrictEqual(r.plan, 'pro', 'occasional never gives Easy Pro');
-  if (a.printing === 'combined' || a.printing === 'notsure') assert.notStrictEqual(r.plan, 'pro', 'uncertain or combined printing never gives Easy Pro');
+  assert(['payg', 'start'].includes(r.plan), 'only Pay As You Go or Easy Start Unlimited: ' + key(a));
+  assert(!/Easy Pro|top-up|for 20 downloads|30 downloads|£14\.99|£99|£149/i.test(JSON.stringify(r)), 'no retired plan, top-up or old allowance wording: ' + key(a));
   assert(!/reduce risk|trading standards|anxi|confiden|SDS update/i.test(JSON.stringify(r)), 'no anxiety/compliance-worry reasoning');
 }
+assert.deepStrictEqual(Object.keys(PC.PLANS).sort(), ['payg', 'start'], 'Easy Pro is not a plan option');
+assert.strictEqual(PC.PLANS.start.name, 'Easy Start Unlimited');
+assert(/£89\/year/.test(PC.PLANS.start.price) && /save £30\.88/i.test(PC.PLANS.start.price), 'annual £89, save £30.88');
+assert(!/Easy Pro|top-up|£14\.99|£99\b|£149/i.test(JSON.stringify(PC.PLANS)), 'no retired plan or top-up copy');
 const realNow = Date.now;
 const before = paths.map(d);
 Date.now = () => PC.PROMO_END_MS + 30 * DAY;
@@ -130,19 +132,19 @@ for (const s of STATES) assert.strictEqual(PC.accountState(entFor(s)), s, 'accou
 
 const A_PAYG = { frequency: 'ongoing', labels: 'upto10', payment: 'none' };
 const A_START = { frequency: 'ongoing', labels: '11to20', printing: 'separate', payment: 'none' };
-const A_PRO = { frequency: 'ongoing', labels: 'over20', printing: 'separate', payment: 'none' };
+const A_HIGH = { frequency: 'ongoing', labels: 'over20', printing: 'separate', payment: 'none' };
 const A_NOTSURE = { frequency: 'notsure', payment: 'none' };
-const PAYG = d(A_PAYG), START = d(A_START), PRO = d(A_PRO), NOTSURE = d(A_NOTSURE);
+const PAYG = d(A_PAYG), START = d(A_START), HIGH = d(A_HIGH), NOTSURE = d(A_NOTSURE);
 const cta = (res, s) => PC.ctas(res, entFor(s));
 const msgs = c => c.messages.join(' ');
 
-for (const [res, href] of [[PAYG, 'pricing.html#payg'], [START, 'pricing.html#easy-start'], [PRO, 'pricing.html#easy-pro']]) {
+for (const [res, href] of [[PAYG, 'pricing.html#payg'], [START, 'pricing.html#easy-start'], [HIGH, 'pricing.html#easy-start']]) {
   const c = cta(res, 'signedOut');
   assert.strictEqual(c.primary.href, href);
   assert.strictEqual(c.secondary.href, 'auth.html?mode=signup', 'trial is the secondary CTA when signed out');
 }
 assert(/Try CLPeasy free for 14 days/.test(msgs(cta(NOTSURE, 'signedOut'))), 'just starting → trial prominently offered');
-for (const s of Object.keys(PROFILES)) for (const res of [PAYG, START, PRO]) {
+for (const s of Object.keys(PROFILES)) for (const res of [PAYG, START, HIGH]) {
   const c = cta(res, s);
   for (const l of [c.primary, c.secondary]) if (l) assert(!/auth\.html\?mode=signup/.test(l.href), 'no trial CTA for signed-in ' + s);
 }
@@ -156,25 +158,25 @@ assert(!/ends your free trial/.test(msgs(cta(PAYG, 'trialExpired'))));
   const c = cta(PAYG, 'payg');
   assert.strictEqual(c.primary.text, 'Buy more downloads →');
   assert(/You have 3 purchased downloads remaining/.test(msgs(c)));
-  for (const res of [START, PRO]) assert(msgs(cta(res, 'payg')).includes("Your unused purchased downloads stay on your account. They're used once your monthly allowance runs out, and they never expire."));
+  for (const res of [START, HIGH]) assert(msgs(cta(res, 'payg')).includes("Your unused purchased downloads stay on your account and never expire. You won't need them while Easy Start Unlimited is active."));
 }
 for (const s of ['activeStart', 'activePro', 'cancelScheduled']) {
   const c = cta(PAYG, s);
   for (const l of [c.primary, c.secondary]) if (l) assert(!/#payg/.test(l.href), 'no PAYG purchase for ' + s);
-  assert.strictEqual(c.primary.href, 'account.html?topup=1');
+  assert.strictEqual(c.primary.href, 'account.html');
+  assert(/already includes unlimited downloads/.test(msgs(c)), 'unlimited subscriber told they need no PAYG: ' + s);
 }
-assert(/You're already on Easy Start\./.test(msgs(cta(START, 'activeStart'))));
-assert(/You're already on Easy Pro\./.test(msgs(cta(PRO, 'activePro'))));
-{
-  const up = cta(PRO, 'activeStart'), down = cta(START, 'activePro');
-  assert(msgs(up).includes('Easy Pro would better match your current usage. To change your plan, contact CLPeasy Support.'));
-  assert(msgs(down).includes('Easy Start would cover your current usage. To change your plan, contact CLPeasy Support.'));
-  for (const c of [up, down]) { assert.strictEqual(c.primary.href, 'support.html'); assert.strictEqual(c.secondary, null); }
-}
+for (const res of [START, HIGH]) assert(/You're already on Easy Start Unlimited\./.test(msgs(cta(res, 'activeStart'))));
+assert(/Your Easy Pro subscription already includes unlimited downloads\./.test(msgs(cta(HIGH, 'activePro'))), 'legacy Easy Pro is unlimited too');
+for (const s of ['activeStart', 'activePro']) assert.strictEqual(cta(START, s).primary.href, 'account.html');
 assert.strictEqual(cta(START, 'cancelScheduled').primary.href, 'account.html');
-assert.strictEqual(cta(PRO, 'paused').primary.href, 'account.html');
+assert.strictEqual(cta(HIGH, 'paused').primary.href, 'account.html');
+for (const s of STATES) for (const res of [PAYG, START, HIGH, NOTSURE]) {
+  const c = cta(res, s);
+  assert(!/topup|easy-pro|Easy Pro →|top-up/i.test(JSON.stringify([c.primary, c.secondary])), 'no Easy Pro or top-up CTA: ' + s);
+}
 assert.strictEqual(cta(PAYG, 'paused').primary.href, 'pricing.html#payg');
-for (const s of STATES) for (const res of [PAYG, START, PRO, NOTSURE]) assert(!/stripe|change plan in/i.test(JSON.stringify(cta(res, s))), 'no Stripe plan-change CTA');
+for (const s of STATES) for (const res of [PAYG, START, HIGH, NOTSURE]) assert(!/stripe|change plan in/i.test(JSON.stringify(cta(res, s))), 'no Stripe plan-change CTA');
 for (const a of paths) {
   const r = d(a), snapshot = JSON.stringify(r);
   for (const s of STATES) PC.ctas(r, entFor(s));
@@ -347,7 +349,7 @@ function readResult(w){
   // only small instant corrections (browser QA checks real positions).
   {
     const { w } = await openPage('signedOut');
-    await run(w, A_PRO);
+    await run(w, A_HIGH);
     w.retake();
     for (const [fn, args] of w.__scrolls) {
       assert.strictEqual(fn, 'scrollBy', 'only small scrollBy corrections, never scrollTo');
@@ -421,15 +423,17 @@ function readResult(w){
     assert.strictEqual($(w, 'result-card').classList.contains('show'), false, 'stale result not shown after Retake');
   }
 
-  // Easy Pro card: factual proposition only.
+  // High usage → Easy Start Unlimited card: factual proposition only.
   {
     const { w } = await openPage('signedOut');
-    await run(w, A_PRO);
+    await run(w, A_HIGH);
     const r = readResult(w);
-    assert.strictEqual(r.plan, 'pro');
-    assert(/30 downloads a month/.test(r.features) && /Priority support — we aim to reply within 1 working day\./.test(r.features) && /Top-ups/.test(r.features));
+    assert.strictEqual(r.plan, 'start');
+    assert.strictEqual(r.name, 'Easy Start Unlimited');
+    assert(/Unlimited downloads while your subscription is active/.test(r.features) && /£89\/year/.test(r.features));
+    assert(!/Easy Pro|Top-up|Priority support|for 20 downloads|30 downloads/i.test(r.text), 'no retired plan wording on the page');
     assert(!/reduce risk|confidence|Trading Standards|SDS/i.test(r.text));
-    assert(/£13\.98/.test(r.boxes));
+    assert.strictEqual(r.primary, 'pricing.html#easy-start');
   }
   // Offer box: shown before the end date, hidden after; recommendation unchanged.
   {
@@ -450,11 +454,11 @@ function readResult(w){
     ['trialActive', A_PAYG, 'pricing.html#payg', /ends your free trial now/],
     ['trialExpired', A_PAYG, 'pricing.html#payg', null],
     ['payg', A_START, 'pricing.html#easy-start', /purchased downloads stay on your account/],
-    ['activeStart', A_PRO, 'support.html', /Easy Pro would better match your current usage/],
-    ['activePro', A_START, 'support.html', /Easy Start would cover your current usage/],
-    ['activeStart', A_PAYG, 'account.html?topup=1', /isn't available while you have an Easy Start or Easy Pro subscription/],
-    ['cancelScheduled', A_PAYG, 'account.html?topup=1', /isn't available/],
-    ['paused', A_PRO, 'account.html', /currently paused/],
+    ['activeStart', A_HIGH, 'account.html', /already on Easy Start Unlimited/],
+    ['activePro', A_START, 'account.html', /Easy Pro subscription already includes unlimited downloads/],
+    ['activeStart', A_PAYG, 'account.html', /already includes unlimited downloads/],
+    ['cancelScheduled', A_PAYG, 'account.html', /already includes unlimited downloads/],
+    ['paused', A_HIGH, 'account.html', /currently paused/],
   ];
   for (const [state, a, href, re] of pageCases) {
     const { w, errors } = await openPage(state);
@@ -470,11 +474,11 @@ function readResult(w){
   // Lookup failure / missing Supabase → signed-out CTAs, same plan.
   for (const opts of [{ throwSession: true }, { noSupabase: true }]) {
     const { w, errors } = await openPage('activePro', opts);
-    await run(w, A_PRO);
+    await run(w, A_HIGH);
     const r = readResult(w);
     assert.strictEqual(r.account, 'signedOut');
-    assert.strictEqual(r.plan, 'pro');
-    assert.strictEqual(r.primary, 'pricing.html#easy-pro');
+    assert.strictEqual(r.plan, 'start');
+    assert.strictEqual(r.primary, 'pricing.html#easy-start');
     assert.deepStrictEqual(errors, [], errors.join('; '));
   }
   console.log('plan checker checks passed (27 branching paths, invariants, auto-advance, Back/branch clearing, ' + pageCases.length + ' account-state page cases, CTA matrix, offer expiry)');

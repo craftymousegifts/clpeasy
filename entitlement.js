@@ -19,6 +19,11 @@
 //    trial downloads" -- pricing.html). An expired trial has no allowance.
 //  - Purchased downloads (Pay As You Go / top-ups; stored in the legacy
 //    topup_credits column) never expire and are always clean.
+//  - Easy Start Unlimited (owner decision, 2 Oct 2026; migration
+//    20261002000000): a CURRENT Easy Start subscription (active, or a
+//    scheduled cancellation still inside its paid period) has unlimited
+//    clean downloads and consumes nothing. Legacy Easy Pro is treated the
+//    same. Subscriber top-ups are retired from new sales.
 //  - When the only plan allowance would be watermarked (trial) and the
 //    customer has purchased downloads, the purchased download is used so a
 //    paying customer receives the clean file they paid for.
@@ -51,6 +56,11 @@
     // allowance is forfeited; only purchased downloads are usable.
     const payg = !active && !paused && !cancelScheduled && (status === 'payg' || plan === 'payg');
 
+    // Easy Start Unlimited: decided from the plan and status, never from a
+    // large downloads_limit (same rule as consume_download()).
+    const unlimited = ['easy_start','easy_pro'].includes(plan) &&
+      (active || (status === 'cancelled' && (deletionDate === null || deletionDate > now)));
+
     const planUsable = active || cancelScheduled || trialActive;
     const planClean = planUsable && !trialActive;
     // Annual plans refill monthly; consume_download() applies the reset at the
@@ -61,13 +71,16 @@
     const planLeft = planUsable ? Math.max(0, limit - used) : 0;
 
     let nextSource = null, nextClean = false;
-    if (planUsable && planLeft > 0 && (planClean || purchased === 0)) { nextSource = 'plan'; nextClean = planClean; }
+    if (unlimited) { nextSource = 'subscription'; nextClean = true; }
+    else if (planUsable && planLeft > 0 && (planClean || purchased === 0)) { nextSource = 'plan'; nextClean = planClean; }
     else if (purchased > 0) { nextSource = 'purchased'; nextClean = true; }
 
     return {
       status, plan, used, limit, purchased,
-      active, cancelScheduled, paused, trialActive, trialExpired, payg,
+      active, cancelScheduled, paused, trialActive, trialExpired, payg, unlimited,
       planUsable, planClean, planLeft,
+      // For an unlimited subscription there is no finite total; pages must
+      // check `unlimited` first (totalLeft only counts finite downloads).
       totalLeft: planLeft + purchased,
       nextSource, nextClean,
       // A clean export (Builder clean preview, any Composer export) is
@@ -75,20 +88,20 @@
       cleanAvailable: nextClean,
       // Builder shows a clean live preview to paying customers: a paid plan
       // (even once this month's allowance is used) or purchased downloads.
-      cleanPreview: planClean || purchased > 0,
-      // D4: subscriber top-up packs are only for active Easy Start/Pro, or a
-      // scheduled cancellation still inside its paid period. Everyone else
-      // (trial, expired trial, PAYG, paused, ended) buys Pay As You Go.
-      topupEligible: active || cancelScheduled,
+      cleanPreview: unlimited || planClean || purchased > 0,
+      // Subscriber top-up packs are retired from new sales (2 Oct 2026):
+      // current subscribers are unlimited. Everyone else (trial, expired
+      // trial, PAYG, paused, ended) buys Pay As You Go.
+      topupEligible: false,
       // Approved decision 2: current subscribers (the same accounts) cannot
       // buy Pay As You Go; everyone else can. Enforced by the server.
-      paygAvailable: !(active || cancelScheduled),
+      paygAvailable: !(active || cancelScheduled || unlimited),
       planName: planName({ status, plan, is_pro: p.is_pro, purchased, trialActive, trialExpired, cancelScheduled, paidPlan, payg })
     };
   }
 
   function subscriptionName(s){
-    return (s.plan === 'easy_pro' || (s.plan !== 'easy_start' && s.is_pro)) ? 'Easy Pro' : 'Easy Start';
+    return (s.plan === 'easy_pro' || (s.plan !== 'easy_start' && s.is_pro)) ? 'Easy Pro' : 'Easy Start Unlimited';
   }
 
   function planName(s){
@@ -115,6 +128,13 @@
     if (!usage) return;
     usage.style.display = 'block';
     const count = doc.getElementById('su-count');
+    if (ent.unlimited) {
+      if (count) count.textContent = 'Unlimited';
+      const f = doc.getElementById('su-fill');
+      if (f) f.style.width = '100%';
+      applyPurchaseLinks(doc, ent);
+      return;
+    }
     if (count) count.textContent = (ent.planUsable && ent.purchased === 0 && ent.limit > 0)
       ? ent.planLeft + ' of ' + ent.limit
       : ent.totalLeft + ' download' + (ent.totalLeft === 1 ? '' : 's');
@@ -125,26 +145,29 @@
     applyPurchaseLinks(doc, ent);
   }
 
-  // Where "buy more downloads" goes for this account (D4).
+  // Where "buy more downloads" goes for this account. Unlimited subscribers
+  // never need to buy downloads (no link); everyone else uses Pay As You Go
+  // (subscriber top-ups are retired from new sales).
   function purchaseLink(ent){
-    return ent && ent.topupEligible
-      ? { href: 'account.html?topup=1', text: 'Buy Top-Up →', route: 'topup' }
+    return ent && ent.unlimited
+      ? null
       : { href: 'pricing.html#payg', text: 'Buy downloads →', route: 'payg' };
   }
-  // Points every sidebar "Buy Top-Up" link at the correct purchase route.
+  // Points every sidebar "Buy downloads" link at the correct purchase route,
+  // and hides it for an unlimited subscriber.
   function applyPurchaseLinks(doc, ent){
     if (!doc || !ent) return;
     const link = purchaseLink(ent);
-    doc.querySelectorAll('.su-topup').forEach(a => { a.setAttribute('href', link.href); a.textContent = link.text; a.dataset.route = link.route; });
+    doc.querySelectorAll('.su-topup').forEach(a => {
+      if (!link) { a.style.display = 'none'; a.dataset.route = 'none'; return; }
+      a.style.display = ''; a.setAttribute('href', link.href); a.textContent = link.text; a.dataset.route = link.route;
+    });
   }
 
-  // Out-of-downloads wording: current subscribers are pointed at subscriber
-  // top-ups (they cannot buy PAYG — approved decision 2); everyone else at
-  // Pay As You Go or a plan.
+  // Out-of-downloads wording. A current (unlimited) subscriber never runs
+  // out; everyone else is pointed at Pay As You Go or Easy Start Unlimited.
   function outOfDownloadsMessage(ent){
-    return ent && ent.topupEligible
-      ? 'You have no downloads remaining this month. Buy a subscriber top-up from your account page to continue.'
-      : 'You have no downloads remaining. Buy downloads or choose a plan to continue.';
+    return 'You have no downloads remaining. Buy Pay As You Go downloads or choose Easy Start Unlimited to continue.';
   }
 
   const api = { summarise, renderSidebar, purchaseLink, applyPurchaseLinks, outOfDownloadsMessage };

@@ -34,16 +34,15 @@ if (!EXE) { console.log('SKIP pricing-checkout-ux: no Chromium available'); proc
 // ── Static: only the PAYG and Easy Start card icons changed ──
 const HTML = fs.readFileSync(path.join(ROOT, 'pricing.html'), 'utf8');
 const icons = [...HTML.matchAll(/<span class="card-icon[^"]*">([\s\S]*?)<\/span>/g)].map(m => m[1]);
-assert.strictEqual(icons.length, 4, 'four pricing-card icons');
+assert.strictEqual(icons.length, 3, 'three pricing-card icons (Easy Pro retired from new sales, 2 Oct 2026)');
 assert.strictEqual(icons[0], '✨', 'Easy Trial icon unchanged');
 assert(/^<svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">/.test(icons[1]) && !/127991/.test(icons[1]), 'Pay As You Go: inline SVG payment-card icon (no 🏷️)');
 assert(/^<svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">/.test(icons[2]) && !/🕯/.test(icons[2]), 'Easy Start: inline SVG clipboard icon (no 🕯️)');
-assert.strictEqual(icons[3], '&#9889;', 'Easy Pro icon unchanged');
 assert(!/<image|xlink:href|href=/.test(icons[1] + icons[2]), 'icons are self-contained vector shapes (no external artwork)');
-console.log('PASS: static: Easy Trial ✨ and Easy Pro ⚡ unchanged; PAYG and Easy Start are inline SVG');
+console.log('PASS: static: Easy Trial ✨ unchanged; PAYG and Easy Start Unlimited are inline SVG; no Easy Pro card');
 
 const LOCK_MS = 5 * 60 * 1000;
-const PRICES = { start_m: 'price_1TdoEYGZLILz5vqUIqlEsf4X', pro_m: 'price_1TdoEXGZLILz5vqUvZKB1RQw', start_a: 'price_1TdoEXGZLILz5vqUQj5n6Zri', pro_a: 'price_1TdoEXGZLILz5vqUFgTznTUT' };
+const PRICES = { start_m: 'price_1TdoEYGZLILz5vqUIqlEsf4X', start_a: 'easy_start_annual' }; // annual: server-side £89 price via productKey
 const srv = { lockAt: null, requests: [] };
 function answer(body) {
   srv.requests.push(body);
@@ -155,7 +154,6 @@ server.listen(0, '127.0.0.1', async () => {
       await t.evaluate(() => setBilling('monthly'));
       assert.deepStrictEqual(await cardParts(t), [
         ['£8.99/month', 'Normally £9.99/month · 10% launch offer until 31 December 2026'],
-        ['£13.49/month', 'Normally £14.99/month · 10% launch offer until 31 December 2026'],
       ]);
       const style = await t.evaluate(() => {
         const n = document.querySelector('.plan-offer-note'), d = document.querySelector('.plan-desc');
@@ -175,7 +173,7 @@ server.listen(0, '127.0.0.1', async () => {
           overflow: [...document.querySelectorAll('#plan-grid .plan-card')].some(c => c.scrollWidth > c.clientWidth + 1),
           hscroll: document.documentElement.scrollWidth > window.innerWidth,
         }));
-        assert.deepStrictEqual(g, { dateLines: [1, 1], overflow: false, hscroll: false });
+        assert.deepStrictEqual(g, { dateLines: [1], overflow: false, hscroll: false });
         await t.evaluate(() => { document.getElementById('plan-grid').scrollIntoView({ block: 'start', behavior: 'instant' }); window.scrollBy(0, -140); });
         await t.screenshot({ path: path.join(SHOTS, `checkout-plan-cards-monthly-${name}.png`) });
         await ctx.close();
@@ -186,20 +184,18 @@ server.listen(0, '127.0.0.1', async () => {
       const ctx = await newCustomer();
       const t = await open(ctx, 'checkout.html', { nowIso: '2026-10-01T12:00:00Z', cookies: false });
       await t.evaluate(() => { setBilling('monthly'); selectPlan('easy_start'); });
-      assert.deepStrictEqual(await summary(t), { plan: 'Easy Start Monthly', price: '£9.99/moStandard price', promoRow: true, promoLabel: '2026 offer – 10% off', promoAmount: '−£1.00', total: '£8.99/month', note: '£8.99/month until 31 December 2026, then £9.99/month.' });
+      assert.deepStrictEqual(await summary(t), { plan: 'Easy Start Unlimited Monthly', price: '£9.99/moStandard price', promoRow: true, promoLabel: '2026 offer – 10% off', promoAmount: '−£1.00', total: '£8.99/month', note: '£8.99/month until 31 December 2026, then £9.99/month.' });
       await t.screenshot({ path: path.join(SHOTS, 'checkout-summary-easy-start-monthly-desktop.png') });
       await ctx.close();
     });
-    await check('checkout.html: Easy Pro MONTHLY summary = standard £14.99, 2026 offer −£1.50, due today £13.49/month; sends the standard monthly price (the server adds the coupon)', async () => {
+    await check('checkout.html: Easy Start Unlimited MONTHLY sends the standard monthly price (the server adds the coupon)', async () => {
       srv.lockAt = null;
       const ctx = await newCustomer();
       const t = await open(ctx, 'checkout.html', { nowIso: '2026-10-01T12:00:00Z', cookies: false });
-      await t.evaluate(() => { setBilling('monthly'); selectPlan('easy_pro'); });
-      assert.deepStrictEqual(await summary(t), { plan: 'Easy Pro Monthly', price: '£14.99/moStandard price', promoRow: true, promoLabel: '2026 offer – 10% off', promoAmount: '−£1.50', total: '£13.49/month', note: '£13.49/month until 31 December 2026, then £14.99/month.' });
-      await t.screenshot({ path: path.join(SHOTS, 'checkout-summary-easy-pro-monthly-desktop.png') });
+      await t.evaluate(() => { setBilling('monthly'); selectPlan('easy_start'); });
       await opensCheckout(t, () => t.click('#btn-checkout'));
       const req = srv.requests.at(-1);
-      assert.deepStrictEqual([req.priceId, req.mode, Object.keys(req).filter(k => /coupon|discount|promo/i.test(k))], [PRICES.pro_m, 'subscription', []], 'no browser-chosen discount');
+      assert.deepStrictEqual([req.priceId, req.mode, Object.keys(req).filter(k => /coupon|discount|promo/i.test(k))], [PRICES.start_m, 'subscription', []], 'no browser-chosen discount');
       await ctx.close();
     });
     await check('checkout.html (iPhone): Easy Start monthly summary readable, no horizontal scroll', async () => {
@@ -213,7 +209,7 @@ server.listen(0, '127.0.0.1', async () => {
       await t.screenshot({ path: path.join(SHOTS, 'checkout-summary-easy-start-monthly-mobile.png') });
       await ctx.close();
     });
-    for (const [plan, label, total] of [['easy_start', 'Easy Start Annual', '£99.00'], ['easy_pro', 'Easy Pro Annual', '£149.00']]) {
+    for (const [plan, label, total] of [['easy_start', 'Easy Start Unlimited Annual', '£89.00']]) {
       await check(`checkout.html: ${label} card and summary are never discounted (due today ${total})`, async () => {
         const ctx = await newCustomer();
         const t = await open(ctx, 'checkout.html', { nowIso: '2026-10-01T12:00:00Z', cookies: false });
@@ -221,7 +217,7 @@ server.listen(0, '127.0.0.1', async () => {
         const s = await summary(t);
         assert.deepStrictEqual([s.plan, s.promoRow, s.total, s.note], [label, false, total, '']);
         assert(!/Standard price/.test(s.price));
-        assert.deepStrictEqual(await cardParts(t), [['£99/yr', null], ['£149/yr', null]], 'annual cards: £99 / £149, no 2026 offer');
+        assert.deepStrictEqual(await cardParts(t), [['£89/yr', null]], 'annual card: £89, no 2026 offer');
         assert(!/launch offer|Normally|2026/.test((await planCards(t)).join(' ')), 'no promotional wording on annual cards');
         if (plan === 'easy_start') { await new Promise(r => setTimeout(r, 400)); await t.screenshot({ path: path.join(SHOTS, 'checkout-plan-cards-annual-desktop.png') }); } // after the toggle's .2s transition
         await ctx.close();
@@ -234,16 +230,14 @@ server.listen(0, '127.0.0.1', async () => {
       const s = await summary(t);
       assert.deepStrictEqual([s.price, s.promoRow, s.total, s.note], ['£9.99/mo', false, '£9.99', '']);
       const cards = await planCards(t);
-      assert.deepStrictEqual(await cardParts(t), [['£9.99/mo', null], ['£14.99/mo', null]], '2027: standard monthly cards, no offer');
+      assert.deepStrictEqual(await cardParts(t), [['£9.99/mo', null]], '2027: standard monthly card, no offer');
       assert(!cards.join(' ').includes('launch offer'));
-      await t.evaluate(() => selectPlan('easy_pro'));
-      assert.strictEqual((await summary(t)).total, '£14.99');
       await ctx.close();
     });
 
     // ── 3. Pricing page: icons and unchanged offer copy, desktop + iPhone ──
     for (const [name, vp] of [['desktop', DESKTOP], ['mobile', IPHONE]]) {
-      await check(`pricing.html (${name}): four card icons the same height, names aligned, PAYG £4.99 / 8 downloads and monthly £8.99 / £13.49 offer copy unchanged (annual £99 / £149: tests/payg-pricing-checkout.js)`, async () => {
+      await check(`pricing.html (${name}): three card icons the same height, names aligned, PAYG £4.99 / 8 downloads and monthly £8.99 offer copy (annual £89: tests/payg-pricing-checkout.js)`, async () => {
         const ctx = await newCustomer();
         const t = await open(ctx, 'pricing.html', { viewport: vp, cookies: false });
         const g = await t.evaluate(() => [...document.querySelectorAll('.card-icon')].map(e => ({ h: e.getBoundingClientRect().height, gap: e.nextElementSibling.getBoundingClientRect().top - e.getBoundingClientRect().top, svg: e.querySelector('svg') ? [e.querySelector('svg').getBoundingClientRect().width, e.querySelector('svg').getBoundingClientRect().height] : null })));
@@ -251,7 +245,7 @@ server.listen(0, '127.0.0.1', async () => {
         assert(g.every(x => Math.abs(x.gap - g[0].gap) <= 1), 'card name sits the same distance below every icon');
         assert(g[1].svg && g[2].svg && g[1].svg[0] >= 30 && g[1].svg[0] <= 36, 'SVG icons rendered at emoji size');
         const txt = await t.evaluate(() => document.body.innerText);
-        for (const s of ['8 downloads for £4.99', '5 downloads + 3 FREE', '£8.99/month until', '£13.49/month until']) assert(txt.includes(s), 'missing: ' + s);
+        for (const s of ['8 downloads for £4.99', '5 downloads + 3 FREE', '£8.99/month until']) assert(txt.includes(s), 'missing: ' + s);
         assert.strictEqual(await t.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, 'no horizontal scroll');
         await t.evaluate(() => document.querySelector('.cards').scrollIntoView({ block: 'start', behavior: 'instant' }));
         await t.screenshot({ path: path.join(SHOTS, `pricing-${name}.png`) });
@@ -330,7 +324,7 @@ server.listen(0, '127.0.0.1', async () => {
       const ctx = await newCustomer();
       const t = await open(ctx, 'checkout.html');
       assert.strictEqual((await indicator(t)).visible, false);
-      await startOn(t, 'checkout.html', 'easy_pro', 'monthly');
+      await startOn(t, 'checkout.html', 'easy_start', 'monthly');
       await t.waitForSelector('.clp-cn-dialog[data-code="CHECKOUT_IN_PROGRESS"]');
       assert.strictEqual(await t.evaluate(() => document.getElementById('clp-cn-title').textContent), 'Checkout already in progress', 'PR #157 dialog unchanged');
       await t.keyboard.press('Escape');
