@@ -36,3 +36,19 @@ from the production webhook hotfix already approved and reported.
 - Main's current homepage still advertises Easy Pro and top-ups, so the PAYG release must **not go live
   without** the Phase C homepage.
 - They must be released together.
+
+## Approved actions carried out (2 Oct 2026, ~20:15 UK)
+- **Webhook into main:** main fast-forwarded `727804e` → **`ae03748`** (1 commit: `stripe-webhook/index.ts` and its 2
+  test files). Main's `stripe-webhook/index.ts` sha256 `228daf0f…` = production v61. No Supabase function was
+  redeployed.
+  - Netlify production (`clpeasy`) auto-built from main: deploy `6ac002c19cb6e900090c2484`, commit `ae03748`,
+    "3 new files uploaded" (the 3 changed source files, which the site publishes as static files from the repo
+    root), no functions. No page HTML changed.
+- **PR #202:** the ChatGPT workstream had already pushed Phase C as `1295d66`. Added `3c208bc` on top of it,
+  fixing the remaining old-model guide text (£99/yr, 20 downloads, "upgrade") and setting the approved offer
+  bar "10% off Easy Start Unlimited monthly".
+  - Preview: https://deploy-preview-202--clpeasy.netlify.app. Layout identical to `1295d66` at 360/390/768/1366
+    px (offer bar, hero and page height).
+  - og/twitter image unchanged (`CLPeasy Home page.png` 1672×941).
+  - Not merged.
+- The prepared `build/homepage-phase-c-on-202.patch` is superseded by `1295d66` + `3c208bc`.
