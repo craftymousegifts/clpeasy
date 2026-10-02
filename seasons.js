@@ -420,9 +420,9 @@
       });
     };
     window.addEventListener('resize', particleResizeHandler);
-    // Stop the effect after 60s even if the banner never appears/dismisses
-    // (e.g. it was already dismissed earlier this session).
-    particleStopTimer = setTimeout(stopParticles, 60000);
+    // Keep seasonal particles brief so leaves/pumpkins add atmosphere
+    // without continuing over the page for an extended period.
+    particleStopTimer = setTimeout(stopParticles, 12000);
   }
 
   // ── TOP STRIPE ─────────────────────────────────────────────────
@@ -481,55 +481,11 @@
   }
 
   // ── FLOATING SEASONAL ICON ─────────────────────────────────────
+  // Removed from the homepage: the inline seasonal strip below the hero is
+  // now the single seasonal CTA, avoiding a duplicate Halloween/season pill.
   function applySeasonIcon(m) {
     const existing = document.getElementById('clpeasy-season-icon');
     if (existing) existing.remove();
-    const hero = document.querySelector('section.hero, .hero');
-    if (!hero) return;
-    const icon = document.createElement('a');
-    icon.id = 'clpeasy-season-icon';
-    // Safe default until the real auth state resolves just below --
-    // never assume signed-in.
-    icon.href = resolveCtaUrl(m, false);
-    icon.setAttribute('aria-label', m.iconLabel);
-    icon.style.cssText = `
-      display:inline-flex;align-items:center;gap:6px;
-      background:${m.pillBg};
-      border:1px solid ${m.accent};
-      color:${m.pillColor};
-      padding:4px 12px 4px 8px;
-      border-radius:20px;
-      font-size:12px;font-weight:700;
-      margin-bottom:12px;
-      font-family:'DM Sans',sans-serif;
-      animation:clpeasy-float 3s ease-in-out infinite;
-      text-decoration:none;
-      cursor:pointer;
-    `;
-    icon.innerHTML = `<span style="font-size:16px">${m.icon}</span><span>${m.iconLabel}</span>`;
-    // Insert after the hero pill (below "BUILT BY A MAKER, FOR MAKERS")
-    const pill = document.getElementById('hero-pill') ||
-                 Array.from(hero.querySelectorAll('div')).find(el => el.textContent.includes('BUILT BY A MAKER'));
-    if (pill && pill.parentNode) {
-      pill.parentNode.insertBefore(icon, pill.nextSibling);
-    } else {
-      const h1 = hero.querySelector('h1');
-      if (h1) hero.insertBefore(icon, h1);
-    }
-    // Add float animation
-    if (!document.getElementById('clpeasy-float-style')) {
-      const style = document.createElement('style');
-      style.id = 'clpeasy-float-style';
-      style.textContent = `
-        @keyframes clpeasy-float {
-          0%,100% { transform: translateY(0px); }
-          50% { transform: translateY(-4px); }
-        }
-      `;
-      document.head.appendChild(style);
-    }
-    // Correct the CTA once the real session state resolves.
-    getAuthState().then(signedIn => { icon.href = resolveCtaUrl(m, signedIn); });
   }
 
   // ── FOOTER SEASONAL BANNER ─────────────────────────────────────
@@ -548,83 +504,34 @@
   function injectFooterBanner(m, onEligibilityResolved) {
     const existing = document.getElementById('clpeasy-season-banner');
     if (existing) existing.remove();
+
     const banner = document.createElement('div');
     banner.id = 'clpeasy-season-banner';
+    banner.setAttribute('role', 'region');
+    banner.setAttribute('aria-label', m.name + ' seasonal reminder');
     banner.style.cssText = `
-      position:fixed;bottom:0;left:0;right:0;z-index:200;
-      background:${m.bannerBg};
-      border-top:3px solid ${m.accent};
-      padding:10px 24px;
-      display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
-      box-shadow:0 -2px 16px rgba(0,0,0,0.08);
+      width:100%;position:relative;z-index:5;
+      background:linear-gradient(90deg,${m.bannerBg},#fff,${m.bannerBg});
+      border-top:1px solid ${m.bannerBorder};
+      border-bottom:1px solid ${m.bannerBorder};
+      padding:9px 24px;
+      display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;
       font-family:'DM Sans',sans-serif;
-      transform:translateY(100%);
-      transition:transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
     `;
     banner.innerHTML = `
-      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:200px;">
-        <span style="font-size:20px;flex-shrink:0;">${m.bannerEmoji}</span>
-        <span style="font-size:13px;color:#374151;line-height:1.5;">${m.bannerText}</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
-        <a id="clpeasy-banner-cta" href="${resolveCtaUrl(m, false)}" style="background:${m.accentDark};color:white;padding:7px 16px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;">${m.bannerCta} →</a>
-        <button id="clpeasy-banner-close" style="background:none;border:none;color:#9CA3AF;font-size:20px;cursor:pointer;padding:0 4px;line-height:1;" aria-label="Close">×</button>
-      </div>
+      <span aria-hidden="true" style="font-size:24px;line-height:1;">${m.bannerEmoji}</span>
+      <strong style="font-size:17px;color:${m.accentDark};white-space:nowrap;">${m.iconLabel.replace(/\s*[—-].*$/, '')}</strong>
+      <span style="font-size:13px;color:#374151;line-height:1.45;text-align:center;">${m.bannerText}</span>
+      <a id="clpeasy-banner-cta" href="https://deploy-preview-202--clpeasy.netlify.app/auth?mode=signup" style="color:${m.accentDark};font-size:18px;font-weight:800;text-decoration:none;line-height:1;" aria-label="Start your 14-day free trial">›</a>
     `;
-    document.body.appendChild(banner);
 
-    // Auth-state gating (see getAuthState()/resolveCtaUrl() above): the
-    // CTA above starts pointing at the safe signed-out default and is
-    // corrected here once the real session state resolves. The banner's
-    // own dismissal key is likewise scoped per auth state below, so
-    // dismissing it while signed out never suppresses it for a later
-    // signed-in visit in the same browser session, or vice versa.
-    let signedInState = false;
-    const authPromise = getAuthState().then(signedIn => {
-      signedInState = signedIn;
-      const cta = document.getElementById('clpeasy-banner-cta');
-      if (cta) cta.href = resolveCtaUrl(m, signedIn);
-      return signedIn;
-    });
+    // Place the seasonal strip directly beneath the homepage hero so it is
+    // part of the page rather than a temporary fixed footer notification.
+    const hero = document.querySelector('.homepage-image-hero');
+    if (hero && hero.parentNode) hero.parentNode.insertBefore(banner, hero.nextSibling);
+    else document.body.insertBefore(banner, document.body.firstChild);
 
-    function dismissKeyFor(signedIn) {
-      return `clpeasy-banner-dismissed-${new Date().getMonth()}-${signedIn ? 'in' : 'out'}`;
-    }
-
-    authPromise.then((signedIn) => {
-      const dismissKey = dismissKeyFor(signedIn);
-      const eligible = !sessionStorage.getItem(dismissKey);
-      if (eligible) {
-        setTimeout(() => {
-          banner.style.transform = 'translateY(0)';
-          // Auto-dismiss after 8 seconds
-          // Timing correction (2026-09-09, clarified requirement): the
-          // leaves are meant to stop together with the banner's own
-          // automatic dismissal, at this ~12s point (4s banner-appear delay
-          // + 8s auto-visible window) -- not run on independently until the
-          // separate 60s particleStopTimer (set in addParticles()) catches
-          // them later. That 60s timer stays in place purely as a fallback
-          // for sessions where the banner was already dismissed earlier and
-          // never reappears. The explicit "x" close button below stops the
-          // particles the same way, immediately, on a direct user action.
-          setTimeout(() => {
-            banner.style.transform = 'translateY(100%)';
-            sessionStorage.setItem(dismissKey, '1');
-            stopParticles();
-          }, 8000);
-        }, 4000);
-      }
-      // Tell init() whether it's safe to start the particle effect at all
-      // -- see this function's own header comment above.
-      if (typeof onEligibilityResolved === 'function') onEligibilityResolved(eligible);
-    });
-
-    document.getElementById('clpeasy-banner-close').addEventListener('click', () => {
-      const dismissKey = dismissKeyFor(signedInState);
-      banner.style.transform = 'translateY(100%)';
-      sessionStorage.setItem(dismissKey, '1');
-      stopParticles();
-    });
+    if (typeof onEligibilityResolved === 'function') onEligibilityResolved(true);
   }
 
   // ── INIT ───────────────────────────────────────────────────────
