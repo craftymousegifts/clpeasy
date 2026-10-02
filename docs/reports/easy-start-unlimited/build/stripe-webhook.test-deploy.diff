@@ -1,6 +1,6 @@
---- supabase/functions/stripe-webhook/index.ts	2026-10-02 12:09:00.010311020 +0000
-+++ /tmp/claude-0/-home-user-clpeasy/86d27313-a9b8-58a9-a666-27f0ed3fed66/scratchpad/fn-test/stripe-webhook.ts	2026-10-02 12:24:57.417332397 +0000
-@@ -559,7 +559,8 @@
+--- supabase/functions/stripe-webhook/index.ts	2026-10-02 13:26:44.579383872 +0000
++++ /tmp/claude-0/-home-user-clpeasy/86d27313-a9b8-58a9-a666-27f0ed3fed66/scratchpad/fn-test/stripe-webhook.ts	2026-10-02 13:26:55.301081612 +0000
+@@ -584,7 +584,8 @@
  // secret create-checkout-session uses). The old £99 annual prices stay mapped
  // below for existing subscriptions.
  function isEasyStartAnnualEnvPrice(priceId: string): boolean {
