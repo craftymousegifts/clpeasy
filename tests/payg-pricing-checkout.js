@@ -18,7 +18,7 @@ async function open({ signedIn, pending, response, notice }){
   const dom = new JSDOM(source, {
     url: 'https://clpeasy.com/pricing.html', runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: vc,
     beforeParse(w){
-      if (pending) w.sessionStorage.setItem('checkout_payg', '1');
+      if (pending) w.sessionStorage.setItem('checkout_payg', pending === true ? 'consented' : pending);
       if (notice) w.eval(fs.readFileSync('checkout-notice.js', 'utf8')); // <script src> tags are stripped above
       w.alert = m => alerts.push(String(m));
       w.scrollTo = () => {};
@@ -33,11 +33,53 @@ async function open({ signedIn, pending, response, notice }){
   return { w: dom.window, calls, alerts, errors };
 }
 
+// PAYG immediate-supply consent (2 Oct 2026): the customer must actively tick
+// the consent box before a PAYG checkout can start.
+function tick(w){ const b = w.document.getElementById('payg-consent'); b.checked = true; b.dispatchEvent(new w.Event('change', { bubbles: true })); }
+
 (async () => {
+  // Consent: not pre-ticked; without it no checkout starts (signed in or out);
+  // once ticked the request carries immediateSupplyConsent:true.
+  {
+    const { w, calls, alerts, errors } = await open({ signedIn: true });
+    const box = w.document.getElementById('payg-consent');
+    assert(box && box.type === 'checkbox', 'consent checkbox present');
+    assert.strictEqual(box.checked, false, 'consent is not pre-ticked');
+    assert.strictEqual(box.hasAttribute('checked'), false, 'no checked attribute in the markup');
+    const label = box.closest('label').textContent.replace(/\s+/g, ' ');
+    assert(/supplied immediately after payment/.test(label), 'asks for immediate supply');
+    assert(/lose my 14-day right to cancel/.test(label), 'acknowledges loss of the cancellation right');
+    await w.startPaygCheckout();
+    assert.strictEqual(calls.length, 0, 'no checkout request without consent');
+    assert.deepStrictEqual(alerts, [], 'inline message, not an alert');
+    assert(w.document.getElementById('payg-consent-error').classList.contains('show'), 'consent prompt shown');
+    tick(w);
+    assert(!w.document.getElementById('payg-consent-error').classList.contains('show'), 'prompt cleared once ticked');
+    await w.startPaygCheckout();
+    assert.strictEqual(calls.length, 1, 'checkout starts after consent');
+    assert.strictEqual(JSON.parse(calls[0].init.body).immediateSupplyConsent, true, 'consent sent to the server');
+    assert.deepStrictEqual(errors, [], errors.join('; '));
+    const { w: g, calls: gc } = await open({ signedIn: false });
+    await g.startPaygCheckout();
+    assert.strictEqual(gc.length, 0); assert.strictEqual(g.sessionStorage.getItem('checkout_payg'), null, 'guest without consent is not sent to sign-up');
+    // A pending purchase without recorded consent (older '1' marker) never
+    // resumes on its own: the box must be ticked on the page.
+    const { w: r, calls: rc } = await open({ signedIn: true, pending: '1' });
+    r.dispatchEvent(new r.Event('load')); await new Promise(res => setTimeout(res, 100));
+    assert.strictEqual(rc.length, 0, 'resumed PAYG purchase without consent does not start');
+    assert(r.document.getElementById('payg-consent-error').classList.contains('show'), 'resumed purchase asks for consent');
+  }
+  // Subscriptions are never gated by the PAYG consent.
+  {
+    const { w, calls } = await open({ signedIn: true });
+    await w.startCheckout('easy_start');
+    assert.strictEqual(calls.length, 1, 'subscription checkout starts without the PAYG box');
+    assert.strictEqual(JSON.parse(calls[0].init.body).immediateSupplyConsent, undefined, 'no PAYG consent on subscriptions');
+  }
   // Signed-in click creates a PAYG session with the page's real key and user JWT.
   {
     const { w, calls, alerts, errors } = await open({ signedIn: true });
-    await w.startPaygCheckout();
+    tick(w); await w.startPaygCheckout();
     assert.deepStrictEqual(alerts, [], 'no "Something went wrong" alert');
     assert.deepStrictEqual(errors, [], errors.join('; '));
     assert.strictEqual(calls.length, 1, 'one checkout request');
@@ -53,10 +95,10 @@ async function open({ signedIn, pending, response, notice }){
   // with ?next=pricing.html (auth.html ignores ?return=).
   {
     const { w, calls, alerts } = await open({ signedIn: false });
-    await w.startPaygCheckout();
+    tick(w); await w.startPaygCheckout();
     assert.strictEqual(calls.length, 0, 'no checkout for a guest');
     assert.deepStrictEqual(alerts, []);
-    assert.strictEqual(w.sessionStorage.getItem('checkout_payg'), '1', 'pending PAYG purchase remembered');
+    assert.strictEqual(w.sessionStorage.getItem('checkout_payg'), 'consented', 'pending PAYG purchase remembered with its consent');
     const script = fs.readFileSync('pricing.html', 'utf8');
     assert(script.includes("auth.html?mode=signup&next=pricing.html"), 'PAYG sign-up redirect uses ?next=');
     assert(!script.includes('&return=pricing.html'), 'the ignored ?return= parameter is gone');
@@ -68,6 +110,7 @@ async function open({ signedIn, pending, response, notice }){
     await new Promise(r => setTimeout(r, 100));
     assert.strictEqual(calls.length, 1, 'resumed PAYG checkout started once');
     assert.strictEqual(JSON.parse(calls[0].init.body).productKey, 'payg_5');
+    assert.strictEqual(JSON.parse(calls[0].init.body).immediateSupplyConsent, true, 'the consent given before sign-up is sent');
     assert.strictEqual(w.sessionStorage.getItem('checkout_payg'), null, 'pending flag cleared so a refresh cannot start a second checkout');
   }
   // Billing selector (Easy Start Unlimited, 2 Oct 2026): Annual shows £89/year
@@ -116,7 +159,7 @@ async function open({ signedIn, pending, response, notice }){
   {
     const refusal = { ok: false, status: 403, json: async () => ({ code: 'PAYG_NOT_FOR_SUBSCRIBERS', error: "You don't need Pay As You Go downloads: your Easy Start Unlimited subscription already includes unlimited downloads." }) };
     const { w, calls, alerts } = await open({ signedIn: true, response: refusal });
-    await w.startPaygCheckout();
+    tick(w); await w.startPaygCheckout();
     assert.strictEqual(calls.length, 1, 'the server was asked (and refused)');
     assert.strictEqual(alerts.length, 1);
     assert(/unlimited downloads/.test(alerts[0]), 'explains the subscription is unlimited');

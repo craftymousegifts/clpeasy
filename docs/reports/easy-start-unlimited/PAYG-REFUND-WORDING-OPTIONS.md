@@ -1,5 +1,7 @@
 # PAYG refund wording — options for owner decision (2 Oct 2026)
 
+> **Superseded 2 Oct 2026:** the owner chose the immediate-supply consent approach (Option A, with consent captured at checkout). See `PAYG-IMMEDIATE-SUPPLY-CONSENT-2026-10-02.md`.
+
 Status: **OWNER DECISION. Nothing published.** `refund.html` on `feature/pay-as-you-go-downloads`
 has a hidden HTML comment marking where the approved section goes, directly above the existing
 "Top-Up Download Packs" section. No customer-visible change has been made.

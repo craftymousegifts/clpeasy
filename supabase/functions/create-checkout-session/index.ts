@@ -86,6 +86,16 @@ const supabaseAdmin = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
 );
 
+// PAYG immediate-supply consent wording. The version is stored with each
+// purchase in Stripe metadata; change it whenever the wording changes.
+const PAYG_CONSENT_VERSION = "payg-immediate-supply-2026-10-02";
+const PAYG_CONSENT_CONFIRMATION =
+  "Pay As You Go digital download credits. Before paying, you asked for these credits to be supplied immediately after payment " +
+  "and acknowledged that once supply begins you lose your 14-day right to cancel this digital-content purchase. " +
+  "This does not affect your statutory rights. Questions: support@clpeasy.com";
+const PAYG_CONSENT_CHECKOUT_NOTE =
+  "You asked for your download credits to be supplied immediately after payment and acknowledged that you then lose your 14-day right to cancel.";
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: CORS });
@@ -118,7 +128,7 @@ serve(async (req) => {
     const userId = user.id;
     const userEmail = user.email;
 
-    const { priceId: clientPriceId, productKey, mode, successUrl, cancelUrl } = await req.json();
+    const { priceId: clientPriceId, productKey, mode, successUrl, cancelUrl, immediateSupplyConsent } = await req.json();
     const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
 
     // PAYG prices stay server-side so the public pricing page never needs a
@@ -196,6 +206,19 @@ serve(async (req) => {
           code: "PAYG_NOT_FOR_SUBSCRIBERS",
         });
       }
+    }
+
+    // ── PAYG immediate-supply consent (UK Consumer Contracts Regs) ──
+    // PAYG credits are digital content supplied as soon as payment succeeds.
+    // The customer must have actively asked for immediate supply and
+    // acknowledged losing the 14-day cancellation right (unticked checkbox on
+    // pricing.html). Refused without it, so the endpoint cannot be called
+    // directly to skip the step. Subscriptions are not affected.
+    if (checkoutMode === "payment" && productKey === "payg_5" && immediateSupplyConsent !== true) {
+      return json(400, {
+        error: "Please confirm that you want your Pay As You Go downloads supplied immediately, and that you understand you then lose your 14-day right to cancel.",
+        code: "PAYG_CONSENT_REQUIRED",
+      });
     }
 
     // ── D3: 2026 monthly promotion coupon, chosen server-side only ──
@@ -315,6 +338,19 @@ serve(async (req) => {
       // The webhook validates this server-stamped quantity; the browser cannot choose it.
       const paygDownloads = new Date() < new Date("2027-01-01T00:00:00Z") ? "8" : "5";
       params.set("metadata[downloads]", paygDownloads);
+      // Durable evidence of the immediate-supply consent, kept by Stripe on
+      // the Checkout Session, its PaymentIntent and the paid invoice.
+      const consentAt = new Date().toISOString();
+      for (const k of ["metadata", "payment_intent_data[metadata]", "invoice_creation[invoice_data][metadata]"]) {
+        params.set(`${k}[payg_immediate_supply_consent]`, "true");
+        params.set(`${k}[payg_immediate_supply_consent_at]`, consentAt);
+        params.set(`${k}[payg_consent_wording]`, PAYG_CONSENT_VERSION);
+      }
+      // Confirmation on a durable medium: Stripe emails the paid invoice
+      // (PDF + hosted page) after payment; the memo restates the consent.
+      params.set("invoice_creation[enabled]", "true");
+      params.set("invoice_creation[invoice_data][description]", PAYG_CONSENT_CONFIRMATION);
+      params.set("custom_text[submit][message]", PAYG_CONSENT_CHECKOUT_NOTE);
     } else {
       params.set("metadata[type]", "topup");
     }

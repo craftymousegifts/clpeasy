@@ -32,7 +32,7 @@ async function test(name: string, fn: () => Promise<void>) {
 }
 const db = () => (globalThis as any).__db;
 const call = (body: unknown) => handler(new Request('http://localhost/', { method: 'POST', headers: { Authorization: 'Bearer user-jwt', 'Content-Type': 'application/json' }, body: JSON.stringify(body) }));
-const paygBody = { productKey: 'payg_5', mode: 'payment', successUrl: 'https://clpeasy.com/account.html?payg=success', cancelUrl: 'https://clpeasy.com/pricing.html?payg=cancelled' };
+const paygBody = { productKey: 'payg_5', mode: 'payment', immediateSupplyConsent: true, successUrl: 'https://clpeasy.com/account.html?payg=success', cancelUrl: 'https://clpeasy.com/pricing.html?payg=cancelled' };
 
 await test('PAYG uses the server-side price, stamps type=payg and 8 downloads during 2026, ignores any browser price', async () => {
   const r = await call({ ...paygBody, priceId: 'price_attacker_cheap' });
@@ -67,6 +67,54 @@ await test('31 December 2026 23:59 UTC is still the launch offer', async () => {
   (globalThis as any).Date = FakeDate;
   try { await call(paygBody); } finally { (globalThis as any).Date = RealDate; }
   eq(stripeRequests[0].get('metadata[downloads]'), '8', 'still 8 at the last second of 2026');
+});
+
+// ── PAYG immediate-supply consent (2 Oct 2026) ──
+await test('PAYG is refused without immediate-supply consent (missing, false, or a non-boolean string)', async () => {
+  const { immediateSupplyConsent: _c, ...noConsent } = paygBody;
+  for (const body of [noConsent, { ...paygBody, immediateSupplyConsent: false }, { ...paygBody, immediateSupplyConsent: 'true' }]) {
+    stripeRequests.length = 0;
+    const r = await call(body);
+    eq(r.status, 400, 'refused'); eq((await r.json()).code, 'PAYG_CONSENT_REQUIRED', 'code');
+    eq(stripeRequests.length, 0, 'no Stripe session without consent');
+  }
+});
+
+await test('PAYG with consent records the evidence on the session, PaymentIntent and invoice, and enables the confirming invoice', async () => {
+  const before = Date.now();
+  const r = await call(paygBody);
+  eq(r.status, 200, 'status');
+  const p = stripeRequests[0];
+  for (const k of ['metadata', 'payment_intent_data[metadata]', 'invoice_creation[invoice_data][metadata]']) {
+    eq(p.get(`${k}[payg_immediate_supply_consent]`), 'true', `${k} consent flag`);
+    eq(p.get(`${k}[payg_consent_wording]`), 'payg-immediate-supply-2026-10-02', `${k} wording version`);
+    const at = Date.parse(p.get(`${k}[payg_immediate_supply_consent_at]`) || '');
+    eq(Number.isFinite(at) && at >= before - 1000 && at <= Date.now() + 1000, true, `${k} server timestamp`);
+  }
+  eq(p.get('invoice_creation[enabled]'), 'true', 'paid invoice emailed as confirmation');
+  const memo = p.get('invoice_creation[invoice_data][description]') || '';
+  eq(/supplied immediately after payment/.test(memo) && /lose your 14-day right to cancel/.test(memo), true, 'invoice memo confirms both elements');
+  eq(/statutory rights/.test(memo), true, 'memo keeps statutory rights');
+  eq(/supplied immediately/.test(p.get('custom_text[submit][message]') || ''), true, 'reminder next to the Stripe pay button');
+});
+
+await test('a current subscriber is still told PAYG is not needed (403), with or without consent', async () => {
+  db().tables.profiles.push({ id: 'user-1', subscription_status: 'active', plan: 'easy_start', downloads_limit: 20 });
+  const { immediateSupplyConsent: _c, ...noConsent } = paygBody;
+  for (const body of [paygBody, noConsent]) {
+    const r = await call(body); eq(r.status, 403, 'refused'); eq((await r.json()).code, 'PAYG_NOT_FOR_SUBSCRIBERS', 'code');
+  }
+  eq(stripeRequests.length, 0, 'no Stripe session');
+});
+
+await test('subscription checkouts need no PAYG consent and carry none of its fields', async () => {
+  for (const body of [{ priceId: 'price_1TyDuRGZLILz5vqU3RIuVFJD', mode: 'subscription' }, { productKey: 'easy_start_annual', mode: 'subscription' }]) {
+    stripeRequests.length = 0; (globalThis as any).__db = freshDb();
+    const r = await call(body); eq(r.status, 200, `subscription allowed: ${JSON.stringify(body)}`);
+    const p = stripeRequests[0];
+    eq(p.get('mode'), 'subscription', 'subscription mode');
+    eq([...p.keys()].some((k) => /payg_|invoice_creation|custom_text/.test(k)), false, 'no PAYG consent/invoice fields on subscriptions');
+  }
 });
 
 const START_M = 'price_1TyDuRGZLILz5vqU3RIuVFJD', PRO_M = 'price_1TyDxBGZLILz5vqUEKx7d2jp';

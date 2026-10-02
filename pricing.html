@@ -84,6 +84,11 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
   .cards>.card>.divider{width:100%;margin:0 0 18px;}
   .cards>.card>.features-label{height:30px;min-height:30px;margin:0 0 10px;align-items:flex-start;}
 }
+.payg-consent{display:flex;gap:10px;align-items:flex-start;margin:0 0 12px;padding:10px 12px;border:1px solid rgba(76,155,176,0.35);border-radius:10px;background:white;font-size:12px;line-height:1.5;color:var(--text);text-align:left;cursor:pointer;}
+.payg-consent input{flex:0 0 auto;width:18px;height:18px;margin:1px 0 0;accent-color:var(--teal);cursor:pointer;}
+.payg-consent.needs-consent{border-color:#B45309;box-shadow:0 0 0 3px rgba(180,83,9,0.15);}
+.payg-consent-error{display:none;margin:-4px 0 10px;font-size:12px;font-weight:600;color:#B45309;}
+.payg-consent-error.show{display:block;}
 .payg-fit{margin-top:18px;padding:14px 16px;border:1px solid rgba(76,155,176,0.35);border-radius:10px;background:white;color:var(--text);font-size:12px;line-height:1.6;}
 
 .popular-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--teal);color:white;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;letter-spacing:0.5px;white-space:nowrap;}
@@ -300,6 +305,11 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
       <div class="card-desc">Buy downloads only when you need them. No subscription — buy another pack whenever you need more.</div>
       <div class="price-row"><div class="price-amount">&pound;4.99</div></div>
       <div class="offer-block paid-offer"><div class="offer-main"><span class="offer-free">🎉 5 downloads + 3 FREE</span></div><div class="offer-then">One-off launch bonus · Ends 31 Dec 2026</div></div><div class="price-sub paid-sub">&nbsp;</div>
+      <label class="payg-consent" for="payg-consent">
+        <input type="checkbox" id="payg-consent" name="payg-consent" aria-describedby="payg-consent-error">
+        <span>I ask for my Pay As You Go download credits to be supplied immediately after payment. I understand that once supply begins, I lose my 14-day right to cancel this digital-content purchase.</span>
+      </label>
+      <div class="payg-consent-error" id="payg-consent-error" role="alert">Please tick the box above to continue to payment.</div>
       <button id="btn-payg" onclick="startPaygCheckout()" class="btn btn-teal">Buy 8 downloads — £4.99 →</button>
       <hr class="divider">
       <div class="features-label">What&#39;s included</div>
@@ -721,8 +731,27 @@ async function initSupabase(){
 }
 initSupabase();
 
-async function startPaygCheckout(){
+// PAYG is digital content supplied immediately. Before payment the customer
+// must actively (never pre-ticked) ask for immediate supply and acknowledge
+// losing the 14-day cancellation right. The server refuses a PAYG checkout
+// without this consent and records it on the Stripe Checkout Session.
+function paygConsentGiven(){
+  const box=document.getElementById('payg-consent');
+  const ok=!!(box&&box.checked);
+  const wrap=box&&box.closest('.payg-consent');
+  const err=document.getElementById('payg-consent-error');
+  if(wrap)wrap.classList.toggle('needs-consent',!ok);
+  if(err)err.classList.toggle('show',!ok);
+  if(!ok&&box){box.focus();if(wrap&&wrap.scrollIntoView)wrap.scrollIntoView({block:'center',behavior:'smooth'});}
+  return ok;
+}
+document.addEventListener('change',e=>{if(e.target&&e.target.id==='payg-consent'&&e.target.checked)paygConsentGiven();});
+
+// resumedWithConsent: the guest ticked the box on this page before being sent
+// to sign up; that earlier, active consent carries over to the resumed purchase.
+async function startPaygCheckout(resumedWithConsent){
   const btn=document.getElementById('btn-payg');
+  if(resumedWithConsent!==true&&!paygConsentGiven())return;
   try{
     // FIX: this used an undefined `sb` and SUPABASE_ANON_KEY, so every click
     // threw and showed "Something went wrong". Same client/key as startCheckout().
@@ -730,7 +759,7 @@ async function startPaygCheckout(){
     const {data:{session}}=await sbClient.auth.getSession();
     const currentUser=session?.user;
     if(!currentUser){
-      sessionStorage.setItem('checkout_payg','1');
+      sessionStorage.setItem('checkout_payg','consented');
       // auth.html only honours ?next= (same as the subscription path below).
       window.location.href='auth.html?mode=signup&next=pricing.html';
       return;
@@ -742,6 +771,7 @@ async function startPaygCheckout(){
       body:JSON.stringify({
         productKey:'payg_5',
         mode:'payment',
+        immediateSupplyConsent:true,
         successUrl:'https://clpeasy.com/account.html?payg=success',
         cancelUrl:'https://clpeasy.com/pricing.html?payg=cancelled'
       })
@@ -838,7 +868,9 @@ window.addEventListener('load',async()=>{
     // Wait for the session like the subscription path does; otherwise the
     // resumed PAYG checkout can be dropped if getSession() resolves after load.
     if(!sbReady)await initSupabase();
-    if(currentUser){ startPaygCheckout(); return; }
+    // Only a purchase the guest consented to before signing up resumes on
+    // its own; anything else needs the box ticked on this page.
+    if(currentUser){ if(pendingPayg==='consented') startPaygCheckout(true); else paygConsentGiven(); return; }
   }
     const pendingPlan=sessionStorage.getItem('checkout_plan');
   const pendingBilling=sessionStorage.getItem('checkout_billing');
