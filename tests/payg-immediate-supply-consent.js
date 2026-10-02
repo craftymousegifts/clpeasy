@@ -51,4 +51,18 @@ const fn = fs.readFileSync('supabase/functions/create-checkout-session/index.ts'
 assert(/immediateSupplyConsent !== true/.test(fn) && /PAYG_CONSENT_REQUIRED/.test(fn), 'server refuses PAYG without consent');
 assert(/payg_immediate_supply_consent/.test(fn) && /invoice_creation\[enabled\]/.test(fn), 'server records consent and enables the confirming invoice');
 
+// PAYG launch bonus wording (owner decision 2 Oct 2026): 3 bonus downloads come
+// with EVERY £4.99 pack until 31 Dec 2026 — never "one-off" or "3 FREE" alone.
+for (const f of ['pricing.html', 'faq.html']) {
+  const t = text(fs.readFileSync(f, 'utf8'));
+  assert(!/one-off launch bonus/i.test(t), `${f}: no "one-off launch bonus"`);
+  assert(!/3 FREE/.test(t) && !/3 extra downloads FREE/i.test(t), `${f}: no "3 FREE" wording`);
+  assert(/3 bonus downloads with every pack until 31 December 2026/.test(t), `${f}: bonus with every pack`);
+}
+const pricingText = text(pricing);
+assert(/8 downloads · includes 3 bonus/.test(pricingText) && /\+3 bonus with every pack · Ends 31 Dec 2026/.test(pricingText), 'PAYG card offer wording');
+// Terms clause 6 recognises PAYG credits as a way to access CLPeasy.
+const terms = text(fs.readFileSync('terms.html', 'utf8'));
+assert(/requires registration and a paid subscription, purchased Pay As You Go download credits, or an active free trial/.test(terms), 'Terms recognise PAYG');
+
 console.log('PAYG immediate-supply consent checks passed');
