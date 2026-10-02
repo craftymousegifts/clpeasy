@@ -30,7 +30,22 @@ class Query {
   private exec(): { data: any; error: any } {
     const rows = this.rows();
     if (this.op === 'insert') {
+      // Injected claim failures (webhook duplicate protection):
+      //  failClaimInsert: the next N inserts are rejected before writing,
+      //    e.g. PostgREST PGRST303 "JWT issued at future" (seen on CLPeasy Test).
+      //  claimWritesThenErrors: the next N inserts ARE written but the client
+      //    sees an error with no code (response lost on the network).
+      if (this.table === 'stripe_processed_events' && db().failClaimInsert > 0) {
+        db().failClaimInsert--; db().claimAttempts = (db().claimAttempts ?? 0) + 1;
+        return { data: null, error: db().claimError ?? { code: 'PGRST303', message: 'JWT issued at future' } };
+      }
+      if (this.table === 'stripe_processed_events') db().claimAttempts = (db().claimAttempts ?? 0) + 1;
       if (this.table === 'stripe_processed_events' && rows.some(r => r.event_id === this.payload.event_id)) return { data: null, error: { code: '23505', message: 'duplicate key' } };
+      if (this.table === 'stripe_processed_events' && db().claimWritesThenErrors > 0) {
+        db().claimWritesThenErrors--;
+        rows.push({ created_at: new Date().toISOString(), ...this.payload });
+        return { data: null, error: { code: '', message: 'TypeError: fetch failed' } };
+      }
       if (this.table === 'checkout_locks' && rows.some(r => r.user_id === this.payload.user_id)) return { data: null, error: { code: '23505', message: 'duplicate key' } };
       rows.push({ created_at: new Date().toISOString(), ...this.payload });
       return { data: null, error: null };
