@@ -81,10 +81,29 @@ Status: **Test / Sandbox only. Not merged; nothing deployed to production; Live 
   They were updated to assert the new rules. No test was skipped or weakened.
 - The Account reactivation test still selected the removed Easy Pro option. Updated.
 
+## Sandbox / Test E2E (2 Oct 2026, after the Stripe connector was linked)
+Full evidence: `SANDBOX-E2E-2026-10-02.md`.
+- **New Sandbox price:** `price_1UM5UwKF3jvQfgEa5A5F3ac5`, £89/year on product `prod_UcstRjI13CbKaI`.
+  The £99 price is untouched.
+- **Functions:** `create-checkout-session` v8 and `stripe-webhook` v9 deployed to CLPeasy Test.
+  The Test build falls back to the Sandbox price because the secret couldn't be set with the
+  available tools.
+- **Test site:** redeployed with the Phase B pages (deploy `6abfa60e6bb1425165b86ecc`).
+- **What passed, all through real Sandbox payments and signed webhooks:**
+  - £89 paid with no discount;
+  - entitlement active, annual and unlimited;
+  - 30 labels + 4 sheets consumed nothing, PAYG 8 kept;
+  - cancel-at-period-end stays unlimited until 2027-10-02;
+  - ended → free, then PAYG used;
+  - a declined first payment and its expiry leave the trial intact;
+  - the duplicate-event guard holds.
+- **Not covered:** the Stripe-hosted Checkout page and the in-browser Builder/Composer buttons
+  against the real backend (the container can't reach those hosts). This needs one manual signed-in
+  run on the Test site.
+
 ## Not done / limitations
-- **Not tested signed-in end to end:** Stripe/Supabase Edge Functions can't be reached from this
-  container, and the £89 Sandbox price doesn't exist yet.
-- The Netlify Test site was **not** redeployed with these pages.
+- The Stripe-hosted Checkout page and the browser download buttons weren't exercised against the
+  real backend (see above).
 - **`index.html` pricing copy is deliberately unchanged here.** It still lists Easy Pro and top-ups.
   It is Phase C (homepage), so it isn't done in a way that conflicts with #202.
 - **Internal pages not changed:** `packagemonitor.html`, `monitor.html`, `scrum.html`,
@@ -94,10 +113,9 @@ Status: **Test / Sandbox only. Not merged; nothing deployed to production; Live 
   place for a safe rollback.
 
 ## Owner action required
-1. **Stripe Sandbox (CLPeasy sandbox account):** create a new recurring Price, £89.00 GBP yearly,
-   on the existing Easy Start product. Don't edit the £99 price.
-   - Put its `price_…` ID in the **CLPeasy Test** Supabase secret `EASY_START_ANNUAL_PRICE_ID`.
-   - Then redeploy `create-checkout-session` and `stripe-webhook` to Test.
+1. **Done 2 Oct 2026:** the Sandbox price `price_1UM5UwKF3jvQfgEa5A5F3ac5` exists and Test is
+   configured. Optional: set the **CLPeasy Test** secret `EASY_START_ANNUAL_PRICE_ID` to that ID in
+   the Supabase dashboard; the Test-build fallback then becomes redundant.
 2. **Stripe Live, later and only after Sandbox E2E:** create the same £89/year Price on the live
    Easy Start product.
    - Put it in the **production** secret `EASY_START_ANNUAL_PRICE_ID`.
@@ -109,12 +127,13 @@ Status: **Test / Sandbox only. Not merged; nothing deployed to production; Live 
 
 ## Release gate (before merge or production)
 - [ ] Owner visual approval of pricing / checkout / plan picker (screenshots available).
-- [ ] Sandbox price + Test secret, then a signed-in Sandbox E2E:
-  - monthly with coupon £8.99;
-  - annual £89;
-  - PAYG £4.99 (8);
-  - unlimited downloads in Builder and Composer;
-  - cancel-at-period-end;
-  - ended → PAYG.
+- [x] Sandbox £89 price and Test configuration (fallback in the Test build).
+- [x] Server-side Sandbox E2E: annual £89, no discount, unlimited, cancel-at-period-end, ended →
+  PAYG, declined and expired payments, duplicate guard.
+- [ ] One manual browser run on the Test site:
+  - Stripe-hosted checkout (annual);
+  - Account display;
+  - one Builder label and one Composer sheet.
+  - Optionally also monthly £8.99 and PAYG £4.99.
 - [ ] Production: apply migration `20261002000000`, deploy both functions, set the Live secret,
   deploy pages. Merge only on explicit approval.

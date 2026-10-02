@@ -1,0 +1,12 @@
+--- supabase/functions/stripe-webhook/index.ts	2026-10-02 12:09:00.010311020 +0000
++++ /tmp/claude-0/-home-user-clpeasy/86d27313-a9b8-58a9-a666-27f0ed3fed66/scratchpad/fn-test/stripe-webhook.ts	2026-10-02 12:24:57.417332397 +0000
+@@ -559,7 +559,8 @@
+ // secret create-checkout-session uses). The old £99 annual prices stay mapped
+ // below for existing subscriptions.
+ function isEasyStartAnnualEnvPrice(priceId: string): boolean {
+-  const id = Deno.env.get('EASY_START_ANNUAL_PRICE_ID');
++  // CLPeasy Test deployment only (not in the repo): Sandbox £89 price fallback.
++  const id = Deno.env.get('EASY_START_ANNUAL_PRICE_ID') || 'price_1UM5UwKF3jvQfgEa5A5F3ac5';
+   return !!id && priceId === id;
+ }
+ 

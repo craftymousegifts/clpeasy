@@ -1,0 +1,48 @@
+--- supabase/functions/create-checkout-session/index.ts	2026-10-02 12:09:00.010050443 +0000
++++ /tmp/claude-0/-home-user-clpeasy/86d27313-a9b8-58a9-a666-27f0ed3fed66/scratchpad/fn-test/create-checkout-session.ts	2026-10-02 12:24:57.417104455 +0000
+@@ -11,14 +11,15 @@
+ // cancelUrl were silently ignored and everything was hard-coded to
+ // builder.html?topup=success regardless of mode; now we honour the caller's
+ // intent but only within known CLPeasy pages — never an arbitrary external URL) ──
+-const ALLOWED_ORIGIN = "https://clpeasy.com";
++// CLPeasy Test deployment only (not in the repo): the isolated QA sites.
++const ALLOWED_ORIGINS = new Set(["https://clpeasy-pr156-payg-test.netlify.app", "https://clpeasy-pr156-payg-test-v10.netlify.app"]);
+ const ALLOWED_PATHS = new Set(["/builder.html", "/checkout.html", "/account.html", "/dashboard.html", "/pricing.html"]);
+ 
+ function safeRedirect(candidate: unknown, fallback: string): string {
+   if (typeof candidate !== "string" || !candidate) return fallback;
+   try {
+     const u = new URL(candidate);
+-    if (u.origin !== ALLOWED_ORIGIN) return fallback;
++    if (!ALLOWED_ORIGINS.has(u.origin)) return fallback;
+     if (!ALLOWED_PATHS.has(u.pathname)) return fallback;
+     return u.toString(); // query string is passed through untouched — only origin+path are restricted
+   } catch {
+@@ -63,7 +64,10 @@
+   "price_1Tdd5SKF3jvQfgEaclfSUxn5", // CLPeasy sandbox Easy Start monthly
+ ]);
+ function easyStartAnnualPriceId(): string | null {
+-  return Deno.env.get("EASY_START_ANNUAL_PRICE_ID") || null;
++  // CLPeasy Test deployment only (not in the repo): the Supabase secret cannot be
++  // set from the available tools, so the CLPeasy Sandbox £89 price is the Test
++  // fallback. A configured secret still takes precedence.
++  return Deno.env.get("EASY_START_ANNUAL_PRICE_ID") || "price_1UM5UwKF3jvQfgEa5A5F3ac5";
+ }
+ 
+ // Subscriber top-up packs (5 for £3.99 / 10 for £7.99) are retired from new
+@@ -265,11 +269,11 @@
+     }
+ 
+     const defaultSuccess = checkoutMode === "subscription"
+-      ? "https://clpeasy.com/builder.html?subscribed=true"
+-      : "https://clpeasy.com/builder.html?topup=success";
++      ? "https://clpeasy-pr156-payg-test-v10.netlify.app/builder.html?subscribed=true"
++      : "https://clpeasy-pr156-payg-test-v10.netlify.app/builder.html?topup=success";
+     const defaultCancel = checkoutMode === "subscription"
+-      ? "https://clpeasy.com/checkout.html?cancelled=true"
+-      : "https://clpeasy.com/builder.html?topup=cancelled";
++      ? "https://clpeasy-pr156-payg-test-v10.netlify.app/checkout.html?cancelled=true"
++      : "https://clpeasy-pr156-payg-test-v10.netlify.app/builder.html?topup=cancelled";
+ 
+     const params = new URLSearchParams({
+       "payment_method_types[]": "card",
