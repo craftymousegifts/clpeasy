@@ -238,8 +238,10 @@ server.listen(0, '127.0.0.1', async () => {
     await check('5. PAYG checkout on pricing.html is not blocked while a subscription lock is held', async () => {
       srv.now += 10000; // lock from test 4 still held
       const t = await open('pricing.html');
-      await expectOpensCheckout(t, () => t.evaluate(() => startPaygCheckout()));
+      // The customer ticks the PAYG immediate-supply consent first (2 Oct 2026).
+      await expectOpensCheckout(t, () => t.evaluate(() => { document.getElementById('payg-consent').checked = true; return startPaygCheckout(); }));
       assert.strictEqual(srv.requests.at(-1).productKey, 'payg_5');
+      assert.strictEqual(srv.requests.at(-1).immediateSupplyConsent, true);
       assert.deepStrictEqual(t.alerts, []);
       await t.close();
     });
