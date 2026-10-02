@@ -41,3 +41,27 @@
 
 ## Not changed
 - Production. The fix needs the normal release gate.
+
+## Automated verification addendum (2 Oct 2026, evening)
+- **v10 retry path proven on a real cold start.**
+  - `invoice.created` `evt_1UM8x3KF3jvQfgEaARGUCNCL`: claim attempt 1 → `PGRST303`
+    (16:04:51.040); retried; claim recorded at 16:04:51.409.
+  - Processed once. Stripe shows `pending_webhooks: 0` (delivered and acknowledged).
+- **PGRST303 frequency:** it occurred on 2 of 2 paired cold starts today (12:32 under v9, 16:04
+  under v10). It is not rare when several events arrive at once.
+- **Duplicate check:** no `event_id` is recorded twice in `stripe_processed_events` (129 rows,
+  8 today).
+- **Final QA account states:**
+  - annual user: free/cancelled after the subscription ended, PAYG 7 kept, 32 label records;
+  - declined user: trialing, 1/10 used.
+- **Stripe Sandbox:** the old £99 annual price `price_1Tdd7pKF3jvQfgEa8DxgQHEW` is unchanged
+  (active, 9900, yearly).
+- **Pre-existing, not caused by the fix:** "Deno.core.runMicrotasks() is not supported" event-loop
+  message about 75 s after each invocation. Seen under v8, v9 and v10; logged after the response
+  is sent, so no functional effect.
+- **Not verifiable with current access:** user-signed-in function calls (`create-checkout-session`,
+  `billing-status`, `create-portal-session`, `manage-subscription`).
+  - Reading the Test anon key to sign QA users in was blocked by the session's safety check.
+  - The temporary QA passwords set for that attempt were removed.
+  - `pg_net` (enabled for that attempt; no requests made) could not be dropped: the DROP timed out
+    4 times. Owner cleanup: Supabase Test dashboard → Database → Extensions → disable `pg_net`.
