@@ -126,3 +126,28 @@ change.** This is software implementation, not legal advice.
   available here (Dashboard only). Not changed.
 - **Invoice fee:** Stripe's pricing and support pages are blocked by this environment's network
   policy, so the exact fee was not verified here.
+
+## Test site v19 (2 Oct 2026, late evening)
+- **Route:** the existing Test build script (`build/build-v19.py` = `build-v18.py` with only the output
+  folder and label changed), using the stored CLPeasy Test public key file through the script. The key
+  was never printed.
+- **Rollback point:** Test deploy `6abfa60e6bb1425165b86ecc` (v18).
+- **New deploy:** **`6ac02a3a3f861b8fedb5ae62`** (v19, built from `4e62cff`). Checksums in
+  `build/v19-checksums.txt`.
+- **Files changed vs v18:**
+  - `pricing.html`, `faq.html`, `refund.html`, `terms.html`;
+  - `TEST-ENVIRONMENT.txt` (label only).
+  - Every other page and script is byte-identical, both in the build and as served by the old and
+    new deploys.
+  - The production key appears in no v19 file.
+- **Live checks on https://clpeasy-pr156-payg-test-v10.netlify.app** (1366/390/360 px):
+  - consent box present and unticked;
+  - Buy without ticking sends no request and shows the prompt;
+  - after ticking, the request carries `immediateSupplyConsent: true` and Test return URLs;
+  - offer reads "£4.99 · 8 downloads · includes 3 bonus · +3 bonus with every pack · Ends 31 Dec 2026";
+  - no horizontal overflow;
+  - refund (PAYG section and statutory rights), Terms (PAYG credits) and FAQ (bonus with every pack)
+    wording is live.
+- **Test site and Test `create-checkout-session` v9 are now aligned.**
+- **Real Sandbox purchase:** not possible from this environment. Test Supabase, Stripe Checkout,
+  js.stripe.com and cdn.jsdelivr.net are blocked by the network policy.
