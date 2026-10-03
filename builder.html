@@ -1739,7 +1739,10 @@ function printToPDF(){
   const svgData=new XMLSerializer().serializeToString(clone);
   // Build full HTML using string concatenation — avoids backtick-in-template-literal
   // breakage when svgData contains backticks from buildSVG template strings
-  const title='CLPeasy Label — '+(S.scentName||'');
+  // M57: product names are user-controlled. Escape them before inserting
+  // into the popup document's HTML <title>; SVG content has its own escaping.
+  const escapeHtmlText=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  const title='CLPeasy Label — '+escapeHtmlText(S.scentName||'');
   const css='*{margin:0;padding:0;box-sizing:border-box;}'+
     'html,body{width:'+mmW+'mm;height:'+mmH+'mm;background:white;overflow:hidden;}'+
     'svg{display:block;width:'+mmW+'mm;height:'+mmH+'mm;}'+
