@@ -173,7 +173,7 @@
     const tail = rounding ? ' The difference may only be rounding, but CLPeasy does not round or apply a tolerance; whether the document applies is for your supplier to say.' + confirmRoute(actual) : confirmRoute(actual);
     if (actual > docPct) return { ok: false, code: 'higher', message: '⛔ You use ' + actual + '%, more than the ' + docPct + '% this document states. On its own, a document for a lower percentage does not establish coverage for yours: hazards can be more severe or additional at a higher percentage.' + tail };
     if (actual < docPct) return { ok: false, code: 'lower', message: '⛔ You use ' + actual + '%, less than the ' + docPct + '% this document states. On its own, a document for a higher percentage does not establish coverage for a lower one: some label warnings depend on concentration thresholds (for example a sensitiser warning can change from H317 to "EUH208 Contains …"), so a document for a different percentage may not give the right label.' + tail };
-    return { ok: true, code: 'match', message: '✓ Your answers are consistent: a finished-product document for your type of product stating ' + actual + '%, the percentage you use. CLPeasy can\'t read the document itself, so make sure it is your supplier\'s GB CLP information for this fragrance in your ' + typeLc + '. Paste its Section 2.2 below.' };
+    return { ok: true, code: 'match', message: '✓ Your answers are consistent: a finished-product document for your type of product stating ' + actual + '%, the percentage you use. CLPeasy can\'t read the document itself, so make sure it is your supplier\'s GB CLP information for this fragrance in your ' + typeLc + '. Paste its Section 2.2 in Smart Paste.' };
   }
 
   function isUpTo(value) {
@@ -186,7 +186,7 @@
     if (_t(d.where).length < 2) return { ok: false, code: 'range-where-missing', message: 'Enter where the document states this range (for example the section, page or heading), so you can find it again.' };
     if (!d.rangeStated) return { ok: false, code: 'range-not-stated', message: 'Tick to confirm the document says its hazard and label information applies throughout this range for your type of product. An ingredient range (for example in Section 3 of an oil SDS) or a recommended usage range doesn\'t count.' };
     if (actual < from || actual > to) return { ok: false, code: 'range-outside', message: '⛔ You use ' + actual + '%, outside the ' + from + '–' + to + '% range this document states. It doesn\'t establish coverage for your percentage, and CLPeasy doesn\'t extend a range or apply a tolerance.' + confirmRoute(actual) };
-    return { ok: true, code: 'range-match', message: '✓ Your answers are consistent: a finished-product document for your type of product that states its hazard and label information applies to ' + from + '–' + to + '%, and you use ' + actual + '%. CLPeasy can\'t read the document itself, so make sure it says this for your ' + typeLc + '. Paste its Section 2.2 below.' };
+    return { ok: true, code: 'range-match', message: '✓ Your answers are consistent: a finished-product document for your type of product that states its hazard and label information applies to ' + from + '–' + to + '%, and you use ' + actual + '%. CLPeasy can\'t read the document itself, so make sure it says this for your ' + typeLc + '. Paste its Section 2.2 in Smart Paste.' };
   }
 
   function _validDate(v) {
@@ -208,7 +208,7 @@
     if (String(d.supplier || '').trim().length < 2) return { ok: false, code: 'conf-supplier-missing', message: 'Enter the supplier who confirmed it.' };
     if (!_validDate(d.cdate)) return { ok: false, code: 'conf-date-missing', message: 'Enter the date of the written confirmation (not a future date).' };
     if (String(d.cref || '').trim().length < 2) return { ok: false, code: 'conf-ref-missing', message: 'Enter the finished-product hazard information the confirmation identifies (the supplier document\'s title or reference). A confirmation that doesn\'t identify it can\'t be used.' };
-    return { ok: true, code: 'confirmed-match', message: '✓ Your answers are consistent: you have recorded written confirmation from ' + String(d.supplier).trim() + ' (' + String(d.cdate).trim() + ') that the finished-product hazard information in "' + _t(d.cref) + '" applies to your ' + typeLc + ' at ' + actual + '%. CLPeasy can\'t see or check that confirmation, so keep it with your records. Paste the Section 2.2 from that document below.' };
+    return { ok: true, code: 'confirmed-match', message: '✓ Your answers are consistent: you have recorded written confirmation from ' + String(d.supplier).trim() + ' (' + String(d.cdate).trim() + ') that the finished-product hazard information in "' + _t(d.cref) + '" applies to your ' + typeLc + ' at ' + actual + '%. CLPeasy can\'t see or check that confirmation, so keep it with your records. Paste Section 2.2 from that document in Smart Paste.' };
   }
 
   // 'verified' | 'not-checked' (never confirmed, e.g. a label saved before
@@ -228,9 +228,9 @@
   function exportBlockMessage(rec) {
     const s = status(rec);
     if (s === 'verified') return null;
-    if (s === 'needs-recheck') return 'The fragrance percentage, product type, hazard information or document details changed after you confirmed your supplier document. Go to Step 3 (Hazards), check "Check your supplier document first" still matches, and continue to Step 5 to download.';
+    if (s === 'needs-recheck') return 'The fragrance percentage, product type, hazard information or document details changed after you confirmed your supplier document. Go to Step 3 (Hazards), check "Supplier document coverage" still matches, and continue to Step 5 to download.';
     if (s === 'not-covered') return evaluate(rec).message.replace(/^[⛔✓]\s*/, '') + ' Update Step 3 (Hazards) before downloading.';
-    return 'Not ready to download yet. Confirm which supplier document this label\'s hazard information comes from: go to Step 3 (Hazards), complete "Check your supplier document first", and continue to Step 5. Your design is kept, and you can still save it as a draft.';
+    return 'Not ready to download yet. Confirm which supplier document this label\'s hazard information comes from: go to Step 3 (Hazards), complete "Supplier document coverage", and continue to Step 5. Your design is kept, and you can still save it as a draft.';
   }
 
   const api = { SUPPLIER_CONFIRMATION_ACCEPTED, isRangeOrUpTo, isUpTo, GROUP_BY_TYPE, DOC_COVERS, DOC_BASE_OPTIONS, parsePct, confirmationFor, evaluate, status, isVerified, exportBlockMessage };

@@ -149,14 +149,14 @@ assert.strictEqual(window.SdsDocCheck.evaluate({ fragLoad:'10', productType:'Sce
 set('product-type', 'Scented Candle');
 ok('candle and wax-melt documents are separate; shared only when the document names both; other groups separate; old answers re-asked');
 
-// Enforcement points: Smart Paste, the Step 3 confirm/Next and leaving Step 3 (manual entry).
+// Extraction is available before coverage; Step 3 and exports still require coverage.
 set('frag-load', '8'); doc('finished','10','candle');
 set('smart-paste-input', 'Warning\nH317 May cause an allergic skin reaction.\nP280 Wear protective gloves.');
 window.__lastAlert = '';
-const before = S('S.hStatements');
+assert(document.querySelector('.smart-paste-box').compareDocumentPosition(document.getElementById('sds-doc-check')) & 4, 'Smart Paste precedes the coverage questions');
 window.extractSDS();
-assert(/less than the 10% this document states/.test(window.__lastAlert), 'Smart Paste refuses a non-matching document');
-assert.strictEqual(S('S.hStatements'), before, 'nothing extracted');
+assert.strictEqual(window.__lastAlert, '', 'coverage does not interrupt extraction with an alert');
+assert(/H317/.test(S('S.hStatements')), 'hazards extracted for review before coverage is established');
 const h = document.getElementById('h-statements'); if (h) { h.value = 'H317'; }
 window.eval("readForm(); S.hStatements='H317';");
 const cb = document.getElementById('hazard-confirm'); cb.checked = true; window.toggleHazardNext();
@@ -164,10 +164,12 @@ const btn = document.getElementById('btn-next-step3');
 assert.strictEqual(btn.style.pointerEvents, 'none', 'Next stays disabled while the document does not match');
 window.__lastAlert = '';
 assert.strictEqual(window.canLeaveApprovedBuilderStep(3), false, 'cannot leave Step 3 with a non-matching document');
-assert(/less than the 10%/.test(window.__lastAlert), 'reason given');
+assert.strictEqual(window.__lastAlert, '', 'coverage failure uses inline guidance rather than an alert');
+assert(/less than the 10%/.test(document.getElementById('sds-doc-result').textContent), 'inline reason given');
+assert.strictEqual(document.activeElement.id, 'sds-doc-result', 'inline reason receives focus');
 doc('finished','8','candle'); window.toggleHazardNext();
 assert.strictEqual(btn.style.pointerEvents, 'auto', 'Next enabled for a matching document');
-ok('enforced at Smart Paste, the confirmation/Next button and when leaving Step 3 (manual entry included)');
+ok('paste first, then review; mismatched coverage still blocks Next with focused inline guidance');
 
 // Step 2 requires a usable fragrance %.
 set('frag-load', ''); window.__lastAlert = '';
@@ -204,7 +206,7 @@ assert.strictEqual(reviewBlocks, false, 'fixture is otherwise exportable, so the
 assert.strictEqual(window.SdsDocCheck.status(window.eval('_sdsDocRecord()')), 'not-checked', 'answers alone are not a confirmation');
 assert.strictEqual(exportOk(), false, 'unconfirmed label cannot be exported');
 if (!reviewBlocks) {
-  assert(/complete "Check your supplier document first"/.test(window._downloadBlockedMessage()), 'guidance names Step 3 check');
+  assert(/complete "Supplier document coverage"/.test(window._downloadBlockedMessage()), 'guidance names Step 3 check');
   const note = document.getElementById('sds-doc-export-note');
   assert(note.style.display !== 'none' && /Step 3/.test(note.textContent), 'visible Step 5 notice with a way back to Step 3');
 }
