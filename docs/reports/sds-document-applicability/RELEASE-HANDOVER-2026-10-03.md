@@ -82,6 +82,11 @@ Detailed design and evidence: `docs/reports/SDS-FRAGRANCE-PERCENTAGE-REVIEW-2026
   - specific concentration limits;
   - the EUH208 elicitation limits: 0.1% for Category 1/1B, 0.01% for 1A, one tenth of an SCL.
 - **GB text not compared:** whether the GB CLP text matches the EU text cited has not been checked.
+- **Retried in a later session, still blocked:** the same official sites plus the archive mirrors
+  (web.archive.org, archive.org, publications.europa.eu, op.europa.eu, data.europa.eu).
+  - The point-by-point checklist, with links and article numbers to confirm, is in
+    `PRIMARY-SOURCE-CHECKLIST.md`.
+  - **Status: NOT VERIFIED.**
 - **What the implementation is:** CLPeasy's conservative evidence policy. It is **not legally
   verified**, and consistent answers do not prove that a supplier document or confirmation is
   suitable.
@@ -108,11 +113,16 @@ Detailed design and evidence: `docs/reports/SDS-FRAGRANCE-PERCENTAGE-REVIEW-2026
 - **Also blocked for new labels:**
   - a document for a different, rounded or range %, a different product, or a concentrated oil;
   - lifted only by supplier information for the exact %, or by a written confirmation if accepted.
-- **Suggested before release:** a short customer notice (email or banner) explaining the one-time
-  Step 3 check. It has not been written; that is your decision.
+- **Customer notice:** a draft email and in-app banner are in `CUSTOMER-NOTICE-DRAFT.md`. It
+  separates what the law requires from CLPeasy's policy, and has version A or B of the
+  written-confirmation section depending on the switch. It has not been sent or published.
 
 ## 5. Untested: the real signed-in journey
 - **Not reachable:** this environment cannot reach CLPeasy Test Supabase (`*.supabase.co`).
+  - **Retried in a later session:** `wwjhvpphlbgtywxskqnf.supabase.co` and `cdn.jsdelivr.net`
+    (which serves the Supabase library) were both rejected by the egress proxy.
+  - **Credentials:** even with network access, a real sign-in needs a Test account login. None is
+    available to the agent, and none should be invented.
 - **How it was tested instead:**
   - The Builder and Composer were tested as a **signed-out guest**, with Supabase stubbed.
   - My Labels was tested with a **simulated signed-in account**.
