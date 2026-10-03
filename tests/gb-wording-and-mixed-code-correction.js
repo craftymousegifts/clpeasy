@@ -88,7 +88,7 @@ const dom = new JSDOM(source, {
       },
       drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
     });
-    window.eval(rawLabelRendererSource);
+    window.eval(rawLabelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
     window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
@@ -124,13 +124,14 @@ function setupBuilderState(shape, customW, customH){
 function pasteAndExtract(text){
   setupBuilderState();
   window.setApprovedBuilderStep(3);
+  document.getElementById('product-type').value = 'Scented Candle'; // a real Step 2 product type (supplier-document check)
   document.getElementById('smart-paste-input').value = text;
   window.extractSDS();
 }
 
 function runStep3Gate(){
   document.getElementById('scent-name').value = 'Test Scent';
-  document.getElementById('product-type').value = 'Candle';
+  document.getElementById('product-type').value = 'Scented Candle'; // real Builder option ('Candle' is not one)
   document.getElementById('biz-name').value = 'Test Business';
   document.getElementById('biz-phone').value = '01234 567890';
   document.getElementById('hazard-confirm').checked = true;
@@ -161,7 +162,7 @@ function renderDirectAndUpdate(hStatementsCsv, opts, shapeOverride){
   if(shapeOverride) setupBuilderState(shapeOverride.shape, shapeOverride.customW, shapeOverride.customH);
   else setupBuilderState();
   const domFields = Object.assign({
-    'scent-name': 'Test Scent', 'product-type': 'Candle',
+    'scent-name': 'Test Scent', 'product-type': 'Scented Candle',
     'biz-name': 'Test Business', 'biz-phone': '01234 567890',
     'h-statements': hStatementsCsv, 'p-statements': 'P501',
     'biz-address': '', 'biz-website': '', 'net-weight': '',
@@ -810,6 +811,7 @@ Precautionary statements:
 P302+352, IF ON SKIN: Wash with plenty of water.
 P333+313, If skin irritation or rash occurs: Get medical advice/attention.
 P501, Dispose of contents and container in accordance with local regulations.`;
+    document.getElementById('product-type').value = 'Scented Candle'; // a real Step 2 product type (supplier-document check)
     document.getElementById('smart-paste-input').value = SECOND_TEXT;
     window.extractSDS();
     const hStAfter = window.eval('S.hStatements'), pStAfter = window.eval('S.pStatements');

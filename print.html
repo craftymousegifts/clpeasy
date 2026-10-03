@@ -568,6 +568,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
     </div>
 
     <div id="fit-issues-panel" style="display:none;"></div>
+    <div id="sds-doc-sheet-note" class="sds-doc-sheet-note" role="status" style="display:none;margin:0 0 12px;padding:10px 12px;border:1.5px solid #F59E0B;background:#FFFBEB;border-radius:10px;font-size:13px;line-height:1.5;color:#78350F;white-space:pre-line;"></div>
 
     <!-- Correction batch: Export's own two action buttons (Print/Save as
          PDF, Download for cutting machine) and their sign-in gate now live
@@ -680,6 +681,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
      is scoped in its own IIFE so it cannot collide with this page's own
      top-level names. -->
 <script src="label-render.js"></script>
+<script src="sds-doc-check.js"></script>
 <script src="label-library.js"></script>
 <script src="entitlement.js"></script>
 
@@ -932,13 +934,41 @@ function getSheetGeometryBlockMessage(){
   return null;
 }
 
+// Owner decision 2 (3 Oct 2026): a sheet can't be exported while any label
+// on it lacks a current supplier-document confirmation (SdsDocCheck, the
+// same rule as the Builder). Saved designs are not changed: the maker opens
+// the label in Create Label and completes Step 3. Returns message or null.
+function getSheetSdsDocBlockMessage(){
+  if(currentTpl===null||typeof SdsDocCheck==='undefined')return null;
+  const seen=new Set(), names=[];
+  for(const p of getSheetPlacementsMM()){
+    const ld=p.labelData||{};
+    const key=ld.id||ld.scentName||JSON.stringify(ld).slice(0,200);
+    if(seen.has(key))continue;
+    seen.add(key);
+    if(!SdsDocCheck.isVerified(ld))names.push(ld.scentName||'Unnamed label');
+  }
+  if(!names.length)return null;
+  const list=names.map(n=>`• ${n}`).join('\n');
+  return `This sheet can't be printed or downloaded yet. ${names.length===1?'This label needs':'These labels need'} a supplier document check:\n\n${list}\n\nOpen ${names.length===1?'it':'each one'} in Create Label, complete "Check your supplier document first" in Step 3 (Hazards), continue to Step 5 and save. Your saved designs are kept.`;
+}
+function updateSdsDocSheetNote(){
+  const el=document.getElementById('sds-doc-sheet-note');
+  if(!el)return;
+  const m=getSheetSdsDocBlockMessage();
+  el.style.display=m?'':'none';
+  el.textContent=m||'';
+}
+
 function updateExportButtonState(){
-  const blockedByFit=((typeof sheetFitIssues!=='undefined')&&sheetFitIssues.length>0)||!!getCustomGridOverflow()||!!getSheetGeometryBlockMessage();
+  updateSdsDocSheetNote();
+  const blockedBySds=!!getSheetSdsDocBlockMessage();
+  const blockedByFit=((typeof sheetFitIssues!=='undefined')&&sheetFitIssues.length>0)||!!getCustomGridOverflow()||!!getSheetGeometryBlockMessage()||blockedBySds;
   // Correction batch: no longer says "marked below" -- since the export
   // buttons moved into the Sheet Preview pane, the fit-issues list they
   // refer to is no longer spatially below them (desktop: it's in the left
   // column; mobile: it's after the preview). Kept direction-neutral.
-  const title=blockedByFit?"Fix the label(s) that don't fit before you can print or download this sheet.":'';
+  const title=blockedBySds?'Complete the supplier document check for the listed label(s) first.':(blockedByFit?"Fix the label(s) that don't fit before you can print or download this sheet.":'');
   const btnPdf=document.getElementById('btn-pdf');
   if(btnPdf){ btnPdf.disabled=!isPro||blockedByFit; btnPdf.title=title; }
   const btnPng=document.getElementById('btn-png-all');
@@ -958,6 +988,8 @@ function getSheetFitBlockMessage(){
   // Stage 1: final physical-geometry guard (getSheetGeometryBlockMessage()).
   const geoMsg=getSheetGeometryBlockMessage();
   if(geoMsg)return geoMsg;
+  const sdsMsg=getSheetSdsDocBlockMessage();
+  if(sdsMsg)return sdsMsg;
   if(!sheetFitIssues||!sheetFitIssues.length)return null;
   const list=sheetFitIssues.map(i=>`• ${i.scentName}: ${i.reason}`).join('\n');
   return `This sheet can't be printed or downloaded yet -- ${sheetFitIssues.length} label${sheetFitIssues.length===1?'':'s'} ${sheetFitIssues.length===1?"doesn't":"don't"} fit:\n\n${list}\n\nFix, replace or remove the marked label(s) below, then try again.`;

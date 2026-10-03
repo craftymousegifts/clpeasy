@@ -7,7 +7,7 @@
 // It never bypasses or alters the production checks (evaluateSdsDoc,
 // canLeaveApprovedBuilderStep, extractSDS still run unchanged), and does
 // nothing on pages without the Builder (print.html, renderer-only DOMs) or
-// for product types CLPeasy cannot match.
+// for blank / unlisted product types (no substitution).
 'use strict';
 const SCRIPT = `(function(){
   if (window.__sdsDocAutoAnswer || typeof window.evaluateSdsDoc !== 'function') return;
@@ -25,25 +25,17 @@ const SCRIPT = `(function(){
       updateSdsDocCheck();
     } catch (e) {}
   }
-  // Unit tests that never choose a REAL product type (blank, or a fixture
-  // value such as 'Candle' that is not a Builder option; the real Step 2
-  // requires a listed type) get 'Scented Candle' only while the check and
-  // the wrapped call run; the original value is restored afterwards.
-  function withRealType(fn, self, args){
-    var pt = document.getElementById('product-type');
-    var cur = (pt && pt.value) || S.productType || '';
-    var fake = !SDS_DOC_BASE_BY_TYPE[cur];
-    var savedDom = pt ? pt.value : '', savedS = S.productType;
-    if (fake) { if (pt) pt.value = 'Scented Candle'; S.productType = 'Scented Candle'; }
-    try { answer(); return fn.apply(self, args); }
-    finally { if (fake) { if (pt) pt.value = savedDom; S.productType = savedS; } }
-  }
-  var ex = window.extractSDS;
-  window.extractSDS = function(){ return withRealType(ex, this, arguments); };
+  // Answers using the label's REAL product type only. A blank or unlisted
+  // type is left unanswered, so the production check blocks it exactly as
+  // it would for a maker (3 Oct 2026: no product-type substitution).
+  function wrap(fn){ return function(){ answer(); return fn.apply(this, arguments); }; }
+  window.extractSDS = wrap(window.extractSDS);
   var leave = window.canLeaveApprovedBuilderStep;
-  window.canLeaveApprovedBuilderStep = function(step){ return (step === 2 || step === 3) ? withRealType(leave, this, arguments) : leave.apply(this, arguments); };
-  var thn = window.toggleHazardNext;
-  window.toggleHazardNext = function(){ return withRealType(thn, this, arguments); };
+  window.canLeaveApprovedBuilderStep = function(step){ if (step === 2 || step === 3) answer(); return leave.apply(this, arguments); };
+  window.toggleHazardNext = wrap(window.toggleHazardNext);
+  // For tests that export without walking Steps 3 -> 4: answer, then run the
+  // production confirmation (it refuses anything evaluateSdsDoc rejects).
+  window.__confirmSdsDoc = function(){ answer(); if (typeof _stampSdsDocConfirmation === 'function') _stampSdsDocConfirmation(); return SdsDocCheck.isVerified(_sdsDocRecord()); };
   window.__answerSdsDoc = answer;
 })();`;
 function install(window){ try { if (window && typeof window.eval === 'function') window.eval(SCRIPT); } catch (e) {} return window; }

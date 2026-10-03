@@ -74,7 +74,7 @@ const dom = new JSDOM(source, {
       },
       drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
     });
-    window.eval(labelRendererSource);
+    window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
     window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
@@ -108,6 +108,7 @@ function pasteAndExtract(text){
   window.setApprovedBuilderStep(3);
   // Real flow: the product is named in Step 2 before Smart Paste in Step 3.
   document.getElementById('scent-name').value = 'Test Scent';
+  document.getElementById('product-type').value = 'Scented Candle'; // a real Step 2 product type (supplier-document check)
   document.getElementById('smart-paste-input').value = text;
   window.extractSDS();
   return {
@@ -118,7 +119,7 @@ function pasteAndExtract(text){
 
 function runStep3Gate(){
   document.getElementById('scent-name').value = 'Test Scent';
-  document.getElementById('product-type').value = 'Candle';
+  document.getElementById('product-type').value = 'Scented Candle'; // real Builder option ('Candle' is not one)
   document.getElementById('biz-name').value = 'Test Business';
   document.getElementById('biz-phone').value = '01234 567890';
   document.getElementById('hazard-confirm').checked = true;

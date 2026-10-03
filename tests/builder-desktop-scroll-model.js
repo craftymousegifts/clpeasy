@@ -95,7 +95,7 @@ function buildDom(){
         },
         drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
       });
-      window.eval(labelRendererSource);
+      window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
       window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;

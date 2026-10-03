@@ -430,7 +430,7 @@ async function openPage(source, opts) {
           font: '', measureText(t){ return { width: String(t).length * 7 }; },
           drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data: [] }; },
         });
-        window.eval(labelRendererSource);
+        window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
         window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
         window.alert = () => {}; window.confirm = () => true; window.scrollTo = () => {};
         window.fetch = async () => ({ ok: true, json: async () => ({}) });

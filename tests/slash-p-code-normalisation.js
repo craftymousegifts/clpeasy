@@ -51,7 +51,7 @@ function buildDom(builderSourcePath){
         },
         drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
       });
-      window.eval(labelRendererSource);
+      window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
       window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
@@ -82,6 +82,7 @@ function pasteAndExtract(window, document, text){
   document.getElementById('custom-h').value = '100';
   window.onDimInput();
   window.setApprovedBuilderStep(3);
+  document.getElementById('product-type').value = 'Scented Candle'; // a real Step 2 product type (supplier-document check)
   document.getElementById('smart-paste-input').value = text;
   window.extractSDS();
   return {
@@ -97,7 +98,7 @@ function pasteAndExtract(window, document, text){
 // alert/block behaves exactly as it would for a real user.
 function runStep3Gate(window, document){
   document.getElementById('scent-name').value = 'Test Scent';
-  document.getElementById('product-type').value = 'Candle';
+  document.getElementById('product-type').value = 'Scented Candle'; // real Builder option ('Candle' is not one)
   document.getElementById('biz-name').value = 'Test Business';
   document.getElementById('biz-phone').value = '01234 567890';
   document.getElementById('hazard-confirm').checked = true;

@@ -47,7 +47,7 @@ const dom = new JSDOM(source, {
       },
       drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
     });
-    window.eval(fs.readFileSync('label-render.js', 'utf8'));
+    window.eval(fs.readFileSync('label-render.js', 'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
     window.eval(fs.readFileSync('label-library.js', 'utf8'));
     window.eval(fs.readFileSync(path.join(__dirname, '..', 'entitlement.js'), 'utf8'));
     window.alert = message => { window.__lastAlert = String(message); };
@@ -154,6 +154,12 @@ function f1Check(context){
   assert.strictEqual(extracted.signal, 'Warning', 'setup: signal word extracted');
   assert(extracted.pictos.includes('exclamation'), 'setup: pictogram extracted');
   assert(extracted.sens.length >= 2, 'setup: EUH208 sensitisers extracted');
+  // Real journey: confirm Step 3 and continue (this records the supplier-
+  // document confirmation that is saved with the label).
+  document.getElementById('hazard-confirm').checked = true;
+  window.eval('approvedBuilderStep=3; S.step=3;');
+  window.setApprovedBuilderStep(4);
+  assert.strictEqual(S('approvedBuilderStep'), 4, 'setup: left Step 3 ' + (window.__lastAlert || ''));
   await window.saveLabel();
   const saved = S('getSaved()').find(e => e.scentName === 'Lavender Candle');
   assert(saved && saved.hazardFromExtraction === true, 'the saved label records hazardFromExtraction:true');
@@ -263,6 +269,12 @@ function f1Check(context){
   document.getElementById('hazard-confirm').checked = true;
   assert.strictEqual(window.canLeaveApprovedBuilderStep(3), true, 'Step 3 can be left once the new SDS is extracted and confirmed');
   tickVerify();
+  // 3 Oct 2026: the hazard data changed, so the supplier-document
+  // confirmation must be renewed by actually leaving Step 3.
+  assert.strictEqual(window._downloadAllowed(), false, 'new hazard data needs the Step 3 document confirmation again');
+  window.setApprovedBuilderStep(4);
+  assert.strictEqual(S('approvedBuilderStep'), 4, 'left Step 3');
+  tickVerify();
   assert.strictEqual(window._downloadAllowed(), true, 'export allowed again once the new regulatory state is valid and verified');
   ok('C4: after re-extraction only the new SDS data is used and export is allowed again');
 
@@ -314,10 +326,23 @@ function f1Check(context){
   assert.strictEqual(document.getElementById('hazard-confirm').checked, false, 'C4 load: Step 3 confirmation must be ticked again');
   assert.strictEqual(window._downloadAllowed(), false, 'C4 load: still blocked until verification is ticked again');
   tickVerify();
+  // 3 Oct 2026 (owner decision 2): the fragrance % changed, so the supplier-
+  // document confirmation no longer applies. Export stays blocked until the
+  // maker has a document for 12% and confirms it again in Step 3.
+  assert.strictEqual(window._downloadAllowed(), false, 'C4 load: re-check alone does not cover a document for another %');
+  assert(/less than|more than|changed after you confirmed/.test(window._downloadBlockedMessage()), 'C4 load: document guidance shown: ' + window._downloadBlockedMessage());
+  window.setApprovedBuilderStep(3);
+  document.getElementById('sds-doc-pct').value = '12'; window.updateSdsDocCheck();
+  document.getElementById('hazard-confirm').checked = true;
+  window.setApprovedBuilderStep(4);
+  assert.strictEqual(S('approvedBuilderStep'), 4, 'C4 load: left Step 3 with a 12% document ' + (window.__lastAlert || ''));
+  tickVerify();
   assert.strictEqual(window._downloadAllowed(), true, 'C4 load: allowed once re-verified');
   ok('C4 load: fragrance-load change blocks save/export until re-checked (with both confirmations again) or cleared');
 
-  // Adding a fragrance load where none was entered is a change too.
+  // Adding a fragrance load where none was entered is a change too. (Since 3 Oct
+  // 2026 Smart Paste needs a %, so the answer helper enters 10% first and this
+  // exercises 10% -> 8%; the review behaviour checked is the same.)
   before = await freshExtracted('No Load Candle', '');
   setLoad('8%');
   assert.deepStrictEqual([...window._hazardReviewReasons()], ['load'], 'C4 load: adding a load after extraction requires review');

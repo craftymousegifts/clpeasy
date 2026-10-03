@@ -1,7 +1,8 @@
 # Fragrance percentage and supplier-document applicability (3 Oct 2026)
 
 **Branch:** `fix/sds-document-applicability`, from production `main` `148334a`. **Not deployed.**
-- PR #203 (`57789c1`) was inspected only. It stays frozen and is not merged.
+- PR #203 (`57789c1`) was inspected only. It stays frozen until this replacement is approved and
+  deployed.
 - No renderer change: `label-render.js` does not use the fragrance %. The approved homepage labels
   are unchanged, and the Builder Safety Baseline still matches its snapshot exactly.
 
@@ -11,128 +12,196 @@ This is a software safeguard, not legal advice or a classification service.
 "I use 8% fragrance but have a 10% SDS, or use 12% fragrance with a 10% SDS. What can CLPeasy
 safely do, and when must I obtain supplier information?"
 
-## What each input represents
-| Input | Meaning |
-|---|---|
-| **Fragrance in the finished product (% by weight)** (Step 2) | Fragrance weight ÷ total weight of the finished product (wax or base + fragrance) × 100. GB CLP classifies the finished mixture by the concentration of each ingredient *in that mixture*. |
-| **What the supplier document describes** (Step 3) | Either the **concentrated fragrance oil** (an oil SDS, effectively 100%), or a **finished product at a stated %** (a supplier "CLP document" / SDS for, for example, "candle at 10%"). |
-| **Fragrance % the document covers** (Step 3) | The fragrance concentration in the finished product that the supplier's classification was prepared for. Typed in by the maker; never guessed. |
-| **Product the document covers** (Step 3) | Wax (candles and wax melts), diffuser base, or spray base. The base changes the hazards (for example an alcohol spray base is flammable; some diffuser bases are hazardous). |
+## Evidence, in three separate categories
 
-## Evidence
-**Network limitation:** this environment blocks legislation.gov.uk, businesscompanion.info,
-britishcandles.org and reachonline.eu. Primary texts could not be opened. The points below come
-from search results that quote or summarise those sources, and each should be re-confirmed against
-the primary text.
+**Source status:** this environment's network policy blocks legislation.gov.uk, eur-lex.europa.eu,
+echa.europa.eu, hse.gov.uk, businesscompanion.info, britishcandles.org and reachonline.eu. **No
+primary text could be opened.** Every point in A below comes from search results quoting or
+summarising those sources. Each is marked "to confirm against the primary text" and should be
+checked before the wording is relied on. Whether the GB CLP text is identical to the EU text cited
+in the summaries has not been confirmed.
 
-**Authoritative points (GB CLP / Trading Standards):**
-1. **Candles are mixtures.** Candles, wax melts and diffusers are mixtures under GB CLP and UK
-   REACH (joint Trading Standards / British Candlemakers Federation advice pack).
-2. **The supplier SDS is an input; the maker classifies.** The maker must assess the final
-   formulation placed on the market and apply the mixture classification rules to the fragrance
-   load (Trading Standards / BCF advice; HSE is the GB CLP agency).
-3. **Classification is concentration-threshold based, not proportional.**
-   - Annex I uses generic and specific concentration limits. For example, skin sensitisers
-     classify a mixture at ≥1% (Cat. 1/1B) or ≥0.1% (1A), and an irritant ingredient at ≥10%
-     generally classifies the mixture as an irritant.
-   - The mixture's hazards therefore change in steps at thresholds, not in proportion to the
-     fragrance %.
-4. **EUH208 depends on concentration.** A mixture not classified as a sensitiser but containing a
-   sensitiser at ≥0.1% (or one-tenth of a specific limit) must carry "EUH208 Contains … May
-   produce an allergic reaction" (Annex II 2.8).
-   - So the same fragrance can give H317 at 10% and EUH208 at a lower %.
-5. **Formulation change means review.** A change of formulation requires the classification to
-   be reviewed (HSE / CLP guidance on mixture classification).
+### A. Legal requirements (GB CLP / Trading Standards) — reported by secondary sources, to confirm
+1. **Candles, wax melts and diffusers are mixtures.** The person placing them on the market
+   classifies the finished mixture (joint Trading Standards / British Candlemakers Federation
+   advice; HSE is the GB CLP agency).
+2. **The supplier SDS is an input, not the classification of the maker's product.** The maker
+   assesses the final formulation placed on the market.
+3. **Classification uses concentration thresholds, not proportions.**
+   - Generic limits for classifying a mixture as a skin sensitiser: an ingredient that is a
+     Category 1 or 1B sensitiser at ≥1%, or Category 1A at ≥0.1%.
+   - A **specific concentration limit (SCL)** set for a substance replaces the generic limit.
+   - So hazards change in steps at thresholds, and the thresholds can differ by substance.
+4. **EUH208 ("Contains … May produce an allergic reaction") has no single threshold.** It applies
+   to a mixture *not* classified as a sensitiser that contains a sensitiser at or above the
+   elicitation limit (Annex I Table 3.4.6, referred to from Annex II 2.8):
+   - Category 1 or 1B: ≥0.1%;
+   - Category 1A: ≥0.01%;
+   - a substance with an SCL: ≥ one tenth of that SCL.
+   The earlier version of this report stated "≥0.1% (or one-tenth…)" as if it applied to all
+   sensitisers. **That was wrong and is corrected here.**
+5. **A formulation change means the classification must be reviewed.**
 
-**Industry (supplier) guidance, not authoritative:**
-- **% of total, not % of wax.** Supplier CLP templates are prepared for fragrance content as a % of
-  the **total** product mass (wax + fragrance), not % of wax (for example Candle Shack, "Is CLP
-  based on fragrance content or fragrance load?").
-- **"Over-estimate" practice.** Several supplier blogs say a maker "can over-estimate but never
-  under-estimate" (use a 10% CLP for 9%). No authoritative source was found for this, and point 4
-  shows it can produce a different, incorrect label.
+### B. Supplier guidance (industry practice, not law)
+- **% of total, not % of wax.** Supplier CLP templates express fragrance as a % of the total
+  product mass (wax or base + fragrance), not % of the wax (for example Candle Shack's guidance).
+- **"You can over-estimate but never under-estimate".** Several supplier blogs advise using, for
+  example, a 10% CLP document for a 9% product. No legal source was found for this. Because of A3
+  and A4, a different % can lead to different label elements.
 
-## Answer to the user's question (as implemented)
+### C. CLPeasy's conservative product policy (owner decisions, 3 Oct 2026)
+CLPeasy's **evidence requirement** is this: hazard information is only used for a label when the
+maker confirms that it comes from a **finished-product document** that:
+- covers **their type of product**; and
+- states the **same fragrance percentage** they use.
+
+This is CLPeasy's own policy. **It is not a claim that the law requires an exact match.** Anything
+else is blocked, and the maker is told to ask the supplier for GB CLP information for their product
+at their percentage.
+
+## How it works (as implemented)
 | Situation | What CLPeasy does |
 |---|---|
-| Supplier finished-product document for the **same kind of product** at **exactly** your % | ✓ Use it (Smart Paste, then review against the document) |
-| **12%** product, document for **10%** | ⛔ Blocked: hazards can be more severe or additional at a higher %. Obtain supplier GB CLP information for your product at 12% |
-| **8%** product, document for **10%** | ⛔ Blocked: a lower % is not automatically covered, and some warnings depend on thresholds (for example H317 vs EUH208). Obtain supplier information for 8% |
-| SDS for the **concentrated oil** (100%) | ⛔ Blocked: it describes the oil, not your product, and CLPeasy does not calculate mixture classifications |
-| Not sure what the document describes | ⛔ Blocked, with how to check (title and Section 1/2 should name a finished product and %) |
-| Document % missing or not a number ("see section 3") | ⛔ Blocked |
-| Your own % missing or uncertain ("about 10") | ⛔ Blocked at Step 2 and Step 3 |
-| Document for a different base (wax document for a spray or diffuser) | ⛔ Blocked |
-| Product or base CLPeasy cannot match ("something else") | ⛔ Blocked |
+| Finished-product document for your product group at **exactly** your % | ✓ Use it (Smart Paste, then review against the document) |
+| **12%** product, **10%** document | ⛔ Blocked; supplier guidance shown |
+| **8%** product, **10%** document | ⛔ Blocked (owner decision 1). The message calls this CLPeasy's requirement and gives H317 / EUH208 as an example of a threshold effect, with no threshold figure |
+| **9.0909%** product (from the calculator), **9.1%** document | ⛔ Blocked: the numbers are not rounded to make a match |
+| Concentrated-oil SDS (100%) | ⛔ Blocked; CLPeasy does not calculate mixture classifications |
+| Not sure what the document describes | ⛔ Blocked, with how to check (title and Sections 1–2) |
+| Document % missing, a range ("8–10%") or not a number | ⛔ Blocked |
+| Your % missing, a range or not a number | ⛔ Blocked at Step 2 and Step 3 |
+| Document for another product group | ⛔ Blocked |
+| "Something else / not stated" | ⛔ Blocked |
 
-**Where the check is enforced:**
-- Smart Paste extraction;
-- the Step 3 confirmation and Next button;
-- leaving Step 3, so hazards typed or edited by hand are covered too.
+### Product groups (owner decision 4)
+Each group needs a document for that group.
 
-**Other implementation details:**
-- The answers are saved with the label and restored.
-- The fragrance % comparison is exact: 10.04% is not treated as covered by 10%.
+| Group | Covers |
+|---|---|
+| Candles | Scented, soy, votive, tea light, pillar, advent candle |
+| Wax melts | Wax melt, wax tart, snap bar, clamshell, advent wax melt (and bag / bouquet if used) |
+| Reed diffusers | |
+| Electric or plug-in diffusers | |
+| Car diffusers | |
+| Room or linen sprays | |
+| Car air freshener sprays | |
+| Scented sachets | |
+| Potpourri | |
 
-## Review of the existing implementation (production `148334a`)
+- **Candles and wax melts are not interchangeable.** A document covers both only when the maker
+  chooses "Candles and wax melts (the document names both)", which means the supplier document
+  explicitly names both.
+- **Sachets and potpourri:** these were listed Builder product types with no document group in the
+  previous version of this branch, so those makers could not pass Step 3. Both are now their own
+  groups.
+- **Answers saved by the earlier version of this branch** (combined "wax"/"diffuser"/"spray"
+  choices) are not accepted, and the maker is asked to choose again. These answers never reached
+  production.
+
+### Precision and rounding
+- **Exact comparison.** Both percentages are compared exactly as numbers. 10 and 10.0 are equal;
+  10.04 and 10 are not; 9.0909 and 9.1 are not.
+- **Single figures only.** Both fields accept a single number (optionally with "%"; a decimal comma
+  is accepted). Ranges, words and "about" are rejected.
+- **Calculator.**
+  - It no longer rounds the applied value to 1 decimal place. 20 g of fragrance in 200 g of wax
+    gives **9.0909%** (the exact value is 9.0909…%), shown as "9.0909% (rounded to 4 decimal
+    places)".
+  - It tells the maker that CLPeasy compares this figure exactly and never rounds to make a match.
+  - Exact values (180 g + 20 g → 10%) are shown without the rounding note.
+- **Supplier-stated coverage.** CLPeasy uses only the single % the document states. If a supplier
+  says a document covers a range or "up to" a %, CLPeasy does not interpret that. The maker must
+  ask the supplier for information at their exact %, or enter the % the document states.
+
+### Confirmation and export (owner decision 2)
+1. **When the check is confirmed.** It is confirmed only when the maker successfully leaves Step 3
+   (Next to Step 4). Leaving Step 3 already requires a matching document, extracted or reviewed
+   hazards, and the "I confirm" tick.
+2. **What the confirmation is tied to:**
+   - the fragrance %;
+   - the product type;
+   - the hazard information (H and P statements, pictograms, signal word and named sensitisers;
+     the order of the codes is ignored);
+   - the document answers.
+3. **When it stops counting.** If any of these changes afterwards, the label shows **needs
+   re-check**, and every export is blocked until the maker goes through Step 3 again.
+4. **Saved with the label.** The confirmation is saved with the label (in the browser, like the
+   rest of My Labels). Reopening a label restores it, and it counts only if nothing has changed.
+
+**Builder:**
+- **The gate.** The single export gate (`_downloadAllowed()`) now also requires the confirmation.
+  It covers all six export functions (PNG, SVG, PDF sheet, print-ready PDF, cutting-machine PNGs,
+  print to PDF) and every button that calls them.
+- **Reopened labels.** A label reopened from My Labels goes straight to Step 5, where the same gate
+  applies.
+- **On-screen guidance.** Step 5 shows a notice with the reason and a "Go to Step 3 (Hazards)"
+  link.
+- **Labels saved before this change** are not checked yet. They can be reopened and edited, but
+  not exported until the maker completes Step 3. The saved design itself is not changed.
+- **Saving the label (btn-save)** shares this gate, as it already did for the Step 5 tick.
+
+**Print Sheet Composer:**
+- **The gate.** The single export gate (`getSheetFitBlockMessage()`) and the button state now
+  refuse a sheet that contains any label without a current confirmation. This covers:
+  - Print / Save as PDF;
+  - every cutting-machine PNG and ZIP path.
+- **Guidance.** A notice lists the label names, and tells the maker to open each one in Create
+  Label, complete Step 3 and save. Saved designs are kept.
+
+## Review of the original implementation (production `148334a`)
 | Found | Problem | Change |
 |---|---|---|
-| "Fragrance load % (optional)" | Unclear basis, and optional, so nothing could be checked | Now "Fragrance in the finished product (% by weight)", required, with the formula shown |
-| Calculator applied **% of wax** (20 g in 200 g → "10%") | Supplier CLP information uses % of the finished product (9.1%) | Applies 9.1% of the finished product; % of wax shown for reference only |
-| Tip: "you can overestimate but never underestimate" | Unsupported assurance | Replaced with "must be for the exact % you use" |
-| Tip: "Use 25% CLP if your load is between 15–25%" | Unsupported assurance | Replaced |
-| Tips: "may not need CLP" / "may not require CLP if fragrance load is low" | Treats a lower % or base as automatically safe | Replaced (the sachet tip now says a lower % does not automatically mean no CLP) |
-| No document applicability check (only a general note) | Smart Paste accepted any Section 2.2, including a 100% oil SDS | New Step 3 check (above) |
+| "Fragrance load % (optional)" | Unclear basis, and optional | "Fragrance in the finished product (% by weight)", required, with the formula |
+| Calculator applied **% of wax** (20 g in 200 g → "10%") | Supplier information uses % of the finished product | Applies 9.0909% of the finished product; % of wax shown for reference |
+| Tip "overestimate but never underestimate"; "Use 25% CLP…"; "may not need/require CLP" | Unsupported assurances | Replaced |
+| No document check | Smart Paste accepted any Section 2.2, including a 100% oil SDS | Step 3 check plus export confirmation (above) |
 
-**Unchanged:** the approved GB note ("Use your supplier's CLP information for the percentage you
-actually use, not the information for the undiluted oil"), the Step 3 and Step 5 confirmations,
-the C4 stale-hazard review, and the renderer and labels.
+**Unchanged:**
+- the approved GB note;
+- the Step 3 and Step 5 confirmations;
+- the C4 stale-hazard review;
+- the renderer and labels;
+- Supabase, Stripe and the database.
 
 ## PR #203 (frozen) compared with this branch
 | PR #203 | This branch |
 |---|---|
-| Requires an exact % match at Smart Paste; blocks a 100% SDS | Same principle, plus a product/base match and an explicit concentrate / finished / unsure choice |
-| Hand-entered hazards were not gated | Gated at the confirmation, Next and leaving Step 3 |
-| Auto-filled the document % from the first "oil … N%" in the pasted text | Never auto-filled; the maker types the % stated on the document |
+| Exact % match at Smart Paste; blocks a 100% SDS | Same, plus product-group match and an explicit document type |
+| Hand-entered hazards not gated; saved labels not gated | Gated at Next / leaving Step 3, and at every Builder and Composer export |
+| Auto-filled the document % from the pasted text | Never auto-filled |
 | Kept the %-of-wax calculator and the misleading tips | Fixed |
-| Based on `727804e` (pre-PAYG/hero/Phase 1) | Based on current production `148334a` |
-
-**Recommendation:** close PR #203 as superseded once this branch is approved. That is your
-decision; it stays frozen until then.
+| Based on `727804e` | Based on production `148334a` |
 
 ## Tests
-- **New:** `tests/sds-document-applicability.js` (real `builder.html` in JSDOM; 7 groups) covers:
-  - 8% and 12% against 10%; exact match; 10.04 vs 10;
-  - concentrate, unsure, missing or uncertain own %, missing or non-numeric document %;
-  - base mismatch and unmatched base;
-  - the wax melt / diffuser / spray mapping;
-  - enforcement at Smart Paste, Next and leaving Step 3 (manual entry);
-  - the Step 2 requirement, the calculator (9.1%) and saving with the label.
-- **Existing Builder journey harnesses (13):** these predate the check. They now answer it through
-  `tests/helpers/sds-doc-answer.js`, as a maker with a matching document would. The helper does
-  not change or bypass any production check.
-  - For tests that use a fixture product type that is not a Builder option (`'Candle'`, or blank),
-    the helper substitutes "Scented Candle" only while the check runs.
-- **Builder Safety Baseline:** identical to its snapshot (10 labels).
+- **`tests/sds-document-applicability.js`** (real `builder.html` in JSDOM, 9 groups) covers:
+  - **Step 3 check:**
+    - every blocking case above, including 9.0909 vs 9.1 and ranges;
+    - candle ≠ wax melt, with "both" covering both;
+    - every listed product type is mapped;
+    - old combined answers are asked again;
+    - enforcement at Smart Paste, Next and leaving Step 3.
+  - **Step 2 and calculator:** the Step 2 % requirement and the calculator precision.
+  - **Export confirmation:**
+    - an unconfirmed label is blocked at all six export functions, with no file produced;
+    - leaving Step 3 confirms the label;
+    - the confirmation is invalidated by a change to the %, product type, H, P, pictogram, signal
+      word, sensitiser or document answer;
+    - saved and restored;
+    - the Composer gate is wired to the same module.
+- **Existing Builder harnesses:**
+  - They answer the check through `tests/helpers/sds-doc-answer.js`, using the label's **real**
+    product type only.
+  - The earlier version substituted "Scented Candle" for blank or fake types. **That substitution
+    has been removed.**
+  - Fixtures now use real Builder product types.
+- **Composer harnesses:** saved fixtures carry a real confirmation made by the shared module, and a
+  dedicated case checks that an unconfirmed label blocks the sheet.
 
 ## Limitations
-- **Primary legal texts not opened** (network policy); evidence is from search results. Confirm
-  the cited points against legislation.gov.uk and the Trading Standards / BCF advice pack before
-  relying on the wording.
-- **Labels saved before this change** have no document answers. They are checked when the maker
-  goes back through Step 3, but they are **not** blocked from download when reopened directly.
-  Retro-blocking saved labels would be an owner decision, similar to M09/M31.
-- **Not verified:** CLPeasy cannot verify that the maker's answers match the document. It checks
-  consistency and blocks known-insufficient evidence; it does not read the document's % or base.
-- **Smart Paste** still extracts from Section 2.2 text; the maker must still review the result.
-
-## Decisions for you
-1. **Lower-% use of a higher-% document** (for example 8% with a 10% document): currently
-   **blocked**. Some suppliers advise it is acceptable ("over-estimate"), but no authoritative
-   source was found, and threshold effects can make the label wrong. Keep the block, or allow it
-   with an explicit acknowledgement, pending advice.
-2. **Saved labels without document answers:** leave as is (checked on edit), or block download
-   until answered.
-3. **PR #203:** close as superseded once this branch is approved.
-4. **Product groups:** candles and wax melts are grouped as "wax". Confirm that a supplier "candle"
-   document may be used for a wax melt at the same %, or split them.
+- **Primary legal texts not opened** (network policy). Category A is reported by secondary
+  sources and is to be confirmed.
+- **CLPeasy cannot read the document.** The check relies on the maker's answers about the document
+  type, % and product. It blocks known-insufficient evidence; it cannot detect a wrong answer.
+- **Local storage only.** The confirmation is stored with the label in the browser, like My Labels.
+  Clearing browser data loses it along with the label.
+- **Smart Paste** still extracts from Section 2.2 text, and the maker must still review the result.

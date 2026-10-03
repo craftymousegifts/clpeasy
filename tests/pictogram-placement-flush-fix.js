@@ -55,7 +55,7 @@ function stubCanvas(window){
 const labelRendererSource = fs.readFileSync(path.join(__dirname, '..', 'label-render.js'), 'utf8');
 const dom = new JSDOM('<!doctype html><html><body></body></html>', {
   runScripts: 'dangerously',
-  beforeParse(window) { stubCanvas(window); window.eval(labelRendererSource); }
+  beforeParse(window) { stubCanvas(window); window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); }
 });
 const LR = dom.window.LabelRenderer;
 

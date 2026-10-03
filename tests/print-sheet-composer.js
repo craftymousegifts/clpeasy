@@ -1,3 +1,7 @@
+// 3 Oct 2026: saved fixtures stand for labels completed in the Builder, so they
+// carry the supplier-document confirmation the Builder saves (real product
+// type and %, made by sds-doc-check.js; see tests/helpers/sds-doc-verified.js).
+const __confirmed = arr => arr.map(r => require('./helpers/sds-doc-verified').withConfirmedDoc(r, '10%'));
 // Phase 1 tests for the Print Sheet Composer template registry (EU30009)
 // and mixed-label rendering. Follows the same jsdom pattern as
 // tests/builder-regression.js. Run from the repo root: node tests/print-sheet-composer.js
@@ -96,7 +100,7 @@ const dom = new JSDOM(source, {
     // proven pattern in tests/label-identity-and-spec.js, BEFORE
     // label-library.js is evaluated below.
     try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
-    window.eval(labelRendererSource);
+    window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
     window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
@@ -127,7 +131,7 @@ const dom = new JSDOM(source, {
       rpc: async () => ({ data:false, error:null })
     }) };
     // Seed the guest-namespace saved-label library before init() runs.
-    window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify([labelLavender, labelVanilla, labelWrongShape, labelWrongSize, labelSimple]));
+    window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify(__confirmed([labelLavender, labelVanilla, labelWrongShape, labelWrongSize, labelSimple])));
   }
 });
 

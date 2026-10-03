@@ -33,7 +33,7 @@ const dom = new JSDOM(source, {
       },
       drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
     });
-    window.eval(labelRendererSource);
+    window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
     window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
     window.alert = () => {};
     window.confirm = () => true;
@@ -64,6 +64,7 @@ function pasteAndExtract(text, customW, customH){
   document.getElementById('custom-h').value = String(customH);
   window.onDimInput();
   window.setApprovedBuilderStep(3);
+  document.getElementById('product-type').value = 'Scented Candle'; // a real Step 2 product type (supplier-document check)
   document.getElementById('smart-paste-input').value = text;
   window.extractSDS();
   return window.eval('S.sensitisers');

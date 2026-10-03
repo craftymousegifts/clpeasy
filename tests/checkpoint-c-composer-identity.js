@@ -1,3 +1,7 @@
+// 3 Oct 2026: saved fixtures stand for labels completed in the Builder, so they
+// carry the supplier-document confirmation the Builder saves (real product
+// type and %, made by sds-doc-check.js; see tests/helpers/sds-doc-verified.js).
+const __confirmed = arr => arr.map(r => require('./helpers/sds-doc-verified').withConfirmedDoc(r, '10%'));
 // ── CHECKPOINT C1: COMPOSER SAVED-LABEL IDENTITY ─────────────────────────
 // Focused regression coverage for the Checkpoint C1 corrections list.
 // Loads the real print.html through the same jsdom harness pattern
@@ -67,7 +71,7 @@ function fakeId(){
 // fitting content, matching the fixtures tests/print-sheet-*.js already use.
 function fixture(overrides){
   return Object.assign({
-    scentName:'Fixture Scent', productType:'Candle', bizName:'Crafty Mouse Gifts',
+    scentName:'Fixture Scent', productType:'Wax Melt', bizName:'Crafty Mouse Gifts',
     shape:'circle', size:'custom', customW:52, customH:52,
     bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'',
     // Correction (read-only impact assessment, 2026-09, Michaela's
@@ -94,7 +98,7 @@ function fixture(overrides){
 function overflowingFixture(overrides){
   return Object.assign({
     scentName:'Extreme Stress Test Scent Name That Is Quite Long Indeed',
-    productType:'Candle', bizName:'Extreme Stress Business Name Ltd',
+    productType:'Wax Melt', bizName:'Extreme Stress Business Name Ltd',
     shape:'circle', size:'custom', customW:52, customH:52,
     bizAddress:'1 Long Address Road, Some Town, County, Postcode', bizPhone:'01234 567890',
     bizWebsite:'www.extremestresstestbusiness.co.uk',
@@ -171,7 +175,7 @@ async function openComposer(opts){
       // check 11 below). Same proven polyfill
       // tests/label-identity-and-spec.js already uses.
       try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
-      window.eval(labelRendererSource);
+      window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
       window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
@@ -187,7 +191,7 @@ async function openComposer(opts){
       window.supabase = makeSupabaseStub(opts.session || null, opts.activeSub);
       const ns = opts.session ? opts.session.user.id : 'guest';
       if(opts.seed){
-        window.localStorage.setItem('clpeasy_labels__u_'+ns, JSON.stringify(opts.seed));
+        window.localStorage.setItem('clpeasy_labels__u_'+ns, JSON.stringify(__confirmed(opts.seed)));
       }
     }
   });
@@ -269,7 +273,7 @@ async function openComposer(opts){
   {
     const idA = fakeId(), idB = fakeId();
     const seed = [
-      fixture({ id:idA, scentName:'Lavender Fields', productType:'Candle', bizName:'Biz One' }),
+      fixture({ id:idA, scentName:'Lavender Fields', productType:'Wax Melt', bizName:'Biz One' }),
       fixture({ id:idB, scentName:'Sandalwood Dusk', productType:'Wax Melt', bizName:'Biz Two' }),
     ]; // distinct records/content, identical 52mm-circle physical spec
     const { window } = await openComposer({ seed });
@@ -295,7 +299,7 @@ async function openComposer(opts){
     // post-delete collection directly to this window's own localStorage,
     // then dispatch a genuine StorageEvent -- same technique
     // tests/checkpoint-b-identity-wiring.js's storage-event checks use.
-    window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify([{ ...seed[1] }]));
+    window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify(__confirmed([{ ...seed[1] }])));
     const evt = new window.StorageEvent('storage', { key:'clpeasy_labels__u_guest', storageArea: window.localStorage });
     window.dispatchEvent(evt);
     await new Promise(resolve => setTimeout(resolve, 300)); // reconciliation polls internally
@@ -603,7 +607,7 @@ async function openComposer(opts){
     window.eval(`addToSheet('${idSheet}')`);
     window.eval(`setQty('${idSheet}','2')`);
     assert.strictEqual(window.eval('getTotalQty()'), 3, 'setup: the preloaded label\'s auto-placed copy (1) plus the unrelated label (2) should both be on the sheet');
-    window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify([{ ...seed[1] }]));
+    window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify(__confirmed([{ ...seed[1] }])));
     const evt = new window.StorageEvent('storage', { key:'clpeasy_labels__u_guest', storageArea: window.localStorage });
     window.dispatchEvent(evt);
     await new Promise(resolve => setTimeout(resolve, 300));

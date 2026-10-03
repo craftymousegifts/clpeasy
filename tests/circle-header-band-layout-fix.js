@@ -56,7 +56,7 @@ const dom = new JSDOM('<!doctype html><html><body></body></html>', {
       },
       drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data: [] }; }
     });
-    window.eval(labelRendererSource);
+    window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
   }
 });
 const LR = dom.window.LabelRenderer;

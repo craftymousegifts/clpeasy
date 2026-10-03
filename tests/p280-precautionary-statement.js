@@ -1,3 +1,7 @@
+// 3 Oct 2026: saved fixtures stand for labels completed in the Builder, so they
+// carry the supplier-document confirmation the Builder saves (real product
+// type and %, made by sds-doc-check.js; see tests/helpers/sds-doc-verified.js).
+const __confirmed = arr => arr.map(r => require('./helpers/sds-doc-verified').withConfirmedDoc(r, '10%'));
 // Focused regression tests for the P280 SELECTABLE-STATEMENT correction
 // (Michaela's "P280 REVIEW CORRECTION" instruction, superseding the
 // earlier fixed-full-sentence implementation this file previously tested).
@@ -62,7 +66,7 @@ const emptyQuery = {
     // ── Shared renderer: buildP280Wording() itself ──────────────────────
     const rendererDom = new JSDOM('<!doctype html><html><body></body></html>', {
       runScripts: 'dangerously',
-      beforeParse(window) { stubCanvas(window); window.eval(labelRendererSource); }
+      beforeParse(window) { stubCanvas(window); window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); }
     });
     const LR = rendererDom.window.LabelRenderer;
     assert(Array.isArray(LR.P280_ITEMS) && LR.P280_ITEMS.length === 5, 'LabelRenderer.P280_ITEMS must offer exactly the 5 standard items');
@@ -94,7 +98,7 @@ const emptyQuery = {
     // ── Shared renderer: renderLabel() end-to-end ───────────────────────
     const baseLabel = {
       shape:'circle', size:63.5,
-      scentName:'Test Scent', productType:'Candle', bizName:'Test Biz',
+      scentName:'Test Scent', productType:'Wax Melt', bizName:'Test Biz',
       signal:'Warning', hStatements:'H317', pStatements:'P280',
       sensitisers:['Linalool'], pictograms:['exclamation'],
     };
@@ -142,7 +146,7 @@ const emptyQuery = {
     const overflowWithP280 = {
       shape:'circle', size:'custom', customW:52, customH:52,
       scentName:'Extreme Stress Test Scent Name That Is Quite Long Indeed',
-      productType:'Candle', bizName:'Extreme Stress Business Name Ltd',
+      productType:'Wax Melt', bizName:'Extreme Stress Business Name Ltd',
       bizAddress:'1 Long Address Road, Some Town, County, Postcode', bizPhone:'01234 567890',
       bizWebsite:'www.extremestresstestbusiness.co.uk',
       netWeight:'220g', batchNum:'B009-EXTREME', burnTime:'45 hrs approx',
@@ -171,7 +175,7 @@ const emptyQuery = {
       virtualConsole: builderVC,
       beforeParse(window) {
         stubCanvas(window);
-        window.eval(labelRendererSource);
+        window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
         // Checkpoint B: builder.html now also loads label-library.js via
         // <script src="...">, stripped by the same generic regex above for
         // the same reason label-render.js already was -- injected
@@ -202,6 +206,7 @@ const emptyQuery = {
 
     // 1. Smart Paste must still NOT auto-add P280.
     bdocument.getElementById('scent-name').value = 'Lavender Fields'; // named in Step 2 before Smart Paste
+    bdocument.getElementById('product-type').value = 'Scented Candle'; // a real Step 2 product type (supplier-document check)
     bdocument.getElementById('smart-paste-input').value = 'Warning H317 P102 P261 P280 P501 Contains Linalool';
     bwindow.extractSDS();
     assert(!bwindow.eval('S.pSelected').includes('P280'), 'Smart Paste must still exclude P280 -- occupational PPE wording must not auto-transfer to a finished consumer product label');
@@ -265,7 +270,7 @@ const emptyQuery = {
     // re-reads these fields from the DOM (not from S directly) -- set the
     // DOM values too so readForm() doesn't wipe the S state just set above.
     bdocument.getElementById('scent-name').value = 'Lavender Fields';
-    bdocument.getElementById('product-type').value = 'Candle';
+    bdocument.getElementById('product-type').value = 'Scented Candle'; // real Builder option ('Candle' is not one)
     bdocument.getElementById('biz-name').value = 'Crafty Mouse Gifts';
     bdocument.getElementById('biz-phone').value = '01234 567890';
     assert.strictEqual(bwindow.canLeaveApprovedBuilderStep(3), true, 'Step 3 must allow progression once P280 has a valid selection');
@@ -383,7 +388,7 @@ const emptyQuery = {
     // too, and every P280 fixture in this block shares one sheet (and
     // therefore one locked size) -- confirmed directly at 75mm for both.
     const p280LabelValid = {
-      scentName:'Lavender Fields', productType:'Candle', bizName:'Crafty Mouse Gifts',
+      scentName:'Lavender Fields', productType:'Wax Melt', bizName:'Crafty Mouse Gifts',
       shape:'circle', size:'custom', customW:75, customH:75,
       bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'',
       signal:'Warning', hStatements:'H317', pStatements:'P280', p280Items:['gloves','eye'],
@@ -408,7 +413,7 @@ const emptyQuery = {
         // evaluated below. Print Sheet Composer (Checkpoint C1) now requires
         // label-library.js for getSaved()/addToSheet() in print.html.
         try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
-        window.eval(labelRendererSource);
+        window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
         window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
         window.alert = message => { window.__lastAlert = String(message); };
         window.confirm = () => true;
@@ -430,7 +435,7 @@ const emptyQuery = {
           from: () => Object.create(emptyQuery),
           rpc: async () => ({ data:false, error:null })
         }) };
-        window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify([p280LabelValid, p280LabelLegacy]));
+        window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify(__confirmed([p280LabelValid, p280LabelLegacy])));
       }
     });
     await new Promise(resolve => setTimeout(resolve, 60));

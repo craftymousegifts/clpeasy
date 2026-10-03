@@ -135,7 +135,7 @@ async function openBuilder(opts){
     runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole,
     beforeParse(window){
       window.HTMLCanvasElement.prototype.getContext = canvasStub();
-      window.eval(labelRendererSource);
+      window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
       window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
@@ -181,7 +181,12 @@ function fillMinimalLabel(window){
   window.document.getElementById('scent-name').value = 'Security Test Candle';
   window.document.getElementById('product-type').value = 'Scented Candle';
   window.onProductTypeChange();
+  window.document.getElementById('frag-load').value = '10%';
   window.updateLabel();
+  // 3 Oct 2026: exports need the supplier-document confirmation; it is
+  // answered for this real product type and recorded by the production code.
+  require('./helpers/sds-doc-answer').install(window);
+  window.__confirmSdsDoc();
   const cb = window.document.getElementById('verify-checkbox');
   if (cb) cb.checked = true;
 }
@@ -218,7 +223,7 @@ async function openComposer(opts){
       window.HTMLCanvasElement.prototype.getContext = canvasStub();
       window.HTMLCanvasElement.prototype.toDataURL = () => 'data:image/png;base64,AA==';
       try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
-      window.eval(labelRendererSource);
+      window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
       window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
@@ -240,13 +245,13 @@ async function openComposer(opts){
   return { dom, window, document: window.document, errors, capturedImgSrcs, rpcCalls };
 }
 function candleFixture(overrides){
-  return Object.assign({
+  return require('./helpers/sds-doc-verified').withConfirmedDoc(Object.assign({
     scentName:'Security Sheet Candle', productType:'Scented Candle', bizName:'Test Biz',
     shape:'rectangle', size:'custom', customW:57, customH:99,
     bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'20 hrs',
     signal:'Warning', hStatements:'H315', pStatements:'', sensitisers:[], pictograms:['exclamation'],
     textColour:'dark', showBorder:true, hideEN15494:false, labelLang:'en',
-  }, overrides);
+  }, overrides), '10%');
 }
 
 (async () => {

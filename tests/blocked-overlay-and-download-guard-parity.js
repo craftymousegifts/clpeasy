@@ -39,7 +39,7 @@ function rectOf(svg){
     runScripts: 'dangerously',
     beforeParse(window) {
       canvasStub(window);
-      window.eval(labelRendererSource);
+      window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
     }
   });
   const LR = dom.window.LabelRenderer;
@@ -170,7 +170,7 @@ function rectOf(svg){
     virtualConsole,
     beforeParse(window) {
       canvasStub(window);
-      window.eval(labelRendererSource);
+      window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
       window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
@@ -245,6 +245,14 @@ function rectOf(svg){
       assert.strictEqual(window.__opened.length, 0, 'printToPDF() must not open a print window while blocked');
 
       // ── Allowed state: ALL seven buttons must re-enable together ──
+      // (3 Oct 2026) "Genuinely unblocked" now includes the supplier-document
+      // confirmation: a real product type and %, answered and confirmed by
+      // the production code path (see tests/helpers/sds-doc-answer.js).
+      document.getElementById('product-type').value = 'Scented Candle';
+      document.getElementById('frag-load').value = '10%';
+      window.eval("readForm();");
+      require('./helpers/sds-doc-answer').install(window);
+      assert.strictEqual(window.__confirmSdsDoc(), true, 'document confirmation recorded');
       window.eval('window._labelBlockDownload = false;');
       cb.checked = true;
       window.toggleDownload();

@@ -1,3 +1,7 @@
+// 3 Oct 2026: saved fixtures stand for labels completed in the Builder, so they
+// carry the supplier-document confirmation the Builder saves (real product
+// type and %, made by sds-doc-check.js; see tests/helpers/sds-doc-verified.js).
+const __confirmed = arr => arr.map(r => require('./helpers/sds-doc-verified').withConfirmedDoc(r, '10%'));
 // Non-fitting-label export block (amendment #4). Follows the same jsdom
 // pattern as tests/print-sheet-composer.js and tests/builder-regression.js.
 // Proves: an occupied position the shared renderer reports as fits:false is
@@ -46,7 +50,7 @@ const emptyQuery = {
 // assessment -- so a thin-but-real fitting fixture serves this test's
 // purpose correctly.
 const fitsA = {
-  scentName:'Lavender Fields', productType:'Candle', bizName:'Crafty Mouse Gifts',
+  scentName:'Lavender Fields', productType:'Wax Melt', bizName:'Crafty Mouse Gifts',
   shape:'circle', size:'custom', customW:52, customH:52,
   bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'',
   signal:'Warning', hStatements:'H315', pStatements:'P273',
@@ -60,7 +64,7 @@ const fitsA = {
 // during the shared-renderer parity work.
 const doesNotFit = {
   scentName:'Extreme Stress Test Scent Name That Is Quite Long Indeed',
-  productType:'Candle', bizName:'Extreme Stress Business Name Ltd',
+  productType:'Wax Melt', bizName:'Extreme Stress Business Name Ltd',
   shape:'circle', size:'custom', customW:52, customH:52,
   bizAddress:'1 Long Address Road, Some Town, County, Postcode', bizPhone:'01234 567890',
   bizWebsite:'www.extremestresstestbusiness.co.uk',
@@ -103,7 +107,7 @@ const dom = new JSDOM(source, {
     // proven pattern in tests/label-identity-and-spec.js, BEFORE
     // label-library.js is evaluated below.
     try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
-    window.eval(labelRendererSource);
+    window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
     window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
@@ -144,7 +148,7 @@ const dom = new JSDOM(source, {
       from: () => Object.create(emptyQuery),
       rpc: async () => ({ data:false, error:null })
     }) };
-    window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify([fitsA, doesNotFit, fitsB]));
+    window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify(__confirmed([fitsA, doesNotFit, fitsB])));
   }
 });
 

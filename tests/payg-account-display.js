@@ -174,7 +174,7 @@ const text = (doc, id) => (doc.getElementById(id) || { textContent:'' }).textCon
   // ── 2c. builder.html sidebar ──────────────────────────────────────
   {
     const rs = fs.readFileSync('label-render.js','utf8'), ls = fs.readFileSync('label-library.js','utf8');
-    const extra = w => { w.eval(rs); w.eval(ls); };
+    const extra = w => { w.eval(rs); w.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); w.eval(ls); };
     const b1 = await open('builder.html', P.paygExpiredTrial, extra);
     assert.strictEqual(text(b1.doc,'su-plan'), 'Pay As You Go', 'Builder must not label a PAYG customer "Easy Pro"');
     assert.strictEqual(text(b1.doc,'su-count'), '8 downloads');
@@ -188,7 +188,7 @@ const text = (doc, id) => (doc.getElementById(id) || { textContent:'' }).textCon
   // ── 2d. my-labels.html sidebar ────────────────────────────────────
   {
     const ls = fs.readFileSync('label-library.js','utf8'), rs = fs.readFileSync('label-render.js','utf8');
-    const m = await open('my-labels.html', P.pausedWithPayg, w => { w.eval(ls); w.eval(rs); });
+    const m = await open('my-labels.html', P.pausedWithPayg, w => { w.eval(ls); w.eval(rs); w.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); });
     assert.strictEqual(text(m.doc,'su-plan'), 'Easy Start Unlimited (Paused)');
     assert.strictEqual(text(m.doc,'su-count'), '2 downloads');
     ok('my-labels.html: sidebar shows paused plan with purchased balance');
@@ -236,7 +236,7 @@ const text = (doc, id) => (doc.getElementById(id) || { textContent:'' }).textCon
     const rs = fs.readFileSync('label-render.js','utf8'), ls = fs.readFileSync('label-library.js','utf8');
     for (const [key, route] of cases) {
       for (const page of ['account.html', 'dashboard.html', 'my-labels.html', 'builder.html']) {
-        const extra = page === 'my-labels.html' || page === 'builder.html' ? (w => { w.eval(rs); w.eval(ls); }) : null;
+        const extra = page === 'my-labels.html' || page === 'builder.html' ? (w => { w.eval(rs); w.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); w.eval(ls); }) : null;
         const { doc } = await open(page, P[key], extra);
         const link = doc.querySelector('.su-topup');
         assert(link, `${page}: sidebar purchase link exists`);

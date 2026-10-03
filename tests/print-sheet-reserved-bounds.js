@@ -57,7 +57,7 @@ const dom = new JSDOM(source, {
     // proven pattern in tests/label-identity-and-spec.js, BEFORE
     // label-library.js is evaluated below.
     try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
-    window.eval(labelRendererSource);
+    window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
     window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;

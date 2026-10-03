@@ -1,3 +1,7 @@
+// 3 Oct 2026: saved fixtures stand for labels completed in the Builder, so they
+// carry the supplier-document confirmation the Builder saves (real product
+// type and %, made by sds-doc-check.js; see tests/helpers/sds-doc-verified.js).
+const __confirmed = arr => arr.map(r => require('./helpers/sds-doc-verified').withConfirmedDoc(r, '10%'));
 // ── PRINT/PDF EXPORT FIDELITY — regression coverage for the correction
 // batch's Section 4 fix (SharedAssetPool.register()).
 //
@@ -117,7 +121,7 @@ async function openComposerForExport(opts){
     beforeParse(window){
       stubCanvas(window);
       try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
-      window.eval(labelRendererSource);
+      window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
       window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
@@ -132,7 +136,7 @@ async function openComposerForExport(opts){
       window.supabase = makeSupabaseStub(opts.session || null);
       const ns = opts.session ? opts.session.user.id : 'guest';
       if(opts.seed){
-        window.localStorage.setItem('clpeasy_labels__u_'+ns, JSON.stringify(opts.seed));
+        window.localStorage.setItem('clpeasy_labels__u_'+ns, JSON.stringify(__confirmed(opts.seed)));
       }
     }
   });
@@ -224,7 +228,7 @@ function decodeSheetSVG(dataUri){
     const { JSDOM: JSDOM2 } = require('jsdom');
     const dom2 = new JSDOM2('<!doctype html><html><body></body></html>', {
       runScripts:'dangerously',
-      beforeParse(window){ stubCanvas(window); window.eval(labelRendererSource); }
+      beforeParse(window){ stubCanvas(window); window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); }
     });
     const LabelRenderer = dom2.window.LabelRenderer;
 
@@ -281,7 +285,7 @@ function decodeSheetSVG(dataUri){
     const { JSDOM: JSDOM3 } = require('jsdom');
     const dom3 = new JSDOM3('<!doctype html><html><body></body></html>', {
       runScripts:'dangerously',
-      beforeParse(window){ stubCanvas(window); window.eval(labelRendererSource); }
+      beforeParse(window){ stubCanvas(window); window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); }
     });
     const LabelRenderer = dom3.window.LabelRenderer;
     const rec = candleFixture({});

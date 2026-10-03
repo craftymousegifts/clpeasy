@@ -13,7 +13,7 @@ function buildDom(){
   const emptyQuery={select(){return this},eq(){return this},update(){return this},upsert(){return this},single(){return Promise.resolve({data:null,error:null})},then(resolve){return Promise.resolve({data:null,error:null}).then(resolve)}};
   const dom=new JSDOM(source,{url:'https://local.clpeasy.test/builder.html',runScripts:'dangerously',pretendToBeVisual:true,virtualConsole:vc,beforeParse(window){
     window.HTMLCanvasElement.prototype.getContext=()=>({font:'',measureText(text){return{width:String(text).length*7}},drawImage(){},fillRect(){},clearRect(){},getImageData(){return{data:[]}}});
-    window.eval(renderer); window.eval(library);
+    window.eval(renderer); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(library);
     window.alert=m=>{window.__lastAlert=String(m)}; window.confirm=()=>true; window.scrollTo=()=>{};
     window.fetch=async()=>({ok:true,json:async()=>({})}); window.open=()=>({location:{href:''},close(){},opener:null});
     window.URL.createObjectURL=()=> 'blob:test'; window.URL.revokeObjectURL=()=>{};
@@ -24,6 +24,7 @@ function buildDom(){
 }
 
 function extract(window,document,text){
+  document.getElementById('product-type').value = 'Scented Candle'; // a real Step 2 product type (supplier-document check)
   document.getElementById('smart-paste-input').value=text;
   window.extractSDS();
   return {signal:window.eval('S.signal'),sdsSignal:window.eval('S.sdsSignal'),h:window.eval('S.hStatements'),p:window.eval('S.pStatements'),pictograms:[...window.eval('S.pictograms')]};

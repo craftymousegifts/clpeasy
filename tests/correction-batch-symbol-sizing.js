@@ -78,7 +78,7 @@ function stubCanvas(window){
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { pretendToBeVisual:true, runScripts:'dangerously' });
 const { window } = dom;
 stubCanvas(window);
-window.eval(labelRendererSource);
+window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
 const LR = window.LabelRenderer;
 assert(LR && typeof LR.renderLabel === 'function', 'LabelRenderer.renderLabel must be exposed on window for this harness to work');
 assert(typeof LR.pictoOuterBoundingBoxMm === 'function' && typeof LR.pictoSquareSideFromBoundingBoxMm === 'function' && typeof LR.pictoSquareAreaMm2 === 'function', 'the three named GHS geometry helpers must be exported on LabelRenderer, not left as unexported/magic-constant internals');

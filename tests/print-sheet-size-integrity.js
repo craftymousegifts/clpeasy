@@ -1,3 +1,7 @@
+// 3 Oct 2026: saved fixtures stand for labels completed in the Builder, so they
+// carry the supplier-document confirmation the Builder saves (real product
+// type and %, made by sds-doc-check.js; see tests/helpers/sds-doc-verified.js).
+const __confirmed = arr => arr.map(r => require('./helpers/sds-doc-verified').withConfirmedDoc(r, '10%'));
 // ── PRINT SHEET COMPOSER — STAGE 1 SIZE INTEGRITY & PAGE BOUNDARY ────────
 // Regression coverage for the Stage 1 fix (27 Sep 2026).
 //
@@ -43,7 +47,7 @@ const A4_W = 210, A4_H = 297;
 
 function label(name, shape, w, h) {
   return {
-    scentName:name, productType:'Candle', bizName:'Crafty Mouse Gifts',
+    scentName:name, productType:'Wax Melt', bizName:'Crafty Mouse Gifts',
     shape, size:'custom', customW:w, customH:(shape === 'rectangle' ? h : w),
     bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'150g', batchNum:'B1', burnTime:'',
     signal:'Warning', hStatements:'H315', pStatements:'P302+P352',
@@ -96,7 +100,7 @@ const dom = new JSDOM(source, {
     window.HTMLCanvasElement.prototype.toDataURL = () => 'data:image/png;base64,AA==';
     window.HTMLCanvasElement.prototype.toBlob = function(cb){ cb({ size:1, type:'image/png' }); };
     try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
-    window.eval(labelRendererSource);
+    window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
     window.eval(labelLibrarySource);
     window.eval(entitlementSource);
     window.alert = message => { window.__lastAlert = String(message); };
@@ -122,7 +126,7 @@ const dom = new JSDOM(source, {
       from: () => Object.create(emptyQuery),
       rpc: async () => ({ data:false, error:null })
     }) };
-    window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify(CASES));
+    window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify(__confirmed(CASES)));
   }
 });
 const { window } = dom;

@@ -1,3 +1,7 @@
+// 3 Oct 2026: saved fixtures stand for labels completed in the Builder, so they
+// carry the supplier-document confirmation the Builder saves (real product
+// type and %, made by sds-doc-check.js; see tests/helpers/sds-doc-verified.js).
+const __confirmed = arr => arr.map(r => require('./helpers/sds-doc-verified').withConfirmedDoc(r, '10%'));
 // Custom Sheet non-square-rectangle grid/A4-fit regression tests (30 Aug
 // 2026 fix). Reported: adding a saved 57x99mm rectangle label locked the
 // sheet's "Sheet locked to 57x99mm rectangle" message, but the Custom Sheet
@@ -28,7 +32,7 @@ const emptyQuery = {
 
 // The exact reported case: a 57x99mm (portrait) rectangle.
 const rectA = {
-  scentName:'Fireside Amber', productType:'Candle', bizName:'Crafty Mouse Gifts',
+  scentName:'Fireside Amber', productType:'Wax Melt', bizName:'Crafty Mouse Gifts',
   shape:'rectangle', size:'custom', customW:57, customH:99,
   bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'200g', batchNum:'B101', burnTime:'',
   signal:'Warning', hStatements:'H315, H319', pStatements:'P302+P352, P305+P351+P338',
@@ -41,7 +45,7 @@ const rectB = { ...rectA, scentName:'Coastal Driftwood', batchNum:'B102' };
 // A plain circle -- used to prove circle/square Custom Sheet behaviour is
 // completely untouched by this fix.
 const circleC = {
-  scentName:'Vanilla Bean', productType:'Candle', bizName:'Crafty Mouse Gifts',
+  scentName:'Vanilla Bean', productType:'Wax Melt', bizName:'Crafty Mouse Gifts',
   shape:'circle', size:'custom', customW:52, customH:52,
   bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'150g', batchNum:'B201', burnTime:'',
   signal:'Warning', hStatements:'H315', pStatements:'P302+P352',
@@ -53,7 +57,7 @@ const circleC = {
 // Sheet GEOMETRY (a single labelMM field, cellWidthMm===cellHeightMm)
 // completely untouched.
 const squareD = {
-  scentName:'Lavender Fields', productType:'Candle', bizName:'Crafty Mouse Gifts',
+  scentName:'Lavender Fields', productType:'Wax Melt', bizName:'Crafty Mouse Gifts',
   shape:'square', size:'custom', customW:60, customH:60,
   bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'150g', batchNum:'B301', burnTime:'',
   signal:'Warning', hStatements:'H315', pStatements:'P302+P352',
@@ -89,7 +93,7 @@ const dom = new JSDOM(source, {
     // evaluated below. Print Sheet Composer (Checkpoint C1) now requires
     // label-library.js for getSaved()/addToSheet() in print.html.
     try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
-    window.eval(labelRendererSource);
+    window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
     window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
@@ -121,7 +125,7 @@ const dom = new JSDOM(source, {
       from: () => Object.create(emptyQuery),
       rpc: async () => ({ data:false, error:null })
     }) };
-    window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify([rectA, rectB, circleC, squareD]));
+    window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify(__confirmed([rectA, rectB, circleC, squareD])));
   }
 });
 
