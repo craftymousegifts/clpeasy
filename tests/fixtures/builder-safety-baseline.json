@@ -1,0 +1,565 @@
+{
+ "circle-52-light": {
+  "builder": {
+   "allowed": true,
+   "fits": true,
+   "fitBlocked": false,
+   "requiredComplete": null,
+   "warnings": [],
+   "signal": "Warning",
+   "h": "H317",
+   "p": "P102, P501",
+   "sensitisers": [],
+   "pictograms": [
+    "exclamation"
+   ],
+   "text": [
+    "Lavender Fields",
+    "Crafty Mouse Gifts",
+    "SCENTED CANDLE",
+    "WARNING",
+    "May cause an allergic skin reaction.",
+    "Keep out of reach of children. Dispose of contents and container in accordance with local regulations.",
+    "12 Mill Lane, Duns, TD11 3AA",
+    "01234 567890"
+   ],
+   "exports": {
+    "svg": 1,
+    "png": 1,
+    "pdf": 1
+   },
+   "png": [
+    1228,
+    1228
+   ],
+   "pdfPage": "52mm 52mm"
+  },
+  "reopen": {
+   "step": 5,
+   "allowed": true
+  },
+  "composer": {
+   "fitIssues": 0,
+   "contentIssues": 0,
+   "pdf": true,
+   "pdfRenderPx": [
+    614,
+    614
+   ],
+   "cutPng": [
+    614,
+    614
+   ],
+   "accountingCalls": 1
+  }
+ },
+ "circle-63-medium-euh208": {
+  "builder": {
+   "allowed": true,
+   "fits": true,
+   "fitBlocked": false,
+   "requiredComplete": null,
+   "warnings": [],
+   "signal": "Warning",
+   "h": "H317, H412, EUH208",
+   "p": "P102, P261, P302+P352, P501",
+   "sensitisers": [
+    "Linalool",
+    "Citral"
+   ],
+   "pictograms": [
+    "exclamation"
+   ],
+   "text": [
+    "Fig & Cassis",
+    "Crafty Mouse Gifts",
+    "SCENTED CANDLE",
+    "WARNING",
+    "May cause an allergic skin reaction. Harmful to aquatic life with long lasting effects.",
+    "Contains: Linalool, Citral May produce an allergic reaction.",
+    "Keep out of reach of children. Avoid breathing vapours and dust. IF ON SKIN: wash with plenty of water. Dispose of contents and container in accordance with local regulations.",
+    "12 Mill Lane, Duns, TD11 3AA",
+    "01234 567890"
+   ],
+   "exports": {
+    "svg": 1,
+    "png": 1,
+    "pdf": 1
+   },
+   "png": [
+    1488,
+    1488
+   ],
+   "pdfPage": "63mm 63mm"
+  },
+  "reopen": {
+   "step": 5,
+   "allowed": true
+  },
+  "composer": {
+   "fitIssues": 0,
+   "contentIssues": 0,
+   "pdf": true,
+   "pdfRenderPx": [
+    744,
+    744
+   ],
+   "cutPng": [
+    744,
+    744
+   ],
+   "accountingCalls": 1
+  }
+ },
+ "circle-90-heavy": {
+  "builder": {
+   "allowed": true,
+   "fits": true,
+   "fitBlocked": false,
+   "requiredComplete": null,
+   "warnings": [],
+   "signal": "Warning",
+   "h": "H302, H315, H317, H319, H411, EUH208",
+   "p": "P101, P102, P261, P273, P302+P352, P333+P313, P501",
+   "sensitisers": [
+    "Linalool",
+    "Citral",
+    "Limonene",
+    "Coumarin"
+   ],
+   "pictograms": [
+    "aquatic",
+    "exclamation"
+   ],
+   "text": [
+    "Winter Spice",
+    "Crafty Mouse Gifts",
+    "SCENTED CANDLE",
+    "WARNING",
+    "Harmful if swallowed. Causes skin irritation. May cause an allergic skin reaction. Causes serious eye irritation. Toxic to aquatic life with long lasting effects.",
+    "Contains: Linalool, Citral, Limonene, Coumarin May produce an allergic reaction.",
+    "If medical advice is needed, have product container or label at hand. Keep out of reach of children. Avoid breathing vapours and dust. Avoid release to the environment. IF ON SKIN: wash with plenty of water. If skin irritation or rash occurs: get medical advice. Dispose of contents and container in accordance with local regulations.",
+    "12 Mill Lane, Duns, TD11 3AA",
+    "01234 567890"
+   ],
+   "exports": {
+    "svg": 1,
+    "png": 1,
+    "pdf": 1
+   },
+   "png": [
+    2126,
+    2126
+   ],
+   "pdfPage": "90mm 90mm"
+  },
+  "reopen": {
+   "step": 5,
+   "allowed": true
+  },
+  "composer": {
+   "fitIssues": 0,
+   "contentIssues": 0,
+   "pdf": true,
+   "pdfRenderPx": [
+    1063,
+    1063
+   ],
+   "cutPng": [
+    1063,
+    1063
+   ],
+   "accountingCalls": 1
+  }
+ },
+ "square-52-light": {
+  "builder": {
+   "allowed": true,
+   "fits": true,
+   "fitBlocked": false,
+   "requiredComplete": null,
+   "warnings": [],
+   "signal": "Warning",
+   "h": "H317",
+   "p": "P102, P501",
+   "sensitisers": [],
+   "pictograms": [
+    "exclamation"
+   ],
+   "text": [
+    "Sea Salt",
+    "Crafty Mouse Gifts",
+    "WAX MELT",
+    "WARNING",
+    "May cause an allergic skin reaction.",
+    "Keep out of reach of children. Dispose of contents and container in accordance with local regulations.",
+    "12 Mill Lane, Duns, TD11 3AA",
+    "01234 567890"
+   ],
+   "exports": {
+    "svg": 1,
+    "png": 1,
+    "pdf": 1
+   },
+   "png": [
+    1228,
+    1228
+   ],
+   "pdfPage": "52mm 52mm"
+  },
+  "reopen": {
+   "step": 5,
+   "allowed": true
+  },
+  "composer": {
+   "fitIssues": 0,
+   "contentIssues": 0,
+   "pdf": true,
+   "pdfRenderPx": [
+    614,
+    614
+   ],
+   "cutPng": [
+    614,
+    614
+   ],
+   "accountingCalls": 1
+  }
+ },
+ "square-63-medium-euh208": {
+  "builder": {
+   "allowed": true,
+   "fits": true,
+   "fitBlocked": false,
+   "requiredComplete": null,
+   "warnings": [],
+   "signal": "Warning",
+   "h": "H317, H412, EUH208",
+   "p": "P102, P261, P302+P352, P501",
+   "sensitisers": [
+    "Linalool",
+    "Citral"
+   ],
+   "pictograms": [
+    "exclamation"
+   ],
+   "text": [
+    "Rose Garden",
+    "Crafty Mouse Gifts",
+    "WAX MELT",
+    "WARNING",
+    "May cause an allergic skin reaction. Harmful to aquatic life with long lasting effects.",
+    "Contains: Linalool, Citral May produce an allergic reaction.",
+    "Keep out of reach of children. Avoid breathing vapours and dust. IF ON SKIN: wash with plenty of water. Dispose of contents and container in accordance with local regulations.",
+    "12 Mill Lane, Duns, TD11 3AA",
+    "01234 567890"
+   ],
+   "exports": {
+    "svg": 1,
+    "png": 1,
+    "pdf": 1
+   },
+   "png": [
+    1488,
+    1488
+   ],
+   "pdfPage": "63mm 63mm"
+  },
+  "reopen": {
+   "step": 5,
+   "allowed": true
+  },
+  "composer": {
+   "fitIssues": 0,
+   "contentIssues": 0,
+   "pdf": true,
+   "pdfRenderPx": [
+    744,
+    744
+   ],
+   "cutPng": [
+    744,
+    744
+   ],
+   "accountingCalls": 1
+  }
+ },
+ "square-75-heavy": {
+  "builder": {
+   "allowed": true,
+   "fits": true,
+   "fitBlocked": false,
+   "requiredComplete": null,
+   "warnings": [],
+   "signal": "Warning",
+   "h": "H302, H315, H317, H319, H411, EUH208",
+   "p": "P101, P102, P261, P273, P302+P352, P333+P313, P501",
+   "sensitisers": [
+    "Linalool",
+    "Citral",
+    "Limonene",
+    "Coumarin"
+   ],
+   "pictograms": [
+    "aquatic",
+    "exclamation"
+   ],
+   "text": [
+    "Amber Woods",
+    "Crafty Mouse Gifts",
+    "SCENTED CANDLE",
+    "WARNING",
+    "Harmful if swallowed. Causes skin irritation. May cause an allergic skin reaction. Causes serious eye irritation. Toxic to aquatic life with long lasting effects.",
+    "Contains: Linalool, Citral, Limonene, Coumarin May produce an allergic reaction.",
+    "If medical advice is needed, have product container or label at hand. Keep out of reach of children. Avoid breathing vapours and dust. Avoid release to the environment. IF ON SKIN: wash with plenty of water. If skin irritation or rash occurs: get medical advice. Dispose of contents and container in accordance with local regulations.",
+    "12 Mill Lane, Duns, TD11 3AA",
+    "01234 567890"
+   ],
+   "exports": {
+    "svg": 1,
+    "png": 1,
+    "pdf": 1
+   },
+   "png": [
+    1772,
+    1772
+   ],
+   "pdfPage": "75mm 75mm"
+  },
+  "reopen": {
+   "step": 5,
+   "allowed": true
+  },
+  "composer": {
+   "fitIssues": 0,
+   "contentIssues": 0,
+   "pdf": true,
+   "pdfRenderPx": [
+    886,
+    886
+   ],
+   "cutPng": [
+    886,
+    886
+   ],
+   "accountingCalls": 1
+  }
+ },
+ "rectangle-63x44-waxmelt-light": {
+  "builder": {
+   "allowed": true,
+   "fits": true,
+   "fitBlocked": false,
+   "requiredComplete": null,
+   "warnings": [],
+   "signal": "Warning",
+   "h": "H317",
+   "p": "P102, P501",
+   "sensitisers": [],
+   "pictograms": [
+    "exclamation"
+   ],
+   "text": [
+    "Lemon Zest",
+    "Crafty Mouse Gifts",
+    "WAX MELT",
+    "WARNING",
+    "May cause an allergic skin reaction.",
+    "Keep out of reach of children. Dispose of contents and container in accordance with local regulations.",
+    "Duns TD11",
+    "01234 567890"
+   ],
+   "exports": {
+    "svg": 1,
+    "png": 1,
+    "pdf": 1
+   },
+   "png": [
+    1488,
+    1039
+   ],
+   "pdfPage": "63mm 44mm"
+  },
+  "reopen": {
+   "step": 5,
+   "allowed": true
+  },
+  "composer": {
+   "fitIssues": 0,
+   "contentIssues": 0,
+   "pdf": true,
+   "pdfRenderPx": [
+    744,
+    520
+   ],
+   "cutPng": [
+    744,
+    520
+   ],
+   "accountingCalls": 1
+  }
+ },
+ "rectangle-63x44-candle-light": {
+  "builder": {
+   "allowed": false,
+   "fits": false,
+   "fitBlocked": true,
+   "requiredComplete": null,
+   "warnings": [
+    "footer-clipped"
+   ],
+   "signal": "Warning",
+   "h": "H317",
+   "p": "P102, P501",
+   "sensitisers": [],
+   "pictograms": [
+    "exclamation"
+   ],
+   "text": [
+    "Vanilla",
+    "Crafty Mouse Gifts",
+    "SCENTED CANDLE",
+    "WARNING",
+    "May cause an allergic skin reaction.",
+    "Keep out of reach of children. Dispose of contents and container in accordance with local regulations.",
+    "Duns TD11",
+    "01234 567890",
+    "FULL CONTENT DOES NOT FIT",
+    "Select a larger size in Step 1"
+   ],
+   "exports": {
+    "svg": 0,
+    "png": 0,
+    "pdf": 0
+   },
+   "png": null,
+   "pdfPage": null
+  },
+  "reopen": {
+   "step": 5,
+   "allowed": false
+  },
+  "composer": {
+   "fitIssues": 1,
+   "contentIssues": 0,
+   "pdf": false,
+   "pdfRenderPx": null,
+   "cutPng": [
+    744,
+    520
+   ],
+   "accountingCalls": 0
+  }
+ },
+ "rectangle-52x36-min-light": {
+  "builder": {
+   "allowed": false,
+   "fits": false,
+   "fitBlocked": true,
+   "requiredComplete": null,
+   "warnings": [
+    "hazard-text-overflow"
+   ],
+   "signal": "Warning",
+   "h": "H317",
+   "p": "P102, P501",
+   "sensitisers": [],
+   "pictograms": [
+    "exclamation"
+   ],
+   "text": [
+    "Mint",
+    "Crafty Mouse Gifts",
+    "WAX MELT",
+    "WARNING",
+    "May cause an allergic skin reaction.",
+    "Keep out of reach of children. Dispose of contents and container in accordance with local regulations.",
+    "Duns TD11",
+    "01234 567890",
+    "FULL CONTENT DOES NOT FIT",
+    "Select a larger size in Step 1"
+   ],
+   "exports": {
+    "svg": 0,
+    "png": 0,
+    "pdf": 0
+   },
+   "png": null,
+   "pdfPage": null
+  },
+  "reopen": {
+   "step": 5,
+   "allowed": false
+  },
+  "composer": {
+   "fitIssues": 1,
+   "contentIssues": 0,
+   "pdf": false,
+   "pdfRenderPx": null,
+   "cutPng": [
+    614,
+    425
+   ],
+   "accountingCalls": 0
+  }
+ },
+ "rectangle-100x60-diffuser-danger": {
+  "builder": {
+   "allowed": true,
+   "fits": true,
+   "fitBlocked": false,
+   "requiredComplete": null,
+   "warnings": [],
+   "signal": "Danger",
+   "h": "H304, H317, H411, EUH208",
+   "p": "P101, P102, P301+P310, P331, P501",
+   "sensitisers": [
+    "Linalool"
+   ],
+   "pictograms": [
+    "aquatic",
+    "exclamation",
+    "health"
+   ],
+   "text": [
+    "Black Pomegranate",
+    "Crafty Mouse Gifts",
+    "REED DIFFUSER",
+    "DANGER",
+    "May be fatal if swallowed and enters airways. May cause an allergic skin reaction. Toxic to aquatic life with long lasting effects.",
+    "Contains: Linalool May produce an allergic reaction.",
+    "If medical advice is needed, have product container or label at hand. Keep out of reach of children. IF SWALLOWED: immediately call a POISON CENTRE or doctor. Do NOT induce vomiting. Dispose of contents and container in accordance with local regulations.",
+    "12 Mill Lane, Duns, TD11 3AA",
+    "01234 567890"
+   ],
+   "exports": {
+    "svg": 1,
+    "png": 1,
+    "pdf": 1
+   },
+   "png": [
+    2362,
+    1417
+   ],
+   "pdfPage": "100mm 60mm"
+  },
+  "reopen": {
+   "step": 5,
+   "allowed": true
+  },
+  "composer": {
+   "fitIssues": 0,
+   "contentIssues": 0,
+   "pdf": true,
+   "pdfRenderPx": [
+    1181,
+    709
+   ],
+   "cutPng": [
+    1181,
+    709
+   ],
+   "accountingCalls": 1
+  }
+ }
+}
