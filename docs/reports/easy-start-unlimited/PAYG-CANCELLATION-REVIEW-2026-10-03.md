@@ -114,3 +114,40 @@ no customer has the old wording on record.
 - **DMCC Act 2024 subscription regime:** reported start January 2027. It adds a 14-day cooling-off
   period at renewal and at the end of a free or discounted period. Easy Start's 2026 promotional
   monthly price and its auto-renewal should be reviewed before then.
+
+## Support procedure: calculating a PAYG cancellation refund
+**Records available:**
+- **Purchases:** Stripe (Live) Checkout Sessions with `metadata.type = payg`. For each pack:
+  - payment date;
+  - amount paid;
+  - credits in the pack (`metadata.downloads`, 8 in 2026, 5 from 2027).
+  - Legacy top-up purchases (5 or 10 credits) are packs too.
+- **Current balance:** `profiles.topup_credits` for the customer, read on the day of the
+  cancellation request.
+- **No per-download ledger exists.** `label_downloads` keeps only the latest time per label, and A4
+  sheet exports are not recorded. The rule below does not need one.
+
+**Why the balance is enough:** the balance only goes up when a pack is credited, and only goes down
+when a download uses a purchased credit (`consume_download` source `purchased`). Trial downloads,
+Easy Start Unlimited downloads and free 7-day re-downloads never touch it. Because used credits are
+counted oldest pack first, the credits still in the balance are always the newest ones.
+
+**Calculation** for pack P, bought within the last 14 days:
+1. newer = total credits in packs bought **after** P that have not been refunded.
+2. unused(P) = min(credits in P, max(0, balance − newer)).
+3. refund = min(amount paid for P, ceil(amount paid for P × unused(P) ÷ credits in P)), in pence.
+4. Refund that amount in Stripe, then remove unused(P) credits from the balance.
+
+**Example:**
+- A customer buys pack A (8 credits) on 1 Oct and pack B (8 credits) on 5 Oct, then makes 10
+  credit-using downloads. The balance is 6.
+- Cancel B: newer = 0, unused = min(8, 6) = 6, refund = ceil(499 × 6 ÷ 8) = 375p = **£3.75**.
+- Cancel A instead: newer = 8, unused = max(0, 6 − 8) = 0, so no refund for A, because A was used
+  first.
+
+**Caveat:** a credit added back by hand (for example a goodwill restore for a faulty download) also
+raises the balance.
+- Record any manual adjustment, with its date, in the support notes.
+- Treat it as a pack of that size on that date, so the balance arithmetic stays exact.
+- A small credit ledger table would make this automatic. That is a possible future improvement,
+  not part of this change.
