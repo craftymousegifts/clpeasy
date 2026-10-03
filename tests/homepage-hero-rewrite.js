@@ -16,32 +16,22 @@ const assert = require('assert');
 const html = fs.readFileSync('index.html', 'utf8');
 const seasonsSource = fs.readFileSync('seasons.js', 'utf8');
 
-// ── Section 1: new heading + product explanation ──────────────────────
-// Three mobile-only <br> insertions were added around the already-approved
-// desktop/tablet wording, all hidden by default and shown only under
-// max-width:600px (desktop/tablet render exactly as before, confirmed
-// separately below):
-//  - hero-mobile-gb-lead, before " GB" -- so mobile breaks *before* "GB"
-//    instead of after it, pairing "GB" with "CLP labels" on one line;
-//  - hero-gb-break, after "GB" (pre-existing) -- now hidden on mobile so
-//    "GB" doesn't ALSO get a break after it there (it still applies on
-//    desktop/tablet, giving their approved 2-line wrap);
-//  - hero-mobile-break, before " in minutes" -- mobile only.
-// Together these give the required mobile layout "Create print-ready" /
-// "GB CLP labels" / "in minutes" without changing a single word of the
-// approved copy.
-const heroMatch = html.match(/<h1>Create <em>print-ready<\/em><br class="hero-mobile-gb-lead"> GB<br class="hero-gb-break">[\s\S]{0,800}?labels<br class="hero-mobile-break"> in minutes<\/h1>/);
-assert(heroMatch, 'hero <h1> must read "Create print-ready GB ... labels in minutes" (CLP ring markup sits between "GB" and "labels"; hero-mobile-gb-lead/hero-gb-break/hero-mobile-break control mobile-only line breaks without altering the approved wording)');
-
-assert(html.includes('Paste Section 2.2 from your current supplier SDS, review the hazard information CLPeasy extracts, then build and download your label.'),
-  'hero must explain the core workflow in plain steps');
-assert(html.includes('Print wherever works for you—at home, in your workspace or through a professional printer.'),
-  'hero must state that labels can be printed anywhere, not just via CLPeasy');
-assert(html.includes('For candles, wax melts, reed diffusers and room sprays.'),
-  'hero must list the supported product types');
-
-// Must not claim the product produces "compliant labels" (house wording
-// rule: CLPeasy does not guarantee legal compliance).
+// ── Section 1: heading + product explanation (approved #202 image hero) ──
+// PR #202 (2 Oct 2026) replaced the typed hero (heading + three explanation
+// lines + mobile-only <br> handling) with approved artwork. The headline and
+// the create/download/print explanation are now in the artwork; the page
+// keeps them in real text for assistive tech and search: one visually-hidden
+// <h1> and the artwork's alt text. (Heading accessibility is covered in depth
+// by tests/clp-hero-explanation.js.)
+const heroH1 = html.match(/<h1 id="homepage-hero-title"[^>]*>([^<]*)<\/h1>/);
+assert(heroH1 && heroH1[1].trim() === 'Create print-ready GB CLP labels in minutes',
+  'the image hero must keep a real <h1> reading "Create print-ready GB CLP labels in minutes"');
+const heroAlt = html.match(/<img src="assets\/CLPeasy%20Home%20page\.png" alt="([^"]+)"/);
+assert(heroAlt, 'the approved hero artwork must be the first hero image');
+assert(/Create, download and print labels/.test(heroAlt[1]),
+  'the hero must still explain the core workflow in plain words (create, download, print) -- now via the artwork alt text');
+assert(/for candles, wax melts, reed diffusers and room sprays/.test(heroAlt[1]),
+  'the hero must still list the supported product types -- now via the artwork alt text');
 assert(!/create compliant labels|produces compliant labels|generate compliant labels/i.test(html),
   'hero copy must not claim CLPeasy produces/creates "compliant labels"');
 // The approved "print-ready"/"GB CLP" wording must be retained.
@@ -63,16 +53,23 @@ assert(!/£200[–-]£600/.test(html),
 // wrapper as the heading (i.e. after it in source order, within one
 // <section class="hero">), confirming it was added to the hero, not a
 // stray duplicate elsewhere.
-const headingIdx = html.indexOf('Create <em>print-ready</em>');
+const headingIdx = html.indexOf('id="homepage-hero-title"');
 const founderIdx = html.indexOf('Built by a maker, for makers', headingIdx);
-assert(headingIdx !== -1 && founderIdx > headingIdx,
-  'the founder section must appear after the hero heading in source order (not counting the unrelated meta-description/footer occurrences of this phrase elsewhere on the page)');
+const heroEndIdx = html.indexOf('</section>', headingIdx);
+assert(headingIdx !== -1 && founderIdx > headingIdx && founderIdx < heroEndIdx,
+  'the founder section must appear after the hero heading, inside the same image-hero <section> (not a stray duplicate elsewhere)');
 
 // ── Section 3: particle-over-content stacking fix ──────────────────────
 // The hero-content wrapper (heading/explanation/founder section) must be
 // stacked above the particle canvas by z-index, not rely on DOM order.
-assert(/<div style="position:relative;z-index:2;">/.test(html),
-  'hero content wrapper must have z-index:2 so it paints above the particle canvas (z-index:1)');
+// With the artwork hero there is no text wrapper to lift; what matters is that
+// the particles can never block the hero's sign-up hotspot: the hotspot sits
+// at z-index:3 inside its positioned banner, and the canvas (z-index:1)
+// ignores pointer events.
+assert(/<div class="homepage-hero-banner" style="position:relative;[^"]*">\s*<img[^>]*>\s*<a href="auth\.html\?mode=signup"[^>]*style="position:absolute;[^"]*z-index:3;/.test(html),
+  'the hero sign-up hotspot must be positioned over the artwork at z-index:3, above the particle canvas (z-index:1)');
+assert(seasonsSource.includes('pointer-events:none;z-index:1;'),
+  'the particle canvas must ignore pointer events so it can never block the hero link');
 // The particle canvas itself must still request the lower z-index -- this
 // file must NOT need to change seasons.js to fix the stacking bug.
 assert(seasonsSource.includes("canvas.id = 'clpeasy-particles'"),
@@ -102,8 +99,9 @@ assert(!html.includes('Your Brand Name'),
 // the same generated bytes.
 assert(!/color:#[0-9a-fA-F]{3,6};font-weight:800;font-family:sans-serif;(?:position:relative;z-index:1;)?">(WARNING|DANGER)/.test(html),
   'the old hand-rolled decorative signal-word span markup must be gone (superseded by renderer-derived SVG thumbnails; see tests/decorative-labels-renderer-derived.js)');
-const decorativeUseCount = (html.match(/<use href="#clp-tmpl-[a-z0-9-]+"\/>/g) || []).length;
-assert.strictEqual(decorativeUseCount, 52,
-  `expected 52 decorative <use> references to the renderer-derived SVG templates (found ${decorativeUseCount}) -- see tests/decorative-labels-renderer-derived.js for full content verification`);
+// The decorative label wall and its renderer-derived templates are verified
+// byte-for-byte by tests/decorative-labels-renderer-derived.js (kept as the
+// single source of truth for that content, as noted above), so the position
+// count is not duplicated here.
 
-console.log(`homepage hero rewrite checks passed (heading/product-explanation copy incl. mobile-only GB/line-break handling, secondary founder section with old long-bio content removed, particle-stacking z-index fix present without touching seasons.js particle creation, old hand-rolled decorative signal-word markup confirmed absent with ${decorativeUseCount} renderer-derived <use> references present)`);
+console.log('homepage hero rewrite checks passed (image hero keeps the exact h1 and a workflow/product-type alt text; founder section inside the hero after the heading with the shortened bio; banned claims absent; sign-up hotspot above the pointer-events:none particle canvas; old hand-rolled decorative markup absent)');

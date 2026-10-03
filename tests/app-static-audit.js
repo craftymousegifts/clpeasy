@@ -18,7 +18,10 @@ for (const file of htmlFiles) {
   for (const element of document.querySelectorAll('[href],[src]')) {
     const ref = element.getAttribute('href') || element.getAttribute('src');
     if (!ref || ref.includes('{{') || /^(?:https?:|mailto:|tel:|data:|javascript:|#|\/)/.test(ref)) continue;
-    const local = ref.split(/[?#]/)[0];
+    // Browsers decode percent-encoding in local paths (e.g. "CLPeasy%20Home%20page.png"
+    // is served from "CLPeasy Home page.png"), so check the decoded file name.
+    let local = ref.split(/[?#]/)[0];
+    try { local = decodeURIComponent(local); } catch (e) { /* malformed escape: check as written */ }
     if (local && !fs.existsSync(path.resolve(path.dirname(file), local))) {
       failures.push(`${file}: missing local target ${local}`);
     }

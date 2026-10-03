@@ -56,11 +56,13 @@ const supportSource = fs.readFileSync('support.html', 'utf8');
 // [file label, source key, old (retired) text, new (approved) text]
 const LOCATIONS = [
   ['index.html:664 (hero Step 2)', 'index', 'Paste your complete SDS document into Smart Paste — or just Section 2.2 if you prefer. CLPeasy automatically finds the hazard classification section',
-    'Copy Section 2.2 (Label elements) from your current SDS into Smart Paste. CLPeasy extracts the available signal word, hazard pictograms, H statements, P statements and sensitiser information to help build your label. Review the extracted information against your SDS before continuing.'],
+    // Owner decision 3 Oct 2026: the approved PR #202 hero uses this shorter
+    // instruction (still Section 2.2 only, still review against the SDS).
+    'Copy Section 2.2 (Label elements) from your current supplier SDS into Smart Paste. Review the extracted hazard information against your current SDS.'],
   ['index.html:704 ("any supplier" statement)', 'index', "use Smart Paste with any supplier's SDS PDF from anywhere in the world",
     'Use Section 2.2 from your current supplier SDS. Supplier formats can vary, so always review the extracted information against the source document.', '7778094 Remove unreleased supplier library homepage card'],
   ['index.html:709 (feature card)', 'index', 'Paste your complete SDS document — CLPeasy automatically finds Section 2.2 and extracts all hazard data instantly',
-    'Copy Section 2.2 (Label elements) from your current supplier SDS and Smart Paste extracts the available hazard information. CLPeasy works from the document you provide rather than a stored fragrance database, so you can review the result against your current SDS.'],
+    'Copy Section 2.2 (Label elements) from your current supplier SDS and Smart Paste extracts the available hazard information. CLPeasy works from the document you provide rather than a stored fragrance database, so you can review the result against your current SDS.', '4dc8f31 Consolidate duplicate features into five-step workflow (PR #202)'],
   ['index.html:892 (How it works, Step 3)', 'index', 'Paste your complete SDS document into Smart Paste. CLPeasy® automatically finds Section 2.2 and extracts signal word',
     'Copy Section 2.2 (Label elements) from your current SDS into Smart Paste. CLPeasy® extracts the available signal word, H statements, P statements, pictograms and supplemental information to help build your label. Review the result against your SDS before continuing.'],
   ['index.html:1012 (UK/international supplier claim)', 'index', 'paste any SDS from any UK or international supplier and CLPeasy extracts the data automatically',
@@ -74,9 +76,9 @@ const LOCATIONS = [
   ['index.html:1302 (onboarding/signup guide tip)', 'index', "paste the whole document and CLPeasy does the rest. Works with any supplier worldwide",
     'Copy Section 2.2 only&#x2014;not the entire SDS. Include the complete Label elements section and review the extracted information against your current supplier document.', '27c976d Polish homepage feature journey and remove remaining future promises'],
   ['index.html:1363 (second signup-guide variant)', 'index', 'select all text (Ctrl+A / Cmd+A), copy and paste into the box. CLPeasy extracts everything automatically',
-    'Open your current supplier SDS PDF and copy the complete Section 2.2 (Label elements), from its heading through the final hazard, precautionary and supplemental information. Paste that section into <strong>Smart Paste</strong> and review the extracted result against the SDS.'],
+    'Open your current supplier SDS PDF and copy the complete Section 2.2 (Label elements), from its heading through the final hazard, precautionary and supplemental information. Paste that section into <strong>Smart Paste</strong> and review the extracted result against the SDS.', '1295d66 Align homepage with Easy Start Unlimited pricing (PR #202: Easy Pro signup-guide panel removed)'],
   ['index.html:1365 (second signup-guide tip)', 'index', 'Works with any supplier, any fragrance, worldwide. CLPeasy finds Section 2.2 automatically from the full document',
-    'Supplier SDS formats can vary. Use the current Section 2.2 applicable to your product, concentration and target market, and check the extracted information before continuing.'],
+    'Supplier SDS formats can vary. Use the current Section 2.2 applicable to your product, concentration and target market, and check the extracted information before continuing.', '1295d66 Align homepage with Easy Start Unlimited pricing (PR #202: Easy Pro signup-guide panel removed)'],
   ['knowledge.html:436', 'knowledge', 'paste the full document into CLPeasy and it extracts them automatically',
     'Hazard statements are found in Section 2.2 (Label elements) of your SDS. Copy that complete section into Smart Paste and review the extracted information against the source document.'],
   ['knowledge.html:463', 'knowledge', 'Paste your complete SDS document into Smart Paste and CLPeasy finds this section automatically',

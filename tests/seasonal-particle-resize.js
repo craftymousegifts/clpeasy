@@ -55,6 +55,8 @@ function makeWindow() {
     <div><div id="hero-pill">BUILT BY A MAKER</div></div>
     <h1>Generate <em>print-ready</em> labels</h1>
   </section>
+  <section class="homepage-image-hero"><img alt="CLPeasy hero"></section>
+  <section id="after-hero"></section>
 </body></html>`, {
     url: 'https://example.test/',
     runScripts: 'dangerously',
@@ -258,8 +260,12 @@ async function main() {
 
   // ── 8. stopParticles() cleans up the canvas AND the resize listener --
   //       a resize after stopping must not resurrect anything ───────────
-  win.document.getElementById('clpeasy-banner-close').dispatchEvent(new win.Event('click'));
-  win.__advanceClock(700); // past the 0.6s fade-out/removal in stopParticles()
+  // The approved #202 homepage has no dismissible footer banner (it was
+  // replaced by an inline seasonal strip), so particles stop on their own
+  // 12-second timer. Before that timer they must still be running.
+  win.__advanceClock(11000);
+  assert(win.document.getElementById('clpeasy-particles'), 'particles must still be running before the 12-second stop');
+  win.__advanceClock(1000 + 700); // past 12s, then the 0.6s fade-out/removal in stopParticles()
   assert.strictEqual(win.document.getElementById('clpeasy-particles'), null,
     'the particle canvas must be fully removed after stopParticles() runs');
 
@@ -274,13 +280,20 @@ async function main() {
   // ── 9. Existing banner timing and particle-stop behaviour are unchanged ──
   // (light touch here -- tests/autumn-homepage-ui.js already covers this
   // exhaustively; this just confirms the resize fix did not disturb it.)
-  const banner = win.document.getElementById('clpeasy-season-banner');
-  assert.strictEqual(banner.style.transform, 'translateY(100%)',
-    'the banner must remain in its dismissed state after the explicit close, unaffected by the resize fix');
+  // The seasonal strip is part of the page (#202): one strip, placed directly
+  // beneath the homepage image hero, still present after the particles stop,
+  // with its sign-up link.
+  const banners = win.document.querySelectorAll('#clpeasy-season-banner');
+  assert.strictEqual(banners.length, 1, 'exactly one seasonal strip');
+  const banner = banners[0];
+  assert(banner.previousElementSibling && banner.previousElementSibling.classList.contains('homepage-image-hero'),
+    'the seasonal strip must sit directly beneath the homepage image hero');
+  const cta = win.document.getElementById('clpeasy-banner-cta');
+  assert(cta && cta.tagName === 'A' && /mode=signup/.test(cta.getAttribute('href')), 'the strip keeps its sign-up link');
 
   win.close();
 
-  console.log('seasonal particle resize checks passed (particles fill the complete viewport on load; expanding/shrinking/re-expanding desktop widths and a mobile portrait<->landscape orientation change all redistribute particles immediately and keep every position within valid bounds; repeated resize events -- including no-ops at unchanged dimensions -- create no duplicate canvas or animation loop; stopParticles() removes the resize listener so a later resize cannot resurrect the canvas; banner dismissal timing is unaffected)');
+  console.log('seasonal particle resize checks passed (particles fill the complete viewport on load; expanding/shrinking/re-expanding desktop widths and a mobile portrait<->landscape orientation change all redistribute particles immediately and keep every position within valid bounds; repeated resize events -- including no-ops at unchanged dimensions -- create no duplicate canvas or animation loop; the 12-second stop removes the canvas and the resize listener so a later resize cannot resurrect it; the inline seasonal strip stays beneath the hero)');
 }
 
 main().catch(err => {
