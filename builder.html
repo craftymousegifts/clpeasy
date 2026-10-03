@@ -1218,21 +1218,29 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
          (unchanged) remains the mandatory "I confirm..." checkbox. -->
     <fieldset id="sds-doc-check" class="sds-doc-check" style="border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin:0 0 14px;background:var(--off);">
       <legend style="font-size:13px;font-weight:700;padding:0 4px;">Check your supplier document first</legend>
-      <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:8px;">Hazards depend on the percentage and on what the product is made with, and they don't scale in simple proportion. CLPeasy's own requirement is a supplier document for your type of product at the same fragrance percentage you use; if yours doesn't match, ask your supplier.</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:8px;">Hazards depend on the percentage and on what the product is made with, and they don't scale in simple proportion. CLPeasy records supplier information that your supplier says covers your type of product at the fragrance percentage you use; if yours doesn't, ask your supplier.</div>
       <div style="font-size:12.5px;font-weight:600;margin-bottom:4px;">What does your supplier document describe?</div>
-      <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:4px;"><input type="radio" name="sds-doc-kind" value="finished" onchange="updateSdsDocCheck()" style="margin-top:2px;"> A finished product made with this fragrance at a stated percentage (for example a CLP document for "candle at 10%")</label>
-      <label id="sds-doc-kind-confirmed-row" style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:4px;"><input type="radio" name="sds-doc-kind" value="supplier-confirmed" onchange="updateSdsDocCheck()" style="margin-top:2px;"> My supplier has confirmed in writing (for example by email) that their GB CLP information applies to my product at the exact percentage I use</label>
+      <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:4px;"><input type="radio" name="sds-doc-kind" value="finished" onchange="updateSdsDocCheck()" style="margin-top:2px;"> A finished product made with this fragrance, at a stated percentage or range (for example a CLP document for "candle at 10%" or "candles, valid for 6–10%")</label>
+      <label id="sds-doc-kind-confirmed-row" style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:4px;"><input type="radio" name="sds-doc-kind" value="supplier-confirmed" onchange="updateSdsDocCheck()" style="margin-top:2px;"> My supplier has confirmed in writing (for example by email) which finished-product hazard information applies to my product at the percentage I use</label>
       <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:4px;"><input type="radio" name="sds-doc-kind" value="concentrate" onchange="updateSdsDocCheck()" style="margin-top:2px;"> The fragrance oil on its own (an SDS for the concentrated oil, 100%)</label>
       <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:8px;"><input type="radio" name="sds-doc-kind" value="unsure" onchange="updateSdsDocCheck()" style="margin-top:2px;"> I'm not sure</label>
       <div id="sds-doc-finished-fields" style="display:none;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:6px;">
-        <div><label for="sds-doc-pct" id="sds-doc-pct-label" style="font-size:12px;">Fragrance % the document states</label><input type="text" id="sds-doc-pct" placeholder="e.g. 10%" inputmode="decimal" aria-describedby="sds-doc-pct-help" oninput="updateSdsDocCheck()"><div id="sds-doc-pct-help" style="margin-top:3px;font-size:11px;color:var(--muted);line-height:1.4;">One figure, exactly as written on the document.</div></div>
+        <div id="sds-doc-coverage-wrap" style="grid-column:1/-1;"><label for="sds-doc-coverage" style="font-size:12px;">How does the document state the percentage it covers?</label><select id="sds-doc-coverage" onchange="updateSdsDocCheck()"><option value="single" selected>One percentage</option><option value="range">A range (from – to)</option></select></div>
+        <div id="sds-doc-pct-wrap"><label for="sds-doc-pct" id="sds-doc-pct-label" style="font-size:12px;">Fragrance % the document states</label><input type="text" id="sds-doc-pct" placeholder="e.g. 10%" inputmode="decimal" aria-describedby="sds-doc-pct-help" oninput="updateSdsDocCheck()"><div id="sds-doc-pct-help" style="margin-top:3px;font-size:11px;color:var(--muted);line-height:1.4;">One figure, exactly as written on the document.</div></div>
         <div><label for="sds-doc-base" id="sds-doc-base-label" style="font-size:12px;">Product the document covers</label><select id="sds-doc-base" onchange="updateSdsDocCheck()"><option value="">— Choose —</option><option value="candle">Candles</option><option value="waxmelt">Wax melts</option><option value="candle+waxmelt">Candles and wax melts (the document names both)</option><option value="reed">Reed diffusers</option><option value="plugin">Electric or plug-in diffusers</option><option value="cardiffuser">Car diffusers</option><option value="spray">Room or linen sprays</option><option value="carspray">Car air freshener sprays</option><option value="sachet">Scented sachets</option><option value="potpourri">Potpourri</option><option value="other">Something else / not stated</option></select></div>
+      </div>
+      <div id="sds-doc-range-fields" style="display:none;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:6px;">
+        <div><label for="sds-doc-from" style="font-size:12px;">From (%)</label><input type="text" id="sds-doc-from" placeholder="e.g. 6" inputmode="decimal" oninput="updateSdsDocCheck()"></div>
+        <div><label for="sds-doc-to" style="font-size:12px;">To (%)</label><input type="text" id="sds-doc-to" placeholder="e.g. 10" inputmode="decimal" oninput="updateSdsDocCheck()"></div>
+        <div style="grid-column:1/-1;"><label for="sds-doc-where" style="font-size:12px;">Where the document states this range (section, page or heading)</label><input type="text" id="sds-doc-where" maxlength="160" autocomplete="off" placeholder="e.g. Page 1, &quot;Valid for fragrance loads&quot;" oninput="updateSdsDocCheck()"></div>
+        <label style="grid-column:1/-1;display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;line-height:1.45;"><input type="checkbox" id="sds-doc-range-stated" onchange="updateSdsDocCheck()" style="margin-top:2px;width:auto;"> The document says its hazard and label information applies throughout this range for my type of product. (Not an ingredient range, such as Section 3 of an oil SDS, and not a recommended usage range.)</label>
       </div>
       <div id="sds-doc-confirm-fields" style="display:none;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:6px;">
         <div><label for="sds-doc-supplier" style="font-size:12px;">Supplier who confirmed it</label><input type="text" id="sds-doc-supplier" maxlength="120" autocomplete="off" oninput="updateSdsDocCheck()"></div>
         <div><label for="sds-doc-cdate" style="font-size:12px;">Date of the written confirmation</label><input type="date" id="sds-doc-cdate" style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:16px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;min-height:46px;" oninput="updateSdsDocCheck()" onchange="updateSdsDocCheck()"></div>
-        <div style="grid-column:1/-1;"><label for="sds-doc-cref" style="font-size:12px;">Supplier document it refers to (title or reference)</label><input type="text" id="sds-doc-cref" maxlength="200" autocomplete="off" placeholder="e.g. Lavender Fields CLP – candle 9.1%" oninput="updateSdsDocCheck()"><div style="margin-top:3px;font-size:11px;color:var(--muted);line-height:1.4;">Keep the supplier's written confirmation with your records. CLPeasy can't see or check it.</div></div>
+        <div style="grid-column:1/-1;"><label for="sds-doc-cref" style="font-size:12px;">Finished-product hazard information it identifies (supplier document title or reference)</label><input type="text" id="sds-doc-cref" maxlength="200" autocomplete="off" placeholder="e.g. Lavender Fields CLP – candle 9.1%" oninput="updateSdsDocCheck()"><div style="margin-top:3px;font-size:11px;color:var(--muted);line-height:1.4;">Keep the supplier's written confirmation with your records. CLPeasy can't see or check it.</div></div>
       </div>
+      <div id="sds-doc-version-wrap" style="display:none;margin-bottom:6px;"><label for="sds-doc-version" style="font-size:12px;">Document date or version <span style="font-weight:400;color:var(--muted);">(optional, for your records)</span></label><input type="text" id="sds-doc-version" maxlength="80" autocomplete="off" placeholder="e.g. v3, 12/08/2026" oninput="updateSdsDocCheck()"></div>
       <div id="sds-doc-result" role="status" aria-live="polite" style="font-size:12.5px;line-height:1.5;"></div>
     </fieldset>
     <div class="smart-paste-box">
@@ -3012,7 +3020,9 @@ async function saveLabel(){
     bizPhone:S.bizPhone,bizWebsite:S.bizWebsite,netWeight:S.netWeight,fragLoad:S.fragLoad,burnTime:S.burnTime,batchNum:S.batchNum,
     supplier:S.supplier||'',hideEN15494:!!S.hideEN15494,
     hazardFromExtraction:!!S.hazardFromExtraction,
-    sdsDoc:S.sdsDoc?Object.assign({kind:S.sdsDoc.kind||'',pct:S.sdsDoc.pct||'',base:S.sdsDoc.base||''},S.sdsDoc.kind==='supplier-confirmed'?{supplier:S.sdsDoc.supplier||'',cdate:S.sdsDoc.cdate||'',cref:S.sdsDoc.cref||''}:{},{confirmed:S.sdsDoc.confirmed||null}):null,
+    sdsDoc:S.sdsDoc?Object.assign({kind:S.sdsDoc.kind||'',pct:S.sdsDoc.pct||'',base:S.sdsDoc.base||''},
+      ...['coverage','rangeFrom','rangeTo','where','rangeStated','docVersion','supplier','cdate','cref'].filter(k=>S.sdsDoc[k]!==undefined).map(k=>({[k]:S.sdsDoc[k]})),
+      {confirmed:S.sdsDoc.confirmed||null}):null,
     bgColour:(document.getElementById('label-bg-colour')?.value)||'#ffffff',
     pStatements:S.pStatements||'',textColour:S.textColour||'dark',showBorder:S.showBorder!==false,
     labelLang:document.getElementById('label-lang')?.value||'en',
@@ -3143,7 +3153,7 @@ function loadLabelRecord(e){
   set('scent-name',e.scentName);set('product-type',e.productType);set('h-statements',e.hStatements||'');set('p-statements',e.pStatements||'');
   set('biz-name',e.bizName||'');set('biz-address',e.bizAddress||'');set('biz-phone',e.bizPhone||'');
   set('biz-website',e.bizWebsite||'');set('net-weight',e.netWeight||'');set('frag-load',e.fragLoad||'');set('burn-time',e.burnTime||'');
-  {const _d=e.sdsDoc||{};document.querySelectorAll('input[name="sds-doc-kind"]').forEach(r=>{r.checked=r.value===(_d.kind||'');});set('sds-doc-pct',_d.pct||'');set('sds-doc-base',_d.base||'');set('sds-doc-supplier',_d.supplier||'');set('sds-doc-cdate',_d.cdate||'');set('sds-doc-cref',_d.cref||'');if(typeof updateSdsDocCheck==='function')updateSdsDocCheck();}
+  {const _d=e.sdsDoc||{};document.querySelectorAll('input[name="sds-doc-kind"]').forEach(r=>{r.checked=r.value===(_d.kind||'');});set('sds-doc-pct',_d.pct||'');set('sds-doc-base',_d.base||'');set('sds-doc-coverage',_d.coverage==='range'?'range':'single');set('sds-doc-from',_d.rangeFrom||'');set('sds-doc-to',_d.rangeTo||'');set('sds-doc-where',_d.where||'');{const _rs=document.getElementById('sds-doc-range-stated');if(_rs)_rs.checked=!!_d.rangeStated;}set('sds-doc-version',_d.docVersion||'');set('sds-doc-supplier',_d.supplier||'');set('sds-doc-cdate',_d.cdate||'');set('sds-doc-cref',_d.cref||'');if(typeof updateSdsDocCheck==='function')updateSdsDocCheck();}
   set('batch-num',e.batchNum||'');set('custom-w',e.customW||'');set('custom-h',e.customH||'');
   const hideCandleWarnings=document.getElementById('hide-en15494');
   if(hideCandleWarnings)hideCandleWarnings.checked=S.hideEN15494;
@@ -3768,7 +3778,17 @@ const SDS_DOC_BASE_BY_TYPE=SdsDocCheck.GROUP_BY_TYPE;
 function _parseFragPct(value){return SdsDocCheck.parsePct(value);}
 function _sdsDocState(){
   const kind=(document.querySelector('input[name="sds-doc-kind"]:checked')||{}).value||'';
-  const st={kind, pct:document.getElementById('sds-doc-pct')?.value||'', base:document.getElementById('sds-doc-base')?.value||''};
+  const v=id=>document.getElementById(id)?.value||'';
+  const st={kind, pct:v('sds-doc-pct'), base:v('sds-doc-base')};
+  if(kind==='finished'){
+    st.coverage=v('sds-doc-coverage')==='range'?'range':'single';
+    if(st.coverage==='range'){
+      st.pct='';
+      st.rangeFrom=v('sds-doc-from'); st.rangeTo=v('sds-doc-to'); st.where=v('sds-doc-where');
+      st.rangeStated=!!document.getElementById('sds-doc-range-stated')?.checked;
+    }
+  }
+  if(kind==='finished'||kind==='supplier-confirmed'){const dv=v('sds-doc-version');if(dv.trim())st.docVersion=dv;}
   if(kind==='supplier-confirmed'){
     st.supplier=document.getElementById('sds-doc-supplier')?.value||'';
     st.cdate=document.getElementById('sds-doc-cdate')?.value||'';
@@ -3801,6 +3821,11 @@ function updateSdsDocCheck(){
   const f=document.getElementById('sds-doc-finished-fields');
   const _conf=d.kind==='supplier-confirmed';
   if(f)f.style.display=(d.kind==='finished'||_conf)?'grid':'none';
+  const _range=d.kind==='finished'&&d.coverage==='range';
+  const cw=document.getElementById('sds-doc-coverage-wrap'); if(cw)cw.style.display=d.kind==='finished'?'':'none';
+  const pw=document.getElementById('sds-doc-pct-wrap'); if(pw)pw.style.display=_range?'none':'';
+  const rf=document.getElementById('sds-doc-range-fields'); if(rf)rf.style.display=_range?'grid':'none';
+  const vw=document.getElementById('sds-doc-version-wrap'); if(vw)vw.style.display=(d.kind==='finished'||_conf)?'':'none';
   const cf=document.getElementById('sds-doc-confirm-fields');
   if(cf)cf.style.display=_conf?'grid':'none';
   const pl=document.getElementById('sds-doc-pct-label'), bl=document.getElementById('sds-doc-base-label');

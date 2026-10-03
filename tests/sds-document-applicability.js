@@ -95,8 +95,8 @@ const cases = [
   ['8-10', 'finished', '10', 'candle', 'actual-missing'],
   ['10', 'finished', '', 'candle', 'doc-pct-missing'],
   ['10', 'finished', '8-10%', 'candle', 'doc-pct-range'],
-  ['10', 'finished', 'up to 10%', 'candle', 'doc-pct-range'],
-  ['8', 'finished', 'max 10%', 'candle', 'doc-pct-range'],
+  ['10', 'finished', 'up to 10%', 'candle', 'doc-pct-upto'],
+  ['8', 'finished', 'max 10%', 'candle', 'doc-pct-upto'],
   ['10', 'finished', 'see section 3', 'candle', 'doc-pct-missing'],
   ['10', 'finished', '10', '', 'base-missing'],
   ['10', 'finished', '10', 'spray', 'base-mismatch'],
@@ -111,18 +111,20 @@ for (const [actual, k, pct, base, want] of cases) {
   assert.strictEqual(r.ok, want === 'match', `only an exact same-product match is usable (${want})`);
 }
 set('frag-load', '8'); const low = doc('finished','10','candle').message;
-assert(/CLPeasy only uses supplier information for the exact percentage you use/.test(low) && /H317/.test(low), 'lower % states the CLPeasy requirement and the threshold example');
+assert(/does not establish coverage/.test(low) && /H317/.test(low) && !/exact percentage you use/.test(low), 'lower %: a document for another % alone does not establish coverage; threshold example; no exact-digits claim');
 assert(!/0\.1\s*%/.test(low) && !/not automatically covered/.test(low), 'no blanket threshold figure or legal-rule claim');
 set('frag-load', '10'); const m = doc('finished','10','candle').message;
 assert(/answers are consistent/.test(m) && /can't read the document itself/.test(m) && !/covers your product/.test(m), 'a match is described as consistent answers, never as proof the document applies');
-set('frag-load', '10'); const rg = doc('finished','up to 12%','candle').message;
-assert(/range or an "up to" percentage/.test(rg) && /that is for your supplier/.test(rg) && /My supplier has confirmed in writing/.test(rg), 'range / up-to documents: supplier decides; points to the written-confirmation route');
+set('frag-load', '10'); const ut = doc('finished','up to 12%','candle').message;
+assert(/doesn't take coverage from an "up to" percentage/.test(ut) && /clarify which finished-product hazard information applies/.test(ut) && /My supplier has confirmed in writing/.test(ut), 'D2: "up to" is never coverage; clarification for the product and % is needed');
+const rgm = doc('finished','6-12%','candle').message;
+assert(/choose "A range"/.test(rgm) && /ingredient range or a recommended usage range doesn't count/.test(rgm), 'a range typed as one % points to the range answer, excluding ingredient/usage ranges');
 set('frag-load', '9.0909'); const rd = doc('finished','9.1','candle');
 assert(rd.code === 'lower' && /may only be rounding/.test(rd.message) && /My supplier has confirmed in writing/.test(rd.message), '9.0909 vs 9.1: blocked, rounding explained, written-confirmation route offered');
 for (const t of ['finished','supplier-confirmed']) assert(!/weigh|reformulat|adjust your (formulation|recipe)|change your (formulation|recipe)/i.test(doc(t,'9.1','candle').message), 'no formulation-change advice');
-set('frag-load', '8'); assert(!/rounding/.test(doc('finished','10','candle').message) && /not assumed to cover a lower one/.test(window.evaluateSdsDoc().message), 'a real lower % is not called rounding; higher-% assumption named');
+set('frag-load', '8'); assert(!/rounding/.test(doc('finished','10','candle').message) && /On its own, a document for a higher percentage does not establish coverage for a lower one/.test(window.evaluateSdsDoc().message), 'a real lower % is not called rounding; higher-% assumption named');
 set('frag-load', '12'); assert(/more severe or additional/.test(doc('finished','10','candle').message), 'higher % explains');
-set('frag-load', '8'); assert(/Ask your supplier for GB CLP information for your scented candle at 8%/.test(doc('finished','10','candle').message), 'supplier guidance names the product and actual %');
+set('frag-load', '8'); assert(/ask your supplier for GB CLP information covering your scented candle at 8%/i.test(doc('finished','10','candle').message), 'supplier guidance names the product and actual %');
 set('frag-load', '8'); assert(/concentrated oil, not your finished product/.test(doc('concentrate').message), 'concentrate explained');
 ok('8% and 12% against 10%, and 9.0909% against 9.1%, are blocked with supplier guidance; ranges and unstated % blocked; concentrate, unsure and product mismatch blocked');
 
@@ -246,6 +248,45 @@ set('sds-doc-base', 'candle+waxmelt'); assert.strictEqual(recheck(), 'needs-rech
 set('sds-doc-base', 'candle'); assert.strictEqual(recheck(), 'verified');
 ok('exports need a Step 3 confirmation; % / product type / H / P / pictogram / signal / sensitiser / document changes invalidate it');
 
+// D1 explicit coverage ranges + D4 optional document date/version.
+{
+  set('product-type', 'Scented Candle'); kind('finished');
+  assert.strictEqual(document.getElementById('sds-doc-coverage').value, 'single', 'one percentage is the default');
+  set('sds-doc-base', 'candle'); set('sds-doc-coverage', 'range');
+  assert.strictEqual(document.getElementById('sds-doc-range-fields').style.display, 'grid', 'range fields shown');
+  assert.strictEqual(document.getElementById('sds-doc-pct-wrap').style.display, 'none', 'single % field hidden for a range');
+  const stated = document.getElementById('sds-doc-range-stated');
+  const RG = (actual, from, to, where, tick) => { set('frag-load', actual); set('sds-doc-from', from); set('sds-doc-to', to); set('sds-doc-where', where); stated.checked = tick; window.updateSdsDocCheck(); return window.evaluateSdsDoc(); };
+  assert.strictEqual(RG('8', '6', '10', 'Page 1', true).code, 'range-match', '8% inside 6-10%');
+  assert(/can't read the document itself/.test(window.evaluateSdsDoc().message), 'never described as proof');
+  assert.strictEqual(RG('6', '6', '10', 'Page 1', true).code, 'range-match', 'lower bound inclusive');
+  assert.strictEqual(RG('10', '6', '10', 'Page 1', true).code, 'range-match', 'upper bound inclusive');
+  assert.strictEqual(RG('10.01', '6', '10', 'Page 1', true).code, 'range-outside', 'no tolerance above');
+  assert.strictEqual(RG('5.9', '6', '10', 'Page 1', true).code, 'range-outside', 'no tolerance below');
+  assert.strictEqual(RG('8', '6', '10', 'Page 1', false).code, 'range-not-stated', 'must confirm it is coverage, not an ingredient or usage range');
+  assert(/ingredient range/.test(window.evaluateSdsDoc().message) && /recommended usage range/.test(window.evaluateSdsDoc().message), 'explains the exclusions');
+  assert.strictEqual(RG('8', '6', '10', '', true).code, 'range-where-missing', 'where it is stated is required');
+  assert.strictEqual(RG('8', '10', '6', 'Page 1', true).code, 'range-invalid');
+  assert.strictEqual(RG('8', '', '10', 'Page 1', true).code, 'range-missing', 'an "up to" (no lower end) is not a range');
+  RG('8', '6', '10', 'Page 1', true); set('sds-doc-base', 'waxmelt');
+  assert.strictEqual(window.evaluateSdsDoc().code, 'base-mismatch', 'the range must be for the maker\'s product');
+  set('sds-doc-base', 'candle'); set('sds-doc-version', 'v3, 12/08/2026');
+  const st = JSON.parse(JSON.stringify(S('S.sdsDoc'))); delete st.confirmed;
+  assert.deepStrictEqual(st, { kind:'finished', pct:'', base:'candle', coverage:'range', rangeFrom:'6', rangeTo:'10', where:'Page 1', rangeStated:true, docVersion:'v3, 12/08/2026' }, 'range and version recorded');
+  const M = window.SdsDocCheck;
+  const r = { fragLoad:'8', productType:'Scented Candle', hStatements:'H317', sdsDoc:Object.assign({}, st) };
+  r.sdsDoc.confirmed = M.confirmationFor(r); assert.strictEqual(M.status(r), 'verified');
+  for (const [k, v] of [['rangeTo','9'], ['where','Page 2'], ['rangeStated', false], ['docVersion','v4']]) {
+    const r2 = Object.assign({}, r, { sdsDoc:Object.assign({}, r.sdsDoc, { [k]:v }) });
+    assert.notStrictEqual(M.status(r2), 'verified', 'changing ' + k + ' needs Step 3 again');
+  }
+  const legacy = { fragLoad:'10', productType:'Scented Candle', hStatements:'H317', sdsDoc:{ kind:'finished', pct:'10', base:'candle' } };
+  assert.strictEqual(M.evaluate(legacy).code, 'match', 'a finished-product answer saved before D1 is read as one percentage');
+  set('sds-doc-version', ''); set('sds-doc-coverage', 'single'); stated.checked = false;
+  assert.strictEqual(document.getElementById('sds-doc-range-fields').style.display, 'none');
+  ok('D1 explicit coverage ranges (inclusive, no tolerance, where stated, not ingredient/usage ranges, product must match); D2 "up to" never coverage; D4 optional version recorded; all part of the confirmation');
+}
+
 // Written supplier confirmation (3 Oct 2026): supplier evidence for the
 // maker's exact % and product, recorded with who / when / which document.
 {
@@ -305,7 +346,7 @@ ok('unverified labels can be saved as drafts; downloads stay blocked; saved vs r
 
 // Saved with the label and restored (reopened label is verified only if unchanged).
 const src = fs.readFileSync('builder.html', 'utf8');
-assert(src.includes("sdsDoc:S.sdsDoc?Object.assign({kind:S.sdsDoc.kind||'',pct:S.sdsDoc.pct||'',base:S.sdsDoc.base||''},S.sdsDoc.kind==='supplier-confirmed'?{supplier:S.sdsDoc.supplier||'',cdate:S.sdsDoc.cdate||'',cref:S.sdsDoc.cref||''}:{},{confirmed:S.sdsDoc.confirmed||null}):null,") && /S\.sdsDoc=e\.sdsDoc\|\|null/.test(src) && /set\('sds-doc-supplier',_d\.supplier\|\|''\)/.test(src), 'saved and restored with the label (including a written confirmation record)');
+assert(src.includes("['coverage','rangeFrom','rangeTo','where','rangeStated','docVersion','supplier','cdate','cref'].filter(k=>S.sdsDoc[k]!==undefined)") && src.includes('{confirmed:S.sdsDoc.confirmed||null}):null,') && /S\.sdsDoc=e\.sdsDoc\|\|null/.test(src) && /set\('sds-doc-supplier',_d\.supplier\|\|''\)/.test(src) && /set\('sds-doc-from',_d\.rangeFrom\|\|''\)/.test(src) && /set\('sds-doc-version',_d\.docVersion\|\|''\)/.test(src), 'saved and restored with the label (range, version and written confirmation records included)');
 assert(/forceGoToStep\(5\)/.test(src) && /SdsDocCheck\.isVerified\(_sdsDocRecord\(\)\)/.test(src), 'reopened labels go straight to Step 5, where the same gate applies');
 const pr = fs.readFileSync('print.html', 'utf8');
 assert(/<script src="sds-doc-check\.js"><\/script>/.test(pr) && /const sdsMsg=getSheetSdsDocBlockMessage\(\);\s*if\(sdsMsg\)return sdsMsg;/.test(pr), 'Composer single export gate includes the document check');

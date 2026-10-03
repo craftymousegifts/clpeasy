@@ -10,6 +10,21 @@ pending.**
 
 This is a software safeguard, not legal advice or a classification service.
 
+> **Superseded in part (3 Oct 2026, owner decisions D1–D4):** CLPeasy now records **explicit
+> supplier coverage** of the maker's product and percentage, rather than requiring identical digits.
+> A finished-product document can state:
+> - the maker's percentage;
+> - or a range its hazard and label information applies to, which contains the maker's percentage.
+>
+> Otherwise a written supplier clarification is needed, identifying the finished-product hazard
+> information.
+> - **Never coverage:** "up to X%" is never treated as coverage, and a document for a different %
+>   does not establish coverage on its own.
+> - **No inference:** no tolerance, rounding, inference or extrapolation.
+> - **Rule and decision record:** `docs/reports/sds-document-applicability/PROPOSED-ACCEPTANCE-RULE.md`.
+>
+> Where this review says "exact percentage match", read it as the earlier rule.
+
 ## The question
 "I use 8% fragrance but have a 10% SDS, or use 12% fragrance with a 10% SDS. What can CLPeasy
 safely do, and when must I obtain supplier information?"

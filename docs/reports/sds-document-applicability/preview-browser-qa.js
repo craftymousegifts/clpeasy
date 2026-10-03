@@ -1,4 +1,4 @@
-// Preview browser QA used for Test v28 (signed-out guest; Supabase stubbed, no network to Supabase).
+// Preview browser QA used for Test v29 (signed-out guest; Supabase stubbed, no network to Supabase).
 // Usage: node docs/reports/sds-document-applicability/preview-browser-qa.js <BASE_URL> <OUT_DIR>
 // Browser QA for the supplier-document confirmation (v26). BASE = preview or local URL.
 const puppeteer = require('/home/user/clpeasy/node_modules/puppeteer');
@@ -99,6 +99,19 @@ const check = (c, label) => { results.push((c ? 'PASS ' : 'FAIL ') + label + (__
     check(/written confirmation from Acme Oils Ltd/.test(await p.evaluate(() => document.getElementById('sds-doc-result').textContent)), `${w}: written-confirmation answer accepted when complete`);
     await p.screenshot({ path: `${OUT}/02b-step3-written-confirmation-${w}.png`, fullPage: false });
     await p.evaluate(() => { document.querySelector('input[name="sds-doc-kind"][value="finished"]').click(); });
+    // D1 range answer (for review): 10% inside 6-10%, with D4 version.
+    await p.evaluate(() => { const setv = (id, v) => { const el = document.getElementById(id); el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); };
+      setv('sds-doc-coverage', 'range'); setv('sds-doc-from', '6'); setv('sds-doc-to', '10'); setv('sds-doc-where', 'Page 1, "Valid for fragrance loads"');
+      const c = document.getElementById('sds-doc-range-stated'); if (!c.checked) c.click(); setv('sds-doc-version', 'v3, 12/08/2026');
+      document.getElementById('sds-doc-check').scrollIntoView({ block: 'start' }); });
+    await sleep(300);
+    const rres = await p.evaluate(() => ({ t: document.getElementById('sds-doc-result').textContent, overflow: document.documentElement.scrollWidth > innerWidth }));
+    check(/applies to 6–10%, and you use 10%/.test(rres.t) && !rres.overflow, `${w}: coverage range answer accepted, no overflow`);
+    await p.screenshot({ path: `${OUT}/02c-step3-range-${w}.png` });
+    await p.evaluate(() => { document.getElementById('sds-doc-range-fields').scrollIntoView({ block: 'start' }); window.scrollBy(0, -60); });
+    await sleep(250);
+    await p.screenshot({ path: `${OUT}/02d-step3-range-fields-${w}.png` });
+    await p.evaluate(() => { const el = document.getElementById('sds-doc-coverage'); el.value = 'single'; el.dispatchEvent(new Event('change', { bubbles: true })); const c = document.getElementById('sds-doc-range-stated'); if (c.checked) c.click(); const v = document.getElementById('sds-doc-version'); v.value = ''; v.dispatchEvent(new Event('input', { bubbles: true })); });
     const opts = await p.evaluate(() => [...document.querySelectorAll('#sds-doc-base option')].map(o => o.textContent));
     check(opts.includes('Candles') && opts.includes('Wax melts') && opts.includes('Candles and wax melts (the document names both)'), `${w}: separate candle / wax melt options`);
     await p.evaluate(() => { const c = document.getElementById('hazard-confirm'); c.checked = true; c.dispatchEvent(new Event('change', { bubbles: true })); toggleHazardNext(); });

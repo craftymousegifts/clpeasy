@@ -22,6 +22,22 @@
 // explicit supplier coverage is different from a maker assuming that a
 // higher-% document covers a lower %. No acknowledgement bypasses either.
 //
+// SUPPLIER COVERAGE (owner decisions D1-D4, 3 Oct 2026; CLPeasy evidence-
+// recording rules, not legal certification). A finished-product document is
+// accepted when the supplier explicitly states the coverage of its hazard /
+// label information for the maker's product and the maker's % is covered:
+//   * 'single': the document states one %; it must equal the maker's %;
+//   * 'range' (D1): the document states its hazard/label information applies
+//     THROUGHOUT a range (from-to) for this product; the maker's % must be
+//     inside it (inclusive), the maker records where it is stated and confirms
+//     it is coverage, not an ingredient or recommended-usage range.
+//   * "up to X%" (D2) is NOT accepted: coverage is not inferred from it; the
+//     maker needs supplier clarification for their product and %.
+//   * optional document date/version (D4) is recorded for the maker.
+// A document for a different % alone does not establish coverage; a written
+// supplier clarification (D3, enabled) can, if it identifies the applicable
+// finished-product hazard information and names the maker's product and %.
+//
 // CONFIRMATION: a label is "verified" only while the fragrance %, product type
 // and hazard information are the same as when the maker last confirmed the
 // document (Builder, leaving Step 3). Any change requires re-confirmation.
@@ -93,6 +109,10 @@
     return Number(actual.toFixed(dp)) === docPct;
   }
 
+  function _t(v) { return String(v == null ? '' : v).trim(); }
+  // Finished-product documents saved before D1 had no coverage answer: one %.
+  function _coverage(d) { return d && d.kind === 'finished' ? (d.coverage === 'range' ? 'range' : 'single') : ''; }
+
   function _list(v) {
     const a = Array.isArray(v) ? v : String(v == null ? '' : v).split(',');
     return a.map(x => String(x).trim()).filter(Boolean).sort();
@@ -111,8 +131,9 @@
         h: _list(rec.hStatements), p: _list(rec.pStatements), pictos: _list(rec.pictograms),
         signal: String(rec.signal || '').trim().toUpperCase(), sens: _list(rec.sensitisers)
       }),
-      doc: JSON.stringify({ kind: d.kind || '', pct: parsePct(d.pct), base: d.base || '',
-        supplier: String(d.supplier || '').trim(), cdate: String(d.cdate || '').trim(), cref: String(d.cref || '').trim() })
+      doc: JSON.stringify({ kind: d.kind || '', coverage: _coverage(d), pct: parsePct(d.pct), from: parsePct(d.rangeFrom), to: parsePct(d.rangeTo),
+        where: _t(d.where), rangeStated: !!d.rangeStated, base: d.base || '', version: _t(d.docVersion),
+        supplier: _t(d.supplier), cdate: _t(d.cdate), cref: _t(d.cref) })
     };
   }
 
@@ -127,7 +148,7 @@
     // Where the supplier may decide coverage (rounding, ranges), point to the
     // written-confirmation route only when the owner has accepted it.
     const confirmRoute = pct => SUPPLIER_CONFIRMATION_ACCEPTED
-      ? ' If your supplier confirms in writing that their GB CLP information applies to your ' + typeLc + ' at exactly ' + pct + '%, choose "My supplier has confirmed in writing" above and record it. Otherwise, ask your supplier for GB CLP information stating ' + pct + '%.'
+      ? ' If your supplier confirms in writing which finished-product hazard information applies to your ' + typeLc + ' at ' + pct + '%, choose "My supplier has confirmed in writing" above and record it. Otherwise, ask your supplier for GB CLP information covering your ' + typeLc + ' at ' + pct + '%.'
       : ask(pct);
     if (actual === null) return { ok: false, code: 'actual-missing', message: 'Enter the fragrance percentage in your finished product (Step 2) as a single number, for example 8 or 8.5. CLPeasy needs it to check your supplier information covers your product.' };
     if (!d.kind) return { ok: false, code: 'kind-missing', message: 'Choose what your supplier document describes.' };
@@ -135,9 +156,7 @@
     if (d.kind === 'unsure') return { ok: false, code: 'unsure', message: '⛔ Check the document title and Sections 1 and 2: it should name a finished product (for example "candle") and the fragrance percentage it covers. If it doesn\'t, CLPeasy can\'t use it.' + ask(actual) };
     if (d.kind === 'supplier-confirmed') return _evaluateConfirmation(d, actual, type, typeLc, ask);
     if (d.kind !== 'finished') return { ok: false, code: 'kind-missing', message: 'Choose what your supplier document describes.' };
-    const docPct = parsePct(d.pct);
-    if (docPct === null && isRangeOrUpTo(d.pct)) return { ok: false, code: 'doc-pct-range', message: '⛔ Your document states a range or an "up to" percentage. CLPeasy doesn\'t decide whether a range covers your product, even when it includes ' + actual + '%: that is for your supplier.' + confirmRoute(actual) };
-    if (docPct === null) return { ok: false, code: 'doc-pct-missing', message: 'Enter the single fragrance percentage the document states, for example 10. A range or no stated percentage can\'t be used.' + ask(actual) };
+    // Product group first (applies to both coverage forms).
     // Unknown values include answers saved before candles and wax melts were
     // split (old 'wax' / 'diffuser' / 'spray'): the maker must choose again.
     if (!d.base || !Object.prototype.hasOwnProperty.call(DOC_COVERS, d.base)) return { ok: false, code: 'base-missing', message: 'Choose the product the document covers.' };
@@ -145,11 +164,29 @@
     const covers = DOC_COVERS[d.base] || [];
     if (!myGroup || d.base === 'other') return { ok: false, code: 'base-unverified', message: '⛔ CLPeasy can only match documents for the product types listed. For any other product, use supplier CLP information written for your exact product.' + ask(actual) };
     if (covers.indexOf(myGroup) === -1) return { ok: false, code: 'base-mismatch', message: '⛔ This document covers a different product. What the product is made with (wax, diffuser base, spray base) changes the hazards, and CLPeasy only uses a document that names your type of product. It can\'t be used for your ' + typeLc + '.' + ask(actual) };
+    if (_coverage(d) === 'range') return _evaluateRange(d, actual, typeLc, ask, confirmRoute);
+    const docPct = parsePct(d.pct);
+    if (docPct === null && isUpTo(d.pct)) return { ok: false, code: 'doc-pct-upto', message: '⛔ CLPeasy doesn\'t take coverage from an "up to" percentage. Ask your supplier to clarify which finished-product hazard information applies to your ' + typeLc + ' at ' + actual + '%.' + (SUPPLIER_CONFIRMATION_ACCEPTED ? ' Then record their clarification with "My supplier has confirmed in writing" above.' : '') };
+    if (docPct === null && isRangeOrUpTo(d.pct)) return { ok: false, code: 'doc-pct-range', message: '⛔ That looks like a range. If the document says its hazard and label information applies throughout a range for your type of product, choose "A range" under "How does the document state the percentage it covers?" and enter it. An ingredient range or a recommended usage range doesn\'t count.' + confirmRoute(actual) };
+    if (docPct === null) return { ok: false, code: 'doc-pct-missing', message: 'Enter the single fragrance percentage the document states, for example 10. If it states a range it applies to, choose "A range" instead.' + ask(actual) };
     const rounding = _roundsTo(actual, d.pct, docPct);
-    const tail = rounding ? ' The difference may only be rounding, but CLPeasy does not round or apply a tolerance; whether the document applies is for your supplier to say.' + confirmRoute(actual) : ask(actual);
-    if (actual > docPct) return { ok: false, code: 'higher', message: '⛔ You use ' + actual + '%, more than the ' + docPct + '% this document states. Hazards can be more severe or additional at a higher percentage.' + tail };
-    if (actual < docPct) return { ok: false, code: 'lower', message: '⛔ You use ' + actual + '%, less than the ' + docPct + '% this document states. CLPeasy only uses supplier information for the exact percentage you use: some label warnings depend on concentration thresholds (for example a sensitiser warning can change from H317 to "EUH208 Contains …"), so a document for a different percentage may not give the right label. A document for a higher percentage is not assumed to cover a lower one.' + tail };
+    const tail = rounding ? ' The difference may only be rounding, but CLPeasy does not round or apply a tolerance; whether the document applies is for your supplier to say.' + confirmRoute(actual) : confirmRoute(actual);
+    if (actual > docPct) return { ok: false, code: 'higher', message: '⛔ You use ' + actual + '%, more than the ' + docPct + '% this document states. On its own, a document for a lower percentage does not establish coverage for yours: hazards can be more severe or additional at a higher percentage.' + tail };
+    if (actual < docPct) return { ok: false, code: 'lower', message: '⛔ You use ' + actual + '%, less than the ' + docPct + '% this document states. On its own, a document for a higher percentage does not establish coverage for a lower one: some label warnings depend on concentration thresholds (for example a sensitiser warning can change from H317 to "EUH208 Contains …"), so a document for a different percentage may not give the right label.' + tail };
     return { ok: true, code: 'match', message: '✓ Your answers are consistent: a finished-product document for your type of product stating ' + actual + '%, the percentage you use. CLPeasy can\'t read the document itself, so make sure it is your supplier\'s GB CLP information for this fragrance in your ' + typeLc + '. Paste its Section 2.2 below.' };
+  }
+
+  function isUpTo(value) {
+    return /(?:up\s*to|max(?:imum)?|not\s+more\s+than|less\s+than|below|under|≤|<=|<)\s*\d/i.test(String(value == null ? '' : value));
+  }
+  function _evaluateRange(d, actual, typeLc, ask, confirmRoute) {
+    const from = parsePct(d.rangeFrom), to = parsePct(d.rangeTo);
+    if (from === null || to === null) return { ok: false, code: 'range-missing', message: 'Enter both ends of the range the document states, for example from 6 to 10. If the document only says "up to" a percentage, CLPeasy can\'t use that range: ask your supplier to clarify coverage for your ' + typeLc + ' at ' + actual + '%.' };
+    if (!(from < to)) return { ok: false, code: 'range-invalid', message: 'The "from" percentage must be lower than the "to" percentage.' };
+    if (_t(d.where).length < 2) return { ok: false, code: 'range-where-missing', message: 'Enter where the document states this range (for example the section, page or heading), so you can find it again.' };
+    if (!d.rangeStated) return { ok: false, code: 'range-not-stated', message: 'Tick to confirm the document says its hazard and label information applies throughout this range for your type of product. An ingredient range (for example in Section 3 of an oil SDS) or a recommended usage range doesn\'t count.' };
+    if (actual < from || actual > to) return { ok: false, code: 'range-outside', message: '⛔ You use ' + actual + '%, outside the ' + from + '–' + to + '% range this document states. It doesn\'t establish coverage for your percentage, and CLPeasy doesn\'t extend a range or apply a tolerance.' + confirmRoute(actual) };
+    return { ok: true, code: 'range-match', message: '✓ Your answers are consistent: a finished-product document for your type of product that states its hazard and label information applies to ' + from + '–' + to + '%, and you use ' + actual + '%. CLPeasy can\'t read the document itself, so make sure it says this for your ' + typeLc + '. Paste its Section 2.2 below.' };
   }
 
   function _validDate(v) {
@@ -170,8 +207,8 @@
     if ((DOC_COVERS[d.base] || []).indexOf(myGroup) === -1) return { ok: false, code: 'base-mismatch', message: '⛔ The confirmation must name your type of product. It can\'t be used for your ' + typeLc + '.' + ask(actual) };
     if (String(d.supplier || '').trim().length < 2) return { ok: false, code: 'conf-supplier-missing', message: 'Enter the supplier who confirmed it.' };
     if (!_validDate(d.cdate)) return { ok: false, code: 'conf-date-missing', message: 'Enter the date of the written confirmation (not a future date).' };
-    if (String(d.cref || '').trim().length < 2) return { ok: false, code: 'conf-ref-missing', message: 'Enter which supplier document the confirmation refers to (its title or reference), so you can find it again.' };
-    return { ok: true, code: 'confirmed-match', message: '✓ Your answers are consistent: you have recorded written confirmation from ' + String(d.supplier).trim() + ' (' + String(d.cdate).trim() + ') that their GB CLP information applies to your ' + typeLc + ' at ' + actual + '%. CLPeasy can\'t see or check that confirmation, so keep it with your records. Paste the Section 2.2 from the document it refers to below.' };
+    if (String(d.cref || '').trim().length < 2) return { ok: false, code: 'conf-ref-missing', message: 'Enter the finished-product hazard information the confirmation identifies (the supplier document\'s title or reference). A confirmation that doesn\'t identify it can\'t be used.' };
+    return { ok: true, code: 'confirmed-match', message: '✓ Your answers are consistent: you have recorded written confirmation from ' + String(d.supplier).trim() + ' (' + String(d.cdate).trim() + ') that the finished-product hazard information in "' + _t(d.cref) + '" applies to your ' + typeLc + ' at ' + actual + '%. CLPeasy can\'t see or check that confirmation, so keep it with your records. Paste the Section 2.2 from that document below.' };
   }
 
   // 'verified' | 'not-checked' (never confirmed, e.g. a label saved before
@@ -196,7 +233,7 @@
     return 'Not ready to download yet. Confirm which supplier document this label\'s hazard information comes from: go to Step 3 (Hazards), complete "Check your supplier document first", and continue to Step 5. Your design is kept, and you can still save it as a draft.';
   }
 
-  const api = { SUPPLIER_CONFIRMATION_ACCEPTED, isRangeOrUpTo, GROUP_BY_TYPE, DOC_COVERS, DOC_BASE_OPTIONS, parsePct, confirmationFor, evaluate, status, isVerified, exportBlockMessage };
+  const api = { SUPPLIER_CONFIRMATION_ACCEPTED, isRangeOrUpTo, isUpTo, GROUP_BY_TYPE, DOC_COVERS, DOC_BASE_OPTIONS, parsePct, confirmationFor, evaluate, status, isVerified, exportBlockMessage };
   global.SdsDocCheck = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

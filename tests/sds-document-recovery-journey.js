@@ -203,6 +203,37 @@ const server = http.createServer((req, res) => {
     await b4.close();
     ok('written supplier confirmation (9.0909%): recorded, ready to download, saved, and restored on reopening with fine-tune kept');
 
+    // 4c. D1 explicit coverage range (6-10%) with D4 version, recorded and kept across save/reopen.
+    const b5 = await open('builder.html?label=' + made.id);
+    const rr = await b5.evaluate(async () => {
+      setApprovedBuilderStep(3); await new Promise(r => setTimeout(r, 200));
+      document.getElementById('frag-load').value = '8%'; updateLabel();
+      document.querySelector('input[name="sds-doc-kind"][value="finished"]').click();
+      const setv = (id, v) => { const el = document.getElementById(id); el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); };
+      setv('sds-doc-base', 'candle'); setv('sds-doc-coverage', 'range'); setv('sds-doc-from', '6'); setv('sds-doc-to', '10');
+      setv('sds-doc-where', 'Page 1, "Valid for fragrance loads"'); document.getElementById('sds-doc-range-stated').click(); setv('sds-doc-version', 'v3');
+      document.querySelectorAll('.hazard-review-keep').forEach(b => { if (b.offsetParent !== null) b.click(); });
+      const hc = document.getElementById('hazard-confirm'); if (!hc.checked) hc.click(); toggleHazardNext();
+      setApprovedBuilderStep(4); await new Promise(r => setTimeout(r, 150));
+      if (approvedBuilderStep === 3) { const h2 = document.getElementById('hazard-confirm'); if (!h2.checked) h2.click(); toggleHazardNext(); setApprovedBuilderStep(4); await new Promise(r => setTimeout(r, 150)); }
+      setApprovedBuilderStep(5); await new Promise(r => setTimeout(r, 150));
+      const v = document.getElementById('verify-checkbox'); v.checked = true; toggleDownload();
+      const res = document.getElementById('sds-doc-result').textContent;
+      await saveLabel();
+      return { res, step: approvedBuilderStep, allowed: _downloadAllowed(), btn: document.getElementById('btn-save').textContent };
+    });
+    assert.strictEqual(rr.step, 5, 'reached Step 5 with a coverage range ' + JSON.stringify(rr));
+    assert(/applies to 6–10%, and you use 8%/.test(rr.res), 'result: ' + rr.res);
+    assert.strictEqual(rr.allowed, true); assert.strictEqual(rr.btn, '✅ Label saved');
+    await b5.close();
+    const b6 = await open('builder.html?label=' + made.id);
+    const rr2 = await b6.evaluate(() => ({ cov: document.getElementById('sds-doc-coverage').value, from: document.getElementById('sds-doc-from').value, to: document.getElementById('sds-doc-to').value, where: document.getElementById('sds-doc-where').value, stated: document.getElementById('sds-doc-range-stated').checked, ver: document.getElementById('sds-doc-version').value, status: SdsDocCheck.status(_sdsDocRecord()), ft: S.hazardFSOverride }));
+    assert.deepStrictEqual([rr2.cov, rr2.from, rr2.to, rr2.where, rr2.stated, rr2.ver, rr2.status], ['range', '6', '10', 'Page 1, "Valid for fragrance loads"', true, 'v3', 'verified'], 'range record restored');
+    assert.strictEqual(rr2.ft, made.older.hazardFSOverride, 'fine-tune still kept');
+    assert.deepStrictEqual([...b5.errs, ...b6.errs], [], 'no page errors');
+    await b6.close();
+    ok('explicit coverage range (8% within 6–10%) with document version: recorded, ready to download, saved, restored on reopening with fine-tune kept');
+
     // 5. Composer.
     const c = await open('print.html');
     const s5 = await c.evaluate((id) => {

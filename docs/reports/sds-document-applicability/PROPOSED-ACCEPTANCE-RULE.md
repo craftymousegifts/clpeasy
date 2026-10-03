@@ -1,8 +1,23 @@
-# Proposed acceptance rule: supplier coverage (PROPOSAL, not implemented)
+# Supplier-coverage acceptance rule (decided 3 Oct 2026; implemented on Test)
 
-**Status:** a proposal for owner review (3 Oct 2026). The code at `d6b9c54` still applies the
-exact-percentage rule, with the written-confirmation route behind its switch. Nothing here is
-implemented, deployed or legally approved.
+**Owner decisions (3 Oct 2026):**
+- **D1 approved:** explicit finished-product coverage ranges are accepted when the supplier states
+  that the supplied hazard and label information applies throughout that range and to the maker's
+  product. Ingredient ranges and recommended usage ranges are not accepted.
+- **D2:** coverage is **not** inferred from "up to X%". Clarification is required, defining
+  coverage for the actual product and percentage.
+- **D3:** the written-confirmation route stays enabled.
+- **D4:** an optional document date or version field is added.
+
+**Correction:** "a lower-% document is never accepted" is replaced by "**a document for a different
+percentage does not, on its own, establish coverage**". A supplier clarification can establish it,
+and that clarification must explicitly identify the applicable finished-product hazard information.
+
+These are **CLPeasy evidence-recording rules, not legal certification.** They are implemented on
+`fix/sds-document-applicability`, on the Test preview only. Nothing is deployed to production or
+legally approved.
+
+The proposal text below is kept for the record; the decisions above take precedence.
 
 ## Basis (official guidance, as reported by the ChatGPT workstream)
 **These pages were not opened from this environment**, which is still blocked; they are recorded as
@@ -60,8 +75,8 @@ There are three accepted ways the supplier can say this. CLPeasy never works it 
 ### Never accepted (unchanged or made explicit)
 | Situation | Why |
 |---|---|
-| A document for a **higher** % with no explicit coverage statement for the maker's % | Coverage of a lower % is not inferred from a higher one |
-| A document for a **lower** % | Hazards can be more severe or additional at a higher % |
+| A document for a **higher** % with no explicit coverage statement for the maker's % | Does not, alone, establish coverage of a lower %, which is never inferred. A supplier clarification can establish it |
+| A document for a **lower** % (on its own) | Does not, alone, establish coverage. Hazards can be more severe or additional at a higher %. A supplier clarification identifying the applicable finished-product hazard information can establish it |
 | **Ingredient ranges in an oil SDS** (Section 3 composition, for example "linalool 10–25%") | These describe the **concentrated oil's composition**, not the finished product's coverage. CLPeasy never uses them and never calculates a classification from them |
 | An oil SDS (100%) used as if it were the finished product | It describes the oil, not the product |
 | **Maximum usage rates** (for example an IFRA certificate maximum or a "max load 10%" product note) | A recommended or allowed usage limit is not a statement of what the CLP classification covers |
