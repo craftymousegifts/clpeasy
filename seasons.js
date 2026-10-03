@@ -522,7 +522,7 @@
       <span aria-hidden="true" style="font-size:24px;line-height:1;">${m.bannerEmoji}</span>
       <strong style="font-size:17px;color:${m.accentDark};white-space:nowrap;">${m.iconLabel.replace(/\s*[—-].*$/, '')}</strong>
       <span style="font-size:13px;color:#374151;line-height:1.45;text-align:center;">${m.bannerText}</span>
-      <a id="clpeasy-banner-cta" href="https://deploy-preview-202--clpeasy.netlify.app/auth?mode=signup" style="color:${m.accentDark};font-size:18px;font-weight:800;text-decoration:none;line-height:1;" aria-label="Start your 14-day free trial">›</a>
+      <a id="clpeasy-banner-cta" href="auth?mode=signup" style="color:${m.accentDark};font-size:18px;font-weight:800;text-decoration:none;line-height:1;" aria-label="Start your 14-day free trial">›</a>
     `;
 
     // Place the seasonal strip directly beneath the homepage hero so it is
