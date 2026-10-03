@@ -227,3 +227,38 @@ Detailed design and evidence: `docs/reports/SDS-FRAGRANCE-PERCENTAGE-REVIEW-2026
      recreated.
    - `sds-doc-check.js` must be in the copied files.
    - Never commit or print the Test key.
+
+## Production release record (3 Oct 2026)
+- **Owner approved** `6bd9a00`. `main` was fast-forwarded from `4bc3e9a` to `6bd9a00`, with no
+  concurrent work on `main` and no force-push.
+- **Netlify production deploy:** `6ac15532a64d0600072093bd` (ready; commit `6bd9a00`; no functions).
+- **Scope:**
+  - site files: `builder.html`, `print.html`, `my-labels.html`, `sds-doc-check.js`;
+  - the rest is tests and docs;
+  - no Stripe, database or Supabase function change.
+- **Rollback:** republish production deploy `6ac14342948ac900080a6c9c` (`main` `4bc3e9a`).
+- **Verified on production** (`main--clpeasy.netlify.app`, signed-out guest plus a simulated
+  signed-in account for My Labels):
+  - **Served files:** `sds-doc-check.js` and `label-render.js` are byte-identical to the repo. The
+    script is loaded on the Builder, Composer and My Labels. Pages carry the production Supabase
+    ref only.
+  - **Browser checks:** 49 passed at 360, 390 and 1366 px plus the Composer:
+    - Step 2 calculator layout;
+    - Step 3 answers (single %, coverage range, written confirmation);
+    - older label blocked with guidance;
+    - "Draft saved";
+    - recovery via Step 3, then ready to download;
+    - a % change blocks export again;
+    - the Composer blocks and names an unchecked label;
+    - no page errors and no sideways scrolling.
+  - **My Labels:** the "Draft: document check needed" tag shows only on the unchecked label, with
+    no page errors.
+  - **Homepage and pricing:** the served homepage is byte-identical before and after the release,
+    so the approved hero is unchanged. The pricing "Local version history" paragraph is unchanged
+    at 390 and 1366 px.
+- **Still outstanding:**
+  - the real signed-in journey (network-blocked; no Test login);
+  - review of the GB CLP legislation text and exact thresholds (only partly supported by official
+    guidance).
+- **Not legal certification.** These are CLPeasy evidence-recording rules.
+- **Not done (by instruction):** the customer email has not been sent, and PR #203 is not closed.
