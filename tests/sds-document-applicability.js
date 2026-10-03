@@ -116,8 +116,10 @@ assert(!/0\.1\s*%/.test(low) && !/not automatically covered/.test(low), 'no blan
 set('frag-load', '10'); const m = doc('finished','10','candle').message;
 assert(/answers are consistent/.test(m) && /can't read the document itself/.test(m) && !/covers your product/.test(m), 'a match is described as consistent answers, never as proof the document applies');
 set('frag-load', '10'); const rg = doc('finished','up to 12%','candle').message;
-assert(/range or an "up to" percentage/.test(rg) && /explicitly confirmed/.test(rg), 'range / up-to documents get their own explanation');
-set('frag-load', '9.0909'); assert(/may only be rounding/.test(doc('finished','9.1','candle').message), '9.0909 vs 9.1 explains rounding without accepting it');
+assert(/range or an "up to" percentage/.test(rg) && /that is for your supplier/.test(rg) && /My supplier has confirmed in writing/.test(rg), 'range / up-to documents: supplier decides; points to the written-confirmation route');
+set('frag-load', '9.0909'); const rd = doc('finished','9.1','candle');
+assert(rd.code === 'lower' && /may only be rounding/.test(rd.message) && /My supplier has confirmed in writing/.test(rd.message), '9.0909 vs 9.1: blocked, rounding explained, written-confirmation route offered');
+for (const t of ['finished','supplier-confirmed']) assert(!/weigh|reformulat|adjust your (formulation|recipe)|change your (formulation|recipe)/i.test(doc(t,'9.1','candle').message), 'no formulation-change advice');
 set('frag-load', '8'); assert(!/rounding/.test(doc('finished','10','candle').message) && /not assumed to cover a lower one/.test(window.evaluateSdsDoc().message), 'a real lower % is not called rounding; higher-% assumption named');
 set('frag-load', '12'); assert(/more severe or additional/.test(doc('finished','10','candle').message), 'higher % explains');
 set('frag-load', '8'); assert(/Ask your supplier for GB CLP information for your scented candle at 8%/.test(doc('finished','10','candle').message), 'supplier guidance names the product and actual %');
@@ -244,6 +246,47 @@ set('sds-doc-base', 'candle+waxmelt'); assert.strictEqual(recheck(), 'needs-rech
 set('sds-doc-base', 'candle'); assert.strictEqual(recheck(), 'verified');
 ok('exports need a Step 3 confirmation; % / product type / H / P / pictogram / signal / sensitiser / document changes invalidate it');
 
+// Written supplier confirmation (3 Oct 2026): supplier evidence for the
+// maker's exact % and product, recorded with who / when / which document.
+{
+  set('product-type', 'Scented Candle'); set('frag-load', '9.0909');
+  kind('supplier-confirmed');
+  assert.strictEqual(document.getElementById('sds-doc-confirm-fields').style.display, 'grid', 'confirmation fields shown');
+  assert.strictEqual(document.getElementById('sds-doc-pct-label').textContent, 'Percentage your supplier confirmed in writing', 'field relabelled');
+  const C = (pct, base, supplier, cdate, cref) => { set('sds-doc-pct', pct); set('sds-doc-base', base); set('sds-doc-supplier', supplier); set('sds-doc-cdate', cdate); set('sds-doc-cref', cref); return window.evaluateSdsDoc(); };
+  const good = ['9.0909', 'candle', 'Acme Oils Ltd', '2026-10-01', 'Lavender CLP candle 9.1%'];
+  assert.strictEqual(C(...good).code, 'confirmed-match', 'exact %, product, supplier, date and document recorded');
+  assert(/can't see or check that confirmation/.test(window.evaluateSdsDoc().message), 'never described as proof');
+  assert.strictEqual(C('9.1', ...good.slice(1)).code, 'conf-pct-mismatch', 'a confirmation naming 9.1% is not one for 9.0909% (no tolerance)');
+  assert.strictEqual(C('up to 10%', ...good.slice(1)).code, 'conf-pct-missing', 'a range is not a confirmation for the exact %');
+  assert.strictEqual(C(good[0], 'waxmelt', ...good.slice(2)).code, 'base-mismatch', 'must name the product group');
+  assert.strictEqual(C(good[0], good[1], '', good[3], good[4]).code, 'conf-supplier-missing');
+  assert.strictEqual(C(good[0], good[1], good[2], '', good[4]).code, 'conf-date-missing');
+  assert.strictEqual(C(good[0], good[1], good[2], '2999-01-01', good[4]).code, 'conf-date-missing', 'future date refused');
+  assert.strictEqual(C(good[0], good[1], good[2], good[3], '').code, 'conf-ref-missing');
+  C(...good);
+  const st = JSON.parse(JSON.stringify(S('S.sdsDoc'))); delete st.confirmed;
+  assert.deepStrictEqual(st, { kind:'supplier-confirmed', pct:'9.0909', base:'candle', supplier:'Acme Oils Ltd', cdate:'2026-10-01', cref:'Lavender CLP candle 9.1%' }, 'recorded in label state');
+  assert.strictEqual(window.SdsDocCheck.status(window.eval('_sdsDocRecord()')), 'needs-recheck', 'an earlier confirmation does not carry over to new answers');
+  const M = window.SdsDocCheck;
+  const r = { fragLoad:'9.0909', productType:'Scented Candle', hStatements:'H317', sdsDoc:{ kind:'supplier-confirmed', pct:'9.0909', base:'candle', supplier:'Acme Oils Ltd', cdate:'2026-10-01', cref:'X1' } };
+  r.sdsDoc.confirmed = M.confirmationFor(r); assert.strictEqual(M.status(r), 'verified');
+  r.sdsDoc = Object.assign({}, r.sdsDoc, { cref:'X2' }); assert.strictEqual(M.status(r), 'needs-recheck', 'changing the recorded confirmation invalidates');
+  // Owner switch: with SUPPLIER_CONFIRMATION_ACCEPTED=false the route is refused and never suggested.
+  const src0 = fs.readFileSync('sds-doc-check.js', 'utf8');
+  assert(/const SUPPLIER_CONFIRMATION_ACCEPTED = true;/.test(src0), 'switch present');
+  const off = new Function('module', 'globalThis', src0.replace('const SUPPLIER_CONFIRMATION_ACCEPTED = true;', 'const SUPPLIER_CONFIRMATION_ACCEPTED = false;') + '; return module.exports;')({ exports:{} }, {});
+  const offR = off.evaluate({ fragLoad:'9.0909', productType:'Scented Candle', sdsDoc:{ kind:'supplier-confirmed', pct:'9.0909', base:'candle', supplier:'A', cdate:'2026-10-01', cref:'X' } });
+  assert(!offR.ok, 'switch off: confirmation not accepted');
+  const offMsg = off.evaluate({ fragLoad:'9.0909', productType:'Scented Candle', sdsDoc:{ kind:'finished', pct:'9.1', base:'candle' } }).message;
+  assert(!/confirmed in writing/.test(offMsg) && /Ask your supplier for GB CLP information/.test(offMsg), 'switch off: no unusable instruction, only "ask your supplier"');
+  set('frag-load', '10'); kind('finished'); set('sds-doc-pct', '10'); set('sds-doc-base', 'candle');
+  assert.strictEqual(document.getElementById('sds-doc-confirm-fields').style.display, 'none', 'confirmation fields hidden for a finished-product document');
+  ok('written supplier confirmation: exact % and product only, who/when/which document recorded, no tolerance, invalidated on change; owner switch off hides the route and its instructions');
+}
+// restore the export-section fixture state
+set('frag-load', '10'); doc('finished','10','candle'); window.eval('S.sdsDoc.confirmed=' + conf);
+
 // Draft saving (3 Oct 2026): an unverified label can be saved, clearly as a draft.
 window.eval('S.sdsDoc.confirmed=null');
 document.getElementById('verify-checkbox').checked = true; window._labelBlockDownload = false; window.toggleDownload();
@@ -255,11 +298,14 @@ const ss = document.getElementById('save-status');
 assert(/Saved as a draft: not ready to download yet/.test(ss.textContent) && ss.classList.contains('field-alert-warn'), 'draft save status is distinct from a ready label');
 window.eval('S.sdsDoc.confirmed=' + conf); window.toggleDownload(); window.showSaveStatus();
 assert(/Label saved/.test(ss.textContent) && !/draft/i.test(ss.textContent) && ss.classList.contains('field-alert-success'), 'verified label: normal saved status');
+const srcB = fs.readFileSync('builder.html', 'utf8');
+assert(/_draft\?'✎ Draft saved':'✅ Label saved'/.test(srcB) && !/'✅ Saved!'/.test(srcB), 'Save button confirms "Draft saved" or "Label saved", matching the notice');
+assert(/@media\(max-width:600px\)\{#frag-row\{grid-template-columns:1fr;\}\}/.test(srcB), 'fragrance row stacks on phones');
 ok('unverified labels can be saved as drafts; downloads stay blocked; saved vs ready is clear');
 
 // Saved with the label and restored (reopened label is verified only if unchanged).
 const src = fs.readFileSync('builder.html', 'utf8');
-assert(/sdsDoc:S\.sdsDoc\?\{kind:S\.sdsDoc\.kind\|\|'',pct:S\.sdsDoc\.pct\|\|'',base:S\.sdsDoc\.base\|\|'',confirmed:S\.sdsDoc\.confirmed\|\|null\}:null/.test(src) && /S\.sdsDoc=e\.sdsDoc\|\|null/.test(src), 'saved and restored with the label');
+assert(src.includes("sdsDoc:S.sdsDoc?Object.assign({kind:S.sdsDoc.kind||'',pct:S.sdsDoc.pct||'',base:S.sdsDoc.base||''},S.sdsDoc.kind==='supplier-confirmed'?{supplier:S.sdsDoc.supplier||'',cdate:S.sdsDoc.cdate||'',cref:S.sdsDoc.cref||''}:{},{confirmed:S.sdsDoc.confirmed||null}):null,") && /S\.sdsDoc=e\.sdsDoc\|\|null/.test(src) && /set\('sds-doc-supplier',_d\.supplier\|\|''\)/.test(src), 'saved and restored with the label (including a written confirmation record)');
 assert(/forceGoToStep\(5\)/.test(src) && /SdsDocCheck\.isVerified\(_sdsDocRecord\(\)\)/.test(src), 'reopened labels go straight to Step 5, where the same gate applies');
 const pr = fs.readFileSync('print.html', 'utf8');
 assert(/<script src="sds-doc-check\.js"><\/script>/.test(pr) && /const sdsMsg=getSheetSdsDocBlockMessage\(\);\s*if\(sdsMsg\)return sdsMsg;/.test(pr), 'Composer single export gate includes the document check');

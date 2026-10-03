@@ -128,7 +128,9 @@ const server = http.createServer((req, res) => {
     assert(/Not ready to download yet/.test(s1.note) && /save it as a draft/.test(s1.note), 'notice: ' + s1.note);
     assert.strictEqual(s1.png, 'none', 'PNG disabled'); assert.strictEqual(s1.save, 'auto', 'Save available as a draft');
     assert.deepStrictEqual(s1.ft, { h: made.older.hazardFSOverride, s: made.older.scentFSOverride, b: made.older.bizNameFSOverride, t: made.older.typeFSOverride, g: made.older.sigFSOverride, y: made.older.hazardYOffset === undefined ? null : made.older.hazardYOffset }, 'fine-tune loaded');
-    ok('reopened older label: Step 5 says not ready to download, exports blocked, draft save available, fine-tune loaded');
+    const dsave = await b1.evaluate(async () => { await saveLabel(); return { btn: document.getElementById('btn-save').textContent, note: document.getElementById('save-status').textContent }; });
+    assert.strictEqual(dsave.btn, '✎ Draft saved', 'button confirms a draft'); assert(/Saved as a draft/.test(dsave.note), 'notice agrees');
+    ok('reopened older label: Step 5 says not ready to download, exports blocked, saved as a draft ("Draft saved"), fine-tune loaded');
 
     // 3. Recovery through the real form.
     await b1.click('#sds-doc-export-note button'); await sleep(400);
@@ -146,12 +148,13 @@ const server = http.createServer((req, res) => {
       const allowed = _downloadAllowed();
       await saveLabel();
       const st = document.getElementById('save-status').textContent;
-      return { r, step: approvedBuilderStep, allowed, st, id: editingLabelId, alerts: window.__lastAlert || '' };
+      return { r, step: approvedBuilderStep, allowed, st, btn: document.getElementById('btn-save').textContent, id: editingLabelId, alerts: window.__lastAlert || '' };
     });
     assert(/answers are consistent/.test(s3.r), 'Step 3 result: ' + s3.r);
     assert.strictEqual(s3.step, 5, 'back at Step 5');
     assert.strictEqual(s3.allowed, true, 'ready to download after Step 3');
     assert(/Label saved/.test(s3.st) && !/draft/i.test(s3.st), 'saved as ready: ' + s3.st);
+    assert.strictEqual(s3.btn, '✅ Label saved', 'button confirms a ready label');
     assert.strictEqual(s3.id, made.id, 'same label updated, not a copy');
     assert.deepStrictEqual(b1.errs, [], 'Builder: no page errors');
     await b1.close();
@@ -168,6 +171,37 @@ const server = http.createServer((req, res) => {
     assert.deepStrictEqual(b2.errs, [], 'Builder reopen: no page errors');
     await b2.close();
     ok('reopened after recovery: ready to download; design and all fine-tune settings identical to before');
+
+    // 4b. Written supplier confirmation route, recorded and kept across save/reopen.
+    const b3 = await open('builder.html?label=' + made.id);
+    const w = await b3.evaluate(async () => {
+      setApprovedBuilderStep(3); await new Promise(r => setTimeout(r, 200));
+      document.getElementById('frag-load').value = '9.0909%'; updateLabel();
+      document.querySelector('input[name="sds-doc-kind"][value="supplier-confirmed"]').click();
+      const setv = (id, v) => { const el = document.getElementById(id); el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); };
+      setv('sds-doc-pct', '9.0909'); setv('sds-doc-base', 'candle'); setv('sds-doc-supplier', 'Acme Oils Ltd'); setv('sds-doc-cdate', '2026-10-01'); setv('sds-doc-cref', 'Lavender CLP candle 9.1%');
+      const reasons = typeof _hazardReviewReasons === 'function' ? [..._hazardReviewReasons()] : [];
+      document.querySelectorAll('.hazard-review-keep').forEach(b => { if (b.offsetParent !== null) b.click(); });
+      const hc = document.getElementById('hazard-confirm'); if (!hc.checked) hc.click(); toggleHazardNext();
+      setApprovedBuilderStep(4); await new Promise(r => setTimeout(r, 150));
+      const hc2 = document.getElementById('hazard-confirm'); if (approvedBuilderStep === 3 && !hc2.checked) { hc2.click(); toggleHazardNext(); setApprovedBuilderStep(4); await new Promise(r => setTimeout(r, 150)); }
+      setApprovedBuilderStep(5); await new Promise(r => setTimeout(r, 150));
+      const v = document.getElementById('verify-checkbox'); v.checked = true; toggleDownload();
+      const res = document.getElementById('sds-doc-result').textContent;
+      await saveLabel();
+      return { reasons, res, step: approvedBuilderStep, allowed: _downloadAllowed(), btn: document.getElementById('btn-save').textContent, alert: window.__lastAlert || '' };
+    });
+    assert.strictEqual(w.step, 5, 'reached Step 5 with a written confirmation ' + JSON.stringify(w));
+    assert(/written confirmation from Acme Oils Ltd/.test(w.res), 'result: ' + w.res);
+    assert.strictEqual(w.allowed, true, 'ready to download'); assert.strictEqual(w.btn, '✅ Label saved');
+    await b3.close();
+    const b4 = await open('builder.html?label=' + made.id);
+    const w2 = await b4.evaluate(() => ({ kind: (document.querySelector('input[name="sds-doc-kind"]:checked') || {}).value, sup: document.getElementById('sds-doc-supplier').value, d: document.getElementById('sds-doc-cdate').value, ref: document.getElementById('sds-doc-cref').value, status: SdsDocCheck.status(_sdsDocRecord()), ft: S.hazardFSOverride }));
+    assert.deepStrictEqual([w2.kind, w2.sup, w2.d, w2.ref, w2.status], ['supplier-confirmed', 'Acme Oils Ltd', '2026-10-01', 'Lavender CLP candle 9.1%', 'verified'], 'confirmation record restored');
+    assert.strictEqual(w2.ft, made.older.hazardFSOverride, 'fine-tune still kept');
+    assert.deepStrictEqual([...b3.errs, ...b4.errs], [], 'no page errors');
+    await b4.close();
+    ok('written supplier confirmation (9.0909%): recorded, ready to download, saved, and restored on reopening with fine-tune kept');
 
     // 5. Composer.
     const c = await open('print.html');

@@ -334,6 +334,11 @@ a.trust-item:hover .trust-icon{background:var(--teal);color:white;}
 /* FORMS */
 .form-group{margin-bottom:16px;}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+/* The fragrance % row (with its calculator) stacks on phones so the
+   calculator result is not squeezed beside Burn time. Scoped to this row:
+   the general .form-row phone rule above is overridden by this later base
+   rule (pre-existing, recorded separately). */
+@media(max-width:600px){#frag-row{grid-template-columns:1fr;}}
 label{display:block;font-size:13px;font-weight:600;margin-bottom:5px;}
 label span{font-weight:400;color:var(--muted);}
 input[type=text],input[type=number],select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:16px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;transition:border-color .2s;outline:none;-webkit-appearance:none;appearance:none;}
@@ -1167,7 +1172,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </select></div>
       <div class="form-group"><label>Net weight <span>(optional)</span></label><input type="text" id="net-weight" placeholder="e.g. 200g" inputmode="text" oninput="updateLabel();saveProdDetails()"><div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4;">Not required by CLP if shown elsewhere on the pack (Art. 17(1)(b)) — but check Weights &amp; Measures rules for your product.</div></div>
     </div>
-    <div class="form-row">
+    <div class="form-row" id="frag-row">
       <div class="form-group">
         <label for="frag-load">Fragrance in the finished product (% by weight)
           <button type="button" onclick="toggleFragCalc()" style="margin-left:8px;font-size:11px;background:var(--teal-light);border:1px solid rgba(13,148,136,0.3);color:var(--teal);padding:2px 8px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;">🧮 Calculate</button>
@@ -1216,11 +1221,17 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:8px;">Hazards depend on the percentage and on what the product is made with, and they don't scale in simple proportion. CLPeasy's own requirement is a supplier document for your type of product at the same fragrance percentage you use; if yours doesn't match, ask your supplier.</div>
       <div style="font-size:12.5px;font-weight:600;margin-bottom:4px;">What does your supplier document describe?</div>
       <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:4px;"><input type="radio" name="sds-doc-kind" value="finished" onchange="updateSdsDocCheck()" style="margin-top:2px;"> A finished product made with this fragrance at a stated percentage (for example a CLP document for "candle at 10%")</label>
+      <label id="sds-doc-kind-confirmed-row" style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:4px;"><input type="radio" name="sds-doc-kind" value="supplier-confirmed" onchange="updateSdsDocCheck()" style="margin-top:2px;"> My supplier has confirmed in writing (for example by email) that their GB CLP information applies to my product at the exact percentage I use</label>
       <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:4px;"><input type="radio" name="sds-doc-kind" value="concentrate" onchange="updateSdsDocCheck()" style="margin-top:2px;"> The fragrance oil on its own (an SDS for the concentrated oil, 100%)</label>
       <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:8px;"><input type="radio" name="sds-doc-kind" value="unsure" onchange="updateSdsDocCheck()" style="margin-top:2px;"> I'm not sure</label>
       <div id="sds-doc-finished-fields" style="display:none;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:6px;">
-        <div><label for="sds-doc-pct" style="font-size:12px;">Fragrance % the document states</label><input type="text" id="sds-doc-pct" placeholder="e.g. 10%" inputmode="decimal" aria-describedby="sds-doc-pct-help" oninput="updateSdsDocCheck()"><div id="sds-doc-pct-help" style="margin-top:3px;font-size:11px;color:var(--muted);line-height:1.4;">One figure, exactly as written on the document.</div></div>
-        <div><label for="sds-doc-base" style="font-size:12px;">Product the document covers</label><select id="sds-doc-base" onchange="updateSdsDocCheck()"><option value="">— Choose —</option><option value="candle">Candles</option><option value="waxmelt">Wax melts</option><option value="candle+waxmelt">Candles and wax melts (the document names both)</option><option value="reed">Reed diffusers</option><option value="plugin">Electric or plug-in diffusers</option><option value="cardiffuser">Car diffusers</option><option value="spray">Room or linen sprays</option><option value="carspray">Car air freshener sprays</option><option value="sachet">Scented sachets</option><option value="potpourri">Potpourri</option><option value="other">Something else / not stated</option></select></div>
+        <div><label for="sds-doc-pct" id="sds-doc-pct-label" style="font-size:12px;">Fragrance % the document states</label><input type="text" id="sds-doc-pct" placeholder="e.g. 10%" inputmode="decimal" aria-describedby="sds-doc-pct-help" oninput="updateSdsDocCheck()"><div id="sds-doc-pct-help" style="margin-top:3px;font-size:11px;color:var(--muted);line-height:1.4;">One figure, exactly as written on the document.</div></div>
+        <div><label for="sds-doc-base" id="sds-doc-base-label" style="font-size:12px;">Product the document covers</label><select id="sds-doc-base" onchange="updateSdsDocCheck()"><option value="">— Choose —</option><option value="candle">Candles</option><option value="waxmelt">Wax melts</option><option value="candle+waxmelt">Candles and wax melts (the document names both)</option><option value="reed">Reed diffusers</option><option value="plugin">Electric or plug-in diffusers</option><option value="cardiffuser">Car diffusers</option><option value="spray">Room or linen sprays</option><option value="carspray">Car air freshener sprays</option><option value="sachet">Scented sachets</option><option value="potpourri">Potpourri</option><option value="other">Something else / not stated</option></select></div>
+      </div>
+      <div id="sds-doc-confirm-fields" style="display:none;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:6px;">
+        <div><label for="sds-doc-supplier" style="font-size:12px;">Supplier who confirmed it</label><input type="text" id="sds-doc-supplier" maxlength="120" autocomplete="off" oninput="updateSdsDocCheck()"></div>
+        <div><label for="sds-doc-cdate" style="font-size:12px;">Date of the written confirmation</label><input type="date" id="sds-doc-cdate" style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:16px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;min-height:46px;" oninput="updateSdsDocCheck()" onchange="updateSdsDocCheck()"></div>
+        <div style="grid-column:1/-1;"><label for="sds-doc-cref" style="font-size:12px;">Supplier document it refers to (title or reference)</label><input type="text" id="sds-doc-cref" maxlength="200" autocomplete="off" placeholder="e.g. Lavender Fields CLP – candle 9.1%" oninput="updateSdsDocCheck()"><div style="margin-top:3px;font-size:11px;color:var(--muted);line-height:1.4;">Keep the supplier's written confirmation with your records. CLPeasy can't see or check it.</div></div>
       </div>
       <div id="sds-doc-result" role="status" aria-live="polite" style="font-size:12.5px;line-height:1.5;"></div>
     </fieldset>
@@ -3001,7 +3012,7 @@ async function saveLabel(){
     bizPhone:S.bizPhone,bizWebsite:S.bizWebsite,netWeight:S.netWeight,fragLoad:S.fragLoad,burnTime:S.burnTime,batchNum:S.batchNum,
     supplier:S.supplier||'',hideEN15494:!!S.hideEN15494,
     hazardFromExtraction:!!S.hazardFromExtraction,
-    sdsDoc:S.sdsDoc?{kind:S.sdsDoc.kind||'',pct:S.sdsDoc.pct||'',base:S.sdsDoc.base||'',confirmed:S.sdsDoc.confirmed||null}:null,
+    sdsDoc:S.sdsDoc?Object.assign({kind:S.sdsDoc.kind||'',pct:S.sdsDoc.pct||'',base:S.sdsDoc.base||''},S.sdsDoc.kind==='supplier-confirmed'?{supplier:S.sdsDoc.supplier||'',cdate:S.sdsDoc.cdate||'',cref:S.sdsDoc.cref||''}:{},{confirmed:S.sdsDoc.confirmed||null}):null,
     bgColour:(document.getElementById('label-bg-colour')?.value)||'#ffffff',
     pStatements:S.pStatements||'',textColour:S.textColour||'dark',showBorder:S.showBorder!==false,
     labelLang:document.getElementById('label-lang')?.value||'en',
@@ -3071,7 +3082,12 @@ async function saveLabel(){
     // here on its own successful commit and attaches ITS new id.
     editingLabelId=result.usedId;
     renderSaved();
-    if(btn){btn.textContent='✅ Saved!';btn.style.background='#ECFDF5';btn.style.borderColor='var(--teal)';}
+    if(btn){
+      // Matches the notice beneath it: an unchecked label is a draft.
+      const _draft=!SdsDocCheck.isVerified(_sdsDocRecord());
+      btn.textContent=_draft?'✎ Draft saved':'✅ Label saved';
+      btn.style.background=_draft?'#FFFBEB':'#ECFDF5';btn.style.borderColor=_draft?'#FDE68A':'var(--teal)';
+    }
     showSaveStatus();
     setTimeout(()=>{if(btn){btn.textContent='💾 Save to my label library';btn.style.background='';btn.style.borderColor='';}},2000);
   }catch(err){
@@ -3127,7 +3143,7 @@ function loadLabelRecord(e){
   set('scent-name',e.scentName);set('product-type',e.productType);set('h-statements',e.hStatements||'');set('p-statements',e.pStatements||'');
   set('biz-name',e.bizName||'');set('biz-address',e.bizAddress||'');set('biz-phone',e.bizPhone||'');
   set('biz-website',e.bizWebsite||'');set('net-weight',e.netWeight||'');set('frag-load',e.fragLoad||'');set('burn-time',e.burnTime||'');
-  {const _d=e.sdsDoc||{};document.querySelectorAll('input[name="sds-doc-kind"]').forEach(r=>{r.checked=r.value===(_d.kind||'');});set('sds-doc-pct',_d.pct||'');set('sds-doc-base',_d.base||'');if(typeof updateSdsDocCheck==='function')updateSdsDocCheck();}
+  {const _d=e.sdsDoc||{};document.querySelectorAll('input[name="sds-doc-kind"]').forEach(r=>{r.checked=r.value===(_d.kind||'');});set('sds-doc-pct',_d.pct||'');set('sds-doc-base',_d.base||'');set('sds-doc-supplier',_d.supplier||'');set('sds-doc-cdate',_d.cdate||'');set('sds-doc-cref',_d.cref||'');if(typeof updateSdsDocCheck==='function')updateSdsDocCheck();}
   set('batch-num',e.batchNum||'');set('custom-w',e.customW||'');set('custom-h',e.customH||'');
   const hideCandleWarnings=document.getElementById('hide-en15494');
   if(hideCandleWarnings)hideCandleWarnings.checked=S.hideEN15494;
@@ -3752,7 +3768,13 @@ const SDS_DOC_BASE_BY_TYPE=SdsDocCheck.GROUP_BY_TYPE;
 function _parseFragPct(value){return SdsDocCheck.parsePct(value);}
 function _sdsDocState(){
   const kind=(document.querySelector('input[name="sds-doc-kind"]:checked')||{}).value||'';
-  return {kind, pct:document.getElementById('sds-doc-pct')?.value||'', base:document.getElementById('sds-doc-base')?.value||''};
+  const st={kind, pct:document.getElementById('sds-doc-pct')?.value||'', base:document.getElementById('sds-doc-base')?.value||''};
+  if(kind==='supplier-confirmed'){
+    st.supplier=document.getElementById('sds-doc-supplier')?.value||'';
+    st.cdate=document.getElementById('sds-doc-cdate')?.value||'';
+    st.cref=document.getElementById('sds-doc-cref')?.value||'';
+  }
+  return st;
 }
 // Current label as SdsDocCheck sees it (form values first, as on screen).
 function _sdsDocRecord(){
@@ -3773,9 +3795,19 @@ function _stampSdsDocConfirmation(){
   S.sdsDoc=Object.assign({},_sdsDocState(),{confirmed:SdsDocCheck.confirmationFor(rec)});
 }
 function updateSdsDocCheck(){
+  const _cr=document.getElementById('sds-doc-kind-confirmed-row');
+  if(_cr&&!SdsDocCheck.SUPPLIER_CONFIRMATION_ACCEPTED)_cr.style.display='none';
   const d=_sdsDocState();
   const f=document.getElementById('sds-doc-finished-fields');
-  if(f)f.style.display=d.kind==='finished'?'grid':'none';
+  const _conf=d.kind==='supplier-confirmed';
+  if(f)f.style.display=(d.kind==='finished'||_conf)?'grid':'none';
+  const cf=document.getElementById('sds-doc-confirm-fields');
+  if(cf)cf.style.display=_conf?'grid':'none';
+  const pl=document.getElementById('sds-doc-pct-label'), bl=document.getElementById('sds-doc-base-label');
+  if(pl)pl.textContent=_conf?'Percentage your supplier confirmed in writing':'Fragrance % the document states';
+  if(bl)bl.textContent=_conf?'Product your supplier confirmed':'Product the document covers';
+  const ph=document.getElementById('sds-doc-pct-help');
+  if(ph)ph.textContent=_conf?'One figure, exactly as written in the confirmation.':'One figure, exactly as written on the document.';
   const r=evaluateSdsDoc();
   const out=document.getElementById('sds-doc-result');
   if(out){
@@ -3785,7 +3817,7 @@ function updateSdsDocCheck(){
     out.dataset.status=r.code;
     out.style.color=r.ok?'#166534':(r.message.startsWith('⛔')?'#991B1B':'var(--muted)');
   }
-  S.sdsDoc={kind:d.kind,pct:d.pct,base:d.base,confirmed:S.sdsDoc&&S.sdsDoc.confirmed||null};
+  S.sdsDoc=Object.assign({},d,{confirmed:S.sdsDoc&&S.sdsDoc.confirmed||null});
   if(typeof toggleHazardNext==='function')toggleHazardNext();
   return r.ok;
 }

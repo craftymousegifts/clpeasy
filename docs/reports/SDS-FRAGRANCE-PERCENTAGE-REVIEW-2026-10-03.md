@@ -121,28 +121,66 @@ information for this fragrance in your [product]".
   - It tells the maker that CLPeasy compares this figure exactly and never rounds to make a match.
   - Exact values (180 g + 20 g → 10%) are shown without the rounding note.
 - **9.0909% (calculated) against a document stating 9.1%.**
-  - **What CLPeasy does:** these are different numbers, so the check is blocked. No tolerance is
-    applied, and none has been invented.
+  - **What CLPeasy does:** these are different numbers, so a document stating 9.1% is blocked for a
+    9.0909% product. No tolerance is applied, and none has been invented.
   - **What the maker sees:** because 9.0909 rounds to 9.1 at the document's precision, the message
-    adds that the difference may only be rounding. It then says CLPeasy does not round or apply a
-    tolerance, and asks the maker to get the supplier's written confirmation that the information
-    covers 9.0909%, or information stating 9.0909%.
+    says the difference may only be rounding, and that whether the document applies is for the
+    supplier to say. It points to the written-confirmation route below, or to asking for
+    information stating 9.0909%.
   - **No tolerance:** the rounding check only chooses the wording. It never accepts a mismatch.
-  - **The maker's options:**
-    - weigh the formulation to the document's stated %, then recalculate;
-    - or get the supplier's confirmation or information for their exact %.
-- **Range or "up to" documents** ("8–10%", "up to 10%", "max 10%") are blocked while this owner
-  decision is open.
-  - **Two separate cases:**
-    - **Range ("doc-pct-range"):** the supplier *explicitly* states coverage across a range.
-    - **Lower ("lower"):** the maker *assumes* that a document for a higher % covers their lower %.
-  - **What the maker is told:**
-    - **Range:** if the supplier has explicitly confirmed coverage for their % in their product, ask
-      the supplier for GB CLP information stating that % and enter it.
-    - **Lower:** "A document for a higher percentage is not assumed to cover a lower one."
-  - **No acknowledgement or override** bypasses either case.
-  - **Possible future decision for you:** whether an explicit supplier statement of range coverage
-    should be accepted (and how it would be recorded). Until then it stays blocked.
+  - **No formulation advice.** CLPeasy does not suggest changing a formulation to satisfy its
+    matching rule. All guidance is about getting applicable supplier information.
+- **Range or "up to" documents** ("8–10%", "up to 10%", "max 10%") are not accepted as a document
+  percentage. CLPeasy does not interpret whether a range covers the product; that is for the
+  supplier.
+- **Explicit supplier coverage vs the maker's assumption:**
+  - **The maker's assumption** (for example "my 10% document covers my 8%") is always blocked as a
+    lower/higher mismatch. "A document for a higher percentage is not assumed to cover a lower
+    one."
+  - **Explicit supplier coverage** is recorded through the separate Step 3 answer described below.
+  - **No acknowledgement or override** turns an assumption into acceptance.
+
+### Written supplier confirmation (prepared; owner decision before release)
+**When the maker uses it:** after a supplier confirms in writing, for example by email, that their
+GB CLP information applies to the maker's product at the maker's exact percentage. The maker then
+chooses this Step 3 answer: "My supplier has confirmed in writing (for example by email) that their
+GB CLP information applies to my product at the exact percentage I use".
+
+**What the maker records:**
+| Field | Rule |
+|---|---|
+| Percentage your supplier confirmed in writing | A single number, **exactly** equal to the maker's %. 9.1 is not 9.0909, and "up to 10%" is not a confirmation |
+| Product your supplier confirmed | Must cover the maker's product group (candles and wax melts are separate, as before) |
+| Supplier who confirmed it | Required |
+| Date of the written confirmation | Required; a real date, not in the future |
+| Supplier document it refers to | Title or reference; required, so the maker can find it again |
+
+**After recording it:**
+- **Message:** "Your answers are consistent: you have recorded written confirmation from [supplier]
+  ([date])… CLPeasy can't see or check that confirmation, so keep it with your records".
+- **Next step:** the maker pastes the Section 2.2 from the document the confirmation refers to.
+- **Saved with the label:** the record is saved and restored like the other answers, and is part
+  of what the export confirmation is tied to. Changing any field means going through Step 3 again.
+
+**What it does *not* do:**
+- It never accepts a different or rounded %.
+- It never accepts a range or a higher-% document by itself.
+- The supplier must have named the maker's exact % and product.
+
+**Owner switch:** `SUPPLIER_CONFIRMATION_ACCEPTED` in `sds-doc-check.js`. It is `true` on this
+branch so you can review the journey on the Test preview. If you decide not to accept written
+confirmations, set it to `false`, and then:
+- the Step 3 answer is hidden, and a saved one is not accepted;
+- the rounding and range messages say only "ask your supplier for GB CLP information stating
+  X%", so no message gives an instruction the form can't support.
+
+Both settings are tested.
+
+**Decision needed:** whether a supplier's written statement is enough evidence for CLPeasy's policy.
+It is the same evidence standard as a finished-product document (the supplier states the maker's
+exact %). But it can't be seen by CLPeasy, and it has not been checked by a legal adviser. If you
+want advice first, set the switch to `false` for release; the rest of the branch does not depend on
+it.
 
 ### Confirmation and export (owner decision 2)
 1. **When the check is confirmed.** It is confirmed only when the maker successfully leaves Step 3
@@ -163,7 +201,9 @@ information for this fragrance in your [product]".
 - **Saving still works.** An unchecked label can be saved: through "Save Progress" (every step) and
   the Step 5 "Save to my label library" button. The Step 5 button keeps its previous conditions,
   but no longer needs the document check.
-- **The saved message says "draft".** When the check is not complete it reads "Saved as a draft:
+- **The saved message says "draft".** The Save button itself confirms "✎ Draft saved" for an
+  unchecked label and "✅ Label saved" for a checked one, matching the notice beneath it.
+- **Notice wording:** When the check is not complete it reads "Saved as a draft:
   not ready to download yet", with what to do next, in an amber notice. A checked label shows the
   usual green "Label saved".
 - **My Labels** marks unchecked labels "Draft: document check needed". The Composer's saved-label
@@ -272,6 +312,10 @@ The Test build includes `sds-doc-check.js` (byte-identical to the repo copy).
 - **Local storage only.** The confirmation is stored with the label in the browser, like My Labels.
   Clearing browser data loses it along with the label.
 - **Smart Paste** still extracts from Section 2.2 text, and the maker must still review the result.
+- **Separate, pre-existing (not fixed here):** the general rule that stacks `.form-row` fields on
+  phones is placed before the desktop rule in `builder.html`'s CSS, so it never applies. Only the
+  fragrance-% row is fixed on this branch (it now stacks at 600 px and below); other two-column
+  rows are unchanged.
 - **Not legally verified.** The implementation applies CLPeasy's evidence policy. It has not been
   legally verified, and consistent answers do not prove that a supplier document is suitable.
 - **Separate, pre-existing (not in this branch):** on the deployed sites (including production),
