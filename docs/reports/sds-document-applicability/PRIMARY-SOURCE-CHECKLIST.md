@@ -78,6 +78,29 @@ The sources support classifying the specific mixture and variable thresholds. Th
 CLPeasy's particular matching rule, and they do not prohibit other approaches. These remain owner
 decisions.
 
+## Update 2: classification guidance (ChatGPT workstream, 3 Oct 2026)
+These pages were also opened by the ChatGPT workstream, not from this environment (retried here:
+still blocked).
+
+| Source | Reported point |
+|---|---|
+| [HSE: How does classification work?](https://www.hse.gov.uk/chemical-classification/classification/how-does-classification-work.htm) | HSE directs GB businesses to the ECHA classification guidance |
+| [ECHA poison centres: identify available information](https://poisoncentres.echa.europa.eu/web/guest/support/mixture-classification/identify-available-information) | Supplier SDSs and other supplier safety information are recognised information sources |
+| [ECHA: examine available information](https://echa.europa.eu/en/support/mixture-classification/examine-available-information) | Information must be examined for relevance, reliability and sufficiency |
+
+**Effect:**
+- These support basing CLPeasy's policy on **actual supplier coverage** of the product and
+  percentage, rather than identical digits.
+- They do **not** establish:
+  - the exact-match rule;
+  - the rejection of explicit supplier ranges;
+  - any numerical tolerance;
+  - acceptance of "up to" wording;
+  - the adequacy of written confirmations.
+
+The proposed rule and its remaining assumptions are in `PROPOSED-ACCEPTANCE-RULE.md`. Claims 1–7
+above are unchanged in status.
+
 ## Secondary evidence already recorded
 Search-result summaries consistent with points 1–6 are summarised in
 `docs/reports/SDS-FRAGRANCE-PERCENTAGE-REVIEW-2026-10-03.md` (section A). They are not a substitute

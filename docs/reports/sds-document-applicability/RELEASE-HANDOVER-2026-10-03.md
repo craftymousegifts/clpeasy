@@ -56,6 +56,11 @@ Detailed design and evidence: `docs/reports/SDS-FRAGRANCE-PERCENTAGE-REVIEW-2026
   `false` before release.** Nothing else depends on it.
 
 ## 2. Range-coverage decision (unresolved)
+> **Update (3 Oct 2026):** a proposed acceptance rule based on explicit supplier coverage is in
+> `PROPOSED-ACCEPTANCE-RULE.md`. It covers an exact %, explicit ranges, and written clarification.
+> Decisions D1–D4 are listed there. It is **not implemented**; the description below is still the
+> behaviour of `d6b9c54`.
+
 - **What CLPeasy does now:** a document stating a range or "up to" % ("8–10%", "up to 10%", "max
   10%") is **not accepted** as a document percentage (`doc-pct-range`). CLPeasy does not decide
   whether a range covers a product.
