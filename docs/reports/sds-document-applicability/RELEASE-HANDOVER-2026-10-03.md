@@ -6,7 +6,18 @@
 
 Detailed design and evidence: `docs/reports/SDS-FRAGRANCE-PERCENTAGE-REVIEW-2026-10-03.md`.
 
-## Identifiers
+## Current state (latest, supersedes the identifiers below)
+| Item | Value |
+|---|---|
+| Code under review | `f885ef9`: D1–D4 supplier-coverage rules on top of `d6b9c54` |
+| Test preview | v29, deploy `6ac1547945051f1eb6f6fd5b` (built from `f885ef9`). Served `sds-doc-check.js` and `label-render.js` byte-identical; shared script on Builder, Composer and My Labels |
+| Full suite at `f885ef9` | 74/79. The only failures are the 5 known baseline ones. Builder Safety Baseline PASS; homepage templates unchanged |
+| Focused tests | `sds-document-applicability` 12 groups; `sds-document-composer-gate`; `sds-document-recovery-journey` 8 groups (real Chromium; includes the range and written-confirmation round trips) |
+| Preview browser QA | 49 checks PASS at 360, 390 and 1366 px plus the Composer (`preview-browser-qa.js`) |
+| Production | unchanged: `main` `4bc3e9a`, deploy `6ac14342948ac900080a6c9c` (also the rollback point) |
+| Signed-in journey | still **blocked** (network policy; no Test login) |
+
+## Identifiers (as of `d6b9c54`)
 | Item | Value |
 |---|---|
 | Branch | `fix/sds-document-applicability` |
