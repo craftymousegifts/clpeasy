@@ -248,6 +248,9 @@ function rectOf(svg){
       // (3 Oct 2026) "Genuinely unblocked" now includes the supplier-document
       // confirmation: a real product type and %, answered and confirmed by
       // the production code path (see tests/helpers/sds-doc-answer.js).
+      document.getElementById('scent-name').value='Guard QA';
+      document.getElementById('biz-name').value='Test Maker';
+      document.getElementById('biz-address').value='Duns';
       document.getElementById('product-type').value = 'Scented Candle';
       document.getElementById('frag-load').value = '10%';
       window.eval("readForm();");

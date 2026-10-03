@@ -98,7 +98,7 @@ const emptyQuery = {
     // ── Shared renderer: renderLabel() end-to-end ───────────────────────
     const baseLabel = {
       shape:'circle', size:63.5,
-      scentName:'Test Scent', productType:'Wax Melt', bizName:'Test Biz',
+      scentName:'Test Scent', productType:'Wax Melt', bizName:'Test Biz', bizAddress:'Duns',
       signal:'Warning', hStatements:'H317', pStatements:'P280',
       sensitisers:['Linalool'], pictograms:['exclamation'],
     };
@@ -390,7 +390,7 @@ const emptyQuery = {
     const p280LabelValid = {
       scentName:'Lavender Fields', productType:'Wax Melt', bizName:'Crafty Mouse Gifts',
       shape:'circle', size:'custom', customW:75, customH:75,
-      bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'',
+      bizAddress:'Duns', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'',
       signal:'Warning', hStatements:'H317', pStatements:'P280', p280Items:['gloves','eye'],
       sensitisers:['Linalool'], pictograms:['exclamation'], textColour:'dark', showBorder:true,
       hideEN15494:false, labelLang:'en',

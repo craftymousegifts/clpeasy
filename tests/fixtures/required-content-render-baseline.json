@@ -1,0 +1,167 @@
+{
+ "complete-control|circle 75x75": {
+  "sha256": "f8dd5fd5d1e24242356fbdd859025fab5c89a6d9d911696ae17b3b007f0fe7c5",
+  "fits": true,
+  "warnings": []
+ },
+ "complete-control|square 63x63": {
+  "sha256": "2ad6819756a78f3840394e4301bcddb30d180107e5c48557f49034f25adad65d",
+  "fits": true,
+  "warnings": []
+ },
+ "complete-control|rectangle 80x100": {
+  "sha256": "4d35a3fb5694c81a1a7fe4818d909c7517a7e03324b241156d09727da0a62cee",
+  "fits": true,
+  "warnings": []
+ },
+ "complete-no-euh208|circle 75x75": {
+  "sha256": "340bd5ea098388a66b1e5cabe703b0a0a1e085b7770e523a2ee02273a016d7f2",
+  "fits": true,
+  "warnings": []
+ },
+ "complete-no-euh208|square 63x63": {
+  "sha256": "6f644ae76de869562832893c7b372c72e1bfe6ba332e262828e2756a5cef4f18",
+  "fits": true,
+  "warnings": []
+ },
+ "complete-no-euh208|rectangle 80x100": {
+  "sha256": "b6134562e156240582be9d679826d5dc035515539e21d0b004213bcb5bf1ddca",
+  "fits": true,
+  "warnings": []
+ },
+ "empty-business-name|circle 75x75": {
+  "sha256": "9d6ed13180c2b417dc40987e9700c9c76026e85b753b04eadeb4f0e0ecdb7cd6",
+  "fits": true,
+  "warnings": []
+ },
+ "empty-business-name|square 63x63": {
+  "sha256": "5c4f4f8c2810dc63b052b7c35b708f8d53af6e77d6fef595e9d0bd66a4650be2",
+  "fits": true,
+  "warnings": []
+ },
+ "empty-business-name|rectangle 80x100": {
+  "sha256": "2428c61f92e532a8be0012240e40ec0ada7255e58dace793e63c94eb868d4e67",
+  "fits": true,
+  "warnings": []
+ },
+ "whitespace-business-name|circle 75x75": {
+  "sha256": "07a5f0e246b2512e5ce1256a4248129727c830f185761f7fa23eb2ab58789437",
+  "fits": true,
+  "warnings": []
+ },
+ "whitespace-business-name|square 63x63": {
+  "sha256": "208752019544c364b2f692884c128fda9280c4ec2e44b50875acd631dd12b996",
+  "fits": true,
+  "warnings": []
+ },
+ "whitespace-business-name|rectangle 80x100": {
+  "sha256": "04971d9a685327d4c029feab1e19d1ea6447a25fad912407dcfd6ed07fef01aa",
+  "fits": true,
+  "warnings": []
+ },
+ "undefined-business-name|circle 75x75": {
+  "sha256": "9d6ed13180c2b417dc40987e9700c9c76026e85b753b04eadeb4f0e0ecdb7cd6",
+  "fits": true,
+  "warnings": []
+ },
+ "undefined-business-name|square 63x63": {
+  "sha256": "5c4f4f8c2810dc63b052b7c35b708f8d53af6e77d6fef595e9d0bd66a4650be2",
+  "fits": true,
+  "warnings": []
+ },
+ "undefined-business-name|rectangle 80x100": {
+  "sha256": "2428c61f92e532a8be0012240e40ec0ada7255e58dace793e63c94eb868d4e67",
+  "fits": true,
+  "warnings": []
+ },
+ "empty-product-name|circle 75x75": {
+  "sha256": "a564d36b01491a1fb8dff8735562e559c9586f7e4f7e7988098f430606c22da8",
+  "fits": true,
+  "warnings": []
+ },
+ "empty-product-name|square 63x63": {
+  "sha256": "b0de3d0b3af708895c188b603da6e45436633a8bea203f45bb67a5ec4dcde052",
+  "fits": true,
+  "warnings": []
+ },
+ "empty-product-name|rectangle 80x100": {
+  "sha256": "48f8bffec5de66d3773fbb0ef0fc4a0aa5a60353e6c8ca52341ee39e9119164e",
+  "fits": true,
+  "warnings": []
+ },
+ "whitespace-product-name|circle 75x75": {
+  "sha256": "d6f04738f084b6d925113a988513fa37797b7f95fc58b787856959856c3ce4aa",
+  "fits": true,
+  "warnings": []
+ },
+ "whitespace-product-name|square 63x63": {
+  "sha256": "e37a4542a9e725914b90c515df49c2b909c79a38683a33cd50588eccb0cdace2",
+  "fits": true,
+  "warnings": []
+ },
+ "whitespace-product-name|rectangle 80x100": {
+  "sha256": "81007969842ad52777e9818f5ba558ec2ced7c8f035102345d0af1ec2f262a43",
+  "fits": true,
+  "warnings": []
+ },
+ "euh208-no-names|circle 75x75": {
+  "sha256": "63a7ad7b7661c078ba607e2b3d0bbfe6cbe7d375740365e2a256993a7ed80df0",
+  "fits": true,
+  "warnings": []
+ },
+ "euh208-no-names|square 63x63": {
+  "sha256": "07b3f1aed9729fc992754ddfabc6d26381e8d6fab31eeca0c3f557acf7c52cd0",
+  "fits": true,
+  "warnings": []
+ },
+ "euh208-no-names|rectangle 80x100": {
+  "sha256": "755ee0588e6197e2cf0334c993a8b637e925b0919c364aefbdbeab5c67da1f00",
+  "fits": true,
+  "warnings": []
+ },
+ "euh208-blank-names|circle 75x75": {
+  "sha256": "6ccc52bb0444bc19072772ddc25aa632591be234b10322f464aa86368e862a46",
+  "fits": true,
+  "warnings": []
+ },
+ "euh208-blank-names|square 63x63": {
+  "sha256": "c0ae6528c35650d743375659739a02553c4cf95fa080b3516e370e4529471116",
+  "fits": true,
+  "warnings": []
+ },
+ "euh208-blank-names|rectangle 80x100": {
+  "sha256": "97e619a2d483a07e0a4ccf28341ea9d1e472d24831cbdae0c40b92a21d4b27a3",
+  "fits": true,
+  "warnings": []
+ },
+ "euh208-valid-names|circle 75x75": {
+  "sha256": "4901ac8c3e5f61a5a98bfa0cf437c7e53e68e5d082b3ab68bbbbbef9d95cfab8",
+  "fits": true,
+  "warnings": []
+ },
+ "euh208-valid-names|square 63x63": {
+  "sha256": "5837ab79cc46e3dc166e1cb5a32da0c15a38c7fd338a07008a7520d3151f2864",
+  "fits": true,
+  "warnings": []
+ },
+ "euh208-valid-names|rectangle 80x100": {
+  "sha256": "030ef9556c00103a3c941bd9fba9b2fd4719fb3ba4e30d0a503ae8b9a0def9af",
+  "fits": true,
+  "warnings": []
+ },
+ "everything-missing|circle 75x75": {
+  "sha256": "43bd5996c2fe1e4dd91a2c64785e43a86a3814ef162347e7ce36909dd23be46b",
+  "fits": true,
+  "warnings": []
+ },
+ "everything-missing|square 63x63": {
+  "sha256": "ac10c0537a09fb5ac08abd2ef9ded79d84913e159d67888ec886cfe7bf9f6dca",
+  "fits": true,
+  "warnings": []
+ },
+ "everything-missing|rectangle 80x100": {
+  "sha256": "d9c30abcda962b9b6d80859b4ccd500d1439caee15d20dfcb662b8317cd9b5df",
+  "fits": true,
+  "warnings": []
+ }
+}

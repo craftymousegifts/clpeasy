@@ -36,7 +36,7 @@ const emptyQuery = {
 const labelLavender = {
   scentName:'Lavender Candle', productType:'Scented Candle', signal:'WARNING',
   shape:'rectangle', size:'custom', customW:99.1, customH:57.3,
-  bizName:'Test Biz', hStatements:'H315,H319',
+  bizName:'Test Biz', bizAddress:'Duns', hStatements:'H315,H319',
   pStatements:'P302+P352,P305+P351+P338',
   sensitisers:['Linalool','Limonene'],
   pictograms:['exclamation']
@@ -52,14 +52,14 @@ const labelLavender = {
 const labelVanilla = {
   scentName:'Vanilla Candle', productType:'Scented Candle', signal:'WARNING',
   shape:'rectangle', size:'custom', customW:99.1, customH:57.3,
-  bizName:'Test Biz', hStatements:'H317,H411,H315',
+  bizName:'Test Biz', bizAddress:'Duns', hStatements:'H317,H411,H315',
   pStatements:'P302+P352,P333+P313,P305+P351+P338,P273,P280',
   p280Items:['gloves','eye'],
   sensitisers:['Linalool','Limonene','Citral','Geraniol','Eugenol','Coumarin'],
   pictograms:['exclamation','aquatic']
 };
-const labelWrongShape = { scentName:'Rose Candle', productType:'Scented Candle', signal:'WARNING', shape:'circle', size:63.5, bizName:'Test Biz', hStatements:'H315', pStatements:'', sensitisers:[], pictograms:['exclamation'] };
-const labelWrongSize = { scentName:'Cinnamon Wax Melt', productType:'Wax Melt', signal:'WARNING', shape:'rectangle', size:'custom', customW:70, customH:68, bizName:'Test Biz', hStatements:'H315', pStatements:'', sensitisers:[], pictograms:['exclamation'] };
+const labelWrongShape = { scentName:'Rose Candle', productType:'Scented Candle', signal:'WARNING', shape:'circle', size:63.5, bizName:'Test Biz', bizAddress:'Duns', hStatements:'H315', pStatements:'', sensitisers:[], pictograms:['exclamation'] };
+const labelWrongSize = { scentName:'Cinnamon Wax Melt', productType:'Wax Melt', signal:'WARNING', shape:'rectangle', size:'custom', customW:70, customH:68, bizName:'Test Biz', bizAddress:'Duns', hStatements:'H315', pStatements:'', sensitisers:[], pictograms:['exclamation'] };
 // Sept 2026 correction (genuine 1.2mm mandatory-text floor): added for the
 // "PDF export stays true A4" check further below only. Lavender/Vanilla
 // (the real 29 Aug 2026 dense stress-case content) no longer fit
@@ -71,7 +71,7 @@ const labelWrongSize = { scentName:'Cinnamon Wax Melt', productType:'Wax Melt', 
 // directly against the corrected renderer to fit 99.1x57.3mm with zero
 // warnings, used only to swap onto the sheet immediately before the
 // PDF/A4 geometry check.
-const labelSimple = { scentName:'Rosemary Candle', productType:'Scented Candle', signal:'WARNING', shape:'rectangle', size:'custom', customW:99.1, customH:57.3, bizName:'Test Biz', hStatements:'H315', pStatements:'P273', sensitisers:[], pictograms:['exclamation'] };
+const labelSimple = { scentName:'Rosemary Candle', productType:'Scented Candle', signal:'WARNING', shape:'rectangle', size:'custom', customW:99.1, customH:57.3, bizName:'Test Biz', bizAddress:'Duns', hStatements:'H315', pStatements:'P273', sensitisers:[], pictograms:['exclamation'] };
 
 const dom = new JSDOM(source, {
   url: 'https://local.clpeasy.test/print.html',

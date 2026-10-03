@@ -52,7 +52,7 @@ const emptyQuery = {
 const fitsA = {
   scentName:'Lavender Fields', productType:'Wax Melt', bizName:'Crafty Mouse Gifts',
   shape:'circle', size:'custom', customW:52, customH:52,
-  bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'',
+  bizAddress:'Duns', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'',
   signal:'Warning', hStatements:'H315', pStatements:'P273',
   sensitisers:[], pictograms:['exclamation'], textColour:'dark', showBorder:true,
   hideEN15494:false, labelLang:'en',
@@ -157,6 +157,8 @@ const document = window.document;
 
 setTimeout(async () => {
   try {
+    // Wait for the real auth/library initialization; a fixed 50ms races under load.
+    await window.eval('initComposerLibrary()');
     // Force Pro status on so the pre-existing, unrelated subscription gate
     // can't mask what this test is actually checking (the fit-block).
     window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active',subscription_status:'active',trial_end:null,downloads_used:0,downloads_limit:30,topup_credits:0},error:null});}}),rpc:()=>Promise.resolve({data:{ok:true,consumed:true,free_redownload:false,source:'plan',clean_export:true},error:null})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
