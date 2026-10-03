@@ -538,13 +538,16 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .btn-dl-svg:active,.btn-dl-svg:hover{background:var(--off);}
 .cricut-note{font-size:11px;color:var(--muted);text-align:center;}
 
+.sds-help{margin:8px 0 14px;font-size:12px;line-height:1.5;color:var(--muted);}
+.sds-help summary{cursor:pointer;color:var(--teal-dark);font-weight:600;padding:8px 0;}
+#sds-doc-result{scroll-margin:100px 0;padding:8px 0;}
 /* MOBILE PREVIEW SHEET */
 .mobile-preview-btn{display:none;background:var(--teal);color:white;border:0;padding:11px 16px;border-radius:999px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;-webkit-tap-highlight-color:transparent;box-shadow:0 8px 24px rgba(12,137,155,.28);}
 @media(max-width:860px){
   .builder-accordion-body{max-height:none;overflow:visible;padding-right:0;padding-bottom:76px;}
   .right-column{display:none;}
   .compliance-card{margin-top:18px;}
-  .mobile-preview-btn{display:flex;position:fixed;right:16px;bottom:84px;z-index:250;align-items:center;gap:7px;}
+  .mobile-preview-btn{display:flex;position:static;margin:12px 16px 12px auto;align-items:center;gap:7px;}
   /* Sticky-within-scroll-container (desktop) can't work once the form's
      own overflow is set to visible above, so Back/Continue instead become
      a true fixed bottom bar on mobile -- otherwise they'd need a scroll to
@@ -1216,13 +1219,20 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
          because the .sds-gb-note below now covers the same point. This is an
          information note, not a confirmation gate -- #hazard-confirm-block
          (unchanged) remains the mandatory "I confirm..." checkbox. -->
+    <div class="smart-paste-box">
+      <h4>✨ Smart Paste — paste SDS Section 2.2</h4>
+      <p>Copy the complete Section 2.2 (Label elements) from your current supplier SDS PDF and paste it here. CLPeasy extracts the information it can identify; review the result against your SDS before continuing.</p>
+      <textarea id="smart-paste-input" placeholder="Paste SDS Section 2.2 text here..."></textarea>
+      <br><br><button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
+      <button type="button" id="hazard-clear-link" onclick="clearHazardData()" style="display:none;margin-left:14px;font-size:12px;color:var(--teal-dark);text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">Clear hazard data and start again</button>
+    </div>
     <fieldset id="sds-doc-check" class="sds-doc-check" style="border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin:0 0 14px;background:var(--off);">
-      <legend style="font-size:13px;font-weight:700;padding:0 4px;">Check your supplier document first</legend>
-      <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:8px;">Hazards depend on the percentage and on what the product is made with, and they don't scale in simple proportion. CLPeasy records supplier information that your supplier says covers your type of product at the fragrance percentage you use; if yours doesn't, ask your supplier.</div>
+      <legend style="font-size:13px;font-weight:700;padding:0 4px;">Supplier document coverage</legend>
+      <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:8px;">Before downloading, check that this supplier information covers your product and fragrance percentage. You can paste and review Section 2.2 first.</div>
       <div style="font-size:12.5px;font-weight:600;margin-bottom:4px;">What does your supplier document describe?</div>
-      <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:4px;"><input type="radio" name="sds-doc-kind" value="finished" onchange="updateSdsDocCheck()" style="margin-top:2px;"> A finished product made with this fragrance, at a stated percentage or range (for example a CLP document for "candle at 10%" or "candles, valid for 6–10%")</label>
-      <label id="sds-doc-kind-confirmed-row" style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:4px;"><input type="radio" name="sds-doc-kind" value="supplier-confirmed" onchange="updateSdsDocCheck()" style="margin-top:2px;"> My supplier has confirmed in writing (for example by email) which finished-product hazard information applies to my product at the percentage I use</label>
-      <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:4px;"><input type="radio" name="sds-doc-kind" value="concentrate" onchange="updateSdsDocCheck()" style="margin-top:2px;"> The fragrance oil on its own (an SDS for the concentrated oil, 100%)</label>
+      <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:4px;"><input type="radio" name="sds-doc-kind" value="finished" onchange="updateSdsDocCheck()" style="margin-top:2px;"> Finished-product CLP information (one percentage or a stated range)</label>
+      <label id="sds-doc-kind-confirmed-row" style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:4px;"><input type="radio" name="sds-doc-kind" value="supplier-confirmed" onchange="updateSdsDocCheck()" style="margin-top:2px;"> Written supplier confirmation for my product and percentage</label>
+      <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:4px;"><input type="radio" name="sds-doc-kind" value="concentrate" onchange="updateSdsDocCheck()" style="margin-top:2px;"> Concentrated fragrance oil (100%)</label>
       <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:8px;"><input type="radio" name="sds-doc-kind" value="unsure" onchange="updateSdsDocCheck()" style="margin-top:2px;"> I'm not sure</label>
       <div id="sds-doc-finished-fields" style="display:none;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:6px;">
         <div id="sds-doc-coverage-wrap" style="grid-column:1/-1;"><label for="sds-doc-coverage" style="font-size:12px;">How does the document state the percentage it covers?</label><select id="sds-doc-coverage" onchange="updateSdsDocCheck()"><option value="single" selected>One percentage</option><option value="range">A range (from – to)</option></select></div>
@@ -1233,7 +1243,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         <div><label for="sds-doc-from" style="font-size:12px;">From (%)</label><input type="text" id="sds-doc-from" placeholder="e.g. 6" inputmode="decimal" oninput="updateSdsDocCheck()"></div>
         <div><label for="sds-doc-to" style="font-size:12px;">To (%)</label><input type="text" id="sds-doc-to" placeholder="e.g. 10" inputmode="decimal" oninput="updateSdsDocCheck()"></div>
         <div style="grid-column:1/-1;"><label for="sds-doc-where" style="font-size:12px;">Where the document states this range (section, page or heading)</label><input type="text" id="sds-doc-where" maxlength="160" autocomplete="off" placeholder="e.g. Page 1, &quot;Valid for fragrance loads&quot;" oninput="updateSdsDocCheck()"></div>
-        <label style="grid-column:1/-1;display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;line-height:1.45;"><input type="checkbox" id="sds-doc-range-stated" onchange="updateSdsDocCheck()" style="margin-top:2px;width:auto;"> The document says its hazard and label information applies throughout this range for my type of product. (Not an ingredient range, such as Section 3 of an oil SDS, and not a recommended usage range.)</label>
+        <label style="grid-column:1/-1;display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;line-height:1.45;"><input type="checkbox" id="sds-doc-range-stated" onchange="updateSdsDocCheck()" style="margin-top:2px;width:auto;"> The supplier states that this label information covers my product throughout this range.</label>
+        <details class="sds-help"><summary>Which ranges count?</summary><p>Use a range explicitly covering finished-product hazard and label information. Ingredient ranges in Section 3, IFRA limits and recommended usage ranges do not establish that coverage.</p></details>
       </div>
       <div id="sds-doc-confirm-fields" style="display:none;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:6px;">
         <div><label for="sds-doc-supplier" style="font-size:12px;">Supplier who confirmed it</label><input type="text" id="sds-doc-supplier" maxlength="120" autocomplete="off" oninput="updateSdsDocCheck()"></div>
@@ -1243,13 +1254,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div id="sds-doc-version-wrap" style="display:none;margin-bottom:6px;"><label for="sds-doc-version" style="font-size:12px;">Document date or version <span style="font-weight:400;color:var(--muted);">(optional, for your records)</span></label><input type="text" id="sds-doc-version" maxlength="80" autocomplete="off" placeholder="e.g. v3, 12/08/2026" oninput="updateSdsDocCheck()"></div>
       <div id="sds-doc-result" role="status" aria-live="polite" style="font-size:12.5px;line-height:1.5;"></div>
     </fieldset>
-    <div class="smart-paste-box">
-      <h4>✨ Smart Paste — paste SDS Section 2.2</h4>
-      <p>Copy the complete Section 2.2 (Label elements) from your current supplier SDS PDF and paste it here. CLPeasy extracts the information it can identify; review the result against your SDS before continuing.</p>
-      <textarea id="smart-paste-input" placeholder="Paste SDS Section 2.2 text here..."></textarea>
-      <br><br><button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
-      <button type="button" id="hazard-clear-link" onclick="clearHazardData()" style="display:none;margin-left:14px;font-size:12px;color:var(--teal-dark);text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">Clear hazard data and start again</button>
-    </div>
+    <details class="sds-help"><summary>About supplier information and GB CLP</summary>
     <aside class="sds-gb-note" aria-label="About supplier SDS information for Great Britain">
       <strong>About your supplier SDS and GB CLP</strong>
       <p>If you place a fragrance mixture on the market in Great Britain (England, Scotland or Wales), you are responsible for checking that the classification and label for your finished product are accurate and meet the applicable GB CLP requirements. Two things to check:</p>
@@ -1260,6 +1265,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <p>Why it matters: an incorrect classification could leave warnings, pictograms or precautions wrong or missing. That can put people or the environment at risk and may lead to enforcement action under GB CLP.</p>
       <p><a href="mailto:support@clpeasy.com?subject=SDS%20classification%20query">Email CLPeasy Support</a> with the SDS and the flagged code. We can investigate what CLPeasy identified and, where appropriate, help you seek clarification from your supplier. <a href="https://www.hse.gov.uk/chemical-classification/legal/clp-regulation.htm" target="_blank" rel="noopener noreferrer">Read the official HSE GB CLP guidance ↗</a></p>
     </aside>
+    </details>
     <div class="sdiv">Signal word</div>
     <div class="signal-row">
       <div class="signal-btn" id="signal-warning" style="cursor:default;">⚠️ Warning</div>
@@ -3840,6 +3846,7 @@ function updateSdsDocCheck(){
     const quiet=!d.kind&&r.code==='kind-missing';
     out.textContent=quiet?'':r.message;
     out.dataset.status=r.code;
+    out.setAttribute('role',r.ok?'status':'alert');
     out.style.color=r.ok?'#166534':(r.message.startsWith('⛔')?'#991B1B':'var(--muted)');
   }
   S.sdsDoc=Object.assign({},d,{confirmed:S.sdsDoc&&S.sdsDoc.confirmed||null});
@@ -3849,7 +3856,15 @@ function updateSdsDocCheck(){
 function _requireSdsDoc(){
   const r=evaluateSdsDoc();
   updateSdsDocCheck();
-  if(!r.ok){alert(r.message.replace(/^[⛔✓]\s*/,''));document.getElementById('sds-doc-check')?.scrollIntoView?.({block:'center'});}
+  if(!r.ok){
+    const fields={'kind-missing':'input[name="sds-doc-kind"]','base-missing':'#sds-doc-base','base-mismatch':'#sds-doc-base','range-missing':'#sds-doc-from','range-not-stated':'#sds-doc-range-stated','range-where-missing':'#sds-doc-where','range-invalid':'#sds-doc-to','doc-pct-missing':'#sds-doc-pct','conf-pct-missing':'#sds-doc-pct','conf-supplier-missing':'#sds-doc-supplier','conf-date-missing':'#sds-doc-cdate','conf-ref-missing':'#sds-doc-cref'};
+    const target=document.querySelector(fields[r.code]||'#sds-doc-result');
+    const out=document.getElementById('sds-doc-result');
+    if(out){out.textContent=r.message;out.setAttribute('tabindex','-1');out.setAttribute('role','alert');}
+    const focusTarget=target&&target.matches('input,select')?target:out;
+    focusTarget?.focus({preventScroll:true});
+    (target||out)?.scrollIntoView?.({block:'center',behavior:'smooth'});
+  }
   return r.ok;
 }
 function extractSDS(){
@@ -3862,7 +3877,8 @@ function extractSDS(){
   // fresh, explicit product-rules confirmation.
   const text=document.getElementById('smart-paste-input').value.trim();
   if(!text){alert('Please paste SDS Section 2.2 text first.');return;}
-  if(!_requireSdsDoc())return;
+  // Extraction lets the maker review the pasted data. Document coverage is
+  // still required at Step 3 exit and by every export gate.
 
   // ── H STATEMENTS ──────────────────────────────────────────────────────────
   const hMatches=[...new Set(text.match(/\bH\d{3}\b/g)||[])];

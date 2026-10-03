@@ -63,6 +63,41 @@ const server = http.createServer((req, res) => {
     return t;
   }
   try {
+    // Mobile usability: paste first, no covered fields, inline guidance, exports remain blocked.
+    for (const width of [360, 390]) {
+      const mobile = await open('builder.html', { width, height: 844 });
+      const result = await mobile.evaluate((SDS) => {
+        document.getElementById('scent-name').value='Paste First';
+        document.getElementById('product-type').value='Scented Candle';onProductTypeChange();
+        document.getElementById('frag-load').value='8';
+        readForm();setApprovedBuilderStep(2);setApprovedBuilderStep(3);
+        document.getElementById('smart-paste-input').value=SDS;extractSDS();
+        const coverage=_requireSdsDoc();
+        return {
+          step:approvedBuilderStep, extracted:S.hStatements, coverage,
+          message:document.getElementById('sds-doc-result').textContent,
+          focus:document.activeElement.name,
+          exportAllowed:_downloadAllowed(),
+          buttonPosition:getComputedStyle(document.querySelector('.mobile-preview-btn')).position,
+          overflow:document.documentElement.scrollWidth>innerWidth,
+          helpCollapsed:[...document.querySelectorAll('.sds-help')].every(e=>!e.open),
+          pasteFirst:!!(document.querySelector('.smart-paste-box').compareDocumentPosition(document.getElementById('sds-doc-check')) & 4)
+        };
+      }, SDS);
+      assert.strictEqual(result.step,3);assert(/H317/.test(result.extracted));
+      assert.strictEqual(result.coverage,false);assert.strictEqual(result.exportAllowed,false);
+      assert(/Choose what your supplier document describes/.test(result.message));
+      assert.strictEqual(result.focus,'sds-doc-kind');assert.strictEqual(result.buttonPosition,'static');
+      assert.strictEqual(result.overflow,false);assert(result.helpCollapsed&&result.pasteFirst);
+      if(process.env.SDS_USABILITY_SCREENSHOTS) {
+        await mobile.evaluate(()=>document.querySelector('.smart-paste-box').scrollIntoView({block:'start'}));
+        await sleep(800);
+        await mobile.screenshot({path:path.join(process.env.SDS_USABILITY_SCREENSHOTS,`step3-${width}.png`)});
+      }
+      await mobile.close();
+    }
+    ok('360/390px: paste before coverage, focused inline guidance, exports blocked, no floating overlap or sideways overflow');
+
     // 1. A real fine-tuned label, then made "older" (no document confirmation).
     const b0 = await open('builder.html');
     const made = await b0.evaluate(async (SDS) => {
