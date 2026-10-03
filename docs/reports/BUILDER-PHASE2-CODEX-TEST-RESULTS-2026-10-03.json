@@ -1,0 +1,434 @@
+{
+  "date": "2026-10-03",
+  "base_main": "6bd9a0077eac27eecd3e027c6f099b8a8eaf1069",
+  "code_commit": "e5477dd24d54240c38bb7116570788bb1b212846",
+  "code_tree": "bb0b86370e96ba7e39dcb5f2368358327a2a8784",
+  "total": 83,
+  "passed": 78,
+  "known_baseline_failures": [
+    "homepage-mobile-nav-signin.js",
+    "lifecycle-reminder-accuracy.js",
+    "payg-download-accounting.js",
+    "pricing-checkout-ux.js",
+    "pricing-signed-in-cta.js"
+  ],
+  "new_failures": [],
+  "runtime": "Node 24 / Chromium 153 / jsdom / Puppeteer",
+  "results": [
+    {
+      "file": "account-checkout-in-progress.js",
+      "code": 0,
+      "seconds": 24.4
+    },
+    {
+      "file": "account-manage-subscription.js",
+      "code": 0,
+      "seconds": 10.8
+    },
+    {
+      "file": "account-next-payment.js",
+      "code": 0,
+      "seconds": 9.0
+    },
+    {
+      "file": "account-trial-expiry.js",
+      "code": 0,
+      "seconds": 6.5
+    },
+    {
+      "file": "app-static-audit.js",
+      "code": 0,
+      "seconds": 4.5
+    },
+    {
+      "file": "auth-mode-routing.js",
+      "code": 0,
+      "seconds": 1.5
+    },
+    {
+      "file": "autumn-homepage-ui.js",
+      "code": 0,
+      "seconds": 1.6
+    },
+    {
+      "file": "blocked-overlay-and-download-guard-parity.js",
+      "code": 0,
+      "seconds": 6.9
+    },
+    {
+      "file": "builder-desktop-scroll-model.js",
+      "code": 0,
+      "seconds": 3.4
+    },
+    {
+      "file": "builder-regression.js",
+      "code": 0,
+      "seconds": 3.9
+    },
+    {
+      "file": "builder-safety-baseline.js",
+      "code": 0,
+      "seconds": 148.0
+    },
+    {
+      "file": "builder-step-navigation-layout.js",
+      "code": 0,
+      "seconds": 2.4
+    },
+    {
+      "file": "checkout-in-progress-notice.js",
+      "code": 0,
+      "seconds": 11.4
+    },
+    {
+      "file": "checkpoint-b-identity-wiring.js",
+      "code": 0,
+      "seconds": 17.9
+    },
+    {
+      "file": "checkpoint-c-composer-identity.js",
+      "code": 0,
+      "seconds": 22.3
+    },
+    {
+      "file": "circle-header-band-layout-fix.js",
+      "code": 0,
+      "seconds": 0.8
+    },
+    {
+      "file": "clp-hero-explanation.js",
+      "code": 0,
+      "seconds": 1.4
+    },
+    {
+      "file": "correction-batch-ghs-asset-framing.js",
+      "code": 0,
+      "seconds": 0.7
+    },
+    {
+      "file": "correction-batch-symbol-sizing.js",
+      "code": 0,
+      "seconds": 0.8
+    },
+    {
+      "file": "correction-batch-ui-and-export-placement.js",
+      "code": 0,
+      "seconds": 3.2
+    },
+    {
+      "file": "custom-rect-grid-geometry.js",
+      "code": 0,
+      "seconds": 2.4
+    },
+    {
+      "file": "custom-size-minimum.js",
+      "code": 0,
+      "seconds": 10.7
+    },
+    {
+      "file": "cutting-machine-tip-layout.js",
+      "code": 0,
+      "seconds": 0.2
+    },
+    {
+      "file": "decorative-labels-renderer-derived.js",
+      "code": 0,
+      "seconds": 1.1
+    },
+    {
+      "file": "download-entitlement-sql.js",
+      "code": 0,
+      "seconds": 0.1
+    },
+    {
+      "file": "euh208-bounded-substance-extraction.js",
+      "code": 0,
+      "seconds": 31.6
+    },
+    {
+      "file": "euh208-horizontal-overflow-fix.js",
+      "code": 0,
+      "seconds": 5.0
+    },
+    {
+      "file": "fail-closed-size-boundaries.js",
+      "code": 0,
+      "seconds": 1.0
+    },
+    {
+      "file": "footer-and-compliance-wording.js",
+      "code": 0,
+      "seconds": 0.2
+    },
+    {
+      "file": "gb-clp-signal-word-resolution.js",
+      "code": 0,
+      "seconds": 7.1
+    },
+    {
+      "file": "gb-legibility-floor-targeted-revert.js",
+      "code": 0,
+      "seconds": 1.1
+    },
+    {
+      "file": "gb-wording-and-mixed-code-correction.js",
+      "code": 0,
+      "seconds": 4.5
+    },
+    {
+      "file": "h316-h401-gb-unsupported-removal.js",
+      "code": 0,
+      "seconds": 3.9
+    },
+    {
+      "file": "hazard-source-integrity.js",
+      "code": 0,
+      "seconds": 5.1
+    },
+    {
+      "file": "homepage-hero-rewrite.js",
+      "code": 0,
+      "seconds": 0.1
+    },
+    {
+      "file": "homepage-mobile-nav-signin.js",
+      "code": 1,
+      "seconds": 0.2
+    },
+    {
+      "file": "label-identity-and-spec.js",
+      "code": 0,
+      "seconds": 1.5
+    },
+    {
+      "file": "label-render-fit-contract.js",
+      "code": 0,
+      "seconds": 0.9
+    },
+    {
+      "file": "lifecycle-label-branding.js",
+      "code": 0,
+      "seconds": 1.7
+    },
+    {
+      "file": "lifecycle-reminder-accuracy.js",
+      "code": 1,
+      "seconds": 0.2
+    },
+    {
+      "file": "lifecycle-tooltip-pin-interaction.js",
+      "code": 0,
+      "seconds": 2.4
+    },
+    {
+      "file": "m03-composer-fine-tune-overrides.js",
+      "code": 0,
+      "seconds": 11.9
+    },
+    {
+      "file": "m10-supplier-address-required.js",
+      "code": 0,
+      "seconds": 16.2
+    },
+    {
+      "file": "m55-bgcolour-validation.js",
+      "code": 0,
+      "seconds": 14.6
+    },
+    {
+      "file": "m56-m57-output-sanitisation.js",
+      "code": 0,
+      "seconds": 0.1
+    },
+    {
+      "file": "p280-precautionary-statement.js",
+      "code": 0,
+      "seconds": 10.4
+    },
+    {
+      "file": "payg-account-display.js",
+      "code": 0,
+      "seconds": 32.1
+    },
+    {
+      "file": "payg-download-accounting.js",
+      "code": 1,
+      "seconds": 0.1
+    },
+    {
+      "file": "payg-immediate-supply-consent.js",
+      "code": 0,
+      "seconds": 0.1
+    },
+    {
+      "file": "payg-pricing-checkout.js",
+      "code": 0,
+      "seconds": 6.3
+    },
+    {
+      "file": "pictogram-parity.js",
+      "code": 0,
+      "seconds": 1.5
+    },
+    {
+      "file": "pictogram-placement-flush-fix.js",
+      "code": 0,
+      "seconds": 1.0
+    },
+    {
+      "file": "plan-checker-decision.js",
+      "code": 0,
+      "seconds": 113.3
+    },
+    {
+      "file": "post-download-print-guidance.js",
+      "code": 0,
+      "seconds": 67.3
+    },
+    {
+      "file": "preview-watermark-and-export-authorization.js",
+      "code": 0,
+      "seconds": 28.6
+    },
+    {
+      "file": "preview-zoom-fit.js",
+      "code": 0,
+      "seconds": 6.6
+    },
+    {
+      "file": "pricing-checkout-ux.js",
+      "code": 1,
+      "seconds": 40.0
+    },
+    {
+      "file": "pricing-signed-in-cta.js",
+      "code": 1,
+      "seconds": 0.1
+    },
+    {
+      "file": "print-sheet-composer-compaction.js",
+      "code": 0,
+      "seconds": 7.6
+    },
+    {
+      "file": "print-sheet-composer.js",
+      "code": 0,
+      "seconds": 3.3
+    },
+    {
+      "file": "print-sheet-export-fidelity.js",
+      "code": 0,
+      "seconds": 7.3
+    },
+    {
+      "file": "print-sheet-fit-blocking.js",
+      "code": 0,
+      "seconds": 12.9
+    },
+    {
+      "file": "print-sheet-mobile-responsive-layout.js",
+      "code": 0,
+      "seconds": 0.1
+    },
+    {
+      "file": "print-sheet-quantity-validation.js",
+      "code": 0,
+      "seconds": 1.8
+    },
+    {
+      "file": "print-sheet-reserved-bounds.js",
+      "code": 0,
+      "seconds": 1.4
+    },
+    {
+      "file": "print-sheet-size-integrity.js",
+      "code": 0,
+      "seconds": 10.5
+    },
+    {
+      "file": "print-sheet-workflow.js",
+      "code": 0,
+      "seconds": 3.0
+    },
+    {
+      "file": "public-nav-consistency.js",
+      "code": 0,
+      "seconds": 0.1
+    },
+    {
+      "file": "renderer-block-reason-messaging.js",
+      "code": 0,
+      "seconds": 3.2
+    },
+    {
+      "file": "renderer-resolution-invariance.js",
+      "code": 0,
+      "seconds": 1.6
+    },
+    {
+      "file": "required-content-export-blocking.js",
+      "code": 0,
+      "seconds": 16.5
+    },
+    {
+      "file": "sds-document-applicability.js",
+      "code": 0,
+      "seconds": 11.4
+    },
+    {
+      "file": "sds-document-composer-gate.js",
+      "code": 0,
+      "seconds": 2.1
+    },
+    {
+      "file": "sds-document-recovery-journey.js",
+      "code": 0,
+      "seconds": 20.5
+    },
+    {
+      "file": "seasonal-particle-resize.js",
+      "code": 0,
+      "seconds": 1.1
+    },
+    {
+      "file": "shared-renderer-integrity.js",
+      "code": 0,
+      "seconds": 0.1
+    },
+    {
+      "file": "site-scroll-accessibility.js",
+      "code": 0,
+      "seconds": 0.1
+    },
+    {
+      "file": "slash-p-code-normalisation.js",
+      "code": 0,
+      "seconds": 3.3
+    },
+    {
+      "file": "smart-paste-user-guidance-wording.js",
+      "code": 0,
+      "seconds": 0.2
+    },
+    {
+      "file": "stage2-print-guidance.js",
+      "code": 0,
+      "seconds": 25.0
+    },
+    {
+      "file": "suffixed-hazard-codes.js",
+      "code": 0,
+      "seconds": 94.5
+    },
+    {
+      "file": "unknown-pictogram-keys.js",
+      "code": 0,
+      "seconds": 6.2
+    },
+    {
+      "file": "versioning-and-release-notes.js",
+      "code": 0,
+      "seconds": 1.4
+    }
+  ]
+}
