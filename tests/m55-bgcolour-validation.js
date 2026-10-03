@@ -35,7 +35,7 @@ const EXE = [process.env.PUPPETEER_EXECUTABLE_PATH, '/opt/pw-browsers/chromium-1
 if (!EXE) { console.log('SKIP m55 browser checks: no Chromium'); process.exit(0); }
 
 // Signed-in stub for this pre-PAYG audit branch (active subscription row).
-const STUB = `window.__rpc=[];window.supabase={createClient:function(){var row={id:'u1',email:'qa@example.test',plan:'pro',status:'active',created_at:new Date(Date.now()-40*864e5).toISOString()};
+const STUB = `window.__rpc=[];window.supabase={createClient:function(){var row={id:'u1',email:'qa@example.test',plan:'easy_start',subscription_status:'active',status:'active',created_at:new Date(Date.now()-40*864e5).toISOString()};
 var q={select:function(){return this},eq:function(){return this},neq:function(){return this},update:function(){return this},upsert:function(){return Promise.resolve({error:null})},insert:function(){return Promise.resolve({error:null})},order:function(){return this},limit:function(){return this},gte:function(){return this},single:function(){return Promise.resolve({data:row,error:null})},maybeSingle:function(){return Promise.resolve({data:row,error:null})},then:function(r){return Promise.resolve({data:[],error:null}).then(r)}};
 return {auth:{getSession:async function(){return {data:{session:{access_token:'x',user:{id:'u1',email:row.email,created_at:row.created_at,user_metadata:{}}}}}},getUser:async function(){return {data:{user:{id:'u1'}}}},onAuthStateChange:function(){return {data:{subscription:{unsubscribe:function(){}}}}},signOut:async function(){return {}}},
 from:function(){return Object.create(q)},rpc:async function(n){window.__rpc.push(n);return {data:{ok:true},error:null};},functions:{invoke:async function(){return {data:null,error:null}}}};}};`;
