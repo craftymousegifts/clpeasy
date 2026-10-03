@@ -88,3 +88,24 @@ the test parse the DOM instead of using the lazy pattern. Then agree the busines
 - **D, "Classification, Labelling and Packaging":** recorded as a non-release-blocking content observation.
 - **E1, preview URL:** to be fixed by the #202 workstream. The test is deliberately not relaxed. `autumn-homepage-ui` keeps failing until #202 is fixed.
 - **E2, signed-in strip:** a separate #202 UX decision. It was not implemented here.
+
+## G. OPEN for the #202 artwork workstream: product-appropriate safety icons on all four hero products (3 Oct 2026)
+- **Status:** OPEN. Owner request, recorded after the release of `cfe025c` (production deploy `6ac101b60af8020008fe50f2`).
+- **Current image:** `assets/CLPeasy Home page.png`, from #202 `20b6e96`, 1672 × 941.
+  - The candle label shows genuine CLPeasy candle-care icons.
+  - The wax melt, reed diffuser and room spray labels have blank rows where icons were removed.
+- **Wanted:** genuine, product-appropriate safety icons on all four products.
+- **Do not:**
+  - copy candle-care icons onto the other products;
+  - invent symbols;
+  - edit the hero outside the #202 artwork workstream.
+- **Owner:** ChatGPT #202 artwork workstream.
+- **Before it can be released:**
+  1. the owner confirms which real icon set applies to each product (wax melt, reed diffuser, room spray), and that set must already exist in CLPeasy;
+  2. the image stays exactly 1672 × 941;
+  3. the change is pushed to #202;
+  4. it is merged into the release branch;
+  5. the full test suite runs;
+  6. the Test preview is rebuilt;
+  7. the owner checks it visually.
+- **Not done here:** no change was made to the hero image.
