@@ -964,15 +964,16 @@ function updateExportButtonState(){
   updateSdsDocSheetNote();
   const blockedBySds=!!getSheetSdsDocBlockMessage();
   const blockedByFit=((typeof sheetFitIssues!=='undefined')&&sheetFitIssues.length>0)||!!getCustomGridOverflow()||!!getSheetGeometryBlockMessage()||blockedBySds;
+  const blockedByContent=(typeof sheetContentIssues!=='undefined')&&sheetContentIssues.length>0;
   // Correction batch: no longer says "marked below" -- since the export
   // buttons moved into the Sheet Preview pane, the fit-issues list they
   // refer to is no longer spatially below them (desktop: it's in the left
   // column; mobile: it's after the preview). Kept direction-neutral.
-  const title=blockedBySds?'Complete the supplier document check for the listed label(s) first.':(blockedByFit?"Fix the label(s) that don't fit before you can print or download this sheet.":'');
+  const title=blockedByContent?'Complete the label(s) missing required content before you can print or download this sheet.':blockedBySds?'Complete the supplier document check for the listed label(s) first.':(blockedByFit?"Fix the label(s) that don't fit before you can print or download this sheet.":'');
   const btnPdf=document.getElementById('btn-pdf');
-  if(btnPdf){ btnPdf.disabled=!isPro||blockedByFit; btnPdf.title=title; }
+  if(btnPdf){ btnPdf.disabled=!isPro||blockedByFit||blockedByContent; btnPdf.title=title; }
   const btnPng=document.getElementById('btn-png-all');
-  if(btnPng){ btnPng.disabled=!isPro||blockedByFit; btnPng.title=title; }
+  if(btnPng){ btnPng.disabled=!isPro||blockedByFit||blockedByContent; btnPng.title=title; }
 }
 
 // SINGLE gate every export path (Print/PDF and every cutting-machine
@@ -990,9 +991,34 @@ function getSheetFitBlockMessage(){
   if(geoMsg)return geoMsg;
   const sdsMsg=getSheetSdsDocBlockMessage();
   if(sdsMsg)return sdsMsg;
+  const contentMsg=getSheetContentBlockMessage();
+  if(contentMsg)return contentMsg;
   if(!sheetFitIssues||!sheetFitIssues.length)return null;
   const list=sheetFitIssues.map(i=>`• ${i.scentName}: ${i.reason}`).join('\n');
   return `This sheet can't be printed or downloaded yet -- ${sheetFitIssues.length} label${sheetFitIssues.length===1?'':'s'} ${sheetFitIssues.length===1?"doesn't":"don't"} fit:\n\n${list}\n\nFix, replace or remove the marked label(s) below, then try again.`;
+}
+
+// ── REQUIRED LABEL CONTENT (Builder Label Technical Audit M09/M31) ──────
+// A saved label missing required content -- a blank product name, a blank
+// business name, or EUH208 without its named sensitising substance(s) --
+// must never be printed or exported from a sheet, whatever its physical fit.
+// Collected per label from the shared renderer's requiredContent result
+// (LabelRenderer.checkRequiredContent) in renderSheetCanvas(); the saved
+// record itself is never changed or repaired here.
+let sheetContentIssues=[];
+const SHEET_CONTENT_REASONS={
+  'product-name':'No product name.',
+  'business-name':'No business name.',
+  'business-address':'No supplier address. Open this label in the Builder and add the address in Step 4.',
+  'euh208-substance':'EUH208 is listed without the named sensitising substance(s). Check your current supplier SDS and paste the complete relevant EUH208/Contains information in Step 3.',
+};
+function describeMissingContent(missing){
+  return (missing||[]).map(m=>SHEET_CONTENT_REASONS[m]||m).join(' ');
+}
+function getSheetContentBlockMessage(){
+  if(!sheetContentIssues||!sheetContentIssues.length)return null;
+  const list=sheetContentIssues.map(i=>`• ${i.scentName}: ${i.reason}`).join('\n');
+  return `This sheet can't be printed or downloaded yet -- ${sheetContentIssues.length} label${sheetContentIssues.length===1?' is':'s are'} missing required label content:\n\n${list}\n\nEdit or remove ${sheetContentIssues.length===1?'that label':'those labels'} first.`;
 }
 
 // ── CUSTOM SHEET GRID/A4-FIT VALIDATION (30 Aug 2026 fix) ────────────
@@ -2196,6 +2222,7 @@ function renderSheetCanvas(){
     // An emptied sheet must not leave stale fit issues behind (e.g. the
     // failing label was just removed) -- clear the block along with the canvas.
     sheetFitIssues=[];
+    sheetContentIssues=[];
     renderFitIssuesPanel();
     updateExportButtonState();
     updateSummary();
@@ -2219,6 +2246,7 @@ function renderSheetCanvas(){
       </div>
     </div>`;
     sheetFitIssues=[];
+    sheetContentIssues=[];
     const panel=document.getElementById('fit-issues-panel');
     if(panel){
       panel.style.display='block';
@@ -2291,6 +2319,7 @@ function renderSheetCanvas(){
   // print/export while any occupied position is failing. Blank and
   // already-used positions are never part of this check.
   sheetFitIssues=[];
+  sheetContentIssues=[];
   let html='';
   // Margin guide
   html+=`<div class="sheet-margin-guide" style="left:${marginLPX}px;top:${marginTPX}px;width:${shW-marginLPX*2}px;height:${shH-marginTPX*2}px;"></div>`;
@@ -2329,8 +2358,10 @@ function renderSheetCanvas(){
         const cw=Math.round(dims.w*MM2PX);
         const ch=Math.round(dims.h*MM2PX);
         const result=renderSheetPosition(ld,cw,ch);
-        const invalidCls=result.fits?'':' sheet-cell-invalid';
-        const invalidTitle=result.fits?'':' title="This label does not fit -- see the fit issues list on the left"';
+        const rc=result.requiredContent||LabelRenderer.checkRequiredContent(ld);
+        const invalidCls=(result.fits&&rc.complete)?'':' sheet-cell-invalid';
+        const invalidTitle=!result.fits?' title="This label does not fit -- see the fit issues list on the left"'
+          :!rc.complete?' title="This label is missing required content -- see the issues list on the left"':'';
         if(trustFresh){
           html+=`<div class="sheet-cell${invalidCls}" style="left:${x}px;top:${y}px;width:${cellWPX}px;height:${cellHPX}px;"${invalidTitle}>${result.svg}</div>`;
         }else{
@@ -2340,6 +2371,9 @@ function renderSheetCanvas(){
         }
         if(!result.fits){
           sheetFitIssues.push({itemId:slot.labelId, scentName:ld.scentName||'Unnamed label', reason:describeFitWarnings(result.warnings, ld)});
+        }
+        if(!rc.complete && !sheetContentIssues.some(i=>i.itemId===slot.labelId)){
+          sheetContentIssues.push({itemId:slot.labelId, scentName:String(ld.scentName||'').trim()||'Unnamed label', reason:describeMissingContent(rc.missing)});
         }
         labelIdx++;
       } else {
@@ -2405,6 +2439,12 @@ let sheetFitIssues=[];
 function describeFitWarnings(warnings, ld){
   warnings=warnings||[];
   const unrecognized=warnings.filter(w=>w.startsWith('unrecognized-code:')).map(w=>w.split('unrecognized-code:')[1]);
+  // M38 (Issue #7): an unrecognised saved pictogram key is a data problem, not
+  // a size problem -- name it, send the maker to the Builder, no size advice.
+  const badPictos=warnings.filter(w=>w.startsWith('unrecognized-pictogram:')).map(w=>w.slice('unrecognized-pictogram:'.length));
+  if(badPictos.length && typeof LabelRenderer!=='undefined' && LabelRenderer.describeInvalidPictograms){
+    return LabelRenderer.describeInvalidPictograms(badPictos).replace(' Re-check the hazards in Step 3.',' Open this label in the Builder and re-check the hazards in Step 3.');
+  }
   // Fail-closed design (2026-09-07): tell the maker exactly which size WOULD
   // fit this exact label's content -- never a guess, a genuine renderLabel()
   // result via label-render.js's findSmallestFittingSize(). Never applied
@@ -2440,8 +2480,19 @@ function describeFitWarnings(warnings, ld){
 function renderFitIssuesPanel(){
   const panel=document.getElementById('fit-issues-panel');
   if(!panel)return;
-  if(!sheetFitIssues.length){ panel.style.display='none'; panel.innerHTML=''; return; }
+  if(!sheetFitIssues.length && !sheetContentIssues.length){ panel.style.display='none'; panel.innerHTML=''; return; }
   panel.style.display='block';
+  const contentRows=sheetContentIssues.map(issue=>`
+    <div class="fit-issue-row">
+      <div class="fir-name">${xe(issue.scentName)}</div>
+      <div class="fir-reason">${xe(issue.reason)}</div>
+      <div class="fir-actions">
+        <a href="builder.html?label=${encodeURIComponent(issue.itemId)}">Edit label</a>
+        <button class="fir-remove" onclick="removeSheetItem('${issue.itemId}')">Remove from sheet</button>
+      </div>
+    </div>`).join('');
+  const contentHtml=sheetContentIssues.length?`<div class="fip-head">⚠ ${sheetContentIssues.length} label${sheetContentIssues.length===1?' on this sheet is':'s on this sheet are'} missing required label content and must be completed before you can print or download this sheet.</div>${contentRows}`:'';
+  if(!sheetFitIssues.length){ panel.innerHTML=contentHtml; return; }
   const rows=sheetFitIssues.map(issue=>`
     <div class="fit-issue-row">
       <div class="fir-name">${xe(issue.scentName)}</div>
@@ -2452,7 +2503,7 @@ function renderFitIssuesPanel(){
         <button class="fir-remove" onclick="removeSheetItem('${issue.itemId}')">Remove from sheet</button>
       </div>
     </div>`).join('');
-  panel.innerHTML=`<div class="fip-head">⚠ ${sheetFitIssues.length} label${sheetFitIssues.length===1?'':'s'} on this sheet ${sheetFitIssues.length===1?"doesn't":"don't"} fit and must be fixed before you can print or download this sheet.</div>${rows}`;
+  panel.innerHTML=`<div class="fip-head">⚠ ${sheetFitIssues.length} label${sheetFitIssues.length===1?'':'s'} on this sheet ${sheetFitIssues.length===1?"doesn't":"don't"} fit and must be fixed before you can print or download this sheet.</div>${rows}`+contentHtml;
 }
 
 function removeSheetItem(itemId){

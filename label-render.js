@@ -181,6 +181,40 @@ function normalizeLabel(data){
   };
 }
 
+// ── REQUIRED LABEL CONTENT (Builder Label Technical Audit M09 / M31) ──────
+// Content completeness, deliberately kept SEPARATE from physical fit: it
+// never changes the SVG, the layout, `fits` or the blocked overlay, so an
+// unfinished label still previews normally (with normalizeLabel()'s
+// placeholder text) while the maker fills it in. Every export route must
+// check it independently: placeholder or missing required content must
+// never be treated as finished, exportable label content.
+// Works on the RAW record (before normalizeLabel()'s placeholders), trims
+// every value, and treats whitespace-only as missing. Returns
+// {complete, missing} where missing lists, in label order:
+//   'product-name'     -- blank product name ("Your Scent Name" placeholder)
+//   'business-name'    -- blank business name ("Your Brand" placeholder)
+//   'euh208-substance' -- EUH208 present but no named sensitising substance
+//                         ("Contains: sensitising substance" placeholder);
+//                         a name must contain at least one letter or digit.
+// M10: supplier address is required GB CLP label content (Article 17(1)(a)).
+// Keep this as a non-blank content gate only: CLPeasy does not attempt to
+// certify postal-address syntax or silently alter a maker's saved address.
+function checkRequiredContent(rawData){
+  const d = rawData || {};
+  const txt = v => (v == null ? '' : String(v)).trim();
+  const missing = [];
+  if(!txt(d.scentName)) missing.push('product-name');
+  if(!txt(d.bizName)) missing.push('business-name');
+  if(!txt(d.bizAddress)) missing.push('business-address');
+  // same code test renderLabel() uses to add the EUH208 sentence/placeholder
+  const codes = txt(d.hStatements).split(',').map(c => c.trim()).filter(Boolean);
+  if(codes.includes('EUH208')){
+    const names = Array.isArray(d.sensitisers) ? d.sensitisers : [];
+    if(!names.some(n => /[A-Za-z0-9]/.test(txt(n)))) missing.push('euh208-substance');
+  }
+  return {complete: missing.length === 0, missing};
+}
+
 // ── LABEL PHYSICAL DIMENSIONS ──────────────────────────────────────────
 // Merges builder.html's getDims() and print.html's getLabelDimsMM() — the
 // two were already computing the same mm values with slightly different
@@ -289,7 +323,7 @@ function assetMarkup(src, x, y, size, pool, poolKey){
 // below for codes that are explicitly blocked, with a dedicated message,
 // rather than just silently unrecognised. Kept in sync with builder.html's
 // own H_LIB copy -- both must change together.
-const H_LIB=[{code:'H225',desc:'Highly flammable liquid and vapour'},{code:'H226',desc:'Flammable liquid and vapour'},{code:'H228',desc:'Flammable solid'},{code:'H301',desc:'Toxic if swallowed'},{code:'H302',desc:'Harmful if swallowed'},{code:'H304',desc:'May be fatal if swallowed and enters airways'},{code:'H311',desc:'Toxic in contact with skin'},{code:'H312',desc:'Harmful in contact with skin'},{code:'H314',desc:'Causes severe skin burns and eye damage'},{code:'H315',desc:'Causes skin irritation'},{code:'H317',desc:'May cause an allergic skin reaction'},{code:'H318',desc:'Causes serious eye damage'},{code:'H319',desc:'Causes serious eye irritation'},{code:'H331',desc:'Toxic if inhaled'},{code:'H332',desc:'Harmful if inhaled'},{code:'H334',desc:'May cause allergy or asthma symptoms if inhaled'},{code:'H335',desc:'May cause respiratory irritation'},{code:'H336',desc:'May cause drowsiness or dizziness'},{code:'H361',desc:'Suspected of damaging fertility or the unborn child'},{code:'H371',desc:'May cause damage to organs'},{code:'H373',desc:'May cause damage to organs through prolonged or repeated exposure'},{code:'H400',desc:'Very toxic to aquatic life'},{code:'H410',desc:'Very toxic to aquatic life with long lasting effects'},{code:'H411',desc:'Toxic to aquatic life with long lasting effects'},{code:'H412',desc:'Harmful to aquatic life with long lasting effects'},{code:'H413',desc:'May cause long lasting harmful effects to aquatic life'},{code:'EUH066',desc:'Repeated exposure may cause skin dryness or cracking'},{code:'EUH208',desc:'Contains sensitiser — may produce an allergic reaction'},{code:'EUH071',desc:'Corrosive to the respiratory tract'},{code:'EUH210',desc:'Safety data sheet available on request'},{code:'H200',desc:'Unstable explosive'},{code:'H201',desc:'Explosive; mass explosion hazard'},{code:'H202',desc:'Explosive; severe projection hazard'},{code:'H203',desc:'Explosive; fire, blast or projection hazard'},{code:'H204',desc:'Fire or projection hazard'},{code:'H205',desc:'May mass explode in fire'},{code:'H223',desc:'Flammable aerosol'},{code:'H224',desc:'Extremely flammable liquid and vapour'},{code:'H240',desc:'Heating may cause an explosion'},{code:'H241',desc:'Heating may cause a fire or explosion'},{code:'H242',desc:'Heating may cause a fire'},{code:'H250',desc:'Catches fire spontaneously if exposed to air'},{code:'H251',desc:'Self-heating; may catch fire'},{code:'H252',desc:'Self-heating in large quantities; may catch fire'},{code:'H260',desc:'In contact with water releases flammable gases which may ignite spontaneously'},{code:'H261',desc:'In contact with water releases flammable gas'},{code:'H270',desc:'May cause or intensify fire; oxidiser'},{code:'H271',desc:'May cause fire or explosion; strong oxidiser'},{code:'H272',desc:'May intensify fire; oxidiser'},{code:'H280',desc:'Contains gas under pressure; may explode if heated'},{code:'H281',desc:'Contains refrigerated gas; may cause cryogenic burns or injury'},{code:'H282',desc:'Extremely flammable chemical under pressure: may explode if heated'},{code:'H283',desc:'Flammable chemical under pressure: may explode if heated'},{code:'H284',desc:'Chemical under pressure: may explode if heated'},{code:'H290',desc:'May be corrosive to metals'},{code:'H300',desc:'Fatal if swallowed'},{code:'H310',desc:'Fatal in contact with skin'},{code:'H330',desc:'Fatal if inhaled'},{code:'H340',desc:'May cause genetic defects'},{code:'H341',desc:'Suspected of causing genetic defects'},{code:'H350',desc:'May cause cancer'},{code:'H351',desc:'Suspected of causing cancer'},{code:'H360',desc:'May damage fertility or the unborn child'},{code:'H362',desc:'May cause harm to breast-fed children'},{code:'H370',desc:'Causes damage to organs'},{code:'H372',desc:'Causes damage to organs through prolonged or repeated exposure'}];
+const H_LIB=[{code:'H225',desc:'Highly flammable liquid and vapour'},{code:'H226',desc:'Flammable liquid and vapour'},{code:'H228',desc:'Flammable solid'},{code:'H301',desc:'Toxic if swallowed'},{code:'H302',desc:'Harmful if swallowed'},{code:'H304',desc:'May be fatal if swallowed and enters airways'},{code:'H311',desc:'Toxic in contact with skin'},{code:'H312',desc:'Harmful in contact with skin'},{code:'H314',desc:'Causes severe skin burns and eye damage'},{code:'H315',desc:'Causes skin irritation'},{code:'H317',desc:'May cause an allergic skin reaction'},{code:'H318',desc:'Causes serious eye damage'},{code:'H319',desc:'Causes serious eye irritation'},{code:'H331',desc:'Toxic if inhaled'},{code:'H332',desc:'Harmful if inhaled'},{code:'H334',desc:'May cause allergy or asthma symptoms if inhaled'},{code:'H335',desc:'May cause respiratory irritation'},{code:'H336',desc:'May cause drowsiness or dizziness'},{code:'H361',desc:'Suspected of damaging fertility or the unborn child'},{code:'H371',desc:'May cause damage to organs'},{code:'H373',desc:'May cause damage to organs through prolonged or repeated exposure'},{code:'H400',desc:'Very toxic to aquatic life'},{code:'H410',desc:'Very toxic to aquatic life with long lasting effects'},{code:'H411',desc:'Toxic to aquatic life with long lasting effects'},{code:'H412',desc:'Harmful to aquatic life with long lasting effects'},{code:'H413',desc:'May cause long lasting harmful effects to aquatic life'},{code:'EUH066',desc:'Repeated exposure may cause skin dryness or cracking'},{code:'EUH208',desc:'Contains sensitiser — may produce an allergic reaction'},{code:'EUH071',desc:'Corrosive to the respiratory tract'},{code:'EUH210',desc:'Safety data sheet available on request'},{code:'H200',desc:'Unstable explosive'},{code:'H201',desc:'Explosive; mass explosion hazard'},{code:'H202',desc:'Explosive; severe projection hazard'},{code:'H203',desc:'Explosive; fire, blast or projection hazard'},{code:'H204',desc:'Fire or projection hazard'},{code:'H205',desc:'May mass explode in fire'},{code:'H223',desc:'Flammable aerosol'},{code:'H224',desc:'Extremely flammable liquid and vapour'},{code:'H240',desc:'Heating may cause an explosion'},{code:'H241',desc:'Heating may cause a fire or explosion'},{code:'H242',desc:'Heating may cause a fire'},{code:'H250',desc:'Catches fire spontaneously if exposed to air'},{code:'H251',desc:'Self-heating; may catch fire'},{code:'H252',desc:'Self-heating in large quantities; may catch fire'},{code:'H260',desc:'In contact with water releases flammable gases which may ignite spontaneously'},{code:'H261',desc:'In contact with water releases flammable gas'},{code:'H270',desc:'May cause or intensify fire; oxidiser'},{code:'H271',desc:'May cause fire or explosion; strong oxidiser'},{code:'H272',desc:'May intensify fire; oxidiser'},{code:'H280',desc:'Contains gas under pressure; may explode if heated'},{code:'H281',desc:'Contains refrigerated gas; may cause cryogenic burns or injury'},{code:'H282',desc:'Extremely flammable chemical under pressure: may explode if heated'},{code:'H283',desc:'Flammable chemical under pressure: may explode if heated'},{code:'H284',desc:'Chemical under pressure: may explode if heated'},{code:'H290',desc:'May be corrosive to metals'},{code:'H300',desc:'Fatal if swallowed'},{code:'H310',desc:'Fatal in contact with skin'},{code:'H330',desc:'Fatal if inhaled'},{code:'H340',desc:'May cause genetic defects'},{code:'H341',desc:'Suspected of causing genetic defects'},{code:'H350',desc:'May cause cancer'},{code:'H351',desc:'Suspected of causing cancer'},{code:'H360',desc:'May damage fertility or the unborn child'},{code:'H362',desc:'May cause harm to breast-fed children'},{code:'H370',desc:'Causes damage to organs'},{code:'H372',desc:'Causes damage to organs through prolonged or repeated exposure'},{code:'H350i',desc:'May cause cancer by inhalation'},{code:'H360F',desc:'May damage fertility'},{code:'H360D',desc:'May damage the unborn child'},{code:'H360FD',desc:'May damage fertility. May damage the unborn child'},{code:'H360Fd',desc:'May damage fertility. Suspected of damaging the unborn child'},{code:'H360Df',desc:'May damage the unborn child. Suspected of damaging fertility'},{code:'H361f',desc:'Suspected of damaging fertility'},{code:'H361d',desc:'Suspected of damaging the unborn child'},{code:'H361fd',desc:'Suspected of damaging fertility. Suspected of damaging the unborn child'}];
 const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product container or label at hand'},{code:'P102',desc:'Keep out of reach of children'},{code:'P103',desc:'Read label before use'},{code:'P210',desc:'Keep away from heat and ignition sources. No smoking'},{code:'P233',desc:'Keep container tightly closed'},{code:'P260',desc:'Do not breathe vapours or dust'},{code:'P261',desc:'Avoid breathing vapours and dust'},{code:'P271',desc:'Use only outdoors or in a well-ventilated area'},{code:'P273',desc:'Avoid release to the environment'},{code:'P301+P310',desc:'IF SWALLOWED: immediately call a POISON CENTRE or doctor'},{code:'P301+P312',desc:'IF SWALLOWED: call a POISON CENTRE or doctor if unwell'},{code:'P302+P352',desc:'IF ON SKIN: wash with plenty of water'},{code:'P304+P340',desc:'IF INHALED: remove to fresh air and keep comfortable for breathing'},{code:'P305+P351+P338',desc:'IF IN EYES: rinse cautiously with water for several minutes'},{code:'P312',desc:'Call a POISON CENTRE or doctor if you feel unwell'},{code:'P313',desc:'Get medical advice/attention'},{code:'P314',desc:'Get medical advice if you feel unwell'},{code:'P321',desc:'Specific treatment: see label'},{code:'P330',desc:'Rinse mouth'},{code:'P331',desc:'Do NOT induce vomiting'},{code:'P332+P313',desc:'If skin irritation occurs: get medical advice/attention'},{code:'P333+P313',desc:'If skin irritation or rash occurs: get medical advice'},{code:'P337+P313',desc:'If eye irritation persists: get medical advice'},{code:'P370+P378',desc:'In case of fire: use appropriate media for extinction'},{code:'P391',desc:'Collect spillage'},{code:'P403+P233',desc:'Store in a well-ventilated place. Keep container tightly closed'},{code:'P211',desc:'Do not spray on an open flame or other ignition source'},{code:'P501',desc:'Dispose of contents and container in accordance with local regulations'},
 // P280 (verified against the retained GB-CLP Regulation (EC) No 1272/2008,
 // Annex IV, Table 6.2, legislation.gov.uk, current in-force UK text) is a
@@ -344,6 +378,53 @@ const ACTIVE_REGULATORY_PROFILE = 'GB';
 // statement -- it blocks and tells the maker to check their supplier's
 // current Great Britain-market SDS instead.
 const GB_UNSUPPORTED_CODES=['H316','H401','H402'];
+
+// ── M21 (Issue #6): suffixed hazard-statement codes ──────────────────────
+// Verified against the CLP material on legislation.gov.uk and supplied by
+// Michaela (Sept 2026). Case is significant: F/D = "May damage", f/d =
+// "Suspected of damaging"; i = by inhalation. These are genuine codes and
+// must never be reduced to their base code (H361f is not H361).
+// Supported: all nine are in H_LIB (appended, both copies) with this exact
+// wording; builder.html maps each to its verified GB CLP label elements
+// (H350i and H360* = Danger + GHS08; H361* = Warning + GHS08). Any OTHER
+// captured suffix is blocked by the existing unrecognised-code fail-safe.
+const H_SUFFIXED_VERIFIED={
+  'H350i':'May cause cancer by inhalation',
+  'H360F':'May damage fertility',
+  'H360D':'May damage the unborn child',
+  'H360FD':'May damage fertility. May damage the unborn child',
+  'H360Fd':'May damage fertility. Suspected of damaging the unborn child',
+  'H360Df':'May damage the unborn child. Suspected of damaging fertility',
+  'H361f':'Suspected of damaging fertility',
+  'H361d':'Suspected of damaging the unborn child',
+  'H361fd':'Suspected of damaging fertility. Suspected of damaging the unborn child',
+};
+// Smart Paste hazard-code extraction (shared so it can be tested directly).
+// - H + 3 digits, optionally followed DIRECTLY by 1-2 letters and then a
+//   non-letter/digit boundary: the complete token is kept exactly as written
+//   ("H361f", "H360FD"). An unknown suffix ("H317s") is kept too, so the
+//   existing unrecognised-code check blocks it -- never dropped, never reduced.
+// - A clearly spaced suffix ("H361 d") is joined ONLY when the result is one
+//   of the verified suffixed codes; otherwise the letters are prose and the
+//   base code stands ("H317 a ...", "H350 i.e." stay H317/H350).
+// - A code run straight into longer text ("H412Harmful", "H317May") is NOT
+//   matched here -- that is separate audit item M63 (open), deliberately
+//   left unchanged by M21.
+// - EUH codes: unchanged.
+const H_TOKEN_RE=/\bH(\d{3})(?:([A-Za-z]{1,2})|[ \t]([FfDdi]{1,2}))?(?![A-Za-z0-9_])(?!\.[A-Za-z])/g;
+function extractHazardCodesFromText(text){
+  const src=String(text||'');
+  const h=[];
+  for(const m of src.matchAll(H_TOKEN_RE)){
+    const base='H'+m[1];
+    let code=base;
+    if(m[2]) code=base+m[2];
+    else if(m[3] && H_SUFFIXED_VERIFIED[base+m[3]]) code=base+m[3];
+    if(!h.includes(code)) h.push(code);
+  }
+  const euh=[...new Set(src.match(/\bEUH\d{3}\b/g)||[])];
+  return h.concat(euh);
+}
 
 // The selectable items P280 offers, in the exact order the statutory text
 // lists them -- used both by Builder's picker UI and by buildP280Wording()
@@ -476,14 +557,39 @@ function svgWrapped(lines,x,startY,lineH,sizePx,bold,serif,fill,anchor='middle',
 // Pictogram / icon asset rendering (with SharedAssetPool support)
 // ============================================================
 
+// M38 (Issue #7): the nine valid internal pictogram keys are exactly the keys
+// of GHS_IMG. Anything else -- unknown, misspelt, wrong case, a display label
+// such as "GHS06", empty or not a string -- is NOT a pictogram: the label is
+// blocked (never substituted, dropped, corrected or re-cased) and the saved
+// record is left unchanged.
+function isValidPictogramKey(k){
+  return typeof k==='string' && Object.prototype.hasOwnProperty.call(GHS_IMG,k);
+}
+// Maker-facing description of invalid pictogram keys (CLPeasy data-integrity
+// wording, not a regulatory claim). Shared by the renderer overlay, the
+// Builder and the Composer so the wording matches everywhere.
+function describeInvalidPictograms(keys){
+  const list=(keys||[]).map(k=>typeof k==='string'?k:'');
+  const named=[...new Set(list.filter(k=>k.trim()!==''))];
+  const blanks=list.filter(k=>k.trim()==='').length;
+  const q=named.map(k=>"'"+k+"'");
+  let first;
+  if(named.length && blanks) first=(named.length>1?'Pictograms ':'Pictogram ')+q.join(', ')+' and '+(blanks>1?'some blank saved pictograms':'a blank saved pictogram')+' were not recognised.';
+  else if(named.length) first=(named.length>1?'Pictograms '+q.join(', ')+' were':'Pictogram '+q[0]+' was')+' not recognised.';
+  else first=blanks>1?'Some saved pictograms were not recognised.':'A saved pictogram was not recognised.';
+  return first+' Re-check the hazards in Step 3.';
+}
 function ghsPicto(key,cx,cy,size,pool){
   // Use uploaded JPEG pictograms — already contain the correct red diamond border.
   // When `pool` (a SharedAssetPool) is supplied, the image is registered once
   // and referenced via <use> instead of re-embedding its base64 data — used
   // when assembling a multi-label print-sheet export document.
-  const usedKey = GHS_IMG[key] ? key : 'exclamation';
-  const src = GHS_IMG[usedKey];
-  return assetMarkup(src, cx-size*0.5, cy-size*0.5, size, pool, 'ghs-'+usedKey);
+  // M38 (Issue #7): never substitute another pictogram for an unknown key.
+  // renderLabel() validates every key first and blocks the label, so an
+  // unknown key never reaches here; this guard only makes sure nothing is
+  // drawn if one ever did.
+  if(!isValidPictogramKey(key)) return '';
+  return assetMarkup(GHS_IMG[key], cx-size*0.5, cy-size*0.5, size, pool, 'ghs-'+key);
 }
 
 // ============================================================
@@ -729,9 +835,9 @@ function choosePictoMmAndRender(rawData, opts){
 // content-does-not-fit branch, which is BYTE-IDENTICAL to the overlay this
 // replaced, so genuine layout overflow with only recognised, GB-supported
 // codes is completely unaffected by this change.
-function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, genericCodes){
-  unsupportedCodes = unsupportedCodes||[]; genericCodes = genericCodes||[];
-  const hasIssue = unsupportedCodes.length>0 || genericCodes.length>0;
+function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, genericCodes, invalidPictograms){
+  unsupportedCodes = unsupportedCodes||[]; genericCodes = genericCodes||[]; invalidPictograms = invalidPictograms||[];
+  const hasIssue = unsupportedCodes.length>0 || genericCodes.length>0 || invalidPictograms.length>0;
 
   if(!hasIssue){
     // Genuine physical overflow with only recognised/supported codes --
@@ -769,6 +875,9 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
       'Check you pasted Section 2.2 from the correct supplier SDS.',
       'Ask your supplier for current GB CLP information for this product and concentration.'
     ];
+  } else if(!gCodes.length){
+    // M38 (Issue #7): unrecognised pictogram key(s) only.
+    sentences = [];
   } else {
     // Generic/unrecognised code(s) -- must NOT state or imply the code is
     // legally unsupported under GB rules, since that has not been verified.
@@ -779,6 +888,14 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
     ];
   }
 
+  // M38 (Issue #7): name any unrecognised pictogram key (escaped -- untrusted
+  // stored data), with the Step 3 instruction. Appended after any code
+  // sentences so neither issue hides the other.
+  if(invalidPictograms.length){
+    const pictoMsg = xe(describeInvalidPictograms(invalidPictograms));
+    const cut = pictoMsg.lastIndexOf(' Re-check');
+    sentences.push(pictoMsg.slice(0,cut), pictoMsg.slice(cut+1));
+  }
   // Largest safe, genuinely readable font sizes -- materially larger than
   // the previous fixed 8px/6px minimums. chordWFn (the caller's own
   // circle/square/rectangle chord-width function, reused rather than
@@ -994,7 +1111,14 @@ function renderLabel(rawData, opts){
   const addr=data.bizAddress||'';
   const phone=data.bizPhone||'';
   const detailParts=[data.netWeight, data.burnTime?'Burn: '+data.burnTime:'', data.batchNum?'Batch: '+data.batchNum:''].filter(Boolean);
-  const pictos=data.pictograms.length?[...new Set(data.pictograms)]:[];
+  // M38 (Issue #7): only valid keys are drawn; any other key blocks the label
+  // (see _invalidPictograms below). For a list of valid keys this is exactly
+  // the previous de-duplicated list, so valid labels render unchanged.
+  const _rawPictos=Array.isArray(data.pictograms)?data.pictograms:[data.pictograms];
+  const _invalidPictograms=[];
+  // (a non-text value has no key to show, so it is reported like a blank one)
+  _rawPictos.forEach(k=>{ if(!isValidPictogramKey(k)) _invalidPictograms.push(typeof k==='string'?k:''); });
+  const pictos=[...new Set(_rawPictos.filter(isValidPictogramKey))];
   const clamp=(v,mn,mx)=>Math.min(Math.max(v,mn),mx);
 
   // ── CLIP & BACKGROUND ────────────────────────────────────────
@@ -1681,7 +1805,8 @@ function renderLabel(rawData, opts){
   // condition is ever added, add it to THIS line, not to a second copy.
   const _contentBlocked = _labelLegibilityWarn || _footerLegibilityClipped
     || _unrecognizedCodes.length>0 || _bcfTooSmall || _scentTooSmall
-    || _bizNameTooSmall || _typeTooSmall || _signalTooSmall;
+    || _bizNameTooSmall || _typeTooSmall || _signalTooSmall
+    || _invalidPictograms.length>0;
   // ── STRUCTURED BLOCK REASON -- never inferred from fits:false alone ─────
   // A code absent from H_LIB is either a CONFIRMED code that the ACTIVE
   // regulatory profile (currently Great Britain only -- see
@@ -1718,9 +1843,11 @@ function renderLabel(rawData, opts){
   const _blockReason = !_contentBlocked ? null
     : _unsupportedCodesFound.length>0 ? 'unsupported-gb-clp-code'
     : _genericUnrecognizedFound.length>0 ? 'unrecognised-code'
+    : _invalidPictograms.length>0 ? 'unrecognised-pictogram'
     : 'content-does-not-fit';
   const _blockReasonCodes = _blockReason==='unsupported-gb-clp-code' ? _unsupportedCodesFound
-    : _blockReason==='unrecognised-code' ? _genericUnrecognizedFound : [];
+    : _blockReason==='unrecognised-code' ? _genericUnrecognizedFound
+    : _blockReason==='unrecognised-pictogram' ? _invalidPictograms : [];
   // Full-bleed rect: the existing clip-path (applied to the whole <g> this
   // gets drawn into) already confines it to the label's true circle/rect
   // outline, so covering the entire canonical canvas can never bleed past
@@ -1731,7 +1858,7 @@ function renderLabel(rawData, opts){
   // recognised/supported codes is unaffected by this change. Both code
   // groups are passed through in full (not just the leading-reason one),
   // so a mixed unsupported+generic input shows both in the overlay too.
-  const overflowOverlay=_contentBlocked?buildBlockedOverlaySVG(pw,ph,cx,cy,chordW,_unsupportedCodesFound,_genericUnrecognizedFound):'';
+  const overflowOverlay=_contentBlocked?buildBlockedOverlaySVG(pw,ph,cx,cy,chordW,_unsupportedCodesFound,_genericUnrecognizedFound,_invalidPictograms):'';
   // Y positions already set per-slot — no global recompute needed
   const footerRendered = footerElems.map(elem=>{
     if(elem.slotY > sBot - 1) return '';
@@ -1871,6 +1998,7 @@ function renderLabel(rawData, opts){
 </g></svg>`;
 
   if(_unrecognizedCodes.length) warnings.push(..._unrecognizedCodes.map(c=>'unrecognized-code:'+c));
+  if(_invalidPictograms.length) warnings.push(..._invalidPictograms.map(k=>'unrecognized-pictogram:'+k));
   if(_labelLegibilityWarn) warnings.push('hazard-text-overflow');
   if(_footerLegibilityClipped) warnings.push('footer-clipped');
   if(_bcfTooSmall) warnings.push('candle-safety-symbols-too-small');
@@ -1910,6 +2038,7 @@ function renderLabel(rawData, opts){
     hazardYSlack: _hazardYSlack,
     footerClipped: _footerLegibilityClipped,
     unrecognizedCodes: _unrecognizedCodes.slice(),
+    unrecognizedPictograms: _invalidPictograms.slice(),
     // Structured failure fields: the confirmed-unsupported and generic-
     // unrecognised code groups are each exposed IN FULL and independently
     // -- a caller never has to re-derive either by cross-referencing
@@ -1981,9 +2110,13 @@ function renderLabel(rawData, opts){
   return {
     svg, fits, blocked: _contentBlocked,
     blockReason: _blockReason, blockReasonCodes: _blockReasonCodes.slice(),
+    // Required-content completeness (M09/M31) -- separate from fit, never
+    // affects svg/fits/blocked; see checkRequiredContent().
+    requiredContent: checkRequiredContent(rawData),
     regulatoryProfile: ACTIVE_REGULATORY_PROFILE,
     unsupportedCodes: _unsupportedCodesFound.slice(),
     unrecognizedCodesGeneric: _genericUnrecognizedFound.slice(),
+    unrecognizedPictograms: _invalidPictograms.slice(),
     contentOverflow: _contentOverflow,
     warnings, metrics, rendererVersion: RENDERER_VERSION,
   };
@@ -2306,7 +2439,7 @@ function isCustomSizeBelowSupportedMinimum(shape, w, h){
 }
 
   const LabelRenderer = {
-    renderLabel, normalizeLabel, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, GB_UNSUPPORTED_CODES, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
+    renderLabel, normalizeLabel, checkRequiredContent, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, GB_UNSUPPORTED_CODES, H_SUFFIXED_VERIFIED, extractHazardCodesFromText, isValidPictogramKey, describeInvalidPictograms, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
     // GHS pictogram geometry -- exposed so tests/consumers measuring
     // compliance never have to re-derive or hardcode the sqrt(2)
     // square<->bounding-box relationship themselves.

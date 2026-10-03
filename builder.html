@@ -1314,8 +1314,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="step-panel" id="step-4">
     <h2 class="step-heading">Your business details</h2>
     <p class="step-sub">Required on CLP labels — your name and address as the responsible person.</p>
-    <div class="form-group"><label>Business / Brand name</label><input type="text" id="biz-name" placeholder="As you want it to appear on the label" oninput="updateLabel();saveBizDetails()"></div>
-    <div class="form-group"><label>Address <span>(town, county or full address)</span></label><input type="text" id="biz-address" placeholder="e.g. Scottish Borders, Scotland" oninput="updateLabel();saveBizDetails()"></div>
+    <div class="form-group"><label>Business / Brand name <span>(required)</span></label><input type="text" id="biz-name" placeholder="As you want it to appear on the label" oninput="updateLabel();saveBizDetails()"></div>
+    <div class="form-group"><label>Address <span>(required)</span></label><input type="text" id="biz-address" placeholder="Enter the supplier address shown on your label" oninput="updateLabel();saveBizDetails()"></div>
     <div class="form-group"><label>Phone number <span>(required for CLP compliance)</span></label><input type="tel" id="biz-phone" placeholder="e.g. 07700 900000" oninput="updateLabel();saveBizDetails()"></div>
     <div class="form-row">
       <div class="form-group"><label>Website <span>(optional)</span></label><input type="text" id="biz-website" placeholder="e.g. clpeasy.com" oninput="updateLabel();saveBizDetails()"></div>
@@ -1397,6 +1397,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div id="label-warn-step5" class="field-alert field-alert-danger" style="display:none;margin-bottom:16px;font-size:13px;"></div>
     <div id="sds-doc-export-note" class="field-alert field-alert-warn" role="status" style="display:none;margin-bottom:16px;font-size:13px;"><span class="sds-doc-export-text"></span> <button type="button" onclick="setApprovedBuilderStep(3)" style="margin-top:6px;display:inline-block;background:none;border:none;padding:0;color:var(--teal-dark);text-decoration:underline;font:inherit;font-weight:600;cursor:pointer;">Go to Step 3 (Hazards)</button></div>
     <div class="hazard-review-notice field-alert field-alert-warn" role="alert" style="display:none;margin-bottom:16px;font-size:13px;"></div>
+    <div id="content-warn-step5" class="field-alert field-alert-danger" style="display:none;margin-bottom:16px;font-size:13px;"></div>
 
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
       <div class="review-download-grid">
@@ -1599,7 +1600,7 @@ const SENSITISERS=[
 // blocked, with a dedicated message, rather than just silently
 // unrecognised. Kept in sync with label-render.js's own H_LIB copy --
 // both must change together.
-const H_LIB=[{code:'H225',desc:'Highly flammable liquid and vapour'},{code:'H226',desc:'Flammable liquid and vapour'},{code:'H228',desc:'Flammable solid'},{code:'H301',desc:'Toxic if swallowed'},{code:'H302',desc:'Harmful if swallowed'},{code:'H304',desc:'May be fatal if swallowed and enters airways'},{code:'H311',desc:'Toxic in contact with skin'},{code:'H312',desc:'Harmful in contact with skin'},{code:'H314',desc:'Causes severe skin burns and eye damage'},{code:'H315',desc:'Causes skin irritation'},{code:'H317',desc:'May cause an allergic skin reaction'},{code:'H318',desc:'Causes serious eye damage'},{code:'H319',desc:'Causes serious eye irritation'},{code:'H331',desc:'Toxic if inhaled'},{code:'H332',desc:'Harmful if inhaled'},{code:'H334',desc:'May cause allergy or asthma symptoms if inhaled'},{code:'H335',desc:'May cause respiratory irritation'},{code:'H336',desc:'May cause drowsiness or dizziness'},{code:'H361',desc:'Suspected of damaging fertility or the unborn child'},{code:'H371',desc:'May cause damage to organs'},{code:'H373',desc:'May cause damage to organs through prolonged or repeated exposure'},{code:'H400',desc:'Very toxic to aquatic life'},{code:'H410',desc:'Very toxic to aquatic life with long lasting effects'},{code:'H411',desc:'Toxic to aquatic life with long lasting effects'},{code:'H412',desc:'Harmful to aquatic life with long lasting effects'},{code:'H413',desc:'May cause long lasting harmful effects to aquatic life'},{code:'EUH066',desc:'Repeated exposure may cause skin dryness or cracking'},{code:'EUH208',desc:'Contains sensitiser — may produce an allergic reaction'},{code:'EUH071',desc:'Corrosive to the respiratory tract'},{code:'EUH210',desc:'Safety data sheet available on request'},{code:'H200',desc:'Unstable explosive'},{code:'H201',desc:'Explosive; mass explosion hazard'},{code:'H202',desc:'Explosive; severe projection hazard'},{code:'H203',desc:'Explosive; fire, blast or projection hazard'},{code:'H204',desc:'Fire or projection hazard'},{code:'H205',desc:'May mass explode in fire'},{code:'H223',desc:'Flammable aerosol'},{code:'H224',desc:'Extremely flammable liquid and vapour'},{code:'H240',desc:'Heating may cause an explosion'},{code:'H241',desc:'Heating may cause a fire or explosion'},{code:'H242',desc:'Heating may cause a fire'},{code:'H250',desc:'Catches fire spontaneously if exposed to air'},{code:'H251',desc:'Self-heating; may catch fire'},{code:'H252',desc:'Self-heating in large quantities; may catch fire'},{code:'H260',desc:'In contact with water releases flammable gases which may ignite spontaneously'},{code:'H261',desc:'In contact with water releases flammable gas'},{code:'H270',desc:'May cause or intensify fire; oxidiser'},{code:'H271',desc:'May cause fire or explosion; strong oxidiser'},{code:'H272',desc:'May intensify fire; oxidiser'},{code:'H280',desc:'Contains gas under pressure; may explode if heated'},{code:'H281',desc:'Contains refrigerated gas; may cause cryogenic burns or injury'},{code:'H282',desc:'Extremely flammable chemical under pressure: may explode if heated'},{code:'H283',desc:'Flammable chemical under pressure: may explode if heated'},{code:'H284',desc:'Chemical under pressure: may explode if heated'},{code:'H290',desc:'May be corrosive to metals'},{code:'H300',desc:'Fatal if swallowed'},{code:'H310',desc:'Fatal in contact with skin'},{code:'H330',desc:'Fatal if inhaled'},{code:'H340',desc:'May cause genetic defects'},{code:'H341',desc:'Suspected of causing genetic defects'},{code:'H350',desc:'May cause cancer'},{code:'H351',desc:'Suspected of causing cancer'},{code:'H360',desc:'May damage fertility or the unborn child'},{code:'H362',desc:'May cause harm to breast-fed children'},{code:'H370',desc:'Causes damage to organs'},{code:'H372',desc:'Causes damage to organs through prolonged or repeated exposure'}];
+const H_LIB=[{code:'H225',desc:'Highly flammable liquid and vapour'},{code:'H226',desc:'Flammable liquid and vapour'},{code:'H228',desc:'Flammable solid'},{code:'H301',desc:'Toxic if swallowed'},{code:'H302',desc:'Harmful if swallowed'},{code:'H304',desc:'May be fatal if swallowed and enters airways'},{code:'H311',desc:'Toxic in contact with skin'},{code:'H312',desc:'Harmful in contact with skin'},{code:'H314',desc:'Causes severe skin burns and eye damage'},{code:'H315',desc:'Causes skin irritation'},{code:'H317',desc:'May cause an allergic skin reaction'},{code:'H318',desc:'Causes serious eye damage'},{code:'H319',desc:'Causes serious eye irritation'},{code:'H331',desc:'Toxic if inhaled'},{code:'H332',desc:'Harmful if inhaled'},{code:'H334',desc:'May cause allergy or asthma symptoms if inhaled'},{code:'H335',desc:'May cause respiratory irritation'},{code:'H336',desc:'May cause drowsiness or dizziness'},{code:'H361',desc:'Suspected of damaging fertility or the unborn child'},{code:'H371',desc:'May cause damage to organs'},{code:'H373',desc:'May cause damage to organs through prolonged or repeated exposure'},{code:'H400',desc:'Very toxic to aquatic life'},{code:'H410',desc:'Very toxic to aquatic life with long lasting effects'},{code:'H411',desc:'Toxic to aquatic life with long lasting effects'},{code:'H412',desc:'Harmful to aquatic life with long lasting effects'},{code:'H413',desc:'May cause long lasting harmful effects to aquatic life'},{code:'EUH066',desc:'Repeated exposure may cause skin dryness or cracking'},{code:'EUH208',desc:'Contains sensitiser — may produce an allergic reaction'},{code:'EUH071',desc:'Corrosive to the respiratory tract'},{code:'EUH210',desc:'Safety data sheet available on request'},{code:'H200',desc:'Unstable explosive'},{code:'H201',desc:'Explosive; mass explosion hazard'},{code:'H202',desc:'Explosive; severe projection hazard'},{code:'H203',desc:'Explosive; fire, blast or projection hazard'},{code:'H204',desc:'Fire or projection hazard'},{code:'H205',desc:'May mass explode in fire'},{code:'H223',desc:'Flammable aerosol'},{code:'H224',desc:'Extremely flammable liquid and vapour'},{code:'H240',desc:'Heating may cause an explosion'},{code:'H241',desc:'Heating may cause a fire or explosion'},{code:'H242',desc:'Heating may cause a fire'},{code:'H250',desc:'Catches fire spontaneously if exposed to air'},{code:'H251',desc:'Self-heating; may catch fire'},{code:'H252',desc:'Self-heating in large quantities; may catch fire'},{code:'H260',desc:'In contact with water releases flammable gases which may ignite spontaneously'},{code:'H261',desc:'In contact with water releases flammable gas'},{code:'H270',desc:'May cause or intensify fire; oxidiser'},{code:'H271',desc:'May cause fire or explosion; strong oxidiser'},{code:'H272',desc:'May intensify fire; oxidiser'},{code:'H280',desc:'Contains gas under pressure; may explode if heated'},{code:'H281',desc:'Contains refrigerated gas; may cause cryogenic burns or injury'},{code:'H282',desc:'Extremely flammable chemical under pressure: may explode if heated'},{code:'H283',desc:'Flammable chemical under pressure: may explode if heated'},{code:'H284',desc:'Chemical under pressure: may explode if heated'},{code:'H290',desc:'May be corrosive to metals'},{code:'H300',desc:'Fatal if swallowed'},{code:'H310',desc:'Fatal in contact with skin'},{code:'H330',desc:'Fatal if inhaled'},{code:'H340',desc:'May cause genetic defects'},{code:'H341',desc:'Suspected of causing genetic defects'},{code:'H350',desc:'May cause cancer'},{code:'H351',desc:'Suspected of causing cancer'},{code:'H360',desc:'May damage fertility or the unborn child'},{code:'H362',desc:'May cause harm to breast-fed children'},{code:'H370',desc:'Causes damage to organs'},{code:'H372',desc:'Causes damage to organs through prolonged or repeated exposure'},{code:'H350i',desc:'May cause cancer by inhalation'},{code:'H360F',desc:'May damage fertility'},{code:'H360D',desc:'May damage the unborn child'},{code:'H360FD',desc:'May damage fertility. May damage the unborn child'},{code:'H360Fd',desc:'May damage fertility. Suspected of damaging the unborn child'},{code:'H360Df',desc:'May damage the unborn child. Suspected of damaging fertility'},{code:'H361f',desc:'Suspected of damaging fertility'},{code:'H361d',desc:'Suspected of damaging the unborn child'},{code:'H361fd',desc:'Suspected of damaging fertility. Suspected of damaging the unborn child'}];
 // GB CLP Annex I label-element tables, current legislation.gov.uk text.
 // Empty string means the statement does not itself require a signal word.
 // A few physical-hazard statements cover more than one category and can use
@@ -1614,6 +1615,7 @@ const GB_CLP_SIGNAL_WORD_BY_CODE=Object.freeze({
   H310:'Danger',H311:'Danger',H312:'Warning',H314:'Danger',H315:'Warning',H317:'Warning',
   H318:'Danger',H319:'Warning',H330:'Danger',H331:'Danger',H332:'Warning',H334:'Danger',
   H335:'Warning',H336:'Warning',H340:'Danger',H341:'Warning',H350:'Danger',H351:'Warning',
+  H350i:'Danger',H360F:'Danger',H360D:'Danger',H360FD:'Danger',H360Fd:'Danger',H360Df:'Danger',H361f:'Warning',H361d:'Warning',H361fd:'Warning',
   H360:'Danger',H361:'Warning',H362:'',H370:'Danger',H371:'Warning',H372:'Danger',H373:'Warning',
   H400:'Warning',H410:'Warning',H411:'',H412:'',H413:'',
   EUH066:'',EUH071:'',EUH208:'',EUH210:''
@@ -1635,7 +1637,7 @@ function extractSdsSignalWord(text){
 }
 function resolveGbClpSignalWord(codes, suppliedSignal){
   const list=Array.isArray(codes)?codes:String(codes||'').split(',');
-  const clean=[...new Set(list.map(v=>String(v).trim().toUpperCase()).filter(Boolean))];
+  const clean=[...new Set(list.map(v=>{const c=String(v).trim();return H_LIB.some(h=>h.code===c)?c:c.toUpperCase();}).filter(Boolean))];
   const supplied=normaliseSdsSignalWord(suppliedSignal);
   const ambiguous=clean.some(code=>GB_CLP_SIGNAL_WORD_AMBIGUOUS_CODES.includes(code));
   if(clean.some(code=>GB_CLP_SIGNAL_WORD_BY_CODE[code]==='Danger'))return 'Danger';
@@ -3548,6 +3550,7 @@ const H_PICTO_MAP = {
   H336:'exclamation',
   // Health hazard
   H304:'health', H334:'health', H340:'health', H341:'health', H350:'health',
+  H350i:'health', H360F:'health', H360D:'health', H360FD:'health', H360Fd:'health', H360Df:'health', H361f:'health', H361d:'health', H361fd:'health',
   H351:'health', H360:'health', H361:'health', H362:'health', H370:'health',
   H371:'health', H372:'health', H373:'health',
   // Aquatic/environmental — pictogram required ONLY for Acute 1 (H400) and Chronic 1/2 (H410, H411).
@@ -3598,19 +3601,52 @@ function buildSensitiserChips(){
 // were previously never gated at all — can bypass either check.
 function _downloadAllowed(){
   const checked=document.getElementById('verify-checkbox')?.checked;
-  return !!checked && !window._labelBlockDownload && !_hazardReviewRequired() && SdsDocCheck.isVerified(_sdsDocRecord());
+  return !!checked && !window._labelBlockDownload && !_hazardReviewRequired() && SdsDocCheck.isVerified(_sdsDocRecord()) && _requiredContentCheck().complete;
+}
+// Required label content (Builder Label Technical Audit M09/M31), kept
+// separate from physical fit (window._labelBlockDownload): the live preview
+// may show "Your Scent Name" / "Your Brand" / "Contains: sensitising
+// substance" while the label is being built, but placeholder or missing
+// content must never be exportable. Re-read from the form fields on EVERY
+// call -- never from which steps were passed, the Step 5 confirmation, or
+// the visible step -- so a field cleared after confirming (e.g. going back
+// from Step 5) is caught by every export route, including the mobile sheet.
+const REQUIRED_CONTENT_MESSAGES={
+  'product-name':'Add your product name (Step 2).',
+  'business-name':'Add your business name (Step 4).',
+  'business-address':'Add your supplier address (Step 4).',
+  'euh208-substance':'EUH208 needs the named sensitising substance(s). Check your current supplier SDS and paste the complete relevant EUH208/Contains information.',
+};
+function _requiredContentCheck(){
+  const val=id=>document.getElementById(id)?.value||'';
+  return LabelRenderer.checkRequiredContent({
+    scentName:val('scent-name'), bizName:val('biz-name'), bizAddress:val('biz-address'),
+    hStatements:document.getElementById('h-statements')?val('h-statements'):S.hStatements,
+    sensitisers:S.sensitisers,
+  });
 }
 function _downloadBlockedMessage(){
   if(_hazardReviewRequired())return _hazardReviewMessage();
-  // Existing reasons keep their existing message; the document check (also
-  // shown as a Step 5 notice) is reported once those are satisfied.
+  const rc=_requiredContentCheck();
+  const badPictos=window._unrecognizedPictograms||[];
+  const base=badPictos.length?"This label can't be downloaded yet. "+LabelRenderer.describeInvalidPictograms(badPictos):'Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.';
+  if(!rc.complete){
+    const content="This label is missing required content, so it can't be downloaded yet:\n\n"+rc.missing.map(m=>'• '+REQUIRED_CONTENT_MESSAGES[m]).join('\n');
+    return !document.getElementById('verify-checkbox')?.checked||window._labelBlockDownload?base+'\n\n'+content:content;
+  }
   const _sdsMsg=SdsDocCheck.exportBlockMessage(_sdsDocRecord());
   if(_sdsMsg&&document.getElementById('verify-checkbox')?.checked&&!window._labelBlockDownload)return _sdsMsg;
-  return 'Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.';
+  return base;
 }
 
 function toggleDownload(){
   const allowed=_downloadAllowed();
+  const rc=_requiredContentCheck();
+  const contentWarn=document.getElementById('content-warn-step5');
+  if(contentWarn){
+    contentWarn.style.display=rc.complete?'none':'block';
+    contentWarn.innerHTML=rc.complete?'':'<strong>⚠️ Download unavailable — required label content is missing</strong><br><br>'+rc.missing.map(m=>escapeBuilderText(REQUIRED_CONTENT_MESSAGES[m])).join('<br>');
+  }
   // Hotfix: the live preview panel has its own PNG/SVG/PDF row
   // (#preview-dl-row) calling the exact same download functions -- it was
   // missing from this list, so those buttons stayed visually enabled
@@ -3865,9 +3901,10 @@ function extractSDS(){
   if(!_requireSdsDoc())return;
 
   // ── H STATEMENTS ──────────────────────────────────────────────────────────
-  const hMatches=[...new Set(text.match(/\bH\d{3}\b/g)||[])];
-  const euhMatches=[...new Set(text.match(/\bEUH\d{3}\b/g)||[])];
-  const allH=[...hMatches,...euhMatches];
+  // M21 (Issue #6): complete suffixed codes are kept exactly (H361f, H360FD,
+  // H350i -- never reduced to the base code); see
+  // LabelRenderer.extractHazardCodesFromText().
+  const allH=LabelRenderer.extractHazardCodesFromText(text);
 
   // Set H statement field and state
   const hEl=document.getElementById('h-statements');
@@ -4231,8 +4268,18 @@ function canLeaveApprovedBuilderStep(step){
       alert('P280 needs at least one applicable protection item selected before continuing. Click the P280 chip to choose.');
       return false;
     }
+    // M31: EUH208 must name the sensitising substance(s) -- the renderer's
+    // "Contains: sensitising substance" placeholder is never finished content.
+    if(LabelRenderer.checkRequiredContent({hStatements:S.hStatements,sensitisers:S.sensitisers,scentName:'-',bizName:'-'}).missing.includes('euh208-substance')){
+      alert(REQUIRED_CONTENT_MESSAGES['euh208-substance']);
+      return false;
+    }
   }
   if(step===4){
+    const bizName=(document.getElementById('biz-name')?.value||'').trim();
+    if(!bizName){alert('Add your business name before continuing.');document.getElementById('biz-name')?.focus();return false;}
+    const address=(document.getElementById('biz-address')?.value||'').trim();
+    if(!address){alert('Add your supplier address before continuing.');document.getElementById('biz-address')?.focus();return false;}
     const phone=(document.getElementById('biz-phone')?.value||'').trim();
     if(!phone){alert('Please enter the required business phone number before final review.');document.getElementById('biz-phone')?.focus();return false;}
   }
@@ -4567,6 +4614,22 @@ function _applyHazardBlockGate(){
 }
 function prevStep(){if(approvedBuilderStep>1)setApprovedBuilderStep(approvedBuilderStep-1);}
 function checkStep4AndNext(){
+  const bizName=(document.getElementById('biz-name')?.value||'').trim();
+  if(!bizName){
+    document.getElementById('biz-name').style.border='1.5px solid #EF4444';
+    document.getElementById('biz-name').focus();
+    alert('Add your business name before continuing.');
+    return;
+  }
+  document.getElementById('biz-name').style.border='';
+  const address=(document.getElementById('biz-address')?.value||'').trim();
+  if(!address){
+    document.getElementById('biz-address').style.border='1.5px solid #EF4444';
+    document.getElementById('biz-address').focus();
+    alert('Add your supplier address before continuing.');
+    return;
+  }
+  document.getElementById('biz-address').style.border='';
   const phone=(document.getElementById('biz-phone')?.value||'').trim();
   if(!phone){
     document.getElementById('biz-phone').style.border='1.5px solid #EF4444';
@@ -4936,6 +4999,8 @@ function buildSVG(forExport=false){
   window._blockReasonCodes=result.blockReasonCodes;
   window._unsupportedCodes=result.unsupportedCodes;
   window._unrecognizedCodesGeneric=result.unrecognizedCodesGeneric;
+  // M38 (Issue #7): unrecognised stored pictogram keys (the renderer blocks them).
+  window._unrecognizedPictograms=result.unrecognizedPictograms||[];
   window._contentOverflow=result.contentOverflow;
   window._labelLegibilityWarn=result.metrics.overflow;
   window._hazardYSlack=result.metrics.hazardYSlack;
@@ -5060,7 +5125,10 @@ function updateLabel(){
   // not fitting must block download exactly like hazard-text-overflow and
   // footer-clipped already do -- see label-render.js's _mandatoryMinFS.
   const _hasMandatoryTextTooSmall = !!(window._scentTooSmall || window._businessNameTooSmall || window._productTypeTooSmall || window._signalWordTooSmall);
-  window._labelBlockDownload = !!(window._labelLegibilityWarn || window._footerLegibilityClipped || _hasUnrecognizedCodes || _isCustomSizeTooSmall || _hasMandatoryTextTooSmall);
+  // M38 (Issue #7): an unrecognised stored pictogram key blocks every export
+  // route too (the renderer never substitutes one).
+  const _hasUnrecognizedPictograms = (window._unrecognizedPictograms||[]).length>0;
+  window._labelBlockDownload = !!(window._labelLegibilityWarn || window._footerLegibilityClipped || _hasUnrecognizedCodes || _isCustomSizeTooSmall || _hasMandatoryTextTooSmall || _hasUnrecognizedPictograms);
   // Fail-closed design (2026-09-07): when the label is blocked for a reason a
   // bigger label might actually fix (not the unrecognised-code or below-
   // minimum-size cases, which have their own specific remedy), tell the
@@ -5068,7 +5136,7 @@ function updateLabel(){
   // renderLabel() result for this exact content via label-render.js's
   // findSmallestFittingSize(). Read-only: this never changes S.size itself:
   // the maker always makes that choice, in Step 1, themselves.
-  const _sizeHelpsIfBlocked = window._labelBlockDownload && !_hasUnrecognizedCodes && !_isCustomSizeTooSmall;
+  const _sizeHelpsIfBlocked = window._labelBlockDownload && !_hasUnrecognizedCodes && !_isCustomSizeTooSmall && !_hasUnrecognizedPictograms;
   const _sizeRec = (_sizeHelpsIfBlocked && window._lastLabelData && typeof LabelRenderer!=='undefined' && LabelRenderer.findSmallestFittingSize)
     ? LabelRenderer.findSmallestFittingSize(window._lastLabelData, {instanceId:'builder-main'})
     : null;
@@ -5098,6 +5166,8 @@ function updateLabel(){
   const _codeBlockParts = clpCombinedCodeBlockMessage(_gbUnsupportedCodesFound, _genericUnrecognizedCodesFound, escapeBuilderText);
   const _blockHeading = _codeBlockParts.length
     ? '⚠️ '+_codeBlockParts.map(p=>p.heading).join(' / ')
+    : _hasUnrecognizedPictograms
+    ? '⚠️ Download unavailable — a saved pictogram was not recognised'
     : _isCustomSizeTooSmall
     ? '⚠️ Download unavailable — custom size below CLPeasy\'s supported minimum'
     : '⚠️ Download unavailable — label size too small for CLP labelling requirements';
@@ -5118,6 +5188,8 @@ function updateLabel(){
       : _gbUnsupportedCodesFound.length
       ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br><strong>CLPeasy has blocked the download rather than remove, replace or print a code it cannot safely resolve for a Great Britain CLP label.</strong>'
       : clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+'<br><br>Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
+    : _hasUnrecognizedPictograms
+    ? escapeBuilderText(LabelRenderer.describeInvalidPictograms(window._unrecognizedPictograms))+'<br><br>CLPeasy has blocked the download rather than print a different pictogram. In Step 3, extract your supplier SDS Section 2.2 again (or change the H statement selection): this rebuilds the pictograms from the label\'s hazard codes.'
     : _isCustomSizeTooSmall
     ? getCustomSizeMinMsg()+'<br><br>To create a downloadable label, return to Step 1 and '+(S.shape==='rectangle'?'set the long side to '+LabelRenderer.CUSTOM_RECT_LONG_MIN_MM+'mm or larger and the short side to '+LabelRenderer.CUSTOM_RECT_SHORT_MIN_MM+'mm or larger':'increase the custom size to '+LabelRenderer.CUSTOM_SIZE_MIN_MM+'mm or larger')+'.'
     : window._footerLegibilityClipped
@@ -5125,11 +5197,14 @@ function updateLabel(){
     : _hasMandatoryTextTooSmall
     ? 'Your '+_mandatoryTextTooSmallLabel+' cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, return to Step 1 and select a larger label size, or shorten the affected text.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
     : 'The required hazard and precautionary information cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, return to Step 1 and select a larger label size. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>';
+  const _blockBodyFull = (_codeBlockParts.length && _hasUnrecognizedPictograms)
+    ? _blockBody+'<br><br>'+escapeBuilderText(LabelRenderer.describeInvalidPictograms(window._unrecognizedPictograms))
+    : _blockBody;
   [document.getElementById('label-warn-stage4'), document.getElementById('label-warn-step5')].forEach(_labelWarnEl=>{
     if(!_labelWarnEl)return;
     if(window._labelBlockDownload){
       _labelWarnEl.style.display='block';
-      _labelWarnEl.innerHTML = '<strong>'+_blockHeading+'</strong><br><br>'+_blockBody;
+      _labelWarnEl.innerHTML = '<strong>'+_blockHeading+'</strong><br><br>'+_blockBodyFull;
     } else {
       _labelWarnEl.style.display='none';
     }

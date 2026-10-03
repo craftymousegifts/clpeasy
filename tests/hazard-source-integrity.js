@@ -97,6 +97,7 @@ function fillBasics(name){
   window.onDimInput();
   document.getElementById('product-type').value = 'Scented Candle';
   document.getElementById('biz-name').value = 'Crafty Mouse Gifts';
+  document.getElementById('biz-address').value = 'Duns';
   document.getElementById('biz-phone').value = '01234 567890';
   setName(name);
 }

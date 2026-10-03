@@ -108,6 +108,9 @@ const server = http.createServer((req, res) => {
         document.getElementById('biz-name').value = 'QA Candles';
         document.getElementById('biz-address').value = '1 Test Street, Testtown, TE1 1ST';
         document.getElementById('biz-phone').value = '01234 567890';
+        // This complete footer clips at 52mm on Chromium 153 on unmodified main too.
+        // Use a genuinely fitting size for successful-download guidance checks.
+        selectSize(63);
         readForm(); updateLabel();
         // Walk the real stage gates 1 -> 5 (confirming Step 3 like a customer).
         for (let n = 2; n <= 5; n++) {
@@ -201,7 +204,7 @@ const server = http.createServer((req, res) => {
       assert.ok(/::circle::|::rectangle::|::square::/.test(pop.args[0] || ''), 'C1: label key carries shape and size: ' + pop.args[0]);
       ok('4c: after allowing pop-ups the PDF is charged once and delivered into the pre-opened window (C6)');
       await t2.close();
-      // A label with no label key (no product name): blocked pop-up still costs nothing.
+      // Missing product name is now required content: every PDF attempt costs nothing.
       const t3 = await open('builder.html', 'payg', 'charged', undefined, { popupBlocked: true });
       await readyBuilder(t3);
       await t3.evaluate(() => { document.getElementById('scent-name').value = ''; readForm(); });
@@ -215,8 +218,9 @@ const server = http.createServer((req, res) => {
       await new Promise(r => setTimeout(r, 500));
       s = await state(t3);
       const k = await t3.evaluate(() => (window.__rpc || []).filter(x => x[0] === 'consume_download').map(x => x[1].p_label_key));
-      assert.deepStrictEqual(k, [null], 'C6: no-key label is charged once, with no label key, only when the window exists');
-      ok('4d: label without a key: blocked pop-up free, successful PDF charged once (C6)');
+      assert.deepStrictEqual(k, [], 'M09: missing product name blocks export before charging, even with pop-ups allowed');
+      assert.strictEqual(s.opened, 0, 'M09: missing product name never opens a PDF window');
+      ok('4d: missing product name: export blocked with or without pop-ups; no charge or PDF (M09 + C6)');
       await t3.close();
       // Download refused by the server: the pre-opened window is closed, nothing delivered.
       const t4 = await open('builder.html', 'zero', 'none');

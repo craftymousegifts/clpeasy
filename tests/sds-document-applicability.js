@@ -195,6 +195,7 @@ const vcb = document.getElementById('verify-checkbox'); vcb.checked = true;
 window.eval("S.sdsDoc=null;");
 set('frag-load', '10'); set('product-type', 'Scented Candle'); doc('finished','10','candle');
 // Hazards come from Smart Paste for the matching document (real production path).
+set('biz-name','Test Maker'); set('biz-address','Duns');
 set('smart-paste-input', 'Warning\nH317 May cause an allergic skin reaction.\nP280 Wear protective gloves.');
 window.extractSDS();
 assert.strictEqual(S('S.hStatements'), 'H317', 'extracted from the matching document');
@@ -204,7 +205,7 @@ assert.strictEqual(reviewBlocks, false, 'fixture is otherwise exportable, so the
 assert.strictEqual(window.SdsDocCheck.status(window.eval('_sdsDocRecord()')), 'not-checked', 'answers alone are not a confirmation');
 assert.strictEqual(exportOk(), false, 'unconfirmed label cannot be exported');
 if (!reviewBlocks) {
-  assert(/complete "Check your supplier document first"/.test(window._downloadBlockedMessage()), 'guidance names Step 3 check');
+  assert(/complete "Check your supplier document first"/.test(window._downloadBlockedMessage()), 'guidance names Step 3 check: '+window._downloadBlockedMessage()+' required='+JSON.stringify(window._requiredContentCheck()));
   const note = document.getElementById('sds-doc-export-note');
   assert(note.style.display !== 'none' && /Step 3/.test(note.textContent), 'visible Step 5 notice with a way back to Step 3');
 }

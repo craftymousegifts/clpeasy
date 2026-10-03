@@ -181,6 +181,8 @@ function fillMinimalLabel(window){
   window.document.getElementById('scent-name').value = 'Security Test Candle';
   window.document.getElementById('product-type').value = 'Scented Candle';
   window.onProductTypeChange();
+  window.document.getElementById('biz-name').value = 'Test Maker';
+  window.document.getElementById('biz-address').value = 'Duns';
   window.document.getElementById('frag-load').value = '10%';
   window.updateLabel();
   // 3 Oct 2026: exports need the supplier-document confirmation; it is
@@ -248,7 +250,7 @@ function candleFixture(overrides){
   return require('./helpers/sds-doc-verified').withConfirmedDoc(Object.assign({
     scentName:'Security Sheet Candle', productType:'Scented Candle', bizName:'Test Biz',
     shape:'rectangle', size:'custom', customW:57, customH:99,
-    bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'20 hrs',
+    bizAddress:'Duns', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'20 hrs',
     signal:'Warning', hStatements:'H315', pStatements:'', sensitisers:[], pictograms:['exclamation'],
     textColour:'dark', showBorder:true, hideEN15494:false, labelLang:'en',
   }, overrides), '10%');

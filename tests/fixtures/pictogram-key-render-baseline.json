@@ -1,0 +1,606 @@
+{
+ "[\"flame\"]|circle 52x52": {
+  "sha256": "3d5fe2346aa34fa54672d1887578e869f964e69ca6a5a10d90acdbc5effbc7b6",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"flame\"]|circle 63x63": {
+  "sha256": "b78c64010ad0fc1f8281fcc4361cee51bcbdfd4b30c877192c374ae616a09043",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"flame\"]|circle 75x75": {
+  "sha256": "e2ebeada179423289408b61471b7eee5cb7123cd34304ceced75491f453dd915",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"flame\"]|square 63x63": {
+  "sha256": "f5fa47dc74013eb3d55eb5064c6fd5fd3a019ab7060dea9071c058c0d06fe5e1",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"flame\"]|rectangle 63x44": {
+  "sha256": "ea37a5f66cd8b6a84303908af7a6b1194901abd839e1e2b60577a60a6af96849",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"flame\"]|rectangle 100x50": {
+  "sha256": "891a06c1c736448f91b22bcdda122aaafeeb817991e25e960c42eea77142503c",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"flame\"]|rectangle 150x100": {
+  "sha256": "412a9fe8c5a2cad282c305e3623beef5399acdc0dd86f378596f8a821ecd3844",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"exclamation\"]|circle 52x52": {
+  "sha256": "fe7a1594a23ae27fd4c59580365c3ac3edfabdcca323c841cebda20092f58196",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"exclamation\"]|circle 63x63": {
+  "sha256": "6f2c30312455b9ee6e4dc02d278efaa04b2328ccef8fc4fe0592d2cf63fb7884",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"exclamation\"]|circle 75x75": {
+  "sha256": "b2747d634e6635a6266d20ed4521ace85404a136afa217f6883da0141890de2b",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"exclamation\"]|square 63x63": {
+  "sha256": "6c0703148a41524834f42cdbb1bfd07284733947948e55016aeb9809811c62bc",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"exclamation\"]|rectangle 63x44": {
+  "sha256": "c4e8c19ae0f4bdce50c5f0c22c0b3300ec86c622ebe82f3e2c0dc0fe5e2d3ea8",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"exclamation\"]|rectangle 100x50": {
+  "sha256": "5e5e22de36f6c3d3d401eca1774a902e7c9969dfe538c163ef5dc7a9e2b256e8",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"exclamation\"]|rectangle 150x100": {
+  "sha256": "f94d5104bf4c3d7ec173651f1c66d5c03e169227499ce283697821e97661465b",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"aquatic\"]|circle 52x52": {
+  "sha256": "c5c408877cd682e02a8ed53325da7d88059e202248d1dec0a4bda519eaa84476",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"aquatic\"]|circle 63x63": {
+  "sha256": "e4dc83b3a5e81f26849eac37d5459876a12616c5c569b644644415bf63746914",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"aquatic\"]|circle 75x75": {
+  "sha256": "5e94bc115a7bee6046c3d8ddb244751bd09ba4913ec3590420833c3cafbf0486",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"aquatic\"]|square 63x63": {
+  "sha256": "71b535d0e852bc97957ef3a1d655c778ba6371488a7a0ee21ebfbe339053994d",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"aquatic\"]|rectangle 63x44": {
+  "sha256": "4f2916e277a58f1ac08f573dc3d1455ed95927047db798c85c10608fc39e68b0",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"aquatic\"]|rectangle 100x50": {
+  "sha256": "d9eac1c8461514a3cc67167273f034a3e9fafd72ea75caaa285f0f422dfebb77",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"aquatic\"]|rectangle 150x100": {
+  "sha256": "bceb7d7ed53ee45f4bba534ef124b8a65259f679ff1d1f307ef9e06682cb0a55",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"explosion\"]|circle 52x52": {
+  "sha256": "3116641c59d79544ca5c0e139b9508b35493ecf3e702b00e3fde7104bfc9ed53",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"explosion\"]|circle 63x63": {
+  "sha256": "9b085e1571b30c724e38868f67984e8138933e82fc98f2ad4f8a4516fa0a27a9",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"explosion\"]|circle 75x75": {
+  "sha256": "01ae927ff95c30f2a743186da9500f2f7db1ba3730094e77c290d0edff8c6462",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"explosion\"]|square 63x63": {
+  "sha256": "a580ec6469296237072c1470d2c62778be67af7e5ce91438f54d90a1d5b47be6",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"explosion\"]|rectangle 63x44": {
+  "sha256": "33425ecc4661095f66f726382e6315d994aad0d9c29063fce2ee582e255702e3",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"explosion\"]|rectangle 100x50": {
+  "sha256": "90a3ce5bde62d1885c62ddde7acebbb56a6ddca98504c6905362b61182d39f62",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"explosion\"]|rectangle 150x100": {
+  "sha256": "2a967e49f06a1308b3ac2f47d02de89a57b1a38bcff38ffdfb44483034a28f75",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"oxidiser\"]|circle 52x52": {
+  "sha256": "5c31039fadb958b8ddedd880398f84da27cc4bf06ceab9919b3ee09ee44ab83c",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"oxidiser\"]|circle 63x63": {
+  "sha256": "d518cbebb5513e3ff7f62496dcee28a52a977256e0eb8ed5f358d7df35a41bfe",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"oxidiser\"]|circle 75x75": {
+  "sha256": "c8660e2926d55357ea6143b48c290de45c514e39c87ef5ee2480bc95610a1c87",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"oxidiser\"]|square 63x63": {
+  "sha256": "b4f6db0d5e6b19c7c579d47ef82190a7f054cff8709008cda155250e40eb6e23",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"oxidiser\"]|rectangle 63x44": {
+  "sha256": "fe4d380d6702a7a4f81c801d74e25440d03158238e5dadb577b435934adc6258",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"oxidiser\"]|rectangle 100x50": {
+  "sha256": "cdc8b8add5350604236e172a5f2902f05372d48c04bb58f3a8cfab159c0261c0",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"oxidiser\"]|rectangle 150x100": {
+  "sha256": "1e0dbd39ef952c0628e0202edbca24e0f3aba487def93bdc6bc680faba84e529",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"gas\"]|circle 52x52": {
+  "sha256": "e2e3c32760d3392251854c03c1cadcb56fb4e44e9f311daa169316956c036882",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"gas\"]|circle 63x63": {
+  "sha256": "da276fa27266e5dcbb9995f2c39e603aa76d1a748ff9882b274a68770039552b",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"gas\"]|circle 75x75": {
+  "sha256": "3adcdf3c72d7a30ae5e71f1f43982bcba9cca1a31d4d4fc784698dfa732556a6",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"gas\"]|square 63x63": {
+  "sha256": "08e0d1b372c37d3270ec302adf17ae3fe802385376b7941ac6c3fe9c98f69a36",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"gas\"]|rectangle 63x44": {
+  "sha256": "25f33301707c2376bef18c4ccf436e9c552c6aa028c03de568354da00c58cbd1",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"gas\"]|rectangle 100x50": {
+  "sha256": "847a432f3622d17ec89e3d1bd6c40623fb46462c147434e1aa8919d7d39312d8",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"gas\"]|rectangle 150x100": {
+  "sha256": "26b91d6de32792762dac77325ebaf7411ef77f54441e2491206387b798aa3125",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"health\"]|circle 52x52": {
+  "sha256": "c6767cac04c2758a5817b484e59591e89df89af538018afa2807930451bf0463",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"health\"]|circle 63x63": {
+  "sha256": "2f333c01fcfa7279c85c803ab43f04c040546a68a65419567f14ac33ef1581c0",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"health\"]|circle 75x75": {
+  "sha256": "f8eaf163ba8fb88781ba8f28218471471dcc31215eb9a9559fbf7248daf3f88b",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"health\"]|square 63x63": {
+  "sha256": "a7102c6cb6c2e426e78ab4c0c587a7032093b4c5c3299252fbf62274dec1cdf6",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"health\"]|rectangle 63x44": {
+  "sha256": "ff7df44ef50ba9e25e0e9ffb22988e26776145f6bae8c2cfa6eb7d9f185c4926",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"health\"]|rectangle 100x50": {
+  "sha256": "341e8c1213019b66ae2d1c7805bb411442df6d97f1921d87c84e7a81912d0dd2",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"health\"]|rectangle 150x100": {
+  "sha256": "a7853d494d7e0f4cf218628ef51b7e01f02a393eee4e796905e3688f283464f5",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"skull\"]|circle 52x52": {
+  "sha256": "d2721c257783f65349f2da128ebeb78e0b63cb5b0ed0a351be9f7a1201d5b385",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"skull\"]|circle 63x63": {
+  "sha256": "a3918dd83fb29459555c0c57e550fe26cf0291cde91f9eca360916b312379a34",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"skull\"]|circle 75x75": {
+  "sha256": "b4799c5c77226e6fd003b1b5f8da3fcce871cbfab7e3a6596aaac45550119ac2",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"skull\"]|square 63x63": {
+  "sha256": "f347b4306f474bf4cffec3626c3ec291294a2c8ed4b688bb9bc1425220e341d4",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"skull\"]|rectangle 63x44": {
+  "sha256": "42bb17508a960795eaa0b5a22b06912e31cc3f8801533bbcdebde979e17daa85",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"skull\"]|rectangle 100x50": {
+  "sha256": "ef1d885b9c6d0779e27a34483564ce5bef4737bbbf562fe777f6ba12ad1d04dd",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"skull\"]|rectangle 150x100": {
+  "sha256": "3da4dc785056eb60a7988a3e27088706969eb590b0472508a8a9e95ad397bb91",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"corrosive\"]|circle 52x52": {
+  "sha256": "93f66300846a808a4e0f21d3a36e105179ff05a288f5c2dbe16fdca3bec2eee2",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"corrosive\"]|circle 63x63": {
+  "sha256": "32c18f5871b3a537ccfad359c5211cf201ba059ff61b789eadc742222d947456",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"corrosive\"]|circle 75x75": {
+  "sha256": "80f5c07f7f7e2901f8cb354ad2e3b9051841fadd7b2771b311d86754e6038a99",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"corrosive\"]|square 63x63": {
+  "sha256": "1896bad98947c9a4a244f55e46fff4665f548af7328b497ecc06f72a4c766165",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"corrosive\"]|rectangle 63x44": {
+  "sha256": "f27b636982594573e66f8635cb2268d9a8ae82d33f46fbd923e2971c1fb22769",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"corrosive\"]|rectangle 100x50": {
+  "sha256": "57cdbdd812a0de2ada6809e65effea21819ee2912a1a3a957fbce25463853e63",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"corrosive\"]|rectangle 150x100": {
+  "sha256": "463345c951b36fd94f28db0e3732fea81903505992eba34a1d51d21d1805fa83",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"exclamation\",\"health\"]|circle 52x52": {
+  "sha256": "208ca8e43d1e2139238321115aa4966be58bfad9863a3b094d0858f29a1799b6",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"exclamation\",\"health\"]|circle 63x63": {
+  "sha256": "dc1a8cf77e9ba62474b163a4eb60ffe817b3fc673fc6330c4be50613dd26c5a3",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"exclamation\",\"health\"]|circle 75x75": {
+  "sha256": "b03f0e85c47929cd79d3ddf5111b6ace8937b5c08c447a5b02ed6617bd9bf95f",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"exclamation\",\"health\"]|square 63x63": {
+  "sha256": "3cf11777d5659afd105c5866d06717959f555774eacfc8622ce63a8695535ee7",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"exclamation\",\"health\"]|rectangle 63x44": {
+  "sha256": "6a6f3a731135764f83905008b423323d27a0aeb27696f579af973e2670d0e3ac",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"exclamation\",\"health\"]|rectangle 100x50": {
+  "sha256": "f15e3ce08c4298a93144d25c39a6dac196b50fc5700c1e502e0577afec6963dd",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"exclamation\",\"health\"]|rectangle 150x100": {
+  "sha256": "f78cd96d46f4525a41d3acefe57a3c7a6e09fcb794a98af7c6feac1090dede47",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"flame\",\"exclamation\",\"aquatic\"]|circle 52x52": {
+  "sha256": "7e4a1bdc32b87763b1a2d6ddeab7daed629794e5d8bddffa41110021b65ec1d2",
+  "fits": false,
+  "warnings": [
+   "hazard-text-overflow"
+  ]
+ },
+ "[\"flame\",\"exclamation\",\"aquatic\"]|circle 63x63": {
+  "sha256": "bee7371e032502b96073c4b5b848e561aba54f23ea88a90bf0153c26f8c848e9",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"flame\",\"exclamation\",\"aquatic\"]|circle 75x75": {
+  "sha256": "d94da5c7f70041d19dfcb05811e11a1ab3b2a109f5f0e347a5c9ad06125545e5",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"flame\",\"exclamation\",\"aquatic\"]|square 63x63": {
+  "sha256": "575c7a25c522a0ab2c5e1520f672afa622a66f73e0a85e44eedd6ccdfb487780",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"flame\",\"exclamation\",\"aquatic\"]|rectangle 63x44": {
+  "sha256": "687fcce7e44d610826edf12db0519efbf3c8cf3f567eb9b5824a1441cd177083",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"flame\",\"exclamation\",\"aquatic\"]|rectangle 100x50": {
+  "sha256": "7fbf16336c0a6f298fea31b7327ada065405a99b8df3cdb63bd361f0c05f1240",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"flame\",\"exclamation\",\"aquatic\"]|rectangle 150x100": {
+  "sha256": "698fb7426b89fbc5373343fbbcbd22c039acdcf7e7f206eb495ede76f41e6645",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"skull\",\"corrosive\",\"health\",\"aquatic\"]|circle 52x52": {
+  "sha256": "4800b750d3d3c7e2144ea57c93522dd11e36b63a1a8086f186b23cf8b4d8420b",
+  "fits": false,
+  "warnings": [
+   "hazard-text-overflow"
+  ]
+ },
+ "[\"skull\",\"corrosive\",\"health\",\"aquatic\"]|circle 63x63": {
+  "sha256": "119e5849ee5f7f7d833f9b36efe28fc12ca48f8096b7c23913023d39f8ebd308",
+  "fits": false,
+  "warnings": [
+   "hazard-text-overflow"
+  ]
+ },
+ "[\"skull\",\"corrosive\",\"health\",\"aquatic\"]|circle 75x75": {
+  "sha256": "d3fc907bddec8b3125db5252b0db940ca2f1c4375b70272dbb6758b665e19349",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"skull\",\"corrosive\",\"health\",\"aquatic\"]|square 63x63": {
+  "sha256": "2f6964e875ac89cf94597e41d5fc87c0d7149269e2be2a513242a1961d8fac0f",
+  "fits": false,
+  "warnings": [
+   "hazard-text-overflow"
+  ]
+ },
+ "[\"skull\",\"corrosive\",\"health\",\"aquatic\"]|rectangle 63x44": {
+  "sha256": "911ac11039423ca921965ba0473c32bf7d70861c59325be2cb8dcaf81fe50240",
+  "fits": false,
+  "warnings": [
+   "hazard-text-overflow",
+   "footer-clipped"
+  ]
+ },
+ "[\"skull\",\"corrosive\",\"health\",\"aquatic\"]|rectangle 100x50": {
+  "sha256": "42d4777f36fb272043fb7d7a9fe4fee302400eb25e39047d36fcf2cdd28d3f63",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"skull\",\"corrosive\",\"health\",\"aquatic\"]|rectangle 150x100": {
+  "sha256": "73dc0a7273680ba7fdd9f30155bb2cfa033a767e027fbe4e6c790070e2093b68",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"flame\",\"exclamation\",\"aquatic\",\"explosion\",\"oxidiser\",\"gas\",\"health\",\"skull\",\"corrosive\"]|circle 52x52": {
+  "sha256": "031037349b591f420c8e0cfa2d0d8d67ca3c977dd93e5973ea7aad1edae0fec6",
+  "fits": false,
+  "warnings": [
+   "hazard-text-overflow"
+  ]
+ },
+ "[\"flame\",\"exclamation\",\"aquatic\",\"explosion\",\"oxidiser\",\"gas\",\"health\",\"skull\",\"corrosive\"]|circle 63x63": {
+  "sha256": "744a8b4cad2e5a6c13e8504489730a9e76a7be85b21b2fe47ce553cea98f57c6",
+  "fits": false,
+  "warnings": [
+   "hazard-text-overflow"
+  ]
+ },
+ "[\"flame\",\"exclamation\",\"aquatic\",\"explosion\",\"oxidiser\",\"gas\",\"health\",\"skull\",\"corrosive\"]|circle 75x75": {
+  "sha256": "8f9bd952f7eff92b89ffed84a9485e72037a65fa873ad7f38cc863399ea30ba6",
+  "fits": false,
+  "warnings": [
+   "hazard-text-overflow"
+  ]
+ },
+ "[\"flame\",\"exclamation\",\"aquatic\",\"explosion\",\"oxidiser\",\"gas\",\"health\",\"skull\",\"corrosive\"]|square 63x63": {
+  "sha256": "59fada06ea3e2dc74b16e119d155da84587247041b1625d6a92765b36dd1a0e7",
+  "fits": false,
+  "warnings": [
+   "hazard-text-overflow"
+  ]
+ },
+ "[\"flame\",\"exclamation\",\"aquatic\",\"explosion\",\"oxidiser\",\"gas\",\"health\",\"skull\",\"corrosive\"]|rectangle 63x44": {
+  "sha256": "99b799d843514c848d73948cf4a8134ab7d09ea00da4c005375fb98f4f08368f",
+  "fits": false,
+  "warnings": [
+   "hazard-text-overflow",
+   "footer-clipped"
+  ]
+ },
+ "[\"flame\",\"exclamation\",\"aquatic\",\"explosion\",\"oxidiser\",\"gas\",\"health\",\"skull\",\"corrosive\"]|rectangle 100x50": {
+  "sha256": "703739bdd0f3483a19d0a6dd32c67bfe00f9763316757860a9e1b4c3e4bc009a",
+  "fits": false,
+  "warnings": [
+   "hazard-text-overflow",
+   "footer-clipped"
+  ]
+ },
+ "[\"flame\",\"exclamation\",\"aquatic\",\"explosion\",\"oxidiser\",\"gas\",\"health\",\"skull\",\"corrosive\"]|rectangle 150x100": {
+  "sha256": "a638febe1f118db87b382dd9fd185085e01fbac636033d19f6ac988155bced53",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"health\",\"health\"]|circle 52x52": {
+  "sha256": "c6767cac04c2758a5817b484e59591e89df89af538018afa2807930451bf0463",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"health\",\"health\"]|circle 63x63": {
+  "sha256": "2f333c01fcfa7279c85c803ab43f04c040546a68a65419567f14ac33ef1581c0",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"health\",\"health\"]|circle 75x75": {
+  "sha256": "f8eaf163ba8fb88781ba8f28218471471dcc31215eb9a9559fbf7248daf3f88b",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"health\",\"health\"]|square 63x63": {
+  "sha256": "a7102c6cb6c2e426e78ab4c0c587a7032093b4c5c3299252fbf62274dec1cdf6",
+  "fits": true,
+  "warnings": []
+ },
+ "[\"health\",\"health\"]|rectangle 63x44": {
+  "sha256": "ff7df44ef50ba9e25e0e9ffb22988e26776145f6bae8c2cfa6eb7d9f185c4926",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"health\",\"health\"]|rectangle 100x50": {
+  "sha256": "341e8c1213019b66ae2d1c7805bb411442df6d97f1921d87c84e7a81912d0dd2",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[\"health\",\"health\"]|rectangle 150x100": {
+  "sha256": "a7853d494d7e0f4cf218628ef51b7e01f02a393eee4e796905e3688f283464f5",
+  "fits": true,
+  "warnings": []
+ },
+ "[]|circle 52x52": {
+  "sha256": "9a0f6f16e5e68dcf0b4e9dd01d6769e08aac0336f2a6b793765356a8c67df949",
+  "fits": true,
+  "warnings": []
+ },
+ "[]|circle 63x63": {
+  "sha256": "fe92b7e37fa07ac9a496271ecfe338ef670c79f3588a17dfa7def3a4eb148d70",
+  "fits": true,
+  "warnings": []
+ },
+ "[]|circle 75x75": {
+  "sha256": "28a6d4eda7eba857f3eec4cfd91584b8fb6704401d6306e87012d37c6544e206",
+  "fits": true,
+  "warnings": []
+ },
+ "[]|square 63x63": {
+  "sha256": "8fff063de56ceadfd7e94e2eb2a9a957daa3c3411bcaa8ba0ee3b939ad873300",
+  "fits": true,
+  "warnings": []
+ },
+ "[]|rectangle 63x44": {
+  "sha256": "231616559c153a86e0fe017582b0e1481260275b510e80f96f879563c8184a7a",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[]|rectangle 100x50": {
+  "sha256": "232ac38e81dd42024074dfa328a8129405b499d5e1df2eaf2addba6179516aab",
+  "fits": false,
+  "warnings": [
+   "footer-clipped"
+  ]
+ },
+ "[]|rectangle 150x100": {
+  "sha256": "7efd87514a9e35469cffd71784c4013133a7b6b7bb5a46e39900136f9a499e7f",
+  "fits": true,
+  "warnings": []
+ }
+}

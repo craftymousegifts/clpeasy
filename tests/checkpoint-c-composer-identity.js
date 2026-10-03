@@ -73,7 +73,7 @@ function fixture(overrides){
   return Object.assign({
     scentName:'Fixture Scent', productType:'Wax Melt', bizName:'Crafty Mouse Gifts',
     shape:'circle', size:'custom', customW:52, customH:52,
-    bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'',
+    bizAddress:'Duns', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'',
     // Correction (read-only impact assessment, 2026-09, Michaela's
     // decision): this fixture is documented (line ~62 above) as "comfortably
     // fitting content" for a 52mm circle -- the Custom sheet's own default
@@ -123,7 +123,7 @@ function eu30009Fixture(overrides){
   return Object.assign({
     scentName:'Registry Fixture', productType:'Scented Candle', signal:'WARNING',
     shape:'rectangle', size:'custom', customW:99.1, customH:57.3,
-    bizName:'Test Biz', hStatements:'H315,H319', pStatements:'P302+P352',
+    bizName:'Test Biz', bizAddress:'Duns', hStatements:'H315,H319', pStatements:'P302+P352',
     sensitisers:[], pictograms:['exclamation'],
   }, overrides);
 }

@@ -90,7 +90,7 @@ function candleFixture(overrides){
   return Object.assign({
     scentName:'Export Fidelity Candle', productType:'Scented Candle', bizName:'Crafty Mouse Gifts',
     shape:'rectangle', size:'custom', customW:57, customH:99,
-    bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'20 hrs',
+    bizAddress:'Duns', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'20 hrs',
     signal:'Warning', hStatements:'H315, H319', pStatements:'P302+P352, P305+P351+P338',
     sensitisers:['Linalool','Limonene'], pictograms:['exclamation'], textColour:'dark', showBorder:true,
     hideEN15494:false, labelLang:'en',

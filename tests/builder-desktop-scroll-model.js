@@ -160,6 +160,8 @@ setTimeout(() => {
     assert.deepStrictEqual([...sens], ['ACETATE PTBCH','Cedramber','Limonene','Linalyl acetate','2-acetoxy-2,3,8,8-tetramethyloctahydronaphthalene'], 'Smart Paste EUH208 extraction/order regressed');
     document.getElementById('hazard-confirm').checked = true;
     window.setApprovedBuilderStep(4);
+    document.getElementById('biz-name').value = 'Test Maker';
+    document.getElementById('biz-address').value = 'Duns';
     document.getElementById('biz-phone').value = '01234 567890';
     window.setApprovedBuilderStep(5);
     const finetune = document.getElementById('finetune-panel-el');

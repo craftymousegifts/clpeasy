@@ -49,7 +49,7 @@ function label(name, shape, w, h) {
   return {
     scentName:name, productType:'Wax Melt', bizName:'Crafty Mouse Gifts',
     shape, size:'custom', customW:w, customH:(shape === 'rectangle' ? h : w),
-    bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'150g', batchNum:'B1', burnTime:'',
+    bizAddress:'Duns', bizPhone:'', bizWebsite:'', netWeight:'150g', batchNum:'B1', burnTime:'',
     signal:'Warning', hStatements:'H315', pStatements:'P302+P352',
     sensitisers:['Linalool'], pictograms:['exclamation'], textColour:'dark', showBorder:true,
     hideEN15494:false, labelLang:'en',
