@@ -18,6 +18,14 @@
 // tests/lifecycle-reminder-accuracy.js and
 // tests/lifecycle-tooltip-pin-interaction.js must be unaffected.
 //
+// Update (3 Oct 2026, owner-approved PR #202 label): the centre label now
+// shows the "Musk & Sandalwood" example with the business-name line removed
+// entirely (no "Your Business Name" placeholder), and #202 places the hidden
+// pictogram/template sprite <svg> INSIDE #lc-svg. The diagram is therefore
+// isolated by parsing the DOM (a lazy "<svg ...</svg>" regex would stop at the
+// nested sprite), and the centre label must equal the real template with ONLY
+// its business-name line removed.
+//
 // Run from repo root: node tests/lifecycle-label-branding.js
 
 const fs = require('fs');
@@ -28,12 +36,44 @@ const html = fs.readFileSync('index.html', 'utf8');
 // Isolate the lifecycle diagram's <svg id="lc-svg"> so a stray match
 // elsewhere on the homepage (or in the shared background-label sprite
 // itself) can't hide a real problem in the diagram, or vice versa.
-const lifecycleMatch = html.match(/<svg id="lc-svg"[\s\S]*?<\/svg>/);
-assert(lifecycleMatch, 'could not locate the lifecycle diagram <svg id="lc-svg"> in index.html');
-const lifecycle = lifecycleMatch[0];
+const { JSDOM } = require('jsdom');
+const lcEl = new JSDOM(html).window.document.getElementById('lc-svg');
+assert(lcEl, 'could not locate the lifecycle diagram <svg id="lc-svg"> in index.html');
+// Exact source text of #lc-svg, matching nested <svg>/</svg> pairs (so the
+// sprite's own </svg> cannot end the diagram early).
+function svgSource(src, startTag) {
+  const start = src.indexOf(startTag);
+  if (start === -1) return null;
+  const re = /<svg\b|<\/svg>/g;
+  re.lastIndex = start;
+  let depth = 0, m;
+  while ((m = re.exec(src))) {
+    depth += m[0] === '</svg>' ? -1 : 1;
+    if (depth === 0) return src.slice(start, m.index + 6);
+  }
+  return null;
+}
+const lifecycle = svgSource(html, '<svg id="lc-svg"');
+assert(lifecycle && lifecycle.includes('id="lc-centre-label"'), 'the lifecycle diagram source must include its centre-label symbol');
+// The hidden sprite (pictogram + template <symbol>s) may live inside #lc-svg.
+// It must stay invisible and inert; everything ELSE in the diagram is what
+// visitors see, and branding checks apply to that.
+const visibleLc = lcEl.cloneNode(true);
+for (const sprite of [...visibleLc.querySelectorAll('svg')]) {
+  assert.strictEqual(sprite.getAttribute('width'), '0', 'a nested sprite <svg> inside the lifecycle diagram must be zero-width');
+  assert.strictEqual(sprite.getAttribute('height'), '0', 'a nested sprite <svg> inside the lifecycle diagram must be zero-height');
+  assert.strictEqual(sprite.getAttribute('aria-hidden'), 'true', 'a nested sprite <svg> inside the lifecycle diagram must be aria-hidden');
+  sprite.remove();
+}
+// Visible part of the diagram = its exact source minus any nested sprite <svg>.
+let visibleLifecycle = lifecycle;
+for (let inner = svgSource(lifecycle.slice(1), '<svg'); inner; inner = svgSource(visibleLifecycle.slice(1), '<svg')) {
+  visibleLifecycle = visibleLifecycle.replace(inner, '');
+}
 
 // ── 1. A complete central label is present, referenced via <use> ──────
-const centreSymbolMatch = lifecycle.match(/<symbol id="lc-centre-label" viewBox="0 0 260 260">([\s\S]*?)<\/symbol>/);
+assert(lcEl.querySelector('symbol#lc-centre-label'), 'the lifecycle diagram must define a local "lc-centre-label" symbol for the centre label');
+const centreSymbolMatch = html.match(/<symbol id="lc-centre-label" viewBox="0 0 260 260">([\s\S]*?)<\/symbol>/);
 assert(centreSymbolMatch, 'the lifecycle diagram must define a local "lc-centre-label" symbol for the centre label');
 const centreLabelInner = centreSymbolMatch[1];
 
@@ -84,7 +124,14 @@ function normalise(svg) {
     .replace(/Crafty Mouse Gifts/g, 'BIZ_NAME')
     .split('\n').map((line) => line.replace(/[ \t]+$/, '')).join('\n');
 }
-assert.strictEqual(normalise(centreLabelInner), normalise(originalInner),
+// Approved (3 Oct 2026): the centre copy drops the template's business-name
+// <text> line entirely. Remove exactly that one line from the template (and
+// prove it was there) before comparing; blank lines are insignificant.
+const BIZ_LINE = /^[ \t]*<text x="130" y="35\.3868"[^>]*>BIZ_NAME<\/text>[ \t]*$/m;
+const dropBlank = (t) => t.split('\n').filter((l) => l.trim() !== '').join('\n');
+assert(BIZ_LINE.test(normalise(originalInner)), 'the homepage circle template must still carry its business-name line (the only line the centre label omits)');
+assert(!BIZ_LINE.test(normalise(centreLabelInner)), 'the approved centre label must not carry a business-name line');
+assert.strictEqual(dropBlank(normalise(centreLabelInner)), dropBlank(normalise(originalInner).replace(BIZ_LINE, '')),
   'the lifecycle centre label must be a structurally exact copy of the homepage "clp-tmpl-circle-candle" template (same shape, border, typography, spacing, pictograms and layout), not an invented approximation -- if the homepage template\'s design changes, this test should fail until the lifecycle copy is updated to match');
 
 // A "sparse" text-only placeholder would have none of a real label's
@@ -102,12 +149,13 @@ assert(centreLabelInner.includes('WARNING'), 'centre label must show its example
 assert(centreLabelInner.includes('200g · Burn: 35hrs'), 'centre label must include the original template\'s footer text');
 
 // ── 4. No real Crafty Mouse Gifts branding or product data ────────────
-assert(!/Crafty Mouse Gifts/i.test(lifecycle), 'the lifecycle diagram must not contain "Crafty Mouse Gifts"');
-assert(!lifecycle.includes('Summer Bloom'), 'the lifecycle diagram must not contain "Summer Bloom"');
-assert(!lifecycle.includes('CMG-2026-001'), 'the lifecycle diagram must not contain "CMG-2026-001"');
-assert(!lifecycle.includes('YOUR CLP LABEL'), 'the lifecycle diagram must not use a plain "YOUR CLP LABEL" text-only placeholder');
-assert(centreLabelInner.includes('Your Business Name'),
-  'centre label must show the neutral "Your Business Name" placeholder in place of the real business name');
+assert(!/Crafty Mouse Gifts/i.test(visibleLifecycle), 'the visible lifecycle diagram must not contain "Crafty Mouse Gifts"');
+assert(!/Crafty Mouse Gifts/i.test(centreLabelInner), 'the centre label must not contain "Crafty Mouse Gifts"');
+assert(!visibleLifecycle.includes('Summer Bloom'), 'the lifecycle diagram must not contain "Summer Bloom"');
+assert(!visibleLifecycle.includes('CMG-2026-001'), 'the lifecycle diagram must not contain "CMG-2026-001"');
+assert(!visibleLifecycle.includes('YOUR CLP LABEL'), 'the lifecycle diagram must not use a plain "YOUR CLP LABEL" text-only placeholder');
+assert(!centreLabelInner.includes('Your Business Name'), 'the approved centre label has no business-name placeholder line');
+assert(centreLabelInner.includes('Musk &amp; Sandalwood'), 'centre label must show the approved "Musk & Sandalwood" example scent');
 
 // ── 5. Nine lifecycle stages and connecting arrows remain present, at ──
 // their exact original coordinates (a centre-label resize must never
@@ -187,4 +235,4 @@ for (const title of stageTitles) {
   assert(html.includes(title), `lifecycle step data must still include ${title}`);
 }
 
-console.log('lifecycle label-branding checks passed (centre label is a whitespace-tolerant but otherwise exact structural copy of the homepage "clp-tmpl-circle-candle" background template via <use>, sized at the approved +10% increase and still centred with a safe margin from the nearest stage node, showing the neutral "Your Business Name" placeholder with all 7 original pictograms and full hazard-statement text intact, no real Crafty Mouse Gifts / Summer Bloom / CMG-2026-001 branding present, no sparse text-only placeholder, all nine lifecycle stage node coordinates and all 9 arrow coordinates unchanged, orbit ring and tooltip scaffolding preserved)');
+console.log('lifecycle label-branding checks passed (centre label is a whitespace-tolerant but otherwise exact structural copy of the homepage "clp-tmpl-circle-candle" background template via <use>, sized at the approved +10% increase and still centred with a safe margin from the nearest stage node, showing the approved Musk & Sandalwood example with no business-name line, all 7 original pictograms and full hazard-statement text intact, no visible Crafty Mouse Gifts / Summer Bloom / CMG-2026-001 branding (hidden sprite zero-size and aria-hidden), no sparse text-only placeholder, all nine lifecycle stage node coordinates and all 9 arrow coordinates unchanged, orbit ring and tooltip scaffolding preserved)');

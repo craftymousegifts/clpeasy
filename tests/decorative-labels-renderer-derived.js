@@ -57,7 +57,8 @@ assert(LR, 'LabelRenderer did not load');
 // a test) for the full per-fixture provenance comments.
 const FIXTURES = [
   { id: 'circle-candle', shape: 'circle', mm: 63, data: {
-    shape: 'circle', scentName: 'Vanilla', productType: 'Scented Candle',
+    // Owner-approved example scent (3 Oct 2026, PR #202): Musk & Sandalwood.
+    shape: 'circle', scentName: 'Musk & Sandalwood', productType: 'Scented Candle',
     netWeight: '200g', burnTime: '35hrs', signal: 'Warning',
     hStatements: 'H317, H411, EUH208',
     pStatements: 'P102, P261, P273, P302+P352, P333+P313, P391, P501',
@@ -168,31 +169,12 @@ assert(!/<span id="scent-\d+"/.test(html), 'the old per-position scent-name <spa
 assert(!/border-radius:50%;[^"]*">\s*<div style="position:absolute;top:6px;left:6px;right:6px;bottom:6px;border-radius:50%;border:0\.75px/.test(html),
   'the old duplicate hand-drawn inner circular ring must not be present');
 
-// ── 6. Decorative SVGs must be non-interactive and correctly wired to the
-//    shared symbol pool -- exactly 52 label positions, each referencing
-//    one of the 5 templates via <use>, none able to receive pointer events. ──
-const useMatches = [...html.matchAll(/<use href="#clp-tmpl-([a-z-]+)"\/>/g)];
-assert.strictEqual(useMatches.length, 52, `expected 52 decorative label positions referencing a template, found ${useMatches.length}`);
-const templateCounts = {};
-for (const m of useMatches) templateCounts[m[1]] = (templateCounts[m[1]] || 0) + 1;
-assert.strictEqual(templateCounts['circle-candle'], 32, `expected all 32 circle positions to use circle-candle, got ${templateCounts['circle-candle']}`);
-assert.strictEqual(templateCounts['square-waxmelt'], 6, `expected all 6 square positions to use square-waxmelt, got ${templateCounts['square-waxmelt']}`);
-const rectTotal = (templateCounts['rectangle-candle'] || 0) + (templateCounts['rectangle-reed-diffuser'] || 0) + (templateCounts['rectangle-room-spray'] || 0);
-assert.strictEqual(rectTotal, 14, `expected all 14 rectangle positions to use one of the 3 rectangle templates, got ${rectTotal}`);
-// Every decorative <svg> must declare pointer-events:none of its own, on
-// top of the wall container's existing pointer-events:none.
-const decorativeSvgs = [...html.matchAll(/<svg viewBox="0 0 260 \d+" width="100%" height="100%"[^>]*>/g)];
-assert.strictEqual(decorativeSvgs.length, 52, `expected 52 decorative <svg> wrappers, found ${decorativeSvgs.length}`);
-for (const m of decorativeSvgs) {
-  assert(/pointer-events:none/.test(m[0]), `a decorative label <svg> is missing pointer-events:none: ${m[0]}`);
-}
-assert(/Seasonal CLP labels[\s\S]{0,60}<div style="position:absolute;inset:0;z-index:0;pointer-events:none;/.test(html),
-  'the decorative wall container itself must still declare pointer-events:none');
-
-// ── 7. Hero content must still stack above both the particle canvas and
-//    the decorative label wall (unchanged from the previous correction --
-//    guards against a future edit accidentally undoing it). ──────────────
-assert(/<div style="position:relative;z-index:2;">/.test(html), 'hero content wrapper must still be z-index:2 (above the particle canvas)');
+// ── 6/7. RETIRED 3 Oct 2026 (owner decision): PR #202 intentionally
+//    replaced the typed hero and its 52-label decorative wall with the
+//    approved image hero. The five templates above now live only in the
+//    hidden 0x0 sprite (no <use> positions), so the 52-position, wrapper,
+//    wall-container and z-index:2 hero-wrapper checks no longer apply. Do
+//    not restore the wall. The particle canvas z-index guard still applies:
 const seasonsSource = fs.readFileSync(path.join(__dirname, '..', 'seasons.js'), 'utf8');
 assert(seasonsSource.includes('z-index:1;opacity:'), 'the particle canvas must still be created at z-index:1 in seasons.js, unchanged');
 
@@ -202,38 +184,18 @@ assert(/function renderLabel\(rawData,\s*opts\)/.test(labelRendererSource), 'lab
 assert(labelRendererSource.includes('const LabelRenderer = {'), 'label-render.js must still expose the same LabelRenderer API');
 
 // ── 9. Mobile hero-heading and header corrections. ─────────────────────
-assert(html.includes('class="hero-gb-break"'), 'the desktop line break after "GB" must be taggable so it can be hidden on mobile only');
-assert(/\.hero-gb-break\s*\{\s*display:\s*none;?\s*\}/.test(html), 'the "GB" break must be hidden on mobile (so "GB" does not sit alone on its own line)');
-assert(html.includes('class="hero-mobile-break"'), 'a mobile-only break must exist to separate "labels" from "in minutes"');
-assert(/\.hero-mobile-break\s*\{\s*display:\s*none;?\s*\}/.test(html), 'the mobile-only break must be hidden by default (desktop/tablet unaffected)');
-assert(/\.hero-mobile-break\s*\{\s*display:\s*initial;?\s*\}/.test(html), 'the mobile-only break must be shown inside the mobile media query');
-// A mobile-only break before "GB" itself is also required: with only the
-// break AFTER "GB" hidden, "GB" merges with "Create print-ready" instead
-// (verified to actually happen in a live render before this was added --
-// see homepage-hero-rewrite.js's heroMatch for the exact required markup
-// order). This break must land BEFORE " GB" in the <h1>, not after it.
-assert(html.includes('class="hero-mobile-gb-lead"'), 'a mobile-only break must exist before "GB" so it pairs with "CLP labels" instead of "Create print-ready"');
-assert(/\.hero-mobile-gb-lead\s*\{\s*display:\s*none;?\s*\}/.test(html), 'the GB-lead break must be hidden by default (desktop/tablet unaffected)');
-assert(/\.hero-mobile-gb-lead\s*\{\s*display:\s*initial;?\s*\}/.test(html), 'the GB-lead break must be shown inside the mobile media query');
-assert(/<em>print-ready<\/em><br class="hero-mobile-gb-lead"> GB/.test(html), 'the GB-lead break must sit between "print-ready" and "GB" in the heading markup');
-assert(/\.clp-ring\s*\{\s*display:\s*none;?\s*\}/.test(html), 'the decorative CLP ring stamp must be hidden on mobile so it does not interrupt the headline');
-// Cascade-order regression guard: the hero's own inline <style> tag (which
-// unconditionally redefines .clp-label-wrap{display:inline-flex;...} for
-// the desktop tooltip/spin behaviour) must appear BEFORE the mobile
-// override that collapses it to plain inline text -- otherwise, at equal
-// selector specificity, the later unconditional rule silently wins on
-// every viewport and the mobile collapse never applies (this exact bug
-// was hit and fixed once already for .hero-mobile-break; the same
-// source-order requirement applies here for a different selector).
-const unconditionalWrapIdx = html.indexOf('.clp-label-wrap{position:relative;display:inline-flex;');
-const mobileWrapOverrideIdx = html.indexOf('.clp-label-wrap { width: auto; height: auto; display: inline; }');
-assert(unconditionalWrapIdx !== -1 && mobileWrapOverrideIdx !== -1 && mobileWrapOverrideIdx > unconditionalWrapIdx,
-  'the mobile .clp-label-wrap collapse override must be placed AFTER the hero\'s unconditional .clp-label-wrap definition in source order, or it will never win the cascade on mobile');
+// The old typed-hero mobile heading checks (hero-gb-break,
+// hero-mobile-break, hero-mobile-gb-lead, .clp-ring, .clp-label-wrap
+// cascade order) were RETIRED 3 Oct 2026 with the typed hero itself
+// (PR #202 image hero; heading checks live in clp-hero-explanation.js).
 assert(/\.nav-dropdown\s*\{\s*display:\s*none\s*!important;?\s*\}/.test(html), 'the Resources nav dropdown must be hidden on mobile, matching the already-hidden Features/Pricing/FAQ links');
 assert(/\.btn-nav\s*\{[^}]*white-space:\s*nowrap/.test(html), '"Start free trial" must not be allowed to wrap onto multiple lines on mobile');
 
 // ── 10. Founder-copy readability correction. ────────────────────────────
-assert(html.includes('font-size:14px;color:#4B5563;line-height:1.7;'), 'founder-section body copy must be 14px, #4B5563, line-height 1.7');
+// The owner later enlarged this copy deliberately (be17946, 30 Sep 2026:
+// 18px #374151 line-height 1.65), so the guard is now a readability floor.
+const founderP = html.match(/<p style="[^"]*font-size:(\d+)px;[^"]*line-height:([\d.]+);[^"]*">I'm Michaela, a candle and wax melt maker/);
+assert(founderP && Number(founderP[1]) >= 14 && Number(founderP[2]) >= 1.5, 'founder-section body copy must stay at least 14px with line-height of at least 1.5');
 
 // ── 11. v1.0.0's recorded release date must be the real public-launch
 //    date, not a placeholder. Versioning moved to a single authoritative
@@ -243,4 +205,4 @@ assert(html.includes('font-size:14px;color:#4B5563;line-height:1.7;'), 'founder-
 const changelogSource = fs.readFileSync(path.join(__dirname, '..', 'CHANGELOG.md'), 'utf8');
 assert(/15 June 2026|2026-06-15/.test(changelogSource), "CHANGELOG.md must record CLPeasy's actual public-launch date (15 June 2026) for v1.0.0, not a placeholder");
 
-console.log(`decorative-labels-renderer-derived checks passed (${useMatches.length} decorative labels genuinely renderer-derived and byte-matched against a fresh render; header-band/duplicate-ring/scent-span removal confirmed; signal-word colour rule verified; pointer-events:none on every decorative svg; hero stacking, mobile heading/header, founder readability and version date all verified)`);
+console.log('decorative-labels-renderer-derived checks passed (all 5 embedded templates, including the Musk & Sandalwood circle candle, genuinely renderer-derived and byte-matched against a fresh render; header-band/duplicate-ring/scent-span removal confirmed; signal-word colour rule verified; particle canvas stacking, mobile header, founder readability and version date verified; 52-label wall and typed-hero checks retired with PR #202)');

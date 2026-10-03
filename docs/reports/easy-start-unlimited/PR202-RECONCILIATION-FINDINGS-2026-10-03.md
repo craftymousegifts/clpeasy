@@ -69,3 +69,22 @@ the test parse the DOM instead of using the lazy pattern. Then agree the busines
    - It should be `/auth?mode=signup`, or `auth.html?mode=signup` like the hero hotspot.
 2. **Behaviour change (owner to confirm intended):** the seasonal strip now always says "Start your 14-day free
    trial", including to signed-in customers. The previous version linked signed-in customers to the Builder.
+
+## F. Resolutions (owner decisions, 3 Oct 2026)
+- **B, lifecycle:** the label is approved as currently rendered in #202 (Musk & Sandalwood, no business-name line). `lifecycle-label-branding` was updated on the PAYG/release branch, and #202 was not changed.
+  - It now isolates `#lc-svg` with a depth-aware source slice, so a nested sprite no longer truncates it.
+  - It requires the nested sprite to be 0×0 and `aria-hidden`.
+  - It checks branding on the visible diagram only.
+  - It requires the centre label to equal the circle-candle template with exactly the business-name line removed. All structure, node, arrow, ring and tooltip checks are kept.
+  - Negative checks fail as intended: a visible business name, or a changed font-size.
+- **C, decorative:** the wall removal is intended. Do not restore it.
+  - `decorative-labels-renderer-derived` was updated as follows:
+    - the circle fixture is now `scentName: 'Musk & Sandalwood'`;
+    - all 5 templates are still byte-matched against a fresh `renderLabel()` (fits, 0 warnings);
+    - the wall (52 positions/wrappers/container), the z-index:2 typed-hero wrapper and the old typed-hero mobile heading checks are retired.
+  - The founder-copy check is now a readability floor (at least 14px, line-height at least 1.5) because the owner enlarged it in `be17946`.
+  - A one-character hand edit to the template fails as intended.
+- **D, hero dimensions (1536×1024 → 1672×941):** to be fixed by the #202 workstream.
+- **D, "Classification, Labelling and Packaging":** recorded as a non-release-blocking content observation.
+- **E1, preview URL:** to be fixed by the #202 workstream. The test is deliberately not relaxed. `autumn-homepage-ui` keeps failing until #202 is fixed.
+- **E2, signed-in strip:** a separate #202 UX decision. It was not implemented here.
