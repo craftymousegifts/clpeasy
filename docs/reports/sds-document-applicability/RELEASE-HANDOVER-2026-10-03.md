@@ -86,7 +86,21 @@ Detailed design and evidence: `docs/reports/SDS-FRAGRANCE-PERCENTAGE-REVIEW-2026
   (web.archive.org, archive.org, publications.europa.eu, op.europa.eu, data.europa.eu).
   - The point-by-point checklist, with links and article numbers to confirm, is in
     `PRIMARY-SOURCE-CHECKLIST.md`.
-  - **Status: NOT VERIFIED.**
+  - **Status: NOT VERIFIED** from this environment.
+- **Update, partial verification supplied by the ChatGPT workstream:**
+  - **Pages opened (full official guidance):**
+    - two HSE pages: self/harmonised classification, and the pesticides handbook (only its stated
+      GB CLP provisions are relied on);
+    - Business Companion's candles and diffusers guide.
+  - **What they support:** mixture classification, formulation-specific assessment, and variable
+    sensitiser thresholds, including SCLs.
+  - **Not all seven claims are verified.** The GB CLP legislation text and the exact threshold
+    figures are still unchecked. Per-claim status is in `PRIMARY-SOURCE-CHECKLIST.md`.
+  - **Not legally approved.** The implementation has not been legally approved.
+  - **Still CLPeasy policy, not established by these sources:**
+    - exact-% equality;
+    - rejection of rounding and ranges;
+    - the written-confirmation route.
 - **What the implementation is:** CLPeasy's conservative evidence policy. It is **not legally
   verified**, and consistent answers do not prove that a supplier document or confirmation is
   suitable.

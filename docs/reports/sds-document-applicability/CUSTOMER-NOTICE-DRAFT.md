@@ -5,7 +5,11 @@ release. Before sending:
 - choose **version A or B** of the written-confirmation section (it depends on the
   `SUPPLIER_CONFIRMATION_ACCEPTED` decision);
 - have the "What the law requires" section confirmed against the primary sources (see
-  `PRIMARY-SOURCE-CHECKLIST.md`). Until then it is our understanding, not verified text.
+  `PRIMARY-SOURCE-CHECKLIST.md`).
+  - Official HSE and Business Companion guidance now partially supports it: mixture
+    classification, formulation-specific assessment, and variable thresholds.
+  - The legislation text has not been checked, so treat the section as supported by guidance, not
+    fully verified.
 
 Suggested channels:
 - an email to existing customers (the full text below);
