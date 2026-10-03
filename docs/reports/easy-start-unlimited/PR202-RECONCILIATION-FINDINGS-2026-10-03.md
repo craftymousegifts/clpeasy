@@ -109,3 +109,19 @@ the test parse the DOM instead of using the lazy pattern. Then agree the busines
   6. the Test preview is rebuilt;
   7. the owner checks it visually.
 - **Not done here:** no change was made to the hero image.
+
+### G (update, 3 Oct 2026): owner-directed correction `e342149`, AWAITING OWNER VISUAL APPROVAL
+- **Owner decision:** at the owner's explicit request, the wax melt, reed diffuser and room spray
+  labels now repeat the candle's original candle-care icon row.
+- **What the icons are:** matching artwork, not verified product-specific safety instructions.
+  This replaces the earlier "do not copy candle-care icons" condition for this image.
+- **Checks on the image:**
+  - image-only commit, still 1672 × 941;
+  - pixel comparison with `20b6e96`: changes only in three small boxes (reed diffuser
+    1388–1537 × 375–401, wax melt 143–313 × 728–781, room spray 1424–1554 × 803–829);
+  - the candle quarter is unchanged.
+- **Integration:**
+  - merged into the release branch as `7c569a9`;
+  - the 10 homepage-related tests pass;
+  - Test preview rebuilt.
+- **Not yet done:** `main` and production are not updated.
