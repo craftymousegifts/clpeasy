@@ -12,9 +12,17 @@ const refund = text(fs.readFileSync('refund.html', 'utf8'));
 // G. The PAYG section describes the real checkout step and confirmation.
 assert(/Pay As You Go Downloads/.test(refund), 'PAYG section heading');
 assert(/digital download credits that are added to your CLPeasy account after successful payment/.test(refund), 'what PAYG is');
-assert(/expressly request immediate supply/.test(refund) && /lose your statutory 14-day right to cancel/.test(refund), 'both consent elements');
+// Conservative policy (3 Oct 2026): the box is a request for the credits to be
+// added straight away; it never removes the right to cancel for unused credits.
+assert(/ask for the credits to be added to your account straight after payment/.test(refund), 'request for immediate access');
+assert(!/lose your statutory 14-day right to cancel/.test(refund) && !/lose your 14-day right/.test(refund), 'no wording that the right to cancel is lost');
+assert(/cancel a Pay As You Go purchase within 14 days of the date you paid/.test(refund), '14-day cancellation for PAYG');
+assert(/If you have not used any of the credits from that purchase, we will refund the full amount you paid/.test(refund), 'full refund when unused');
+assert(/refund the unused credits from that purchase/.test(refund) && /price you paid divided by the number of credits in the pack/.test(refund), 'pro-rata refund of unused credits');
+assert(/Downloads you have already made are not refunded/.test(refund), 'used downloads are the only exclusion');
+assert(/within 14 days of receiving your cancellation/.test(refund), 'refund timing');
 assert(/You cannot continue to payment without ticking it/.test(refund), 'consent is required, as enforced at checkout');
-assert(/confirmation of this request and acknowledgement is included in the invoice we email to you/.test(refund), 'durable confirmation described');
+assert(/confirmation of this request, and of your right to cancel described below, is included in the invoice we email to you/.test(refund), 'durable confirmation described');
 assert(/charged twice/.test(refund) && /credits were not added correctly/.test(refund) && /technical problem/.test(refund), 'duplicate/technical exceptions kept');
 
 // H. Statutory rights preserved.
@@ -64,5 +72,10 @@ assert(/8 downloads · includes 3 bonus/.test(pricingText) && /\+3 bonus with ev
 // Terms clause 6 recognises PAYG credits as a way to access CLPeasy.
 const terms = text(fs.readFileSync('terms.html', 'utf8'));
 assert(/requires registration and a paid subscription, purchased Pay As You Go download credits, or an active free trial/.test(terms), 'Terms recognise PAYG');
+assert(/cancel a Pay As You Go purchase within 14 days of payment for a refund of any credits from that purchase you have not used/.test(terms), 'Terms state the PAYG 14-day refund of unused credits');
+// The checkbox, server, invoice memo and Stripe note must never claim the
+// right to cancel is lost (classification not established).
+for (const src of [pricing, fn]) assert(!/lose (my|your) 14-day right to cancel/.test(src), 'no lost-right wording in checkout code');
+assert(/payg-immediate-access-unused-refund-2026-10-03/.test(fn), 'new wording version recorded in Stripe metadata');
 
 console.log('PAYG immediate-supply consent checks passed');

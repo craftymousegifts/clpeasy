@@ -47,8 +47,9 @@ function tick(w){ const b = w.document.getElementById('payg-consent'); b.checked
     assert.strictEqual(box.checked, false, 'consent is not pre-ticked');
     assert.strictEqual(box.hasAttribute('checked'), false, 'no checked attribute in the markup');
     const label = box.closest('label').textContent.replace(/\s+/g, ' ');
-    assert(/supplied immediately after payment/.test(label), 'asks for immediate supply');
-    assert(/lose my 14-day right to cancel/.test(label), 'acknowledges loss of the cancellation right');
+    assert(/added to my account straight after payment/.test(label), 'asks for the credits to be added straight away');
+    assert(/cancel within 14 days I will be refunded for any credits I have not used/.test(label), 'unused credits stay refundable within 14 days');
+    assert(!/lose my 14-day right to cancel/.test(label), 'never says the right to cancel is lost when credits are added');
     await w.startPaygCheckout();
     assert.strictEqual(calls.length, 0, 'no checkout request without consent');
     assert.deepStrictEqual(alerts, [], 'inline message, not an alert');

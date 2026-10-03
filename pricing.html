@@ -307,7 +307,7 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
       <div class="offer-block paid-offer"><div class="offer-main"><span class="offer-free">🎉 8 downloads · includes 3 bonus</span></div><div class="offer-then">+3 bonus with every pack · Ends 31 Dec 2026</div></div><div class="price-sub paid-sub">&nbsp;</div>
       <label class="payg-consent" for="payg-consent">
         <input type="checkbox" id="payg-consent" name="payg-consent" aria-describedby="payg-consent-error">
-        <span>I ask for my Pay As You Go download credits to be supplied immediately after payment. I understand that once supply begins, I lose my 14-day right to cancel this digital-content purchase.</span>
+        <span>I ask for my Pay As You Go download credits to be added to my account straight after payment so I can use them straight away. I understand that if I cancel within 14 days I will be refunded for any credits I have not used, but not for downloads I have already made.</span>
       </label>
       <div class="payg-consent-error" id="payg-consent-error" role="alert">Please tick the box above to continue to payment.</div>
       <button id="btn-payg" onclick="startPaygCheckout()" class="btn btn-teal">Buy 8 downloads — £4.99 →</button>
@@ -731,10 +731,10 @@ async function initSupabase(){
 }
 initSupabase();
 
-// PAYG is digital content supplied immediately. Before payment the customer
-// must actively (never pre-ticked) ask for immediate supply and acknowledge
-// losing the 14-day cancellation right. The server refuses a PAYG checkout
-// without this consent and records it on the Stripe Checkout Session.
+// PAYG credits are added straight after payment. Before payment the customer
+// must actively (never pre-ticked) ask for that. Unused credits stay
+// refundable within 14 days (Refund Policy). The server refuses a PAYG
+// checkout without this request and records it on the Stripe Checkout Session.
 function paygConsentGiven(){
   const box=document.getElementById('payg-consent');
   const ok=!!(box&&box.checked);

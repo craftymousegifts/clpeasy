@@ -86,15 +86,21 @@ const supabaseAdmin = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
 );
 
-// PAYG immediate-supply consent wording. The version is stored with each
-// purchase in Stripe metadata; change it whenever the wording changes.
-const PAYG_CONSENT_VERSION = "payg-immediate-supply-2026-10-02";
+// PAYG request for immediate access. The version is stored with each purchase
+// in Stripe metadata; change it whenever the wording changes.
+// Conservative cancellation policy (3 Oct 2026, pending legal clarification of
+// whether PAYG credits are digital content or a service): the customer asks
+// for the credits to be added straight after payment, and can still cancel
+// within 14 days for a refund of any credits from that purchase not yet used.
+// No wording here says the right to cancel is lost when credits are added.
+const PAYG_CONSENT_VERSION = "payg-immediate-access-unused-refund-2026-10-03";
 const PAYG_CONSENT_CONFIRMATION =
-  "Pay As You Go digital download credits. Before paying, you asked for these credits to be supplied immediately after payment " +
-  "and acknowledged that once supply begins you lose your 14-day right to cancel this digital-content purchase. " +
-  "This does not affect your statutory rights. Questions: support@clpeasy.com";
+  "Pay As You Go download credits. Before paying, you asked for these credits to be added to your account straight after payment. " +
+  "You can cancel within 14 days of purchase for a refund of any credits from this purchase you have not used; " +
+  "downloads you have already made are not refunded. This does not affect your statutory rights. " +
+  "To cancel or ask a question, email support@clpeasy.com";
 const PAYG_CONSENT_CHECKOUT_NOTE =
-  "You asked for your download credits to be supplied immediately after payment and acknowledged that you then lose your 14-day right to cancel.";
+  "You asked for your credits to be added straight after payment. You can cancel within 14 days for a refund of any credits you have not used.";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -208,15 +214,16 @@ serve(async (req) => {
       }
     }
 
-    // ── PAYG immediate-supply consent (UK Consumer Contracts Regs) ──
-    // PAYG credits are digital content supplied as soon as payment succeeds.
-    // The customer must have actively asked for immediate supply and
-    // acknowledged losing the 14-day cancellation right (unticked checkbox on
-    // pricing.html). Refused without it, so the endpoint cannot be called
-    // directly to skip the step. Subscriptions are not affected.
+    // ── PAYG request for immediate access (UK Consumer Contracts Regs) ──
+    // Credits are added as soon as payment succeeds, i.e. inside the 14-day
+    // cancellation period, so the customer must have actively asked for that
+    // (unticked checkbox on pricing.html). Refused without it, so the
+    // endpoint cannot be called directly to skip the step. Subscriptions are
+    // not affected. The request does not remove the right to cancel for
+    // unused credits (conservative policy, see PAYG_CONSENT_VERSION).
     if (checkoutMode === "payment" && productKey === "payg_5" && immediateSupplyConsent !== true) {
       return json(400, {
-        error: "Please confirm that you want your Pay As You Go downloads supplied immediately, and that you understand you then lose your 14-day right to cancel.",
+        error: "Please tick the box to ask for your Pay As You Go credits to be added to your account straight after payment.",
         code: "PAYG_CONSENT_REQUIRED",
       });
     }
@@ -338,7 +345,7 @@ serve(async (req) => {
       // The webhook validates this server-stamped quantity; the browser cannot choose it.
       const paygDownloads = new Date() < new Date("2027-01-01T00:00:00Z") ? "8" : "5";
       params.set("metadata[downloads]", paygDownloads);
-      // Durable evidence of the immediate-supply consent, kept by Stripe on
+      // Durable record of the request for immediate access, kept by Stripe on
       // the Checkout Session, its PaymentIntent and the paid invoice.
       const consentAt = new Date().toISOString();
       for (const k of ["metadata", "payment_intent_data[metadata]", "invoice_creation[invoice_data][metadata]"]) {
@@ -347,7 +354,8 @@ serve(async (req) => {
         params.set(`${k}[payg_consent_wording]`, PAYG_CONSENT_VERSION);
       }
       // Confirmation on a durable medium: Stripe emails the paid invoice
-      // (PDF + hosted page) after payment; the memo restates the consent.
+      // (PDF + hosted page) after payment; the memo restates the request and
+      // the 14-day refund of unused credits.
       params.set("invoice_creation[enabled]", "true");
       params.set("invoice_creation[invoice_data][description]", PAYG_CONSENT_CONFIRMATION);
       params.set("custom_text[submit][message]", PAYG_CONSENT_CHECKOUT_NOTE);

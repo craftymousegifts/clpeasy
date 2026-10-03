@@ -87,15 +87,16 @@ await test('PAYG with consent records the evidence on the session, PaymentIntent
   const p = stripeRequests[0];
   for (const k of ['metadata', 'payment_intent_data[metadata]', 'invoice_creation[invoice_data][metadata]']) {
     eq(p.get(`${k}[payg_immediate_supply_consent]`), 'true', `${k} consent flag`);
-    eq(p.get(`${k}[payg_consent_wording]`), 'payg-immediate-supply-2026-10-02', `${k} wording version`);
+    eq(p.get(`${k}[payg_consent_wording]`), 'payg-immediate-access-unused-refund-2026-10-03', `${k} wording version`);
     const at = Date.parse(p.get(`${k}[payg_immediate_supply_consent_at]`) || '');
     eq(Number.isFinite(at) && at >= before - 1000 && at <= Date.now() + 1000, true, `${k} server timestamp`);
   }
   eq(p.get('invoice_creation[enabled]'), 'true', 'paid invoice emailed as confirmation');
   const memo = p.get('invoice_creation[invoice_data][description]') || '';
-  eq(/supplied immediately after payment/.test(memo) && /lose your 14-day right to cancel/.test(memo), true, 'invoice memo confirms both elements');
+  eq(/added to your account straight after payment/.test(memo) && /cancel within 14 days of purchase for a refund of any credits from this purchase you have not used/.test(memo), true, 'invoice memo confirms the request and the 14-day refund of unused credits');
+  eq(/lose your 14-day right to cancel/.test(memo), false, 'memo never says the right to cancel is lost');
   eq(/statutory rights/.test(memo), true, 'memo keeps statutory rights');
-  eq(/supplied immediately/.test(p.get('custom_text[submit][message]') || ''), true, 'reminder next to the Stripe pay button');
+  eq(/added straight after payment/.test(p.get('custom_text[submit][message]') || '') && /refund of any credits you have not used/.test(p.get('custom_text[submit][message]') || ''), true, 'reminder next to the Stripe pay button');
 });
 
 await test('a current subscriber is still told PAYG is not needed (403), with or without consent', async () => {
