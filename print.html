@@ -1609,6 +1609,7 @@ function savedItemCardHtml(e,qty,compat){
       <div class="sli-info">
         <div class="sli-name">${xe(e.scentName||'Unnamed')}</div>
         <div class="sli-meta">${xe(e.productType||'')} · ${sizeLabel} ${e.shape||'circle'}${compat.incompatible?' 🔒':''}</div>
+        ${(typeof SdsDocCheck!=='undefined'&&!SdsDocCheck.isVerified(e))?'<div class="sli-meta" style="color:#92400E;font-weight:600;">Draft: document check needed before printing</div>':''}
         ${compat.incompatible?`<div class="sli-incompat-reason">${xe(compat.reason)}</div>`:''}
       </div>
       <div class="sli-qty">

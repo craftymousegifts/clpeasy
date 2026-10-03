@@ -94,7 +94,9 @@ const cases = [
   ['about 10', 'finished', '10', 'candle', 'actual-missing'],
   ['8-10', 'finished', '10', 'candle', 'actual-missing'],
   ['10', 'finished', '', 'candle', 'doc-pct-missing'],
-  ['10', 'finished', '8-10%', 'candle', 'doc-pct-missing'],
+  ['10', 'finished', '8-10%', 'candle', 'doc-pct-range'],
+  ['10', 'finished', 'up to 10%', 'candle', 'doc-pct-range'],
+  ['8', 'finished', 'max 10%', 'candle', 'doc-pct-range'],
   ['10', 'finished', 'see section 3', 'candle', 'doc-pct-missing'],
   ['10', 'finished', '10', '', 'base-missing'],
   ['10', 'finished', '10', 'spray', 'base-mismatch'],
@@ -111,6 +113,12 @@ for (const [actual, k, pct, base, want] of cases) {
 set('frag-load', '8'); const low = doc('finished','10','candle').message;
 assert(/CLPeasy only uses supplier information for the exact percentage you use/.test(low) && /H317/.test(low), 'lower % states the CLPeasy requirement and the threshold example');
 assert(!/0\.1\s*%/.test(low) && !/not automatically covered/.test(low), 'no blanket threshold figure or legal-rule claim');
+set('frag-load', '10'); const m = doc('finished','10','candle').message;
+assert(/answers are consistent/.test(m) && /can't read the document itself/.test(m) && !/covers your product/.test(m), 'a match is described as consistent answers, never as proof the document applies');
+set('frag-load', '10'); const rg = doc('finished','up to 12%','candle').message;
+assert(/range or an "up to" percentage/.test(rg) && /explicitly confirmed/.test(rg), 'range / up-to documents get their own explanation');
+set('frag-load', '9.0909'); assert(/may only be rounding/.test(doc('finished','9.1','candle').message), '9.0909 vs 9.1 explains rounding without accepting it');
+set('frag-load', '8'); assert(!/rounding/.test(doc('finished','10','candle').message) && /not assumed to cover a lower one/.test(window.evaluateSdsDoc().message), 'a real lower % is not called rounding; higher-% assumption named');
 set('frag-load', '12'); assert(/more severe or additional/.test(doc('finished','10','candle').message), 'higher % explains');
 set('frag-load', '8'); assert(/Ask your supplier for GB CLP information for your scented candle at 8%/.test(doc('finished','10','candle').message), 'supplier guidance names the product and actual %');
 set('frag-load', '8'); assert(/concentrated oil, not your finished product/.test(doc('concentrate').message), 'concentrate explained');
@@ -235,6 +243,19 @@ set('sds-doc-pct', '10.0'); assert.strictEqual(recheck(), 'verified', 'same docu
 set('sds-doc-base', 'candle+waxmelt'); assert.strictEqual(recheck(), 'needs-recheck', 'document answers changed invalidates');
 set('sds-doc-base', 'candle'); assert.strictEqual(recheck(), 'verified');
 ok('exports need a Step 3 confirmation; % / product type / H / P / pictogram / signal / sensitiser / document changes invalidate it');
+
+// Draft saving (3 Oct 2026): an unverified label can be saved, clearly as a draft.
+window.eval('S.sdsDoc.confirmed=null');
+document.getElementById('verify-checkbox').checked = true; window._labelBlockDownload = false; window.toggleDownload();
+assert.strictEqual(window._downloadAllowed(), false, 'unverified: downloads blocked');
+assert.strictEqual(document.getElementById('btn-save').style.pointerEvents, 'auto', 'unverified: Save is still available (draft)');
+assert.strictEqual(document.getElementById('btn-png').style.pointerEvents, 'none', 'unverified: PNG stays disabled');
+window.showSaveStatus();
+const ss = document.getElementById('save-status');
+assert(/Saved as a draft: not ready to download yet/.test(ss.textContent) && ss.classList.contains('field-alert-warn'), 'draft save status is distinct from a ready label');
+window.eval('S.sdsDoc.confirmed=' + conf); window.toggleDownload(); window.showSaveStatus();
+assert(/Label saved/.test(ss.textContent) && !/draft/i.test(ss.textContent) && ss.classList.contains('field-alert-success'), 'verified label: normal saved status');
+ok('unverified labels can be saved as drafts; downloads stay blocked; saved vs ready is clear');
 
 // Saved with the label and restored (reopened label is verified only if unchanged).
 const src = fs.readFileSync('builder.html', 'utf8');

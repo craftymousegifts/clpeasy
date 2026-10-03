@@ -1219,7 +1219,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:4px;"><input type="radio" name="sds-doc-kind" value="concentrate" onchange="updateSdsDocCheck()" style="margin-top:2px;"> The fragrance oil on its own (an SDS for the concentrated oil, 100%)</label>
       <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:8px;"><input type="radio" name="sds-doc-kind" value="unsure" onchange="updateSdsDocCheck()" style="margin-top:2px;"> I'm not sure</label>
       <div id="sds-doc-finished-fields" style="display:none;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:6px;">
-        <div><label for="sds-doc-pct" style="font-size:12px;">Fragrance % the document covers</label><input type="text" id="sds-doc-pct" placeholder="e.g. 10%" inputmode="decimal" oninput="updateSdsDocCheck()"></div>
+        <div><label for="sds-doc-pct" style="font-size:12px;">Fragrance % the document states</label><input type="text" id="sds-doc-pct" placeholder="e.g. 10%" inputmode="decimal" aria-describedby="sds-doc-pct-help" oninput="updateSdsDocCheck()"><div id="sds-doc-pct-help" style="margin-top:3px;font-size:11px;color:var(--muted);line-height:1.4;">One figure, exactly as written on the document.</div></div>
         <div><label for="sds-doc-base" style="font-size:12px;">Product the document covers</label><select id="sds-doc-base" onchange="updateSdsDocCheck()"><option value="">— Choose —</option><option value="candle">Candles</option><option value="waxmelt">Wax melts</option><option value="candle+waxmelt">Candles and wax melts (the document names both)</option><option value="reed">Reed diffusers</option><option value="plugin">Electric or plug-in diffusers</option><option value="cardiffuser">Car diffusers</option><option value="spray">Room or linen sprays</option><option value="carspray">Car air freshener sprays</option><option value="sachet">Scented sachets</option><option value="potpourri">Potpourri</option><option value="other">Something else / not stated</option></select></div>
       </div>
       <div id="sds-doc-result" role="status" aria-live="polite" style="font-size:12.5px;line-height:1.5;"></div>
@@ -2646,8 +2646,15 @@ let _saveStatusTimer=null;
 function showSaveStatus(){
   const el=document.getElementById('save-status');
   if(!el)return;
-  el.innerHTML='<span class="dl-pg-icon" aria-hidden="true">✓</span><div><strong>Label saved</strong>'+
-    '<p>You\'ll find it in <a href="my-labels.html">My Labels</a> in this browser on this device.</p></div>';
+  // Saved is not the same as ready to download: an unchecked label is a draft.
+  const draft=!SdsDocCheck.isVerified(_sdsDocRecord());
+  el.classList.toggle('field-alert-success',!draft);
+  el.classList.toggle('field-alert-warn',draft);
+  el.innerHTML=draft
+    ?'<span class="dl-pg-icon" aria-hidden="true">✎</span><div><strong>Saved as a draft: not ready to download yet</strong>'+
+      '<p>You\'ll find it in <a href="my-labels.html">My Labels</a> in this browser on this device. Before it can be downloaded or printed, complete "Check your supplier document first" in Step 3 (Hazards) and continue to Step 5.</p></div>'
+    :'<span class="dl-pg-icon" aria-hidden="true">✓</span><div><strong>Label saved</strong>'+
+      '<p>You\'ll find it in <a href="my-labels.html">My Labels</a> in this browser on this device.</p></div>';
   el.hidden=false;
   if(_saveStatusTimer)clearTimeout(_saveStatusTimer);
   _saveStatusTimer=setTimeout(hideSaveStatus,8000);
@@ -3586,11 +3593,17 @@ function toggleDownload(){
   // already refused the export either way -- this only fixes the visual
   // state to match what actually happens on click.
   const btns=['btn-png','btn-svg','btn-pdf','btn-save','btn-png-preview','btn-svg-preview','btn-pdf-preview'];
+  // Saving is not exporting (owner, 3 Oct 2026): a label whose supplier-
+  // document check is not complete can still be saved, as a draft. The Save
+  // button therefore keeps its previous rule (everything except that check);
+  // every download stays on the full rule.
+  const saveAllowed=allowed||(!!document.getElementById('verify-checkbox')?.checked&&!window._labelBlockDownload&&!_hazardReviewRequired());
   btns.forEach(id=>{
     const btn=document.getElementById(id);
     if(!btn)return;
-    btn.style.opacity=allowed?'1':'0.4';
-    btn.style.pointerEvents=allowed?'auto':'none';
+    const ok=id==='btn-save'?saveAllowed:allowed;
+    btn.style.opacity=ok?'1':'0.4';
+    btn.style.pointerEvents=ok?'auto':'none';
   });
   const _sdsNote=document.getElementById('sds-doc-export-note');
   if(_sdsNote){

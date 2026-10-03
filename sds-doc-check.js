@@ -12,8 +12,15 @@
 // accepted, and the maker is guided to ask the supplier.
 //
 // PRECISION: percentages are compared exactly as numbers, never rounded to
-// make a match. 9.0909 is not 9.1; 10 and 10.0 are equal. Ranges ("8-10%")
-// are not accepted as a document percentage.
+// make a match, and no tolerance is applied. 9.0909 is not 9.1; 10 and 10.0
+// are equal. Equal numbers are only CONSISTENT answers: they never prove the
+// document applies (CLPeasy cannot read the document).
+//
+// RANGES / "UP TO": a document stating a range or an upper limit is not
+// accepted while the owner decision is open. It is reported separately
+// ('doc-pct-range') from a single higher-% document ('lower'), because
+// explicit supplier coverage is different from a maker assuming that a
+// higher-% document covers a lower %. No acknowledgement bypasses either.
 //
 // CONFIRMATION: a label is "verified" only while the fragrance %, product type
 // and hazard information are the same as when the maker last confirmed the
@@ -61,6 +68,19 @@
     return Number.isFinite(n) && n > 0 && n <= 100 ? n : null;
   }
 
+  // "8-10%", "8 to 10", "up to 10%", "max 10%", "≤10%", "less than 10%"
+  function isRangeOrUpTo(value) {
+    const t = String(value == null ? '' : value).trim().toLowerCase();
+    return /\d\s*(?:-|–|—|to)\s*\d/.test(t) || /(?:up\s*to|max(?:imum)?|not\s+more\s+than|less\s+than|below|under|≤|<=|<)\s*\d/.test(t);
+  }
+  // True when the maker's exact % only rounds to the document's figure at the
+  // document's precision (9.0909 vs 9.1). Used for wording only, never to accept.
+  function _roundsTo(actual, docRaw, docPct) {
+    const m = String(docRaw).trim().replace(',', '.').replace(/\s*%\s*$/, '').split('.');
+    const dp = m[1] ? m[1].length : 0;
+    return Number(actual.toFixed(dp)) === docPct;
+  }
+
   function _list(v) {
     const a = Array.isArray(v) ? v : String(v == null ? '' : v).split(',');
     return a.map(x => String(x).trim()).filter(Boolean).sort();
@@ -97,6 +117,7 @@
     if (d.kind === 'unsure') return { ok: false, code: 'unsure', message: '⛔ Check the document title and Sections 1 and 2: it should name a finished product (for example "candle") and the fragrance percentage it covers. If it doesn\'t, CLPeasy can\'t use it.' + ask(actual) };
     if (d.kind !== 'finished') return { ok: false, code: 'kind-missing', message: 'Choose what your supplier document describes.' };
     const docPct = parsePct(d.pct);
+    if (docPct === null && isRangeOrUpTo(d.pct)) return { ok: false, code: 'doc-pct-range', message: '⛔ Your document states a range or an "up to" percentage. CLPeasy can\'t use range information yet, even when it includes ' + actual + '%. If your supplier has explicitly confirmed that this information covers your ' + typeLc + ' at ' + actual + '%, ask them for GB CLP information that states ' + actual + '%, and enter that.' + ask(actual) };
     if (docPct === null) return { ok: false, code: 'doc-pct-missing', message: 'Enter the single fragrance percentage the document states, for example 10. A range or no stated percentage can\'t be used.' + ask(actual) };
     // Unknown values include answers saved before candles and wax melts were
     // split (old 'wax' / 'diffuser' / 'spray'): the maker must choose again.
@@ -105,9 +126,10 @@
     const covers = DOC_COVERS[d.base] || [];
     if (!myGroup || d.base === 'other') return { ok: false, code: 'base-unverified', message: '⛔ CLPeasy can only match documents for the product types listed. For any other product, use supplier CLP information written for your exact product.' + ask(actual) };
     if (covers.indexOf(myGroup) === -1) return { ok: false, code: 'base-mismatch', message: '⛔ This document covers a different product. What the product is made with (wax, diffuser base, spray base) changes the hazards, and CLPeasy only uses a document that names your type of product. It can\'t be used for your ' + typeLc + '.' + ask(actual) };
-    if (actual > docPct) return { ok: false, code: 'higher', message: '⛔ You use ' + actual + '%, more than the ' + docPct + '% this document states. Hazards can be more severe or additional at a higher percentage.' + ask(actual) };
-    if (actual < docPct) return { ok: false, code: 'lower', message: '⛔ You use ' + actual + '%, less than the ' + docPct + '% this document states. CLPeasy only uses supplier information for the exact percentage you use: some label warnings depend on concentration thresholds (for example a sensitiser warning can change from H317 to "EUH208 Contains …"), so a document for a different percentage may not give the right label.' + ask(actual) };
-    return { ok: true, code: 'match', message: '✓ This document covers your product: ' + typeLc + ' at ' + actual + '%. Paste its Section 2.2 below.' };
+    const roundNote = _roundsTo(actual, d.pct, docPct) ? ' The difference may only be rounding, but CLPeasy does not round or apply a tolerance: ask your supplier to confirm in writing that the information covers ' + actual + '%, or for information stating ' + actual + '%.' : '';
+    if (actual > docPct) return { ok: false, code: 'higher', message: '⛔ You use ' + actual + '%, more than the ' + docPct + '% this document states. Hazards can be more severe or additional at a higher percentage.' + roundNote + ask(actual) };
+    if (actual < docPct) return { ok: false, code: 'lower', message: '⛔ You use ' + actual + '%, less than the ' + docPct + '% this document states. CLPeasy only uses supplier information for the exact percentage you use: some label warnings depend on concentration thresholds (for example a sensitiser warning can change from H317 to "EUH208 Contains …"), so a document for a different percentage may not give the right label. A document for a higher percentage is not assumed to cover a lower one.' + roundNote + ask(actual) };
+    return { ok: true, code: 'match', message: '✓ Your answers are consistent: a finished-product document for your type of product stating ' + actual + '%, the percentage you use. CLPeasy can\'t read the document itself, so make sure it is your supplier\'s GB CLP information for this fragrance in your ' + typeLc + '. Paste its Section 2.2 below.' };
   }
 
   // 'verified' | 'not-checked' (never confirmed, e.g. a label saved before
@@ -129,10 +151,10 @@
     if (s === 'verified') return null;
     if (s === 'needs-recheck') return 'The fragrance percentage, product type, hazard information or document details changed after you confirmed your supplier document. Go to Step 3 (Hazards), check "Check your supplier document first" still matches, and continue to Step 5 to download.';
     if (s === 'not-covered') return evaluate(rec).message.replace(/^[⛔✓]\s*/, '') + ' Update Step 3 (Hazards) before downloading.';
-    return 'Before downloading, confirm which supplier document this label\'s hazard information comes from. Go to Step 3 (Hazards), complete "Check your supplier document first", and continue to Step 5. Your saved design is kept.';
+    return 'Not ready to download yet. Confirm which supplier document this label\'s hazard information comes from: go to Step 3 (Hazards), complete "Check your supplier document first", and continue to Step 5. Your design is kept, and you can still save it as a draft.';
   }
 
-  const api = { GROUP_BY_TYPE, DOC_COVERS, DOC_BASE_OPTIONS, parsePct, confirmationFor, evaluate, status, isVerified, exportBlockMessage };
+  const api = { isRangeOrUpTo, GROUP_BY_TYPE, DOC_COVERS, DOC_BASE_OPTIONS, parsePct, confirmationFor, evaluate, status, isVerified, exportBlockMessage };
   global.SdsDocCheck = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -171,6 +171,11 @@ setTimeout(async () => {
     const pdfDisabled = () => window.eval('document.getElementById("btn-pdf").disabled');
     const pngDisabled = () => window.eval('document.getElementById("btn-png-all").disabled');
 
+    // The saved-label list marks drafts (saved, not ready to print).
+    const card = name => (document.getElementById('sli-' + rec(name).id) || {}).textContent || '';
+    assert(/Draft: document check needed/.test(card('Older Saved Label')) && /Draft: document check needed/.test(card('Changed After Confirming')), 'unchecked labels marked as drafts in the list');
+    assert(card('Lavender Fields') && !/Draft/.test(card('Lavender Fields')), 'checked label not marked');
+
     // Confirmed label only: export proceeds.
     window.eval(`addToSheet('${rec('Lavender Fields').id}')`);
     assert.strictEqual(pdfDisabled(), false, 'confirmed label: Print/PDF enabled');

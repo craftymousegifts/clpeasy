@@ -1,6 +1,8 @@
 # Fragrance percentage and supplier-document applicability (3 Oct 2026)
 
-**Branch:** `fix/sds-document-applicability`, from production `main` `148334a`. **Not deployed.**
+**Branch:** `fix/sds-document-applicability`, from production `main` `148334a`, with production
+`main` `4bc3e9a` (the published pricing wording) merged in. **Not deployed; production approval
+pending.**
 - PR #203 (`57789c1`) was inspected only. It stays frozen until this replacement is approved and
   deployed.
 - No renderer change: `label-render.js` does not use the fragrance %. The approved homepage labels
@@ -68,7 +70,8 @@ at their percentage.
 | **9.0909%** product (from the calculator), **9.1%** document | ⛔ Blocked: the numbers are not rounded to make a match |
 | Concentrated-oil SDS (100%) | ⛔ Blocked; CLPeasy does not calculate mixture classifications |
 | Not sure what the document describes | ⛔ Blocked, with how to check (title and Sections 1–2) |
-| Document % missing, a range ("8–10%") or not a number | ⛔ Blocked |
+| Document % missing or not a number | ⛔ Blocked |
+| Document states a range or "up to" ("8–10%", "up to 10%") | ⛔ Blocked with its own explanation (see below) |
 | Your % missing, a range or not a number | ⛔ Blocked at Step 2 and Step 3 |
 | Document for another product group | ⛔ Blocked |
 | "Something else / not stated" | ⛔ Blocked |
@@ -98,6 +101,14 @@ Each group needs a document for that group.
   choices) are not accepted, and the maker is asked to choose again. These answers never reached
   production.
 
+### Matching answers are not proof
+When every answer is consistent, the Step 3 message says exactly that. It reads: "Your answers are
+consistent… CLPeasy can't read the document itself, so make sure it is your supplier's GB CLP
+information for this fragrance in your [product]".
+- It no longer says "This document covers your product".
+- Equal numbers show that the maker's answers agree. They do not show that the document is
+  suitable.
+
 ### Precision and rounding
 - **Exact comparison.** Both percentages are compared exactly as numbers. 10 and 10.0 are equal;
   10.04 and 10 are not; 9.0909 and 9.1 are not.
@@ -109,9 +120,29 @@ Each group needs a document for that group.
     places)".
   - It tells the maker that CLPeasy compares this figure exactly and never rounds to make a match.
   - Exact values (180 g + 20 g → 10%) are shown without the rounding note.
-- **Supplier-stated coverage.** CLPeasy uses only the single % the document states. If a supplier
-  says a document covers a range or "up to" a %, CLPeasy does not interpret that. The maker must
-  ask the supplier for information at their exact %, or enter the % the document states.
+- **9.0909% (calculated) against a document stating 9.1%.**
+  - **What CLPeasy does:** these are different numbers, so the check is blocked. No tolerance is
+    applied, and none has been invented.
+  - **What the maker sees:** because 9.0909 rounds to 9.1 at the document's precision, the message
+    adds that the difference may only be rounding. It then says CLPeasy does not round or apply a
+    tolerance, and asks the maker to get the supplier's written confirmation that the information
+    covers 9.0909%, or information stating 9.0909%.
+  - **No tolerance:** the rounding check only chooses the wording. It never accepts a mismatch.
+  - **The maker's options:**
+    - weigh the formulation to the document's stated %, then recalculate;
+    - or get the supplier's confirmation or information for their exact %.
+- **Range or "up to" documents** ("8–10%", "up to 10%", "max 10%") are blocked while this owner
+  decision is open.
+  - **Two separate cases:**
+    - **Range ("doc-pct-range"):** the supplier *explicitly* states coverage across a range.
+    - **Lower ("lower"):** the maker *assumes* that a document for a higher % covers their lower %.
+  - **What the maker is told:**
+    - **Range:** if the supplier has explicitly confirmed coverage for their % in their product, ask
+      the supplier for GB CLP information stating that % and enter it.
+    - **Lower:** "A document for a higher percentage is not assumed to cover a lower one."
+  - **No acknowledgement or override** bypasses either case.
+  - **Possible future decision for you:** whether an explicit supplier statement of range coverage
+    should be accepted (and how it would be recorded). Until then it stays blocked.
 
 ### Confirmation and export (owner decision 2)
 1. **When the check is confirmed.** It is confirmed only when the maker successfully leaves Step 3
@@ -128,6 +159,17 @@ Each group needs a document for that group.
 4. **Saved with the label.** The confirmation is saved with the label (in the browser, like the
    rest of My Labels). Reopening a label restores it, and it counts only if nothing has changed.
 
+**Saved is not the same as ready to download (draft saving):**
+- **Saving still works.** An unchecked label can be saved: through "Save Progress" (every step) and
+  the Step 5 "Save to my label library" button. The Step 5 button keeps its previous conditions,
+  but no longer needs the document check.
+- **The saved message says "draft".** When the check is not complete it reads "Saved as a draft:
+  not ready to download yet", with what to do next, in an amber notice. A checked label shows the
+  usual green "Label saved".
+- **My Labels** marks unchecked labels "Draft: document check needed". The Composer's saved-label
+  list marks them "Draft: document check needed before printing". Checked labels have no marker.
+- **Exports stay blocked** until the check is complete.
+
 **Builder:**
 - **The gate.** The single export gate (`_downloadAllowed()`) now also requires the confirmation.
   It covers all six export functions (PNG, SVG, PDF sheet, print-ready PDF, cutting-machine PNGs,
@@ -136,9 +178,19 @@ Each group needs a document for that group.
   applies.
 - **On-screen guidance.** Step 5 shows a notice with the reason and a "Go to Step 3 (Hazards)"
   link.
-- **Labels saved before this change** are not checked yet. They can be reopened and edited, but
-  not exported until the maker completes Step 3. The saved design itself is not changed.
-- **Saving the label (btn-save)** shares this gate, as it already did for the Step 5 tick.
+- **Labels saved before this change** are not checked yet. They can be reopened, edited and saved
+  as drafts, but not exported until the maker completes Step 3. The saved design itself is not
+  changed.
+- **Recovery journey (tested end to end in real Chromium):**
+  1. open the older label;
+  2. "Go to Step 3";
+  3. answer the check;
+  4. Step 4, then Step 5;
+  5. save (it updates the same label);
+  6. reopen it (it is ready to download);
+  7. add it to the Composer.
+
+  Design and all fine-tune settings are identical before and after.
 
 **Print Sheet Composer:**
 - **The gate.** The single export gate (`getSheetFitBlockMessage()`) and the button state now
@@ -172,6 +224,16 @@ Each group needs a document for that group.
 | Kept the %-of-wax calculator and the misleading tips | Fixed |
 | Based on `727804e` | Based on production `148334a` |
 
+## Where the shared script is loaded
+| Page | Why | Loaded |
+|---|---|---|
+| `builder.html` | Step 3 check, export gate, draft save message | yes |
+| `print.html` | sheet export gate, draft marker | yes |
+| `my-labels.html` | draft marker | yes |
+| `dashboard.html` | lists recent label names only; no export or status | not needed |
+
+The Test build includes `sds-doc-check.js` (byte-identical to the repo copy).
+
 ## Tests
 - **`tests/sds-document-applicability.js`** (real `builder.html` in JSDOM, 9 groups) covers:
   - **Step 3 check:**
@@ -194,8 +256,13 @@ Each group needs a document for that group.
   - The earlier version substituted "Scented Candle" for blank or fake types. **That substitution
     has been removed.**
   - Fixtures now use real Builder product types.
-- **Composer harnesses:** saved fixtures carry a real confirmation made by the shared module, and a
-  dedicated case checks that an unconfirmed label blocks the sheet.
+- **Composer harnesses:** saved fixtures carry a real confirmation made by the shared module.
+  `tests/sds-document-composer-gate.js` checks that unconfirmed and changed labels block the sheet,
+  and that the list marks them as drafts.
+- **`tests/sds-document-recovery-journey.js`** (real Chromium) covers the older-label recovery
+  journey above, the My Labels draft marker, and that fine-tune settings are kept.
+- **Focused test extras:** draft saving and its message; range / "up to" documents; the rounding
+  wording; and that a match is never described as proof.
 
 ## Limitations
 - **Primary legal texts not opened** (network policy). Category A is reported by secondary
@@ -205,3 +272,9 @@ Each group needs a document for that group.
 - **Local storage only.** The confirmation is stored with the label in the browser, like My Labels.
   Clearing browser data loses it along with the label.
 - **Smart Paste** still extracts from Section 2.2 text, and the maker must still review the result.
+- **Not legally verified.** The implementation applies CLPeasy's evidence policy. It has not been
+  legally verified, and consistent answers do not prove that a supplier document is suitable.
+- **Separate, pre-existing (not in this branch):** on the deployed sites (including production),
+  the "Print Sheet Composer" link's inline hover handler is served cut short. Hovering over it logs
+  a script error, and the hover colour does not change. The repo file is correct. This is recorded
+  for a separate fix.
