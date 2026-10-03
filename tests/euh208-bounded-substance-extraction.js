@@ -8,7 +8,7 @@
 // Run from the repo root: node tests/euh208-bounded-substance-extraction.js
 const fs = require('fs');
 const assert = require('assert');
-const { JSDOM, VirtualConsole } = require('jsdom');
+const { JSDOM, VirtualConsole } = require('jsdom'); const __sdsAns = require('./helpers/sds-doc-answer').installed;
 
 const source = fs.readFileSync('builder.html', 'utf8')
   .replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
@@ -58,6 +58,7 @@ const dom = new JSDOM(source, {
     }) };
   }
 });
+__sdsAns(dom);
 
 const { window } = dom;
 const document = window.document;

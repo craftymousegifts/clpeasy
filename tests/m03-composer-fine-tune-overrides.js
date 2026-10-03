@@ -74,7 +74,7 @@ const server = http.createServer((req, res) => {
       if (u.includes('jszip')) return r.respond({ status: 200, contentType: 'text/javascript', body: 'window.JSZip=function(){};' });
       return r.respond({ status: 204, body: '' });
     });
-    await t.goto(`${base}/${page}`, { waitUntil: 'load' });
+    await t.goto(`${base}/${page}`, { waitUntil: 'load' }); await t.evaluate(require('./helpers/sds-doc-answer').SCRIPT).catch(()=>{});
     await sleep(1500);
     return t;
   }
@@ -126,7 +126,7 @@ const server = http.createServer((req, res) => {
       const NF = Object.assign({}, C, { id: ids.NF, scentName: 'NF Label', hazardFSOverride: rec.hazardFSOverride });
       await LabelLibrary.mutate(() => ({ collection: [A, C, NF], usedId: A.id }));
     }, B.rec, ids);
-    await t.goto(`${base}/print.html`, { waitUntil: 'load' });
+    await t.goto(`${base}/print.html`, { waitUntil: 'load' }); await t.evaluate(require('./helpers/sds-doc-answer').SCRIPT).catch(()=>{});
     await sleep(2000);
 
     const R = await t.evaluate((ids, K) => {

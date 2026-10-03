@@ -2,7 +2,7 @@
 // Run from repo root: node tests/gb-clp-signal-word-resolution.js
 const fs=require('fs');
 const assert=require('assert');
-const {JSDOM,VirtualConsole}=require('jsdom');
+const {JSDOM,VirtualConsole}=require('jsdom'); const __sdsAns = require('./helpers/sds-doc-answer').installed;
 
 function buildDom(){
   const source=fs.readFileSync('builder.html','utf8').replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi,'');
@@ -19,6 +19,7 @@ function buildDom(){
     window.URL.createObjectURL=()=> 'blob:test'; window.URL.revokeObjectURL=()=>{};
     window.supabase={createClient:()=>({auth:{getSession:async()=>({data:{session:null}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}}),signOut:async()=>({})},from:()=>Object.create(emptyQuery),rpc:async()=>({data:false,error:null})})};
   }});
+  __sdsAns(dom);
   return {dom,errors};
 }
 

@@ -1169,15 +1169,16 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label>Fragrance load % <span>(optional)</span>
+        <label for="frag-load">Fragrance in the finished product (% by weight)
           <button type="button" onclick="toggleFragCalc()" style="margin-left:8px;font-size:11px;background:var(--teal-light);border:1px solid rgba(13,148,136,0.3);color:var(--teal);padding:2px 8px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;">🧮 Calculate</button>
         </label>
-        <input type="text" id="frag-load" placeholder="e.g. 10%" oninput="updateLabel();saveProdDetails()">
+        <input type="text" id="frag-load" placeholder="e.g. 10%" inputmode="decimal" aria-describedby="frag-load-help" oninput="updateLabel();saveProdDetails();updateSdsDocCheck()">
+        <div id="frag-load-help" style="margin-top:4px;font-size:11px;color:var(--muted);line-height:1.45;">Fragrance weight ÷ total weight of the finished product (wax or base + fragrance) × 100. Required: CLPeasy uses it to check your supplier's CLP information covers your product.</div>
         <div id="frag-calc-panel" style="display:none;margin-top:8px;background:var(--off);border:1.5px solid var(--border);border-radius:10px;padding:12px;">
           <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;">Calculate from weights</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
             <div>
-              <div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Wax weight (g)</div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:3px;">Wax or base weight (g)</div>
               <input type="number" id="calc-wax" placeholder="e.g. 200" min="0" oninput="calcFragLoad()" style="width:100%;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-size:14px;font-family:'DM Sans',sans-serif;">
             </div>
             <div>
@@ -1210,6 +1211,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
          because the .sds-gb-note below now covers the same point. This is an
          information note, not a confirmation gate -- #hazard-confirm-block
          (unchanged) remains the mandatory "I confirm..." checkbox. -->
+    <fieldset id="sds-doc-check" class="sds-doc-check" style="border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin:0 0 14px;background:var(--off);">
+      <legend style="font-size:13px;font-weight:700;padding:0 4px;">Check your supplier document first</legend>
+      <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:8px;">Hazards depend on the exact percentage and on what the product is made with. They don't scale in simple proportion, so CLPeasy only uses supplier information that covers your product.</div>
+      <div style="font-size:12.5px;font-weight:600;margin-bottom:4px;">What does your supplier document describe?</div>
+      <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:4px;"><input type="radio" name="sds-doc-kind" value="finished" onchange="updateSdsDocCheck()" style="margin-top:2px;"> A finished product made with this fragrance at a stated percentage (for example a CLP document for "candle at 10%")</label>
+      <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:4px;"><input type="radio" name="sds-doc-kind" value="concentrate" onchange="updateSdsDocCheck()" style="margin-top:2px;"> The fragrance oil on its own (an SDS for the concentrated oil, 100%)</label>
+      <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:8px;"><input type="radio" name="sds-doc-kind" value="unsure" onchange="updateSdsDocCheck()" style="margin-top:2px;"> I'm not sure</label>
+      <div id="sds-doc-finished-fields" style="display:none;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px;">
+        <div><label for="sds-doc-pct" style="font-size:12px;">Fragrance % the document covers</label><input type="text" id="sds-doc-pct" placeholder="e.g. 10%" inputmode="decimal" oninput="updateSdsDocCheck()"></div>
+        <div><label for="sds-doc-base" style="font-size:12px;">Product the document covers</label><select id="sds-doc-base" onchange="updateSdsDocCheck()"><option value="">— Choose —</option><option value="wax">Candle or wax melt (wax)</option><option value="diffuser">Diffuser (reed, electric, car or plug-in base)</option><option value="spray">Spray (room, linen or car spray base)</option><option value="other">Something else / not stated</option></select></div>
+      </div>
+      <div id="sds-doc-result" role="status" aria-live="polite" style="font-size:12.5px;line-height:1.5;"></div>
+    </fieldset>
     <div class="smart-paste-box">
       <h4>✨ Smart Paste — paste SDS Section 2.2</h4>
       <p>Copy the complete Section 2.2 (Label elements) from your current supplier SDS PDF and paste it here. CLPeasy extracts the information it can identify; review the result against your SDS before continuing.</p>
@@ -1640,26 +1654,26 @@ const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',produc
   hazardFromExtraction:false,hazardSource:null};
 // ── PRODUCT TYPE GUIDANCE ─────────────────────────────────────
 const FRAG_LOAD_TIPS={
-  'Scented Candle':'Recommended: 6–10%. Your CLP must be for the actual % used — you can overestimate but never underestimate.',
+  'Scented Candle':'Recommended: 6–10%. Your supplier CLP information must be for the exact % you use.',
   'Soy Candle':'Recommended: 6–10%. Soy wax typically holds up to 10% fragrance load well.',
   'Votive Candle':'Recommended: 6–10%.',
   'Tea Light Candle':'Recommended: 6–10%. Small size — keep fragrance load accurate on label.',
   'Pillar Candle':'Recommended: 6–10%.',
   'Advent Calendar Candle':'Recommended: 6–10%. Each individual item needs its own CLP label, as does the outer packaging.',
-  'Wax Melt':'Recommended: 6–10%. You can use up to 10% — your CLP must reflect the actual fragrance load.',
+  'Wax Melt':'Recommended: 6–10%. Your supplier CLP information must be for the exact % you use.',
   'Wax Tart':'Recommended: 6–10%.',
   'Snap Bar':'Recommended: 6–10%.',
   'Wax Melt Clamshell':'Recommended: 6–10%.',
   'Advent Calendar Wax Melt':'Recommended: 6–10%. Each individual melt and the outer packaging each need a CLP label.',
-  'Reed Diffuser':'Recommended: 15–25%. Use 25% CLP if your load is between 15–25%. If using Augeo base (hazardous), include it in your SDS data — you need a combined CLP.',
+  'Reed Diffuser':'Recommended: 15–25%. Use supplier CLP information for your exact % and diffuser base. If your base is hazardous (for example Augeo), you need a combined classification.',
   'Electric Diffuser':'Recommended: 15–25%. Check your base — hazardous bases like Augeo must be included in the CLP.',
   'Car Diffuser':'Recommended: 15–25%. Include any hazardous carrier base in your SDS data.',
-  'Plugin Diffuser':'Recommended: 15–25%. Non-hazardous plugin bases may not need CLP — check your SDS.',
-  'Room Spray':'Recommended: 5–25%. If using an alcohol base, include flammability data. Non-hazardous bases like Isopropyl Myristate may not need CLP — check your SDS.',
+  'Plugin Diffuser':'Recommended: 15–25%. Use supplier CLP information for your exact % and base.',
+  'Room Spray':'Recommended: 5–25%. If using an alcohol base, include flammability data. Use supplier CLP information for your exact % and base.',
   'Car Air Freshener Spray':'Recommended: 5–25%. Alcohol-based sprays require flammability warnings.',
   'Linen Spray':'Recommended: 5–15%. Check your base — alcohol bases require flammability data.',
   'Wax Melt Bouquet':'Recommended: 6–10% per individual melt component.',
-  'Scented Sachet':'Check your SDS — some sachets may not require CLP if fragrance load is low.',
+  'Scented Sachet':'Use supplier CLP information for the exact % in your sachet. A lower % does not automatically mean no CLP label is needed.',
   'Potpourri':'Check your SDS for fragrance load and hazard classification.'
 };
 
@@ -2978,6 +2992,7 @@ async function saveLabel(){
     bizPhone:S.bizPhone,bizWebsite:S.bizWebsite,netWeight:S.netWeight,fragLoad:S.fragLoad,burnTime:S.burnTime,batchNum:S.batchNum,
     supplier:S.supplier||'',hideEN15494:!!S.hideEN15494,
     hazardFromExtraction:!!S.hazardFromExtraction,
+    sdsDoc:S.sdsDoc?{kind:S.sdsDoc.kind||'',pct:S.sdsDoc.pct||'',base:S.sdsDoc.base||''}:null,
     bgColour:(document.getElementById('label-bg-colour')?.value)||'#ffffff',
     pStatements:S.pStatements||'',textColour:S.textColour||'dark',showBorder:S.showBorder!==false,
     labelLang:document.getElementById('label-lang')?.value||'en',
@@ -3088,7 +3103,7 @@ function loadLabelRecord(e){
   // product type and fragrance load.
   _snapshotHazardSource({name:e.scentName,type:e.productType,load:e.fragLoad});
   S.bizName=e.bizName||'';S.bizAddress=e.bizAddress||'';S.bizPhone=e.bizPhone||'';
-  S.bizWebsite=e.bizWebsite||'';S.netWeight=e.netWeight||'';S.fragLoad=e.fragLoad||'';S.burnTime=e.burnTime||'';S.batchNum=e.batchNum||'';
+  S.bizWebsite=e.bizWebsite||'';S.netWeight=e.netWeight||'';S.fragLoad=e.fragLoad||'';S.burnTime=e.burnTime||'';S.batchNum=e.batchNum||'';S.sdsDoc=e.sdsDoc||null;
   S.supplier=e.supplier||'';S.hideEN15494=!!e.hideEN15494;
   if(e.textColour)S.textColour=e.textColour;
   if(e.showBorder!==undefined)S.showBorder=e.showBorder;
@@ -3103,6 +3118,7 @@ function loadLabelRecord(e){
   set('scent-name',e.scentName);set('product-type',e.productType);set('h-statements',e.hStatements||'');set('p-statements',e.pStatements||'');
   set('biz-name',e.bizName||'');set('biz-address',e.bizAddress||'');set('biz-phone',e.bizPhone||'');
   set('biz-website',e.bizWebsite||'');set('net-weight',e.netWeight||'');set('frag-load',e.fragLoad||'');set('burn-time',e.burnTime||'');
+  {const _d=e.sdsDoc||{};document.querySelectorAll('input[name="sds-doc-kind"]').forEach(r=>{r.checked=r.value===(_d.kind||'');});set('sds-doc-pct',_d.pct||'');set('sds-doc-base',_d.base||'');if(typeof updateSdsDocCheck==='function')updateSdsDocCheck();}
   set('batch-num',e.batchNum||'');set('custom-w',e.customW||'');set('custom-h',e.customH||'');
   const hideCandleWarnings=document.getElementById('hide-en15494');
   if(hideCandleWarnings)hideCandleWarnings.checked=S.hideEN15494;
@@ -3694,6 +3710,75 @@ function parseBoundedSubstanceList(raw){
   });
   return out;
 }
+// ── SUPPLIER DOCUMENT APPLICABILITY (fragrance %) ────────────────────────
+// GB CLP classifies a mixture from the concentration of each hazardous
+// ingredient in the FINISHED product. Hazards do not scale in proportion
+// (generic/specific concentration limits, e.g. a sensitiser can change from
+// H317 to EUH208 below a threshold), so CLPeasy only uses supplier
+// information that covers the maker's own product: a finished-product
+// document for the same kind of product at the same fragrance %. A 100% /
+// concentrated-oil SDS, an unknown document, a different %, (higher OR
+// lower) or a different product base is blocked with supplier guidance.
+// CLPeasy never calculates or scales a classification.
+const SDS_DOC_BASE_BY_TYPE={
+  'Scented Candle':'wax','Soy Candle':'wax','Votive Candle':'wax','Tea Light Candle':'wax','Pillar Candle':'wax','Advent Calendar Candle':'wax',
+  'Wax Melt':'wax','Wax Tart':'wax','Snap Bar':'wax','Wax Melt Clamshell':'wax','Advent Calendar Wax Melt':'wax','Wax Melt Bag':'wax','Wax Melt Bouquet':'wax',
+  'Reed Diffuser':'diffuser','Electric Diffuser':'diffuser','Car Diffuser':'diffuser','Plugin Diffuser':'diffuser',
+  'Room Spray':'spray','Car Air Freshener Spray':'spray','Linen Spray':'spray'
+};
+function _parseFragPct(value){
+  const t=String(value==null?'':value).trim().replace(',','.').replace(/\s*%\s*$/,'');
+  if(!/^\d{1,3}(?:\.\d+)?$/.test(t))return null;
+  const n=Number(t);
+  return Number.isFinite(n)&&n>0&&n<=100?n:null;
+}
+function _sdsDocState(){
+  const kind=(document.querySelector('input[name="sds-doc-kind"]:checked')||{}).value||'';
+  return {kind, pct:document.getElementById('sds-doc-pct')?.value||'', base:document.getElementById('sds-doc-base')?.value||''};
+}
+// Returns {ok, code, message}. Pure check of the current form state.
+function evaluateSdsDoc(){
+  const actual=_parseFragPct(document.getElementById('frag-load')?.value);
+  const type=document.getElementById('product-type')?.value||S.productType||'';
+  const d=_sdsDocState();
+  const ask=pct=>' Ask your supplier for GB CLP information for your '+(type?type.toLowerCase():'product')+' at '+(pct!=null?pct+'%':'the percentage you use')+'.';
+  if(actual===null)return {ok:false,code:'actual-missing',message:'Enter the fragrance percentage in your finished product (Step 2) as a number, for example 8 or 8.5. CLPeasy needs it to check your supplier information covers your product.'};
+  if(!d.kind)return {ok:false,code:'kind-missing',message:'Choose what your supplier document describes.'};
+  if(d.kind==='concentrate')return {ok:false,code:'concentrate',message:'⛔ An SDS for the fragrance oil on its own describes the concentrated oil, not your finished product. Its hazards are not the hazards of a product containing '+actual+'%, and CLPeasy does not calculate them.'+ask(actual)};
+  if(d.kind==='unsure')return {ok:false,code:'unsure',message:'⛔ Check the document title and Section 1/2: it should name a finished product (for example "candle") and the fragrance percentage it covers. If it doesn\'t, CLPeasy can\'t use it.'+ask(actual)};
+  const docPct=_parseFragPct(d.pct);
+  if(docPct===null)return {ok:false,code:'doc-pct-missing',message:'Enter the fragrance percentage the document covers, as a number (for example 10). If the document doesn\'t state one, CLPeasy can\'t use it.'+ask(actual)};
+  if(!d.base)return {ok:false,code:'base-missing',message:'Choose the product the document covers.'};
+  const myBase=SDS_DOC_BASE_BY_TYPE[type]||'other';
+  if(d.base==='other'||myBase==='other')return {ok:false,code:'base-unverified',message:'⛔ CLPeasy can only match documents for candles and wax melts, diffusers or sprays. For any other product or base, use supplier CLP information written for your exact product.'+ask(actual)};
+  if(d.base!==myBase)return {ok:false,code:'base-mismatch',message:'⛔ This document covers a different kind of product. The base (for example wax, diffuser base or alcohol spray) changes the hazards, so it can\'t be used for your '+(type||'product').toLowerCase()+'.'+ask(actual)};
+  if(actual>docPct)return {ok:false,code:'higher',message:'⛔ You use '+actual+'%, more than the '+docPct+'% this document covers. Hazards can be more severe or additional at a higher percentage.'+ask(actual)};
+  if(actual<docPct)return {ok:false,code:'lower',message:'⛔ You use '+actual+'%, less than the '+docPct+'% this document covers. A lower percentage is not automatically covered: some warnings depend on concentration thresholds (for example a sensitiser warning can change from H317 to "EUH208 Contains …"), so the label could be wrong.'+ask(actual)};
+  return {ok:true,code:'match',message:'✓ This document covers your product: '+(type||'product').toLowerCase()+' at '+actual+'%. Paste its Section 2.2 below.'};
+}
+function updateSdsDocCheck(){
+  const d=_sdsDocState();
+  const f=document.getElementById('sds-doc-finished-fields');
+  if(f)f.style.display=d.kind==='finished'?'grid':'none';
+  const r=evaluateSdsDoc();
+  const out=document.getElementById('sds-doc-result');
+  if(out){
+    // Before the maker has answered, show nothing alarming.
+    const quiet=!d.kind&&r.code==='kind-missing';
+    out.textContent=quiet?'':r.message;
+    out.dataset.status=r.code;
+    out.style.color=r.ok?'#166534':(r.message.startsWith('⛔')?'#991B1B':'var(--muted)');
+  }
+  S.sdsDoc={kind:d.kind,pct:d.pct,base:d.base};
+  if(typeof toggleHazardNext==='function')toggleHazardNext();
+  return r.ok;
+}
+function _requireSdsDoc(){
+  const r=evaluateSdsDoc();
+  updateSdsDocCheck();
+  if(!r.ok){alert(r.message.replace(/^[⛔✓]\s*/,''));document.getElementById('sds-doc-check')?.scrollIntoView?.({block:'center'});}
+  return r.ok;
+}
 function extractSDS(){
   // NOTE (2026-08-02, reversal — see smart-paste-pro-gating / reverify):
   // A plan gate was added here believing Smart Paste was Easy-Pro-exclusive.
@@ -3704,6 +3789,7 @@ function extractSDS(){
   // fresh, explicit product-rules confirmation.
   const text=document.getElementById('smart-paste-input').value.trim();
   if(!text){alert('Please paste SDS Section 2.2 text first.');return;}
+  if(!_requireSdsDoc())return;
 
   // ── H STATEMENTS ──────────────────────────────────────────────────────────
   const hMatches=[...new Set(text.match(/\bH\d{3}\b/g)||[])];
@@ -4033,6 +4119,7 @@ function canLeaveApprovedBuilderStep(step){
     const type=document.getElementById('product-type')?.value||'';
     if(!name){alert('Please enter a product name before continuing.');document.getElementById('scent-name')?.focus();return false;}
     if(!type){alert('Please select a product type before continuing.');document.getElementById('product-type')?.focus();return false;}
+    if(_parseFragPct(document.getElementById('frag-load')?.value)===null){alert('Please enter the fragrance percentage in your finished product as a number, for example 8 or 8.5.');document.getElementById('frag-load')?.focus();return false;}
     if(_hazardReviewRequired()){alert(_hazardReviewMessage());return false;}
   }
   if(step===3){
@@ -4040,6 +4127,7 @@ function canLeaveApprovedBuilderStep(step){
     if(_hazardReviewRequired()){alert(_hazardReviewMessage());return false;}
     const confirmed=!!document.getElementById('hazard-confirm')?.checked;
     if(!(S.hStatements||'').trim()){alert('Please extract and review the hazard data from your supplier SDS before continuing.');return false;}
+    if(!_requireSdsDoc())return false;
     if(!confirmed){alert('Please confirm that the extracted hazard data matches your supplier SDS before continuing.');document.getElementById('hazard-confirm')?.focus();return false;}
     const hCodes=(S.hStatements||'').split(',').map(v=>v.trim()).filter(Boolean);
     const pCodes=(S.pStatements||'').split(',').map(v=>v.trim()).filter(Boolean);
@@ -4225,6 +4313,11 @@ function checkStep2Next(){
     document.getElementById('product-type')?.focus();
     return;
   }
+  if(_parseFragPct(document.getElementById('frag-load')?.value)===null){
+    alert('Please enter the fragrance percentage in your finished product as a number, for example 8 or 8.5.');
+    document.getElementById('frag-load')?.focus();
+    return;
+  }
   nextStep();
 }
 function toggleHazardNext(){
@@ -4244,7 +4337,7 @@ function toggleHazardNext(){
     btn.style.opacity='0.4';btn.style.pointerEvents='none';
     return;
   }
-  if(cb&&cb.checked&&hasHazard){btn.style.opacity='1';btn.style.pointerEvents='auto';}
+  if(cb&&cb.checked&&hasHazard&&(typeof evaluateSdsDoc!=='function'||evaluateSdsDoc().ok)){btn.style.opacity='1';btn.style.pointerEvents='auto';}
   else{btn.style.opacity='0.4';btn.style.pointerEvents='none';}
 }
 // U6 fix (2026-08-03, UX simplification round 2 — per Michaela's request): show
@@ -5723,15 +5816,14 @@ function calcFragLoad(){
   const applyBtn=document.getElementById('calc-apply-btn');
   if(!res)return;
   if(wax<=0||frag<=0){res.textContent='';if(applyBtn)applyBtn.style.display='none';return;}
-  const pct=((frag/wax)*100).toFixed(1);
+  // CLP information is prepared for the fragrance as a percentage of the
+  // FINISHED product (fragrance / (wax or base + fragrance)), so that is the
+  // value applied. The %-of-wax figure is shown only for reference.
   const total=wax+frag;
-  const pctOfTotal=((frag/total)*100).toFixed(1);
-  let warning='';
-  const pctNum=parseFloat(pct);
-  if(pctNum>12)warning=' ⚠️ High — verify SDS max load';
-  else if(pctNum>10)warning=' — check SDS max';
-  res.textContent=`${pct}% of wax weight (${pctOfTotal}% of total)${warning}`;
-  res.style.color=pctNum>12?'#DC2626':'var(--teal)';
+  const pct=((frag/total)*100).toFixed(1);
+  const pctOfWax=((frag/wax)*100).toFixed(1);
+  res.textContent=`${pct}% of the finished product (${frag} g fragrance in ${total} g total). For reference: ${pctOfWax}% of the wax/base weight.`;
+  res.style.color='var(--teal)';
   if(applyBtn)applyBtn.style.display='';
   if(applyBtn)applyBtn.dataset.pct=pct;
 }
@@ -5741,7 +5833,7 @@ function applyFragLoad(){
   const pct=btn?.dataset.pct;
   if(!pct)return;
   const el=document.getElementById('frag-load');
-  if(el){el.value=pct+'%';updateLabel();saveProdDetails();}
+  if(el){el.value=pct+'%';updateLabel();saveProdDetails();updateSdsDocCheck();}
   document.getElementById('frag-calc-panel').style.display='none';
 }
 

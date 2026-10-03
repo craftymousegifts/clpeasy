@@ -130,7 +130,7 @@ const server = http.createServer((req, res) => {
       if (u.includes('jszip')) return r.respond({ status: 200, contentType: 'text/javascript', body: 'window.JSZip=function(){this.files={};this.file=function(n,b){this.files[n]=b;};this.generateAsync=async function(){return new Blob(["zip"]);};};' });
       return r.respond({ status: 204, body: '' });
     });
-    await t.goto(base + '/' + url, { waitUntil: 'load' });
+    await t.goto(base + '/' + url, { waitUntil: 'load' }); await t.evaluate(require('./helpers/sds-doc-answer').SCRIPT).catch(()=>{});
     await sleep(1500);
     return t;
   }
@@ -201,7 +201,7 @@ const server = http.createServer((req, res) => {
       if (B.saved) {
         const t2 = await open('builder.html', OUT);
         await t2.evaluate(async (rec) => { currentUser = null; if (typeof initSavedLabelLibrary === 'function') await initSavedLabelLibrary(); await LabelLibrary.mutate(() => ({ collection: [rec], usedId: rec.id })); }, B.saved);
-        await t2.goto(base + '/builder.html?label=' + B.saved.id, { waitUntil: 'load' });
+        await t2.goto(base + '/builder.html?label=' + B.saved.id, { waitUntil: 'load' }); await t2.evaluate(require('./helpers/sds-doc-answer').SCRIPT).catch(()=>{});
         await sleep(2000);
         R = await t2.evaluate(async () => {
           const vb = document.getElementById('verify-checkbox'); if (vb && !vb.checked) { vb.checked = true; vb.dispatchEvent(new Event('change', { bubbles: true })); }
@@ -228,7 +228,7 @@ const server = http.createServer((req, res) => {
     // ── Print Sheet Composer: every saved label, one sheet each ─────────
     const c = await open('print.html', IN);
     await c.evaluate(async (recs) => { await LabelLibrary.mutate(() => ({ collection: recs, usedId: recs[0].id })); }, saved.map(s => s.rec));
-    await c.goto(base + '/print.html', { waitUntil: 'load' });
+    await c.goto(base + '/print.html', { waitUntil: 'load' }); await c.evaluate(require('./helpers/sds-doc-answer').SCRIPT).catch(()=>{});
     await sleep(2500);
     // spy: the size every label is actually rendered at in the A4 PDF / PNG
     await c.evaluate(() => { const L = window.LabelRenderer, o = L.renderLabel; window.__renders = []; L.renderLabel = function (d, op) { if (op && op._pictoMmOverride == null) window.__renders.push({ name: d && d.scentName, pw: op.pw, ph: op.ph }); return o.apply(this, arguments); }; });

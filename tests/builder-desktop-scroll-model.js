@@ -4,7 +4,7 @@
 // Run from the repo root: node tests/builder-desktop-scroll-model.js
 const fs = require('fs');
 const assert = require('assert');
-const { JSDOM, VirtualConsole } = require('jsdom');
+const { JSDOM, VirtualConsole } = require('jsdom'); const __sdsAns = require('./helpers/sds-doc-answer').installed;
 
 const rawSource = fs.readFileSync('builder.html', 'utf8');
 const source = rawSource.replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
@@ -81,7 +81,7 @@ console.log('static desktop workspace checks passed');
 
 // ── (c)/(d): DOM structure + already-covered behaviour stays intact ─────
 function buildDom(){
-  return new JSDOM(source, {
+  return __sdsAns(new JSDOM(source, {
     url: 'https://local.clpeasy.test/builder.html',
     runScripts: 'dangerously',
     pretendToBeVisual: true,
@@ -119,7 +119,7 @@ function buildDom(){
         rpc: async () => ({ data:false, error:null })
       }) };
     }
-  });
+  }));
 }
 
 const dom = buildDom();

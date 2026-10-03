@@ -20,7 +20,7 @@
 // Run individually from the repo root: node tests/slash-p-code-normalisation.js
 const fs = require('fs');
 const assert = require('assert');
-const { JSDOM, VirtualConsole } = require('jsdom');
+const { JSDOM, VirtualConsole } = require('jsdom'); const __sdsAns = require('./helpers/sds-doc-answer').installed;
 
 function buildDom(builderSourcePath){
   const source = fs.readFileSync(builderSourcePath, 'utf8')
@@ -71,6 +71,7 @@ function buildDom(builderSourcePath){
       }) };
     }
   });
+  __sdsAns(dom);
   return { dom, errors };
 }
 

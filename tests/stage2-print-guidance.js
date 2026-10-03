@@ -114,7 +114,7 @@ const server = http.createServer((req, res) => {
       return r.respond({ status: 204, body: '' });
     });
     await t.evaluateOnNewDocument(() => { const oc = HTMLAnchorElement.prototype.click; window.__downloads = []; HTMLAnchorElement.prototype.click = function () { if (this.download) { window.__downloads.push(this.download); return; } return oc.apply(this, arguments); }; });
-    await t.goto(`${base}/${page}`, { waitUntil: 'load' });
+    await t.goto(`${base}/${page}`, { waitUntil: 'load' }); await t.evaluate(require('./helpers/sds-doc-answer').SCRIPT).catch(()=>{});
     await sleep(1500);
     return t;
   }
@@ -265,7 +265,7 @@ const server = http.createServer((req, res) => {
         const rec = { id: '11111111-2222-4333-8444-555555555555', schemaVersion: 1, scentName: 'Sheet QA', productType: 'Scented Candle', shape: 'circle', size: 52, signal: 'Warning', sdsSignal: 'Warning', hStatements: 'H317', pictograms: ['exclamation'], sensitisers: ['Linalool'], bizName: 'QA', bizAddress: '1 Test St', bizPhone: '0123', pStatements: '', p280Items: [], savedAt: '27/09/2026' };
         await LabelLibrary.mutate(() => ({ collection: [rec], usedId: rec.id }));
       });
-      await t.goto(t.url().split('?')[0] + '?label=11111111-2222-4333-8444-555555555555', { waitUntil: 'load' });
+      await t.goto(t.url().split('?')[0] + '?label=11111111-2222-4333-8444-555555555555', { waitUntil: 'load' }); await t.evaluate(require('./helpers/sds-doc-answer').SCRIPT).catch(()=>{});
       await sleep(1800);
       const hint = await t.evaluate(() => { const e = document.getElementById('export-print-hint'); return { vis: e.offsetParent !== null, text: e.innerText.replace(/\s+/g, ' ') }; });
       assert(hint.vis && /A4/.test(hint.text) && /saved size/.test(hint.text) && /Actual Size \/ 100%/.test(hint.text) && /Fit to page or Shrink/.test(hint.text), 'Composer export hint: ' + hint.text);

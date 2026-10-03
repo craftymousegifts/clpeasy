@@ -48,7 +48,7 @@
 // Run individually from the repo root: node tests/gb-wording-and-mixed-code-correction.js
 const fs = require('fs');
 const assert = require('assert');
-const { JSDOM, VirtualConsole } = require('jsdom');
+const { JSDOM, VirtualConsole } = require('jsdom'); const __sdsAns = require('./helpers/sds-doc-answer').installed;
 
 // Correction 2 (2026-09): the blocked-preview overlay now wraps its
 // wording across multiple <tspan> lines, so a literal contiguous-string
@@ -108,6 +108,7 @@ const dom = new JSDOM(source, {
     }) };
   }
 });
+__sdsAns(dom);
 
 const { window } = dom;
 const document = window.document;

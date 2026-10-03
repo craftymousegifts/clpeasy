@@ -10,7 +10,7 @@
 // Run from the repo root: node tests/builder-step-navigation-layout.js
 const fs = require('fs');
 const assert = require('assert');
-const { JSDOM, VirtualConsole } = require('jsdom');
+const { JSDOM, VirtualConsole } = require('jsdom'); const __sdsAns = require('./helpers/sds-doc-answer').installed;
 
 const source = fs.readFileSync('builder.html', 'utf8')
   .replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
@@ -21,7 +21,7 @@ const virtualConsole = new VirtualConsole();
 virtualConsole.on('jsdomError', error => errors.push(error.message));
 
 function buildDom(){
-  return new JSDOM(source, {
+  return __sdsAns(new JSDOM(source, {
     url: 'https://local.clpeasy.test/builder.html',
     runScripts: 'dangerously',
     pretendToBeVisual: true,
@@ -54,7 +54,7 @@ function buildDom(){
         rpc: async () => ({ data:false, error:null })
       }) };
     }
-  });
+  }));
 }
 
 const dom = buildDom();

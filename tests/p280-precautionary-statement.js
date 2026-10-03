@@ -32,7 +32,7 @@
 // Run from the repo root: node tests/p280-precautionary-statement.js
 const fs = require('fs');
 const assert = require('assert');
-const { JSDOM, VirtualConsole } = require('jsdom');
+const { JSDOM, VirtualConsole } = require('jsdom'); const __sdsAns = require('./helpers/sds-doc-answer').installed;
 const { webcrypto } = require('crypto');
 
 const labelRendererSource = fs.readFileSync('label-render.js', 'utf8');
@@ -195,6 +195,7 @@ const emptyQuery = {
         }) };
       }
     });
+    __sdsAns(builderDom);
     await new Promise(resolve => setTimeout(resolve, 60));
     const bwindow = builderDom.window;
     const bdocument = bwindow.document;

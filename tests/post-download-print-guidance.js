@@ -93,7 +93,7 @@ const server = http.createServer((req, res) => {
         if (u.includes('jszip')) return r.respond({ status: 200, contentType: 'text/javascript', body: 'window.JSZip=function(){};' });
         return r.respond({ status: 204, body: '' });
       });
-      await t.goto(`${base}/${page}`, { waitUntil: 'load' });
+      await t.goto(`${base}/${page}`, { waitUntil: 'load' }); await t.evaluate(require('./helpers/sds-doc-answer').SCRIPT).catch(()=>{});
       await new Promise(r => setTimeout(r, 1500));
       return t;
     }
@@ -311,7 +311,7 @@ const server = http.createServer((req, res) => {
         const rec = { id: '11111111-2222-4333-8444-555555555555', schemaVersion: 1, scentName: 'Sheet QA', productType: 'Scented Candle', shape: 'circle', size: 52, signal: 'Warning', sdsSignal: 'Warning', hStatements: 'H317', pictograms: ['exclamation'], sensitisers: ['Linalool'], bizName: 'QA', bizAddress: '1 Test St', bizPhone: '0123', pStatements: '', p280Items: [], savedAt: '26/09/2026' };
         await LabelLibrary.mutate(() => ({ collection: [rec], usedId: rec.id }));
       });
-      await t.goto(t.url().split('?')[0] + '?label=11111111-2222-4333-8444-555555555555', { waitUntil: 'load' });
+      await t.goto(t.url().split('?')[0] + '?label=11111111-2222-4333-8444-555555555555', { waitUntil: 'load' }); await t.evaluate(require('./helpers/sds-doc-answer').SCRIPT).catch(()=>{});
       await new Promise(r => setTimeout(r, 1800));
     }
     const cstate = t => t.evaluate(() => { const g = document.getElementById('sheet-print-guidance');
