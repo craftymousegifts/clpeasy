@@ -70,6 +70,20 @@ treats every buyer the same.
   - Downloads already made are not refunded.
 - **Refund mechanics:** refunds go to the original payment method within 14 days of the
   cancellation, and refunded credits are removed from the balance.
+- **Rounding:** the refund is the amount paid × unused credits ÷ credits in the pack (bonus
+  included), rounded **up** to the nearest penny, and never more than the amount paid. For
+  £4.99 / 8: 8 unused → £4.99, 5 → £3.12, 1 → £0.63.
+- **Which pack a download uses:**
+  - credits are one balance, so downloads that used a purchased credit are counted against packs
+    in purchase order, oldest first, and the newest pack is treated as used last;
+  - trial downloads, Easy Start Unlimited downloads and free 7-day re-downloads use no credit and
+    are not counted.
+- **Faulty or undelivered downloads:**
+  - the credit is restored or the file replaced, and otherwise refunded, whenever the credits
+    were bought;
+  - this is independent of the 14 days and keeps the customer's statutory rights;
+  - the checkbox and invoice note say used downloads are not refunded "unless they were faulty"
+    / "faulty or not delivered".
 - **No wording anywhere says the right to cancel is lost when credits are added.**
 
 ### Files changed

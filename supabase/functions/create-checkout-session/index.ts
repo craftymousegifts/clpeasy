@@ -97,7 +97,7 @@ const PAYG_CONSENT_VERSION = "payg-immediate-access-unused-refund-2026-10-03";
 const PAYG_CONSENT_CONFIRMATION =
   "Pay As You Go download credits. Before paying, you asked for these credits to be added to your account straight after payment. " +
   "You can cancel within 14 days of purchase for a refund of any credits from this purchase you have not used; " +
-  "downloads you have already made are not refunded. This does not affect your statutory rights. " +
+  "downloads you have already made are not refunded unless they were faulty or not delivered. This does not affect your statutory rights. " +
   "To cancel or ask a question, email support@clpeasy.com";
 const PAYG_CONSENT_CHECKOUT_NOTE =
   "You asked for your credits to be added straight after payment. You can cancel within 14 days for a refund of any credits you have not used.";
