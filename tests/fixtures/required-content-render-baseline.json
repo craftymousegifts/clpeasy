@@ -1,6 +1,6 @@
 {
  "complete-control|circle 75x75": {
-  "sha256": "b97dc6392308764df9559e3553ba59fe6a757795db59c1a9a500e3a12feee538",
+  "sha256": "f8dd5fd5d1e24242356fbdd859025fab5c89a6d9d911696ae17b3b007f0fe7c5",
   "fits": true,
   "warnings": []
  },
@@ -15,7 +15,7 @@
   "warnings": []
  },
  "complete-no-euh208|circle 75x75": {
-  "sha256": "4543c1ad3447072d830b4be8c322bf5644995435fc2b20af116c2236ed8c22d8",
+  "sha256": "340bd5ea098388a66b1e5cabe703b0a0a1e085b7770e523a2ee02273a016d7f2",
   "fits": true,
   "warnings": []
  },
@@ -75,7 +75,7 @@
   "warnings": []
  },
  "empty-product-name|circle 75x75": {
-  "sha256": "ed18044cc0e4b5c924f89a78c1d6e2a6bd9f055318101e8f3200998c331b4647",
+  "sha256": "a564d36b01491a1fb8dff8735562e559c9586f7e4f7e7988098f430606c22da8",
   "fits": true,
   "warnings": []
  },
@@ -105,7 +105,7 @@
   "warnings": []
  },
  "euh208-no-names|circle 75x75": {
-  "sha256": "1c7a868c5195af9b0bd873ea3669d191769f3468c56a8b99a5e4ef31a44dd9dc",
+  "sha256": "63a7ad7b7661c078ba607e2b3d0bbfe6cbe7d375740365e2a256993a7ed80df0",
   "fits": true,
   "warnings": []
  },
@@ -120,7 +120,7 @@
   "warnings": []
  },
  "euh208-blank-names|circle 75x75": {
-  "sha256": "48352046a89aa187ed66c1a7ba17fae0da9563f5d8ca801e60e2b8f0250a65e3",
+  "sha256": "6ccc52bb0444bc19072772ddc25aa632591be234b10322f464aa86368e862a46",
   "fits": true,
   "warnings": []
  },
@@ -135,7 +135,7 @@
   "warnings": []
  },
  "euh208-valid-names|circle 75x75": {
-  "sha256": "43c7f1ffd48d13fb50ec2f35c7d6ddc5b00b617e8dd2e3eac5313ce277bac8fa",
+  "sha256": "4901ac8c3e5f61a5a98bfa0cf437c7e53e68e5d082b3ab68bbbbbef9d95cfab8",
   "fits": true,
   "warnings": []
  },
@@ -150,7 +150,7 @@
   "warnings": []
  },
  "everything-missing|circle 75x75": {
-  "sha256": "0c2b3e161b171f83087f0672b02bc6d800551f7c4dc01244a5160fb6bcf01dd2",
+  "sha256": "43bd5996c2fe1e4dd91a2c64785e43a86a3814ef162347e7ce36909dd23be46b",
   "fits": true,
   "warnings": []
  },

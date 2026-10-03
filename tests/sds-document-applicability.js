@@ -79,6 +79,7 @@ assert(!/<input[^>]*id="sds-doc-pct"[^>]*\bvalue=/.test(html), 'document % is ne
 ok('static: clear input wording, document check present, misleading tips removed');
 
 set('scent-name', 'Musk Test'); set('product-type', 'Scented Candle');
+set('biz-name', 'Crafty Mouse Gifts'); // required label content (M09/M31)
 
 // Required cases against a candle document covering 10%.
 const cases = [
@@ -349,7 +350,7 @@ const src = fs.readFileSync('builder.html', 'utf8');
 assert(src.includes("['coverage','rangeFrom','rangeTo','where','rangeStated','docVersion','supplier','cdate','cref'].filter(k=>S.sdsDoc[k]!==undefined)") && src.includes('{confirmed:S.sdsDoc.confirmed||null}):null,') && /S\.sdsDoc=e\.sdsDoc\|\|null/.test(src) && /set\('sds-doc-supplier',_d\.supplier\|\|''\)/.test(src) && /set\('sds-doc-from',_d\.rangeFrom\|\|''\)/.test(src) && /set\('sds-doc-version',_d\.docVersion\|\|''\)/.test(src), 'saved and restored with the label (range, version and written confirmation records included)');
 assert(/forceGoToStep\(5\)/.test(src) && /SdsDocCheck\.isVerified\(_sdsDocRecord\(\)\)/.test(src), 'reopened labels go straight to Step 5, where the same gate applies');
 const pr = fs.readFileSync('print.html', 'utf8');
-assert(/<script src="sds-doc-check\.js"><\/script>/.test(pr) && /const sdsMsg=getSheetSdsDocBlockMessage\(\);\s*if\(sdsMsg\)return sdsMsg;/.test(pr), 'Composer single export gate includes the document check');
+assert(/<script src="sds-doc-check\.js"><\/script>/.test(pr) && /const sdsMsg=getSheetSdsDocBlockMessage\(\);\s*if\(sdsMsg\)return contentMsg\?sdsMsg\+'\\n\\n'\+contentMsg:sdsMsg;/.test(pr), 'Composer single export gate includes the document check');
 ok('confirmation saved with the label; Composer uses the same module');
 
 // Pure module: a legacy saved record (no sdsDoc / no confirmation) is blocked; a confirmed one passes.

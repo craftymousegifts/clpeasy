@@ -80,7 +80,10 @@ function partOne() {
 function partTwo() {
   const source = fs.readFileSync(path.join(ROOT, 'print.html'), 'utf8').replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
   const librarySource = fs.readFileSync(path.join(ROOT, 'label-library.js'), 'utf8');
-  const base = { productType: 'Candle', shape: 'circle', size: 'custom', customW: 52, customH: 52, bizAddress: '', bizPhone: '', bizWebsite: '',
+  // Phase 2 port (3 Oct 2026): a real Builder product type, and records that
+  // carry the supplier-document confirmation the Builder saves (the document
+  // gate is separate and must not mask the content gate under test).
+  const base = { productType: 'Wax Melt', fragLoad: '10%', shape: 'circle', size: 'custom', customW: 52, customH: 52, bizAddress: '', bizPhone: '', bizWebsite: '',
     netWeight: '220g', batchNum: 'B001', burnTime: '', signal: 'Warning', pStatements: 'P273', pictograms: ['exclamation'], textColour: 'dark', showBorder: true, hideEN15494: false, labelLang: 'en' };
   // 52mm content verified to FIT physically, so only content can block
   const saved = [
@@ -92,7 +95,7 @@ function partTwo() {
     ['P1', { scentName: '   ', bizName: 'Crafty Mouse Gifts', hStatements: 'H315', sensitisers: [] }, 'No product name.'],
     ['E1', { scentName: 'EUH208 No Names', bizName: 'Crafty Mouse Gifts', hStatements: 'EUH208', sensitisers: [] }, 'EUH208 is listed without'],
     ['E2', { scentName: 'EUH208 Blank Names', bizName: 'Crafty Mouse Gifts', hStatements: 'EUH208', sensitisers: ['  ', ''] }, 'EUH208 is listed without'],
-  ].map(([tag, o, reason]) => ({ tag, reason, rec: Object.assign({}, base, o, { batchNum: tag }) }));
+  ].map(([tag, o, reason]) => ({ tag, reason, rec: require('./helpers/sds-doc-verified').withConfirmedDoc(Object.assign({}, base, o, { batchNum: tag })) }));
   const counts = { open: 0, anchor: 0, zip: 0 };
   const errors = []; const vc = new VirtualConsole(); vc.on('jsdomError', e => errors.push(e.message));
   const emptyQuery = { select() { return this; }, eq() { return this; }, update() { return this; }, upsert() { return this; },
@@ -105,9 +108,11 @@ function partTwo() {
       window.HTMLCanvasElement.prototype.toBlob = function (cb) { cb({ size: 1, type: 'image/png' }); };
       try { window.crypto.subtle = webcrypto.subtle; } catch (e) { /* already present */ }
       window.eval(rendererSource); window.eval(librarySource);
+      window.eval(fs.readFileSync(path.join(ROOT, 'sds-doc-check.js'), 'utf8'));
+      window.eval(fs.readFileSync(path.join(ROOT, 'entitlement.js'), 'utf8'));
       window.alert = m => { window.__lastAlert = String(m); }; window.confirm = () => true; window.scrollTo = () => {};
       window.fetch = async () => ({ ok: true, json: async () => ({}) });
-      window.open = () => { counts.open++; return { document: { write() {}, close() {} }, location: { href: '' }, close() {}, opener: null }; };
+      window.open = () => { counts.open++; return { document: { open() {}, write() {}, close() {} }, location: { href: '' }, close() {}, focus() {}, opener: null }; };
       window.URL.createObjectURL = () => 'blob:test'; window.URL.revokeObjectURL = () => {};
       window.HTMLAnchorElement.prototype.click = function () { counts.anchor++; };
       window.JSZip = function () { this.file = function () { counts.zip++; }; this.generateAsync = async function () { return { size: 0 }; }; };
@@ -119,7 +124,7 @@ function partTwo() {
   const { window } = dom;
   return new Promise((resolve, reject) => setTimeout(async () => {
     try {
-      window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active'},error:null});}})}; currentUser=currentUser||{id:'test-user'}; isPro=true; if(typeof updateProGate==='function')updateProGate();");
+      window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'easy_start',status:'active',subscription_status:'active',trial_end:null,downloads_used:0,downloads_limit:0,topup_credits:0},error:null});}}),rpc:()=>Promise.resolve({data:{ok:true,consumed:true,free_redownload:false,source:'plan',clean_export:true},error:null})}; currentUser=currentUser||{id:'test-user'}; isPro=true; if(typeof updateProGate==='function')updateProGate();");
       const before = JSON.stringify(window.eval('getSaved()'));
       const ids = window.eval('getSaved()').map(r => ({ id: r.id, tag: r.batchNum }));
       let checked = 0;
@@ -142,7 +147,7 @@ function partTwo() {
           assert.strictEqual(counts.anchor + counts.zip, 0, `${s.tag}: cutting-machine exports must refuse`);
         } else {
           assert.strictEqual(content.length, 0, `${s.tag}: a complete record must not be blocked`);
-          assert.strictEqual(window.eval('document.getElementById("btn-pdf").disabled'), false, `${s.tag}: PDF button must be enabled`);
+          assert.strictEqual(window.eval('document.getElementById("btn-pdf").disabled'), false, `${s.tag}: PDF button must be enabled -- gate: ${window.eval('getSheetFitBlockMessage()')}`);
           await window.eval('downloadPDF()');
           assert.strictEqual(counts.open, 1, `${s.tag}: a complete record must print as before`);
         }
@@ -181,6 +186,8 @@ async function partThree() {
     const alerts = []; page.on('dialog', d => { alerts.push(d.message()); d.accept(); });
     const reload = async () => {
       await page.goto(url, { waitUntil: 'load' }); await new Promise(o => setTimeout(o, 600));
+      // Phase 2 port: answer the supplier-document check for the real product type (no substitution).
+      await page.evaluate(require('./helpers/sds-doc-answer').SCRIPT).catch(() => {});
       await page.evaluate(() => {
         window.__dl = { anchor: 0, open: 0 };
         HTMLAnchorElement.prototype.click = function () { window.__dl.anchor++; };

@@ -5,7 +5,9 @@
 //
 // The committed baseline was generated from label-render.js as it was BEFORE
 // the required-content (M09/M31) export blocking (branch
-// fix/circle-per-line-text-fit @ 0102247). The regression test uses it to
+// fix/circle-per-line-text-fit @ 0102247). Phase 2 port (3 Oct 2026): it was
+// regenerated from production main 6bd9a00's label-render.js (before M09/M31
+// was ported onto it), so the test still proves the port never alters output. The regression test uses it to
 // prove that change never alters the rendered label, its physical fit or its
 // warnings -- complete and incomplete labels alike (preview placeholders are
 // still drawn while a label is being built).
