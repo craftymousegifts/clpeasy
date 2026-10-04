@@ -726,7 +726,7 @@ async function initSupabase(){
   // while this browser knows a subscription checkout was started for this
   // account within the last 5 minutes.
   if(window.CLPCheckoutNotice&&!document.getElementById('clp-checkout-indicator')){
-    window.CLPCheckoutNotice.mountIndicator(document.querySelector('nav .nav-actions'),()=>currentUser&&currentUser.id);
+    window.CLPCheckoutNotice.mountIndicator(document.querySelector('nav .public-nav-links'),()=>currentUser&&currentUser.id);
   }
 }
 initSupabase();
