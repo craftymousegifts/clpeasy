@@ -1199,7 +1199,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
         <div id="frag-load-tip" style="margin-top:6px;font-size:12px;color:var(--muted);line-height:1.5;"></div>
       </div>
-      <div class="form-group"><label>Burn time <span>(optional)</span></label><input type="text" id="burn-time" placeholder="e.g. 45 hrs or 40–45 hours" inputmode="text" maxlength="40" oninput="updateLabel();saveProdDetails()"></div>
+      <div class="form-group"><label>Burn time <span>(optional)</span></label><select id="burn-time" aria-label="Burn time (optional)" onchange="updateLabel();saveProdDetails()"><option value="">— Select hours —</option><option value="4 hrs">4 hrs</option><option value="5 hrs">5 hrs</option><option value="6 hrs">6 hrs</option><option value="7 hrs">7 hrs</option><option value="8 hrs">8 hrs</option><option value="9 hrs">9 hrs</option><option value="10 hrs">10 hrs</option><option value="11 hrs">11 hrs</option><option value="12 hrs">12 hrs</option><option value="13 hrs">13 hrs</option><option value="14 hrs">14 hrs</option><option value="15 hrs">15 hrs</option><option value="16 hrs">16 hrs</option><option value="17 hrs">17 hrs</option><option value="18 hrs">18 hrs</option><option value="19 hrs">19 hrs</option><option value="20 hrs">20 hrs</option><option value="21 hrs">21 hrs</option><option value="22 hrs">22 hrs</option><option value="23 hrs">23 hrs</option><option value="24 hrs">24 hrs</option><option value="25 hrs">25 hrs</option><option value="26 hrs">26 hrs</option><option value="27 hrs">27 hrs</option><option value="28 hrs">28 hrs</option><option value="29 hrs">29 hrs</option><option value="30 hrs">30 hrs</option><option value="31 hrs">31 hrs</option><option value="32 hrs">32 hrs</option><option value="33 hrs">33 hrs</option><option value="34 hrs">34 hrs</option><option value="35 hrs">35 hrs</option><option value="36 hrs">36 hrs</option><option value="37 hrs">37 hrs</option><option value="38 hrs">38 hrs</option><option value="39 hrs">39 hrs</option><option value="40 hrs">40 hrs</option><option value="41 hrs">41 hrs</option><option value="42 hrs">42 hrs</option><option value="43 hrs">43 hrs</option><option value="44 hrs">44 hrs</option><option value="45 hrs">45 hrs</option><option value="46 hrs">46 hrs</option><option value="47 hrs">47 hrs</option><option value="48 hrs">48 hrs</option><option value="49 hrs">49 hrs</option><option value="50 hrs">50 hrs</option><option value="51 hrs">51 hrs</option><option value="52 hrs">52 hrs</option><option value="53 hrs">53 hrs</option><option value="54 hrs">54 hrs</option><option value="55 hrs">55 hrs</option><option value="56 hrs">56 hrs</option><option value="57 hrs">57 hrs</option><option value="58 hrs">58 hrs</option><option value="59 hrs">59 hrs</option><option value="60 hrs">60 hrs</option><option value="61 hrs">61 hrs</option><option value="62 hrs">62 hrs</option><option value="63 hrs">63 hrs</option><option value="64 hrs">64 hrs</option><option value="65 hrs">65 hrs</option><option value="66 hrs">66 hrs</option><option value="67 hrs">67 hrs</option><option value="68 hrs">68 hrs</option><option value="69 hrs">69 hrs</option><option value="70 hrs">70 hrs</option><option value="71 hrs">71 hrs</option><option value="72 hrs">72 hrs</option><option value="73 hrs">73 hrs</option><option value="74 hrs">74 hrs</option><option value="75 hrs">75 hrs</option><option value="76 hrs">76 hrs</option><option value="77 hrs">77 hrs</option><option value="78 hrs">78 hrs</option><option value="79 hrs">79 hrs</option><option value="80 hrs">80 hrs</option></select></div>
     </div>
     <div class="step-nav"><button class="btn-prev" onclick="prevStep()">← Back</button><button class="btn-next" onclick="checkStep2Next()">Next: Hazard data →</button></div>
   </div>
@@ -1488,7 +1488,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="preview-sheet-handle"></div>
     <div class="preview-sheet-label" id="sheet-label-container"></div>
     <div style="font-size:12px;color:rgba(255,255,255,0.4);text-align:center;margin-bottom:4px;" id="sheet-size-info"></div>
-    <button type="button" onclick="showSheetSizeEditor()" style="color:white;background:none;border:1px solid white;border-radius:8px;padding:10px;min-height:44px;margin:8px 0;">Adjust label size</button><div id="sheet-fit-advice" role="status" aria-live="polite" style="color:white;font-size:14px;"></div><div id="sheet-size-editor" style="color:white;"></div>
+    <button type="button" onclick="showSheetSizeEditor()" style="color:white;background:none;border:1px solid white;border-radius:8px;padding:10px;min-height:44px;margin:8px 0;">Adjust shape &amp; size</button><div id="sheet-fit-advice" role="status" aria-live="polite" style="color:white;font-size:14px;"></div><div id="sheet-size-editor" style="color:white;"></div>
     <div class="preview-sheet-actions">
       <button class="btn-dl" id="btn-png-sheet" onclick="downloadPNG();closeSheet()">⬇ PNG (single)</button>
       <button class="btn-dl" id="btn-pdf-sheet" onclick="printToPDF()">▣ PDF</button>
@@ -3129,7 +3129,7 @@ function loadLabelRecord(e){
   const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};
   set('scent-name',e.scentName);set('product-type',e.productType);set('h-statements',e.hStatements||'');set('p-statements',e.pStatements||'');
   set('biz-name',e.bizName||'');set('biz-address',e.bizAddress||'');set('biz-phone',e.bizPhone||'');
-  set('biz-website',e.bizWebsite||'');set('net-weight',e.netWeight||'');set('frag-load',e.fragLoad||'');set('burn-time',e.burnTime||'');
+  set('biz-website',e.bizWebsite||'');set('net-weight',e.netWeight||'');set('frag-load',e.fragLoad||'');restoreBurnTime(e.burnTime||'');
   {const _d=e.sdsDoc||{};document.querySelectorAll('input[name="sds-doc-kind"]').forEach(r=>{r.checked=r.value===(_d.kind||'');});set('sds-doc-pct',_d.pct||'');set('sds-doc-base',_d.base||'');set('sds-doc-coverage',_d.coverage==='range'?'range':'single');set('sds-doc-from',_d.rangeFrom||'');set('sds-doc-to',_d.rangeTo||'');set('sds-doc-where',_d.where||'');{const _rs=document.getElementById('sds-doc-range-stated');if(_rs)_rs.checked=!!_d.rangeStated;}set('sds-doc-version',_d.docVersion||'');set('sds-doc-supplier',_d.supplier||'');set('sds-doc-cdate',_d.cdate||'');set('sds-doc-cref',_d.cref||'');if(typeof updateSdsDocCheck==='function')updateSdsDocCheck();}
   set('batch-num',e.batchNum||'');set('custom-w',e.customW||'');set('custom-h',e.customH||'');
   const hideCandleWarnings=document.getElementById('hide-en15494');
@@ -4745,9 +4745,38 @@ function applySize(sz){
   syncDimFields();updateSizeWarnings();updateLabel();
 }
 function selectSize(sz){applySize(sz);}
+function restoreBurnTime(value){
+  const field=document.getElementById('burn-time');
+  if(!field)return;
+  // Normalise single-hour values from older saved labels. Preserve older
+  // ranges/custom wording as a saved-value option rather than discarding it.
+  const raw=String(value||'').trim();
+  const match=raw.match(/^(\\d+)\\s*(?:hrs?|hours?)?$/i);
+  const hours=match?Number(match[1]):null;
+  const normal=hours>=4&&hours<=80?hours+' hrs':raw;
+  if(normal&&!Array.from(field.options).some(o=>o.value===normal)){
+    const option=document.createElement('option');option.value=normal;option.textContent=raw+' (saved value)';field.appendChild(option);
+  }
+  field.value=normal;
+}
 function inlineSizeEditor(){
   const d=getDims();
-  return '<div class="inline-size-editor" style="margin:12px 0;padding:12px;border:1px solid currentColor;border-radius:10px;"><strong>Adjust label size here</strong><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;"><label>'+ (S.shape==='rectangle'?'Width':'Size')+' (mm)<input data-size-width type="number" inputmode="numeric" min="10" max="150" step="1" value="'+d.mmW+'" style="display:block;width:100px;padding:8px;color:#111;background:white;"></label>'+(S.shape==='rectangle'?'<label>Height (mm)<input data-size-height type="number" inputmode="numeric" min="10" max="150" step="1" value="'+d.mmH+'" style="display:block;width:100px;padding:8px;color:#111;background:white;"></label>':'')+'<button type="button" onclick="applyInlineSize(this)" style="padding:10px;border-radius:8px;background:white;color:#111;border:1px solid #4c9bb0;min-height:44px;">Apply size</button></div><small>Your entered information is kept. The preview will check the new size.</small></div>';
+  return '<div class="inline-size-editor" style="margin:12px 0;padding:12px;border:1px solid currentColor;border-radius:10px;"><strong>Adjust shape and size here</strong><label style="display:block;margin-top:8px;">Shape<select data-size-shape onchange="applyInlineShape(this)" style="display:block;padding:8px;min-height:44px;background:white;color:#111;">'+['circle','rectangle','square'].map(shape=>'<option value="'+shape+'"'+(S.shape===shape?' selected':'')+'>'+shape.charAt(0).toUpperCase()+shape.slice(1)+'</option>').join('')+'</select></label><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;"><label>'+ (S.shape==='rectangle'?'Width':'Size')+' (mm)<input data-size-width type="number" inputmode="numeric" min="10" max="150" step="1" value="'+d.mmW+'" style="display:block;width:100px;padding:8px;color:#111;background:white;"></label>'+(S.shape==='rectangle'?'<label>Height (mm)<input data-size-height type="number" inputmode="numeric" min="10" max="150" step="1" value="'+d.mmH+'" style="display:block;width:100px;padding:8px;color:#111;background:white;"></label>':'')+'<button type="button" onclick="applyInlineSize(this)" style="padding:10px;border-radius:8px;background:white;color:#111;border:1px solid #4c9bb0;min-height:44px;">Apply size</button></div><small>Your entered information is kept. The preview will check the new size.</small></div>';
+}
+function applyInlineShape(select){
+  const shape=select.value;
+  if(!['circle','rectangle','square'].includes(shape))return;
+  const box=select.closest('.inline-size-editor');
+  const w=box.querySelector('[data-size-width]');
+  const h=box.querySelector('[data-size-height]');
+  if(!w.checkValidity()||(h&&!h.checkValidity())){select.value=S.shape;(w.checkValidity()?h:w).reportValidity();return;}
+  document.getElementById('custom-w').value=w.value;
+  document.getElementById('custom-h').value=shape==='rectangle'?(h?h.value:w.value):w.value;
+  S.shape=shape;
+  document.querySelectorAll('.shape-card').forEach(c=>c.classList.toggle('selected',c.dataset.shape===shape));
+  onDimInput();
+  const sheetEditor=document.getElementById('sheet-size-editor');
+  if(sheetEditor&&sheetEditor.innerHTML)showSheetSizeEditor();
 }
 function applyInlineSize(button){
   const box=button.closest('.inline-size-editor');
