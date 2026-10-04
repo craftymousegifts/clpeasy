@@ -140,7 +140,7 @@ const server = http.createServer((req, res) => {
       await t.evaluate(() => downloadPNG());
       assert.ok(await waitFor(t, () => window.__downloads.some(d => /\.png$/.test(d))), 'PNG file handed over');
       s = await state(t);
-      assert.ok(s.shown, 'guidance shown after PNG'); assert.ok(s.text.startsWith('✓ Label downloaded'), s.text);
+      assert.ok(s.shown, 'guidance shown after PNG'); assert.ok(s.text.startsWith('✓ Download started'), s.text);
       assert.ok(s.text.includes(BODY), 'exact approved wording: ' + s.text);
       assert.strictEqual(s.role, 'status'); assert.strictEqual(s.live, 'polite'); assert.strictEqual(s.tick, '✓', 'success is not colour-only (✓ + text)');
       assert.strictEqual(s.rpc, 1, 'exactly one charge for the PNG');
@@ -149,15 +149,15 @@ const server = http.createServer((req, res) => {
       await t.evaluate(() => downloadSVG());
       assert.ok(await waitFor(t, () => window.__downloads.some(d => /\.svg$/.test(d))), 'SVG file handed over');
       s = await state(t);
-      assert.ok(s.shown && s.text.startsWith('✓ Label downloaded'), s.text); assert.strictEqual(s.rpc, 2);
+      assert.ok(s.shown && s.text.startsWith('✓ Download started'), s.text); assert.strictEqual(s.rpc, 2);
       ok('2: successful Builder SVG download shows the guidance');
 
       await t.evaluate(() => printToPDF());
       await new Promise(r => setTimeout(r, 400));
       s = await state(t);
       assert.strictEqual(s.opened, 1, 'print window opened');
-      assert.ok(s.shown && s.text.startsWith('✓ Label downloaded') && s.text.includes(BODY), s.text); assert.strictEqual(s.rpc, 3);
-      ok('3: successful Builder PDF (print window) shows the guidance, headed "Label downloaded" (approved wording)');
+      assert.ok(s.shown && s.text.startsWith('✓ Print view ready') && s.text.includes(BODY), s.text); assert.strictEqual(s.rpc, 3);
+      ok('3: successful Builder PDF (print window) shows the guidance, headed "Print view ready"');
       assert.deepStrictEqual(t.errs, [], 'no console errors: ' + t.errs.join(' | '));
       ok('14a: no console errors on the Builder success paths');
       await t.close();
@@ -197,7 +197,7 @@ const server = http.createServer((req, res) => {
       const pop = await t2.evaluate(() => ({ nav: (window.__lastPopup || {}).navigated || '', closed: (window.__lastPopup || {}).closed, args: (window.__rpc || []).filter(x => x[0] === 'consume_download').map(x => x[1].p_label_key) }));
       assert.strictEqual(s.rpc, 1, 'C6: retry after allowing pop-ups is charged exactly once');
       assert.ok(pop.nav.startsWith('blob:') && pop.closed === false, 'C6: the label is delivered into the window opened before charging');
-      assert.ok(s.shown && s.text.startsWith('✓ Label downloaded'), 'C6: guidance after the successful retry');
+      assert.ok(s.shown && s.text.startsWith('✓ Print view ready'), 'C6: guidance after the successful retry');
       assert.ok(/::circle::|::rectangle::|::square::/.test(pop.args[0] || ''), 'C1: label key carries shape and size: ' + pop.args[0]);
       ok('4c: after allowing pop-ups the PDF is charged once and delivered into the pre-opened window (C6)');
       await t2.close();

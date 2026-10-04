@@ -2781,7 +2781,7 @@ async function cricutDownloadZip(){
   document.body.appendChild(a);a.click();
   setTimeout(()=>{URL.revokeObjectURL(a.href);if(a.parentNode)a.parentNode.removeChild(a);},1000);
   fill.style.width='100%';
-  txt.textContent=`✅ ZIP downloaded — ${made} PNG${made===1?'':'s'}`+(failed?` (${failed} couldn't be generated)`:'')+`. Extract and upload each PNG to your cutting machine software.`;
+  txt.textContent=`✅ ZIP download started — ${made} PNG${made===1?'':'s'}`+(failed?` (${failed} couldn't be generated)`:'')+`. Check your browser’s Downloads list, then extract and upload each PNG to your cutting machine software.`;
   setTimeout(()=>closeCricutModal(),2500);
 }
 async function cricutDownloadSequential(){
@@ -2837,7 +2837,7 @@ async function cricutDownloadSequential(){
     txt.textContent='⚠️ Sorry, none of the labels could be generated. Please try again, or contact support@clpeasy.com.';
     return;
   }
-  txt.textContent=`✅ ${made} PNG file${made===1?'':'s'} saved to your Downloads folder`+(failed?` (${failed} couldn't be generated)`:'')+`.`;
+  txt.textContent=`✅ ${made} PNG download${made===1?'':'s'} started. Check your browser’s Downloads list`+(failed?` (${failed} couldn't be generated)`:'')+`.`;
   setTimeout(()=>closeCricutModal(),2500);
 }
 function downloadAllPNGs(){openCricutModal();}

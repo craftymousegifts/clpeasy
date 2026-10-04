@@ -183,7 +183,7 @@ const server = http.createServer((req, res) => {
       await t.evaluate(() => downloadPNG());
       assert(await waitFor(t, () => window.__downloads.some(d => /\.png$/.test(d))), 'PNG handed over');
       let g = await panel(t, 'dl-print-guidance');
-      assert(g.shown && g.text.startsWith('✓ Label downloaded'), g.text);
+      assert(g.shown && g.text.startsWith('✓ Download started'), g.text);
       assert(/PNG files don't store a print size/.test(g.text) && /For an individual exact-size print, use PDF\. For several labels on A4, use the Print Sheet Composer\./.test(g.text), 'PNG guidance names both routes: ' + g.text);
       ok('PNG download: approved confirmation + "PNG files don\'t store a print size ... use PDF"');
 
