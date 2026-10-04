@@ -73,7 +73,7 @@ function fixture(overrides){
   return Object.assign({
     scentName:'Fixture Scent', productType:'Wax Melt', bizName:'Crafty Mouse Gifts',
     shape:'circle', size:'custom', customW:52, customH:52,
-    bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'',
+    bizAddress:'1 Test Road', bizPhone:'00000000000', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'',
     // Correction (read-only impact assessment, 2026-09, Michaela's
     // decision): this fixture is documented (line ~62 above) as "comfortably
     // fitting content" for a 52mm circle -- the Custom sheet's own default

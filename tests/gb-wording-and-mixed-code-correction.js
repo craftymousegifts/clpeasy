@@ -400,7 +400,7 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     assert.strictEqual(r.fits, false);
     assert.strictEqual(r.blockReason, 'content-does-not-fit', 'genuine overflow alone must still report content-does-not-fit');
     assert(r.svg.includes('FULL CONTENT DOES NOT FIT'), 'genuine overflow alone must still show the original, byte-identical message');
-    assert(r.svg.includes('Select a larger size in Step 1'));
+    assert(r.svg.includes('Adjust size below the preview'));
     assert(!r.svg.includes('Great Britain') && !r.svg.includes('GB CLP code'), 'genuine overflow alone must never show the SDS/jurisdiction-code wording');
   }
 

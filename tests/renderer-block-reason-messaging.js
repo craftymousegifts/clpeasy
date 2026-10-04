@@ -3,7 +3,7 @@
 // render/download -- a confirmed code unsupported under the active
 // regulatory profile (H316/H401/H402), any other unrecognised code, or
 // genuine content that doesn't fit -- showed the SAME "FULL CONTENT DOES
-// NOT FIT / Select a larger size in Step 1" message. That is actively
+// NOT FIT / Adjust size below the preview" message. That is actively
 // wrong advice for the first two cases: no label size fixes a
 // regulatory/code problem. This file proves:
 //   1. renderLabel() now returns a structured blockReason (one of
@@ -20,7 +20,7 @@
 //      and is never described as confirmed unsupported.
 //   4. Genuine size overflow with every code recognised and GB-supported
 //      still shows the ORIGINAL, byte-identical "FULL CONTENT DOES NOT
-//      FIT / Select a larger size in Step 1" message -- completely
+//      FIT / Adjust size below the preview" message -- completely
 //      unaffected by this change.
 //   5. Every bypass path (direct renderer feed, a simulated pre-existing
 //      saved label, SVG/PNG export's own buildSVG(true) call, and the
@@ -363,7 +363,7 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     assert.strictEqual(r.blockReason, 'content-does-not-fit', `a genuine overflow with zero unrecognised codes must report blockReason:'content-does-not-fit', got: ${r.blockReason}`);
     assert.deepStrictEqual([...r.blockReasonCodes], [], 'content-does-not-fit must carry an empty blockReasonCodes list');
     assert(r.svg.includes('FULL CONTENT DOES NOT FIT'), 'genuine overflow must still show the ORIGINAL "FULL CONTENT DOES NOT FIT" message, byte-identical to before this fix');
-    assert(r.svg.includes('Select a larger size in Step 1'), 'genuine overflow must still show the ORIGINAL "Select a larger size in Step 1" message');
+    assert(r.svg.includes('Adjust size below the preview'), 'genuine overflow must still show the ORIGINAL "Adjust size below the preview" message');
     assert(!r.svg.includes('LABEL DATA NEEDS REVIEW') && !r.svg.includes('GB market') && !r.svg.includes('GB CLP code'), 'genuine overflow must NOT show the SDS/jurisdiction-code message');
   }
 

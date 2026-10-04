@@ -36,7 +36,7 @@ const emptyQuery = {
 const labelLavender = {
   scentName:'Lavender Candle', productType:'Scented Candle', signal:'WARNING',
   shape:'rectangle', size:'custom', customW:99.1, customH:57.3,
-  bizName:'Test Biz', hStatements:'H315,H319',
+  bizName:'Test Biz', bizAddress:'1 Test Road', bizPhone:'00000000000', hStatements:'H315,H319',
   pStatements:'P302+P352,P305+P351+P338',
   sensitisers:['Linalool','Limonene'],
   pictograms:['exclamation']
@@ -52,14 +52,14 @@ const labelLavender = {
 const labelVanilla = {
   scentName:'Vanilla Candle', productType:'Scented Candle', signal:'WARNING',
   shape:'rectangle', size:'custom', customW:99.1, customH:57.3,
-  bizName:'Test Biz', hStatements:'H317,H411,H315',
+  bizName:'Test Biz', bizAddress:'1 Test Road', bizPhone:'00000000000', hStatements:'H317,H411,H315',
   pStatements:'P302+P352,P333+P313,P305+P351+P338,P273,P280',
   p280Items:['gloves','eye'],
   sensitisers:['Linalool','Limonene','Citral','Geraniol','Eugenol','Coumarin'],
   pictograms:['exclamation','aquatic']
 };
-const labelWrongShape = { scentName:'Rose Candle', productType:'Scented Candle', signal:'WARNING', shape:'circle', size:63.5, bizName:'Test Biz', hStatements:'H315', pStatements:'', sensitisers:[], pictograms:['exclamation'] };
-const labelWrongSize = { scentName:'Cinnamon Wax Melt', productType:'Wax Melt', signal:'WARNING', shape:'rectangle', size:'custom', customW:70, customH:68, bizName:'Test Biz', hStatements:'H315', pStatements:'', sensitisers:[], pictograms:['exclamation'] };
+const labelWrongShape = { scentName:'Rose Candle', productType:'Scented Candle', signal:'WARNING', shape:'circle', size:63.5, bizName:'Test Biz', bizAddress:'1 Test Road', bizPhone:'00000000000', hStatements:'H315', pStatements:'', sensitisers:[], pictograms:['exclamation'] };
+const labelWrongSize = { scentName:'Cinnamon Wax Melt', productType:'Wax Melt', signal:'WARNING', shape:'rectangle', size:'custom', customW:70, customH:68, bizName:'Test Biz', bizAddress:'1 Test Road', bizPhone:'00000000000', hStatements:'H315', pStatements:'', sensitisers:[], pictograms:['exclamation'] };
 // Sept 2026 correction (genuine 1.2mm mandatory-text floor): added for the
 // "PDF export stays true A4" check further below only. Lavender/Vanilla
 // (the real 29 Aug 2026 dense stress-case content) no longer fit
@@ -71,7 +71,7 @@ const labelWrongSize = { scentName:'Cinnamon Wax Melt', productType:'Wax Melt', 
 // directly against the corrected renderer to fit 99.1x57.3mm with zero
 // warnings, used only to swap onto the sheet immediately before the
 // PDF/A4 geometry check.
-const labelSimple = { scentName:'Rosemary Candle', productType:'Scented Candle', signal:'WARNING', shape:'rectangle', size:'custom', customW:99.1, customH:57.3, bizName:'Test Biz', hStatements:'H315', pStatements:'P273', sensitisers:[], pictograms:['exclamation'] };
+const labelSimple = { scentName:'Rosemary Wax Melt', productType:'Wax Melt', signal:'WARNING', shape:'rectangle', size:'custom', customW:99.1, customH:57.3, bizName:'Test Biz', bizAddress:'1 Rd', bizPhone:'000', hStatements:'H315', pStatements:'P273', sensitisers:[], pictograms:['exclamation'] };
 
 const dom = new JSDOM(source, {
   url: 'https://local.clpeasy.test/print.html',
@@ -263,10 +263,11 @@ setTimeout(async () => {
     const emptyCount = (canvasHTML.match(/sheet-cell-empty/g)||[]).length;
     assert.strictEqual(usedCount, 2, `expected 2 already-used positions, got ${usedCount}`);
     assert.strictEqual(filledCount, 5, `expected 5 filled positions (2 Lavender + 3 Vanilla), got ${filledCount}`);
-    assert.strictEqual(invalidCount, 0, `expected all 5 filled positions to fit cleanly (no sheet-cell-invalid) under the restored GB floor -- both fixtures fit 99.1x57.3mm again, got ${invalidCount}`);
+    // Required supplier details now occupy real footer space. Both dense fixtures must fail closed.
+    assert.strictEqual(invalidCount, 5, 'dense labels with complete supplier details must remain blocked');
     assert.strictEqual(emptyCount, 3, `expected 3 blank positions, got ${emptyCount}`);
     assert.strictEqual(usedCount+filledCount+emptyCount, 10, 'positions do not add up to the 10-slot EU30009 sheet');
-    assert.strictEqual(window.eval('sheetFitIssues').length, 0, `expected no fit issues to be recorded now that both fixtures fit 99.1x57.3mm again, got ${window.eval('sheetFitIssues.length')}`);
+    assert.strictEqual(window.eval('sheetFitIssues').length, 5, 'every dense occupied position must report its fit issue');
 
     // ── Real completed label content, not truncated (Testing Req 5,13) ──
     assert(canvasHTML.includes('Lavender Candle'), 'Lavender label content missing from sheet');

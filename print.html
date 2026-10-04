@@ -967,6 +967,9 @@ function getSheetBusinessDetailsBlockMessage(){
   for(const placement of getSheetPlacementsMM()){
     const data=placement.labelData||{};
     const missing=LabelRenderer.getMissingBusinessDetails(data);
+    const content=LabelRenderer.checkRequiredContent(data);
+    if(content.missing.includes('product-name'))missing.push({label:'product name (Step 2)'});
+    if(content.missing.includes('euh208-substance'))missing.push({label:'named sensitising substance(s) for EUH208 (Step 3)'});
     const message=(data.scentName||'Unnamed label')+': '+missing.map(field=>field.label).join(', ');
     if(missing.length&&!seen.has(message)){messages.push(message);seen.add(message);}
   }
@@ -2421,6 +2424,8 @@ let sheetFitIssues=[];
 
 function describeFitWarnings(warnings, ld){
   warnings=warnings||[];
+  const invalidPictograms=warnings.filter(w=>w.startsWith('unrecognized-pictogram:')).map(w=>w.slice('unrecognized-pictogram:'.length));
+  if(invalidPictograms.length)return LabelRenderer.describeInvalidPictograms(invalidPictograms).replace('Re-check the hazards in Step 3.','Open this label in the Builder and re-check the hazards in Step 3.');
   const unrecognized=warnings.filter(w=>w.startsWith('unrecognized-code:')).map(w=>w.split('unrecognized-code:')[1]);
   // Fail-closed design (2026-09-07): tell the maker exactly which size WOULD
   // fit this exact label's content -- never a guess, a genuine renderLabel()
