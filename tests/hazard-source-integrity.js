@@ -380,6 +380,57 @@ function f1Check(context){
   assert.deepStrictEqual(hazardSnapshot(), before, 'C4 combo: hazard data unchanged after an answered name change');
   ok('C4 combo: reopened label with name/type/load changes; each is detected, reverting removes it');
 
+  // 4 Oct production QA: full suffixed codes must survive extraction and
+  // rendering. Expected wording is the previously approved M21 table,
+  // rechecked against GB CLP Annex VI, 1.1.2.1.2 in this release.
+  const suffixed = {
+    H350i:['May cause cancer by inhalation','Danger'],
+    H360F:['May damage fertility','Danger'],
+    H360D:['May damage the unborn child','Danger'],
+    H360FD:['May damage fertility. May damage the unborn child','Danger'],
+    H360Fd:['May damage fertility. Suspected of damaging the unborn child','Danger'],
+    H360Df:['May damage the unborn child. Suspected of damaging fertility','Danger'],
+    H361f:['Suspected of damaging fertility','Warning'],
+    H361d:['Suspected of damaging the unborn child','Warning'],
+    H361fd:['Suspected of damaging fertility. Suspected of damaging the unborn child','Warning']
+  };
+  for(const [code,[wording,signal]] of Object.entries(suffixed)){
+    window.splashNewLabel(); fillBasics('Suffix QA '+code);
+    document.getElementById('custom-w').value='150'; window.onDimInput();
+    extract('2.2 Label elements\n'+code+' '+wording+'.\nP102 Keep out of reach of children.');
+    assert.strictEqual(S('S.hStatements'), code, code+': full code retained');
+    assert.strictEqual(document.getElementById('h-statements').value, code, code+': visible field retains code');
+    assert.strictEqual(S('S.signal'), signal, code+': signal word');
+    assert.deepStrictEqual([...S('S.pictograms')], ['health'], code+': GHS08');
+    assert.strictEqual(S('H_LIB').find(h=>h.code===code).desc, wording, code+': Builder wording');
+    assert.strictEqual(window.LabelRenderer.H_LIB.find(h=>h.code===code).desc, wording, code+': shared renderer wording');
+    document.getElementById('hazard-confirm').checked=true; tickVerify();
+    assert.strictEqual(window.canLeaveApprovedBuilderStep(3), true, code+': reviewed data accepted');
+    assert.strictEqual(window._downloadAllowed(), true, code+': export guard accepts complete large label');
+    const rendered=window.buildSVG(true).replace(/<tspan[^>]*>/g,' ').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ');
+    assert(rendered.includes(wording+'.'), code+': full statement in export SVG');
+    await window.saveLabel();
+    const record=S('getSaved()').find(e=>e.scentName==='Suffix QA '+code);
+    assert(record,code+': label saved '+(window.__lastAlert||''));
+    assert.strictEqual(record.hStatements,code, code+': saved full code');
+    window.clearHazardData(); window.loadLabelRecord(record);
+    assert.strictEqual(S('S.hStatements'),code, code+': reopened full code');
+  }
+  for(const [text,want] of [['H361 d Suspected',['H361d']],['H360 FD May damage',['H360FD']],['H350 i.e. prose',['H350']],['H317 a skin sensitiser',['H317']],['H317, H350i, EUH208',['H317','H350i','EUH208']]]){
+    assert.deepStrictEqual([...window.LabelRenderer.extractHazardCodesFromText(text)],want,'token boundary: '+text);
+  }
+  for(const code of ['H317s','H361F','H360fd']){
+    window.clearHazardData(); fillBasics('Unknown suffix QA');
+    extract('2.2 Label elements\nH317 May cause an allergic skin reaction.\n'+code+' Unresolved statement.\nP102 Keep out of reach of children.');
+    assert(S('S.hStatements').split(', ').includes(code), code+': never silently omitted or reduced');
+    document.getElementById('hazard-confirm').checked=true; tickVerify();
+    assert.strictEqual(window.canLeaveApprovedBuilderStep(3),false, code+': blocked in Step 3');
+    assert.strictEqual(window._downloadAllowed(),false, code+': export blocked');
+    const before=downloads; await window.downloadSVG();
+    assert.strictEqual(downloads,before,code+': no output handover');
+  }
+  ok('Suffixed codes: all nine preserve code/wording/signal/GHS08/save/reopen; unknown and wrong-case suffixes block output');
+
   assert.deepStrictEqual(errors, [], 'no page errors');
   console.log('hazard source integrity checks passed (C3 + C4)');
   process.exit(0);

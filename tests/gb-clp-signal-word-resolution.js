@@ -12,6 +12,7 @@ function buildDom(){
   const errors=[]; vc.on('jsdomError',e=>errors.push(e.message));
   const emptyQuery={select(){return this},eq(){return this},update(){return this},upsert(){return this},single(){return Promise.resolve({data:null,error:null})},then(resolve){return Promise.resolve({data:null,error:null}).then(resolve)}};
   const dom=new JSDOM(source,{url:'https://local.clpeasy.test/builder.html',runScripts:'dangerously',pretendToBeVisual:true,virtualConsole:vc,beforeParse(window){
+    window.HTMLElement.prototype.scrollIntoView=()=>{};
     window.HTMLCanvasElement.prototype.getContext=()=>({font:'',measureText(text){return{width:String(text).length*7}},drawImage(){},fillRect(){},clearRect(){},getImageData(){return{data:[]}}});
     window.eval(renderer); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(library);
     window.alert=m=>{window.__lastAlert=String(m)}; window.confirm=()=>true; window.scrollTo=()=>{};
