@@ -1,6 +1,6 @@
 # CLPeasy outstanding register: against production `main` `148334a` (3 Oct 2026)
 
-**Historical snapshot. See [4 October final PR reconciliation](FINAL-PR-SIGNOFF-2026-10-04.md) for current releases, verification and unresolved items.**
+**Historical snapshot. Superseded by [OUTSTANDING-REGISTER-2026-10-04.md](OUTSTANDING-REGISTER-2026-10-04.md).**
 
 **Production:**
 - `main` `148334a`;
