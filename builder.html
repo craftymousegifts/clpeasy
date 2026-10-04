@@ -1743,6 +1743,16 @@ function setBorder(show){
 // ── PRINT TO PDF ──────────────────────────────────────────────
 function printToPDF(){
   if(!_downloadAllowed()){alert(_downloadBlockedMessage());return;}
+  let prepared;
+  try{prepared=preparePrintView();}
+  catch(error){console.error('Print view generation failed:',error);alert('PDF print view could not be prepared. Please try again, or use PNG / SVG.');return;}
+  openPrintView(prepared);
+}
+// Generation-before-credit (4 Oct 2026): the print view is built completely
+// (for the current watermark state) BEFORE any download credit is used, so a
+// generation failure can never cost a credit. openPrintView() only hands the
+// finished page to the window. Output is unchanged.
+function preparePrintView(){
   readForm();
   const{mmW,mmH,pw,ph}=getDims();
   const svgStr=buildSVG(true);
@@ -1783,6 +1793,12 @@ function printToPDF(){
     '<p>This label is '+mmW+' × '+mmH+' mm. This note does not print.</p></div>'+
     '<button class="print-btn" onclick="window.print()">&#x1F5A8; Print / Save as PDF</button>'+
     '</body></html>';
+  const parsed=new DOMParser().parseFromString(html,'text/html');
+  if(!parsed.querySelector('svg'))throw new Error('Print view has no label');
+  return {html};
+}
+function openPrintView(view){
+  const html=view.html;
   // Use Blob URL — avoids document.write() quirks and template literal breakage
   const blob=new Blob([html],{type:'text/html;charset=utf-8'});
   const blobUrl=URL.createObjectURL(blob);
@@ -2691,6 +2707,24 @@ function wrapDownloads(){
           alert('The label changed while preparing the PNG. No download credit was used. Review the label and try again.');return;
         }
       }
+      // Generation-before-credit (4 Oct 2026), as for PNG above: build the SVG
+      // file / PDF print view for both entitlement outcomes BEFORE the atomic
+      // charge, so a generation failure never uses a credit. The RPC still
+      // decides which finished variant is handed over.
+      let preparedSVG=null, preparedPrint=null;
+      if((fn==='downloadSVG'||fn==='printToPDF')&&currentUser){
+        const previousPro=S.isPro;
+        try{
+          const make=fn==='downloadSVG'?prepareBuilderSVG:preparePrintView;
+          S.isPro=false;const watermarked=make();
+          S.isPro=true;const clean=make();
+          if(fn==='downloadSVG')preparedSVG={watermarked,clean};else preparedPrint={watermarked,clean};
+        }catch(error){
+          console.error(fn+' generation failed:',error);
+          alert((fn==='downloadSVG'?'SVG':'PDF print view')+' generation failed. No download credit was used. Please try again, or use another format.');
+          return;
+        }finally{S.isPro=previousPro;}
+      }
       // Signed-out guests keep the long-standing Builder behaviour: a
       // watermarked export that is not counted against any allowance (there
       // is no account to count it against). Never clean, whatever S.isPro
@@ -2726,6 +2760,12 @@ function wrapDownloads(){
       const wmNote=document.querySelector('.watermark-note');
       if(wmNote)wmNote.style.display=S.isPro?'none':'';
       if(preparedPNGs){return handOverBuilderPNG(preparedPNGs[S.isPro?'clean':'watermarked']);}
+      if(preparedSVG){return handOverBuilderSVG(preparedSVG[S.isPro?'clean':'watermarked']);}
+      if(preparedPrint){
+        _preparedPopup=popup;
+        try{return openPrintView(preparedPrint[S.isPro?'clean':'watermarked']);}
+        finally{if(_preparedPopup===popup){_preparedPopup=null;try{popup.close();}catch(e){}}}
+      }
       if(!popup)return orig.apply(this,arguments);
       _preparedPopup=popup;
       try{return await orig.apply(this,arguments);}
@@ -5606,8 +5646,16 @@ async function downloadPNG(){
 // ── SVG DOWNLOAD ──────────────────────────────────────────────
 function downloadSVG(){
   if(!_downloadAllowed()){alert(_downloadBlockedMessage());return;}
-  plausible('Label Downloaded',{props:{format:'SVG'}});
-  try{
+  let prepared;
+  try{prepared=prepareBuilderSVG();}
+  catch(err){console.error('SVG download error:',err);alert('SVG download failed. Please try again.');return;}
+  handOverBuilderSVG(prepared);
+}
+// Generation-before-credit (4 Oct 2026): the SVG file is built completely
+// before any download credit is used; handOverBuilderSVG() only starts the
+// browser download. Output is unchanged.
+function prepareBuilderSVG(){
+  {
     readForm();
     const{mmW,mmH,pw,ph}=getDims();
     const svgStr=buildSVG(true);
@@ -5620,7 +5668,15 @@ function downloadSVG(){
       .replace(/width="[^"]*"/,`width="${mmW}mm"`)
       .replace(/height="[^"]*"/,`height="${mmH}mm"`);
     const serialised='<?xml version="1.0" encoding="UTF-8"?>\n'+cleanSvg;
+    if(!/<svg[\s>]/.test(cleanSvg))throw new Error('SVG generation produced no label');
     const dataUri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(serialised);
+    return {dataUri,fname};
+  }
+}
+function handOverBuilderSVG(prepared){
+  plausible('Label Downloaded',{props:{format:'SVG'}});
+  try{
+    const {dataUri,fname}=prepared;
     const a=document.createElement('a');
     a.href=dataUri;
     a.download=fname;
