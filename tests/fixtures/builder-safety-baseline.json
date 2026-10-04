@@ -4,7 +4,7 @@
    "allowed": true,
    "fits": true,
    "fitBlocked": false,
-   "requiredComplete": null,
+   "requiredComplete": true,
    "warnings": [],
    "signal": "Warning",
    "h": "H317",
@@ -58,7 +58,7 @@
    "allowed": true,
    "fits": true,
    "fitBlocked": false,
-   "requiredComplete": null,
+   "requiredComplete": true,
    "warnings": [],
    "signal": "Warning",
    "h": "H317, H412, EUH208",
@@ -116,7 +116,7 @@
    "allowed": true,
    "fits": true,
    "fitBlocked": false,
-   "requiredComplete": null,
+   "requiredComplete": true,
    "warnings": [],
    "signal": "Warning",
    "h": "H302, H315, H317, H319, H411, EUH208",
@@ -177,7 +177,7 @@
    "allowed": true,
    "fits": true,
    "fitBlocked": false,
-   "requiredComplete": null,
+   "requiredComplete": true,
    "warnings": [],
    "signal": "Warning",
    "h": "H317",
@@ -231,7 +231,7 @@
    "allowed": true,
    "fits": true,
    "fitBlocked": false,
-   "requiredComplete": null,
+   "requiredComplete": true,
    "warnings": [],
    "signal": "Warning",
    "h": "H317, H412, EUH208",
@@ -289,7 +289,7 @@
    "allowed": true,
    "fits": true,
    "fitBlocked": false,
-   "requiredComplete": null,
+   "requiredComplete": true,
    "warnings": [],
    "signal": "Warning",
    "h": "H302, H315, H317, H319, H411, EUH208",
@@ -350,7 +350,7 @@
    "allowed": true,
    "fits": true,
    "fitBlocked": false,
-   "requiredComplete": null,
+   "requiredComplete": true,
    "warnings": [],
    "signal": "Warning",
    "h": "H317",
@@ -404,7 +404,7 @@
    "allowed": false,
    "fits": false,
    "fitBlocked": true,
-   "requiredComplete": null,
+   "requiredComplete": true,
    "warnings": [
     "footer-clipped"
    ],
@@ -425,7 +425,7 @@
     "Duns TD11",
     "01234 567890",
     "FULL CONTENT DOES NOT FIT",
-    "Select a larger size in Step 1"
+    "Adjust size below the preview"
    ],
    "exports": {
     "svg": 0,
@@ -456,7 +456,7 @@
    "allowed": false,
    "fits": false,
    "fitBlocked": true,
-   "requiredComplete": null,
+   "requiredComplete": true,
    "warnings": [
     "hazard-text-overflow"
    ],
@@ -477,7 +477,7 @@
     "Duns TD11",
     "01234 567890",
     "FULL CONTENT DOES NOT FIT",
-    "Select a larger size in Step 1"
+    "Adjust size below the preview"
    ],
    "exports": {
     "svg": 0,
@@ -508,7 +508,7 @@
    "allowed": true,
    "fits": true,
    "fitBlocked": false,
-   "requiredComplete": null,
+   "requiredComplete": true,
    "warnings": [],
    "signal": "Danger",
    "h": "H304, H317, H411, EUH208",
