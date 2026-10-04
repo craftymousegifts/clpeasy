@@ -2617,9 +2617,11 @@ function showPrintGuidance(kind){
     pdf:'<p>This PDF is an individual label file at <strong>'+size+'</strong>. First time printing? Test on ordinary paper and measure the label with a ruler before using your label stock.</p>'+
       '<p>Printing several labels on A4? Use the <a href="print.html" target="_blank" rel="noopener">Print Sheet Composer</a>.</p>',
     png:'<p><strong>PNG files don\'t store a print size</strong>, so the app you print from may choose its own size. For an individual exact-size print, use <strong>PDF</strong>. For several labels on A4, use the <strong>Print Sheet Composer</strong>.</p>',
-    svg:'<p>Your SVG is saved at <strong>'+size+'</strong> for design or cutting-machine software. After importing it, check it still shows '+size+'.</p>'
+    svg:'<p>Your SVG uses <strong>'+size+'</strong> for design or cutting-machine software. After importing it, check it still shows '+size+'.</p>'
   }[kind]||'';
-  el.innerHTML='<span class="dl-pg-icon" aria-hidden="true">✓</span><div><strong>Label downloaded</strong>'+
+  const heading=kind==='pdf'?'Print view ready':'Download started';
+  const downloadNote=kind==='pdf'?'':'<p>Check your browser\'s Downloads list. If no file appears, allow downloads for CLPeasy and try again.</p>';
+  el.innerHTML='<span class="dl-pg-icon" aria-hidden="true">✓</span><div><strong>'+heading+'</strong>'+downloadNote+
     '<p>Now load your chosen label paper or sheet into your printer. Print at <strong>100% / Actual Size</strong> to preserve the label dimensions.</p>'+
     extra+
     '<details class="dl-pg-more"><summary>How to print this label correctly</summary><ul>'+
@@ -2676,6 +2678,17 @@ function wrapDownloads(){
         alert(_downloadBlockedMessage());
         return;
       }
+      // Prepare both entitlement variants before the atomic credit charge.
+      // The RPC still chooses which completed PNG may be handed over.
+      let preparedPNGs=null;
+      if(fn==='downloadPNG'&&currentUser){
+        try{preparedPNGs=await prepareBuilderPNGDownloads(true);}
+        catch(error){console.error('PNG generation failed:',error);alert('PNG generation failed. No download credit was used. Please try again, or use PDF / SVG.');return;}
+        readForm();
+        if(!_downloadAllowed()||preparedPNGs.fingerprint!==pngInputFingerprint()){
+          alert('The label changed while preparing the PNG. No download credit was used. Review the label and try again.');return;
+        }
+      }
       // Signed-out guests keep the long-standing Builder behaviour: a
       // watermarked export that is not counted against any allowance (there
       // is no account to count it against). Never clean, whatever S.isPro
@@ -2710,6 +2723,7 @@ function wrapDownloads(){
       S.isPro=charge.clean===true;
       const wmNote=document.querySelector('.watermark-note');
       if(wmNote)wmNote.style.display=S.isPro?'none':'';
+      if(preparedPNGs){return handOverBuilderPNG(preparedPNGs[S.isPro?'clean':'watermarked']);}
       if(!popup)return orig.apply(this,arguments);
       _preparedPopup=popup;
       try{return await orig.apply(this,arguments);}
@@ -5476,7 +5490,7 @@ function buildSummary(){
   if(summaryEl)summaryEl.innerHTML=items.map(([k,v])=>`<div><strong>${escapeBuilderText(k)}</strong>${escapeBuilderText(v)}</div>`).join('');
 }
 
-// ── PNG DOWNLOAD (works on iPhone Safari) ─────────────────────
+// ── PNG FILE GENERATION ──────────────────────────────────────
 
 // ── FONT PRELOAD HELPER ─────────────────────────────────────
 // Ensures DM Sans is loaded in the document before rasterising SVG to canvas
@@ -5489,73 +5503,88 @@ async function ensureFontsLoaded(){
   }catch(e){}
 }
 
-async function downloadPNG(){
-  if(!_downloadAllowed()){alert(_downloadBlockedMessage());return;}
-  plausible('Label Downloaded',{props:{format:'PNG'}});
+function pngInputFingerprint(){
+  // Ignore entitlement while comparing the exact prepared design with the
+  // current form. A changed design must be reviewed and prepared again.
+  return JSON.stringify({...S,isPro:null});
+}
+async function prepareBuilderPNGDownloads(includeClean){
   await ensureFontsLoaded();
   readForm();
-  const{mmW,mmH,pw,ph}=getDims();
-  const DPI=600,MPI=25.4;
-  const eW=Math.round(mmW/MPI*DPI),eH=Math.round(mmH/MPI*DPI);
-  const svgStr=buildSVG(true);
+  const {mmW,mmH}=getDims();
+  const eW=Math.round(mmW/25.4*600),eH=Math.round(mmH/25.4*600);
   const slug=(S.scentName||'label').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
   const fname=`clpeasy-${slug}-${S.size==='custom'?mmW+'x'+mmH:''+S.size}mm.png`;
-
-  // Convert each JPEG data URI in the SVG to a PNG data URI via canvas
-  // This bypasses the browser's "no external resources in SVG blob" restriction
-  function jpegToPng(jpegDataUri){
-    return new Promise(function(resolve){
+  const previousPro=S.isPro;
+  let watermarkedSvg,cleanSvg;
+  try{
+    S.isPro=false;watermarkedSvg=buildSVG(true);
+    if(includeClean){S.isPro=true;cleanSvg=buildSVG(true);}
+  }finally{S.isPro=previousPro;}
+  const fingerprint=pngInputFingerprint();
+  const watermarked=await buildBuilderPNGArtifact(watermarkedSvg,eW,eH,fname);
+  const clean=includeClean?await buildBuilderPNGArtifact(cleanSvg,eW,eH,fname):null;
+  return {watermarked,clean,fingerprint};
+}
+async function buildBuilderPNGArtifact(svgStr,eW,eH,fname){
+  // Conversion and rasterisation must finish (or fail visibly) before a
+  // credit is consumed. Bound every image load so it cannot hang forever.
+  function jpegToPng(uri){
+    return new Promise((resolve,reject)=>{
       const img=new Image();
-      img.onload=function(){
-        const c=document.createElement('canvas');
-        c.width=img.naturalWidth||img.width;
-        c.height=img.naturalHeight||img.height;
-        c.getContext('2d').drawImage(img,0,0);
-        resolve(c.toDataURL('image/png'));
-      };
-      img.onerror=function(){resolve(jpegDataUri);};
-      img.src=jpegDataUri;
+      const timer=setTimeout(()=>reject(new Error('Pictogram conversion timed out')),15000);
+      img.onload=()=>{clearTimeout(timer);try{
+        const canvas=document.createElement('canvas');
+        canvas.width=img.naturalWidth||img.width;canvas.height=img.naturalHeight||img.height;
+        const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Canvas unavailable');
+        ctx.drawImage(img,0,0);resolve(canvas.toDataURL('image/png'));
+      }catch(error){reject(error);}};
+      img.onerror=()=>{clearTimeout(timer);reject(new Error('Pictogram conversion failed'));};
+      img.src=uri;
     });
   }
-
-  // Find all unique JPEG data URIs in the SVG and replace with PNG
-  async function convertJpegsInSvg(svg){
-    const matches=svg.match(/data:image\/jpeg;base64,[A-Za-z0-9+/=]+/g);
-    if(!matches||!matches.length)return svg;
-    const unique=[...new Set(matches)];
-    const map={};
-    await Promise.all(unique.map(async function(uri){
-      map[uri]=await jpegToPng(uri);
-    }));
-    unique.forEach(function(uri){
-      svg=svg.split(uri).join(map[uri]);
-    });
-    return svg;
-  }
-
-  const convertedSvg=await convertJpegsInSvg(svgStr);
-  const clone=new DOMParser().parseFromString(convertedSvg,'image/svg+xml').documentElement;
-  clone.setAttribute('width',eW); clone.setAttribute('height',eH);
+  const unique=[...new Set(svgStr.match(/data:image\/jpeg;base64,[A-Za-z0-9+/=]+/g)||[])];
+  const converted=await Promise.all(unique.map(jpegToPng));
+  unique.forEach((uri,index)=>{svgStr=svgStr.split(uri).join(converted[index]);});
+  const clone=new DOMParser().parseFromString(svgStr,'image/svg+xml').documentElement;
+  if(clone.nodeName==='parsererror'||clone.querySelector('parsererror'))throw new Error('Invalid SVG');
+  clone.setAttribute('width',eW);clone.setAttribute('height',eH);
   const svgData=new XMLSerializer().serializeToString(clone);
-  const blob=new Blob([svgData],{type:'image/svg+xml;charset=utf-8'});
-  const blobUrl=URL.createObjectURL(blob);
-  const img=new Image();
-  img.onload=function(){
-    const cvs=document.createElement('canvas'); cvs.width=eW; cvs.height=eH;
-    const ctx=cvs.getContext('2d');
-    ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high';
-    ctx.drawImage(img,0,0,eW,eH);
-    URL.revokeObjectURL(blobUrl);
-    cvs.toBlob(function(b){
-      const u=URL.createObjectURL(b);
-      const a=document.createElement('a'); a.href=u; a.download=fname;
-      document.body.appendChild(a); a.click();
-      showPrintGuidance('png');
-      setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(u);},1500);
-    },'image/png');
-  };
-  img.onerror=function(){URL.revokeObjectURL(blobUrl);};
-  img.src=blobUrl;
+  const sourceUrl=URL.createObjectURL(new Blob([svgData],{type:'image/svg+xml;charset=utf-8'}));
+  return new Promise((resolve,reject)=>{
+    const img=new Image();let settled=false;
+    const finish=(error,blob)=>{
+      if(settled)return;settled=true;clearTimeout(timer);URL.revokeObjectURL(sourceUrl);
+      if(error)reject(error);else resolve({blob,fname});
+    };
+    const timer=setTimeout(()=>finish(new Error('PNG generation timed out')),15000);
+    img.onload=()=>{try{
+      const canvas=document.createElement('canvas');canvas.width=eW;canvas.height=eH;
+      const ctx=canvas.getContext('2d');if(!ctx)throw new Error('Canvas unavailable');
+      ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(img,0,0,eW,eH);
+      canvas.toBlob(blob=>finish(blob?null:new Error('PNG encoding failed'),blob),'image/png');
+    }catch(error){finish(error);}};
+    img.onerror=()=>finish(new Error('Label image could not be loaded'));
+    img.src=sourceUrl;
+  });
+}
+function handOverBuilderPNG(artifact){
+  const url=URL.createObjectURL(artifact.blob);
+  const anchor=document.createElement('a');anchor.href=url;anchor.download=artifact.fname;
+  document.body.appendChild(anchor);
+  try{anchor.click();plausible('Label Downloaded',{props:{format:'PNG'}});showPrintGuidance('png');}
+  finally{setTimeout(()=>{if(anchor.parentNode)anchor.parentNode.removeChild(anchor);URL.revokeObjectURL(url);},1500);}
+}
+async function downloadPNG(){
+  if(!_downloadAllowed()){alert(_downloadBlockedMessage());return;}
+  try{
+    const prepared=await prepareBuilderPNGDownloads(false);
+    readForm();
+    if(!_downloadAllowed()||prepared.fingerprint!==pngInputFingerprint()){
+      alert('The label changed while preparing the PNG. Review the label and try again.');return;
+    }
+    handOverBuilderPNG(prepared.watermarked);
+  }catch(error){console.error('PNG generation failed:',error);alert('PNG generation failed. Please try again, or use PDF / SVG.');}
 }
 
 // ── SVG DOWNLOAD ──────────────────────────────────────────────
