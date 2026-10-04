@@ -2268,7 +2268,19 @@ function isCustomSizeBelowSupportedMinimum(shape, w, h){
   return !(Number.isFinite(w) && w >= CUSTOM_SIZE_MIN_MM);
 }
 
+// Check raw label data, before preview placeholders such as "Your Brand"
+// are inserted. Drafts can still render/save; exports require these fields.
+function getMissingBusinessDetails(data){
+  data=data||{};
+  return [
+    {key:'bizName',label:'business / brand name'},
+    {key:'bizAddress',label:'business address'},
+    {key:'bizPhone',label:'business phone number'},
+  ].filter(field=>typeof data[field.key]!=='string'||!data[field.key].trim());
+}
+
   const LabelRenderer = {
+    getMissingBusinessDetails,
     renderLabel, normalizeLabel, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, GB_UNSUPPORTED_CODES, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
     // GHS pictogram geometry -- exposed so tests/consumers measuring
     // compliance never have to re-derive or hardcode the sqrt(2)

@@ -175,6 +175,9 @@ async function openBuilder(opts){
 }
 
 function fillMinimalLabel(window){
+  window.document.getElementById('biz-name').value = 'QA';
+  window.document.getElementById('biz-address').value = '1 Test Street';
+  window.document.getElementById('biz-phone').value = '00000000000';
   window.selectShape('circle');
   window.selectSize(63);
   window.setApprovedBuilderStep(2);
@@ -248,7 +251,7 @@ function candleFixture(overrides){
   return require('./helpers/sds-doc-verified').withConfirmedDoc(Object.assign({
     scentName:'Security Sheet Candle', productType:'Scented Candle', bizName:'Test Biz',
     shape:'rectangle', size:'custom', customW:57, customH:99,
-    bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'20 hrs',
+    bizAddress:'1 Test Street', bizPhone:'00000000000', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'20 hrs',
     signal:'Warning', hStatements:'H315', pStatements:'', sensitisers:[], pictograms:['exclamation'],
     textColour:'dark', showBorder:true, hideEN15494:false, labelLang:'en',
   }, overrides), '10%');

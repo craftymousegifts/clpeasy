@@ -568,6 +568,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
     </div>
 
     <div id="fit-issues-panel" style="display:none;"></div>
+    <div id="business-details-sheet-note" role="status" style="display:none;margin:0 0 12px;padding:10px 12px;border:1.5px solid #F59E0B;background:#FFFBEB;border-radius:10px;font-size:13px;line-height:1.5;color:#78350F;white-space:pre-line;"></div>
     <div id="sds-doc-sheet-note" class="sds-doc-sheet-note" role="status" style="display:none;margin:0 0 12px;padding:10px 12px;border:1.5px solid #F59E0B;background:#FFFBEB;border-radius:10px;font-size:13px;line-height:1.5;color:#78350F;white-space:pre-line;"></div>
 
     <!-- Correction batch: Export's own two action buttons (Print/Save as
@@ -960,15 +961,29 @@ function updateSdsDocSheetNote(){
   el.textContent=m||'';
 }
 
+function getSheetBusinessDetailsBlockMessage(){
+  if(currentTpl===null)return null;
+  const messages=[],seen=new Set();
+  for(const placement of getSheetPlacementsMM()){
+    const data=placement.labelData||{};
+    const missing=LabelRenderer.getMissingBusinessDetails(data);
+    const message=(data.scentName||'Unnamed label')+': '+missing.map(field=>field.label).join(', ');
+    if(missing.length&&!seen.has(message)){messages.push(message);seen.add(message);}
+  }
+  return messages.length?'This sheet needs complete business details before printing or downloading:\n\n'+messages.map(message=>'• '+message).join('\n')+'\n\nOpen the listed label(s) in Create Label, complete Step 4 (Business), and save. Your saved designs are kept.':null;
+}
 function updateExportButtonState(){
   updateSdsDocSheetNote();
+  const businessMessage=getSheetBusinessDetailsBlockMessage();
+  const businessNote=document.getElementById('business-details-sheet-note');
+  if(businessNote){businessNote.style.display=businessMessage?'':'none';businessNote.textContent=businessMessage||'';}
   const blockedBySds=!!getSheetSdsDocBlockMessage();
-  const blockedByFit=((typeof sheetFitIssues!=='undefined')&&sheetFitIssues.length>0)||!!getCustomGridOverflow()||!!getSheetGeometryBlockMessage()||blockedBySds;
+  const blockedByFit=((typeof sheetFitIssues!=='undefined')&&sheetFitIssues.length>0)||!!getCustomGridOverflow()||!!getSheetGeometryBlockMessage()||blockedBySds||!!businessMessage;
   // Correction batch: no longer says "marked below" -- since the export
   // buttons moved into the Sheet Preview pane, the fit-issues list they
   // refer to is no longer spatially below them (desktop: it's in the left
   // column; mobile: it's after the preview). Kept direction-neutral.
-  const title=blockedBySds?'Complete the supplier document check for the listed label(s) first.':(blockedByFit?"Fix the label(s) that don't fit before you can print or download this sheet.":'');
+  const title=businessMessage?'Complete the business details for the listed label(s) first.':(blockedBySds?'Complete the supplier document check for the listed label(s) first.':(blockedByFit?"Fix the label(s) that don't fit before you can print or download this sheet.":''));
   const btnPdf=document.getElementById('btn-pdf');
   if(btnPdf){ btnPdf.disabled=!isPro||blockedByFit; btnPdf.title=title; }
   const btnPng=document.getElementById('btn-png-all');
@@ -980,6 +995,8 @@ function updateExportButtonState(){
 // output at once. Returns the alert message to show and refuse, or null
 // when every occupied position fits and export may proceed.
 function getSheetFitBlockMessage(){
+  const businessMessage=getSheetBusinessDetailsBlockMessage();
+  if(businessMessage)return businessMessage;
   // Checked first: a physically-impossible Custom Sheet grid (30 Aug 2026
   // fix) is a whole-sheet configuration problem, not a per-label one, and
   // takes priority -- see getCustomGridOverflowMessage().
