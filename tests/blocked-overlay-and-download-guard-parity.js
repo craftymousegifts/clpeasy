@@ -3,7 +3,7 @@
 //      now share ONE boolean (_contentBlocked) instead of the overlay
 //      having its own earlier, incomplete copy of the condition.
 //   2. builder.html: the live-preview-panel PNG/SVG/PDF row is wired into
-//      the same toggleDownload() visual sync as the Step-5 grid buttons.
+//      the same toggleDownload() visual sync as the mobile preview buttons.
 // No CLP calculation, geometry, x-height floor, or export-guard logic was
 // touched by that hotfix -- this file exists to keep it that way: it pins
 // the exact fits/warnings contract for known fixtures, proves the overlay
@@ -199,8 +199,8 @@ function rectOf(svg){
   setTimeout(async () => {
     try {
       // Sanity: the three preview-row ids this hotfix added must exist,
-      // alongside the pre-existing Step-5 grid ids.
-      for (const id of ['btn-png-preview','btn-pdf-preview','btn-svg-preview','btn-png','btn-svg','btn-pdf','btn-save']) {
+      // alongside the mobile preview controls and Save.
+      for (const id of ['btn-png-preview','btn-pdf-preview','btn-svg-preview','btn-png-sheet','btn-svg-sheet','btn-pdf-sheet','btn-save']) {
         assert(document.getElementById(id), `expected element #${id} to exist`);
       }
 
@@ -211,7 +211,7 @@ function rectOf(svg){
       window.eval('window._labelBlockDownload = true;');
       if (cb) cb.checked = true; // even "confirmed" must stay blocked
       window.toggleDownload();
-      for (const id of ['btn-png','btn-svg','btn-pdf','btn-save','btn-png-preview','btn-svg-preview','btn-pdf-preview']) {
+      for (const id of ['btn-png-sheet','btn-svg-sheet','btn-pdf-sheet','btn-save','btn-png-preview','btn-svg-preview','btn-pdf-preview']) {
         const s = readStyle(id);
         assert.strictEqual(s.opacity, '0.4', `#${id} must be dimmed (opacity 0.4) while blocked -- got ${s.opacity}`);
         assert.strictEqual(s.pe, 'none', `#${id} must be inert (pointer-events none) while blocked -- got ${s.pe}`);
@@ -256,7 +256,7 @@ function rectOf(svg){
       window.eval('window._labelBlockDownload = false;');
       cb.checked = true;
       window.toggleDownload();
-      for (const id of ['btn-png','btn-svg','btn-pdf','btn-save','btn-png-preview','btn-svg-preview','btn-pdf-preview']) {
+      for (const id of ['btn-png-sheet','btn-svg-sheet','btn-pdf-sheet','btn-save','btn-png-preview','btn-svg-preview','btn-pdf-preview']) {
         const s = readStyle(id);
         assert.strictEqual(s.opacity, '1', `#${id} must be fully visible (opacity 1) once allowed -- got ${s.opacity}`);
         assert.strictEqual(s.pe, 'auto', `#${id} must be clickable (pointer-events auto) once allowed -- got ${s.pe}`);
@@ -272,3 +272,4 @@ function rectOf(svg){
     }
   }, 500);
 })();
+
