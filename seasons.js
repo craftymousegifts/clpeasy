@@ -531,6 +531,7 @@
     if (hero && hero.parentNode) hero.parentNode.insertBefore(banner, hero.nextSibling);
     else document.body.insertBefore(banner, document.body.firstChild);
 
+    if(typeof window.updateHomepageAccountCtas==='function')window.updateHomepageAccountCtas();
     if (typeof onEligibilityResolved === 'function') onEligibilityResolved(true);
   }
 
