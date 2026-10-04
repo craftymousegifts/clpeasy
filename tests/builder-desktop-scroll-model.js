@@ -292,9 +292,9 @@ setTimeout(() => {
     const sdsNote = step3.querySelector('.sds-gb-note');
     assert(sdsNote, 'Step 3 SDS / GB CLP guidance note is missing');
     assert(/CLP information for the percentage you actually use/.test(sdsNote.textContent), 'SDS note must still cover finished-product / fragrance-concentration guidance');
-    assert.strictEqual(smartPasteBox.nextElementSibling.id, 'sds-doc-check', 'paste precedes the coverage check');
-    assert(sdsNote.parentElement.matches('details.sds-help') && !sdsNote.parentElement.open, 'guidance remains available in collapsed help');
-    assert.strictEqual(smartPasteBox.nextElementSibling.nextElementSibling, sdsNote.parentElement, 'expandable help follows the coverage check');
+    assert(!document.getElementById('sds-doc-check'), 'mandatory supplier questionnaire removed');
+    assert(sdsNote.parentElement.matches('details.sds-help') && !sdsNote.parentElement.open, 'guidance remains in collapsed help');
+    assert.strictEqual(smartPasteBox.nextElementSibling, sdsNote.parentElement, 'expandable help follows Smart Paste');
     // The mandatory confirmation checkbox (a distinct, binding "I confirm..."
     // gate). Owner-approved wording (26 Sep 2026, F1): it refers to the hazard
     // data shown in this step, not to the Smart Paste box, which is blank on a

@@ -946,7 +946,7 @@ function getSheetSdsDocBlockMessage(){
     const key=ld.id||ld.scentName||JSON.stringify(ld).slice(0,200);
     if(seen.has(key))continue;
     seen.add(key);
-    if(!SdsDocCheck.isVerified(ld))names.push(ld.scentName||'Unnamed label');
+    if(!SdsDocCheck.isExportAllowed(ld))names.push(ld.scentName||'Unnamed label');
   }
   if(!names.length)return null;
   const list=names.map(n=>`• ${n}`).join('\n');
@@ -1609,7 +1609,7 @@ function savedItemCardHtml(e,qty,compat){
       <div class="sli-info">
         <div class="sli-name">${xe(e.scentName||'Unnamed')}</div>
         <div class="sli-meta">${xe(e.productType||'')} · ${sizeLabel} ${e.shape||'circle'}${compat.incompatible?' 🔒':''}</div>
-        ${(typeof SdsDocCheck!=='undefined'&&!SdsDocCheck.isVerified(e))?'<div class="sli-meta" style="color:#92400E;font-weight:600;">Draft: document check needed before printing</div>':''}
+        ${(typeof SdsDocCheck!=='undefined'&&!SdsDocCheck.isExportAllowed(e))?'<div class="sli-meta" style="color:#92400E;font-weight:600;">Draft: document check needed before printing</div>':''}
         ${compat.incompatible?`<div class="sli-incompat-reason">${xe(compat.reason)}</div>`:''}
       </div>
       <div class="sli-qty">

@@ -474,7 +474,7 @@ function renderGrid(){
           <div class="label-tags">
             <span class="tag">${escapeHtml(e.productType||'—')}</span>
             <span class="tag">${escapeHtml(dimensionLabel(e))}</span>
-            ${(window.SdsDocCheck&&!SdsDocCheck.isVerified(e))?'<span class="tag tag-draft" title="Saved, but not ready to download: open it and complete the supplier document check in Step 3">Draft: document check needed</span>':''}
+            ${(window.SdsDocCheck&&!SdsDocCheck.isExportAllowed(e))?'<span class="tag tag-draft" title="Saved, but not ready to download: open it and complete the supplier document check in Step 3">Draft: document check needed</span>':''}
           </div>
         </div>
       </div>

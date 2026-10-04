@@ -35,7 +35,7 @@ const SCRIPT = `(function(){
   window.toggleHazardNext = wrap(window.toggleHazardNext);
   // For tests that export without walking Steps 3 -> 4: answer, then run the
   // production confirmation (it refuses anything evaluateSdsDoc rejects).
-  window.__confirmSdsDoc = function(){ answer(); if (typeof _stampSdsDocConfirmation === 'function') _stampSdsDocConfirmation(); return SdsDocCheck.isVerified(_sdsDocRecord()); };
+  window.__confirmSdsDoc = function(){ answer(); if (typeof _stampSdsDocConfirmation === 'function') _stampSdsDocConfirmation(); return SdsDocCheck.isExportAllowed(_sdsDocRecord()); };
   window.__answerSdsDoc = answer;
 })();`;
 function install(window){ try { if (window && typeof window.eval === 'function') window.eval(SCRIPT); } catch (e) {} return window; }

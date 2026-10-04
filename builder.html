@@ -1181,7 +1181,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <button type="button" onclick="toggleFragCalc()" style="margin-left:8px;font-size:11px;background:var(--teal-light);border:1px solid rgba(13,148,136,0.3);color:var(--teal);padding:2px 8px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;">🧮 Calculate</button>
         </label>
         <input type="text" id="frag-load" placeholder="e.g. 10%" inputmode="decimal" aria-describedby="frag-load-help" oninput="updateLabel();saveProdDetails();updateSdsDocCheck()">
-        <div id="frag-load-help" style="margin-top:4px;font-size:11px;color:var(--muted);line-height:1.45;">Fragrance weight ÷ total weight of the finished product (wax or base + fragrance) × 100. Required: CLPeasy uses it to check your supplier's CLP information covers your product.</div>
+        <div id="frag-load-help" style="margin-top:4px;font-size:11px;color:var(--muted);line-height:1.45;">Fragrance weight ÷ total weight of the finished product (wax or base + fragrance) × 100. Check your supplier's CLP information applies to the percentage you use.</div>
         <div id="frag-calc-panel" style="display:none;margin-top:8px;background:var(--off);border:1.5px solid var(--border);border-radius:10px;padding:12px;">
           <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;">Calculate from weights</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
@@ -1226,34 +1226,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <br><br><button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
       <button type="button" id="hazard-clear-link" onclick="clearHazardData()" style="display:none;margin-left:14px;font-size:12px;color:var(--teal-dark);text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">Clear hazard data and start again</button>
     </div>
-    <fieldset id="sds-doc-check" class="sds-doc-check" style="border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin:0 0 14px;background:var(--off);">
-      <legend style="font-size:13px;font-weight:700;padding:0 4px;">Supplier document coverage</legend>
-      <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:8px;">Before downloading, check that this supplier information covers your product and fragrance percentage. You can paste and review Section 2.2 first.</div>
-      <div style="font-size:12.5px;font-weight:600;margin-bottom:4px;">What does your supplier document describe?</div>
-      <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:4px;"><input type="radio" name="sds-doc-kind" value="finished" onchange="updateSdsDocCheck()" style="margin-top:2px;"> Finished-product CLP information (one percentage or a stated range)</label>
-      <label id="sds-doc-kind-confirmed-row" style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:4px;"><input type="radio" name="sds-doc-kind" value="supplier-confirmed" onchange="updateSdsDocCheck()" style="margin-top:2px;"> Written supplier confirmation for my product and percentage</label>
-      <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:4px;"><input type="radio" name="sds-doc-kind" value="concentrate" onchange="updateSdsDocCheck()" style="margin-top:2px;"> Concentrated fragrance oil (100%)</label>
-      <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;margin-bottom:8px;"><input type="radio" name="sds-doc-kind" value="unsure" onchange="updateSdsDocCheck()" style="margin-top:2px;"> I'm not sure</label>
-      <div id="sds-doc-finished-fields" style="display:none;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:6px;">
-        <div id="sds-doc-coverage-wrap" style="grid-column:1/-1;"><label for="sds-doc-coverage" style="font-size:12px;">How does the document state the percentage it covers?</label><select id="sds-doc-coverage" onchange="updateSdsDocCheck()"><option value="single" selected>One percentage</option><option value="range">A range (from – to)</option></select></div>
-        <div id="sds-doc-pct-wrap"><label for="sds-doc-pct" id="sds-doc-pct-label" style="font-size:12px;">Fragrance % the document states</label><input type="text" id="sds-doc-pct" placeholder="e.g. 10%" inputmode="decimal" aria-describedby="sds-doc-pct-help" oninput="updateSdsDocCheck()"><div id="sds-doc-pct-help" style="margin-top:3px;font-size:11px;color:var(--muted);line-height:1.4;">One figure, exactly as written on the document.</div></div>
-        <div><label for="sds-doc-base" id="sds-doc-base-label" style="font-size:12px;">Product the document covers</label><select id="sds-doc-base" onchange="updateSdsDocCheck()"><option value="">— Choose —</option><option value="candle">Candles</option><option value="waxmelt">Wax melts</option><option value="candle+waxmelt">Candles and wax melts (the document names both)</option><option value="reed">Reed diffusers</option><option value="plugin">Electric or plug-in diffusers</option><option value="cardiffuser">Car diffusers</option><option value="spray">Room or linen sprays</option><option value="carspray">Car air freshener sprays</option><option value="sachet">Scented sachets</option><option value="potpourri">Potpourri</option><option value="other">Something else / not stated</option></select></div>
-      </div>
-      <div id="sds-doc-range-fields" style="display:none;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:6px;">
-        <div><label for="sds-doc-from" style="font-size:12px;">From (%)</label><input type="text" id="sds-doc-from" placeholder="e.g. 6" inputmode="decimal" oninput="updateSdsDocCheck()"></div>
-        <div><label for="sds-doc-to" style="font-size:12px;">To (%)</label><input type="text" id="sds-doc-to" placeholder="e.g. 10" inputmode="decimal" oninput="updateSdsDocCheck()"></div>
-        <div style="grid-column:1/-1;"><label for="sds-doc-where" style="font-size:12px;">Where the document states this range (section, page or heading)</label><input type="text" id="sds-doc-where" maxlength="160" autocomplete="off" placeholder="e.g. Page 1, &quot;Valid for fragrance loads&quot;" oninput="updateSdsDocCheck()"></div>
-        <label style="grid-column:1/-1;display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:12.5px;line-height:1.45;"><input type="checkbox" id="sds-doc-range-stated" onchange="updateSdsDocCheck()" style="margin-top:2px;width:auto;"> The supplier states that this label information covers my product throughout this range.</label>
-        <details class="sds-help"><summary>Which ranges count?</summary><p>Use a range explicitly covering finished-product hazard and label information. Ingredient ranges in Section 3, IFRA limits and recommended usage ranges do not establish that coverage.</p></details>
-      </div>
-      <div id="sds-doc-confirm-fields" style="display:none;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:6px;">
-        <div><label for="sds-doc-supplier" style="font-size:12px;">Supplier who confirmed it</label><input type="text" id="sds-doc-supplier" maxlength="120" autocomplete="off" oninput="updateSdsDocCheck()"></div>
-        <div><label for="sds-doc-cdate" style="font-size:12px;">Date of the written confirmation</label><input type="date" id="sds-doc-cdate" style="width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:16px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;min-height:46px;" oninput="updateSdsDocCheck()" onchange="updateSdsDocCheck()"></div>
-        <div style="grid-column:1/-1;"><label for="sds-doc-cref" style="font-size:12px;">Finished-product hazard information it identifies (supplier document title or reference)</label><input type="text" id="sds-doc-cref" maxlength="200" autocomplete="off" placeholder="e.g. Lavender Fields CLP – candle 9.1%" oninput="updateSdsDocCheck()"><div style="margin-top:3px;font-size:11px;color:var(--muted);line-height:1.4;">Keep the supplier's written confirmation with your records. CLPeasy can't see or check it.</div></div>
-      </div>
-      <div id="sds-doc-version-wrap" style="display:none;margin-bottom:6px;"><label for="sds-doc-version" style="font-size:12px;">Document date or version <span style="font-weight:400;color:var(--muted);">(optional, for your records)</span></label><input type="text" id="sds-doc-version" maxlength="80" autocomplete="off" placeholder="e.g. v3, 12/08/2026" oninput="updateSdsDocCheck()"></div>
-      <div id="sds-doc-result" role="status" aria-live="polite" style="font-size:12.5px;line-height:1.5;"></div>
-    </fieldset>
     <details class="sds-help"><summary>About supplier information and GB CLP</summary>
     <aside class="sds-gb-note" aria-label="About supplier SDS information for Great Britain">
       <strong>About your supplier SDS and GB CLP</strong>
@@ -2672,7 +2644,7 @@ function showSaveStatus(){
   const el=document.getElementById('save-status');
   if(!el)return;
   // Saved is not the same as ready to download: an unchecked label is a draft.
-  const draft=!SdsDocCheck.isVerified(_sdsDocRecord());
+  const draft=!SdsDocCheck.isExportAllowed(_sdsDocRecord());
   el.classList.toggle('field-alert-success',!draft);
   el.classList.toggle('field-alert-warn',draft);
   el.innerHTML=draft
@@ -3100,7 +3072,7 @@ async function saveLabel(){
     renderSaved();
     if(btn){
       // Matches the notice beneath it: an unchecked label is a draft.
-      const _draft=!SdsDocCheck.isVerified(_sdsDocRecord());
+      const _draft=!SdsDocCheck.isExportAllowed(_sdsDocRecord());
       btn.textContent=_draft?'✎ Draft saved':'✅ Label saved';
       btn.style.background=_draft?'#FFFBEB':'#ECFDF5';btn.style.borderColor=_draft?'#FDE68A':'var(--teal)';
     }
@@ -3604,7 +3576,7 @@ function buildSensitiserChips(){
 // were previously never gated at all — can bypass either check.
 function _downloadAllowed(){
   const checked=document.getElementById('verify-checkbox')?.checked;
-  return !!checked && !window._labelBlockDownload && !_hazardReviewRequired() && SdsDocCheck.isVerified(_sdsDocRecord());
+  return !!checked && !window._labelBlockDownload && !_hazardReviewRequired() && SdsDocCheck.isExportAllowed(_sdsDocRecord());
 }
 function _downloadBlockedMessage(){
   if(_hazardReviewRequired())return _hazardReviewMessage();
@@ -3783,6 +3755,7 @@ function parseBoundedSubstanceList(raw){
 const SDS_DOC_BASE_BY_TYPE=SdsDocCheck.GROUP_BY_TYPE;
 function _parseFragPct(value){return SdsDocCheck.parsePct(value);}
 function _sdsDocState(){
+  if(!SdsDocCheck.DOCUMENT_CHECK_REQUIRED)return S.sdsDoc||{};
   const kind=(document.querySelector('input[name="sds-doc-kind"]:checked')||{}).value||'';
   const v=id=>document.getElementById(id)?.value||'';
   const st={kind, pct:v('sds-doc-pct'), base:v('sds-doc-base')};
@@ -3810,17 +3783,19 @@ function _sdsDocRecord(){
     hStatements:S.hStatements,pStatements:S.pStatements,pictograms:S.pictograms,signal:S.signal,sensitisers:S.sensitisers};
 }
 // Returns {ok, code, message}. Pure check of the current form state.
-function evaluateSdsDoc(){return SdsDocCheck.evaluate(_sdsDocRecord());}
+function evaluateSdsDoc(){return SdsDocCheck.DOCUMENT_CHECK_REQUIRED?SdsDocCheck.evaluate(_sdsDocRecord()):{ok:true,code:'not-required',message:''};}
 // Owner decision 2 (3 Oct 2026): the answers are CONFIRMED only when the maker
 // successfully leaves Step 3. Exports require that confirmation to still
 // match the label's fragrance %, product type, hazard information and
 // document answers (SdsDocCheck.status); any later change needs Step 3 again.
 function _stampSdsDocConfirmation(){
+  if(!SdsDocCheck.DOCUMENT_CHECK_REQUIRED)return;
   const rec=_sdsDocRecord();
   if(!SdsDocCheck.evaluate(rec).ok)return;
   S.sdsDoc=Object.assign({},_sdsDocState(),{confirmed:SdsDocCheck.confirmationFor(rec)});
 }
 function updateSdsDocCheck(){
+  if(!SdsDocCheck.DOCUMENT_CHECK_REQUIRED)return true;
   const _cr=document.getElementById('sds-doc-kind-confirmed-row');
   if(_cr&&!SdsDocCheck.SUPPLIER_CONFIRMATION_ACCEPTED)_cr.style.display='none';
   const d=_sdsDocState();
@@ -3854,6 +3829,7 @@ function updateSdsDocCheck(){
   return r.ok;
 }
 function _requireSdsDoc(){
+  if(!SdsDocCheck.DOCUMENT_CHECK_REQUIRED)return true;
   const r=evaluateSdsDoc();
   updateSdsDocCheck();
   if(!r.ok){

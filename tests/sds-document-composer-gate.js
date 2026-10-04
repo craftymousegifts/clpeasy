@@ -1,3 +1,4 @@
+// 4 Oct 2026 owner decision: supplier questionnaire removed; ordinary hazard review and export checks remain.
 // 3 Oct 2026: saved fixtures stand for labels completed in the Builder, so they
 // carry the supplier-document confirmation the Builder saves (real product
 // type and %, made by sds-doc-check.js; see tests/helpers/sds-doc-verified.js).
@@ -157,67 +158,20 @@ const { window } = dom;
 const document = window.document;
 
 setTimeout(async () => {
-  try {
-    window.eval("sbClient={from:()=>({select(){return this;},eq(){return this;},single(){return Promise.resolve({data:{plan:'pro',status:'active',subscription_status:'active',trial_end:null,downloads_used:0,downloads_limit:30,topup_credits:0},error:null});}}),rpc:()=>Promise.resolve({data:{ok:true,consumed:true,free_redownload:false,source:'plan',clean_export:true},error:null})}; currentUser=currentUser||{id:'test-pro-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
-    const saved = window.eval('getSaved()');
-    const before = JSON.stringify(saved);
-    const rec = name => saved.find(r => r.scentName === name);
-    const M = window.SdsDocCheck;
-    assert(M, 'print.html loads the shared module');
-    assert.strictEqual(M.status(rec('Lavender Fields')), 'verified');
-    assert.strictEqual(M.status(rec('Older Saved Label')), 'not-checked');
-    assert.strictEqual(M.status(rec('Changed After Confirming')), 'needs-recheck');
-    const note = document.getElementById('sds-doc-sheet-note');
-    const pdfDisabled = () => window.eval('document.getElementById("btn-pdf").disabled');
-    const pngDisabled = () => window.eval('document.getElementById("btn-png-all").disabled');
-
-    // The saved-label list marks drafts (saved, not ready to print).
-    const card = name => (document.getElementById('sli-' + rec(name).id) || {}).textContent || '';
-    assert(/Draft: document check needed/.test(card('Older Saved Label')) && /Draft: document check needed/.test(card('Changed After Confirming')), 'unchecked labels marked as drafts in the list');
-    assert(card('Lavender Fields') && !/Draft/.test(card('Lavender Fields')), 'checked label not marked');
-
-    // Confirmed label only: export proceeds.
-    window.eval(`addToSheet('${rec('Lavender Fields').id}')`);
-    assert.strictEqual(pdfDisabled(), false, 'confirmed label: Print/PDF enabled');
-    assert.strictEqual(note.style.display, 'none', 'no notice for a confirmed sheet');
-    windowOpenCalls = 0; await window.eval('downloadPDF()');
-    assert.strictEqual(windowOpenCalls, 1, 'confirmed sheet exports');
-
-    // Add an older label (no confirmation) and a changed one.
-    window.eval(`addToSheet('${rec('Older Saved Label').id}')`);
-    window.eval(`addToSheet('${rec('Changed After Confirming').id}')`);
-    assert.strictEqual(pdfDisabled(), true, 'Print/PDF disabled');
-    assert.strictEqual(pngDisabled(), true, 'cutting-machine download disabled');
-    assert.notStrictEqual(note.style.display, 'none', 'notice shown');
-    assert(/Older Saved Label/.test(note.textContent) && /Changed After Confirming/.test(note.textContent) && !/Lavender Fields/.test(note.textContent), 'notice names exactly the unconfirmed labels');
-    assert(/Create Label/.test(note.textContent) && /Step 3/.test(note.textContent) && /saved designs are kept/i.test(note.textContent), 'notice gives the way to fix it');
-    const msg = window.eval('getSheetFitBlockMessage()');
-    assert(msg && /supplier document check/.test(msg), 'single export gate refuses');
-    // Every path refuses with no side effects.
-    windowOpenCalls = 0; window.eval('window.__lastAlert=null'); await window.eval('downloadPDF()');
-    assert.strictEqual(windowOpenCalls, 0, 'downloadPDF opens nothing');
-    assert(/supplier document check/.test(window.eval('window.__lastAlert') || ''), 'downloadPDF explains');
-    zipFileCalls = 0; anchorClickCalls = 0; window.eval('window.__lastAlert=null');
-    window.eval('openCricutModal()');
-    assert.strictEqual(window.eval('document.getElementById("cricutModal").classList.contains("show")'), false, 'cutting-machine dialog does not open');
-    await window.eval('cricutDownloadZip()'); await window.eval('cricutDownloadSequential()');
-    assert.strictEqual(zipFileCalls, 0, 'no ZIP built'); assert.strictEqual(anchorClickCalls, 0, 'no PNG downloaded');
-
-    // Removing the unconfirmed labels releases the block.
-    window.eval(`removeSheetItem('${rec('Older Saved Label').id}')`);
-    assert.strictEqual(pdfDisabled(), true, 'still blocked by the changed label');
-    assert(!/Older Saved Label/.test(note.textContent), 'notice updates');
-    window.eval(`removeSheetItem('${rec('Changed After Confirming').id}')`);
-    assert.strictEqual(pdfDisabled(), false, 'released');
-    assert.strictEqual(note.style.display, 'none', 'notice hidden');
-    windowOpenCalls = 0; await window.eval('downloadPDF()');
-    assert.strictEqual(windowOpenCalls, 1, 'exports again');
-
-    assert.strictEqual(JSON.stringify(window.eval('getSaved()')), before, 'saved designs unchanged by the Composer');
-    assert.deepStrictEqual(errors.filter(e => !/Not implemented/.test(e)), [], 'no script errors');
-    console.log('sds-document composer gate checks passed');
-  } catch (error) {
-    console.error(error.stack || error.message);
-    process.exitCode = 1;
+ try {
+  window.eval("sbClient={rpc:()=>Promise.resolve({data:{ok:true,consumed:true,source:'plan',clean_export:true},error:null})}; currentUser={id:'test-user'}; isPro=true; _previewVerifiedAt=Date.now(); updateProGate();");
+  const saved=window.eval('getSaved()'),before=JSON.stringify(saved);
+  const legacy=saved.find(r=>r.scentName==='Older Saved Label');
+  const stale=saved.find(r=>r.scentName==='Changed After Confirming');
+  for(const r of [legacy,stale]){
+   assert(window.SdsDocCheck.isExportAllowed(r));
+   const card=document.getElementById('sli-'+r.id);assert(card&&!/Draft: document check/.test(card.textContent));
   }
-}, 600);
+  window.addToSheet(legacy.id);
+  assert.strictEqual(window.getSheetSdsDocBlockMessage(),null,'old labels no longer blocked by questionnaire');
+  assert.strictEqual(window.getSheetFitBlockMessage(),null,'fitting old label passes existing sheet gates');
+  assert.strictEqual(document.getElementById('sds-doc-sheet-note').style.display,'none');
+  assert.strictEqual(JSON.stringify(window.eval('getSaved()')),before,'Composer leaves designs and metadata unchanged');
+  console.log('PASS: Composer accepts legacy labels without document questions or draft markers; storage unchanged');
+ }catch(e){console.error(e.stack);process.exitCode=1;}finally{window.close();}
+},500);

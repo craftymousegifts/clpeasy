@@ -269,9 +269,9 @@ function f1Check(context){
   document.getElementById('hazard-confirm').checked = true;
   assert.strictEqual(window.canLeaveApprovedBuilderStep(3), true, 'Step 3 can be left once the new SDS is extracted and confirmed');
   tickVerify();
-  // 3 Oct 2026: the hazard data changed, so the supplier-document
-  // confirmation must be renewed by actually leaving Step 3.
-  assert.strictEqual(window._downloadAllowed(), false, 'new hazard data needs the Step 3 document confirmation again');
+  // 4 Oct 2026: fresh extraction and the existing hazard/final review satisfy
+  // the remaining checks; the owner removed the separate document stamp.
+  assert.strictEqual(window._downloadAllowed(), true, 'reviewed new hazard data does not need a document questionnaire stamp');
   window.setApprovedBuilderStep(4);
   assert.strictEqual(S('approvedBuilderStep'), 4, 'left Step 3');
   tickVerify();
@@ -326,16 +326,14 @@ function f1Check(context){
   assert.strictEqual(document.getElementById('hazard-confirm').checked, false, 'C4 load: Step 3 confirmation must be ticked again');
   assert.strictEqual(window._downloadAllowed(), false, 'C4 load: still blocked until verification is ticked again');
   tickVerify();
-  // 3 Oct 2026 (owner decision 2): the fragrance % changed, so the supplier-
-  // document confirmation no longer applies. Export stays blocked until the
-  // maker has a document for 12% and confirms it again in Step 3.
-  assert.strictEqual(window._downloadAllowed(), false, 'C4 load: re-check alone does not cover a document for another %');
-  assert(/less than|more than|changed after you confirmed/.test(window._downloadBlockedMessage()), 'C4 load: document guidance shown: ' + window._downloadBlockedMessage());
+  // The owner removed the separate document-percentage stamp. The explicit
+  // same-fragrance review and final verification still govern this export.
+  assert.strictEqual(window._downloadAllowed(), true, 'C4 load: explicit re-check and final verification do not require questionnaire answers');
+  assert(!/supplier document|document coverage/i.test(window._downloadBlockedMessage()), 'no retired questionnaire instruction');
   window.setApprovedBuilderStep(3);
-  document.getElementById('sds-doc-pct').value = '12'; window.updateSdsDocCheck();
   document.getElementById('hazard-confirm').checked = true;
   window.setApprovedBuilderStep(4);
-  assert.strictEqual(S('approvedBuilderStep'), 4, 'C4 load: left Step 3 with a 12% document ' + (window.__lastAlert || ''));
+  assert.strictEqual(S('approvedBuilderStep'), 4, 'C4 load: left Step 3 after reviewing updated supplier data ' + (window.__lastAlert || ''));
   tickVerify();
   assert.strictEqual(window._downloadAllowed(), true, 'C4 load: allowed once re-verified');
   ok('C4 load: fragrance-load change blocks save/export until re-checked (with both confirmations again) or cleared');

@@ -1,3 +1,5 @@
+// 4 Oct 2026: owner removed the mandatory supplier questionnaire.
+// Legacy document records remain readable; they no longer restrict exports.
 // ── SdsDocCheck — supplier-document applicability for the fragrance % ────
 // (3 Oct 2026, owner decisions 1-4.) Shared by builder.html and print.html so
 // the Builder and the Print Sheet Composer apply exactly the same rule.
@@ -224,8 +226,11 @@
     return 'verified';
   }
   function isVerified(rec) { return status(rec) === 'verified'; }
+  const DOCUMENT_CHECK_REQUIRED = false;
+  function isExportAllowed(rec) { return !DOCUMENT_CHECK_REQUIRED || isVerified(rec); }
 
   function exportBlockMessage(rec) {
+    if (!DOCUMENT_CHECK_REQUIRED) return null;
     const s = status(rec);
     if (s === 'verified') return null;
     if (s === 'needs-recheck') return 'The fragrance percentage, product type, hazard information or document details changed after you confirmed your supplier document. Go to Step 3 (Hazards), check "Supplier document coverage" still matches, and continue to Step 5 to download.';
@@ -233,7 +238,7 @@
     return 'Not ready to download yet. Confirm which supplier document this label\'s hazard information comes from: go to Step 3 (Hazards), complete "Supplier document coverage", and continue to Step 5. Your design is kept, and you can still save it as a draft.';
   }
 
-  const api = { SUPPLIER_CONFIRMATION_ACCEPTED, isRangeOrUpTo, isUpTo, GROUP_BY_TYPE, DOC_COVERS, DOC_BASE_OPTIONS, parsePct, confirmationFor, evaluate, status, isVerified, exportBlockMessage };
+  const api = { DOCUMENT_CHECK_REQUIRED, isExportAllowed, SUPPLIER_CONFIRMATION_ACCEPTED, isRangeOrUpTo, isUpTo, GROUP_BY_TYPE, DOC_COVERS, DOC_BASE_OPTIONS, parsePct, confirmationFor, evaluate, status, isVerified, exportBlockMessage };
   global.SdsDocCheck = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);
