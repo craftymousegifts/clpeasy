@@ -1224,6 +1224,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <p>Copy the complete Section 2.2 (Label elements) from your current supplier SDS PDF and paste it here. CLPeasy extracts the information it can identify; review the result against your SDS before continuing.</p>
       <textarea id="smart-paste-input" placeholder="Paste SDS Section 2.2 text here..."></textarea>
       <br><br><button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
+      <div id="smart-paste-size-warning" class="field-alert field-alert-danger" role="status" aria-live="polite" style="display:none;margin-top:14px;font-size:14px;"></div>
       <button type="button" id="hazard-clear-link" onclick="clearHazardData()" style="display:none;margin-left:14px;font-size:12px;color:var(--teal-dark);text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">Clear hazard data and start again</button>
     </div>
     <details class="sds-help"><summary>About supplier information and GB CLP</summary>
@@ -1487,7 +1488,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="preview-sheet-handle"></div>
     <div class="preview-sheet-label" id="sheet-label-container"></div>
     <div style="font-size:12px;color:rgba(255,255,255,0.4);text-align:center;margin-bottom:4px;" id="sheet-size-info"></div>
-    <button type="button" onclick="showSheetSizeEditor()" style="color:white;background:none;border:1px solid white;border-radius:8px;padding:10px;min-height:44px;margin:8px 0;">Adjust label size</button><div id="sheet-size-editor" style="color:white;"></div>
+    <button type="button" onclick="showSheetSizeEditor()" style="color:white;background:none;border:1px solid white;border-radius:8px;padding:10px;min-height:44px;margin:8px 0;">Adjust label size</button><div id="sheet-fit-advice" role="status" aria-live="polite" style="color:white;font-size:14px;"></div><div id="sheet-size-editor" style="color:white;"></div>
     <div class="preview-sheet-actions">
       <button class="btn-dl" id="btn-png-sheet" onclick="downloadPNG();closeSheet()">⬇ PNG (single)</button>
       <button class="btn-dl" id="btn-pdf-sheet" onclick="printToPDF()">▣ PDF</button>
@@ -4011,6 +4012,8 @@ function extractSDS(){
   updateLabel();
   lockHazardFields(true);
   showExtractToast(allH.length,pRaw.length,S.sensitisers.length);
+  const fitNotice=document.getElementById('smart-paste-size-warning');
+  if(fitNotice&&fitNotice.style.display!=='none')fitNotice.scrollIntoView({block:'center',behavior:'smooth'});
 }
 
 function showExtractToast(hCount, pCount, sensCount){
@@ -4755,6 +4758,14 @@ function applyInlineSize(button){
   document.getElementById('custom-h').value=h?h.value:w.value;
   onDimInput();
 }
+function applySuggestedLabelSize(){
+  const rec=window._suggestedLabelSize;
+  if(!rec)return;
+  if(rec.source==='preset'){applySize(rec.presetMm);return;}
+  document.getElementById('custom-w').value=rec.mmW;
+  document.getElementById('custom-h').value=rec.mmH;
+  onDimInput();
+}
 function showSheetSizeEditor(){
   document.getElementById('sheet-size-editor').innerHTML=inlineSizeEditor();
 }
@@ -5069,10 +5080,11 @@ function updateLabel(){
   // renderLabel() result for this exact content via label-render.js's
   // findSmallestFittingSize(). Read-only: this never changes S.size itself:
   // the maker always makes that choice, in Step 1, themselves.
-  const _sizeHelpsIfBlocked = window._labelBlockDownload && !_hasUnrecognizedCodes && !_isCustomSizeTooSmall;
+  const _sizeHelpsIfBlocked = window._labelBlockDownload && !_hasUnrecognizedCodes;
   const _sizeRec = (_sizeHelpsIfBlocked && window._lastLabelData && typeof LabelRenderer!=='undefined' && LabelRenderer.findSmallestFittingSize)
     ? LabelRenderer.findSmallestFittingSize(window._lastLabelData, {instanceId:'builder-main'})
     : null;
+  window._suggestedLabelSize=_sizeRec;
   // Genuine-size fix (2026-09-07): findSmallestFittingSize() now tries the
   // two real size-card presets (52mm/63mm) before any custom size, and
   // reports which kind of size it found (source/presetMm) so this message
@@ -5082,7 +5094,7 @@ function updateLabel(){
   const _sizeRecKind = _sizeRec ? (_sizeRec.source==='preset' ? ', the built-in '+_sizeRec.presetMm+'mm preset' : ', a custom size') : '';
   const _sizeRecMsg = _sizeRec
     ? ' The smallest size that fits this exact content is <strong>'+_sizeRecDims+'</strong> ('+_sizeRec.shape+_sizeRecKind+') — try that size using the controls below.'
-    : (_sizeHelpsIfBlocked ? ' CLPeasy checked every supported size up to 150mm and none of them fit this exact content, so a larger size alone won\'t be enough — the content itself will need to be shortened.' : '');
+    : (_sizeHelpsIfBlocked ? ' CLPeasy checked every supported size up to 150mm and none of them fit this exact content, so consider a different label shape or suitable fold-out labelling; do not remove required safety information.' : '');
   // Wording (updated 3 Aug 2026, round 2 — per Michaela's CLP-labelling-focused
   // request): name the CLP labelling requirement specifically rather than
   // "required information" generically.
@@ -5126,11 +5138,25 @@ function updateLabel(){
     : _hasMandatoryTextTooSmall
     ? 'Your '+_mandatoryTextTooSmallLabel+' cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, use the size controls below to select a larger label size, or shorten the affected text.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
     : 'The required hazard and precautionary information cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, use the size controls below to select a larger label size. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>';
+
+  const _fitAdvice = '<strong>This label is too small for the entered content.</strong><p>The complete information cannot fit at CLPeasy\'s readability limit. Downloads remain unavailable until all required content fits.</p>'+
+    (_sizeRec ? '<p>Smallest tested size for the content entered so far: <strong>'+_sizeRecDims+'</strong> ('+_sizeRec.shape+').</p><button type="button" onclick="applySuggestedLabelSize()" style="padding:10px;min-height:44px;border:1px solid #4c9bb0;border-radius:8px;background:white;color:#111;">Use '+_sizeRecDims+'</button>'
+    : '<p>No fitting size was found among the supported sizes tested up to 150mm. Try a different shape or seek advice about a suitable fold-out label.</p>')+
+    '<p style="margin-top:8px;">This is a content-fit recommendation, not a universal legal minimum. GB CLP requires clearly legible information. Adding product or business details may increase the size needed.</p>'+
+    '<p>If your packaging cannot accommodate the label, ask your supplier or a labelling specialist about an attached pull-out / fold-out label where the GB CLP small-packaging rules permit it. Do not omit required information. CLPeasy does not generate fold-out labels.</p>';
+  const pasteFit=document.getElementById('smart-paste-size-warning');
+  if(pasteFit){
+    const showFit=!!S.hazardFromExtraction&&!!window._labelBlockDownload&&!_codeBlockParts.length;
+    pasteFit.style.display=showFit?'block':'none';
+    pasteFit.innerHTML=showFit?_fitAdvice+inlineSizeEditor():'';
+  }
+  const sheetFit=document.getElementById('sheet-fit-advice');
+  if(sheetFit){sheetFit.innerHTML=window._labelBlockDownload&&!_codeBlockParts.length?_fitAdvice:'';}
   [document.getElementById('label-warn-stage4'), document.getElementById('label-warn-step5')].forEach(_labelWarnEl=>{
     if(!_labelWarnEl)return;
     if(window._labelBlockDownload){
       _labelWarnEl.style.display='block';
-      _labelWarnEl.innerHTML = '<strong>'+_blockHeading+'</strong><br><br>'+_blockBody+(_codeBlockParts.length?'':inlineSizeEditor());
+      _labelWarnEl.innerHTML = _codeBlockParts.length?'<strong>'+_blockHeading+'</strong><br><br>'+_blockBody:_fitAdvice+inlineSizeEditor();
     } else {
       _labelWarnEl.style.display='none';
     }
