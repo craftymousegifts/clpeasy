@@ -740,7 +740,7 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
     // branch (and its exact markup) is deliberately left untouched.
     const titleY = (ph*.46).toFixed(1), bodyY = (ph*.55).toFixed(1);
     const titleFS = Math.max(8,pw*.035).toFixed(1), bodyFS = Math.max(6,pw*.025).toFixed(1);
-    return `<g class="clp-fit-block"><rect x="0" y="0" width="${pw}" height="${ph}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${titleY}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${titleFS}" font-weight="800" fill="#991b1b">FULL CONTENT DOES NOT FIT</text><text x="${cx}" y="${bodyY}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${bodyFS}" fill="#991b1b">Select a larger size in Step 1</text></g>`;
+    return `<g class="clp-fit-block"><rect x="0" y="0" width="${pw}" height="${ph}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${titleY}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${titleFS}" font-weight="800" fill="#991b1b">FULL CONTENT DOES NOT FIT</text><text x="${cx}" y="${bodyY}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${bodyFS}" fill="#991b1b">Adjust size below the preview</text></g>`;
   }
 
   // ── Correction 2 (2026-09, readable blocked-preview wording) ──────────
@@ -2008,75 +2008,38 @@ function renderLabel(rawData, opts){
 // getLabelDims()) fits -- meaning the content itself needs to be reduced, or
 // supplementary labelling considered, not just a larger size.
 function findSmallestFittingSize(rawData, opts){
-  opts = opts || {};
-  // Only options that don't change the fit outcome by content may carry
-  // over -- manual fine-tune overrides (hazardFSOverride, scentFSOverride,
-  // hazardYOffset, etc.) were tuned for the CURRENT size and must never leak
-  // into a different candidate size's own auto-fit search, or the search
-  // would be testing the wrong thing.
-  const cleanOpts = {instanceId: opts.instanceId, bgColour: opts.bgColour};
-  const shape = rawData.shape;
-  const cur = getLabelDims(rawData, opts);
-  const MAX_MM = 150;   // matches getLabelDims()'s own hard ceiling
-  const MIN_MM = 52;    // CLPeasy's own supported minimum -- never recommend below it
-  // Genuine-size fix (2026-09-07, Michaela's explicit requirement): this
-  // function must only ever recommend a size the maker could actually go
-  // and select in Builder -- never an arbitrary decimal like "72x50.3mm"
-  // that isn't one of the two real size-card presets (52mm/63mm, whose
-  // rectangle height is always Math.round(mm*0.7) -- see builder.html's
-  // applySize()/getLabelDims() above, kept in exact sync) and wouldn't
-  // even be enterable as a Custom size (Builder's own custom-width/height
-  // fields parseInt() to whole mm, and isCustomSizeBelowSupportedMinimum()
-  // requires BOTH dimensions >=52mm for a Custom rectangle -- the two
-  // named presets are the only sizes exempt from that per-dimension rule).
-  // Named presets are tried first, in ascending size order; only when
-  // neither fits does this fall back to a genuine (integer, both-
-  // dimensions->=52mm) Custom size preserving the record's own aspect
-  // ratio, so a maker who deliberately chose a specific proportion (e.g.
-  // to match a real print-sheet template) isn't recommended a different
-  // one. Returns null -- never a guess -- when nothing up to 150mm works.
-  const PRESETS_MM = [52, 63];
-  function dimsForPreset(mm){
-    return shape === 'rectangle'
-      ? {mmW: mm, mmH: Math.round(mm*0.7)}
-      : {mmW: mm, mmH: mm};
+  opts=opts||{};
+  const cleanOpts={instanceId:opts.instanceId,bgColour:opts.bgColour};
+  const shape=rawData.shape,cur=getLabelDims(rawData,opts),candidates=[];
+  // Test presets AND enterable custom sizes in ascending area order.
+  // Rectangle custom candidates preserve the current aspect ratio; this
+  // is the smallest tested layout, not a minimum over every possible ratio.
+  for(const presetMm of [52,63]){
+    const mmW=presetMm,mmH=shape==='rectangle'?Math.round(presetMm*0.7):presetMm;
+    candidates.push({shape,mmW,mmH,source:'preset',presetMm});
   }
-  for(const presetMm of PRESETS_MM){
-    const {mmW, mmH} = dimsForPreset(presetMm);
-    // Presets below the current size, or identical to it, were already
-    // ruled out (the label is blocked AT its current size, and a preset
-    // no bigger than that can only be smaller or the same) -- skip
-    // re-rendering them.
-    if(mmW <= cur.mmW && mmH <= cur.mmH) continue;
-    const candidate = Object.assign({}, rawData, {size: presetMm, customW: mmW, customH: mmH});
-    if(renderLabel(candidate, cleanOpts).fits) return {shape, mmW, mmH, source:'preset', presetMm};
+  const aspect=cur.mmH/cur.mmW;
+  for(let mmW=52;mmW<=150;mmW++){
+    const mmH=shape==='rectangle'?Math.round(mmW*aspect):mmW;
+    if(mmH<10||mmH>150||isCustomSizeBelowSupportedMinimum(shape,mmW,mmH))continue;
+    candidates.push({shape,mmW,mmH,source:'custom',presetMm:null});
   }
-  if(shape === 'rectangle'){
-    const aspect = cur.mmH / cur.mmW; // preserve the maker's chosen proportions
-    const startW = Math.max(Math.floor(cur.mmW) + 1, 10);
-    for(let w = startW; w <= MAX_MM; w++){
-      // Whole mm only (matches what Builder's custom-width/height fields
-      // actually accept). Corrected 2026-09-07 (Michaela's explicit
-      // decision): a rectangle's real supported minimum is >=52mm on its
-      // LONG side and >=36mm on its SHORT side (either orientation), not
-      // >=52mm on both -- see isCustomSizeBelowSupportedMinimum()'s own
-      // comment. Skip any (w,h) that function would still block, so this
-      // never recommends a size the maker couldn't actually keep once they
-      // typed it in.
-      const h = Math.min(Math.max(Math.round(w * aspect), 10), MAX_MM);
-      if(isCustomSizeBelowSupportedMinimum(shape, w, h)) continue;
-      const candidate = Object.assign({}, rawData, {size:'custom', customW:w, customH:h});
-      if(renderLabel(candidate, cleanOpts).fits) return {shape, mmW:w, mmH:h, source:'custom', presetMm:null};
+  // Portrait rectangles may have a short width below 52mm.
+  if(shape==='rectangle'){
+    for(let mmW=36;mmW<52;mmW++){
+      const mmH=Math.round(mmW*aspect);
+      if(mmH>150||isCustomSizeBelowSupportedMinimum(shape,mmW,mmH))continue;
+      candidates.push({shape,mmW,mmH,source:'custom',presetMm:null});
     }
-    return null;
   }
-  // circle/square: one governing dimension, already always a whole mm
-  // value with both dimensions equal -- inherently satisfies the same
-  // both-dimensions->=52mm rule Custom rectangles must meet.
-  const start = Math.max(Math.floor(cur.mmW) + 1, MIN_MM);
-  for(let mm = start; mm <= MAX_MM; mm++){
-    const candidate = Object.assign({}, rawData, {size:'custom', customW:mm, customH:mm});
-    if(renderLabel(candidate, cleanOpts).fits) return {shape, mmW:mm, mmH:mm, source:'custom', presetMm:null};
+  candidates.sort((a,b)=>a.mmW*a.mmH-b.mmW*b.mmH||Number(a.source==='custom')-Number(b.source==='custom')||a.mmW-b.mmW);
+  const seen=new Set();
+  for(const rec of candidates){
+    const key=rec.mmW+'x'+rec.mmH;
+    if(seen.has(key))continue;
+    seen.add(key);
+    const candidate=Object.assign({},rawData,{size:rec.source==='preset'?rec.presetMm:'custom',customW:rec.mmW,customH:rec.mmH});
+    if(renderLabel(candidate,cleanOpts).fits)return rec;
   }
   return null;
 }
