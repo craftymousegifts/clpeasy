@@ -91,14 +91,39 @@ re-run here.
 Oversize and invalid layouts remain blocked: `print-sheet-fit-blocking`, `print-sheet-size-integrity`,
 `custom-rect-grid-geometry` and `required-content-export-blocking` all pass.
 
-## 6. Test suite at `e2e5d75`
-**Full suite:** 80/83 pass. The 3 failures are pre-existing, fail identically on `main`, and are
-**obsolete expectations, not product defects**:
-| Test | Classification |
-|---|---|
-| `homepage-mobile-nav-signin` | **Obsolete.** It looks for menu markup removed from `index.html` in `cc8750c`; the menu now comes from shared `public-nav.js`. On production at 390 px with touch emulation, tapping Sign in reaches `auth.html?mode=signin`, with no fixed scroll-container ancestor. The test should be re-targeted at `public-nav.js`, not deleted (it guards an iPhone structure). |
-| `pricing-checkout-ux` | **Obsolete.** It expects the phrase "8 downloads for £4.99"; the page says "£4.99 for 8 downloads" (price and count correct). The checkout-indicator sub-checks need the same review before any change. |
-| `pricing-signed-in-cta` | **Obsolete.** It expects four trial CTAs on `pricing.html`; one moved to the shared navigation. Signed-in CTA routing for that link needs re-checking when the test is refreshed. |
+## 6. Test suite
+**Earlier result at `e2e5d75`:** 80/83. The three failures below were refreshed in this branch to
+test the current intended production behaviour. Each refreshed test was then mutation-checked to
+make sure it still detects a regression.
+
+| Test | Refresh | Result now |
+|---|---|---|
+| `homepage-mobile-nav-signin` | Re-targeted from the removed homepage menu markup to the shared `public-nav.js`. Phone checks at 390×664 and 375×548: Sign in is hidden while the menu is closed; tapping the toggle reveals it; it is a plain same-tab link to `auth.html?mode=signin` with no blocking ancestor, overlay or listener; a real touchscreen tap navigates. In-page links and Escape close the menu. Desktop shows Sign in with no toggle. Mutation check: adding `target="_blank"` makes it fail | **PASS** |
+| `pricing-checkout-ux` | The copy check now uses the current visible card wording ("Buy 8 downloads — £4.99", "8 downloads · includes 3 bonus", "+3 bonus with every pack"). The PAYG checkout now has to pass the immediate-supply consent tick: no request without the tick, the error shown, then `payg_5` with `immediateSupplyConsent: true` | **FAIL: genuine regression** (see below) |
+| `pricing-signed-in-cta` | The header CTA is now read from the shared navigation (`.public-nav-cta`). Easy Pro is withdrawn, so there are three plan pills and no Easy Pro button. The pill position is compared by CSS offset, because the PAYG card has a 2px border against 1.5px. The phone header check opens the menu first | **FAIL: genuine regression** (see below) |
+
+**Genuine regressions (pricing page, pre-existing on production `main`; not caused by this branch):**
+1. **Signed-in visitors see "Start free trial →" in the pricing-page header.**
+   - The shared navigation (`public-nav.js`) replaced the old header link that
+     `applySignedInCtas` converted to "My account". The page code still documents that behaviour,
+     but no longer applies it to the header.
+   - In-page trial CTAs still switch to "Go to builder →", and the plan and PAYG buttons are
+     unaffected.
+   - **Impact:** cosmetic and confusing (it invites an existing customer to start a trial). No
+     billing or data effect.
+   - **Check:** with a temporary local patch that converts the header CTA, the refreshed test
+     passes everything except a brief flash before the shared nav is built. The test therefore
+     discriminates correctly.
+2. **The "checkout in progress" indicator is never mounted on the pricing page.**
+   - `pricing.html` mounts it into `nav .nav-actions`, which the shared navigation no longer has.
+   - Duplicate-checkout protection itself still works: the server returns `CHECKOUT_IN_PROGRESS`
+     and the dialog appears. `checkout.html` shows the indicator correctly.
+   - **Impact:** a customer who returns to the pricing page during an open checkout gets no
+     header reminder until they click Buy.
+
+Both need an owner decision on the header wording (the homepage uses "My account" plus "Go to
+builder →") and on where the indicator sits. These are visible header changes, so they were **not
+changed** in this release-critical work.
 
 **Fixed in this branch:**
 - three expectations made obsolete by released changes, all failing identically on `main`:
@@ -109,9 +134,6 @@ Oversize and invalid layouts remain blocked: `print-sheet-fit-blocking`, `print-
 - **Snapshot detail:** exactly 12 differences, all from approved live changes: 10 × the new
   `requiredComplete` field (#211) and 2 × the overlay wording "Adjust size below the preview"
   (#207). No fit, size, pictogram or safety-wording change.
-
-**Previously listed as baseline failures:** `lifecycle-reminder-accuracy` and
-`payg-download-accounting` now pass on `main`.
 
 ## 7. Not verified / outstanding
 | Item | Status |

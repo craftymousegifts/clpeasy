@@ -26,14 +26,19 @@ const TOKEN_KEY = 'sb-qvkosdqcryrcfbjtaxic-auth-token'; // supabase-js v2 defaul
 // ── Static: exactly the four trial CTAs are marked; plan/PAYG buttons are not ──
 const HTML = fs.readFileSync(path.join(ROOT, 'pricing.html'), 'utf8');
 const marked = [...HTML.matchAll(/<a [^>]*data-trial-cta[^>]*>([\s\S]*?)<\/a>/g)].map(m => m[1].replace(/&#8594;/g, '→').trim());
-assert.deepStrictEqual(marked, ['Start free trial', 'Start free trial →', 'Start your free 14-day trial →', 'Start free trial →'], 'the four trial CTAs are marked');
-const unmarkedTrial = [...HTML.matchAll(/<a [^>]*href="auth\.html\?mode=signup"[^>]*>/g)].filter(m => !/data-trial-cta/.test(m[0]));
-assert.strictEqual(unmarkedTrial.length, 0, 'every signup link in the markup is a marked trial CTA');
+// 4 Oct 2026: the header CTA now comes from the shared public-nav.js (the
+// page's own header link was removed), so the page itself marks three CTAs.
+// The header's signed-in behaviour is checked in the browser below.
+assert.deepStrictEqual(marked, ['Start free trial →', 'Start your free 14-day trial →', 'Start free trial →'], 'the three in-page trial CTAs are marked');
+const BODY_NO_NAV = HTML.replace(/<nav class="public-site-nav"[\s\S]*?<\/nav>/, '');
+const unmarkedTrial = [...BODY_NO_NAV.matchAll(/<a [^>]*href="auth\.html\?mode=signup"[^>]*>/g)].filter(m => !/data-trial-cta/.test(m[0]));
+assert.strictEqual(unmarkedTrial.length, 0, 'every signup link in the page body is a marked trial CTA (the shared header is checked in the browser)');
 assert(!/data-trial-cta[^>]*(btn-payg|btn-easy_)/.test(HTML), 'plan and PAYG buttons are not trial CTAs');
-console.log('PASS: static: exactly the four "Start free trial" CTAs are marked; plan and PAYG buttons untouched');
+console.log('PASS: static: exactly the three in-page "Start free trial" CTAs are marked; plan and PAYG buttons untouched');
 const pills = [...HTML.matchAll(/<div class="(plan-pill [a-z-]+|payg-badge-pill|pro-badge-pill)"[^>]*>([^<]*)<\/div>/g)].map(m => m[2]);
-assert.deepStrictEqual(pills, ['Easy Trial', 'Pay As You Go', 'Easy Start', 'Easy Pro'], 'one plan-name pill per card, in card order');
-console.log('PASS: static: one plan-name pill per card (Easy Trial, Pay As You Go, Easy Start, Easy Pro)');
+// Easy Pro was withdrawn in the Easy Start Unlimited release (no Easy Pro card).
+assert.deepStrictEqual(pills, ['Easy Trial', 'Pay As You Go', 'Easy Start'], 'one plan-name pill per card, in card order');
+console.log('PASS: static: one plan-name pill per card (Easy Trial, Pay As You Go, Easy Start; Easy Pro withdrawn)');
 
 let puppeteer;
 try { puppeteer = require('puppeteer'); } catch (e) { console.log('SKIP pricing-signed-in-cta browser checks: puppeteer not installed'); process.exit(0); }
@@ -104,8 +109,11 @@ server.listen(0, '127.0.0.1', async () => {
     return t;
   }
   // [text, href, visible] for each trial CTA, in page order.
-  const ctas = t => t.evaluate(() => [...document.querySelectorAll('[data-trial-cta]')].map(a => [a.textContent.trim(), a.getAttribute('href'), getComputedStyle(a).visibility === 'visible']));
-  const SIGNED_OUT = [['Start free trial', 'auth.html?mode=signup', true], ['Start free trial →', 'auth.html?mode=signup', true], ['Start your free 14-day trial →', 'auth.html?mode=signup', true], ['Start free trial →', 'auth.html?mode=signup', true]];
+  // The header CTA is now built by the shared public-nav.js (.public-nav-cta);
+  // the in-page trial CTAs keep data-trial-cta. A signed-in visitor must see
+  // "My account" in the header, never a trial invitation.
+  const ctas = t => t.evaluate(() => [...document.querySelectorAll('.public-site-nav .public-nav-cta, [data-trial-cta]')].map(a => [a.textContent.trim(), a.getAttribute('href'), getComputedStyle(a).visibility === 'visible']));
+  const SIGNED_OUT = [['Start free trial →', 'auth.html?mode=signup', true], ['Start free trial →', 'auth.html?mode=signup', true], ['Start your free 14-day trial →', 'auth.html?mode=signup', true], ['Start free trial →', 'auth.html?mode=signup', true]];
   const SIGNED_IN = [['My account', 'account.html', true], ['Go to builder →', 'builder.html', true], ['Go to builder →', 'builder.html', true], ['Go to builder →', 'builder.html', true]];
   const visibleTrialInvites = t => t.evaluate(() => [...document.querySelectorAll('a,button')].filter(a => /free trial|14-day trial/i.test(a.textContent) && getComputedStyle(a).visibility === 'visible' && a.getClientRects().length).map(a => a.textContent.trim()));
 
@@ -161,13 +169,16 @@ server.listen(0, '127.0.0.1', async () => {
     await check('signed in: plan and Pay As You Go buttons unchanged', async () => {
       const t = await open({ signedIn: true, profile: STATES['active trial'] });
       const b = await t.evaluate(() => ['btn-payg', 'btn-easy_start', 'btn-easy_pro'].map(id => { const e = document.getElementById(id); return e ? [e.textContent.trim(), e.getAttribute('onclick')] : null; }));
-      assert.deepStrictEqual(b, [['Buy 8 downloads — £4.99 →', 'startPaygCheckout()'], ['Get started →', "startCheckout('easy_start')"], ['Get started →', "startCheckout('easy_pro')"]]);
+      // Easy Pro is withdrawn from sale: no Easy Pro button.
+      assert.deepStrictEqual(b, [['Buy 8 downloads — £4.99 →', 'startPaygCheckout()'], ['Get started →', "startCheckout('easy_start')"], null]);
       await t.close();
     });
 
     for (const [name, vp] of [['desktop', DESKTOP], ['mobile', IPHONE]]) {
       await check(`signed in (${name}): header fits, "My account" does not overlap other header controls, no horizontal scroll`, async () => {
         const t = await open({ signedIn: true, profile: STATES['Easy Start'], viewport: vp });
+        // Phone width: the shared header collapses its links behind the menu toggle.
+        if (name === 'mobile') { await t.click('.public-nav-toggle'); await new Promise(r => setTimeout(r, 300)); }
         const g = await t.evaluate(() => {
           const items = [...document.querySelectorAll('nav a, nav button')].filter(e => e.getClientRects().length && getComputedStyle(e).display !== 'none').map(e => { const r = e.getBoundingClientRect(); return { n: e.textContent.trim(), l: r.left, r: r.right, t: r.top, b: r.bottom }; });
           return { items, vw: window.innerWidth, hscroll: document.documentElement.scrollWidth > window.innerWidth };
@@ -185,7 +196,7 @@ server.listen(0, '127.0.0.1', async () => {
       });
     }
     for (const [name, vp] of [['desktop', DESKTOP], ['mobile', IPHONE]]) {
-      await check(`plan pills (${name}): EASY TRIAL / PAY AS YOU GO / EASY START / EASY PRO, same size and type, centred on the top border, not clipped or overlapping`, async () => {
+      await check(`plan pills (${name}): EASY TRIAL / PAY AS YOU GO / EASY START, same size and type, centred on the top border, not clipped or overlapping`, async () => {
         const t = await open({ signedIn: false, viewport: vp });
         const g = await t.evaluate(() => {
           const cards = [...document.querySelectorAll('.cards > .card')];
@@ -200,7 +211,7 @@ server.listen(0, '127.0.0.1', async () => {
               const icon = c.querySelector('.card-icon').getBoundingClientRect();
               return {
                 text: pill.innerText.trim(), h: pr.height, font: [cs.fontSize, cs.fontWeight, cs.letterSpacing, cs.textTransform, cs.paddingTop, cs.paddingLeft, cs.borderRadius].join(' '),
-                topFromCard: +(pr.top - cr.top).toFixed(2), centreOffset: Math.abs((pr.left + pr.right) / 2 - (cr.left + cr.right) / 2),
+                topFromCard: +(pr.top - cr.top).toFixed(2), offsetTop: pill.offsetTop, centreOffset: Math.abs((pr.left + pr.right) / 2 - (cr.left + cr.right) / 2),
                 inside: pr.left >= 0 && pr.right <= window.innerWidth, clearOfIcon: pr.bottom <= icon.top,
                 // Stacked (mobile): the pill must not touch the card above it.
                 clearOfPrev: !prev || prev.bottom <= cr.top - 1 ? (!prev || prev.bottom <= pr.top || prev.right <= pr.left || prev.left >= pr.right) : true,
@@ -210,18 +221,22 @@ server.listen(0, '127.0.0.1', async () => {
           };
         });
         assert(g.pills.every(Boolean), 'every card has a pill');
-        assert.deepStrictEqual(g.pills.map(p => p.text), ['EASY TRIAL', 'PAY AS YOU GO', 'EASY START', 'EASY PRO']);
+        assert.deepStrictEqual(g.pills.map(p => p.text), ['EASY TRIAL', 'PAY AS YOU GO', 'EASY START']);
         assert(g.pills.every(p => p.font === g.pills[1].font), 'same typography/padding as the PAYG pill: ' + JSON.stringify(g.pills.map(p => p.font)));
         assert(g.pills.every(p => Math.abs(p.h - g.pills[1].h) < 0.5), 'same height: ' + g.pills.map(p => p.h));
-        assert(g.pills.every(p => Math.abs(p.topFromCard - g.pills[1].topFromCard) <= 0.5), 'same position over the top border: ' + g.pills.map(p => p.topFromCard));
+        // Same CSS position over the top border (13px above the padding edge). The
+        // PAYG card's border is 2px against 1.5px on the others, so the distance
+        // from the outer edge legitimately differs by the rounded border width.
+        assert(g.pills.every(p => p.offsetTop === g.pills[1].offsetTop), 'same position over the top border: ' + g.pills.map(p => p.offsetTop));
+        assert(g.pills.every(p => p.topFromCard < 0 && p.topFromCard > -p.h), 'straddles the top border: ' + g.pills.map(p => p.topFromCard));
         assert(g.pills.every(p => p.centreOffset < 1), 'centred on the card');
         assert(g.pills.every(p => p.inside && p.clearOfIcon && p.clearOfPrev), 'not clipped, clear of the icon and of the card above: ' + JSON.stringify(g.pills));
-        assert.strictEqual(new Set(g.pills.map(p => p.bg)).size, 4, 'each plan keeps its own colour treatment (background, outline, text colour)');
+        assert.strictEqual(new Set(g.pills.map(p => p.bg)).size, 3, 'each plan keeps its own colour treatment (background, outline, text colour)');
         assert.strictEqual(g.hscroll, false);
         await t.evaluate(() => { document.querySelector('.cards').scrollIntoView({ block: 'start', behavior: 'instant' }); window.scrollBy(0, -40); });
         await t.screenshot({ path: path.join(SHOTS, `plan-pills-${name}.png`) });
         if (name === 'mobile') {
-          for (const [i, shot] of [[2, 'plan-pills-mobile-easy-start'], [3, 'plan-pills-mobile-easy-pro']]) {
+          for (const [i, shot] of [[2, 'plan-pills-mobile-easy-start']]) {
             await t.evaluate(n => { document.querySelectorAll('.cards > .card')[n].scrollIntoView({ block: 'start', behavior: 'instant' }); window.scrollBy(0, -60); }, i);
             await t.screenshot({ path: path.join(SHOTS, shot + '.png') });
           }
