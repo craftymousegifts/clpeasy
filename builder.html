@@ -1199,7 +1199,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
         <div id="frag-load-tip" style="margin-top:6px;font-size:12px;color:var(--muted);line-height:1.5;"></div>
       </div>
-      <div class="form-group"><label>Burn time <span>(optional)</span></label><input type="text" id="burn-time" placeholder="e.g. 45hrs" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9hHrRsS]/g,'');updateLabel();saveProdDetails()"></div>
+      <div class="form-group"><label>Burn time <span>(optional)</span></label><select id="burn-time" aria-label="Burn time (optional)" onchange="updateLabel();saveProdDetails()"><option value="">— Select hours —</option><option value="4 hrs">4 hrs</option><option value="5 hrs">5 hrs</option><option value="6 hrs">6 hrs</option><option value="7 hrs">7 hrs</option><option value="8 hrs">8 hrs</option><option value="9 hrs">9 hrs</option><option value="10 hrs">10 hrs</option><option value="11 hrs">11 hrs</option><option value="12 hrs">12 hrs</option><option value="13 hrs">13 hrs</option><option value="14 hrs">14 hrs</option><option value="15 hrs">15 hrs</option><option value="16 hrs">16 hrs</option><option value="17 hrs">17 hrs</option><option value="18 hrs">18 hrs</option><option value="19 hrs">19 hrs</option><option value="20 hrs">20 hrs</option><option value="21 hrs">21 hrs</option><option value="22 hrs">22 hrs</option><option value="23 hrs">23 hrs</option><option value="24 hrs">24 hrs</option><option value="25 hrs">25 hrs</option><option value="26 hrs">26 hrs</option><option value="27 hrs">27 hrs</option><option value="28 hrs">28 hrs</option><option value="29 hrs">29 hrs</option><option value="30 hrs">30 hrs</option><option value="31 hrs">31 hrs</option><option value="32 hrs">32 hrs</option><option value="33 hrs">33 hrs</option><option value="34 hrs">34 hrs</option><option value="35 hrs">35 hrs</option><option value="36 hrs">36 hrs</option><option value="37 hrs">37 hrs</option><option value="38 hrs">38 hrs</option><option value="39 hrs">39 hrs</option><option value="40 hrs">40 hrs</option><option value="41 hrs">41 hrs</option><option value="42 hrs">42 hrs</option><option value="43 hrs">43 hrs</option><option value="44 hrs">44 hrs</option><option value="45 hrs">45 hrs</option><option value="46 hrs">46 hrs</option><option value="47 hrs">47 hrs</option><option value="48 hrs">48 hrs</option><option value="49 hrs">49 hrs</option><option value="50 hrs">50 hrs</option><option value="51 hrs">51 hrs</option><option value="52 hrs">52 hrs</option><option value="53 hrs">53 hrs</option><option value="54 hrs">54 hrs</option><option value="55 hrs">55 hrs</option><option value="56 hrs">56 hrs</option><option value="57 hrs">57 hrs</option><option value="58 hrs">58 hrs</option><option value="59 hrs">59 hrs</option><option value="60 hrs">60 hrs</option><option value="61 hrs">61 hrs</option><option value="62 hrs">62 hrs</option><option value="63 hrs">63 hrs</option><option value="64 hrs">64 hrs</option><option value="65 hrs">65 hrs</option><option value="66 hrs">66 hrs</option><option value="67 hrs">67 hrs</option><option value="68 hrs">68 hrs</option><option value="69 hrs">69 hrs</option><option value="70 hrs">70 hrs</option><option value="71 hrs">71 hrs</option><option value="72 hrs">72 hrs</option><option value="73 hrs">73 hrs</option><option value="74 hrs">74 hrs</option><option value="75 hrs">75 hrs</option><option value="76 hrs">76 hrs</option><option value="77 hrs">77 hrs</option><option value="78 hrs">78 hrs</option><option value="79 hrs">79 hrs</option><option value="80 hrs">80 hrs</option></select></div>
     </div>
     <div class="step-nav"><button class="btn-prev" onclick="prevStep()">← Back</button><button class="btn-next" onclick="checkStep2Next()">Next: Hazard data →</button></div>
   </div>
@@ -1224,6 +1224,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <p>Copy the complete Section 2.2 (Label elements) from your current supplier SDS PDF and paste it here. CLPeasy extracts the information it can identify; review the result against your SDS before continuing.</p>
       <textarea id="smart-paste-input" placeholder="Paste SDS Section 2.2 text here..."></textarea>
       <br><br><button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
+      <div id="smart-paste-size-warning" class="field-alert field-alert-danger" role="status" aria-live="polite" style="display:none;margin-top:14px;font-size:14px;"></div>
       <button type="button" id="hazard-clear-link" onclick="clearHazardData()" style="display:none;margin-left:14px;font-size:12px;color:var(--teal-dark);text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">Clear hazard data and start again</button>
     </div>
     <details class="sds-help"><summary>About supplier information and GB CLP</summary>
@@ -1280,7 +1281,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
          no separate warning bar or lock banner is needed alongside it. -->
     <div id="hazard-blocked-cta" class="field-alert field-alert-danger" style="display:none;margin-bottom:10px;padding:14px 16px;font-size:13px;">
       <strong>Label fit is checked against the size selected in Step 1.</strong><br><br>
-      Continue entering the complete information from your SDS. If it does not fit, return to Step 1 and choose a larger size.
+      Continue entering the complete information from your SDS. If it does not fit, adjust the label size here.
       <div style="margin-top:10px;">
         <button type="button" onclick="clearHazardData()" style="background:white;color:#991B1B;border:1.5px solid #EF4444;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;">Clear hazard data and start again</button>
       </div>
@@ -1377,11 +1378,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="hazard-review-notice field-alert field-alert-warn" role="alert" style="display:none;margin-bottom:16px;font-size:13px;"></div>
 
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
-      <div class="review-download-grid">
-      <button id="btn-pdf" onclick="printToPDF()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">▣ PDF</button>      <button id="btn-svg" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬡ SVG</button>
-      <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ PNG</button>
-      
-      </div>
+      <button type="button" id="btn-view-label" class="btn-next" onclick="viewReviewLabel()" aria-controls="preview-panel-el preview-sheet" style="width:100%;padding:14px;font-size:16px;margin-top:10px;">View label ↗</button>
       <!-- Stage 2: the two current printing routes (single label: PDF; several on A4: Print Sheet Composer). -->
       <div class="dl-format-help" id="dl-format-help">
         <p><strong>Printing your labels?</strong> For a single label, use <strong>PDF</strong>. For several labels on A4, use the <strong>Print Sheet Composer</strong>. Always print at <strong>Actual Size / 100%</strong>.</p>
@@ -1491,9 +1488,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="preview-sheet-handle"></div>
     <div class="preview-sheet-label" id="sheet-label-container"></div>
     <div style="font-size:12px;color:rgba(255,255,255,0.4);text-align:center;margin-bottom:4px;" id="sheet-size-info"></div>
+    <button type="button" onclick="showSheetSizeEditor()" style="color:white;background:none;border:1px solid white;border-radius:8px;padding:10px;min-height:44px;margin:8px 0;">Adjust shape &amp; size</button><div id="sheet-fit-advice" role="status" aria-live="polite" style="color:white;font-size:14px;"></div><div id="sheet-size-editor" style="color:white;"></div>
     <div class="preview-sheet-actions">
-      <button class="btn-dl" onclick="downloadPNG();closeSheet()">⬇ PNG (single)</button>
-      <button class="btn-dl-svg" onclick="downloadSVG();closeSheet()">⬡ SVG</button>
+      <button class="btn-dl" id="btn-png-sheet" onclick="downloadPNG();closeSheet()">⬇ PNG (single)</button>
+      <button class="btn-dl" id="btn-pdf-sheet" onclick="printToPDF()">▣ PDF</button>
+      <button class="btn-dl-svg" id="btn-svg-sheet" onclick="downloadSVG();closeSheet()">⬡ SVG</button>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
 
@@ -1502,8 +1501,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div style="margin-top:8px;">
 
     </div>
-    <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.3);text-align:center;">Single label: PDF in Step 5 · Several on A4: Print Sheet Composer · SVG for cutting machines</div>
-    <div style="margin-top:12px;text-align:center;"><button onclick="closeSheet()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;padding:8px;">Hide label</button></div>
+    <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.3);text-align:center;">Single label: PDF · Several on A4: Print Sheet Composer · SVG for cutting machines</div>
+    <div style="margin-top:12px;text-align:center;"><button onclick="closeSheet()" style="background:none;border:none;color:#fff;font-size:18px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;padding:12px 20px;min-height:44px;border-radius:8px;">Hide label</button></div>
   </div>
 </div>
 
@@ -3130,7 +3129,7 @@ function loadLabelRecord(e){
   const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};
   set('scent-name',e.scentName);set('product-type',e.productType);set('h-statements',e.hStatements||'');set('p-statements',e.pStatements||'');
   set('biz-name',e.bizName||'');set('biz-address',e.bizAddress||'');set('biz-phone',e.bizPhone||'');
-  set('biz-website',e.bizWebsite||'');set('net-weight',e.netWeight||'');set('frag-load',e.fragLoad||'');set('burn-time',e.burnTime||'');
+  set('biz-website',e.bizWebsite||'');set('net-weight',e.netWeight||'');set('frag-load',e.fragLoad||'');restoreBurnTime(e.burnTime||'');
   {const _d=e.sdsDoc||{};document.querySelectorAll('input[name="sds-doc-kind"]').forEach(r=>{r.checked=r.value===(_d.kind||'');});set('sds-doc-pct',_d.pct||'');set('sds-doc-base',_d.base||'');set('sds-doc-coverage',_d.coverage==='range'?'range':'single');set('sds-doc-from',_d.rangeFrom||'');set('sds-doc-to',_d.rangeTo||'');set('sds-doc-where',_d.where||'');{const _rs=document.getElementById('sds-doc-range-stated');if(_rs)_rs.checked=!!_d.rangeStated;}set('sds-doc-version',_d.docVersion||'');set('sds-doc-supplier',_d.supplier||'');set('sds-doc-cdate',_d.cdate||'');set('sds-doc-cref',_d.cref||'');if(typeof updateSdsDocCheck==='function')updateSdsDocCheck();}
   set('batch-num',e.batchNum||'');set('custom-w',e.customW||'');set('custom-h',e.customH||'');
   const hideCandleWarnings=document.getElementById('hide-en15494');
@@ -3596,7 +3595,7 @@ function toggleDownload(){
   // downloadPNG/downloadSVG/printToPDF (_downloadAllowed(), unchanged)
   // already refused the export either way -- this only fixes the visual
   // state to match what actually happens on click.
-  const btns=['btn-png','btn-svg','btn-pdf','btn-save','btn-png-preview','btn-svg-preview','btn-pdf-preview'];
+  const btns=['btn-png','btn-svg','btn-pdf','btn-save','btn-png-preview','btn-svg-preview','btn-pdf-preview','btn-png-sheet','btn-svg-sheet','btn-pdf-sheet'];
   // Saving is not exporting (owner, 3 Oct 2026): a label whose supplier-
   // document check is not complete can still be saved, as a draft. The Save
   // button therefore keeps its previous rule (everything except that check);
@@ -4013,6 +4012,8 @@ function extractSDS(){
   updateLabel();
   lockHazardFields(true);
   showExtractToast(allH.length,pRaw.length,S.sensitisers.length);
+  const fitNotice=document.getElementById('smart-paste-size-warning');
+  if(fitNotice&&fitNotice.style.display!=='none')fitNotice.scrollIntoView({block:'center',behavior:'smooth'});
 }
 
 function showExtractToast(hCount, pCount, sensCount){
@@ -4744,6 +4745,60 @@ function applySize(sz){
   syncDimFields();updateSizeWarnings();updateLabel();
 }
 function selectSize(sz){applySize(sz);}
+function restoreBurnTime(value){
+  const field=document.getElementById('burn-time');
+  if(!field)return;
+  // Normalise single-hour values from older saved labels. Preserve older
+  // ranges/custom wording as a saved-value option rather than discarding it.
+  const raw=String(value||'').trim();
+  const match=raw.match(/^(\d+)\s*(?:hrs?|hours?)?$/i);
+  const hours=match?Number(match[1]):null;
+  const normal=hours>=4&&hours<=80?hours+' hrs':raw;
+  if(normal&&!Array.from(field.options).some(o=>o.value===normal)){
+    const option=document.createElement('option');option.value=normal;option.textContent=raw+' (saved value)';field.appendChild(option);
+  }
+  field.value=normal;
+}
+function inlineSizeEditor(){
+  const d=getDims();
+  return '<div class="inline-size-editor" style="margin:12px 0;padding:12px;border:1px solid currentColor;border-radius:10px;"><strong>Adjust shape and size here</strong><label style="display:block;margin-top:8px;">Shape<select data-size-shape onchange="applyInlineShape(this)" style="display:block;padding:8px;min-height:44px;background:white;color:#111;">'+['circle','rectangle','square'].map(shape=>'<option value="'+shape+'"'+(S.shape===shape?' selected':'')+'>'+shape.charAt(0).toUpperCase()+shape.slice(1)+'</option>').join('')+'</select></label><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;"><label>'+ (S.shape==='rectangle'?'Width':'Size')+' (mm)<input data-size-width type="number" inputmode="numeric" min="10" max="150" step="1" value="'+d.mmW+'" style="display:block;width:100px;padding:8px;color:#111;background:white;"></label>'+(S.shape==='rectangle'?'<label>Height (mm)<input data-size-height type="number" inputmode="numeric" min="10" max="150" step="1" value="'+d.mmH+'" style="display:block;width:100px;padding:8px;color:#111;background:white;"></label>':'')+'<button type="button" onclick="applyInlineSize(this)" style="padding:10px;border-radius:8px;background:white;color:#111;border:1px solid #4c9bb0;min-height:44px;">Apply size</button></div><small>Your entered information is kept. The preview will check the new size.</small></div>';
+}
+function applyInlineShape(select){
+  const shape=select.value;
+  if(!['circle','rectangle','square'].includes(shape))return;
+  const box=select.closest('.inline-size-editor');
+  const w=box.querySelector('[data-size-width]');
+  const h=box.querySelector('[data-size-height]');
+  if(!w.checkValidity()||(h&&!h.checkValidity())){select.value=S.shape;(w.checkValidity()?h:w).reportValidity();return;}
+  document.getElementById('custom-w').value=w.value;
+  document.getElementById('custom-h').value=shape==='rectangle'?(h?h.value:w.value):w.value;
+  S.shape=shape;
+  document.querySelectorAll('.shape-card').forEach(c=>c.classList.toggle('selected',c.dataset.shape===shape));
+  onDimInput();
+  const sheetEditor=document.getElementById('sheet-size-editor');
+  if(sheetEditor&&sheetEditor.innerHTML)showSheetSizeEditor();
+}
+function applyInlineSize(button){
+  const box=button.closest('.inline-size-editor');
+  const w=box.querySelector('[data-size-width]');
+  const h=box.querySelector('[data-size-height]');
+  if(!w.checkValidity()||(h&&!h.checkValidity())){(w.checkValidity()?h:w).reportValidity();return;}
+  document.getElementById('custom-w').value=w.value;
+  document.getElementById('custom-h').value=h?h.value:w.value;
+  onDimInput();
+}
+function applySuggestedLabelSize(){
+  const rec=window._suggestedLabelSize;
+  if(!rec)return;
+  if(rec.source==='preset'){applySize(rec.presetMm);return;}
+  document.getElementById('custom-w').value=rec.mmW;
+  document.getElementById('custom-h').value=rec.mmH;
+  onDimInput();
+}
+function showSheetSizeEditor(){
+  document.getElementById('sheet-size-editor').innerHTML=inlineSizeEditor();
+}
+
 function updateSizeWarnings(){
   const rawW = parseInt(document.getElementById('custom-w').value)||50;
   const rawH = S.shape==='rectangle'?(parseInt(document.getElementById('custom-h').value)||40):rawW;
@@ -5054,10 +5109,11 @@ function updateLabel(){
   // renderLabel() result for this exact content via label-render.js's
   // findSmallestFittingSize(). Read-only: this never changes S.size itself:
   // the maker always makes that choice, in Step 1, themselves.
-  const _sizeHelpsIfBlocked = window._labelBlockDownload && !_hasUnrecognizedCodes && !_isCustomSizeTooSmall;
+  const _sizeHelpsIfBlocked = window._labelBlockDownload && !_hasUnrecognizedCodes;
   const _sizeRec = (_sizeHelpsIfBlocked && window._lastLabelData && typeof LabelRenderer!=='undefined' && LabelRenderer.findSmallestFittingSize)
     ? LabelRenderer.findSmallestFittingSize(window._lastLabelData, {instanceId:'builder-main'})
     : null;
+  window._suggestedLabelSize=_sizeRec;
   // Genuine-size fix (2026-09-07): findSmallestFittingSize() now tries the
   // two real size-card presets (52mm/63mm) before any custom size, and
   // reports which kind of size it found (source/presetMm) so this message
@@ -5066,8 +5122,8 @@ function updateLabel(){
   const _sizeRecDims = _sizeRec ? (_sizeRec.mmW===_sizeRec.mmH?_sizeRec.mmW+'mm':_sizeRec.mmW+'×'+_sizeRec.mmH+'mm') : '';
   const _sizeRecKind = _sizeRec ? (_sizeRec.source==='preset' ? ', the built-in '+_sizeRec.presetMm+'mm preset' : ', a custom size') : '';
   const _sizeRecMsg = _sizeRec
-    ? ' The smallest size that fits this exact content is <strong>'+_sizeRecDims+'</strong> ('+_sizeRec.shape+_sizeRecKind+') — go to Step 1 and try that size.'
-    : (_sizeHelpsIfBlocked ? ' CLPeasy checked every supported size up to 150mm and none of them fit this exact content, so a larger size alone won\'t be enough — the content itself will need to be shortened.' : '');
+    ? ' The smallest size that fits this exact content is <strong>'+_sizeRecDims+'</strong> ('+_sizeRec.shape+_sizeRecKind+') — try that size using the controls below.'
+    : (_sizeHelpsIfBlocked ? ' CLPeasy checked every supported size up to 150mm and none of them fit this exact content, so consider a different label shape or suitable fold-out labelling; do not remove required safety information.' : '');
   // Wording (updated 3 Aug 2026, round 2 — per Michaela's CLP-labelling-focused
   // request): name the CLP labelling requirement specifically rather than
   // "required information" generically.
@@ -5105,17 +5161,31 @@ function updateLabel(){
       ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br><strong>CLPeasy has blocked the download rather than remove, replace or print a code it cannot safely resolve for a Great Britain CLP label.</strong>'
       : clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+'<br><br>Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
     : _isCustomSizeTooSmall
-    ? getCustomSizeMinMsg()+'<br><br>To create a downloadable label, return to Step 1 and '+(S.shape==='rectangle'?'set the long side to '+LabelRenderer.CUSTOM_RECT_LONG_MIN_MM+'mm or larger and the short side to '+LabelRenderer.CUSTOM_RECT_SHORT_MIN_MM+'mm or larger':'increase the custom size to '+LabelRenderer.CUSTOM_SIZE_MIN_MM+'mm or larger')+'.'
+    ? getCustomSizeMinMsg()+'<br><br>To create a downloadable label, use the size controls below to '+(S.shape==='rectangle'?'set the long side to '+LabelRenderer.CUSTOM_RECT_LONG_MIN_MM+'mm or larger and the short side to '+LabelRenderer.CUSTOM_RECT_SHORT_MIN_MM+'mm or larger':'increase the custom size to '+LabelRenderer.CUSTOM_SIZE_MIN_MM+'mm or larger')+'.'
     : window._footerLegibilityClipped
-    ? 'Your business/supplier details cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling, so some required information would be left off.<br><br>To create a downloadable label, return to Step 1 and select a larger label size, or shorten your business details.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
+    ? 'Your business/supplier details cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling, so some required information would be left off.<br><br>To create a downloadable label, use the size controls below to select a larger label size, or shorten your business details.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
     : _hasMandatoryTextTooSmall
-    ? 'Your '+_mandatoryTextTooSmallLabel+' cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, return to Step 1 and select a larger label size, or shorten the affected text.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
-    : 'The required hazard and precautionary information cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, return to Step 1 and select a larger label size. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>';
+    ? 'Your '+_mandatoryTextTooSmallLabel+' cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, use the size controls below to select a larger label size, or shorten the affected text.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
+    : 'The required hazard and precautionary information cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, use the size controls below to select a larger label size. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>';
+
+  const _fitAdvice = '<strong>Your label needs more space.</strong><p>Choose a larger size to keep all required information clearly readable.</p>'+
+    (_sizeRec ? '<p>Smallest tested size for your current content: <strong>'+_sizeRecDims+'</strong> ('+_sizeRec.shape+').</p><button type="button" onclick="applySuggestedLabelSize()" style="padding:10px;min-height:44px;border:1px solid #4c9bb0;border-radius:8px;background:white;color:#111;">Use '+_sizeRecDims+'</button>'
+    : '<p>No supported size tested up to 150mm fits this content. Try a different shape.</p>')+
+    '<p style="margin-top:8px;">We will check the fit again when you add more details.</p>'+
+    '<details style="margin-top:8px;"><summary>Label too large for your packaging?</summary><p>An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.</p></details>';
+  const pasteFit=document.getElementById('smart-paste-size-warning');
+  if(pasteFit){
+    const showFit=!!S.hazardFromExtraction&&!!window._labelBlockDownload&&!_codeBlockParts.length;
+    pasteFit.style.display=showFit?'block':'none';
+    pasteFit.innerHTML=showFit?_fitAdvice+inlineSizeEditor():'';
+  }
+  const sheetFit=document.getElementById('sheet-fit-advice');
+  if(sheetFit){sheetFit.innerHTML=window._labelBlockDownload&&!_codeBlockParts.length?_fitAdvice:'';}
   [document.getElementById('label-warn-stage4'), document.getElementById('label-warn-step5')].forEach(_labelWarnEl=>{
     if(!_labelWarnEl)return;
     if(window._labelBlockDownload){
       _labelWarnEl.style.display='block';
-      _labelWarnEl.innerHTML = '<strong>'+_blockHeading+'</strong><br><br>'+_blockBody;
+      _labelWarnEl.innerHTML = _codeBlockParts.length?'<strong>'+_blockHeading+'</strong><br><br>'+_blockBody:_fitAdvice+inlineSizeEditor();
     } else {
       _labelWarnEl.style.display='none';
     }
@@ -5515,6 +5585,12 @@ function wizClearChat(){
   wizParsed=null;
   document.getElementById('wiz-messages').innerHTML='';
   wizGreet();
+}
+function viewReviewLabel(){
+  updateLabel();
+  if(window.matchMedia('(max-width:860px)').matches){openPreviewSheet();return;}
+  const preview=document.getElementById('preview-panel-el');
+  if(preview){preview.setAttribute('tabindex','-1');preview.scrollIntoView({behavior:'smooth',block:'center'});preview.focus({preventScroll:true});}
 }
 function openPreviewSheet(){const sheet=document.getElementById('preview-sheet');if(sheet){sheet.classList.add('open');document.body.style.overflow='hidden';}}
 function closeSheet(e){if(!e||e.target===document.getElementById('preview-sheet')||e===undefined){document.getElementById('preview-sheet').classList.remove('open');document.body.style.overflow='';}}

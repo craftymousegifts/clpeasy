@@ -75,6 +75,22 @@ const LR = window.LabelRenderer;
 
 setTimeout(async () => {
   try {
+    const burn=document.getElementById('burn-time');
+    assert.deepStrictEqual([...burn.options].filter(o=>o.value).map(o=>o.value),Array.from({length:77},(_,i)=>(i+4)+' hrs'),'burn time must offer every hour from 4 to 80');
+    window.restoreBurnTime('45hrs');
+    assert.strictEqual(burn.value,'45 hrs','older hours value must restore');
+    window.restoreBurnTime('40–45 hours');
+    assert.strictEqual(burn.value,'40–45 hours','saved range must remain intact');
+    burn.value='';
+    window.showSheetSizeEditor();
+    const shape=document.querySelector('#sheet-size-editor [data-size-shape]');
+    document.getElementById('scent-name').value='Shape preservation';
+    shape.value='rectangle';window.applyInlineShape(shape);
+    assert.strictEqual(window.eval('S.shape'),'rectangle');
+    assert.strictEqual(document.getElementById('scent-name').value,'Shape preservation','shape amendment must keep content');
+    assert(document.querySelector('#sheet-size-editor [data-size-height]'),'rectangle amendment must show height');
+    assert(document.getElementById('btn-view-label'),'review must offer View label');
+    assert.strictEqual(document.querySelectorAll('#btn-png,#btn-pdf,#btn-svg').length,0,'review must not duplicate export controls');
     assert(document.querySelector('.builder-utility-actions [onclick="openHelp()"]'), 'visible Help Guide control missing');
     assert(document.querySelector('.mobile-preview-btn[onclick="openPreviewSheet()"]'), 'mobile preview control missing');
     assert.strictEqual(window.eval('approvedBuilderStep'), 1, 'Builder did not initialise at Step 1');
@@ -337,7 +353,7 @@ setTimeout(async () => {
     window.updateLabel();
     assert.strictEqual(window.eval('isCustomSizeBelowSupportedMinimum()'), false, 'the approved 63×44mm preset must still be exempt from the 52mm custom-size floor at export-blocking time');
     const warnStep5 = document.getElementById('label-warn-step5').innerHTML;
-    assert(/select a larger label size/i.test(warnStep5), `dense 63×44mm fixture (approved preset): export-blocked message must recommend a larger label size, got: ${warnStep5}`);
+    assert(/choose a larger size/i.test(warnStep5), `dense 63×44mm fixture (approved preset): export-blocked message must recommend a larger label size, got: ${warnStep5}`);
     assert(!/52mm or larger|supported minimum/i.test(warnStep5), `dense 63×44mm fixture (approved preset): must NOT show the generic custom-size-minimum message -- that gate must not apply to an approved preset, got: ${warnStep5}`);
     assert(!/not supported|unsupported/i.test(warnStep5), `dense 63×44mm fixture: export-blocked message must not describe 63×44mm as universally unsupported, got: ${warnStep5}`);
 
@@ -453,7 +469,7 @@ setTimeout(async () => {
     // are retained via still-existing coverage instead: H315 retention is
     // already asserted above (line 170, S.hSelected), and the long-sensitiser
     // check is re-proven below against the real label output (buildSVG(false)).
-    assert.strictEqual(document.querySelectorAll('#btn-png,#btn-pdf,#btn-svg').length, 3, 'approved exports are incomplete');
+    assert.strictEqual(document.querySelectorAll('#btn-png-preview,#btn-pdf-preview,#btn-svg-preview').length, 3, 'approved exports are incomplete');
     assert.strictEqual(window.eval('window._labelBlockDownload'), false, 'representative 63mm candle was falsely blocked');
     assert(window.buildSVG(false).includes('Butylphenyl methylpropional'), 'label output shortened a long sensitiser');
     document.getElementById('verify-checkbox').checked = true;
@@ -507,3 +523,4 @@ setTimeout(async () => {
     window.close();
   }
 }, 500);
+
