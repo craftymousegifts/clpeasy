@@ -1199,7 +1199,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
         <div id="frag-load-tip" style="margin-top:6px;font-size:12px;color:var(--muted);line-height:1.5;"></div>
       </div>
-      <div class="form-group"><label>Burn time <span>(optional)</span></label><input type="text" id="burn-time" placeholder="e.g. 45hrs" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9hHrRsS]/g,'');updateLabel();saveProdDetails()"></div>
+      <div class="form-group"><label>Burn time <span>(optional)</span></label><input type="text" id="burn-time" placeholder="e.g. 45 hrs or 40–45 hours" inputmode="text" maxlength="40" oninput="updateLabel();saveProdDetails()"></div>
     </div>
     <div class="step-nav"><button class="btn-prev" onclick="prevStep()">← Back</button><button class="btn-next" onclick="checkStep2Next()">Next: Hazard data →</button></div>
   </div>
@@ -5139,11 +5139,11 @@ function updateLabel(){
     ? 'Your '+_mandatoryTextTooSmallLabel+' cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, use the size controls below to select a larger label size, or shorten the affected text.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
     : 'The required hazard and precautionary information cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, use the size controls below to select a larger label size. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>';
 
-  const _fitAdvice = '<strong>This label is too small for the entered content.</strong><p>The complete information cannot fit at CLPeasy\'s readability limit. Downloads remain unavailable until all required content fits.</p>'+
-    (_sizeRec ? '<p>Smallest tested size for the content entered so far: <strong>'+_sizeRecDims+'</strong> ('+_sizeRec.shape+').</p><button type="button" onclick="applySuggestedLabelSize()" style="padding:10px;min-height:44px;border:1px solid #4c9bb0;border-radius:8px;background:white;color:#111;">Use '+_sizeRecDims+'</button>'
-    : '<p>No fitting size was found among the supported sizes tested up to 150mm. Try a different shape or seek advice about a suitable fold-out label.</p>')+
-    '<p style="margin-top:8px;">This is a content-fit recommendation, not a universal legal minimum. GB CLP requires clearly legible information. Adding product or business details may increase the size needed.</p>'+
-    '<p>If your packaging cannot accommodate the label, ask your supplier or a labelling specialist about an attached pull-out / fold-out label where the GB CLP small-packaging rules permit it. Do not omit required information. CLPeasy does not generate fold-out labels.</p>';
+  const _fitAdvice = '<strong>Your label needs more space.</strong><p>Choose a larger size to keep all required information clearly readable.</p>'+
+    (_sizeRec ? '<p>Smallest tested size for your current content: <strong>'+_sizeRecDims+'</strong> ('+_sizeRec.shape+').</p><button type="button" onclick="applySuggestedLabelSize()" style="padding:10px;min-height:44px;border:1px solid #4c9bb0;border-radius:8px;background:white;color:#111;">Use '+_sizeRecDims+'</button>'
+    : '<p>No supported size tested up to 150mm fits this content. Try a different shape.</p>')+
+    '<p style="margin-top:8px;">We will check the fit again when you add more details.</p>'+
+    '<details style="margin-top:8px;"><summary>Label too large for your packaging?</summary><p>An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.</p></details>';
   const pasteFit=document.getElementById('smart-paste-size-warning');
   if(pasteFit){
     const showFit=!!S.hazardFromExtraction&&!!window._labelBlockDownload&&!_codeBlockParts.length;
