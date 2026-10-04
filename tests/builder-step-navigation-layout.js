@@ -157,6 +157,8 @@ setTimeout(async () => {
     document.getElementById('hazard-confirm').checked = true;
     window.setApprovedBuilderStep(3);
     window.setApprovedBuilderStep(4);
+    document.getElementById('biz-name').value = 'QA Business';
+    document.getElementById('biz-address').value = '1 Test Street';
     document.getElementById('biz-phone').value = '01234 567890';
     window.setApprovedBuilderStep(5);
     assert.strictEqual(window.eval('approvedBuilderStep'), 5, 'did not reach Step 5');
