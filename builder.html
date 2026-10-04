@@ -4184,7 +4184,6 @@ function canLeaveApprovedBuilderStep(step){
     const type=document.getElementById('product-type')?.value||'';
     if(!name){alert('Please enter a product name before continuing.');document.getElementById('scent-name')?.focus();return false;}
     if(!type){alert('Please select a product type before continuing.');document.getElementById('product-type')?.focus();return false;}
-    if(_parseFragPct(document.getElementById('frag-load')?.value)===null){alert('Please enter the fragrance percentage in your finished product as a number, for example 8 or 8.5.');document.getElementById('frag-load')?.focus();return false;}
     if(_hazardReviewRequired()){alert(_hazardReviewMessage());return false;}
   }
   if(step===3){
@@ -4378,11 +4377,6 @@ function checkStep2Next(){
   if(!ptype){
     alert('Please select a product type before continuing.');
     document.getElementById('product-type')?.focus();
-    return;
-  }
-  if(_parseFragPct(document.getElementById('frag-load')?.value)===null){
-    alert('Please enter the fragrance percentage in your finished product as a number, for example 8 or 8.5.');
-    document.getElementById('frag-load')?.focus();
     return;
   }
   nextStep();

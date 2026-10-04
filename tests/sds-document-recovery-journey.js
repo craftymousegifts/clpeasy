@@ -69,12 +69,13 @@ const server = http.createServer((req, res) => {
       const made=await b.evaluate(async SDS=>{
         document.getElementById('scent-name').value='Simple SDS Candle';
         document.getElementById('product-type').value='Scented Candle';onProductTypeChange();
-        document.getElementById('frag-load').value='9.0909%';
+        document.getElementById('frag-load').value='';
         document.getElementById('biz-name').value='QA Candles';
         document.getElementById('biz-address').value='1 Test Street, Testtown, TE1 1ST';
         document.getElementById('biz-phone').value='01234 567890';
         selectShape('circle');document.getElementById('custom-w').value=100;onDimInput();readForm();updateLabel();
-        setApprovedBuilderStep(2);setApprovedBuilderStep(3);
+        setApprovedBuilderStep(2);checkStep2Next();
+        if(approvedBuilderStep!==3)throw new Error("Blank fragrance percentage blocked Step 2 Next");
         document.getElementById('smart-paste-input').value=SDS;extractSDS();
         const unchecked=canLeaveApprovedBuilderStep(3);
         document.getElementById('hazard-confirm').checked=true;toggleHazardNext();
