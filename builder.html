@@ -559,7 +559,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .preview-sheet.open{display:flex;}
 .preview-sheet-inner{background:#1a1f2e;border-radius:20px 20px 0 0;padding:20px;width:100%;max-height:90vh;overflow-y:auto;}
 .preview-sheet-handle{width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:100px;margin:0 auto 20px;}
-.preview-sheet-label{display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
+.preview-sheet-label{display:flex;align-items:center;justify-content:center;margin:0 auto 16px;width:100%;max-width:100%;min-height:0;overflow:hidden;}
+.preview-sheet-label>svg{display:block;width:auto!important;height:auto!important;max-width:100%!important;max-height:min(52vh,420px)!important;}
 .preview-sheet-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;}
 
 /* SUPPLIER LIBRARY */
