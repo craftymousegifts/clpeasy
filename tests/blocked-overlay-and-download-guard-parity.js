@@ -204,6 +204,7 @@ function rectOf(svg){
         assert(document.getElementById(id), `expected element #${id} to exist`);
       }
 
+      for(const [id,value] of Object.entries({'scent-name':'Test Label','biz-name':'Test Business','biz-address':'1 Test Road','biz-phone':'00000000000'}))document.getElementById(id).value=value;
       const readStyle = id => { const el = document.getElementById(id); return { opacity: el.style.opacity, pe: el.style.pointerEvents }; };
       const cb = document.getElementById('verify-checkbox');
 

@@ -80,6 +80,31 @@ function buildDom(pageSource=source,page='builder'){
     await w.downloadSVG();assert.strictEqual(chargeCalls,0,'incomplete export must not consume a credit');
     el.value=previous;w.updateLabel();
   }
+  for(const scenario of ['name','EUH208']){
+    const oldName=d.getElementById('scent-name').value;
+    const oldCodes=d.getElementById('h-statements').value;
+    if(scenario==='name')d.getElementById('scent-name').value='   ';
+    else {d.getElementById('h-statements').value='EUH208';w.eval('S.hStatements="EUH208";S.sensitisers=[]');}
+    w.toggleDownload();
+    assert.strictEqual(w._downloadAllowed(),false,scenario+' incomplete content must block');
+    assert.notStrictEqual(d.getElementById('business-details-export-note').style.display,'none');
+    let calls=0;w.consumeBuilderDownload=async()=>{calls++;return {ok:true};};
+    await w.downloadPNG();await w.downloadSVG();await w.printToPDF();
+    assert.strictEqual(calls,0,'every incomplete export must refuse before credits');
+    d.getElementById('scent-name').value=oldName;d.getElementById('h-statements').value=oldCodes;
+    w.eval('S.hStatements="H317";S.sensitisers=[]');
+  }
+  const specimen={shape:'circle',size:100,scentName:'Test',productType:'Wax Melt',bizName:'QA',bizAddress:'1 Test Street',bizPhone:'00000000000',hStatements:'H317',pStatements:'P102',pictograms:['exclamation']};
+  const normal=w.LabelRenderer.renderLabel(specimen,{instanceId:"guard-test"});
+  assert(normal.fits);
+  for(const key of ['unknown','GHS06','Exclamation','toString','',null,42]){
+    const raw={...specimen,pictograms:[key]},saved=JSON.stringify(raw);
+    const result=w.LabelRenderer.renderLabel(raw,{instanceId:"guard-test"});
+    assert.strictEqual(result.fits,false);assert.strictEqual(result.blockReason,'unrecognised-pictogram');
+    assert(!result.svg.includes('data:image/jpeg'),'unknown pictogram must never substitute a valid hazard image');
+    assert.strictEqual(JSON.stringify(raw),saved,'draft data must stay intact');
+  }
+  assert.strictEqual(w.LabelRenderer.renderLabel(specimen,{instanceId:"guard-test"}).svg,normal.svg,'valid rendering must stay stable');
   w.setApprovedBuilderStep(4);
   assert.strictEqual(d.getElementById('preview-dl-row').style.display,'none');
   w.setApprovedBuilderStep(5);
@@ -101,6 +126,13 @@ function buildDom(pageSource=source,page='builder'){
     assert.strictEqual(cd.getElementById('btn-pdf').disabled,true);
     assert.strictEqual(cd.getElementById('btn-png-all').disabled,true);
     assert.notStrictEqual(cd.getElementById('business-details-sheet-note').style.display,'none');
+  }
+  for(const data of [{...good,scentName:'  '},{...good,hStatements:'EUH208',sensitisers:[]}]){
+    c.getSheetPlacementsMM=()=>[{labelData:data}];
+    assert(c.getSheetFitBlockMessage(),'incomplete saved label must block Composer');
+    c.updateExportButtonState();assert(cd.getElementById('btn-pdf').disabled);assert(cd.getElementById('btn-png-all').disabled);
+    let calls=0;c.consumeComposerDownload=async()=>{calls++;return {ok:true};};
+    await c.downloadPDF();assert.strictEqual(calls,0);
   }
   c.getSheetPlacementsMM=()=>[];
   assert.strictEqual(c.getSheetBusinessDetailsBlockMessage(),null,'blank slots must not block');

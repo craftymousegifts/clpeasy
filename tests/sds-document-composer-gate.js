@@ -51,7 +51,7 @@ const emptyQuery = {
 const fitsA = {
   scentName:'Lavender Fields', productType:'Wax Melt', bizName:'Crafty Mouse Gifts',
   shape:'circle', size:'custom', customW:52, customH:52,
-  bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'',
+  bizAddress:'1 Test Road', bizPhone:'00000000000', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'',
   signal:'Warning', hStatements:'H315', pStatements:'P273',
   sensitisers:[], pictograms:['exclamation'], textColour:'dark', showBorder:true,
   hideEN15494:false, labelLang:'en',

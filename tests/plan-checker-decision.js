@@ -229,7 +229,13 @@ const activeQ = w => { const c = w.document.querySelector('.question-card.active
 const pressed = (w, q) => [...w.document.querySelectorAll('#q-' + q + ' .option[aria-pressed="true"]')].map(o => o.dataset.value);
 function click(w, q, v){ w.document.querySelector('#q-' + q + ' .option[data-value="' + v + '"]').click(); }
 // 250ms selection + 300ms fade-in before the next question accepts a tap.
-async function pick(w, q, v){ click(w, q, v); await sleep(600); }
+async function pick(w, q, v){
+  click(w,q,v);
+  const deadline=Date.now()+3000;
+  while(activeQ(w)===q&&!$(w,'result-card').classList.contains('show')&&Date.now()<deadline)await sleep(25);
+  assert(activeQ(w)!==q||$(w,'result-card').classList.contains('show'),'choice must advance or produce a result');
+  await sleep(350); // actual fade starts after the selection timer fires
+}
 async function run(w, a){
   const seen = [];
   for (;;) {

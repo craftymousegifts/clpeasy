@@ -98,7 +98,8 @@ try {
   // for getSheetPlacementsMM()/getSheetGeometryBlockMessage()/
   // getProspectiveCustomGrid() and the read-only Label size read-out.
   // Same ~4KB headroom policy.
-  assert(source.length < 171500,
+  // October 4: reviewed business/content guards and honest ZIP feedback add ~4KB.
+  assert(source.length < 179500,
     'print.html should stay close to its current size -- an unexpectedly large increase suggests an accidental duplicate/oversized insertion');
 
   console.log('cutting-machine tip visual-revision checks passed (the #cricut-tip card and all its CSS are completely removed from the sheet-preview area; no replacement card/panel was added; the real "Download for cutting machine" button and its modal wiring are byte-for-byte unchanged; the required guidance sentence now lives inside the existing #cricutModal\'s #modal-sub, alongside its unchanged dynamic count sentence)');

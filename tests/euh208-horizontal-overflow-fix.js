@@ -25,6 +25,7 @@ const dom = new JSDOM(source, {
   pretendToBeVisual: true,
   virtualConsole,
   beforeParse(window) {
+    window.HTMLElement.prototype.scrollIntoView=()=>{};
     window.HTMLCanvasElement.prototype.getContext = () => ({
       font:'',
       measureText(text){

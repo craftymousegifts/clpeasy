@@ -184,7 +184,7 @@ if (regAlertsPanelIdx !== -1) assert(pricing.includes('Planned feature. Regulati
 assert(!/Circle presets cover|Rectangle presets cover/i.test(html),
   'homepage Setup Guide must not claim circle/rectangle presets cover specific product categories (no preset picker exists)');
 // 27c976d ("Polish homepage feature journey and remove remaining future promises") reworded this step.
-assert(html.includes('Choose a circle, rectangle or square, then enter the dimensions you need in millimetres.'),
+assert(html.includes('Choose a circle, rectangle or square, set the dimensions you need in millimetres,'),
   'homepage Setup Guide "Open the label builder" step must describe the real shape-then-mm-entry workflow');
 assert(!/four standard preset sizes/i.test(html),
   'homepage FAQ must not claim CLPeasy includes four standard preset sizes (no such preset picker exists)');
@@ -239,7 +239,7 @@ if (/Drop entire SDS PDF in/.test(pricing)) assert(pricing.includes('Coming soon
 // as a real, currently-available feature -- and no longer has a PDF
 // drop-in claim tacked onto its description.
 // c370053 (#149, "Correct Easy Start and Easy Pro feature claims") reworded the Smart Paste description.
-assert(pricing.includes("Copy Section 2.2 from your fragrance supplier's SDS PDF and paste it into CLPeasy®."),
+assert(pricing.includes("Paste Section 2.2 from your current supplier SDS."),
   'pricing.html must still correctly describe Smart Paste as pasting Section 2.2 text');
 assert(!/Smart Paste[\s\S]{0,400}dropping in your complete SDS PDF/i.test(pricing),
   'pricing.html Smart Paste description must not have a PDF drop-in claim appended to it');
@@ -251,17 +251,13 @@ assert(!/including SDS Smart Import and compliance alerts/i.test(pricing),
 assert(!/compliance alert/i.test(pricing) && !/compliance alert/i.test(html) && !/compliance alert/i.test(planPicker),
   'no customer-facing page may claim an active "compliance alert" feature');
 
-// ── Easy Pro Setup Guide steps must be numbered consecutively ──────────
-const sgProMatch = html.match(/<div class="sg-panel" id="sg-pro">[\s\S]*?(?=<div class="sg-panel" id="sg-start"|<script>)/);
-assert(sgProMatch, 'could not locate the sg-pro Setup Guide panel in index.html');
-const sgProNums = (sgProMatch[0].match(/class="sg-step-num">(\d+)</g) || []).map(m => parseInt(m.match(/\d+/)[0], 10));
-assert.deepStrictEqual(sgProNums, [1, 2, 3, 4, 5],
-  `the Easy Pro Setup Guide panel must show consecutive steps 1-5 (found ${JSON.stringify(sgProNums)})`);
-assert(html.includes('Complete and check your label') && html.includes('Download and save'),
-  'the Easy Pro Setup Guide must include real steps 3 ("Complete and check your label") and 4 ("Download and save")');
-assert(!/PDF import|batch export.{0,20}(pin|extract)|reminder emails|monitor.{0,15}regulator/i.test(sgProMatch[0]),
-  'the new Easy Pro Setup Guide steps must not invent PDF import, batch export, reminders or monitoring');
-
+// Easy Pro is retired from new sales. The remaining Setup Guide must have real consecutive steps.
+const sgProMatch=html.match(/<div class="sg-panel" id="sg-pro">[\s\S]*?(?=<div class="sg-panel" id="sg-start"|<script>)/);
+assert.strictEqual(sgProMatch,null,'retired Pro Setup Guide must not return');
+const sgStart=html.match(/<div class="sg-panel" id="sg-start">[\s\S]*?(?=<script>)/);
+assert(sgStart);
+const sgNums=(sgStart[0].match(/class="sg-step-num">(\d+)</g)||[]).map(m=>Number(m.match(/\d+/)[0]));
+assert.deepStrictEqual(sgNums,[1,2,3,4,5],'current Setup Guide must show real consecutive steps');
 // ── Round 5: paid-plan entitlement audit -- "Batch export" has no
 // implementation anywhere in the repo (no batch/bulk export code exists);
 // "Smart Paste" and "label folders" are real but are on BOTH plans, not
@@ -276,9 +272,7 @@ assert(!/adds Smart Paste/i.test(html) && !/adds.{0,20}Smart Paste/i.test(html),
   'index.html must not describe Smart Paste as something Easy Pro adds -- it is included on Easy Start too');
 assert(!/adds.{0,40}label folders|adds.{0,10}folders/i.test(html),
   'index.html must not describe label folders as something Easy Pro adds -- they are included on Easy Start too');
-assert(html.includes('Easy Pro (£14.99/mo or £149/year) gives you 30 downloads/month and priority support. Smart Paste is included on both plans, and saved labels are organised automatically by product type.'),
-  'index.html homepage FAQ must accurately scope Easy Pro\'s added benefits to downloads/month and priority support, and describe Smart Paste + automatic product-type grouping, not "label folders"');
-
+assert(!html.includes('Easy Pro (£14.99/mo'),'retired Pro sales must not return');
 // The implementation is five fixed product-type categories with automatic
 // assignment (label-library.js/builder.html FOLDER_DEFS) -- users cannot
 // create a custom-named folder or manually move a label between folders.
@@ -293,20 +287,10 @@ for (const file of [['index.html', html], ['pricing.html', pricing], ['plan-pick
   assert(!/(labels?|folders?) and folders\b/i.test(source),
     `${name} must not describe saved labels with a bare, unqualified "folders" claim (e.g. "labels and folders") -- must describe automatic product-type grouping instead`);
 }
-assert(pricing.includes("browser-saved labels organised automatically by product type, local version history"),
-  'pricing.html "Easy Start vs Easy Pro" FAQ must describe automatic product-type grouping, not bare "folders"');
+assert(pricing.includes('Included with Pay As You Go and Easy Start Unlimited.'),'Smart Paste must be shared by both current paid options');
 assert(pricing.includes("they're organised automatically by product type"),
   'pricing.html saved-label FAQ must describe automatic product-type grouping, not "organise them into folders"');
-// b8945ae (#152, "Explain browser-saved labels plainly") reworded the storage disclaimer.
-assert(pricing.includes('Save labels (organised automatically by product type) and local version history in your current browser. They are available on that device unless its site data is cleared.'),
-  'pricing.html storage disclaimer must describe automatic product-type grouping, not bare "folders"');
-assert(pricing.includes('Save labels (organised automatically by product type) and local version history in your current browser'),
-  'pricing.html comparison-table "Saved label library" row must describe automatic product-type grouping, not bare "folders"');
+assert(pricing.includes('They are not currently synchronised between devices and may be lost if browser site data is cleared.'),'current storage limitations must be explicit');
 assert(pricing.includes('Organise browser-saved labels into folders &mdash; Candles, Wax Melts, Diffusers and Room Sprays'),
   'pricing.html "Organised by product type" feature item must still name the real fixed categories');
-assert(html.includes('Everything in Easy Start + 30 downloads/month &#x00B7; Priority support'),
-  'index.html Easy Pro Setup Guide banner must list real, Pro-specific benefits only (30 downloads/month, priority support), not Smart Paste or batch export');
-assert(html.includes('<span class="sg-step-title">Use Smart Paste</span>'),
-  'index.html Easy Pro Setup Guide step 2 ("Use Smart Paste") must not carry a PRO badge -- Smart Paste is included on Easy Start too');
-
 console.log('lifecycle reminder-accuracy checks passed (Step 7/8/9 wording, automation claims removed, no active reminder/regulation-alert claims in index/pricing/plan-picker, nine-stage lifecycle preserved, lifecycle nodes keyboard-accessible with visible titles and clamped tooltip positioning, multi-language labels not claimed active, "compliant output"/"fully compliant" removed, ECHA-monitoring detail replaced with neutral "planned feature" wording, stale size-preset claims corrected, showcase absolute claim corrected, SDS Smart Import/PDF-import claims removed or coming-soon-labelled, compliance-alerts claim removed, Easy Pro Setup Guide renumbered consecutively with real steps 3-4, batch export claim removed, Smart Paste/label folders no longer mis-attributed as Pro-exclusive)');

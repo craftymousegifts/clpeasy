@@ -3602,14 +3602,28 @@ function _businessDetailsBlockedMessage(){
   const missing=_missingBusinessDetails();
   return missing.length?'Please enter your '+missing.map(field=>field.label).join(', ')+' in Step 4 (Business) before downloading.':'';
 }
+function _requiredLabelContent(){
+  const value=(id,key)=>document.getElementById(id)?.value??S[key];
+  return LabelRenderer.checkRequiredContent({scentName:value('scent-name','scentName'),bizName:value('biz-name','bizName'),bizAddress:value('biz-address','bizAddress'),bizPhone:value('biz-phone','bizPhone'),hStatements:value('h-statements','hStatements'),sensitisers:S.sensitisers});
+}
+function _requiredLabelContentMessage(){
+  const missing=_requiredLabelContent().missing;
+  if(missing.includes('product-name'))return 'Add your product name in Step 2 before downloading.';
+  if(missing.includes('euh208-substance'))return 'EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading.';
+  return '';
+}
 function _downloadAllowed(){
   const checked=document.getElementById('verify-checkbox')?.checked;
-  return !!checked && !_missingBusinessDetails().length && !window._labelBlockDownload && !_hazardReviewRequired() && SdsDocCheck.isExportAllowed(_sdsDocRecord());
+  return !!checked && _requiredLabelContent().complete && !_missingBusinessDetails().length && !window._labelBlockDownload && !_hazardReviewRequired() && SdsDocCheck.isExportAllowed(_sdsDocRecord());
 }
 function _downloadBlockedMessage(){
   const businessMessage=_businessDetailsBlockedMessage();
   if(businessMessage)return businessMessage;
+  const contentMessage=_requiredLabelContentMessage();
+  if(contentMessage)return contentMessage;
   if(_hazardReviewRequired())return _hazardReviewMessage();
+  const invalid=(Array.isArray(S.pictograms)?S.pictograms:[S.pictograms]).filter(key=>!LabelRenderer.isValidPictogramKey(key));
+  if(invalid.length)return LabelRenderer.describeInvalidPictograms(invalid);
   // Existing reasons keep their existing message; the document check (also
   // shown as a Step 5 notice) is reported once those are satisfied.
   const _sdsMsg=SdsDocCheck.exportBlockMessage(_sdsDocRecord());
@@ -3621,7 +3635,7 @@ function toggleDownload(){
   const allowed=_downloadAllowed();
   const businessNote=document.getElementById('business-details-export-note');
   if(businessNote){
-    const message=_businessDetailsBlockedMessage();
+    const message=_businessDetailsBlockedMessage()||_requiredLabelContentMessage();
     businessNote.style.display=message?'':'none';
     businessNote.textContent=message;
   }

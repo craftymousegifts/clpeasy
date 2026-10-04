@@ -34,7 +34,7 @@ const emptyQuery = {
 const rectA = {
   scentName:'Fireside Amber', productType:'Wax Melt', bizName:'Crafty Mouse Gifts',
   shape:'rectangle', size:'custom', customW:57, customH:99,
-  bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'200g', batchNum:'B101', burnTime:'',
+  bizAddress:'1 Test Road', bizPhone:'00000000000', bizWebsite:'', netWeight:'200g', batchNum:'B101', burnTime:'',
   signal:'Warning', hStatements:'H315, H319', pStatements:'P302+P352, P305+P351+P338',
   sensitisers:['Linalool','Limonene'], pictograms:['exclamation'], textColour:'dark', showBorder:true,
   hideEN15494:false, labelLang:'en',
@@ -47,7 +47,7 @@ const rectB = { ...rectA, scentName:'Coastal Driftwood', batchNum:'B102' };
 const circleC = {
   scentName:'Vanilla Bean', productType:'Wax Melt', bizName:'Crafty Mouse Gifts',
   shape:'circle', size:'custom', customW:52, customH:52,
-  bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'150g', batchNum:'B201', burnTime:'',
+  bizAddress:'1 Test Road', bizPhone:'00000000000', bizWebsite:'', netWeight:'150g', batchNum:'B201', burnTime:'',
   signal:'Warning', hStatements:'H315', pStatements:'P302+P352',
   sensitisers:['Linalool'], pictograms:['exclamation'], textColour:'dark', showBorder:true,
   hideEN15494:false, labelLang:'en',
@@ -59,7 +59,7 @@ const circleC = {
 const squareD = {
   scentName:'Lavender Fields', productType:'Wax Melt', bizName:'Crafty Mouse Gifts',
   shape:'square', size:'custom', customW:60, customH:60,
-  bizAddress:'', bizPhone:'', bizWebsite:'', netWeight:'150g', batchNum:'B301', burnTime:'',
+  bizAddress:'1 Test Road', bizPhone:'00000000000', bizWebsite:'', netWeight:'150g', batchNum:'B301', burnTime:'',
   signal:'Warning', hStatements:'H315', pStatements:'P302+P352',
   sensitisers:['Linalool'], pictograms:['exclamation'], textColour:'dark', showBorder:true,
   hideEN15494:false, labelLang:'en',
