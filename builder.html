@@ -4751,7 +4751,7 @@ function restoreBurnTime(value){
   // Normalise single-hour values from older saved labels. Preserve older
   // ranges/custom wording as a saved-value option rather than discarding it.
   const raw=String(value||'').trim();
-  const match=raw.match(/^(\\d+)\\s*(?:hrs?|hours?)?$/i);
+  const match=raw.match(/^(\d+)\s*(?:hrs?|hours?)?$/i);
   const hours=match?Number(match[1]):null;
   const normal=hours>=4&&hours<=80?hours+' hrs':raw;
   if(normal&&!Array.from(field.options).some(o=>o.value===normal)){
