@@ -7,7 +7,7 @@
 **This work:**
 - branch `fix/generate-before-credit-svg-pdf` (`3e5172b` fix, `e2e5d75` test refresh);
 - Test preview deploy `6ac2be0e4e7ec9c4a575cae4`;
-- **not in production** (awaiting approval).
+- **merged as #213 (`815f8b6`) and live in Netlify deploy `6ac2c50d06704800091a46b4`.**
 
 ## 1. Repository reconciliation
 - **PNG fix:** the PNG "generate first, charge second" change (the handover's local-only work) is
@@ -142,15 +142,7 @@ changed** in this release-critical work.
 | Real paid path with this fix on the CLPeasy Test database | Not run from here (Test Supabase unreachable). Test preview `6ac2be0e4e7ec9c4a575cae4` is ready for an owner check with a Test PAYG account |
 | Physical actual-size print, Cricut Print Then Cut | Not performed (no hardware) |
 | First genuine live purchase, invoice email, live duplicate delivery | Awaits a genuine customer purchase; no live payment |
-| Production deployment of `3e5172b` | **Awaiting approval** |
+| Production deployment | **Done:** #213 `815f8b6`, deploy `6ac2c50d…`. Production guest capture at 1366 and 390 px: PNG, SVG and PDF delivered and inspected |
 
 ## Decision
-**NOT READY FOR MARKETING.** Blockers:
-1. iPhone/Safari customer journey and real file handling not verified on a real device.
-2. The SVG/PDF generate-before-credit fix is not yet in production (approval needed). Until then, a
-   rare SVG or PDF generation failure could still use a credit.
-3. The paid path with this fix has not been exercised against the CLPeasy Test database
-   (owner check on preview `6ac2be0e4e7ec9c4a575cae4`).
-
-**Desktop Chromium:** real-file delivery, content and credit ordering pass on production
-(guest), the Test preview and local `main`.
+Superseded by the final sign-off and `OUTSTANDING-REGISTER-2026-10-04.md`.
