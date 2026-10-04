@@ -1377,11 +1377,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="hazard-review-notice field-alert field-alert-warn" role="alert" style="display:none;margin-bottom:16px;font-size:13px;"></div>
 
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
-      <div class="review-download-grid">
-      <button id="btn-pdf" onclick="printToPDF()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">▣ PDF</button>      <button id="btn-svg" onclick="downloadSVG()" style="background:white;color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">⬡ SVG</button>
-      <button class="btn-next" style="width:100%;padding:14px;font-size:15px;opacity:0.4;pointer-events:none;" id="btn-png" onclick="downloadPNG()">⬇ PNG</button>
-      
-      </div>
+      <button type="button" id="btn-view-label" class="btn-next" onclick="viewReviewLabel()" aria-controls="preview-panel-el preview-sheet" style="width:100%;padding:14px;font-size:16px;margin-top:10px;">View label ↗</button>
       <!-- Stage 2: the two current printing routes (single label: PDF; several on A4: Print Sheet Composer). -->
       <div class="dl-format-help" id="dl-format-help">
         <p><strong>Printing your labels?</strong> For a single label, use <strong>PDF</strong>. For several labels on A4, use the <strong>Print Sheet Composer</strong>. Always print at <strong>Actual Size / 100%</strong>.</p>
@@ -5534,6 +5530,12 @@ function wizClearChat(){
   wizParsed=null;
   document.getElementById('wiz-messages').innerHTML='';
   wizGreet();
+}
+function viewReviewLabel(){
+  updateLabel();
+  if(window.matchMedia('(max-width:860px)').matches){openPreviewSheet();return;}
+  const preview=document.getElementById('preview-panel-el');
+  if(preview){preview.setAttribute('tabindex','-1');preview.scrollIntoView({behavior:'smooth',block:'center'});preview.focus({preventScroll:true});}
 }
 function openPreviewSheet(){const sheet=document.getElementById('preview-sheet');if(sheet){sheet.classList.add('open');document.body.style.overflow='hidden';}}
 function closeSheet(e){if(!e||e.target===document.getElementById('preview-sheet')||e===undefined){document.getElementById('preview-sheet').classList.remove('open');document.body.style.overflow='';}}
