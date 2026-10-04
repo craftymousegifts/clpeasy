@@ -215,7 +215,10 @@ const server = http.createServer((req, res) => {
       await new Promise(r => setTimeout(r, 500));
       s = await state(t3);
       const k = await t3.evaluate(() => (window.__rpc || []).filter(x => x[0] === 'consume_download').map(x => x[1].p_label_key));
-      assert.deepStrictEqual(k, [null], 'C6: no-key label is charged once, with no label key, only when the window exists');
+      // Since #211 a label without a product name is missing required content:
+      // it can never be exported, so it is never charged (stronger than before).
+      assert.deepStrictEqual(k, [], 'C6/#211: a label with no product name is blocked and never charged');
+      assert.ok(await t3.evaluate(() => !_downloadAllowed() && /product name/i.test(_downloadBlockedMessage())), 'C6/#211: the block names the missing product name');
       ok('4d: label without a key: blocked pop-up free, successful PDF charged once (C6)');
       await t3.close();
       // Download refused by the server: the pre-opened window is closed, nothing delivered.

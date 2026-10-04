@@ -190,7 +190,8 @@ const server = http.createServer((req, res) => {
       await t.evaluate(() => downloadSVG());
       assert(await waitFor(t, () => window.__downloads.some(d => /\.svg$/.test(d))), 'SVG handed over');
       g = await panel(t, 'dl-print-guidance');
-      assert(/SVG is saved at 60 × 60 mm/.test(g.text), 'SVG guidance states its mm size: ' + g.text);
+      // Wording updated by #209; the requirement (state the saved mm size) is unchanged.
+      assert(/SVG uses 60 × 60 mm/.test(g.text) && /still shows 60 × 60 mm/.test(g.text), 'SVG guidance states its mm size: ' + g.text);
       ok('SVG download: states the saved mm size and to check it after importing');
 
       const popupP = new Promise(r => browser.once('targetcreated', async tg => r(await tg.page())));

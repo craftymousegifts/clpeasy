@@ -245,7 +245,9 @@ server.listen(0, '127.0.0.1', async () => {
         assert(g.every(x => Math.abs(x.gap - g[0].gap) <= 1), 'card name sits the same distance below every icon');
         assert(g[1].svg && g[2].svg && g[1].svg[0] >= 30 && g[1].svg[0] <= 36, 'SVG icons rendered at emoji size');
         const txt = await t.evaluate(() => document.body.innerText);
-        for (const s of ['8 downloads for £4.99', '+3 bonus with every pack', '£8.99/month until']) assert(txt.includes(s), 'missing: ' + s);
+        // 4 Oct 2026: the visible PAYG card now reads "8 downloads · includes 3
+        // bonus" with the button "Buy 8 downloads — £4.99" (same price and count).
+        for (const s of ['Buy 8 downloads — £4.99', '8 downloads · includes 3 bonus', '+3 bonus with every pack', '£8.99/month until']) assert(txt.includes(s), 'missing: ' + s);
         assert.strictEqual(await t.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, 'no horizontal scroll');
         await t.evaluate(() => document.querySelector('.cards').scrollIntoView({ block: 'start', behavior: 'instant' }));
         await t.screenshot({ path: path.join(SHOTS, `pricing-${name}.png`) });
@@ -352,8 +354,17 @@ server.listen(0, '127.0.0.1', async () => {
       srv.lockAt = Date.now();
       const ctx = await newCustomer();
       const t = await open(ctx, 'pricing.html');
+      // PAYG needs the customer's (never pre-ticked) immediate-supply request:
+      // without it nothing is sent; with it, Stripe Checkout opens.
+      const before = srv.requests.length;
+      await t.evaluate(() => startPaygCheckout());
+      await new Promise(r => setTimeout(r, 300));
+      assert.strictEqual(srv.requests.length, before, 'no PAYG checkout request without the consent tick');
+      assert.strictEqual(await t.evaluate(() => !!document.querySelector('#payg-consent-error.show')), true, 'consent prompt shown');
+      await t.evaluate(() => { document.getElementById('payg-consent').checked = true; });
       await opensCheckout(t, () => t.evaluate(() => startPaygCheckout()));
       assert.strictEqual(srv.requests.at(-1).productKey, 'payg_5');
+      assert.strictEqual(srv.requests.at(-1).immediateSupplyConsent, true, 'consent recorded on the request');
       const t2 = await open(ctx, 'pricing.html');
       assert.strictEqual((await indicator(t2)).visible, false, 'PAYG does not show the subscription indicator');
       assert.deepStrictEqual([t.alerts, t2.alerts], [[], []]);
