@@ -155,3 +155,31 @@ The register itself could not be reached from the build environment; the certifi
 - Retired, unpublished `clpeasy-flow.html` (404 on production) still says "filed"; it is not public, so it was left alone.
 
 **Remaining placeholders:** privacy 7, terms 1 (clause 9 subscriptions), cookie 1, refund 1.
+
+## Round 3: factual placeholders (5 Oct 2026)
+
+### A. Factual: evidence found
+| Item | Evidence | Result |
+|---|---|---|
+| Download-record retention | `label_downloads` FK `user_id → auth.users ON DELETE CASCADE`; no cleanup function or `pg_cron` (extension not installed); 16 rows 31 Jul–29 Sep | **Resolved:** kept while the account exists, deleted with the account |
+| Rate-limit (IP) retention | `api_rate_limits(rl_key 'search:<IP>'/'wizard:<IP>', day, count)`; `increment_rate_limit` only inserts/updates; no deletion job. 1 row currently (4 Oct); earlier rows are absent, cause unknown (likely manual) | **Resolved:** not deleted automatically (stated as such) |
+| Zoho Mail | Internal monitor page: Zoho Mail Lite, mailboxes support@ and noreply@, SMTP `smtp.zoho.eu:587`, DKIM/SPF configured. The project plan records Zoho SMTP for Supabase Auth emails. `send-support-email` delivers to support@ (the Zoho mailbox). Live Supabase Auth SMTP settings and DNS could not be read from here | **Resolved** from internal records: support@/noreply@ mailboxes (EU) and account emails |
+| Anthropic | `clp-wizard` (Guide Me): `api.anthropic.com/v1/messages`, model allowlist (default `claude-haiku-4-5-20251001`; the Builder requests `claude-sonnet-4-20250514`), max 1000 tokens (cap 2000), sends a fixed system prompt plus the last 8 chat messages. `clp-search` (Knowledge Base): `claude-haiku-4-5-20251001`, the question text only. No email, user ID or label data is sent; the IP is used only for the Supabase daily limit (40/day per IP). Anthropic's published policy: API inputs/outputs deleted within 30 days; flagged requests up to 2 years; ZDR only by agreement | **Resolved** (standard terms stated; whether CLPeasy has a ZDR agreement is not known, so the standard position is used) |
+| Brevo cancellation/win-back | `clp-account-events`: pause sends transactional template 7 immediately; cancel updates the Brevo contact (CANCEL_REASON, SUBSCRIPTION_STATUS) for a Brevo automation (templates for save offers 8/9 and win-back days 3/14/28: 12/10/11 are defined); save-offer acceptance updates attributes. The live automation timing and unsubscribe links sit in Brevo, which is not readable here | **Partly resolved:** what is sent is stated; basis and unsubscribe remain B |
+| Stripe renewal reminders | No CLPeasy code sends them. Stripe docs: the "Send emails about upcoming renewals" switch is Dashboard-only and not exposed by the API | **Not establishable here:** owner Dashboard check (placeholder reworded with exact steps) |
+| International transfers (technical) | Supabase `eu-west-2` London (verified); Zoho EU data centre (`smtp.zoho.eu`); Anthropic is a US company. Others not technically verified | **Locations stated;** mechanism remains B |
+| Server logs | Supabase free plan; the docs did not give a definitive log-retention figure | **Not establishable:** removed from the policy bullet rather than guessed |
+
+### B. Legal/policy decisions (not implemented)
+| Decision | Safest practical option |
+|---|---|
+| Lawful basis for Anthropic processing | Treat it as part of providing the service you asked for (contract) when you use Guide Me or Knowledge Base, and keep the on-page note "Do not include personal information". Confirm with an adviser |
+| International-transfer mechanism | Rely on the providers' own UK transfer terms (e.g. the Anthropic, Stripe and Google data processing addenda incorporating the UK IDTA/Addendum or adequacy). The owner checks each DPA is accepted and names the mechanism |
+| Brevo cancellation/win-back emails | Treat save-offer and win-back emails as marketing: make sure each has an unsubscribe link and send them only under the soft opt-in, which needs a clear opt-out offered at sign-up. Otherwise keep only the pause/cancel confirmation (service) emails |
+| Plausible opt-out | Approve the proposed one-click opt-out (the "Essential only" button and a Cookie Policy link set Plausible's own `plausible_ignore` flag) and correct the banner text |
+| Subscriptions cancelled within 14 days | Safest: refund in full if a subscriber cancels within 14 days of first purchase and say so in the Refund Policy. No code change needed. Alternative: add a "start now" request at subscription checkout, then legal advice on the amount |
+| Terms clause 7 liability (includes PAYG) | Keep the corrected wording, which only extends the cap to PAYG customers and favours customers; get it confirmed in any legal review |
+
+### Placeholders
+- **Remaining: 7.** privacy 4 (AI basis, Stripe renewal-reminder check, Brevo follow-up basis/unsubscribe, transfer mechanism), cookie 1 (Plausible opt-out), terms 1 (clause 9), refund 1 (subscriptions).
+- **Guard:** new test `tests/no-review-placeholders.js` fails while any deployable file still contains a placeholder.

@@ -96,12 +96,12 @@ footer-legal{display:block;text-align:center;padding:32px;border-top:1px solid v
   <ul>
     <li>Provide and maintain the CLPeasy service</li>
     <li>Send account-related emails (verification, password reset, subscription notifications)</li>
-    <li>Send subscription renewal reminders before your annual plan renews <strong>[OWNER/LEGAL REVIEW: CLPeasy has no code that sends these; confirm Stripe's upcoming-renewal emails are switched on, or remove this line]</strong></li>
+    <li>Send subscription renewal reminders before your annual plan renews <strong>[OWNER/LEGAL REVIEW: CLPeasy's own code does not send these; they can only come from Stripe. Owner to check Stripe Dashboard → Settings → Billing → Subscriptions and emails → 'Send emails about upcoming renewals'. Keep this line only if it is switched on]</strong></li>
     <li>Process payments and manage your subscription</li>
     <li>Improve and develop the service</li>
     <li>Comply with legal obligations</li>
     <li>Prevent fraud and abuse</li>
-    <li>Send emails about pausing or cancelling a subscription, including emails inviting you to stay or come back <strong>[OWNER/LEGAL REVIEW: these are sent through Brevo automations; confirm whether they are marketing and the legal basis / opt-out]</strong></li>
+    <li>Send emails about pausing or cancelling a subscription. If you pause, we send a confirmation email. If you cancel, we pass your cancellation reason to Brevo, where our automated follow-up emails (which can include an offer to stay or an invitation to come back) are set up <strong>[OWNER/LEGAL REVIEW: lawful basis and marketing status of the follow-up emails; confirm in Brevo that they include an unsubscribe link]</strong></li>
   </ul>
   <p>We will never sell your personal data to third parties or use it for advertising purposes.</p>
 
@@ -109,7 +109,7 @@ footer-legal{display:block;text-align:center;padding:32px;border-top:1px solid v
   <p>Your data is stored securely in Supabase (AWS eu-west-2, London region). All data is encrypted in transit using TLS and encrypted at rest. We implement appropriate technical and organisational measures to protect your data.</p>
   <p>Payments are processed by Stripe — we do not store your card details. Stripe is PCI DSS compliant.</p>
   <p>Your saved labels, business details, label folders and history are stored in your own browser, not in our database. The SDS text you paste into Smart Paste is processed in your browser to read the hazard information; it is not sent to CLPeasy or to any third party.</p>
-  <p>Some of our service providers (for example Anthropic, which answers Guide Me and Knowledge Base questions) may process data outside the UK. <strong>[OWNER/LEGAL REVIEW: name each provider's processing location and the transfer safeguard relied on (e.g. UK adequacy regulations or the UK International Data Transfer Addendum)]</strong></p>
+  <p>Our database (Supabase) is hosted in London, and our Zoho Mail mailboxes use Zoho's EU data centre. Some service providers are based outside the UK and may process data there, for example Anthropic (United States), which answers Guide Me and Knowledge Base questions. <strong>[OWNER/LEGAL REVIEW: name the transfer safeguard relied on for each non-UK provider (for example UK adequacy regulations or the UK International Data Transfer Addendum)]</strong></p>
 
   <h2>5. Data Retention</h2>
   <p>We retain your account data for as long as your account is active. Specifically:</p>
@@ -118,8 +118,9 @@ footer-legal{display:block;text-align:center;padding:32px;border-top:1px solid v
     <li>If you request deletion of your account, we will delete your personal data within 30 days of your request.</li>
     <li>Financial records (payment history, invoice data) are retained for 7 years as required by UK tax law, even after account deletion.</li>
     <li>Labels you have downloaded to your own device are yours to keep and are not affected by account deletion.</li>
-    <li>Download records (product name, type, shape and size), daily question-limit records linked to IP addresses, and server logs: <strong>[OWNER/LEGAL REVIEW: retention period not yet set]</strong></li>
-    <li>Questions sent to Anthropic: <strong>[OWNER/LEGAL REVIEW: confirm Anthropic's retention for API data under CLPeasy's account terms]</strong></li>
+    <li>Download records (product name, type, shape and size) are kept while your account exists and are deleted automatically when your account is deleted.</li>
+    <li>Daily question-limit records (an IP address, the date and a count of questions) are not currently deleted automatically.</li>
+    <li>Questions sent to Anthropic: under Anthropic's standard terms for API customers, inputs and outputs are deleted within 30 days, except where Anthropic's automated systems flag a request as breaching its usage policy (kept for up to 2 years).</li>
   </ul>
   <p>To request account deletion, email us at <a href="mailto:support@clpeasy.com">support@clpeasy.com</a> with the subject line "Account deletion request". We will confirm deletion within 30 days.</p>
 
@@ -128,7 +129,7 @@ footer-legal{display:block;text-align:center;padding:32px;border-top:1px solid v
   <ul>
     <li><strong>Supabase</strong> — database and authentication (AWS London region)</li>
     <li><strong>Stripe</strong> — payment processing</li>
-    <li><strong>Zoho Mail</strong> — transactional email delivery <strong>[OWNER/LEGAL REVIEW: not found in the website or server code; confirm whether it is still used (for example for account emails) or remove]</strong></li>
+    <li><strong>Zoho Mail</strong> — our support@ and noreply@ mailboxes (EU data centre), including messages you send to support@clpeasy.com, and sending of account emails such as sign-up verification and password reset</li>
     <li><strong>Brevo</strong> — onboarding and account email delivery (e.g. welcome, trial reminder, subscription pause and cancellation emails), and delivery of messages you send through our support form</li>
     <li><strong>Anthropic</strong> — AI service that answers questions you type into Guide Me in the Builder or the Knowledge Base search (your question is sent to Anthropic to generate the answer)</li>
     <li><strong>Plausible Analytics</strong> — privacy-focused website visit statistics</li>
