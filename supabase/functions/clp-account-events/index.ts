@@ -1,7 +1,18 @@
 // supabase/functions/clp-account-events/index.ts
 //
-// Notifies Brevo of account lifecycle events (pause / cancel / save-offer-accepted)
-// so marketing automations can react. Called from account.html.
+// Account-page lifecycle follow-ups (pause / cancel / save-offer-accepted).
+// Called from account.html AFTER manage-subscription has changed the Stripe
+// subscription.
+//
+// BREVO STATUS OWNERSHIP (6 Oct 2026, Brevo remediation): this function no
+// longer writes ANY Brevo contact attribute (SUBSCRIPTION_STATUS,
+// CANCEL_REASON, DELETION_DATE, DISCOUNT_ACTIVE). stripe-webhook is the sole
+// writer of SUBSCRIPTION_STATUS (payg / active / paused / cancelled / ended):
+// every Account-page and Billing Portal change reaches Stripe first and
+// arrives there once per event. The cancellation confirmation email is sent by
+// stripe-webhook too (both routes). This function still sends the
+// pause-confirmation email (template 7). The cancel reason is already stored in
+// profiles.cancel_reason by manage-subscription.
 //
 // SECURITY FIX (2026-07-27): this function was previously deployed with
 // verify_jwt=false and trusted an `email` field supplied directly in the request
@@ -105,7 +116,7 @@ Deno.serve(async (req: Request) => {
     const { data: { user }, error: authError } = await supabaseAsCaller.auth.getUser();
     if (authError || !user) return json({ error: 'Not authenticated' }, 401);
 
-    const { event, reason, deletionDate } = await req.json();
+    const { event } = await req.json();
 
     if (!event || !ALLOWED_EVENTS.has(event)) {
       return json({ error: 'Unknown or missing event' }, 400);
@@ -121,11 +132,6 @@ Deno.serve(async (req: Request) => {
     const email = profile?.email || user.email;
     if (!email) return json({ error: 'No email on file for this account' }, 400);
 
-    // Format deletion date for email
-    const deletionFormatted = deletionDate
-      ? new Date(deletionDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
-      : '';
-
     let sent = false;
 
     if (event === 'subscription_paused') {
@@ -135,37 +141,10 @@ Deno.serve(async (req: Request) => {
     }
 
     else if (event === 'subscription_cancelled') {
-      // Route to correct save offer template based on reason
-      // Send after 2hr delay — handled by Brevo automation trigger instead
-      // Here we just add contact to Brevo with event data so automation fires
-      await fetch('https://api.brevo.com/v3/contacts/doubleOptinConfirmation', {
-        method: 'POST',
-        headers: { 'api-key': BREVO_API_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          attributes: {
-            CANCEL_REASON: reason || '',
-            DELETION_DATE: deletionFormatted,
-            SUBSCRIPTION_STATUS: 'cancelled',
-          },
-          listIds: [],
-          updateEnabled: true,
-        }),
-      }).catch(() => null);
-
-      // Also update contact attributes via contacts API
-      await fetch(`https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}`, {
-        method: 'PUT',
-        headers: { 'api-key': BREVO_API_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          attributes: {
-            CANCEL_REASON: reason || '',
-            DELETION_DATE: deletionFormatted,
-            SUBSCRIPTION_STATUS: 'cancelled',
-          },
-        }),
-      }).catch(() => null);
-
+      // Nothing to send from here: stripe-webhook records the scheduled
+      // cancellation in Brevo (SUBSCRIPTION_STATUS = cancelled) and sends the
+      // cancellation confirmation for both the Account page and the Billing
+      // Portal. No save-offer or win-back emails are sent by CLPeasy.
       sent = true;
     }
 
@@ -204,17 +183,7 @@ Deno.serve(async (req: Request) => {
         discount_ends: stripeDiscountApplied ? discountEnds : null,
       }).eq('id', user.id);
 
-      // Update Brevo contact status
-      await fetch(`https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}`, {
-        method: 'PUT',
-        headers: { 'api-key': BREVO_API_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          attributes: {
-            SUBSCRIPTION_STATUS: 'active',
-            DISCOUNT_ACTIVE: stripeDiscountApplied ? 'true' : 'false',
-          },
-        }),
-      }).catch(() => null);
+      // No Brevo write here: stripe-webhook owns SUBSCRIPTION_STATUS.
       sent = true;
 
       // PRE-DEPLOYMENT REVIEW FINDING (2026-07-28): `success: sent` only ever

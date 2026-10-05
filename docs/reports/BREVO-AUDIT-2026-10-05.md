@@ -530,3 +530,33 @@ Deploy to the **CLPeasy Test** Supabase project / Stripe test mode, if its Brevo
   - The same request also carries the non-existent `CANCEL_REASON` and `DELETION_DATE`, so whether Brevo accepts the whole update cannot be confirmed without a live call.
 - **Why it is harmless:** the value matches what the webhook writes for the same event, no workflow reads the attribute yet, and there are currently 0 active subscribers.
 - **Optional, needs owner approval:** to make the webhook the *only* writer, add `clp-account-events` to the repo and remove its cancel and save-offer Brevo writes. The pause email send stays.
+
+## Round 5: SUBSCRIPTION_STATUS has a single owner (6 Oct 2026, approved)
+
+### `clp-account-events`
+- **Added to the repo.** The first commit (`aaeadbb`) is the **deployed v38 source, unchanged**, so the change is reviewable as a diff. It was re-read from Supabase on 6 Oct; still v38, `verify_jwt: true`.
+- **Change (second commit):** the function no longer makes any Brevo contact call.
+  - **Cancel:** the `doubleOptinConfirmation` POST and the contact PUT are removed (`SUBSCRIPTION_STATUS`, `CANCEL_REASON`, `DELETION_DATE`). It now just returns `{ success: true }`, as before.
+  - **Save offer:** the contact PUT (`SUBSCRIPTION_STATUS = active`, `DISCOUNT_ACTIVE`) is removed. The Stripe coupon, the profile flags and the `{ success, discountApplied }` response are unchanged. This branch is still unreachable from the Account page (`SAVE_OFFER_ENABLED = false`).
+- **Unchanged:**
+  - the pause confirmation (template 7 to the account email, `FIRSTNAME` param, `success` reflects the send);
+  - JWT authentication and the account-email lookup;
+  - the allowed events, CORS, and every response shape.
+- `account.html` and `manage-subscription` are not changed, so the customer-facing Stripe pause and cancellation are exactly as before. The cancellation confirmation for both routes comes from `stripe-webhook`.
+
+### Ownership, now enforced by tests
+- `tests/deno/clp-account-events.test.ts` (6 scenarios):
+  - pause sends only template 7 and no attribute;
+  - a pause send failure still returns `success: false`;
+  - cancel makes **no** Brevo call;
+  - save offer is unchanged in Stripe and the profile, with no Brevo call;
+  - authentication (401/400) is unchanged;
+  - **repository check: outside comments, `stripe-webhook` is the only Edge Function containing `SUBSCRIPTION_STATUS`.**
+- Verified to fail when expected:
+  - against the deployed v38 code (cancel writes to Brevo);
+  - when a `SUBSCRIPTION_STATUS` write is added to another function.
+- `grep` of the whole repo (excluding docs and tests): `SUBSCRIPTION_STATUS` appears in code only in `stripe-webhook`. `notify-signup` and `clp-account-events` mention it only in comments.
+
+### Deploy notes (when approved)
+- Deploy `clp-account-events` with JWT verification **on** (Supabase CLI default; do not pass `--no-verify-jwt`), matching the current deployment.
+- Deploy it together with, or after, `stripe-webhook`. Otherwise, between the two deploys, Account-page cancellations would get neither the old attribute write nor the new webhook update. Harmless while no workflow reads the attribute, but tidier.
