@@ -183,3 +183,24 @@ The register itself could not be reached from the build environment; the certifi
 ### Placeholders
 - **Remaining: 7.** privacy 4 (AI basis, Stripe renewal-reminder check, Brevo follow-up basis/unsubscribe, transfer mechanism), cookie 1 (Plausible opt-out), terms 1 (clause 9), refund 1 (subscriptions).
 - **Guard:** new test `tests/no-review-placeholders.js` fails while any deployable file still contains a placeholder.
+
+## Round 4: owner decisions applied (5 Oct 2026)
+
+### Changes
+| Decision | Change | Evidence / test |
+|---|---|---|
+| Plausible opt-out (approved) | Banner on index, auth, pricing and checkout: "Essential only" sets Plausible's own `plausible_ignore` flag; "Accept" clears it. A one-line `<head>` snippet on the 7 Plausible pages (index, account, auth, builder, pricing, privacy, support) applies an earlier "Essential only" choice before the script loads. The Cookie Policy has a new "Your analytics choice" section (status plus Turn analytics off / Allow analytics) and `plausible_ignore` in the storage table. The banner text now says what is used: essential browser storage, plus Plausible with no cookies, which can be turned off | Plausible docs: `localStorage.plausible_ignore` is the supported opt-out. Plausible's real tracker (npm 0.4.6) in Chromium: no choice → 1 event sent; Turn analytics off → **0 sent** ("Ignoring Event: localStorage flag"); Allow again → 1 sent. All 4 banners: Essential only → flag `true`; Accept → flag removed. An earlier "essential" choice on the Builder → flag set. Banner fits at 390 px (185 px tall, no sideways scroll) |
+| First subscription within 14 days (approved) | Refund Policy: new "Your first 14 days of a subscription" section (full refund of the first payment if the customer cancels within 14 days of taking out a monthly or annual subscription; ask by email; does not restart at each renewal; statutory rights unaffected). The monthly and annual paragraphs point to it. Terms clause 9 says the same. No checkout change | Rendered 375/1366 |
+| Brevo | Privacy now describes only the pause/cancel confirmation emails and says marketing emails are not sent without agreement. A marker stays until the owner confirms the cancellation-triggered save-offer/win-back automations (templates 8–12) are paused. Sign-up has **no** marketing opt-in or opt-out, so a soft opt-in is not evidenced | `auth.html`, `account.html`, `dashboard.html` searched |
+| Anthropic | The row states exactly what is sent (question, or Guide Me message plus up to the last 8 chat messages and fixed CLPeasy instructions; never name, email, account or label data). The legal-basis cell keeps its marker (professional confirmation) | deployed `clp-wizard`/`clp-search`; `builder.html` system prompt has no interpolated data |
+| Transfers | Named only where the provider's own documentation supports it: EU-hosted Zoho/Brevo/Plausible (UK adequacy for the EU); Stripe (UK IDTA in its Data Transfers Addendum); Anthropic (SCCs in its DPA, part of its Commercial Terms); Netlify (UK Extension to the DPF plus SCCs). Google sign-in, Google Fonts and the CDNs are described as direct browser connections under their own policies. Marker removed | provider documentation (search results from stripe.com, privacy.anthropic.com, plausible.io, help.brevo.com, netlify.com) |
+| Retention | Reconciled. `pg_stat_user_tables` since 22 May 2026: `api_rate_limits` **1 insert, 0 updates, 0 deletes**. No function, trigger, policy or job deletes rows, and recent logs show one Knowledge Base call (200) and one Guide Me call refused before the rate-limit step (403, origin check). The single row is because the feature has rarely been used, not because of deletion. "Not currently deleted automatically" is evidenced. Server logs: entries from 2 Oct still present, so retention is at least 3 days and the exact period is unknown; **no log-retention claim is made** | SQL statistics and logs |
+| Liability | Clause 7 (includes PAYG) kept, **recommended for future professional Terms review**; not a release blocker | — |
+
+### Markers remaining: 3 (all in `privacy.html`)
+1. **Lawful basis for Guide Me / Knowledge Base (Anthropic):** needs professional confirmation.
+2. **Stripe renewal reminders:** owner Dashboard check. Then keep or remove the line.
+3. **Brevo marketing automations:** owner to pause them in Brevo and confirm.
+
+### Separate observation (not changed, outside #220)
+The `cmg-contact` function (Crafty Mouse Gifts site, not CLPeasy) returned HTTP 500 twice on 5 Oct ("Unexpected token 'w', "website=ht"… is not valid JSON"). That contact form posts form-encoded data to a function that expects JSON.

@@ -44,6 +44,7 @@ footer-legal{display:block;text-align:center;padding:32px;border-top:1px solid v
 }
 </style>
 <!-- Privacy-friendly analytics by Plausible -->
+<script>/* Analytics preference: "Essential only" turns Plausible off via its own opt-out flag */try{if(localStorage.getItem('clpeasy-cookie-consent')==='essential')localStorage.setItem('plausible_ignore','true')}catch(e){}</script>
 <script async src="https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"></script>
 <script>
   window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
@@ -85,8 +86,8 @@ footer-legal{display:block;text-align:center;padding:32px;border-top:1px solid v
     <tr><td>Business name &amp; address</td><td>Appears on your CLP labels (saved in your browser, not in your CLPeasy account)</td><td>Contract performance</td></tr>
     <tr><td>Label data (scent name, hazard info etc)</td><td>Generating your labels. Saved labels are kept in your browser. When you download a label, we record its product name, product type, shape and size with the download, to count your downloads and allow free re-downloads of the same label within 7 days</td><td>Contract performance</td></tr>
     <tr><td>Payment data</td><td>Processing subscriptions and Pay As You Go purchases (handled by Stripe — we do not store card details). For Pay As You Go, your request for the credits to be added straight away, with its date and time, is recorded with the payment</td><td>Contract performance</td></tr>
-    <tr><td>Usage data (pages visited, features used)</td><td>Improving the service. Page visits are counted with Plausible Analytics, which produces aggregated statistics and does not use cookies</td><td>Legitimate interests</td></tr>
-    <tr><td>Questions you type into Guide Me (in the Builder) or the Knowledge Base search</td><td>Answering your question. The text you type, and for Guide Me the recent conversation, is sent to Anthropic to generate the answer. Do not include personal information you do not want shared</td><td><strong>[OWNER/LEGAL REVIEW: legal basis to be confirmed]</strong></td></tr>
+    <tr><td>Usage data (pages visited, features used)</td><td>Improving the service. Page visits are counted with Plausible Analytics, which produces aggregated statistics and does not use cookies. You can turn analytics off at any time with "Essential only" on the cookie banner or in our <a href="cookie-policy.html#analytics-choice">Cookie Policy</a></td><td>Legitimate interests</td></tr>
+    <tr><td>Questions you type into Guide Me (in the Builder) or the Knowledge Base search</td><td>Answering your question. Only what you type is sent to Anthropic: your Knowledge Base question, or for Guide Me your message with up to the last 8 messages of the conversation, together with fixed instructions written by CLPeasy. We do not send your name, email address, account details or label data. Please do not type personal information you do not want shared</td><td><strong>[OWNER/LEGAL REVIEW: legal basis to be confirmed]</strong></td></tr>
     <tr><td>Support form messages (name, email, description of the problem and browser details you choose to give)</td><td>Answering your support request (delivered to us by email through Brevo)</td><td>Legitimate interests</td></tr>
     <tr><td>IP address</td><td>Security, fraud prevention, and limiting how many Guide Me and Knowledge Base questions can be asked each day</td><td>Legitimate interests</td></tr>
   </table>
@@ -101,7 +102,7 @@ footer-legal{display:block;text-align:center;padding:32px;border-top:1px solid v
     <li>Improve and develop the service</li>
     <li>Comply with legal obligations</li>
     <li>Prevent fraud and abuse</li>
-    <li>Send emails about pausing or cancelling a subscription. If you pause, we send a confirmation email. If you cancel, we pass your cancellation reason to Brevo, where our automated follow-up emails (which can include an offer to stay or an invitation to come back) are set up <strong>[OWNER/LEGAL REVIEW: lawful basis and marketing status of the follow-up emails; confirm in Brevo that they include an unsubscribe link]</strong></li>
+    <li>Send a confirmation email when you pause or cancel your subscription. We do not send you marketing emails, such as offers to stay or invitations to come back, unless you have agreed to receive them <strong>[OWNER/LEGAL REVIEW: true only once the Brevo save-offer and win-back automations triggered by cancellation (templates 8, 9, 10, 11, 12) are paused in Brevo; sign-up currently offers no marketing opt-in or opt-out. Remove this marker when the owner confirms they are paused]</strong></li>
   </ul>
   <p>We will never sell your personal data to third parties or use it for advertising purposes.</p>
 
@@ -109,7 +110,14 @@ footer-legal{display:block;text-align:center;padding:32px;border-top:1px solid v
   <p>Your data is stored securely in Supabase (AWS eu-west-2, London region). All data is encrypted in transit using TLS and encrypted at rest. We implement appropriate technical and organisational measures to protect your data.</p>
   <p>Payments are processed by Stripe — we do not store your card details. Stripe is PCI DSS compliant.</p>
   <p>Your saved labels, business details, label folders and history are stored in your own browser, not in our database. The SDS text you paste into Smart Paste is processed in your browser to read the hazard information; it is not sent to CLPeasy or to any third party.</p>
-  <p>Our database (Supabase) is hosted in London, and our Zoho Mail mailboxes use Zoho's EU data centre. Some service providers are based outside the UK and may process data there, for example Anthropic (United States), which answers Guide Me and Knowledge Base questions. <strong>[OWNER/LEGAL REVIEW: name the transfer safeguard relied on for each non-UK provider (for example UK adequacy regulations or the UK International Data Transfer Addendum)]</strong></p>
+  <p>Our database (Supabase) is hosted in London. Some of our service providers store or process data outside the UK:</p>
+  <ul>
+    <li><strong>Zoho Mail, Brevo and Plausible</strong> store data in the European Union (Zoho's EU data centre; Brevo in France, Germany and Belgium; Plausible in Germany). The UK recognises the EU as providing adequate protection for personal data.</li>
+    <li><strong>Stripe</strong>: transfers from the UK are covered by the UK International Data Transfer Addendum, which Stripe incorporates in the Data Transfers Addendum to its Data Processing Agreement.</li>
+    <li><strong>Anthropic</strong> (United States): transfers are covered by the Standard Contractual Clauses in Anthropic's Data Processing Addendum, which forms part of Anthropic's Commercial Terms.</li>
+    <li><strong>Netlify</strong> (United States): Netlify is certified under the UK Extension to the EU-U.S. Data Privacy Framework, and its Data Processing Addendum also includes Standard Contractual Clauses.</li>
+    <li>When you sign in with Google, or when your browser loads fonts from Google Fonts or software libraries from jsDelivr or cdnjs, your browser connects to those services directly, and they handle that connection under their own privacy policies.</li>
+  </ul>
 
   <h2>5. Data Retention</h2>
   <p>We retain your account data for as long as your account is active. Specifically:</p>

@@ -82,6 +82,12 @@ footer-legal{display:block;text-align:center;padding:32px;border-top:1px solid v
       <td>Until you clear your browser data</td>
     </tr>
     <tr>
+      <td style="word-break:break-word;overflow-wrap:anywhere">plausible_ignore (local storage)</td>
+      <td>Essential</td>
+      <td>Set only if you turn analytics off, so Plausible does not count your visits</td>
+      <td>Until you allow analytics again or clear your browser data</td>
+    </tr>
+    <tr>
       <td style="word-break:break-word;overflow-wrap:anywhere">checkout_plan, checkout_billing, checkout_payg (session storage)</td>
       <td>Essential</td>
       <td>Remembers the plan or pack you chose while you sign in to complete a purchase</td>
@@ -96,9 +102,30 @@ footer-legal{display:block;text-align:center;padding:32px;border-top:1px solid v
   <p>When you choose to buy Pay As You Go downloads or an Easy Start Unlimited subscription, you will be redirected to Stripe's secure payment page. Stripe may set its own cookies on that page. Please refer to <a href="https://stripe.com/privacy" target="_blank">Stripe's Privacy Policy</a> for details.</p>
   <p>If you choose to sign in with Google, Google may set cookies as part of their OAuth authentication flow. Please refer to <a href="https://policies.google.com/privacy" target="_blank">Google's Privacy Policy</a> for details.</p>
   <p>CLPeasy does not use Google Analytics, Facebook Pixel, or any other advertising or analytics tracking cookies. We use Plausible Analytics to count page visits and produce aggregated statistics that help us improve CLPeasy. Plausible does not set cookies. Its script does read one setting from your browser's local storage (<code>plausible_ignore</code>), which is how a visitor can tell it not to count their visits.</p>
-  <p><strong>[OWNER/LEGAL REVIEW: the ICO's statistical-purposes exception requires an easy, free way to object to analytics. A one-click opt-out has been proposed but not yet built; describe it here once approved.]</strong></p>
+  <h3 id="analytics-choice" style="font-size:16px;margin:20px 0 8px;">Your analytics choice</h3>
+  <p>Analytics is optional. Choosing <strong>Essential only</strong> on the cookie banner, or <strong>Turn analytics off</strong> below, stops Plausible from counting your visits in this browser. You can change your choice at any time.</p>
+  <p id="analytics-status" aria-live="polite" style="font-weight:600;">Analytics is currently: checking…</p>
+  <p style="display:flex;gap:10px;flex-wrap:wrap;">
+    <button type="button" onclick="setAnalyticsChoice(false)" style="background:none;color:var(--text);border:1.5px solid var(--border);padding:10px 16px;border-radius:8px;font-size:14px;cursor:pointer;">Turn analytics off</button>
+    <button type="button" onclick="setAnalyticsChoice(true)" style="background:var(--teal);color:white;border:none;padding:10px 16px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">Allow analytics</button>
+  </p>
+  <script>
+  function showAnalyticsChoice(){
+    var off=false;try{off=localStorage.getItem('plausible_ignore')==='true';}catch(e){}
+    document.getElementById('analytics-status').textContent='Analytics is currently: '+(off?'off in this browser':'on');
+  }
+  function setAnalyticsChoice(allow){
+    try{
+      localStorage.setItem('clpeasy-cookie-consent',allow?'accepted':'essential');
+      if(allow)localStorage.removeItem('plausible_ignore');else localStorage.setItem('plausible_ignore','true');
+    }catch(e){}
+    showAnalyticsChoice();
+  }
+  showAnalyticsChoice();
+  </script>
 
   <h2>6. How to Control Cookies</h2>
+  <p>To change your analytics choice, use the <a href="#analytics-choice">analytics buttons above</a>.</p>
   <p>You can control and delete cookies through your browser settings. Please note that disabling essential cookies will prevent you from logging in to CLPeasy.</p>
   <p>Instructions for managing cookies in popular browsers:</p>
   <ul>
