@@ -25,3 +25,15 @@
   .homepage-image-hero{overflow:hidden!important}
   .homepage-image-hero>.homepage-hero-banner{width:125%!important;margin-left:-12.5%!important;margin-right:-12.5%!important}
 }
+
+
+/* Mobile viewport guard: public pages must never become wider than the
+   visual viewport. Long card copy, badges, media and legacy page sections
+   shrink/wrap instead of creating horizontal page scroll. */
+@media(max-width:860px){
+  html,body{max-width:100%;overflow-x:hidden}
+  body>*{max-width:100%}
+  main,section,header,footer,nav,article,aside,form{min-width:0;max-width:100%}
+  img,svg,video,canvas,iframe{max-width:100%}
+  input,select,textarea,button{max-width:100%}
+}
