@@ -1,0 +1,62 @@
+# CLPeasy final production + policy QA (5 Oct 2026)
+
+**Production audited:**
+- `main` `bb84b61` (#219);
+- Netlify deploy `6ac3022ace66790008fa6095` (ready, `context: production`, commit `bb84b61`).
+
+The served pages match `main` (differences are only Netlify's pretty-URL rewriting).
+
+**Branch with proposed corrections:** `audit/release-signoff-2026-10-05`. **Not merged, not deployed.**
+
+## Environment limits (BLOCKED here, not CLPeasy defects)
+The build environment's network policy blocks:
+- `clpeasy.com` (production was tested through its Netlify deploy address);
+- production and Test Supabase;
+- the jsDelivr/cdnjs CDNs, Plausible, Stripe and Google.
+
+As a result, live sign-up, login, Google sign-in, password reset, real balances, Guide Me answers and
+checkout could not be exercised live. They are covered by the automated tests (simulated Supabase
+and Stripe). No payment was made.
+
+## Release sign-off table
+| # | Area / page | Finding | Severity | Evidence | Action | Commit/PR | Retest |
+|---|---|---|---|---|---|---|---|
+| 1 | Whole site | All 41 internal URLs return 200; retired/internal pages return 404 | — | crawl of production deploy; nightly link scan and daily health check green on `bb84b61` | none | — | PASS |
+| 2 | Public pages at 375 / 390 / 1366 px | No horizontal scroll on any of 17 public pages | — | production browser run | none | — | PASS |
+| 3 | Builder exports (guest) | PNG 2362×1654, SVG 100×70 mm and a one-page PDF were delivered at 1366/390/375 px; byte-identical to 4 Oct | — | real files saved from production | none | — | PASS |
+| 4 | Automated suite | 82/83 pass on `bb84b61` | — | full run | see #5 | — | PASS (1 known) |
+| 5 | Pricing page: "checkout in progress" header indicator | Still not shown on `pricing.html`. #215 mounts it into the header links, but `public-nav.js` (deferred) rebuilds those links afterwards and removes it. Server-side duplicate-checkout protection and its dialog still work; `checkout.html` shows the indicator | Low | `pricing-checkout-ux` | A fix that remounts it was tested. It works on desktop, but on iPhone the indicator sits inside the collapsed menu and overlaps "Our story". Placement needs an owner decision, so the fix was **reverted** | — | OWNER DECISION |
+| 6 | Pricing header for signed-in visitors | Fixed by #215 | — | `pricing-signed-in-cta` PASS | none | #215 | PASS |
+| 7 | Repo / PRs | Production = `main`. Every 4–5 Oct branch matches its squash merge (patch-id). `fix/sitewide-ios-horizontal-overflow` (no PR) is an earlier draft superseded by #219. No unresolved comments on #213–#219. The 10 older open PRs are as dispositioned in `FINAL-PR-SIGNOFF-2026-10-04.md` | — | git / GitHub | none | — | PASS |
+| 8 | Pricing model | The site, FAQ, checkout and **server** agree on the **released** model: Easy Start Unlimited £9.99/month (£8.99 until 31 Dec 2026), £89/year, Easy Pro and top-ups retired, PAYG £4.99 = 8 downloads (5 + 3 bonus) **on every pack** until 31 Dec 2026, 14-day trial (10 watermarked downloads, no card). The QA brief lists a different model (Easy Pro £14.99, annual £99/£149, one-off bonus); that matches the June history, not the release approved on 2–3 Oct (`1895a92`, `4df62cc`) | High if the brief is the intended model | `create-checkout-session` stamps 8 downloads on every pack until 2027-01-01 | **None.** Changing it would be a commercial and server change | — | OWNER DECISION |
+| 9 | Release notes | 15 June entry mentions Easy Pro and top-ups | Info | dated history entry | none (accurate history) | — | PASS |
+| 10 | Builder / dashboard sidebar logo | Showed CLPeasy™; 60+ other places use ® | Low | grep | ™ → ® (the "Easy Trial™" plan name keeps ™) | branch | PASS (rendered) |
+| 11 | Trade mark ® | Terms say UK00004395085 was **filed** 31 May 2026. Using ® on a mark that is not yet **registered** is an offence under s.95 Trade Marks Act 1994 | Legal | terms.html clause 8 | Confirm the mark is entered on the register; if so, update clause 8 to "registered" | — | OWNER/LEGAL |
+| 12 | Cookie Policy | Listed `sb-access-token`/`sb-refresh-token` **cookies**. CLPeasy sets no cookies (0 cookies before or after consent); sign-in uses local storage `sb-qvkosdqcryrcfbjtaxic-auth-token`. Labels, business details, folders and history are local storage; checkout choices are session storage. Plausible not mentioned. "Pro subscription" stale. Footer lacked ® | Medium (inaccurate policy) | production browser measurement + code | Table and text corrected to the measured storage; Plausible named; purchase wording updated; date 5 Oct 2026 | branch | PASS (rendered 375/1366) |
+| 13 | Cookie banner | "Accept" and "Essential only" change nothing (no optional cookies or storage exist). Plausible loads for everyone | Low | code + measurement | none | — | OWNER/LEGAL |
+| 14 | Cookie table on phones | Duration column partly cut off at 375 px; **pre-existing** (481 px wide on production) | Low | measurement | New name cells wrap (now 389 px). Layout itself unchanged | branch | Pre-existing, improved |
+| 15 | Privacy Policy: processors | Missing: **Anthropic** (Guide Me and Knowledge Base questions are sent to the Anthropic API), **Plausible**, Google Fonts / jsDelivr / cdnjs (receive IP). Brevo purposes incomplete (support/feedback forms, pause/cancel/win-back emails via `clp-account-events`, `send-support-email`) | Medium | deployed edge functions `clp-wizard`, `clp-search`, `clp-account-events` | Added to the third-party list and purposes | branch | PASS (rendered) |
+| 16 | Privacy Policy: data table | Labels and business details are stored in the browser, not the account. The server records product name/type/shape/size per download. The PAYG consent timestamp is stored with the Stripe payment. IP is used for daily AI-question limits (`api_rate_limits`) | Medium | code | Rows corrected factually; date 5 Oct 2026 | branch | PASS |
+| 17 | Privacy: transfers, legal bases, retention | Anthropic (US) and other non-UK processors have no transfer wording; no legal basis given for AI questions; `api_rate_limits` retention unknown; "Zoho Mail" not found in code (may be Supabase Auth SMTP); "renewal reminders before your annual plan renews" has no CLPeasy code (only Stripe's own emails, if enabled); Brevo win-back emails are marketing | Legal | code | **not changed** | — | OWNER/LEGAL |
+| 18 | Terms | "Last updated 19 June" although clauses 6 and 9 changed 2–3 Oct; clause 2 said fragrance % is always entered (optional since `75c7311`) | Low | git history | Date 5 Oct 2026; "where relevant (optional)" | branch | PASS |
+| 19 | Terms: gaps | Clause 7 liability cap counts "subscription fees" only (PAYG); no clause for trial limits, credits not expiring, bonus credits, immediate supply, Stripe, browser-stored labels; clause 6 says registration is required, but guests can use the Builder (watermarked); the HSE wording differs (Terms "has not identified" vs FAQ "confirmed") | Legal | text | **not changed** | — | OWNER/LEGAL |
+| 20 | Refund Policy | Matches checkout: PAYG consent tick required (server refuses without it), invoice memo, unused-credit refund maths correct (£3.12 / £0.63), all "Buy downloads" links route via the consent. Date said "May 2026" | Low | code + tests | Date → 3 October 2026 | branch | PASS |
+| 21 | Refund: subscriptions | No express immediate-supply request at **subscription** checkout, so the 14-day cancellation right for monthly/annual subscriptions may be wider than the wording implies | Legal | checkout code | **not changed** | — | OWNER/LEGAL |
+| 22 | Marketing claims | No "fully/automatically/legally compliant" or "guarantee" claims. Pricing explicitly says no guarantee and no monitoring/alerts. "Will my labels be legally compliant?" answers with user responsibility. `lifecycle-reminder-accuracy` PASS | — | site-wide search | none | — | PASS |
+| 23 | Live-only flows | Sign-up, login, Google, reset, real balances, Guide Me answers, signed-in Composer on production | — | network policy | covered by automated tests only | — | BLOCKED (environment) |
+| 24 | Real iPhone/Safari | Outstanding owner check (`IPHONE-OWNER-CHECK-2026-10-04.md`); #216–#218 changed iPhone preview fit since | — | — | — | — | OWNER CHECK |
+
+## Data-flow inventory (from code and deployed functions)
+| Service | What it receives | Where in code | In policy before this audit? |
+|---|---|---|---|
+| Supabase (eu-west-2 London) | account email, hashed password, profile (name, plan, credits), download log (product name/type/shape/size), IP-keyed rate-limit counters | pages, `consume_download`, `clp-wizard`/`clp-search` | Yes (partly) |
+| Stripe | payment, billing email, PAYG consent metadata and timestamp | `create-checkout-session`, `stripe-webhook`, portal | Yes |
+| Anthropic API | Guide Me chat text; Knowledge Base questions | `clp-wizard`, `clp-search` | **No** |
+| Brevo | email for signup lists, lifecycle and cancellation/win-back emails, support/feedback messages | `notify-signup`, `clp-account-events`, `send-*-email`, `stripe-webhook` | Partly |
+| Plausible | page views (script on every page, not consent-gated) | `<script>` tags, `plausible-proxy` | **No** |
+| Google | OAuth sign-in (optional); Google Fonts (IP on every page) | auth, `<link>` | OAuth yes, Fonts **no** |
+| jsDelivr, cdnjs | IP (supabase-js, JSZip) | `<script>` | **No** |
+| Netlify | hosting, request logs | — | Yes |
+| Zoho Mail | not found in code | — | Listed; owner to confirm |
+| Browser storage | auth token, labels, business details, folders, history, consent, checkout choices | listed in the Cookie Policy now | Inaccurate before |
+| SDS / Smart Paste text | processed in the browser only; no network call found | `extractSDS` | — |

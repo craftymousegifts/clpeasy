@@ -67,7 +67,7 @@ footer-legal{display:block;text-align:center;padding:32px;border-top:1px solid v
 </nav>
 <div class="container">
   <h1>Privacy Policy</h1>
-  <div class="meta">Last updated: 9 June 2026 &nbsp;·&nbsp; Effective: 9 June 2026</div>
+  <div class="meta">Last updated: 5 October 2026 &nbsp;·&nbsp; Effective: 5 October 2026</div>
 
   <div class="highlight">
     <p>CLPeasy is committed to protecting your privacy. This policy explains what data we collect, why we collect it, and how we use it. We comply with the UK General Data Protection Regulation (UK GDPR) and the Data Protection Act 2018.</p>
@@ -82,11 +82,11 @@ footer-legal{display:block;text-align:center;padding:32px;border-top:1px solid v
     <tr><th>Data</th><th>Why we collect it</th><th>Legal basis</th></tr>
     <tr><td>Email address</td><td>Account creation, login, system emails</td><td>Contract performance</td></tr>
     <tr><td>Password (hashed)</td><td>Account security</td><td>Contract performance</td></tr>
-    <tr><td>Business name &amp; address</td><td>Appears on your CLP labels</td><td>Contract performance</td></tr>
-    <tr><td>Label data (scent name, hazard info etc)</td><td>Generating and saving your labels</td><td>Contract performance</td></tr>
-    <tr><td>Payment data</td><td>Processing subscriptions (handled by Stripe — we do not store card details)</td><td>Contract performance</td></tr>
+    <tr><td>Business name &amp; address</td><td>Appears on your CLP labels (saved in your browser, not in your CLPeasy account)</td><td>Contract performance</td></tr>
+    <tr><td>Label data (scent name, hazard info etc)</td><td>Generating your labels. Saved labels are kept in your browser. When you download a label, we record its product name, product type, shape and size with the download, to count your downloads and allow free re-downloads of the same label within 7 days</td><td>Contract performance</td></tr>
+    <tr><td>Payment data</td><td>Processing subscriptions and Pay As You Go purchases (handled by Stripe — we do not store card details). For Pay As You Go, your request for the credits to be added straight away, with its date and time, is recorded with the payment</td><td>Contract performance</td></tr>
     <tr><td>Usage data (pages visited, features used)</td><td>Improving the service</td><td>Legitimate interests</td></tr>
-    <tr><td>IP address</td><td>Security and fraud prevention</td><td>Legitimate interests</td></tr>
+    <tr><td>IP address</td><td>Security, fraud prevention, and limiting how many Guide Me and Knowledge Base questions can be asked each day</td><td>Legitimate interests</td></tr>
   </table>
 
   <h2>3. How We Use Your Data</h2>
@@ -122,9 +122,12 @@ footer-legal{display:block;text-align:center;padding:32px;border-top:1px solid v
     <li><strong>Supabase</strong> — database and authentication (AWS London region)</li>
     <li><strong>Stripe</strong> — payment processing</li>
     <li><strong>Zoho Mail</strong> — transactional email delivery</li>
-    <li><strong>Brevo</strong> — onboarding and account email delivery (e.g. welcome and trial reminder emails)</li>
+    <li><strong>Brevo</strong> — onboarding and account email delivery (e.g. welcome, trial reminder, subscription pause and cancellation emails), and delivery of messages you send through our support and feedback forms</li>
+    <li><strong>Anthropic</strong> — AI service that answers questions you type into Guide Me in the Builder or the Knowledge Base search (your question is sent to Anthropic to generate the answer)</li>
+    <li><strong>Plausible Analytics</strong> — privacy-focused website visit statistics</li>
     <li><strong>Google</strong> — optional Google OAuth login (only if you choose to sign in with Google)</li>
     <li><strong>Netlify</strong> — website hosting</li>
+    <li><strong>Google Fonts, jsDelivr and cdnjs</strong> — deliver fonts and software libraries to your browser when pages load, which means your browser's IP address is sent to them</li>
   </ul>
   <p>All third parties are required to handle your data in accordance with applicable data protection law.</p>
 
