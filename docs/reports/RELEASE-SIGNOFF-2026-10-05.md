@@ -288,3 +288,36 @@ The "Send emails about upcoming renewals" switch is Dashboard-only (Stripe docs)
 
 ### Markers
 **1 remaining** (privacy: Brevo marketing automations). `tests/no-review-placeholders.js` still blocks merge.
+
+## Round 6: owner evidence (5 Oct 2026)
+
+### Stripe Easy Start description: FIXED (by the owner, verified)
+The owner edited the live product in the Dashboard. A read-back via the Stripe API (live CLPeasy account `acct_1TdczNGZLILz5vqU`):
+- `prod_Ucsr7Mghv6kj0C` description is now "Unlimited clean PNG, SVG and PDF label downloads and Print Sheet Composer sheets while your subscription is active, monthly or annual."
+- The name is unchanged.
+- Prices are unchanged: `price_1TdoEYGZLILz5vqUIqlEsf4X` £9.99/month (default, active) and `price_1UMSlpGZLILz5vqUKA7dE3JS` £89/year (active).
+
+### Brevo workflows: RESOLVED (owner screenshots)
+Brevo → Automations → Workflows, **4 in total**:
+
+| # | Workflow | Status |
+|---|---|---|
+| 1 | CLPeasy Onboarding | Active |
+| 2 | CLPeasy Paid Subscribers | Active |
+| 3 | CLPeasy Annual Renewal Reminder | Active |
+| 4 | [COPY] CLPeasy Onboarding | Inactive |
+
+**There is no cancellation, save-offer or win-back workflow.** The cancellation attributes written by `clp-account-events` trigger nothing.
+
+**Privacy wording (marker removed):** "Send a confirmation email when you pause your subscription. We do not send offers to stay or invitations to come back after you cancel."
+
+**Markers remaining: 0.** `no-review-placeholders` now passes.
+
+### Post-release / future (not blockers)
+- **Workflow #3 "Annual Renewal Reminder":**
+  - Its trigger was not inspected.
+  - CLPeasy code sends Brevo no renewal-date attribute (only PLAN), so whether it can fire is unknown.
+  - The Privacy Policy covers renewal emails under "subscription notifications".
+  - Review its trigger and content when the DMCC renewal-reminder rules arrive.
+- **Content of workflows #1 and #2 (onboarding / paid subscribers):** review for promotional content and an unsubscribe footer.
+- **PAYG purchase confirmation email:** none from CLPeasy (PAYG buyers join the paid list, so workflow #2 may email them; content not reviewed).
