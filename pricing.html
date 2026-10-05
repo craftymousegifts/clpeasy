@@ -26,7 +26,7 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
 .nav-cta{background:var(--teal);color:white;border:none;padding:9px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;}
 
 /* HERO */
-.hero{text-align:center;padding:32px 24px 40px;background:white;border-bottom:1px solid var(--border);}
+.hero{text-align:center;padding:112px 24px 40px;background:white;border-bottom:1px solid var(--border);}
 .hero-eyebrow{display:inline-flex;align-items:center;gap:6px;background:var(--teal-light);color:var(--teal-dark);padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:18px;}
 .hero h1{font-family:'DM Serif Display',serif;font-size:clamp(30px,5vw,48px);line-height:1.15;margin-bottom:14px;color:var(--text);}
 .hero h1 em{font-style:italic;color:var(--teal);}
@@ -207,6 +207,13 @@ footer a{color:#6B7280;text-decoration:none;}
   .legend-grid{grid-template-columns:1fr;}
 }
 @media(max-width:600px){
+  .hero{padding:94px 16px 32px;}
+  .pricing-section{padding-left:16px;padding-right:16px;}
+  .cards,.plan-benefits{width:100%;max-width:100%;}
+  .card{min-width:0;padding-left:20px;padding-right:20px;}
+  .offer-main,.offer-then,.offer-free,.paid-offer .offer-then{white-space:normal;overflow-wrap:anywhere;}
+  .paid-offer .offer-main{display:block;}
+  .payg-consent{min-width:0;}
   nav{padding:0 16px;}
   .nav-link:not(.nav-home){display:none;}
   .nav-actions{gap:6px;}
