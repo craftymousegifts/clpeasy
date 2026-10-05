@@ -10,8 +10,8 @@ import { freshDb } from './stubs/supabase.ts';
 const env: Record<string, string> = {
   STRIPE_SECRET_KEY: 'sk_test_offline', STRIPE_WEBHOOK_SECRET: 'whsec_offline',
   SUPABASE_URL: 'http://offline.invalid', SUPABASE_SERVICE_ROLE_KEY: 'offline',
-  BREVO_API_KEY: 'offline-brevo-key', BREVO_PAID_LIST_ID: '11',
-  BREVO_PAYG_LIST_ID: '12', BREVO_PAYG_TEMPLATE_ID: '31', BREVO_CANCEL_TEMPLATE_ID: '32',
+  BREVO_API_KEY: 'offline-brevo-key', BREVO_PAID_LIST_ID: '5',
+  BREVO_PAYG_LIST_ID: '7', BREVO_PAYG_TEMPLATE_ID: '23', BREVO_CANCEL_TEMPLATE_ID: '24', // live Brevo IDs (lists 5/7, templates 23/24)
   PROMO_2026_EASY_START_MONTHLY_COUPON_ID: 'coupon_promo_start', PROMO_2026_EASY_PRO_MONTHLY_COUPON_ID: 'coupon_promo_pro',
   EASY_START_ANNUAL_PRICE_ID: 'price_easy_start_annual_89_env',
 };
@@ -75,10 +75,10 @@ await test('PAYG purchase: credit 8, then Brevo contact on the PAYG list (never 
   const r = await send(paygEvent('evt_new'));
   eq(r.status, 200, 'status'); eq(balance(), 8, 'credited 8');
   eq(brevoCalls.length, 2, 'contact upsert + confirmation email');
-  eq(contactCalls()[0].body.listIds, [12], 'PAYG list (BREVO_PAYG_LIST_ID), not the subscriber list 11');
+  eq(contactCalls()[0].body.listIds, [7], 'PAYG list (BREVO_PAYG_LIST_ID), not the subscriber list 5');
   eq(contactCalls()[0].body.attributes, { FIRSTNAME: 'Maker', PLAN: 'Pay As You Go', SUBSCRIPTION_STATUS: 'payg' }, 'attributes');
   eq(contactCalls()[0].body.updateEnabled, true, 'upsert');
-  eq(emailCalls()[0].body, { to: [{ email: 'buyer@example.com' }], templateId: 31, params: { FIRSTNAME: 'Maker', DOWNLOADS: 8, PURCHASED: 5, BONUS: 3, BALANCE: 8 } }, 'confirmation from the actual purchase');
+  eq(emailCalls()[0].body, { to: [{ email: 'buyer@example.com' }], templateId: 23, params: { FIRSTNAME: 'Maker', DOWNLOADS: 8, PURCHASED: 5, BONUS: 3, BALANCE: 8 } }, 'confirmation from the actual purchase');
   const creditIdx = db().rpcCalls.findIndex((c: any) => c.name === 'credit_payg_purchase');
   assert(creditIdx === 0, 'credit happened');
   assert(logs.findIndex(l => l.includes('PAYG: +8')) < logs.findIndex(l => l.includes('Brevo PAYG contact upsert HTTP 201')), 'Brevo runs only after the credit');
@@ -171,14 +171,21 @@ await test('PAYG list not configured: credit succeeds, list step skipped and NEV
   Deno.env.delete('BREVO_PAYG_LIST_ID');
   const r = await send(paygEvent('evt_nolist'));
   eq(r.status, 200, 'status'); eq(balance(), 8, 'credited'); eq(contactCalls().length, 0, 'no contact upsert');
-  assert(!brevoCalls.some(c => JSON.stringify(c.body).includes('"listIds":[11]')), 'subscriber list never used');
+  assert(!brevoCalls.some(c => JSON.stringify(c.body).includes('"listIds":[5]')), 'subscriber list never used');
   eq(emailCalls().length, 1, 'purchase confirmation still sent');
+});
+await test('misconfiguration guard: PAYG list set to the subscriber list ID -> PAYG buyer is NOT added to the Paid Subscribers list', async () => {
+  seedProfile({});
+  Deno.env.set('BREVO_PAYG_LIST_ID', '5');
+  await send(paygEvent('evt_payg_misconfig'));
+  eq(balance(), 8, 'credited'); eq(contactCalls().length, 0, 'list step refused');
+  assert(logs.some(l => l.includes('PAYG Brevo list step refused')), 'logged'); eq(emailCalls().length, 1, 'confirmation still sent');
 });
 await test('PAYG confirmation template not configured: no email, contact still on the PAYG list', async () => {
   seedProfile({});
   Deno.env.delete('BREVO_PAYG_TEMPLATE_ID');
   await send(paygEvent('evt_notemplate'));
-  eq(balance(), 8, 'credited'); eq(emailCalls().length, 0, 'no email'); eq(contactCalls()[0].body.listIds, [12], 'PAYG list');
+  eq(balance(), 8, 'credited'); eq(emailCalls().length, 0, 'no email'); eq(contactCalls()[0].body.listIds, [7], 'PAYG list');
 });
 await test('PAYG after the bonus ends (5-download pack): confirmation says 5, no bonus, without any copy change', async () => {
   seedProfile({ topup_credits: 7 });
@@ -221,7 +228,7 @@ await test('subscription purchase still uses the subscriber Brevo list (unchange
     metadata: { userId: 'user-1', priceId: 'price_1TyDuRGZLILz5vqU3RIuVFJD' } } } };
   const r = await send(ev);
   eq(r.status, 200, 'status');
-  eq(brevoCalls.length, 1, 'one Brevo call'); eq(brevoCalls[0].body.listIds, [11], 'subscriber list');
+  eq(brevoCalls.length, 1, 'one Brevo call'); eq(brevoCalls[0].body.listIds, [5], 'subscriber list');
   eq(brevoCalls[0].body.attributes.PLAN, 'Easy Start Monthly', 'subscription plan label');
   eq(brevoCalls[0].body.attributes.SUBSCRIPTION_STATUS, 'active', 'status active');
   eq(emailCalls().length, 0, 'no PAYG confirmation for a subscription');
@@ -236,7 +243,7 @@ await test('D5 live trial + successful PAYG: trial ends, account becomes Pay As 
   eq([prof().subscription_status, prof().plan, prof().downloads_limit, prof().topup_credits], ['payg', 'payg', 0, 8], 'converted, trial allowance forfeited');
   assert(new Date(prof().trial_end).getTime() <= Date.now() + 1000, 'trial_end is now');
   eq(contactCalls().length, 1, 'PAYG Brevo journey for the converted customer'); eq(contactCalls()[0].body.attributes.PLAN, 'Pay As You Go', 'PLAN');
-  eq(contactCalls()[0].body.listIds, [12], 'PAYG list');
+  eq(contactCalls()[0].body.listIds, [7], 'PAYG list');
 });
 await test('D5 duplicate successful webhook: no second credit, no second conversion or Brevo call', async () => {
   seedProfile({ subscription_status: 'trialing', plan: 'free', trial_end: new Date(Date.now() + 5 * 86400000).toISOString(), downloads_limit: 10 });
@@ -282,7 +289,7 @@ await test('decision 3: fully ended subscriber buys PAYG -> current plan Pay As 
   seedProfile({ subscription_status: 'cancelled', plan: 'free', is_pro: true, downloads_limit: 0, topup_credits: 0 });
   await send(paygEvent('evt_ended_buy'));
   eq([prof().subscription_status, prof().plan, prof().is_pro, prof().downloads_limit, prof().topup_credits], ['payg', 'payg', false, 0, 8], 'converted');
-  eq(contactCalls().length, 1, 'PAYG Brevo journey'); eq(contactCalls()[0].body.attributes.PLAN, 'Pay As You Go', 'PLAN'); eq(contactCalls()[0].body.listIds, [12], 'PAYG list');
+  eq(contactCalls().length, 1, 'PAYG Brevo journey'); eq(contactCalls()[0].body.attributes.PLAN, 'Pay As You Go', 'PLAN'); eq(contactCalls()[0].body.listIds, [7], 'PAYG list');
 });
 await test('decision 3: paid period over but Stripe deletion not yet processed -> converts; the late deletion keeps Pay As You Go', async () => {
   seedProfile({ subscription_status: 'cancelled', plan: 'easy_pro', is_pro: true, downloads_limit: 30, deletion_date: new Date(Date.now() - 3600e3).toISOString(), topup_credits: 0 });
@@ -522,7 +529,7 @@ for (const route of ['Account page', 'Billing Portal'] as const) {
     eq((await send(ev)).status, 200, 'status');
     eq(prof().subscription_status, 'cancelled', 'profile: cancellation scheduled');
     eq(statusCalls().map(c => c.body), [{ attributes: { SUBSCRIPTION_STATUS: 'cancelled' } }], 'Brevo status cancelled; still on the subscriber list');
-    eq(emailCalls().map(c => c.body), [{ to: [{ email: EMAIL }], templateId: 32, params: { FIRSTNAME: 'Sam', ACCESS_UNTIL: '31 October 2026' } }], 'cancellation confirmation to the account email');
+    eq(emailCalls().map(c => c.body), [{ to: [{ email: EMAIL }], templateId: 24, params: { FIRSTNAME: 'Sam', ACCESS_UNTIL: '31 October 2026' } }], 'cancellation confirmation to the account email');
     await send(ev);
     eq(emailCalls().length, 1, 'duplicate delivery: no second email');
     (globalThis as any).__stripeCustomers = undefined;
@@ -547,7 +554,7 @@ await test('cancellation template not configured: status still synced, no email'
 await test('reactivation after a scheduled cancellation: back on the subscriber list as active, no cancellation email', async () => {
   seedProfile({ email: EMAIL, subscription_status: 'cancelled', plan: 'easy_start', downloads_limit: 20 });
   await send(subUpdated('evt_bv_react', subObj(PRICE.start), { cancel_at_period_end: true, cancel_at: OCT_31 }));
-  eq(contactCalls().map(c => [c.body.email, c.body.listIds, c.body.attributes.SUBSCRIPTION_STATUS]), [[EMAIL, [11], 'active']], 'subscriber list, active');
+  eq(contactCalls().map(c => [c.body.email, c.body.listIds, c.body.attributes.SUBSCRIPTION_STATUS]), [[EMAIL, [5], 'active']], 'subscriber list, active');
   eq(emailCalls().length, 0, 'no email');
 });
 await test('ordinary subscription update (e.g. payment method): no Brevo call at all', async () => {
@@ -558,18 +565,18 @@ await test('ordinary subscription update (e.g. payment method): no Brevo call at
 await test('subscription actually ends (deleted): status ended AND removed from the subscriber list, no email', async () => {
   seedProfile({ email: EMAIL, subscription_status: 'cancelled', plan: 'easy_start', downloads_limit: 20 });
   await send({ id: 'evt_bv_deleted', type: 'customer.subscription.deleted', data: { object: subObj(PRICE.start, { status: 'canceled' }) } });
-  eq(statusCalls().map(c => c.body), [{ attributes: { SUBSCRIPTION_STATUS: 'ended' }, unlinkListIds: [11] }], 'ended + left list 11');
+  eq(statusCalls().map(c => c.body), [{ attributes: { SUBSCRIPTION_STATUS: 'ended' }, unlinkListIds: [5] }], 'ended + left list 5');
   eq(emailCalls().length, 0, 'no win-back or other email');
 });
 await test("subscription ends via an updated event with status 'canceled': same ended sync", async () => {
   seedProfile({ email: EMAIL, subscription_status: 'cancelled', plan: 'easy_start', downloads_limit: 20 });
   await send(subUpdated('evt_bv_canceled_upd', subObj(PRICE.start, { status: 'canceled' }), { status: 'active' }));
-  eq(statusCalls().map(c => c.body), [{ attributes: { SUBSCRIPTION_STATUS: 'ended' }, unlinkListIds: [11] }], 'ended + left list 11');
+  eq(statusCalls().map(c => c.body), [{ attributes: { SUBSCRIPTION_STATUS: 'ended' }, unlinkListIds: [5] }], 'ended + left list 5');
 });
 await test('ended subscription that already converted to Pay As You Go: status stays payg, still leaves the subscriber list', async () => {
   seedProfile({ email: EMAIL, subscription_status: 'payg', plan: 'payg', downloads_limit: 0 });
   await send({ id: 'evt_bv_deleted_payg', type: 'customer.subscription.deleted', data: { object: subObj(PRICE.start, { status: 'canceled' }) } });
-  eq(statusCalls().map(c => c.body), [{ attributes: { SUBSCRIPTION_STATUS: 'payg' }, unlinkListIds: [11] }], 'payg + left list 11');
+  eq(statusCalls().map(c => c.body), [{ attributes: { SUBSCRIPTION_STATUS: 'payg' }, unlinkListIds: [5] }], 'payg + left list 5');
 });
 await test('profile without an email: lifecycle sync skipped quietly, subscription processing unaffected', async () => {
   seedProfile({ subscription_status: 'active', plan: 'easy_start', downloads_limit: 20 });
@@ -594,10 +601,10 @@ await test('PAYG customer journey end to end is never treated as a subscriber (n
   await send(again);
   eq(prof().subscription_status, 'payg', 'account is Pay As You Go');
   const all = JSON.stringify(brevoCalls);
-  assert(!all.includes('"listIds":[11]') && !all.includes('"unlinkListIds"'), 'subscriber list never touched');
+  assert(!all.includes('"listIds":[5]') && !all.includes('"unlinkListIds"'), 'subscriber list never touched');
   assert(!all.includes('"SUBSCRIPTION_STATUS":"active"'), 'never marked active');
-  eq(contactCalls().map(c => [c.body.listIds, c.body.attributes.SUBSCRIPTION_STATUS, c.body.attributes.PLAN]), [[[12], 'payg', 'Pay As You Go'], [[12], 'payg', 'Pay As You Go']], 'PAYG list and status each time');
-  eq(emailCalls().map(c => [c.body.templateId, c.body.params.DOWNLOADS, c.body.params.BONUS, c.body.params.BALANCE]), [[31, 8, 3, 8], [31, 5, 0, 13]], 'only PAYG confirmations, with the real numbers');
+  eq(contactCalls().map(c => [c.body.listIds, c.body.attributes.SUBSCRIPTION_STATUS, c.body.attributes.PLAN]), [[[7], 'payg', 'Pay As You Go'], [[7], 'payg', 'Pay As You Go']], 'PAYG list and status each time');
+  eq(emailCalls().map(c => [c.body.templateId, c.body.params.DOWNLOADS, c.body.params.BONUS, c.body.params.BALANCE]), [[23, 8, 3, 8], [23, 5, 0, 13]], 'only PAYG confirmations, with the real numbers');
 });
 await test('no save-offer or win-back: no event ever sends templates 8-12 or writes cancel-reason/discount attributes', async () => {
   seedProfile({ email: EMAIL, subscription_status: 'active', plan: 'easy_start', downloads_limit: 20 });
@@ -605,7 +612,7 @@ await test('no save-offer or win-back: no event ever sends templates 8-12 or wri
   await send(subUpdated('evt_bv_nw_resume', subObj(PRICE.start), { pause_collection: PAUSED }));
   await send(subUpdated('evt_bv_nw_cancel', subObj(PRICE.start, { cancel_at_period_end: true, cancel_at: OCT_31 }), { cancel_at_period_end: false }));
   await send({ id: 'evt_bv_nw_del', type: 'customer.subscription.deleted', data: { object: subObj(PRICE.start, { status: 'canceled' }) } });
-  eq(emailCalls().map(c => c.body.templateId), [32], 'only the cancellation confirmation');
+  eq(emailCalls().map(c => c.body.templateId), [24], 'only the cancellation confirmation');
   const all = JSON.stringify(brevoCalls);
   for (const k of ['CANCEL_REASON', 'DELETION_DATE', 'DISCOUNT_ACTIVE', 'CLPEASY_PLAN']) assert(!all.includes(k), 'never writes ' + k);
 });

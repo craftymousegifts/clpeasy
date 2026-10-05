@@ -33,6 +33,14 @@ async function addToBrevoPayList(email: string, firstName: string, planLabel: st
 // were credited, and never throws: a Brevo problem must never fail or re-run
 // a completed credit.
 async function addToBrevoPaygList(email: string, firstName: string): Promise<void> {
+  // Misconfiguration guard: never let a PAYG buyer reach the subscriber list,
+  // even if BREVO_PAYG_LIST_ID were set to the same ID as BREVO_PAID_LIST_ID.
+  const paygList = parseInt(Deno.env.get('BREVO_PAYG_LIST_ID') ?? '', 10);
+  const paidList = parseInt(Deno.env.get('BREVO_PAID_LIST_ID') ?? '', 10);
+  if (Number.isFinite(paygList) && paygList === paidList) {
+    console.error('BREVO_PAYG_LIST_ID equals BREVO_PAID_LIST_ID — PAYG Brevo list step refused');
+    return;
+  }
   await upsertBrevoContact(email, firstName, PAYG_PLAN_LABEL, 'BREVO_PAYG_LIST_ID', 'PAYG', 'payg');
 }
 const PAYG_PLAN_LABEL = 'Pay As You Go';

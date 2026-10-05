@@ -504,3 +504,29 @@ Deploy to the **CLPeasy Test** Supabase project / Stripe test mode, if its Brevo
 1. Confirm the virtual-address service is active, verification is complete, and its plan lets you publish the address as your business address and receive documents there.
 2. If yes, the current footers can stay.
 3. Check one delivered email for a Brevo-added footer showing the Duns address. If one is present, change the company address in Brevo's sender/company settings to the business address, so your home address is never shown.
+
+## Round 4: owner Brevo setup reconciled (6 Oct 2026)
+
+**Verified through the connector (read-only):**
+- List **7 "CLPeasy PAYG Customers"**: folder 2, 0 contacts.
+- Attribute **`SUBSCRIPTION_STATUS`**: normal, type **text**.
+- No `CLPEASY_*` attributes exist.
+- Templates **23** and **24** are still **inactive**.
+
+**PR #221 reconciled:**
+- The code reads list and template IDs from Supabase secrets. Nothing is hard-coded, so production needs `BREVO_PAYG_LIST_ID=7`, `BREVO_PAYG_TEMPLATE_ID=23` and `BREVO_CANCEL_TEMPLATE_ID=24` (`BREVO_PAID_LIST_ID` is already 5).
+- The tests now use these live IDs (paid 5, PAYG 7, templates 23 and 24).
+- **New misconfiguration guard:** if `BREVO_PAYG_LIST_ID` were ever set to the same ID as `BREVO_PAID_LIST_ID`, the PAYG list step is refused and logged, so a PAYG buyer still cannot reach the Paid Subscribers list. A test covers this.
+- Deno suite: stripe-webhook **71**, notify-signup 1, create-checkout-session 50, billing-status 26, manage-subscription 8, all passing.
+- **Attribute fit:** the code writes only `SUBSCRIPTION_STATUS` (text) with the values `payg`, `active`, `paused`, `cancelled` and `ended`.
+  - `notify-signup` never writes it (test-enforced).
+  - No `CLPEASY_*`, `CANCEL_REASON`, `DELETION_DATE` or `DISCOUNT_ACTIVE` writes occur from the PR code (test-enforced).
+
+**Live side-effect of creating the attribute (production code unchanged):** the **deployed** `clp-account-events` (v38, not in the repo) already sends `SUBSCRIPTION_STATUS`.
+- **What it sends:**
+  - `"cancelled"` after an Account-page cancellation (authenticated, and only after `manage-subscription` has succeeded in Stripe);
+  - `"active"` in the unreachable save-offer branch.
+- **What changed:** before the attribute existed, Brevo dropped that value. From now on Brevo may store it.
+  - The same request also carries the non-existent `CANCEL_REASON` and `DELETION_DATE`, so whether Brevo accepts the whole update cannot be confirmed without a live call.
+- **Why it is harmless:** the value matches what the webhook writes for the same event, no workflow reads the attribute yet, and there are currently 0 active subscribers.
+- **Optional, needs owner approval:** to make the webhook the *only* writer, add `clp-account-events` to the repo and remove its cancel and save-offer Brevo writes. The pause email send stays.
