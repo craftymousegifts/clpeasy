@@ -137,3 +137,21 @@ No redesign is involved. The policy placeholder will then be replaced.
 | `builder.html`, `dashboard.html` | Round-1 ™→® **reverted** (trade mark unverified) |
 
 **Before merge:** every `[OWNER/LEGAL REVIEW: …]` placeholder (privacy 7, terms 2, cookie 1, refund 1) must be replaced or removed.
+
+## Trade mark: RESOLVED, PASS (owner evidence, 5 Oct 2026)
+**Evidence:** the owner holds the official UKIPO Registration Certificate:
+- UK00004395085;
+- Class 42, Software as a Service (SaaS) services;
+- registered with effect from 31/05/2026;
+- entered on the register 21/08/2026.
+
+The register itself could not be reached from the build environment; the certificate is the owner's.
+
+**Changes:**
+- Terms clause 8 now says "registered trade mark… registered with effect from 31 May 2026 and entered on the register on 21 August 2026". The "filed" wording and its placeholder are removed.
+- Builder and dashboard sidebar logos restored to CLPeasy®.
+- `compliance.html` already says "registered UK trade mark".
+- "Easy Trial™" is unchanged.
+- Retired, unpublished `clpeasy-flow.html` (404 on production) still says "filed"; it is not public, so it was left alone.
+
+**Remaining placeholders:** privacy 7, terms 1 (clause 9 subscriptions), cookie 1, refund 1.
