@@ -21,20 +21,23 @@ const corsHeaders = {
 // BREVO_PAID_LIST_ID = the list ID you get from Brevo after creating "CLPeasy Paid Subscribers"
 // BREVO_PAID_AUTOMATION_ID = the automation workflow ID for the paid sequence (set after building in Brevo)
 async function addToBrevoPayList(email: string, firstName: string, planLabel: string): Promise<void> {
-  await upsertBrevoContact(email, firstName, planLabel, 'BREVO_PAID_LIST_ID', 'paid');
+  await upsertBrevoContact(email, firstName, planLabel, 'BREVO_PAID_LIST_ID', 'paid', 'active');
 }
 
-// ── PAY AS YOU GO BREVO JOURNEY (approved D2) ───────────────────
-// PAYG buyers join the EXISTING paid-customer list (BREVO_PAID_LIST_ID) with
-// PLAN = "Pay As You Go", so the paid automation can branch on PLAN.
-// Always called only AFTER the purchased downloads were credited, and never
-// throws: a Brevo problem must never fail or re-run a completed credit.
+// ── PAY AS YOU GO BREVO JOURNEY (approved 5 Oct 2026, replaces D2) ─────
+// PAYG buyers join their OWN list (BREVO_PAYG_LIST_ID, "CLPeasy PAYG
+// Customers") and never the subscriber list (BREVO_PAID_LIST_ID), so no
+// subscription welcome or annual-renewal automation can reach them. If the
+// PAYG list is not configured the list step is skipped -- it never falls back
+// to the subscriber list. Always called only AFTER the purchased downloads
+// were credited, and never throws: a Brevo problem must never fail or re-run
+// a completed credit.
 async function addToBrevoPaygList(email: string, firstName: string): Promise<void> {
-  await upsertBrevoContact(email, firstName, PAYG_PLAN_LABEL, 'BREVO_PAID_LIST_ID', 'PAYG');
+  await upsertBrevoContact(email, firstName, PAYG_PLAN_LABEL, 'BREVO_PAYG_LIST_ID', 'PAYG', 'payg');
 }
 const PAYG_PLAN_LABEL = 'Pay As You Go';
 
-async function upsertBrevoContact(email: string, firstName: string, planLabel: string, listEnvName: string, kind: string): Promise<void> {
+async function upsertBrevoContact(email: string, firstName: string, planLabel: string, listEnvName: string, kind: string, status: BrevoStatus): Promise<void> {
   const apiKey = Deno.env.get('BREVO_API_KEY');
   const listId = Deno.env.get(listEnvName);
 
@@ -55,6 +58,7 @@ async function upsertBrevoContact(email: string, firstName: string, planLabel: s
         attributes: {
           FIRSTNAME: firstName || '',
           PLAN: planLabel,
+          SUBSCRIPTION_STATUS: status,
         },
         listIds: [parseInt(listId, 10)],
         updateEnabled: true,
@@ -71,6 +75,92 @@ async function upsertBrevoContact(email: string, firstName: string, planLabel: s
     // Non-fatal — Stripe processing continues
     console.error(`Brevo ${kind} list error (non-fatal):`, err);
   }
+}
+
+// ── BREVO LIFECYCLE STATUS AND TRANSACTIONAL EMAILS (5 Oct 2026) ──────
+// This webhook is the ONLY writer of the Brevo SUBSCRIPTION_STATUS attribute.
+// Every subscription change made on the Account page (manage-subscription)
+// or in the Stripe Billing Portal reaches Stripe first and arrives here, once
+// per event (duplicate-protection claim above). notify-signup deliberately
+// does not write it: that endpoint can be called again for an existing email.
+//   payg      Pay As You Go customer (no subscription)
+//   active    subscription active
+//   paused    subscription paused (Account page)
+//   cancelled cancellation scheduled, still inside the paid period
+//   ended     subscription fully ended (also removed from the subscriber list)
+// All helpers are non-throwing and skip quietly when not configured.
+type BrevoStatus = 'payg' | 'active' | 'paused' | 'cancelled' | 'ended';
+
+async function brevoFetch(method: string, path: string, body: unknown, label: string): Promise<boolean> {
+  const apiKey = Deno.env.get('BREVO_API_KEY');
+  if (!apiKey) { console.warn(`Brevo ${label}: BREVO_API_KEY missing — skipped`); return false; }
+  try {
+    const res = await fetch(`https://api.brevo.com/v3/${path}`, {
+      method,
+      headers: { 'Content-Type': 'application/json', 'api-key': apiKey },
+      body: JSON.stringify(body),
+    });
+    console.log(`Brevo ${label} HTTP ${res.status}`);
+    if (!res.ok) console.error(`Brevo ${label} failed: ${await res.text()}`);
+    return res.ok;
+  } catch (err) {
+    console.error(`Brevo ${label} error (non-fatal):`, err);
+    return false;
+  }
+}
+
+// The CLPeasy account email (profiles.email) is the Brevo contact key used at
+// sign-up; a customer can change their Stripe email in the Billing Portal.
+async function brevoEmailFor(userId: string, fallback = ''): Promise<string> {
+  try {
+    const { data } = await supabase.from('profiles').select('email').eq('id', userId).maybeSingle();
+    return (data?.email as string) || fallback;
+  } catch (_e) {
+    return fallback;
+  }
+}
+
+async function setBrevoStatus(email: string, status: BrevoStatus, opts: { leaveSubscriberList?: boolean } = {}): Promise<void> {
+  if (!email) return;
+  const body: Record<string, unknown> = { attributes: { SUBSCRIPTION_STATUS: status } };
+  const paidList = parseInt(Deno.env.get('BREVO_PAID_LIST_ID') ?? '', 10);
+  if (opts.leaveSubscriberList && Number.isFinite(paidList)) body.unlinkListIds = [paidList];
+  await brevoFetch('PUT', `contacts/${encodeURIComponent(email)}`, body, `status ${status}`);
+}
+
+// Sends a Brevo transactional template only when its template-ID secret is
+// set, so the code can be deployed before the template is activated.
+async function sendBrevoTemplate(templateEnv: string, email: string, params: Record<string, string | number>, label: string): Promise<void> {
+  const templateId = parseInt(Deno.env.get(templateEnv) ?? '', 10);
+  if (!email || !Number.isFinite(templateId)) { console.log(`Brevo ${label} email skipped (${templateEnv} not set)`); return; }
+  await brevoFetch('POST', 'smtp/email', { to: [{ email }], templateId, params }, `${label} email`);
+}
+
+// PAYG purchase confirmation. The numbers come from THIS purchase (the pack
+// size create-checkout-session put in the Stripe metadata and the balance the
+// credit returned), so the email is correct before and after the 3-download
+// bonus ends on 31 Dec 2026 without any copy change.
+const PAYG_PACK_DOWNLOADS = 5;
+function paygEmailParams(firstName: string, downloads: number, balance: unknown): Record<string, string | number> {
+  const bonus = Math.max(0, downloads - PAYG_PACK_DOWNLOADS);
+  return {
+    FIRSTNAME: firstName || 'there',
+    DOWNLOADS: downloads,
+    PURCHASED: downloads - bonus,
+    BONUS: bonus,
+    BALANCE: Number.isFinite(Number(balance)) ? Number(balance) : downloads,
+  };
+}
+
+// The date paid access ends after a scheduled cancellation, from Stripe. Empty
+// when Stripe gives none; the email then says "the end of your current billing
+// period" instead of a date.
+function accessUntil(subscription: any): string {
+  const ts = subscription?.cancel_at
+    ?? subscription?.items?.data?.[0]?.current_period_end
+    ?? subscription?.current_period_end;
+  if (!ts) return '';
+  return new Date(ts * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/London' });
 }
 
 // ── PLAN LABEL for Brevo attribute ───────────────────────────
@@ -197,14 +287,17 @@ Deno.serve(async (req) => {
           // the catch below, release the idempotency claim and let Stripe's
           // retry credit the purchase a second time.
           try {
-            const paygEmail = session.customer_details?.email || session.customer_email || '';
+            const paygEmail = await brevoEmailFor(userId, session.customer_details?.email || session.customer_email || '');
+            const paygFirstName = (session.customer_details?.name || '').split(' ')[0] || '';
             // A current subscriber buying PAYG downloads must keep their
-            // subscriber PLAN attribute and must not enter the PAYG journey.
+            // subscriber PLAN/status and must not join the PAYG list.
             if (paygEmail && !isCurrentSubscriber(credit)) {
-              await addToBrevoPaygList(paygEmail, (session.customer_details?.name || '').split(' ')[0] || '');
+              await addToBrevoPaygList(paygEmail, paygFirstName);
             } else if (paygEmail) {
-              console.log(`PAYG Brevo skipped for current subscriber ${userId}`);
+              console.log(`PAYG Brevo list skipped for current subscriber ${userId}`);
             }
+            // Every successful PAYG buyer gets the purchase confirmation.
+            await sendBrevoTemplate('BREVO_PAYG_TEMPLATE_ID', paygEmail, paygEmailParams(paygFirstName, downloads, credit?.balance), 'PAYG confirmation');
           } catch (brevoErr) {
             console.error('PAYG Brevo step failed (non-fatal, credit kept):', brevoErr);
           }
@@ -283,7 +376,7 @@ Deno.serve(async (req) => {
         console.log(`Subscription activated for user ${userId} — plan: ${plan}`);
 
         // ── ADD TO BREVO PAID LIST ───────────────────────────────
-        const customerEmail = session.customer_details?.email || session.customer_email || '';
+        const customerEmail = await brevoEmailFor(userId, session.customer_details?.email || session.customer_email || '');
         const customerName  = session.customer_details?.name || '';
         if (customerEmail) {
           await addToBrevoPayList(customerEmail, customerName.split(' ')[0] || '', getPlanLabel(priceId!));
@@ -326,6 +419,7 @@ Deno.serve(async (req) => {
         // while still retaining paid access if 'deleted' never arrives.
         if (subscription.status === 'canceled') {
           await downgradeToFree(userId);
+          await syncBrevoEnded(userId);
           console.log(`Subscription reached 'canceled' via updated event for user ${userId} — downgraded to free`);
           break;
         }
@@ -371,6 +465,7 @@ if (profileStatus) {
         // from an ordinary update (payment method, metadata, etc.) that
         // should NOT reset the allowance/cycle.
         const priceJustChanged = !!prev && Object.prototype.hasOwnProperty.call(prev, 'items');
+        const statusJustChanged = !!prev && Object.prototype.hasOwnProperty.call(prev, 'status');
 
         const shouldRefreshPlan =
           !isPaused && !isCancelScheduled && subscription.status === 'active' &&
@@ -388,14 +483,35 @@ if (profileStatus) {
           const custId = subscription.customer as string;
           try {
             const customer = await stripe.customers.retrieve(custId) as Stripe.Customer;
-            if (customer.email) {
+            const reactivatedEmail = await brevoEmailFor(userId, customer.email || '');
+            if (reactivatedEmail) {
               await addToBrevoPayList(
-                customer.email,
+                reactivatedEmail,
                 (customer.name || '').split(' ')[0] || '',
                 getPlanLabel(priceId!)
               );
             }
           } catch (e) { console.warn('Could not retrieve customer for Brevo:', e); }
+        } else if (profileStatus && (pauseJustChanged || cancelJustChanged || statusJustChanged)) {
+          // Pause, scheduled cancellation, or another status transition (Account
+          // page or Billing Portal): keep Brevo's SUBSCRIPTION_STATUS in step.
+          // Ordinary updates (payment method, metadata) make no Brevo call.
+          await setBrevoStatus(await brevoEmailFor(userId), profileStatus);
+        }
+
+        // Cancellation confirmation (service email, no offers) when a
+        // cancellation is newly scheduled -- from either route.
+        const cancelJustScheduled = isCancelScheduled && cancelJustChanged;
+        if (cancelJustScheduled) {
+          const cancelEmail = await brevoEmailFor(userId);
+          if (cancelEmail) {
+            let firstName = '';
+            try {
+              const customer = await stripe.customers.retrieve(subscription.customer as string) as Stripe.Customer;
+              firstName = (customer?.name || '').split(' ')[0] || '';
+            } catch (_e) { /* name is optional */ }
+            await sendBrevoTemplate('BREVO_CANCEL_TEMPLATE_ID', cancelEmail, { FIRSTNAME: firstName || 'there', ACCESS_UNTIL: accessUntil(subscription) }, 'cancellation confirmation');
+          }
         }
 
         console.log(`Subscription updated for user ${userId} — status: ${status}, profile status: ${profileStatus ?? 'unchanged'}, reactivation: ${isGenuineReactivation}, priceChanged: ${priceJustChanged}, planRefreshed: ${shouldRefreshPlan}`);
@@ -445,6 +561,7 @@ if (profileStatus) {
         }
 
         await downgradeToFree(userId);
+        await syncBrevoEnded(userId);
 
         console.log(`Subscription cancelled for user ${userId}`);
         break;
@@ -703,6 +820,20 @@ async function applyProfilePlan(userId: string, priceId: string, opts: { resetUs
   }
 
   console.log('✅ applyProfilePlan SUCCESS:', data);
+}
+
+// A subscription has genuinely ended: leave the subscriber list so no
+// subscriber automation treats the contact as a paying subscriber. An account
+// that already converted to Pay As You Go keeps status 'payg'. Non-throwing.
+async function syncBrevoEnded(userId: string): Promise<void> {
+  try {
+    const { data } = await supabase.from('profiles').select('email, subscription_status').eq('id', userId).maybeSingle();
+    const email = (data?.email as string) || '';
+    if (!email) { console.warn(`Brevo ended sync skipped: no email for user ${userId}`); return; }
+    await setBrevoStatus(email, data?.subscription_status === 'payg' ? 'payg' : 'ended', { leaveSubscriberList: true });
+  } catch (err) {
+    console.error('Brevo ended sync error (non-fatal):', err);
+  }
 }
 
 // ── FULL DOWNGRADE TO FREE — the only place paid access is actually removed.

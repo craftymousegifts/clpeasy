@@ -144,7 +144,7 @@ General: every promotional/lifecycle email (not receipts or pause/cancel confirm
 
 **Status: plan and drafts only.** Nothing has been changed in Brevo, Stripe or Supabase. No email has been sent. PR #220 is untouched. §7's suggestion to switch off the renewal workflow is **withdrawn**: the owner has instructed that workflow 3 is not changed until its logic has been inspected (§R8).
 
-Draft email HTML for review: `docs/brevo/drafts/` (rendered at 640 px and 375 px in Chromium: no overflow, no errors; Brevo's own rendering not yet tested).
+Draft email HTML for review: `docs/brevo/templates/` (rendered at 640 px and 375 px in Chromium: no overflow, no errors; Brevo's own rendering not yet tested).
 
 ## Extra evidence gathered for this plan (read-only)
 
@@ -184,7 +184,7 @@ The workflow conditions are checked **at the moment each step is reached**, so t
 
 ## R3. Onboarding templates 1–6 (drafts ready)
 
-The drafts are `docs/brevo/drafts/01…06-*.html`. Each is a copy of the live template with only the listed sentences changed, so the layout is identical.
+The drafts are `docs/brevo/templates/01…06-*.html`. Each is a copy of the live template with only the listed sentences changed, so the layout is identical.
 
 | # | Changes |
 |---|---|
@@ -215,7 +215,7 @@ The copies 17–22 belong to the **inactive** [COPY] workflow 4 and are left alo
 | `FIRSTNAME` | from Stripe checkout name |
 
 - The template shows "(5 purchased + 3 bonus)" only when `BONUS > 0`. A purchase on or after 1 Jan 2027 reads "5 clean downloads have been added", with **no edit needed and no stale promotion**. Both cases are rendered in the drafts check.
-- Draft: `docs/brevo/drafts/NEW-payg-purchase-confirmation.html`. Content:
+- Draft: `docs/brevo/templates/NEW-payg-purchase-confirmation.html`. Content:
   - downloads added;
   - one download = one exported file;
   - same-label re-download free within 7 days;
@@ -369,3 +369,138 @@ The connector can **read** everything, **create new templates** (created inactiv
 2. **Cancellation confirmation email:** yes or no?
 3. **Template 1:** drop "CLP-compliant" (recommended under the project's compliance-wording rule)?
 4. **For information, not changed:** the footers show "66 Paul Street, London", while the Brevo account address is in Duns. Please confirm which postal address the emails should carry.
+
+---
+
+# Round 3: decisions and implementation (5 Oct 2026)
+
+## Owner decisions
+| # | Decision | Result |
+|---|---|---|
+| 1 | Separate **CLPeasy PAYG Customers** list; PAYG never in subscriber or renewal journeys | **Approved**, implemented in code (replaces D2) |
+| 2 | Plain transactional cancellation confirmation, with the access end date where reliable | **Approved**, template created (inactive) + code |
+| 3 | Remove "CLP-compliant" from template 1; use the approved CLP Ready term | **Approved**: "Download your **CLP Ready** label as a PNG, PDF sheet, or Cricut-ready file" |
+| 4 | Footer postal address | **Not approved yet.** Investigated below; footers unchanged |
+
+Annual Renewal Reminder (workflow 3, template 16): **not touched.**
+
+## What was done (no customer-facing change; nothing activated or sent)
+
+### Brevo (through the connector)
+| ID | Template | State | Check |
+|---|---|---|---|
+| **23** | CLPeasy - PAYG Purchase Confirmation | **inactive** | sender `noreply@clpeasy.com` ("Michaela at CLPeasy"), reply-to `support@clpeasy.com`; read back from Brevo: content identical to `docs/brevo/templates/NEW-payg-purchase-confirmation.html` |
+| **24** | CLPeasy - Cancellation Confirmation | **inactive** | same sender and reply-to; content identical to `docs/brevo/templates/NEW-cancellation-confirmation.html` |
+
+- No test emails were sent. A connector test send cannot fill in `params`, so it would show blank numbers. The real check is a send from the code to a test contact (see QA below).
+- Brevo's handling of the `{% if %}` blocks has **not yet been tested in Brevo itself**. They follow Brevo's template language. In a browser render with sample values, all branches produce the intended wording.
+
+### Final template content: `docs/brevo/templates/`
+| File | Live template | Change |
+|---|---|---|
+| `01`–`06` | onboarding 1–6 (workflow 1) | as in R3. Template 1 now says "CLP Ready label" |
+| `07-pause-confirmation.html` | 7 | as in R6. Generic "your CLPeasy subscription"; greeting "Hi {{ params.FIRSTNAME }}" |
+| `13-paid-welcome-subscription.html` | 13 | as in R5 |
+| `14-paid-day7-tips.html` | 14 | "label library in this browser" |
+| `15-paid-day30-thank-you.html` | 15 | **reviewed, no change** (included for completeness) |
+| `NEW-payg-…`, `NEW-cancellation-…` | 23, 24 | created in Brevo (inactive) |
+
+- Every file renders at 640 px and 375 px in Chromium with no horizontal overflow and no errors. That includes the PAYG email with 8 (2026) and 5 (2027) downloads, and the cancellation email with and without a date.
+- The live Brevo versions were **not** overwritten.
+
+### Code (branch `claude/clpeasy-brevo-audit-ty30up`; separate from #220; not deployed)
+**`supabase/functions/stripe-webhook/index.ts`:**
+- **PAYG:** after a successful credit, the buyer goes to `BREVO_PAYG_LIST_ID` with `PLAN = Pay As You Go` and `SUBSCRIPTION_STATUS = payg`.
+  - This happens only if they are not a current subscriber (existing rule).
+  - It **never** uses the subscriber list. If the PAYG list is not configured, the list step is skipped rather than falling back to the subscriber list.
+  - Every PAYG buyer (subscriber or not) gets template `BREVO_PAYG_TEMPLATE_ID` with `DOWNLOADS`, `PURCHASED`, `BONUS` and `BALANCE` taken from that purchase. A 2027 pack therefore reads "5 downloads" with no bonus line, and no copy change is needed.
+- **Subscription bought:** the existing subscriber-list upsert now also sets `SUBSCRIPTION_STATUS = active`.
+- **`customer.subscription.updated`** (Account page *and* Billing Portal):
+  - On a pause, cancellation or status transition, `SUBSCRIPTION_STATUS` is set to `paused` or `cancelled`.
+  - Reactivation re-adds the contact to the subscriber list as `active` (existing call + status).
+  - Ordinary updates make **no** Brevo call.
+- **Cancellation newly scheduled:** template `BREVO_CANCEL_TEMPLATE_ID` is sent with `ACCESS_UNTIL`.
+  - The date comes from Stripe: `cancel_at`, otherwise the item's `current_period_end`, otherwise the subscription's `current_period_end`.
+  - If Stripe gives no date, the field is empty and the email says "the end of your current billing period". A date is never guessed.
+  - Duplicate deliveries never send twice (existing event claim).
+- **Subscription actually ends** (`customer.subscription.deleted`, or `updated` with status `canceled`):
+  - `SUBSCRIPTION_STATUS = ended`, or `payg` if the account already converted to Pay As You Go.
+  - The contact is **removed from the subscriber list** (`unlinkListIds`).
+- The Brevo contact key is `profiles.email` (Stripe email only as a fallback). Checked read-only: the live `profiles` table has an `email` column filled on all 21 rows.
+- Every Brevo call is non-fatal and logged. Each new behaviour is skipped while its secret is unset.
+- **No save-offer or win-back behaviour:** templates 8–12 are never sent, and `CANCEL_REASON`, `DELETION_DATE` and `DISCOUNT_ACTIVE` are never written.
+
+**`supabase/functions/notify-signup/index.ts`:** the sign-up contact now carries only `FIRSTNAME` (the five `CLPEASY_*` attributes are removed). It deliberately does **not** write `SUBSCRIPTION_STATUS`, because the endpoint:
+- is called from `auth.html` without sign-in, and
+- runs again when someone submits the sign-up form with an email that is already registered.
+
+Writing a status there could reset a paying customer to "trial".
+
+**Not changed:** `account.html`, `manage-subscription`, `clp-account-events` (pause still sends template 7), `create-checkout-session`, pricing, Annual Renewal Reminder.
+
+### Tests
+- `tests/deno/stripe-webhook.test.ts`: 51 → **70 scenarios**. Existing PAYG expectations were updated to the PAYG list. New scenarios:
+  - PAYG list missing never falls back to the subscriber list;
+  - 2027 five-download pack;
+  - account email used;
+  - current subscriber buying PAYG (no list or status change, confirmation only);
+  - pause;
+  - cancellation via the Account page and via the Billing Portal (status + one email, duplicates ignored);
+  - end date from the item period, or empty;
+  - cancellation template unset;
+  - reactivation;
+  - ordinary update (no call);
+  - deletion and `canceled` update (ended + removed from list 5);
+  - ended-but-PAYG;
+  - no email on file;
+  - Brevo HTTP 500 or network failure (webhook still 200, profile changes kept);
+  - a full PAYG journey that never touches the subscriber list or the `active` status;
+  - no save-offer, win-back or cancel-reason writes.
+- New `tests/deno/notify-signup.test.ts`: the sign-up contact has `FIRSTNAME` + list only, and no plan or status.
+- **Mutation checks:** the new tests fail against the old code, and against each deliberate break:
+  - PAYG sent to the subscriber list;
+  - no list removal on end;
+  - hard-coded bonus.
+  - A redundant guard that no test could distinguish was removed.
+- **`npm test` (full suite): exit 0.** Deno 2.9.6 was installed in the session. `download-entitlement-sql` was SKIPPED (no local PostgreSQL; that SQL is not changed).
+
+### QA still needed after approval (test contacts only)
+Deploy to the **CLPeasy Test** Supabase project / Stripe test mode, if its Brevo setup allows, and use `craftymousegifts+…` contacts:
+1. A PAYG purchase in 2026 sends template 23 showing "8 … (5 purchased + 3 bonus)".
+2. A subscription and an Account-page cancel send template 24 with the date.
+3. A Billing Portal cancel does the same.
+4. End the subscription: the contact leaves list 5 and its status is `ended`.
+5. Pause sends template 7.
+
+## Decision 4: postal address findings (no change made)
+
+**What the repository shows:**
+- "66 Paul Street, London, EC2A 4NA" is CLPeasy's published business address in many places. In `privacy.html` it is "Our registered business address is CLPeasy, 66 Paul Street…". It also appears in `terms.html` ("Michaela Feeley, trading as CLPeasy, of 66 Paul Street…"), `refund.html`, `faq.html`, `compliance.html`, `showcase.html`, `release-notes.html` (asserted by `tests/versioning-and-release-notes.js`), and in the email templates.
+- `monitor.html` (an internal page) records it as a paid **virtual address service**: the card is titled "Horton Mix — Virtual Address", "London · 66 Paul Street, EC2A 4NA", "Monthly cost £26/month", **status "Verification in progress"**. Its live status and renewal date are kept only in your browser storage, so they are not visible here.
+- `scrum.html` acceptance criterion: "Registered address 66 Paul Street London EC2A 4NA correct on all pages". It was first committed on 31 May 2026.
+- The CLPeasy repo does not record whether that verification was completed, whether the service is still paid, or what the service plan permits (mail handling or acceptance of formal documents).
+
+**What Brevo holds:**
+- The Brevo account's company address (`accounts_get_account`) is the residential address in Duns. **None of the 22 templates contains it.** 12 templates print 66 Paul Street; templates 1, 2, 3, 5, 6 (and copies 17, 18, 20–22) print no postal address.
+- Brevo can add a footer of its own when it sends, depending on account settings. Whether it currently adds the Duns address to sent emails **could not be checked**:
+  - the connector shows only template HTML, not sent messages;
+  - the Gmail connector needs signing in again, so the delivered copies to your `craftymousegifts+…` test aliases could not be read.
+- **Before activating any template, open one delivered CLPeasy email and check its footer.**
+
+**UK requirements** (summary for orientation, not legal advice; check against legislation.gov.uk / ICO / GOV.UK before relying on it):
+- **PECR reg. 22–23 (marketing email):**
+  - consent or soft opt-in;
+  - the sender's identity must not be concealed;
+  - a valid address must be given for opt-out requests. An unsubscribe link or email address meets this; a postal address is not specifically required.
+- **Electronic Commerce Regulations 2002, reg. 6:** the provider's name, *geographic* address and email must be "easily, directly and permanently accessible". This is usually met on the website (the legal pages) rather than in every email.
+- **Consumer Contracts Regulations 2013:** the trader's geographical address must be given before a contract. That is the website/checkout, not each email.
+- **Companies Act 2006 ss. 1202–1204 (business names):**
+  - A sole trader using a business name ("Michaela Feeley trading as CLPeasy") must show their name and a **UK address at which documents can be effectively served** on business letters, written orders, invoices, receipts and written demands for payment.
+  - Whether a virtual address qualifies depends on it genuinely accepting service of documents.
+  - Whether ordinary emails count as "business letters" should be confirmed.
+- **Company trading disclosures (registered office in emails):** apply only if CLPeasy becomes a limited company.
+
+**What is needed from you before any change:**
+1. Confirm the virtual-address service is active, verification is complete, and its plan lets you publish the address as your business address and receive documents there.
+2. If yes, the current footers can stay.
+3. Check one delivered email for a Brevo-added footer showing the Duns address. If one is present, change the company address in Brevo's sender/company settings to the business address, so your home address is never shown.

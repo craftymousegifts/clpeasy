@@ -60,13 +60,14 @@ serve(async (req) => {
         email,
         updateEnabled: true,
         listIds: [BREVO_LIST_ID],
+        // Only FIRSTNAME (5 Oct 2026 Brevo audit): the former CLPEASY_PLAN,
+        // CLPEASY_BETA, CLPEASY_TRIAL_ENDS, CLPEASY_SIGNUP_DATE and
+        // CLPEASY_USER_ID attributes never existed in Brevo, so Brevo dropped
+        // them and nothing used them. SUBSCRIPTION_STATUS is deliberately not
+        // written here: this endpoint can be called again for an email that
+        // already belongs to a paying customer. stripe-webhook owns it.
         attributes: {
           FIRSTNAME: email.split("@")[0],
-          CLPEASY_PLAN: "trial",
-          CLPEASY_BETA: is_beta ? "yes" : "no",
-          CLPEASY_TRIAL_ENDS: trial_ends,
-          CLPEASY_SIGNUP_DATE: created_at,
-          CLPEASY_USER_ID: user_id,
         }
       })
     });
