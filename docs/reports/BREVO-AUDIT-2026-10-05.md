@@ -137,3 +137,235 @@ General: every promotional/lifecycle email (not receipts or pause/cancel confirm
 3. Template 13: rewrite as subscription welcome; new PAYG welcome template; `PLAN` condition in workflow 2.
 4. Template 7: correct content, then activate.
 5. Workflow 3: deactivate (and turn on Stripe renewal emails), or keep inactive until a renewal-date attribute exists.
+
+---
+
+# Remediation plan (prepared 5 Oct 2026, awaiting approval)
+
+**Status: plan and drafts only.** Nothing has been changed in Brevo, Stripe or Supabase. No email has been sent. PR #220 is untouched. §7's suggestion to switch off the renewal workflow is **withdrawn**: the owner has instructed that workflow 3 is not changed until its logic has been inspected (§R8).
+
+Draft email HTML for review: `docs/brevo/drafts/` (rendered at 640 px and 375 px in Chromium: no overflow, no errors; Brevo's own rendering not yet tested).
+
+## Extra evidence gathered for this plan (read-only)
+
+- **Stripe billing portal** (live `bpc_1TdoeKGZLILz5vqUMOlIzlgo`): cancellation is **at period end**, **pause is disabled**, customers **can change their email address**, and price changes are allowed.
+- **Stripe webhook endpoint** (live) already receives `checkout.session.completed`, `invoice.paid`, `customer.subscription.updated`, `customer.subscription.deleted` and `invoice.created`. No Stripe change is needed for anything below.
+- **Account page:** `account.html` pause, cancel and reactivate all call `manage-subscription`, which changes the Stripe subscription. Each of these produces a `customer.subscription.updated` event, exactly as a portal cancellation does. The account page then separately calls `clp-account-events`, which is only reached from the account page.
+- **Pause has no end date:** `manage-subscription` pauses with `pause_collection: mark_uncollectible` and no `resumes_at`. A pause continues until the customer reactivates.
+- **PAYG pack size is already decided per purchase:** `create-checkout-session` puts `downloads` = 8 before 1 Jan 2027 and 5 after into the Stripe metadata. `stripe-webhook` credits that number, and `credit_payg_purchase` returns the new balance.
+- **Stripe Checkout email:** `customer_email` is set to the signed-in user's email. Because portal customers can change their Stripe email, Brevo updates should use `profiles.email` (looked up by `userId`) rather than the Stripe customer email.
+
+## R1. Brevo attributes: which are genuinely required
+
+| Attribute | Exists in Brevo | Written by | Read by | Decision |
+|---|---|---|---|---|
+| `FIRSTNAME` | yes | all | all templates | **Keep** |
+| `PLAN` | yes | `stripe-webhook` (subscription label, or "Pay As You Go") | template 16 (renewal) and possibly workflow 3 conditions | **Keep, unchanged.** Workflow 3 may depend on its values (§R8), so the labels are not renamed now. The rewritten welcome email (13) no longer prints it |
+| `SUBSCRIPTION_STATUS` | **no** | `clp-account-events` ("cancelled", "active"); the plan adds `stripe-webhook` and `notify-signup` | the plan: onboarding safety condition, future renewal condition | **Create (Text).** This is the single lifecycle state. Values: `trial`, `payg`, `active`, `paused`, `cancelled` (cancellation scheduled, still in the paid period), `ended`. `cancelled` and `active` match what `clp-account-events` already writes, so that deployed function needs no change |
+| `CLPEASY_PLAN` | no | `notify-signup` ("trial") | nothing | **Do not create.** It duplicates `SUBSCRIPTION_STATUS = trial`. Remove it from `notify-signup` |
+| `CLPEASY_BETA`, `CLPEASY_TRIAL_ENDS`, `CLPEASY_SIGNUP_DATE`, `CLPEASY_USER_ID` | no | `notify-signup` | nothing (the workflow uses relative delays from sign-up) | **Do not create.** Remove them from `notify-signup` (data minimisation) |
+| `CANCEL_REASON` | no | `clp-account-events` | nothing (no workflow); the reason is already stored in `profiles.cancel_reason` | **Do not create.** No email uses it, and keeping a copy in Brevo has no purpose |
+| `DELETION_DATE` | no | `clp-account-events` (always empty) | inactive template 11 only | **Do not create.** The optional cancellation email receives the access-until date as a send parameter, not as a stored attribute |
+| `DISCOUNT_ACTIVE` | no | `clp-account-events` (save offer, unreachable: `SAVE_OFFER_ENABLED = false`) | nothing | **Do not create** |
+
+`clp-account-events` (deployed v38; **its source is not in the repo**) still sends `CANCEL_REASON`, `DELETION_DATE` and `DISCOUNT_ACTIVE`. Brevo drops values for attributes that do not exist. If Brevo rejects that whole update, the only loss is its `SUBSCRIPTION_STATUS` copy, which `stripe-webhook` will own anyway. No change to that function is needed. A tidy-up is recorded as a separate, optional item (§R9).
+
+## R2. Stop trial-conversion emails after purchase (reliable mid-trial)
+
+The workflow conditions are checked **at the moment each step is reached**, so this works whatever day the customer buys on, including partway through the 14 days.
+
+1. **Brevo workflow 1 (dashboard, owner):** add a condition step **immediately before each of the trial-conversion emails**: template 4 (day 10), template 5 (day 12) and template 6 (day 14).
+   - The condition: "Contact **is in list 5 (CLPeasy Paid Subscribers)** OR **is in list PAYG** (new, R4)" → **Yes: exit the workflow**. No: continue.
+   - Optionally put the same condition before the day 2 and day 5 tips. They are not sales emails, but a paying customer does not need them either.
+   - If the workflow editor offers workflow-level **exit criteria**, set the same rule there as well.
+2. **Why list membership:** the current production code already adds every subscriber, and today every PAYG buyer, to list 5. This part therefore **works before any code change is deployed**.
+   - `SUBSCRIPTION_STATUS` (R1) becomes a second safeguard once the code is live. The condition can then also be "SUBSCRIPTION_STATUS is not trial".
+3. **Residual risk:** if a Brevo call fails during a purchase (it is non-fatal by design), the contact is not added to the list and would still get the trial emails. This is rare, and the Supabase logs show it (`Brevo … upsert failed`).
+
+## R3. Onboarding templates 1–6 (drafts ready)
+
+The drafts are `docs/brevo/drafts/01…06-*.html`. Each is a copy of the live template with only the listed sentences changed, so the layout is identical.
+
+| # | Changes |
+|---|---|
+| 1 | "14 days of full access — no restrictions" becomes "**14 days** and **10 label downloads** with a faint preview watermark. No card needed". "CLP-compliant label" becomes "label" (the project rule is to avoid unqualified compliance claims; **please confirm**). "Reply" text now also gives support@. Unsubscribe link added |
+| 2, 3 | "Just reply" text now gives support@. Unsubscribe link added |
+| 4 | The Easy Start / Easy Pro table (10/20 downloads, £99/£149) is replaced with **Easy Start Unlimited** (£9.99/month or £89/year; launch offer £8.99/month until 31 Dec 2026) and **Pay As You Go** (£4.99 for 5; 3 bonus with every pack bought by 31 Dec 2026; no expiry; free same-label re-download within 7 days). The promised "feedback questionnaire" (does not exist) is replaced by a support@ line. Unsubscribe link added |
+| 5 | "You'll need to subscribe… lose access to the full builder" is replaced by "keep downloading clean labels with Pay As You Go or Easy Start Unlimited". Saved labels are described as "in your label library in this browser" (labels are stored in the browser). Same offer block as 4. Unsubscribe link added |
+| 6 | Same offer block. The dead `beta-feedback.html` link (404) becomes `mailto:support@clpeasy.com?subject=CLPeasy trial feedback`. Unsubscribe link added |
+
+The copies 17–22 belong to the **inactive** [COPY] workflow 4 and are left alone.
+
+**Brevo settings for 1–6 (dashboard):**
+- Set **reply-to `support@clpeasy.com`**, so "reply to this email" is true. The sender stays `noreply@clpeasy.com`.
+- Unsubscribe uses Brevo's `{{ unsubscribe }}` tag. It shows the account's default unsubscribe page and works only in a real or test send, not in the editor preview.
+
+**Dated content:** the two offer lines say "until 31 December 2026" and "bought by 31 December 2026". They stay literally true afterwards, but they should be removed in the first week of January 2027. **Diary item: 2 Jan 2027, edit templates 4–6.**
+
+## R4. PAYG purchase journey (new; transactional)
+
+**Design:** CLPeasy sends the PAYG email itself from `stripe-webhook` **immediately after the credit**, using a Brevo transactional template with the **actual numbers from that purchase**. It does not depend on any automation.
+
+| Param | Value |
+|---|---|
+| `DOWNLOADS` | downloads credited (from Stripe metadata) |
+| `PURCHASED` | 5 |
+| `BONUS` | `DOWNLOADS − 5` |
+| `BALANCE` | new balance from `credit_payg_purchase` |
+| `FIRSTNAME` | from Stripe checkout name |
+
+- The template shows "(5 purchased + 3 bonus)" only when `BONUS > 0`. A purchase on or after 1 Jan 2027 reads "5 clean downloads have been added", with **no edit needed and no stale promotion**. Both cases are rendered in the drafts check.
+- Draft: `docs/brevo/drafts/NEW-payg-purchase-confirmation.html`. Content:
+  - downloads added;
+  - one download = one exported file;
+  - same-label re-download free within 7 days;
+  - no expiry, no subscription;
+  - Stripe receipt sent separately;
+  - Refund Policy link;
+  - buttons to the Builder and Account.
+  - **No** subscription, renewal, monthly or top-up wording. No unsubscribe link (purchase confirmation).
+- It is sent to **every** successful PAYG buyer, including paused or cancelling subscribers, because it confirms a purchase.
+
+**List change (needs your decision; it changes approved decision D2):**
+- **Recommended:** PAYG buyers go to a **new list "CLPeasy PAYG Customers"** instead of list 5, with `PLAN = Pay As You Go` and `SUBSCRIPTION_STATUS = payg`. List 5 then means "subscribers" only.
+- Workflow 2 (subscriber welcome/tips/thank-you) and possibly workflow 3 (renewal) are triggered from list 5 in ways we cannot see. Taking PAYG out of list 5 is the only change that **guarantees** PAYG buyers get no subscription wording, without first editing those workflows.
+- Current subscribers buying PAYG are still not moved (existing rule kept).
+- **Alternative:** keep D2 (list 5) and add a `PLAN = Pay As You Go → exit` condition at the top of workflows 2 and 3. That requires editing workflow 3, which you have asked not to do yet.
+
+## R5. Subscription welcome (workflow 2)
+
+- **Template 13** (draft `13-paid-welcome-subscription.html`): "You're now on {{PLAN}}… full download allowance" becomes "You're now on **Easy Start Unlimited**". The three ticks become:
+  - unlimited clean PNG/SVG/PDF downloads and Print Sheet Composer sheets while active;
+  - label library saved in your browser;
+  - manage your subscription, payment details and invoices from your account.
+  - **Monthly reset and top-ups are removed.** It no longer prints `PLAN`, so the "Easy Start Monthly" label cannot show.
+- **Template 14** (day 7 tips): one wording fix, "stored in your label library **in this browser**". Smart Paste, label library and Print Sheet Composer tips are kept.
+- **Template 15** (day 30 thank-you/review request): **no change needed**.
+- After R4, only subscribers enter list 5. Both new monthly and new annual subscribers get 13 → 14 → 15. This is correct for both, because none of them mentions billing frequency.
+
+## R6. Template 7 (pause confirmation)
+
+**Why it is inactive:**
+- What the evidence shows: templates 7–12 were all created on 1 Jun 2026, never modified, all use sender id 4 (`michaela@clpeasy.com`), and are **all inactive**.
+- Brevo creates templates inactive unless they are explicitly activated. The pattern fits a batch created through the API (the code comment "update these once you note the IDs from Brevo dashboard") that was never activated.
+- Who created them, and whether that was deliberate, **cannot be confirmed** from the data available.
+- Whether Brevo has been rejecting the pause sends can be confirmed in **Brevo → Transactional → Logs** (owner check).
+
+**Content problems in the live template 7:**
+- "Your pause lasts up to 3 months. We'll send you a heads-up before the window closes" is **false**: the pause has no end date and no heads-up email exists.
+- "every label, folder, version and batch record is preserved" is not how the product works (labels are browser-saved).
+- "QR safety codes stay live" is an unverified claim.
+
+**Draft** `07-pause-confirmation.html`:
+- no charges while paused;
+- unlimited downloads pause too, and PAYG can be bought meanwhile (matches `entitlement.js`);
+- saved labels stay in this browser;
+- the pause continues until you reactivate from your account page.
+- It uses `{{ params.FIRSTNAME }}`, which is what `clp-account-events` sends.
+
+**How to apply (owner, dashboard):** replace template 7's content in place, keeping **ID 7** so no code change is needed. Then **send a test to a test contact**, and only then **activate** it.
+- From that moment every account-page pause sends it. Portal pause is disabled, so the account page is the only pause route.
+
+## R7. Templates 8–12
+
+Kept **inactive**. No save-offer or win-back workflow is introduced. The code constants in `clp-account-events` are harmless: nothing sends those templates.
+
+## R8. Annual Renewal Reminder: unchanged; what to inspect before deciding
+
+The workflow and template 16 are **not changed**. Please capture (screenshots are fine) from Automations → CLPeasy Annual Renewal Reminder:
+1. **Entry trigger:** the exact type ("contact added to list 5"? "attribute updated"? date-based? event?) and any entry filter.
+2. **Steps 1–4 before the email (step 5):** the delays (for example "wait 358 days") and each condition (for example on `PLAN`).
+3. **Re-entry setting:** can a contact enter more than once (needed for a second year)?
+4. **Exit criteria**, if any.
+5. Whether it filters on "Annual" in `PLAN`. If not, monthly and PAYG contacts in list 5 would qualify.
+6. **Workflow statistics:** contacts currently in progress and emails sent so far.
+
+**Facts that limit what it can do today:**
+- No renewal date is ever sent to Brevo.
+- `PLAN` labels are "Easy Start Annual", "Easy Start Unlimited Annual" (only if `EASY_START_ANNUAL_PRICE_ID` is set) and "Easy Pro Annual".
+- After R9, `SUBSCRIPTION_STATUS` will let it skip `paused`, `cancelled` and `ended` contacts.
+- With the evidence above, the choice is: **retain** (it is correct), **repair** (add an Annual and active condition, or a real renewal date sent by code), or **replace** (Stripe "upcoming renewal" emails).
+
+## R9. Cancellation sync (smallest reliable solution)
+
+**The problem:**
+- Brevo is only ever told when someone **becomes** paid (`stripe-webhook` adds them to list 5).
+- A portal cancellation never reaches CLPeasy code except through Stripe webhooks.
+- The account-page cancellation writes attributes that do not exist.
+- When a subscription ends, nothing removes the contact from list 5.
+
+**The solution:** make `stripe-webhook` the **single owner** of `SUBSCRIPTION_STATUS`. It already receives every pause, cancel, reactivate, end and new-subscription event from **both** the account page and the Stripe portal, and its existing duplicate-event protection runs each one once.
+
+| Stripe event (either route) | Brevo update |
+|---|---|
+| `checkout.session.completed` (subscription) | existing list 5 add + `SUBSCRIPTION_STATUS = active` |
+| `customer.subscription.updated` → profile `active` / `paused` / `cancelled` (scheduled) | `SUBSCRIPTION_STATUS` = the same value |
+| `customer.subscription.updated` with status `canceled`, or `customer.subscription.deleted` | `SUBSCRIPTION_STATUS = ended` (or `payg` if the account converted to PAYG) **and remove from list 5** |
+| reactivation / price change (existing list 5 add) | + `SUBSCRIPTION_STATUS = active` |
+
+- All Brevo calls stay **non-fatal**, matching the existing pattern, so they can never affect billing or credits.
+- Every update looks up the contact's email from `profiles.email` (by `userId`).
+
+**Optional, needs your yes or no:** a **cancellation confirmation** (service email, no offers; draft `NEW-cancellation-confirmation.html`). It would be sent by `stripe-webhook` when `cancel_at_period_end` turns on, with `ACCESS_UNTIL` from Stripe. It covers both the account page and the portal, and is consistent with the Privacy Policy ("We do not send offers to stay or invitations to come back after you cancel").
+
+**Optional tidy-up, not needed for correctness:** add `clp-account-events` (deployed v38) to the repo and remove its no-op cancel and save-offer Brevo writes and the invalid `doubleOptinConfirmation` call. This is a separate change because the function's source is not under version control.
+
+## R10. Implementation plan
+
+### A. Brevo changes the connector can make (on approval)
+The connector can **read** everything, **create new templates** (created inactive) and **send test emails** of a template to existing contacts. It **cannot** edit or activate existing templates, create attributes, create lists, change contacts, or see or edit workflows.
+
+1. Create **"CLPeasy - PAYG Purchase Confirmation"** (inactive) from `NEW-payg-purchase-confirmation.html`. Sender `noreply@clpeasy.com` (id 2), reply-to `support@clpeasy.com`. Record its ID.
+2. (If approved) create **"CLPeasy - Cancellation Confirmation"** (inactive) from `NEW-cancellation-confirmation.html`.
+3. Test-send both, plus template 7 once you have edited it, **only to test contacts** (for example `craftymousegifts+clptest5@gmail.com`, already on a list).
+   - A plain test send does not fill in `params`, so it shows blank numbers. The full check is the code QA in D.
+
+### B. Brevo dashboard changes that need you
+1. **Contacts → Settings → Attributes:** create `SUBSCRIPTION_STATUS` (Text). Create nothing else.
+2. **Contacts → Lists:** create **"CLPeasy PAYG Customers"** (if R4 is approved). Tell me its ID.
+3. **Workflow 1 (Onboarding):** add the R2 conditions before steps 8, 10 and 12 (templates 4, 5, 6). Paste the R3 HTML into steps 2–12 (templates 1–6). Set reply-to `support@clpeasy.com`. Keep the workflow active throughout: edit, save, then check.
+4. **Workflow 2 (Paid):** paste the R5 HTML into templates 13 and 14. Trigger and steps unchanged.
+5. **Template 7:** paste the R6 HTML (same ID), test, **then** activate.
+6. **Activate** the new PAYG template (and the cancellation template, if approved) **only after** the code QA passes.
+7. **Workflow 3:** **no change.** Collect the R8 evidence.
+8. **Transactional → Logs:** check whether pause sends with template 7 were rejected.
+9. Diary: **2 Jan 2027**, remove the dated offer lines from templates 4–6.
+
+### C. CLPeasy code changes (one PR, separate from #220; no deploy without approval)
+1. **`supabase/functions/stripe-webhook/index.ts`:**
+   - non-throwing helpers to set `SUBSCRIPTION_STATUS`, add to or remove from a list, and send a transactional template, using `profiles.email`;
+   - PAYG: list `BREVO_PAYG_LIST_ID` instead of `BREVO_PAID_LIST_ID`, plus `SUBSCRIPTION_STATUS = payg`; transactional `BREVO_PAYG_TEMPLATE_ID` with `DOWNLOADS/PURCHASED/BONUS/BALANCE/FIRSTNAME` to every PAYG buyer;
+   - subscription status sync and list 5 removal (R9);
+   - optional cancellation confirmation (`BREVO_CANCEL_TEMPLATE_ID`).
+   - Every new behaviour is **skipped when its secret is unset**, so deploying the code before the Brevo setup is safe.
+2. **`supabase/functions/notify-signup/index.ts`:** attributes become `FIRSTNAME` + `SUBSCRIPTION_STATUS = trial` (drops the five `CLPEASY_*`). The list, automation trigger and admin alert are unchanged.
+3. **Tests:** extend the existing Deno tests for `stripe-webhook`. Cases:
+   - PAYG with 8 and with 5;
+   - subscriber buying PAYG;
+   - Brevo HTTP 500 and network failure (the credit is kept, the event is not re-run);
+   - pause, cancel, reactivate, portal cancel and end;
+   - each secret unset.
+   - Plus a `notify-signup` payload test.
+4. **New Supabase secrets** (owner): `BREVO_PAYG_LIST_ID`, `BREVO_PAYG_TEMPLATE_ID`, optional `BREVO_CANCEL_TEMPLATE_ID`.
+5. **No changes** to `account.html`, `manage-subscription`, `clp-account-events`, `create-checkout-session` or pricing.
+
+### D. Stripe changes
+**None required.** The portal and webhook configuration already cover every event. Renewal reminders: undecided (R8).
+
+### Order and QA (test contacts only)
+1. Approve the drafts (and the D2 list decision, the cancellation email, and the "CLP-compliant" wording).
+2. B1, B2, then A1 and A2 (new templates stay inactive).
+3. Code PR (C): local Deno tests. If the Brevo key setup allows, run it against the **CLPeasy Test** Supabase project and Stripe test mode, using `craftymousegifts+…` test contacts only.
+4. B3–B5 (onboarding conditions and content; template 13/14; template 7). Run test sends to test contacts.
+5. **End-to-end QA with test accounts:**
+   - sign up → buy PAYG on day 1 → confirm the PAYG email and the PAYG list, and that the day 10 step exits;
+   - a second test account subscribes → template 13 and the status change;
+   - pause → template 7;
+   - cancel in the portal → `cancelled`, then end → `ended` and removed from list 5.
+6. Deploy the code and activate the templates only with your explicit go-ahead.
+
+### Decisions needed from you
+1. **PAYG list:** a new "CLPeasy PAYG Customers" list (recommended; replaces approved decision D2), or keep list 5 + `PLAN` conditions?
+2. **Cancellation confirmation email:** yes or no?
+3. **Template 1:** drop "CLP-compliant" (recommended under the project's compliance-wording rule)?
+4. **For information, not changed:** the footers show "66 Paul Street, London", while the Brevo account address is in Duns. Please confirm which postal address the emails should carry.
