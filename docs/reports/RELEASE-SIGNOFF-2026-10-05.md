@@ -204,3 +204,50 @@ The register itself could not be reached from the build environment; the certifi
 
 ### Separate observation (not changed, outside #220)
 The `cmg-contact` function (Crafty Mouse Gifts site, not CLPeasy) returned HTTP 500 twice on 5 Oct ("Unexpected token 'w', "website=ht"… is not valid JSON"). That contact form posts form-encoded data to a function that expects JSON.
+
+## Email-flow audit (read-only, 5 Oct 2026)
+**Sources:**
+- deployed `notify-signup` v47 and `clp-account-events` v38 (read from Supabase);
+- `stripe-webhook`: repo copy unchanged since 2 Oct, recorded byte-identical to deployed v63 at the 3 Oct release;
+- `create-checkout-session`;
+- live Stripe products (read-only).
+
+Nothing was changed.
+
+### Successful PAYG purchase
+1. **Checkout** (`create-checkout-session`, `payg_5`): Stripe payment-mode session for the live price `price_1UKF6YGZLILz5vqUwdiwcokx`.
+   - Product "CLPeasy Pay As You Go downloads", described as "5 downloads for £4.99, plus 3 FREE until 31 December 2026 (8 in total). Purchased downloads do not expire."
+   - Metadata `downloads=8` until 2027-01-01, plus consent metadata.
+   - `invoice_creation` enabled, with memo `PAYG_CONSENT_CONFIRMATION`: credits added straight after payment, 14-day refund of unused credits, contact support@. **The memo does not mention 5 + 3.**
+2. **Webhook** `checkout.session.completed` → `credit_payg_purchase(userId, 8)`.
+3. **Then** `addToBrevoPaygList`: Brevo `POST /v3/contacts` upserts the buyer's email into `BREVO_PAID_LIST_ID` with `FIRSTNAME` and `PLAN = "Pay As You Go"`. It is skipped for current subscribers.
+   - **No email is sent by CLPeasy code.** Any email depends on a Brevo automation attached to that list or contact, which exists only in the Brevo dashboard.
+4. **Stripe:** sends its own receipt/paid invoice. Per the release record, the owner confirmed "Successful payments" emails are ON. The receipt shows the product name; the invoice carries the consent memo.
+
+### All Brevo calls in CLPeasy code
+| Trigger | Function | Brevo action | Recipient | Type |
+|---|---|---|---|---|
+| Sign-up (auth page plus DB webhook) | `notify-signup` | Contact upsert to `BREVO_LIST_ID` (attributes: email-prefix name, plan "trial", trial end, sign-up date, user ID). **Triggers automation `BREVO_AUTOMATION_ID`** (onboarding, dashboard-only) | customer (via automation) | Onboarding: content unknown; must be checked in Brevo for any promotional content |
+| Sign-up | `notify-signup` | `smtp/email` admin alert "New CLPeasy™ trial signup" | support@clpeasy.com (owner) | Internal |
+| PAYG paid | `stripe-webhook` | Contact upsert to `BREVO_PAID_LIST_ID`, PLAN "Pay As You Go" | — (automation only) | Dashboard-only |
+| Subscription paid / reactivated / plan change | `stripe-webhook` | Contact upsert to `BREVO_PAID_LIST_ID`, PLAN label | — (automation only) | Dashboard-only |
+| Pause (account page) | `clp-account-events` | `smtp/email` **template 7** sent immediately, param FIRSTNAME | customer | Transactional (pause confirmation; template content in Brevo) |
+| Cancel (account page) | `clp-account-events` | Contact attribute update: CANCEL_REASON, SUBSCRIPTION_STATUS=cancelled, DELETION_DATE (always empty: the page does not send it). Also calls `contacts/doubleOptinConfirmation` without the template/redirect fields that endpoint requires, so it is very likely rejected (response ignored) | — (automation only) | **No cancellation confirmation email is sent by code.** Save-offer (templates 8/9) and win-back (10/11/12) are defined as constants but are **not sent by code**; they can only be sent by a Brevo automation reacting to the attributes → **marketing, dashboard-only** |
+| Save offer accepted | `clp-account-events` | Attribute update (DISCOUNT_ACTIVE) | — | Unreachable: `SAVE_OFFER_ENABLED = false` |
+| Support form | `send-support-email` | `smtp/email` to support@ with the customer as reply-to | owner | Internal |
+| Beta sign-up | `beta-tester-email` (DB trigger on `beta_testers`) | Not read | — | Retired page (404); dormant |
+
+**Not Brevo:** account verification and password reset are Supabase Auth emails (Zoho SMTP per internal records). Payment receipts and invoices come from Stripe.
+
+### Exists only in the Brevo dashboard (cannot be verified from code)
+- the onboarding automation `BREVO_AUTOMATION_ID` (its steps and any promotional content);
+- automations on `BREVO_LIST_ID` and `BREVO_PAID_LIST_ID` (including any PAYG or subscriber welcome sequence, and whether it mentions 5 + 3);
+- automations reacting to SUBSCRIPTION_STATUS=cancelled or CANCEL_REASON (save offer / win-back, templates 8–12);
+- the content of template 7;
+- unsubscribe footers;
+- whether `doubleOptinConfirmation` calls succeed.
+
+### Side findings (not changed)
+- **Live Stripe product "CLPeasy Easy Start"** (`prod_Ucsr7Mghv6kj0C`, used by the current £89/year and £9.99/month prices) is still described as "20 label downloads per month, all download formats, QR safety sheets and label history". That contradicts **Unlimited**, and Stripe Checkout normally shows the product description. Owner fix: Stripe Dashboard → Product catalogue → CLPeasy Easy Start → edit the description.
+- Old live prices remain active: Easy Pro £14.99/£149, Easy Start £99/year, Top-ups £3.99/£7.99. The site and server no longer offer them; archiving them is an owner choice.
+- Privacy wording corrected in #220: confirmation email on **pause** only, because no code sends a cancellation confirmation.
