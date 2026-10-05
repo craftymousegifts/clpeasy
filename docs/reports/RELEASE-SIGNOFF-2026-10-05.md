@@ -60,3 +60,80 @@ and Stripe). No payment was made.
 | Zoho Mail | not found in code | — | Listed; owner to confirm |
 | Browser storage | auth token, labels, business details, folders, history, consent, checkout choices | listed in the Cookie Policy now | Inaccurate before |
 | SDS / Smart Paste text | processed in the browser only; no network call found | `extractSDS` | — |
+
+---
+
+# Round 2: owner decisions applied (5 Oct 2026)
+
+## Pricing: the current October model is intentional
+**Model:**
+- Easy Start Unlimited £9.99/month (£8.99 until 31 Dec 2026), £89/year;
+- Easy Pro and top-ups retired;
+- PAYG £4.99 = 5 + 3 bonus = 8 downloads on every pack until 31 Dec 2026.
+
+**Re-audit result:** every customer-visible page and policy is consistent with it. That covers home, pricing, FAQ, checkout, plan picker, account/dashboard, Builder FAQ, Terms and Refund. The plan checker shows the standard £4.99/5 with a separate "Current offer: 8 downloads" line, as designed. The old £14.99, £99 and £149 figures appear only in code comments and in the disabled save-offer code (`SAVE_OFFER_ENABLED = false`). The 15 June release note is dated history. **PASS.** No Stripe or server change was made.
+
+## Trade mark UK00004395085: NOT VERIFIED (BLOCKED)
+**Sources tried:**
+- UKIPO register (`trademarks.ipo.gov.uk`): blocked by the network policy;
+- `ipo.gov.uk`, EUIPO TMview and WIPO Global Brand Database: blocked;
+- Gmail (UKIPO correspondence): connector needs re-authorising;
+- Google Drive: only an unofficial history document.
+
+The only web result is the owner's own LinkedIn post saying it is registered. That is not authoritative.
+
+**Action:** no trade mark symbol was changed. The round-1 sidebar ™→® change was **reverted**. Terms clause 8 carries a review placeholder.
+
+## Plausible and consent: proposed change (NOT implemented)
+**Evidence:**
+- The Plausible tracker (`@plausible-analytics/tracker` 0.4.6) sets no cookies.
+- It does **read** `localStorage.plausible_ignore`, which is access to information stored on the device, so PECR regulation 6 is engaged.
+- According to the ICO's storage and access technologies guidance (search extract from ico.org.uk), the DUAA 2025 "statistical purposes" exception (in force 5 Feb 2026) removes the need for consent. In return it requires **clear and comprehensive information** and an **easy, free way to object**, including for JavaScript tags.
+
+**Current state:**
+- Information: now provided in the corrected policies.
+- Way to object: **missing**. The banner's "Essential only" does nothing.
+- The banner also says "We use essential cookies to keep you logged in", but sign-in uses local storage, not cookies.
+
+**Proposed minimal change (awaiting approval):**
+1. Banner "Essential only" (on `index.html` and `checkout.html`) also sets `localStorage.plausible_ignore = 'true'`; "Accept" removes it. This is Plausible's own documented opt-out flag.
+2. Add a one-click "Turn analytics off/on" link in the Cookie Policy, using the same flag.
+3. Banner text → "We use essential browser storage to keep you signed in, and privacy-friendly analytics with no cookies. No advertising or tracking cookies."
+
+No redesign is involved. The policy placeholder will then be replaced.
+
+## Subscription cancellation (A–E)
+- **A. What the site does:**
+  - Subscription checkout (`checkout.html` → Stripe) shows "By subscribing you agree to our terms and refund policy. Your subscription auto-renews. Cancel any time".
+  - There is **no** express request to start within 14 days and no acknowledgement.
+  - Unlimited downloads start straight after payment.
+  - Self-service cancel sets `cancel_at_period_end` (no automatic refund); refunds are manual by email.
+- **B. Refund Policy:**
+  - 14-day rights "can apply… depending on whether you asked for the service to begin during the cancellation period and how much of the service has already been supplied".
+  - Monthly: no pro-rata refunds *outside* statutory rights.
+  - Annual: requests within 14 days handled per statutory rights, otherwise case by case.
+- **C. Terms clause 9:** cancel any time, effective at period end, no partial-period refunds "except where required by UK consumer law".
+- **D. Change that appears necessary:** the policies never promise *less* than the law, but they don't tell a subscriber what they get if they cancel within 14 days. Because no express request is captured, the business should decide one of:
+  1. honour a **full refund** for a subscription cancelled within 14 days of purchase, and say so; or
+  2. add an express request and acknowledgement at subscription checkout (like PAYG), then apply whatever the law allows for service already supplied.
+
+  Option 1 needs no code. Option 2 is a checkout change.
+- **E. OWNER/LEGAL REVIEW:**
+  - whether CLPeasy is a "service" or "digital content" (the same open question as PAYG);
+  - the 14-day refund position for subscriptions;
+  - the wording.
+
+  Rights were **not** weakened; placeholders are in Terms clause 9 and the Refund Policy.
+
+## Round-2 changes in #220
+| File | Change |
+|---|---|
+| `terms.html` | Clause 6 rewritten to the current product: guest Builder (watermarked), trial (14 days, no card, 10 watermarked downloads), Easy Start Unlimited, PAYG credits (one per download, 7-day same-label re-download, no expiry, bonus credits part of the pack), PAYG immediate-access confirmation, Stripe. Clause 4: "CLPeasy does not guarantee that any label is legally compliant." Clause 7: liability cap counts subscription **and PAYG** fees. Placeholders for clause 8 (trade mark) and clause 9 (subscriptions) |
+| `faq.html` | "HSE confirmed that no specific regulatory obligations apply" → "HSE did not identify any…" (matches Terms and the compliance page; less strong) |
+| `privacy.html` | Guide Me / Knowledge Base row (Anthropic), Plausible detail, support-form row, browser-storage and Smart Paste statement, Brevo cancellation emails. Placeholders: AI legal basis, renewal reminders, Brevo cancellation/win-back basis, international transfers, retention of download/rate-limit/log records and Anthropic data, Zoho |
+| `cookie-policy.html` | Plausible reads `plausible_ignore` (evidenced); opt-out placeholder; mobile table fits from 360 px (8 px internal scroll at 320 px) |
+| `refund.html` | Subscription placeholder |
+| `tests/payg-immediate-supply-consent.js` | Terms assertion updated to the new clause 6 wording (still requires subscription, PAYG credits, trial and no-expiry) |
+| `builder.html`, `dashboard.html` | Round-1 ™→® **reverted** (trade mark unverified) |
+
+**Before merge:** every `[OWNER/LEGAL REVIEW: …]` placeholder (privacy 7, terms 2, cookie 1, refund 1) must be replaced or removed.
