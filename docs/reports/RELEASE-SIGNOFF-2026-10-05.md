@@ -251,3 +251,40 @@ Nothing was changed.
 - **Live Stripe product "CLPeasy Easy Start"** (`prod_Ucsr7Mghv6kj0C`, used by the current £89/year and £9.99/month prices) is still described as "20 label downloads per month, all download formats, QR safety sheets and label history". That contradicts **Unlimited**, and Stripe Checkout normally shows the product description. Owner fix: Stripe Dashboard → Product catalogue → CLPeasy Easy Start → edit the description.
 - Old live prices remain active: Easy Pro £14.99/£149, Easy Start £99/year, Top-ups £3.99/£7.99. The site and server no longer offer them; archiving them is an owner choice.
 - Privacy wording corrected in #220: confirmation email on **pause** only, because no code sends a cancellation confirmation.
+
+## Round 5 (5 Oct 2026)
+
+### Lawful basis for Guide Me / Knowledge Base: legitimate interests (assessment)
+- **Why not contract** (ICO "Contract" guidance: processing must be integral to delivering a contract *with that person*): the Knowledge Base search is on a public page and the Builder (Guide Me) works for signed-out guests. Many users have no contract with CLPeasy, so contract cannot be the single basis.
+- **Purpose:** answering the question the person chose to ask. This is a legitimate interest of CLPeasy and of the user. The IP-based daily limit protects the service from misuse.
+- **Necessity:** the answer can only be produced by sending the typed text to the AI provider. Only the typed text (and, for Guide Me, up to the last 8 chat messages plus fixed instructions) is sent; no name, email, account ID or label data. There is no less intrusive way to provide the feature.
+- **Balancing:**
+  - Use is entirely optional and user-initiated.
+  - Both features are labelled as AI at the point of use ("Guide Me — AI Assistant"; "AI-generated response for guidance only").
+  - A reasonable person typing into an AI assistant expects the text to be processed to produce an answer.
+  - Anthropic acts as a processor under its DPA (incorporated in its Commercial Terms) and deletes API data within 30 days by default.
+  - The privacy notice now describes this and advises users not to type personal information.
+  - Objection is simple: don't use the feature.
+  - Low risk.
+- **Conclusion:** legitimate interests is supportable under the ICO three-part test. The marker is removed; the policy row says "Legitimate interests (giving you the help you ask for)".
+- **Future improvement:** a one-line notice beside each input saying questions are sent to an AI provider.
+
+### Inaccurate AI search claims corrected
+`clp-search` (deployed) sends the question to Claude Haiku with fixed instructions; it does **no** live legislation lookup. Corrected:
+- `knowledge.html`: "answered using live information and our knowledge base" → "answered by AI for general guidance"; the loading text "Searching legislation and knowledge base..." → "Getting an answer..."; "powered by live regulatory information" → "AI-generated answer for general guidance".
+- `index.html`: "a search tool powered by live information" → "an AI search tool that gives quick, general answers".
+
+### Stripe renewal-reminder line
+The "Send emails about upcoming renewals" switch is Dashboard-only (Stripe docs). The specific promise "Send subscription renewal reminders before your annual plan renews" was removed. Any reminder Stripe sends is covered by the existing "subscription notifications" line. This is accurate whether the switch is on or off, so no owner check is needed.
+**Future:** the DMCC subscription regime (expected 2027) is likely to require renewal reminders; review then.
+
+### Stripe Easy Start product description: customer-facing defect
+- Live `prod_Ucsr7Mghv6kj0C` ("CLPeasy Easy Start", carrying the current £9.99/month `price_1TdoEYGZLILz5vqUIqlEsf4X` and £89/year `price_1UMSlpGZLILz5vqUKA7dE3JS`) says "20 label downloads per month, all download formats, QR safety sheets and label history". Easy Start is Unlimited.
+- An update of the description only, via the Stripe tooling on the live CLPeasy account, was **refused (read-only scope)**. Nothing in Stripe changed. **Owner action** (see the final summary).
+
+### Brevo
+- The policy is reduced to one owner check: cancellation-triggered marketing automations.
+- **PAYG purchase confirmation email:** none exists in CLPeasy code (Stripe's receipt/invoice only). This is a **post-release customer-experience item**, unless a Brevo automation on the paid list already sends one (not evidenced).
+
+### Markers
+**1 remaining** (privacy: Brevo marketing automations). `tests/no-review-placeholders.js` still blocks merge.
