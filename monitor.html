@@ -291,6 +291,97 @@ footer{text-align:center;padding:20px;font-size:11px;color:rgba(255,255,255,0.2)
     </div>
   </div>
 
+  <!-- ========== Website & Regulatory Links (site-link-health Edge Function) ========== -->
+  <style>
+    .lh-stats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin:4px 0 14px;}
+    .lh-stat{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:10px 8px;text-align:center;}
+    .lh-stat-num{font-size:22px;font-weight:800;color:white;line-height:1.1;}
+    .lh-stat-num.green{color:#4ade80;}.lh-stat-num.amber{color:#fbbf24;}.lh-stat-num.red{color:#f87171;}.lh-stat-num.orange{color:#fb923c;}
+    .lh-stat-label{font-size:11px;color:rgba(255,255,255,0.45);margin-top:4px;}
+    .lh-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;margin-bottom:14px;}
+    .lh-meta .info-key{white-space:nowrap;}
+    .lh-run-state{font-size:12px;font-weight:600;color:rgba(255,255,255,0.7);}
+    .lh-run-state.ok{color:#4ade80;}.lh-run-state.warn{color:#fbbf24;}.lh-run-state.alert{color:#f87171;}
+    .lh-filters{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 12px;}
+    .lh-chip{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);padding:5px 12px;border-radius:14px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+    .lh-chip.active{background:var(--teal);border-color:var(--teal);color:white;}
+    .lh-list{display:flex;flex-direction:column;gap:8px;}
+    .lh-row{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-left:3px solid rgba(255,255,255,0.2);border-radius:10px;padding:10px 14px;min-width:0;}
+    .lh-row.s-HEALTHY{border-left-color:#4ade80;}.lh-row.s-REDIRECTED{border-left-color:#fbbf24;}.lh-row.s-WARNING{border-left-color:#fbbf24;}
+    .lh-row.s-BROKEN{border-left-color:#f87171;}.lh-row.s-REVIEW{border-left-color:#fb923c;background:rgba(251,146,60,0.08);}
+    .lh-row-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;}
+    .lh-tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px;letter-spacing:.4px;white-space:nowrap;}
+    .lh-tag.HEALTHY{background:rgba(74,222,128,0.15);color:#4ade80;}.lh-tag.REDIRECTED,.lh-tag.WARNING{background:rgba(251,191,36,0.15);color:#fbbf24;}
+    .lh-tag.BROKEN{background:rgba(248,113,113,0.18);color:#f87171;}.lh-tag.REVIEW{background:rgba(251,146,60,0.2);color:#fb923c;}
+    .lh-tag.reg{background:rgba(76,155,176,0.18);color:var(--teal-light);}
+    .lh-title{font-size:13px;font-weight:700;color:white;}
+    .lh-line{font-size:12px;color:rgba(255,255,255,0.7);line-height:1.55;overflow-wrap:anywhere;word-break:break-word;}
+    .lh-line a{color:var(--teal-light);}
+    .lh-line .k{color:rgba(255,255,255,0.42);}
+    .lh-note{font-size:12px;font-weight:600;margin-top:3px;}
+    .lh-note a{color:var(--teal-light);}
+    .lh-note.safe{color:#4ade80;}.lh-note.review{color:#fb923c;}.lh-note.bad{color:#f87171;}.lh-note.warn{color:#fbbf24;}
+    .lh-empty{font-size:13px;color:rgba(255,255,255,0.55);padding:6px 0;}
+    .lh-signin{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:6px;}
+    .lh-signin input{flex:1 1 180px;min-width:0;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:white;padding:8px 10px;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;}
+    .lh-msg{font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;min-height:1em;}
+    .lh-msg.err{color:#f87171;}
+    .lh-toggle{background:none;border:none;color:var(--teal-light);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:underline;padding:6px 0;}
+    @media(max-width:600px){.lh-stats{grid-template-columns:repeat(3,minmax(0,1fr));}.lh-meta{gap:6px 14px;}}
+  </style>
+  <div class="section-title">🔗 Website &amp; Regulatory Links</div>
+  <div class="service-card status-info" id="card-links" style="margin-bottom:8px;">
+    <div class="card-header">
+      <div class="card-header-left">
+        <span class="service-icon">🔗</span>
+        <div>
+          <div class="service-name">Website &amp; Regulatory Links</div>
+          <div class="service-plan">Automatic check every Monday 03:17 UTC · links found on clpeasy.com</div>
+        </div>
+      </div>
+      <span class="status-badge loading" id="lh-badge">Sign in</span>
+    </div>
+    <div class="card-body">
+      <div id="lh-signin-wrap" style="display:none;">
+        <div class="lh-line" style="margin-bottom:8px;">Sign in with your CLPeasy admin account to see link results.</div>
+        <form class="lh-signin" id="lh-signin" autocomplete="on">
+          <input type="email" id="lh-email" placeholder="Admin email" autocomplete="username" required>
+          <input type="password" id="lh-password" placeholder="Password" autocomplete="current-password" required>
+          <button type="submit" class="refresh-btn">Sign in</button>
+        </form>
+        <div class="lh-msg" id="lh-signin-msg"></div>
+      </div>
+      <div id="lh-content" style="display:none;">
+        <div class="lh-stats">
+          <div class="lh-stat"><div class="lh-stat-num" id="lh-n-checked">—</div><div class="lh-stat-label">Checked</div></div>
+          <div class="lh-stat"><div class="lh-stat-num green" id="lh-n-healthy">—</div><div class="lh-stat-label">Healthy</div></div>
+          <div class="lh-stat"><div class="lh-stat-num amber" id="lh-n-redirected">—</div><div class="lh-stat-label">Redirected</div></div>
+          <div class="lh-stat"><div class="lh-stat-num amber" id="lh-n-warning">—</div><div class="lh-stat-label">Warnings</div></div>
+          <div class="lh-stat"><div class="lh-stat-num red" id="lh-n-broken">—</div><div class="lh-stat-label">Broken</div></div>
+          <div class="lh-stat"><div class="lh-stat-num orange" id="lh-n-review">—</div><div class="lh-stat-label">Review required</div></div>
+        </div>
+        <div class="lh-meta">
+          <span class="info-key">Last automatic check: <span class="info-val" id="lh-last-auto">—</span></span>
+          <span class="info-key">Last check: <span class="info-val" id="lh-last-any">—</span></span>
+          <button type="button" class="refresh-btn" id="lh-run-btn">Check links now</button>
+          <span class="lh-run-state" id="lh-run-state" role="status" aria-live="polite"></span>
+          <button type="button" class="lh-toggle" id="lh-signout" style="margin-left:auto;">Sign out of link checks</button>
+        </div>
+        <div class="lh-filters" role="group" aria-label="Filter links">
+          <button type="button" class="lh-chip active" data-lh-filter="all">All</button>
+          <button type="button" class="lh-chip" data-lh-filter="broken">Broken</button>
+          <button type="button" class="lh-chip" data-lh-filter="warnings">Warnings</button>
+          <button type="button" class="lh-chip" data-lh-filter="review">Review required</button>
+        </div>
+        <div class="lh-list" id="lh-list"></div>
+        <button type="button" class="lh-toggle" id="lh-healthy-toggle" style="display:none;"></button>
+        <div class="lh-list" id="lh-healthy-list" style="display:none;"></div>
+      </div>
+      <div class="lh-msg" id="lh-msg"></div>
+    </div>
+  </div>
+  <!-- ========== End Website & Regulatory Links ========== -->
+
   <style>
     .svc-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-left:3px solid var(--teal);border-radius:16px;padding:20px 22px;margin-bottom:8px;}
     .svc-intro{color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:16px;line-height:1.5;}
@@ -1431,6 +1522,7 @@ async function runAll() {
   try { checkSupabase(); } catch (e) { console.error('checkSupabase', e); }
   try { checkBrevo(); } catch (e) { console.error('checkBrevo', e); }
   try { loadDates(); } catch (e) { console.error('loadDates', e); }
+  try { if (window.loadLinkHealth) window.loadLinkHealth(); } catch (e) { console.error('loadLinkHealth', e); }
   try { updateSummary(); } catch (e) { console.error('updateSummary', e); }
   document.getElementById('lastRefresh').textContent = 'Last refreshed: ' + new Date().toLocaleTimeString('en-GB');
 }
@@ -1749,6 +1841,217 @@ setInterval(async () => { try { await checkPlausible(); } catch(e){} try { await
 })();
 
 
+</script>
+<script>
+// ── Website & Regulatory Links ─────────────────────────────────────
+// Reads results from the site-link-health Edge Function. Signing in uses
+// Supabase Auth directly (public anon key only); the function itself checks
+// server-side that the account is the CLPeasy admin. No secret is in this page.
+(function(){
+  const SB_URL = 'https://qvkosdqcryrcfbjtaxic.supabase.co';
+  const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF2a29zZHFjcnlyY2ZianRheGljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3MTkzOTIsImV4cCI6MjA5NTI5NTM5Mn0.Uo18YEjMKN3vgQ4WGgrdZR4eVa85M1ubAv-FIYUYAYw';
+  const FN_URL = SB_URL + '/functions/v1/site-link-health';
+  const KEY = 'clp_links_session';
+  const $ = id => document.getElementById(id);
+  let filter = 'all', showHealthy = false, data = null, polling = null;
+
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const safeLink = u => /^https?:\/\//i.test(u || '') ? '<a href="' + esc(u) + '" target="_blank" rel="noopener noreferrer">' + esc(u) + '</a>' : esc(u);
+  const fmtDate = iso => iso ? new Date(iso).toLocaleString('en-GB', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+  const fmtDay = iso => iso ? new Date(iso).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : '—';
+
+  function getSession(){ try { return JSON.parse(sessionStorage.getItem(KEY) || 'null'); } catch(e){ return null; } }
+  function setSession(s){ try { s ? sessionStorage.setItem(KEY, JSON.stringify(s)) : sessionStorage.removeItem(KEY); } catch(e){} }
+
+  async function authRequest(grant, body){
+    const res = await fetch(SB_URL + '/auth/v1/token?grant_type=' + grant, {
+      method: 'POST', headers: { 'apikey': SB_ANON, 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+    });
+    const j = await res.json().catch(() => ({}));
+    if (!res.ok || !j.access_token) throw new Error(j.error_description || j.msg || 'Sign-in failed');
+    const s = { access_token: j.access_token, refresh_token: j.refresh_token, expires_at: Math.floor(Date.now()/1000) + (j.expires_in || 3600) };
+    setSession(s);
+    return s;
+  }
+  async function token(){
+    let s = getSession();
+    if (!s) return null;
+    if (s.expires_at - 60 < Date.now()/1000) {
+      try { s = await authRequest('refresh_token', { refresh_token: s.refresh_token }); } catch(e){ setSession(null); return null; }
+    }
+    return s.access_token;
+  }
+  async function callFn(method, body){
+    const t = await token();
+    if (!t) { if ($('lh-signin-wrap').style.display !== 'block') showSignIn(); return null; }
+    const res = await fetch(FN_URL + (method === 'GET' ? '?action=results' : ''), {
+      method, headers: { 'Authorization': 'Bearer ' + t, 'apikey': SB_ANON, 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    if (res.status === 401 || res.status === 403) {
+      setSession(null); showSignIn('This account isn’t authorised to view link checks.'); return null;
+    }
+    return { status: res.status, body: await res.json().catch(() => ({})) };
+  }
+
+  function setCard(cls, badgeCls, badgeText){
+    $('card-links').className = 'service-card ' + cls;
+    $('lh-badge').className = 'status-badge ' + badgeCls;
+    $('lh-badge').textContent = badgeText;
+    if (typeof updateSummary === 'function') { try { updateSummary(); } catch(e){} }
+  }
+  function showSignIn(msg){
+    $('lh-signin-wrap').style.display = 'block';
+    $('lh-content').style.display = 'none';
+    $('lh-signin-msg').textContent = msg || '';
+    $('lh-signin-msg').className = 'lh-msg' + (msg ? ' err' : '');
+    setCard('status-info', 'loading', 'Sign in');
+  }
+
+  // Group the per-page rows into one entry per destination URL.
+  function groupLinks(rows){
+    const by = new Map();
+    rows.forEach(r => {
+      let g = by.get(r.target_url);
+      if (!g) { g = Object.assign({}, r, { pages: [] }); by.set(r.target_url, g); }
+      g.pages.push({ page: r.source_page, text: r.link_text });
+    });
+    return [...by.values()];
+  }
+  const kind = g => g.health_status === 'REVIEW_REQUIRED' ? 'REVIEW' : g.health_status;
+  const RANK = { REVIEW_REQUIRED:0, BROKEN:1, WARNING:3, REDIRECTED:4, UNCHECKED:5, HEALTHY:6 };
+  const rank = g => g.review_required && g.health_status === 'REDIRECTED' ? 2 : (RANK[g.health_status] ?? 5);
+  const LABEL = { HEALTHY:'🟢 HEALTHY', REDIRECTED:'🟡 REDIRECTED', WARNING:'🟡 WARNING', BROKEN:'🔴 BROKEN', REVIEW_REQUIRED:'🟠 REVIEW REQUIRED', UNCHECKED:'⚪ NOT CHECKED YET' };
+
+  function rowHtml(g){
+    const pages = g.pages.map(p => esc(p.page) + (p.text ? ' → “' + esc(p.text) + '”' : '')).join('<br>');
+    const reg = g.authority_type === 'regulatory';
+    let lines = '<div class="lh-line"><span class="k">Found on:</span><br>' + pages + '</div>';
+    lines += '<div class="lh-line"><span class="k">' + (g.health_status === 'HEALTHY' ? 'URL' : 'Old URL') + ':</span> ' + safeLink(g.target_url) + '</div>';
+    if (g.health_status === 'REDIRECTED' && g.final_url) lines += '<div class="lh-line"><span class="k">→ Now goes to:</span> ' + safeLink(g.final_url) + (g.redirect_count ? ' <span class="k">(' + g.redirect_count + ' redirect' + (g.redirect_count > 1 ? 's' : '') + ')</span>' : '') + '</div>';
+    const extra = (g.last_error || '').replace(/^HTTP \d+\.?\s*(\u2014\s*)?/, '').replace(/\.?\s*Regulatory link \u2014 manual verification required$/, '');
+    const result = g.http_status ? 'HTTP ' + g.http_status + (g.health_status !== 'HEALTHY' && extra ? ' \u2014 ' + extra : '') : (g.last_error || '\u2014');
+    lines += '<div class="lh-line"><span class="k">Result:</span> ' + esc(result) + '</div>';
+    const dates = ['Last checked: ' + fmtDate(g.last_checked_at)];
+    if (g.first_failed_at) dates.push('First failed: ' + fmtDay(g.first_failed_at));
+    if (g.health_status !== 'HEALTHY') dates.push('Last known healthy: ' + (g.last_healthy_at ? fmtDay(g.last_healthy_at) : 'not recorded'));
+    lines += '<div class="lh-line"><span class="k">' + dates.map(esc).join(' · ') + '</span></div>';
+    let note = '';
+    if (g.health_status === 'REDIRECTED' && g.replacement_url) note = '<div class="lh-note safe">✔ Safe replacement available: ' + safeLink(g.replacement_url) + '</div>';
+    else if (g.health_status === 'REDIRECTED' && reg) note = '<div class="lh-note review">Official redirect recorded — regulatory link, manual verification required before changing it</div>';
+    else if (g.health_status === 'REDIRECTED') note = '<div class="lh-note warn">Temporary redirect — no replacement suggested</div>';
+    else if (g.health_status === 'REVIEW_REQUIRED') note = '<div class="lh-note review">Regulatory link — manual verification required. Find the correct official page yourself; nothing is replaced automatically.</div>';
+    else if (g.health_status === 'BROKEN') note = '<div class="lh-note bad">Fix or remove this link</div>';
+    else if (g.health_status === 'WARNING') note = '<div class="lh-note warn">Temporary problem — will be re-checked next week</div>';
+    return '<div class="lh-row s-' + kind(g) + '"><div class="lh-row-top"><span class="lh-tag ' + kind(g) + '">' + LABEL[g.health_status] + '</span>' +
+      (reg ? '<span class="lh-tag reg">Regulatory</span>' : '') +
+      '<span class="lh-title">' + esc(g.pages[0].page) + ' → ' + esc(g.pages[0].text || g.target_url) + (g.pages.length > 1 ? ' <span class="k" style="color:rgba(255,255,255,0.45);font-weight:500;">+' + (g.pages.length - 1) + ' more page' + (g.pages.length > 2 ? 's' : '') + '</span>' : '') + '</span></div>' +
+      lines + note + '</div>';
+  }
+
+  function render(){
+    if (!data) return;
+    const groups = groupLinks(data.links || []).sort((a, b) => rank(a) - rank(b) || a.target_url.localeCompare(b.target_url));
+    const checked = groups.filter(g => g.health_status !== 'UNCHECKED');
+    const n = s => checked.filter(g => g.health_status === s).length;
+    const review = checked.filter(g => g.review_required).length;
+    $('lh-n-checked').textContent = checked.length;
+    $('lh-n-healthy').textContent = n('HEALTHY');
+    $('lh-n-redirected').textContent = n('REDIRECTED');
+    $('lh-n-warning').textContent = n('WARNING');
+    $('lh-n-broken').textContent = n('BROKEN');
+    $('lh-n-review').textContent = review;
+    $('lh-last-auto').textContent = data.last_scheduled ? fmtDay(data.last_scheduled.completed_at || data.last_scheduled.started_at) : 'not yet run';
+    const latest = (data.runs || [])[0];
+    $('lh-last-any').textContent = latest ? fmtDate(latest.completed_at || latest.started_at) + (latest.status === 'completed' ? '' : ' (' + latest.status + ')') : 'never';
+
+    const issues = groups.filter(g => g.health_status !== 'HEALTHY');
+    const shown = issues.filter(g => filter === 'all' ? true
+      : filter === 'broken' ? g.health_status === 'BROKEN'
+      : filter === 'warnings' ? g.health_status === 'WARNING'
+      : g.review_required);
+    $('lh-list').innerHTML = shown.length ? shown.map(rowHtml).join('') :
+      '<div class="lh-empty">' + (checked.length ? 'Nothing to show for this filter — no action needed.' : 'No links checked yet. Use “Check links now” or wait for the weekly check.') + '</div>';
+    const healthy = groups.filter(g => g.health_status === 'HEALTHY');
+    $('lh-healthy-toggle').style.display = healthy.length ? 'inline-block' : 'none';
+    $('lh-healthy-toggle').textContent = (showHealthy ? 'Hide' : 'Show') + ' ' + healthy.length + ' healthy link' + (healthy.length === 1 ? '' : 's');
+    $('lh-healthy-list').style.display = showHealthy ? 'flex' : 'none';
+    $('lh-healthy-list').innerHTML = showHealthy ? healthy.map(rowHtml).join('') : '';
+
+    if (!checked.length) setCard('status-info', 'info', 'Not checked yet');
+    else if (n('BROKEN') && review) setCard('status-alert', 'alert', '✕ Broken + review');
+    else if (n('BROKEN')) setCard('status-alert', 'alert', '✕ Broken links');
+    else if (review) setCard('status-alert', 'alert', '⚠ Review required');
+    else if (n('WARNING') || n('REDIRECTED')) setCard('status-warn', 'warn', '⚠ Attention');
+    else setCard('status-ok', 'ok', '✓ All healthy');
+  }
+
+  function setRunState(text, cls){ $('lh-run-state').textContent = text; $('lh-run-state').className = 'lh-run-state' + (cls ? ' ' + cls : ''); }
+
+  async function load(){
+    const r = await callFn('GET');
+    if (!r) return;
+    if (r.status !== 200) { $('lh-msg').textContent = 'Could not load link results (' + (r.body.error || r.status) + ').'; $('lh-msg').className = 'lh-msg err'; return; }
+    $('lh-msg').textContent = '';
+    $('lh-signin-wrap').style.display = 'none';
+    $('lh-content').style.display = 'block';
+    data = r.body;
+    render();
+    const latest = (data.runs || [])[0];
+    if (latest && latest.status === 'running') { setRunState('Checking…'); $('lh-run-btn').disabled = true; startPolling(); }
+    return latest;
+  }
+
+  function startPolling(){
+    if (polling) return;
+    const began = Date.now();
+    polling = setInterval(async () => {
+      const latest = await load();
+      if (!latest || latest.status !== 'running' || Date.now() - began > 5 * 60000) {
+        clearInterval(polling); polling = null; $('lh-run-btn').disabled = false;
+        if (!latest) return;
+        if (latest.status === 'running') setRunState('Still checking — refresh later', 'warn');
+        else if (latest.status === 'failed') setRunState('Failed' + (latest.error_summary ? ': ' + latest.error_summary : ''), 'alert');
+        else setRunState(latest.status === 'partial' ? 'Completed (partial — see last check)' : 'Completed', latest.status === 'partial' ? 'warn' : 'ok');
+      }
+    }, 5000);
+  }
+
+  async function runNow(){
+    $('lh-run-btn').disabled = true;
+    setRunState('Checking…');
+    const r = await callFn('POST', { action: 'run' });
+    if (!r) { $('lh-run-btn').disabled = false; setRunState(''); return; }
+    if (r.status === 202 || (r.status === 409 && r.body.reason === 'already_running')) { startPolling(); return; }
+    $('lh-run-btn').disabled = false;
+    if (r.status === 429) setRunState('Checked recently — try again in ' + Math.max(1, Math.ceil((r.body.retry_after_seconds || 600) / 60)) + ' min', 'warn');
+    else setRunState('Failed to start (' + (r.body.error || r.body.reason || r.status) + ')', 'alert');
+  }
+
+  $('lh-signin').addEventListener('submit', async e => {
+    e.preventDefault();
+    $('lh-signin-msg').className = 'lh-msg'; $('lh-signin-msg').textContent = 'Signing in…';
+    try {
+      await authRequest('password', { email: $('lh-email').value.trim(), password: $('lh-password').value });
+      $('lh-password').value = '';
+      $('lh-signin-msg').textContent = '';
+      await load();
+    } catch(err) {
+      $('lh-signin-msg').className = 'lh-msg err'; $('lh-signin-msg').textContent = 'Sign-in failed — check your email and password.';
+    }
+  });
+  $('lh-run-btn').addEventListener('click', runNow);
+  $('lh-signout').addEventListener('click', () => { setSession(null); data = null; showSignIn(); });
+  $('lh-healthy-toggle').addEventListener('click', () => { showHealthy = !showHealthy; render(); });
+  document.querySelectorAll('[data-lh-filter]').forEach(b => b.addEventListener('click', () => {
+    filter = b.getAttribute('data-lh-filter');
+    document.querySelectorAll('[data-lh-filter]').forEach(x => x.classList.toggle('active', x === b));
+    render();
+  }));
+
+  window.loadLinkHealth = function(){ if (getSession()) load().catch(e => console.error('loadLinkHealth', e)); else showSignIn(); };
+  window.loadLinkHealth();
+})();
 </script>
 </body>
 </html>
