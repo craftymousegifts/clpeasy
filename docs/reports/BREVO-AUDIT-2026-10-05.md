@@ -560,3 +560,44 @@ Deploy to the **CLPeasy Test** Supabase project / Stripe test mode, if its Brevo
 ### Deploy notes (when approved)
 - Deploy `clp-account-events` with JWT verification **on** (Supabase CLI default; do not pass `--no-verify-jwt`), matching the current deployment.
 - Deploy it together with, or after, `stripe-webhook`. Otherwise, between the two deploys, Account-page cancellations would get neither the old attribute write nor the new webhook update. Harmless while no workflow reads the attribute, but tidier.
+
+## Round 6: owner's manual Brevo work recorded (6 Oct 2026)
+
+Done by the owner in the Brevo dashboard. Template contents were re-read through the Brevo connector (read-only) on 6 Oct and match the copies in `docs/brevo/templates/`, which were updated in this round to the final pasted versions.
+
+### Workflow 1 "CLPeasy Onboarding" — Active
+- Trigger unchanged: contact added to list 3 (identified_contacts).
+- All six emails replaced with the final approved HTML (templates 1–6 = `01…06-*.html`). Sender and reply-to checked.
+- A conditional split now sits **before Day 10, Day 12 and Day 14**: contact is a member of **Paid Subscribers #5 OR PAYG Customers #7 → Exit**; otherwise continue to that email.
+- Test run: all six emails processed and received.
+
+### Workflow 2 "CLPeasy Paid Subscribers" — Active
+- Unchanged structure: subscription welcome → wait 7 days → tips → wait 23 days → one-month thank-you (templates 13, 14, 15 = `13…15-*.html`).
+- All three updated/verified with the final approved HTML. Test run: all three processed and received.
+
+### Transactional templates (all **Inactive**)
+| Template | Repo copy | State |
+|---|---|---|
+| **7** Pause confirmation | `07-pause-confirmation.html` | Corrected content (no 3-month limit, no reminder promise). Duplicate legacy logo block and duplicate legacy Brevo footer block removed in the visual editor (Brevo stores this one inside its editor wrapper). Gmail test received. |
+| **23** PAYG purchase confirmation | `NEW-payg-purchase-confirmation.html` | Approved dynamic HTML installed (`FIRSTNAME`, `DOWNLOADS`, `PURCHASED`, `BONUS`, `BALANCE`; bonus line only when `BONUS > 0`). Visual test received; values blank as expected, because an ordinary Brevo test sends no webhook params. Briefly activated by accident while editing and immediately deactivated; no customer transaction occurred. |
+| **24** Cancellation confirmation | `NEW-cancellation-confirmation.html` | Approved dynamic HTML installed (`FIRSTNAME`, `ACCESS_UNTIL`, with fallback wording when `ACCESS_UNTIL` is empty). Preview verified. |
+
+### Data configuration (unchanged, verified)
+- List **7** "CLPeasy PAYG Customers" exists (0 contacts on 6 Oct).
+- Attribute **`SUBSCRIPTION_STATUS`** exists (Text).
+- Paid Subscribers is list **5** (5 contacts on 6 Oct, all owner test addresses; no PAYG contacts).
+- Deployment settings expected: `BREVO_PAID_LIST_ID=5`, `BREVO_PAYG_LIST_ID=7`, `BREVO_PAYG_TEMPLATE_ID=23`, `BREVO_CANCEL_TEMPLATE_ID=24`.
+
+### Left alone
+- Templates **8–12** (save offers, win-back) remain inactive and unused.
+- Workflow **3** Annual Renewal Reminder untouched.
+- Inactive onboarding copy (workflow **4**) untouched.
+
+### Website wording aligned with template 7
+- The pause has no fixed length (Stripe `pause_collection` with no `resumes_at`); it continues until the customer reactivates from the Account page.
+- `account.html` ("Pauses last up to 3 months") and `pricing.html` ("You can pause for up to 3 months at a time") corrected to say the pause continues until the customer reactivates. New regression test `tests/pause-duration-wording.js`.
+
+### Noted for the owner (not changed)
+- Template **4** (Day 10) has reply-to `noreply@clpeasy.com`, while the email says "Reply to this email". The other onboarding and paid emails use `support@clpeasy.com`.
+- Template 7's greeting uses the part of the email address before "@" (`clp-account-events`, unchanged behaviour).
+- Template 7's subject line still says "your labels are safe"; saved labels are browser-local.
