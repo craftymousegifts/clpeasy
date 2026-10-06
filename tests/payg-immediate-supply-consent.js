@@ -87,7 +87,7 @@ const pricingText = text(pricing);
 assert(/8 downloads · includes 3 bonus/.test(pricingText) && /\+3 bonus with every pack · Ends 31 Dec 2026/.test(pricingText), 'PAYG card offer wording');
 // Terms clause 6 recognises PAYG credits as a way to access CLPeasy.
 const terms = text(fs.readFileSync('terms.html', 'utf8'));
-assert(/requires registration and a paid subscription, purchased Pay As You Go download credits, or an active free trial/.test(terms), 'Terms recognise PAYG');
+assert(/either an active Easy Start Unlimited subscription or purchased Pay As You Go download credits/.test(terms) && /14-day free trial with no payment card required/.test(terms) && /Purchased credits do not expire/.test(terms), 'Terms recognise PAYG');
 assert(/cancel a Pay As You Go purchase within 14 days of payment for a refund of any credits from that purchase you have not used/.test(terms), 'Terms state the PAYG 14-day refund of unused credits');
 // The checkbox, server, invoice memo and Stripe note must never claim the
 // right to cancel is lost (classification not established).

@@ -44,6 +44,7 @@ footer-legal{display:block;text-align:center;padding:32px;border-top:1px solid v
 }
 </style>
 <!-- Privacy-friendly analytics by Plausible -->
+<script>/* Analytics preference: "Essential only" turns Plausible off via its own opt-out flag */try{if(localStorage.getItem('clpeasy-cookie-consent')==='essential')localStorage.setItem('plausible_ignore','true')}catch(e){}</script>
 <script async src="https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"></script>
 <script>
   window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
@@ -67,7 +68,7 @@ footer-legal{display:block;text-align:center;padding:32px;border-top:1px solid v
 </nav>
 <div class="container">
   <h1>Privacy Policy</h1>
-  <div class="meta">Last updated: 9 June 2026 &nbsp;·&nbsp; Effective: 9 June 2026</div>
+  <div class="meta">Last updated: 5 October 2026 &nbsp;·&nbsp; Effective: 5 October 2026</div>
 
   <div class="highlight">
     <p>CLPeasy is committed to protecting your privacy. This policy explains what data we collect, why we collect it, and how we use it. We comply with the UK General Data Protection Regulation (UK GDPR) and the Data Protection Act 2018.</p>
@@ -82,11 +83,13 @@ footer-legal{display:block;text-align:center;padding:32px;border-top:1px solid v
     <tr><th>Data</th><th>Why we collect it</th><th>Legal basis</th></tr>
     <tr><td>Email address</td><td>Account creation, login, system emails</td><td>Contract performance</td></tr>
     <tr><td>Password (hashed)</td><td>Account security</td><td>Contract performance</td></tr>
-    <tr><td>Business name &amp; address</td><td>Appears on your CLP labels</td><td>Contract performance</td></tr>
-    <tr><td>Label data (scent name, hazard info etc)</td><td>Generating and saving your labels</td><td>Contract performance</td></tr>
-    <tr><td>Payment data</td><td>Processing subscriptions (handled by Stripe — we do not store card details)</td><td>Contract performance</td></tr>
-    <tr><td>Usage data (pages visited, features used)</td><td>Improving the service</td><td>Legitimate interests</td></tr>
-    <tr><td>IP address</td><td>Security and fraud prevention</td><td>Legitimate interests</td></tr>
+    <tr><td>Business name &amp; address</td><td>Appears on your CLP labels (saved in your browser, not in your CLPeasy account)</td><td>Contract performance</td></tr>
+    <tr><td>Label data (scent name, hazard info etc)</td><td>Generating your labels. Saved labels are kept in your browser. When you download a label, we record its product name, product type, shape and size with the download, to count your downloads and allow free re-downloads of the same label within 7 days</td><td>Contract performance</td></tr>
+    <tr><td>Payment data</td><td>Processing subscriptions and Pay As You Go purchases (handled by Stripe — we do not store card details). For Pay As You Go, your request for the credits to be added straight away, with its date and time, is recorded with the payment</td><td>Contract performance</td></tr>
+    <tr><td>Usage data (pages visited, features used)</td><td>Improving the service. Page visits are counted with Plausible Analytics, which produces aggregated statistics and does not use cookies. You can turn analytics off at any time with "Essential only" on the cookie banner or in our <a href="cookie-policy.html#analytics-choice">Cookie Policy</a></td><td>Legitimate interests</td></tr>
+    <tr><td>Questions you type into Guide Me (in the Builder) or the Knowledge Base search</td><td>Answering your question. Only what you type is sent to Anthropic: your Knowledge Base question, or for Guide Me your message with up to the last 8 messages of the conversation, together with fixed instructions written by CLPeasy. We do not send your name, email address, account details or label data. Using these features is optional; both are labelled as AI. Please do not type personal information you do not want shared</td><td>Legitimate interests (giving you the help you ask for)</td></tr>
+    <tr><td>Support form messages (name, email, description of the problem and browser details you choose to give)</td><td>Answering your support request (delivered to us by email through Brevo)</td><td>Legitimate interests</td></tr>
+    <tr><td>IP address</td><td>Security, fraud prevention, and limiting how many Guide Me and Knowledge Base questions can be asked each day</td><td>Legitimate interests</td></tr>
   </table>
 
   <h2>3. How We Use Your Data</h2>
@@ -94,17 +97,26 @@ footer-legal{display:block;text-align:center;padding:32px;border-top:1px solid v
   <ul>
     <li>Provide and maintain the CLPeasy service</li>
     <li>Send account-related emails (verification, password reset, subscription notifications)</li>
-    <li>Send subscription renewal reminders before your annual plan renews</li>
     <li>Process payments and manage your subscription</li>
     <li>Improve and develop the service</li>
     <li>Comply with legal obligations</li>
     <li>Prevent fraud and abuse</li>
+    <li>Send a confirmation email when you pause your subscription. We do not send offers to stay or invitations to come back after you cancel.</li>
   </ul>
   <p>We will never sell your personal data to third parties or use it for advertising purposes.</p>
 
   <h2>4. Data Storage and Security</h2>
   <p>Your data is stored securely in Supabase (AWS eu-west-2, London region). All data is encrypted in transit using TLS and encrypted at rest. We implement appropriate technical and organisational measures to protect your data.</p>
   <p>Payments are processed by Stripe — we do not store your card details. Stripe is PCI DSS compliant.</p>
+  <p>Your saved labels, business details, label folders and history are stored in your own browser, not in our database. The SDS text you paste into Smart Paste is processed in your browser to read the hazard information; it is not sent to CLPeasy or to any third party.</p>
+  <p>Our database (Supabase) is hosted in London. Some of our service providers store or process data outside the UK:</p>
+  <ul>
+    <li><strong>Zoho Mail, Brevo and Plausible</strong> store data in the European Union (Zoho's EU data centre; Brevo in France, Germany and Belgium; Plausible in Germany). The UK recognises the EU as providing adequate protection for personal data.</li>
+    <li><strong>Stripe</strong>: transfers from the UK are covered by the UK International Data Transfer Addendum, which Stripe incorporates in the Data Transfers Addendum to its Data Processing Agreement.</li>
+    <li><strong>Anthropic</strong> (United States): transfers are covered by the Standard Contractual Clauses in Anthropic's Data Processing Addendum, which forms part of Anthropic's Commercial Terms.</li>
+    <li><strong>Netlify</strong> (United States): Netlify is certified under the UK Extension to the EU-U.S. Data Privacy Framework, and its Data Processing Addendum also includes Standard Contractual Clauses.</li>
+    <li>When you sign in with Google, or when your browser loads fonts from Google Fonts or software libraries from jsDelivr or cdnjs, your browser connects to those services directly, and they handle that connection under their own privacy policies.</li>
+  </ul>
 
   <h2>5. Data Retention</h2>
   <p>We retain your account data for as long as your account is active. Specifically:</p>
@@ -113,6 +125,9 @@ footer-legal{display:block;text-align:center;padding:32px;border-top:1px solid v
     <li>If you request deletion of your account, we will delete your personal data within 30 days of your request.</li>
     <li>Financial records (payment history, invoice data) are retained for 7 years as required by UK tax law, even after account deletion.</li>
     <li>Labels you have downloaded to your own device are yours to keep and are not affected by account deletion.</li>
+    <li>Download records (product name, type, shape and size) are kept while your account exists and are deleted automatically when your account is deleted.</li>
+    <li>Daily question-limit records (an IP address, the date and a count of questions) are not currently deleted automatically.</li>
+    <li>Questions sent to Anthropic: under Anthropic's standard terms for API customers, inputs and outputs are deleted within 30 days, except where Anthropic's automated systems flag a request as breaching its usage policy (kept for up to 2 years).</li>
   </ul>
   <p>To request account deletion, email us at <a href="mailto:support@clpeasy.com">support@clpeasy.com</a> with the subject line "Account deletion request". We will confirm deletion within 30 days.</p>
 
@@ -121,10 +136,13 @@ footer-legal{display:block;text-align:center;padding:32px;border-top:1px solid v
   <ul>
     <li><strong>Supabase</strong> — database and authentication (AWS London region)</li>
     <li><strong>Stripe</strong> — payment processing</li>
-    <li><strong>Zoho Mail</strong> — transactional email delivery</li>
-    <li><strong>Brevo</strong> — onboarding and account email delivery (e.g. welcome and trial reminder emails)</li>
+    <li><strong>Zoho Mail</strong> — our support@ and noreply@ mailboxes (EU data centre), including messages you send to support@clpeasy.com, and sending of account emails such as sign-up verification and password reset</li>
+    <li><strong>Brevo</strong> — onboarding and account email delivery (e.g. welcome, trial reminder, subscription pause and cancellation emails), and delivery of messages you send through our support form</li>
+    <li><strong>Anthropic</strong> — AI service that answers questions you type into Guide Me in the Builder or the Knowledge Base search (your question is sent to Anthropic to generate the answer)</li>
+    <li><strong>Plausible Analytics</strong> — privacy-focused website visit statistics</li>
     <li><strong>Google</strong> — optional Google OAuth login (only if you choose to sign in with Google)</li>
     <li><strong>Netlify</strong> — website hosting</li>
+    <li><strong>Google Fonts, jsDelivr and cdnjs</strong> — deliver fonts and software libraries to your browser when pages load, which means your browser's IP address is sent to them</li>
   </ul>
   <p>All third parties are required to handle your data in accordance with applicable data protection law.</p>
 
