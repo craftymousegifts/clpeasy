@@ -606,6 +606,36 @@ await test('PAYG customer journey end to end is never treated as a subscriber (n
   eq(contactCalls().map(c => [c.body.listIds, c.body.attributes.SUBSCRIPTION_STATUS, c.body.attributes.PLAN]), [[[7], 'payg', 'Pay As You Go'], [[7], 'payg', 'Pay As You Go']], 'PAYG list and status each time');
   eq(emailCalls().map(c => [c.body.templateId, c.body.params.DOWNLOADS, c.body.params.BONUS, c.body.params.BALANCE]), [[23, 8, 3, 8], [23, 5, 0, 13]], 'only PAYG confirmations, with the real numbers');
 });
+await test('annual renewal date: Stripe current_period_end is synced to Brevo as NEXT_RENEWAL_DATE', async () => {
+  seedProfile({ email: EMAIL, subscription_status: 'active', plan: 'easy_start', downloads_limit: 20 });
+  const renewal = Date.UTC(2027, 9, 6, 12) / 1000;
+  await send(subUpdated('evt_bv_annual_date', subObj(PRICE.proAnnual, {
+    items: { data: [{ price: { id: PRICE.proAnnual }, current_period_end: renewal }] }
+  }), { default_payment_method: 'pm_old' }));
+  const call = statusCalls().find(c => c.body?.attributes?.NEXT_RENEWAL_DATE);
+  eq(call?.body, { attributes: { NEXT_RENEWAL_DATE: '2027-10-06' } }, 'actual Stripe renewal date synced');
+});
+await test('annual renewal date: paused or cancel-scheduled subscriptions do not arm a renewal reminder date', async () => {
+  const renewal = Date.UTC(2027, 9, 6, 12) / 1000;
+  for (const [id, over] of [
+    ['paused', { pause_collection: PAUSED }],
+    ['cancelled', { cancel_at_period_end: true, cancel_at: renewal }],
+  ] as const) {
+    seedProfile({ email: EMAIL, subscription_status: 'active', plan: 'easy_pro', downloads_limit: 30 });
+    await send(subUpdated('evt_bv_annual_' + id, subObj(PRICE.proAnnual, {
+      ...over, items: { data: [{ price: { id: PRICE.proAnnual }, current_period_end: renewal }] }
+    }), id === 'paused' ? { pause_collection: null } : { cancel_at_period_end: false }));
+    assert(!statusCalls().some(c => c.body?.attributes?.NEXT_RENEWAL_DATE), id + ': no renewal date write');
+  }
+});
+await test('monthly subscription: never writes NEXT_RENEWAL_DATE', async () => {
+  seedProfile({ email: EMAIL, subscription_status: 'active', plan: 'easy_start', downloads_limit: 20 });
+  await send(subUpdated('evt_bv_monthly_no_date', subObj(PRICE.start, {
+    current_period_end: Date.UTC(2026, 10, 6, 12) / 1000
+  }), { default_payment_method: 'pm_old' }));
+  assert(!JSON.stringify(brevoCalls).includes('NEXT_RENEWAL_DATE'), 'monthly has no annual renewal date');
+});
+
 await test('no save-offer or win-back: no event ever sends templates 8-12 or writes cancel-reason/discount attributes', async () => {
   seedProfile({ email: EMAIL, subscription_status: 'active', plan: 'easy_start', downloads_limit: 20 });
   await send(subUpdated('evt_bv_nw_pause', subObj(PRICE.start, { pause_collection: PAUSED }), { pause_collection: null }));
