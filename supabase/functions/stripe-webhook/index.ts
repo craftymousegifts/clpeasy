@@ -20,8 +20,8 @@ const corsHeaders = {
 // Set BREVO_API_KEY and BREVO_PAID_LIST_ID in Supabase secrets
 // BREVO_PAID_LIST_ID = the list ID you get from Brevo after creating "CLPeasy Paid Subscribers"
 // BREVO_PAID_AUTOMATION_ID = the automation workflow ID for the paid sequence (set after building in Brevo)
-async function addToBrevoPayList(email: string, firstName: string, planLabel: string): Promise<void> {
-  await upsertBrevoContact(email, firstName, planLabel, 'BREVO_PAID_LIST_ID', 'paid', 'active');
+async function addToBrevoPayList(email: string, firstName: string, planLabel: string, nextRenewalDate = ''): Promise<void> {
+  await upsertBrevoContact(email, firstName, planLabel, 'BREVO_PAID_LIST_ID', 'paid', 'active', nextRenewalDate);
 }
 
 // ── PAY AS YOU GO BREVO JOURNEY (approved 5 Oct 2026, replaces D2) ─────
@@ -45,7 +45,7 @@ async function addToBrevoPaygList(email: string, firstName: string): Promise<voi
 }
 const PAYG_PLAN_LABEL = 'Pay As You Go';
 
-async function upsertBrevoContact(email: string, firstName: string, planLabel: string, listEnvName: string, kind: string, status: BrevoStatus): Promise<void> {
+async function upsertBrevoContact(email: string, firstName: string, planLabel: string, listEnvName: string, kind: string, status: BrevoStatus, nextRenewalDate = ''): Promise<void> {
   const apiKey = Deno.env.get('BREVO_API_KEY');
   const listId = Deno.env.get(listEnvName);
 
@@ -67,6 +67,7 @@ async function upsertBrevoContact(email: string, firstName: string, planLabel: s
           FIRSTNAME: firstName || '',
           PLAN: planLabel,
           SUBSCRIPTION_STATUS: status,
+          ...(nextRenewalDate ? { NEXT_RENEWAL_DATE: nextRenewalDate } : {}),
         },
         listIds: [parseInt(listId, 10)],
         updateEnabled: true,
@@ -126,6 +127,19 @@ async function brevoEmailFor(userId: string, fallback = ''): Promise<string> {
   } catch (_e) {
     return fallback;
   }
+}
+
+function stripeRenewalDate(subscription: any): string {
+  const ts = subscription?.items?.data?.[0]?.current_period_end ?? subscription?.current_period_end;
+  return ts ? new Date(ts * 1000).toISOString().slice(0, 10) : '';
+}
+
+async function setBrevoRenewalDate(email: string, priceId: string, subscription: any): Promise<void> {
+  if (!email || profileInfoFromPriceId(priceId).cycle !== 'annual') return;
+  if (subscription?.status !== 'active' || subscription?.pause_collection || subscription?.cancel_at_period_end) return;
+  const date = stripeRenewalDate(subscription);
+  if (!date) return;
+  await brevoFetch('PUT', `contacts/${encodeURIComponent(email)}`, { attributes: { NEXT_RENEWAL_DATE: date } }, `renewal date ${date}`);
 }
 
 async function setBrevoStatus(email: string, status: BrevoStatus, opts: { leaveSubscriberList?: boolean } = {}): Promise<void> {
@@ -387,7 +401,16 @@ Deno.serve(async (req) => {
         const customerEmail = await brevoEmailFor(userId, session.customer_details?.email || session.customer_email || '');
         const customerName  = session.customer_details?.name || '';
         if (customerEmail) {
-          await addToBrevoPayList(customerEmail, customerName.split(' ')[0] || '', getPlanLabel(priceId!));
+          let nextRenewalDate = '';
+          if (profileInfoFromPriceId(priceId!).cycle === 'annual' && subscriptionId) {
+            try {
+              const purchasedSubscription = await stripe.subscriptions.retrieve(subscriptionId);
+              nextRenewalDate = stripeRenewalDate(purchasedSubscription);
+            } catch (e) {
+              console.warn('Could not retrieve annual subscription renewal date for Brevo:', e);
+            }
+          }
+          await addToBrevoPayList(customerEmail, customerName.split(' ')[0] || '', getPlanLabel(priceId!), nextRenewalDate);
         }
         break;
       }
@@ -507,6 +530,12 @@ if (profileStatus) {
           await setBrevoStatus(await brevoEmailFor(userId), profileStatus);
         }
 
+        // Keep the annual renewal date anchored to Stripe's actual billing
+        // period. Brevo's replacement renewal automation reads this Date
+        // attribute 7 days before it occurs; monthly/paused/cancel-scheduled
+        // subscriptions deliberately do not write a renewal date.
+        await setBrevoRenewalDate(await brevoEmailFor(userId), priceId!, subscription);
+
         // Cancellation confirmation (service email, no offers) when a
         // cancellation is newly scheduled -- from either route.
         const cancelJustScheduled = isCancelScheduled && cancelJustChanged;
@@ -537,6 +566,7 @@ if (profileStatus) {
         if (!userId || !priceId) break;
 
         await applyProfilePlan(userId, priceId);
+        await setBrevoRenewalDate(await brevoEmailFor(userId), priceId, subscription);
 
         // Don't flip subscription_status back to 'active' if a deliberate
         // pause/cancel-scheduled state is in effect for this same period —
