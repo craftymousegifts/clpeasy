@@ -89,3 +89,18 @@ The updated regression now **passes all 100 authentic SDS browser cases** with z
 | P303+P361+P353 | 10 | IF ON SKIN (or hair): remove contaminated clothing and rinse | Review classification and combination/precedence rules |
 
 **Total 400 omitted occurrences** (not 400 unique statements). These counts are from the authentic source-versus-builder artifact, not proof that omissions are correct or incorrect. A fragrance oil concentrate's supplier SDS is not automatically the prescribed consumer label for a diluted finished candle. No automatic inclusion or deletion was applied pending a product-specific classification review.
+
+## GB CLP Article 28 precautionary statement policy review
+
+**Primary sources:** [HSE on precautionary statements](https://www.hse.gov.uk/chemical-classification/labelling-packaging/hazard-precautionary-statements-signal-words.htm); [retained GB CLP Article 28](https://www.legislation.gov.uk/eur/2008/1272/2022-11-01?view=extent); [HSE classification responsibilities](https://www.hse.gov.uk/chemical-classification/classification/how-does-classification-work.htm).
+
+The HSE says the supplier selects appropriate precautionary statements on the basis of hazard classification; the GB CLP Article 28 text allows omitting clearly redundant/unnecessary statements for the **specific mixture and use**, and ordinarily limits the label to six precautionary statements unless hazards justify more. **It does not authorise automatically deleting any named P-code from every finished home-fragrance product solely because the code is described as “occupational”.** Mixture classification and the resulting label are product- and concentration-specific.
+
+### Findings and required disposition
+
+- **High priority — automatic exclusions:** The current Smart Paste `_pExclude` array silently removes nine P-code forms for all products, including P280 (95 instances in the corpus), P264 (75), P405 (25), and the P303+P361+P353 response combination (10). The blanket code comment “codes not applicable to finished consumer home fragrance products” is broader than what the primary sources establish. A code can be inappropriate for a particular candle yet relevant to another mixture/product or exposure scenario. Treat the existing exclusion policy as **not regulator-validated**.
+- **P280 requires a maker-specific decision:** The builder already offers a manual protective-equipment picker and prevents P280 being accepted without a selected equipment item. That mitigates rendering ambiguity but does **not** make silent initial removal inherently correct. The builder should make exclusions visible and explain how to review/reinstate an applicable statement before any regulatory approval.
+- **P-code selection cannot be established by matching raw fragrance SDS 1:1:** The supplier SDS describes the concentrate, not necessarily a candle/wax melt/room spray at the maker's final fragrance loading. Never infer that all 400 omitted occurrences must be restored to the finished label.
+- **QA protection added:** `tests/sds-p-code-exclusion-policy.js` now guards the current nine-item list and the manual P280 selection pathway. It will fail if the exclusion list is silently changed without revisiting the policy. This is a **change-control test**, not a safety endorsement.
+
+**Decision:** Keep draft PR unmerged. Do not alter the regulatory inclusion/exclusion policy until a competent GB CLP reviewer checks finished-product examples and documented hazard/use scenarios. Independently prioritise a user-visible exclusion disclosure and review workflow before release.
