@@ -62,7 +62,7 @@ if(!links.some(d=>d.url===SEED))links.unshift({supplier:'Nikura',name:'Nag Champ
    d.section_2_2_found=!!sdsSection;
    d.sha256=crypto.createHash('sha256').update(pdf).digest('hex');d.bytes=pdf.length;d.pdf_file=pdfFile;d.download_ok=true;
    d.label_text_found=!!sec;
-   if(sec){d.section_2_2_text_file=id+'-section-2-2.txt';fs.writeFileSync(path.join(OUT,d.section_2_2_text_file),sec);}
+   if(sec){d.section_2_2_text_file=id+'-section-2-2.txt';d.label_text_sha256=crypto.createHash('sha256').update(sec,'utf8').digest('hex');fs.writeFileSync(path.join(OUT,d.section_2_2_text_file),sec);}
    const head=raw.slice(0,16000);
    // A mere 10% mention in an ingredient or regulatory threshold does not
    // establish the actual formulation. Require a 10% mixture description.
