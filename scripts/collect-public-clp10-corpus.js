@@ -49,7 +49,7 @@ if(!links.some(d=>d.url===SEED))links.unshift({supplier:'Nikura',name:'Nag Champ
    const head=raw.slice(0,16000);
    // A mere 10% mention in an ingredient or regulatory threshold does not
    // establish the actual formulation. Require a 10% mixture description.
-   d.is_10_percent=/(?:\b(?:fragrance(?:\s+oil)?|perfume|mixture|dilution|concentration)\s*[:=-]?\s*10\s*%\b|\b10\s*%\s*(?:fragrance(?:\s+oil)?|perfume|(?:in|of)\s+(?:candle\s+wax|wax|fragrance(?:\s+oil)?))\b|\b10\s*percent\s*(?:fragrance|in\s+wax))/i.test(head);
+   d.is_10_percent=/(?:\b(?:fragrance(?:\s+oil)?|perfume|mixture|dilution|concentration)\s*[:=-]?\s*10\s*%(?!\d)|\b10\s*%\s*(?:fragrance(?:\s+oil)?|perfume|(?:in|of)\s+(?:candle\s+wax|wax|fragrance(?:\s+oil)?))\b|\b10\s*percent\s*(?:fragrance|in\s+wax))/i.test(head);
    d.mentions_candle_wax=/candle\s+wax/i.test(raw.slice(0,16000));
    if(!d.is_10_percent||!d.mentions_candle_wax)d.review_note='10% candle-wax scope not confidently established; do not count as verified';
   }catch(e){d.error=String(e.message||e).slice(0,250);}
