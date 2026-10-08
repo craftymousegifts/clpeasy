@@ -8,6 +8,8 @@ on:
       - 'sds-doc-check.js'
       - 'tests/sds-pdf-text-joins.js'
       - '.github/workflows/smart-paste-sds-qa.yml'
+      - 'scripts/collect-public-sds-corpus.js'
+      - 'scripts/browser-test-authentic-sds.js'
   push:
     branches:
       - qa/smart-paste-sds-corpus
@@ -45,3 +47,33 @@ jobs:
         run: node tests/sds-document-composer-gate.js
       - name: Existing automated suite
         run: timeout 600s npm test
+
+  authentic-supplier-corpus:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install browser dependencies
+        run: |
+          npm ci
+          npx puppeteer browsers install chrome
+          pdftotext -v
+      - name: Collect public supplier SDS PDFs and Section 2.2
+        id: collect
+        continue-on-error: true
+        run: node scripts/collect-public-sds-corpus.js
+      - name: Run authentic SDS through isolated Smart Paste Chromium
+        if: always()
+        run: node scripts/browser-test-authentic-sds.js
+      - name: Preserve authentic PDFs and browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: supplier-sds-browser-evidence
+          path: qa-artifacts/sds-corpus/
+          if-no-files-found: warn
+          retention-days: 7
