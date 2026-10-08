@@ -17,13 +17,23 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install PDF text extractor
-        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+      - name: Install browser and PDF text extractor
+        run: |
+          npm ci
+          npx puppeteer browsers install chrome
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq poppler-utils
       - name: Collect public supplier 10% candle-wax PDFs
         env:
           CLP10_LIMIT: ${{ inputs.limit || '20' }}
         run: node scripts/collect-public-clp10-corpus.js
-      - name: Preserve originals, extracted Section 2.2 and manifest
+      - name: Compare verified 10% Section 2.2 in isolated Chromium Smart Paste
+        env:
+          SDS_SOURCE_CLASS: clp10
+          SDS_CORPUS_DIR: qa-artifacts/clp10-corpus
+          CLP10_MIN_EXPECTED: '1'
+        run: node scripts/browser-test-authentic-sds.js
+      - name: Preserve originals, extracted Section 2.2 and browser results
         if: always()
         uses: actions/upload-artifact@v4
         with:
