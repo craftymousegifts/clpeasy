@@ -14,6 +14,19 @@ const server=http.createServer((req,res)=>{
  if(!full.startsWith(ROOT+path.sep)||!fs.existsSync(full)||fs.statSync(full).isDirectory()){res.writeHead(404);return res.end();}
  const ext=path.extname(full);res.setHeader('Content-Type',ext==='.html'?'text/html':ext==='.js'?'text/javascript':'application/octet-stream');fs.createReadStream(full).pipe(res);
 });
+// Independent supplier EUH208 content comparison: original Section 2.2 phrase,
+// with known PDF column/page layout artefacts removed, against builder names.
+function supplierEuh208Names(raw){
+ const clean=String(raw||'')
+  .replace(/-\\s*\\r?\\n\\s*Nikura Ltd,[\\s\\S]{0,1200}?\\f[\\s\\S]{0,1200}?SAFETY DATA SHEET[\\s\\S]{0,600}?\\n\\s*Version:\\s*\\d+\\s*\\r?\\n\\s*(?=[A-Za-z])/gi,'-')
+  .replace(/-\\s*\\r?\\n\\s*Information:\\s*/gi,'-')
+  .replace(/-\\s*\\r?\\n\\s*(?=[A-Za-z0-9])/g,'-')
+  .replace(/\\r?\\n\\s*Information:\\s*/gi,' ')
+  .replace(/\\r?\\n[ \\t]{8,}(?=[A-Za-z0-9(])/g,' ');
+ const match=clean.match(/EUH208\\s*[,;:]?\\s*Contains\\s+([\\s\\S]{1,4000}?)\\.\\s*May\\s+(?:produce|cause)\\s+an\\s+allergic\\s+reaction/i);
+ return match?match[1].replace(/\\s+/g,' ').trim():null;
+}
+const canonicalNames=s=>String(s||'').replace(/\\s+/g,' ').trim().toLowerCase();
 const expectedPCodes=t=>[...new Set([...t.matchAll(/\bP\d{3}(?:\s*[+/]\s*P?\d{3})*\b/g)].map(m=>(m[0].match(/\d{3}/g)||[]).map(x=>'P'+x).join('+')))];
 const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|f|d)?\b/g)].map(m=>m[0]))].sort();
 (async()=>{
@@ -53,8 +66,9 @@ const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|
     const explicitSignal=(text.match(/(?:^|\n)\s*Signal\s+word\s*[:\-]?\s*(Danger|Warning|None|Not applicable)/im)||[])[1]||'';
     const signalMismatch=!!(explicitSignal&&/^(Danger|Warning)$/i.test(explicitSignal)&&actual.signal&&explicitSignal.toLowerCase()!==actual.signal.toLowerCase());
     const sensitiserClause=(text.match(/Contains\s+([^\n]{1,500}?)\.\s*May\s+(?:produce|cause)\s+an\s+allergic\s+reaction/i)||[])[1]||'';
-    const sensitiserMismatch=!!(sensitiserClause&&actual.sensitisers.length===0);
-    results.push({id:doc.id,source:doc.url,sha256:doc.sha256,status:(missing.length||extraH.length||unexpectedP.length||unexpectedEUH.length||contaminatedSensitisers.length||signalMismatch||sensitiserMismatch)?'review':'extracted',expected_h_codes:expected,actual_h_codes:actual.h,missing_h_codes:missing,unexpected_h_codes:extraH,supplier_euh_codes:supplierEUH,unexpected_euh_codes:unexpectedEUH,contaminated_sensitiser_names:contaminatedSensitisers,supplier_p_codes:supplierP,actual_p_codes:actual.pCodes,unexpected_p_codes:unexpectedP,excluded_p_codes:excludedP,explicit_supplier_signal:explicitSignal,actual_signal_word:actual.signal,signal_mismatch:signalMismatch,supplier_euh208_clause:sensitiserClause,actual_sensitisers:actual.sensitisers,sensitiser_mismatch:sensitiserMismatch});
+    const supplierNames=supplierEuh208Names(text);
+    const sensitiserMismatch=supplierNames!==null&&canonicalNames(supplierNames)!==canonicalNames(actual.sensitisers.join(', '));
+    results.push({id:doc.id,source:doc.url,sha256:doc.sha256,status:(missing.length||extraH.length||unexpectedP.length||unexpectedEUH.length||contaminatedSensitisers.length||signalMismatch||sensitiserMismatch)?'review':'extracted',expected_h_codes:expected,actual_h_codes:actual.h,missing_h_codes:missing,unexpected_h_codes:extraH,supplier_euh_codes:supplierEUH,unexpected_euh_codes:unexpectedEUH,contaminated_sensitiser_names:contaminatedSensitisers,supplier_p_codes:supplierP,actual_p_codes:actual.pCodes,unexpected_p_codes:unexpectedP,excluded_p_codes:excludedP,explicit_supplier_signal:explicitSignal,actual_signal_word:actual.signal,signal_mismatch:signalMismatch,supplier_euh208_clause:supplierNames,actual_sensitisers:actual.sensitisers,sensitiser_mismatch:sensitiserMismatch});
    }catch(e){results.push({id:doc.id,source:doc.url,status:'error',error:String(e.message).slice(0,300)});}
   }
  }finally{await browser.close();server.close();}
