@@ -3944,6 +3944,16 @@ function _requireSdsDoc(){
   }
   return r.ok;
 }
+// QA: PDF layout text may split long EUH208 ingredient names over a line
+// and inject the left-column label "Information:" into the name itself.
+// Keep the original textarea untouched; normalise only the extraction input.
+function normalisePdfSdsText(raw){
+  return String(raw||'')
+    .replace(/-\s*\r?\n\s*(?=[A-Za-z0-9])/g,'-')
+    .replace(/\r?\n\s*Information:\s*/gi,' ')
+    .replace(/\r?\n[ \t]{8,}(?=[A-Za-z0-9(])/g,' ');
+}
+
 function extractSDS(){
   // NOTE (2026-08-02, reversal — see smart-paste-pro-gating / reverify):
   // A plan gate was added here believing Smart Paste was Easy-Pro-exclusive.
@@ -3952,7 +3962,7 @@ function extractSDS(){
   // use — it is not an Easy Pro-exclusive feature. Gate removed; restored
   // to unconditional behaviour. Do not re-add a plan check here without a
   // fresh, explicit product-rules confirmation.
-  const text=document.getElementById('smart-paste-input').value.trim();
+  const text=normalisePdfSdsText(document.getElementById('smart-paste-input').value.trim());
   if(!text){alert('Please paste SDS Section 2.2 text first.');return;}
   // Extraction lets the maker review the pasted data. Document coverage is
   // still required at Step 3 exit and by every export gate.
