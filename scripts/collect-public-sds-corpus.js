@@ -21,9 +21,9 @@ function links(html){
   const a=m[1],h=a.match(/\bhref\s*=\s*["']([^"']+)["']/i);
   if(!h)continue;
   const label=decode(m[2].replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim());
-  if(!/safety\s*data\s*sheet/i.test(label))continue;
+  if(!/(?:safety\s*data\s*sheet|\bSDS\b)/i.test(label+' '+h[1]))continue;
   let url;try{url=new URL(decode(h[1]),SOURCE).href;}catch{continue;}
-  if(!/^https:\/\//.test(url)||!url.toLowerCase().includes('.pdf'))continue;
+  if(!/^https:\/\//.test(url)||!/\.pdf(?:[?#]|$)/i.test(url))continue;
   if(!found.has(url))found.set(url,{supplier:'Nikura',name:label,url,source_page:SOURCE});
  }
  return [...found.values()];
