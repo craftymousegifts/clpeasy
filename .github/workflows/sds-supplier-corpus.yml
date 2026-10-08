@@ -7,6 +7,7 @@ on:
     paths:
       - scripts/collect-public-sds-corpus.js
       - .github/workflows/sds-supplier-corpus.yml
+      - scripts/browser-test-authentic-sds.js
 permissions:
   contents: read
 jobs:
@@ -20,8 +21,17 @@ jobs:
           node-version: '22'
       - name: Verify PDF extraction utility
         run: pdftotext -v
+      - name: Install browser runner dependencies
+        run: npm ci
+      - name: Install isolated Chrome
+        run: npx puppeteer browsers install chrome
       - name: Download authentic public Nikura SDS and extract Section 2.2
+        id: collect
+        continue-on-error: true
         run: node scripts/collect-public-sds-corpus.js
+      - name: Exercise real Smart Paste browser UI against collected Section 2.2 text
+        if: always()
+        run: node scripts/browser-test-authentic-sds.js
       - name: Preserve documents and provenance for QA
         if: always()
         uses: actions/upload-artifact@v4
