@@ -21,10 +21,20 @@ function discover(html){
  return [...map.values()];
 }
 function section22(text){
- const start=text.search(/\b2\.2\s*(?:Label\s+elements)?\b/i);if(start<0)return null;
- const rest=text.slice(start);
- const end=rest.slice(8).search(/\b(?:2\.3\s*(?:Other\s+hazards)?|SECTION\s*3\s*[:.]|3\.1\s*Substances)\b/i);
- return rest.slice(0,end<0?Math.min(rest.length,7500):Math.min(rest.length,end+8)).trim();
+ // Match numbered headings at the start of a line, not references in a
+ // contents table or prose. Prefer a labelled Section 2.2 heading.
+ const lines=text.split(/\r?\n/);
+ const candidates=[];
+ for(let i=0;i<lines.length;i++){
+  if(/^\s*2\.2(?:\s+|\s*[:.\-]\s*)(?:Label\s+elements|Labelling|Labeling)\b/i.test(lines[i]))candidates.push(i);
+ }
+ if(!candidates.length)return null;
+ const start=candidates[candidates.length-1];
+ let end=Math.min(lines.length,start+150);
+ for(let i=start+1;i<end;i++){
+  if(/^\s*(?:2\.3\b|SECTION\s*3\b|3\.1\b)/i.test(lines[i])){end=i;break;}
+ }
+ return lines.slice(start,end).join('\n').slice(0,7500).trim()||null;
 }
 (async()=>{
  let html='',catalogueError=null;
