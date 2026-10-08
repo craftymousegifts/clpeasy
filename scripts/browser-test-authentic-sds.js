@@ -18,15 +18,15 @@ const server=http.createServer((req,res)=>{
 // with known PDF column/page layout artefacts removed, against builder names.
 function supplierEuh208Names(raw){
  const clean=String(raw||'')
-  .replace(/-\\s*\\r?\\n\\s*Nikura Ltd,[\\s\\S]{0,1200}?\\f[\\s\\S]{0,1200}?SAFETY DATA SHEET[\\s\\S]{0,600}?\\n\\s*Version:\\s*\\d+\\s*\\r?\\n\\s*(?=[A-Za-z])/gi,'-')
-  .replace(/-\\s*\\r?\\n\\s*Information:\\s*/gi,'-')
-  .replace(/-\\s*\\r?\\n\\s*(?=[A-Za-z0-9])/g,'-')
-  .replace(/\\r?\\n\\s*Information:\\s*/gi,' ')
-  .replace(/\\r?\\n[ \\t]{8,}(?=[A-Za-z0-9(])/g,' ');
- const match=clean.match(/EUH208\\s*[,;:]?\\s*Contains\\s+([\\s\\S]{1,4000}?)\\.\\s*May\\s+(?:produce|cause)\\s+an\\s+allergic\\s+reaction/i);
- return match?match[1].replace(/\\s+/g,' ').trim():null;
+  .replace(/-\s*\r?\n\s*Nikura Ltd,[\s\S]{0,1200}?\f[\s\S]{0,1200}?SAFETY DATA SHEET[\s\S]{0,600}?\n\s*Version:\s*\d+\s*\r?\n\s*(?=[A-Za-z])/gi,'-')
+  .replace(/-\s*\r?\n\s*Information:\s*/gi,'-')
+  .replace(/-\s*\r?\n\s*(?=[A-Za-z0-9])/g,'-')
+  .replace(/\r?\n\s*Information:\s*/gi,' ')
+  .replace(/\r?\n[ \t]{8,}(?=[A-Za-z0-9(])/g,' ');
+ const match=clean.match(/EUH208\s*[,;:]?\s*Contains\s+([\s\S]{1,4000}?)\.\s*May\s+(?:produce|cause)\s+an\s+allergic\s+reaction/i);
+ return match?match[1].replace(/\s+/g,' ').trim():null;
 }
-const canonicalNames=s=>String(s||'').replace(/\\s+/g,' ').trim().toLowerCase();
+const canonicalNames=s=>String(s||'').replace(/\s+/g,' ').trim().toLowerCase();
 const expectedPCodes=t=>[...new Set([...t.matchAll(/\bP\d{3}(?:\s*[+/]\s*P?\d{3})*\b/g)].map(m=>(m[0].match(/\d{3}/g)||[]).map(x=>'P'+x).join('+')))];
 const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|f|d)?\b/g)].map(m=>m[0]))].sort();
 (async()=>{
