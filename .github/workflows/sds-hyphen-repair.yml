@@ -1,0 +1,31 @@
+name: SDS column hyphen continuation repair
+on:
+  push:
+    branches: [qa/smart-paste-sds-corpus]
+    paths:
+      - '.github/workflows/sds-hyphen-repair.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: qa/smart-paste-sds-corpus
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/apply-sds-pdf-column-fix.js
+      - run: |
+          if git diff --quiet -- builder.html; then
+            echo 'No change needed'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add builder.html
+          git commit -m 'fix: preserve PDF hyphenated sensitiser names across column headings'
+          git push origin HEAD:qa/smart-paste-sds-corpus
