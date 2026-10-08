@@ -61,6 +61,7 @@ const labelSectionOnly=t=>{const lines=String(t).split(/\r?\n/);const start=line
     if(!doc.sha256||digest!==doc.sha256)throw Error('Supplier PDF hash differs from collection manifest for '+doc.id);
    }
    const text=fs.readFileSync(path.join(DIR,doc.section_2_2_text_file),'utf8');
+   if(IS_CLP10&&(!doc.label_text_sha256||crypto.createHash('sha256').update(text,'utf8').digest('hex')!==doc.label_text_sha256))throw Error('Supplier label text hash differs from collection manifest for '+doc.id);
    try{
     const actual=await page.evaluate(t=>{
      const el=document.getElementById('smart-paste-input');
