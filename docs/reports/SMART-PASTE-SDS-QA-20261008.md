@@ -35,3 +35,10 @@ The user requested 100 genuine supplier SDS documents exercised through the comp
 ## Verified GitHub Actions evidence (run #37807585041)
 
 The post-fix isolated GitHub Actions run reached and **passed** these steps: dependency installation, browser installation, PDF joined-text regression, SDS document applicability, SDS document recovery, and SDS document composer gate. The existing full repository suite was still **in progress** at the latest check; no overall CI pass is claimed. This run uses synthetic/existing automated fixtures, not the 100 real supplier SDS corpus. Link: https://github.com/craftymousegifts/clpeasy/actions/runs/37807585041
+
+## Authentic-document collection pipeline (added; unverified)
+
+- Added `scripts/collect-public-sds-corpus.js` and `.github/workflows/sds-supplier-corpus.yml` on QA branch. The runner is designed to discover public Nikura SDS PDF links, download up to 100 original PDFs, extract Section 2.2 with `pdftotext`, calculate SHA-256 checksums, and retain a provenance manifest and source PDFs as a short-lived GitHub Actions artifact.
+- **This is a collector, not the full Smart Paste browser runner.** Until the workflow finishes and artifacts are reviewed, verified supplier documents tested through the UI remain 0/100.
+- The Nikura supplier page explicitly says its separate CLP templates are at 10%; these are not interchangeable with the fragrance-oil SDS for finished-product classification. Treat raw fragrance SDS and concentration-specific label documents as different source categories.
+- The collector has no production credentials, makes only public-document GET requests, and cannot write to CLPeasy production systems.
