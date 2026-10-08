@@ -3949,6 +3949,7 @@ function _requireSdsDoc(){
 // Keep the original textarea untouched; normalise only the extraction input.
 function normalisePdfSdsText(raw){
   return String(raw||'')
+    .replace(/-\s*\r?\n\s*Nikura Ltd,[\s\S]{0,1200}?\f[\s\S]{0,1200}?SAFETY DATA SHEET[\s\S]{0,600}?\n\s*Version:\s*\d+\s*\r?\n\s*(?=[A-Za-z])/gi,'-')
     .replace(/-\s*\r?\n\s*Information:\s*/gi,'-')
     .replace(/-\s*\r?\n\s*(?=[A-Za-z0-9])/g,'-')
     .replace(/\r?\n\s*Information:\s*/gi,' ')
