@@ -28,6 +28,10 @@ function section22(text){
 }
 (async()=>{
  const html=(await get(SOURCE)).toString('utf8');const links=discover(html);
+// Independently documented public supplier PDF: keep one genuine 10% seed even
+// when Shopify renders its catalogue links through scripts rather than anchors.
+const SEED='https://nikura.blob.core.windows.net/pdfs/CLP10_Nag_Champa_Premium_Fragrance_Oil_FO-FR-NAG.pdf';
+if(!links.some(d=>d.url===SEED))links.unshift({supplier:'Nikura',name:'Nag Champa Premium Fragrance Oil — 10% in candle wax',url:SEED,source_page:SOURCE});
  const docs=[];
  for(const item of links){
   if(docs.filter(d=>d.section_2_2_found).length>=LIMIT)break;
