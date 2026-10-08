@@ -4849,6 +4849,9 @@ function clearHazardData(){
   // Clear sensitisers
   S.sensitisers=[];
   renderTags();
+  // Clear the supplier-only precautionary review notice with its source SDS.
+  // Otherwise a stale warning from the previous fragrance remains visible.
+  document.getElementById('sds-excluded-p-review')?.remove();
   // Clear smart paste
   const sp=document.getElementById('smart-paste-input');
   if(sp)sp.value='';
