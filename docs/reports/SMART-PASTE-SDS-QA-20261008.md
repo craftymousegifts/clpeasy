@@ -116,3 +116,27 @@ QA-branch Smart Paste now displays a persistent, accessible notice immediately b
 ## Incremental verification — Deno Edge Functions
 
 The isolated workflow was updated to install Deno using `denoland/setup-deno@v2` and run `node tests/deno/run.js` directly before the existing npm suite. In run 37816177118 both **Install Deno for offline Edge Function tests** and **Verify Deno Edge Function tests are not skipped** completed successfully. This closes the previous environment-level test gap without rerunning earlier exploratory checks by hand. The six offline mocked tests cover Stripe webhook, signup notification, CLP account events, checkout session creation, billing status and subscription management. No live Stripe, Supabase or Brevo changes were made. The full `npm test` step in this same run must finish before describing the entire run as green.
+
+## Regulatory decision matrix — no unsupported automatic policy changes
+
+The following is a **review protocol**, not an assertion that any particular code is legally required or prohibited on a finished product. Every decision needs the *actual* finished-mixture classification, product presentation, foreseeable consumer use, label space, and applicable GB CLP precautionary-statement selection principles. A raw fragrance SDS alone is insufficient.
+
+| Excluded code | Supplier SDS occurrences | Required case-by-case evidence before deciding |
+|---|---:|---|
+| P280 | 95 | Is skin/eye PPE appropriate for foreseeable consumer handling of this finished mixture? What protective equipment can truthfully be specified? |
+| P272 | 92 | Does contaminated work clothing meaningfully apply to the marketed use, or is it only concentrate/workplace handling advice? |
+| P264 | 75 | Does the finished classification warrant hygiene wording, and what specific washing action is appropriate? |
+| P362 | 56 | Does the finished mixture require contaminated-clothing response instructions? |
+| P363 | 36 | Is laundering contaminated clothing a necessary response for the finished mixture? |
+| P405 | 25 | Does the classification/marketed-use context warrant locked storage? |
+| P270 | 11 | Is eating/drinking/smoking avoidance an appropriate precaution for the actual intended use? |
+| P303+P361+P353 | 10 | Do finished-mixture hazards require this skin/hair response combination? |
+| Other combinations | Remaining 0 | Preserve exact source code combinations; check for normalisation, overlaps and duplicates |
+
+**Release decision gates:**
+1. Assemble at least one real finished-formulation worked example for **each product family** (candle, wax melt, reed diffuser, room spray), with fragrance percentage and supplier SDS version; never substitute concentrate hazards for the finished mixture.
+2. Have a competent GB CLP reviewer document the finished-mixture hazard classification, required label elements and selected P-statements, including reasons for each excluded or reinstated code.
+3. Reconcile the review against the builder's generated **actual PDF/SVG/PNG export** and physical-label space constraints; the present 100-case exercise validated the Smart Paste browser extraction, not printed-label legal correctness.
+4. Resolve any demonstrated gaps in a separate change with targeted tests. Do not globally restore all 400 occurrences or approve blanket removal without evidence.
+
+**Status: blocked on real formulation-specific regulatory evidence.** No legal sign-off is claimed. Supplier SDS anomalies #035 and #056 remain separate supplier clarification items.
