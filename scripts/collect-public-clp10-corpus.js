@@ -76,7 +76,7 @@ function section22(text){
   }catch(e){d.error=String(e.message||e).slice(0,250);}
   docs.push(d);console.log(id,d.download_ok?'PDF':'FAILED',d.section_2_2_found?'Section 2.2':'',item.name);
  }
- const verified=docs.filter(d=>d.download_ok&&d.label_text_found&&(d.supplier_10_percent_evidence||(d.is_10_percent&&d.mentions_candle_wax)));
+ const verified=docs.filter(d=>d.download_ok&&d.label_text_found&&!d.historical_supplier_error&&(d.supplier_10_percent_evidence||(d.is_10_percent&&d.mentions_candle_wax)));
  const manifest={generated_at:new Date().toISOString(),source:SOURCE,catalogue_error:catalogueError,source_class:'Supplier 10% candle-wax SDS (not raw fragrance concentrate)',discovered:links.length,attempted:docs.length,verified_10_percent:verified.length,documents:verified,rejected_or_review:docs.filter(d=>!verified.includes(d))};
  fs.writeFileSync(path.join(OUT,'manifest.json'),JSON.stringify(manifest,null,2));
  console.log(JSON.stringify({discovered:links.length,attempted:docs.length,verified_10_percent:verified.length}));
