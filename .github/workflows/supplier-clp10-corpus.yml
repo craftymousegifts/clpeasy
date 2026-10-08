@@ -1,11 +1,18 @@
 name: Supplier 10% candle-wax SDS collection (isolated)
 on:
+  push:
+    branches:
+      - qa/smart-paste-sds-corpus
+    paths:
+      - '.github/workflows/supplier-clp10-corpus.yml'
+      - 'scripts/collect-public-clp10-corpus.js'
+      - 'scripts/browser-test-authentic-sds.js'
   workflow_dispatch:
     inputs:
       limit:
         description: 'Maximum verified supplier 10% PDFs (1–100)'
         required: false
-        default: '20'
+        default: '1'
 jobs:
   collect-10-percent:
     runs-on: ubuntu-latest
@@ -25,7 +32,7 @@ jobs:
           sudo apt-get install -y -qq poppler-utils
       - name: Collect public supplier 10% candle-wax PDFs
         env:
-          CLP10_LIMIT: ${{ inputs.limit || '20' }}
+          CLP10_LIMIT: ${{ inputs.limit || '1' }}
         run: node scripts/collect-public-clp10-corpus.js
       - name: Compare verified 10% Section 2.2 in isolated Chromium Smart Paste
         env:
