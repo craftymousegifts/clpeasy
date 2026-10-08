@@ -44,4 +44,4 @@ jobs:
       - name: SDS document composer gate
         run: node tests/sds-document-composer-gate.js
       - name: Existing automated suite
-        run: npm test
+        run: timeout 600s npm test
