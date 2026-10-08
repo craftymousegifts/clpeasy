@@ -1,13 +1,6 @@
 name: Authentic supplier SDS corpus (QA only)
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - qa/smart-paste-sds-corpus
-    paths:
-      - scripts/collect-public-sds-corpus.js
-      - .github/workflows/sds-supplier-corpus.yml
-      - scripts/browser-test-authentic-sds.js
 permissions:
   contents: read
 jobs:

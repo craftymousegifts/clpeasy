@@ -5,7 +5,7 @@ on:
       limit:
         description: 'Maximum verified supplier 10% PDFs (1–100)'
         required: false
-        default: '1'
+        default: '100'
 jobs:
   collect-10-percent:
     runs-on: ubuntu-latest
@@ -25,7 +25,7 @@ jobs:
           sudo apt-get install -y -qq poppler-utils
       - name: Collect public supplier 10% candle-wax PDFs
         env:
-          CLP10_LIMIT: ${{ inputs.limit || '1' }}
+          CLP10_LIMIT: ${{ inputs.limit || '100' }}
         run: node scripts/collect-public-clp10-corpus.js
       - name: Compare verified 10% Section 2.2 in isolated Chromium Smart Paste
         env:

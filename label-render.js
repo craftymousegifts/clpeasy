@@ -416,11 +416,7 @@ const H_TOKEN_RE=/\bH(\d{3})(?:([A-Za-z]{1,2})|[ \t]([FfDdi]{1,2}))?(?![A-Za-z0-
 function extractHazardCodesFromText(text){
   const src=String(text||'');
   const h=[];
-  // M63: Some PDF text layers join a recognised H-code to its phrase.
-  // Split only when followed by a known phrase opening. Unknown suffixes
-  // remain untouched for the existing unrecognised-code safety gate.
-  const normalized=src.replace(/\b(H\d{3}(?:i|FD|Fd|fD|fd|F|D|f|d)?)(?=(?:May|Harmful|Causes|Suspected|Fatal|Toxic|Very|Flammable|Highly|Extremely|Danger|Inhalation)\b)/g, '$1 ');
-  for(const m of normalized.matchAll(H_TOKEN_RE)){
+  for(const m of src.matchAll(H_TOKEN_RE)){
     const base='H'+m[1];
     let code=base;
     if(m[2]) code=base+m[2];
