@@ -37,3 +37,5 @@ jobs:
           git add -- label-render.js
           git commit -m "fix: recognise PDF-joined H-code phrase openings (M63)"
           git push origin HEAD:qa/smart-paste-sds-corpus
+
+# QA patch workflow: guarded, branch-isolated, and regression-gated.
