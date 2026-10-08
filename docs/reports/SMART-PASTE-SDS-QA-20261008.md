@@ -162,3 +162,7 @@ The following is a **review protocol**, not an assertion that any particular cod
 | Merge/release decision | Founder after the above evidence | Explicit approval; draft PR remains unmerged until then |
 
 **Important:** Do not describe the 100 raw-fragrance SDS Smart Paste browser passes as a finished-product CLP certification. The supplier SDS data do not supply all final-formulation facts. No production deployment, database mutation, or customer-data access is authorised by this QA work.
+
+## Maker-visible Step 3 review notice — targeted verification
+
+The new `checkVisibility()` assertion initially reported 96 hidden notices because the browser harness called `extractSDS()` while the builder was on hidden Step 1. This was a **test harness setup error**, not evidence that the maker-facing Step 3 notice was hidden. The harness now enters Step 3 before extraction, then checks computed visibility. The targeted `authentic-supplier-corpus` job in [run 37818230347](https://github.com/craftymousegifts/clpeasy/actions/runs/37818230347) **passed**. This confirms that the notice is visible in the active Step 3 panel for the authentic corpus cases with excluded P-codes. The separate stale-notice reset fix remains on this QA branch. This targeted result does not establish persistence after save/reopen or a regulatory decision on P-code applicability.
