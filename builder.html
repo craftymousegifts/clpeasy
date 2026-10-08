@@ -3949,6 +3949,9 @@ function _requireSdsDoc(){
 // Keep the original textarea untouched; normalise only the extraction input.
 function normalisePdfSdsText(raw){
   return String(raw||'')
+    // A supplier PDF page break can interrupt an EUH208 name (e.g. beta-Pinene).
+    // Remove only a recognisable Nikura postal footer + following SDS page header.
+    .replace(/\bNikura Ltd,\s*Unit 6,\s*Tariff Road,\s*London,\s*N17 0EB\s*\f?[\s\S]{0,650}?Product:\s*Nikura[^\n]*\n\s*Version:\s*\d+[^\n]*\n/gi,' ')
     .replace(/-\s*\r?\n\s*Nikura Ltd,[\s\S]{0,1200}?\f[\s\S]{0,1200}?SAFETY DATA SHEET[\s\S]{0,600}?\n\s*Version:\s*\d+\s*\r?\n\s*(?=[A-Za-z])/gi,'-')
     .replace(/-\s*\r?\n\s*Information:\s*/gi,'-')
     .replace(/-\s*\r?\n\s*(?=[A-Za-z0-9])/g,'-')
