@@ -45,6 +45,8 @@ jobs:
         run: node tests/sds-document-recovery-journey.js
       - name: SDS document composer gate
         run: node tests/sds-document-composer-gate.js
+      - name: SDS precautionary exclusion policy guard
+        run: node tests/sds-p-code-exclusion-policy.js
       - name: Existing automated suite
         run: timeout 600s npm test
 
