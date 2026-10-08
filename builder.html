@@ -4024,6 +4024,22 @@ function extractSDS(){
     'P405'             // Store locked up — controlled substances/workplace
   ]; // codes not applicable to finished consumer home fragrance products
   const pRaw=_pAllCodes.filter(c=>!_pExclude.some(x=>c===x||c.startsWith(x+'+')||c.endsWith('+'+x)));
+
+  // Supplier SDS precautionary codes are not automatically suitable for a
+  // finished product, but neither is blanket exclusion proof of irrelevance.
+  // Make every filtered code visible for explicit maker/regulatory review.
+  const excludedSupplierPCodes=_pAllCodes.filter(c=>!pRaw.includes(c));
+  const oldPReview=document.getElementById('sds-excluded-p-review');
+  if(oldPReview)oldPReview.remove();
+  if(excludedSupplierPCodes.length){
+    const pReview=document.createElement('div');
+    pReview.id='sds-excluded-p-review';
+    pReview.setAttribute('role','status');
+    pReview.style.cssText='margin:10px 0;padding:12px 14px;border:1px solid #bd8b43;border-radius:8px;background:#fff8e9;color:#503a19;font-size:13px;line-height:1.5;';
+    pReview.textContent='Supplier SDS precautionary statements not added automatically: '+excludedSupplierPCodes.join(', ')+'. These may describe handling the fragrance concentrate rather than your finished product. Check the classification and intended use of your final formulation; review any applicable statements before downloading. P280 can be added using the protective-equipment picker. Do not assume an omitted code is never required.';
+    document.getElementById('smart-paste-input')?.insertAdjacentElement('afterend',pReview);
+  }
+
   const pEl=document.getElementById('p-statements');
   if(pEl){pEl.value=pRaw.join(', ');}
   S.pStatements=pRaw.join(', ');
