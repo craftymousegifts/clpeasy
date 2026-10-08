@@ -170,3 +170,15 @@ The new `checkVisibility()` assertion initially reported 96 hidden notices becau
 ## Scope control — incremental reset assertions
 
 After the Step 3 visibility correction, the existing authentic-document harness gained *post-extraction reset assertions* for removal of the excluded P-code notice, selected P-statements, pasted source text, H-code selections, sensitiser state and extraction provenance. These assertions reuse the same in-browser extraction snapshot; they do **not** constitute a new independent GB CLP classification audit. The isolated run for commit `398979adc0acefbf017a97a303f7ab497e0afe87` is [37819319181](https://github.com/craftymousegifts/clpeasy/actions/runs/37819319181). The `authentic-supplier-corpus` job **passed** in this run, confirming the new post-extraction reset assertions against the existing authentic corpus. The separate `sds-regression` job was still running at the time of this update; do not claim the entire run is complete. Do not repeat earlier manual prechecks.
+
+## New independent source class — supplier 10% candle-wax SDS (not concentrate SDS)
+
+**Verified external source:** Nikura's [10% CLP document catalogue](https://nikura.com/pages/clp-labels-at-10) links directly to supplier-generated 10% documents. The [Nag Champa Premium Fragrance Oil 10% in Candle Wax PDF](https://nikura.blob.core.windows.net/pdfs/CLP10_Nag_Champa_Premium_Fragrance_Oil_FO-FR-NAG.pdf), issue 21 July 2025, version 1, identifies the mixture as **10% in candle wax**, with uses **Candles/Wax Melts**. This is distinct from previously tested raw fragrance-concentrate SDS. The earlier 100 concentrate tests must **not** be counted as 10% finished-mixture tests.
+
+**10% Section 2.2 label elements in source:** signal word **Warning**; H317, H412, H316; EUH208 sensitisers **Amyl cinnamic aldehyde, Citronellol, Coumarin, Linalyl acetate, d-Limonene**; P261, P272, P273, P280, P302/352, P333/313, P363, P501. Section 16 is a *code glossary*, not the applicable label: do **not** harvest the extra P-codes there. Slash-separated P302/352 and P333/313 combinations need normalisation to P302+P352 and P333+P313 for comparison.
+
+**Concrete supplier-output fidelity discrepancy:** the current Smart Paste exclusion list removes **P272, P280 and P363** from this expressly 10%-in-candle-wax Section 2.2, despite their presence in the supplier document. This is **not** by itself a legal noncompliance finding: GB CLP selection may be context-specific. But the assertion that those statements only apply to fragrance concentrate is not supported by this 10% example. No automatic blanket restoration is approved.
+
+**Additional compatibility question:** H316 appears in the supplier's 10% Section 2.2. Verify builder support and GB CLP applicability before treating this as a valid finished-product code.
+
+**New technical gate:** collect a separate 10% document manifest and compare actual Section 2.2 signal/H/EUH/P elements against Smart Paste and exports. Distinguish intentional withholding from accidental loss. Do not rerun the 100 concentrate tests or claim any 10% browser pass count yet.
