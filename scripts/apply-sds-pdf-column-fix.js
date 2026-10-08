@@ -14,7 +14,15 @@ function normalisePdfSdsText(raw){
     .replace(/\\r?\\n[ \\t]{8,}(?=[A-Za-z0-9(])/g,' ');
 }
 `;
-if(s.includes('function normalisePdfSdsText(')){console.log('Already applied');process.exit(0);}
+if(s.includes('function normalisePdfSdsText(')){
+  const marker="return String(raw||'')";
+  const from=".replace(/-\\\\s*\\\\r?\\\\n\\\\s*(?=[A-Za-z0-9])/g,'-')";
+  const to=".replace(/-\\\\s*\\\\r?\\\\n\\\\s*Information:\\\\s*/gi,'-')\\n    "+from;
+  if(s.includes(".replace(/-\\\\s*\\\\r?\\\\n\\\\s*Information:")){console.log('Already upgraded');process.exit(0);}
+  if(!s.includes(from))throw Error('Guard failed: normaliser anchor changed');
+  s=s.replace(from,to.replace('\\n','\n'));
+  fs.writeFileSync(file,s);console.log('Upgraded PDF hyphen/Information column join');process.exit(0);
+}
 if(s.split(old).length!==2)throw Error('Guard failed: Smart Paste extraction anchor changed');
 if(s.split('function extractSDS(){').length!==2)throw Error('Guard failed: extractSDS anchor changed');
 s=s.replace('function extractSDS(){',helper+'\nfunction extractSDS(){').replace(old,next);
