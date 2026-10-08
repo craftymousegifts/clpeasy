@@ -64,6 +64,8 @@ const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|
      clearHazardData();
      snapshot.stalePReviewAfterClear=!!document.getElementById('sds-excluded-p-review');
      snapshot.stalePSelectionAfterClear=!!(S.pSelected&&S.pSelected.length);
+     snapshot.staleInputAfterClear=!!document.getElementById('smart-paste-input')?.value.trim();
+     snapshot.staleHazardsAfterClear=!!(S.hSelected?.length||S.sensitisers?.length||S.hazardFromExtraction);
      return snapshot;
     },text);
     const expected=expectedCodes(text);
@@ -78,7 +80,7 @@ const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|
     const exclusionNoticeMismatch=excludedP.length>0&&(!actual.pReviewText.includes('not added automatically')||excludedP.some(x=>!actual.pReviewText.includes(x)));
     const unexpectedExclusionNotice=excludedP.length===0&&!!actual.pReviewText;
     const exclusionNoticeHidden=excludedP.length>0&&!actual.pReviewVisible;
-    const resetFailed=actual.stalePReviewAfterClear||actual.stalePSelectionAfterClear;
+    const resetFailed=actual.stalePReviewAfterClear||actual.stalePSelectionAfterClear||actual.staleInputAfterClear||actual.staleHazardsAfterClear;
     const explicitSignal=(text.match(/(?:^|\n)\s*Signal\s+word\s*[:\-]?\s*(Danger|Warning|None|Not applicable)/im)||[])[1]||'';
     const signalMismatch=!!(explicitSignal&&/^(Danger|Warning|None)$/i.test(explicitSignal)&&((explicitSignal.toLowerCase()==='none'?'':explicitSignal.toLowerCase())!==actual.signal.toLowerCase()));
     const signalCodes=actual.h.filter(x=>/^H\d{3}$/.test(x));
@@ -87,7 +89,7 @@ const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|
     const sensitiserClause=(text.match(/Contains\s+([^\n]{1,500}?)\.\s*May\s+(?:produce|cause)\s+an\s+allergic\s+reaction/i)||[])[1]||'';
     const supplierNames=supplierEuh208Names(text);
     const sensitiserMismatch=supplierNames!==null&&canonicalNames(supplierNames)!==canonicalNames(actual.sensitisers.join(', '));
-    results.push({id:doc.id,source:doc.url,sha256:doc.sha256,status:(missing.length||extraH.length||unexpectedP.length||unexpectedEUH.length||contaminatedSensitisers.length||technicalSignalMismatch||sensitiserMismatch||exclusionNoticeMismatch||unexpectedExclusionNotice||exclusionNoticeHidden||resetFailed)?'review':'extracted',expected_h_codes:expected,actual_h_codes:actual.h,missing_h_codes:missing,unexpected_h_codes:extraH,supplier_euh_codes:supplierEUH,unexpected_euh_codes:unexpectedEUH,contaminated_sensitiser_names:contaminatedSensitisers,supplier_p_codes:supplierP,actual_p_codes:actual.pCodes,unexpected_p_codes:unexpectedP,excluded_p_codes:excludedP,exclusion_notice_mismatch:exclusionNoticeMismatch,unexpected_exclusion_notice:unexpectedExclusionNotice,exclusion_notice_hidden:exclusionNoticeHidden,reset_failed:resetFailed,explicit_supplier_signal:explicitSignal,actual_signal_word:actual.signal,signal_mismatch:signalMismatch,supplier_signal_anomaly:supplierSignalAnomaly,technical_signal_mismatch:technicalSignalMismatch,supplier_euh208_clause:supplierNames,actual_sensitisers:actual.sensitisers,sensitiser_mismatch:sensitiserMismatch});
+    results.push({id:doc.id,source:doc.url,sha256:doc.sha256,status:(missing.length||extraH.length||unexpectedP.length||unexpectedEUH.length||contaminatedSensitisers.length||technicalSignalMismatch||sensitiserMismatch||exclusionNoticeMismatch||unexpectedExclusionNotice||exclusionNoticeHidden||resetFailed)?'review':'extracted',expected_h_codes:expected,actual_h_codes:actual.h,missing_h_codes:missing,unexpected_h_codes:extraH,supplier_euh_codes:supplierEUH,unexpected_euh_codes:unexpectedEUH,contaminated_sensitiser_names:contaminatedSensitisers,supplier_p_codes:supplierP,actual_p_codes:actual.pCodes,unexpected_p_codes:unexpectedP,excluded_p_codes:excludedP,exclusion_notice_mismatch:exclusionNoticeMismatch,unexpected_exclusion_notice:unexpectedExclusionNotice,exclusion_notice_hidden:exclusionNoticeHidden,reset_failed:resetFailed,stale_input_after_clear:actual.staleInputAfterClear,stale_hazards_after_clear:actual.staleHazardsAfterClear,explicit_supplier_signal:explicitSignal,actual_signal_word:actual.signal,signal_mismatch:signalMismatch,supplier_signal_anomaly:supplierSignalAnomaly,technical_signal_mismatch:technicalSignalMismatch,supplier_euh208_clause:supplierNames,actual_sensitisers:actual.sensitisers,sensitiser_mismatch:sensitiserMismatch});
    }catch(e){results.push({id:doc.id,source:doc.url,status:'error',error:String(e.message).slice(0,300)});}
   }
  }finally{await browser.close();server.close();}
