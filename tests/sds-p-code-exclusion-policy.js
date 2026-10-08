@@ -3,7 +3,7 @@
 // This test intentionally does not certify regulatory suitability.
 const fs=require('node:fs'),assert=require('node:assert/strict');
 const source=fs.readFileSync(require('node:path').join(__dirname,'..','builder.html'),'utf8');
-const extract=source.match(/const _pExclude=\[([\s\S]*?)\];\s*\/\/ codes not applicable/);
+const extract=source.match(/const _pExclude=\[([\s\S]*?)\];\s*\/\/ Supplier-concentrate P-codes withheld pending finished-mixture, use-specific review/);
 assert.ok(extract,'Smart Paste exclusion policy must remain explicitly discoverable');
 const codes=[...extract[1].matchAll(/'((?:P\d{3})(?:\+P\d{3})*)'/g)].map(m=>m[1]);
 const expected=['P272','P264','P270','P280','P303+P361+P353','P362','P362+P364','P363','P405'];
