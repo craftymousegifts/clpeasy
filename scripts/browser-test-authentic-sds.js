@@ -43,7 +43,10 @@ const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|
     },text);
     const expected=expectedCodes(text);
     const missing=expected.filter(x=>!actual.h.includes(x));
-    const extraH=actual.h.filter(x=>!expected.includes(x));
+    const extraH=actual.h.filter(x=>!expected.includes(x)&&!/^EUH\d{3}$/.test(x));
+    const supplierEUH=[...new Set([...text.matchAll(/\bEUH\d{3}\b/g)].map(m=>m[0]))];
+    const unexpectedEUH=actual.h.filter(x=>/^EUH\d{3}$/.test(x)&&!supplierEUH.includes(x));
+    const contaminatedSensitisers=actual.sensitisers.filter(x=>/\b(?:Information:|statements:|Page\s+\d+)\b/i.test(x));
     const supplierP=expectedPCodes(text);
     const unexpectedP=actual.pCodes.filter(x=>!supplierP.includes(x));
     const excludedP=supplierP.filter(x=>!actual.pCodes.includes(x));
@@ -51,7 +54,7 @@ const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|
     const signalMismatch=!!(explicitSignal&&/^(Danger|Warning)$/i.test(explicitSignal)&&actual.signal&&explicitSignal.toLowerCase()!==actual.signal.toLowerCase());
     const sensitiserClause=(text.match(/Contains\s+([^\n]{1,500}?)\.\s*May\s+(?:produce|cause)\s+an\s+allergic\s+reaction/i)||[])[1]||'';
     const sensitiserMismatch=!!(sensitiserClause&&actual.sensitisers.length===0);
-    results.push({id:doc.id,source:doc.url,sha256:doc.sha256,status:(missing.length||extraH.length||unexpectedP.length||signalMismatch||sensitiserMismatch)?'review':'extracted',expected_h_codes:expected,actual_h_codes:actual.h,missing_h_codes:missing,unexpected_h_codes:extraH,supplier_p_codes:supplierP,actual_p_codes:actual.pCodes,unexpected_p_codes:unexpectedP,excluded_p_codes:excludedP,explicit_supplier_signal:explicitSignal,actual_signal_word:actual.signal,signal_mismatch:signalMismatch,supplier_euh208_clause:sensitiserClause,actual_sensitisers:actual.sensitisers,sensitiser_mismatch:sensitiserMismatch});
+    results.push({id:doc.id,source:doc.url,sha256:doc.sha256,status:(missing.length||extraH.length||unexpectedP.length||unexpectedEUH.length||contaminatedSensitisers.length||signalMismatch||sensitiserMismatch)?'review':'extracted',expected_h_codes:expected,actual_h_codes:actual.h,missing_h_codes:missing,unexpected_h_codes:extraH,supplier_euh_codes:supplierEUH,unexpected_euh_codes:unexpectedEUH,contaminated_sensitiser_names:contaminatedSensitisers,supplier_p_codes:supplierP,actual_p_codes:actual.pCodes,unexpected_p_codes:unexpectedP,excluded_p_codes:excludedP,explicit_supplier_signal:explicitSignal,actual_signal_word:actual.signal,signal_mismatch:signalMismatch,supplier_euh208_clause:sensitiserClause,actual_sensitisers:actual.sensitisers,sensitiser_mismatch:sensitiserMismatch});
    }catch(e){results.push({id:doc.id,source:doc.url,status:'error',error:String(e.message).slice(0,300)});}
   }
  }finally{await browser.close();server.close();}
