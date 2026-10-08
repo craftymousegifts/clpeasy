@@ -14,6 +14,7 @@ const server=http.createServer((req,res)=>{
  if(!full.startsWith(ROOT+path.sep)||!fs.existsSync(full)||fs.statSync(full).isDirectory()){res.writeHead(404);return res.end();}
  const ext=path.extname(full);res.setHeader('Content-Type',ext==='.html'?'text/html':ext==='.js'?'text/javascript':'application/octet-stream');fs.createReadStream(full).pipe(res);
 });
+const expectedPCodes=t=>[...new Set([...t.matchAll(/\bP\d{3}(?:\s*[+/]\s*P?\d{3})*\b/g)].map(m=>(m[0].match(/\d{3}/g)||[]).map(x=>'P'+x).join('+')))];
 const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|f|d)?\b/g)].map(m=>m[0]))].sort();
 (async()=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
@@ -38,11 +39,19 @@ const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|
      const el=document.getElementById('smart-paste-input');
      if(!el||typeof extractSDS!=='function')throw Error('Smart Paste UI unavailable');
      el.value=t;extractSDS();
-     return {h:(document.getElementById('h-statements')?.value||'').split(',').map(x=>x.trim()).filter(Boolean),p:document.getElementById('p-statements')?.value||'',signal:document.getElementById('signal-danger')?.classList.contains('sel-danger')?'Danger':document.getElementById('signal-warning')?.classList.contains('sel-warn')?'Warning':''};
+     return {h:(document.getElementById('h-statements')?.value||'').split(',').map(x=>x.trim()).filter(Boolean),p:document.getElementById('p-statements')?.value||'',signal:document.getElementById('signal-danger')?.classList.contains('sel-danger')?'Danger':document.getElementById('signal-warning')?.classList.contains('sel-warn')?'Warning':'',sensitisers:[...S.sensitisers],pCodes:[...S.pSelected],hCodes:[...S.hSelected],sdsSignal:S.sdsSignal};
     },text);
     const expected=expectedCodes(text);
     const missing=expected.filter(x=>!actual.h.includes(x));
-    results.push({id:doc.id,source:doc.url,sha256:doc.sha256,status:missing.length?'review':'extracted',expected_h_codes:expected,actual_h_codes:actual.h,missing_h_codes:missing,p_statements:actual.p,signal_word:actual.signal});
+    const extraH=actual.h.filter(x=>!expected.includes(x));
+    const supplierP=expectedPCodes(text);
+    const unexpectedP=actual.pCodes.filter(x=>!supplierP.includes(x));
+    const excludedP=supplierP.filter(x=>!actual.pCodes.includes(x));
+    const explicitSignal=(text.match(/(?:^|\n)\s*Signal\s+word\s*[:\-]?\s*(Danger|Warning|None|Not applicable)/im)||[])[1]||'';
+    const signalMismatch=!!(explicitSignal&&/^(Danger|Warning)$/i.test(explicitSignal)&&actual.signal&&explicitSignal.toLowerCase()!==actual.signal.toLowerCase());
+    const sensitiserClause=(text.match(/Contains\s+([^\n]{1,500}?)\.\s*May\s+(?:produce|cause)\s+an\s+allergic\s+reaction/i)||[])[1]||'';
+    const sensitiserMismatch=!!(sensitiserClause&&actual.sensitisers.length===0);
+    results.push({id:doc.id,source:doc.url,sha256:doc.sha256,status:(missing.length||extraH.length||unexpectedP.length||signalMismatch||sensitiserMismatch)?'review':'extracted',expected_h_codes:expected,actual_h_codes:actual.h,missing_h_codes:missing,unexpected_h_codes:extraH,supplier_p_codes:supplierP,actual_p_codes:actual.pCodes,unexpected_p_codes:unexpectedP,excluded_p_codes:excludedP,explicit_supplier_signal:explicitSignal,actual_signal_word:actual.signal,signal_mismatch:signalMismatch,supplier_euh208_clause:sensitiserClause,actual_sensitisers:actual.sensitisers,sensitiser_mismatch:sensitiserMismatch});
    }catch(e){results.push({id:doc.id,source:doc.url,status:'error',error:String(e.message).slice(0,300)});}
   }
  }finally{await browser.close();server.close();}
