@@ -1,0 +1,53 @@
+'use strict';
+// Real Chromium runs the actual builder.html Smart Paste extractSDS() on authentic
+// supplier Section 2.2 text. Offline guest mode; no production API requests.
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http');
+const puppeteer=require('puppeteer');
+const ROOT=path.resolve(__dirname,'..'),DIR=path.resolve(process.env.SDS_CORPUS_DIR||'qa-artifacts/sds-corpus');
+const manifestPath=path.join(DIR,'manifest.json');
+if(!fs.existsSync(manifestPath))throw Error('Missing authentic SDS manifest');
+const manifest=JSON.parse(fs.readFileSync(manifestPath,'utf8'));
+const mock="window.supabase={createClient:function(){var q={select:function(){return q},eq:function(){return q},single:async function(){return {data:null,error:null}},then:function(f){return Promise.resolve({data:null,error:null}).then(f)}};return {auth:{getSession:async function(){return {data:{session:null}}},onAuthStateChange:function(){return {data:{subscription:{unsubscribe:function(){}}}}}},from:function(){return q},rpc:async function(){return {data:null,error:null}}}}};";
+const server=http.createServer((req,res)=>{
+ let f;try{f=decodeURIComponent(new URL(req.url,'http://localhost').pathname);}catch{res.writeHead(400);return res.end();}
+ const full=path.resolve(ROOT,'.'+f);
+ if(!full.startsWith(ROOT+path.sep)||!fs.existsSync(full)||fs.statSync(full).isDirectory()){res.writeHead(404);return res.end();}
+ const ext=path.extname(full);res.setHeader('Content-Type',ext==='.html'?'text/html':ext==='.js'?'text/javascript':'application/octet-stream');fs.createReadStream(full).pipe(res);
+});
+const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|f|d)?\b/g)].map(m=>m[0]))].sort();
+(async()=>{
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ const base='http://127.0.0.1:'+server.address().port;
+ const browser=await puppeteer.launch({headless:true,args:['--no-sandbox']});
+ const results=[];
+ try{
+  const page=await browser.newPage();page.on('dialog',d=>d.dismiss());
+  await page.setRequestInterception(true);
+  page.on('request',r=>{
+   const u=r.url();
+   if(u.includes('supabase-js'))return r.respond({status:200,contentType:'text/javascript',body:mock});
+   if(u.startsWith(base)||u.startsWith('data:')||u.startsWith('blob:'))return r.continue();
+   return r.respond({status:204,body:''});
+  });
+  await page.goto(base+'/builder.html',{waitUntil:'load',timeout:45000});
+  for(const doc of manifest.documents){
+   if(!doc.section_2_2_found){results.push({id:doc.id,source:doc.url,status:'not-extracted'});continue;}
+   const text=fs.readFileSync(path.join(DIR,doc.section_2_2_text_file),'utf8');
+   try{
+    const actual=await page.evaluate(t=>{
+     const el=document.getElementById('smart-paste-input');
+     if(!el||typeof extractSDS!=='function')throw Error('Smart Paste UI unavailable');
+     el.value=t;extractSDS();
+     return {h:(document.getElementById('h-statements')?.value||'').split(',').map(x=>x.trim()).filter(Boolean),p:document.getElementById('p-statements')?.value||'',signal:document.getElementById('signal-word')?.value||''};
+    },text);
+    const expected=expectedCodes(text);
+    const missing=expected.filter(x=>!actual.h.includes(x));
+    results.push({id:doc.id,source:doc.url,sha256:doc.sha256,status:missing.length?'review':'extracted',expected_h_codes:expected,actual_h_codes:actual.h,missing_h_codes:missing,p_statements:actual.p,signal_word:actual.signal});
+   }catch(e){results.push({id:doc.id,source:doc.url,status:'error',error:String(e.message).slice(0,300)});}
+  }
+ }finally{await browser.close();server.close();}
+ const report={timestamp:new Date().toISOString(),scope:'Actual builder.html Smart Paste UI extraction of supplier Section 2.2; NOT compliance certification',count:results.length,extracted:results.filter(x=>x.status==='extracted').length,needs_review:results.filter(x=>x.status==='review').length,errors:results.filter(x=>x.status==='error').length,results};
+ fs.writeFileSync(path.join(DIR,'browser-results.json'),JSON.stringify(report,null,2));
+ console.log(JSON.stringify({count:report.count,extracted:report.extracted,needs_review:report.needs_review,errors:report.errors}));
+ if(report.count<100||report.needs_review||report.errors)process.exitCode=1;
+})().catch(e=>{console.error(e);server.close();process.exitCode=1;});
