@@ -66,7 +66,7 @@ const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|
     const explicitSignal=(text.match(/(?:^|\n)\s*Signal\s+word\s*[:\-]?\s*(Danger|Warning|None|Not applicable)/im)||[])[1]||'';
     const signalMismatch=!!(explicitSignal&&/^(Danger|Warning|None)$/i.test(explicitSignal)&&((explicitSignal.toLowerCase()==='none'?'':explicitSignal.toLowerCase())!==actual.signal.toLowerCase()));
     const signalCodes=actual.h.filter(x=>/^H\d{3}$/.test(x));
-    const supplierSignalAnomaly=signalMismatch&&((signalCodes.includes('H317')&&actual.signal==='Warning')||(signalCodes.every(x=>['H402','H412'].includes(x))&&actual.signal===''));
+    const supplierSignalAnomaly=signalMismatch&&((signalCodes.includes('H317')&&actual.signal==='Warning')||(signalCodes.length>0&&signalCodes.every(x=>['H402','H412'].includes(x))&&actual.signal===''));
     const technicalSignalMismatch=signalMismatch&&!supplierSignalAnomaly;
     const sensitiserClause=(text.match(/Contains\s+([^\n]{1,500}?)\.\s*May\s+(?:produce|cause)\s+an\s+allergic\s+reaction/i)||[])[1]||'';
     const supplierNames=supplierEuh208Names(text);
