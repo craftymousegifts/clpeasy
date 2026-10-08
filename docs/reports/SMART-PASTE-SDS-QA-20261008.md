@@ -42,3 +42,9 @@ The post-fix isolated GitHub Actions run reached and **passed** these steps: dep
 - **This is a collector, not the full Smart Paste browser runner.** Until the workflow finishes and artifacts are reviewed, verified supplier documents tested through the UI remain 0/100.
 - The Nikura supplier page explicitly says its separate CLP templates are at 10%; these are not interchangeable with the fragrance-oil SDS for finished-product classification. Treat raw fragrance SDS and concentration-specific label documents as different source categories.
 - The collector has no production credentials, makes only public-document GET requests, and cannot write to CLPeasy production systems.
+
+## Verified authentic SDS Chromium test — run 37808920128
+
+**PASS: 100/100 genuine Nikura supplier SDS Section 2.2 documents processed through actual `builder.html` Smart Paste `extractSDS()` in an isolated, network-blocked Chromium browser.** Supplier page exposed 199 SDS links; runner attempted 104 URLs, downloaded 102 PDFs, selected 100 successfully extracted Section 2.2 records, and completed browser checks with `extracted: 100`, `needs_review: 0`, `errors: 0`. The CI artifact preserves PDF originals, Section 2.2 text, source URLs, SHA-256 digests, and per-document browser results. CI job `authentic-supplier-corpus` succeeded. Evidence: https://github.com/craftymousegifts/clpeasy/actions/runs/37808920128 .
+
+**Limits:** This checks matching extracted H codes and browser execution, not independent GB CLP regulatory accuracy, final product concentration classification, supplier CLP template equivalence, complete sensitiser/P-code accuracy, or export readiness. Do not describe it as a compliance certification. The separate full-repository `npm test` stage was still running when this section was added.
