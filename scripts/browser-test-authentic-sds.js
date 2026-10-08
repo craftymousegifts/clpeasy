@@ -1,7 +1,7 @@
 'use strict';
 // Real Chromium runs the actual builder.html Smart Paste extractSDS() on authentic
 // supplier Section 2.2 text. Offline guest mode; no production API requests.
-const fs=require('node:fs'),path=require('node:path'),http=require('node:http');
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),crypto=require('node:crypto');
 const puppeteer=require('puppeteer');
 const ROOT=path.resolve(__dirname,'..'),DIR=path.resolve(process.env.SDS_CORPUS_DIR||'qa-artifacts/sds-corpus');
 const manifestPath=path.join(DIR,'manifest.json');
@@ -52,6 +52,14 @@ const labelSectionOnly=t=>{const lines=String(t).split(/\r?\n/);const start=line
   await page.goto(base+'/builder.html',{waitUntil:'load',timeout:45000});
   for(const doc of manifest.documents){
    if(!doc.section_2_2_found){results.push({id:doc.id,source:doc.url,status:'not-extracted'});continue;}
+   // Verify the exact supplier PDF bytes recorded during collection before
+   // comparing the extracted text. A stale or swapped file is not evidence.
+   if(IS_CLP10){
+    const pdfName=String(doc.pdf_file||''),sectionName=String(doc.section_2_2_text_file||'');
+    if(!/^\d{3}\.pdf$/.test(pdfName)||!/^\d{3}-section-2-2\.txt$/.test(sectionName)||pdfName.slice(0,3)!==sectionName.slice(0,3))throw Error('Unsafe or mismatched supplier artifact names for '+doc.id);
+    const digest=crypto.createHash('sha256').update(fs.readFileSync(path.join(DIR,pdfName))).digest('hex');
+    if(!doc.sha256||digest!==doc.sha256)throw Error('Supplier PDF hash differs from collection manifest for '+doc.id);
+   }
    const text=fs.readFileSync(path.join(DIR,doc.section_2_2_text_file),'utf8');
    try{
     const actual=await page.evaluate(t=>{
