@@ -4022,7 +4022,7 @@ function extractSDS(){
     'P362+P364',       // Take off contaminated clothing and wash — occupational
     'P363',            // Wash contaminated clothing before reuse — occupational
     'P405'             // Store locked up — controlled substances/workplace
-  ]; // codes not applicable to finished consumer home fragrance products
+  ]; // Supplier-concentrate P-codes withheld pending finished-mixture, use-specific review; not a blanket legal exemption.
   const pRaw=_pAllCodes.filter(c=>!_pExclude.some(x=>c===x||c.startsWith(x+'+')||c.endsWith('+'+x)));
 
   // Supplier SDS precautionary codes are not automatically suitable for a
