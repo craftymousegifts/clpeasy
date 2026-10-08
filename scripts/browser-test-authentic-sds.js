@@ -38,7 +38,7 @@ const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|
      const el=document.getElementById('smart-paste-input');
      if(!el||typeof extractSDS!=='function')throw Error('Smart Paste UI unavailable');
      el.value=t;extractSDS();
-     return {h:(document.getElementById('h-statements')?.value||'').split(',').map(x=>x.trim()).filter(Boolean),p:document.getElementById('p-statements')?.value||'',signal:document.getElementById('signal-word')?.value||''};
+     return {h:(document.getElementById('h-statements')?.value||'').split(',').map(x=>x.trim()).filter(Boolean),p:document.getElementById('p-statements')?.value||'',signal:document.getElementById('signal-danger')?.classList.contains('sel-danger')?'Danger':document.getElementById('signal-warning')?.classList.contains('sel-warn')?'Warning':''};
     },text);
     const expected=expectedCodes(text);
     const missing=expected.filter(x=>!actual.h.includes(x));
@@ -49,5 +49,5 @@ const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|
  const report={timestamp:new Date().toISOString(),scope:'Actual builder.html Smart Paste UI extraction of supplier Section 2.2; NOT compliance certification',count:results.length,extracted:results.filter(x=>x.status==='extracted').length,needs_review:results.filter(x=>x.status==='review').length,errors:results.filter(x=>x.status==='error').length,results};
  fs.writeFileSync(path.join(DIR,'browser-results.json'),JSON.stringify(report,null,2));
  console.log(JSON.stringify({count:report.count,extracted:report.extracted,needs_review:report.needs_review,errors:report.errors}));
- if(report.count<100||report.needs_review||report.errors)process.exitCode=1;
+ if(report.count<100||report.extracted<100||report.needs_review||report.errors)process.exitCode=1;
 })().catch(e=>{console.error(e);server.close();process.exitCode=1;});
