@@ -22,8 +22,11 @@ jobs:
           node-version: '22'
       - name: Apply guarded Smart Paste PDF normalisation
         run: node scripts/apply-sds-pdf-column-fix.js
-      - name: Check builder script syntax
-        run: node --check scripts/apply-sds-pdf-column-fix.js
+      - name: Check builder script syntax and normalisation regression
+        run: |
+          node --check scripts/apply-sds-pdf-column-fix.js
+          grep -q 'function normalisePdfSdsText' builder.html
+          grep -q 'Information:' builder.html
       - name: Commit to isolated QA branch
         run: |
           if git diff --quiet -- builder.html; then exit 0; fi
