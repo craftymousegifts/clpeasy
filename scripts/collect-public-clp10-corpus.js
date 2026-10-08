@@ -46,15 +46,22 @@ const SEED='https://nikura.blob.core.windows.net/pdfs/CLP10_Nag_Champa_Premium_F
 if(!links.some(d=>d.url===SEED))links.unshift({supplier:'Nikura',name:'Nag Champa Premium Fragrance Oil — 10% in candle wax',url:SEED,source_page:SOURCE,discovery_method:'known_public_pdf_seed'});
  const docs=[];
  for(const item of links){
-  if(docs.filter(d=>d.download_ok&&d.section_2_2_found&&(d.supplier_10_percent_evidence||(d.is_10_percent&&d.mentions_candle_wax))).length>=LIMIT)break;
+  if(docs.filter(d=>d.download_ok&&d.label_text_found&&(d.supplier_10_percent_evidence||(d.is_10_percent&&d.mentions_candle_wax))).length>=LIMIT)break;
   const id=String(docs.length+1).padStart(3,'0');const d={id,...item,download_ok:false,section_2_2_found:false};
   try{
    const pdf=await get(item.url);if(pdf.subarray(0,5).toString()!=='%PDF-')throw Error('Not PDF');
    const pdfFile=id+'.pdf';fs.writeFileSync(path.join(OUT,pdfFile),pdf);
    const raw=cp.execFileSync('pdftotext',['-layout',path.join(OUT,pdfFile),'-'],{maxBuffer:8*1024*1024,timeout:15000}).toString();
-   const sec=section22(raw);
+   // Supplier CLP10 PDFs can be standalone label sheets, not full SDS files.
+   // Accept a label-only PDF only when it visibly contains hazard/precautionary
+   // codes and label wording; never pretend that it has a Section 2.2.
+   const sdsSection=section22(raw);
+   const labelSheet=!sdsSection&&/\bH\d{3}\b/.test(raw)&&/\bP\d{3}\b/.test(raw)&&/\b(?:Warning|Danger|Hazard\s+statements?|Precautionary\s+statements?|Contains)\b/i.test(raw);
+   const sec=sdsSection||(labelSheet?raw.slice(0,7500).trim():null);
+   d.document_format=sdsSection?'SDS Section 2.2':labelSheet?'standalone supplier CLP label':'unrecognised';
+   d.section_2_2_found=!!sdsSection;
    d.sha256=crypto.createHash('sha256').update(pdf).digest('hex');d.bytes=pdf.length;d.pdf_file=pdfFile;d.download_ok=true;
-   d.section_2_2_found=!!sec;
+   d.label_text_found=!!sec;
    if(sec){d.section_2_2_text_file=id+'-section-2-2.txt';fs.writeFileSync(path.join(OUT,d.section_2_2_text_file),sec);}
    const head=raw.slice(0,16000);
    // A mere 10% mention in an ingredient or regulatory threshold does not
@@ -67,7 +74,7 @@ if(!links.some(d=>d.url===SEED))links.unshift({supplier:'Nikura',name:'Nag Champ
   }catch(e){d.error=String(e.message||e).slice(0,250);}
   docs.push(d);console.log(id,d.download_ok?'PDF':'FAILED',d.section_2_2_found?'Section 2.2':'',item.name);
  }
- const verified=docs.filter(d=>d.download_ok&&d.section_2_2_found&&(d.supplier_10_percent_evidence||(d.is_10_percent&&d.mentions_candle_wax)));
+ const verified=docs.filter(d=>d.download_ok&&d.label_text_found&&(d.supplier_10_percent_evidence||(d.is_10_percent&&d.mentions_candle_wax)));
  const manifest={generated_at:new Date().toISOString(),source:SOURCE,catalogue_error:catalogueError,source_class:'Supplier 10% candle-wax SDS (not raw fragrance concentrate)',discovered:links.length,attempted:docs.length,verified_10_percent:verified.length,documents:verified,rejected_or_review:docs.filter(d=>!verified.includes(d))};
  fs.writeFileSync(path.join(OUT,'manifest.json'),JSON.stringify(manifest,null,2));
  console.log(JSON.stringify({discovered:links.length,attempted:docs.length,verified_10_percent:verified.length}));
