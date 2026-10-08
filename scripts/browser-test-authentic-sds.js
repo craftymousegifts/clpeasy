@@ -32,6 +32,9 @@ function supplierEuh208Names(raw){
 const canonicalNames=s=>String(s||'').replace(/\s+/g,' ').trim().toLowerCase();
 const expectedPCodes=t=>[...new Set([...t.matchAll(/\bP\d{3}(?:\s*[+/]\s*P?\d{3})*\b/g)].map(m=>(m[0].match(/\d{3}/g)||[]).map(x=>'P'+x).join('+')))];
 const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|f|d)?\b/g)].map(m=>m[0]))].sort();
+// Compare only the supplier's Section 2.2 label elements, not later Section 2.3
+// prose, Section 3 ingredients, or Section 16 code glossaries.
+const labelSectionOnly=t=>{const m=t.match(/\b2\.2\s*(?:Label\s+elements)?\b/i);if(!m)return t;const rest=t.slice(m.index);const next=rest.slice(m[0].length).search(/\b(?:2\.3\s*Other\s+hazards|SECTION\s*3\s*[:.]|3\.1\s*Substances)\b/i);return next<0?rest:rest.slice(0,m[0].length+next);};
 (async()=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const base='http://127.0.0.1:'+server.address().port;
@@ -71,13 +74,13 @@ const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|
      snapshot.staleHazardsAfterClear=!!(S.hSelected?.length||S.sensitisers?.length||S.hazardFromExtraction);
      return snapshot;
     },text);
-    const expected=expectedCodes(text);
+    const expected=expectedCodes(labelSectionOnly(text));
     const missing=expected.filter(x=>!actual.h.includes(x));
     const extraH=actual.h.filter(x=>!expected.includes(x)&&!/^EUH\d{3}$/.test(x));
-    const supplierEUH=[...new Set([...text.matchAll(/\bEUH\d{3}\b/g)].map(m=>m[0]))];
+    const supplierEUH=[...new Set([...labelSectionOnly(text).matchAll(/\bEUH\d{3}\b/g)].map(m=>m[0]))];
     const unexpectedEUH=actual.h.filter(x=>/^EUH\d{3}$/.test(x)&&!supplierEUH.includes(x));
     const contaminatedSensitisers=actual.sensitisers.filter(x=>/(?:Information:|statements:|Page\s+\d+)/i.test(x));
-    const supplierP=expectedPCodes(text);
+    const supplierP=expectedPCodes(labelSectionOnly(text));
     const unexpectedP=actual.pCodes.filter(x=>!supplierP.includes(x));
     const excludedP=supplierP.filter(x=>!actual.pCodes.includes(x));
     const knownWithheldPCodes=['P272','P264','P270','P280','P303+P361+P353','P362','P362+P364','P363','P405'];
