@@ -51,6 +51,9 @@ const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|
     const actual=await page.evaluate(t=>{
      const el=document.getElementById('smart-paste-input');
      if(!el||typeof extractSDS!=='function')throw Error('Smart Paste UI unavailable');
+     // Smart Paste lives in Step 3; exercise it while its actual panel is visible.
+     // Earlier corpus runs invoked extractSDS() from the hidden initial Step 1.
+     if(typeof forceGoToStep==='function')forceGoToStep(3);
      el.value=t;extractSDS();
      const notice=document.getElementById('sds-excluded-p-review');
      const noticeVisible=!!(notice&&notice.checkVisibility({checkVisibilityCSS:true}));
