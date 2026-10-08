@@ -27,7 +27,9 @@ function section22(text){
  return rest.slice(0,end<0?Math.min(rest.length,7500):Math.min(rest.length,end+8)).trim();
 }
 (async()=>{
- const html=(await get(SOURCE)).toString('utf8');const links=discover(html);
+ let html='',catalogueError=null;
+ try{html=(await get(SOURCE)).toString('utf8');}catch(e){catalogueError=String(e.message||e);console.warn('Supplier catalogue unavailable; attempting independently verified public PDF seed:',catalogueError);}
+ const links=discover(html);
 // Independently documented public supplier PDF: keep one genuine 10% seed even
 // when Shopify renders its catalogue links through scripts rather than anchors.
 const SEED='https://nikura.blob.core.windows.net/pdfs/CLP10_Nag_Champa_Premium_Fragrance_Oil_FO-FR-NAG.pdf';
@@ -51,7 +53,7 @@ if(!links.some(d=>d.url===SEED))links.unshift({supplier:'Nikura',name:'Nag Champ
   docs.push(d);console.log(id,d.download_ok?'PDF':'FAILED',d.section_2_2_found?'Section 2.2':'',item.name);
  }
  const verified=docs.filter(d=>d.download_ok&&d.section_2_2_found&&d.is_10_percent&&d.mentions_candle_wax);
- const manifest={generated_at:new Date().toISOString(),source:SOURCE,source_class:'Supplier 10% candle-wax SDS (not raw fragrance concentrate)',discovered:links.length,attempted:docs.length,verified_10_percent:verified.length,documents:verified,rejected_or_review:docs.filter(d=>!verified.includes(d))};
+ const manifest={generated_at:new Date().toISOString(),source:SOURCE,catalogue_error:catalogueError,source_class:'Supplier 10% candle-wax SDS (not raw fragrance concentrate)',discovered:links.length,attempted:docs.length,verified_10_percent:verified.length,documents:verified,rejected_or_review:docs.filter(d=>!verified.includes(d))};
  fs.writeFileSync(path.join(OUT,'manifest.json'),JSON.stringify(manifest,null,2));
  console.log(JSON.stringify({discovered:links.length,attempted:docs.length,verified_10_percent:verified.length}));
  if(!verified.length)process.exitCode=1;
