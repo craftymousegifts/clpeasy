@@ -1,6 +1,13 @@
 name: Smart Paste SDS QA (isolated)
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'label-render.js'
+      - 'builder.html'
+      - 'sds-doc-check.js'
+      - 'tests/sds-pdf-text-joins.js'
+      - '.github/workflows/smart-paste-sds-qa.yml'
   push:
     branches:
       - qa/smart-paste-sds-corpus
@@ -15,7 +22,7 @@ permissions:
 jobs:
   sds-regression:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,6 +31,10 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Verify dependencies and browser availability
+        run: |
+          node -e "require('jsdom'); require('puppeteer'); console.log('QA dependencies available')"
+          npx puppeteer browsers install chrome
       - name: PDF text joins regression
         run: node tests/sds-pdf-text-joins.js
       - name: SDS document applicability
