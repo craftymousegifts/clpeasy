@@ -64,7 +64,7 @@ const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|
     const unexpectedP=actual.pCodes.filter(x=>!supplierP.includes(x));
     const excludedP=supplierP.filter(x=>!actual.pCodes.includes(x));
     const explicitSignal=(text.match(/(?:^|\n)\s*Signal\s+word\s*[:\-]?\s*(Danger|Warning|None|Not applicable)/im)||[])[1]||'';
-    const signalMismatch=!!(explicitSignal&&/^(Danger|Warning)$/i.test(explicitSignal)&&actual.signal&&explicitSignal.toLowerCase()!==actual.signal.toLowerCase());
+    const signalMismatch=!!(explicitSignal&&/^(Danger|Warning|None)$/i.test(explicitSignal)&&((explicitSignal.toLowerCase()==='none'?'':explicitSignal.toLowerCase())!==actual.signal.toLowerCase()));
     const sensitiserClause=(text.match(/Contains\s+([^\n]{1,500}?)\.\s*May\s+(?:produce|cause)\s+an\s+allergic\s+reaction/i)||[])[1]||'';
     const supplierNames=supplierEuh208Names(text);
     const sensitiserMismatch=supplierNames!==null&&canonicalNames(supplierNames)!==canonicalNames(actual.sensitisers.join(', '));
@@ -72,7 +72,7 @@ const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|
    }catch(e){results.push({id:doc.id,source:doc.url,status:'error',error:String(e.message).slice(0,300)});}
   }
  }finally{await browser.close();server.close();}
- const report={timestamp:new Date().toISOString(),scope:'Actual builder.html Smart Paste UI extraction of supplier Section 2.2; NOT compliance certification',count:results.length,extracted:results.filter(x=>x.status==='extracted').length,needs_review:results.filter(x=>x.status==='review').length,errors:results.filter(x=>x.status==='error').length,results};
+ const report={timestamp:new Date().toISOString(),supplier_signal_discrepancies:results.filter(x=>x.signal_mismatch).map(x=>({id:x.id,source:x.source,supplier:x.explicit_supplier_signal,builder:x.actual_signal_word})),supplier_p_code_exclusions:results.reduce((n,x)=>n+(x.excluded_p_codes||[]).length,0),scope:'Actual builder.html Smart Paste UI extraction of supplier Section 2.2; NOT compliance certification',count:results.length,extracted:results.filter(x=>x.status==='extracted').length,needs_review:results.filter(x=>x.status==='review').length,errors:results.filter(x=>x.status==='error').length,results};
  fs.writeFileSync(path.join(DIR,'browser-results.json'),JSON.stringify(report,null,2));
  console.log(JSON.stringify({count:report.count,extracted:report.extracted,needs_review:report.needs_review,errors:report.errors}));
  if(report.count<100||report.extracted<100||report.needs_review||report.errors)process.exitCode=1;
