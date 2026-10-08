@@ -1,0 +1,36 @@
+name: Smart Paste SDS QA (isolated)
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - qa/smart-paste-sds-corpus
+    paths:
+      - 'label-render.js'
+      - 'builder.html'
+      - 'sds-doc-check.js'
+      - 'tests/sds-pdf-text-joins.js'
+      - '.github/workflows/smart-paste-sds-qa.yml'
+permissions:
+  contents: read
+jobs:
+  sds-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: PDF text joins regression
+        run: node tests/sds-pdf-text-joins.js
+      - name: SDS document applicability
+        run: node tests/sds-document-applicability.js
+      - name: SDS document recovery
+        run: node tests/sds-document-recovery-journey.js
+      - name: SDS document composer gate
+        run: node tests/sds-document-composer-gate.js
+      - name: Existing automated suite
+        run: npm test
