@@ -140,3 +140,9 @@ The following is a **review protocol**, not an assertion that any particular cod
 4. Resolve any demonstrated gaps in a separate change with targeted tests. Do not globally restore all 400 occurrences or approve blanket removal without evidence.
 
 **Status: blocked on real formulation-specific regulatory evidence.** No legal sign-off is claimed. Supplier SDS anomalies #035 and #056 remain separate supplier clarification items.
+
+## Final Deno-enabled CI result — run 37816177118
+
+**Both jobs completed successfully**: the authentic supplier SDS Chromium corpus and `sds-regression`, including the full `npm test` suite. Unlike the earlier green run, this run installed Deno and executed the six offline mocked Edge Function test files before the full suite. The job logs include successful billing-status (26 scenarios) and manage-subscription (8 scenarios) checks. CI evidence: https://github.com/craftymousegifts/clpeasy/actions/runs/37816177118 . No rerun of previously completed manual prechecks is required.
+
+**Separate, non-blocking follow-up:** some existing billing tests reference legacy Easy Pro and annual pricing scenarios. This is not evidence of a production billing defect, and pricing changes are out of scope for this Smart Paste QA PR; track separately against current product rules. The **regulatory sign-off for excluded P-statements remains unresolved** and is the release gate for these QA changes.
