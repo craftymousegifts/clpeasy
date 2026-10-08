@@ -1,0 +1,32 @@
+name: Authentic supplier SDS corpus (QA only)
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - qa/smart-paste-sds-corpus
+    paths:
+      - scripts/collect-public-sds-corpus.js
+      - .github/workflows/sds-supplier-corpus.yml
+permissions:
+  contents: read
+jobs:
+  collect-supplier-sds:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify PDF extraction utility
+        run: pdftotext -v
+      - name: Download authentic public Nikura SDS and extract Section 2.2
+        run: node scripts/collect-public-sds-corpus.js
+      - name: Preserve documents and provenance for QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: authentic-supplier-sds-corpus
+          path: qa-artifacts/sds-corpus/
+          if-no-files-found: warn
+          retention-days: 7
