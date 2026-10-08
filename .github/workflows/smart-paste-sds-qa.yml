@@ -61,6 +61,8 @@ jobs:
         run: |
           npm ci
           npx puppeteer browsers install chrome
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq poppler-utils
           pdftotext -v
       - name: Collect public supplier SDS PDFs and Section 2.2
         id: collect
