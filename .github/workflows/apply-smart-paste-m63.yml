@@ -1,0 +1,39 @@
+name: Apply M63 fix to isolated QA branch
+on:
+  push:
+    branches:
+      - qa/smart-paste-sds-corpus
+    paths:
+      - scripts/apply-smart-paste-m63.js
+      - .github/workflows/apply-smart-paste-m63.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch-and-verify:
+    if: github.ref == 'refs/heads/qa/smart-paste-sds-corpus'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: qa/smart-paste-sds-corpus
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Apply guarded M63 patch
+        run: node scripts/apply-smart-paste-m63.js
+      - name: Verify targeted regression tests
+        run: node tests/sds-pdf-text-joins.js
+      - name: Commit tested fix to QA branch only
+        run: |
+          if git diff --quiet -- label-render.js; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- label-render.js
+          git commit -m "fix: recognise PDF-joined H-code phrase openings (M63)"
+          git push origin HEAD:qa/smart-paste-sds-corpus
