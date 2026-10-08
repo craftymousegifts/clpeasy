@@ -16,6 +16,10 @@ const cases = [
  ['H317 May cause an allergic skin reaction.', ['H317']],
  ['H361fd Suspected of damaging fertility.', ['H361fd']],
  ['EUH208 Contains Linalool.', ['EUH208']],
+ ['H315Causes skin irritation.', ['H315']],
+ ['H410Very toxic to aquatic life with long lasting effects.', ['H410']],
+ ['H361fSuspected of damaging fertility.', ['H361f']],
+ ['H317unknown invalid suffix', []],
 ];
 let passed=0;
 for(const [input,expected] of cases){
