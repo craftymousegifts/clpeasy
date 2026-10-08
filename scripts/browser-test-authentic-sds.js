@@ -52,7 +52,9 @@ const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|
      const el=document.getElementById('smart-paste-input');
      if(!el||typeof extractSDS!=='function')throw Error('Smart Paste UI unavailable');
      el.value=t;extractSDS();
-     return {h:(document.getElementById('h-statements')?.value||'').split(',').map(x=>x.trim()).filter(Boolean),p:document.getElementById('p-statements')?.value||'',signal:document.getElementById('signal-danger')?.classList.contains('sel-danger')?'Danger':document.getElementById('signal-warning')?.classList.contains('sel-warn')?'Warning':'',sensitisers:[...S.sensitisers],pCodes:[...S.pSelected],hCodes:[...S.hSelected],sdsSignal:S.sdsSignal,pReviewText:document.getElementById('sds-excluded-p-review')?.textContent||''};
+     const notice=document.getElementById('sds-excluded-p-review');
+     const noticeVisible=!!(notice&&notice.checkVisibility({checkVisibilityCSS:true}));
+     return {pReviewVisible:noticeVisible,h:(document.getElementById('h-statements')?.value||'').split(',').map(x=>x.trim()).filter(Boolean),p:document.getElementById('p-statements')?.value||'',signal:document.getElementById('signal-danger')?.classList.contains('sel-danger')?'Danger':document.getElementById('signal-warning')?.classList.contains('sel-warn')?'Warning':'',sensitisers:[...S.sensitisers],pCodes:[...S.pSelected],hCodes:[...S.hSelected],sdsSignal:S.sdsSignal,pReviewText:document.getElementById('sds-excluded-p-review')?.textContent||''};
     },text);
     const expected=expectedCodes(text);
     const missing=expected.filter(x=>!actual.h.includes(x));
@@ -65,6 +67,7 @@ const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|
     const excludedP=supplierP.filter(x=>!actual.pCodes.includes(x));
     const exclusionNoticeMismatch=excludedP.length>0&&(!actual.pReviewText.includes('not added automatically')||excludedP.some(x=>!actual.pReviewText.includes(x)));
     const unexpectedExclusionNotice=excludedP.length===0&&!!actual.pReviewText;
+    const exclusionNoticeHidden=excludedP.length>0&&!actual.pReviewVisible;
     const explicitSignal=(text.match(/(?:^|\n)\s*Signal\s+word\s*[:\-]?\s*(Danger|Warning|None|Not applicable)/im)||[])[1]||'';
     const signalMismatch=!!(explicitSignal&&/^(Danger|Warning|None)$/i.test(explicitSignal)&&((explicitSignal.toLowerCase()==='none'?'':explicitSignal.toLowerCase())!==actual.signal.toLowerCase()));
     const signalCodes=actual.h.filter(x=>/^H\d{3}$/.test(x));
@@ -73,7 +76,7 @@ const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|
     const sensitiserClause=(text.match(/Contains\s+([^\n]{1,500}?)\.\s*May\s+(?:produce|cause)\s+an\s+allergic\s+reaction/i)||[])[1]||'';
     const supplierNames=supplierEuh208Names(text);
     const sensitiserMismatch=supplierNames!==null&&canonicalNames(supplierNames)!==canonicalNames(actual.sensitisers.join(', '));
-    results.push({id:doc.id,source:doc.url,sha256:doc.sha256,status:(missing.length||extraH.length||unexpectedP.length||unexpectedEUH.length||contaminatedSensitisers.length||technicalSignalMismatch||sensitiserMismatch||exclusionNoticeMismatch||unexpectedExclusionNotice)?'review':'extracted',expected_h_codes:expected,actual_h_codes:actual.h,missing_h_codes:missing,unexpected_h_codes:extraH,supplier_euh_codes:supplierEUH,unexpected_euh_codes:unexpectedEUH,contaminated_sensitiser_names:contaminatedSensitisers,supplier_p_codes:supplierP,actual_p_codes:actual.pCodes,unexpected_p_codes:unexpectedP,excluded_p_codes:excludedP,exclusion_notice_mismatch:exclusionNoticeMismatch,unexpected_exclusion_notice:unexpectedExclusionNotice,explicit_supplier_signal:explicitSignal,actual_signal_word:actual.signal,signal_mismatch:signalMismatch,supplier_signal_anomaly:supplierSignalAnomaly,technical_signal_mismatch:technicalSignalMismatch,supplier_euh208_clause:supplierNames,actual_sensitisers:actual.sensitisers,sensitiser_mismatch:sensitiserMismatch});
+    results.push({id:doc.id,source:doc.url,sha256:doc.sha256,status:(missing.length||extraH.length||unexpectedP.length||unexpectedEUH.length||contaminatedSensitisers.length||technicalSignalMismatch||sensitiserMismatch||exclusionNoticeMismatch||unexpectedExclusionNotice||exclusionNoticeHidden)?'review':'extracted',expected_h_codes:expected,actual_h_codes:actual.h,missing_h_codes:missing,unexpected_h_codes:extraH,supplier_euh_codes:supplierEUH,unexpected_euh_codes:unexpectedEUH,contaminated_sensitiser_names:contaminatedSensitisers,supplier_p_codes:supplierP,actual_p_codes:actual.pCodes,unexpected_p_codes:unexpectedP,excluded_p_codes:excludedP,exclusion_notice_mismatch:exclusionNoticeMismatch,unexpected_exclusion_notice:unexpectedExclusionNotice,exclusion_notice_hidden:exclusionNoticeHidden,explicit_supplier_signal:explicitSignal,actual_signal_word:actual.signal,signal_mismatch:signalMismatch,supplier_signal_anomaly:supplierSignalAnomaly,technical_signal_mismatch:technicalSignalMismatch,supplier_euh208_clause:supplierNames,actual_sensitisers:actual.sensitisers,sensitiser_mismatch:sensitiserMismatch});
    }catch(e){results.push({id:doc.id,source:doc.url,status:'error',error:String(e.message).slice(0,300)});}
   }
  }finally{await browser.close();server.close();}
