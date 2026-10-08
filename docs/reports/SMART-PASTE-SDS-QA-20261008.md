@@ -31,3 +31,7 @@ The user requested 100 genuine supplier SDS documents exercised through the comp
 - Local environment: `jsdom` and `puppeteer` package directories exist but are incomplete; SDS applicability and composer tests fail to load `jsdom`, and browser recovery test skips Puppeteer. This is an environment issue, not a product defect finding.
 - Supplier-document sample count actually verified through Smart Paste browser: **0 / 100**. No supplier SDS correctness claims can be made.
 - Netlify deploy preview status was reported successful for PR #225; this is not equivalent to passing QA.
+
+## Verified GitHub Actions evidence (run #37807585041)
+
+The post-fix isolated GitHub Actions run reached and **passed** these steps: dependency installation, browser installation, PDF joined-text regression, SDS document applicability, SDS document recovery, and SDS document composer gate. The existing full repository suite was still **in progress** at the latest check; no overall CI pass is claimed. This run uses synthetic/existing automated fixtures, not the 100 real supplier SDS corpus. Link: https://github.com/craftymousegifts/clpeasy/actions/runs/37807585041
