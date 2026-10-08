@@ -23,7 +23,7 @@ function discover(html){
 function section22(text){
  const start=text.search(/\b2\.2\s*(?:Label\s+elements)?\b/i);if(start<0)return null;
  const rest=text.slice(start);
- const end=rest.slice(8).search(/\b(?:2\.3\s*Other\s+hazards|SECTION\s*3\s*[:.]|3\.1\s*Substances)\b/i);
+ const end=rest.slice(8).search(/\b(?:2\.3\s*(?:Other\s+hazards)?|SECTION\s*3\s*[:.]|3\.1\s*Substances)\b/i);
  return rest.slice(0,end<0?Math.min(rest.length,7500):Math.min(rest.length,end+8)).trim();
 }
 (async()=>{
