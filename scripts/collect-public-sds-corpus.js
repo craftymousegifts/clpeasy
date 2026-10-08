@@ -41,9 +41,10 @@ function section22(t){
 }
 async function main(){
  const html=(await get(SOURCE)).toString('utf8'),items=links(html).slice(0,limit);
- const results=new Array(items.length);let cursor=0;
+ const results=[];let cursor=0;const candidates=links(html);
  async function worker(){
-  while(cursor<items.length){const i=cursor++,item=items[i],id=String(i+1).padStart(3,'0');
+  while(cursor<candidates.length){const i=cursor++,item=candidates[i],id=String(i+1).padStart(3,'0');
+   if(results.filter(x=>x&&x.section_2_2_found).length>=limit)break;
    const record={id,...item,download_ok:false,section_2_2_found:false};
    try{
     const pdf=await get(item.url);
@@ -61,9 +62,10 @@ async function main(){
   }
  }
  await Promise.all(Array.from({length:4},worker));
- const report={generated_at:new Date().toISOString(),source:SOURCE,discovered:links(html).length,attempted:items.length,downloaded:results.filter(x=>x.download_ok).length,section_2_2_extracted:results.filter(x=>x.section_2_2_found).length,warning:'Raw fragrance SDS may differ from finished-product 10% CLP. No compliance or UI test is claimed.',documents:results};
+ const selected=results.filter(x=>x&&x.section_2_2_found).slice(0,limit);
+ const report={generated_at:new Date().toISOString(),source:SOURCE,discovered:candidates.length,attempted:results.filter(Boolean).length,downloaded:results.filter(x=>x&&x.download_ok).length,section_2_2_extracted:selected.length,warning:'Raw fragrance SDS may differ from finished-product 10% CLP. No compliance or UI test is claimed.',documents:selected};
  fs.writeFileSync(path.join(out,'manifest.json'),JSON.stringify(report,null,2));
  console.log(JSON.stringify({discovered:report.discovered,attempted:report.attempted,downloaded:report.downloaded,section_2_2_extracted:report.section_2_2_extracted}));
- if(report.attempted<100||report.section_2_2_extracted<100)process.exitCode=1;
+ if(report.section_2_2_extracted<limit)process.exitCode=1;
 }
 main().catch(e=>{console.error(e);process.exitCode=1;});
