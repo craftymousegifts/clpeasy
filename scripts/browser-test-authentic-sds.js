@@ -7,6 +7,9 @@ const ROOT=path.resolve(__dirname,'..'),DIR=path.resolve(process.env.SDS_CORPUS_
 const manifestPath=path.join(DIR,'manifest.json');
 if(!fs.existsSync(manifestPath))throw Error('Missing authentic SDS manifest');
 const manifest=JSON.parse(fs.readFileSync(manifestPath,'utf8'));
+const IS_CLP10=process.env.SDS_SOURCE_CLASS==='clp10';
+const MIN_EXPECTED=IS_CLP10?Math.max(1,Number(process.env.CLP10_MIN_EXPECTED||1)):100;
+if(IS_CLP10&&manifest.source_class!=='Supplier 10% candle-wax SDS (not raw fragrance concentrate)')throw Error('10% run requires verified 10% candle-wax manifest');
 const mock="window.supabase={createClient:function(){var q={select:function(){return q},eq:function(){return q},single:async function(){return {data:null,error:null}},then:function(f){return Promise.resolve({data:null,error:null}).then(f)}};return {auth:{getSession:async function(){return {data:{session:null}}},onAuthStateChange:function(){return {data:{subscription:{unsubscribe:function(){}}}}}},from:function(){return q},rpc:async function(){return {data:null,error:null}}}}};";
 const server=http.createServer((req,res)=>{
  let f;try{f=decodeURIComponent(new URL(req.url,'http://localhost').pathname);}catch{res.writeHead(400);return res.end();}
@@ -84,7 +87,7 @@ const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|
     const explicitSignal=(text.match(/(?:^|\n)\s*Signal\s+word\s*[:\-]?\s*(Danger|Warning|None|Not applicable)/im)||[])[1]||'';
     const signalMismatch=!!(explicitSignal&&/^(Danger|Warning|None)$/i.test(explicitSignal)&&((explicitSignal.toLowerCase()==='none'?'':explicitSignal.toLowerCase())!==actual.signal.toLowerCase()));
     const signalCodes=actual.h.filter(x=>/^H\d{3}$/.test(x));
-    const supplierSignalAnomaly=signalMismatch&&((signalCodes.includes('H317')&&actual.signal==='Warning')||(signalCodes.length>0&&signalCodes.every(x=>['H402','H412'].includes(x))&&actual.signal===''));
+    const supplierSignalAnomaly=!IS_CLP10&&signalMismatch&&((signalCodes.includes('H317')&&actual.signal==='Warning')||(signalCodes.length>0&&signalCodes.every(x=>['H402','H412'].includes(x))&&actual.signal===''));
     const technicalSignalMismatch=signalMismatch&&!supplierSignalAnomaly;
     const sensitiserClause=(text.match(/Contains\s+([^\n]{1,500}?)\.\s*May\s+(?:produce|cause)\s+an\s+allergic\s+reaction/i)||[])[1]||'';
     const supplierNames=supplierEuh208Names(text);
@@ -93,8 +96,8 @@ const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|
    }catch(e){results.push({id:doc.id,source:doc.url,status:'error',error:String(e.message).slice(0,300)});}
   }
  }finally{await browser.close();server.close();}
- const report={timestamp:new Date().toISOString(),supplier_signal_discrepancies:results.filter(x=>x.signal_mismatch).map(x=>({id:x.id,source:x.source,supplier:x.explicit_supplier_signal,builder:x.actual_signal_word})),supplier_signal_anomalies:results.filter(x=>x.supplier_signal_anomaly).length,technical_signal_mismatches:results.filter(x=>x.technical_signal_mismatch).length,supplier_p_code_exclusions:results.reduce((n,x)=>n+(x.excluded_p_codes||[]).length,0),scope:'Actual builder.html Smart Paste UI extraction of supplier Section 2.2; NOT compliance certification',count:results.length,extracted:results.filter(x=>x.status==='extracted').length,needs_review:results.filter(x=>x.status==='review').length,errors:results.filter(x=>x.status==='error').length,results};
+ const report={timestamp:new Date().toISOString(),supplier_signal_discrepancies:results.filter(x=>x.signal_mismatch).map(x=>({id:x.id,source:x.source,supplier:x.explicit_supplier_signal,builder:x.actual_signal_word})),supplier_signal_anomalies:results.filter(x=>x.supplier_signal_anomaly).length,technical_signal_mismatches:results.filter(x=>x.technical_signal_mismatch).length,supplier_p_code_exclusions:results.reduce((n,x)=>n+(x.excluded_p_codes||[]).length,0),scope:IS_CLP10?'10% candle-wax supplier Section 2.2 versus builder Smart Paste; NOT compliance certification':'Actual builder.html Smart Paste UI extraction of supplier Section 2.2; NOT compliance certification',count:results.length,extracted:results.filter(x=>x.status==='extracted').length,needs_review:results.filter(x=>x.status==='review').length,errors:results.filter(x=>x.status==='error').length,results};
  fs.writeFileSync(path.join(DIR,'browser-results.json'),JSON.stringify(report,null,2));
  console.log(JSON.stringify({count:report.count,extracted:report.extracted,needs_review:report.needs_review,errors:report.errors}));
- if(report.count<100||report.extracted<100||report.needs_review||report.errors)process.exitCode=1;
+ if(report.count<MIN_EXPECTED||report.extracted<MIN_EXPECTED||report.needs_review||report.errors)process.exitCode=1;
 })().catch(e=>{console.error(e);server.close();process.exitCode=1;});
