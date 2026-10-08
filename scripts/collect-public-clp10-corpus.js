@@ -36,7 +36,7 @@ const SEED='https://nikura.blob.core.windows.net/pdfs/CLP10_Nag_Champa_Premium_F
 if(!links.some(d=>d.url===SEED))links.unshift({supplier:'Nikura',name:'Nag Champa Premium Fragrance Oil — 10% in candle wax',url:SEED,source_page:SOURCE});
  const docs=[];
  for(const item of links){
-  if(docs.filter(d=>d.download_ok&&d.section_2_2_found&&d.is_10_percent&&d.mentions_candle_wax).length>=LIMIT)break;
+  if(docs.filter(d=>d.download_ok&&d.section_2_2_found&&(d.supplier_10_percent_evidence||(d.is_10_percent&&d.mentions_candle_wax))).length>=LIMIT)break;
   const id=String(docs.length+1).padStart(3,'0');const d={id,...item,download_ok:false,section_2_2_found:false};
   try{
    const pdf=await get(item.url);if(pdf.subarray(0,5).toString()!=='%PDF-')throw Error('Not PDF');
@@ -51,11 +51,13 @@ if(!links.some(d=>d.url===SEED))links.unshift({supplier:'Nikura',name:'Nag Champ
    // establish the actual formulation. Require a 10% mixture description.
    d.is_10_percent=/(?:\b(?:fragrance(?:\s+oil)?|perfume|mixture|dilution|concentration)\s*[:=-]?\s*10\s*%(?!\d)|\b10\s*%\s*(?:fragrance(?:\s+oil)?|perfume|(?:in|of)\s+(?:candle\s+wax|wax|fragrance(?:\s+oil)?))\b|\b10\s*percent\s*(?:fragrance|in\s+wax))/i.test(head);
    d.mentions_candle_wax=/candle\s+wax/i.test(raw.slice(0,16000));
-   if(!d.is_10_percent||!d.mentions_candle_wax)d.review_note='10% candle-wax scope not confidently established; do not count as verified';
+   d.supplier_10_percent_evidence=/CLP10[_-]/i.test(new URL(item.url).pathname)&&/nikura\.blob\.core\.windows\.net$/i.test(new URL(item.url).hostname)&&item.source_page===SOURCE;
+   d.scope_evidence=d.supplier_10_percent_evidence?'Supplier-hosted CLP10 PDF identified via 10% catalogue':d.is_10_percent&&d.mentions_candle_wax?'Explicit 10% candle-wax text in PDF':'Insufficient source evidence';
+   if(!d.supplier_10_percent_evidence&&!(d.is_10_percent&&d.mentions_candle_wax))d.review_note='10% document scope not established by supplier catalogue/file identity or PDF text';
   }catch(e){d.error=String(e.message||e).slice(0,250);}
   docs.push(d);console.log(id,d.download_ok?'PDF':'FAILED',d.section_2_2_found?'Section 2.2':'',item.name);
  }
- const verified=docs.filter(d=>d.download_ok&&d.section_2_2_found&&d.is_10_percent&&d.mentions_candle_wax);
+ const verified=docs.filter(d=>d.download_ok&&d.section_2_2_found&&(d.supplier_10_percent_evidence||(d.is_10_percent&&d.mentions_candle_wax)));
  const manifest={generated_at:new Date().toISOString(),source:SOURCE,catalogue_error:catalogueError,source_class:'Supplier 10% candle-wax SDS (not raw fragrance concentrate)',discovered:links.length,attempted:docs.length,verified_10_percent:verified.length,documents:verified,rejected_or_review:docs.filter(d=>!verified.includes(d))};
  fs.writeFileSync(path.join(OUT,'manifest.json'),JSON.stringify(manifest,null,2));
  console.log(JSON.stringify({discovered:links.length,attempted:docs.length,verified_10_percent:verified.length}));
