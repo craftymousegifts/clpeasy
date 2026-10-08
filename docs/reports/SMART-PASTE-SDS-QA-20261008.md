@@ -74,3 +74,18 @@ The original archived PDFs (not only extracted browser state) were checked. SDS 
 ## Final verified classification of source discrepancies — run 37813604674
 
 The updated regression now **passes all 100 authentic SDS browser cases** with zero technical review flags and zero browser errors. Crucially, it **separately reports two supplier SDS internal signal-word anomalies**, rather than suppressing or mistaking them for software defects. The archived JSON independently confirms `supplier_signal_anomalies: 2`, `technical_signal_mismatches: 0`, and `supplier_p_code_exclusions: 400`. The two supplier inconsistencies are verified against original PDF Section 2.1 and 2.2 (see preceding section). **No builder signal-word change is warranted by this evidence.** The 400 supplier P-code omissions remain a distinct regulatory review issue. Evidence: https://github.com/craftymousegifts/clpeasy/actions/runs/37813604674 .
+
+### Precautionary-statement exclusion inventory (supplier Section 2.2 versus builder)
+
+| Code | Omitted occurrences | Typical supplier instruction | Regulatory disposition |
+|---|---:|---|---|
+| P280 | 95 | Wear protective gloves/protective clothing/eye protection | Review relevance to the specific finished product and its hazards |
+| P272 | 92 | Contaminated work clothing should not leave the workplace | Workplace-specific; verify consumer applicability |
+| P264 | 75 | Wash thoroughly after handling | Review against selected classification and required wording |
+| P362 | 56 | Take off contaminated clothing | Review combined P-code selection and skin exposure context |
+| P363 | 36 | Wash contaminated clothing before reuse | Review workplace versus consumer context |
+| P405 | 25 | Store locked up | Check hazard classification and consumer selection |
+| P270 | 11 | Do not eat, drink or smoke when using | Review applicability to finished product |
+| P303+P361+P353 | 10 | IF ON SKIN (or hair): remove contaminated clothing and rinse | Review classification and combination/precedence rules |
+
+**Total 400 omitted occurrences** (not 400 unique statements). These counts are from the authentic source-versus-builder artifact, not proof that omissions are correct or incorrect. A fragrance oil concentrate's supplier SDS is not automatically the prescribed consumer label for a diluted finished candle. No automatic inclusion or deletion was applied pending a product-specific classification review.
