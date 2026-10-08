@@ -44,7 +44,7 @@ if(!links.some(d=>d.url===SEED))links.unshift({supplier:'Nikura',name:'Nag Champ
    d.sha256=crypto.createHash('sha256').update(pdf).digest('hex');d.bytes=pdf.length;d.pdf_file=pdfFile;d.download_ok=true;
    d.section_2_2_found=!!sec;
    if(sec){d.section_2_2_text_file=id+'-section-2-2.txt';fs.writeFileSync(path.join(OUT,d.section_2_2_text_file),sec);}
-   d.is_10_percent=/\b10\s*%\s*(?:in|fragrance)|\b10\s*percent\b/i.test(raw.slice(0,16000));
+   d.is_10_percent=/(?:\b10\s*%\s*(?:in|fragrance)|\b10\s*percent\b|\b10\s*%\s*of\s*(?:fragrance|oil)|\b10\s*%\s*fragrance\s*oil)/i.test(raw.slice(0,16000));
    d.mentions_candle_wax=/candle\s+wax/i.test(raw.slice(0,16000));
    if(!d.is_10_percent||!d.mentions_candle_wax)d.review_note='10% candle-wax scope not confidently established; do not count as verified';
   }catch(e){d.error=String(e.message||e).slice(0,250);}
