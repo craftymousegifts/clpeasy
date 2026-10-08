@@ -40,13 +40,11 @@ function section22(text){
  let html='',catalogueError=null;
  try{html=(await get(SOURCE)).toString('utf8');}catch(e){catalogueError=String(e.message||e);console.warn('Supplier catalogue unavailable; attempting independently verified public PDF seed:',catalogueError);}
  const links=discover(html);
-// Independently documented public supplier PDF: keep one genuine 10% seed even
-// when Shopify renders its catalogue links through scripts rather than anchors.
-const SEED='https://nikura.blob.core.windows.net/pdfs/CLP10_Nag_Champa_Premium_Fragrance_Oil_FO-FR-NAG.pdf';
-if(!links.some(d=>d.url===SEED))links.unshift({supplier:'Nikura',name:'Nag Champa Premium Fragrance Oil — 10% in candle wax',url:SEED,source_page:SOURCE,discovery_method:'known_public_pdf_seed'});
+// No historical CLP10 Nag Champa seed: Nikura confirmed its old public document contained an incorrect H316 classification.
+// Only discover currently linked supplier documents, and verify their actual Section 2.2 before using as reference.
  const docs=[];
  for(const item of links){
-  if(docs.filter(d=>d.download_ok&&d.label_text_found&&(d.supplier_10_percent_evidence||(d.is_10_percent&&d.mentions_candle_wax))).length>=LIMIT)break;
+  if(docs.filter(d=>d.download_ok&&d.label_text_found&&!d.historical_supplier_error&&(d.supplier_10_percent_evidence||(d.is_10_percent&&d.mentions_candle_wax))).length>=LIMIT)break;
   const id=String(docs.length+1).padStart(3,'0');const d={id,...item,download_ok:false,section_2_2_found:false};
   try{
    const pdf=await get(item.url);if(pdf.subarray(0,5).toString()!=='%PDF-')throw Error('Not PDF');
@@ -62,6 +60,10 @@ if(!links.some(d=>d.url===SEED))links.unshift({supplier:'Nikura',name:'Nag Champ
    d.section_2_2_found=!!sdsSection;
    d.sha256=crypto.createHash('sha256').update(pdf).digest('hex');d.bytes=pdf.length;d.pdf_file=pdfFile;d.download_ok=true;
    d.label_text_found=!!sec;
+   // Historical supplier error: the pre-correction Nag Champa 10% document included H316.
+   // Never count it as authoritative ground truth for a finished-mixture QA pass.
+   d.historical_supplier_error=/Nag.Champa/i.test(item.name+' '+item.url)&&/\bH316\b/.test(sec||'');
+   if(d.historical_supplier_error)d.review_note='Historical Nikura Nag Champa 10% H316 error; obtain corrected Regulatory Affairs SDS';
    if(sec){d.section_2_2_text_file=id+'-section-2-2.txt';d.label_text_sha256=crypto.createHash('sha256').update(sec,'utf8').digest('hex');fs.writeFileSync(path.join(OUT,d.section_2_2_text_file),sec);}
    const head=raw.slice(0,16000);
    // A mere 10% mention in an ingredient or regulatory threshold does not

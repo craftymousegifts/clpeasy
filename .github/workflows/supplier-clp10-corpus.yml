@@ -1,12 +1,5 @@
 name: Supplier 10% candle-wax SDS collection (isolated)
 on:
-  push:
-    branches:
-      - qa/smart-paste-sds-corpus
-    paths:
-      - '.github/workflows/supplier-clp10-corpus.yml'
-      - 'scripts/collect-public-clp10-corpus.js'
-      - 'scripts/browser-test-authentic-sds.js'
   workflow_dispatch:
     inputs:
       limit:
