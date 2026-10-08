@@ -146,3 +146,19 @@ The following is a **review protocol**, not an assertion that any particular cod
 **Both jobs completed successfully**: the authentic supplier SDS Chromium corpus and `sds-regression`, including the full `npm test` suite. Unlike the earlier green run, this run installed Deno and executed the six offline mocked Edge Function test files before the full suite. The job logs include successful billing-status (26 scenarios) and manage-subscription (8 scenarios) checks. CI evidence: https://github.com/craftymousegifts/clpeasy/actions/runs/37816177118 . No rerun of previously completed manual prechecks is required.
 
 **Separate, non-blocking follow-up:** some existing billing tests reference legacy Easy Pro and annual pricing scenarios. This is not evidence of a production billing defect, and pricing changes are out of scope for this Smart Paste QA PR; track separately against current product rules. The **regulatory sign-off for excluded P-statements remains unresolved** and is the release gate for these QA changes.
+
+## Final QA handover — frozen evidence and narrowly scoped remaining decisions
+
+**Technical CI is green** as of run [37816177118](https://github.com/craftymousegifts/clpeasy/actions/runs/37816177118): authentic SDS browser job, isolated targeted checks, Deno-backed offline Edge Function tests and the full npm suite all passed. Do **not** rerun the same prechecks or corpus solely to recreate this evidence. Rerun only focused tests for a newly changed component or if source evidence changes. The earlier chronology in this audit trail is retained for traceability; initial 0/100 and unverified CI statements describe *earlier stages*, not the final outcome.
+
+**Outstanding decisions, with owners and completion evidence:**
+
+| Decision | Suggested owner | What constitutes completion |
+|---|---|---|
+| GB CLP applicability of the nine excluded precautionary codes | Competent GB CLP specialist, with founder providing formulation facts | Written code-by-code determination for each actual finished-product family and use/concentration, citing classification and selection rationale |
+| Whether the two contradictory supplier signal words require correction or clarification | Nikura SDS author / competent GB CLP specialist | Written supplier clarification or documented reviewer determination; do not alter hazard signal logic to mimic internally inconsistent SDS |
+| Maker-facing notice accessibility and persistence after extraction, save/reopen and Step 3 navigation | Engineering QA | Focused UI visibility and persistence checks, not only DOM-text presence; fix only if demonstrably hidden or lost |
+| Print/export of representative *finished-product* labels | Engineering QA following specialist classification | Compare actual PDF/SVG/PNG content and size against approved reference label for one example per product family |
+| Merge/release decision | Founder after the above evidence | Explicit approval; draft PR remains unmerged until then |
+
+**Important:** Do not describe the 100 raw-fragrance SDS Smart Paste browser passes as a finished-product CLP certification. The supplier SDS data do not supply all final-formulation facts. No production deployment, database mutation, or customer-data access is authorised by this QA work.
