@@ -34,7 +34,7 @@ const expectedPCodes=t=>[...new Set([...t.matchAll(/\bP\d{3}(?:\s*[+/]\s*P?\d{3}
 const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|f|d)?\b/g)].map(m=>m[0]))].sort();
 // Compare only the supplier's Section 2.2 label elements, not later Section 2.3
 // prose, Section 3 ingredients, or Section 16 code glossaries.
-const labelSectionOnly=t=>{const m=t.match(/\b2\.2\s*(?:Label\s+elements)?\b/i);if(!m)return t;const rest=t.slice(m.index);const next=rest.slice(m[0].length).search(/\b(?:2\.3\s*Other\s+hazards|SECTION\s*3\s*[:.]|3\.1\s*Substances)\b/i);return next<0?rest:rest.slice(0,m[0].length+next);};
+const labelSectionOnly=t=>{const lines=String(t).split(/\r?\n/);const start=lines.findIndex(x=>/^\s*2\.2\s*(?:Label\s+elements|Labelling|Labeling)\b/i.test(x));if(start<0)return t;let end=lines.length;for(let i=start+1;i<lines.length;i++){if(/^\s*(?:2\.3\b|SECTION\s*3\b|3\.1\b)/i.test(lines[i])){end=i;break;}}return lines.slice(start,end).join('\n');};
 (async()=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  const base='http://127.0.0.1:'+server.address().port;
