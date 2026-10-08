@@ -34,7 +34,7 @@ const SEED='https://nikura.blob.core.windows.net/pdfs/CLP10_Nag_Champa_Premium_F
 if(!links.some(d=>d.url===SEED))links.unshift({supplier:'Nikura',name:'Nag Champa Premium Fragrance Oil — 10% in candle wax',url:SEED,source_page:SOURCE});
  const docs=[];
  for(const item of links){
-  if(docs.filter(d=>d.section_2_2_found).length>=LIMIT)break;
+  if(docs.filter(d=>d.download_ok&&d.section_2_2_found&&d.is_10_percent&&d.mentions_candle_wax).length>=LIMIT)break;
   const id=String(docs.length+1).padStart(3,'0');const d={id,...item,download_ok:false,section_2_2_found:false};
   try{
    const pdf=await get(item.url);if(pdf.subarray(0,5).toString()!=='%PDF-')throw Error('Not PDF');
