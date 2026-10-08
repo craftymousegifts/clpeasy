@@ -46,7 +46,7 @@ const expectedCodes=t=>[...new Set([...t.matchAll(/\bH\d{3}(?:i|FD|Fd|fD|fd|F|D|
     const extraH=actual.h.filter(x=>!expected.includes(x)&&!/^EUH\d{3}$/.test(x));
     const supplierEUH=[...new Set([...text.matchAll(/\bEUH\d{3}\b/g)].map(m=>m[0]))];
     const unexpectedEUH=actual.h.filter(x=>/^EUH\d{3}$/.test(x)&&!supplierEUH.includes(x));
-    const contaminatedSensitisers=actual.sensitisers.filter(x=>/\b(?:Information:|statements:|Page\s+\d+)\b/i.test(x));
+    const contaminatedSensitisers=actual.sensitisers.filter(x=>/(?:Information:|statements:|Page\s+\d+)/i.test(x));
     const supplierP=expectedPCodes(text);
     const unexpectedP=actual.pCodes.filter(x=>!supplierP.includes(x));
     const excludedP=supplierP.filter(x=>!actual.pCodes.includes(x));
