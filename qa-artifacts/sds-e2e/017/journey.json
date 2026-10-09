@@ -1,0 +1,471 @@
+{
+ "input": {
+  "id": "017",
+  "supplier": "Nikura",
+  "name": "Cedarwood Atlas Essential Oil 10% full SDS",
+  "url": "https://nikura.blob.core.windows.net/pdfs/CLP10_Cedarwood_Atlas_Essential_Oil_EO-CEA.pdf",
+  "pdf_sha256": "0869fe9d55fbb05955692c3d5cecdd3b8240c3de00504e1e18eb63c75f43b88f",
+  "manifest_sha256": "0869fe9d55fbb05955692c3d5cecdd3b8240c3de00504e1e18eb63c75f43b88f",
+  "text_sha256": "d553aec31f01bafa35fd85bc284886289d96ee02e2d97e91480887bd46adb378",
+  "manifest_text_sha256": "d553aec31f01bafa35fd85bc284886289d96ee02e2d97e91480887bd46adb378",
+  "input_verified": true
+ },
+ "product_name": "Cedarwood Atlas Essential Oil Candle",
+ "sizes": {
+  "63x44": {
+   "size": "63x44",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-4",
+    "step-5"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 63,
+     "mmH": 44,
+     "pw": 260,
+     "ph": 182
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "H412",
+    "p_field": "P273, P501",
+    "signal": "",
+    "h_codes": [
+     "H412"
+    ],
+    "p_codes": [
+     "P273",
+     "P501"
+    ],
+    "sensitisers": [],
+    "pictograms_state": [],
+    "pictograms_ui": [],
+    "allergen_tags": "None detected — paste Section 2.2 data and click Extract",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "H412",
+    "p_field": "P273, P501",
+    "signal": "",
+    "h_codes": [
+     "H412"
+    ],
+    "p_codes": [
+     "P273",
+     "P501"
+    ],
+    "sensitisers": [],
+    "pictograms_state": [],
+    "pictograms_ui": [],
+    "allergen_tags": "None detected — paste Section 2.2 data and click Extract",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "preview_before_confirm": {
+    "warnings": [
+     {
+      "id": "label-warn-step5",
+      "text": "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 69×48mm (rectangle).Use 69×48mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareWidth (mm)Height (mm)Apply sizeYour entered information is kept. The preview will check the new size."
+     }
+    ],
+    "download_allowed": false,
+    "blocked_message": "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+    "label_block_download": true,
+    "block_reason": "content-does-not-fit",
+    "content_overflow": true,
+    "legibility_warn": null,
+    "footer_clipped": true,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": true,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": true,
+      "enabled": false
+     },
+     "svg": {
+      "visible": true,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 63,
+     "mmH": 44,
+     "pw": 260,
+     "ph": 182
+    }
+   },
+   "preview": {
+    "warnings": [
+     {
+      "id": "label-warn-step5",
+      "text": "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 69×48mm (rectangle).Use 69×48mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareWidth (mm)Height (mm)Apply sizeYour entered information is kept. The preview will check the new size."
+     }
+    ],
+    "download_allowed": false,
+    "blocked_message": "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+    "label_block_download": true,
+    "block_reason": "content-does-not-fit",
+    "content_overflow": true,
+    "legibility_warn": null,
+    "footer_clipped": true,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": true,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": true,
+      "enabled": false
+     },
+     "svg": {
+      "visible": true,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 63,
+     "mmH": 44,
+     "pw": 260,
+     "ph": 182
+    }
+   },
+   "verify_checked": true,
+   "exports": {
+    "png": {
+     "status": "blocked",
+     "clickable": false,
+     "dialog": "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+     "rpc_calls": 0
+    },
+    "svg": {
+     "status": "blocked",
+     "clickable": false,
+     "dialog": "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+     "rpc_calls": 0
+    },
+    "pdf": {
+     "status": "blocked",
+     "clickable": false,
+     "dialog": "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+     "rpc_calls": 0
+    }
+   },
+   "reset": {
+    "input": false,
+    "h": 0,
+    "p": 0,
+    "sens": 0
+   },
+   "dialogs": [
+    "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+    "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+    "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading."
+   ],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [],
+   "downloads_seen": [],
+   "ms": 24255
+  },
+  "76x51": {
+   "size": "76x51",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-4",
+    "step-5"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 76,
+     "mmH": 51,
+     "pw": 260,
+     "ph": 174
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "H412",
+    "p_field": "P273, P501",
+    "signal": "",
+    "h_codes": [
+     "H412"
+    ],
+    "p_codes": [
+     "P273",
+     "P501"
+    ],
+    "sensitisers": [],
+    "pictograms_state": [],
+    "pictograms_ui": [],
+    "allergen_tags": "None detected — paste Section 2.2 data and click Extract",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "H412",
+    "p_field": "P273, P501",
+    "signal": "",
+    "h_codes": [
+     "H412"
+    ],
+    "p_codes": [
+     "P273",
+     "P501"
+    ],
+    "sensitisers": [],
+    "pictograms_state": [],
+    "pictograms_ui": [],
+    "allergen_tags": "None detected — paste Section 2.2 data and click Extract",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "preview_before_confirm": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": true,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": true,
+      "enabled": false
+     },
+     "svg": {
+      "visible": true,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 76,
+     "mmH": 51,
+     "pw": 260,
+     "ph": 174
+    }
+   },
+   "preview": {
+    "warnings": [],
+    "download_allowed": true,
+    "blocked_message": "",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": true,
+      "enabled": true
+     },
+     "pdf": {
+      "visible": true,
+      "enabled": true
+     },
+     "svg": {
+      "visible": true,
+      "enabled": true
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 76,
+     "mmH": 51,
+     "pw": 260,
+     "ph": 174
+    }
+   },
+   "verify_checked": true,
+   "exports": {
+    "png": {
+     "status": "exported",
+     "file": "export-76x51.png",
+     "original_name": "clpeasy-cedarwood-atlas-essential-oil-candle-76x51mm.png",
+     "rpc_calls": 1,
+     "clickable": true,
+     "dialog": ""
+    },
+    "svg": {
+     "status": "exported",
+     "file": "export-76x51.svg",
+     "original_name": "clpeasy-cedarwood-atlas-essential-oil-candle-76x51mm.svg",
+     "rpc_calls": 1,
+     "clickable": true,
+     "dialog": ""
+    },
+    "pdf": {
+     "status": "exported",
+     "file": "export-76x51.pdf",
+     "via": "print view → Chromium Save as PDF",
+     "rpc_calls": 1,
+     "clickable": true,
+     "dialog": ""
+    }
+   },
+   "reset": {
+    "input": false,
+    "h": 0,
+    "p": 0,
+    "sens": 0
+   },
+   "dialogs": [],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [
+    [
+     "consume_download",
+     {
+      "p_label_key": "cedarwood atlas essential oil candle::scented candle::rectangle::76x51mm",
+      "p_legacy_label_key": "cedarwood atlas essential oil candle::scented candle"
+     }
+    ],
+    [
+     "consume_download",
+     {
+      "p_label_key": "cedarwood atlas essential oil candle::scented candle::rectangle::76x51mm",
+      "p_legacy_label_key": "cedarwood atlas essential oil candle::scented candle"
+     }
+    ],
+    [
+     "consume_download",
+     {
+      "p_label_key": "cedarwood atlas essential oil candle::scented candle::rectangle::76x51mm",
+      "p_legacy_label_key": "cedarwood atlas essential oil candle::scented candle"
+     }
+    ]
+   ],
+   "downloads_seen": [
+    {
+     "guid": "684c8334-30b5-4a8a-8ce2-c74be5a25710",
+     "name": "clpeasy-cedarwood-atlas-essential-oil-candle-76x51mm.png",
+     "state": "completed"
+    },
+    {
+     "guid": "0908929a-ea1e-43ba-a6c8-8f4ab029bcd3",
+     "name": "clpeasy-cedarwood-atlas-essential-oil-candle-76x51mm.svg",
+     "state": "completed"
+    }
+   ],
+   "ms": 23753
+  }
+ }
+}
