@@ -920,7 +920,7 @@
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
   "defect_owner": "Supplier SDS",
-  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H401 || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H401 || SUPPLIER: builder correctly stops the journey on the non-GB code and asks for supplier clarification || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/008/",
   "_detail": {
@@ -1114,7 +1114,7 @@
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; Supplier SDS",
-  "issue_details": "FAIL: EUH208 names: supplier ['a-Pinene', 'alpha-Bisabolene', 'beta-Pinene', 'l-.β.-Bisabolene'] vs builder [] || SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H401 || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "FAIL: EUH208 names: supplier ['a-Pinene', 'alpha-Bisabolene', 'beta-Pinene', 'l-.β.-Bisabolene'] vs builder [] || SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H401 || SUPPLIER: builder correctly stops the journey on the non-GB code and asks for supplier clarification || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/010/",
   "_detail": {
@@ -1763,7 +1763,7 @@
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; Supplier SDS",
-  "issue_details": "FAIL: EUH208 names: supplier ['Caryophyllene', 'Geraniol', 'a-Pinene', 'beta-Pinene', 'd-Limonene', 'l-.β.-Bisabolene'] vs builder ['Caryophyllene', 'Geraniol', 'a-Pinene', 'beta-Pinene', 'd-Limonene', 'l-.β.- Information:              Bisabolene'] || FAIL: PDF layout text inside sensitiser name: ['l-.β.- Information:              Bisabolene'] || SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402",
+  "issue_details": "FAIL: EUH208 names: supplier ['Caryophyllene', 'Geraniol', 'a-Pinene', 'beta-Pinene', 'd-Limonene', 'l-.β.-Bisabolene'] vs builder ['Caryophyllene', 'Geraniol', 'a-Pinene', 'beta-Pinene', 'd-Limonene', 'l-.β.- Information:              Bisabolene'] || FAIL: PDF layout text inside sensitiser name: ['l-.β.- Information:              Bisabolene'] || SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || SUPPLIER: builder correctly stops the journey on the non-GB code and asks for supplier clarification",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/015/",
   "_detail": {
@@ -1860,7 +1860,7 @@
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
   "defect_owner": "Supplier SDS",
-  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || SUPPLIER: builder correctly stops the journey on the non-GB code and asks for supplier clarification || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/016/",
   "_detail": {
@@ -3034,7 +3034,7 @@
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
   "defect_owner": "Supplier SDS",
-  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || SUPPLIER: builder correctly stops the journey on the non-GB code and asks for supplier clarification || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/024/",
   "_detail": {
@@ -5265,7 +5265,7 @@
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; Supplier SDS",
-  "issue_details": "FAIL: EUH208 names: supplier ['Citronellyl formate', 'Citronellyl tiglate', 'Geranyl formate', 'Geranyl propionate', 'Isomenthone', 'Menthone', 'Nerol'] vs builder ['Citronellyl formate', 'Citronellyl tiglate', 'Geranyl formate', 'Geranyl propionate', 'Information:               Isomenthone', 'Menthone', 'Nerol'] || FAIL: PDF layout text inside sensitiser name: ['Information:               Isomenthone'] || SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "FAIL: EUH208 names: supplier ['Citronellyl formate', 'Citronellyl tiglate', 'Geranyl formate', 'Geranyl propionate', 'Isomenthone', 'Menthone', 'Nerol'] vs builder ['Citronellyl formate', 'Citronellyl tiglate', 'Geranyl formate', 'Geranyl propionate', 'Information:               Isomenthone', 'Menthone', 'Nerol'] || FAIL: PDF layout text inside sensitiser name: ['Information:               Isomenthone'] || SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || SUPPLIER: builder correctly stops the journey on the non-GB code and asks for supplier clarification || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/038/",
   "_detail": {
@@ -5690,7 +5690,7 @@
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
   "defect_owner": "Supplier SDS",
-  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H401 || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H401 || SUPPLIER: builder correctly stops the journey on the non-GB code and asks for supplier clarification || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/041/",
   "_detail": {
@@ -6033,7 +6033,7 @@
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
   "defect_owner": "Supplier SDS",
-  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H401",
+  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H401 || SUPPLIER: builder correctly stops the journey on the non-GB code and asks for supplier clarification",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/044/",
   "_detail": {
@@ -6138,7 +6138,7 @@
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; Supplier SDS",
-  "issue_details": "FAIL: EUH208 names: supplier ['Caryophyllene', 'Terpinen-4-ol', 'Terpinolene', 'alpha-Phellandrene', 'beta-Pinene', 'd-Limonene', 'p-Mentha-1,3-diene'] vs builder ['Caryophyllene', 'Terpinen-4-ol', 'Terpinolene', 'alpha-Phellandrene', 'beta- Information:             Pinene', 'd-Limonene', 'p-Mentha-1,3-diene'] || FAIL: PDF layout text inside sensitiser name: ['beta- Information:             Pinene'] || SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H316 || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "FAIL: EUH208 names: supplier ['Caryophyllene', 'Terpinen-4-ol', 'Terpinolene', 'alpha-Phellandrene', 'beta-Pinene', 'd-Limonene', 'p-Mentha-1,3-diene'] vs builder ['Caryophyllene', 'Terpinen-4-ol', 'Terpinolene', 'alpha-Phellandrene', 'beta- Information:             Pinene', 'd-Limonene', 'p-Mentha-1,3-diene'] || FAIL: PDF layout text inside sensitiser name: ['beta- Information:             Pinene'] || SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H316 || SUPPLIER: builder correctly stops the journey on the non-GB code and asks for supplier clarification || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/045/",
   "_detail": {
@@ -6269,14 +6269,14 @@
   "export_block_76x51": "blocked, no download charged",
   "recommended_size_result": "85x57: fits",
   "exported_formats": "85x57: PNG+SVG+PDF",
-  "export_preview_match": "no",
+  "export_preview_match": "yes",
   "min_print_font_mm": 1.2,
   "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; CLPeasy rendering/export",
-  "issue_details": "FAIL: EUH208 names: supplier ['Eucalyptol', 'Neryl acetate', 'beta-Caryophyllene', 'l-Limonene'] vs builder ['Limonene'] || FAIL: recommended 85x57: export/preview mismatch: ['smallest printed text 1.20 mm < CLPeasy GB floor 1.2 mm'] || FAIL: recommended 85x57 rendered: rendered \"Contains\" ['Limonene'] != supplier ['Eucalyptol', 'Neryl acetate', 'beta-Caryophyllene', 'l-Limonene'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element) || REVIEW: recommended 85x57 rendered: P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\"",
+  "issue_details": "FAIL: EUH208 names: supplier ['Eucalyptol', 'Neryl acetate', 'beta-Caryophyllene', 'l-Limonene'] vs builder ['Limonene'] || FAIL: recommended 85x57 rendered: rendered \"Contains\" ['Limonene'] != supplier ['Eucalyptol', 'Neryl acetate', 'beta-Caryophyllene', 'l-Limonene'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element) || REVIEW: recommended 85x57 rendered: P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\" || NOTE: smallest font size 1.1998 mm = renderer floor 1.2 mm less 2-decimal SVG rounding",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/046/",
   "_detail": {
@@ -6371,9 +6371,7 @@
        "SVG",
        "PDF"
       ],
-      "issues": [
-       "smallest printed text 1.20 mm < CLPeasy GB floor 1.2 mm"
-      ],
+      "issues": [],
       "png_px": [
        2008,
        1346
@@ -6385,6 +6383,9 @@
       ],
       "min_font_mm": 1.2,
       "min_xheight_mm_est": 0.62,
+      "notes": [
+       "smallest font size 1.1998 mm = renderer floor 1.2 mm less 2-decimal SVG rounding"
+      ],
       "pdf_pages": 1,
       "pdf_mm": [
        85.01,
@@ -6569,7 +6570,7 @@
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
   "defect_owner": "Supplier SDS",
-  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || SUPPLIER: builder correctly stops the journey on the non-GB code and asks for supplier clarification || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/048/",
   "_detail": {
@@ -6686,7 +6687,7 @@
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
   "defect_owner": "Supplier SDS",
-  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || SUPPLIER: builder correctly stops the journey on the non-GB code and asks for supplier clarification || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/049/",
   "_detail": {
@@ -6966,7 +6967,7 @@
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
   "defect_owner": "Supplier SDS",
-  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H401 || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H401 || SUPPLIER: builder correctly stops the journey on the non-GB code and asks for supplier clarification || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/051/",
   "_detail": {
@@ -7582,7 +7583,7 @@
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; Supplier SDS",
-  "issue_details": "FAIL: EUH208 names: supplier ['Caryophyllene', 'Geraniol', 'Geranyl acetate', 'Isocitral #2', 'Isocitral #3', 'Isoeugenol', 'Linalool', 'l-Limonene'] vs builder ['Caryophyllene', 'Geraniol', 'Geranyl Acetate', 'Isocitral #2', 'Isocitral #3', 'Information:              Isoeugenol', 'Linalool', 'l-Limonene'] || FAIL: PDF layout text inside sensitiser name: ['Information:              Isoeugenol'] || SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "FAIL: EUH208 names: supplier ['Caryophyllene', 'Geraniol', 'Geranyl acetate', 'Isocitral #2', 'Isocitral #3', 'Isoeugenol', 'Linalool', 'l-Limonene'] vs builder ['Caryophyllene', 'Geraniol', 'Geranyl Acetate', 'Isocitral #2', 'Isocitral #3', 'Information:              Isoeugenol', 'Linalool', 'l-Limonene'] || FAIL: PDF layout text inside sensitiser name: ['Information:              Isoeugenol'] || SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || SUPPLIER: builder correctly stops the journey on the non-GB code and asks for supplier clarification || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/055/",
   "_detail": {
@@ -8451,14 +8452,14 @@
   "export_block_76x51": "blocked, no download charged",
   "recommended_size_result": "85x57: fits",
   "exported_formats": "85x57: PNG+SVG+PDF",
-  "export_preview_match": "no",
+  "export_preview_match": "yes",
   "min_print_font_mm": 1.2,
   "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; CLPeasy rendering/export",
-  "issue_details": "FAIL: EUH208 names: supplier ['Citronellal', 'Geraniol', 'Linalool', 'dl-Citronellol'] vs builder ['Geraniol', 'Citronellol', 'Linalool'] || FAIL: recommended 85x57: export/preview mismatch: ['smallest printed text 1.20 mm < CLPeasy GB floor 1.2 mm'] || FAIL: recommended 85x57 rendered: rendered \"Contains\" ['Geraniol', 'Citronellol', 'Linalool'] != supplier ['Citronellal', 'Geraniol', 'Linalool', 'dl-Citronellol'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element) || REVIEW: recommended 85x57 rendered: P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\"",
+  "issue_details": "FAIL: EUH208 names: supplier ['Citronellal', 'Geraniol', 'Linalool', 'dl-Citronellol'] vs builder ['Geraniol', 'Citronellol', 'Linalool'] || FAIL: recommended 85x57 rendered: rendered \"Contains\" ['Geraniol', 'Citronellol', 'Linalool'] != supplier ['Citronellal', 'Geraniol', 'Linalool', 'dl-Citronellol'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element) || REVIEW: recommended 85x57 rendered: P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\" || NOTE: smallest font size 1.1998 mm = renderer floor 1.2 mm less 2-decimal SVG rounding",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/061/",
   "_detail": {
@@ -8555,9 +8556,7 @@
        "SVG",
        "PDF"
       ],
-      "issues": [
-       "smallest printed text 1.20 mm < CLPeasy GB floor 1.2 mm"
-      ],
+      "issues": [],
       "png_px": [
        2008,
        1346
@@ -8569,6 +8568,9 @@
       ],
       "min_font_mm": 1.2,
       "min_xheight_mm_est": 0.62,
+      "notes": [
+       "smallest font size 1.1998 mm = renderer floor 1.2 mm less 2-decimal SVG rounding"
+      ],
       "pdf_pages": 1,
       "pdf_mm": [
        85.01,
@@ -8635,7 +8637,7 @@
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; Supplier SDS",
-  "issue_details": "FAIL: EUH208 names: supplier ['Citronellal', 'Dipentene', 'Geraniol', 'Geranyl acetate', 'Isoeugenol', 'Nerol'] vs builder ['Isoeugenol', 'Geraniol', 'Geranyl Acetate'] || SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P362']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "FAIL: EUH208 names: supplier ['Citronellal', 'Dipentene', 'Geraniol', 'Geranyl acetate', 'Isoeugenol', 'Nerol'] vs builder ['Isoeugenol', 'Geraniol', 'Geranyl Acetate'] || SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || SUPPLIER: builder correctly stops the journey on the non-GB code and asks for supplier clarification || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P362']; no notice shown to the customer (the builder has no exclusion-notice element)",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/062/",
   "_detail": {
@@ -9085,7 +9087,7 @@
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; Supplier SDS",
-  "issue_details": "FAIL: EUH208 names: supplier ['Caryophyllene', 'Geraniol', 'Geranyl acetate', 'Neryl acetate', 'a-Pinene'] vs builder ['Geraniol', 'Geranyl Acetate'] || SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H401 || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "FAIL: EUH208 names: supplier ['Caryophyllene', 'Geraniol', 'Geranyl acetate', 'Neryl acetate', 'a-Pinene'] vs builder ['Geraniol', 'Geranyl Acetate'] || SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H401 || SUPPLIER: builder correctly stops the journey on the non-GB code and asks for supplier clarification || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/066/",
   "_detail": {
@@ -9399,8 +9401,8 @@
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
-  "defect_owner": "CLPeasy Smart Paste / code library; CLPeasy rendering/export",
-  "issue_details": "FAIL: EUH208 names: supplier ['Nikura | Niaouli Essential Oil - 100% Pure', 'Terpinolene', 'alpha-Pinene', 'beta-Pinene'] vs builder ['Nikura | Niaouli Essential Oil - 100% Pure', 'Terpinolene', 'alpha-Pinene', 'beta- Information:              Pinene'] || FAIL: PDF layout text inside sensitiser name: ['beta- Information:              Pinene'] || FAIL: recommended 80x54 rendered: rendered \"Contains\" ['Nikura | Niaouli Essential Oil - 100% Pure', 'Terpinolene', 'alpha-Pinene', 'beta- Information: Pinene'] != supplier ['Nikura | Niaouli Essential Oil - 100% Pure', 'Terpinolene', 'alpha-Pinene', 'beta-Pinene'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "defect_owner": "CLPeasy Smart Paste / code library; CLPeasy rendering/export; Supplier SDS",
+  "issue_details": "FAIL: EUH208 names: supplier ['Nikura | Niaouli Essential Oil - 100% Pure', 'Terpinolene', 'alpha-Pinene', 'beta-Pinene'] vs builder ['Nikura | Niaouli Essential Oil - 100% Pure', 'Terpinolene', 'alpha-Pinene', 'beta- Information:              Pinene'] || FAIL: PDF layout text inside sensitiser name: ['beta- Information:              Pinene'] || FAIL: recommended 80x54 rendered: rendered \"Contains\" ['Nikura | Niaouli Essential Oil - 100% Pure', 'Terpinolene', 'alpha-Pinene', 'beta- Information: Pinene'] != supplier ['Nikura | Niaouli Essential Oil - 100% Pure', 'Terpinolene', 'alpha-Pinene', 'beta-Pinene'] || SUPPLIER: supplier EUH208 lists a product name as a substance: ['Nikura | Niaouli Essential Oil - 100% Pure'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/068/",
   "_detail": {
@@ -9737,7 +9739,7 @@
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
   "defect_owner": "Supplier SDS",
-  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H401 || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H401 || SUPPLIER: builder correctly stops the journey on the non-GB code and asks for supplier clarification || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/070/",
   "_detail": {
@@ -9844,7 +9846,7 @@
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; Supplier SDS",
-  "issue_details": "FAIL: EUH208 names: supplier ['Carvone', 'Caryophyllene', 'Citral', 'Citronellal', 'Dodecanal', 'Geraniol', 'Nerol', 'p-Mentha-1,8-dien-7-al'] vs builder ['Carvone', 'Caryophyllene', 'Citral', 'Citronellal', 'Dodecanal', 'Geraniol', 'Nerol', 'p- Information:              Mentha-1,8-dien-7-al'] || FAIL: PDF layout text inside sensitiser name: ['p- Information:              Mentha-1,8-dien-7-al'] || SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H401 || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "FAIL: EUH208 names: supplier ['Carvone', 'Caryophyllene', 'Citral', 'Citronellal', 'Dodecanal', 'Geraniol', 'Nerol', 'p-Mentha-1,8-dien-7-al'] vs builder ['Carvone', 'Caryophyllene', 'Citral', 'Citronellal', 'Dodecanal', 'Geraniol', 'Nerol', 'p- Information:              Mentha-1,8-dien-7-al'] || FAIL: PDF layout text inside sensitiser name: ['p- Information:              Mentha-1,8-dien-7-al'] || SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H401 || SUPPLIER: builder correctly stops the journey on the non-GB code and asks for supplier clarification || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/071/",
   "_detail": {
@@ -9973,7 +9975,7 @@
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; Supplier SDS",
-  "issue_details": "FAIL: EUH208 names: supplier ['Caryophyllene', 'a-Pinene', 'p-Mentha-1,3-diene'] vs builder [] || SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "FAIL: EUH208 names: supplier ['Caryophyllene', 'a-Pinene', 'p-Mentha-1,3-diene'] vs builder [] || SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || SUPPLIER: builder correctly stops the journey on the non-GB code and asks for supplier clarification || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/072/",
   "_detail": {
@@ -10087,8 +10089,8 @@
   "extraction_result": "FAIL",
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
-  "defect_owner": "CLPeasy Smart Paste / code library; QA environment/harness",
-  "issue_details": "FAIL: EUH208 names: supplier ['Geranyl acetate', 'Linalool', 'beta-Caryophyllene'] vs builder ['Geranyl Acetate', 'Linalool'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element) || BLOCKED: stopped at Step 3: CLP code not recognised\n\nCLPeasy did not recognise the following code: P310. Check that the SDS text was copied correctly and that you are using the current Great Britain-market SDS or classification ",
+  "defect_owner": "CLPeasy Smart Paste / code library",
+  "issue_details": "FAIL: EUH208 names: supplier ['Geranyl acetate', 'Linalool', 'beta-Caryophyllene'] vs builder ['Geranyl Acetate', 'Linalool'] || FAIL: builder rejects valid CLP P statement(s) ['P310'] and blocks the journey (\"CLP code not recognised\") || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/073/",
   "_detail": {
@@ -10795,7 +10797,7 @@
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; Supplier SDS",
-  "issue_details": "FAIL: EUH208 names: supplier ['Caryophyllene', 'Eucalyptol', 'Isomenthone', 'l-Limonene'] vs builder ['Limonene'] || SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "FAIL: EUH208 names: supplier ['Caryophyllene', 'Eucalyptol', 'Isomenthone', 'l-Limonene'] vs builder ['Limonene'] || SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || SUPPLIER: builder correctly stops the journey on the non-GB code and asks for supplier clarification || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/078/",
   "_detail": {
@@ -11730,14 +11732,14 @@
   "export_block_76x51": "blocked, no download charged",
   "recommended_size_result": "85x57: fits",
   "exported_formats": "85x57: PNG+SVG+PDF",
-  "export_preview_match": "no",
+  "export_preview_match": "yes",
   "min_print_font_mm": 1.2,
   "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; CLPeasy rendering/export",
-  "issue_details": "FAIL: EUH208 names: supplier ['Citronellyl formate', 'Citronellyl tiglate', 'Geranyl formate', 'Geranyl propionate', 'Isomenthone', 'Menthone', 'Nerol'] vs builder ['Citronellyl formate', 'Citronellyl tiglate', 'Geranyl formate', 'Geranyl propionate', 'Information:              Isomenthone', 'Menthone', 'Nerol'] || FAIL: PDF layout text inside sensitiser name: ['Information:              Isomenthone'] || FAIL: recommended 85x57: export/preview mismatch: ['smallest printed text 1.20 mm < CLPeasy GB floor 1.2 mm'] || FAIL: recommended 85x57 rendered: rendered \"Contains\" ['Citronellyl formate', 'Citronellyl tiglate', 'Geranyl formate', 'Geranyl propionate', 'Information: Isomenthone', 'Menthone', 'Nerol'] != supplier ['Citronellyl formate', 'Citronellyl tiglate', 'Geranyl formate', 'Geranyl propionate', 'Isomenthone', 'Menthone', 'Nerol'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element) || REVIEW: recommended 85x57 rendered: P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\"",
+  "issue_details": "FAIL: EUH208 names: supplier ['Citronellyl formate', 'Citronellyl tiglate', 'Geranyl formate', 'Geranyl propionate', 'Isomenthone', 'Menthone', 'Nerol'] vs builder ['Citronellyl formate', 'Citronellyl tiglate', 'Geranyl formate', 'Geranyl propionate', 'Information:              Isomenthone', 'Menthone', 'Nerol'] || FAIL: PDF layout text inside sensitiser name: ['Information:              Isomenthone'] || FAIL: recommended 85x57 rendered: rendered \"Contains\" ['Citronellyl formate', 'Citronellyl tiglate', 'Geranyl formate', 'Geranyl propionate', 'Information: Isomenthone', 'Menthone', 'Nerol'] != supplier ['Citronellyl formate', 'Citronellyl tiglate', 'Geranyl formate', 'Geranyl propionate', 'Isomenthone', 'Menthone', 'Nerol'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element) || REVIEW: recommended 85x57 rendered: P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\" || NOTE: smallest font size 1.1998 mm = renderer floor 1.2 mm less 2-decimal SVG rounding",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/084/",
   "_detail": {
@@ -11841,9 +11843,7 @@
        "SVG",
        "PDF"
       ],
-      "issues": [
-       "smallest printed text 1.20 mm < CLPeasy GB floor 1.2 mm"
-      ],
+      "issues": [],
       "png_px": [
        2008,
        1346
@@ -11855,6 +11855,9 @@
       ],
       "min_font_mm": 1.2,
       "min_xheight_mm_est": 0.62,
+      "notes": [
+       "smallest font size 1.1998 mm = renderer floor 1.2 mm less 2-decimal SVG rounding"
+      ],
       "pdf_pages": 1,
       "pdf_mm": [
        85.01,
@@ -12111,7 +12114,7 @@
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
   "defect_owner": "Supplier SDS",
-  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P280']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || SUPPLIER: builder correctly stops the journey on the non-GB code and asks for supplier clarification || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P280']; no notice shown to the customer (the builder has no exclusion-notice element)",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/086/",
   "_detail": {
@@ -12930,7 +12933,7 @@
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
   "defect_owner": "Supplier SDS",
-  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H402 || SUPPLIER: builder correctly stops the journey on the non-GB code and asks for supplier clarification || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/091/",
   "_detail": {
@@ -13390,7 +13393,7 @@
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
   "defect_owner": "Supplier SDS",
-  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H401 || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P362', 'P405']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "SUPPLIER: supplier Section 2.2 uses GHS-only code(s) not in GB CLP: H401 || SUPPLIER: builder correctly stops the journey on the non-GB code and asks for supplier clarification || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P362', 'P405']; no notice shown to the customer (the builder has no exclusion-notice element)",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/094/",
   "_detail": {

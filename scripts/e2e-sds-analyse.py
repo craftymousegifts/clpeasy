@@ -190,7 +190,11 @@ def check_exports(dirp, tag, mm, prev):
             k = W / si['vb_w']
             mn = min(si['font_sizes']) * k
             r['min_font_mm'] = round(mn, 2); r['min_xheight_mm_est'] = round(mn * XH_RATIO, 2)
-            if mn + 1e-6 < GB_MIN_FS_MM: r['issues'].append(f'smallest printed text {mn:.2f} mm < CLPeasy GB floor {GB_MIN_FS_MM} mm')
+            # The renderer computes the floor exactly and then writes font-size
+            # with toFixed(2), which can land a few ten-thousandths of a mm
+            # below 1.2 mm. Only a real shortfall (> 0.005 mm) is a defect.
+            if mn < GB_MIN_FS_MM - 0.005: r['issues'].append(f'smallest printed text {mn:.4f} mm font size is below the renderer floor {GB_MIN_FS_MM} mm')
+            elif mn < GB_MIN_FS_MM: r['notes'] = [f'smallest font size {mn:.4f} mm = renderer floor {GB_MIN_FS_MM} mm less 2-decimal SVG rounding']
     if os.path.exists(pdfp):
         r['formats'].append('PDF')
         doc = pymupdf.open(pdfp)
@@ -293,6 +297,8 @@ def main():
         if sup['euh208_names'] is not None and canon(', '.join(sup['euh208_names'])) != canon(', '.join(built['sensitisers'])):
             fails.append(f'EUH208 names: supplier {sup["euh208_names"]} vs builder {built["sensitisers"]}')
         contaminated = [s for s in built['sensitisers'] if re.search(r'Information:|statements:|Page\s+\d+', s)]
+        odd = [n for n in (sup['euh208_names'] or []) if re.search(r'\||Essential Oil|100% Pure', n)]
+        if odd: supplier.append(f'supplier EUH208 lists a product name as a substance: {odd}')
         if contaminated: fails.append(f'PDF layout text inside sensitiser name: {contaminated}')
         sig_ok = canon(sup['signal']) == canon(built['signal'])
         if not sig_ok:
@@ -314,8 +320,8 @@ def main():
         stop3 = [v for v in sizes.values() if v.get('stopped_at') == 'step-3']
         if stop3:
             d = ' '.join(stop3[0].get('dialogs') or [])
-            unrec = re.search(r'did not recognise the following codes:\s*([^.]+)\.', d)
-            if re.search(r'does not recognise (it|them) as hazard statement', d): supplier.append('builder correctly stops the journey on the non-GB code and asks for supplier clarification')
+            unrec = re.search(r'did not recognise the following codes?:\s*([^.]+)\.', d)
+            if re.search(r'does not recognise (it|them) as (a )?hazard statement', d): supplier.append('builder correctly stops the journey on the non-GB code and asks for supplier clarification')
             if unrec:
                 codes = [c.strip() for c in unrec.group(1).split(',')]
                 valid = [c for c in codes if c in VALID_CLP_P]
@@ -347,6 +353,7 @@ def main():
                 if rc['issues']: fails.extend(f'{key} rendered: {i}' for i in rc['issues'])
                 reviews.extend(f'{key} rendered: {i}' for i in rc['reviews'])
                 export_ok_any = export_ok_any or not exp['issues']
+                notes.extend(exp.get('notes', []))
             elif not pv['label_block_download']:
                 # fits, but an existing (non-size) safety check blocks export
                 ok = all(e['status'] == 'blocked' and e['rpc_calls'] == 0 for e in v['exports'].values())
@@ -373,6 +380,7 @@ def main():
                     if rc['issues']: fails.extend(f'recommended {rec["size"]} rendered: {i}' for i in rc['issues'])
                     reviews.extend(f'recommended {rec["size"]} rendered: {i}' for i in rc['reviews'])
                     export_ok_any = export_ok_any or not exp['issues']
+                    notes.extend(exp.get('notes', []))
                 else:
                     rp = rec['preview']
                     if rp['label_block_download']:
