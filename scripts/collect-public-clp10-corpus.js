@@ -58,7 +58,7 @@ if(localPdf)links.unshift({supplier:'Nikura',name:'Nag Champa 10% corrected Regu
    // Accept a label-only PDF only when it visibly contains hazard/precautionary
    // codes and label wording; never pretend that it has a Section 2.2.
    const sdsSection=section22(raw);
-   const labelSheet=!sdsSection&&/\bH\d{3}\b/.test(raw)&&/\bP\d{3}\b/.test(raw)&&/\b(?:Warning|Danger|Hazard\s+statements?|Precautionary\s+statements?|Contains)\b/i.test(raw);
+   const labelSheet=!sdsSection&&raw.trim().length>=80&&(/\b(?:H\d{3}|P\d{3}|EUH\d{3})\b/i.test(raw)||/\b(?:Warning|Danger|Hazard\s+statements?|Precautionary\s+statements?|Contains|CLP\s+Label)\b/i.test(raw));
    const sec=sdsSection||(labelSheet?raw.slice(0,7500).trim():null);
    d.document_format=sdsSection?'SDS Section 2.2':labelSheet?'standalone supplier CLP label':'unrecognised';
    d.section_2_2_found=!!sdsSection;
@@ -74,7 +74,7 @@ if(localPdf)links.unshift({supplier:'Nikura',name:'Nag Champa 10% corrected Regu
    // establish the actual formulation. Require a 10% mixture description.
    d.is_10_percent=/(?:\b(?:fragrance(?:\s+oil)?|perfume|mixture|dilution|concentration)\s*[:=-]?\s*10\s*%(?!\d)|\b10\s*%\s*(?:fragrance(?:\s+oil)?|perfume|(?:in|of)\s+(?:candle\s+wax|wax|fragrance(?:\s+oil)?))\b|\b10\s*percent\s*(?:fragrance|in\s+wax))/i.test(head);
    d.mentions_candle_wax=/candle\s+wax/i.test(raw.slice(0,16000));
-   d.supplier_10_percent_evidence=item.discovery_method==='owner_supplied_local'?(d.is_10_percent&&d.mentions_candle_wax):/CLP10[_-]/i.test(new URL(item.url).pathname)&&/nikura\.blob\.core\.windows\.net$/i.test(new URL(item.url).hostname)&&item.source_page===SOURCE;
+   d.supplier_10_percent_evidence=item.discovery_method==='owner_supplied_local'?(d.is_10_percent&&d.mentions_candle_wax):/CLP10(?:Label)?[_-]/i.test(new URL(item.url).pathname)&&/nikura\.blob\.core\.windows\.net$/i.test(new URL(item.url).hostname)&&item.source_page===SOURCE;
    d.scope_evidence=d.supplier_10_percent_evidence?(item.discovery_method==='owner_supplied_local'?'Owner-supplied corrected 10% SDS, verified by PDF formulation text':'Supplier-hosted CLP10 PDF linked on 10% catalogue'):d.is_10_percent&&d.mentions_candle_wax?'Explicit 10% candle-wax text in PDF':'Insufficient source evidence';
    if(!d.supplier_10_percent_evidence&&!(d.is_10_percent&&d.mentions_candle_wax))d.review_note='10% document scope not established by supplier catalogue/file identity or PDF text';
   }catch(e){d.error=String(e.message||e).slice(0,250);}
