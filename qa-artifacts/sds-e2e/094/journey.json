@@ -1,0 +1,304 @@
+{
+ "input": {
+  "id": "094",
+  "supplier": "Nikura",
+  "name": "Tangerine Essential Oil 10% full SDS",
+  "url": "https://nikura.blob.core.windows.net/pdfs/CLP10_Tangerine_Essential_Oil_EO-TANG.pdf",
+  "pdf_sha256": "ef43d2afb66cb06d1cdf528490c9e2455593d553d20f969f8ed37ec0114f6ff7",
+  "manifest_sha256": "ef43d2afb66cb06d1cdf528490c9e2455593d553d20f969f8ed37ec0114f6ff7",
+  "text_sha256": "13e83c6ea19984868541157825bc60323cdd29f3b575325997ee5d2ee51b856b",
+  "manifest_text_sha256": "13e83c6ea19984868541157825bc60323cdd29f3b575325997ee5d2ee51b856b",
+  "input_verified": true
+ },
+ "product_name": "Tangerine Essential Oil Candle",
+ "sizes": {
+  "63x44": {
+   "size": "63x44",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-3"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 63,
+     "mmH": 44,
+     "pw": 260,
+     "ph": 182
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "H304, H315, H317, H412, H401, EUH208",
+    "p_field": "P261, P273, P301+P310, P302+P352, P331, P333+P313, P501",
+    "signal": "Danger",
+    "h_codes": [
+     "H304",
+     "H315",
+     "H317",
+     "H412",
+     "H401",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P261",
+     "P273",
+     "P301+P310",
+     "P302+P352",
+     "P331",
+     "P333+P313",
+     "P501"
+    ],
+    "sensitisers": [
+     "Citral",
+     "Linalool",
+     "Terpinolene",
+     "a-Pinene"
+    ],
+    "pictograms_state": [
+     "health",
+     "exclamation"
+    ],
+    "pictograms_ui": [
+     "exclamation",
+     "health"
+    ],
+    "allergen_tags": "CitralLinaloolTerpinolenea-Pinene",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "H304, H315, H317, H412, H401, EUH208",
+    "p_field": "P261, P273, P301+P310, P302+P352, P331, P333+P313, P501",
+    "signal": "Danger",
+    "h_codes": [
+     "H304",
+     "H315",
+     "H317",
+     "H412",
+     "H401",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P261",
+     "P273",
+     "P301+P310",
+     "P302+P352",
+     "P331",
+     "P333+P313",
+     "P501"
+    ],
+    "sensitisers": [
+     "Citral",
+     "Linalool",
+     "Terpinolene",
+     "a-Pinene"
+    ],
+    "pictograms_state": [
+     "health",
+     "exclamation"
+    ],
+    "pictograms_ui": [
+     "exclamation",
+     "health"
+    ],
+    "allergen_tags": "CitralLinaloolTerpinolenea-Pinene",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "stopped_at": "step-3",
+   "dialogs": [
+    "This code needs supplier confirmation for a Great Britain CLP label\n\nThe following code appears in your supplier SDS: H401. CLPeasy does not recognise it as a hazard statement in the current Great Britain CLP information checked by the service. It may be recognised under another national or international classification system, or the supplier may need to clarify the Great Britain classification. CLPeasy currently supports products placed on the market in Great Britain (England, Scotland and Wales). Please ask your supplier for the current Great Britain-market SDS or classification information applicable to your final formulation and concentration. CLPeasy has not added, removed, translated or substituted this code. Do not change the SDS code just to make the label generate. For help, contact support@clpeasy.com with the SDS and flagged code."
+   ],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [],
+   "downloads_seen": [],
+   "ms": 11682
+  },
+  "76x51": {
+   "size": "76x51",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-3"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 76,
+     "mmH": 51,
+     "pw": 260,
+     "ph": 174
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "H304, H315, H317, H412, H401, EUH208",
+    "p_field": "P261, P273, P301+P310, P302+P352, P331, P333+P313, P501",
+    "signal": "Danger",
+    "h_codes": [
+     "H304",
+     "H315",
+     "H317",
+     "H412",
+     "H401",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P261",
+     "P273",
+     "P301+P310",
+     "P302+P352",
+     "P331",
+     "P333+P313",
+     "P501"
+    ],
+    "sensitisers": [
+     "Citral",
+     "Linalool",
+     "Terpinolene",
+     "a-Pinene"
+    ],
+    "pictograms_state": [
+     "health",
+     "exclamation"
+    ],
+    "pictograms_ui": [
+     "exclamation",
+     "health"
+    ],
+    "allergen_tags": "CitralLinaloolTerpinolenea-Pinene",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "H304, H315, H317, H412, H401, EUH208",
+    "p_field": "P261, P273, P301+P310, P302+P352, P331, P333+P313, P501",
+    "signal": "Danger",
+    "h_codes": [
+     "H304",
+     "H315",
+     "H317",
+     "H412",
+     "H401",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P261",
+     "P273",
+     "P301+P310",
+     "P302+P352",
+     "P331",
+     "P333+P313",
+     "P501"
+    ],
+    "sensitisers": [
+     "Citral",
+     "Linalool",
+     "Terpinolene",
+     "a-Pinene"
+    ],
+    "pictograms_state": [
+     "health",
+     "exclamation"
+    ],
+    "pictograms_ui": [
+     "exclamation",
+     "health"
+    ],
+    "allergen_tags": "CitralLinaloolTerpinolenea-Pinene",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "stopped_at": "step-3",
+   "dialogs": [
+    "This code needs supplier confirmation for a Great Britain CLP label\n\nThe following code appears in your supplier SDS: H401. CLPeasy does not recognise it as a hazard statement in the current Great Britain CLP information checked by the service. It may be recognised under another national or international classification system, or the supplier may need to clarify the Great Britain classification. CLPeasy currently supports products placed on the market in Great Britain (England, Scotland and Wales). Please ask your supplier for the current Great Britain-market SDS or classification information applicable to your final formulation and concentration. CLPeasy has not added, removed, translated or substituted this code. Do not change the SDS code just to make the label generate. For help, contact support@clpeasy.com with the SDS and flagged code."
+   ],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [],
+   "downloads_seen": [],
+   "ms": 11229
+  }
+ }
+}

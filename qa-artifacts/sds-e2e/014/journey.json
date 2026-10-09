@@ -1,0 +1,571 @@
+{
+ "input": {
+  "id": "014",
+  "supplier": "Nikura",
+  "name": "Camphor Essential Oil 10% full SDS",
+  "url": "https://nikura.blob.core.windows.net/pdfs/CLP10_Camphor_Essential_Oil_EO-CAM.pdf",
+  "pdf_sha256": "143601d7bcac6caeec83e9393f32d373121606d66f283dcd93d9dd004807858d",
+  "manifest_sha256": "143601d7bcac6caeec83e9393f32d373121606d66f283dcd93d9dd004807858d",
+  "text_sha256": "47b51ce0bfd104d35bdb897cf2aa59609d6c1676e3b30083d460871117b0982b",
+  "manifest_text_sha256": "47b51ce0bfd104d35bdb897cf2aa59609d6c1676e3b30083d460871117b0982b",
+  "input_verified": true
+ },
+ "product_name": "Camphor Essential Oil Candle",
+ "sizes": {
+  "63x44": {
+   "size": "63x44",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-4",
+    "step-5"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 63,
+     "mmH": 44,
+     "pw": 260,
+     "ph": 182
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "H317, H412, EUH208",
+    "p_field": "P261, P273, P302+P352, P333+P313, P501",
+    "signal": "Warning",
+    "h_codes": [
+     "H317",
+     "H412",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P261",
+     "P273",
+     "P302+P352",
+     "P333+P313",
+     "P501"
+    ],
+    "sensitisers": [],
+    "pictograms_state": [
+     "exclamation"
+    ],
+    "pictograms_ui": [
+     "exclamation"
+    ],
+    "allergen_tags": "None detected — paste Section 2.2 data and click Extract",
+    "visible_notices": [
+     "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 77×54mm (rectangle).Use 77×54mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareWidth (mm)Height (mm)Apply sizeYour entered information is kept. The preview will check the new size.",
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "H317, H412, EUH208",
+    "p_field": "P261, P273, P302+P352, P333+P313, P501",
+    "signal": "Warning",
+    "h_codes": [
+     "H317",
+     "H412",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P261",
+     "P273",
+     "P302+P352",
+     "P333+P313",
+     "P501"
+    ],
+    "sensitisers": [],
+    "pictograms_state": [
+     "exclamation"
+    ],
+    "pictograms_ui": [
+     "exclamation"
+    ],
+    "allergen_tags": "None detected — paste Section 2.2 data and click Extract",
+    "visible_notices": [
+     "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 77×54mm (rectangle).Use 77×54mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareWidth (mm)Height (mm)Apply sizeYour entered information is kept. The preview will check the new size.",
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "preview_before_confirm": {
+    "warnings": [
+     {
+      "id": "label-warn-step5",
+      "text": "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 77×54mm (rectangle).Use 77×54mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareWidth (mm)Height (mm)Apply sizeYour entered information is kept. The preview will check the new size."
+     },
+     {
+      "id": "business-details-export-note",
+      "text": "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading."
+     }
+    ],
+    "download_allowed": false,
+    "blocked_message": "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading.",
+    "label_block_download": true,
+    "block_reason": "content-does-not-fit",
+    "content_overflow": true,
+    "legibility_warn": true,
+    "footer_clipped": true,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": true,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": true,
+      "enabled": false
+     },
+     "svg": {
+      "visible": true,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 63,
+     "mmH": 44,
+     "pw": 260,
+     "ph": 182
+    }
+   },
+   "preview": {
+    "warnings": [
+     {
+      "id": "label-warn-step5",
+      "text": "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 77×54mm (rectangle).Use 77×54mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareWidth (mm)Height (mm)Apply sizeYour entered information is kept. The preview will check the new size."
+     },
+     {
+      "id": "business-details-export-note",
+      "text": "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading."
+     }
+    ],
+    "download_allowed": false,
+    "blocked_message": "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading.",
+    "label_block_download": true,
+    "block_reason": "content-does-not-fit",
+    "content_overflow": true,
+    "legibility_warn": true,
+    "footer_clipped": true,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": true,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": true,
+      "enabled": false
+     },
+     "svg": {
+      "visible": true,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 63,
+     "mmH": 44,
+     "pw": 260,
+     "ph": 182
+    }
+   },
+   "verify_checked": true,
+   "exports": {
+    "png": {
+     "status": "blocked",
+     "clickable": false,
+     "dialog": "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading.",
+     "rpc_calls": 0
+    },
+    "svg": {
+     "status": "blocked",
+     "clickable": false,
+     "dialog": "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading.",
+     "rpc_calls": 0
+    },
+    "pdf": {
+     "status": "blocked",
+     "clickable": false,
+     "dialog": "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading.",
+     "rpc_calls": 0
+    }
+   },
+   "reset": {
+    "input": false,
+    "h": 0,
+    "p": 0,
+    "sens": 0
+   },
+   "dialogs": [
+    "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading.",
+    "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading.",
+    "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading."
+   ],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [],
+   "downloads_seen": [],
+   "ms": 32474
+  },
+  "76x51": {
+   "size": "76x51",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-4",
+    "step-5"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 76,
+     "mmH": 51,
+     "pw": 260,
+     "ph": 174
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "H317, H412, EUH208",
+    "p_field": "P261, P273, P302+P352, P333+P313, P501",
+    "signal": "Warning",
+    "h_codes": [
+     "H317",
+     "H412",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P261",
+     "P273",
+     "P302+P352",
+     "P333+P313",
+     "P501"
+    ],
+    "sensitisers": [],
+    "pictograms_state": [
+     "exclamation"
+    ],
+    "pictograms_ui": [
+     "exclamation"
+    ],
+    "allergen_tags": "None detected — paste Section 2.2 data and click Extract",
+    "visible_notices": [
+     "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 80×54mm (rectangle).Use 80×54mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareWidth (mm)Height (mm)Apply sizeYour entered information is kept. The preview will check the new size.",
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "H317, H412, EUH208",
+    "p_field": "P261, P273, P302+P352, P333+P313, P501",
+    "signal": "Warning",
+    "h_codes": [
+     "H317",
+     "H412",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P261",
+     "P273",
+     "P302+P352",
+     "P333+P313",
+     "P501"
+    ],
+    "sensitisers": [],
+    "pictograms_state": [
+     "exclamation"
+    ],
+    "pictograms_ui": [
+     "exclamation"
+    ],
+    "allergen_tags": "None detected — paste Section 2.2 data and click Extract",
+    "visible_notices": [
+     "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 80×54mm (rectangle).Use 80×54mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareWidth (mm)Height (mm)Apply sizeYour entered information is kept. The preview will check the new size.",
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "preview_before_confirm": {
+    "warnings": [
+     {
+      "id": "label-warn-step5",
+      "text": "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 80×54mm (rectangle).Use 80×54mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareWidth (mm)Height (mm)Apply sizeYour entered information is kept. The preview will check the new size."
+     },
+     {
+      "id": "business-details-export-note",
+      "text": "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading."
+     }
+    ],
+    "download_allowed": false,
+    "blocked_message": "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading.",
+    "label_block_download": true,
+    "block_reason": "content-does-not-fit",
+    "content_overflow": true,
+    "legibility_warn": true,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": true,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": true,
+      "enabled": false
+     },
+     "svg": {
+      "visible": true,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 76,
+     "mmH": 51,
+     "pw": 260,
+     "ph": 174
+    }
+   },
+   "preview": {
+    "warnings": [
+     {
+      "id": "label-warn-step5",
+      "text": "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 80×54mm (rectangle).Use 80×54mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareWidth (mm)Height (mm)Apply sizeYour entered information is kept. The preview will check the new size."
+     },
+     {
+      "id": "business-details-export-note",
+      "text": "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading."
+     }
+    ],
+    "download_allowed": false,
+    "blocked_message": "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading.",
+    "label_block_download": true,
+    "block_reason": "content-does-not-fit",
+    "content_overflow": true,
+    "legibility_warn": true,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": true,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": true,
+      "enabled": false
+     },
+     "svg": {
+      "visible": true,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 76,
+     "mmH": 51,
+     "pw": 260,
+     "ph": 174
+    }
+   },
+   "verify_checked": true,
+   "exports": {
+    "png": {
+     "status": "blocked",
+     "clickable": false,
+     "dialog": "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading.",
+     "rpc_calls": 0
+    },
+    "svg": {
+     "status": "blocked",
+     "clickable": false,
+     "dialog": "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading.",
+     "rpc_calls": 0
+    },
+    "pdf": {
+     "status": "blocked",
+     "clickable": false,
+     "dialog": "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading.",
+     "rpc_calls": 0
+    }
+   },
+   "recommended": {
+    "button": "Use 80×54mm",
+    "size": "80x54",
+    "preview": {
+     "warnings": [
+      {
+       "id": "business-details-export-note",
+       "text": "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading."
+      }
+     ],
+     "download_allowed": false,
+     "blocked_message": "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading.",
+     "label_block_download": false,
+     "block_reason": null,
+     "content_overflow": null,
+     "legibility_warn": null,
+     "footer_clipped": false,
+     "too_small": {
+      "scent": false,
+      "business": false,
+      "type": false,
+      "signal": false
+     },
+     "buttons": {
+      "png": {
+       "visible": true,
+       "enabled": false
+      },
+      "pdf": {
+       "visible": true,
+       "enabled": false
+      },
+      "svg": {
+       "visible": true,
+       "enabled": false
+      }
+     },
+     "preview_markup_kind": "vector",
+     "dims": {
+      "mmW": 80,
+      "mmH": 54,
+      "pw": 260,
+      "ph": 176
+     }
+    },
+    "exports": {
+     "png": {
+      "status": "blocked",
+      "clickable": false,
+      "dialog": "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading.",
+      "rpc_calls": 0
+     },
+     "svg": {
+      "status": "blocked",
+      "clickable": false,
+      "dialog": "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading.",
+      "rpc_calls": 0
+     },
+     "pdf": {
+      "status": "blocked",
+      "clickable": false,
+      "dialog": "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading.",
+      "rpc_calls": 0
+     }
+    }
+   },
+   "reset": {
+    "input": false,
+    "h": 0,
+    "p": 0,
+    "sens": 0
+   },
+   "dialogs": [
+    "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading.",
+    "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading.",
+    "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading.",
+    "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading.",
+    "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading.",
+    "EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains information in Step 3 before downloading."
+   ],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [],
+   "downloads_seen": [],
+   "ms": 37379
+  }
+ }
+}

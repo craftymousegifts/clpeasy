@@ -1,0 +1,332 @@
+{
+ "input": {
+  "id": "097",
+  "supplier": "Nikura",
+  "name": "Thyme White Essential Oil 10% full SDS",
+  "url": "https://nikura.blob.core.windows.net/pdfs/CLP10_Thyme_White_Essential_Oil_EO-THY.pdf",
+  "pdf_sha256": "4153793c1a36a57f9be41a403e28e8b88edd40bc3d776535c287bcc8dc8da9cb",
+  "manifest_sha256": "4153793c1a36a57f9be41a403e28e8b88edd40bc3d776535c287bcc8dc8da9cb",
+  "text_sha256": "3aa23798a7365ebcfaee193f67db0618729c9dd40fc01963d29c0a6fff0e234d",
+  "manifest_text_sha256": "3aa23798a7365ebcfaee193f67db0618729c9dd40fc01963d29c0a6fff0e234d",
+  "input_verified": true
+ },
+ "product_name": "Thyme White Essential Oil Candle",
+ "sizes": {
+  "63x44": {
+   "size": "63x44",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-3"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 63,
+     "mmH": 44,
+     "pw": 260,
+     "ph": 182
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "H315, H318, H361, H412, EUH208",
+    "p_field": "P202, P273, P302+P352, P305+P351+P338, P308+P313, P310, P332+P313, P501",
+    "signal": "Danger",
+    "h_codes": [
+     "H315",
+     "H318",
+     "H361",
+     "H412",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P202",
+     "P273",
+     "P302+P352",
+     "P305+P351+P338",
+     "P308+P313",
+     "P310",
+     "P332+P313",
+     "P501"
+    ],
+    "sensitisers": [
+     "Caryophyllene",
+     "Eucalyptol",
+     "Linalool",
+     "Longifolene",
+     "Terpinen-4-ol",
+     "Information:            Terpinolene",
+     "a-Pinene",
+     "beta-Pinene",
+     "p-Mentha-1,3-diene"
+    ],
+    "pictograms_state": [
+     "exclamation",
+     "corrosive",
+     "health"
+    ],
+    "pictograms_ui": [
+     "exclamation",
+     "health",
+     "corrosive"
+    ],
+    "allergen_tags": "CaryophylleneEucalyptolLinaloolLongifoleneTerpinen-4-olInformation: Terpinolenea-Pinenebeta-Pinenep-Mentha-1,3-diene",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "H315, H318, H361, H412, EUH208",
+    "p_field": "P202, P273, P302+P352, P305+P351+P338, P308+P313, P310, P332+P313, P501",
+    "signal": "Danger",
+    "h_codes": [
+     "H315",
+     "H318",
+     "H361",
+     "H412",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P202",
+     "P273",
+     "P302+P352",
+     "P305+P351+P338",
+     "P308+P313",
+     "P310",
+     "P332+P313",
+     "P501"
+    ],
+    "sensitisers": [
+     "Caryophyllene",
+     "Eucalyptol",
+     "Linalool",
+     "Longifolene",
+     "Terpinen-4-ol",
+     "Information:            Terpinolene",
+     "a-Pinene",
+     "beta-Pinene",
+     "p-Mentha-1,3-diene"
+    ],
+    "pictograms_state": [
+     "exclamation",
+     "corrosive",
+     "health"
+    ],
+    "pictograms_ui": [
+     "exclamation",
+     "health",
+     "corrosive"
+    ],
+    "allergen_tags": "CaryophylleneEucalyptolLinaloolLongifoleneTerpinen-4-olInformation: Terpinolenea-Pinenebeta-Pinenep-Mentha-1,3-diene",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "stopped_at": "step-3",
+   "dialogs": [
+    "CLP code not recognised\n\nCLPeasy did not recognise the following codes: P202, P308+P313, P310. Check that the SDS text was copied correctly and that you are using the current Great Britain-market SDS or classification documentation. Do not change the SDS code just to make the label generate. For help, contact support@clpeasy.com with the SDS and flagged code."
+   ],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [],
+   "downloads_seen": [],
+   "ms": 12463
+  },
+  "76x51": {
+   "size": "76x51",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-3"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 76,
+     "mmH": 51,
+     "pw": 260,
+     "ph": 174
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "H315, H318, H361, H412, EUH208",
+    "p_field": "P202, P273, P302+P352, P305+P351+P338, P308+P313, P310, P332+P313, P501",
+    "signal": "Danger",
+    "h_codes": [
+     "H315",
+     "H318",
+     "H361",
+     "H412",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P202",
+     "P273",
+     "P302+P352",
+     "P305+P351+P338",
+     "P308+P313",
+     "P310",
+     "P332+P313",
+     "P501"
+    ],
+    "sensitisers": [
+     "Caryophyllene",
+     "Eucalyptol",
+     "Linalool",
+     "Longifolene",
+     "Terpinen-4-ol",
+     "Information:            Terpinolene",
+     "a-Pinene",
+     "beta-Pinene",
+     "p-Mentha-1,3-diene"
+    ],
+    "pictograms_state": [
+     "exclamation",
+     "corrosive",
+     "health"
+    ],
+    "pictograms_ui": [
+     "exclamation",
+     "health",
+     "corrosive"
+    ],
+    "allergen_tags": "CaryophylleneEucalyptolLinaloolLongifoleneTerpinen-4-olInformation: Terpinolenea-Pinenebeta-Pinenep-Mentha-1,3-diene",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "H315, H318, H361, H412, EUH208",
+    "p_field": "P202, P273, P302+P352, P305+P351+P338, P308+P313, P310, P332+P313, P501",
+    "signal": "Danger",
+    "h_codes": [
+     "H315",
+     "H318",
+     "H361",
+     "H412",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P202",
+     "P273",
+     "P302+P352",
+     "P305+P351+P338",
+     "P308+P313",
+     "P310",
+     "P332+P313",
+     "P501"
+    ],
+    "sensitisers": [
+     "Caryophyllene",
+     "Eucalyptol",
+     "Linalool",
+     "Longifolene",
+     "Terpinen-4-ol",
+     "Information:            Terpinolene",
+     "a-Pinene",
+     "beta-Pinene",
+     "p-Mentha-1,3-diene"
+    ],
+    "pictograms_state": [
+     "exclamation",
+     "corrosive",
+     "health"
+    ],
+    "pictograms_ui": [
+     "exclamation",
+     "health",
+     "corrosive"
+    ],
+    "allergen_tags": "CaryophylleneEucalyptolLinaloolLongifoleneTerpinen-4-olInformation: Terpinolenea-Pinenebeta-Pinenep-Mentha-1,3-diene",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "stopped_at": "step-3",
+   "dialogs": [
+    "CLP code not recognised\n\nCLPeasy did not recognise the following codes: P202, P308+P313, P310. Check that the SDS text was copied correctly and that you are using the current Great Britain-market SDS or classification documentation. Do not change the SDS code just to make the label generate. For help, contact support@clpeasy.com with the SDS and flagged code."
+   ],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [],
+   "downloads_seen": [],
+   "ms": 11390
+  }
+ }
+}

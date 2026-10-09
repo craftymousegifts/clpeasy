@@ -1,0 +1,202 @@
+{
+ "input": {
+  "id": "009",
+  "supplier": "Nikura",
+  "name": "Birch Tar Essential Oil 10% full SDS",
+  "url": "https://nikura.blob.core.windows.net/pdfs/CLP10_Birch_Tar_Essential_Oil_EO-BIT.pdf",
+  "pdf_sha256": "130b299ac6f37dfcc79a4f95c5bb4188e470570af006dd9d5181f6fad193bbf9",
+  "manifest_sha256": "130b299ac6f37dfcc79a4f95c5bb4188e470570af006dd9d5181f6fad193bbf9",
+  "text_sha256": "327638f894e73eef0db2b6bf9fc4bbccda559984e9c99f1a97d40f6cb5f8e5db",
+  "manifest_text_sha256": "327638f894e73eef0db2b6bf9fc4bbccda559984e9c99f1a97d40f6cb5f8e5db",
+  "input_verified": true
+ },
+ "product_name": "Birch Tar Essential Oil Candle",
+ "sizes": {
+  "63x44": {
+   "size": "63x44",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-3"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 63,
+     "mmH": 44,
+     "pw": 260,
+     "ph": 182
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "",
+    "p_field": "",
+    "signal": "",
+    "h_codes": [],
+    "p_codes": [],
+    "sensitisers": [],
+    "pictograms_state": [],
+    "pictograms_ui": [],
+    "allergen_tags": "None detected — paste Section 2.2 data and click Extract",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "",
+    "p_field": "",
+    "signal": "",
+    "h_codes": [],
+    "p_codes": [],
+    "sensitisers": [],
+    "pictograms_state": [],
+    "pictograms_ui": [],
+    "allergen_tags": "None detected — paste Section 2.2 data and click Extract",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "stopped_at": "step-3",
+   "dialogs": [
+    "Please extract hazard data from your SDS before confirming.",
+    "Please extract and review the hazard data from your supplier SDS before continuing."
+   ],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [],
+   "downloads_seen": [],
+   "ms": 11838
+  },
+  "76x51": {
+   "size": "76x51",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-3"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 76,
+     "mmH": 51,
+     "pw": 260,
+     "ph": 174
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "",
+    "p_field": "",
+    "signal": "",
+    "h_codes": [],
+    "p_codes": [],
+    "sensitisers": [],
+    "pictograms_state": [],
+    "pictograms_ui": [],
+    "allergen_tags": "None detected — paste Section 2.2 data and click Extract",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "",
+    "p_field": "",
+    "signal": "",
+    "h_codes": [],
+    "p_codes": [],
+    "sensitisers": [],
+    "pictograms_state": [],
+    "pictograms_ui": [],
+    "allergen_tags": "None detected — paste Section 2.2 data and click Extract",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "stopped_at": "step-3",
+   "dialogs": [
+    "Please extract hazard data from your SDS before confirming.",
+    "Please extract and review the hazard data from your supplier SDS before continuing."
+   ],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [],
+   "downloads_seen": [],
+   "ms": 11990
+  }
+ }
+}

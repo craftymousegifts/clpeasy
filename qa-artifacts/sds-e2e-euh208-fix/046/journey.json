@@ -1,0 +1,610 @@
+{
+ "input": {
+  "id": "046",
+  "supplier": "Nikura",
+  "name": "Lavandin Essential Oil 10% full SDS",
+  "url": "https://nikura.blob.core.windows.net/pdfs/CLP10_Lavandin_Essential_Oil_EO-LAVN.pdf",
+  "pdf_sha256": "36783a7f7a347f7e8c5b23b32da65016c7d131ad6197c923b3b231e2dc557b64",
+  "manifest_sha256": "36783a7f7a347f7e8c5b23b32da65016c7d131ad6197c923b3b231e2dc557b64",
+  "text_sha256": "11007972e8d48f0764ae84dc0e298767d5a3c0056f35648bbdf5a0cb92659a77",
+  "manifest_text_sha256": "11007972e8d48f0764ae84dc0e298767d5a3c0056f35648bbdf5a0cb92659a77",
+  "input_verified": true
+ },
+ "product_name": "Lavandin Essential Oil Candle",
+ "sizes": {
+  "63x44": {
+   "size": "63x44",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-4",
+    "step-5"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 63,
+     "mmH": 44,
+     "pw": 260,
+     "ph": 182
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "H317, H319, EUH208",
+    "p_field": "P261, P302+P352, P305+P351+P338, P333+P313, P337+P313, P501",
+    "signal": "Warning",
+    "h_codes": [
+     "H317",
+     "H319",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P261",
+     "P302+P352",
+     "P305+P351+P338",
+     "P333+P313",
+     "P337+P313",
+     "P501"
+    ],
+    "sensitisers": [
+     "Eucalyptol",
+     "Neryl acetate",
+     "beta-Caryophyllene",
+     "l-Limonene"
+    ],
+    "pictograms_state": [
+     "exclamation"
+    ],
+    "pictograms_ui": [
+     "exclamation"
+    ],
+    "allergen_tags": "EucalyptolNeryl acetatebeta-Caryophyllenel-Limonene",
+    "visible_notices": [
+     "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 83×58mm (rectangle).Use 83×58mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareWidth (mm)Height (mm)Apply sizeYour entered information is kept. The preview will check the new size.",
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "H317, H319, EUH208",
+    "p_field": "P261, P302+P352, P305+P351+P338, P333+P313, P337+P313, P501",
+    "signal": "Warning",
+    "h_codes": [
+     "H317",
+     "H319",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P261",
+     "P302+P352",
+     "P305+P351+P338",
+     "P333+P313",
+     "P337+P313",
+     "P501"
+    ],
+    "sensitisers": [
+     "Eucalyptol",
+     "Neryl acetate",
+     "beta-Caryophyllene",
+     "l-Limonene"
+    ],
+    "pictograms_state": [
+     "exclamation"
+    ],
+    "pictograms_ui": [
+     "exclamation"
+    ],
+    "allergen_tags": "EucalyptolNeryl acetatebeta-Caryophyllenel-Limonene",
+    "visible_notices": [
+     "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 83×58mm (rectangle).Use 83×58mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareWidth (mm)Height (mm)Apply sizeYour entered information is kept. The preview will check the new size.",
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "preview_before_confirm": {
+    "warnings": [
+     {
+      "id": "label-warn-step5",
+      "text": "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 83×58mm (rectangle).Use 83×58mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareWidth (mm)Height (mm)Apply sizeYour entered information is kept. The preview will check the new size."
+     }
+    ],
+    "download_allowed": false,
+    "blocked_message": "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+    "label_block_download": true,
+    "block_reason": "content-does-not-fit",
+    "content_overflow": true,
+    "legibility_warn": true,
+    "footer_clipped": true,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": true,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": true,
+      "enabled": false
+     },
+     "svg": {
+      "visible": true,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 63,
+     "mmH": 44,
+     "pw": 260,
+     "ph": 182
+    }
+   },
+   "preview": {
+    "warnings": [
+     {
+      "id": "label-warn-step5",
+      "text": "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 83×58mm (rectangle).Use 83×58mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareWidth (mm)Height (mm)Apply sizeYour entered information is kept. The preview will check the new size."
+     }
+    ],
+    "download_allowed": false,
+    "blocked_message": "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+    "label_block_download": true,
+    "block_reason": "content-does-not-fit",
+    "content_overflow": true,
+    "legibility_warn": true,
+    "footer_clipped": true,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": true,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": true,
+      "enabled": false
+     },
+     "svg": {
+      "visible": true,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 63,
+     "mmH": 44,
+     "pw": 260,
+     "ph": 182
+    }
+   },
+   "verify_checked": true,
+   "exports": {
+    "png": {
+     "status": "blocked",
+     "clickable": false,
+     "dialog": "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+     "rpc_calls": 0
+    },
+    "svg": {
+     "status": "blocked",
+     "clickable": false,
+     "dialog": "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+     "rpc_calls": 0
+    },
+    "pdf": {
+     "status": "blocked",
+     "clickable": false,
+     "dialog": "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+     "rpc_calls": 0
+    }
+   },
+   "reset": {
+    "input": false,
+    "h": 0,
+    "p": 0,
+    "sens": 0
+   },
+   "dialogs": [
+    "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+    "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+    "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading."
+   ],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [],
+   "downloads_seen": [],
+   "ms": 39080
+  },
+  "76x51": {
+   "size": "76x51",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-4",
+    "step-5"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 76,
+     "mmH": 51,
+     "pw": 260,
+     "ph": 174
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "H317, H319, EUH208",
+    "p_field": "P261, P302+P352, P305+P351+P338, P333+P313, P337+P313, P501",
+    "signal": "Warning",
+    "h_codes": [
+     "H317",
+     "H319",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P261",
+     "P302+P352",
+     "P305+P351+P338",
+     "P333+P313",
+     "P337+P313",
+     "P501"
+    ],
+    "sensitisers": [
+     "Eucalyptol",
+     "Neryl acetate",
+     "beta-Caryophyllene",
+     "l-Limonene"
+    ],
+    "pictograms_state": [
+     "exclamation"
+    ],
+    "pictograms_ui": [
+     "exclamation"
+    ],
+    "allergen_tags": "EucalyptolNeryl acetatebeta-Caryophyllenel-Limonene",
+    "visible_notices": [
+     "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 85×57mm (rectangle).Use 85×57mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareWidth (mm)Height (mm)Apply sizeYour entered information is kept. The preview will check the new size.",
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "H317, H319, EUH208",
+    "p_field": "P261, P302+P352, P305+P351+P338, P333+P313, P337+P313, P501",
+    "signal": "Warning",
+    "h_codes": [
+     "H317",
+     "H319",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P261",
+     "P302+P352",
+     "P305+P351+P338",
+     "P333+P313",
+     "P337+P313",
+     "P501"
+    ],
+    "sensitisers": [
+     "Eucalyptol",
+     "Neryl acetate",
+     "beta-Caryophyllene",
+     "l-Limonene"
+    ],
+    "pictograms_state": [
+     "exclamation"
+    ],
+    "pictograms_ui": [
+     "exclamation"
+    ],
+    "allergen_tags": "EucalyptolNeryl acetatebeta-Caryophyllenel-Limonene",
+    "visible_notices": [
+     "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 85×57mm (rectangle).Use 85×57mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareWidth (mm)Height (mm)Apply sizeYour entered information is kept. The preview will check the new size.",
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "preview_before_confirm": {
+    "warnings": [
+     {
+      "id": "label-warn-step5",
+      "text": "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 85×57mm (rectangle).Use 85×57mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareWidth (mm)Height (mm)Apply sizeYour entered information is kept. The preview will check the new size."
+     }
+    ],
+    "download_allowed": false,
+    "blocked_message": "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+    "label_block_download": true,
+    "block_reason": "content-does-not-fit",
+    "content_overflow": true,
+    "legibility_warn": true,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": true,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": true,
+      "enabled": false
+     },
+     "svg": {
+      "visible": true,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 76,
+     "mmH": 51,
+     "pw": 260,
+     "ph": 174
+    }
+   },
+   "preview": {
+    "warnings": [
+     {
+      "id": "label-warn-step5",
+      "text": "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 85×57mm (rectangle).Use 85×57mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareWidth (mm)Height (mm)Apply sizeYour entered information is kept. The preview will check the new size."
+     }
+    ],
+    "download_allowed": false,
+    "blocked_message": "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+    "label_block_download": true,
+    "block_reason": "content-does-not-fit",
+    "content_overflow": true,
+    "legibility_warn": true,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": true,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": true,
+      "enabled": false
+     },
+     "svg": {
+      "visible": true,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 76,
+     "mmH": 51,
+     "pw": 260,
+     "ph": 174
+    }
+   },
+   "verify_checked": true,
+   "exports": {
+    "png": {
+     "status": "blocked",
+     "clickable": false,
+     "dialog": "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+     "rpc_calls": 0
+    },
+    "svg": {
+     "status": "blocked",
+     "clickable": false,
+     "dialog": "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+     "rpc_calls": 0
+    },
+    "pdf": {
+     "status": "blocked",
+     "clickable": false,
+     "dialog": "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+     "rpc_calls": 0
+    }
+   },
+   "recommended": {
+    "button": "Use 85×57mm",
+    "size": "85x57",
+    "preview": {
+     "warnings": [],
+     "download_allowed": true,
+     "blocked_message": "",
+     "label_block_download": false,
+     "block_reason": null,
+     "content_overflow": null,
+     "legibility_warn": null,
+     "footer_clipped": false,
+     "too_small": {
+      "scent": false,
+      "business": false,
+      "type": false,
+      "signal": false
+     },
+     "buttons": {
+      "png": {
+       "visible": true,
+       "enabled": true
+      },
+      "pdf": {
+       "visible": true,
+       "enabled": true
+      },
+      "svg": {
+       "visible": true,
+       "enabled": true
+      }
+     },
+     "preview_markup_kind": "vector",
+     "dims": {
+      "mmW": 85,
+      "mmH": 57,
+      "pw": 260,
+      "ph": 174
+     }
+    },
+    "exports": {
+     "png": {
+      "status": "exported",
+      "file": "export-recommended-85x57.png",
+      "original_name": "clpeasy-lavandin-essential-oil-candle-85x57mm.png",
+      "rpc_calls": 1,
+      "clickable": true,
+      "dialog": ""
+     },
+     "svg": {
+      "status": "exported",
+      "file": "export-recommended-85x57.svg",
+      "original_name": "clpeasy-lavandin-essential-oil-candle-85x57mm.svg",
+      "rpc_calls": 1,
+      "clickable": true,
+      "dialog": ""
+     },
+     "pdf": {
+      "status": "exported",
+      "file": "export-recommended-85x57.pdf",
+      "via": "print view → Chromium Save as PDF",
+      "rpc_calls": 1,
+      "clickable": true,
+      "dialog": ""
+     }
+    }
+   },
+   "reset": {
+    "input": false,
+    "h": 0,
+    "p": 0,
+    "sens": 0
+   },
+   "dialogs": [
+    "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+    "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+    "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading."
+   ],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [
+    [
+     "consume_download",
+     {
+      "p_label_key": "lavandin essential oil candle::scented candle::rectangle::85x57mm",
+      "p_legacy_label_key": "lavandin essential oil candle::scented candle"
+     }
+    ],
+    [
+     "consume_download",
+     {
+      "p_label_key": "lavandin essential oil candle::scented candle::rectangle::85x57mm",
+      "p_legacy_label_key": "lavandin essential oil candle::scented candle"
+     }
+    ],
+    [
+     "consume_download",
+     {
+      "p_label_key": "lavandin essential oil candle::scented candle::rectangle::85x57mm",
+      "p_legacy_label_key": "lavandin essential oil candle::scented candle"
+     }
+    ]
+   ],
+   "downloads_seen": [
+    {
+     "guid": "7e80abdf-f5e4-4d53-a79e-91aa38ac3e77",
+     "name": "clpeasy-lavandin-essential-oil-candle-85x57mm.png",
+     "state": "completed"
+    },
+    {
+     "guid": "35eed084-575f-48f2-b395-b03bf119899b",
+     "name": "clpeasy-lavandin-essential-oil-candle-85x57mm.svg",
+     "state": "completed"
+    }
+   ],
+   "ms": 43017
+  }
+ }
+}

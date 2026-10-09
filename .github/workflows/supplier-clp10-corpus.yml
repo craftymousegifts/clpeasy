@@ -1,0 +1,42 @@
+name: Supplier 10% candle-wax SDS collection (isolated)
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Maximum verified supplier 10% PDFs (1–100)'
+        required: false
+        default: '100'
+jobs:
+  collect-10-percent:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser and PDF text extractor
+        run: |
+          npm ci
+          npx puppeteer browsers install chrome
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq poppler-utils
+      - name: Collect public supplier 10% candle-wax PDFs
+        env:
+          CLP10_LIMIT: ${{ inputs.limit || '100' }}
+        run: node scripts/collect-public-clp10-corpus.js
+      - name: Compare verified 10% Section 2.2 in isolated Chromium Smart Paste
+        env:
+          SDS_SOURCE_CLASS: clp10
+          SDS_CORPUS_DIR: qa-artifacts/clp10-corpus
+          CLP10_MIN_EXPECTED: '1'
+        run: node scripts/browser-test-authentic-sds.js
+      - name: Preserve originals, extracted Section 2.2 and browser results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: clp10-supplier-documents
+          path: qa-artifacts/clp10-corpus/
+          retention-days: 7

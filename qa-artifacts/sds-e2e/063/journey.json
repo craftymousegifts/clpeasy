@@ -1,0 +1,202 @@
+{
+ "input": {
+  "id": "063",
+  "supplier": "Nikura",
+  "name": "Myrrh Thick Essential Oil 10% full SDS",
+  "url": "https://nikura.blob.core.windows.net/pdfs/CLP10_Myrrh_Thick_Essential_Oil_EO-MYRTHICK.pdf",
+  "pdf_sha256": "e40514b6a4b7706ddca8035ecc57e3b8457c587895c6e51dd87b78d1d0a9b4d3",
+  "manifest_sha256": "e40514b6a4b7706ddca8035ecc57e3b8457c587895c6e51dd87b78d1d0a9b4d3",
+  "text_sha256": "e2d3d700d983d26e892b7c05175957705cb1e73280e7f49bc37825a5a0dc8cb2",
+  "manifest_text_sha256": "e2d3d700d983d26e892b7c05175957705cb1e73280e7f49bc37825a5a0dc8cb2",
+  "input_verified": true
+ },
+ "product_name": "Myrrh Thick Essential Oil Candle",
+ "sizes": {
+  "63x44": {
+   "size": "63x44",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-3"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 63,
+     "mmH": 44,
+     "pw": 260,
+     "ph": 182
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "",
+    "p_field": "",
+    "signal": "",
+    "h_codes": [],
+    "p_codes": [],
+    "sensitisers": [],
+    "pictograms_state": [],
+    "pictograms_ui": [],
+    "allergen_tags": "None detected — paste Section 2.2 data and click Extract",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "",
+    "p_field": "",
+    "signal": "",
+    "h_codes": [],
+    "p_codes": [],
+    "sensitisers": [],
+    "pictograms_state": [],
+    "pictograms_ui": [],
+    "allergen_tags": "None detected — paste Section 2.2 data and click Extract",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "stopped_at": "step-3",
+   "dialogs": [
+    "Please extract hazard data from your SDS before confirming.",
+    "Please extract and review the hazard data from your supplier SDS before continuing."
+   ],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [],
+   "downloads_seen": [],
+   "ms": 11501
+  },
+  "76x51": {
+   "size": "76x51",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-3"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 76,
+     "mmH": 51,
+     "pw": 260,
+     "ph": 174
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "",
+    "p_field": "",
+    "signal": "",
+    "h_codes": [],
+    "p_codes": [],
+    "sensitisers": [],
+    "pictograms_state": [],
+    "pictograms_ui": [],
+    "allergen_tags": "None detected — paste Section 2.2 data and click Extract",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "",
+    "p_field": "",
+    "signal": "",
+    "h_codes": [],
+    "p_codes": [],
+    "sensitisers": [],
+    "pictograms_state": [],
+    "pictograms_ui": [],
+    "allergen_tags": "None detected — paste Section 2.2 data and click Extract",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "stopped_at": "step-3",
+   "dialogs": [
+    "Please extract hazard data from your SDS before confirming.",
+    "Please extract and review the hazard data from your supplier SDS before continuing."
+   ],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [],
+   "downloads_seen": [],
+   "ms": 11969
+  }
+ }
+}
