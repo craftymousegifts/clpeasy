@@ -46,9 +46,13 @@ const localPdf=process.env.CLP10_LOCAL_PDF||'';
 if(localPdf)links.unshift({supplier:'Nikura',name:'Nag Champa 10% corrected Regulatory Affairs SDS',url:'local://corrected-nag-champa-10-percent',source_page:'owner-supplied corrected document',discovery_method:'owner_supplied_local'});
 // No historical CLP10 Nag Champa seed: Nikura confirmed its old public document contained an incorrect H316 classification.
 // Only discover currently linked supplier documents, and verify their actual Section 2.2 before using as reference.
+ // The catalogue points to one-page CLP10Label PDFs. The corresponding full
+ // supplier SDS uses CLP10_ (confirmed against the owner's Bergamot SDS).
+ // Verify the downloaded document itself: never count a label sheet as an SDS.
+ const sdsLinks=links.map(item=>({...item,url:item.url.replace(/CLP10Label_/i,'CLP10_'),name:item.name.replace(/CLP Label at 10%/i,'10% full SDS'),source_label_url:item.url}));
  const docs=[];
- for(const item of links){
-  if(docs.filter(d=>d.download_ok&&d.label_text_found&&!d.historical_supplier_error&&(d.supplier_10_percent_evidence||(d.is_10_percent&&d.mentions_candle_wax))).length>=LIMIT)break;
+ for(const item of sdsLinks){
+  if(docs.filter(d=>d.download_ok&&d.section_2_2_found&&d.supplier_10_percent_evidence&&!d.historical_supplier_error).length>=LIMIT)break;
   const id=String(docs.length+1).padStart(3,'0');const d={id,...item,download_ok:false,section_2_2_found:false};
   try{
    const pdf=item.discovery_method==='owner_supplied_local'?fs.readFileSync(localPdf):await get(item.url);if(pdf.subarray(0,5).toString()!=='%PDF-')throw Error('Not PDF');
@@ -59,9 +63,10 @@ if(localPdf)links.unshift({supplier:'Nikura',name:'Nag Champa 10% corrected Regu
    // codes and label wording; never pretend that it has a Section 2.2.
    const sdsSection=section22(raw);
    const labelSheet=!sdsSection&&raw.trim().length>=80&&(/\b(?:H\d{3}|P\d{3}|EUH\d{3})\b/i.test(raw)||/\b(?:Warning|Danger|Hazard\s+statements?|Precautionary\s+statements?|Contains|CLP\s+Label)\b/i.test(raw));
-   const sec=sdsSection||(labelSheet?raw.slice(0,7500).trim():null);
-   d.document_format=sdsSection?'SDS Section 2.2':labelSheet?'standalone supplier CLP label':'unrecognised';
-   d.section_2_2_found=!!sdsSection;
+   const fullSds=/\bSAFETY\s+DATA\s+SHEET\b/i.test(raw)&&/\bSection\s*1\b/i.test(raw)&&/\bSection\s*16\b/i.test(raw)&&/\b10\s*%\s*in\s*Candle\s*Wax\b/i.test(raw.slice(0,16000));
+   const sec=fullSds?sdsSection:null;
+   d.document_format=fullSds&&sdsSection?'Full 10% candle-wax SDS Section 2.2':'rejected: not full 10% SDS';
+   d.section_2_2_found=!!sec;
    d.sha256=crypto.createHash('sha256').update(pdf).digest('hex');d.bytes=pdf.length;d.pdf_file=pdfFile;d.download_ok=true;
    d.label_text_found=!!sec;
    // Historical supplier error: the pre-correction Nag Champa 10% document included H316.
@@ -74,15 +79,15 @@ if(localPdf)links.unshift({supplier:'Nikura',name:'Nag Champa 10% corrected Regu
    // establish the actual formulation. Require a 10% mixture description.
    d.is_10_percent=/(?:\b(?:fragrance(?:\s+oil)?|perfume|mixture|dilution|concentration)\s*[:=-]?\s*10\s*%(?!\d)|\b10\s*%\s*(?:fragrance(?:\s+oil)?|perfume|(?:in|of)\s+(?:candle\s+wax|wax|fragrance(?:\s+oil)?))\b|\b10\s*percent\s*(?:fragrance|in\s+wax))/i.test(head);
    d.mentions_candle_wax=/candle\s+wax/i.test(raw.slice(0,16000));
-   d.supplier_10_percent_evidence=item.discovery_method==='owner_supplied_local'?(d.is_10_percent&&d.mentions_candle_wax):/CLP10(?:Label)?[_-]/i.test(new URL(item.url).pathname)&&/nikura\.blob\.core\.windows\.net$/i.test(new URL(item.url).hostname)&&item.source_page===SOURCE;
+   d.supplier_10_percent_evidence=fullSds&&d.is_10_percent&&d.mentions_candle_wax;
    d.scope_evidence=d.supplier_10_percent_evidence?(item.discovery_method==='owner_supplied_local'?'Owner-supplied corrected 10% SDS, verified by PDF formulation text':'Supplier-hosted CLP10 PDF linked on 10% catalogue'):d.is_10_percent&&d.mentions_candle_wax?'Explicit 10% candle-wax text in PDF':'Insufficient source evidence';
    if(!d.supplier_10_percent_evidence&&!(d.is_10_percent&&d.mentions_candle_wax))d.review_note='10% document scope not established by supplier catalogue/file identity or PDF text';
   }catch(e){d.error=String(e.message||e).slice(0,250);}
   docs.push(d);console.log(id,d.download_ok?'PDF':'FAILED',d.section_2_2_found?'Section 2.2':'',item.name);
  }
- const verified=docs.filter(d=>d.download_ok&&d.label_text_found&&!d.historical_supplier_error&&(d.supplier_10_percent_evidence||(d.is_10_percent&&d.mentions_candle_wax)));
+ const verified=docs.filter(d=>d.download_ok&&d.section_2_2_found&&d.supplier_10_percent_evidence&&!d.historical_supplier_error);
  const manifest={generated_at:new Date().toISOString(),source:SOURCE,catalogue_error:catalogueError,source_class:'Supplier 10% candle-wax SDS (not raw fragrance concentrate)',discovered:links.length,attempted:docs.length,verified_10_percent:verified.length,documents:verified,rejected_or_review:docs.filter(d=>!verified.includes(d))};
  fs.writeFileSync(path.join(OUT,'manifest.json'),JSON.stringify(manifest,null,2));
  console.log(JSON.stringify({discovered:links.length,attempted:docs.length,verified_10_percent:verified.length}));
- if(!verified.length)process.exitCode=1;
+ if(verified.length<LIMIT)process.exitCode=1;
 })().catch(e=>{console.error(e);process.exitCode=1;});
