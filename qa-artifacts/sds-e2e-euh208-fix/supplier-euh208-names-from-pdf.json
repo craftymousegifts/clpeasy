@@ -1,0 +1,860 @@
+{
+ "001": null,
+ "002": {
+  "block": "EUH208, Contains Estragole. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Estragole",
+  "names": [
+   "Estragole"
+  ]
+ },
+ "003": {
+  "block": "EUH208, Contains Eucalyptol, Eugenol, l-.β.-Bisabolene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Eucalyptol, Eugenol, l-.β.-Bisabolene",
+  "names": [
+   "Eucalyptol",
+   "Eugenol",
+   "l-.β.-Bisabolene"
+  ]
+ },
+ "004": {
+  "block": "EUH208, Contains 1-Octen-3-ol, Linalool, l-Limonene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "1-Octen-3-ol, Linalool, l-Limonene",
+  "names": [
+   "1-Octen-3-ol",
+   "Linalool",
+   "l-Limonene"
+  ]
+ },
+ "005": {
+  "block": "EUH208, Contains Estragole, Linalool, beta-Caryophyllene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Estragole, Linalool, beta-Caryophyllene",
+  "names": [
+   "Estragole",
+   "Linalool",
+   "beta-Caryophyllene"
+  ]
+ },
+ "006": null,
+ "007": {
+  "block": "EUH208, Contains alpha-Pinene, beta-Pinene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "alpha-Pinene, beta-Pinene",
+  "names": [
+   "alpha-Pinene",
+   "beta-Pinene"
+  ]
+ },
+ "008": {
+  "block": "EUH208, Contains beta-Pinene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "beta-Pinene",
+  "names": [
+   "beta-Pinene"
+  ]
+ },
+ "009": null,
+ "010": {
+  "block": "EUH208, Contains a-Pinene, alpha-Bisabolene, beta-Pinene, l-.β.-Bisabolene. May produce an\nallergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "a-Pinene, alpha-Bisabolene, beta-Pinene, l-.β.-Bisabolene",
+  "names": [
+   "a-Pinene",
+   "alpha-Bisabolene",
+   "beta-Pinene",
+   "l-.β.-Bisabolene"
+  ]
+ },
+ "011": {
+  "block": "EUH208, Contains Terpinolene, d-Limonene, dl-Limonene, p-Mentha-1,3-diene. May produce\nan allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Terpinolene, d-Limonene, dl-Limonene, p-Mentha-1,3-diene",
+  "names": [
+   "Terpinolene",
+   "d-Limonene",
+   "dl-Limonene",
+   "p-Mentha-1,3-diene"
+  ]
+ },
+ "012": null,
+ "013": {
+  "block": "EUH208, Contains Linalool, Terpinolene, alpha-Pinene, beta-Pinene, l-Limonene. May produce\nan allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Linalool, Terpinolene, alpha-Pinene, beta-Pinene, l-Limonene",
+  "names": [
+   "Linalool",
+   "Terpinolene",
+   "alpha-Pinene",
+   "beta-Pinene",
+   "l-Limonene"
+  ]
+ },
+ "014": {
+  "block": "EUH208, Contains Terpinolene, alpha-Pinene, delta-3-Carene. May produce an allergic\nreaction.\nSupplemental\nInformation:\n",
+  "clause": "Terpinolene, alpha-Pinene, delta-3-Carene",
+  "names": [
+   "Terpinolene",
+   "alpha-Pinene",
+   "delta-3-Carene"
+  ]
+ },
+ "015": {
+  "block": "EUH208, Contains Caryophyllene, Geraniol, a-Pinene, beta-Pinene, d-Limonene, l-.β.-\nBisabolene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Caryophyllene, Geraniol, a-Pinene, beta-Pinene, d-Limonene, l-.β.-Bisabolene",
+  "names": [
+   "Caryophyllene",
+   "Geraniol",
+   "a-Pinene",
+   "beta-Pinene",
+   "d-Limonene",
+   "l-.β.-Bisabolene"
+  ]
+ },
+ "016": null,
+ "017": null,
+ "018": {
+  "block": "EUH208, Contains alpha-Pinene, beta-Caryophyllene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "alpha-Pinene, beta-Caryophyllene",
+  "names": [
+   "alpha-Pinene",
+   "beta-Caryophyllene"
+  ]
+ },
+ "019": {
+  "block": "EUH208, Contains Caryophyllene, a-Pinene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Caryophyllene, a-Pinene",
+  "names": [
+   "Caryophyllene",
+   "a-Pinene"
+  ]
+ },
+ "020": {
+  "block": "EUH208, Contains Eugenol, d-Limonene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Eugenol, d-Limonene",
+  "names": [
+   "Eugenol",
+   "d-Limonene"
+  ]
+ },
+ "021": {
+  "block": "EUH208, Contains 4-trans-propenylveratrole, Caryophyllene, Citronellal, Citronellol, Geranyl\nacetate, Terpinen-4-ol, a-Pinene, cis-Methylisoeugenol, l-Limonene. May produce an allergic\nreaction.\n",
+  "clause": "4-trans-propenylveratrole, Caryophyllene, Citronellal, Citronellol, Geranyl acetate, Terpinen-4-ol, a-Pinene, cis-Methylisoeugenol, l-Limonene",
+  "names": [
+   "4-trans-propenylveratrole",
+   "Caryophyllene",
+   "Citronellal",
+   "Citronellol",
+   "Geranyl acetate",
+   "Terpinen-4-ol",
+   "a-Pinene",
+   "cis-Methylisoeugenol",
+   "l-Limonene"
+  ]
+ },
+ "022": {
+  "block": "EUH208, Contains Caryophyllene, Geraniol, Geranyl acetate. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Caryophyllene, Geraniol, Geranyl acetate",
+  "names": [
+   "Caryophyllene",
+   "Geraniol",
+   "Geranyl acetate"
+  ]
+ },
+ "023": {
+  "block": "EUH208, Contains Geranyl acetate, alpha-Pinene, beta-Caryophyllene. May produce an\nallergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Geranyl acetate, alpha-Pinene, beta-Caryophyllene",
+  "names": [
+   "Geranyl acetate",
+   "alpha-Pinene",
+   "beta-Caryophyllene"
+  ]
+ },
+ "024": {
+  "block": "EUH208, Contains Caryophyllene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Caryophyllene",
+  "names": [
+   "Caryophyllene"
+  ]
+ },
+ "025": {
+  "block": "EUH208, Contains Isoeugenol. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Isoeugenol",
+  "names": [
+   "Isoeugenol"
+  ]
+ },
+ "026": {
+  "block": "EUH208, Contains 2-trans-Dodecenal, Lauric aldehyde, Methylheptenone (isomer unspecified),\nalpha-Pinene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "2-trans-Dodecenal, Lauric aldehyde, Methylheptenone (isomer unspecified), alpha-Pinene",
+  "names": [
+   "2-trans-Dodecenal",
+   "Lauric aldehyde",
+   "Methylheptenone (isomer unspecified)",
+   "alpha-Pinene"
+  ]
+ },
+ "027": {
+  "block": "EUH208, Contains Terpinen-4-ol, Terpinolene, beta-Pinene, l-Limonene. May produce an\nallergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Terpinen-4-ol, Terpinolene, beta-Pinene, l-Limonene",
+  "names": [
+   "Terpinen-4-ol",
+   "Terpinolene",
+   "beta-Pinene",
+   "l-Limonene"
+  ]
+ },
+ "028": null,
+ "029": {
+  "block": "EUH208, Contains alpha-Pinene, l-Limonene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "alpha-Pinene, l-Limonene",
+  "names": [
+   "alpha-Pinene",
+   "l-Limonene"
+  ]
+ },
+ "030": {
+  "block": "EUH208, Contains alpha-Pinene, l-Limonene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "alpha-Pinene, l-Limonene",
+  "names": [
+   "alpha-Pinene",
+   "l-Limonene"
+  ]
+ },
+ "031": {
+  "block": "EUH208, Contains Estragole, a-Pinene, alpha-Phellandrene, d-Limonene. May produce an\nallergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Estragole, a-Pinene, alpha-Phellandrene, d-Limonene",
+  "names": [
+   "Estragole",
+   "a-Pinene",
+   "alpha-Phellandrene",
+   "d-Limonene"
+  ]
+ },
+ "032": {
+  "block": "EUH208, Contains beta-Caryophyllene, beta-Pinene, delta-3-Carene, l-Limonene. May produce\nan allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "beta-Caryophyllene, beta-Pinene, delta-3-Carene, l-Limonene",
+  "names": [
+   "beta-Caryophyllene",
+   "beta-Pinene",
+   "delta-3-Carene",
+   "l-Limonene"
+  ]
+ },
+ "033": {
+  "block": "EUH208, Contains 2,2,3-Trimethyl-3-Cyclopentene-1-acetaldehyde, Carvone, Eucalyptol,\nGeraniol, Linalool, Terpinen-4-ol, alpha-Phellandrene, beta-Caryophyllene, beta-Phellandrene,\ndelta-3-Carene, l-.beta.-Pinene, p-Mentha-1,3-diene. May produce an allergic reaction.\n",
+  "clause": "2,2,3-Trimethyl-3-Cyclopentene-1-acetaldehyde, Carvone, Eucalyptol, Geraniol, Linalool, Terpinen-4-ol, alpha-Phellandrene, beta-Caryophyllene, beta-Phellandrene, delta-3-Carene, l-.beta.-Pinene, p-Mentha-1,3-diene",
+  "names": [
+   "2,2,3-Trimethyl-3-Cyclopentene-1-acetaldehyde",
+   "Carvone",
+   "Eucalyptol",
+   "Geraniol",
+   "Linalool",
+   "Terpinen-4-ol",
+   "alpha-Phellandrene",
+   "beta-Caryophyllene",
+   "beta-Phellandrene",
+   "delta-3-Carene",
+   "l-.beta.-Pinene",
+   "p-Mentha-1,3-diene"
+  ]
+ },
+ "034": {
+  "block": "EUH208, Contains Caryophyllene acetate, Estragole, Terpinen-4-ol, Terpinolene, beta-Pinene.\nMay produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Caryophyllene acetate, Estragole, Terpinen-4-ol, Terpinolene, beta-Pinene",
+  "names": [
+   "Caryophyllene acetate",
+   "Estragole",
+   "Terpinen-4-ol",
+   "Terpinolene",
+   "beta-Pinene"
+  ]
+ },
+ "035": {
+  "block": "EUH208, Contains Caryophyllene, Estragole, beta-Pinene, d-Limonene. May produce an\nallergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Caryophyllene, Estragole, beta-Pinene, d-Limonene",
+  "names": [
+   "Caryophyllene",
+   "Estragole",
+   "beta-Pinene",
+   "d-Limonene"
+  ]
+ },
+ "036": {
+  "block": "EUH208, Contains Isomenthone, a-Pinene, beta-Pinene, l-Limonene. May produce an allergic\nreaction.\nSupplemental\nInformation:\n",
+  "clause": "Isomenthone, a-Pinene, beta-Pinene, l-Limonene",
+  "names": [
+   "Isomenthone",
+   "a-Pinene",
+   "beta-Pinene",
+   "l-Limonene"
+  ]
+ },
+ "037": null,
+ "038": {
+  "block": "EUH208, Contains Citronellyl formate, Citronellyl tiglate, Geranyl formate, Geranyl propionate,\nIsomenthone, Menthone, Nerol. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Citronellyl formate, Citronellyl tiglate, Geranyl formate, Geranyl propionate, Isomenthone, Menthone, Nerol",
+  "names": [
+   "Citronellyl formate",
+   "Citronellyl tiglate",
+   "Geranyl formate",
+   "Geranyl propionate",
+   "Isomenthone",
+   "Menthone",
+   "Nerol"
+  ]
+ },
+ "039": {
+  "block": "EUH208, Contains Eucalyptol, Geranial, Linalyl acetate, Neral, alpha-Pinene, l-.β.-Bisabolene.\nMay produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Eucalyptol, Geranial, Linalyl acetate, Neral, alpha-Pinene, l-.β.-Bisabolene",
+  "names": [
+   "Eucalyptol",
+   "Geranial",
+   "Linalyl acetate",
+   "Neral",
+   "alpha-Pinene",
+   "l-.β.-Bisabolene"
+  ]
+ },
+ "040": {
+  "block": "EUH208, Contains Citral, Eucalyptol, alpha-Pinene, dl-Limonene, l-.β.-Bisabolene. May\nproduce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Citral, Eucalyptol, alpha-Pinene, dl-Limonene, l-.β.-Bisabolene",
+  "names": [
+   "Citral",
+   "Eucalyptol",
+   "alpha-Pinene",
+   "dl-Limonene",
+   "l-.β.-Bisabolene"
+  ]
+ },
+ "041": null,
+ "042": null,
+ "043": {
+  "block": "EUH208, Contains Linalool, beta-Caryophyllene, l-Limonene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Linalool, beta-Caryophyllene, l-Limonene",
+  "names": [
+   "Linalool",
+   "beta-Caryophyllene",
+   "l-Limonene"
+  ]
+ },
+ "044": {
+  "block": "EUH208, Contains Eugenol, Isoeugenol, Linalool, Phytol. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Eugenol, Isoeugenol, Linalool, Phytol",
+  "names": [
+   "Eugenol",
+   "Isoeugenol",
+   "Linalool",
+   "Phytol"
+  ]
+ },
+ "045": {
+  "block": "EUH208, Contains Caryophyllene, Terpinen-4-ol, Terpinolene, alpha-Phellandrene, beta-\nPinene, d-Limonene, p-Mentha-1,3-diene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Caryophyllene, Terpinen-4-ol, Terpinolene, alpha-Phellandrene, beta-Pinene, d-Limonene, p-Mentha-1,3-diene",
+  "names": [
+   "Caryophyllene",
+   "Terpinen-4-ol",
+   "Terpinolene",
+   "alpha-Phellandrene",
+   "beta-Pinene",
+   "d-Limonene",
+   "p-Mentha-1,3-diene"
+  ]
+ },
+ "046": {
+  "block": "EUH208, Contains Eucalyptol, Neryl acetate, beta-Caryophyllene, l-Limonene. May produce an\nallergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Eucalyptol, Neryl acetate, beta-Caryophyllene, l-Limonene",
+  "names": [
+   "Eucalyptol",
+   "Neryl acetate",
+   "beta-Caryophyllene",
+   "l-Limonene"
+  ]
+ },
+ "047": {
+  "block": "EUH208, Contains Caryophyllene, Terpinen-4-ol. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Caryophyllene, Terpinen-4-ol",
+  "names": [
+   "Caryophyllene",
+   "Terpinen-4-ol"
+  ]
+ },
+ "048": {
+  "block": "EUH208, Contains Caryophyllene, Terpinen-4-ol. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Caryophyllene, Terpinen-4-ol",
+  "names": [
+   "Caryophyllene",
+   "Terpinen-4-ol"
+  ]
+ },
+ "049": {
+  "block": "EUH208, Contains Caryophyllene, Terpinen-4-ol. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Caryophyllene, Terpinen-4-ol",
+  "names": [
+   "Caryophyllene",
+   "Terpinen-4-ol"
+  ]
+ },
+ "050": {
+  "block": "EUH208, Contains Eucalyptol, alpha-Pinene, beta-Pinene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Eucalyptol, alpha-Pinene, beta-Pinene",
+  "names": [
+   "Eucalyptol",
+   "alpha-Pinene",
+   "beta-Pinene"
+  ]
+ },
+ "051": {
+  "block": "EUH208, Contains Geranial, a-Pinene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Geranial, a-Pinene",
+  "names": [
+   "Geranial",
+   "a-Pinene"
+  ]
+ },
+ "052": {
+  "block": "EUH208, Contains dl-Citronellol. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "dl-Citronellol",
+  "names": [
+   "dl-Citronellol"
+  ]
+ },
+ "053": {
+  "block": "EUH208, Contains Caryophyllene acetate, Geraniol, Rhodinol. May produce an allergic\nreaction.\nSupplemental\nInformation:\n",
+  "clause": "Caryophyllene acetate, Geraniol, Rhodinol",
+  "names": [
+   "Caryophyllene acetate",
+   "Geraniol",
+   "Rhodinol"
+  ]
+ },
+ "054": {
+  "block": "EUH208, Contains Caryophyllene acetate, Eucalyptol, Geraniol, Geranyl acetate, Nerol,\nNerolidol, Neryl acetate, a-Pinene, trans-Nerolidol. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Caryophyllene acetate, Eucalyptol, Geraniol, Geranyl acetate, Nerol, Nerolidol, Neryl acetate, a-Pinene, trans-Nerolidol",
+  "names": [
+   "Caryophyllene acetate",
+   "Eucalyptol",
+   "Geraniol",
+   "Geranyl acetate",
+   "Nerol",
+   "Nerolidol",
+   "Neryl acetate",
+   "a-Pinene",
+   "trans-Nerolidol"
+  ]
+ },
+ "055": {
+  "block": "EUH208, Contains Caryophyllene, Geraniol, Geranyl acetate, Isocitral #2, Isocitral #3,\nIsoeugenol, Linalool, l-Limonene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Caryophyllene, Geraniol, Geranyl acetate, Isocitral #2, Isocitral #3, Isoeugenol, Linalool, l-Limonene",
+  "names": [
+   "Caryophyllene",
+   "Geraniol",
+   "Geranyl acetate",
+   "Isocitral #2",
+   "Isocitral #3",
+   "Isoeugenol",
+   "Linalool",
+   "l-Limonene"
+  ]
+ },
+ "056": {
+  "block": "EUH208, Contains Citral, Eucalyptol, alpha-Pinene, beta-Pinene, p-Mentha-1,3-diene. May\nproduce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Citral, Eucalyptol, alpha-Pinene, beta-Pinene, p-Mentha-1,3-diene",
+  "names": [
+   "Citral",
+   "Eucalyptol",
+   "alpha-Pinene",
+   "beta-Pinene",
+   "p-Mentha-1,3-diene"
+  ]
+ },
+ "057": {
+  "block": "EUH208, Contains alpha-Pinene, beta-Pinene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "alpha-Pinene, beta-Pinene",
+  "names": [
+   "alpha-Pinene",
+   "beta-Pinene"
+  ]
+ },
+ "058": {
+  "block": "EUH208, Contains alpha-Pinene, beta-Pinene, l-Limonene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "alpha-Pinene, beta-Pinene, l-Limonene",
+  "names": [
+   "alpha-Pinene",
+   "beta-Pinene",
+   "l-Limonene"
+  ]
+ },
+ "059": {
+  "block": "EUH208, Contains Linalool, beta-Caryophyllene. May produce an allergic reaction.\nEUH210, Safety data sheet available on request.\nSupplemental\nInformation:\n",
+  "clause": "Linalool, beta-Caryophyllene",
+  "names": [
+   "Linalool",
+   "beta-Caryophyllene"
+  ]
+ },
+ "060": {
+  "block": "EUH208, Contains Citronellal, Eucalyptol, Geraniol, Isocitral #3, Linalool, alpha-Pinene, beta-\nCaryophyllene, beta-Pinene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Citronellal, Eucalyptol, Geraniol, Isocitral #3, Linalool, alpha-Pinene, beta-Caryophyllene, beta-Pinene",
+  "names": [
+   "Citronellal",
+   "Eucalyptol",
+   "Geraniol",
+   "Isocitral #3",
+   "Linalool",
+   "alpha-Pinene",
+   "beta-Caryophyllene",
+   "beta-Pinene"
+  ]
+ },
+ "061": {
+  "block": "EUH208, Contains Citronellal, Geraniol, Linalool, dl-Citronellol. May produce an allergic\nreaction.\nSupplemental\nInformation:\n",
+  "clause": "Citronellal, Geraniol, Linalool, dl-Citronellol",
+  "names": [
+   "Citronellal",
+   "Geraniol",
+   "Linalool",
+   "dl-Citronellol"
+  ]
+ },
+ "062": {
+  "block": "EUH208, Contains Citronellal, Dipentene, Geraniol, Geranyl acetate, Isoeugenol, Nerol. May\nproduce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Citronellal, Dipentene, Geraniol, Geranyl acetate, Isoeugenol, Nerol",
+  "names": [
+   "Citronellal",
+   "Dipentene",
+   "Geraniol",
+   "Geranyl acetate",
+   "Isoeugenol",
+   "Nerol"
+  ]
+ },
+ "063": null,
+ "064": null,
+ "065": {
+  "block": "EUH208, Contains Geranyl acetate, Linalool, l-Limonene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Geranyl acetate, Linalool, l-Limonene",
+  "names": [
+   "Geranyl acetate",
+   "Linalool",
+   "l-Limonene"
+  ]
+ },
+ "066": {
+  "block": "EUH208, Contains Caryophyllene, Geraniol, Geranyl acetate, Neryl acetate, a-Pinene. May\nproduce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Caryophyllene, Geraniol, Geranyl acetate, Neryl acetate, a-Pinene",
+  "names": [
+   "Caryophyllene",
+   "Geraniol",
+   "Geranyl acetate",
+   "Neryl acetate",
+   "a-Pinene"
+  ]
+ },
+ "067": {
+  "block": "EUH208, Contains Citral, Geraniol, Geranyl acetate, alpha-Pinene, beta-Pinene, trans-\nNerolidol. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Citral, Geraniol, Geranyl acetate, alpha-Pinene, beta-Pinene, trans-Nerolidol",
+  "names": [
+   "Citral",
+   "Geraniol",
+   "Geranyl acetate",
+   "alpha-Pinene",
+   "beta-Pinene",
+   "trans-Nerolidol"
+  ]
+ },
+ "068": {
+  "block": "EUH208, Contains Nikura | Niaouli Essential Oil - 100% Pure, Terpinolene, alpha-Pinene, beta-\nPinene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Nikura | Niaouli Essential Oil - 100% Pure, Terpinolene, alpha-Pinene, beta-Pinene",
+  "names": [
+   "Nikura | Niaouli Essential Oil - 100% Pure",
+   "Terpinolene",
+   "alpha-Pinene",
+   "beta-Pinene"
+  ]
+ },
+ "069": {
+  "block": "EUH208, Contains Isoeugenol, Terpinolene, d-Limonene, delta-3-Carene. May produce an\nallergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Isoeugenol, Terpinolene, d-Limonene, delta-3-Carene",
+  "names": [
+   "Isoeugenol",
+   "Terpinolene",
+   "d-Limonene",
+   "delta-3-Carene"
+  ]
+ },
+ "070": null,
+ "071": {
+  "block": "EUH208, Contains Carvone, Caryophyllene, Citral, Citronellal, Dodecanal, Geraniol, Nerol, p-\nMentha-1,8-dien-7-al. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Carvone, Caryophyllene, Citral, Citronellal, Dodecanal, Geraniol, Nerol, p-Mentha-1,8-dien-7-al",
+  "names": [
+   "Carvone",
+   "Caryophyllene",
+   "Citral",
+   "Citronellal",
+   "Dodecanal",
+   "Geraniol",
+   "Nerol",
+   "p-Mentha-1,8-dien-7-al"
+  ]
+ },
+ "072": {
+  "block": "EUH208, Contains Caryophyllene, a-Pinene, p-Mentha-1,3-diene. May produce an allergic\nreaction.\nSupplemental\nInformation:\n",
+  "clause": "Caryophyllene, a-Pinene, p-Mentha-1,3-diene",
+  "names": [
+   "Caryophyllene",
+   "a-Pinene",
+   "p-Mentha-1,3-diene"
+  ]
+ },
+ "073": {
+  "block": "EUH208, Contains Geranyl acetate, Linalool, beta-Caryophyllene. May produce an allergic\nreaction.\nSupplemental\nInformation:\n",
+  "clause": "Geranyl acetate, Linalool, beta-Caryophyllene",
+  "names": [
+   "Geranyl acetate",
+   "Linalool",
+   "beta-Caryophyllene"
+  ]
+ },
+ "074": {
+  "block": "EUH208, Contains beta-Pinene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "beta-Pinene",
+  "names": [
+   "beta-Pinene"
+  ]
+ },
+ "075": {
+  "block": "EUH208, Contains beta-Caryophyllene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "beta-Caryophyllene",
+  "names": [
+   "beta-Caryophyllene"
+  ]
+ },
+ "076": {
+  "block": "EUH208, Contains beta-Caryophyllene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "beta-Caryophyllene",
+  "names": [
+   "beta-Caryophyllene"
+  ]
+ },
+ "077": {
+  "block": "EUH208, Contains alpha-Pinene, beta-Pinene, d,l-Isomenthone, l-Limonene. May produce an\nallergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "alpha-Pinene, beta-Pinene, d,l-Isomenthone, l-Limonene",
+  "names": [
+   "alpha-Pinene",
+   "beta-Pinene",
+   "d,l-Isomenthone",
+   "l-Limonene"
+  ]
+ },
+ "078": {
+  "block": "EUH208, Contains Caryophyllene, Eucalyptol, Isomenthone, l-Limonene. May produce an\nallergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Caryophyllene, Eucalyptol, Isomenthone, l-Limonene",
+  "names": [
+   "Caryophyllene",
+   "Eucalyptol",
+   "Isomenthone",
+   "l-Limonene"
+  ]
+ },
+ "079": {
+  "block": "EUH208, Contains Geranyl acetate, Neryl acetate, beta-Pinene, l-Limonene. May produce an\nallergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Geranyl acetate, Neryl acetate, beta-Pinene, l-Limonene",
+  "names": [
+   "Geranyl acetate",
+   "Neryl acetate",
+   "beta-Pinene",
+   "l-Limonene"
+  ]
+ },
+ "080": {
+  "block": "EUH208, Contains beta-Caryophyllene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "beta-Caryophyllene",
+  "names": [
+   "beta-Caryophyllene"
+  ]
+ },
+ "081": {
+  "block": "EUH208, Contains Caryophyllene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Caryophyllene",
+  "names": [
+   "Caryophyllene"
+  ]
+ },
+ "082": {
+  "block": "EUH208, Contains Caryophyllene, a-Pinene, beta-Pinene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Caryophyllene, a-Pinene, beta-Pinene",
+  "names": [
+   "Caryophyllene",
+   "a-Pinene",
+   "beta-Pinene"
+  ]
+ },
+ "083": {
+  "block": "EUH208, Contains Estragole, Eucalyptol, Linalool, alpha-Pinene, beta-Pinene, delta-3-Carene.\nMay produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Estragole, Eucalyptol, Linalool, alpha-Pinene, beta-Pinene, delta-3-Carene",
+  "names": [
+   "Estragole",
+   "Eucalyptol",
+   "Linalool",
+   "alpha-Pinene",
+   "beta-Pinene",
+   "delta-3-Carene"
+  ]
+ },
+ "084": {
+  "block": "EUH208, Contains Citronellyl formate, Citronellyl tiglate, Geranyl formate, Geranyl propionate,\nIsomenthone, Menthone, Nerol. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Citronellyl formate, Citronellyl tiglate, Geranyl formate, Geranyl propionate, Isomenthone, Menthone, Nerol",
+  "names": [
+   "Citronellyl formate",
+   "Citronellyl tiglate",
+   "Geranyl formate",
+   "Geranyl propionate",
+   "Isomenthone",
+   "Menthone",
+   "Nerol"
+  ]
+ },
+ "085": {
+  "block": "EUH208, Contains Caryophyllene, Eugenol, Linalool, l-Limonene. May produce an allergic\nreaction.\nSupplemental\nInformation:\n",
+  "clause": "Caryophyllene, Eugenol, Linalool, l-Limonene",
+  "names": [
+   "Caryophyllene",
+   "Eugenol",
+   "Linalool",
+   "l-Limonene"
+  ]
+ },
+ "086": {
+  "block": "EUH208, Contains d-Limonene, l-Limonene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "d-Limonene, l-Limonene",
+  "names": [
+   "d-Limonene",
+   "l-Limonene"
+  ]
+ },
+ "087": {
+  "block": "EUH208, Contains Eucalyptol, Geraniol, Geranyl acetate, alpha-Pinene, beta-Pinene, d-\nLimonene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Eucalyptol, Geraniol, Geranyl acetate, alpha-Pinene, beta-Pinene, d-Limonene",
+  "names": [
+   "Eucalyptol",
+   "Geraniol",
+   "Geranyl acetate",
+   "alpha-Pinene",
+   "beta-Pinene",
+   "d-Limonene"
+  ]
+ },
+ "088": {
+  "block": "EUH208, Contains Eucalyptol, Terpinen-4-ol, alpha-Pinene, beta-Caryophyllene, beta-Pinene,\nl-Limonene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Eucalyptol, Terpinen-4-ol, alpha-Pinene, beta-Caryophyllene, beta-Pinene, l-Limonene",
+  "names": [
+   "Eucalyptol",
+   "Terpinen-4-ol",
+   "alpha-Pinene",
+   "beta-Caryophyllene",
+   "beta-Pinene",
+   "l-Limonene"
+  ]
+ },
+ "089": {
+  "block": "EUH208, Contains Linalool, Terpinen-4-ol, Terpinolene, a-Pinene, beta-Caryophyllene, beta-\nPinene, l-Limonene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Linalool, Terpinen-4-ol, Terpinolene, a-Pinene, beta-Caryophyllene, beta-Pinene, l-Limonene",
+  "names": [
+   "Linalool",
+   "Terpinen-4-ol",
+   "Terpinolene",
+   "a-Pinene",
+   "beta-Caryophyllene",
+   "beta-Pinene",
+   "l-Limonene"
+  ]
+ },
+ "090": {
+  "block": "EUH208, Contains (E)-beta-Santalol. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "(E)-beta-Santalol",
+  "names": [
+   "(E)-beta-Santalol"
+  ]
+ },
+ "091": {
+  "block": "EUH208, Contains Caryophyllene, Eucalyptol. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Caryophyllene, Eucalyptol",
+  "names": [
+   "Caryophyllene",
+   "Eucalyptol"
+  ]
+ },
+ "092": {
+  "block": "EUH208, Contains alpha-Pinene, beta-Caryophyllene, beta-Pinene, l-Limonene, trans-alpha-\nBisabolene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "alpha-Pinene, beta-Caryophyllene, beta-Pinene, l-Limonene, trans-alpha-Bisabolene",
+  "names": [
+   "alpha-Pinene",
+   "beta-Caryophyllene",
+   "beta-Pinene",
+   "l-Limonene",
+   "trans-alpha-Bisabolene"
+  ]
+ },
+ "093": {
+  "block": "EUH208, Contains Estragole, Linalool, d-Limonene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Estragole, Linalool, d-Limonene",
+  "names": [
+   "Estragole",
+   "Linalool",
+   "d-Limonene"
+  ]
+ },
+ "094": {
+  "block": "EUH208, Contains Citral, Linalool, Terpinolene, a-Pinene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Citral, Linalool, Terpinolene, a-Pinene",
+  "names": [
+   "Citral",
+   "Linalool",
+   "Terpinolene",
+   "a-Pinene"
+  ]
+ },
+ "095": {
+  "block": "EUH208, Contains l-Limonene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "l-Limonene",
+  "names": [
+   "l-Limonene"
+  ]
+ },
+ "096": {
+  "block": "EUH208, Contains Eucalyptol, Terpinolene, a-Pinene, l-Limonene, p-Mentha-1,3-diene. May\nproduce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Eucalyptol, Terpinolene, a-Pinene, l-Limonene, p-Mentha-1,3-diene",
+  "names": [
+   "Eucalyptol",
+   "Terpinolene",
+   "a-Pinene",
+   "l-Limonene",
+   "p-Mentha-1,3-diene"
+  ]
+ },
+ "097": {
+  "block": "EUH208, Contains Caryophyllene, Eucalyptol, Linalool, Longifolene, Terpinen-4-ol,\nTerpinolene, a-Pinene, beta-Pinene, p-Mentha-1,3-diene. May produce an allergic reaction.\nSupplemental\nInformation:\n",
+  "clause": "Caryophyllene, Eucalyptol, Linalool, Longifolene, Terpinen-4-ol, Terpinolene, a-Pinene, beta-Pinene, p-Mentha-1,3-diene",
+  "names": [
+   "Caryophyllene",
+   "Eucalyptol",
+   "Linalool",
+   "Longifolene",
+   "Terpinen-4-ol",
+   "Terpinolene",
+   "a-Pinene",
+   "beta-Pinene",
+   "p-Mentha-1,3-diene"
+  ]
+ },
+ "098": {
+  "block": "EUH208, Contains Bisabolene. May produce an allergic reaction.\nEUH210, Safety data sheet available on request.\nSupplemental\nInformation:\n",
+  "clause": "Bisabolene",
+  "names": [
+   "Bisabolene"
+  ]
+ },
+ "099": {
+  "block": "EUH208, Contains alpha-Vetivone, beta-Vetivone. May produce an allergic reaction.\nEUH210, Safety data sheet available on request.\nSupplemental\nInformation:\n",
+  "clause": "alpha-Vetivone, beta-Vetivone",
+  "names": [
+   "alpha-Vetivone",
+   "beta-Vetivone"
+  ]
+ },
+ "100": null
+}
