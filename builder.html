@@ -4097,7 +4097,16 @@ function extractSDS(){
   // table's spelling IN PLACE, never moved) and stops table-recognised
   // names from jumping ahead of unrecognised ones the way the previous
   // "append what's missing" approach did.
-  const _euh208Match = text.match(EUH208_CLAUSE_RE);
+  // D1/D2 (100-SDS QA, 9 Oct 2026): a PDF copy of a two-column SDS wraps the
+  // left-column row label "Information:" (of "Supplemental Information:")
+  // into the EUH208 sentence, and can break a name at its own hyphen across
+  // lines. Only for matching this clause, drop that row label at the start
+  // of a line and re-join a name broken directly after a hyphen. Every
+  // other extraction step above keeps using the original pasted text.
+  const _euhText = text
+    .replace(/(^|\n)[ \t]*(?:Supplemental[ \t]+)?Information:[ \t]*/gi, '$1')
+    .replace(/(\S)-[ \t]*\r?\n[ \t]*/g, '$1-');
+  const _euh208Match = _euhText.match(EUH208_CLAUSE_RE);
   if(_euh208Match){
     S.sensitisers = parseBoundedSubstanceList(_euh208Match[1]).map(normaliseSubstanceName);
   } else {
