@@ -128,5 +128,11 @@ const labelSectionOnly=t=>{const lines=String(t).split(/\r?\n/);const start=line
  report.review_only=results.filter(x=>x.status==='review'&&!technicalFailures.includes(x)).length;
  fs.writeFileSync(path.join(DIR,'browser-results.json'),JSON.stringify(report,null,2));
  console.log(JSON.stringify({technical_failures:report.technical_failures,review_only:report.review_only}));
+ // Emit actionable diagnostics even when GitHub's uploaded artifact is not opened.
+ const flags=['missing_h_codes','unexpected_h_codes','unexpected_euh_codes','unaccounted_missing_p_codes','unexpected_p_codes','contaminated_sensitiser_names','technical_signal_mismatch','sensitiser_mismatch','exclusion_notice_mismatch','unexpected_exclusion_notice','exclusion_notice_hidden','reset_failed','finished_mixture_p_review'];
+ console.log('QA_FAILURE_BREAKDOWN '+JSON.stringify(Object.fromEntries(flags.map(k=>[k,results.filter(r=>Array.isArray(r[k])?r[k].length:!!r[k]).length]))));
+ for(const r of results.filter(r=>r.status!=='extracted').slice(0,12)){
+  console.log('QA_CASE '+JSON.stringify({id:r.id,status:r.status,error:r.error,missing_h:r.missing_h_codes,extra_h:r.unexpected_h_codes,missing_p:r.unaccounted_missing_p_codes,extra_p:r.unexpected_p_codes,expected_euh208:r.supplier_euh208_clause,actual_sensitisers:r.actual_sensitisers,sensitiser_mismatch:r.sensitiser_mismatch,signal_mismatch:r.technical_signal_mismatch,notice_mismatch:r.exclusion_notice_mismatch,notice_hidden:r.exclusion_notice_hidden,reset_failed:r.reset_failed}));
+ }
  if(report.count<MIN_EXPECTED||report.technical_failures||(IS_CLP10?false:report.needs_review))process.exitCode=1;
 })().catch(e=>{console.error(e);server.close();process.exitCode=1;});
