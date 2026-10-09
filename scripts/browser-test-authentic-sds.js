@@ -8,7 +8,7 @@ const manifestPath=path.join(DIR,'manifest.json');
 if(!fs.existsSync(manifestPath))throw Error('Missing authentic SDS manifest');
 const manifest=JSON.parse(fs.readFileSync(manifestPath,'utf8'));
 const IS_CLP10=process.env.SDS_SOURCE_CLASS==='clp10';
-const MIN_EXPECTED=IS_CLP10?Math.max(1,Number(process.env.CLP10_MIN_EXPECTED||1)):100;
+const MIN_EXPECTED=IS_CLP10?Math.max(100,Number(process.env.CLP10_MIN_EXPECTED||100)):100;
 if(IS_CLP10&&manifest.source_class!=='Supplier 10% candle-wax SDS (not raw fragrance concentrate)')throw Error('10% run requires verified 10% candle-wax manifest');
 const mock="window.supabase={createClient:function(){var q={select:function(){return q},eq:function(){return q},single:async function(){return {data:null,error:null}},then:function(f){return Promise.resolve({data:null,error:null}).then(f)}};return {auth:{getSession:async function(){return {data:{session:null}}},onAuthStateChange:function(){return {data:{subscription:{unsubscribe:function(){}}}}}},from:function(){return q},rpc:async function(){return {data:null,error:null}}}}};";
 const server=http.createServer((req,res)=>{
@@ -63,7 +63,11 @@ const labelSectionOnly=t=>{const lines=String(t).split(/\r?\n/);const start=line
    const text=fs.readFileSync(path.join(DIR,doc.section_2_2_text_file),'utf8');
    if(IS_CLP10&&(!doc.label_text_sha256||crypto.createHash('sha256').update(text,'utf8').digest('hex')!==doc.label_text_sha256))throw Error('Supplier label text hash differs from collection manifest for '+doc.id);
    try{
-    const actual=await page.evaluate(t=>{
+    let actual;
+   // The guest label library initializes asynchronously. Retry only its
+   // explicit not-ready exception; never mask a genuine Smart Paste error.
+   for(let attempt=0;attempt<12;attempt++){
+    try{actual=await page.evaluate(t=>{
      const el=document.getElementById('smart-paste-input');
      if(!el||typeof extractSDS!=='function')throw Error('Smart Paste UI unavailable');
      // Smart Paste lives in Step 3; exercise it while its actual panel is visible.
@@ -82,7 +86,9 @@ const labelSectionOnly=t=>{const lines=String(t).split(/\r?\n/);const start=line
      snapshot.staleInputAfterClear=!!document.getElementById('smart-paste-input')?.value.trim();
      snapshot.staleHazardsAfterClear=!!(S.hSelected?.length||S.sensitisers?.length||S.hazardFromExtraction);
      return snapshot;
-    },text);
+    },text);break;
+    }catch(e){if(!/LabelLibrary: getSaved\(\) called before init\(\) completed/.test(String(e))||attempt===11)throw e;await new Promise(r=>setTimeout(r,250));}
+   }
     const expected=expectedCodes(labelSectionOnly(text));
     const missing=expected.filter(x=>!actual.h.includes(x));
     const extraH=actual.h.filter(x=>!expected.includes(x)&&!/^EUH\d{3}$/.test(x));
@@ -114,7 +120,7 @@ const labelSectionOnly=t=>{const lines=String(t).split(/\r?\n/);const start=line
    }catch(e){results.push({id:doc.id,source:doc.url,status:'error',error:String(e.message).slice(0,300)});}
   }
  }finally{await browser.close();server.close();}
- const report={timestamp:new Date().toISOString(),supplier_signal_discrepancies:results.filter(x=>x.signal_mismatch).map(x=>({id:x.id,source:x.source,supplier:x.explicit_supplier_signal,builder:x.actual_signal_word})),supplier_signal_anomalies:results.filter(x=>x.supplier_signal_anomaly).length,technical_signal_mismatches:results.filter(x=>x.technical_signal_mismatch).length,supplier_p_code_exclusions:results.reduce((n,x)=>n+(x.excluded_p_codes||[]).length,0),finished_mixture_p_review_count:results.filter(x=>x.finished_mixture_p_review).length,unaccounted_missing_p_codes:results.reduce((n,x)=>n+(x.unaccounted_missing_p_codes||[]).length,0),scope:IS_CLP10?'10% candle-wax supplier label text (SDS Section 2.2 or standalone CLP label) versus builder Smart Paste; NOT compliance certification':'Actual builder.html Smart Paste UI extraction of supplier Section 2.2; NOT compliance certification',count:results.length,extracted:results.filter(x=>x.status==='extracted').length,needs_review:results.filter(x=>x.status==='review').length,errors:results.filter(x=>x.status==='error').length,results};
+ const report={timestamp:new Date().toISOString(),supplier_signal_discrepancies:results.filter(x=>x.signal_mismatch).map(x=>({id:x.id,source:x.source,supplier:x.explicit_supplier_signal,builder:x.actual_signal_word})),supplier_signal_anomalies:results.filter(x=>x.supplier_signal_anomaly).length,technical_signal_mismatches:results.filter(x=>x.technical_signal_mismatch).length,supplier_p_code_exclusions:results.reduce((n,x)=>n+(x.excluded_p_codes||[]).length,0),finished_mixture_p_review_count:results.filter(x=>x.finished_mixture_p_review).length,unaccounted_missing_p_codes:results.reduce((n,x)=>n+(x.unaccounted_missing_p_codes||[]).length,0),scope:IS_CLP10?'100 genuine 10% candle-wax supplier SDS Section 2.2 texts versus builder Smart Paste; NOT compliance certification':'Actual builder.html Smart Paste UI extraction of supplier Section 2.2; NOT compliance certification',count:results.length,extracted:results.filter(x=>x.status==='extracted').length,needs_review:results.filter(x=>x.status==='review').length,errors:results.filter(x=>x.status==='error').length,results};
  fs.writeFileSync(path.join(DIR,'browser-results.json'),JSON.stringify(report,null,2));
  console.log(JSON.stringify({count:report.count,extracted:report.extracted,needs_review:report.needs_review,errors:report.errors}));
  const technicalFailures=results.filter(x=>x.status==='error'||x.missing_h_codes?.length||x.unexpected_h_codes?.length||x.unexpected_euh_codes?.length||x.unaccounted_missing_p_codes?.length||x.unexpected_p_codes?.length||x.contaminated_sensitiser_names?.length||x.technical_signal_mismatch||x.sensitiser_mismatch||x.exclusion_notice_mismatch||x.unexpected_exclusion_notice||x.exclusion_notice_hidden||x.reset_failed);
