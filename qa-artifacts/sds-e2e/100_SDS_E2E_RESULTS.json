@@ -30,6 +30,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "REVIEW",
   "label_result": "BLOCKED",
   "overall_result": "REVIEW",
@@ -45,6 +47,7 @@
     "p": [],
     "euh208_names": null,
     "h_wording": {},
+    "p_wording": {},
     "pictograms": []
    },
    "builder": {
@@ -100,6 +103,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "REVIEW",
   "label_result": "PASS",
   "overall_result": "REVIEW",
@@ -130,6 +135,15 @@
     ],
     "h_wording": {
      "H317": "May cause an allergic skin reaction."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -186,6 +200,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -199,7 +215,9 @@
        "Estragole"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -236,6 +254,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "REVIEW",
   "label_result": "PASS",
   "overall_result": "REVIEW",
@@ -268,6 +288,15 @@
     ],
     "h_wording": {
      "H317": "May cause an allergic skin reaction."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -326,6 +355,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -341,7 +372,9 @@
        "l-.β.-Bisabolene"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -378,6 +411,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "FAIL",
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
@@ -420,6 +455,19 @@
      "H341": "Suspected of causing genetic defects (exposure route).",
      "H351": "Suspected of causing cancer (exposure route).",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P308+P313": "IF exposed or concerned: Get medical advice/attention.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P405": "Store locked up.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations.",
+     "P202": "Do not handle until all safety precautions have been read and understood."
     },
     "pictograms": [
      "exclamation",
@@ -501,6 +549,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "FAIL",
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
@@ -540,6 +590,18 @@
      "H317": "May cause an allergic skin reaction.",
      "H341": "Suspected of causing genetic defects (exposure route).",
      "H351": "Suspected of causing cancer (exposure route)."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P308+P313": "IF exposed or concerned: Get medical advice/attention.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P405": "Store locked up.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations.",
+     "P202": "Do not handle until all safety precautions have been read and understood."
     },
     "pictograms": [
      "exclamation",
@@ -619,6 +681,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "REVIEW",
   "label_result": "BLOCKED",
   "overall_result": "REVIEW",
@@ -634,6 +698,7 @@
     "p": [],
     "euh208_names": null,
     "h_wording": {},
+    "p_wording": {},
     "pictograms": []
    },
    "builder": {
@@ -689,6 +754,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "REVIEW",
   "label_result": "PASS",
   "overall_result": "REVIEW",
@@ -723,6 +790,16 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -782,6 +859,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -796,7 +875,9 @@
        "beta-Pinene"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -833,6 +914,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "REVIEW",
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
@@ -868,6 +951,16 @@
      "H317": "May cause an allergic skin reaction.",
      "H412": "Harmful to aquatic life with long lasting effects.",
      "H401": "Toxic to aquatic life."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -942,6 +1035,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "REVIEW",
   "label_result": "BLOCKED",
   "overall_result": "REVIEW",
@@ -957,6 +1052,7 @@
     "p": [],
     "euh208_names": null,
     "h_wording": {},
+    "p_wording": {},
     "pictograms": []
    },
    "builder": {
@@ -1012,6 +1108,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "FAIL",
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
@@ -1050,6 +1148,16 @@
      "H317": "May cause an allergic skin reaction.",
      "H412": "Harmful to aquatic life with long lasting effects.",
      "H401": "Toxic to aquatic life."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -1122,6 +1230,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
@@ -1159,6 +1269,17 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H411": "Toxic to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P391": "Collect spillage.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "aquatic",
@@ -1220,6 +1341,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -1235,7 +1358,9 @@
       "issues": [
        "rendered \"Contains\" ['Limonene'] != supplier ['Terpinolene', 'd-Limonene', 'dl-Limonene', 'p-Mentha-1,3-diene']"
       ],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -1272,6 +1397,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "REVIEW",
   "label_result": "BLOCKED",
   "overall_result": "REVIEW",
@@ -1287,6 +1414,7 @@
     "p": [],
     "euh208_names": null,
     "h_wording": {},
+    "p_wording": {},
     "pictograms": []
    },
    "builder": {
@@ -1342,6 +1470,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
@@ -1379,6 +1509,16 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -1438,6 +1578,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -1454,7 +1596,9 @@
       "issues": [
        "rendered \"Contains\" ['Linalool', 'Limonene'] != supplier ['Linalool', 'Terpinolene', 'alpha-Pinene', 'beta-Pinene', 'l-Limonene']"
       ],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -1491,6 +1635,8 @@
   "recommended_size_result": "80x54: fits; export blocked by existing check: EUH208 needs the named sensitising substance(s). Check your current supplier SDS and add the complete EUH208 / Contains ",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "FAIL",
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
@@ -1526,6 +1672,16 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -1601,6 +1757,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "FAIL",
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
@@ -1629,6 +1787,7 @@
     "h_wording": {
      "H402": "Harmful to aquatic life."
     },
+    "p_wording": {},
     "pictograms": []
    },
    "builder": {
@@ -1695,6 +1854,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "REVIEW",
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
@@ -1723,6 +1884,15 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H402": "Harmful to aquatic life."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -1791,6 +1961,8 @@
   "recommended_size_result": "",
   "exported_formats": "76x51: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.32,
+  "rendered_p_statements": "all printed",
   "extraction_result": "PASS",
   "label_result": "PASS",
   "overall_result": "PASS",
@@ -1812,6 +1984,10 @@
     "euh208_names": null,
     "h_wording": {
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P273": "Avoid release to the environment.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": []
    },
@@ -1854,6 +2030,8 @@
        76.0,
        51.0
       ],
+      "min_font_mm": 1.32,
+      "min_xheight_mm_est": 0.68,
       "pdf_pages": 1,
       "pdf_mm": [
        75.86,
@@ -1865,7 +2043,9 @@
      "rendered": {
       "shown_sensitisers": [],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -1902,6 +2082,8 @@
   "recommended_size_result": "",
   "exported_formats": "76x51: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.2,
+  "rendered_p_statements": "all printed",
   "extraction_result": "PASS",
   "label_result": "PASS",
   "overall_result": "PASS",
@@ -1929,6 +2111,11 @@
     ],
     "h_wording": {
      "H410": "Very toxic to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P273": "Avoid release to the environment.",
+     "P391": "Collect spillage.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local"
     },
     "pictograms": [
      "aquatic"
@@ -1981,6 +2168,8 @@
        76.0,
        51.0
       ],
+      "min_font_mm": 1.2,
+      "min_xheight_mm_est": 0.62,
       "pdf_pages": 1,
       "pdf_mm": [
        75.86,
@@ -1995,7 +2184,9 @@
        "beta-Caryophyllene"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -2032,6 +2223,8 @@
   "recommended_size_result": "",
   "exported_formats": "76x51: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.2,
+  "rendered_p_statements": "all printed",
   "extraction_result": "PASS",
   "label_result": "PASS",
   "overall_result": "PASS",
@@ -2059,6 +2252,11 @@
     ],
     "h_wording": {
      "H410": "Very toxic to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P273": "Avoid release to the environment.",
+     "P391": "Collect spillage.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local"
     },
     "pictograms": [
      "aquatic"
@@ -2111,6 +2309,8 @@
        76.0,
        51.0
       ],
+      "min_font_mm": 1.2,
+      "min_xheight_mm_est": 0.62,
       "pdf_pages": 1,
       "pdf_mm": [
        75.86,
@@ -2125,7 +2325,9 @@
        "a-Pinene"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -2162,6 +2364,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "REVIEW",
   "label_result": "PASS",
   "overall_result": "REVIEW",
@@ -2193,6 +2397,15 @@
     ],
     "h_wording": {
      "H317": "May cause an allergic skin reaction."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -2250,6 +2463,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -2264,7 +2479,9 @@
        "d-Limonene"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -2301,11 +2518,13 @@
   "recommended_size_result": "94x63: fits",
   "exported_formats": "94x63: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; CLPeasy rendering/export",
-  "issue_details": "FAIL: EUH208 names: supplier ['4-trans-propenylveratrole', 'Caryophyllene', 'Citronellal', 'Citronellol', 'Geranyl acetate', 'Terpinen-4-ol', 'a-Pinene', 'cis-Methylisoeugenol', 'l-Limonene'] vs builder ['4-trans-propenylveratrole', 'Caryophyllene', 'Citronellal', 'Citronellol', 'Geranyl Information:               acetate', 'Terpinen-4-ol', 'a-Pinene', 'cis-Methylisoeugenol', 'l-Limonene'] || FAIL: PDF layout text inside sensitiser name: ['Geranyl Information:               acetate'] || FAIL: recommended 94x63 rendered: rendered \"Contains\" ['4-trans-propenylveratrole', 'Caryophyllene', 'Citronellal', 'Citronellol', 'Geranyl Information: acetate', 'Terpinen-4-ol', 'a-Pinene', 'cis-Methylisoeugenol', 'l-Limonene'] != supplier ['4-trans-propenylveratrole', 'Caryophyllene', 'Citronellal', 'Citronellol', 'Geranyl acetate', 'Terpinen-4-ol', 'a-Pinene', 'cis-Methylisoeugenol', 'l-Limonene'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "FAIL: EUH208 names: supplier ['4-trans-propenylveratrole', 'Caryophyllene', 'Citronellal', 'Citronellol', 'Geranyl acetate', 'Terpinen-4-ol', 'a-Pinene', 'cis-Methylisoeugenol', 'l-Limonene'] vs builder ['4-trans-propenylveratrole', 'Caryophyllene', 'Citronellal', 'Citronellol', 'Geranyl Information:               acetate', 'Terpinen-4-ol', 'a-Pinene', 'cis-Methylisoeugenol', 'l-Limonene'] || FAIL: PDF layout text inside sensitiser name: ['Geranyl Information:               acetate'] || FAIL: recommended 94x63 rendered: rendered \"Contains\" ['4-trans-propenylveratrole', 'Caryophyllene', 'Citronellal', 'Citronellol', 'Geranyl Information: acetate', 'Terpinen-4-ol', 'a-Pinene', 'cis-Methylisoeugenol', 'l-Limonene'] != supplier ['4-trans-propenylveratrole', 'Caryophyllene', 'Citronellal', 'Citronellol', 'Geranyl acetate', 'Terpinen-4-ol', 'a-Pinene', 'cis-Methylisoeugenol', 'l-Limonene'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element) || REVIEW: recommended 94x63 rendered: P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\"",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/021/",
   "_detail": {
@@ -2347,6 +2566,19 @@
      "H317": "May cause an allergic skin reaction.",
      "H319": "Causes serious eye irritation.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P264": "Wash hands and other contacted skin thoroughly after handling.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P305+P351+P338": "IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P337+P313": "If eye irritation persists: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -2416,6 +2648,8 @@
        94.0,
        63.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        93.81,
@@ -2439,7 +2673,13 @@
       "issues": [
        "rendered \"Contains\" ['4-trans-propenylveratrole', 'Caryophyllene', 'Citronellal', 'Citronellol', 'Geranyl Information: acetate', 'Terpinen-4-ol', 'a-Pinene', 'cis-Methylisoeugenol', 'l-Limonene'] != supplier ['4-trans-propenylveratrole', 'Caryophyllene', 'Citronellal', 'Citronellol', 'Geranyl acetate', 'Terpinen-4-ol', 'a-Pinene', 'cis-Methylisoeugenol', 'l-Limonene']"
       ],
-      "reviews": []
+      "reviews": [
+       "P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\""
+      ],
+      "p_missing": [],
+      "p_abridged": [
+       "P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\""
+      ]
      }
     }
    }
@@ -2476,6 +2716,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "REVIEW",
   "label_result": "PASS",
   "overall_result": "REVIEW",
@@ -2508,6 +2750,15 @@
     ],
     "h_wording": {
      "H317": "May cause an allergic skin reaction."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -2566,6 +2817,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -2581,7 +2834,9 @@
        "Geranyl Acetate"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -2618,6 +2873,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
@@ -2650,6 +2907,15 @@
     ],
     "h_wording": {
      "H317": "May cause an allergic skin reaction."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -2706,6 +2972,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -2721,7 +2989,9 @@
       "issues": [
        "rendered \"Contains\" ['Geranyl Acetate'] != supplier ['Geranyl acetate', 'alpha-Pinene', 'beta-Caryophyllene']"
       ],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -2758,6 +3028,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "REVIEW",
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
@@ -2790,6 +3062,15 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H402": "Harmful to aquatic life."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -2862,6 +3143,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "REVIEW",
   "label_result": "PASS",
   "overall_result": "REVIEW",
@@ -2892,6 +3175,15 @@
     ],
     "h_wording": {
      "H317": "May cause an allergic skin reaction."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -2948,6 +3240,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -2961,7 +3255,9 @@
        "Isoeugenol"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -2998,6 +3294,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
@@ -3034,6 +3332,16 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -3095,6 +3403,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -3113,7 +3423,9 @@
       "issues": [
        "rendered \"Contains\" ['2-trans-Dodecenal', 'Lauric aldehyde', 'Methylheptenone (isomer unspecified)', 'Information: alpha-Pinene'] != supplier ['2-trans-Dodecenal', 'Lauric aldehyde', 'Methylheptenone (isomer unspecified)', 'alpha-Pinene']"
       ],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -3150,6 +3462,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
@@ -3187,6 +3501,17 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H411": "Toxic to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P391": "Collect spillage.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "aquatic",
@@ -3248,6 +3573,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -3263,7 +3590,9 @@
       "issues": [
        "rendered \"Contains\" ['Limonene'] != supplier ['Terpinen-4-ol', 'Terpinolene', 'beta-Pinene', 'l-Limonene']"
       ],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -3300,6 +3629,8 @@
   "recommended_size_result": "",
   "exported_formats": "76x51: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.32,
+  "rendered_p_statements": "all printed",
   "extraction_result": "REVIEW",
   "label_result": "PASS",
   "overall_result": "REVIEW",
@@ -3326,6 +3657,15 @@
     "euh208_names": null,
     "h_wording": {
      "H317": "May cause an allergic skin reaction."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -3374,6 +3714,8 @@
        76.0,
        51.0
       ],
+      "min_font_mm": 1.32,
+      "min_xheight_mm_est": 0.68,
       "pdf_pages": 1,
       "pdf_mm": [
        75.86,
@@ -3385,7 +3727,9 @@
      "rendered": {
       "shown_sensitisers": [],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -3422,6 +3766,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "REVIEW",
   "label_result": "PASS",
   "overall_result": "REVIEW",
@@ -3456,6 +3802,16 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -3515,6 +3871,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -3529,7 +3887,9 @@
        "l-Limonene"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -3566,6 +3926,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "REVIEW",
   "label_result": "PASS",
   "overall_result": "REVIEW",
@@ -3600,6 +3962,16 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -3659,6 +4031,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -3673,7 +4047,9 @@
        "l-Limonene"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -3710,6 +4086,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
@@ -3746,6 +4124,16 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -3804,6 +4192,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -3819,7 +4209,9 @@
       "issues": [
        "rendered \"Contains\" ['Limonene'] != supplier ['Estragole', 'a-Pinene', 'alpha-Phellandrene', 'd-Limonene']"
       ],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -3856,6 +4248,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
@@ -3894,6 +4288,17 @@
      "H317": "May cause an allergic skin reaction.",
      "H411": "Toxic to aquatic life with long lasting effects."
     },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P391": "Collect spillage.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
+    },
     "pictograms": [
      "aquatic",
      "exclamation"
@@ -3954,6 +4359,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -3969,7 +4376,9 @@
       "issues": [
        "rendered \"Contains\" ['Limonene'] != supplier ['beta-Caryophyllene', 'beta-Pinene', 'delta-3-Carene', 'l-Limonene']"
       ],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -4006,6 +4415,8 @@
   "recommended_size_result": "88x59: fits",
   "exported_formats": "88x59: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.2,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
@@ -4054,6 +4465,18 @@
      "H315": "Causes skin irritation.",
      "H317": "May cause an allergic skin reaction.",
      "H411": "Toxic to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P264": "Wash hands and other contacted skin thoroughly after handling.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P362": "Take off contaminated clothing and wash before reuse.",
+     "P391": "Collect spillage.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "aquatic",
@@ -4127,6 +4550,8 @@
        88.0,
        59.0
       ],
+      "min_font_mm": 1.2,
+      "min_xheight_mm_est": 0.62,
       "pdf_pages": 1,
       "pdf_mm": [
        87.88,
@@ -4153,7 +4578,9 @@
       "issues": [
        "rendered \"Contains\" ['2,2,3-Trimethyl-3-Cyclopentene-1-acetaldehyde', 'Carvone', 'Eucalyptol', 'Information: Geraniol', 'Linalool', 'Terpinen-4-ol', 'alpha-Phellandrene', 'beta-Caryophyllene', 'beta-Phellandrene', 'delta-3-Carene', 'l-.beta.-Pinene', 'p-Mentha-1,3-diene'] != supplier ['2,2,3-Trimethyl-3-Cyclopentene-1-acetaldehyde', 'Carvone', 'Eucalyptol', 'Geraniol', 'Linalool', 'Terpinen-4-ol', 'alpha-Phellandrene', 'beta-Caryophyllene', 'beta-Phellandrene', 'delta-3-Carene', 'l-.beta.-Pinene', 'p-Mentha-1,3-diene']"
       ],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -4190,6 +4617,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
@@ -4228,6 +4657,17 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H411": "Toxic to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P391": "Collect spillage.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "aquatic",
@@ -4293,6 +4733,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -4312,7 +4754,9 @@
       "issues": [
        "rendered \"Contains\" ['Caryophyllene acetate', 'Estragole', 'Terpinen-4-ol', 'Terpinolene', 'beta-Pinene. Information:'] != supplier ['Caryophyllene acetate', 'Estragole', 'Terpinen-4-ol', 'Terpinolene', 'beta-Pinene']"
       ],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -4349,6 +4793,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
@@ -4387,6 +4833,17 @@
      "H317": "May cause an allergic skin reaction.",
      "H411": "Toxic to aquatic life with long lasting effects."
     },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P391": "Collect spillage.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
+    },
     "pictograms": [
      "aquatic",
      "exclamation"
@@ -4447,6 +4904,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -4462,7 +4921,9 @@
       "issues": [
        "rendered \"Contains\" ['Limonene'] != supplier ['Caryophyllene', 'Estragole', 'beta-Pinene', 'd-Limonene']"
       ],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -4499,6 +4960,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
@@ -4535,6 +4998,16 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -4593,6 +5066,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -4608,7 +5083,9 @@
       "issues": [
        "rendered \"Contains\" ['Limonene'] != supplier ['Isomenthone', 'a-Pinene', 'beta-Pinene', 'l-Limonene']"
       ],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -4645,6 +5122,8 @@
   "recommended_size_result": "",
   "exported_formats": "76x51: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.32,
+  "rendered_p_statements": "all printed",
   "extraction_result": "REVIEW",
   "label_result": "PASS",
   "overall_result": "REVIEW",
@@ -4671,6 +5150,15 @@
     "euh208_names": null,
     "h_wording": {
      "H317": "May cause an allergic skin reaction."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -4719,6 +5207,8 @@
        76.0,
        51.0
       ],
+      "min_font_mm": 1.32,
+      "min_xheight_mm_est": 0.68,
       "pdf_pages": 1,
       "pdf_mm": [
        75.86,
@@ -4730,7 +5220,9 @@
      "rendered": {
       "shown_sensitisers": [],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -4767,6 +5259,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "FAIL",
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
@@ -4810,6 +5304,18 @@
      "H317": "May cause an allergic skin reaction.",
      "H319": "Causes serious eye irritation.",
      "H402": "Harmful to aquatic life."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P264": "Wash hands and other contacted skin thoroughly after handling.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P305+P351+P338": "IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P337+P313": "If eye irritation persists: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -4891,6 +5397,8 @@
   "recommended_size_result": "",
   "exported_formats": "76x51: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.2,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
@@ -4921,6 +5429,10 @@
     ],
     "h_wording": {
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P273": "Avoid release to the environment.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": []
    },
@@ -4972,6 +5484,8 @@
        76.0,
        51.0
       ],
+      "min_font_mm": 1.2,
+      "min_xheight_mm_est": 0.62,
       "pdf_pages": 1,
       "pdf_mm": [
        75.86,
@@ -4992,7 +5506,9 @@
       "issues": [
        "rendered \"Contains\" ['Eucalyptol', 'Geranial', 'Linalyl acetate', 'Neral', 'alpha-Pinene', 'l-.β.-Bisabolene. Information:'] != supplier ['Eucalyptol', 'Geranial', 'Linalyl acetate', 'Neral', 'alpha-Pinene', 'l-.β.-Bisabolene']"
       ],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -5029,6 +5545,8 @@
   "recommended_size_result": "",
   "exported_formats": "76x51: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.2,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
@@ -5058,6 +5576,10 @@
     ],
     "h_wording": {
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P273": "Avoid release to the environment.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": []
    },
@@ -5105,6 +5627,8 @@
        76.0,
        51.0
       ],
+      "min_font_mm": 1.2,
+      "min_xheight_mm_est": 0.62,
       "pdf_pages": 1,
       "pdf_mm": [
        75.86,
@@ -5121,7 +5645,9 @@
       "issues": [
        "rendered \"Contains\" ['Citral', 'Limonene'] != supplier ['Citral', 'Eucalyptol', 'alpha-Pinene', 'dl-Limonene', 'l-.β.-Bisabolene']"
       ],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -5158,6 +5684,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "REVIEW",
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
@@ -5186,6 +5714,15 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H401": "Toxic to aquatic life."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -5254,6 +5791,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "REVIEW",
   "label_result": "BLOCKED",
   "overall_result": "REVIEW",
@@ -5269,6 +5808,7 @@
     "p": [],
     "euh208_names": null,
     "h_wording": {},
+    "p_wording": {},
     "pictograms": []
    },
    "builder": {
@@ -5324,6 +5864,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "REVIEW",
   "label_result": "PASS",
   "overall_result": "REVIEW",
@@ -5359,6 +5901,16 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -5419,6 +5971,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -5434,7 +5988,9 @@
        "l-Limonene"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -5471,6 +6027,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "REVIEW",
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
@@ -5501,6 +6059,10 @@
     "h_wording": {
      "H412": "Harmful to aquatic life with long lasting effects.",
      "H401": "Toxic to aquatic life."
+    },
+    "p_wording": {
+     "P273": "Avoid release to the environment.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local"
     },
     "pictograms": []
    },
@@ -5570,6 +6132,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "FAIL",
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
@@ -5612,6 +6176,17 @@
      "H317": "May cause an allergic skin reaction.",
      "H411": "Toxic to aquatic life with long lasting effects.",
      "H316": "Causes mild skin irritation."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P391": "Collect spillage.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "aquatic",
@@ -5694,12 +6269,14 @@
   "export_block_76x51": "blocked, no download charged",
   "recommended_size_result": "85x57: fits",
   "exported_formats": "85x57: PNG+SVG+PDF",
-  "export_preview_match": "yes",
+  "export_preview_match": "no",
+  "min_print_font_mm": 1.2,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; CLPeasy rendering/export",
-  "issue_details": "FAIL: EUH208 names: supplier ['Eucalyptol', 'Neryl acetate', 'beta-Caryophyllene', 'l-Limonene'] vs builder ['Limonene'] || FAIL: recommended 85x57 rendered: rendered \"Contains\" ['Limonene'] != supplier ['Eucalyptol', 'Neryl acetate', 'beta-Caryophyllene', 'l-Limonene'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "FAIL: EUH208 names: supplier ['Eucalyptol', 'Neryl acetate', 'beta-Caryophyllene', 'l-Limonene'] vs builder ['Limonene'] || FAIL: recommended 85x57: export/preview mismatch: ['smallest printed text 1.20 mm < CLPeasy GB floor 1.2 mm'] || FAIL: recommended 85x57 rendered: rendered \"Contains\" ['Limonene'] != supplier ['Eucalyptol', 'Neryl acetate', 'beta-Caryophyllene', 'l-Limonene'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element) || REVIEW: recommended 85x57 rendered: P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\"",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/046/",
   "_detail": {
@@ -5733,6 +6310,18 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H319": "Causes serious eye irritation."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P264": "Wash hands and other contacted skin thoroughly after handling.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P305+P351+P338": "IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P337+P313": "If eye irritation persists: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -5782,7 +6371,9 @@
        "SVG",
        "PDF"
       ],
-      "issues": [],
+      "issues": [
+       "smallest printed text 1.20 mm < CLPeasy GB floor 1.2 mm"
+      ],
       "png_px": [
        2008,
        1346
@@ -5792,6 +6383,8 @@
        85.0,
        57.0
       ],
+      "min_font_mm": 1.2,
+      "min_xheight_mm_est": 0.62,
       "pdf_pages": 1,
       "pdf_mm": [
        85.01,
@@ -5807,7 +6400,13 @@
       "issues": [
        "rendered \"Contains\" ['Limonene'] != supplier ['Eucalyptol', 'Neryl acetate', 'beta-Caryophyllene', 'l-Limonene']"
       ],
-      "reviews": []
+      "reviews": [
+       "P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\""
+      ],
+      "p_missing": [],
+      "p_abridged": [
+       "P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\""
+      ]
      }
     }
    }
@@ -5844,6 +6443,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "REVIEW",
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
@@ -5879,6 +6480,15 @@
      "H317": "May cause an allergic skin reaction.",
      "H316": "Causes mild skin irritation.",
      "H402": "Harmful to aquatic life."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -5953,6 +6563,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "REVIEW",
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
@@ -5986,6 +6598,15 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H402": "Harmful to aquatic life."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -6059,6 +6680,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "REVIEW",
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
@@ -6092,6 +6715,15 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H402": "Harmful to aquatic life."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -6165,6 +6797,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "REVIEW",
   "label_result": "PASS",
   "overall_result": "REVIEW",
@@ -6200,6 +6834,16 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -6260,6 +6904,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -6275,7 +6921,9 @@
        "beta-Pinene"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -6312,6 +6960,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "REVIEW",
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
@@ -6348,6 +6998,16 @@
      "H317": "May cause an allergic skin reaction.",
      "H412": "Harmful to aquatic life with long lasting effects.",
      "H401": "Toxic to aquatic life."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -6423,6 +7083,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.2,
+  "rendered_p_statements": "all printed",
   "extraction_result": "REVIEW",
   "label_result": "PASS",
   "overall_result": "REVIEW",
@@ -6453,6 +7115,15 @@
     ],
     "h_wording": {
      "H317": "May cause an allergic skin reaction."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -6509,6 +7180,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.2,
+      "min_xheight_mm_est": 0.62,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -6522,7 +7195,9 @@
        "dl-Citronellol"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -6559,6 +7234,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "FAIL",
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
@@ -6604,6 +7281,22 @@
      "H319": "Causes serious eye irritation.",
      "H361": "Suspected of damaging fertility or the unborn child (exposure route).",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P264": "Wash hands and other contacted skin thoroughly after handling.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P305+P351+P338": "IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.",
+     "P308+P313": "IF exposed or concerned: Get medical advice/attention.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P337+P313": "If eye irritation persists: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P405": "Store locked up.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations.",
+     "P202": "Do not handle until all safety precautions have been read and understood."
     },
     "pictograms": [
      "exclamation",
@@ -6685,11 +7378,13 @@
   "recommended_size_result": "88x59: fits",
   "exported_formats": "88x59: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.2,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; CLPeasy rendering/export",
-  "issue_details": "FAIL: EUH208 names: supplier ['Caryophyllene acetate', 'Eucalyptol', 'Geraniol', 'Geranyl acetate', 'Nerol', 'Nerolidol', 'Neryl acetate', 'a-Pinene', 'trans-Nerolidol'] vs builder ['Caryophyllene acetate', 'Eucalyptol', 'Geraniol', 'Geranyl Acetate', 'Nerol', 'Information:            Nerolidol', 'Neryl acetate', 'a-Pinene', 'trans-Nerolidol'] || FAIL: PDF layout text inside sensitiser name: ['Information:            Nerolidol'] || FAIL: recommended 88x59 rendered: rendered \"Contains\" ['Caryophyllene acetate', 'Eucalyptol', 'Geraniol', 'Geranyl Acetate', 'Nerol', 'Information: Nerolidol', 'Neryl acetate', 'a-Pinene', 'trans-Nerolidol'] != supplier ['Caryophyllene acetate', 'Eucalyptol', 'Geraniol', 'Geranyl acetate', 'Nerol', 'Nerolidol', 'Neryl acetate', 'a-Pinene', 'trans-Nerolidol'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "FAIL: EUH208 names: supplier ['Caryophyllene acetate', 'Eucalyptol', 'Geraniol', 'Geranyl acetate', 'Nerol', 'Nerolidol', 'Neryl acetate', 'a-Pinene', 'trans-Nerolidol'] vs builder ['Caryophyllene acetate', 'Eucalyptol', 'Geraniol', 'Geranyl Acetate', 'Nerol', 'Information:            Nerolidol', 'Neryl acetate', 'a-Pinene', 'trans-Nerolidol'] || FAIL: PDF layout text inside sensitiser name: ['Information:            Nerolidol'] || FAIL: recommended 88x59 rendered: rendered \"Contains\" ['Caryophyllene acetate', 'Eucalyptol', 'Geraniol', 'Geranyl Acetate', 'Nerol', 'Information: Nerolidol', 'Neryl acetate', 'a-Pinene', 'trans-Nerolidol'] != supplier ['Caryophyllene acetate', 'Eucalyptol', 'Geraniol', 'Geranyl acetate', 'Nerol', 'Nerolidol', 'Neryl acetate', 'a-Pinene', 'trans-Nerolidol'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element) || REVIEW: recommended 88x59 rendered: P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\"",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/054/",
   "_detail": {
@@ -6731,6 +7426,19 @@
      "H317": "May cause an allergic skin reaction.",
      "H319": "Causes serious eye irritation.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P264": "Wash hands and other contacted skin thoroughly after handling.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P305+P351+P338": "IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P337+P313": "If eye irritation persists: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -6800,6 +7508,8 @@
        88.0,
        59.0
       ],
+      "min_font_mm": 1.2,
+      "min_xheight_mm_est": 0.62,
       "pdf_pages": 1,
       "pdf_mm": [
        87.88,
@@ -6823,7 +7533,13 @@
       "issues": [
        "rendered \"Contains\" ['Caryophyllene acetate', 'Eucalyptol', 'Geraniol', 'Geranyl Acetate', 'Nerol', 'Information: Nerolidol', 'Neryl acetate', 'a-Pinene', 'trans-Nerolidol'] != supplier ['Caryophyllene acetate', 'Eucalyptol', 'Geraniol', 'Geranyl acetate', 'Nerol', 'Nerolidol', 'Neryl acetate', 'a-Pinene', 'trans-Nerolidol']"
       ],
-      "reviews": []
+      "reviews": [
+       "P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\""
+      ],
+      "p_missing": [],
+      "p_abridged": [
+       "P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\""
+      ]
      }
     }
    }
@@ -6860,6 +7576,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "FAIL",
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
@@ -6899,6 +7617,15 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H402": "Harmful to aquatic life."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -6978,6 +7705,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
@@ -7015,6 +7744,16 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -7073,6 +7812,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -7088,7 +7829,9 @@
       "issues": [
        "rendered \"Contains\" ['Citral'] != supplier ['Citral', 'Eucalyptol', 'alpha-Pinene', 'beta-Pinene', 'p-Mentha-1,3-diene']"
       ],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -7125,6 +7868,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "REVIEW",
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
@@ -7163,6 +7908,16 @@
      "H412": "Harmful to aquatic life with long lasting effects.",
      "H316": "Causes mild skin irritation.",
      "H401": "Toxic to aquatic life."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -7239,6 +7994,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "REVIEW",
   "label_result": "PASS",
   "overall_result": "REVIEW",
@@ -7274,6 +8031,16 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -7334,6 +8101,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -7349,7 +8118,9 @@
        "l-Limonene"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -7386,6 +8157,8 @@
   "recommended_size_result": "",
   "exported_formats": "76x51: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.32,
+  "rendered_p_statements": "all printed",
   "extraction_result": "PASS",
   "label_result": "PASS",
   "overall_result": "PASS",
@@ -7407,6 +8180,7 @@
      "beta-Caryophyllene"
     ],
     "h_wording": {},
+    "p_wording": {},
     "pictograms": []
    },
    "builder": {
@@ -7449,6 +8223,8 @@
        76.0,
        51.0
       ],
+      "min_font_mm": 1.32,
+      "min_xheight_mm_est": 0.68,
       "pdf_pages": 1,
       "pdf_mm": [
        75.86,
@@ -7463,7 +8239,9 @@
        "beta-Caryophyllene"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -7500,6 +8278,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
@@ -7537,6 +8317,15 @@
     ],
     "h_wording": {
      "H317": "May cause an allergic skin reaction."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -7600,6 +8389,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -7622,7 +8413,9 @@
       "issues": [
        "rendered \"Contains\" ['Citronellal', 'Eucalyptol', 'Geraniol', 'Isocitral #3', 'Linalool', 'alpha-Pinene', 'beta- Information: Caryophyllene', 'beta-Pinene'] != supplier ['Citronellal', 'Eucalyptol', 'Geraniol', 'Isocitral #3', 'Linalool', 'alpha-Pinene', 'beta-Caryophyllene', 'beta-Pinene']"
       ],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -7658,12 +8451,14 @@
   "export_block_76x51": "blocked, no download charged",
   "recommended_size_result": "85x57: fits",
   "exported_formats": "85x57: PNG+SVG+PDF",
-  "export_preview_match": "yes",
+  "export_preview_match": "no",
+  "min_print_font_mm": 1.2,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; CLPeasy rendering/export",
-  "issue_details": "FAIL: EUH208 names: supplier ['Citronellal', 'Geraniol', 'Linalool', 'dl-Citronellol'] vs builder ['Geraniol', 'Citronellol', 'Linalool'] || FAIL: recommended 85x57 rendered: rendered \"Contains\" ['Geraniol', 'Citronellol', 'Linalool'] != supplier ['Citronellal', 'Geraniol', 'Linalool', 'dl-Citronellol'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "FAIL: EUH208 names: supplier ['Citronellal', 'Geraniol', 'Linalool', 'dl-Citronellol'] vs builder ['Geraniol', 'Citronellol', 'Linalool'] || FAIL: recommended 85x57: export/preview mismatch: ['smallest printed text 1.20 mm < CLPeasy GB floor 1.2 mm'] || FAIL: recommended 85x57 rendered: rendered \"Contains\" ['Geraniol', 'Citronellol', 'Linalool'] != supplier ['Citronellal', 'Geraniol', 'Linalool', 'dl-Citronellol'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element) || REVIEW: recommended 85x57 rendered: P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\"",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/061/",
   "_detail": {
@@ -7697,6 +8492,18 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H319": "Causes serious eye irritation."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P264": "Wash hands and other contacted skin thoroughly after handling.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P305+P351+P338": "IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P337+P313": "If eye irritation persists: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -7748,7 +8555,9 @@
        "SVG",
        "PDF"
       ],
-      "issues": [],
+      "issues": [
+       "smallest printed text 1.20 mm < CLPeasy GB floor 1.2 mm"
+      ],
       "png_px": [
        2008,
        1346
@@ -7758,6 +8567,8 @@
        85.0,
        57.0
       ],
+      "min_font_mm": 1.2,
+      "min_xheight_mm_est": 0.62,
       "pdf_pages": 1,
       "pdf_mm": [
        85.01,
@@ -7775,7 +8586,13 @@
       "issues": [
        "rendered \"Contains\" ['Geraniol', 'Citronellol', 'Linalool'] != supplier ['Citronellal', 'Geraniol', 'Linalool', 'dl-Citronellol']"
       ],
-      "reviews": []
+      "reviews": [
+       "P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\""
+      ],
+      "p_missing": [],
+      "p_abridged": [
+       "P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\""
+      ]
      }
     }
    }
@@ -7812,6 +8629,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "FAIL",
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
@@ -7856,6 +8675,18 @@
      "H317": "May cause an allergic skin reaction.",
      "H319": "Causes serious eye irritation.",
      "H402": "Harmful to aquatic life."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P264": "Wash hands and other contacted skin thoroughly after handling.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P305+P351+P338": "IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P337+P313": "If eye irritation persists: Get medical advice/attention.",
+     "P362": "Take off contaminated clothing and wash before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -7934,6 +8765,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "REVIEW",
   "label_result": "BLOCKED",
   "overall_result": "REVIEW",
@@ -7949,6 +8782,7 @@
     "p": [],
     "euh208_names": null,
     "h_wording": {},
+    "p_wording": {},
     "pictograms": []
    },
    "builder": {
@@ -8004,6 +8838,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "REVIEW",
   "label_result": "BLOCKED",
   "overall_result": "REVIEW",
@@ -8019,6 +8855,7 @@
     "p": [],
     "euh208_names": null,
     "h_wording": {},
+    "p_wording": {},
     "pictograms": []
    },
    "builder": {
@@ -8074,6 +8911,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "REVIEW",
   "label_result": "PASS",
   "overall_result": "REVIEW",
@@ -8110,6 +8949,17 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H411": "Toxic to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P391": "Collect spillage.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "aquatic",
@@ -8173,6 +9023,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -8188,7 +9040,9 @@
        "l-Limonene"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -8225,6 +9079,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "FAIL",
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
@@ -8264,6 +9120,16 @@
      "H317": "May cause an allergic skin reaction.",
      "H412": "Harmful to aquatic life with long lasting effects.",
      "H401": "Toxic to aquatic life."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -8339,11 +9205,13 @@
   "recommended_size_result": "88x59: fits",
   "exported_formats": "88x59: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.2,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; CLPeasy rendering/export",
-  "issue_details": "FAIL: EUH208 names: supplier ['Citral', 'Geraniol', 'Geranyl acetate', 'alpha-Pinene', 'beta-Pinene', 'trans-Nerolidol'] vs builder ['Citral', 'Geraniol', 'Geranyl Acetate', 'alpha-Pinene', 'beta-Pinene', 'trans- Information:               Nerolidol'] || FAIL: PDF layout text inside sensitiser name: ['trans- Information:               Nerolidol'] || FAIL: recommended 88x59 rendered: rendered \"Contains\" ['Citral', 'Geraniol', 'Geranyl Acetate', 'alpha-Pinene', 'beta-Pinene', 'trans- Information: Nerolidol'] != supplier ['Citral', 'Geraniol', 'Geranyl acetate', 'alpha-Pinene', 'beta-Pinene', 'trans-Nerolidol'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "FAIL: EUH208 names: supplier ['Citral', 'Geraniol', 'Geranyl acetate', 'alpha-Pinene', 'beta-Pinene', 'trans-Nerolidol'] vs builder ['Citral', 'Geraniol', 'Geranyl Acetate', 'alpha-Pinene', 'beta-Pinene', 'trans- Information:               Nerolidol'] || FAIL: PDF layout text inside sensitiser name: ['trans- Information:               Nerolidol'] || FAIL: recommended 88x59 rendered: rendered \"Contains\" ['Citral', 'Geraniol', 'Geranyl Acetate', 'alpha-Pinene', 'beta-Pinene', 'trans- Information: Nerolidol'] != supplier ['Citral', 'Geraniol', 'Geranyl acetate', 'alpha-Pinene', 'beta-Pinene', 'trans-Nerolidol'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element) || REVIEW: recommended 88x59 rendered: P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\"",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/067/",
   "_detail": {
@@ -8382,6 +9250,19 @@
      "H317": "May cause an allergic skin reaction.",
      "H319": "Causes serious eye irritation.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P264": "Wash hands and other contacted skin thoroughly after handling.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P305+P351+P338": "IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P337+P313": "If eye irritation persists: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -8448,6 +9329,8 @@
        88.0,
        59.0
       ],
+      "min_font_mm": 1.2,
+      "min_xheight_mm_est": 0.62,
       "pdf_pages": 1,
       "pdf_mm": [
        87.88,
@@ -8468,7 +9351,13 @@
       "issues": [
        "rendered \"Contains\" ['Citral', 'Geraniol', 'Geranyl Acetate', 'alpha-Pinene', 'beta-Pinene', 'trans- Information: Nerolidol'] != supplier ['Citral', 'Geraniol', 'Geranyl acetate', 'alpha-Pinene', 'beta-Pinene', 'trans-Nerolidol']"
       ],
-      "reviews": []
+      "reviews": [
+       "P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\""
+      ],
+      "p_missing": [],
+      "p_abridged": [
+       "P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\""
+      ]
      }
     }
    }
@@ -8505,6 +9394,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
@@ -8541,6 +9432,16 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -8602,6 +9503,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -8620,7 +9523,9 @@
       "issues": [
        "rendered \"Contains\" ['Nikura | Niaouli Essential Oil - 100% Pure', 'Terpinolene', 'alpha-Pinene', 'beta- Information: Pinene'] != supplier ['Nikura | Niaouli Essential Oil - 100% Pure', 'Terpinolene', 'alpha-Pinene', 'beta-Pinene']"
       ],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -8657,6 +9562,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
@@ -8694,6 +9601,17 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H411": "Toxic to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P391": "Collect spillage.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "aquatic",
@@ -8756,6 +9674,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -8772,7 +9692,9 @@
       "issues": [
        "rendered \"Contains\" ['Isoeugenol', 'Limonene'] != supplier ['Isoeugenol', 'Terpinolene', 'd-Limonene', 'delta-3-Carene']"
       ],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -8809,6 +9731,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "REVIEW",
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
@@ -8837,6 +9761,15 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H401": "Toxic to aquatic life."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -8905,6 +9838,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "FAIL",
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
@@ -8944,6 +9879,15 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H401": "Toxic to aquatic life."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -9023,6 +9967,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "FAIL",
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
@@ -9057,6 +10003,15 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H402": "Harmful to aquatic life."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -9127,6 +10082,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "FAIL",
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
@@ -9163,6 +10120,17 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H318": "Causes serious eye damage."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P305+P351+P338": "IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.",
+     "P310": "Immediately call a POISON CENTER or doctor/physician.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "corrosive",
@@ -9240,6 +10208,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "REVIEW",
   "label_result": "PASS",
   "overall_result": "REVIEW",
@@ -9273,6 +10243,16 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -9331,6 +10311,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -9344,7 +10326,9 @@
        "beta-Pinene"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -9381,6 +10365,8 @@
   "recommended_size_result": "",
   "exported_formats": "76x51: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.2,
+  "rendered_p_statements": "all printed",
   "extraction_result": "PASS",
   "label_result": "PASS",
   "overall_result": "PASS",
@@ -9406,6 +10392,10 @@
     ],
     "h_wording": {
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P273": "Avoid release to the environment.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": []
    },
@@ -9452,6 +10442,8 @@
        76.0,
        51.0
       ],
+      "min_font_mm": 1.2,
+      "min_xheight_mm_est": 0.62,
       "pdf_pages": 1,
       "pdf_mm": [
        75.86,
@@ -9465,7 +10457,9 @@
        "beta-Caryophyllene"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -9502,6 +10496,8 @@
   "recommended_size_result": "",
   "exported_formats": "76x51: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.2,
+  "rendered_p_statements": "all printed",
   "extraction_result": "PASS",
   "label_result": "PASS",
   "overall_result": "PASS",
@@ -9527,6 +10523,10 @@
     ],
     "h_wording": {
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P273": "Avoid release to the environment.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": []
    },
@@ -9573,6 +10573,8 @@
        76.0,
        51.0
       ],
+      "min_font_mm": 1.2,
+      "min_xheight_mm_est": 0.62,
       "pdf_pages": 1,
       "pdf_mm": [
        75.86,
@@ -9586,7 +10588,9 @@
        "beta-Caryophyllene"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -9623,6 +10627,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
@@ -9659,6 +10665,16 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -9717,6 +10733,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -9732,7 +10750,9 @@
       "issues": [
        "rendered \"Contains\" ['Limonene'] != supplier ['alpha-Pinene', 'beta-Pinene', 'd,l-Isomenthone', 'l-Limonene']"
       ],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -9769,6 +10789,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "FAIL",
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
@@ -9804,6 +10826,15 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H402": "Harmful to aquatic life."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -9876,6 +10907,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
@@ -9909,6 +10942,15 @@
     ],
     "h_wording": {
      "H317": "May cause an allergic skin reaction."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -9966,6 +11008,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -9982,7 +11026,9 @@
       "issues": [
        "rendered \"Contains\" ['Geranyl Acetate', 'Limonene'] != supplier ['Geranyl acetate', 'Neryl acetate', 'beta-Pinene', 'l-Limonene']"
       ],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -10019,6 +11065,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "REVIEW",
   "label_result": "PASS",
   "overall_result": "REVIEW",
@@ -10053,6 +11101,17 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H411": "Toxic to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P391": "Collect spillage.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "aquatic",
@@ -10114,6 +11173,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -10127,7 +11188,9 @@
        "beta-Caryophyllene"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -10164,6 +11227,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "REVIEW",
   "label_result": "PASS",
   "overall_result": "REVIEW",
@@ -10198,6 +11263,17 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H411": "Toxic to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P391": "Collect spillage.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "aquatic",
@@ -10259,6 +11335,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -10272,7 +11350,9 @@
        "Caryophyllene"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -10309,6 +11389,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "REVIEW",
   "label_result": "PASS",
   "overall_result": "REVIEW",
@@ -10346,6 +11428,17 @@
      "H317": "May cause an allergic skin reaction.",
      "H411": "Toxic to aquatic life with long lasting effects."
     },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P391": "Collect spillage.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
+    },
     "pictograms": [
      "aquatic",
      "exclamation"
@@ -10408,6 +11501,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -10423,7 +11518,9 @@
        "beta-Pinene"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -10460,6 +11557,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
@@ -10498,6 +11597,16 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -10561,6 +11670,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -10581,7 +11692,9 @@
       "issues": [
        "rendered \"Contains\" ['Estragole', 'Eucalyptol', 'Linalool', 'alpha-Pinene', 'beta-Pinene', 'delta-3-Carene. Information:'] != supplier ['Estragole', 'Eucalyptol', 'Linalool', 'alpha-Pinene', 'beta-Pinene', 'delta-3-Carene']"
       ],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -10617,12 +11730,14 @@
   "export_block_76x51": "blocked, no download charged",
   "recommended_size_result": "85x57: fits",
   "exported_formats": "85x57: PNG+SVG+PDF",
-  "export_preview_match": "yes",
+  "export_preview_match": "no",
+  "min_print_font_mm": 1.2,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; CLPeasy rendering/export",
-  "issue_details": "FAIL: EUH208 names: supplier ['Citronellyl formate', 'Citronellyl tiglate', 'Geranyl formate', 'Geranyl propionate', 'Isomenthone', 'Menthone', 'Nerol'] vs builder ['Citronellyl formate', 'Citronellyl tiglate', 'Geranyl formate', 'Geranyl propionate', 'Information:              Isomenthone', 'Menthone', 'Nerol'] || FAIL: PDF layout text inside sensitiser name: ['Information:              Isomenthone'] || FAIL: recommended 85x57 rendered: rendered \"Contains\" ['Citronellyl formate', 'Citronellyl tiglate', 'Geranyl formate', 'Geranyl propionate', 'Information: Isomenthone', 'Menthone', 'Nerol'] != supplier ['Citronellyl formate', 'Citronellyl tiglate', 'Geranyl formate', 'Geranyl propionate', 'Isomenthone', 'Menthone', 'Nerol'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "FAIL: EUH208 names: supplier ['Citronellyl formate', 'Citronellyl tiglate', 'Geranyl formate', 'Geranyl propionate', 'Isomenthone', 'Menthone', 'Nerol'] vs builder ['Citronellyl formate', 'Citronellyl tiglate', 'Geranyl formate', 'Geranyl propionate', 'Information:              Isomenthone', 'Menthone', 'Nerol'] || FAIL: PDF layout text inside sensitiser name: ['Information:              Isomenthone'] || FAIL: recommended 85x57: export/preview mismatch: ['smallest printed text 1.20 mm < CLPeasy GB floor 1.2 mm'] || FAIL: recommended 85x57 rendered: rendered \"Contains\" ['Citronellyl formate', 'Citronellyl tiglate', 'Geranyl formate', 'Geranyl propionate', 'Information: Isomenthone', 'Menthone', 'Nerol'] != supplier ['Citronellyl formate', 'Citronellyl tiglate', 'Geranyl formate', 'Geranyl propionate', 'Isomenthone', 'Menthone', 'Nerol'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element) || REVIEW: recommended 85x57 rendered: P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\"",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/084/",
   "_detail": {
@@ -10659,6 +11774,18 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H319": "Causes serious eye irritation."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P264": "Wash hands and other contacted skin thoroughly after handling.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P305+P351+P338": "IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P337+P313": "If eye irritation persists: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -10714,7 +11841,9 @@
        "SVG",
        "PDF"
       ],
-      "issues": [],
+      "issues": [
+       "smallest printed text 1.20 mm < CLPeasy GB floor 1.2 mm"
+      ],
       "png_px": [
        2008,
        1346
@@ -10724,6 +11853,8 @@
        85.0,
        57.0
       ],
+      "min_font_mm": 1.2,
+      "min_xheight_mm_est": 0.62,
       "pdf_pages": 1,
       "pdf_mm": [
        85.01,
@@ -10745,7 +11876,13 @@
       "issues": [
        "rendered \"Contains\" ['Citronellyl formate', 'Citronellyl tiglate', 'Geranyl formate', 'Geranyl propionate', 'Information: Isomenthone', 'Menthone', 'Nerol'] != supplier ['Citronellyl formate', 'Citronellyl tiglate', 'Geranyl formate', 'Geranyl propionate', 'Isomenthone', 'Menthone', 'Nerol']"
       ],
-      "reviews": []
+      "reviews": [
+       "P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\""
+      ],
+      "p_missing": [],
+      "p_abridged": [
+       "P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\""
+      ]
      }
     }
    }
@@ -10782,11 +11919,13 @@
   "recommended_size_result": "88x59: fits",
   "exported_formats": "88x59: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.2,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; CLPeasy rendering/export",
-  "issue_details": "FAIL: EUH208 names: supplier ['Caryophyllene', 'Eugenol', 'Linalool', 'l-Limonene'] vs builder ['Eugenol', 'Linalool', 'Limonene'] || FAIL: recommended 88x59 rendered: rendered \"Contains\" ['Eugenol', 'Linalool', 'Limonene'] != supplier ['Caryophyllene', 'Eugenol', 'Linalool', 'l-Limonene'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "FAIL: EUH208 names: supplier ['Caryophyllene', 'Eugenol', 'Linalool', 'l-Limonene'] vs builder ['Eugenol', 'Linalool', 'Limonene'] || FAIL: recommended 88x59 rendered: rendered \"Contains\" ['Eugenol', 'Linalool', 'Limonene'] != supplier ['Caryophyllene', 'Eugenol', 'Linalool', 'l-Limonene'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element) || REVIEW: recommended 88x59 rendered: P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\"",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/085/",
   "_detail": {
@@ -10824,6 +11963,20 @@
      "H317": "May cause an allergic skin reaction.",
      "H319": "Causes serious eye irritation.",
      "H411": "Toxic to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P264": "Wash hands and other contacted skin thoroughly after handling.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P305+P351+P338": "IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P337+P313": "If eye irritation persists: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P391": "Collect spillage.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "aquatic",
@@ -10890,6 +12043,8 @@
        88.0,
        59.0
       ],
+      "min_font_mm": 1.2,
+      "min_xheight_mm_est": 0.62,
       "pdf_pages": 1,
       "pdf_mm": [
        87.88,
@@ -10907,7 +12062,13 @@
       "issues": [
        "rendered \"Contains\" ['Eugenol', 'Linalool', 'Limonene'] != supplier ['Caryophyllene', 'Eugenol', 'Linalool', 'l-Limonene']"
       ],
-      "reviews": []
+      "reviews": [
+       "P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\""
+      ],
+      "p_missing": [],
+      "p_abridged": [
+       "P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\""
+      ]
      }
     }
    }
@@ -10944,6 +12105,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "REVIEW",
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
@@ -10974,6 +12137,12 @@
     "h_wording": {
      "H319": "Causes serious eye irritation.",
      "H402": "Harmful to aquatic life."
+    },
+    "p_wording": {
+     "P264": "Wash hands and other contacted skin thoroughly after handling.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P305+P351+P338": "IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.",
+     "P337+P313": "If eye irritation persists: Get medical advice/attention."
     },
     "pictograms": [
      "exclamation"
@@ -11045,11 +12214,13 @@
   "recommended_size_result": "88x59: fits",
   "exported_formats": "88x59: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.2,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; CLPeasy rendering/export",
-  "issue_details": "FAIL: EUH208 names: supplier ['Eucalyptol', 'Geraniol', 'Geranyl acetate', 'alpha-Pinene', 'beta-Pinene', 'd-Limonene'] vs builder ['Eucalyptol', 'Geraniol', 'Geranyl Acetate', 'alpha-Pinene', 'beta-Pinene', 'd- Information:               Limonene'] || FAIL: PDF layout text inside sensitiser name: ['d- Information:               Limonene'] || FAIL: recommended 88x59 rendered: rendered \"Contains\" ['Eucalyptol', 'Geraniol', 'Geranyl Acetate', 'alpha-Pinene', 'beta-Pinene', 'd- Information: Limonene'] != supplier ['Eucalyptol', 'Geraniol', 'Geranyl acetate', 'alpha-Pinene', 'beta-Pinene', 'd-Limonene'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "FAIL: EUH208 names: supplier ['Eucalyptol', 'Geraniol', 'Geranyl acetate', 'alpha-Pinene', 'beta-Pinene', 'd-Limonene'] vs builder ['Eucalyptol', 'Geraniol', 'Geranyl Acetate', 'alpha-Pinene', 'beta-Pinene', 'd- Information:               Limonene'] || FAIL: PDF layout text inside sensitiser name: ['d- Information:               Limonene'] || FAIL: recommended 88x59 rendered: rendered \"Contains\" ['Eucalyptol', 'Geraniol', 'Geranyl Acetate', 'alpha-Pinene', 'beta-Pinene', 'd- Information: Limonene'] != supplier ['Eucalyptol', 'Geraniol', 'Geranyl acetate', 'alpha-Pinene', 'beta-Pinene', 'd-Limonene'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element) || REVIEW: recommended 88x59 rendered: P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\"",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/087/",
   "_detail": {
@@ -11088,6 +12259,19 @@
      "H317": "May cause an allergic skin reaction.",
      "H319": "Causes serious eye irritation.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P264": "Wash hands and other contacted skin thoroughly after handling.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P305+P351+P338": "IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P337+P313": "If eye irritation persists: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -11154,6 +12338,8 @@
        88.0,
        59.0
       ],
+      "min_font_mm": 1.2,
+      "min_xheight_mm_est": 0.62,
       "pdf_pages": 1,
       "pdf_mm": [
        87.88,
@@ -11174,7 +12360,13 @@
       "issues": [
        "rendered \"Contains\" ['Eucalyptol', 'Geraniol', 'Geranyl Acetate', 'alpha-Pinene', 'beta-Pinene', 'd- Information: Limonene'] != supplier ['Eucalyptol', 'Geraniol', 'Geranyl acetate', 'alpha-Pinene', 'beta-Pinene', 'd-Limonene']"
       ],
-      "reviews": []
+      "reviews": [
+       "P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\""
+      ],
+      "p_missing": [],
+      "p_abridged": [
+       "P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\""
+      ]
      }
     }
    }
@@ -11211,11 +12403,13 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; CLPeasy rendering/export",
-  "issue_details": "FAIL: EUH208 names: supplier ['Eucalyptol', 'Terpinen-4-ol', 'alpha-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'l-Limonene'] vs builder ['Eucalyptol', 'Terpinen-4-ol', 'alpha-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'Information:              l-Limonene'] || FAIL: PDF layout text inside sensitiser name: ['Information:              l-Limonene'] || FAIL: recommended 80x54 rendered: rendered \"Contains\" ['Eucalyptol', 'Terpinen-4-ol', 'alpha-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'Information: l-Limonene'] != supplier ['Eucalyptol', 'Terpinen-4-ol', 'alpha-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'l-Limonene'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P280']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "FAIL: EUH208 names: supplier ['Eucalyptol', 'Terpinen-4-ol', 'alpha-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'l-Limonene'] vs builder ['Eucalyptol', 'Terpinen-4-ol', 'alpha-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'Information:              l-Limonene'] || FAIL: PDF layout text inside sensitiser name: ['Information:              l-Limonene'] || FAIL: recommended 80x54 rendered: rendered \"Contains\" ['Eucalyptol', 'Terpinen-4-ol', 'alpha-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'Information: l-Limonene'] != supplier ['Eucalyptol', 'Terpinen-4-ol', 'alpha-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'l-Limonene'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P280']; no notice shown to the customer (the builder has no exclusion-notice element) || REVIEW: recommended 80x54 rendered: P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\"",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/088/",
   "_detail": {
@@ -11247,6 +12441,14 @@
     "h_wording": {
      "H319": "Causes serious eye irritation.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P264": "Wash hands and other contacted skin thoroughly after handling.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P305+P351+P338": "IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.",
+     "P337+P313": "If eye irritation persists: Get medical advice/attention.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -11309,6 +12511,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -11329,7 +12533,13 @@
       "issues": [
        "rendered \"Contains\" ['Eucalyptol', 'Terpinen-4-ol', 'alpha-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'Information: l-Limonene'] != supplier ['Eucalyptol', 'Terpinen-4-ol', 'alpha-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'l-Limonene']"
       ],
-      "reviews": []
+      "reviews": [
+       "P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\""
+      ],
+      "p_missing": [],
+      "p_abridged": [
+       "P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\""
+      ]
      }
     }
    }
@@ -11366,11 +12576,13 @@
   "recommended_size_result": "88x59: fits",
   "exported_formats": "88x59: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.2,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; CLPeasy rendering/export",
-  "issue_details": "FAIL: EUH208 names: supplier ['Linalool', 'Terpinen-4-ol', 'Terpinolene', 'a-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'l-Limonene'] vs builder ['Linalool', 'Terpinen-4-ol', 'Terpinolene', 'a-Pinene', 'beta-Caryophyllene', 'beta- Information:            Pinene', 'l-Limonene'] || FAIL: PDF layout text inside sensitiser name: ['beta- Information:            Pinene'] || FAIL: recommended 88x59 rendered: rendered \"Contains\" ['Linalool', 'Terpinen-4-ol', 'Terpinolene', 'a-Pinene', 'beta-Caryophyllene', 'beta- Information: Pinene', 'l-Limonene'] != supplier ['Linalool', 'Terpinen-4-ol', 'Terpinolene', 'a-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'l-Limonene'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "FAIL: EUH208 names: supplier ['Linalool', 'Terpinen-4-ol', 'Terpinolene', 'a-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'l-Limonene'] vs builder ['Linalool', 'Terpinen-4-ol', 'Terpinolene', 'a-Pinene', 'beta-Caryophyllene', 'beta- Information:            Pinene', 'l-Limonene'] || FAIL: PDF layout text inside sensitiser name: ['beta- Information:            Pinene'] || FAIL: recommended 88x59 rendered: rendered \"Contains\" ['Linalool', 'Terpinen-4-ol', 'Terpinolene', 'a-Pinene', 'beta-Caryophyllene', 'beta- Information: Pinene', 'l-Limonene'] != supplier ['Linalool', 'Terpinen-4-ol', 'Terpinolene', 'a-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'l-Limonene'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element) || REVIEW: recommended 88x59 rendered: P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\"",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/089/",
   "_detail": {
@@ -11411,6 +12623,20 @@
      "H317": "May cause an allergic skin reaction.",
      "H319": "Causes serious eye irritation.",
      "H411": "Toxic to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P264": "Wash hands and other contacted skin thoroughly after handling.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P305+P351+P338": "IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P337+P313": "If eye irritation persists: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P391": "Collect spillage.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "aquatic",
@@ -11481,6 +12707,8 @@
        88.0,
        59.0
       ],
+      "min_font_mm": 1.2,
+      "min_xheight_mm_est": 0.62,
       "pdf_pages": 1,
       "pdf_mm": [
        87.88,
@@ -11502,7 +12730,13 @@
       "issues": [
        "rendered \"Contains\" ['Linalool', 'Terpinen-4-ol', 'Terpinolene', 'a-Pinene', 'beta-Caryophyllene', 'beta- Information: Pinene', 'l-Limonene'] != supplier ['Linalool', 'Terpinen-4-ol', 'Terpinolene', 'a-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'l-Limonene']"
       ],
-      "reviews": []
+      "reviews": [
+       "P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\""
+      ],
+      "p_missing": [],
+      "p_abridged": [
+       "P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\""
+      ]
      }
     }
    }
@@ -11539,6 +12773,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "REVIEW",
   "label_result": "PASS",
   "overall_result": "REVIEW",
@@ -11569,6 +12805,15 @@
     ],
     "h_wording": {
      "H317": "May cause an allergic skin reaction."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -11625,6 +12870,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -11638,7 +12885,9 @@
        "(E)-beta-Santalol"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -11675,6 +12924,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "REVIEW",
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
@@ -11708,6 +12959,15 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H402": "Harmful to aquatic life."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -11781,11 +13041,13 @@
   "recommended_size_result": "88x59: fits",
   "exported_formats": "88x59: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.2,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
   "defect_owner": "CLPeasy Smart Paste / code library; CLPeasy rendering/export",
-  "issue_details": "FAIL: EUH208 names: supplier ['alpha-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'l-Limonene', 'trans-alpha-Bisabolene'] vs builder ['alpha-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'l-Limonene', 'trans-alpha- Information:               Bisabolene'] || FAIL: PDF layout text inside sensitiser name: ['trans-alpha- Information:               Bisabolene'] || FAIL: recommended 88x59 rendered: rendered \"Contains\" ['alpha-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'l-Limonene', 'trans-alpha- Information: Bisabolene'] != supplier ['alpha-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'l-Limonene', 'trans-alpha-Bisabolene'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element)",
+  "issue_details": "FAIL: EUH208 names: supplier ['alpha-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'l-Limonene', 'trans-alpha-Bisabolene'] vs builder ['alpha-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'l-Limonene', 'trans-alpha- Information:               Bisabolene'] || FAIL: PDF layout text inside sensitiser name: ['trans-alpha- Information:               Bisabolene'] || FAIL: recommended 88x59 rendered: rendered \"Contains\" ['alpha-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'l-Limonene', 'trans-alpha- Information: Bisabolene'] != supplier ['alpha-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'l-Limonene', 'trans-alpha-Bisabolene'] || REVIEW: supplier P codes withheld by CLPeasy consumer-label policy: ['P264', 'P272', 'P280', 'P363']; no notice shown to the customer (the builder has no exclusion-notice element) || REVIEW: recommended 88x59 rendered: P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\"",
   "other_label_elements": "EN 15494 candle pictograms, product type, business name/address/phone checked in rendered label",
   "evidence_paths": "qa-artifacts/sds-e2e/092/",
   "_detail": {
@@ -11823,6 +13085,19 @@
      "H317": "May cause an allergic skin reaction.",
      "H319": "Causes serious eye irritation.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P264": "Wash hands and other contacted skin thoroughly after handling.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P305+P351+P338": "IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P337+P313": "If eye irritation persists: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -11888,6 +13163,8 @@
        88.0,
        59.0
       ],
+      "min_font_mm": 1.2,
+      "min_xheight_mm_est": 0.62,
       "pdf_pages": 1,
       "pdf_mm": [
        87.88,
@@ -11907,7 +13184,13 @@
       "issues": [
        "rendered \"Contains\" ['alpha-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'l-Limonene', 'trans-alpha- Information: Bisabolene'] != supplier ['alpha-Pinene', 'beta-Caryophyllene', 'beta-Pinene', 'l-Limonene', 'trans-alpha-Bisabolene']"
       ],
-      "reviews": []
+      "reviews": [
+       "P wording on label materially shorter than supplier: P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\""
+      ],
+      "p_missing": [],
+      "p_abridged": [
+       "P305+P351+P338: supplier \"IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.\" / label \"IF IN EYES: rinse cautiously with water for several minutes\""
+      ]
      }
     }
    }
@@ -11944,6 +13227,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "REVIEW",
   "label_result": "PASS",
   "overall_result": "REVIEW",
@@ -11976,6 +13261,15 @@
     ],
     "h_wording": {
      "H317": "May cause an allergic skin reaction."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -12034,6 +13328,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -12049,7 +13345,9 @@
        "d-Limonene"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -12086,6 +13384,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "REVIEW",
   "label_result": "BLOCKED",
   "overall_result": "SUPPLIER REVIEW",
@@ -12132,6 +13432,20 @@
      "H317": "May cause an allergic skin reaction.",
      "H412": "Harmful to aquatic life with long lasting effects.",
      "H401": "Toxic to aquatic life."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P264": "Wash hands and other contacted skin thoroughly after handling.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P301+P310": "IF SWALLOWED: Immediately call a POISON CENTER or doctor/physician.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P331": "Do not induce vomiting.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P362": "Take off contaminated clothing and wash before reuse.",
+     "P405": "Store locked up.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation",
@@ -12215,6 +13529,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "FAIL",
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
@@ -12252,6 +13568,18 @@
      "H317": "May cause an allergic skin reaction.",
      "H341": "Suspected of causing genetic defects (exposure route).",
      "H351": "Suspected of causing cancer (exposure route)."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P308+P313": "IF exposed or concerned: Get medical advice/attention.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P405": "Store locked up.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations.",
+     "P202": "Do not handle until all safety precautions have been read and understood."
     },
     "pictograms": [
      "exclamation",
@@ -12329,6 +13657,8 @@
   "recommended_size_result": "80x54: fits",
   "exported_formats": "80x54: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.22,
+  "rendered_p_statements": "all printed",
   "extraction_result": "FAIL",
   "label_result": "FAIL",
   "overall_result": "FAIL",
@@ -12366,6 +13696,16 @@
     "h_wording": {
      "H317": "May cause an allergic skin reaction.",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "exclamation"
@@ -12424,6 +13764,8 @@
        80.0,
        54.0
       ],
+      "min_font_mm": 1.22,
+      "min_xheight_mm_est": 0.63,
       "pdf_pages": 1,
       "pdf_mm": [
        80.09,
@@ -12439,7 +13781,9 @@
       "issues": [
        "rendered \"Contains\" ['Limonene'] != supplier ['Eucalyptol', 'Terpinolene', 'a-Pinene', 'l-Limonene', 'p-Mentha-1,3-diene']"
       ],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -12476,6 +13820,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "FAIL",
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
@@ -12525,6 +13871,20 @@
      "H318": "Causes serious eye damage.",
      "H361": "Suspected of damaging fertility or the unborn child (exposure route).",
      "H412": "Harmful to aquatic life with long lasting effects."
+    },
+    "p_wording": {
+     "P202": "Do not handle until all safety precautions have been read and understood.",
+     "P264": "Wash hands and other contacted skin thoroughly after handling.",
+     "P273": "Avoid release to the environment.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P305+P351+P338": "IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.",
+     "P308+P313": "IF exposed or concerned: Get medical advice/attention.",
+     "P310": "Immediately call a POISON CENTER or doctor/physician.",
+     "P332+P313": "If skin irritation occurs: Get medical advice/attention.",
+     "P362": "Take off contaminated clothing and wash before reuse.",
+     "P405": "Store locked up.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "corrosive",
@@ -12614,6 +13974,8 @@
   "recommended_size_result": "",
   "exported_formats": "76x51: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.32,
+  "rendered_p_statements": "all printed",
   "extraction_result": "PASS",
   "label_result": "PASS",
   "overall_result": "PASS",
@@ -12634,6 +13996,7 @@
      "Bisabolene"
     ],
     "h_wording": {},
+    "p_wording": {},
     "pictograms": []
    },
    "builder": {
@@ -12675,6 +14038,8 @@
        76.0,
        51.0
       ],
+      "min_font_mm": 1.32,
+      "min_xheight_mm_est": 0.68,
       "pdf_pages": 1,
       "pdf_mm": [
        75.86,
@@ -12688,7 +14053,9 @@
        "Bisabolene"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -12725,6 +14092,8 @@
   "recommended_size_result": "",
   "exported_formats": "76x51: PNG+SVG+PDF",
   "export_preview_match": "yes",
+  "min_print_font_mm": 1.32,
+  "rendered_p_statements": "all printed",
   "extraction_result": "PASS",
   "label_result": "PASS",
   "overall_result": "PASS",
@@ -12746,6 +14115,7 @@
      "beta-Vetivone"
     ],
     "h_wording": {},
+    "p_wording": {},
     "pictograms": []
    },
    "builder": {
@@ -12788,6 +14158,8 @@
        76.0,
        51.0
       ],
+      "min_font_mm": 1.32,
+      "min_xheight_mm_est": 0.68,
       "pdf_pages": 1,
       "pdf_mm": [
        75.86,
@@ -12802,7 +14174,9 @@
        "beta-Vetivone"
       ],
       "issues": [],
-      "reviews": []
+      "reviews": [],
+      "p_missing": [],
+      "p_abridged": []
      }
     }
    }
@@ -12839,6 +14213,8 @@
   "recommended_size_result": "",
   "exported_formats": "",
   "export_preview_match": "n/a",
+  "min_print_font_mm": "",
+  "rendered_p_statements": "n/a",
   "extraction_result": "FAIL",
   "label_result": "BLOCKED",
   "overall_result": "FAIL",
@@ -12874,6 +14250,20 @@
      "H317": "May cause an allergic skin reaction.",
      "H318": "Causes serious eye damage.",
      "H361": "Suspected of damaging fertility or the unborn child (exposure route)."
+    },
+    "p_wording": {
+     "P202": "Do not handle until all safety precautions have been read and understood.",
+     "P261": "Avoid breathing vapour or dust.",
+     "P272": "Contaminated work clothing should not be allowed out of the workplace.",
+     "P280": "Wear protective gloves/eye protection/face protection.",
+     "P302+P352": "IF ON SKIN: Wash with plenty of soap and water.",
+     "P305+P351+P338": "IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.",
+     "P308+P313": "IF exposed or concerned: Get medical advice/attention.",
+     "P310": "Immediately call a POISON CENTER or doctor/physician.",
+     "P333+P313": "If skin irritation or rash occurs: Get medical advice/attention.",
+     "P363": "Wash contaminated clothing before reuse.",
+     "P405": "Store locked up.",
+     "P501": "Dispose of contents/container to approved disposal site, in accordance with local regulations."
     },
     "pictograms": [
      "corrosive",

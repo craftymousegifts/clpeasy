@@ -95,11 +95,21 @@ def supplier_elements(text):
     m = re.search(r'EUH208\s*[,;:]?\s*Contains\s+(.+?)\.\s*May\s+(?:produce|cause)', joined, re.I)
     if m:
         names = [n.strip() for n in re.split(r',\s+(?=\S)|\s+and\s+', re.sub(r'\s+', ' ', m.group(1))) if n.strip()]
+    # Supplier P wording, re-joining statements that wrap onto the next line.
+    pwords, cur = {}, None
+    for l in lines:
+        m = re.match(r'\s*(?:Precautionary\s+|statements:\s+)?(P\d{3}(?:\s*[/+]\s*P?\d{3})*)\s*[,:]?\s*(.*)', l)
+        if m:
+            cur = norm_p(m.group(1)); pwords.setdefault(cur, m.group(2).strip())
+        elif cur and l.strip() and re.match(r'\s{8,}\S', l) and not re.search(r'(Pictograms|Supplemental|Signal word|Hazard statements):', l):
+            pwords[cur] += ' ' + l.strip()
+        elif not l.strip() or re.search(r'(Pictograms|Supplemental|Signal word|Hazard statements):', l):
+            cur = None if not l.strip() else None
     # H statement wording as printed by the supplier
     hwords = {}
     for m in re.finditer(r'(?<![A-Z])(H\d{3})\s*[,:]?\s*([^\n]+)', sec):
         hwords.setdefault(m.group(1), m.group(2).strip())
-    return dict(signal=signal, h=h, euh=euh, p=p, euh208_names=names, h_wording=hwords, pictograms=expected_pictos(h))
+    return dict(signal=signal, h=h, euh=euh, p=p, euh208_names=names, h_wording=hwords, p_wording=pwords, pictograms=expected_pictos(h))
 
 
 def ghs_hashes(js):
@@ -115,6 +125,16 @@ def ghs_hashes(js):
 GHS = ghs_hashes(RENDER_JS)
 
 
+def p_lib(js):
+    line = next(l for l in open(js, encoding='utf-8') if l.startswith('const P_LIB='))
+    return {c: d for c, d in re.findall(r"\{code:'([^']+)',desc:'([^']*)'\}", line)}
+
+
+PLIB = p_lib(RENDER_JS)
+GB_MIN_FS_MM = 1.2  # label-render.js GB_ACTIVE_MIN_FS_MM (CLPeasy's own GB legibility floor)
+XH_RATIO = 0.515625  # label-render.js DM_SANS_XHEIGHT_RATIO
+
+
 def svg_info(path):
     s = open(path, encoding='utf-8').read()
     texts = []
@@ -125,8 +145,10 @@ def svg_info(path):
     imgs = re.findall(r'<image\b[^>]*?href="(data:image/[^"]+)"', s)
     ghs = sorted({GHS[hashlib.sha1(i.encode()).hexdigest()] for i in imgs if hashlib.sha1(i.encode()).hexdigest() in GHS})
     wh = re.search(r'<svg[^>]*\swidth="([\d.]+)mm"[^>]*\sheight="([\d.]+)mm"', s)
+    vb = re.search(r'viewBox="0 0 ([\d.]+) ([\d.]+)"', s)
+    fss = [float(x) for x in re.findall(r'<text\b[^>]*\sfont-size="([\d.]+)"', s)]
     return dict(text=' '.join(texts), lines=texts, ghs=ghs, images=len(imgs), width_mm=float(wh.group(1)) if wh else None, height_mm=float(wh.group(2)) if wh else None,
-                does_not_fit='DOES NOT FIT' in s.upper(), raw=s)
+                does_not_fit='DOES NOT FIT' in s.upper(), raw=s, vb_w=float(vb.group(1)) if vb else None, font_sizes=fss)
 
 
 def canon(s):
@@ -164,6 +186,11 @@ def check_exports(dirp, tag, mm, prev):
         if prev and canon(si['text']) != canon(prev['text']): r['issues'].append('SVG text differs from preview')
         if prev and si['ghs'] != prev['ghs']: r['issues'].append(f'SVG pictograms {si["ghs"]} != preview {prev["ghs"]}')
         if si['does_not_fit']: r['issues'].append('SVG contains does-not-fit overlay')
+        if si['vb_w'] and si['font_sizes']:
+            k = W / si['vb_w']
+            mn = min(si['font_sizes']) * k
+            r['min_font_mm'] = round(mn, 2); r['min_xheight_mm_est'] = round(mn * XH_RATIO, 2)
+            if mn + 1e-6 < GB_MIN_FS_MM: r['issues'].append(f'smallest printed text {mn:.2f} mm < CLPeasy GB floor {GB_MIN_FS_MM} mm')
     if os.path.exists(pdfp):
         r['formats'].append('PDF')
         doc = pymupdf.open(pdfp)
@@ -204,10 +231,21 @@ def rendered_checks(prev, sup, built, scent, biz):
             ww = [x for x in canon(w).split() if len(x) > 3]
             if sum(1 for x in ww if x in t) < max(1, int(len(ww) * 0.8)): reviews.append(f'{h} wording "{w}" not found verbatim in rendered label')
     if sorted(prev['ghs']) != sorted(built['pictograms']): issues.append(f'rendered pictograms {prev["ghs"]} != builder {built["pictograms"]}')
+    # precautionary statements actually printed vs the builder's selected codes
+    p_missing = [c for c in built['p'] if c in PLIB and canon(PLIB[c]) not in t]
+    p_nolib = [c for c in built['p'] if c not in PLIB]
+    if p_missing: issues.append(f'P statements selected in builder but not printed: {p_missing}')
+    if p_nolib: reviews.append(f'P codes without renderer wording: {p_nolib}')
+    p_abridged = []
+    for c in built['p']:
+        sw = sup.get('p_wording', {}).get(c, '')
+        ww = [x for x in canon(sw).split() if len(x) > 3]
+        if ww and sum(1 for x in ww if x in t) < 0.6 * len(ww): p_abridged.append(f'{c}: supplier "{sw}" / label "{PLIB.get(c, "?")}"')
+    if p_abridged: reviews.append('P wording on label materially shorter than supplier: ' + '; '.join(p_abridged))
     for label, val in [('product name', scent), ('business name', biz['name']), ('address', biz['address']), ('phone', biz['phone'])]:
         if canon(val) not in t: issues.append(f'{label} not rendered')
     if prev['does_not_fit']: issues.append('does-not-fit overlay present in an allowed preview')
-    return dict(shown_sensitisers=shown, issues=issues, reviews=reviews)
+    return dict(shown_sensitisers=shown, issues=issues, reviews=reviews, p_missing=p_missing, p_abridged=p_abridged)
 
 
 def main():
@@ -354,6 +392,9 @@ def main():
             if r.get('exports'): fmts.append(f'{r.get("size", k)}: ' + '+'.join(r['exports']['formats']))
         row['exported_formats'] = '; '.join(fmts)
         row['export_preview_match'] = ('yes' if export_ok_any else 'no') if fmts else 'n/a'
+        mfs = [r['exports'].get('min_font_mm') for r in size_res.values() if r.get('exports') and r['exports'].get('min_font_mm')]
+        row['min_print_font_mm'] = min(mfs) if mfs else ''
+        row['rendered_p_statements'] = 'all printed' if fmts and not any('not printed' in f for f in fails) else ('n/a' if not fmts else 'missing')
         # reset / contamination
         for k, v in sizes.items():
             rs = v.get('reset')
@@ -384,7 +425,7 @@ def main():
         rows.append(row)
     cols = ['case_id', 'supplier', 'fragrance', 'pdf_url', 'pdf_sha256', 'sds_version', 'input_verified', 'section_2_2_exact', 'extracted_h', 'expected_h', 'extracted_p', 'expected_p',
             'extracted_euh208_names', 'expected_euh208_names', 'extracted_signal', 'expected_signal', 'signal_match', 'extracted_pictograms', 'expected_pictograms', 'pictograms_match', 'other_label_elements',
-            'preview_63x44', 'warning_63x44', 'export_block_63x44', 'preview_76x51', 'warning_76x51', 'export_block_76x51', 'recommended_size_result', 'exported_formats', 'export_preview_match',
+            'preview_63x44', 'warning_63x44', 'export_block_63x44', 'preview_76x51', 'warning_76x51', 'export_block_76x51', 'recommended_size_result', 'exported_formats', 'export_preview_match', 'rendered_p_statements', 'min_print_font_mm',
             'extraction_result', 'label_result', 'overall_result', 'historical_extraction_status', 'defect_owner', 'issue_details', 'evidence_paths']
     os.makedirs(OUT, exist_ok=True)
     with open(os.path.join(OUT, '100_SDS_E2E_RESULTS.csv'), 'w', newline='', encoding='utf-8') as f:

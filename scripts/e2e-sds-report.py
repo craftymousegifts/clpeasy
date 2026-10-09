@@ -48,6 +48,7 @@ rules = [
     ('R1', 'Supplier P statements (P272/P280/P363/P405) withheld by CLPeasy consumer-label policy with no notice to the customer', r'withheld by CLPeasy consumer-label policy'),
     ('R2', 'Unclassified mixture (supplier: no hazards) — builder cannot continue past Step 3, so no label can be produced', r'states no classification'),
     ('R3', 'Supplier H-statement wording differs from the rendered GB CLP wording', r'wording .* not found verbatim'),
+    ('R4', 'P305+P351+P338 printed in shortened form ("Remove contact lenses, if present and easy to do. Continue rinsing." omitted) on the downloaded label', r'P wording on label materially shorter'),
 ]
 for r in rows:
     det = r.get('issue_details') or ''
