@@ -30,14 +30,14 @@ def main():
     if last_url:
         comments, _ = fetch_json(last_url)
     last = comments[-1] if comments else None
-    report = "\\n".join([
+    report = "\n".join([
         "## CLPeasy AI handover — read-only",
         f"- Checked: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}",
         f"- Coordination: https://github.com/{REPO}/issues/{ISSUE}",
         f"- Latest comment: {last['html_url'] if last else 'none'}",
         "- Decision needed: review issue #230 for unresolved approvals",
         "- Production / cost: no deployments or paid AI calls from this workflow",
-    ]) + "\\n"
+    ]) + "\n"
     print(report)
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
