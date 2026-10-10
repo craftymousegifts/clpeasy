@@ -3801,9 +3801,10 @@ function renderTags(){
 // to contain. When the pasted text carries a clearly bounded EUH208
 // "Contains ... may produce/cause an allergic reaction" statement, every
 // name inside that bounded clause is trusted and kept, IN THE SUPPLIER'S
-// OWN ORDER -- names matching the table are normalised to its canonical
-// spelling IN PLACE (never moved/reordered); anything not in the table is
-// kept exactly as the supplier wrote it. Ordering correction (Michaela's
+// OWN ORDER and exactly as the supplier wrote it, including capitalisation
+// (F3, 10 Oct 2026: names matching the table are no longer re-cased to the
+// table's spelling, e.g. "Geranyl acetate" stays "Geranyl acetate", not
+// "Geranyl Acetate"). Ordering correction (Michaela's
 // review): this bounded clause, when present, is the SOLE and
 // AUTHORITATIVE source of the sensitiser list -- it is never merged with,
 // appended to, or reordered by the whole-text table scan in extractSDS()
@@ -3816,9 +3817,9 @@ function renderTags(){
 // count is applied anywhere in this path.
 const EUH208_CLAUSE_RE = /EUH\s*208\b[\s\S]{0,50}?Contains\s*:?\s*([\s\S]*?)\.?\s*May\s+(?:produce|cause)\s+an\s+allergic\s+reaction\b/i;
 function normaliseSubstanceName(raw){
-  const upper = raw.toUpperCase();
-  const known = SENSITISERS.find(s=>s.name.toUpperCase()===upper);
-  return known ? known.name : raw;
+  // F3: keep the supplier's own spelling and capitalisation. The whole-text
+  // fallback below (no bounded EUH208 clause) still uses the table spelling.
+  return raw;
 }
 function parseBoundedSubstanceList(raw){
   // Line breaks within the list are just wrapping, not separators.
