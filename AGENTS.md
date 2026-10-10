@@ -180,19 +180,18 @@ A previous PDF output issue involved a 63×44 mm rectangle where "SCENTED CANDLE
 
 Michaela has specifically been concerned that GHS pictograms and other label elements must meet applicable minimum sizing requirements. Do not casually reduce pictogram or label dimensions to make a layout fit. Verify the current regulatory requirement before implementing compliance-sensitive changes.
 
-## Pricing history
+## Pricing (checked 10 Oct 2026, main @ eb59b2e)
 
-Previously discussed CLPeasy pricing:
+Current plans, as shown in `pricing.html`:
 
-* Easy Start: $9.99/month
-* Easy Pro: $14.99/month
-* Easy Pro annual: $149/year
-* Easy Start annual: $99/year
-* Top-up: 5 downloads $3.99
-* Top-up: 10 downloads $7.99
-* Free trial changed to 14 days
+* Easy Trial: 14 days, 10 downloads, no card needed.
+* Pay As You Go: £4.99 for 8 downloads (5 + 3 bonus) until 31 Dec 2026; from 1 Jan 2027, 5 downloads for £4.99. No subscription; purchased downloads do not expire.
+* Easy Start Unlimited: £9.99/month (£8.99/month offer until 31 Dec 2026) or £89/year; unlimited downloads while subscribed.
+* One download = one finished exported file (an individual label or a complete A4 Print Sheet Composer sheet).
 
-These are historical project notes. Inspect the current live pricing and code before changing or quoting prices.
+Retired on 2 Oct 2026 (see `docs/reports/easy-start-unlimited/RELEASE-GATE-B.md`): Easy Pro, the £99 annual price and all top-ups. Historical records are kept; do not offer them.
+
+Prices change. Treat `pricing.html` and the checkout/entitlement code as the source of truth before quoting or changing prices.
 
 ## Launch
 
