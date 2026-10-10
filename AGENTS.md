@@ -48,6 +48,44 @@
 
 # 
 
+## CLPeasy operating standard
+
+Identify → Evidence → Adjudicate → Implement → Verify → Manage are guiding principles applied within the existing workflow, not separate stages or reports.
+
+### Risk tiers (if unsure, use the higher tier)
+
+* **Low** — copy, CSS, presentation: smallest change; browser check (desktop/mobile as relevant); report.
+* **Medium** — functional UI, library, exports, non-regulatory logic: the spec cites evidence; verify any protected functionality touched.
+* **High** — CLP/regulatory logic or wording, pictograms, label dimensions, Stripe/payments, auth, RLS, edge functions, data migration: existing release gate, Test environment first, targeted independent review, founder approval before merge.
+
+### Roles
+
+* One primary implementation agent per task (Codex or Claude Code). Other agents do not repeat the investigation.
+* Independent review only for High-tier changes or material uncertainty, scoped to the diff, the cited evidence and a specific question.
+
+### Evidence and reuse
+
+* Anchor findings: code → commit; regulatory → source plus version/date; browser → tested environment/deployment plus commit.
+* Reuse a finding while its anchor holds. Reverify when relevant files, dependencies or sources change, the environment differs, or the evidence is contradicted or unreliable.
+* Record findings only where they already belong: PR description, `docs/reports/`, `docs/context/PROJECT_HISTORY.md`. No separate logs.
+
+### Disagreement
+
+* One focused review round by default, against authoritative evidence (code or test for behaviour; legislation.gov.uk, HSE or the supplier SDS for regulatory points).
+* A regulatory interpretation still unresolved after that round stays **REVIEW**: stop AI debate and obtain appropriate independent authoritative evidence. Founder approval governs whether work proceeds, but does not clear REVIEW without that evidence. REVIEW holds only the disputed item.
+
+### Handover (max 5 lines)
+
+Task · Tier · Files · Evidence anchors · Result/Open.
+
+### Unchanged
+
+All founder approvals, release gates, production restrictions, batched GitHub pushes and "CLP Ready" wording rules remain in force.
+
+### Maintenance
+
+This section is the single governance source; other agent instruction files point here rather than restating it. Keep it to about one page. A new rule replaces or merges an existing one and is added only after a real incident.
+
 # AGENTS.md — Michaela / CLPeasy Working Instructions
 
 ## Who you are working with
