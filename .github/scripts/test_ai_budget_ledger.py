@@ -39,6 +39,11 @@ class LedgerTests(unittest.TestCase):
         for t in threads: t.start()
         for t in threads: t.join()
         self.assertEqual(sum(results),5)
+    def test_invalid_month_and_request_ids(self):
+        for month in ('2026-00','2026-13','2026-1a','2026-1','2026-10-extra'):
+            self.assertFalse(self.db.reserve('id-'+month,month,100))
+        for request_id in ('', ' ', 'x'*129):
+            self.assertFalse(self.db.reserve(request_id,'2026-10',100))
     def test_cannot_release_uncertain_reservation(self):
         self.assertTrue(self.db.reserve("a","2026-10",500))
         self.assertFalse(self.db.cancel("a"))
