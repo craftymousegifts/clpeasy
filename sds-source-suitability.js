@@ -19,9 +19,9 @@
       level:'concentrate',message:'This appears to be a 100% fragrance-oil SDS, not information for '+target+'. '+limitation+' Check with your supplier before using this label.'
     };
     if(namedOil && (!hasPct || pct<100)) return {
-      level:'possible',message:'This document names a fragrance oil, but may not cover '+target+'. '+limitation+' Check the document title and supplier information.'
+      level:'possible',message:'This SDS names fragrance oil, but may not cover '+target+'. '+limitation+' Check the original supplier document.'
     };
-    return {level:'unverified',message:'Section 2.2 alone may not show whether the SDS covers '+target+'. '+limitation+' Check the original supplier document.'};
+    return {level:'unverified',message:'Section 2.2 does not confirm whether this SDS covers '+target+'. '+limitation+' Check the original supplier document.'};
   }
   const api=Object.freeze({inspect});
   if(typeof module==='object'&&module.exports)module.exports=api;
