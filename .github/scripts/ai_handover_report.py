@@ -21,7 +21,7 @@ def fetch_json(url):
         return json.load(response), response.headers.get("Link", "")
 
 def last_page_url(link):
-    match = re.search(r'<([^>]+)>;\\s*rel="last"', link)
+    match = re.search(r'<([^>]+)>;\s*rel="last"', link)
     return match.group(1) if match else None
 
 def main():
