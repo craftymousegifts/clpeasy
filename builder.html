@@ -3954,7 +3954,11 @@ function updateSdsSourceSuitabilityWarning(){
   if(!S.hazardFromExtraction||!raw.trim()){
     box.textContent='';box.style.display='none';return;
   }
-  const result=SdsSourceSuitability.inspect(raw,document.getElementById('product-type')?.value||S.productType,document.getElementById('frag-load')?.value||S.fragLoad);
+  // If the checker script is unavailable, show the conservative general
+  // message instead of interrupting Smart Paste extraction.
+  const result=window.SdsSourceSuitability
+    ?SdsSourceSuitability.inspect(raw,document.getElementById('product-type')?.value||S.productType,document.getElementById('frag-load')?.value||S.fragLoad)
+    :{level:'unverified',message:'Section 2.2 does not confirm whether this SDS covers your finished product. CLPeasy does not adjust hazards for fragrance percentages. Check the original supplier document.'};
   box.textContent=(result.level==='concentrate'?'⚠️ Check SDS source: ':result.level==='possible'?'⚠️ Check document type: ':'ℹ️ ')+result.message;
   box.dataset.suitability=result.level;
   box.style.display='block';
