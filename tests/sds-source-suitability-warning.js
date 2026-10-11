@@ -54,4 +54,7 @@ assert(html.includes('id="sds-source-suitability-warning"'));
 assert(html.includes('updateSdsSourceSuitabilityWarning();'));
 assert(html.includes('S.hazardFromExtraction=true;\n  _snapshotHazardSource();\n  updateSdsSourceSuitabilityWarning();'));
 assert(html.includes('S.hazardFromExtraction=false;S.hazardSource=null;\n  updateSdsSourceSuitabilityWarning();'));
+// Calculator wording must not claim a supplier-document comparison.
+assert(!html.includes('compares this figure exactly with your supplier document'));
+assert(html.includes('Check that your supplier’s CLP information applies to this finished-product percentage. CLPeasy does not verify this or recalculate hazards.'));
 console.log('PASS: SDS suitability warnings are conservative and wired into Smart Paste');

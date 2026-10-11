@@ -6138,7 +6138,7 @@ function calcFragLoad(){
   const pct=String(Number(exact.toFixed(4)));
   const rounded=Math.abs(Number(pct)-exact)>1e-9;
   const pctOfWax=((frag/wax)*100).toFixed(1);
-  res.textContent=`${pct}%${rounded?' (rounded to 4 decimal places)':''} of the finished product (${frag} g fragrance in ${total} g total). For reference: ${pctOfWax}% of the wax/base weight. CLPeasy compares this figure exactly with your supplier document and never rounds it to make a match.`;
+  res.textContent=`${pct}%${rounded?' (rounded to 4 decimal places)':''} of the finished product (${frag} g fragrance in ${total} g total). For reference: ${pctOfWax}% of the wax/base weight. Check that your supplier’s CLP information applies to this finished-product percentage. CLPeasy does not verify this or recalculate hazards.`;
   res.style.color='var(--teal)';
   if(applyBtn)applyBtn.style.display='';
   if(applyBtn)applyBtn.dataset.pct=pct;
