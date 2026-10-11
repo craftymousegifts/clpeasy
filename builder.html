@@ -3961,6 +3961,11 @@ function updateSdsSourceSuitabilityWarning(){
   box.classList.toggle('field-alert-danger',result.level==='concentrate');
   box.classList.toggle('field-alert-warn',result.level!=='concentrate');
 }
+document.addEventListener('DOMContentLoaded',()=>{
+  ['frag-load','product-type'].forEach(id=>{
+    document.getElementById(id)?.addEventListener('change',updateSdsSourceSuitabilityWarning);
+  });
+});
 function extractSDS(){
   // NOTE (2026-08-02, reversal — see smart-paste-pro-gating / reverify):
   // A plan gate was added here believing Smart Paste was Easy-Pro-exclusive.
