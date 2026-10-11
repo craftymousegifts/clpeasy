@@ -14,18 +14,8 @@ jobs:
     timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
-      - name: Run offline regression tests
-        run: python3 -m unittest discover -s .github/scripts -p 'test_ai_handover_bridge.py' -v
-      - name: Test fail-closed budget guard
-        run: python3 -m unittest discover -s .github/scripts -p 'test_ai_budget_guard.py' -v
-      - name: Test live transport remains disabled
-        run: python3 -m unittest discover -s .github/scripts -p 'test_ai_live_transport_disabled.py' -v
-      - name: Test durable-ledger simulation
-        run: python3 -m unittest discover -s .github/scripts -p 'test_ai_budget_ledger.py' -v
-      - name: Test offline provider request contract
-        run: python3 -m unittest discover -s .github/scripts -p 'test_ai_transport_contract.py' -v
-      - name: Test offline handover runner
-        run: python3 -m unittest discover -s .github/scripts -p 'test_ai_offline_runner.py' -v
+      - name: Run all offline regression tests
+        run: python3 -m unittest discover -s .github/scripts -p 'test_ai_*.py' -v
       - name: Run end-to-end offline integration smoke check
         run: python3 .github/scripts/ai_integration_smoke.py
       - name: Simulate both handover directions
