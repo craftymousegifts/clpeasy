@@ -1,0 +1,21 @@
+name: AI Two-way Handover (offline simulation only)
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-simulation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run offline regression tests
+        run: python3 -m unittest discover -s .github/scripts -p 'test_ai_handover_bridge.py' -v
+      - name: Simulate both handover directions
+        run: python3 .github/scripts/ai_handover_bridge.py --output ai-handover-simulation.json
+      - name: Print safe simulation result
+        run: |
+          echo "Offline handover simulation passed. No external AI invoked." >> "$GITHUB_STEP_SUMMARY"
+          echo "No issue comments, commits, merges or deployments performed by this job." >> "$GITHUB_STEP_SUMMARY"
