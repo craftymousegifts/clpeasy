@@ -5,9 +5,9 @@ from ai_transport_contract import Exchange
 
 def mock_http(provider, body):
     if provider == "anthropic":
-        return {"content":[{"type":"text","text":"Claude evidence: "+body["messages"][0]["content"]}]}
+        return {"stop_reason":"end_turn","content":[{"type":"text","text":"Claude evidence: "+body["messages"][0]["content"]}]}
     if provider == "openai":
-        return {"output":[{"type":"message","content":[{"type":"output_text","text":"OpenAI REVIEW: "+body["input"]}]}]}
+        return {"status":"completed","output":[{"type":"message","content":[{"type":"output_text","text":"OpenAI REVIEW: "+body["input"]}]}]}
     raise ValueError("Unsupported provider")
 
 def run(task):
