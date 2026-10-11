@@ -12,14 +12,14 @@ def extract_text(provider, payload):
     if not isinstance(payload, dict):
         raise ProviderResponseError("Expected JSON object")
     if provider == "anthropic":
-        if payload.get("stop_reason") not in (None, "end_turn"):
+        if payload.get("stop_reason") != "end_turn":
             raise ProviderResponseError("Anthropic response not completed normally")
         blocks = payload.get("content")
         if not isinstance(blocks, list):
             raise ProviderResponseError("Missing content blocks")
         parts = [block.get("text") for block in blocks if isinstance(block, dict) and block.get("type") == "text" and isinstance(block.get("text"), str)]
     elif provider == "openai":
-        if payload.get("status") not in (None, "completed") or payload.get("incomplete_details"):
+        if payload.get("status") != "completed" or payload.get("incomplete_details"):
             raise ProviderResponseError("OpenAI response incomplete or failed")
         blocks = payload.get("output")
         if not isinstance(blocks, list):
