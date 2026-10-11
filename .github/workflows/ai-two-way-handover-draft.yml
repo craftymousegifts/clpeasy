@@ -1,5 +1,8 @@
 name: AI Two-way Handover (offline simulation only)
 on:
+  push:
+    branches:
+      - automation/ai-two-way-handover-draft
   workflow_dispatch:
 
 permissions:
