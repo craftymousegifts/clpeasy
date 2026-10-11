@@ -1235,6 +1235,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <p>Copy the complete Section 2.2 (Label elements) from your current supplier SDS PDF and paste it here. CLPeasy extracts the information it can identify; review the result against your SDS before continuing.</p>
       <textarea id="smart-paste-input" placeholder="Paste SDS Section 2.2 text here..."></textarea>
       <br><br><button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
+      <div id="sds-source-suitability-warning" class="field-alert field-alert-warn" role="alert" aria-live="polite" style="display:none;margin-top:14px;font-size:13px;"></div>
       <div id="smart-paste-size-warning" class="field-alert field-alert-danger" role="status" aria-live="polite" style="display:none;margin-top:14px;font-size:14px;"></div>
       <button type="button" id="hazard-clear-link" onclick="clearHazardData()" style="display:none;margin-left:14px;font-size:12px;color:var(--teal-dark);text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">Clear hazard data and start again</button>
     </div>
@@ -1528,6 +1529,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
      top-level names. -->
 <script src="label-render.js"></script>
 <script src="sds-doc-check.js"></script>
+<script src="sds-source-suitability.js"></script>
 
 <!-- Checkpoint B (connected print-workflow task, 1 Sep 2026): shared
      saved-label identity/coordinated-mutation module. Every saved-label
@@ -3945,6 +3947,20 @@ function _requireSdsDoc(){
   }
   return r.ok;
 }
+function updateSdsSourceSuitabilityWarning(){
+  const box=document.getElementById('sds-source-suitability-warning');
+  if(!box)return;
+  const raw=document.getElementById('smart-paste-input')?.value||'';
+  if(!S.hazardFromExtraction||!raw.trim()){
+    box.textContent='';box.style.display='none';return;
+  }
+  const result=SdsSourceSuitability.inspect(raw,document.getElementById('product-type')?.value||S.productType,document.getElementById('frag-load')?.value||S.fragLoad);
+  box.textContent=(result.level==='concentrate'?'⚠️ Check SDS source: ':result.level==='possible'?'⚠️ Check document type: ':'ℹ️ ')+result.message;
+  box.dataset.suitability=result.level;
+  box.style.display='block';
+  box.classList.toggle('field-alert-danger',result.level==='concentrate');
+  box.classList.toggle('field-alert-warn',result.level!=='concentrate');
+}
 function extractSDS(){
   // NOTE (2026-08-02, reversal — see smart-paste-pro-gating / reverify):
   // A plan gate was added here believing Smart Paste was Easy-Pro-exclusive.
@@ -4120,6 +4136,7 @@ function extractSDS(){
   // SDS of the product currently named in Step 2.
   S.hazardFromExtraction=true;
   _snapshotHazardSource();
+  updateSdsSourceSuitabilityWarning();
   updateLabel();
   lockHazardFields(true);
   showExtractToast(allH.length,pRaw.length,S.sensitisers.length);
@@ -4801,6 +4818,7 @@ function clearHazardData(){
   const hzCb=document.getElementById('hazard-confirm');
   if(hzCb)hzCb.checked=false;
   S.hazardFromExtraction=false;S.hazardSource=null;
+  updateSdsSourceSuitabilityWarning();
   // Clear signal word
   S.signal='';
   S.sdsSignal='';
