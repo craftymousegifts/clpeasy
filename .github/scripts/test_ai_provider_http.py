@@ -25,6 +25,15 @@ class ProviderHttpTests(unittest.TestCase):
             extract_text("anthropic",{"content":[{"type":"text","text":"x"*4001}]})
         with self.assertRaises(ProviderResponseError):
             extract_text("openai",{"output":"not-list"})
+    def test_truncated_anthropic_response_rejected(self):
+        with self.assertRaises(ProviderResponseError):
+            extract_text("anthropic",{"stop_reason":"max_tokens","content":[{"type":"text","text":"Partial answer"}]})
+    def test_incomplete_openai_response_rejected(self):
+        with self.assertRaises(ProviderResponseError):
+            extract_text("openai",{"status":"incomplete","output":[{"type":"message","content":[{"type":"output_text","text":"Partial answer"}]}]})
+    def test_completed_provider_responses_accepted(self):
+        self.assertEqual(extract_text("anthropic",{"stop_reason":"end_turn","content":[{"type":"text","text":"OK"}]}),"OK")
+        self.assertEqual(extract_text("openai",{"status":"completed","output":[{"type":"message","content":[{"type":"output_text","text":"OK"}]}]}),"OK")
     def test_live_is_blocked(self):
         with self.assertRaises(RuntimeError):
             live_http_adapter()
