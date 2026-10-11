@@ -6,7 +6,7 @@ reservations. GitHub-hosted runners do NOT share a filesystem, so this is
 NOT a cross-run production solution and must never authorise paid calls.
 """
 import sqlite3
-from datetime import datetime, timezone
+import re
 
 LIMIT_PENCE = 500
 
@@ -20,7 +20,7 @@ class BudgetLedger:
         db.execute("PRAGMA busy_timeout=10000")
         return db
     def reserve(self, request_id, month, maximum_pence):
-        if not request_id or not isinstance(month, str) or len(month)!=7 or month[4]!="-":
+        if not isinstance(request_id, str) or not request_id.strip() or len(request_id)>128 or not isinstance(month, str) or not re.fullmatch(r"[0-9]{4}-(0[1-9]|1[0-2])",month):
             return False
         if type(maximum_pence) is not int or maximum_pence <= 0 or maximum_pence > LIMIT_PENCE:
             return False
