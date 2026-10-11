@@ -5298,11 +5298,29 @@ function updateLabel(){
     pasteFit.style.display=showFit?'block':'none';
     pasteFit.innerHTML=showFit?_fitAdviceFor(true)+inlineSizeEditor():'';
   }
+  // From Step 4 on, a missing required business detail (the existing
+  // _missingBusinessDetails() check, unchanged) is reported by name instead
+  // of fit advice: the fit is only meaningful once the footer is complete,
+  // so an empty field is never explained as "needs more space"/"no size
+  // fits". Unrecognised/unsupported-code messages are unaffected.
+  const _missingBiz = approvedBuilderStep>=4 && !_codeBlockParts.length ? _missingBusinessDetails() : [];
+  const _missingBizPrompt = _missingBiz.length
+    ? '<strong>Complete your business details.</strong><p>Add your '+_missingBiz.map(field=>field.label).join(', ')+' in Step 4 (Business). CLPeasy checks whether your label fits once these are entered. Your other details are kept.</p>'
+    : '';
   const sheetFit=document.getElementById('sheet-fit-advice');
-  if(sheetFit){sheetFit.innerHTML=window._labelBlockDownload&&!_codeBlockParts.length?_fitAdvice:'';}
-  [document.getElementById('label-warn-stage4'), document.getElementById('label-warn-step4'), document.getElementById('label-warn-step5')].forEach(_labelWarnEl=>{
+  if(sheetFit){sheetFit.innerHTML=_missingBizPrompt||(window._labelBlockDownload&&!_codeBlockParts.length?_fitAdvice:'');}
+  const step4Warn=document.getElementById('label-warn-step4');
+  [document.getElementById('label-warn-stage4'), step4Warn, document.getElementById('label-warn-step5')].forEach(_labelWarnEl=>{
     if(!_labelWarnEl)return;
-    if(window._labelBlockDownload){
+    if(_missingBizPrompt&&_labelWarnEl===step4Warn){
+      _labelWarnEl.className='field-alert field-alert-warn';
+      _labelWarnEl.style.display='block';
+      _labelWarnEl.innerHTML=_missingBizPrompt;
+    } else if(_missingBizPrompt&&_labelWarnEl.id==='label-warn-step5'){
+      // Step 5 already names the missing field in #business-details-export-note.
+      _labelWarnEl.style.display='none';
+    } else if(window._labelBlockDownload){
+      if(_labelWarnEl===step4Warn)_labelWarnEl.className='field-alert field-alert-danger';
       _labelWarnEl.style.display='block';
       _labelWarnEl.innerHTML = _codeBlockParts.length?'<strong>'+_blockHeading+'</strong><br><br>'+_blockBody:_fitAdvice+inlineSizeEditor();
     } else {
