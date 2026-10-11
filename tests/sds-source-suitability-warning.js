@@ -13,9 +13,9 @@ assert.strictEqual(inspect('Product: Scented candle, 10% fragrance\nH317').level
 assert.strictEqual(inspect('Product: Heather Fragrance Oil\nConcentration: 100% fragrance oil',100).level,'unverified', '100% oil versus 100% product is not a mismatch by number alone');
 assert(inspect('H317',10).message.includes('does not adjust hazards for fragrance percentages'));
 for (const raw of [
-  'Product: Heather Fragrance Oil\\nConcentration: 100% fragrance oil',
-  'Product name: Heather Fragrance Oil\\nH317',
-  'SECTION 2.2\\nH317'
+  'Product: Heather Fragrance Oil\nConcentration: 100% fragrance oil',
+  'Product name: Heather Fragrance Oil\nH317',
+  'SECTION 2.2\nH317'
 ]) {
   const message=inspect(raw,10).message;
   assert(message.length<320,'Mobile warning should be concise: '+message.length);
