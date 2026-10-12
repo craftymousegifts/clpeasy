@@ -5346,7 +5346,15 @@ function updateLabel(){
   // this user is entitled to the live clean vector or must get the
   // flattened watermarked raster, and never lets the clean markup reach
   // the DOM for an unverified/unpaid render even momentarily.
-  renderPreviewInto(svgHtml,pw,ph);
+  // Same rule as the boxes above: while a required business detail is
+  // missing (from Step 4 on), the preview's generic fit overlay is reworded
+  // so the empty field is not shown as a size failure. Preview markup only:
+  // exports are already refused while a required detail is missing, and
+  // code/pictogram overlays (different wording) are never touched.
+  const previewSvg=_missingBiz.length
+    ? svgHtml.replace('>FULL CONTENT DOES NOT FIT</text>','>COMPLETE YOUR BUSINESS DETAILS</text>').replace('>Adjust size below the preview</text>','>Add the missing details in Step 4 (Business)</text>')
+    : svgHtml;
+  renderPreviewInto(previewSvg,pw,ph);
   const si=document.getElementById('sheet-size-info');
   if(si)si.textContent=`Print size: ${mmW} × ${mmH}mm`;
   const szName=S.size==='custom'?`${mmW}×${mmH}mm`:`${S.size}mm`;

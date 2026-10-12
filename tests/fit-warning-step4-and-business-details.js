@@ -58,6 +58,8 @@ const server = http.createServer((req, res) => {
     });
     await t.goto(base + '/builder.html', { waitUntil: 'load' });
     await sleep(600);
+    // Record the markup handed to the live preview (desktop panel + mobile sheet).
+    await t.evaluate(() => { const orig = window.renderPreviewInto; window.renderPreviewInto = function (svg) { window.__preview = svg; return orig.apply(this, arguments); }; });
     t.ctx = ctx;
     return t;
   }
@@ -95,6 +97,7 @@ const server = http.createServer((req, res) => {
       sheet: txt('sheet-fit-advice'),
       biz: ['biz-name', 'biz-address', 'biz-phone'].map(id => document.getElementById(id).value),
       stage4Count: document.querySelectorAll('#label-warn-step4').length,
+      overlay: /FULL CONTENT DOES NOT FIT/.test(window.__preview || '') ? 'fit' : /COMPLETE YOUR BUSINESS DETAILS/.test(window.__preview || '') ? 'details' : 'none',
     };
   });
 
@@ -110,6 +113,7 @@ const server = http.createServer((req, res) => {
     assert(!s.step4.includes(RECHECK), 'Step 4 box must not say the fit is checked again later');
     assert(!s.sheet.includes(RECHECK), 'sheet advice must not say the fit is checked again later');
     assert.strictEqual(s.stage4Count, 1);
+    assert.strictEqual(s.overlay, 'fit', 'genuine overflow keeps the fit overlay');
     await t.evaluate(() => setApprovedBuilderStep(5));
     s = await state(t);
     assert.strictEqual(s.step5Shown, true);
@@ -140,6 +144,9 @@ const server = http.createServer((req, res) => {
     assert(!/business address|brand name/.test(s.step4), 'only the missing field is named');
     assert(!NO_SIZE.test(s.step4) && !/needs more space/.test(s.step4), 'Step 4 must not explain a missing field as a fit problem');
     assert(/field-alert-warn/.test(s.step4Class));
+    assert.strictEqual(s.overlay, 'details', 'preview overlay names missing details, not a size failure');
+    assert(/Add the missing details in Step 4/.test(await t.evaluate(() => window.__preview)));
+    assert(/FULL CONTENT DOES NOT FIT/.test(await t.evaluate(() => buildSVG(false))), 'renderer output itself is unchanged');
     assert(!NO_SIZE.test(s.sheet) && /business phone number/.test(s.sheet), 'sheet names the phone: ' + s.sheet);
     await t.evaluate(() => setApprovedBuilderStep(5));
     s = await state(t);
@@ -152,6 +159,7 @@ const server = http.createServer((req, res) => {
     await t.evaluate(() => { setApprovedBuilderStep(4); const e = document.getElementById('biz-phone'); e.value = '01632 960000'; e.dispatchEvent(new Event('input', { bubbles: true })); });
     s = await state(t);
     assert(/needs more space/.test(s.step4) && /Use 97mm/.test(s.step4) && /field-alert-danger/.test(s.step4Class), 'fit advice after completing: ' + s.step4);
+    assert.strictEqual(s.overlay, 'fit', 'fit overlay returns once details are complete');
     await t.ctx.close();
 
     // ── 3b. All three missing: each named; short complete details: no box ──
