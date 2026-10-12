@@ -484,6 +484,20 @@ function measureText(txt,sizePx,bold,serif){
   _ctx.font=`${bold?'700':'400'} ${sizePx}px ${serif?'serif':'sans-serif'}`;
   return _ctx.measureText(txt).width;
 }
+// Ink bounds of one character (relative to its own start on the baseline):
+// left/right edge, height above and depth below the baseline. Uses the
+// canvas TextMetrics actualBoundingBox* values where the browser provides
+// them; otherwise (e.g. a stubbed canvas) falls back to the full advance
+// width, 0.75em above and fallbackDesc below the baseline.
+function measureInk(ch,sizePx,bold,serif,fallbackDesc){
+  _ctx.font=`${bold?'700':'400'} ${sizePx}px ${serif?'serif':'sans-serif'}`;
+  const m=_ctx.measureText(ch);
+  if(m && typeof m.actualBoundingBoxAscent==='number' && isFinite(m.actualBoundingBoxAscent)){
+    return {l:-(m.actualBoundingBoxLeft||0), r:(m.actualBoundingBoxRight||0), asc:m.actualBoundingBoxAscent, desc:m.actualBoundingBoxDescent||0, w:m.width};
+  }
+  const w=m?m.width:0;
+  return {l:0, r:w, asc:sizePx*0.75, desc:fallbackDesc, w};
+}
 
 // ── HELPER: fit font size to a max pixel width ────────────────
 function fitFont(txt,maxPx,startPx,minPx,bold=true,serif=false,step=0.5){
@@ -1291,51 +1305,111 @@ function renderLabel(rawData, opts){
 
   // ── CIRCLE: CURVED PRODUCT NAME vs THE TEXT BELOW IT ─────────
   // (Oct 2026, Michaela's approved option A.) On circles the product name
-  // is drawn along an arc (svgArcText), but the business name/website above
-  // were placed by the straight-text rules, so a longer name curved down
-  // into them (and could reach the product-type heading) while fits stayed
-  // true. Geometry used here: the arc baseline has radius _arcR about the
-  // canvas centre; a name of measured width W spans +/-W/(2*_arcR) radians
-  // from the top, and its letters reach inwards (downwards) to about
-  // 0.3*fs below the baseline. _arcLow() gives the lowest point those
-  // letters reach within a horizontal half-width hw of the centre, so
-  // collisions are judged by real horizontal overlap, not name length.
-  // Labels with no collision keep their existing layout untouched. When
-  // there is one, the curved name is reduced in steps (never below
-  // _mandatoryMinFS) with its arc capped at 72 degrees either side, and the
-  // business name/website move below its lowest letters; the product type
-  // moves down only within the existing breathing-pad allowance. If nothing
-  // fits, the label is blocked through the existing product-name flag.
+  // is drawn along an arc (svgArcText), but the business name/website were
+  // placed by the straight-text rules, so a longer name curved down into
+  // them (and could reach the product-type heading) while fits stayed true.
+  // Geometry: each curved letter is placed at its real angle on the arc
+  // baseline (radius _arcR) and its ink box (canvas TextMetrics, same
+  // measuring font as the rest of the layout) is rotated with it, giving
+  // its real lowest point and horizontal extent. The business name and
+  // website are checked letter by letter against the curved letters above
+  // them; the product type and signal word against the lowest curved
+  // letter within their width. Collisions are judged on letter shapes and
+  // positions, not on name length. Labels that are already clear (closer
+  // than _arcGapMin nowhere) keep their existing layout exactly. Otherwise
+  // the curved name is reduced in steps (never below _mandatoryMinFS) with
+  // its arc capped at 72 degrees either side, sizes needing no extra push of
+  // the hazard area are preferred, the business name/website move below its
+  // lowest letters, and the product type moves down only within the
+  // existing breathing-pad allowance. If nothing fits, the label is blocked
+  // through the existing product-name flag (scentTooSmall).
   const _arcR = Math.min(pw,ph)/2*0.85;   // svgArcText's own baseline radius
   const _arcMaxHalf = Math.PI/2*0.8;      // 72 degrees either side of the top
-  // Per-letter geometry: each letter's centre angle along the arc, its own
-  // half-width in radians, and how far it reaches below the baseline
-  // (descender letters about 0.24em, others about 0.03em). Widths are
-  // measured with the same canvas measurement as the rest of the layout,
-  // plus 3% to allow for font differences between preview and export.
+  // Per-letter geometry: each letter sits at its measured position along
+  // the arc (same canvas measurement as the rest of the layout) and its
+  // ink box (measureInk) is rotated with it. Where the canvas gives no ink
+  // metrics, descender letters are assumed to reach about 0.24em below the
+  // baseline and others about 0.03em.
   const _ARC_DESC = /[gjpqyQ,;()\[\]{}]/;
   const _arcGeom = fs => {
-    const k = 1.03, W = measureText(scent, fs, true, false)*k;
-    const glyphs = []; let acc = 0; const chars = [...scent];
-    chars.forEach(ch => {
-      const w = measureText(ch, fs, true, false)*k;
-      const mid = -W/2 + Math.min(acc + w/2, W);
-      glyphs.push({a: Math.abs(mid)/_arcR, d: (w/2)/_arcR, desc: fs*(_ARC_DESC.test(ch)?0.24:0.03)});
-      acc = measureText(chars.slice(0, glyphs.length).join(''), fs, true, false)*k;
+    const k = 1, W = measureText(scent, fs, true, false)*k;
+    const glyphs = []; const chars = [...scent]; let acc = 0;
+    chars.forEach((ch, i) => {
+      const ink = measureInk(ch, fs, true, false, fs*(_ARC_DESC.test(ch)?0.24:0.03));
+      const w = ink.w*k;
+      const phi = (-W/2 + acc + w/2)/_arcR;              // angle of the letter's midpoint
+      acc = measureText(chars.slice(0, i+1).join(''), fs, true, false)*k;
+      if(!ch.trim()) return;
+      // ink corners in the letter's own frame: u along the arc from its midpoint, v outwards
+      const us = [ink.l*k - w/2, ink.r*k - w/2], vs = [-ink.desc, ink.asc];
+      // corners in order around the box (so it can be clipped as a polygon)
+      const pts = [[us[0],vs[0]],[us[1],vs[0]],[us[1],vs[1]],[us[0],vs[1]]].map(([u,v]) =>
+        [cx + _arcR*Math.sin(phi) + u*Math.cos(phi) + v*Math.sin(phi), cy - _arcR*Math.cos(phi) + u*Math.sin(phi) - v*Math.cos(phi)]);
+      const xs = pts.map(q => q[0]), ys = pts.map(q => q[1]);
+      glyphs.push({pts, xl: Math.min(...xs), xr: Math.max(...xs), low: Math.max(...ys)});
     });
     return {fs, half: W/2/_arcR, glyphs};
   };
+  // Lowest point of one tilted letter within the horizontal span [a, b]
+  // (its box clipped to that span), or -Infinity if it does not reach it.
+  const _glyphLowIn = (gl, a, b) => {
+    if(gl.xr <= a || gl.xl >= b) return -Infinity;
+    let poly = gl.pts;
+    for(const [lim, keep] of [[a, (x)=>x >= a], [b, (x)=>x <= b]]){
+      const out = [];
+      for(let i = 0; i < poly.length; i++){
+        const P = poly[i], Q = poly[(i+1) % poly.length], inP = keep(P[0]), inQ = keep(Q[0]);
+        if(inP) out.push(P);
+        if(inP !== inQ){ const t = (lim - P[0])/(Q[0] - P[0]); out.push([lim, P[1] + t*(Q[1] - P[1])]); }
+      }
+      poly = out; if(!poly.length) return -Infinity;
+    }
+    return Math.max(...poly.map(q => q[1]));
+  };
   const _arcLow = (g, hw) => {
     let low = -Infinity;
-    for(const gl of g.glyphs){
-      const inner = _arcR - gl.desc;
-      const near = inner*Math.sin(Math.max(0, gl.a - gl.d));      // closest edge to the centre line
-      if(isFinite(hw) && near >= hw) continue;
-      low = Math.max(low, cy - inner*Math.cos(gl.a + gl.d));       // its lowest corner
-    }
+    for(const gl of g.glyphs) low = Math.max(low, isFinite(hw) ? _glyphLowIn(gl, cx - hw, cx + hw) : gl.low);
     return low;
   };
-  const _arcGap = Math.max(1, _bizFSf*0.1);
+
+  // Straight centred line (business name / website): each letter's x-range
+  // and how far its ink rises above the line's centre (dominant-baseline
+  // middle): capitals, digits and ascender letters about 0.5em, x-height
+  // letters about 0.28em. _arcLineShift() returns how far that line must
+  // move down so no curved letter above any of its letters is closer than
+  // the gap -- 0 when already clear.
+  const _LINE_TALL = /[^acemnorsuvwxz .,\-]/;
+  const _lineGlyphs = (text, fs, bold, serif) => {
+    const W = measureText(text, fs, bold, serif), chars = [...text], out = [];
+    // dominant-baseline="middle": the line's y is half an x-height above its baseline
+    const xInk = measureInk('x', fs, bold, serif, 0);
+    const xh = (xInk.asc && isFinite(xInk.asc)) ? xInk.asc : fs*0.5;
+    let x0 = cx - W/2;
+    chars.forEach((ch, i) => {
+      const x1 = cx - W/2 + measureText(chars.slice(0, i+1).join(''), fs, bold, serif);
+      if(ch.trim()){
+        const ink = measureInk(ch, fs, bold, serif, 0);
+        const up = ink.asc === fs*0.75 ? fs*(_LINE_TALL.test(ch) ? 0.5 : 0.28) : ink.asc - xh/2;
+        out.push({l: x0 + ink.l, r: x0 + ink.r, up});
+      }
+      x0 = x1;
+    });
+    return out;
+  };
+  const _arcLineShift = (g, line, lineY, gap) => {
+    let need = 0;
+    for(const gl of g.glyphs) for(const lg of line){
+      const low = _glyphLowIn(gl, lg.l - 0.5, lg.r + 0.5);
+      if(low > -Infinity) need = Math.max(need, low + gap - (lineY - lg.up));
+    }
+    return need;
+  };
+  // Two clearances: a label only counts as colliding when the curved name
+  // comes closer than _arcGapMin (so labels that are already clear keep
+  // their exact layout); once a label has to be adjusted, it is laid out
+  // with the more comfortable _arcGap.
+  const _arcGapMin = Math.max(1, _bizFSf*0.1);
+  const _arcGap = Math.max(2.5, _bizFSf*0.2);
   let _arcFS = scentFS, _arcTypeFloor = -Infinity, _arcEngaged = false;
   if(isCircle && data.scentName){
     // Same expressions as the breathing block below (natural product-type top).
@@ -1344,11 +1418,12 @@ function renderLabel(rawData, opts){
     const _arcWantGap    = Math.max(midH*0.07, topH*0.08);
     const _arcPadCap     = midH*0.12;
     const _arcTypeHW     = (measureText(type, _arcTypeFS, true, false) + 0.6*type.length)/2;
-    const _bizHW = measureText(bizName, _bizFSf, true, true)/2;
-    const _webHW = webLine ? measureText(webLine, _webFSf, false, false)/2 : 0;
+    const _bizLine = _lineGlyphs(bizName, _bizFSf, true, true);
+    const _webLine = webLine ? _lineGlyphs(webLine, _webFSf, false, false) : [];
     const _place = g => {
-      const bY = Math.max(_bizYf, _arcLow(g, _bizHW) + _arcGap + _bizFSf*0.5);
-      const wY = webLine ? Math.max(_webYf, bY + _bizFSf*0.5 + _arcGap + _webFSf*0.5, _arcLow(g, _webHW) + _arcGap + _webFSf*0.5) : _webYf;
+      const bY = _bizYf + _arcLineShift(g, _bizLine, _bizYf, _arcGap);
+      const wY0 = webLine ? Math.max(_webYf, bY + _bizFSf*0.5 + _arcGap + _webFSf*0.5) : _webYf;
+      const wY = webLine ? wY0 + _arcLineShift(g, _webLine, wY0, _arcGap) : _webYf;
       const stackBot = webLine ? wY + _webFSf*0.5 : bY + _bizFSf*0.5;
       const typeFloor = _arcLow(g, _arcTypeHW) + _arcGap;
       const pad = Math.max(0, Math.max(stackBot + _arcWantGap, typeFloor) - _arcTypeTop);
@@ -1356,8 +1431,9 @@ function renderLabel(rawData, opts){
     };
     const g0 = _arcGeom(_arcFS), p0 = _place(g0);
     const _existingPad = Math.max(0, Math.min(((webLine ? _webYf + _webFSf*0.5 : _bizYf + _bizFSf*0.5) + _arcWantGap) - _arcTypeTop, _arcPadCap));
-    const _collides = p0.bY > _bizYf + 0.01 || (webLine && p0.wY > _webYf + 0.01)
-      || p0.typeFloor > _arcTypeTop + _existingPad;
+    const _collides = _arcLineShift(g0, _bizLine, _bizYf, _arcGapMin) > 0.01
+      || (webLine && _arcLineShift(g0, _webLine, _webYf, _arcGapMin) > 0.01)
+      || _arcLow(g0, _arcTypeHW) + _arcGapMin > _arcTypeTop + _existingPad;
     if(_collides){
       _arcEngaged = true;
       // Prefer the largest name size that needs no more push than the
@@ -1465,12 +1541,11 @@ function renderLabel(rawData, opts){
   // text all start below it). Anything else blocks export.
   if(isCircle && data.scentName){
     const g = _arcGeom(_arcFS);
-    const bizHW = measureText(bizName, _bizFSf, true, true)/2;
     const typeHW = (measureText(type, typeFS, true, false) + 0.6*type.length)/2;
     const sigHW = measureText(sig, sigFS, true, false)/2;
-    const clearOf = (hw, top) => _arcLow(g, hw) + _arcGap*0.5 <= top;
-    const ok = clearOf(bizHW, _bizYf - _bizFSf*0.5)
-      && (!webLine || clearOf(measureText(webLine, _webFSf, false, false)/2, _webYf - _webFSf*0.5))
+    const clearOf = (hw, top) => _arcLow(g, hw) + _arcGapMin*0.5 <= top;
+    const ok = _arcLineShift(g, _lineGlyphs(bizName, _bizFSf, true, true), _bizYf, _arcGapMin*0.5) <= 0
+      && (!webLine || _arcLineShift(g, _lineGlyphs(webLine, _webFSf, false, false), _webYf, _arcGapMin*0.5) <= 0)
       && (!type || clearOf(typeHW, typeY - typeFS*0.5))
       && (!sig || clearOf(sigHW, sigY - sigFS*0.5))
       && _arcLow(g, Infinity) <= sigY + sigFS*0.5
@@ -2190,6 +2265,10 @@ function renderLabel(rawData, opts){
     // floor and still doesn't fit" flags, exposed for
     // transparency/testing alongside the existing footerClipped/bcfTooSmall.
     scentTooSmall: _scentTooSmall,
+    // Circle curved product name (see the curved-name block): whether the
+    // collision rule adjusted this label, and the declared font size used.
+    curvedNameAdjusted: _arcEngaged,
+    curvedNameFS: isCircle ? _arcFS : null,
     businessNameTooSmall: _bizNameTooSmall,
     productTypeTooSmall: _typeTooSmall,
     signalWordTooSmall: _signalTooSmall,
