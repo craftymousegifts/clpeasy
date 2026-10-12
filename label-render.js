@@ -1289,6 +1289,100 @@ function renderLabel(rawData, opts){
     if(measureText(bizName, _bizFSf, true, true) > bizSW*0.84) _bizNameTooSmall = true;
   }
 
+  // ── CIRCLE: CURVED PRODUCT NAME vs THE TEXT BELOW IT ─────────
+  // (Oct 2026, Michaela's approved option A.) On circles the product name
+  // is drawn along an arc (svgArcText), but the business name/website above
+  // were placed by the straight-text rules, so a longer name curved down
+  // into them (and could reach the product-type heading) while fits stayed
+  // true. Geometry used here: the arc baseline has radius _arcR about the
+  // canvas centre; a name of measured width W spans +/-W/(2*_arcR) radians
+  // from the top, and its letters reach inwards (downwards) to about
+  // 0.3*fs below the baseline. _arcLow() gives the lowest point those
+  // letters reach within a horizontal half-width hw of the centre, so
+  // collisions are judged by real horizontal overlap, not name length.
+  // Labels with no collision keep their existing layout untouched. When
+  // there is one, the curved name is reduced in steps (never below
+  // _mandatoryMinFS) with its arc capped at 72 degrees either side, and the
+  // business name/website move below its lowest letters; the product type
+  // moves down only within the existing breathing-pad allowance. If nothing
+  // fits, the label is blocked through the existing product-name flag.
+  const _arcR = Math.min(pw,ph)/2*0.85;   // svgArcText's own baseline radius
+  const _arcMaxHalf = Math.PI/2*0.8;      // 72 degrees either side of the top
+  // Per-letter geometry: each letter's centre angle along the arc, its own
+  // half-width in radians, and how far it reaches below the baseline
+  // (descender letters about 0.24em, others about 0.03em). Widths are
+  // measured with the same canvas measurement as the rest of the layout,
+  // plus 3% to allow for font differences between preview and export.
+  const _ARC_DESC = /[gjpqyQ,;()\[\]{}]/;
+  const _arcGeom = fs => {
+    const k = 1.03, W = measureText(scent, fs, true, false)*k;
+    const glyphs = []; let acc = 0; const chars = [...scent];
+    chars.forEach(ch => {
+      const w = measureText(ch, fs, true, false)*k;
+      const mid = -W/2 + Math.min(acc + w/2, W);
+      glyphs.push({a: Math.abs(mid)/_arcR, d: (w/2)/_arcR, desc: fs*(_ARC_DESC.test(ch)?0.24:0.03)});
+      acc = measureText(chars.slice(0, glyphs.length).join(''), fs, true, false)*k;
+    });
+    return {fs, half: W/2/_arcR, glyphs};
+  };
+  const _arcLow = (g, hw) => {
+    let low = -Infinity;
+    for(const gl of g.glyphs){
+      const inner = _arcR - gl.desc;
+      const near = inner*Math.sin(Math.max(0, gl.a - gl.d));      // closest edge to the centre line
+      if(isFinite(hw) && near >= hw) continue;
+      low = Math.max(low, cy - inner*Math.cos(gl.a + gl.d));       // its lowest corner
+    }
+    return low;
+  };
+  const _arcGap = Math.max(1, _bizFSf*0.1);
+  let _arcFS = scentFS, _arcTypeFloor = -Infinity, _arcEngaged = false;
+  if(isCircle && data.scentName){
+    // Same expressions as the breathing block below (natural product-type top).
+    const _arcTypeFS  = Math.min(slot.type*0.68*1.5, clamp(BASE*0.060*1.5,4,21));
+    const _arcTypeTop = curY + slot.type*0.5 + midH*0.15*(0.6-1) - _arcTypeFS*0.5;
+    const _arcWantGap    = Math.max(midH*0.07, topH*0.08);
+    const _arcPadCap     = midH*0.12;
+    const _arcTypeHW     = (measureText(type, _arcTypeFS, true, false) + 0.6*type.length)/2;
+    const _bizHW = measureText(bizName, _bizFSf, true, true)/2;
+    const _webHW = webLine ? measureText(webLine, _webFSf, false, false)/2 : 0;
+    const _place = g => {
+      const bY = Math.max(_bizYf, _arcLow(g, _bizHW) + _arcGap + _bizFSf*0.5);
+      const wY = webLine ? Math.max(_webYf, bY + _bizFSf*0.5 + _arcGap + _webFSf*0.5, _arcLow(g, _webHW) + _arcGap + _webFSf*0.5) : _webYf;
+      const stackBot = webLine ? wY + _webFSf*0.5 : bY + _bizFSf*0.5;
+      const typeFloor = _arcLow(g, _arcTypeHW) + _arcGap;
+      const pad = Math.max(0, Math.max(stackBot + _arcWantGap, typeFloor) - _arcTypeTop);
+      return {bY, wY, typeFloor, pad};
+    };
+    const g0 = _arcGeom(_arcFS), p0 = _place(g0);
+    const _existingPad = Math.max(0, Math.min(((webLine ? _webYf + _webFSf*0.5 : _bizYf + _bizFSf*0.5) + _arcWantGap) - _arcTypeTop, _arcPadCap));
+    const _collides = p0.bY > _bizYf + 0.01 || (webLine && p0.wY > _webYf + 0.01)
+      || p0.typeFloor > _arcTypeTop + _existingPad;
+    if(_collides){
+      _arcEngaged = true;
+      // Prefer the largest name size that needs no more push than the
+      // label already has (hazard area untouched); otherwise the size
+      // needing the least extra push within the existing allowance.
+      let found = null, least = null;
+      for(let fs = _arcFS; fs >= _mandatoryMinFS - 1e-9; fs -= 0.25){
+        const g = _arcGeom(fs);
+        if(g.half > _arcMaxHalf) continue;
+        const pl = _place(g);
+        if(pl.pad <= _existingPad + 0.01){ found = {fs, pl}; break; }
+        if(pl.pad <= _arcPadCap && (!least || pl.pad < least.pl.pad - 0.01)) least = {fs, pl};
+      }
+      if(!found) found = least;
+      if(!found){
+        // Cannot fit legibly: keep the floor size, still clear the business
+        // name, and block export (same flag as any product-name overflow).
+        const fs = Math.max(_mandatoryMinFS, Math.min(_arcFS, _mandatoryMinFS));
+        found = {fs, pl: _place(_arcGeom(fs))};
+        _scentTooSmall = true;
+      }
+      _arcFS = found.fs; _bizYf = found.pl.bY; _webYf = found.pl.wY; _arcTypeFloor = found.pl.typeFloor;
+    }
+  }
+
   // ── HEADER → MID-BAND BREATHING ──────────────────────────────
   // The product type slot is nudged upward; combined with the website sitting
   // low in the header band, the URL and the product type can end up almost
@@ -1316,7 +1410,7 @@ function renderLabel(rawData, opts){
     // conflict this avoids.
     const _wantGap    = _isRect ? Math.max(midH*0.05, topH*0.06) : Math.max(midH*0.07, topH*0.08);
     const _padCap     = _isRect ? midH*0.06 : midH*0.12;
-    const _pad        = Math.max(0, Math.min((_hdrBottom + _wantGap) - _typeTopNat, _padCap));
+    const _pad        = Math.max(0, Math.min(Math.max(_hdrBottom + _wantGap, _arcTypeFloor) - _typeTopNat, _padCap));
     curY += _pad;
   }
 
@@ -1363,6 +1457,26 @@ function renderLabel(rawData, opts){
   const _sigFSBounds={min:sigFSMin,max:sigFSMax,auto:_sigFSAuto};
   const sigY    = curY + slot.signal*0.5 + (_isRect?0:midH*0.15*(0.55-1));
   curY += slot.signal;
+
+  // Final check for circles (see the curved-name block above): with every
+  // header element and the signal word at their real positions and sizes,
+  // the curved name must clear each of them within their own width, and
+  // must end above the bottom of the signal word (pictograms and hazard
+  // text all start below it). Anything else blocks export.
+  if(isCircle && data.scentName){
+    const g = _arcGeom(_arcFS);
+    const bizHW = measureText(bizName, _bizFSf, true, true)/2;
+    const typeHW = (measureText(type, typeFS, true, false) + 0.6*type.length)/2;
+    const sigHW = measureText(sig, sigFS, true, false)/2;
+    const clearOf = (hw, top) => _arcLow(g, hw) + _arcGap*0.5 <= top;
+    const ok = clearOf(bizHW, _bizYf - _bizFSf*0.5)
+      && (!webLine || clearOf(measureText(webLine, _webFSf, false, false)/2, _webYf - _webFSf*0.5))
+      && (!type || clearOf(typeHW, typeY - typeFS*0.5))
+      && (!sig || clearOf(sigHW, sigY - sigFS*0.5))
+      && _arcLow(g, Infinity) <= sigY + sigFS*0.5
+      && g.half <= _arcMaxHalf;
+    if(!ok) _scentTooSmall = true;
+  }
 
   // Pictograms: wrap into extra rows rather than shrinking below the CLP 10mm legal minimum.
   const nP        = pictos.length;
@@ -1961,7 +2075,7 @@ function renderLabel(rawData, opts){
 
   <!-- HEADER: scent at top, then biz, then web -->
   ${isCircle
-    ? svgArcText(instanceId, scent, cx, cy, Math.min(pw,ph)/2, scentFS, txtCol, Math.min(1.1, 38/mmW))
+    ? svgArcText(instanceId, scent, cx, cy, Math.min(pw,ph)/2, _arcFS, txtCol, Math.min(1.1, 38/mmW))
     : svgWrapped(scentLines,cx,scentTopY,scentLH,scentFS,true,true,txtCol)}
   ${svgWrapped([bizName],cx,_bizYf,_bizFSf*1.2,_bizFSf,true,true,txtCol)}
   ${webLine?`<text x="${cx}" y="${_webYf.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${_webFSf.toFixed(2)}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(webLine)}</text>`:''}
