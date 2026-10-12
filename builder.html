@@ -4344,6 +4344,15 @@ function canLeaveApprovedBuilderStep(step){
       return false;
     }
   }
+  if(step===3 || step===4){
+    // Re-read and render before checking, including restored or edited
+    // fields. Confirmation must not bypass a genuine unresolved fit block.
+    updateLabel();
+    if(window._labelBlockDownload){
+      alert('Your label content does not fit at this size. Use the suggested size or adjust shape and size before continuing.');
+      return false;
+    }
+  }
   return true;
 }
 function setApprovedBuilderStep(n){
@@ -4508,9 +4517,9 @@ function toggleHazardNext(){
   const cb=document.getElementById('hazard-confirm');
   const btn=document.getElementById('btn-next-step3');
   if(!btn)return;
-  // Fit is not a Hazards progression gate; dimensions can be changed in Step 1.
-  if(window._labelBlockDownload&&approvedBuilderStep>=4){
-    if(cb)cb.checked=false;
+  // Keep the confirmation tick while resizing, but do not offer progression
+  // until the current label clears the same fit check used for downloads.
+  if(window._labelBlockDownload){
     btn.style.opacity='0.4';btn.style.pointerEvents='none';
     return;
   }
@@ -4875,7 +4884,7 @@ function restoreBurnTime(value){
 }
 function inlineSizeEditor(){
   const d=getDims();
-  return '<div class="inline-size-editor" style="margin:12px 0;padding:12px;border:1px solid currentColor;border-radius:10px;"><strong>Adjust shape and size here</strong><label style="display:block;margin-top:8px;">Shape<select data-size-shape onchange="applyInlineShape(this)" style="display:block;padding:8px;min-height:44px;background:white;color:#111;">'+['circle','rectangle','square'].map(shape=>'<option value="'+shape+'"'+(S.shape===shape?' selected':'')+'>'+shape.charAt(0).toUpperCase()+shape.slice(1)+'</option>').join('')+'</select></label><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;"><label>'+ (S.shape==='rectangle'?'Width':'Size')+' (mm)<input data-size-width type="number" inputmode="numeric" min="10" max="150" step="1" value="'+d.mmW+'" style="display:block;width:100px;padding:8px;color:#111;background:white;"></label>'+(S.shape==='rectangle'?'<label>Height (mm)<input data-size-height type="number" inputmode="numeric" min="10" max="150" step="1" value="'+d.mmH+'" style="display:block;width:100px;padding:8px;color:#111;background:white;"></label>':'')+'<button type="button" onclick="applyInlineSize(this)" style="padding:10px;border-radius:8px;background:white;color:#111;border:1px solid #4c9bb0;min-height:44px;">Apply size</button></div><small>Your entered information is kept. The preview will check the new size.</small></div>';
+  return '<div class="inline-size-editor" style="margin:12px 0;padding:12px;border:1px solid currentColor;border-radius:10px;"><strong>Adjust shape and size here</strong><label style="display:block;margin-top:8px;">Shape<select data-size-shape onchange="applyInlineShape(this)" style="display:block;padding:8px;min-height:44px;background:white;color:#111;">'+['circle','rectangle','square'].map(shape=>'<option value="'+shape+'"'+(S.shape===shape?' selected':'')+'>'+shape.charAt(0).toUpperCase()+shape.slice(1)+'</option>').join('')+'</select></label><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;"><label>'+ (S.shape==='rectangle'?'Width':'Size')+' (mm)<input data-size-width oninput="updateInlineSizeApply(this)" type="number" inputmode="numeric" min="10" max="150" step="1" value="'+d.mmW+'" style="display:block;width:100px;padding:8px;color:#111;background:white;"></label>'+(S.shape==='rectangle'?'<label>Height (mm)<input data-size-height oninput="updateInlineSizeApply(this)" type="number" inputmode="numeric" min="10" max="150" step="1" value="'+d.mmH+'" style="display:block;width:100px;padding:8px;color:#111;background:white;"></label>':'')+'<button type="button" disabled onclick="applyInlineSize(this)" style="opacity:0.4;padding:10px;border-radius:8px;background:white;color:#111;border:1px solid #4c9bb0;min-height:44px;">Apply size</button></div><small>Enter a different size, then select Apply size. Your entered information is kept.</small></div>';
 }
 function applyInlineShape(select){
   const shape=select.value;
@@ -4891,6 +4900,14 @@ function applyInlineShape(select){
   onDimInput();
   const sheetEditor=document.getElementById('sheet-size-editor');
   if(sheetEditor&&sheetEditor.innerHTML)showSheetSizeEditor();
+}
+function updateInlineSizeApply(input){
+  const box=input.closest('.inline-size-editor');
+  const w=box.querySelector('[data-size-width]'),h=box.querySelector('[data-size-height]');
+  const dims=getDims(),button=box.querySelector('button');
+  const changed=Number(w.value)!==dims.mmW || Number(h?h.value:w.value)!==dims.mmH;
+  button.disabled=!changed;
+  button.style.opacity=changed?'1':'0.4';
 }
 function applyInlineSize(button){
   const box=button.closest('.inline-size-editor');
