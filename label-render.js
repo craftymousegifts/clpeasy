@@ -548,7 +548,7 @@ function svgWrapped(lines,x,startY,lineH,sizePx,bold,serif,fill,anchor='middle',
   if(!lines.length)return'';
   const ls=letterSpacing?` letter-spacing="${letterSpacing}"`:'';
   const fw=bold?'700':'400';
-  const ff=serif?'Georgia,serif':'DM Sans,sans-serif';
+  const ff=serif?'Georgia,serif':'sans-serif';
   return`<text x="${x}" y="${startY}" font-family="${ff}" font-size="${sizePx.toFixed(2)}" font-weight="${fw}" fill="${fill}" text-anchor="${anchor}" dominant-baseline="middle"${ls}>${
     lines.map((l,i)=>i===0?xe(l):`<tspan x="${x}" dy="${lineH.toFixed(2)}">${xe(l)}</tspan>`).join('')
   }</text>`;
@@ -609,7 +609,7 @@ function svgArcText(instanceId, text, cx, cy, r, fontSize, color, arcPos){
   const path = `M ${startX},${startY} A ${arcR},${arcR} 0 0,1 ${endX},${endY}`;
   const arcId = `${instanceId}-scentArc`;
   return `<defs><path id="${arcId}" d="${path}"/></defs>` +
-    `<text font-family="DM Sans,sans-serif" font-size="${fontSize.toFixed(2)}" font-weight="700" fill="${color}" text-anchor="middle">` +
+    `<text font-family="sans-serif" font-size="${fontSize.toFixed(2)}" font-weight="700" fill="${color}" text-anchor="middle">` +
     `<textPath href="#${arcId}" startOffset="50%">${xe(text)}</textPath></text>`;
 }
 
@@ -847,7 +847,7 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
     // branch (and its exact markup) is deliberately left untouched.
     const titleY = (ph*.46).toFixed(1), bodyY = (ph*.55).toFixed(1);
     const titleFS = Math.max(8,pw*.035).toFixed(1), bodyFS = Math.max(6,pw*.025).toFixed(1);
-    return `<g class="clp-fit-block"><rect x="0" y="0" width="${pw}" height="${ph}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${titleY}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${titleFS}" font-weight="800" fill="#991b1b">FULL CONTENT DOES NOT FIT</text><text x="${cx}" y="${bodyY}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${bodyFS}" fill="#991b1b">Adjust size below the preview</text></g>`;
+    return `<g class="clp-fit-block"><rect x="0" y="0" width="${pw}" height="${ph}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${titleY}" text-anchor="middle" font-family="sans-serif" font-size="${titleFS}" font-weight="800" fill="#991b1b">FULL CONTENT DOES NOT FIT</text><text x="${cx}" y="${bodyY}" text-anchor="middle" font-family="sans-serif" font-size="${bodyFS}" fill="#991b1b">Adjust size below the preview</text></g>`;
   }
 
   // ── Correction 2 (2026-09, readable blocked-preview wording) ──────────
@@ -941,7 +941,7 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
   const headY = (y + headFS*0.85).toFixed(1);
   y += headFS*1.1 + gap;
   const bodyTspans = wrapped.map((ln,i)=>`<tspan x="${cx}" y="${(y+i*lineH).toFixed(1)}">${ln}</tspan>`).join('');
-  return `<g class="clp-fit-block"><rect x="0" y="0" width="${pw}" height="${ph}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${headY}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${headFS.toFixed(1)}" font-weight="800" fill="#991b1b">${heading}</text><text x="${cx}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${bodyFS.toFixed(1)}" fill="#991b1b">${bodyTspans}</text></g>`;
+  return `<g class="clp-fit-block"><rect x="0" y="0" width="${pw}" height="${ph}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${headY}" text-anchor="middle" font-family="sans-serif" font-size="${headFS.toFixed(1)}" font-weight="800" fill="#991b1b">${heading}</text><text x="${cx}" text-anchor="middle" font-family="sans-serif" font-size="${bodyFS.toFixed(1)}" fill="#991b1b">${bodyTspans}</text></g>`;
 }
 
 function renderLabel(rawData, opts){
@@ -1880,7 +1880,7 @@ function renderLabel(rawData, opts){
     // than shrinking further.
     const fs = fitFont(elem.text, availW, elem.fs, _mandatoryMinFS, elem.bold, false);
     // CLP compliance: all supplier/footer text must be solid black, not muted.
-    return`<text x="${cx}" y="${elem.slotY.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${fs.toFixed(2)}" font-weight="${elem.isPhone?'600':'400'}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(elem.text)}</text>`;
+    return`<text x="${cx}" y="${elem.slotY.toFixed(1)}" font-family="sans-serif" font-size="${fs.toFixed(2)}" font-weight="${elem.isPhone?'600':'400'}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(elem.text)}</text>`;
   }).join('');
 
   // ── EN 15494:2019 CANDLE SAFETY PICTOGRAMS ────────────────────
@@ -1929,9 +1929,9 @@ function renderLabel(rawData, opts){
   // ── WATERMARK ─────────────────────────────────────────────────
   const wmSz=sW*0.12;
   const wm=opts.watermark?`<g transform="translate(${cx},${cy}) rotate(-35)" style="mix-blend-mode:difference">
-    <text x="0" y="${(-wmSz*0.6).toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${Math.max(wmSz,6).toFixed(1)}" fill="rgba(128,128,128,0.55)" text-anchor="middle" font-weight="900" letter-spacing="1">CLPeasy</text>
-    <text x="0" y="${(wmSz*0.55).toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${Math.max(wmSz*0.60,4).toFixed(1)}" fill="rgba(128,128,128,0.45)" text-anchor="middle" font-weight="700">PREVIEW ONLY</text>
-    <text x="0" y="${(wmSz*1.4).toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${Math.max(wmSz*0.42,3).toFixed(1)}" fill="rgba(128,128,128,0.38)" text-anchor="middle">clpeasy.com</text>
+    <text x="0" y="${(-wmSz*0.6).toFixed(1)}" font-family="sans-serif" font-size="${Math.max(wmSz,6).toFixed(1)}" fill="rgba(128,128,128,0.55)" text-anchor="middle" font-weight="900" letter-spacing="1">CLPeasy</text>
+    <text x="0" y="${(wmSz*0.55).toFixed(1)}" font-family="sans-serif" font-size="${Math.max(wmSz*0.60,4).toFixed(1)}" fill="rgba(128,128,128,0.45)" text-anchor="middle" font-weight="700">PREVIEW ONLY</text>
+    <text x="0" y="${(wmSz*1.4).toFixed(1)}" font-family="sans-serif" font-size="${Math.max(wmSz*0.42,3).toFixed(1)}" fill="rgba(128,128,128,0.38)" text-anchor="middle">clpeasy.com</text>
   </g>`:'';
 
   // ── ASSEMBLE ──────────────────────────────────────────────────
@@ -1955,7 +1955,7 @@ function renderLabel(rawData, opts){
   const svgH = opts.ph || (forExport ? Math.round(mmH*exportPxPerMm) : ph);
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" viewBox="0 0 ${pw} ${ph}" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" image-rendering="optimizeQuality">
-<defs>${clip}<style>@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&amp;display=swap');</style></defs>
+<defs>${clip}</defs>
 <g clip-path="url(#${instanceId}-lc)">
   ${bg}
 
@@ -1964,13 +1964,13 @@ function renderLabel(rawData, opts){
     ? svgArcText(instanceId, scent, cx, cy, Math.min(pw,ph)/2, scentFS, txtCol, Math.min(1.1, 38/mmW))
     : svgWrapped(scentLines,cx,scentTopY,scentLH,scentFS,true,true,txtCol)}
   ${svgWrapped([bizName],cx,_bizYf,_bizFSf*1.2,_bizFSf,true,true,txtCol)}
-  ${webLine?`<text x="${cx}" y="${_webYf.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${_webFSf.toFixed(2)}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(webLine)}</text>`:''}
+  ${webLine?`<text x="${cx}" y="${_webYf.toFixed(1)}" font-family="sans-serif" font-size="${_webFSf.toFixed(2)}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(webLine)}</text>`:''}
 
   <!-- PRODUCT TYPE -->
-  <text x="${cx}" y="${typeY.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${typeFS.toFixed(2)}" font-weight="700" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle" letter-spacing="0.6">${xe(type)}</text>
+  <text x="${cx}" y="${typeY.toFixed(1)}" font-family="sans-serif" font-size="${typeFS.toFixed(2)}" font-weight="700" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle" letter-spacing="0.6">${xe(type)}</text>
 
   <!-- SIGNAL WORD -->
-  <text x="${cx}" y="${sigY.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${sigFS.toFixed(2)}" font-weight="800" fill="${sig==='DANGER'?'#cc0000':txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(sig)}</text>
+  <text x="${cx}" y="${sigY.toFixed(1)}" font-family="sans-serif" font-size="${sigFS.toFixed(2)}" font-weight="800" fill="${sig==='DANGER'?'#cc0000':txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(sig)}</text>
 
   <!-- PICTOGRAMS -->
   ${pictoRow}
