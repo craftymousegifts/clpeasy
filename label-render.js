@@ -1067,7 +1067,18 @@ function renderLabel(rawData, opts){
   const _showBCF = _isCandle && !data.hideEN15494 && mmW >= 40 && mmH >= 40;
   // The candle row and supplier details are measured independently below, so
   // a 22% blanket reservation wasted usable hazard space on 63mm circles.
-  const botFrac = _showBCF ? 0.19 : 0.15;
+  let botFrac = _showBCF ? 0.19 : 0.15;
+  // With no hazard pictograms, use the freed middle space to give the
+  // candle footer its actual minimum room. Keep the existing text/icon
+  // floors and the layout of labels carrying pictograms unchanged.
+  if(_showBCF && data.pictograms.length===0){
+    const footerLines = [data.bizAddress, data.bizPhone,
+      data.netWeight || data.burnTime || data.batchNum].filter(Boolean).length;
+    const minimumFooter = (BCF_FLOOR_MM * _pxPerMm * BCF_ROW_HEIGHT_RATIO
+      + footerLines * (_mandatoryMinFS / 0.82) + 0.1 * _pxPerMm)
+      / (1 - 2 * BCF_FOOTER_PAD_FRAC);
+    botFrac = Math.max(botFrac, minimumFooter / sH);
+  }
   const topH = sH * topFrac;
   const botH = sH * botFrac;
   const midH = sH - topH - botH;
@@ -1190,9 +1201,9 @@ function renderLabel(rawData, opts){
   const _pictoWEstimate = chordW(midY, 0.06);
   const _pictoGapEstimate = _pictoWEstimate * 0.04;
   const _pictoPerRowEst = Math.max(1, Math.floor((_pictoWEstimate + _pictoGapEstimate) / (_minPictoPx + _pictoGapEstimate)));
-  const _pictoRowCount = pictos.length ? Math.ceil(pictos.length / _pictoPerRowEst) : 1;
+  const _pictoRowCount = pictos.length ? Math.ceil(pictos.length / _pictoPerRowEst) : 0;
   const _pictoRowGapPx = _minPictoPx * 0.18;
-  const _minPictoSlot = Math.ceil(_pictoRowCount * _minPictoPx + (_pictoRowCount - 1) * _pictoRowGapPx);
+  const _minPictoSlot = Math.ceil(_pictoRowCount * _minPictoPx + Math.max(_pictoRowCount - 1, 0) * _pictoRowGapPx);
   const _naturalPicto = midH * 0.16 * _pictoRowCount;
   const _pictoSlot    = Math.max(_naturalPicto, _minPictoSlot);
   // Remaining mid-band space shared between type, signal, H, sens, P, gap
@@ -1373,7 +1384,6 @@ function renderLabel(rawData, opts){
   const pictoPerRow = Math.max(1, Math.floor((pictoSW + _pictoGapAtMin) / (minPictoSz + _pictoGapAtMin)));
   const pictoRows = [];
   for(let i=0;i<nP;i+=pictoPerRow) pictoRows.push(pictos.slice(i,i+pictoPerRow));
-  if(!pictoRows.length) pictoRows.push([]);
   // Pictogram size is always the physical _pictoMm-per-icon size
   // (minPictoSz), derived from pxPerMm (pw/mmW) -- the same real-world
   // physical icon regardless of which canvas/caller (Builder's fixed-260
