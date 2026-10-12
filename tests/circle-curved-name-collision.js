@@ -5,8 +5,8 @@
 // smallest distance between the two ink layers is taken, in label units
 // (the label canvas is 260 units wide). Covers: previously clear labels
 // (unchanged), long names, descenders, website text, a DANGER reed
-// diffuser, the blocked-export path with its suggested size, and the
-// 63x44mm rectangle reference case.
+// diffuser, the blocked-export path with its suggested size, the 63x44mm
+// rectangle reference case, and identical output at 1x and 3x pixel ratio.
 // Run from the repo root: node tests/circle-curved-name-collision.js
 const fs = require('fs');
 const path = require('path');
@@ -108,6 +108,24 @@ const server = http.createServer((req, res) => {
     check(mr.gap > 0.25, `63x44mm: SCENTED CANDLE and WARNING touch (gap ${mr.gap})`);
     const mw = await measure(Object.assign({}, rect, { productType: 'Wax Melt', scentName: 'Lemon Zest' }));
     check(mw.fits && mw.adjusted === false && mw.gap > 0.25, `63x44mm wax melt reference should fit with WAX MELT/WARNING clear (fits ${mw.fits}, gap ${mw.gap})`);
+    // 8. Device pixel ratio must not change the layout (customers' screens
+    //    range from 1x to 3x; small-size canvas ink metrics are pixel-rounded).
+    const renderAll = async dpr => {
+      const pg = await browser.newPage();
+      await pg.setViewport({ width: 800, height: 600, deviceScaleFactor: dpr });
+      await pg.setContent(`<body></body><script src="http://127.0.0.1:${server.address().port}/label-render.js"></script>`);
+      await pg.waitForFunction('window.LabelRenderer');
+      const out = await pg.evaluate((names, base) => {
+        const o = []; let n = 0;
+        for (const mm of [52, 63, 97]) for (const s of names) for (const v of [{}, { bizWebsite: 'www.example-candles.test' }])
+          o.push(LabelRenderer.renderLabel(Object.assign({}, base, { customW: mm, customH: mm, scentName: s, bizName: 'Crafty Mouse Gifts' }, v), { instanceId: 'dpr' + (n++) }).svg);
+        return o;
+      }, ['Fig & Cassis', 'Black Pomegranate', 'Gingerbread Spice', 'Winter Spice and Orange Blossom', 'Amber Woods'], BASE_LABEL);
+      await pg.close(); return out;
+    };
+    const r1 = await renderAll(1), r3 = await renderAll(3);
+    const differ = r1.filter((svg, i) => svg !== r3[i]).length;
+    check(differ === 0, `${differ} of ${r1.length} circle labels render differently at 1x and 3x device pixel ratio`);
   } catch (e) {
     failures.push('error: ' + e.message);
   } finally {

@@ -489,13 +489,18 @@ function measureText(txt,sizePx,bold,serif){
 // canvas TextMetrics actualBoundingBox* values where the browser provides
 // them; otherwise (e.g. a stubbed canvas) falls back to the full advance
 // width, 0.75em above and fallbackDesc below the baseline.
+// Measured at a 1000px reference size and scaled: browsers round ink
+// bounds to whole pixels, which at label font sizes (often under 15px) would
+// make results imprecise and dependent on the device's pixel ratio.
+const _INK_REF_PX=1000;
 function measureInk(ch,sizePx,bold,serif,fallbackDesc){
-  _ctx.font=`${bold?'700':'400'} ${sizePx}px ${serif?'serif':'sans-serif'}`;
-  const m=_ctx.measureText(ch);
+  _ctx.font=`${bold?'700':'400'} ${_INK_REF_PX}px ${serif?'serif':'sans-serif'}`;
+  const m=_ctx.measureText(ch), k=sizePx/_INK_REF_PX;
   if(m && typeof m.actualBoundingBoxAscent==='number' && isFinite(m.actualBoundingBoxAscent)){
-    return {l:-(m.actualBoundingBoxLeft||0), r:(m.actualBoundingBoxRight||0), asc:m.actualBoundingBoxAscent, desc:m.actualBoundingBoxDescent||0, w:m.width};
+    return {l:-(m.actualBoundingBoxLeft||0)*k, r:(m.actualBoundingBoxRight||0)*k, asc:m.actualBoundingBoxAscent*k, desc:(m.actualBoundingBoxDescent||0)*k, w:m.width*k};
   }
-  const w=m?m.width:0;
+  _ctx.font=`${bold?'700':'400'} ${sizePx}px ${serif?'serif':'sans-serif'}`;
+  const w=_ctx.measureText(ch).width||0;
   return {l:0, r:w, asc:sizePx*0.75, desc:fallbackDesc, w};
 }
 
