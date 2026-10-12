@@ -4339,6 +4339,10 @@ function canLeaveApprovedBuilderStep(step){
   if(step===4){
     const missing=_missingBusinessDetails();
     if(missing.length){
+      // Re-render first so the preview and Step 4 box reflect the field
+      // values this check just read (a value changed without an input event
+      // would otherwise leave an older "does not fit" preview showing).
+      updateLabel();
       alert(_businessDetailsBlockedMessage());
       const ids={bizName:'biz-name',bizAddress:'biz-address',bizPhone:'biz-phone'};
       document.getElementById(ids[missing[0].key])?.focus();
@@ -5768,7 +5772,7 @@ function viewReviewLabel(){
   const preview=document.getElementById('preview-panel-el');
   if(preview){preview.setAttribute('tabindex','-1');preview.scrollIntoView({behavior:'smooth',block:'center'});preview.focus({preventScroll:true});}
 }
-function openPreviewSheet(){const sheet=document.getElementById('preview-sheet');if(sheet){sheet.classList.add('open');document.body.style.overflow='hidden';}}
+function openPreviewSheet(){const sheet=document.getElementById('preview-sheet');if(sheet){updateLabel();sheet.classList.add('open');document.body.style.overflow='hidden';}}
 function closeSheet(e){if(!e||e.target===document.getElementById('preview-sheet')||e===undefined){document.getElementById('preview-sheet').classList.remove('open');document.body.style.overflow='';}}
 
 // ══════════════════════════════════════════════════════════════

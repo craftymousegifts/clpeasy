@@ -101,6 +101,27 @@ const server = http.createServer((req, res) => {
     };
   });
 
+  // Width of the red overlay text actually painted in the visible preview
+  // (guest previews are a raster image, so this reads screen pixels, not
+  // markup). "COMPLETE YOUR BUSINESS DETAILS" paints wider than
+  // "FULL CONTENT DOES NOT FIT".
+  async function paintedRedWidth(t, sel) {
+    await t.evaluate(() => window.scrollTo(0, 0)); // fixed-position sheet: keep screenshot coordinates aligned
+    await sleep(900);
+    const b64 = await (await t.$(sel)).screenshot({ encoding: 'base64' });
+    if (process.env.SHOT_DIR) fs.writeFileSync(path.join(process.env.SHOT_DIR, 'painted-' + Date.now() + '.png'), Buffer.from(b64, 'base64'));
+    return t.evaluate(async b64 => {
+      const img = new Image(); img.src = 'data:image/png;base64,' + b64; await img.decode();
+      const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+      const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+      const d = x.getImageData(0, 0, c.width, c.height).data; let min = 1e9, max = -1;
+      for (let i = 0; i < d.length; i += 4) if (d[i] > 120 && d[i + 1] < 70 && d[i + 2] < 70) { const px = (i / 4) % c.width; if (px < min) min = px; if (px > max) max = px; }
+      return max < 0 ? 0 : (max - min) / c.width;
+    }, b64);
+  }
+  const openSheet = async t => { await t.evaluate(() => document.activeElement && document.activeElement.blur()); await sleep(500); await t.evaluate(() => { const b = [...document.querySelectorAll('button')].find(x => /View label/.test(x.textContent) && x.checkVisibility()); b.click(); }); };
+  const closeSheet = t => t.evaluate(() => window.closeSheet());
+
   try {
     // ── 1/2. Long business details at 60mm: blocked at Step 4, box visible ──
     let t = await open(1366, 900, false);
@@ -170,6 +191,31 @@ const server = http.createServer((req, res) => {
     await t.evaluate(() => { for (const [id, v] of [['biz-name', 'Fernhill QA'], ['biz-address', '1 Test Lane, EX1 2AB'], ['biz-phone', '01632 960000']]) { const e = document.getElementById(id); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); } });
     s = await state(t);
     assert.strictEqual(s.blocked, false); assert.strictEqual(s.step4Shown, false, 'no Step 4 box when complete and fitting');
+    await t.ctx.close();
+
+    // ── 5. What is painted: missing phone vs completed, on the iPhone sheet ──
+    t = await open(390, 664, true);
+    await toStep4(t, 60, LONG);
+    await openSheet(t);
+    const wFit = await paintedRedWidth(t, '#sheet-label-container');
+    await closeSheet(t);
+    // (a) phone deleted by typing
+    await t.evaluate(() => { const e = document.getElementById('biz-phone'); e.value = ''; e.dispatchEvent(new Event('input', { bubbles: true })); });
+    await openSheet(t);
+    const wTyped = await paintedRedWidth(t, '#sheet-label-container');
+    await closeSheet(t);
+    // (b) phone restored, then cleared WITHOUT an input event and "Preview & download" pressed
+    await t.evaluate(() => { const e = document.getElementById('biz-phone'); e.value = '01632 960000'; e.dispatchEvent(new Event('input', { bubbles: true })); });
+    await t.evaluate(() => { document.getElementById('biz-phone').value = ''; });
+    await t.evaluate(() => { const b = [...document.querySelectorAll('.approved-stage-nav button')].find(x => /Preview\s*&/.test(x.textContent)); b.click(); });
+    await sleep(300);
+    s = await state(t);
+    assert(/Complete your business details/.test(s.step4), 'Step 4 box refreshed by the Step 4 check: ' + s.step4);
+    await openSheet(t);
+    const wSilent = await paintedRedWidth(t, '#sheet-label-container');
+    assert(wFit > 0.2 && wTyped > 0.2 && wSilent > 0.2, `red overlay text painted: ${wFit} ${wTyped} ${wSilent}`);
+    assert(wTyped > wFit * 1.08, `painted overlay should read COMPLETE YOUR BUSINESS DETAILS after typing: ${wTyped} vs fit ${wFit}`);
+    assert(Math.abs(wSilent - wTyped) < 0.02, `painted overlay after silent clear + Step 4 check matches the missing-details overlay: ${wSilent} vs ${wTyped}`);
     await t.ctx.close();
 
     // ── 4. Short iPhone viewport: blocked sheet keeps the label whole ──
