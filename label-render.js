@@ -1514,11 +1514,37 @@ function renderLabel(rawData, opts){
     // EU/NI-mode information, not an active GB requirement.
     const hLH=fs*1.25, sLH=fs*1.25, pLH=fs*1.15;
     const _edgeMargin=2*pxPerMm; // fixed 2mm from the label edge, both sides
+    // Circle-edge fix (Oct 2026): each block used to be wrapped once at the
+    // width of its FIRST line, so below the centre of a circle its later,
+    // lower lines could be wider than the circle allows there and were cut
+    // off by the label clip while the label still reported fits:true. Each
+    // line is now wrapped to the narrower of that same block width and the
+    // circle's width at the line's own centre (minus the same 2mm margin), so
+    // a line that already fitted keeps exactly its old width. Squares and
+    // rectangles are unchanged (their width does not vary with height).
+    // overX records how far any line still exceeds its own allowance (only
+    // possible where the fs*3 minimum width applies); _fits() treats that as
+    // not fitting, so such a label is blocked rather than exported clipped.
+    let _overX=0;
+    const _lineAllow=(yc)=>chordW(yc,0)-_edgeMargin*2;
+    const _wrapBlock=(txt,sw,yTop,LH,i0)=>{
+      if(!txt) return [];
+      if(!isCircle) return wrapText(txt,sw,fs,false,false);
+      let rest=txt.split(/\s+/).join(' ').trim(); const out=[]; let i=i0;
+      while(rest){
+        const w=Math.max(fs*3, Math.min(sw, _lineAllow(yTop+(i+0.5)*LH)));
+        const ls=wrapText(rest,w,fs,false,false);
+        if(ls.length<=1 || !rest.startsWith(ls[0])){ out.push(...ls); break; }
+        out.push(ls[0]); rest=rest.slice(ls[0].length).trim(); i++;
+      }
+      out.forEach((l,k)=>{ _overX=Math.max(_overX, measureText(l,fs,false,false)-_lineAllow(yTop+(i0+k+0.5)*LH)); });
+      return out;
+    };
     let y=y0;
     let hLines=[];
     if(hText){
       const sw=Math.max(fs*3, chordW(y+hLH*0.5,0)-_edgeMargin*2);
-      hLines=wrapText(hText,sw,fs,false,false);
+      hLines=_wrapBlock(hText,sw,y,hLH,0);
     }
     const hStartY=y+hLH*0.5;
     y+=hLines.length*hLH;
@@ -1527,8 +1553,8 @@ function renderLabel(rawData, opts){
     let sLines=[],eLines=[];
     if(sensText){
       const sw=Math.max(fs*3, chordW(y+sLH*0.5,0)-_edgeMargin*2);
-      sLines=_sensBase?wrapText(_sensBase,sw,fs,false,false):[];
-      eLines=_euhSuffix?wrapText(_euhSuffix,sw,fs,false,false):[];
+      sLines=_sensBase?_wrapBlock(_sensBase,sw,y,sLH,0):[];
+      eLines=_euhSuffix?_wrapBlock(_euhSuffix,sw,y,sLH,sLines.length):[];
     }
     const sStartY=y+sLH*0.5;
     const allS=[...sLines,...eLines];
@@ -1538,12 +1564,12 @@ function renderLabel(rawData, opts){
     let pLines=[];
     if(pText){
       const sw=Math.max(fs*3, chordW(y+pLH*0.5,0)-_edgeMargin*2);
-      pLines=wrapText(pText,sw,fs,false,false);
+      pLines=_wrapBlock(pText,sw,y,pLH,0);
     }
     const pStartY=y+pLH*0.5;
     y+=pLines.length*pLH;
 
-    return {fs,hLH,sLH,pLH,hLines,hStartY,allS,sStartY,pLines,pStartY,endY:y};
+    return {fs,hLH,sLH,pLH,hLines,hStartY,allS,sStartY,pLines,pStartY,endY:y,overX:_overX};
   }
 
   // Fit = block laid from the top of the avail zone ends at/above botY minus a
@@ -1551,7 +1577,11 @@ function renderLabel(rawData, opts){
   // this margin only governs aesthetics/warning, not overflow — keep it modest
   // so a block that genuinely fits doesn't trip a false legibility warning.)
   const _fitMargin=(fs)=> fs*0.3;
-  const _fits=(fs)=> _layoutHazard(fs,_curY0).endY <= _hardBot - _fitMargin(fs);
+  // A layout also fails if any line is wider than the circle allows at its
+  // own height (overX; always 0 on squares/rectangles). 0.5 units tolerance.
+  const _OVER_X_TOL=0.5;
+  const _fitsLayout=(L,bottom)=> L.endY <= bottom && L.overX <= _OVER_X_TOL;
+  const _fits=(fs)=> _fitsLayout(_layoutHazard(fs,_curY0), _hardBot - _fitMargin(fs));
 
   // Binary search for the largest fitting font size.
   let _bsLo=_minLegibleFS, _bsHi=clamp(BASE*0.13,8,28);
@@ -1570,7 +1600,7 @@ function renderLabel(rawData, opts){
   let _sharedFS=_bsLo;
   // Manual override gets its own ceiling using zero breathing margin — right up
   // to the label boundary itself, not auto-fit's cautious buffer.
-  const _fitsExact=(fs)=> _layoutHazard(fs,_curY0).endY <= _hardBot;
+  const _fitsExact=(fs)=> _fitsLayout(_layoutHazard(fs,_curY0), _hardBot);
   let _manualHi=_bsHi;
   if(_fitsAtMin){
     let _mLo=_bsHi, _mHi=clamp(BASE*0.30,8,60);
@@ -1603,12 +1633,12 @@ function renderLabel(rawData, opts){
   // Step the offset back toward 0 until it fits, rather than snapping the
   // whole way to top-aligned — keeps the control visibly responsive.
   let _yTries=0;
-  while(_L.endY > _hardBot && _yFrac>0 && _yTries<20){
+  while(!_fitsLayout(_L,_hardBot) && _yFrac>0 && _yTries<20){
     _yFrac=Math.max(0,_yFrac-0.05);
     _L=_layoutHazard(_sharedFS,_curY0+_slack*_yFrac);
     _yTries++;
   }
-  if(_L.endY > _hardBot) _L=_topLayout;
+  if(!_fitsLayout(_L,_hardBot)) _L=_topLayout;
 
   // Derive render variables from the chosen layout.
   const hFS=_sharedFS, hLH=_L.hLH;
@@ -1624,7 +1654,7 @@ function renderLabel(rawData, opts){
   // If the full layout exceeds the available area, block it. The preview shows
   // an unmistakable non-exportable state instead of replacing mandatory text
   // with dots or silently omitting statements.
-  const _labelLegibilityWarn = !_fitsAtMin || _L.endY>_hardBot;
+  const _labelLegibilityWarn = !_fitsAtMin || !_fitsLayout(_L,_hardBot);
 
   const showP   = pLines.length > 0;
 
