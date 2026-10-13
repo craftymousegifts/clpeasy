@@ -207,3 +207,11 @@ CLPeasy V1.0 was planned/launched around Monday 15 June 2026, with a "LIVE TODAY
 6. Validate locally where possible.
 7. Summarize files changed and tests/checks performed.
 
+
+## Production release timing — founder instruction, 13 October 2026
+
+All routine production updates must be managed outside normal working hours in an explicitly founder-approved release window. This covers production-triggering merges, manual publishes, deployed functions, migrations and production service/settings/email-workflow changes. Daytime preparation and isolated preview testing remain permitted. Normal working hours and a standing window have not yet been selected; do not infer standing release approval.
+
+Before release, record scope/version, risk, relevant preview/sandbox and physical checks, customer impact/notice where needed, known-good rollback/recovery steps, stop time, approval and monitored outcome in the existing PR/release record. Assess whether downtime is necessary; preserve active work, browser-saved labels, in-flight payments and webhook processing. A managed release does not automatically require taking the site offline.
+
+Urgent containment of security/data exposure, harmful output, ongoing billing failures or major outages follows a separate expedited founder decision with recorded reason, approval and verification; AI has no blanket emergency release authority. Real-money testing requires advance disclosure of expected non-refundable fees and explicit approval; use sandbox by default.
