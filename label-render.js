@@ -1743,17 +1743,44 @@ function renderLabel(rawData, opts){
   // lines can never overlap vertically. The EN15494 row occupies the reserved
   // strip above (_footerBase), so the text always sits clear of the icons.
   const nSlots = Math.min(footerSlots.length, 3);
-  const slotLH = nSlots > 0 ? fUsable / nSlots : fUsable;
   const _footerBase = botY + fTopPad + _bcfRowH; // top of footer text zone (below EN row)
+  // Circle footer balance (Oct 2026, Michaela's approved option P6b; circles
+  // only -- squares and rectangles keep the layout below unchanged):
+  //  - every footer line keeps at least 1 mm from the circular cut edge:
+  //    the rows end 1 mm above the bottom of the circle, and each line's
+  //    width is measured at its lowest ink point, 1 mm in from each side;
+  //  - the longest line goes in the top (widest) row, so the order follows
+  //    the measured line widths and can vary with the content;
+  //  - all footer lines share one size (the smallest of their fitted sizes,
+  //    never below the existing _mandatoryMinFS floor), and the phone is
+  //    drawn in regular weight like the other lines.
+  // A footer that cannot fit this way still blocks export (_footerClipped).
+  const _footerEdgeClear = 1.0*pxPerMm;
+  let slotLH = nSlots > 0 ? fUsable / nSlots : fUsable;
+  if(isCircle && nSlots > 0){
+    // The rows end 1 mm above the bottom of the circle. If that would leave a
+    // row too short for the floor size at the existing >=122% spacing (the
+    // 52 mm preset with address + phone), the rows keep just that minimum
+    // height instead; the edge check after sizing still guarantees 1 mm.
+    const _rowsTo1mm = Math.max(0, Math.min(fUsable, (cy + r - _footerEdgeClear) - _footerBase)) / nSlots;
+    const _rowForFloor = _mandatoryMinFS / 0.82 + 0.01;
+    slotLH = (_rowsTo1mm < _rowForFloor) ? Math.min(fUsable / nSlots, _rowForFloor) : _rowsTo1mm;
+  }
   const _slotFSCap  = slotLH * 0.82;             // hard vertical cap per row
   let footerElems = [];
   let _footerClipped = false;
-  footerSlots.slice(0, nSlots).forEach((slot, i)=>{
-    const _isDetail = !slot.isPhone && i>0;
-    const _fsMax  = Math.min(maxFooterFS * (slot.isPhone?1.05:_isDetail?1.15:1.0), _slotFSCap);
+  let _footerRows = footerSlots.slice(0, nSlots);
+  if(isCircle){
+    const _w = s => measureText(s.text, 10, s.bold, false);
+    _footerRows = _footerRows.map((s,k)=>({s,k})).sort((a,b)=>(_w(b.s)-_w(a.s))||(a.k-b.k)).map(o=>o.s);
+  }
+  _footerRows.forEach((slot, i)=>{
+    const _isDetail = !slot.isPhone && footerSlots.indexOf(slot)>0;
+    const _fsMax  = isCircle ? Math.min(maxFooterFS, _slotFSCap) : Math.min(maxFooterFS * (slot.isPhone?1.05:_isDetail?1.15:1.0), _slotFSCap);
     const slotY   = _footerBase + slotLH * (i + 0.5);
     const chordAtY = Math.min(chordW(slotY, 0.09), sW * 0.88);
-    const availW  = chordAtY * 0.88;
+    let availW  = chordAtY * 0.88;
+    if(isCircle) availW = Math.min(availW, chordW(slotY + _fsMax*0.5, 0) - 2*_footerEdgeClear);
     const fs = fitFont(slot.text, availW, _fsMax, _mandatoryMinFS, slot.bold, false);
     // fitFont() never returns below the floor it's given (Math.max(sz,
     // minPx)) -- but that alone doesn't prove the text actually FITS at
@@ -1785,8 +1812,18 @@ function renderLabel(rawData, opts){
     // text still renders, at its true mandatory size and position, so the
     // overlap itself is visible evidence of the block, not hidden by it).
     if(fs / 0.82 > slotLH) _footerClipped = true;
-    footerElems.push({text: slot.text, fs, bold: slot.bold, isPhone: slot.isPhone||false, slotY});
+    // isPhone only selects the semi-bold drawing weight below; on circles the
+    // phone is drawn regular (P6b), matching how it is measured here.
+    footerElems.push({text: slot.text, fs, bold: slot.bold, isPhone: (!isCircle && slot.isPhone)||false, slotY, availW});
   });
+  if(isCircle && footerElems.length){
+    const _shared = Math.min(...footerElems.map(e=>e.fs));
+    footerElems.forEach(e=>{ e.fs=_shared; });
+    // Final check at the real size: each line's lowest point (about half a
+    // font height below its row centre) must be at least 1 mm above the
+    // bottom of the circle; the sideways rule above keeps its ends 1 mm in.
+    footerElems.forEach(e=>{ if(e.slotY + e.fs*0.5 > cy + r - _footerEdgeClear) _footerClipped = true; });
+  }
   const _footerLegibilityClipped = _footerClipped;
 
   // ── SHARED NON-FIT BOOLEAN ──────────────────────────────────────────────
@@ -1861,7 +1898,7 @@ function renderLabel(rawData, opts){
   const footerRendered = footerElems.map(elem=>{
     if(elem.slotY > sBot - 1) return '';
     const chordAtY = Math.min(chordW(elem.slotY, 0.09), sW * 0.88);
-    const availW = chordAtY * 0.88;
+    const availW = isCircle ? elem.availW : chordAtY * 0.88;
     // Final fit at actual Y — catches any rounding. Bug fix (read-only
     // impact assessment, 2026-09): this recompute previously floored at
     // Math.max(minFooterFS*0.5, 1.5) -- a tiny, purely aesthetic value far
