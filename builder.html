@@ -513,6 +513,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .preview-legend .ft-controls{display:flex;align-items:center;gap:4px;}
 .preview-legend .ft-btn{background:var(--off);border:1px solid var(--border);color:var(--text);border-radius:4px;width:19px;height:19px;font-size:11px;cursor:pointer;line-height:1;padding:0;}
 .preview-legend .ft-pct{font-size:10.5px;color:var(--muted);min-width:28px;text-align:center;font-weight:600;}
+.preview-legend .ft-pct .ft-min{display:block;font-size:8.5px;font-weight:600;color:var(--muted);line-height:1;}
 .preview-legend .ft-reset{font-size:9.5px;color:var(--teal);font-weight:600;cursor:pointer;display:none;text-align:right;padding:2px 0 4px;}
 #label-svg-container{
   -webkit-user-select:none;-moz-user-select:none;user-select:none;
@@ -5076,6 +5077,10 @@ function buildSVG(forExport=false){
   window._typeFSBounds=result.metrics.fsBounds.type;
   window._sigFSBounds=result.metrics.fsBounds.signal;
   window._hazardFSBounds=result.metrics.fsBounds.hazard;
+  // Fine-tune display only (Oct 2026): the sizes actually drawn, and the
+  // inputs of this preview render, so syncAdjustPanel() can show each
+  // adjusted size as a percentage of its automatic size.
+  if(!forExport){window._ftRenderedFS=result.metrics.fontSizes;window._ftLastData=data;window._ftLastOpts=opts;}
   window._unrecognizedCodes=result.metrics.unrecognizedCodes;
   // Structured failure fields: the renderer's own determination of WHY
   // this render is blocked, never re-derived here. blockReason/
@@ -5109,19 +5114,50 @@ function buildSVG(forExport=false){
 }
 
 // ── UPDATE PREVIEW ────────────────────────────────────────────
-function _fsPct(override,bounds){
-  if(!bounds)return 100;
-  const v=override!=null?Math.min(Math.max(override,bounds.min),bounds.max):bounds.auto;
-  return bounds.max>bounds.min?Math.round((v-bounds.min)/(bounds.max-bounds.min)*100):100;
+// Fine-tune display (Oct 2026, Michaela's approved correction): each size is
+// shown as a percentage of its AUTOMATIC size -- 100% when automatic or
+// after Reset -- instead of its position between the allowed minimum and
+// maximum (which showed e.g. "3%" for text at 59% of its automatic size).
+// Display only: sizes, steps, limits, fit checks and exports are unchanged.
+// The automatic reference for an adjusted control is held steady while the
+// customer adjusts, and re-measured (one extra render with that control on
+// automatic) only when the label's content, size or other settings change.
+const _FT_CONTROLS=[
+  {el:'hazard-fs-pct', ov:'hazardFSOverride', bounds:'_hazardFSBounds', fs:'hazard'},
+  {el:'scent-fs-pct', ov:'scentFSOverride', bounds:'_scentFSBounds', fs:'scent'},
+  {el:'bizname-fs-pct', ov:'bizNameFSOverride', bounds:'_bizNameFSBounds', fs:'biz'},
+  {el:'type-fs-pct', ov:'typeFSOverride', bounds:'_typeFSBounds', fs:'type'},
+  {el:'sig-fs-pct', ov:'sigFSOverride', bounds:'_sigFSBounds', fs:'signal'},
+];
+let _ftAutoRef={}, _ftAutoRefKey=null;
+function _ftContextKey(){
+  const o=Object.assign({},window._ftLastOpts||{});
+  _FT_CONTROLS.forEach(c=>{delete o[c.ov];});
+  return JSON.stringify([window._ftLastData||null,o]);
+}
+function _ftAutoSize(c){
+  const fsNow=window._ftRenderedFS||{};
+  if(S[c.ov]==null)return fsNow[c.fs];
+  try{
+    const o=Object.assign({},window._ftLastOpts,{instanceId:'builder-ft-ref'});o[c.ov]=null;
+    return LabelRenderer.renderLabel(window._ftLastData,o).metrics.fontSizes[c.fs];
+  }catch(e){return null;}
+}
+function _ftPctHtml(c){
+  const b=window[c.bounds], fsNow=window._ftRenderedFS||{};
+  const cur=S[c.ov]!=null?S[c.ov]:(b?b.auto:null);
+  const atMin=!!b&&cur!=null&&(b.max<=b.min||cur<=b.min);
+  const ref=_ftAutoRef[c.ov], drawn=fsNow[c.fs];
+  const pct=(S[c.ov]==null||!(ref>0)||!(drawn>0))?100:Math.round(drawn/ref*100);
+  return pct+'%'+(atMin?'<span class="ft-min">minimum</span>':'');
 }
 function syncAdjustPanel(){
-  const hb=window._hazardFSBounds, sb=window._scentFSBounds, bb=window._bizNameFSBounds;
-  const tb=window._typeFSBounds, gb=window._sigFSBounds;
-  const hEl=document.getElementById('hazard-fs-pct'); if(hEl)hEl.textContent=_fsPct(S.hazardFSOverride,hb)+'%';
-  const sEl=document.getElementById('scent-fs-pct'); if(sEl)sEl.textContent=_fsPct(S.scentFSOverride,sb)+'%';
-  const zEl=document.getElementById('bizname-fs-pct'); if(zEl)zEl.textContent=_fsPct(S.bizNameFSOverride,bb)+'%';
-  const tEl=document.getElementById('type-fs-pct'); if(tEl)tEl.textContent=_fsPct(S.typeFSOverride,tb)+'%';
-  const gEl=document.getElementById('sig-fs-pct'); if(gEl)gEl.textContent=_fsPct(S.sigFSOverride,gb)+'%';
+  const key=_ftContextKey(), changed=key!==_ftAutoRefKey;
+  _FT_CONTROLS.forEach(c=>{
+    if(changed||S[c.ov]==null||!(_ftAutoRef[c.ov]>0))_ftAutoRef[c.ov]=_ftAutoSize(c);
+  });
+  _ftAutoRefKey=key;
+  _FT_CONTROLS.forEach(c=>{const e=document.getElementById(c.el);if(e)e.innerHTML=_ftPctHtml(c);});
   const yPct=Math.round((S.hazardYOffset!=null?S.hazardYOffset:0.5)*100);
   const yEl=document.getElementById('hazard-y-pct'); if(yEl)yEl.textContent=yPct+'%';
   const hR=document.getElementById('hazard-fs-reset'); if(hR)hR.style.display=S.hazardFSOverride!=null?'block':'none';
