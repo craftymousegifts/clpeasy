@@ -5120,8 +5120,10 @@ function buildSVG(forExport=false){
 // maximum (which showed e.g. "3%" for text at 59% of its automatic size).
 // Display only: sizes, steps, limits, fit checks and exports are unchanged.
 // The automatic reference for an adjusted control is held steady while the
-// customer adjusts, and re-measured (one extra render with that control on
-// automatic) only when the label's content, size or other settings change.
+// customer adjusts THAT control, and re-measured (one extra render with that
+// control on automatic) when the label's content, size or other settings
+// change -- including any of the OTHER four fine-tune controls, since their
+// sizes change the room available to this text (#242 review, 14 Oct 2026).
 const _FT_CONTROLS=[
   {el:'hazard-fs-pct', ov:'hazardFSOverride', bounds:'_hazardFSBounds', fs:'hazard'},
   {el:'scent-fs-pct', ov:'scentFSOverride', bounds:'_scentFSBounds', fs:'scent'},
@@ -5129,7 +5131,7 @@ const _FT_CONTROLS=[
   {el:'type-fs-pct', ov:'typeFSOverride', bounds:'_typeFSBounds', fs:'type'},
   {el:'sig-fs-pct', ov:'sigFSOverride', bounds:'_sigFSBounds', fs:'signal'},
 ];
-let _ftAutoRef={}, _ftAutoRefKey=null;
+let _ftAutoRef={}, _ftAutoRefKey={};
 function _ftContextKey(){
   const o=Object.assign({},window._ftLastOpts||{});
   _FT_CONTROLS.forEach(c=>{delete o[c.ov];});
@@ -5152,11 +5154,14 @@ function _ftPctHtml(c){
   return pct+'%'+(atMin?'<span class="ft-min">minimum</span>':'');
 }
 function syncAdjustPanel(){
-  const key=_ftContextKey(), changed=key!==_ftAutoRefKey;
+  const ctx=_ftContextKey();
   _FT_CONTROLS.forEach(c=>{
-    if(changed||S[c.ov]==null||!(_ftAutoRef[c.ov]>0))_ftAutoRef[c.ov]=_ftAutoSize(c);
+    // This control's reference depends on the label and on the other four
+    // controls' settings, never on its own adjustment.
+    const key=ctx+'|'+JSON.stringify(_FT_CONTROLS.filter(o=>o!==c).map(o=>S[o.ov]));
+    if(key!==_ftAutoRefKey[c.ov]||S[c.ov]==null||!(_ftAutoRef[c.ov]>0))_ftAutoRef[c.ov]=_ftAutoSize(c);
+    _ftAutoRefKey[c.ov]=key;
   });
-  _ftAutoRefKey=key;
   _FT_CONTROLS.forEach(c=>{const e=document.getElementById(c.el);if(e)e.innerHTML=_ftPctHtml(c);});
   const yPct=Math.round((S.hazardYOffset!=null?S.hazardYOffset:0.5)*100);
   const yEl=document.getElementById('hazard-y-pct'); if(yEl)yEl.textContent=yPct+'%';

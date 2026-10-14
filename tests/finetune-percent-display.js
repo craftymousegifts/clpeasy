@@ -17,6 +17,11 @@
 // Also: the reference is re-measured when the label size changes while a
 // control is adjusted, and the fine-tune display never changes label output
 // (the SVG is identical whether or not the panel has been refreshed).
+// Cross-control (#242 review): after adjusting one control, moving any other
+// control to its minimum, maximum or Reset leaves the first control showing
+// its drawn size against its automatic size for the CURRENT layout; the
+// confirmed case is a 90x63 mm rectangle whose hazard showed 95% when it was
+// 83% after the business name went to its minimum.
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -124,7 +129,47 @@ const server = http.createServer((req, res) => {
       const d70 = drawn(hz);
       const refresh = { size: d70, auto70, expected: Math.round(d70 / auto70 * 100), ...show(hz) };
       hz.reset();
-      return { rows, same, refresh, reset70: show(hz) };
+      const reset70 = show(hz);
+
+      // Cross-control: an adjusted control's figure must use its automatic
+      // size for the CURRENT layout after another control changes (#242
+      // review: hazard on a 90x63 mm rectangle showed 95% when it was 83%).
+      const truth = c => {   // drawn size / this control's automatic size with everything else as it is now
+        const o = Object.assign({}, window._ftLastOpts, { instanceId: 'test-truth' }); o[c.ov] = null;
+        const auto = LabelRenderer.renderLabel(window._ftLastData, o).metrics.fontSizes[c.fs];
+        return Math.round(window._ftRenderedFS[c.fs] / auto * 100);
+      };
+      const shown = c => parseInt(document.getElementById(c.el).textContent, 10);
+      const resetAll = () => C.forEach(c => c.reset());
+      const setSize = (shape, w, h) => { selectShape(shape); selectSize('custom'); document.getElementById('custom-w').value = w; document.getElementById('custom-h').value = h; onDimInput(); readForm(); updateLabel(); };
+      document.getElementById('burn-time').value = ''; readForm();
+      const cross = [];
+      // The confirmed case, step by step.
+      setSize('rectangle', 90, 63); resetAll();
+      const bz = C[2];
+      hz.fn(-1); const r1 = { shown: shown(hz), truth: truth(hz) };
+      for (let i = 0; i < 40; i++) bz.fn(-1);
+      const r2 = { shown: shown(hz), truth: truth(hz), staleBefore: r1.shown };
+      hz.fn(-1); const r3 = { shown: shown(hz), truth: truth(hz) };
+      bz.reset(); const r4 = { shown: shown(hz), truth: truth(hz) };
+      const rect = { r1, r2, r3, r4 };
+      resetAll();
+      // Every pair: adjust X, then move Y to its minimum, maximum and Reset.
+      for (const [shape, w, h] of [['rectangle', 90, 63], ['circle', 60, 60]]) {
+        setSize(shape, w, h);
+        for (const x of C) for (const y of C) {
+          if (x === y) continue;
+          resetAll(); x.fn(-1);
+          const own = shown(x);
+          for (let i = 0; i < 40; i++) y.fn(-1); cross.push({ id: `${shape} ${x.name} after ${y.name} minimum`, shown: shown(x), truth: truth(x) });
+          for (let i = 0; i < 60; i++) y.fn(1); cross.push({ id: `${shape} ${x.name} after ${y.name} maximum`, shown: shown(x), truth: truth(x) });
+          y.reset(); cross.push({ id: `${shape} ${x.name} after ${y.name} Reset`, shown: shown(x), truth: truth(x), own });
+          // Stable during its own adjustments: one more step of X itself.
+          x.fn(-1); cross.push({ id: `${shape} ${x.name} own step after ${y.name}`, shown: shown(x), truth: truth(x) });
+        }
+      }
+      resetAll();
+      return { rows, same, refresh, reset70, rect, cross };
     }, SDS);
 
     const fail = [];
@@ -147,11 +192,16 @@ const server = http.createServer((req, res) => {
     if (!out.same) fail.push('refreshing the fine-tune display changed the label SVG');
     if (parseInt(out.refresh.text, 10) !== out.refresh.expected) fail.push(`after resizing to 70 mm: shows ${out.refresh.text}, expected ${out.refresh.expected}% of the new automatic size`);
     if (out.reset70.text !== '100%') fail.push(`after resizing and Reset: shows "${out.reset70.text}"`);
+    const R = out.rect;
+    for (const [k, v] of Object.entries(R)) if (v.shown !== v.truth) fail.push(`rectangle 90x63 ${k}: hazard shows ${v.shown}%, actual ${v.truth}% of its automatic size`);
+    if (!(R.r2.staleBefore - R.r2.truth >= 5)) fail.push(`rectangle 90x63: case no longer exercises a changed automatic size (${R.r2.staleBefore}% -> ${R.r2.truth}%)`);
+    for (const c of out.cross) if (c.shown !== c.truth) fail.push(`${c.id}: shows ${c.shown}%, actual ${c.truth}%`);
     if (errs.length) fail.push('page errors: ' + errs.join(' | '));
     assert.strictEqual(fail.length, 0, 'fine-tune display:\n  ' + fail.join('\n  '));
     console.log('PASS: five fine-tune controls show size as % of automatic (100% automatic/Reset; ' +
       out.rows.map(r => `${r.name} ${r.steps[2].text}/${r.minimum.text.replace('minimum', ' minimum')}/${r.maximum.text}`).join('; ') +
-      `); stable reference; refreshed after resize (${out.refresh.text}); output unchanged`);
+      `); stable reference; refreshed after resize (${out.refresh.text}); 90x63 rectangle hazard after business name minimum ${out.rect.r2.shown}% (${out.rect.r2.staleBefore}% before the business name changed); ` +
+      `${out.cross.length} cross-control checks; output unchanged`);
   } catch (e) { failed = true; console.error(e.message || e); }
   finally { await browser.close(); server.close(); process.exit(failed ? 1 : 0); }
 });
