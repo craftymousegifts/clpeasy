@@ -4,6 +4,22 @@ All notable changes to CLPeasy are documented here. Customer-friendly notes
 covering the same releases live at `release-notes.html`. Versioning rules
 and the release procedure are documented in `VERSIONING.md`.
 
+## [1.1.1] - 2026-10-15
+
+### Fixed
+- Curved-name/business-name collision protection with hazard-text priority. (#236)
+- Consistent measured and drawn font families for label output. (#237)
+- Circle statement wrapping and edge containment. (#240)
+- Balanced circle footer sizes, regular phone text and edge clearance. (#241)
+- Fine-tune percentage references, cross-control refresh, decimal changes,
+  limit button states and Reset. (#242)
+- Mobile preview fine-tuning, edit-details navigation, shape/size editor
+  overlap and supported-size wording. (#244)
+
+Delivered together through #244, production commit `aa33efb`, Netlify deploy
+`6ad133053abdc7febf967f53` (15 October 2026, 21:09 BST). The version number
+and these notes were completed in a subsequent metadata-only update.
+
 ## [1.1.0] - 2026-09-22
 
 ### Added
