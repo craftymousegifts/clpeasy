@@ -42,8 +42,14 @@
 
   main { max-width: 760px; margin: 0 auto; padding: 48px 24px 80px; }
 
-  .release-block { margin-bottom: 48px; }
-  .release-header { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .release-block { margin-bottom: 16px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--white); }
+  .release-block > summary { cursor: pointer; padding: 18px 20px; border-radius: var(--radius); }
+  .release-block > summary::marker { color: var(--teal-dark); }
+  .release-block > summary:hover { background: var(--teal-light); }
+  .release-block > summary:focus-visible { outline: 3px solid var(--teal-dark); outline-offset: 3px; }
+  .release-content { padding: 0 20px 16px; }
+  .release-hint { display: block; font-size: 13px; color: var(--text-mid); margin-top: 4px; }
+  .release-header { display: inline-flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
   .release-version { font-family: 'DM Sans', sans-serif; font-size: 24px; font-weight: 900; color: var(--text); }
   .release-date { font-size: 13px; color: var(--text-light); }
   .new-badge {
@@ -95,12 +101,16 @@
 
 <main>
 
-  <div class="release-block">
-    <div class="release-header">
+  <details class="release-block">
+    <summary>
+      <span class="release-header">
       <span class="release-version">v1.1.1</span>
       <span class="new-badge">Current</span>
       <span class="release-date">15 October 2026</span>
-    </div>
+      </span>
+      <span class="release-hint">View changes</span>
+    </summary>
+    <div class="release-content">
     <div class="release-section-title">Label layout and printing</div>
     <ul class="release-list">
       <li>Improved statement wrapping inside circular labels and consistency between text measurement and exported fonts.</li>
@@ -113,14 +123,19 @@
       <li>Made fine-tuning and editing product, hazard and business details accessible from the mobile preview.</li>
       <li>Improved mobile preview spacing when adjusting shape and size.</li>
     </ul>
-  </div>
+    </div>
+  </details>
 
 
-  <div class="release-block">
-    <div class="release-header">
+  <details class="release-block">
+    <summary>
+      <span class="release-header">
       <span class="release-version">v1.1.0</span>
       <span class="release-date">22 September 2026</span>
-    </div>
+      </span>
+      <span class="release-hint">View changes</span>
+    </summary>
+    <div class="release-content">
 
     <div class="release-section-title">New and improved</div>
     <ul class="release-list">
@@ -152,13 +167,18 @@
       <li>Improved preview handling and general platform reliability.</li>
       <li>Added the customer-facing "What's new" page.</li>
     </ul>
-  </div>
+    </div>
+  </details>
 
-  <div class="release-block">
-    <div class="release-header">
+  <details class="release-block">
+    <summary>
+      <span class="release-header">
       <span class="release-version">v1.0.0</span>
       <span class="release-date">15 June 2026 · Original public launch</span>
-    </div>
+      </span>
+      <span class="release-hint">View changes</span>
+    </summary>
+    <div class="release-content">
 
     <div class="release-section-title">Launch</div>
     <ul class="release-list">
@@ -169,7 +189,8 @@
       <li>Print-ready PNG and PDF label exports.</li>
       <li>Free 14-day trial, with Easy Start and Easy Pro subscription plans plus top-up download packs.</li>
     </ul>
-  </div>
+    </div>
+  </details>
 
 </main>
 
