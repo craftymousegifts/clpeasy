@@ -548,7 +548,7 @@ function svgWrapped(lines,x,startY,lineH,sizePx,bold,serif,fill,anchor='middle',
   if(!lines.length)return'';
   const ls=letterSpacing?` letter-spacing="${letterSpacing}"`:'';
   const fw=bold?'700':'400';
-  const ff=serif?'Georgia,serif':'DM Sans,sans-serif';
+  const ff=serif?'Georgia,serif':'sans-serif';
   return`<text x="${x}" y="${startY}" font-family="${ff}" font-size="${sizePx.toFixed(2)}" font-weight="${fw}" fill="${fill}" text-anchor="${anchor}" dominant-baseline="middle"${ls}>${
     lines.map((l,i)=>i===0?xe(l):`<tspan x="${x}" dy="${lineH.toFixed(2)}">${xe(l)}</tspan>`).join('')
   }</text>`;
@@ -609,7 +609,7 @@ function svgArcText(instanceId, text, cx, cy, r, fontSize, color, arcPos){
   const path = `M ${startX},${startY} A ${arcR},${arcR} 0 0,1 ${endX},${endY}`;
   const arcId = `${instanceId}-scentArc`;
   return `<defs><path id="${arcId}" d="${path}"/></defs>` +
-    `<text font-family="DM Sans,sans-serif" font-size="${fontSize.toFixed(2)}" font-weight="700" fill="${color}" text-anchor="middle">` +
+    `<text font-family="sans-serif" font-size="${fontSize.toFixed(2)}" font-weight="700" fill="${color}" text-anchor="middle">` +
     `<textPath href="#${arcId}" startOffset="50%">${xe(text)}</textPath></text>`;
 }
 
@@ -847,7 +847,7 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
     // branch (and its exact markup) is deliberately left untouched.
     const titleY = (ph*.46).toFixed(1), bodyY = (ph*.55).toFixed(1);
     const titleFS = Math.max(8,pw*.035).toFixed(1), bodyFS = Math.max(6,pw*.025).toFixed(1);
-    return `<g class="clp-fit-block"><rect x="0" y="0" width="${pw}" height="${ph}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${titleY}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${titleFS}" font-weight="800" fill="#991b1b">FULL CONTENT DOES NOT FIT</text><text x="${cx}" y="${bodyY}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${bodyFS}" fill="#991b1b">Adjust size below the preview</text></g>`;
+    return `<g class="clp-fit-block"><rect x="0" y="0" width="${pw}" height="${ph}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${titleY}" text-anchor="middle" font-family="sans-serif" font-size="${titleFS}" font-weight="800" fill="#991b1b">FULL CONTENT DOES NOT FIT</text><text x="${cx}" y="${bodyY}" text-anchor="middle" font-family="sans-serif" font-size="${bodyFS}" fill="#991b1b">Adjust size below the preview</text></g>`;
   }
 
   // ── Correction 2 (2026-09, readable blocked-preview wording) ──────────
@@ -941,7 +941,7 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
   const headY = (y + headFS*0.85).toFixed(1);
   y += headFS*1.1 + gap;
   const bodyTspans = wrapped.map((ln,i)=>`<tspan x="${cx}" y="${(y+i*lineH).toFixed(1)}">${ln}</tspan>`).join('');
-  return `<g class="clp-fit-block"><rect x="0" y="0" width="${pw}" height="${ph}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${headY}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${headFS.toFixed(1)}" font-weight="800" fill="#991b1b">${heading}</text><text x="${cx}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${bodyFS.toFixed(1)}" fill="#991b1b">${bodyTspans}</text></g>`;
+  return `<g class="clp-fit-block"><rect x="0" y="0" width="${pw}" height="${ph}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${headY}" text-anchor="middle" font-family="sans-serif" font-size="${headFS.toFixed(1)}" font-weight="800" fill="#991b1b">${heading}</text><text x="${cx}" text-anchor="middle" font-family="sans-serif" font-size="${bodyFS.toFixed(1)}" fill="#991b1b">${bodyTspans}</text></g>`;
 }
 
 function renderLabel(rawData, opts){
@@ -1514,11 +1514,37 @@ function renderLabel(rawData, opts){
     // EU/NI-mode information, not an active GB requirement.
     const hLH=fs*1.25, sLH=fs*1.25, pLH=fs*1.15;
     const _edgeMargin=2*pxPerMm; // fixed 2mm from the label edge, both sides
+    // Circle-edge fix (Oct 2026): each block used to be wrapped once at the
+    // width of its FIRST line, so below the centre of a circle its later,
+    // lower lines could be wider than the circle allows there and were cut
+    // off by the label clip while the label still reported fits:true. Each
+    // line is now wrapped to the narrower of that same block width and the
+    // circle's width at the line's own centre (minus the same 2mm margin), so
+    // a line that already fitted keeps exactly its old width. Squares and
+    // rectangles are unchanged (their width does not vary with height).
+    // overX records how far any line still exceeds its own allowance (only
+    // possible where the fs*3 minimum width applies); _fits() treats that as
+    // not fitting, so such a label is blocked rather than exported clipped.
+    let _overX=0;
+    const _lineAllow=(yc)=>chordW(yc,0)-_edgeMargin*2;
+    const _wrapBlock=(txt,sw,yTop,LH,i0)=>{
+      if(!txt) return [];
+      if(!isCircle) return wrapText(txt,sw,fs,false,false);
+      let rest=txt.split(/\s+/).join(' ').trim(); const out=[]; let i=i0;
+      while(rest){
+        const w=Math.max(fs*3, Math.min(sw, _lineAllow(yTop+(i+0.5)*LH)));
+        const ls=wrapText(rest,w,fs,false,false);
+        if(ls.length<=1 || !rest.startsWith(ls[0])){ out.push(...ls); break; }
+        out.push(ls[0]); rest=rest.slice(ls[0].length).trim(); i++;
+      }
+      out.forEach((l,k)=>{ _overX=Math.max(_overX, measureText(l,fs,false,false)-_lineAllow(yTop+(i0+k+0.5)*LH)); });
+      return out;
+    };
     let y=y0;
     let hLines=[];
     if(hText){
       const sw=Math.max(fs*3, chordW(y+hLH*0.5,0)-_edgeMargin*2);
-      hLines=wrapText(hText,sw,fs,false,false);
+      hLines=_wrapBlock(hText,sw,y,hLH,0);
     }
     const hStartY=y+hLH*0.5;
     y+=hLines.length*hLH;
@@ -1527,8 +1553,8 @@ function renderLabel(rawData, opts){
     let sLines=[],eLines=[];
     if(sensText){
       const sw=Math.max(fs*3, chordW(y+sLH*0.5,0)-_edgeMargin*2);
-      sLines=_sensBase?wrapText(_sensBase,sw,fs,false,false):[];
-      eLines=_euhSuffix?wrapText(_euhSuffix,sw,fs,false,false):[];
+      sLines=_sensBase?_wrapBlock(_sensBase,sw,y,sLH,0):[];
+      eLines=_euhSuffix?_wrapBlock(_euhSuffix,sw,y,sLH,sLines.length):[];
     }
     const sStartY=y+sLH*0.5;
     const allS=[...sLines,...eLines];
@@ -1538,12 +1564,12 @@ function renderLabel(rawData, opts){
     let pLines=[];
     if(pText){
       const sw=Math.max(fs*3, chordW(y+pLH*0.5,0)-_edgeMargin*2);
-      pLines=wrapText(pText,sw,fs,false,false);
+      pLines=_wrapBlock(pText,sw,y,pLH,0);
     }
     const pStartY=y+pLH*0.5;
     y+=pLines.length*pLH;
 
-    return {fs,hLH,sLH,pLH,hLines,hStartY,allS,sStartY,pLines,pStartY,endY:y};
+    return {fs,hLH,sLH,pLH,hLines,hStartY,allS,sStartY,pLines,pStartY,endY:y,overX:_overX};
   }
 
   // Fit = block laid from the top of the avail zone ends at/above botY minus a
@@ -1551,7 +1577,11 @@ function renderLabel(rawData, opts){
   // this margin only governs aesthetics/warning, not overflow — keep it modest
   // so a block that genuinely fits doesn't trip a false legibility warning.)
   const _fitMargin=(fs)=> fs*0.3;
-  const _fits=(fs)=> _layoutHazard(fs,_curY0).endY <= _hardBot - _fitMargin(fs);
+  // A layout also fails if any line is wider than the circle allows at its
+  // own height (overX; always 0 on squares/rectangles). 0.5 units tolerance.
+  const _OVER_X_TOL=0.5;
+  const _fitsLayout=(L,bottom)=> L.endY <= bottom && L.overX <= _OVER_X_TOL;
+  const _fits=(fs)=> _fitsLayout(_layoutHazard(fs,_curY0), _hardBot - _fitMargin(fs));
 
   // Binary search for the largest fitting font size.
   let _bsLo=_minLegibleFS, _bsHi=clamp(BASE*0.13,8,28);
@@ -1570,7 +1600,7 @@ function renderLabel(rawData, opts){
   let _sharedFS=_bsLo;
   // Manual override gets its own ceiling using zero breathing margin — right up
   // to the label boundary itself, not auto-fit's cautious buffer.
-  const _fitsExact=(fs)=> _layoutHazard(fs,_curY0).endY <= _hardBot;
+  const _fitsExact=(fs)=> _fitsLayout(_layoutHazard(fs,_curY0), _hardBot);
   let _manualHi=_bsHi;
   if(_fitsAtMin){
     let _mLo=_bsHi, _mHi=clamp(BASE*0.30,8,60);
@@ -1603,12 +1633,12 @@ function renderLabel(rawData, opts){
   // Step the offset back toward 0 until it fits, rather than snapping the
   // whole way to top-aligned — keeps the control visibly responsive.
   let _yTries=0;
-  while(_L.endY > _hardBot && _yFrac>0 && _yTries<20){
+  while(!_fitsLayout(_L,_hardBot) && _yFrac>0 && _yTries<20){
     _yFrac=Math.max(0,_yFrac-0.05);
     _L=_layoutHazard(_sharedFS,_curY0+_slack*_yFrac);
     _yTries++;
   }
-  if(_L.endY > _hardBot) _L=_topLayout;
+  if(!_fitsLayout(_L,_hardBot)) _L=_topLayout;
 
   // Derive render variables from the chosen layout.
   const hFS=_sharedFS, hLH=_L.hLH;
@@ -1624,7 +1654,7 @@ function renderLabel(rawData, opts){
   // If the full layout exceeds the available area, block it. The preview shows
   // an unmistakable non-exportable state instead of replacing mandatory text
   // with dots or silently omitting statements.
-  const _labelLegibilityWarn = !_fitsAtMin || _L.endY>_hardBot;
+  const _labelLegibilityWarn = !_fitsAtMin || !_fitsLayout(_L,_hardBot);
 
   const showP   = pLines.length > 0;
 
@@ -1743,17 +1773,44 @@ function renderLabel(rawData, opts){
   // lines can never overlap vertically. The EN15494 row occupies the reserved
   // strip above (_footerBase), so the text always sits clear of the icons.
   const nSlots = Math.min(footerSlots.length, 3);
-  const slotLH = nSlots > 0 ? fUsable / nSlots : fUsable;
   const _footerBase = botY + fTopPad + _bcfRowH; // top of footer text zone (below EN row)
+  // Circle footer balance (Oct 2026, Michaela's approved option P6b; circles
+  // only -- squares and rectangles keep the layout below unchanged):
+  //  - every footer line keeps at least 1 mm from the circular cut edge:
+  //    the rows end 1 mm above the bottom of the circle, and each line's
+  //    width is measured at its lowest ink point, 1 mm in from each side;
+  //  - the longest line goes in the top (widest) row, so the order follows
+  //    the measured line widths and can vary with the content;
+  //  - all footer lines share one size (the smallest of their fitted sizes,
+  //    never below the existing _mandatoryMinFS floor), and the phone is
+  //    drawn in regular weight like the other lines.
+  // A footer that cannot fit this way still blocks export (_footerClipped).
+  const _footerEdgeClear = 1.0*pxPerMm;
+  let slotLH = nSlots > 0 ? fUsable / nSlots : fUsable;
+  if(isCircle && nSlots > 0){
+    // The rows end 1 mm above the bottom of the circle. If that would leave a
+    // row too short for the floor size at the existing >=122% spacing (the
+    // 52 mm preset with address + phone), the rows keep just that minimum
+    // height instead; the edge check after sizing still guarantees 1 mm.
+    const _rowsTo1mm = Math.max(0, Math.min(fUsable, (cy + r - _footerEdgeClear) - _footerBase)) / nSlots;
+    const _rowForFloor = _mandatoryMinFS / 0.82 + 0.01;
+    slotLH = (_rowsTo1mm < _rowForFloor) ? Math.min(fUsable / nSlots, _rowForFloor) : _rowsTo1mm;
+  }
   const _slotFSCap  = slotLH * 0.82;             // hard vertical cap per row
   let footerElems = [];
   let _footerClipped = false;
-  footerSlots.slice(0, nSlots).forEach((slot, i)=>{
-    const _isDetail = !slot.isPhone && i>0;
-    const _fsMax  = Math.min(maxFooterFS * (slot.isPhone?1.05:_isDetail?1.15:1.0), _slotFSCap);
+  let _footerRows = footerSlots.slice(0, nSlots);
+  if(isCircle){
+    const _w = s => measureText(s.text, 10, s.bold, false);
+    _footerRows = _footerRows.map((s,k)=>({s,k})).sort((a,b)=>(_w(b.s)-_w(a.s))||(a.k-b.k)).map(o=>o.s);
+  }
+  _footerRows.forEach((slot, i)=>{
+    const _isDetail = !slot.isPhone && footerSlots.indexOf(slot)>0;
+    const _fsMax  = isCircle ? Math.min(maxFooterFS, _slotFSCap) : Math.min(maxFooterFS * (slot.isPhone?1.05:_isDetail?1.15:1.0), _slotFSCap);
     const slotY   = _footerBase + slotLH * (i + 0.5);
     const chordAtY = Math.min(chordW(slotY, 0.09), sW * 0.88);
-    const availW  = chordAtY * 0.88;
+    let availW  = chordAtY * 0.88;
+    if(isCircle) availW = Math.min(availW, chordW(slotY + _fsMax*0.5, 0) - 2*_footerEdgeClear);
     const fs = fitFont(slot.text, availW, _fsMax, _mandatoryMinFS, slot.bold, false);
     // fitFont() never returns below the floor it's given (Math.max(sz,
     // minPx)) -- but that alone doesn't prove the text actually FITS at
@@ -1785,8 +1842,18 @@ function renderLabel(rawData, opts){
     // text still renders, at its true mandatory size and position, so the
     // overlap itself is visible evidence of the block, not hidden by it).
     if(fs / 0.82 > slotLH) _footerClipped = true;
-    footerElems.push({text: slot.text, fs, bold: slot.bold, isPhone: slot.isPhone||false, slotY});
+    // isPhone only selects the semi-bold drawing weight below; on circles the
+    // phone is drawn regular (P6b), matching how it is measured here.
+    footerElems.push({text: slot.text, fs, bold: slot.bold, isPhone: (!isCircle && slot.isPhone)||false, slotY, availW});
   });
+  if(isCircle && footerElems.length){
+    const _shared = Math.min(...footerElems.map(e=>e.fs));
+    footerElems.forEach(e=>{ e.fs=_shared; });
+    // Final check at the real size: each line's lowest point (about half a
+    // font height below its row centre) must be at least 1 mm above the
+    // bottom of the circle; the sideways rule above keeps its ends 1 mm in.
+    footerElems.forEach(e=>{ if(e.slotY + e.fs*0.5 > cy + r - _footerEdgeClear) _footerClipped = true; });
+  }
   const _footerLegibilityClipped = _footerClipped;
 
   // ── SHARED NON-FIT BOOLEAN ──────────────────────────────────────────────
@@ -1861,7 +1928,7 @@ function renderLabel(rawData, opts){
   const footerRendered = footerElems.map(elem=>{
     if(elem.slotY > sBot - 1) return '';
     const chordAtY = Math.min(chordW(elem.slotY, 0.09), sW * 0.88);
-    const availW = chordAtY * 0.88;
+    const availW = isCircle ? elem.availW : chordAtY * 0.88;
     // Final fit at actual Y — catches any rounding. Bug fix (read-only
     // impact assessment, 2026-09): this recompute previously floored at
     // Math.max(minFooterFS*0.5, 1.5) -- a tiny, purely aesthetic value far
@@ -1880,7 +1947,7 @@ function renderLabel(rawData, opts){
     // than shrinking further.
     const fs = fitFont(elem.text, availW, elem.fs, _mandatoryMinFS, elem.bold, false);
     // CLP compliance: all supplier/footer text must be solid black, not muted.
-    return`<text x="${cx}" y="${elem.slotY.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${fs.toFixed(2)}" font-weight="${elem.isPhone?'600':'400'}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(elem.text)}</text>`;
+    return`<text x="${cx}" y="${elem.slotY.toFixed(1)}" font-family="sans-serif" font-size="${fs.toFixed(2)}" font-weight="${elem.isPhone?'600':'400'}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(elem.text)}</text>`;
   }).join('');
 
   // ── EN 15494:2019 CANDLE SAFETY PICTOGRAMS ────────────────────
@@ -1929,9 +1996,9 @@ function renderLabel(rawData, opts){
   // ── WATERMARK ─────────────────────────────────────────────────
   const wmSz=sW*0.12;
   const wm=opts.watermark?`<g transform="translate(${cx},${cy}) rotate(-35)" style="mix-blend-mode:difference">
-    <text x="0" y="${(-wmSz*0.6).toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${Math.max(wmSz,6).toFixed(1)}" fill="rgba(128,128,128,0.55)" text-anchor="middle" font-weight="900" letter-spacing="1">CLPeasy</text>
-    <text x="0" y="${(wmSz*0.55).toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${Math.max(wmSz*0.60,4).toFixed(1)}" fill="rgba(128,128,128,0.45)" text-anchor="middle" font-weight="700">PREVIEW ONLY</text>
-    <text x="0" y="${(wmSz*1.4).toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${Math.max(wmSz*0.42,3).toFixed(1)}" fill="rgba(128,128,128,0.38)" text-anchor="middle">clpeasy.com</text>
+    <text x="0" y="${(-wmSz*0.6).toFixed(1)}" font-family="sans-serif" font-size="${Math.max(wmSz,6).toFixed(1)}" fill="rgba(128,128,128,0.55)" text-anchor="middle" font-weight="900" letter-spacing="1">CLPeasy</text>
+    <text x="0" y="${(wmSz*0.55).toFixed(1)}" font-family="sans-serif" font-size="${Math.max(wmSz*0.60,4).toFixed(1)}" fill="rgba(128,128,128,0.45)" text-anchor="middle" font-weight="700">PREVIEW ONLY</text>
+    <text x="0" y="${(wmSz*1.4).toFixed(1)}" font-family="sans-serif" font-size="${Math.max(wmSz*0.42,3).toFixed(1)}" fill="rgba(128,128,128,0.38)" text-anchor="middle">clpeasy.com</text>
   </g>`:'';
 
   // ── ASSEMBLE ──────────────────────────────────────────────────
@@ -1955,7 +2022,7 @@ function renderLabel(rawData, opts){
   const svgH = opts.ph || (forExport ? Math.round(mmH*exportPxPerMm) : ph);
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" viewBox="0 0 ${pw} ${ph}" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" image-rendering="optimizeQuality">
-<defs>${clip}<style>@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&amp;display=swap');</style></defs>
+<defs>${clip}</defs>
 <g clip-path="url(#${instanceId}-lc)">
   ${bg}
 
@@ -1964,13 +2031,13 @@ function renderLabel(rawData, opts){
     ? svgArcText(instanceId, scent, cx, cy, Math.min(pw,ph)/2, scentFS, txtCol, Math.min(1.1, 38/mmW))
     : svgWrapped(scentLines,cx,scentTopY,scentLH,scentFS,true,true,txtCol)}
   ${svgWrapped([bizName],cx,_bizYf,_bizFSf*1.2,_bizFSf,true,true,txtCol)}
-  ${webLine?`<text x="${cx}" y="${_webYf.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${_webFSf.toFixed(2)}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(webLine)}</text>`:''}
+  ${webLine?`<text x="${cx}" y="${_webYf.toFixed(1)}" font-family="sans-serif" font-size="${_webFSf.toFixed(2)}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(webLine)}</text>`:''}
 
   <!-- PRODUCT TYPE -->
-  <text x="${cx}" y="${typeY.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${typeFS.toFixed(2)}" font-weight="700" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle" letter-spacing="0.6">${xe(type)}</text>
+  <text x="${cx}" y="${typeY.toFixed(1)}" font-family="sans-serif" font-size="${typeFS.toFixed(2)}" font-weight="700" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle" letter-spacing="0.6">${xe(type)}</text>
 
   <!-- SIGNAL WORD -->
-  <text x="${cx}" y="${sigY.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${sigFS.toFixed(2)}" font-weight="800" fill="${sig==='DANGER'?'#cc0000':txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(sig)}</text>
+  <text x="${cx}" y="${sigY.toFixed(1)}" font-family="sans-serif" font-size="${sigFS.toFixed(2)}" font-weight="800" fill="${sig==='DANGER'?'#cc0000':txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(sig)}</text>
 
   <!-- PICTOGRAMS -->
   ${pictoRow}

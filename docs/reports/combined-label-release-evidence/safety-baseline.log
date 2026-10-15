@@ -1,0 +1,12 @@
+EXPORTABLE circle-52-light                    fits=true pictos=[exclamation] 
+EXPORTABLE circle-63-medium-euh208            fits=true pictos=[exclamation] 
+EXPORTABLE circle-90-heavy                    fits=true pictos=[aquatic,exclamation] 
+EXPORTABLE square-52-light                    fits=true pictos=[exclamation] 
+EXPORTABLE square-63-medium-euh208            fits=true pictos=[exclamation] 
+EXPORTABLE square-75-heavy                    fits=true pictos=[aquatic,exclamation] 
+EXPORTABLE rectangle-63x44-waxmelt-light      fits=true pictos=[exclamation] 
+BLOCKED    rectangle-63x44-candle-light       fits=false pictos=[exclamation] warnings=footer-clipped
+BLOCKED    rectangle-52x36-min-light          fits=false pictos=[exclamation] warnings=hazard-text-overflow
+EXPORTABLE rectangle-100x60-diffuser-danger   fits=true pictos=[aquatic,exclamation,health] 
+
+BUILDER SAFETY BASELINE: PASS (10 labels; invariants + snapshot)

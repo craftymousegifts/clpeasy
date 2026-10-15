@@ -1,0 +1,1 @@
+PASS 90 square/rectangle label SVGs, fit results and warnings byte-identical to PR237 font-corrected baseline

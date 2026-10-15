@@ -1,0 +1,65 @@
+[
+  {
+    "fixture": "extracted-five-63",
+    "svg_size": [
+      "63mm",
+      "63mm"
+    ],
+    "png_pixels": [
+      1488,
+      1488
+    ],
+    "png_metadata": {},
+    "pdf_pages": 1,
+    "pdf_page_mm": [
+      63.161330964830185,
+      63.161330964830185
+    ],
+    "smallest_pdf_font_mm": 1.1969956510596804,
+    "required_phrases_present_pdf": true,
+    "required_phrases_present_svg": true,
+    "svg_font_mismatch_import_present": false
+  },
+  {
+    "fixture": "extracted-five-75",
+    "svg_size": [
+      "75mm",
+      "75mm"
+    ],
+    "png_pixels": [
+      1772,
+      1772
+    ],
+    "png_metadata": {},
+    "pdf_pages": 1,
+    "pdf_page_mm": [
+      75.09932967291938,
+      75.09932967291938
+    ],
+    "smallest_pdf_font_mm": 1.4941705465316772,
+    "required_phrases_present_pdf": true,
+    "required_phrases_present_svg": true,
+    "svg_font_mismatch_import_present": false
+  },
+  {
+    "fixture": "manual-six-75",
+    "svg_size": [
+      "75mm",
+      "75mm"
+    ],
+    "png_pixels": [
+      1772,
+      1772
+    ],
+    "png_metadata": {},
+    "pdf_pages": 1,
+    "pdf_page_mm": [
+      75.09932967291938,
+      75.09932967291938
+    ],
+    "smallest_pdf_font_mm": 1.3585991422335306,
+    "required_phrases_present_pdf": true,
+    "required_phrases_present_svg": true,
+    "svg_font_mismatch_import_present": false
+  }
+]
