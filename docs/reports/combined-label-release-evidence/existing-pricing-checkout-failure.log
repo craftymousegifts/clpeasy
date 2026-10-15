@@ -1,0 +1,24 @@
+PASS: static: Easy Trial ✨ unchanged; PAYG and Easy Start Unlimited are inline SVG; no Easy Pro card
+PASS: checkout.html: monthly plan-choice cards show the same 2026 offer prices as the summary
+PASS: checkout.html (desktop): monthly offer cards fit, the end date stays on one line, screenshot
+PASS: checkout.html (mobile): monthly offer cards fit, the end date stays on one line, screenshot
+PASS: checkout.html: Easy Start MONTHLY summary = standard £9.99, 2026 offer −£1.00, due today £8.99/month
+PASS: checkout.html: Easy Start Unlimited MONTHLY sends the standard monthly price (the server adds the coupon)
+PASS: checkout.html (iPhone): Easy Start monthly summary readable, no horizontal scroll
+PASS: checkout.html: Easy Start Unlimited Annual card and summary are never discounted (due today £89.00)
+PASS: checkout.html: from 1 January 2027 monthly shows the standard price with no offer (same boundary as the server)
+FAIL: pricing.html (desktop): three card icons the same height, names aligned, PAYG £4.99 / 8 downloads and monthly £8.99 offer copy (annual £89: tests/payg-pricing-checkout.js) 
+  same icon box height: [{"h":30,"gap":44,"svg":null},{"h":31,"gap":45,"svg":[33,33]},{"h":31,"gap":45,"svg":[33,33]}]
+FAIL: pricing.html (mobile): three card icons the same height, names aligned, PAYG £4.99 / 8 downloads and monthly £8.99 offer copy (annual £89: tests/payg-pricing-checkout.js) 
+  same icon box height: [{"h":30,"gap":42,"svg":null},{"h":31,"gap":43,"svg":[33,33]},{"h":31,"gap":43,"svg":[33,33]}]
+FAIL: pricing.html: no indicator before any checkout; after a subscription checkout is started it shows (button, aria-label), and its dialog never shows a plan, price, session or countdown 
+  Cannot read properties of null (reading 'visible')
+PASS: checkout.html: no indicator before any checkout; after a subscription checkout is started it shows (button, aria-label), and its dialog never shows a plan, price, session or countdown
+FAIL: indicator: desktop and iPhone screenshots; on iPhone it fits in the header without overlapping Home / Start free trial / Back to pricing or the cookie banner 
+  Cannot read properties of null (reading 'visible')
+PASS: indicator: a CHECKOUT_IN_PROGRESS refusal (checkout started elsewhere) also shows it, alongside the PR #157 dialog
+FAIL: indicator: hides itself once 5 minutes have passed, and never shows for a different signed-in account 
+  Cannot read properties of null (reading 'visible')
+FAIL: PAYG: opens during a subscription lock (£4.99 / 8 downloads), and never sets the indicator 
+  Cannot read properties of null (reading 'visible')
+PASS: storage blocked: pages still work and the indicator simply stays hidden

@@ -16,9 +16,7 @@
       63.161330964830185
     ],
     "smallest_pdf_font_mm": 1.1969956510596804,
-    "required_phrases_present_pdf": true,
-    "required_phrases_present_svg": true,
-    "svg_font_mismatch_import_present": false
+    "full_pdf_text": "S\ny\nn\nt\nh\ne\nti\nc \nT\ne\nst\nSynthetic Test Business\nhttps://example.invalid\nSCENTED CANDLE\nWARNING\nMay cause an allergic skin reaction. Toxic to aquatic life with long lasting effects.\nContains: Linalool, Limonene\nMay produce an allergic reaction.\nAvoid breathing vapours and dust. Avoid release to the environment. IF ON SKIN:\nwash with plenty of water. If skin irritation or rash occurs: get medical advice.\nDispose of contents and container in accordance with local regulations.\n1 Test Street, Test Town, TE1 1ST\nBatch: TEST-001\n00000000000\nCLPeasy\nPREVIEW ONLY\nclpeasy.com\n"
   },
   {
     "fixture": "extracted-five-75",
@@ -37,9 +35,7 @@
       75.09932967291938
     ],
     "smallest_pdf_font_mm": 1.4941705465316772,
-    "required_phrases_present_pdf": true,
-    "required_phrases_present_svg": true,
-    "svg_font_mismatch_import_present": false
+    "full_pdf_text": "S\ny\nn\nt\nh\ne\nti\nc \nT\ne\nst\nSynthetic Test Business\nhttps://example.invalid\nSCENTED CANDLE\nWARNING\nMay cause an allergic skin reaction. Toxic to aquatic life with long lasting effects.\nContains: Linalool, Limonene\nMay produce an allergic reaction.\nAvoid breathing vapours and dust. Avoid release to the environment. IF ON SKIN:\nwash with plenty of water. If skin irritation or rash occurs: get medical advice.\nDispose of contents and container in accordance with local regulations.\n1 Test Street, Test Town, TE1 1ST\nBatch: TEST-001\n00000000000\nCLPeasy\nPREVIEW ONLY\nclpeasy.com\n"
   },
   {
     "fixture": "manual-six-75",
@@ -58,8 +54,6 @@
       75.09932967291938
     ],
     "smallest_pdf_font_mm": 1.3585991422335306,
-    "required_phrases_present_pdf": true,
-    "required_phrases_present_svg": true,
-    "svg_font_mismatch_import_present": false
+    "full_pdf_text": "S\ny\nn\nt\nh\ne\nti\nc \nT\ne\nst\nSynthetic Test Business\nhttps://example.invalid\nSCENTED CANDLE\nWARNING\nMay cause an allergic skin reaction. Toxic to aquatic life with long lasting effects.\nContains: Linalool, Limonene\nMay produce an allergic reaction.\nAvoid breathing vapours and dust. Avoid release to the environment. IF ON SKIN: wash\nwith plenty of water. If skin irritation or rash occurs: get medical advice. Dispose of\ncontents and container in accordance with local regulations. Wear protective gloves.\n1 Test Street, Test Town, TE1 1ST\nBatch: TEST-001\n00000000000\nCLPeasy\nPREVIEW ONLY\nclpeasy.com\n"
   }
 ]

@@ -1,5 +1,5 @@
 {
-  "base": "http://127.0.0.1:42611",
+  "base": "http://127.0.0.1:40871",
   "backend": "mocked; signed out; external requests intercepted",
   "cases": [
     {
@@ -20,7 +20,7 @@
       "fonts": [
         {
           "text": "Synthetic Test",
-          "fs": 13.88,
+          "fs": 9.13,
           "family": "sans-serif"
         },
         {
@@ -110,7 +110,7 @@
       "fonts": [
         {
           "text": "Synthetic Test",
-          "fs": 13.88,
+          "fs": 9.13,
           "family": "sans-serif"
         },
         {
@@ -211,7 +211,7 @@
       "fonts": [
         {
           "text": "Synthetic Test",
-          "fs": 13.88,
+          "fs": 9.13,
           "family": "sans-serif"
         },
         {
@@ -312,7 +312,7 @@
       "fonts": [
         {
           "text": "Synthetic Test",
-          "fs": 13.88,
+          "fs": 9.13,
           "family": "sans-serif"
         },
         {
@@ -402,7 +402,7 @@
       "fonts": [
         {
           "text": "Synthetic Test",
-          "fs": 13.88,
+          "fs": 9.13,
           "family": "sans-serif"
         },
         {
@@ -492,7 +492,7 @@
       "fonts": [
         {
           "text": "Synthetic Test",
-          "fs": 13.88,
+          "fs": 9.13,
           "family": "sans-serif"
         },
         {
