@@ -1,0 +1,20 @@
+PASS: static: exactly the three in-page "Start free trial" CTAs are marked; plan and PAYG buttons untouched
+PASS: static: one plan-name pill per card (Easy Trial, Pay As You Go, Easy Start; Easy Pro withdrawn)
+PASS: signed out: acquisition CTAs unchanged (Start free trial → auth.html?mode=signup), never hidden
+PASS: signed in (active trial): no "Start free trial"; header "My account" → account.html, trial CTAs "Go to builder →" → builder.html; profile not read
+PASS: signed in (expired trial / no plan): no "Start free trial"; header "My account" → account.html, trial CTAs "Go to builder →" → builder.html; profile not read
+PASS: signed in (Easy Start): no "Start free trial"; header "My account" → account.html, trial CTAs "Go to builder →" → builder.html; profile not read
+PASS: signed in (Easy Pro): no "Start free trial"; header "My account" → account.html, trial CTAs "Go to builder →" → builder.html; profile not read
+PASS: signed in (Pay As You Go (no subscription)): no "Start free trial"; header "My account" → account.html, trial CTAs "Go to builder →" → builder.html; profile not read
+PASS: signed in (ended subscription): no "Start free trial"; header "My account" → account.html, trial CTAs "Go to builder →" → builder.html; profile not read
+PASS: no flash: with a stored session and a slow session check, "Start free trial" is never visible at any point
+PASS: stale stored session (session check says signed out): reverts to the signed-out CTAs, visible
+PASS: Supabase script fails to load with a stored session: signed-in CTAs shown (never left hidden)
+PASS: Supabase script fails to load, signed out: acquisition CTAs shown and visible
+PASS: signed in: plan and Pay As You Go buttons unchanged
+PASS: signed in (desktop): header fits, "My account" does not overlap other header controls, no horizontal scroll
+PASS: signed in (mobile): header fits, "My account" does not overlap other header controls, no horizontal scroll
+PASS: plan pills (desktop): EASY TRIAL / PAY AS YOU GO / EASY START, same size and type, centred on the top border, not clipped or overlapping
+PASS: plan pills (mobile): EASY TRIAL / PAY AS YOU GO / EASY START, same size and type, centred on the top border, not clipped or overlapping
+PASS: signed out (mobile): header unchanged and fits
+pricing signed-in CTA checks passed (17 scenarios)

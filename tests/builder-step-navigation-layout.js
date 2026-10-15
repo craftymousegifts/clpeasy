@@ -179,6 +179,46 @@ setTimeout(async () => {
     assert(document.querySelector('.preview-badge'), '"Fit to view" control missing');
     assert(document.getElementById('preview-size-info'), 'print-size display missing');
 
+    // Mobile uses the SAME panel, including its adjustment values and IDs.
+    // Keep it reachable in the open sheet and restore desktop placement.
+    let mobile = true;
+    window.matchMedia = () => ({matches:mobile});
+    window.HTMLElement.prototype.scrollIntoView = function(){};
+    window.setApprovedBuilderStep(5);
+    const fineTunePanel=document.getElementById('finetune-panel-el');
+    const entered=document.getElementById('scent-name').value;
+    window.eval('S.hazardFSOverride=1.5');
+    for(let visit=0;visit<2;visit++){
+      window.openPreviewSheet();
+      assert.strictEqual(fineTunePanel.parentElement.id,'sheet-finetune-slot');
+      assert.strictEqual(document.querySelectorAll('#finetune-panel-el').length,1,'must not clone controls/IDs');
+      assert.strictEqual(fineTunePanel.querySelectorAll('.ft-row').length,5,'all five controls must be reachable');
+      window.showSheetSizeEditor();
+      assert(document.querySelector('#sheet-size-editor [data-size-width]'),'mobile size editor missing');
+      window.renderBuilderAccordion();
+      assert.strictEqual(fineTunePanel.parentElement.id,'sheet-finetune-slot','re-render lost mobile controls');
+      window.closeSheet();
+      assert.strictEqual(fineTunePanel.parentElement.id,'preview-canvas-area');
+      assert.strictEqual(window.eval('S.hazardFSOverride'),1.5,'moving the panel changed its adjustment');
+    }
+    window.openPreviewSheet();
+    mobile=false;window.dispatchEvent(new window.Event('resize'));
+    assert.strictEqual(fineTunePanel.parentElement.id,'preview-canvas-area','desktop resize lost controls');
+    assert(!document.getElementById('preview-sheet').classList.contains('open'),'desktop resize must close mobile overlay');
+    mobile=true;window.dispatchEvent(new window.Event('resize'));window.openPreviewSheet();
+    assert.strictEqual(fineTunePanel.parentElement.id,'sheet-finetune-slot');
+    for(const step of [2,3,4]){
+      window.editDetailsFromSheet(step);
+      assert(!document.getElementById('preview-sheet').classList.contains('open'),'edit route must close overlay');
+      assert.strictEqual(window.eval('approvedBuilderStep'),step,'edit route opened wrong form step');
+      assert.strictEqual(document.getElementById('scent-name').value,entered,'edit route lost entered data');
+      assert.strictEqual(fineTunePanel.parentElement.id,'builder-source-staging','fine-tune should only appear at review');
+      window.setApprovedBuilderStep(5);window.openPreviewSheet();
+    }
+    window.closeSheet();window.eval('S.hazardFSOverride=null');
+    assert(source.includes('.preview-sheet-inner>*{flex-shrink:0;}'),'sheet children must not compress into overlapping boxes');
+    assert(source.includes('.preview-sheet-label{margin-bottom:8px;flex:0 0 auto;}'),'label box must retain its SVG height');
+
     const structuralErrors = errors.filter(message => !/not implemented|navigation/i.test(message));
     assert.deepStrictEqual(structuralErrors, [], `runtime errors: ${structuralErrors.join('; ')}`);
     window.close();

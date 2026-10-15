@@ -513,6 +513,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .preview-legend .ft-controls{display:flex;align-items:center;gap:4px;}
 .preview-legend .ft-btn{background:var(--off);border:1px solid var(--border);color:var(--text);border-radius:4px;width:19px;height:19px;font-size:11px;cursor:pointer;line-height:1;padding:0;}
 .preview-legend .ft-pct{font-size:10.5px;color:var(--muted);min-width:28px;text-align:center;font-weight:600;}
+.preview-legend .ft-pct .ft-min,.preview-legend .ft-pct .ft-max{display:block;font-size:8.5px;font-weight:600;color:var(--muted);line-height:1;}
+.preview-legend .ft-btn:disabled{opacity:.4;cursor:not-allowed;}
 .preview-legend .ft-reset{font-size:9.5px;color:var(--teal);font-weight:600;cursor:pointer;display:none;text-align:right;padding:2px 0 4px;}
 #label-svg-container{
   -webkit-user-select:none;-moz-user-select:none;user-select:none;
@@ -564,13 +566,25 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .preview-sheet-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;}
 @media(max-width:860px){
   .preview-sheet-inner{padding:12px 20px calc(10px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;}
+  /* The sheet scrolls; opening editors must not compress the label's box
+     while its SVG keeps its height and paints over neighbouring controls. */
+  .preview-sheet-inner>*{flex-shrink:0;}
   .preview-sheet-handle{margin-bottom:8px;flex:0 0 auto;}
-  .preview-sheet-label{margin-bottom:8px;flex:0 1 auto;}
+  .preview-sheet-label{margin-bottom:8px;flex:0 0 auto;}
   .preview-sheet-label>svg{max-height:min(36dvh,320px)!important;}
   .preview-sheet-actions{margin-top:8px;}
   .preview-sheet-inner>div:last-child{margin-top:4px!important;}
   .preview-sheet-inner>div:last-child button{padding:6px 20px!important;min-height:40px!important;}
 }
+#sheet-finetune-slot:empty{display:none;}
+#sheet-finetune-slot .preview-legend{width:100%;box-sizing:border-box;max-height:none;overflow:visible;margin:12px 0;}
+#sheet-finetune-slot .ft-btn{width:44px;height:44px;font-size:20px;}
+#sheet-finetune-slot .ft-reset{font-size:14px;padding:12px 0;}
+#sheet-finetune-slot .ft-pct{min-width:48px;}
+.sheet-edit-details{color:white;margin:8px 0;}
+.sheet-edit-details summary{cursor:pointer;padding:12px 0;min-height:44px;box-sizing:border-box;}
+.sheet-edit-details div{display:flex;flex-wrap:wrap;gap:8px;}
+.sheet-edit-details button{min-height:44px;padding:10px;border-radius:8px;border:1px solid white;background:none;color:white;font:inherit;}
 
 /* SUPPLIER LIBRARY */
 .supplier-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:16px;}
@@ -1328,7 +1342,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="watermark-note">🆓 Free trial — labels include a CLPeasy watermark. <button onclick="window.open('pricing.html','_blank','noopener')" style="background:var(--teal,#4C9BB0);color:white;border:none;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;">Subscribe to remove →</button></div>
     <div id="finetune-panel-el" class="preview-legend">
         <div class="fine-tune-title">Fine-tune your label</div>
-        <div class="fine-tune-sub">Within the compliant range. Pictogram size is set automatically for this label and isn't manually adjustable here. H/P/sensitisers move as one block.</div>
+        <div class="fine-tune-sub">Within the supported size limits. Pictogram size is set automatically for this label and isn't manually adjustable here. H/P/sensitisers move as one block.</div>
 
         <div class="ft-row">
           <span>Product type</span>
@@ -1500,7 +1514,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="preview-sheet-handle"></div>
     <div class="preview-sheet-label" id="sheet-label-container"></div>
     <div style="font-size:12px;color:rgba(255,255,255,0.4);text-align:center;margin-bottom:4px;" id="sheet-size-info"></div>
+    <details class="sheet-edit-details"><summary>Edit label details</summary><div>
+      <button type="button" onclick="editDetailsFromSheet(2)">Product</button>
+      <button type="button" onclick="editDetailsFromSheet(3)">Hazards</button>
+      <button type="button" onclick="editDetailsFromSheet(4)">Business</button>
+    </div></details>
     <button type="button" onclick="showSheetSizeEditor()" style="color:white;background:none;border:1px solid white;border-radius:8px;padding:10px;min-height:44px;margin:8px 0;">Adjust shape &amp; size</button><div id="sheet-fit-advice" role="status" aria-live="polite" style="color:white;font-size:14px;"></div><div id="sheet-size-editor" style="color:white;"></div>
+    <div id="sheet-finetune-slot"></div>
     <div class="preview-sheet-actions">
       <button class="btn-dl" id="btn-png-sheet" onclick="downloadPNG();closeSheet()">⬇ PNG (single)</button>
       <button class="btn-dl" id="btn-pdf-sheet" onclick="printToPDF()">▣ PDF</button>
@@ -4405,14 +4425,8 @@ function renderBuilderAccordion(){
   // Step 5 form; on any other step it's parked in the same staging area
   // used for #label-appearance-section/#label-warn-stage4 above, so it
   // doesn't sit visible in the preview column when Step 5 isn't active.
-  const finetune=document.getElementById('finetune-panel-el');
-  if(finetune){
-    if(approvedBuilderStep===5){
-      document.getElementById('preview-canvas-area')?.appendChild(finetune);
-    } else if(finetune.parentElement && finetune.parentElement.id==='preview-canvas-area'){
-      staging.appendChild(finetune);
-    }
-  }
+  // On mobile the same panel moves into the open preview sheet instead.
+  syncFineTuneLocation();
   const panelMap={1:[1],2:[2],3:[3],4:[4],5:[5]};
   BUILDER_STEP_LABELS.forEach((label,index)=>{
     const n=index+1,section=document.createElement('section');
@@ -4911,6 +4925,7 @@ function applySuggestedLabelSize(){
 }
 function showSheetSizeEditor(){
   document.getElementById('sheet-size-editor').innerHTML=inlineSizeEditor();
+  document.getElementById('sheet-size-editor').scrollIntoView?.({block:'nearest'});
 }
 
 function updateSizeWarnings(){
@@ -5076,6 +5091,10 @@ function buildSVG(forExport=false){
   window._typeFSBounds=result.metrics.fsBounds.type;
   window._sigFSBounds=result.metrics.fsBounds.signal;
   window._hazardFSBounds=result.metrics.fsBounds.hazard;
+  // Fine-tune display only (Oct 2026): the sizes actually drawn, and the
+  // inputs of this preview render, so syncAdjustPanel() can show each
+  // adjusted size as a percentage of its automatic size.
+  if(!forExport){window._ftRenderedFS=result.metrics.fontSizes;window._ftLastData=data;window._ftLastOpts=opts;}
   window._unrecognizedCodes=result.metrics.unrecognizedCodes;
   // Structured failure fields: the renderer's own determination of WHY
   // this render is blocked, never re-derived here. blockReason/
@@ -5109,19 +5128,65 @@ function buildSVG(forExport=false){
 }
 
 // ── UPDATE PREVIEW ────────────────────────────────────────────
-function _fsPct(override,bounds){
-  if(!bounds)return 100;
-  const v=override!=null?Math.min(Math.max(override,bounds.min),bounds.max):bounds.auto;
-  return bounds.max>bounds.min?Math.round((v-bounds.min)/(bounds.max-bounds.min)*100):100;
+// Fine-tune display (Oct 2026, Michaela's approved correction): each size is
+// shown as a percentage of its AUTOMATIC size -- 100% when automatic or
+// after Reset -- instead of its position between the allowed minimum and
+// maximum (which showed e.g. "3%" for text at 59% of its automatic size).
+// Display only: sizes, steps, limits, fit checks and exports are unchanged.
+// The automatic reference for an adjusted control is held steady while the
+// customer adjusts THAT control, and re-measured (one extra render with that
+// control on automatic) when the label's content, size or other settings
+// change -- including any of the OTHER four fine-tune controls, since their
+// sizes change the room available to this text (#242 review, 14 Oct 2026).
+const _FT_CONTROLS=[
+  {el:'hazard-fs-pct', ov:'hazardFSOverride', bounds:'_hazardFSBounds', fs:'hazard'},
+  {el:'scent-fs-pct', ov:'scentFSOverride', bounds:'_scentFSBounds', fs:'scent'},
+  {el:'bizname-fs-pct', ov:'bizNameFSOverride', bounds:'_bizNameFSBounds', fs:'biz'},
+  {el:'type-fs-pct', ov:'typeFSOverride', bounds:'_typeFSBounds', fs:'type'},
+  {el:'sig-fs-pct', ov:'sigFSOverride', bounds:'_sigFSBounds', fs:'signal'},
+];
+let _ftAutoRef={}, _ftAutoRefKey={};
+function _ftContextKey(){
+  const o=Object.assign({},window._ftLastOpts||{});
+  _FT_CONTROLS.forEach(c=>{delete o[c.ov];});
+  return JSON.stringify([window._ftLastData||null,o]);
+}
+function _ftAutoSize(c){
+  const fsNow=window._ftRenderedFS||{};
+  if(S[c.ov]==null)return fsNow[c.fs];
+  try{
+    const o=Object.assign({},window._ftLastOpts,{instanceId:'builder-ft-ref'});o[c.ov]=null;
+    return LabelRenderer.renderLabel(window._ftLastData,o).metrics.fontSizes[c.fs];
+  }catch(e){return null;}
+}
+function _ftLimits(c){
+  const b=window[c.bounds], cur=S[c.ov]!=null?S[c.ov]:(b?b.auto:null);
+  return {min:!b||cur==null||b.max<=b.min||cur<=b.min,
+    max:!b||cur==null||b.max<=b.min||cur>=b.max};
+}
+function _ftPctHtml(c){
+  const b=window[c.bounds], fsNow=window._ftRenderedFS||{};
+  const limits=_ftLimits(c);
+  const ref=_ftAutoRef[c.ov], drawn=fsNow[c.fs];
+  const pct=(S[c.ov]==null||!(ref>0)||!(drawn>0))?100:Number((drawn/ref*100).toFixed(1));
+  return pct+'%'+(b&&limits.min?'<span class="ft-min">minimum</span>':'')+
+    (b&&limits.max?'<span class="ft-max">maximum</span>':'');
 }
 function syncAdjustPanel(){
-  const hb=window._hazardFSBounds, sb=window._scentFSBounds, bb=window._bizNameFSBounds;
-  const tb=window._typeFSBounds, gb=window._sigFSBounds;
-  const hEl=document.getElementById('hazard-fs-pct'); if(hEl)hEl.textContent=_fsPct(S.hazardFSOverride,hb)+'%';
-  const sEl=document.getElementById('scent-fs-pct'); if(sEl)sEl.textContent=_fsPct(S.scentFSOverride,sb)+'%';
-  const zEl=document.getElementById('bizname-fs-pct'); if(zEl)zEl.textContent=_fsPct(S.bizNameFSOverride,bb)+'%';
-  const tEl=document.getElementById('type-fs-pct'); if(tEl)tEl.textContent=_fsPct(S.typeFSOverride,tb)+'%';
-  const gEl=document.getElementById('sig-fs-pct'); if(gEl)gEl.textContent=_fsPct(S.sigFSOverride,gb)+'%';
+  const ctx=_ftContextKey();
+  _FT_CONTROLS.forEach(c=>{
+    // This control's reference depends on the label and on the other four
+    // controls' settings, never on its own adjustment.
+    const key=ctx+'|'+JSON.stringify(_FT_CONTROLS.filter(o=>o!==c).map(o=>S[o.ov]));
+    if(key!==_ftAutoRefKey[c.ov]||S[c.ov]==null||!(_ftAutoRef[c.ov]>0))_ftAutoRef[c.ov]=_ftAutoSize(c);
+    _ftAutoRefKey[c.ov]=key;
+  });
+  _FT_CONTROLS.forEach(c=>{
+    const e=document.getElementById(c.el);if(!e)return;
+    e.innerHTML=_ftPctHtml(c);
+    const limits=_ftLimits(c), buttons=e.closest('.ft-controls').querySelectorAll('button');
+    buttons[0].disabled=limits.min;buttons[1].disabled=limits.max;
+  });
   const yPct=Math.round((S.hazardYOffset!=null?S.hazardYOffset:0.5)*100);
   const yEl=document.getElementById('hazard-y-pct'); if(yEl)yEl.textContent=yPct+'%';
   const hR=document.getElementById('hazard-fs-reset'); if(hR)hR.style.display=S.hazardFSOverride!=null?'block':'none';
@@ -5737,8 +5802,21 @@ function viewReviewLabel(){
   const preview=document.getElementById('preview-panel-el');
   if(preview){preview.setAttribute('tabindex','-1');preview.scrollIntoView({behavior:'smooth',block:'center'});preview.focus({preventScroll:true});}
 }
-function openPreviewSheet(){const sheet=document.getElementById('preview-sheet');if(sheet){sheet.classList.add('open');document.body.style.overflow='hidden';}}
-function closeSheet(e){if(!e||e.target===document.getElementById('preview-sheet')||e===undefined){document.getElementById('preview-sheet').classList.remove('open');document.body.style.overflow='';}}
+function syncFineTuneLocation(){
+  const panel=document.getElementById('finetune-panel-el');if(!panel)return;
+  const mobile=window.matchMedia&&window.matchMedia('(max-width:860px)').matches;
+  const inSheet=mobile&&document.getElementById('preview-sheet')?.classList.contains('open');
+  const target=document.getElementById(approvedBuilderStep===5?
+    (inSheet?'sheet-finetune-slot':'preview-canvas-area'):'builder-source-staging');
+  if(target&&panel.parentElement!==target)target.appendChild(panel);
+}
+function openPreviewSheet(){const sheet=document.getElementById('preview-sheet');if(sheet){sheet.classList.add('open');document.body.style.overflow='hidden';syncFineTuneLocation();}}
+function closeSheet(e){if(!e||e.target===document.getElementById('preview-sheet')){document.getElementById('preview-sheet').classList.remove('open');document.body.style.overflow='';syncFineTuneLocation();}}
+function editDetailsFromSheet(step){closeSheet();setApprovedBuilderStep(step);}
+window.addEventListener('resize',()=>{
+  if(window.matchMedia&&!window.matchMedia('(max-width:860px)').matches)closeSheet();
+  else syncFineTuneLocation();
+});
 
 // ══════════════════════════════════════════════════════════════
 // LABEL WIZARD — AI-powered natural language guide
