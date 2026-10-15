@@ -69,3 +69,24 @@ Task: five-PR integration QA. Tier: High (label geometry); focused diff review a
 Files: builder.html, label-render.js, generated index.html examples, existing PR tests, one offline integration harness and this report/evidence.
 Result: combined technical checks PASS within tested scope; SQL and Deno tests SKIP; actual Safari/printer, original scaling cause and unrelated policy items remain open. The independently run pricing-checkout-ux test still fails on untouched pricing/checkout source; signed-in pricing CTA browser checks pass. See OUTSTANDING-FIXES-2026-10-15.md for the reconciled inventory.
 Release: HOLD pending founder physical/device checks, decision on unchanged visual issues, exact-head approval and agreed window.
+
+
+## Fine-tune usability follow-up — 15 October, later verification
+
+Source #242 advanced to `4af04f06ed9b89f0be83fd95a85ecb0d0a5ce107` after Michaela approved the laptop usability correction. The candidate now includes that follow-up: decimal percentages when needed, minimum/maximum labels, and disabled buttons at limits. Steps, allowed sizes and renderer logic are unchanged.
+
+Desktop Cloud Chrome, signed out on #242 Netlify deploy `6ad10587b1608955698ed8b3`, synthetic 60 mm Mint candle with H317/H412/EUH208 and P102/P261/P273/P302+P352/P501, no weight/burn/website/batch:
+
+| Control | Minimum | Maximum | Reset |
+|---|---|---|---|
+| Hazard | 100%, minus disabled | 104.5%, plus disabled | 100% minimum |
+| Product type | 37.7%, minus disabled | 100%, plus disabled | 100% maximum |
+| Signal word | 38.5%, minus disabled | 100%, plus disabled | 100% maximum |
+| Scent name | 50.4%, minus disabled | 100%, plus disabled | 100% maximum |
+| Business name | 50%, minus disabled | 100%, plus disabled | 100% maximum |
+
+First hazard increase showed 100.4%; no further ineffective click is available at either endpoint. A long automation call timed out and was resumed in per-control runs; the table records the completed runs. This is desktop Chrome evidence, not real Safari.
+
+Candidate checks: `finetune-control-limits`, `builder-regression`, `site-scroll-accessibility` and `app-static-audit` PASS. The renderer and index.html are byte-identical to c5b86a8, so previous renderer/export evidence above is reused; it was not rerun for this UI-only follow-up. Full npm suite on the standalone follow-up was stopped after PAYG checks printed PASS but retained handles. Local Chromium is unavailable for rerunning the browser integration harness.
+
+The isolated combined Test site has NOT been redeployed to this follow-up. Combined hosted verification, real-device confirmation of the latest package, actual-size paper measurement and founder release approval remain pending. Production is untouched.
