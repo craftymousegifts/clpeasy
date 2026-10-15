@@ -94,25 +94,24 @@ const server = http.createServer((req, res) => {
         const el = [...doc.querySelectorAll('text')].find(c.find);
         return el ? +el.getAttribute('font-size') : null;
       };
-      const show = c => { const e = document.getElementById(c.el); return { text: e.textContent, min: !!e.querySelector('.ft-min') }; };
-      const pctOf = s => parseInt(s, 10);
+      const show = c => { const e = document.getElementById(c.el); return { text: e.textContent, min: !!e.querySelector('.ft-min'), max: !!e.querySelector('.ft-max'), disabled: [...e.closest('.ft-controls').querySelectorAll('button')].map(b => b.disabled) }; };
       const rows = [];
       for (const c of C) {
         const r = { name: c.name, steps: [] };
         const auto = drawn(c);
         r.auto = { size: auto, ...show(c) };
         // Decrease three times, one at a time.
-        for (let i = 1; i <= 3; i++) { c.fn(-1); const d = drawn(c); r.steps.push({ step: '-' + i, size: d, expected: Math.round(d / auto * 100), ...show(c) }); }
+        for (let i = 1; i <= 3; i++) { c.fn(-1); const d = drawn(c); r.steps.push({ step: '-' + i, size: d, expected: Number((d / auto * 100).toFixed(1)), ...show(c) }); }
         // Decrease to the limit.
         for (let i = 0; i < 40; i++) c.fn(-1);
         const atMin = drawn(c); const b = window[c.b];
-        r.minimum = { size: atMin, boundMin: b.min, expected: Math.round(atMin / auto * 100), ...show(c) };
+        r.minimum = { size: atMin, boundMin: b.min, expected: Number((atMin / auto * 100).toFixed(1)), ...show(c) };
         c.fn(-1); r.minimum.afterOneMore = drawn(c);
         c.reset(); r.reset1 = { size: drawn(c), ...show(c) };
         // Increase to the limit.
         for (let i = 0; i < 40; i++) c.fn(1);
         const atMax = drawn(c);
-        r.maximum = { size: atMax, expected: Math.round(atMax / auto * 100), ...show(c) };
+        r.maximum = { size: atMax, expected: Number((atMax / auto * 100).toFixed(1)), ...show(c) };
         c.reset(); r.reset2 = { size: drawn(c), ...show(c) };
         rows.push(r);
       }
@@ -127,7 +126,7 @@ const server = http.createServer((req, res) => {
       const o = Object.assign({}, window._ftLastOpts, { instanceId: 'test-auto' }); o.hazardFSOverride = null;
       const auto70 = LabelRenderer.renderLabel(window._ftLastData, o).metrics.fontSizes.hazard;
       const d70 = drawn(hz);
-      const refresh = { size: d70, auto70, expected: Math.round(d70 / auto70 * 100), ...show(hz) };
+      const refresh = { size: d70, auto70, expected: Number((d70 / auto70 * 100).toFixed(1)), ...show(hz) };
       hz.reset();
       const reset70 = show(hz);
 
@@ -137,9 +136,9 @@ const server = http.createServer((req, res) => {
       const truth = c => {   // drawn size / this control's automatic size with everything else as it is now
         const o = Object.assign({}, window._ftLastOpts, { instanceId: 'test-truth' }); o[c.ov] = null;
         const auto = LabelRenderer.renderLabel(window._ftLastData, o).metrics.fontSizes[c.fs];
-        return Math.round(window._ftRenderedFS[c.fs] / auto * 100);
+        return Number((window._ftRenderedFS[c.fs] / auto * 100).toFixed(1));
       };
-      const shown = c => parseInt(document.getElementById(c.el).textContent, 10);
+      const shown = c => parseFloat(document.getElementById(c.el).textContent);
       const resetAll = () => C.forEach(c => c.reset());
       const setSize = (shape, w, h) => { selectShape(shape); selectSize('custom'); document.getElementById('custom-w').value = w; document.getElementById('custom-h').value = h; onDimInput(); readForm(); updateLabel(); };
       document.getElementById('burn-time').value = ''; readForm();
@@ -176,13 +175,15 @@ const server = http.createServer((req, res) => {
     for (const r of out.rows) {
       const id = r.name;
       if (r.auto.text !== '100%' || r.auto.min) fail.push(`${id}: automatic shows "${r.auto.text}"`);
-      for (const s of r.steps) if (parseInt(s.text, 10) !== s.expected) fail.push(`${id} ${s.step}: shows ${s.text}, drawn size is ${s.expected}% of automatic`);
+      for (const s of r.steps) if (parseFloat(s.text) !== s.expected) fail.push(`${id} ${s.step}: shows ${s.text}, drawn size is ${s.expected}% of automatic`);
       if (!(r.steps[0].size < r.auto.size)) fail.push(`${id}: one decrease did not reduce the drawn size`);
-      if (parseInt(r.minimum.text, 10) !== r.minimum.expected) fail.push(`${id} minimum: shows ${r.minimum.text}, expected ${r.minimum.expected}%`);
+      if (parseFloat(r.minimum.text) !== r.minimum.expected) fail.push(`${id} minimum: shows ${r.minimum.text}, expected ${r.minimum.expected}%`);
+      if (!r.minimum.disabled[0] || r.minimum.disabled[1]) fail.push(`${id}: wrong button states at minimum`);
       if (!r.minimum.min) fail.push(`${id}: "minimum" not shown at the lower limit`);
       if (Math.abs(r.minimum.size - r.minimum.boundMin) > 0.01) fail.push(`${id}: lower limit drawn at ${r.minimum.size}, renderer minimum ${r.minimum.boundMin}`);
       if (r.minimum.afterOneMore !== r.minimum.size) fail.push(`${id}: decreasing past the minimum changed the size`);
-      if (parseInt(r.maximum.text, 10) !== r.maximum.expected) fail.push(`${id} maximum: shows ${r.maximum.text}, expected ${r.maximum.expected}%`);
+      if (parseFloat(r.maximum.text) !== r.maximum.expected) fail.push(`${id} maximum: shows ${r.maximum.text}, expected ${r.maximum.expected}%`);
+      if (!r.maximum.max || r.maximum.disabled[0] || !r.maximum.disabled[1]) fail.push(`${id}: wrong maximum status/button states`);
       if (r.maximum.min) fail.push(`${id}: "minimum" shown at the upper limit`);
       for (const k of ['reset1', 'reset2']) {
         if (r[k].text !== '100%' || r[k].min) fail.push(`${id} ${k}: shows "${r[k].text}"`);
@@ -190,7 +191,7 @@ const server = http.createServer((req, res) => {
       }
     }
     if (!out.same) fail.push('refreshing the fine-tune display changed the label SVG');
-    if (parseInt(out.refresh.text, 10) !== out.refresh.expected) fail.push(`after resizing to 70 mm: shows ${out.refresh.text}, expected ${out.refresh.expected}% of the new automatic size`);
+    if (parseFloat(out.refresh.text) !== out.refresh.expected) fail.push(`after resizing to 70 mm: shows ${out.refresh.text}, expected ${out.refresh.expected}% of the new automatic size`);
     if (out.reset70.text !== '100%') fail.push(`after resizing and Reset: shows "${out.reset70.text}"`);
     const R = out.rect;
     for (const [k, v] of Object.entries(R)) if (v.shown !== v.truth) fail.push(`rectangle 90x63 ${k}: hazard shows ${v.shown}%, actual ${v.truth}% of its automatic size`);
