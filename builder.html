@@ -339,6 +339,9 @@ a.trust-item:hover .trust-icon{background:var(--teal);color:white;}
    the general .form-row phone rule above is overridden by this later base
    rule (pre-existing, recorded separately). */
 @media(max-width:600px){#frag-row{grid-template-columns:1fr;}}
+/* Same for Step 4's Website / Batch row: on phones the batch box was squeezed
+   to ~50px beside its clear/+1 buttons, hiding the batch number. */
+@media(max-width:600px){#biz-extra-row{grid-template-columns:1fr;}}
 label{display:block;font-size:13px;font-weight:600;margin-bottom:5px;}
 label span{font-weight:400;color:var(--muted);}
 input[type=text],input[type=number],select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:16px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;transition:border-color .2s;outline:none;-webkit-appearance:none;appearance:none;}
@@ -1341,7 +1344,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="form-group"><label>Business / Brand name <span>(required)</span></label><input type="text" id="biz-name" aria-required="true" placeholder="As you want it to appear on the label" oninput="updateLabel();saveBizDetails()"></div>
     <div class="form-group"><label>Address <span>(required)</span></label><input type="text" id="biz-address" aria-required="true" placeholder="Your business address" oninput="updateLabel();saveBizDetails()"></div>
     <div class="form-group"><label>Phone number <span>(required for CLP compliance)</span></label><input type="tel" id="biz-phone" placeholder="e.g. 07700 900000" oninput="updateLabel();saveBizDetails()"></div>
-    <div class="form-row">
+    <div class="form-row" id="biz-extra-row">
       <div class="form-group"><label>Website <span>(optional)</span></label><input type="text" id="biz-website" placeholder="e.g. clpeasy.com" oninput="updateLabel();saveBizDetails()"></div>
       <div class="form-group">
         <label>Batch / Lot number <span>(optional)</span></label>
