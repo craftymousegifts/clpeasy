@@ -52,6 +52,7 @@ const dom = new JSDOM(source, {
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
     window.scrollTo = () => {};
+    window.matchMedia = () => ({matches:false,addEventListener(){},removeEventListener(){}});
     window.fetch = async () => ({ ok:true, json:async()=>({}) });
     window.open = () => ({ location:{ href:'' }, close(){}, opener:null });
     window.URL.createObjectURL = () => 'blob:test';
@@ -91,6 +92,7 @@ setTimeout(async () => {
   assert.strictEqual(home.window.document.querySelectorAll('#features').length,1,'How it works has one real anchor target');
   assert(home.window.document.querySelector('#features').textContent.includes('From SDS to printed label in 5 steps'));home.window.close();
   assert(Number(window.getComputedStyle(document.getElementById('preview-sheet')).zIndex)>Number(window.getComputedStyle(document.querySelector('.sidebar')).zIndex||0),'enlarged preview must sit above sidebar');
+  window.openPreviewSheet();assert.strictEqual(document.getElementById('preview-sheet').parentElement,document.body,'preview escapes isolated shell stacking context');window.closeSheet();
   const help=document.getElementById('supplier-information-help');
   assert(!help.open,'supplier guidance starts collapsed');
   help.open=true;window.updateLabel();assert(help.open,'user may expand supplier guidance');help.open=false;
