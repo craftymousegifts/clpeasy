@@ -69,7 +69,7 @@ function refreshOptionalItemBadges(){
   const box=document.getElementById('omission-download-summary');
   if(box){
     box.style.display=hidden.length?'block':'none';
-    box.innerHTML=hidden.length?'Not shown on this label: '+hidden.map(k=>escapeBuilderText(LabelOptionalItems.labels[k]+' ('+S[k]+')')).join(', ')+'. <button type="button" onclick="showOptionalItems(LabelOptionalItems.keys)" style="font:inherit;color:var(--teal-dark);background:none;border:0;text-decoration:underline;cursor:pointer;">Show all on label</button>':'';
+    box.innerHTML=hidden.length?'Hidden: '+hidden.map(k=>escapeBuilderText(LabelOptionalItems.labels[k]+(k==='netWeight'?' ('+S[k]+')':''))).join(', ')+' · <button type="button" onclick="showOptionalItems(LabelOptionalItems.keys)" style="font:inherit;color:var(--teal-dark);background:none;border:0;text-decoration:underline;cursor:pointer;">Show all</button>':'';
     if(hidden.length&&LabelRenderer.renderLabel(Object.assign({},window._lastLabelData,{showOnLabel:{},omissionConfirmations:{}}),window._ftLastOpts).fits)box.innerHTML+='<p>All entered items now fit. You can show them again.</p>';
   }
 }

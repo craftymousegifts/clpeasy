@@ -231,6 +231,13 @@ setTimeout(async () => {
     document.getElementById('verify-checkbox').checked=false;window.toggleDownload();
     assert(document.getElementById('btn-png-preview').disabled,'unchecked final review must use native disabled semantics');
     assert(document.querySelector('.download-lock-note').textContent,'locked downloads must have an explanation');
+    const declaration=document.querySelector('label[for="verify-checkbox"]').textContent.replace(/\s+/g,' ').trim();
+    assert.strictEqual(declaration,"I've checked this label against my supplier's current SDS for the fragrance load used. I'm responsible for the product and for checking the label before I print and sell it.");
+    assert(!document.querySelector('.export-file-types').open,'file guidance starts collapsed');
+    assert(!document.querySelector('.export-role-info').open,'role explanation starts collapsed');
+    for(const id of ['btn-png-sheet','btn-svg-sheet','btn-pdf-sheet'])assert(document.getElementById(id),'View label retains all download formats');
+    assert(document.querySelector('.export-secondary-actions #btn-save'));
+    assert(document.querySelector('.export-secondary-actions #print-sheet-link'));
     assert(source.includes('.preview-sheet-inner>*{flex-shrink:0;}'),'sheet children must not compress into overlapping boxes');
     assert(source.includes('.preview-sheet-label{margin-bottom:8px;flex:0 0 auto;}'),'label box must retain its SVG height');
 
