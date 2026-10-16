@@ -120,6 +120,7 @@ setTimeout(async () => {
   assert(window._labelBlockDownload);assert.notStrictEqual(document.getElementById('label-warn-step5').style.display,'none');
   assert(document.getElementById('label-warn-step5').textContent.includes('Checking sizes'));
   assert(!document.getElementById('label-warn-step5').textContent.includes('No tested size'),'pending search is not a failed search');
+  assert(!document.querySelector('#label-warn-step5 .fit-placement-help'),'pending check cannot claim no alternative fits');
   const oldJob=window.eval('_fitAdviceJob');window.updateLabel();assert.strictEqual(window.eval('_fitAdviceJob'),oldJob,'identical update reuses in-flight search');
   window.restoreNetWeight('181g');window.updateLabel();assert.notStrictEqual(window.eval('_fitAdviceJob'),oldJob,'edits supersede pending advice');
   window.restoreNetWeight('180g');window.updateLabel();
@@ -136,11 +137,22 @@ setTimeout(async () => {
   window.eval("S.size='custom';S.customW=58;S.customH=58;");set('custom-w','58');set('custom-h','58');window.updateLabel();
   await settle();assert(window._labelBlockDownload);assert(window._omissionOptions.length);
   const card=document.querySelector('#label-warn-step5 details.optional-fit-options')||document.querySelector('#label-warn-step5 [data-omission-status]').closest('details');
-  const select=k=>card.querySelector('[data-omit-select="'+k+'"]');
-  select('burnTime').checked=true;window.refreshOptionalReview(card);
-  assert(card.querySelector('button').disabled,'shortening one footer line must not bypass fit');
-  select('netWeight').checked=true;select('batchNum').checked=true;window.refreshOptionalReview(card);
-  const apply=card.querySelector('button');assert(!apply.disabled);
+  assert(!document.querySelector('#label-warn-step5 .fit-placement-help'),'passing optional choices take precedence over placement fallback');
+  // A 52mm jar base cannot always use the suggested larger circle. Keep
+  // downloads blocked and provide honest placement advice after full search.
+  window.eval("S.customW=52;S.customH=52;S.hStatements='H317,H412';S.pStatements='P102,P261,P273,P302+P352,P501';");set('custom-w','52');set('custom-h','52');set('h-statements','H317,H412,EUH208');set('p-statements','P102,P261,P273,P302+P352,P501');window.eval("S.sensitisers=['Linalool','Citral'];");window.updateLabel();await settle();
+  assert(window._labelBlockDownload);assert.strictEqual(window._omissionOptions.length,0);
+  const fallback=document.querySelector('#label-warn-step5 .fit-placement-help');assert(fallback);
+  assert(!fallback.open,'packaging advice starts collapsed');
+  assert(fallback.textContent.includes('fit at 52 mm'));assert(fallback.textContent.includes('another shape or a label position'));
+  assert(!window._downloadAllowed(),'placement advice cannot bypass fit');
+  window.eval("S.customW=58;S.customH=58;S.hStatements='H317';S.pStatements='P102,P501';");set('custom-w','58');set('custom-h','58');set('h-statements','H317');set('p-statements','P102,P501');window.eval('S.sensitisers=[];');window.updateLabel();await settle();
+  const currentCard=document.querySelector('#label-warn-step5 [data-omission-status]').closest('details');
+  const select=k=>currentCard.querySelector('[data-omit-select="'+k+'"]');
+  select('burnTime').checked=true;window.refreshOptionalReview(currentCard);
+  assert(currentCard.querySelector('button').disabled,'shortening one footer line must not bypass fit');
+  select('netWeight').checked=true;select('batchNum').checked=true;window.refreshOptionalReview(currentCard);
+  const apply=currentCard.querySelector('button');assert(!apply.disabled);
   window.applyOptionalOmission(0,apply);assert(!window._labelBlockDownload);
   for(const k of ['netWeight','burnTime','batchNum'])assert.strictEqual(state().showOnLabel[k],false);
   const data=window._lastLabelData;
