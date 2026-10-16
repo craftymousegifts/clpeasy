@@ -86,7 +86,7 @@ function optionalItemAdviceHTML(){
   }
   html+='</div><p class="fit-helper">Hidden details are saved, so you can add them back later.</p>';
   for(const key of present.filter(k=>LabelOptionalItems.protectedKeys.includes(k))){
-    const text=key==='netWeight'?'Net quantity ('+data[key]+'): shown elsewhere on the packaging.':'Batch ('+data[key]+'): shown elsewhere on the product or its packaging.';
+    const text=key==='netWeight'?'Quantity shown elsewhere on packaging.':'Batch shown elsewhere on product or packaging.';
     html+='<div data-omission-confirm="'+key+'" hidden><label class="omission-confirm"><input type="checkbox" data-omission-key="'+key+'" onchange="refreshOptionalReview(this.closest(\'.optional-item-review\'))"><span>'+escapeBuilderText(text)+'</span></label></div>';
   }
   return html+'<p data-omission-status role="status" aria-live="polite" class="fit-status fit-status-blocked">Still too full: tick another or choose a larger size.</p><p data-omission-comparison class="fit-helper" hidden></p><button type="button" disabled onclick="applyOptionalOmission(0,this)">Apply choices</button><p class="fit-footnote">Fit check only. It doesn’t confirm legal compliance.</p></details>';
@@ -114,7 +114,7 @@ function refreshOptionalReview(panel){
   status.className='fit-status fit-status-ok';
   const fitSize=dims.mmW===dims.mmH?dims.mmW+' mm':dims.mmW+' × '+dims.mmH+' mm';
   const missing=omit.filter(k=>LabelOptionalItems.protectedKeys.includes(k)&&!panel.querySelector('[data-omission-key="'+k+'"]')?.checked);
-  if(missing.length){status.textContent='✓ Fits at '+fitSize+'. Confirm where you show '+missing.map(k=>LabelOptionalItems.labels[k].toLowerCase()).join(' and ')+'.';return;}
+  if(missing.length){status.textContent='✓ Fits at '+fitSize;return;}
   button.disabled=false;status.textContent='✓ Fits at '+fitSize;
 }
 function applyOptionalOmission(index,button){
