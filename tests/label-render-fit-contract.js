@@ -133,7 +133,11 @@ try {
 
   const overlayLine = labelRendererSource.split('\n').find(l => l.includes('const overflowOverlay='));
   assert(overlayLine, 'could not locate the `const overflowOverlay=` line in label-render.js');
-  assert(/_contentBlocked\?/.test(overlayLine), 'overflowOverlay must be gated on the same shared _contentBlocked boolean as fits');
+  assert(/_showBlockOverlay\?/.test(overlayLine), 'overflowOverlay must be gated on _showBlockOverlay');
+  // Hotfix (16 Oct 2026): the overlay is still derived from the same
+  // _contentBlocked boolean as fits; only the Builder's non-export live
+  // preview may omit it, and never for unsupported/unrecognised codes.
+  assert(labelRendererSource.includes('const _showBlockOverlay = _contentBlocked && !(opts.livePreview && !opts.forExport'), 'only non-export live presentation may omit the layout overlay');
 
   console.log('label-render fit-contract checks passed (overflow, unrecognised-code, and footer-clip classes all proven LIVE with real fixtures; fits and the blocked overlay proven to share one boolean)');
 } catch (error) {
