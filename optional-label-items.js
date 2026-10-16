@@ -80,14 +80,14 @@ function optionalItemAdviceHTML(){
   let html='<p>CLPeasy will not shrink text below its supported size limits or cut off required information to force a label to fit.</p>';
   options.forEach((option,i)=>{
     const protectedItems=option.omit.filter(k=>LabelOptionalItems.protectedKeys.includes(k));
-    html+='<details open class="optional-item-review"><summary>Keep '+size+' by leaving optional details off'+(options.length>1?' — option '+(i+1):'')+'</summary><p>This tested option leaves <strong>all '+option.omit.length+' listed items</strong> off this label:</p><ul style="padding-left:20px;">'+option.omit.map(k=>'<li>'+escapeBuilderText(LabelOptionalItems.labels[k]+' ('+option.values[k]+')')+'</li>').join('')+'</ul><p>Your entered values are kept and can be restored. The ticks below confirm where protected items are shown; they do not select individual items to remove.</p>';
+    html+='<details open class="optional-item-review"><summary>Keep '+size+' by leaving optional details off'+(options.length>1?' — option '+(i+1):'')+'</summary><p>This tested option leaves <strong>'+ (option.omit.length===1?'the listed item':'all '+option.omit.length+' listed items') +'</strong> off this label:</p><ul style="padding-left:20px;">'+option.omit.map(k=>'<li>'+escapeBuilderText(LabelOptionalItems.labels[k]+' ('+option.values[k]+')')+'</li>').join('')+'</ul><p>Your entered values are kept and can be restored.</p>'+ (protectedItems.length?'<p>The ticks below confirm where protected items are shown; they do not select individual items to remove.</p>':'');
     if(Number.isFinite(option.hazardMm)&&Number.isFinite(option.largerHazardMm))html+='<p>Hazard text: about '+option.hazardMm.toFixed(1)+' mm here, compared with '+option.largerHazardMm.toFixed(1)+' mm on the suggested larger label (font size).</p>';
     html+='<p>Fitting the layout checks is not confirmation that your label meets GB CLP or any other legal requirement.</p>';
     for(const key of protectedItems){
       const text=key==='netWeight'?'The net quantity ('+option.values[key]+') is shown elsewhere on the packaging.':'The batch ('+option.values[key]+') is shown elsewhere on the product or its packaging.';
       html+='<label style="display:flex;gap:8px;margin:10px 0;"><input type="checkbox" data-omission-key="'+key+'" onchange="refreshOptionalReview(this.closest(\'.optional-item-review\'))"><span>'+escapeBuilderText(text)+'</span></label>';
     }
-    html+='<p data-omission-status role="status" aria-live="polite">'+(protectedItems.length?'Confirm where '+protectedItems.map(k=>LabelOptionalItems.labels[k].toLowerCase()).join(' and ')+' are shown to enable this option.':'Ready to apply this tested option.')+'</p><button type="button" '+(protectedItems.length?'disabled ':'')+'onclick="applyOptionalOmission('+i+',this)">Leave these '+option.omit.length+' items off this label</button></details>';
+    html+='<p data-omission-status role="status" aria-live="polite">'+(protectedItems.length?'Confirm the statements below to enable this option.':'Ready to apply this tested option.')+'</p><button type="button" '+(protectedItems.length?'disabled ':'')+'onclick="applyOptionalOmission('+i+',this)">'+(option.omit.length===1?'Leave this item off this label':'Leave these '+option.omit.length+' items off this label')+'</button></details>';
   });
   return html;
 }
@@ -95,7 +95,7 @@ function refreshOptionalReview(panel){
   const unchecked=Array.from(panel.querySelectorAll('[data-omission-key]')).filter(c=>!c.checked);
   panel.querySelector('button').disabled=unchecked.length>0;
   panel.querySelector('[data-omission-status]').textContent=unchecked.length
-    ?'Still needed: confirm where '+unchecked.map(c=>LabelOptionalItems.labels[c.dataset.omissionKey].toLowerCase()).join(' and ')+' are shown.'
+    ?'Still needed: confirm the location of '+unchecked.map(c=>LabelOptionalItems.labels[c.dataset.omissionKey].toLowerCase()).join(' and ')+'.'
     :'Ready. Apply this option to leave all listed items off this label.';
 }
 function applyOptionalOmission(index,button){
