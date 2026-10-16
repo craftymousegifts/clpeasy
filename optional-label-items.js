@@ -76,41 +76,58 @@ function refreshOptionalItemBadges(){
 function optionalItemAdviceHTML(){
   const options=window._omissionOptions||[];
   if(!options.length)return '';
-  const dims=LabelRenderer.getLabelDims(window._lastLabelData),size=dims.mmW===dims.mmH?dims.mmW+' mm':dims.mmW+' × '+dims.mmH+' mm';
-  let html='<p>CLPeasy will not shrink text below its supported size limits or cut off required information to force a label to fit.</p>';
-  options.forEach((option,i)=>{
-    const protectedItems=option.omit.filter(k=>LabelOptionalItems.protectedKeys.includes(k));
-    html+='<details open class="optional-item-review"><summary>Keep '+size+' by leaving optional details off'+(options.length>1?' — option '+(i+1):'')+'</summary><p>This tested option leaves <strong>'+ (option.omit.length===1?'the listed item':'all '+option.omit.length+' listed items') +'</strong> off this label:</p><ul style="padding-left:20px;">'+option.omit.map(k=>'<li>'+escapeBuilderText(LabelOptionalItems.labels[k]+' ('+option.values[k]+')')+'</li>').join('')+'</ul><p>Your entered values are kept and can be restored.</p>'+ (protectedItems.length?'<p>The ticks below confirm where protected items are shown; they do not select individual items to remove.</p>':'');
-    if(Number.isFinite(option.hazardMm)&&Number.isFinite(option.largerHazardMm))html+='<p>Hazard text: about '+option.hazardMm.toFixed(1)+' mm here, compared with '+option.largerHazardMm.toFixed(1)+' mm on the suggested larger label (font size).</p>';
-    html+='<p>Fitting the layout checks is not confirmation that your label meets GB CLP or any other legal requirement.</p>';
-    for(const key of protectedItems){
-      const text=key==='netWeight'?'The net quantity ('+option.values[key]+') is shown elsewhere on the packaging.':'The batch ('+option.values[key]+') is shown elsewhere on the product or its packaging.';
-      html+='<label style="display:flex;gap:8px;margin:10px 0;"><input type="checkbox" data-omission-key="'+key+'" onchange="refreshOptionalReview(this.closest(\'.optional-item-review\'))"><span>'+escapeBuilderText(text)+'</span></label>';
+  const data=window._lastLabelData,normalized=LabelRenderer.normalizeLabel(data);
+  const present=LabelOptionalItems.keys.filter(k=>normalized[k]);
+  const dims=LabelRenderer.getLabelDims(data),size=dims.mmW===dims.mmH?dims.mmW+' mm':dims.mmW+' × '+dims.mmH+' mm';
+  let html='<p>CLPeasy will not shrink text below its supported size limits or cut off required information to force a label to fit.</p><details open class="optional-item-review"><summary>Keep '+size+' by leaving optional details off</summary><p><strong>Choose which items to leave off this label.</strong> Tick an item to leave it off; untick it to keep it. Your entered values are kept and can be restored.</p>';
+  html+='<p>Tested combinations that fit: '+options.map(o=>escapeBuilderText(o.omit.map(k=>LabelOptionalItems.labels[k]).join(' + '))).join('; ')+'.</p>';
+  for(const key of present){
+    html+='<label style="display:flex;gap:8px;margin:12px 0;"><input type="checkbox" data-omit-select="'+key+'" data-entered-value="'+escapeBuilderText(data[key])+'" onchange="refreshOptionalReview(this.closest(\'.optional-item-review\'))"><span>Leave off '+escapeBuilderText(LabelOptionalItems.labels[key]+' ('+data[key]+')')+'</span></label>';
+    if(LabelOptionalItems.protectedKeys.includes(key)){
+      const text=key==='netWeight'?'The net quantity ('+data[key]+') is shown elsewhere on the packaging.':'The batch ('+data[key]+') is shown elsewhere on the product or its packaging.';
+      html+='<div data-omission-confirm="'+key+'" hidden style="margin-left:24px;"><label style="display:flex;gap:8px;margin:10px 0;"><input type="checkbox" data-omission-key="'+key+'" onchange="refreshOptionalReview(this.closest(\'.optional-item-review\'))"><span>'+escapeBuilderText(text)+'</span></label></div>';
     }
-    html+='<p data-omission-status role="status" aria-live="polite">'+(protectedItems.length?'Confirm the statements below to enable this option.':'Ready to apply this tested option.')+'</p><button type="button" '+(protectedItems.length?'disabled ':'')+'onclick="applyOptionalOmission('+i+',this)">'+(option.omit.length===1?'Leave this item off this label':'Leave these '+option.omit.length+' items off this label')+'</button></details>';
-  });
-  return html;
+  }
+  return html+'<p>Fitting the layout checks is not confirmation that your label meets GB CLP or any other legal requirement.</p><p data-omission-comparison></p><p data-omission-status role="status" aria-live="polite">Choose the items to leave off. We will check whether your selection fits.</p><button type="button" disabled onclick="applyOptionalOmission(0,this)">Leave selected items off this label</button></details>';
+}
+function selectedOptionalItems(panel){
+  return Array.from(panel.querySelectorAll('[data-omit-select]:checked')).map(c=>c.dataset.omitSelect);
 }
 function refreshOptionalReview(panel){
-  const unchecked=Array.from(panel.querySelectorAll('[data-omission-key]')).filter(c=>!c.checked);
-  panel.querySelector('button').disabled=unchecked.length>0;
-  panel.querySelector('[data-omission-status]').textContent=unchecked.length
-    ?'Still needed: confirm the location of '+unchecked.map(c=>LabelOptionalItems.labels[c.dataset.omissionKey].toLowerCase()).join(' and ')+'.'
-    :'Ready. Apply this option to leave all listed items off this label.';
+  const omit=selectedOptionalItems(panel);
+  for(const key of LabelOptionalItems.protectedKeys){
+    const box=panel.querySelector('[data-omission-confirm="'+key+'"]');
+    if(box){box.hidden=!omit.includes(key);if(box.hidden)box.querySelector('input').checked=false;}
+  }
+  const button=panel.querySelector('button'),status=panel.querySelector('[data-omission-status]'),comparison=panel.querySelector('[data-omission-comparison]');
+  button.disabled=true;comparison.textContent='';
+  button.textContent=omit.length===1?'Leave this item off this label':'Leave these '+omit.length+' items off this label';
+  if(!omit.length){button.textContent='Leave selected items off this label';status.textContent='Choose the items to leave off. We will check whether your selection fits.';return;}
+  const data=window._lastLabelData;
+  if(Array.from(panel.querySelectorAll('[data-omit-select]')).some(c=>c.dataset.enteredValue!==String(data[c.dataset.omitSelect]))){status.textContent='Details changed. Review the updated options before applying.';return;}
+  const result=LabelRenderer.renderLabel(LabelOptionalItems.candidate(data,omit),window._ftLastOpts);
+  if(!result.fits){status.textContent='This selection still needs more space. Leave off additional optional items or use the suggested larger label.';return;}
+  const dims=LabelRenderer.getLabelDims(data),hazardMm=result.metrics.fontSizes.hazard*dims.mmW/260;
+  const larger=(window._omissionOptions||[])[0]?.largerHazardMm;
+  comparison.textContent='Hazard text: about '+hazardMm.toFixed(1)+' mm with this selection'+(Number.isFinite(larger)?', compared with '+larger.toFixed(1)+' mm on the suggested larger label':'')+' (font size).';
+  const missing=omit.filter(k=>LabelOptionalItems.protectedKeys.includes(k)&&!panel.querySelector('[data-omission-key="'+k+'"]')?.checked);
+  if(missing.length){status.textContent='This selection fits. Still needed: confirm the location of '+missing.map(k=>LabelOptionalItems.labels[k].toLowerCase()).join(' and ')+'.';return;}
+  button.disabled=false;status.textContent='This selection fits. Apply it to leave only the selected items off this label.';
 }
 function applyOptionalOmission(index,button){
-  const option=(window._omissionOptions||[])[index];if(!option)return;
-  readForm();reconcileOptionalItems();
-  if(option.omit.some(k=>S[k]!==option.values[k])){updateLabel();return;}
   const panel=button.closest('.optional-item-review');if(!panel)return;
-  for(const key of option.omit.filter(k=>LabelOptionalItems.protectedKeys.includes(k))){
+  readForm();reconcileOptionalItems();
+  const fields=Array.from(panel.querySelectorAll('[data-omit-select]'));
+  if(fields.some(c=>c.dataset.enteredValue!==String(S[c.dataset.omitSelect]))){updateLabel();return;}
+  const omit=selectedOptionalItems(panel);if(!omit.length)return;
+  for(const key of omit.filter(k=>LabelOptionalItems.protectedKeys.includes(k))){
     if(!panel.querySelector('[data-omission-key="'+key+'"]')?.checked)return;
   }
   const data=Object.assign({},window._lastLabelData);
   for(const key of LabelOptionalItems.keys)data[key]=S[key];
-  const candidate=LabelOptionalItems.candidate(data,option.omit);
-  if(!LabelRenderer.renderLabel(candidate,window._ftLastOpts).fits){updateLabel();return;}
+  const candidate=LabelOptionalItems.candidate(data,omit);
+  if(!LabelRenderer.renderLabel(candidate,window._ftLastOpts).fits){refreshOptionalReview(panel);return;}
   S.showOnLabel=candidate.showOnLabel;S.omissionConfirmations=candidate.omissionConfirmations;
-  for(const key of option.omit)delete S._omissionNeedsConfirm[key];
+  for(const key of omit)delete S._omissionNeedsConfirm[key];
   updateLabel();
 }

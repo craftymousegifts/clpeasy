@@ -43,6 +43,11 @@ const option={omit:['netWeight','batchNum'],values:{netWeight:'180g',batchNum:'B
 const el=w.document.createElement('div');el.innerHTML=w.optionalItemAdviceHTML();w.document.body.append(el);
 const btn=el.querySelector('button');assert(btn.disabled);
 assert(el.querySelector('details').open,'passing alternative must be visible without discovering a disclosure');
+const select=key=>el.querySelector('[data-omit-select="'+key+'"]');
+assert(select('burnTime'),'burn time has an individual selection checkbox');
+assert.equal(el.querySelectorAll('[data-omit-select]:checked').length,0,'nothing preselected');
+select('netWeight').checked=true;select('batchNum').checked=true;
+w.refreshOptionalReview(el.querySelector('details'));
 const confirmations=el.querySelectorAll('[data-omission-key]');
 confirmations[0].checked=true;w.refreshOptionalReview(el.querySelector('details'));
 assert(btn.disabled,'one protected confirmation cannot enable the whole combination');
@@ -55,4 +60,18 @@ w.S.netWeight='200g';w.reconcileOptionalItems();assert.equal(w.S.showOnLabel.net
 w.showOptionalItems(O.keys);assert(Object.values(w.S.showOnLabel).every(v=>v===true));
 assert(html.includes('showOnLabel:JSON.parse(JSON.stringify(S.showOnLabel||{}))'),'saving preserves choices');
 assert(html.includes('S.showOnLabel=Object.assign({},e.showOnLabel||{})'),'loading restores choices');
+// Burn time alone needs no location confirmation and only hides the chosen item.
+w.S=JSON.parse(JSON.stringify(base));w._lastLabelData=base;
+el.innerHTML=w.optionalItemAdviceHTML();select('burnTime').checked=true;
+w.refreshOptionalReview(el.querySelector('details'));
+assert(!el.querySelector('button').disabled);
+w.applyOptionalOmission(0,el.querySelector('button'));
+assert.equal(w.S.showOnLabel.burnTime,false);assert.notEqual(w.S.showOnLabel.netWeight,false);assert.notEqual(w.S.showOnLabel.batchNum,false);
+// Exact chosen subset must pass, even if confirmation checkboxes are forged/checked.
+const small={...base,customW:52,customH:52};
+w.S=JSON.parse(JSON.stringify(small));w._lastLabelData=small;
+el.innerHTML=w.optionalItemAdviceHTML();select('burnTime').checked=true;
+w.refreshOptionalReview(el.querySelector('details'));
+assert(el.querySelector('button').disabled,'failing partial selection stays blocked');
+w.applyOptionalOmission(0,el.querySelector('button'));assert.notEqual(w.S.showOnLabel?.burnTime,false,'direct invocation cannot apply failing selection');
 console.log(`PASS optional-label-items: ${blocked} blocked and ${rescued} rescued in 42 fixtures; confirmations, exact-value invalidation, legacy rendering, exports and restore checked`);
