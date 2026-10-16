@@ -508,11 +508,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .preview-legend{flex:0 0 220px;background:white;border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:12px;align-self:stretch;overflow-y:auto;max-height:100%;}
 .preview-legend .fine-tune-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
 .preview-legend .fine-tune-sub{font-size:10.5px;color:var(--muted);margin-bottom:10px;line-height:1.35;}
-.preview-legend .ft-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);}
+.preview-legend .ft-row{display:grid;grid-template-columns:minmax(0,1fr) 112px;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);}
 .preview-legend .ft-row span{font-size:11.5px;font-weight:600;color:var(--text);}
-.preview-legend .ft-controls{display:flex;align-items:center;gap:4px;}
+.preview-legend .ft-controls{display:grid;grid-template-columns:24px 56px 24px;align-items:center;gap:4px;}
 .preview-legend .ft-btn{background:var(--off);border:1px solid var(--border);color:var(--text);border-radius:4px;width:19px;height:19px;font-size:11px;cursor:pointer;line-height:1;padding:0;}
-.preview-legend .ft-pct{font-size:10.5px;color:var(--muted);min-width:28px;text-align:center;font-weight:600;}
+.preview-legend .ft-pct{font-size:10.5px;color:var(--muted);width:56px;min-width:0;text-align:center;font-weight:600;}
 .preview-legend .ft-pct .ft-min,.preview-legend .ft-pct .ft-max{display:block;font-size:8.5px;font-weight:600;color:var(--muted);line-height:1;}
 .preview-legend .ft-btn:disabled{opacity:.4;cursor:not-allowed;}
 .preview-legend .ft-reset{font-size:9.5px;color:var(--teal);font-weight:600;cursor:pointer;display:none;text-align:right;padding:2px 0 4px;}
@@ -559,6 +559,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 }
 .preview-sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;align-items:flex-start;justify-content:center;padding-top:max(12px,env(safe-area-inset-top,0px));box-sizing:border-box;}
 .preview-sheet.open{display:flex;}
+@media(min-width:861px){.preview-sheet.open .preview-sheet-inner{max-width:920px;border-radius:16px;}.preview-sheet-label>svg{max-height:50dvh!important;}}
+.optional-item-review{color:var(--text,#152333);background:white;border:1px solid var(--teal,#4c9bb0);border-radius:10px;padding:14px;margin-top:14px;}
+.optional-item-review summary{font-weight:700;color:var(--teal-dark,#286579);cursor:pointer;}
+.optional-item-review button{background:var(--teal,#4c9bb0);color:white;border:0;border-radius:8px;padding:10px;min-height:44px;cursor:pointer;}
+.optional-item-review button:disabled{background:#e5e7eb;color:#596273;cursor:not-allowed;}
+.download-lock-note{padding:10px;border-radius:8px;background:#f0f5f7;color:#283e4a;font-size:13px;line-height:1.5;margin:10px 0;}
 .preview-sheet-inner{background:#1a1f2e;border-radius:20px 20px 0 0;padding:20px;width:100%;height:calc(100dvh - max(12px,env(safe-area-inset-top,0px)));max-height:none;overflow-y:auto;box-sizing:border-box;}
 .preview-sheet-handle{width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:100px;margin:0 auto 12px;}
 .preview-sheet-label{display:flex;align-items:center;justify-content:center;margin:0 auto 16px;width:100%;max-width:100%;min-height:0;overflow:visible;}
@@ -579,6 +585,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 #sheet-finetune-slot:empty{display:none;}
 #sheet-finetune-slot .preview-legend{width:100%;box-sizing:border-box;max-height:none;overflow:visible;margin:12px 0;}
 #sheet-finetune-slot .ft-btn{width:44px;height:44px;font-size:20px;}
+#sheet-finetune-slot .ft-row{grid-template-columns:minmax(0,1fr) 152px;}
+#sheet-finetune-slot .ft-controls{grid-template-columns:44px 56px 44px;}
 #sheet-finetune-slot .ft-reset{font-size:14px;padding:12px 0;}
 #sheet-finetune-slot .ft-pct{min-width:48px;}
 .sheet-edit-details{color:white;margin:8px 0;}
@@ -1404,6 +1412,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="hazard-review-notice field-alert field-alert-warn" role="alert" style="display:none;margin-bottom:16px;font-size:13px;"></div>
 
       <div id="omission-download-summary" role="status" style="display:none;margin-bottom:12px;font-size:13px;"></div>
+      <div class="download-lock-note" role="status" aria-live="polite" style="display:none;"></div>
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
       <button type="button" id="btn-view-label" class="btn-next" onclick="viewReviewLabel()" aria-controls="preview-panel-el preview-sheet" style="width:100%;padding:14px;font-size:16px;margin-top:10px;">View label ↗</button>
       <!-- Stage 2: the two current printing routes (single label: PDF; several on A4: Print Sheet Composer). -->
@@ -1511,7 +1520,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 <!-- MOBILE PREVIEW SHEET -->
 <div class="preview-sheet" id="preview-sheet" onclick="closeSheet(event)">
-  <div class="preview-sheet-inner">
+  <div class="preview-sheet-inner" role="dialog" aria-modal="true" aria-label="Label review" tabindex="-1">
     <div class="preview-sheet-handle"></div>
     <div class="preview-sheet-label" id="sheet-label-container"></div>
     <div style="font-size:12px;color:rgba(255,255,255,0.4);text-align:center;margin-bottom:4px;" id="sheet-size-info"></div>
@@ -1522,6 +1531,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div></details>
     <button type="button" onclick="showSheetSizeEditor()" style="color:white;background:none;border:1px solid white;border-radius:8px;padding:10px;min-height:44px;margin:8px 0;">Adjust shape &amp; size</button><div id="sheet-fit-advice" role="status" aria-live="polite" style="color:white;font-size:14px;"></div><div id="sheet-size-editor" style="color:white;"></div>
     <div id="sheet-finetune-slot"></div>
+    <div class="download-lock-note" role="status" aria-live="polite" style="display:none;"></div>
+    <button type="button" id="sheet-review-confirmation-link" onclick="closeSheet();document.getElementById('verify-checkbox').scrollIntoView({block:'center'});document.getElementById('verify-checkbox').focus();" style="display:none;min-height:44px;">Go to final review confirmation</button>
     <div class="preview-sheet-actions">
       <button class="btn-dl" id="btn-png-sheet" onclick="downloadPNG();closeSheet()">⬇ PNG (single)</button>
       <button class="btn-dl" id="btn-pdf-sheet" onclick="printToPDF()">▣ PDF</button>
@@ -3731,9 +3742,19 @@ function toggleDownload(){
     const btn=document.getElementById(id);
     if(!btn)return;
     const ok=id==='btn-save'?saveAllowed:allowed;
+    btn.disabled=!ok;
+    btn.setAttribute('aria-disabled',String(!ok));
     btn.style.opacity=ok?'1':'0.4';
     btn.style.pointerEvents=ok?'auto':'none';
   });
+  const reason=allowed?'':_businessDetailsBlockedMessage()||_requiredLabelContentMessage()||
+    (_hazardReviewRequired()?'Review the changed product information in Step 2 before downloading.':'')||
+    (window._labelBlockDownload?'This label does not pass the current content and size checks. Resolve the warning above or choose a tested larger size.':'')||
+    SdsDocCheck.exportBlockMessage(_sdsDocRecord())||
+    (!document.getElementById('verify-checkbox')?.checked?'Tick the final review confirmation to enable downloads.':'Downloads are unavailable. Review the label information before trying again.');
+  document.querySelectorAll('.download-lock-note').forEach(note=>{note.style.display=reason?'block':'none';note.textContent=reason;});
+  const reviewLink=document.getElementById('sheet-review-confirmation-link');
+  if(reviewLink)reviewLink.style.display=approvedBuilderStep===5&&!document.getElementById('verify-checkbox')?.checked?'block':'none';
   const _sdsNote=document.getElementById('sds-doc-export-note');
   if(_sdsNote){
     const m=SdsDocCheck.exportBlockMessage(_sdsDocRecord());
@@ -4449,6 +4470,8 @@ function renderBuilderAccordion(){
         // appearance/dimensions). Desktop CSS places these same siblings in
         // two columns without changing their DOM order.
         if(labelAppearance)body.appendChild(labelAppearance);
+      }
+      if(n===1||n===4){
         const labelFitWarning=staging.querySelector('#label-warn-stage4');
         if(labelFitWarning)body.appendChild(labelFitWarning);
       }
@@ -4893,7 +4916,7 @@ function restoreBurnTime(value){
 }
 function inlineSizeEditor(){
   const d=getDims();
-  return '<div class="inline-size-editor" style="margin:12px 0;padding:12px;border:1px solid currentColor;border-radius:10px;"><strong>Adjust shape and size here</strong><label style="display:block;margin-top:8px;">Shape<select data-size-shape onchange="applyInlineShape(this)" style="display:block;padding:8px;min-height:44px;background:white;color:#111;">'+['circle','rectangle','square'].map(shape=>'<option value="'+shape+'"'+(S.shape===shape?' selected':'')+'>'+shape.charAt(0).toUpperCase()+shape.slice(1)+'</option>').join('')+'</select></label><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;"><label>'+ (S.shape==='rectangle'?'Width':'Size')+' (mm)<input data-size-width type="number" inputmode="numeric" min="10" max="150" step="1" value="'+d.mmW+'" style="display:block;width:100px;padding:8px;color:#111;background:white;"></label>'+(S.shape==='rectangle'?'<label>Height (mm)<input data-size-height type="number" inputmode="numeric" min="10" max="150" step="1" value="'+d.mmH+'" style="display:block;width:100px;padding:8px;color:#111;background:white;"></label>':'')+'<button type="button" onclick="applyInlineSize(this)" style="padding:10px;border-radius:8px;background:white;color:#111;border:1px solid #4c9bb0;min-height:44px;">Apply size</button></div><small>Your entered information is kept. The preview will check the new size.</small></div>';
+  return '<div class="inline-size-editor" style="margin:12px 0;padding:12px;border:1px solid currentColor;border-radius:10px;"><strong>Choose another shape or size</strong><p>The recommendation above is for your current shape and content. You can try a different shape or size here; every choice is checked again against the supported size limits.</p><label style="display:block;margin-top:8px;">Shape<select data-size-shape onchange="applyInlineShape(this)" style="display:block;padding:8px;min-height:44px;background:white;color:#111;">'+['circle','rectangle','square'].map(shape=>'<option value="'+shape+'"'+(S.shape===shape?' selected':'')+'>'+shape.charAt(0).toUpperCase()+shape.slice(1)+'</option>').join('')+'</select></label><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;"><label>'+ (S.shape==='rectangle'?'Width':'Size')+' (mm)<input data-size-width type="number" inputmode="numeric" min="10" max="150" step="1" value="'+d.mmW+'" style="display:block;width:100px;padding:8px;color:#111;background:white;"></label>'+(S.shape==='rectangle'?'<label>Height (mm)<input data-size-height type="number" inputmode="numeric" min="10" max="150" step="1" value="'+d.mmH+'" style="display:block;width:100px;padding:8px;color:#111;background:white;"></label>':'')+'<button type="button" onclick="applyInlineSize(this)" style="padding:10px;border-radius:8px;background:white;color:#111;border:1px solid #4c9bb0;min-height:44px;">Apply size</button></div><small>Your entered information is kept. Nothing is removed automatically.</small></div>';
 }
 function applyInlineShape(select){
   const shape=select.value;
@@ -5808,23 +5831,22 @@ function wizClearChat(){
 }
 function viewReviewLabel(){
   updateLabel();
-  if(window.matchMedia('(max-width:860px)').matches){openPreviewSheet();return;}
-  const preview=document.getElementById('preview-panel-el');
-  if(preview){preview.setAttribute('tabindex','-1');preview.scrollIntoView({behavior:'smooth',block:'center'});preview.focus({preventScroll:true});}
+  openPreviewSheet();
 }
 function syncFineTuneLocation(){
   const panel=document.getElementById('finetune-panel-el');if(!panel)return;
   const mobile=window.matchMedia&&window.matchMedia('(max-width:860px)').matches;
-  const inSheet=mobile&&document.getElementById('preview-sheet')?.classList.contains('open');
+  const inSheet=document.getElementById('preview-sheet')?.classList.contains('open');
   const target=document.getElementById(approvedBuilderStep===5?
     (inSheet?'sheet-finetune-slot':'preview-canvas-area'):'builder-source-staging');
   if(target&&panel.parentElement!==target)target.appendChild(panel);
 }
-function openPreviewSheet(){const sheet=document.getElementById('preview-sheet');if(sheet){sheet.classList.add('open');document.body.style.overflow='hidden';syncFineTuneLocation();}}
+function openPreviewSheet(){const sheet=document.getElementById('preview-sheet');if(sheet){sheet.dataset.openedOnMobile=String(window.matchMedia('(max-width:860px)').matches);sheet.classList.add('open');document.body.style.overflow='hidden';syncFineTuneLocation();sheet.querySelector('[role="dialog"]')?.focus();}}
 function closeSheet(e){if(!e||e.target===document.getElementById('preview-sheet')){document.getElementById('preview-sheet').classList.remove('open');document.body.style.overflow='';syncFineTuneLocation();}}
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.getElementById('preview-sheet')?.classList.contains('open'))closeSheet();});
 function editDetailsFromSheet(step){closeSheet();setApprovedBuilderStep(step);}
 window.addEventListener('resize',()=>{
-  if(window.matchMedia&&!window.matchMedia('(max-width:860px)').matches)closeSheet();
+  if(document.getElementById('preview-sheet')?.dataset.openedOnMobile==='true'&&!window.matchMedia('(max-width:860px)').matches)closeSheet();
   else syncFineTuneLocation();
 });
 

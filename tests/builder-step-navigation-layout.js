@@ -216,6 +216,21 @@ setTimeout(async () => {
       window.setApprovedBuilderStep(5);window.openPreviewSheet();
     }
     window.closeSheet();window.eval('S.hazardFSOverride=null');
+    window.setApprovedBuilderStep(4);
+    const businessFit=document.getElementById('label-warn-stage4');
+    assert(businessFit.closest('.builder-accordion-section.active'),'business-stage warning must be inside the active step');
+    assert(!businessFit.closest('[hidden]'),'business-stage warning must not be parked under hidden staging');
+    window.setApprovedBuilderStep(5);mobile=false;
+    window.viewReviewLabel();
+    assert(document.getElementById('preview-sheet').classList.contains('open'),'desktop View label must open a visible enlarged review');
+    assert.strictEqual(fineTunePanel.parentElement.id,'sheet-finetune-slot','desktop review must include the same fine-tune controls');
+    window.dispatchEvent(new window.Event('resize'));
+    assert(document.getElementById('preview-sheet').classList.contains('open'),'desktop review must survive desktop resizing');
+    document.dispatchEvent(new window.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+    assert(!document.getElementById('preview-sheet').classList.contains('open'),'Escape must close enlarged review');
+    document.getElementById('verify-checkbox').checked=false;window.toggleDownload();
+    assert(document.getElementById('btn-png-preview').disabled,'unchecked final review must use native disabled semantics');
+    assert(document.querySelector('.download-lock-note').textContent,'locked downloads must have an explanation');
     assert(source.includes('.preview-sheet-inner>*{flex-shrink:0;}'),'sheet children must not compress into overlapping boxes');
     assert(source.includes('.preview-sheet-label{margin-bottom:8px;flex:0 0 auto;}'),'label box must retain its SVG height');
 
