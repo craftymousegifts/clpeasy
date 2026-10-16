@@ -548,6 +548,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 .sds-help{margin:8px 0 14px;font-size:12px;line-height:1.5;color:var(--muted);}
 .sds-help summary{cursor:pointer;color:var(--teal-dark);font-weight:600;padding:8px 0;}
+.sds-help:not([open]) > :not(summary){display:none;}
 #sds-doc-result{scroll-margin:100px 0;padding:8px 0;}
 /* MOBILE PREVIEW SHEET */
 .mobile-preview-btn{display:none;background:var(--teal);color:white;border:0;padding:11px 16px;border-radius:999px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;-webkit-tap-highlight-color:transparent;box-shadow:0 8px 24px rgba(12,137,155,.28);}
@@ -563,13 +564,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
      exactly the original "keep scrolling to find Next/Back" complaint. */
   .approved-stage-nav{position:fixed;left:0;right:0;bottom:0;z-index:220;background:white;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));box-shadow:0 -4px 16px rgba(15,23,42,.08);border-top:1px solid var(--border);}
 }
-.preview-sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;align-items:flex-start;justify-content:center;padding-top:max(12px,env(safe-area-inset-top,0px));box-sizing:border-box;}
+.preview-sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:400;align-items:flex-start;justify-content:center;padding-top:max(12px,env(safe-area-inset-top,0px));box-sizing:border-box;}
 .preview-sheet.open{display:flex;}
-@media(min-width:861px){.preview-sheet.open .preview-sheet-inner{max-width:920px;border-radius:16px;}.preview-sheet-label>svg{max-height:50dvh!important;}}
+@media(min-width:861px){.preview-sheet.open .preview-sheet-inner{max-width:920px;border-radius:16px;}}
 
 .fit-advice-card{background:#fff!important;color:#26313b!important;border:1px solid #dce2e8!important;border-radius:14px!important;padding:20px!important;line-height:1.5;}
 .fit-heading{font-size:17px;font-weight:650;color:#9b6200;}.fit-heading>span{color:#e4a11b;margin-right:6px;}.fit-heading small{font-size:13px;font-weight:400;color:#737d87;}
 .fit-actions{display:flex;flex-wrap:wrap;align-items:flex-start;gap:12px;margin:16px 0;}.fit-primary,.fit-size-picker>summary{box-sizing:border-box;min-height:44px;border:1px solid #2f8aa6;border-radius:8px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;}.fit-primary{background:#2f8aa6;color:#fff;}.fit-size-picker>summary{background:white;color:#2f8aa6;list-style:none;}.fit-size-picker>summary::-webkit-details-marker{display:none;}.fit-size-picker .inline-size-editor{max-width:100%;}.fit-size-picker .inline-size-editor>strong,.fit-size-picker .inline-size-editor>p,.fit-size-picker .inline-size-editor>small{display:none;}
+.fit-placement-help{border-top:1px solid #e5e8eb;padding-top:14px;margin-top:16px;}.fit-placement-help summary{cursor:pointer;font-size:14px;font-weight:600;color:#26313b;}
 .fit-advice-card .optional-item-review{border:0;border-top:1px solid #e5e8eb;border-radius:0;padding:16px 0 0;margin:0;color:#26313b;}.fit-advice-card .optional-item-review summary{color:#26313b;}.omission-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}.omission-chip{display:flex;align-items:center;gap:7px;border:1px solid #dce2e8;border-radius:8px;padding:9px;min-height:44px;box-sizing:border-box;cursor:pointer;}.omission-chip:has(input:checked){border-color:#2f8aa6;background:#f0f8fa;}.omission-chip small{background:#eef1f3;color:#68737d;border-radius:10px;padding:1px 6px;font-size:10px;}.omission-chip input,.omission-confirm input{accent-color:#2f8aa6;min-width:20px;min-height:20px;flex-shrink:0;}.omission-confirm{display:flex;align-items:center;gap:8px;margin:10px 0;font-size:13px;}.fit-helper{color:#717b85;font-size:12px;margin:10px 0;}.fit-status{font-size:13px;margin:12px 0;}.fit-status-blocked{color:#b53333;}.fit-status-ok{color:#23754a;}.fit-footnote{color:#7b838c;font-size:11px;margin:12px 0 0;}.fit-advice-card .optional-item-review button{background:#2f8aa6;}.fit-advice-card .optional-item-review button:disabled{background:#e5e7eb;}
 
 .optional-item-review{color:var(--text,#152333);background:white;border:1px solid var(--teal,#4c9bb0);border-radius:10px;padding:14px;margin-top:14px;}
@@ -580,7 +582,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .preview-sheet-inner{background:#1a1f2e;border-radius:20px 20px 0 0;padding:20px;width:100%;height:calc(100dvh - max(12px,env(safe-area-inset-top,0px)));max-height:none;overflow-y:auto;box-sizing:border-box;}
 .preview-sheet-handle{width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:100px;margin:0 auto 12px;}
 .preview-sheet-label{display:flex;align-items:center;justify-content:center;margin:0 auto 16px;width:100%;max-width:100%;min-height:0;overflow:visible;}
-.preview-sheet-label>svg{display:block;width:auto!important;height:auto!important;max-width:calc(100vw - 40px)!important;max-height:min(42dvh,360px)!important;}
+.preview-sheet-label>svg{display:block;width:100%!important;height:auto!important;max-width:640px!important;max-height:none!important;}
 .preview-sheet-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;}
 @media(max-width:860px){
   .preview-sheet-inner{padding:12px 20px calc(10px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;}
@@ -589,7 +591,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   .preview-sheet-inner>*{flex-shrink:0;}
   .preview-sheet-handle{margin-bottom:8px;flex:0 0 auto;}
   .preview-sheet-label{margin-bottom:8px;flex:0 0 auto;}
-  .preview-sheet-label>svg{max-height:min(36dvh,320px)!important;}
   .preview-sheet-actions{margin-top:8px;}
   .preview-sheet-inner>div:last-child{margin-top:4px!important;}
   .preview-sheet-inner>div:last-child button{padding:6px 20px!important;min-height:40px!important;}
@@ -1272,7 +1273,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div id="smart-paste-size-warning" class="field-alert field-alert-danger" role="status" aria-live="polite" style="display:none;margin-top:14px;font-size:14px;"></div>
       <button type="button" id="hazard-clear-link" onclick="clearHazardData()" style="display:none;margin-left:14px;font-size:12px;color:var(--teal-dark);text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">Clear hazard data and start again</button>
     </div>
-    <details class="sds-help"><summary>About supplier information and GB CLP</summary>
+    <details id="supplier-information-help" class="sds-help"><summary>About supplier information and GB CLP</summary>
     <aside class="sds-gb-note" aria-label="About supplier SDS information for Great Britain">
       <strong>About your supplier SDS and GB CLP</strong>
       <p>If you place a fragrance mixture on the market in Great Britain (England, Scotland or Wales), you are responsible for checking that the classification and label for your finished product are accurate and meet the applicable GB CLP requirements. Two things to check:</p>
@@ -1476,6 +1477,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="preview-canvas-area" id="preview-canvas-area"><div id="preview-stage"><div id="label-svg-container"></div></div></div>
   <div class="preview-footer">
     <button type="button" id="clp-code-help-btn" class="clp-code-help-btn" onclick="openClpCodeHelp()">Why is this label blocked?</button>
+    <div id="preview-incomplete-note" role="status" hidden style="font-size:12px;color:#986300;margin-bottom:8px;"></div>
     <div class="preview-size-info" id="preview-size-info">Print size: 35 × 35mm</div>
     <div class="dl-row" id="preview-dl-row" style="display:none;">
       <button class="btn-dl" id="btn-png-preview" onclick="downloadPNG()" style="opacity:0.4;pointer-events:none;">⬇ PNG</button>
@@ -1529,6 +1531,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="preview-sheet-inner" role="dialog" aria-modal="true" aria-label="Label review" tabindex="-1">
     <div class="preview-sheet-handle"></div>
     <div class="preview-sheet-label" id="sheet-label-container"></div>
+    <div id="sheet-incomplete-note" role="status" hidden style="font-size:13px;color:#f2cd7b;text-align:center;margin-bottom:8px;"></div>
     <div style="font-size:12px;color:rgba(255,255,255,0.4);text-align:center;margin-bottom:4px;" id="sheet-size-info"></div>
     <details class="sheet-edit-details"><summary>Edit label details</summary><div>
       <button type="button" onclick="editDetailsFromSheet(2)">Product</button>
@@ -3801,12 +3804,13 @@ function toggleHChip(el,code){el.classList.toggle('selected');const i=S.hSelecte
 // picker (openP280Modal()) instead of adding it immediately; the code and
 // its selected wording are only committed to S.pStatements once the user
 // confirms at least one applicable item (see confirmP280Modal()). Clicking
-// an already-selected P280 chip removes it, exactly like any other chip,
-// and clears its saved selection. Every other P-code's toggle behaviour is
+// an already-completed P280 chip removes it, exactly like any other chip,
+// and clears its saved selection. An extracted, incomplete P280 opens the
+// picker so it can be completed without silently discarding the code. Every other P-code's toggle behaviour is
 // unchanged below.
 function togglePChip(el,code){
   if(code==='P280'){
-    if(S.pSelected.includes('P280')){
+    if(S.pSelected.includes('P280') && LabelRenderer.buildP280Wording({p280Items:S.p280Items,p280Other:S.p280Other})){
       el.classList.remove('selected');
       const i=S.pSelected.indexOf('P280');if(i>-1)S.pSelected.splice(i,1);
       S.p280Items=[];S.p280Other='';
@@ -4047,12 +4051,12 @@ function extractSDS(){
   // Combined P-codes (e.g. "P302+P352") are often printed by suppliers with
   // spaces around the "+" (e.g. "P302 + P352" — seen in real supplier SDS
   // PDFs). Match that spaced form too, then strip the spaces so the token
-  // matches P_LIB's/​_pExclude's no-space "P302+P352" convention exactly —
+  // matches P_LIB's no-space "P302+P352" convention exactly —
   // otherwise each half is captured as a separate, unrecognised standalone
   // code (e.g. orphan "P302"/"P352"), which incorrectly blocked Step 3.
   // Combined-P-code notation fix: the official/canonical combined P-code
   // designation is represented internally with "+" (e.g. "P302+P352",
-  // matching P_LIB/_pExclude) -- that has not changed. Some supplier SDS
+  // matching P_LIB) -- that has not changed. Some supplier SDS
   // documents and PDF text layers instead print combined codes using an
   // abbreviated "/"-separated shorthand (e.g. "P302/352", "P333/313"),
   // which Smart Paste must tolerate and canonicalise to the official "+"
@@ -4067,18 +4071,10 @@ function extractSDS(){
   // and "P302+P352" normalise to the same official "P302+P352" internal
   // form.
   const _pAllCodes=[...new Set((text.match(/\bP\d{3}(?:\s*[\/+]\s*P?\d{3})*\b/g)||[]).map(c=>(c.match(/\d{3}/g)||[]).map(n=>'P'+n).join('+')))];
-  const _pExclude=[
-    'P272',            // Contaminated work clothing — occupational only
-    'P264',            // Wash hands after handling — workplace handling context
-    'P270',            // Do not eat/drink/smoke when using — workplace ingestion risk
-    'P280',            // Wear protective gloves/eye protection — occupational PPE
-    'P303+P361+P353',  // Remove contaminated clothing — occupational
-    'P362',            // Take off contaminated clothing — occupational
-    'P362+P364',       // Take off contaminated clothing and wash — occupational
-    'P363',            // Wash contaminated clothing before reuse — occupational
-    'P405'             // Store locked up — controlled substances/workplace
-  ]; // codes not applicable to finished consumer home fragrance products
-  const pRaw=_pAllCodes.filter(c=>!_pExclude.some(x=>c===x||c.startsWith(x+'+')||c.endsWith('+'+x)));
+  // Preserve every supplied P code. Product-specific selection belongs to
+  // the supplier/maker review; a fixed consumer-product blacklist cannot
+  // establish that a precaution is unnecessary for this finished product.
+  const pRaw=_pAllCodes;
   const pEl=document.getElementById('p-statements');
   if(pEl){pEl.value=pRaw.join(', ');}
   S.pStatements=pRaw.join(', ');
@@ -5131,6 +5127,7 @@ function buildSVG(forExport=false){
   window._lastLabelData=data;
   const opts={
     instanceId:'builder-main', forExport,
+    livePreview:!forExport,
     bgColour:document.getElementById('label-bg-colour')?.value,
     hazardFSOverride:S.hazardFSOverride, hazardYOffset:S.hazardYOffset,
     scentFSOverride:S.scentFSOverride, bizNameFSOverride:S.bizNameFSOverride,
@@ -5163,6 +5160,8 @@ function buildSVG(forExport=false){
   window._unsupportedCodes=result.unsupportedCodes;
   window._unrecognizedCodesGeneric=result.unrecognizedCodesGeneric;
   window._contentOverflow=result.contentOverflow;
+  window._rendererBlocked=result.blocked;
+  window._previewCareMissing=!!(result.metrics.candleCareEdgeClipped||result.metrics.bcfTooSmall);
   window._labelLegibilityWarn=result.metrics.overflow;
   window._hazardYSlack=result.metrics.hazardYSlack;
   window._footerLegibilityClipped=result.metrics.footerClipped;
@@ -5283,6 +5282,32 @@ function nudgeBizNameFS(delta){
   updateLabel();
 }
 function resetBizNameFS(){S.bizNameFSOverride=null;updateLabel();}
+// One cancellable advice search for the current complete label. Keep rendering
+// synchronous previews, but yield between size candidates instead of blocking
+// the browser for the entire search. Identical updates reuse the last result.
+let _fitAdviceJob=null, _fitAdviceFontRevision=0;
+if(document.fonts&&document.fonts.addEventListener)document.fonts.addEventListener('loadingdone',()=>{
+  _fitAdviceFontRevision++;_fitAdviceJob=null;updateLabel();
+});
+function currentFitAdvice(enabled,data,opts,allowOmissions){
+  if(!enabled){_fitAdviceJob=null;return {pending:false,size:null,options:[]};}
+  const key=JSON.stringify([data,opts,allowOmissions,_fitAdviceFontRevision]);
+  if(_fitAdviceJob&&_fitAdviceJob.key===key)return _fitAdviceJob;
+  const job={key,pending:true,size:null,options:[]};_fitAdviceJob=job;
+  const snapshot=JSON.parse(JSON.stringify(data)), renderOpts=Object.assign({},opts);
+  const current=()=>_fitAdviceJob===job;
+  LabelRenderer.findSmallestFittingSizeAsync(snapshot,{instanceId:'builder-main'},current).then(async size=>{
+    if(!current())return;
+    job.size=size;
+    job.options=allowOmissions&&typeof LabelOptionalItems!=='undefined'?await LabelOptionalItems.findOptionsAsync(snapshot,renderOpts,size,current):[];
+    if(!current())return;
+    job.pending=false;updateLabel();
+  }).catch(error=>{
+    if(!current())return;
+    console.error('Label fit advice failed',error);job.pending=false;job.failed=true;updateLabel();
+  });
+  return job;
+}
 function updateLabel(){
   readForm();
   if(typeof reconcileOptionalItems==='function')reconcileOptionalItems();
@@ -5333,7 +5358,10 @@ function updateLabel(){
   // not fitting must block download exactly like hazard-text-overflow and
   // footer-clipped already do -- see label-render.js's _mandatoryMinFS.
   const _hasMandatoryTextTooSmall = !!(window._scentTooSmall || window._businessNameTooSmall || window._productTypeTooSmall || window._signalWordTooSmall);
-  window._labelBlockDownload = !!(window._labelLegibilityWarn || window._footerLegibilityClipped || _hasUnrecognizedCodes || _isCustomSizeTooSmall || _hasMandatoryTextTooSmall);
+  window._labelBlockDownload = !!(window._rendererBlocked || window._labelLegibilityWarn || window._footerLegibilityClipped || _hasUnrecognizedCodes || _isCustomSizeTooSmall || _hasMandatoryTextTooSmall);
+  // Fit advice belongs to the complete-label review, after SDS and Business.
+  // Keep the renderer/export block active while earlier steps are edited.
+  const _showFinalFit = approvedBuilderStep===5;
   // Fail-closed design (2026-09-07): when the label is blocked for a reason a
   // bigger label might actually fix (not the unrecognised-code or below-
   // minimum-size cases, which have their own specific remedy), tell the
@@ -5341,13 +5369,11 @@ function updateLabel(){
   // renderLabel() result for this exact content via label-render.js's
   // findSmallestFittingSize(). Read-only: this never changes S.size itself:
   // the maker always makes that choice, in Step 1, themselves.
-  const _sizeHelpsIfBlocked = window._labelBlockDownload && !_hasUnrecognizedCodes;
-  const _sizeRec = (_sizeHelpsIfBlocked && window._lastLabelData && typeof LabelRenderer!=='undefined' && LabelRenderer.findSmallestFittingSize)
-    ? LabelRenderer.findSmallestFittingSize(window._lastLabelData, {instanceId:'builder-main'})
-    : null;
+  const _sizeHelpsIfBlocked = _showFinalFit && window._labelBlockDownload && !_hasUnrecognizedCodes;
+  const _advice=currentFitAdvice(_sizeHelpsIfBlocked,window._lastLabelData,window._ftLastOpts,!_isCustomSizeTooSmall);
+  const _sizeRec=_advice.size;
   window._suggestedLabelSize=_sizeRec;
-  window._omissionOptions=(!_isCustomSizeTooSmall&&_sizeHelpsIfBlocked)
-    &&typeof LabelOptionalItems!=='undefined'? LabelOptionalItems.findOptions(window._lastLabelData,window._ftLastOpts,_sizeRec) : [];
+  window._omissionOptions=_advice.options;
   if(typeof refreshOptionalItemBadges==='function')refreshOptionalItemBadges();
   // Genuine-size fix (2026-09-07): findSmallestFittingSize() now tries the
   // two real size-card presets (52mm/63mm) before any custom size, and
@@ -5358,7 +5384,7 @@ function updateLabel(){
   const _sizeRecKind = _sizeRec ? (_sizeRec.source==='preset' ? ', the built-in '+_sizeRec.presetMm+'mm preset' : ', a custom size') : '';
   const _sizeRecMsg = _sizeRec
     ? ' The smallest size that fits this exact content is <strong>'+_sizeRecDims+'</strong> ('+_sizeRec.shape+_sizeRecKind+') — try that size using the controls below.'
-    : (_sizeHelpsIfBlocked ? ' CLPeasy checked every supported size up to 150mm and none of them fit this exact content, so consider a different label shape or suitable fold-out labelling; do not remove required safety information.' : '');
+    : (_sizeHelpsIfBlocked && !_advice.pending && !_advice.failed ? ' CLPeasy checked every supported size up to 150mm and none of them fit this exact content, so consider a different label shape or suitable fold-out labelling; do not remove required safety information.' : '');
   // Wording (updated 3 Aug 2026, round 2 — per Michaela's CLP-labelling-focused
   // request): name the CLP labelling requirement specifically rather than
   // "required information" generically.
@@ -5404,22 +5430,25 @@ function updateLabel(){
     : 'The required hazard and precautionary information cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, use the size controls below to select a larger label size. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>';
 
   const _compactRecDims=_sizeRec?(_sizeRec.mmW===_sizeRec.mmH?_sizeRec.mmW+' mm':_sizeRec.mmW+' × '+_sizeRec.mmH+' mm'):'';
-  const _fitAdvice = '<div class="fit-heading"><span aria-hidden="true">●</span> '+(_sizeRec?'Needs '+_compactRecDims+' to fit everything clearly <small>('+escapeBuilderText(_sizeRec.shape)+')</small>':'Try another shape or size')+'</div><div class="fit-actions">'+
-    (_sizeRec?'<button type="button" class="fit-primary" onclick="applySuggestedLabelSize()">Use '+_compactRecDims+'</button>':'<p class="fit-helper">No tested size up to 150 mm fits.</p>')+
+  const _fitAdvice = '<div class="fit-heading"><span aria-hidden="true">●</span> '+(_advice.pending?'Checking sizes…':_sizeRec?'Smallest tested '+escapeBuilderText(_sizeRec.shape)+' that fits all your details: '+_compactRecDims:'Try another shape or size')+'</div><div class="fit-actions">'+
+    (_sizeRec?'<button type="button" class="fit-primary" onclick="applySuggestedLabelSize()">Use '+_compactRecDims+'</button>':(_advice.pending||_advice.failed?'':'<p class="fit-helper">No tested size up to 150 mm fits.</p>'))+
     '<details class="fit-size-picker"><summary>Other shape or size ▾</summary>'+inlineSizeEditor()+'</details></div>'+
-    (typeof optionalItemAdviceHTML==='function'?optionalItemAdviceHTML():'');
+    (typeof optionalItemAdviceHTML==='function'?optionalItemAdviceHTML():'')+
+    (!_advice.pending&&!_advice.failed&&!window._omissionOptions.length
+      ? '<details class="fit-placement-help"><summary>Larger label won’t fit your packaging?</summary><p class="fit-helper">No tested optional-item changes make this content fit at '+escapeBuilderText(mmW===mmH?mmW+' mm':mmW+' × '+mmH+' mm')+'. Try another shape or a label position with more room.</p></details>'
+      : '');
   const pasteFit=document.getElementById('smart-paste-size-warning');
   if(pasteFit){
-    const showFit=!!S.hazardFromExtraction&&!!window._labelBlockDownload&&!_codeBlockParts.length;
+    const showFit=false; // Step 3 reviews SDS data; layout is reviewed in Step 5.
     pasteFit.style.display=showFit?'block':'none';
     pasteFit.classList.toggle('fit-advice-card',showFit);
     pasteFit.innerHTML=showFit?_fitAdvice:'';
   }
   const sheetFit=document.getElementById('sheet-fit-advice');
-  if(sheetFit){sheetFit.classList.toggle('fit-advice-card',!!window._labelBlockDownload&&!_codeBlockParts.length);sheetFit.innerHTML=window._labelBlockDownload&&!_codeBlockParts.length?_fitAdvice:'';}
+  if(sheetFit){sheetFit.classList.toggle('fit-advice-card',_showFinalFit&&!!window._labelBlockDownload&&!_codeBlockParts.length);sheetFit.innerHTML=_showFinalFit&&window._labelBlockDownload&&!_codeBlockParts.length?_fitAdvice:'';}
   [document.getElementById('label-warn-stage4'), document.getElementById('label-warn-step5')].forEach(_labelWarnEl=>{
     if(!_labelWarnEl)return;
-    if(window._labelBlockDownload){
+    if(window._labelBlockDownload && (_showFinalFit || _codeBlockParts.length)){
       _labelWarnEl.style.display='block';
       _labelWarnEl.classList.toggle('fit-advice-card',!_codeBlockParts.length);
       _labelWarnEl.innerHTML = _codeBlockParts.length?'<strong>'+_blockHeading+'</strong><br><br>'+_blockBody:_fitAdvice;
@@ -5447,6 +5476,16 @@ function updateLabel(){
   // flattened watermarked raster, and never lets the clean markup reach
   // the DOM for an unverified/unpaid render even momentarily.
   renderPreviewInto(svgHtml,pw,ph);
+  // Keep the real label visible, but never present clipped/omitted layout as
+  // complete. This is preview status only; final remedies stay in Step 5.
+  const incomplete=!!window._contentOverflow && !_hasUnrecognizedCodes;
+  for(const id of ['preview-incomplete-note','sheet-incomplete-note']){
+    const note=document.getElementById(id);if(!note)continue;
+    note.hidden=_showFinalFit&&!incomplete;
+    note.textContent=!_showFinalFit?'Preview updates as you add details. Final fit checked before download.':incomplete?(window._previewCareMissing
+      ?'Preview incomplete: candle-care icons do not fit at this size.'
+      :'Preview incomplete: some text does not fit at this size.'):'';
+  }
   const si=document.getElementById('sheet-size-info');
   if(si)si.textContent=`Print size: ${mmW} × ${mmH}mm`;
   const szName=S.size==='custom'?`${mmW}×${mmH}mm`:`${S.size}mm`;
@@ -5866,7 +5905,7 @@ function syncFineTuneLocation(){
     (inSheet?'sheet-finetune-slot':'preview-canvas-area'):'builder-source-staging');
   if(target&&panel.parentElement!==target)target.appendChild(panel);
 }
-function openPreviewSheet(){const sheet=document.getElementById('preview-sheet');if(sheet){sheet.dataset.openedOnMobile=String(window.matchMedia('(max-width:860px)').matches);sheet.classList.add('open');document.body.style.overflow='hidden';syncFineTuneLocation();sheet.querySelector('[role="dialog"]')?.focus();}}
+function openPreviewSheet(){const sheet=document.getElementById('preview-sheet');if(sheet){if(sheet.parentElement!==document.body)document.body.appendChild(sheet);sheet.dataset.openedOnMobile=String(window.matchMedia('(max-width:860px)').matches);sheet.classList.add('open');document.body.style.overflow='hidden';syncFineTuneLocation();sheet.querySelector('[role="dialog"]')?.focus();}}
 function closeSheet(e){if(!e||e.target===document.getElementById('preview-sheet')){document.getElementById('preview-sheet').classList.remove('open');document.body.style.overflow='';syncFineTuneLocation();}}
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.getElementById('preview-sheet')?.classList.contains('open'))closeSheet();});
 function editDetailsFromSheet(step){closeSheet();setApprovedBuilderStep(step);}

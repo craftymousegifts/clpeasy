@@ -151,9 +151,9 @@ function normalizeLabel(data){
   // Protected omissions fail closed unless the exact current value was confirmed.
   const visible = key => {
     if(!data.showOnLabel || data.showOnLabel[key] !== false)return true;
-    if(key==='netWeight'||key==='batchNum'){
+    if(key==='netWeight'||key==='batchNum'||key==='candleCare'){
       const c=data.omissionConfirmations && data.omissionConfirmations[key];
-      return !(c && c.confirmed===true && c.value===data[key]);
+      return !(c && c.confirmed===true && c.value===(key==='candleCare'?(data.productType||''):data[key]));
     }
     return false;
   };
@@ -185,7 +185,7 @@ function normalizeLabel(data){
     netWeight: visible('netWeight') ? (data.netWeight || '') : '',
     burnTime: visible('burnTime') ? (data.burnTime || '') : '',
     batchNum: visible('batchNum') ? (data.batchNum || '') : '',
-    hideEN15494: !!data.hideEN15494,
+    hideEN15494: !!data.hideEN15494 || !visible('candleCare'),
     textColour: data.textColour === 'light' ? 'light' : 'dark',
     showBorder: data.showBorder !== false,
   };
@@ -490,9 +490,26 @@ const BCF_IMG={
 // ============================================================
 
 const _cvs=document.createElement('canvas'),_ctx=_cvs.getContext('2d');
+// Reuse identical canvas measurements only during one synchronous operation.
+// The cache is discarded before returning, so font loads or later edits cannot
+// reuse stale metrics. Nested pictogram searches share this bounded cache; each
+// candidate label size starts fresh instead of exhausting one search-wide cache.
+let _measurementCache=null;
+function withMeasurementCache(fn){
+  if(_measurementCache)return fn();
+  _measurementCache=new Map();
+  try{return fn();}finally{_measurementCache=null;}
+}
+function canvasMeasurement(txt,font){
+  const key=font+'\0'+String(txt);
+  if(_measurementCache&&_measurementCache.has(key))return _measurementCache.get(key);
+  _ctx.font=font;
+  const result=_ctx.measureText(txt);
+  if(_measurementCache&&_measurementCache.size<25000)_measurementCache.set(key,result);
+  return result;
+}
 function measureText(txt,sizePx,bold,serif){
-  _ctx.font=`${bold?'700':'400'} ${sizePx}px ${serif?'serif':'sans-serif'}`;
-  return _ctx.measureText(txt).width;
+  return canvasMeasurement(txt,`${bold?'700':'400'} ${sizePx}px ${serif?'serif':'sans-serif'}`).width;
 }
 // Ink bounds of one character (relative to its own start on the baseline):
 // left/right edge, height above and depth below the baseline. Uses the
@@ -504,13 +521,11 @@ function measureText(txt,sizePx,bold,serif){
 // make results imprecise and dependent on the device's pixel ratio.
 const _INK_REF_PX=1000;
 function measureInk(ch,sizePx,bold,serif,fallbackDesc){
-  _ctx.font=`${bold?'700':'400'} ${_INK_REF_PX}px ${serif?'serif':'sans-serif'}`;
-  const m=_ctx.measureText(ch), k=sizePx/_INK_REF_PX;
+  const m=canvasMeasurement(ch,`${bold?'700':'400'} ${_INK_REF_PX}px ${serif?'serif':'sans-serif'}`), k=sizePx/_INK_REF_PX;
   if(m && typeof m.actualBoundingBoxAscent==='number' && isFinite(m.actualBoundingBoxAscent)){
     return {l:-(m.actualBoundingBoxLeft||0)*k, r:(m.actualBoundingBoxRight||0)*k, asc:m.actualBoundingBoxAscent*k, desc:(m.actualBoundingBoxDescent||0)*k, w:m.width*k};
   }
-  _ctx.font=`${bold?'700':'400'} ${sizePx}px ${serif?'serif':'sans-serif'}`;
-  const w=_ctx.measureText(ch).width||0;
+  const w=canvasMeasurement(ch,`${bold?'700':'400'} ${sizePx}px ${serif?'serif':'sans-serif'}`).width||0;
   return {l:0, r:w, asc:sizePx*0.75, desc:fallbackDesc, w};
 }
 
@@ -834,14 +849,17 @@ function choosePictoMmAndRender(rawData, opts){
     return renderLabel(rawData, Object.assign({}, opts, {_pictoMmOverride: pictoOuterBoundingBoxMm(squareSideMm)}));
   }
   const atTarget = renderAt(PICTO_TARGET_SQUARE_MM);
-  if(atTarget.fits) return atTarget;
+  // Care-edge clearance must not make this search shrink GHS pictograms or
+  // alter text sizes to rescue the footer. Choose the same layout as before,
+  // then keep its new care-edge failure blocked if necessary.
+  if(atTarget.metrics.pictoSearchFits) return atTarget;
   const atFloor = renderAt(PICTO_FLOOR_SQUARE_MM);
-  if(!atFloor.fits) return atFloor; // even the floor doesn't fit -- keep the floor size; fits:false blocks export exactly as any other overflow already does
+  if(!atFloor.metrics.pictoSearchFits) return atFloor; // even the floor doesn't fit -- keep the floor size; fits:false blocks export exactly as any other overflow already does
   let lo=PICTO_FLOOR_SQUARE_MM, loResult=atFloor, hi=PICTO_TARGET_SQUARE_MM;
   while(hi-lo > PICTO_SEARCH_PRECISION_MM){
     const mid=(lo+hi)/2;
     const midResult=renderAt(mid);
-    if(midResult.fits){ lo=mid; loResult=midResult; } else { hi=mid; }
+    if(midResult.metrics.pictoSearchFits){ lo=mid; loResult=midResult; } else { hi=mid; }
   }
   return loResult;
 }
@@ -974,6 +992,9 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
 }
 
 function renderLabel(rawData, opts){
+  return withMeasurementCache(()=>renderLabelMeasured(rawData,opts));
+}
+function renderLabelMeasured(rawData, opts){
   opts = opts || {};
   if(!opts.instanceId) throw new Error('renderLabel: opts.instanceId is required (must be unique per rendered label in a document)');
   // A top-level call (no _pictoMmOverride yet) always resolves the physical
@@ -1913,12 +1934,38 @@ function renderLabel(rawData, opts){
   // and it will be updated before rendering (both sections are in same scope)
   // Pre-calculate _bcfRowH so footer slots sit correctly below EN15494 row
   let _bcfRowH = 0;
+  let _careRowLift=0;
   // Set below when this label physically cannot fit the icon row even at
   // the BS EN 15494:2019 5mm floor -- never silently rendered smaller than
   // that floor; instead this label is treated as not fitting (see the
   // `warnings`/`fits` handling further down), exactly like
   // hazard-text-overflow/footer-clipped.
   let _bcfTooSmall = false;
+  let _bcfEdgeClipped = false;
+  // Keep every care-icon corner at least 1 mm inside the circular cut edge,
+  // matching the footer text's physical clearance. Use spare space above the
+  // footer first, without moving or resizing hazard text; narrow gaps only
+  // when needed. If neither placement fits, the existing export block applies.
+  // The small canonical-unit allowance covers one-decimal SVG rounding.
+  function candleCareGeometry(sz){
+    const originalY=botY+sz*0.1;
+    let y=originalY;
+    let gap=sz*0.25;
+    let fits=true;
+    if(isCircle){
+      const safeR=r-1.1*pxPerMm;
+      const halfRow=3*sz+0.2;
+      const desiredY=safeR>halfRow?cy+Math.sqrt(safeR*safeR-halfRow*halfRow)-sz:-Infinity;
+      // _L.endY includes the complete hazard/precautionary layout. Leave
+      // breathing room above the icon row and never push it down instead.
+      y=Math.max(_L.endY+_sharedFS*0.3,Math.min(originalY,desiredY));
+      const dy=Math.max(Math.abs(y-cy),Math.abs(y+sz-cy));
+      const available=dy<safeR?2*Math.sqrt(safeR*safeR-dy*dy)-0.4:0;
+      gap=Math.min(gap,(available-5*sz)/4);
+      fits=y<=originalY && gap>=sz*0.1;
+    }
+    return {y,gap,x:cx-(5*sz+4*gap)/2,fits};
+  }
   if(_showBCF){
     const _bcfMinDimPre  = Math.min(mmW, mmH);
     const _bcfTargetMmPre = _bcfMinDimPre <= 50 ? 5.5 : 8; // nice-to-have, above the 5mm floor
@@ -1945,6 +1992,9 @@ function renderLabel(rawData, opts){
       // legal floor -- matches the render block below exactly.
       const _bcfMaxSzPre = Math.max(_bcfFloorSzPre, Math.min(sW * 0.07, _bcfTargetMmPre * pxPerMm, _bcfPhysicalCapPre, _bcfRoomForIconsPre/BCF_ROW_HEIGHT_RATIO));
       _bcfRowH = _bcfMaxSzPre * BCF_ROW_HEIGHT_RATIO; // matches the icons' actual vertical footprint
+      const care=candleCareGeometry(_bcfMaxSzPre);
+      if(!care.fits) _bcfEdgeClipped=true;
+      else if(isCircle)_careRowLift=Math.max(0,botY+_bcfMaxSzPre*0.1-care.y);
     } else {
       _bcfTooSmall = true;
     }
@@ -1990,6 +2040,7 @@ function renderLabel(rawData, opts){
   //    drawn in regular weight like the other lines.
   // A footer that cannot fit this way still blocks export (_footerClipped).
   const _footerEdgeClear = 1.0*pxPerMm;
+  function fitFooterRows(_footerBase,fUsable){
   let slotLH = nSlots > 0 ? fUsable / nSlots : fUsable;
   if(isCircle && nSlots > 0){
     // The rows end 1 mm above the bottom of the circle. If that would leave a
@@ -2058,6 +2109,19 @@ function renderLabel(rawData, opts){
     // bottom of the circle; the sideways rule above keeps its ends 1 mm in.
     footerElems.forEach(e=>{ if(e.slotY + e.fs*0.5 > cy + r - _footerEdgeClear) _footerClipped = true; });
   }
+    return {elems:footerElems,clipped:_footerClipped};
+  }
+  const _originalFooter=fitFooterRows(_footerBase,fUsable);
+  let _footer=_originalFooter;
+  // The care row can move up into spare space, but the old footer allocation
+  // stayed behind. Reuse that exact released height only when it rescues a
+  // blocked footer. Retain all row spacing, shared-size and edge checks.
+  if(isCircle && _showBCF && !_bcfEdgeClipped && _careRowLift>0 && _originalFooter.clipped){
+    const candidate=fitFooterRows(_footerBase-_careRowLift,fUsable+_careRowLift);
+    if(!candidate.clipped)_footer=candidate;
+  }
+  const footerElems=_footer.elems;
+  const _footerClipped=_footer.clipped;
   const _footerLegibilityClipped = _footerClipped;
 
   // ── SHARED NON-FIT BOOLEAN ──────────────────────────────────────────────
@@ -2072,10 +2136,11 @@ function renderLabel(rawData, opts){
   // free to drift apart if either was ever edited without the other. Every
   // flag `fits` has ever included is included here; if a new blocking
   // condition is ever added, add it to THIS line, not to a second copy.
-  const _contentBlocked = _labelLegibilityWarn || _footerLegibilityClipped
+  const _contentBlockedWithoutCareEdge = _labelLegibilityWarn || _footerLegibilityClipped
     || _unrecognizedCodes.length>0 || _bcfTooSmall || _scentTooSmall
     || _bizNameTooSmall || _typeTooSmall || _signalTooSmall
     || _invalidPictograms.length>0;
+  const _contentBlocked = _contentBlockedWithoutCareEdge || _bcfEdgeClipped;
   // ── STRUCTURED BLOCK REASON -- never inferred from fits:false alone ─────
   // A code absent from H_LIB is either a CONFIRMED code that the ACTIVE
   // regulatory profile (currently Great Britain only -- see
@@ -2108,7 +2173,7 @@ function renderLabel(rawData, opts){
   // merits, so a caller can tell "is there ALSO a genuine fit problem"
   // even when a code issue is the headline reason.
   const _contentOverflow = _labelLegibilityWarn || _footerLegibilityClipped
-    || _bcfTooSmall || _scentTooSmall || _bizNameTooSmall || _typeTooSmall || _signalTooSmall;
+    || _bcfTooSmall || _bcfEdgeClipped || _scentTooSmall || _bizNameTooSmall || _typeTooSmall || _signalTooSmall;
   const _blockReason = !_contentBlocked ? null
     : _unsupportedCodesFound.length>0 ? 'unsupported-gb-clp-code'
     : _genericUnrecognizedFound.length>0 ? 'unrecognised-code'
@@ -2127,7 +2192,11 @@ function renderLabel(rawData, opts){
   // recognised/supported codes is unaffected by this change. Both code
   // groups are passed through in full (not just the leading-reason one),
   // so a mixed unsupported+generic input shows both in the overlay too.
-  const overflowOverlay=_contentBlocked?buildBlockedOverlaySVG(pw,ph,cx,cy,chordW,_unsupportedCodesFound,_genericUnrecognizedFound,_invalidPictograms):'';
+  // Builder previews stay visible while being edited, even when layout does
+  // not fit. This presentation option never changes fits/blocked or exports.
+  const _showBlockOverlay = _contentBlocked && !(opts.livePreview && !opts.forExport
+    && !_unsupportedCodesFound.length && !_genericUnrecognizedFound.length && !_invalidPictograms.length);
+  const overflowOverlay=_showBlockOverlay?buildBlockedOverlaySVG(pw,ph,cx,cy,chordW,_unsupportedCodesFound,_genericUnrecognizedFound,_invalidPictograms):'';
   // Y positions already set per-slot — no global recompute needed
   const footerRendered = footerElems.map(elem=>{
     if(elem.slotY > sBot - 1) return '';
@@ -2163,7 +2232,7 @@ function renderLabel(rawData, opts){
   // render, when shown -- exposed on `metrics` below for transparency/
   // testing, mirroring `pictoSquareSideMm`/`pictoOuterBoundingBoxMm`.
   let _bcfSizeMm = null;
-    if(_showBCF && !_bcfTooSmall){
+    if(_showBCF && !_bcfTooSmall && !_bcfEdgeClipped){
     const _bcfKeys=['burn_within_sight','keep_from_fire','keep_from_children','no_draught','trim_wick'];
     const _nBcf = _bcfKeys.length;
     // Size icons based on the shorter label dimension to prevent overflow
@@ -2182,11 +2251,12 @@ function renderLabel(rawData, opts){
     // first (see _footerTextMinH/_footerBandTotalEarly's own comment).
     const _bcfRoomForIcons = Math.max(_bcfFloorSz*BCF_ROW_HEIGHT_RATIO, _footerBandTotalEarly - _footerTextMinH);
     const _bcfMaxSz = Math.max(_bcfFloorSz, Math.min(sW * 0.07, _bcfTargetMm * _pxPerMm, _bcfPhysicalCap, _bcfRoomForIcons/BCF_ROW_HEIGHT_RATIO));
-    const _bcfGap   = _bcfMaxSz * 0.25;
+    const _bcfGeometry = candleCareGeometry(_bcfMaxSz);
+    const _bcfGap   = _bcfGeometry.gap;
     const _bcfTotW  = _nBcf * _bcfMaxSz + (_nBcf - 1) * _bcfGap;
     // Position at top of footer band with small padding
-    const _bcfY = botY + _bcfMaxSz * 0.6;
-    const _bcfStartX = cx - _bcfTotW / 2;
+    const _bcfY = _bcfGeometry.y + _bcfMaxSz / 2;
+    const _bcfStartX = _bcfGeometry.x;
     bcfRow = _bcfKeys.map((key, i) => {
       const bx = _bcfStartX + i * (_bcfMaxSz + _bcfGap);
       const by = _bcfY - _bcfMaxSz / 2;
@@ -2271,6 +2341,7 @@ function renderLabel(rawData, opts){
   if(_labelLegibilityWarn) warnings.push('hazard-text-overflow');
   if(_footerLegibilityClipped) warnings.push('footer-clipped');
   if(_bcfTooSmall) warnings.push('candle-safety-symbols-too-small');
+  if(_bcfEdgeClipped) warnings.push('candle-safety-edge-clearance');
   // Regression fix (2026-09-06): mandatory text outside the hazard/footer
   // blocks (product name, business name, product type, signal word) now
   // gets the same physical-floor fail-closed treatment those blocks
@@ -2285,6 +2356,8 @@ function renderLabel(rawData, opts){
   const _pictoHalfW = chordW(pictoBlockTopY+pictoBlockH/2, 0.06)/2;
 
   const metrics = {
+    pictoSearchFits: !(_contentBlockedWithoutCareEdge || _originalFooter.clipped),
+    candleCareEdgeClipped: _bcfEdgeClipped,
     labelDims: {mmW, mmH, pw, ph},
     fontSizes: {scent: scentFS, biz: _bizFSf, web: _webFSf, type: typeFS, signal: sigFS, hazard: hFS, footer: footerElems.length?footerElems[0].fs:null},
     hazardBounds: {x0: cx-_hazardHalfW, x1: cx+_hazardHalfW, y0: _curY0, y1: _L.endY},
@@ -2413,9 +2486,8 @@ function renderLabel(rawData, opts){
 // that fits, or null if nothing up to the renderer's own 150mm ceiling (see
 // getLabelDims()) fits -- meaning the content itself needs to be reduced, or
 // supplementary labelling considered, not just a larger size.
-function findSmallestFittingSize(rawData, opts){
+function fittingSizeCandidates(rawData, opts){
   opts=opts||{};
-  const cleanOpts={instanceId:opts.instanceId,bgColour:opts.bgColour};
   const shape=rawData.shape,cur=getLabelDims(rawData,opts),candidates=[];
   // Test presets AND enterable custom sizes in ascending area order.
   // Rectangle custom candidates preserve the current aspect ratio; this
@@ -2439,11 +2511,36 @@ function findSmallestFittingSize(rawData, opts){
     }
   }
   candidates.sort((a,b)=>a.mmW*a.mmH-b.mmW*b.mmH||Number(a.source==='custom')-Number(b.source==='custom')||a.mmW-b.mmW);
+  return candidates;
+}
+function findSmallestFittingSize(rawData, opts){
+  opts=opts||{};
+  const cleanOpts={instanceId:opts.instanceId,bgColour:opts.bgColour};
+  const candidates=fittingSizeCandidates(rawData,opts);
   const seen=new Set();
   for(const rec of candidates){
     const key=rec.mmW+'x'+rec.mmH;
     if(seen.has(key))continue;
     seen.add(key);
+    const candidate=Object.assign({},rawData,{size:rec.source==='preset'?rec.presetMm:'custom',customW:rec.mmW,customH:rec.mmH});
+    if(renderLabel(candidate,cleanOpts).fits)return rec;
+  }
+  return null;
+}
+
+// Same candidates, order and full fit check as the synchronous API. Yield
+// between candidates so Builder can paint and accept edits. A superseded
+// request stops before rendering its next candidate.
+async function findSmallestFittingSizeAsync(rawData, opts, isCurrent=()=>true){
+  opts=opts||{};
+  const cleanOpts={instanceId:opts.instanceId,bgColour:opts.bgColour};
+  const seen=new Set();
+  for(const rec of fittingSizeCandidates(rawData,opts)){
+    const key=rec.mmW+'x'+rec.mmH;
+    if(seen.has(key))continue;
+    seen.add(key);
+    await new Promise(resolve=>setTimeout(resolve,0));
+    if(!isCurrent())return null;
     const candidate=Object.assign({},rawData,{size:rec.source==='preset'?rec.presetMm:'custom',customW:rec.mmW,customH:rec.mmH});
     if(renderLabel(candidate,cleanOpts).fits)return rec;
   }
@@ -2687,7 +2784,7 @@ function getMissingBusinessDetails(data){
 
   const LabelRenderer = {
     getMissingBusinessDetails, checkRequiredContent, isValidPictogramKey, describeInvalidPictograms,
-    renderLabel, normalizeLabel, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, GB_UNSUPPORTED_CODES, H_SUFFIXED_VERIFIED, extractHazardCodesFromText, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
+    renderLabel, normalizeLabel, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, GB_UNSUPPORTED_CODES, H_SUFFIXED_VERIFIED, extractHazardCodesFromText, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize, findSmallestFittingSizeAsync,
     // GHS pictogram geometry -- exposed so tests/consumers measuring
     // compliance never have to re-derive or hardcode the sqrt(2)
     // square<->bounding-box relationship themselves.

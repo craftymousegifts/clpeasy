@@ -115,7 +115,11 @@ try {
   assert.deepStrictEqual([...rFooter.warnings], ['footer-clipped'], `footer-only fixture should carry ONLY footer-clipped, proving this class is independently reachable and isolated -- got ${JSON.stringify(rFooter.warnings)}`);
   assert.strictEqual(rFooter.metrics.overflow, false, 'footer-only fixture must not also be flagged as hazard overflow');
 
-  const contentBlockedLine = labelRendererSource.split('\n').find(l => l.includes('const _contentBlocked ='));
+  const finalBlockedLine = labelRendererSource.split('\n').find(l => l.includes('const _contentBlocked ='));
+  assert(/_contentBlockedWithoutCareEdge\s*\|\|\s*_bcfEdgeClipped/.test(finalBlockedLine),'final block must retain base fit checks plus care-edge clearance');
+  // GHS size selection retains the base fit result; output must also pass
+  // the separate care-edge check. All original flags remain in the base.
+  const contentBlockedLine = labelRendererSource.split('\n').find(l => l.includes('const _contentBlockedWithoutCareEdge ='));
   assert(contentBlockedLine, 'could not locate the `const _contentBlocked =` line in label-render.js');
   const contentBlockedBlock = labelRendererSource.slice(labelRendererSource.indexOf(contentBlockedLine)).split(';')[0];
   assert(/_footerLegibilityClipped/.test(contentBlockedBlock), '_contentBlocked does not reference _footerLegibilityClipped');
@@ -133,7 +137,8 @@ try {
 
   const overlayLine = labelRendererSource.split('\n').find(l => l.includes('const overflowOverlay='));
   assert(overlayLine, 'could not locate the `const overflowOverlay=` line in label-render.js');
-  assert(/_contentBlocked\?/.test(overlayLine), 'overflowOverlay must be gated on the same shared _contentBlocked boolean as fits');
+  assert(/_showBlockOverlay\?/.test(overlayLine));
+  assert(labelRendererSource.includes('const _showBlockOverlay = _contentBlocked && !(opts.livePreview && !opts.forExport'), 'only non-export live presentation may omit layout overlay');
 
   console.log('label-render fit-contract checks passed (overflow, unrecognised-code, and footer-clip classes all proven LIVE with real fixtures; fits and the blocked overlay proven to share one boolean)');
 } catch (error) {

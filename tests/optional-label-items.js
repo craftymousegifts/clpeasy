@@ -83,3 +83,30 @@ console.log(`PASS optional-label-items: ${blocked} blocked and ${rescued} rescue
 // A stale checkbox cannot confirm a newly edited quantity before applying.
 w.S=JSON.parse(JSON.stringify(base));w._lastLabelData=base;el.innerHTML=w.optionalItemAdviceHTML();select('netWeight').checked=true;
 w.S.netWeight='212.5g';w.applyOptionalOmission(0,el.querySelector('button'));assert.notEqual(w.S.showOnLabel?.netWeight,false,'old displayed value cannot authorize new quantity');
+
+// Candle care is a protected placement choice, not ordinary optional content.
+const care=O.candidate(base,['candleCare']);
+assert.equal(R.normalizeLabel(care).hideEN15494,true);
+assert.equal(R.normalizeLabel({...care,omissionConfirmations:{}}).hideEN15494,false,'missing acknowledgement restores icons');
+assert.equal(R.normalizeLabel({...care,productType:'Soy Candle'}).hideEN15494,false,'changed candle type needs fresh acknowledgement');
+assert.equal(R.normalizeLabel({...base,hideEN15494:true}).hideEN15494,true,'legacy explicit choice preserved');
+assert.equal(O.present({...base,productType:'Wax Melt'},'candleCare'),false);
+assert.equal(O.present({...base,hideEN15494:true},'candleCare'),false);
+w.S=JSON.parse(JSON.stringify(base));w._lastLabelData=base;el.innerHTML=w.optionalItemAdviceHTML();
+assert(select('candleCare').closest('label').textContent.includes('visible and legible elsewhere on the product or packaging'));
+select('candleCare').checked=true;w.refreshOptionalReview(el.querySelector('details'));
+assert(!el.querySelector('button').disabled);w.applyOptionalOmission(0,el.querySelector('button'));
+assert.equal(w.S.omissionConfirmations.candleCare.value,base.productType);
+const savedCare=JSON.parse(JSON.stringify(w.S));
+for(const exportOpts of [{},{forExport:true},{pw:900,ph:900}]){
+ const result=R.renderLabel(savedCare,{...opts,...exportOpts});assert(result.fits);
+ assert.equal(result.metrics.bcfTooSmall,false);assert(result.svg.includes('May cause an allergic skin reaction.'));
+ const row=result.svg.split('<!-- EN 15494 CANDLE SAFETY PICTOGRAMS -->')[1].split('<!-- WATERMARK -->')[0];
+ assert(!/<(?:image|use)\b/.test(row),'care pictograms are not exported after confirmed relocation');
+ assert.equal(result.svg,R.renderLabel({...base,hideEN15494:true},{...opts,...exportOpts}).svg,'relocation uses the established hide-care rendering in every export mode');
+}
+w.showOptionalItems(['candleCare']);assert.equal(R.normalizeLabel(w.S).hideEN15494,false);
+w.S=JSON.parse(JSON.stringify(savedCare));w.S.productType='Soy Candle';w.reconcileOptionalItems();assert.equal(w.S.showOnLabel.candleCare,true);
+const blank={...base,netWeight:'',burnTime:'',batchNum:'',bizWebsite:'',productType:'Wax Melt'};
+w._lastLabelData=blank;el.innerHTML=w.optionalItemAdviceHTML();assert.equal(el.querySelectorAll('[data-omit-select]').length,0,'unentered fields and non-candle icons are not offered');
+(async()=>{const sync=O.findOptions({...base,customW:58,customH:58},opts);assert.deepEqual(await O.findOptionsAsync({...base,customW:58,customH:58},opts),sync);assert.deepEqual(await O.findOptionsAsync(base,opts,null,()=>false),[]);console.log('PASS care relocation: explicit confirmation, type invalidation, restore, legacy choice, export parity, absent fields and cancellable search');w.close();})().catch(e=>{console.error(e);process.exitCode=1});

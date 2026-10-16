@@ -249,7 +249,9 @@ try {
     // re-confirmed under the restored floor rather than the genuine-1.2mm
     // one.
     const sweep = [
-      ['circle 52mm',  ordinaryContent({shape:'circle', size:'custom', customW:52, customH:52}), true],
+      // The 1 mm care-icon cut-edge clearance added in October blocks this
+      // fixture rather than resize its existing GHS or mandatory text.
+      ['circle 52mm',  ordinaryContent({shape:'circle', size:'custom', customW:52, customH:52}), false, 'candle-safety-edge-clearance'],
       ['circle 63mm',  ordinaryContent({shape:'circle', size:'custom', customW:63, customH:63}), true],
       ['circle 75mm',  ordinaryContent({shape:'circle', size:'custom', customW:75, customH:75}), true],
       ['rect 63x44mm', ordinaryContent({shape:'rectangle', size:'custom', customW:63, customH:44}), false, 'footer-clipped'],

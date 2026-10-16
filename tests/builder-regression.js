@@ -350,8 +350,13 @@ setTimeout(async () => {
     // hazard-text-overflow branch's message shows, so this now asserts
     // that SPECIFIC message only, not an "either wording" fallback.
     window.selectSize(63);
+    // Fit advice is now exclusive to completed-label review. This fixture
+    // exercises its presentation there; earlier-step timing has its own journey test.
+    window.eval('approvedBuilderStep=5;');
     window.updateLabel();
     assert.strictEqual(window.eval('isCustomSizeBelowSupportedMinimum()'), false, 'the approved 63×44mm preset must still be exempt from the 52mm custom-size floor at export-blocking time');
+    for(let n=0;n<1000&&window.eval('_fitAdviceJob?.pending');n++)await new Promise(r=>setTimeout(r,10));
+    assert(!window.eval('_fitAdviceJob?.pending'),'final size search completes');
     const warnStep5 = document.getElementById('label-warn-step5').innerHTML;
     assert(/Needs [\d ×.]+ mm to fit everything clearly/.test(document.getElementById('label-warn-step5').textContent) && document.querySelector('#label-warn-step5 .fit-primary[onclick="applySuggestedLabelSize()"]'), `dense 63×44mm fixture (approved preset): export-blocked message must recommend a larger label size, got: ${warnStep5}`);
     assert(!/52mm or larger|supported minimum/i.test(warnStep5), `dense 63×44mm fixture (approved preset): must NOT show the generic custom-size-minimum message -- that gate must not apply to an approved preset, got: ${warnStep5}`);
@@ -360,6 +365,7 @@ setTimeout(async () => {
     window.selectShape('circle');
     window.selectSize(63);
     window.clearHazardData();
+    window.eval('approvedBuilderStep=2;');
     window.setApprovedBuilderStep(3);
     assert.strictEqual(window.eval('approvedBuilderStep'), 3, 'Product did not advance to Hazards');
     assert(document.querySelector('.builder-accordion-section.active #step-3'), 'hazard panel is not in Step 3');
