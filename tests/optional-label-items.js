@@ -46,17 +46,20 @@ assert(el.querySelector('details').open,'passing alternative must be visible wit
 const select=key=>el.querySelector('[data-omit-select="'+key+'"]');
 assert(select('burnTime'),'burn time has an individual selection checkbox');
 assert.equal(el.querySelectorAll('[data-omit-select]:checked').length,0,'nothing preselected');
+assert.equal(el.querySelectorAll('input[type="checkbox"]').length,O.keys.length,'one checkbox per item, no duplicate confirmations');
+assert(select('netWeight').closest('label').textContent.includes('180g'));
+assert(select('burnTime').closest('label').textContent.includes('40 hrs'));
+assert(select('batchNum').closest('label').textContent.includes('B2310'));
+assert(select('netWeight').closest('label').textContent.includes('I confirm this quantity is shown elsewhere on the packaging.'));
+assert(select('batchNum').closest('label').textContent.includes('I confirm this batch is shown elsewhere on the product or packaging.'));
+w.applyOptionalOmission(0,btn);assert.notEqual(w.S.showOnLabel.netWeight,false,'no selected confirmation cannot hide quantity');
 select('netWeight').checked=true;select('batchNum').checked=true;
-w.refreshOptionalReview(el.querySelector('details'));
-const confirmations=el.querySelectorAll('[data-omission-key]');
-confirmations[0].checked=true;w.refreshOptionalReview(el.querySelector('details'));
-assert(btn.disabled,'one protected confirmation cannot enable the whole combination');
-assert.equal(el.querySelector('[data-omission-status]').textContent,'✓ Fits at 90 mm','fit status stays short while confirmations gate Apply');
-assert(!el.querySelector('[data-omission-confirm="batchNum"]').hidden,'missing batch confirmation remains visible');
-confirmations[0].checked=false;
-w.applyOptionalOmission(0,btn);assert.notEqual(w.S.showOnLabel.netWeight,false,'missing confirmations cannot apply');
-el.querySelectorAll('input').forEach(c=>c.checked=true);w.refreshOptionalReview(el.querySelector('details'));assert(!btn.disabled);w.applyOptionalOmission(0,btn);
+w.refreshOptionalReview(el.querySelector('details'));assert(!btn.disabled,'same checkbox selects and confirms protected items');
+assert.equal(el.querySelector('[data-omission-status]').textContent,'✓ Fits at 90 mm');
+w.applyOptionalOmission(0,btn);
+assert.equal(w.S.omissionConfirmations.netWeight.value,'180g');assert.equal(w.S.omissionConfirmations.batchNum.value,'B2310');
 assert.equal(w.S.netWeight,'180g');assert.equal(w.S.batchNum,'B2310');assert.equal(w.S.showOnLabel.netWeight,false);
+w.S.batchNum='BN-NEW';w.reconcileOptionalItems();assert.equal(w.S.showOnLabel.batchNum,true);assert(!w.S.omissionConfirmations.batchNum);
 w.S.netWeight='200g';w.reconcileOptionalItems();assert.equal(w.S.showOnLabel.netWeight,true);assert(!w.S.omissionConfirmations.netWeight);
 w.showOptionalItems(O.keys);assert(Object.values(w.S.showOnLabel).every(v=>v===true));
 assert(html.includes('showOnLabel:JSON.parse(JSON.stringify(S.showOnLabel||{}))'),'saving preserves choices');
@@ -68,7 +71,7 @@ w.refreshOptionalReview(el.querySelector('details'));
 assert(!el.querySelector('button').disabled);
 w.applyOptionalOmission(0,el.querySelector('button'));
 assert.equal(w.S.showOnLabel.burnTime,false);assert.notEqual(w.S.showOnLabel.netWeight,false);assert.notEqual(w.S.showOnLabel.batchNum,false);
-// Exact chosen subset must pass, even if confirmation checkboxes are forged/checked.
+// Exact chosen subset must pass, even when directly invoked.
 const small={...base,customW:52,customH:52};
 w.S=JSON.parse(JSON.stringify(small));w._lastLabelData=small;
 el.innerHTML=w.optionalItemAdviceHTML();select('burnTime').checked=true;
@@ -76,3 +79,7 @@ w.refreshOptionalReview(el.querySelector('details'));
 assert(el.querySelector('button').disabled,'failing partial selection stays blocked');
 w.applyOptionalOmission(0,el.querySelector('button'));assert.notEqual(w.S.showOnLabel?.burnTime,false,'direct invocation cannot apply failing selection');
 console.log(`PASS optional-label-items: ${blocked} blocked and ${rescued} rescued in 42 fixtures; confirmations, exact-value invalidation, legacy rendering, exports and restore checked`);
+
+// A stale checkbox cannot confirm a newly edited quantity before applying.
+w.S=JSON.parse(JSON.stringify(base));w._lastLabelData=base;el.innerHTML=w.optionalItemAdviceHTML();select('netWeight').checked=true;
+w.S.netWeight='212.5g';w.applyOptionalOmission(0,el.querySelector('button'));assert.notEqual(w.S.showOnLabel?.netWeight,false,'old displayed value cannot authorize new quantity');
