@@ -101,11 +101,13 @@ setTimeout(async () => {
   set('scent-name','Mint');set('product-type','Scented Candle');set('frag-load','10%');
   set('biz-name','Test Maker');set('biz-address','1 Test Lane, EX1 2AB');set('biz-phone','01632 960000');
   window.restoreNetWeight('200g');window.updateLabel();
-  assert(window._labelBlockDownload,'retained footer plus weight really overflows at 52mm');early();
+  assert(!window._labelBlockDownload,'weight-only footer reuses space released by raised care row');
+  set('biz-address','A very long synthetic address, Test Industrial Estate, Sampletown, EX1 2AB');window.updateLabel();
+  assert(window._labelBlockDownload,'long retained footer really overflows at 52mm');early();
   assert(!window.buildSVG(false).includes('clp-fit-block'),'actual label stays visible during editing');
   assert(window.buildSVG(true).includes('FULL CONTENT DOES NOT FIT'),'exports never receive draft presentation');
   window.restoreNetWeight('');window.restoreBurnTime('40 hrs');window.updateLabel();early();
-  window.restoreNetWeight('180g');
+  window.restoreNetWeight('180g');set('biz-address','1 Test Lane, EX1 2AB');window.updateLabel();
   window.setApprovedBuilderStep(3);assert.strictEqual(step(),3);
   set('smart-paste-input','2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nP102 Keep out of reach of children.\nP501 Dispose of contents/container in accordance with local regulations.');
   window.extractSDS();early();
@@ -114,6 +116,7 @@ setTimeout(async () => {
   window.setApprovedBuilderStep(4);assert.strictEqual(step(),4,'fit failure must not stop entry of business details');early();
   set('batch-num','B2310');window.updateLabel();early();
   window.setApprovedBuilderStep(5);assert.strictEqual(step(),5);
+  window.eval("S.size='custom';S.customW=58;S.customH=58;");set('custom-w','58');set('custom-h','58');window.updateLabel();
   assert(window._labelBlockDownload);assert.notStrictEqual(document.getElementById('label-warn-step5').style.display,'none');
   assert(document.getElementById('label-warn-step5').textContent.includes('Checking sizes'));
   assert(!document.getElementById('label-warn-step5').textContent.includes('No tested size'),'pending search is not a failed search');
@@ -122,10 +125,14 @@ setTimeout(async () => {
   window.restoreNetWeight('180g');window.updateLabel();
 
   assert(!window.buildSVG(false).includes('clp-fit-block'),'actual label stays visible at final review');
+  assert(!document.getElementById('preview-incomplete-note').hidden);
+  assert(document.getElementById('preview-incomplete-note').textContent.includes('candle-care icons'));
+  assert(!document.getElementById('sheet-incomplete-note').hidden);
   await settle();assert(document.querySelector('#label-warn-step5 [data-omit-select="batchNum"]'),'final panel knows the batch entered in Step 4');
   // Try the suggested larger size, then return to a deliberately smaller label.
   await settle();const rec=window._suggestedLabelSize;assert(rec);
   window.applySuggestedLabelSize();assert(!window._labelBlockDownload,'larger-size action genuinely fits');
+  assert(document.getElementById('preview-incomplete-note').hidden,'fitting preview clears incompleteness note');
   window.eval("S.size='custom';S.customW=58;S.customH=58;");set('custom-w','58');set('custom-h','58');window.updateLabel();
   await settle();assert(window._labelBlockDownload);assert(window._omissionOptions.length);
   const card=document.querySelector('#label-warn-step5 details.optional-fit-options')||document.querySelector('#label-warn-step5 [data-omission-status]').closest('details');

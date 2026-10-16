@@ -1476,6 +1476,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="preview-canvas-area" id="preview-canvas-area"><div id="preview-stage"><div id="label-svg-container"></div></div></div>
   <div class="preview-footer">
     <button type="button" id="clp-code-help-btn" class="clp-code-help-btn" onclick="openClpCodeHelp()">Why is this label blocked?</button>
+    <div id="preview-incomplete-note" role="status" hidden style="font-size:12px;color:#986300;margin-bottom:8px;"></div>
     <div class="preview-size-info" id="preview-size-info">Print size: 35 × 35mm</div>
     <div class="dl-row" id="preview-dl-row" style="display:none;">
       <button class="btn-dl" id="btn-png-preview" onclick="downloadPNG()" style="opacity:0.4;pointer-events:none;">⬇ PNG</button>
@@ -1529,6 +1530,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="preview-sheet-inner" role="dialog" aria-modal="true" aria-label="Label review" tabindex="-1">
     <div class="preview-sheet-handle"></div>
     <div class="preview-sheet-label" id="sheet-label-container"></div>
+    <div id="sheet-incomplete-note" role="status" hidden style="font-size:13px;color:#f2cd7b;text-align:center;margin-bottom:8px;"></div>
     <div style="font-size:12px;color:rgba(255,255,255,0.4);text-align:center;margin-bottom:4px;" id="sheet-size-info"></div>
     <details class="sheet-edit-details"><summary>Edit label details</summary><div>
       <button type="button" onclick="editDetailsFromSheet(2)">Product</button>
@@ -3801,12 +3803,13 @@ function toggleHChip(el,code){el.classList.toggle('selected');const i=S.hSelecte
 // picker (openP280Modal()) instead of adding it immediately; the code and
 // its selected wording are only committed to S.pStatements once the user
 // confirms at least one applicable item (see confirmP280Modal()). Clicking
-// an already-selected P280 chip removes it, exactly like any other chip,
-// and clears its saved selection. Every other P-code's toggle behaviour is
+// an already-completed P280 chip removes it, exactly like any other chip,
+// and clears its saved selection. An extracted, incomplete P280 opens the
+// picker so it can be completed without silently discarding the code. Every other P-code's toggle behaviour is
 // unchanged below.
 function togglePChip(el,code){
   if(code==='P280'){
-    if(S.pSelected.includes('P280')){
+    if(S.pSelected.includes('P280') && LabelRenderer.buildP280Wording({p280Items:S.p280Items,p280Other:S.p280Other})){
       el.classList.remove('selected');
       const i=S.pSelected.indexOf('P280');if(i>-1)S.pSelected.splice(i,1);
       S.p280Items=[];S.p280Other='';
@@ -4047,12 +4050,12 @@ function extractSDS(){
   // Combined P-codes (e.g. "P302+P352") are often printed by suppliers with
   // spaces around the "+" (e.g. "P302 + P352" — seen in real supplier SDS
   // PDFs). Match that spaced form too, then strip the spaces so the token
-  // matches P_LIB's/​_pExclude's no-space "P302+P352" convention exactly —
+  // matches P_LIB's no-space "P302+P352" convention exactly —
   // otherwise each half is captured as a separate, unrecognised standalone
   // code (e.g. orphan "P302"/"P352"), which incorrectly blocked Step 3.
   // Combined-P-code notation fix: the official/canonical combined P-code
   // designation is represented internally with "+" (e.g. "P302+P352",
-  // matching P_LIB/_pExclude) -- that has not changed. Some supplier SDS
+  // matching P_LIB) -- that has not changed. Some supplier SDS
   // documents and PDF text layers instead print combined codes using an
   // abbreviated "/"-separated shorthand (e.g. "P302/352", "P333/313"),
   // which Smart Paste must tolerate and canonicalise to the official "+"
@@ -4067,18 +4070,10 @@ function extractSDS(){
   // and "P302+P352" normalise to the same official "P302+P352" internal
   // form.
   const _pAllCodes=[...new Set((text.match(/\bP\d{3}(?:\s*[\/+]\s*P?\d{3})*\b/g)||[]).map(c=>(c.match(/\d{3}/g)||[]).map(n=>'P'+n).join('+')))];
-  const _pExclude=[
-    'P272',            // Contaminated work clothing — occupational only
-    'P264',            // Wash hands after handling — workplace handling context
-    'P270',            // Do not eat/drink/smoke when using — workplace ingestion risk
-    'P280',            // Wear protective gloves/eye protection — occupational PPE
-    'P303+P361+P353',  // Remove contaminated clothing — occupational
-    'P362',            // Take off contaminated clothing — occupational
-    'P362+P364',       // Take off contaminated clothing and wash — occupational
-    'P363',            // Wash contaminated clothing before reuse — occupational
-    'P405'             // Store locked up — controlled substances/workplace
-  ]; // codes not applicable to finished consumer home fragrance products
-  const pRaw=_pAllCodes.filter(c=>!_pExclude.some(x=>c===x||c.startsWith(x+'+')||c.endsWith('+'+x)));
+  // Preserve every supplied P code. Product-specific selection belongs to
+  // the supplier/maker review; a fixed consumer-product blacklist cannot
+  // establish that a precaution is unnecessary for this finished product.
+  const pRaw=_pAllCodes;
   const pEl=document.getElementById('p-statements');
   if(pEl){pEl.value=pRaw.join(', ');}
   S.pStatements=pRaw.join(', ');
@@ -5165,6 +5160,7 @@ function buildSVG(forExport=false){
   window._unrecognizedCodesGeneric=result.unrecognizedCodesGeneric;
   window._contentOverflow=result.contentOverflow;
   window._rendererBlocked=result.blocked;
+  window._previewCareMissing=!!(result.metrics.candleCareEdgeClipped||result.metrics.bcfTooSmall);
   window._labelLegibilityWarn=result.metrics.overflow;
   window._hazardYSlack=result.metrics.hazardYSlack;
   window._footerLegibilityClipped=result.metrics.footerClipped;
@@ -5475,6 +5471,16 @@ function updateLabel(){
   // flattened watermarked raster, and never lets the clean markup reach
   // the DOM for an unverified/unpaid render even momentarily.
   renderPreviewInto(svgHtml,pw,ph);
+  // Keep the real label visible, but never present clipped/omitted layout as
+  // complete. This is preview status only; final remedies stay in Step 5.
+  const incomplete=!!window._contentOverflow && !_hasUnrecognizedCodes;
+  for(const id of ['preview-incomplete-note','sheet-incomplete-note']){
+    const note=document.getElementById(id);if(!note)continue;
+    note.hidden=!incomplete;
+    note.textContent=incomplete?(window._previewCareMissing
+      ?'Preview incomplete: candle-care icons do not fit at this size.'
+      :'Preview incomplete: some text does not fit at this size.'):'';
+  }
   const si=document.getElementById('sheet-size-info');
   if(si)si.textContent=`Print size: ${mmW} × ${mmH}mm`;
   const szName=S.size==='custom'?`${mmW}×${mmH}mm`:`${S.size}mm`;

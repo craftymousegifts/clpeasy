@@ -122,7 +122,7 @@ async function run(){
     { label: 'P302/352 -> P302+P352', text: 'Precautionary statements: P302/352, IF ON SKIN: Wash with plenty of soap and water. P501, Dispose of contents.', expect: ['P302+P352','P501'] },
     { label: 'P302/P352 -> P302+P352', text: 'Precautionary statements: P302/P352, IF ON SKIN: Wash with plenty of soap and water. P501, Dispose of contents.', expect: ['P302+P352','P501'] },
     { label: 'P333/313 -> P333+P313', text: 'Precautionary statements: P333/313, If skin irritation or rash occurs: Get medical advice/attention. P501, Dispose of contents.', expect: ['P333+P313','P501'] },
-    { label: 'P303/361/353 -> P303+P361+P353 (then excluded, unchanged behaviour)', text: 'Precautionary statements: P303/361/353, IF ON SKIN (or hair): Remove contaminated clothing. P501, Dispose of contents.', expect: ['P501'] },
+    { label: 'P303/361/353 -> P303+P361+P353 (preserved for maker review)', text: 'Precautionary statements: P303/361/353, IF ON SKIN (or hair): Remove contaminated clothing. P501, Dispose of contents.', expect: ['P303+P361+P353','P501'] },
     { label: 'optional spaces around / : "P302 / 352"', text: 'Precautionary statements: P302 / 352, IF ON SKIN: Wash. P501, Dispose of contents.', expect: ['P302+P352','P501'] },
     { label: 'optional spaces around + : "P403 + P233"', text: 'Precautionary statements: P403 + P233, Store in a well-ventilated place. P501, Dispose of contents.', expect: ['P403+P233','P501'] },
     { label: 'existing "+" notation unchanged: "P302+P352"', text: 'Precautionary statements: P302+P352, IF ON SKIN: Wash. P501, Dispose of contents.', expect: ['P302+P352','P501'] },

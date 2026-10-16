@@ -10,9 +10,8 @@ const __confirmed = arr => arr.map(r => require('./helpers/sds-doc-verified').wi
 // selectable statement -- only the items that actually apply to the
 // finished product should ever be printed, never every item
 // unconditionally. Proves:
-//   1. P280 is still NOT auto-added by Smart Paste (untouched _pExclude
-//      behaviour -- occupational PPE wording from a raw-fragrance SDS must
-//      never silently transfer onto a finished consumer product label).
+//   1. Smart Paste preserves supplied P280; it cannot render/export without
+//      the maker completing its applicable protection items.
 //   2. P280 cannot be accepted (in the picker, or past Step 3) without at
 //      least one applicable item / an "other" item selected.
 //   3. The selected wording survives save/reopen.
@@ -204,12 +203,14 @@ const emptyQuery = {
     const bwindow = builderDom.window;
     const bdocument = bwindow.document;
 
-    // 1. Smart Paste must still NOT auto-add P280.
+    // 1. Smart Paste preserves P280 but never invents protection items.
     bdocument.getElementById('scent-name').value = 'Lavender Fields'; // named in Step 2 before Smart Paste
     bdocument.getElementById('product-type').value = 'Scented Candle'; // a real Step 2 product type (supplier-document check)
     bdocument.getElementById('smart-paste-input').value = 'Warning H317 P102 P261 P280 P501 Contains Linalool';
     bwindow.extractSDS();
-    assert(!bwindow.eval('S.pSelected').includes('P280'), 'Smart Paste must still exclude P280 -- occupational PPE wording must not auto-transfer to a finished consumer product label');
+    assert(bwindow.eval('S.pSelected').includes('P280'),'Smart Paste preserves supplied P280');
+    assert(!bwindow.LabelRenderer.buildP280Wording({p280Items:bwindow.eval('S.p280Items')}),'extraction cannot invent protection items');
+    assert(bwindow._labelBlockDownload,'incomplete supplied P280 blocks downloads');
     assert(bwindow.eval('S.pSelected').includes('P501'), 'setup: Smart Paste should still extract an ordinary, non-excluded P-code (P501) normally');
 
     // 2. Manual entry: clicking the P280 chip opens the picker; confirming
@@ -218,12 +219,13 @@ const emptyQuery = {
     assert(p280Chip, 'P280 chip is missing from Builder\'s P-statement chip list');
     bwindow.togglePChip(p280Chip, 'P280');
     assert.strictEqual(bdocument.getElementById('p280Modal').classList.contains('show'), true, 'clicking the P280 chip must open the protection-item picker, not add it directly');
-    assert(!bwindow.eval('S.pSelected').includes('P280'), 'P280 must not be added to state merely by opening the picker');
+    assert(bwindow.eval('S.pSelected').includes('P280'),'opening picker retains supplied P280');
 
     bdocument.getElementById('p280-other-input').value = '';
     bwindow.confirmP280Modal();
     assert.strictEqual(bdocument.getElementById('p280-modal-error').style.display, 'block', 'confirming with nothing selected and no "other" text must show the validation error');
-    assert(!bwindow.eval('S.pSelected').includes('P280'), 'P280 must not be accepted with no applicable wording selected');
+    assert(bwindow.eval('S.pSelected').includes('P280'),'empty confirmation cannot erase supplied P280');
+    assert(bwindow._labelBlockDownload,'empty P280 remains download-blocked');
     assert.strictEqual(bdocument.getElementById('p280Modal').classList.contains('show'), true, 'the picker must stay open after a rejected empty confirm');
 
     // Now tick two items and confirm -- must succeed.
@@ -513,7 +515,7 @@ const emptyQuery = {
 
     if (printErrors.length) throw new Error('jsdom runtime errors (print): ' + printErrors.join('; '));
 
-    console.log('P280 selectable-statement checks passed (Smart Paste exclusion intact, picker requires a selection, save/reopen round-trips, Builder + Composer render identical selected wording, legacy no-selection labels are blocked not auto-filled, fit gate still applies)');
+    console.log('P280 selectable-statement checks passed (Smart Paste code retained with incomplete wording blocked, picker requires a selection, save/reopen round-trips, Builder + Composer render identical selected wording, legacy no-selection labels are blocked not auto-filled, fit gate still applies)');
   } catch (error) {
     console.error(error.stack || error.message);
     process.exitCode = 1;

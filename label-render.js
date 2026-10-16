@@ -1934,6 +1934,7 @@ function renderLabelMeasured(rawData, opts){
   // and it will be updated before rendering (both sections are in same scope)
   // Pre-calculate _bcfRowH so footer slots sit correctly below EN15494 row
   let _bcfRowH = 0;
+  let _careRowLift=0;
   // Set below when this label physically cannot fit the icon row even at
   // the BS EN 15494:2019 5mm floor -- never silently rendered smaller than
   // that floor; instead this label is treated as not fitting (see the
@@ -1991,7 +1992,9 @@ function renderLabelMeasured(rawData, opts){
       // legal floor -- matches the render block below exactly.
       const _bcfMaxSzPre = Math.max(_bcfFloorSzPre, Math.min(sW * 0.07, _bcfTargetMmPre * pxPerMm, _bcfPhysicalCapPre, _bcfRoomForIconsPre/BCF_ROW_HEIGHT_RATIO));
       _bcfRowH = _bcfMaxSzPre * BCF_ROW_HEIGHT_RATIO; // matches the icons' actual vertical footprint
-      if(!candleCareGeometry(_bcfMaxSzPre).fits) _bcfEdgeClipped=true;
+      const care=candleCareGeometry(_bcfMaxSzPre);
+      if(!care.fits) _bcfEdgeClipped=true;
+      else if(isCircle)_careRowLift=Math.max(0,botY+_bcfMaxSzPre*0.1-care.y);
     } else {
       _bcfTooSmall = true;
     }
@@ -2037,6 +2040,7 @@ function renderLabelMeasured(rawData, opts){
   //    drawn in regular weight like the other lines.
   // A footer that cannot fit this way still blocks export (_footerClipped).
   const _footerEdgeClear = 1.0*pxPerMm;
+  function fitFooterRows(_footerBase,fUsable){
   let slotLH = nSlots > 0 ? fUsable / nSlots : fUsable;
   if(isCircle && nSlots > 0){
     // The rows end 1 mm above the bottom of the circle. If that would leave a
@@ -2105,6 +2109,19 @@ function renderLabelMeasured(rawData, opts){
     // bottom of the circle; the sideways rule above keeps its ends 1 mm in.
     footerElems.forEach(e=>{ if(e.slotY + e.fs*0.5 > cy + r - _footerEdgeClear) _footerClipped = true; });
   }
+    return {elems:footerElems,clipped:_footerClipped};
+  }
+  const _originalFooter=fitFooterRows(_footerBase,fUsable);
+  let _footer=_originalFooter;
+  // The care row can move up into spare space, but the old footer allocation
+  // stayed behind. Reuse that exact released height only when it rescues a
+  // blocked footer. Retain all row spacing, shared-size and edge checks.
+  if(isCircle && _showBCF && !_bcfEdgeClipped && _careRowLift>0 && _originalFooter.clipped){
+    const candidate=fitFooterRows(_footerBase-_careRowLift,fUsable+_careRowLift);
+    if(!candidate.clipped)_footer=candidate;
+  }
+  const footerElems=_footer.elems;
+  const _footerClipped=_footer.clipped;
   const _footerLegibilityClipped = _footerClipped;
 
   // ── SHARED NON-FIT BOOLEAN ──────────────────────────────────────────────
@@ -2339,7 +2356,7 @@ function renderLabelMeasured(rawData, opts){
   const _pictoHalfW = chordW(pictoBlockTopY+pictoBlockH/2, 0.06)/2;
 
   const metrics = {
-    pictoSearchFits: !_contentBlockedWithoutCareEdge,
+    pictoSearchFits: !(_contentBlockedWithoutCareEdge || _originalFooter.clipped),
     candleCareEdgeClipped: _bcfEdgeClipped,
     labelDims: {mmW, mmH, pw, ph},
     fontSizes: {scent: scentFS, biz: _bizFSf, web: _webFSf, type: typeFS, signal: sigFS, hazard: hFS, footer: footerElems.length?footerElems[0].fs:null},

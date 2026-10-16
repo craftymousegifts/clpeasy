@@ -18,7 +18,22 @@ for(let mm=52;mm<=150;mm++)for(const footer of [{},{netWeight:'180g',burnTime:'4
   const attrs=Object.fromEntries(Array.from(m[0].matchAll(/\b(x|y|width|height)="([\d.-]+)"/g),a=>[a[1],Number(a[2])]));
   return attrs;
  });
- if(result.fits){passing++;assert.equal(boxes.length,5,'a passing candle keeps all care icons');}
+ if(result.fits){
+  passing++;assert.equal(boxes.length,5,'a passing candle keeps all care icons');
+  const footer=result.svg.split('<!-- FOOTER -->')[1].split('<!-- EN 15494')[0];
+  const rows=Array.from(footer.matchAll(/<text\b([^>]+)>([^<]*)<\/text>/g),m=>{
+   const attrs=Object.fromEntries(Array.from(m[1].matchAll(/\b(x|y|font-size)="([\d.-]+)"/g),a=>[a[1],Number(a[2])]));
+   const size=attrs['font-size'];const width=[...m[2]].reduce((n,c)=>n+size*(/[MW@%]/.test(c)?.82:/[ilI1.,' ]/.test(c)?.28:.54),0);
+   // P6b's existing rule measures 1mm horizontally from each chord edge
+   // and 1mm vertically above the bottom; it is not a radial corner rule.
+   const bottom=attrs.y+size/2;
+   const halfChord=Math.sqrt(Math.max(0,128.5**2-(bottom-130)**2));
+   assert((halfChord-width/2)*mm/260>=0.98,'footer keeps1mm horizontal chord clearance');
+   assert((258.5-bottom)*mm/260>=0.98,'footer keeps1mm bottom clearance');
+   return {top:attrs.y-size/2};
+  });
+  if(rows.length)assert((Math.min(...rows.map(r=>r.top))-Math.max(...boxes.map(b=>b.y+b.height)))*mm/260>=0.45,'footer stays separate below care icons');
+ }
  for(const b of boxes){
   if(result.fits)assert(b.y>=result.metrics.hazardBounds.y1+result.metrics.fontSizes.hazard*0.3-0.1,'care icons cannot overlap hazard/precautionary layout');
   assert(b.width*mm/260>=R.BCF_FLOOR_MM-0.02,'physical icon floor is preserved (SVG rounding tolerance)');
@@ -37,7 +52,7 @@ for(let mm=52;mm<=150;mm++)for(const footer of [{},{netWeight:'180g',burnTime:'4
  if(opts.forExport&&result.blocked)assert(result.svg.includes('FULL CONTENT DOES NOT FIT'),'blocked exports cannot use draft messaging');
 }
 // Before final review only the presentation changes; fit and export guards do not.
-const small={...base,customW:52,customH:52,netWeight:'180g'};
+const small={...base,customW:58,customH:58,netWeight:'180g',burnTime:'40 hrs',batchNum:'B2310'};
 const final=R.renderLabel(small,{instanceId:'care-final'});
 const draft=R.renderLabel(small,{instanceId:'care-draft',livePreview:true});
 assert(!final.fits);assert.equal(draft.fits,final.fits);assert.deepStrictEqual(draft.warnings,final.warnings);

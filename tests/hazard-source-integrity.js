@@ -268,7 +268,9 @@ function f1Check(context){
   assert(!fresh2.pictos.includes('exclamation') && fresh2.pictos.includes('corrosive'), 'no stale pictogram; new one present');
   assert.strictEqual(window._hazardReviewRequired(), false, 'the new extraction belongs to the current name');
   document.getElementById('hazard-confirm').checked = true;
-  assert.strictEqual(window.canLeaveApprovedBuilderStep(3), true, 'Step 3 can be left once the new SDS is extracted and confirmed');
+  assert.strictEqual(window.canLeaveApprovedBuilderStep(3), false,'supplied P280 requires applicable items before advancing');
+  window.openP280Modal();document.querySelector('#p280-item-opts input[value="eye"]').checked=true;window.confirmP280Modal();
+  assert.strictEqual(window.canLeaveApprovedBuilderStep(3), true, 'Step 3 can be left once new SDS and P280 are reviewed');
   tickVerify();
   // 4 Oct 2026: fresh extraction and the existing hazard/final review satisfy
   // the remaining checks; the owner removed the separate document stamp.
