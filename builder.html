@@ -5130,7 +5130,7 @@ function buildSVG(forExport=false){
   // findSmallestFittingSize() -- read-only, never used to change S.size.
   window._lastLabelData=data;
   const opts={
-    instanceId:'builder-main', forExport,
+    instanceId:'builder-main', forExport, livePreview:!forExport,
     bgColour:document.getElementById('label-bg-colour')?.value,
     hazardFSOverride:S.hazardFSOverride, hazardYOffset:S.hazardYOffset,
     scentFSOverride:S.scentFSOverride, bizNameFSOverride:S.bizNameFSOverride,

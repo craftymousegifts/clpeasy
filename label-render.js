@@ -2127,7 +2127,12 @@ function renderLabel(rawData, opts){
   // recognised/supported codes is unaffected by this change. Both code
   // groups are passed through in full (not just the leading-reason one),
   // so a mixed unsupported+generic input shows both in the overlay too.
-  const overflowOverlay=_contentBlocked?buildBlockedOverlaySVG(pw,ph,cx,cy,chordW,_unsupportedCodesFound,_genericUnrecognizedFound,_invalidPictograms):'';
+  // Hotfix (16 Oct 2026): Builder previews stay visible while being edited,
+  // even when the layout does not fit. Presentation only -- fits/blocked,
+  // warnings and every export are unchanged; code problems keep the overlay.
+  const _showBlockOverlay = _contentBlocked && !(opts.livePreview && !opts.forExport
+    && !_unsupportedCodesFound.length && !_genericUnrecognizedFound.length && !_invalidPictograms.length);
+  const overflowOverlay=_showBlockOverlay?buildBlockedOverlaySVG(pw,ph,cx,cy,chordW,_unsupportedCodesFound,_genericUnrecognizedFound,_invalidPictograms):'';
   // Y positions already set per-slot — no global recompute needed
   const footerRendered = footerElems.map(elem=>{
     if(elem.slotY > sBot - 1) return '';
