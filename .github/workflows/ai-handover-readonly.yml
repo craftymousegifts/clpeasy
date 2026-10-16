@@ -1,0 +1,16 @@
+name: AI Handover Read-only Report (pilot)
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  handover-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout reporting script
+        uses: actions/checkout@v4
+      - name: Report GitHub coordination status (no API keys)
+        run: python3 .github/scripts/ai_handover_report.py
