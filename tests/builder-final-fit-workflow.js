@@ -85,6 +85,7 @@ setTimeout(async () => {
    for(const id of ['smart-paste-size-warning','label-warn-stage4','label-warn-step5'])hidden(id);
    assert.strictEqual(window._suggestedLabelSize,null);
    assert.strictEqual(window._omissionOptions.length,0);
+   assert(document.getElementById('preview-incomplete-note').textContent.includes('Final fit checked before download.'));
    const svg=window.buildSVG(false);
    assert(!svg.includes('FULL CONTENT DOES NOT FIT'),'early preview cannot declare a final fit failure');
    assert(!window._downloadAllowed(),'unfinished label cannot download');
@@ -147,8 +148,20 @@ setTimeout(async () => {
   assert(fallback.textContent.includes('fit at 52 mm'));assert(fallback.textContent.includes('another shape or a label position'));
   assert(!window._downloadAllowed(),'placement advice cannot bypass fit');
   window.eval("S.customW=58;S.customH=58;S.hStatements='H317';S.pStatements='P102,P501';");set('custom-w','58');set('custom-h','58');set('h-statements','H317');set('p-statements','P102,P501');window.eval('S.sensitisers=[];');window.updateLabel();await settle();
-  const currentCard=document.querySelector('#label-warn-step5 [data-omission-status]').closest('details');
+  let currentCard=document.querySelector('#label-warn-step5 [data-omission-status]').closest('details');
   const select=k=>currentCard.querySelector('[data-omit-select="'+k+'"]');
+  assert(select('candleCare'),'enabled candle care appears only at complete final review');
+  // Confirmed relocation round-trips through the real Builder library.
+  for(const key of ['netWeight','burnTime','batchNum','candleCare'])select(key).checked=true;
+  window.refreshOptionalReview(currentCard);assert(!currentCard.querySelector('button').disabled);
+  window.applyOptionalOmission(0,currentCard.querySelector('button'));assert(!window._labelBlockDownload);
+  assert.strictEqual(state().omissionConfirmations.candleCare.value,'Scented Candle');
+  assert(document.getElementById('omission-download-summary').textContent.includes('Candle-care icons'));
+  await window.saveLabel();const careSaved=window.getSaved().find(e=>e.scentName==='Mint');
+  window.loadLabelAndGotoStep5(careSaved.id);assert.strictEqual(state().showOnLabel.candleCare,false);assert(LR.normalizeLabel(window._lastLabelData).hideEN15494);
+  window.showOptionalItems(window.LabelOptionalItems.keys);await settle();assert(window._labelBlockDownload);
+  const restoredCard=document.querySelector('#label-warn-step5 [data-omission-status]').closest('details');
+  currentCard=restoredCard;
   select('burnTime').checked=true;window.refreshOptionalReview(currentCard);
   assert(currentCard.querySelector('button').disabled,'shortening one footer line must not bypass fit');
   select('netWeight').checked=true;select('batchNum').checked=true;window.refreshOptionalReview(currentCard);

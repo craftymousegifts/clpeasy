@@ -5,7 +5,7 @@ const jobs=[],fonts=new w.EventTarget();Object.defineProperty(w.document,'fonts'
 let updates=0,omissions=0;
 w.updateLabel=()=>updates++;
 w.LabelRenderer={findSmallestFittingSizeAsync:(data,opts,current)=>new Promise(resolve=>jobs.push({data,current,resolve}))};
-w.LabelOptionalItems={findOptions:()=>{omissions++;return ['current-option']}};
+w.LabelOptionalItems={findOptionsAsync:async()=>{omissions++;return ['current-option']}};
 w.eval(source.slice(source.indexOf('let _fitAdviceJob=null'),source.indexOf('function updateLabel(){')));
 const call=(data)=>w.currentFitAdvice(true,data,{instanceId:'qa'},true);
 const flush=()=>new Promise(r=>setImmediate(r));

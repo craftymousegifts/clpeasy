@@ -5296,10 +5296,11 @@ function currentFitAdvice(enabled,data,opts,allowOmissions){
   const job={key,pending:true,size:null,options:[]};_fitAdviceJob=job;
   const snapshot=JSON.parse(JSON.stringify(data)), renderOpts=Object.assign({},opts);
   const current=()=>_fitAdviceJob===job;
-  LabelRenderer.findSmallestFittingSizeAsync(snapshot,{instanceId:'builder-main'},current).then(size=>{
+  LabelRenderer.findSmallestFittingSizeAsync(snapshot,{instanceId:'builder-main'},current).then(async size=>{
     if(!current())return;
     job.size=size;
-    job.options=allowOmissions&&typeof LabelOptionalItems!=='undefined'?LabelOptionalItems.findOptions(snapshot,renderOpts,size):[];
+    job.options=allowOmissions&&typeof LabelOptionalItems!=='undefined'?await LabelOptionalItems.findOptionsAsync(snapshot,renderOpts,size,current):[];
+    if(!current())return;
     job.pending=false;updateLabel();
   }).catch(error=>{
     if(!current())return;
@@ -5480,8 +5481,8 @@ function updateLabel(){
   const incomplete=!!window._contentOverflow && !_hasUnrecognizedCodes;
   for(const id of ['preview-incomplete-note','sheet-incomplete-note']){
     const note=document.getElementById(id);if(!note)continue;
-    note.hidden=!incomplete;
-    note.textContent=incomplete?(window._previewCareMissing
+    note.hidden=_showFinalFit&&!incomplete;
+    note.textContent=!_showFinalFit?'Preview updates as you add details. Final fit checked before download.':incomplete?(window._previewCareMissing
       ?'Preview incomplete: candle-care icons do not fit at this size.'
       :'Preview incomplete: some text does not fit at this size.'):'';
   }

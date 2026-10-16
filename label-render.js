@@ -151,9 +151,9 @@ function normalizeLabel(data){
   // Protected omissions fail closed unless the exact current value was confirmed.
   const visible = key => {
     if(!data.showOnLabel || data.showOnLabel[key] !== false)return true;
-    if(key==='netWeight'||key==='batchNum'){
+    if(key==='netWeight'||key==='batchNum'||key==='candleCare'){
       const c=data.omissionConfirmations && data.omissionConfirmations[key];
-      return !(c && c.confirmed===true && c.value===data[key]);
+      return !(c && c.confirmed===true && c.value===(key==='candleCare'?(data.productType||''):data[key]));
     }
     return false;
   };
@@ -185,7 +185,7 @@ function normalizeLabel(data){
     netWeight: visible('netWeight') ? (data.netWeight || '') : '',
     burnTime: visible('burnTime') ? (data.burnTime || '') : '',
     batchNum: visible('batchNum') ? (data.batchNum || '') : '',
-    hideEN15494: !!data.hideEN15494,
+    hideEN15494: !!data.hideEN15494 || !visible('candleCare'),
     textColour: data.textColour === 'light' ? 'light' : 'dark',
     showBorder: data.showBorder !== false,
   };
