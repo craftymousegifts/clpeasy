@@ -236,9 +236,10 @@ function run(){
     // guard-parity.js download-gate suites, which continue to run against
     // this file unchanged).
     // Label text deliberately reworded in c5c1d57 / PR #136 ("Improve builder responsibility and CLP Ready wording").
-    const step5CheckboxLabel = 'I confirm I have reviewed the finished label and checked the hazard information against my fragrance supplier\'s current SDS/CLP information for the fragrance load used. CLPeasy has helped extract, organise, check and format the information provided; I understand I remain responsible for the product I place on the market and for reviewing the finished label before printing and selling.';
-    results.correction1.step5CheckboxPreserved = builderSource.includes('id="verify-checkbox"') && builderSource.includes(step5CheckboxLabel);
-    assert(results.correction1.step5CheckboxPreserved, 'Step 5 verification checkbox and its label text must remain exactly as before');
+    const step5CheckboxLabel = "I've checked this label against my supplier's current SDS for the fragrance load used.";
+    const responsibility = "I'm responsible for the product and for checking the label before I print and sell it.";
+    results.correction1.step5CheckboxPreserved = builderSource.includes('id="verify-checkbox"') && builderSource.includes(step5CheckboxLabel) && builderSource.includes(responsibility);
+    assert(results.correction1.step5CheckboxPreserved, 'Step 5 must retain the owner-approved SDS, fragrance-load and responsibility declaration');
   }
 
   console.log('smart-paste-user-guidance-wording checks passed (20 approved locations)');

@@ -148,13 +148,13 @@ const server = http.createServer((req, res) => {
       await readyBuilder(t);
       const fh = await t.evaluate(() => { const e = document.getElementById('dl-format-help'); return { shown: e.offsetParent !== null, text: e.innerText.replace(/\s+/g, ' ') }; });
       assert(fh.shown, 'Step 5 format help visible');
-      assert(/Printing your labels\? For a single label, use PDF\. For several labels on A4, use the Print Sheet Composer\. Always print at Actual Size \/ 100%/.test(fh.text), 'two neutral routes: ' + fh.text);
-      assert(!/most reliable printed size|Printing at home\? Choose PDF/.test(fh.text), 'PDF must not be presented as the home-printing route');
-      assert(/PDF is an individual label file/.test(fh.text), 'PDF described as an individual label file');
-      assert(/Actual Size \/ 100%/.test(fh.text), 'Step 5 mentions Actual Size / 100%');
-      assert(/PNG[^.]*high-resolution image/.test(fh.text) && /may choose its own print size/.test(fh.text), 'PNG explained (app may choose print size): ' + fh.text);
-      assert(!/PNG[^.]*(prints at the correct size|correct print size)/i.test(fh.text), 'PNG never claimed to print at the correct size');
-      ok('Step 5 format help: single label → PDF, several on A4 → Composer, Actual Size / 100%; SVG keeps mm; PNG size set by the app');
+      assert(/Print at Actual size \/ 100%/.test(fh.text), 'print scale instruction stays visible');
+      await t.click('.export-file-types summary');
+      const guidance=await t.evaluate(()=>document.querySelector('.export-file-types').innerText);
+      assert(/PDF: one label at its exact size/.test(guidance),'PDF exact size advice');
+      assert(/SVG: for design or cutting-machine software/.test(guidance),'SVG guidance');
+      assert(/PNG: image only, so print size may vary/.test(guidance),'PNG print size caution');
+      ok('Step 5 compact file guidance expands; PDF/SVG/PNG meanings preserved');
 
       // ── Save: visible confirmation, auto-hides ───────────────────────
       let s = await panel(t, 'save-status');

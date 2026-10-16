@@ -442,6 +442,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .dl-pg-more li{margin:2px 0;}
 .dl-pg-note{font-size:12px;opacity:.9;}
 .dl-pg-close{flex-shrink:0;background:none;border:1px solid currentColor;border-radius:6px;color:inherit;font:600 12px 'DM Sans',sans-serif;padding:4px 8px;cursor:pointer;}
+
+#step-5 .watermark-note{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;font-size:12px;background:#f3f4f6;}.watermark-note button{min-height:36px;flex-shrink:0;background:#2f8aa6!important;}
+.export-confirmation-card{border:1px solid #dce2e8;border-radius:12px;padding:14px;margin-bottom:14px;background:#fff;}.export-confirmation-label{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.55;color:var(--text);cursor:pointer;}.export-confirmation-label input{width:20px;height:20px;flex-shrink:0;margin-top:2px;accent-color:#2f8aa6;}.export-role-info{margin:6px 0 0 30px;font-size:12px;color:var(--muted);}.export-role-info summary,.export-file-types summary{color:#2f8aa6;cursor:pointer;}.export-role-info p{margin:8px 0 0;}
+#omission-download-summary{font-size:12px!important;color:var(--muted);}#btn-view-label{background:#2f8aa6;}.export-file-types{font-size:12px;margin-top:5px;}.export-file-box{background:#f5f6f7;border-radius:8px;padding:10px 12px;margin-top:8px;}.export-file-box p{margin:3px 0;}
+.export-secondary-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:16px;align-items:start;}.export-save,.export-composer{box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;padding:10px 8px;border-radius:9px;font:inherit;font-size:13px;font-weight:600;text-align:center;line-height:1.35;text-decoration:none;cursor:pointer;}.export-save{border:1px solid #62717c;background:white;color:var(--text);}.export-composer{border:1px solid #a4d8c6;background:#eefaf5;color:#286e67;}.export-composer:disabled{opacity:.55;cursor:not-allowed;}.export-composer-action small{display:block;text-align:center;font-size:11px;color:var(--muted);margin-top:4px;}#composer-save-first[hidden]{display:none;}
+
 .dl-format-help{margin:10px 0 0;font-size:13.5px;line-height:1.55;color:var(--muted);}
 .dl-format-help p{margin:0;}
 .dl-format-help ul{margin:4px 0 0 18px;padding:0;}
@@ -1353,7 +1359,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="step-panel" id="step-5">
     <h2 class="step-heading">Your label is ready!</h2>
     <p class="step-sub">Review your label, then download in your preferred format.</p>
-    <div class="watermark-note">🆓 Free trial — labels include a CLPeasy watermark. <button onclick="window.open('pricing.html','_blank','noopener')" style="background:var(--teal,#4C9BB0);color:white;border:none;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;">Subscribe to remove →</button></div>
+    <div class="watermark-note">Free trial: labels are watermarked. <button onclick="window.open('pricing.html','_blank','noopener')" style="background:var(--teal,#4C9BB0);color:white;border:none;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;">Remove watermark →</button></div>
     <div id="finetune-panel-el" class="preview-legend">
         <div class="fine-tune-title">Fine-tune your label</div>
         <div class="fine-tune-sub">Within the supported size limits. Pictogram size is set automatically for this label and isn't manually adjustable here. H/P/sensitisers move as one block.</div>
@@ -1404,11 +1410,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
         <div class="ft-reset" id="bizname-fs-reset" onclick="resetBizNameFS()">Reset</div>
     </div>
-    <div style="background:#F8FAFC;border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;">
-      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:var(--text);font-weight:500;line-height:1.5;">
-        <input type="checkbox" id="verify-checkbox" onchange="toggleDownload()" style="width:18px;height:18px;margin-top:1px;flex-shrink:0;accent-color:var(--teal);">
-        I confirm I have reviewed the finished label and checked the hazard information against my fragrance supplier's current SDS/CLP information for the fragrance load used. CLPeasy has helped extract, organise, check and format the information provided; I understand I remain responsible for the product I place on the market and for reviewing the finished label before printing and selling.
+    <div class="export-confirmation-card">
+      <label for="verify-checkbox" class="export-confirmation-label">
+        <input type="checkbox" id="verify-checkbox" onchange="toggleDownload()">
+        <span><strong>I've checked this label against my supplier's current SDS for the fragrance load used.</strong> I'm responsible for the product and for checking the label before I print and sell it.</span>
       </label>
+      <details class="export-role-info"><summary>What CLPeasy does ⓘ</summary><p>CLPeasy helps extract, organise, check and format the information you provide. It does not independently classify your product.</p></details>
     </div>
     <!-- Visible on Step 5 (unlike #label-warn, which lives in Step 3's hidden panel) so the
          download-block reason is shown right next to the disabled buttons it explains. -->
@@ -1421,32 +1428,25 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="download-lock-note" role="status" aria-live="polite" style="display:none;"></div>
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
       <button type="button" id="btn-view-label" class="btn-next" onclick="viewReviewLabel()" aria-controls="preview-panel-el preview-sheet" style="width:100%;padding:14px;font-size:16px;margin-top:10px;">View label ↗</button>
-      <!-- Stage 2: the two current printing routes (single label: PDF; several on A4: Print Sheet Composer). -->
       <div class="dl-format-help" id="dl-format-help">
-        <p><strong>Printing your labels?</strong> For a single label, use <strong>PDF</strong>. For several labels on A4, use the <strong>Print Sheet Composer</strong>. Always print at <strong>Actual Size / 100%</strong>.</p>
-        <ul>
-          <li><strong>PDF</strong> is an individual label file at the label's exact size.</li>
-          <li><strong>SVG</strong> keeps the label's size in millimetres, for design and cutting-machine software.</li>
-          <li><strong>PNG</strong> is a high-resolution image. The app you open it in may choose its own print size.</li>
-        </ul>
+        <p><strong>Print at Actual size / 100%.</strong></p>
+        <details class="export-file-types"><summary>Which file type?</summary><div class="export-file-box">
+          <p><strong>PDF:</strong> one label at its exact size</p>
+          <p><strong>SVG:</strong> for design or cutting-machine software</p>
+          <p><strong>PNG:</strong> image only, so print size may vary</p>
+        </div></details>
       </div>
       <div id="dl-print-guidance" class="field-alert field-alert-success dl-print-guidance" role="status" aria-live="polite" hidden></div>
-      <button id="btn-save" onclick="saveLabel()" style="background:var(--off);color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">💾 Save to my label library</button>
+      <div class="export-secondary-actions">
+        <button type="button" id="btn-save" onclick="saveLabel()" class="export-save" style="opacity:0.4;pointer-events:none;">💾 Save to library</button>
+        <div class="export-composer-action">
+          <a id="print-sheet-link" href="print.html" target="_blank" rel="noopener" style="display:none;" class="export-composer">🖨 Print Sheet Composer</a>
+          <button type="button" id="composer-save-first" class="export-composer" disabled title="Save this label to your library first">🖨 Print Sheet Composer</button>
+          <small>Several labels on A4</small>
+        </div>
+      </div>
       <div id="save-status" class="field-alert field-alert-success dl-print-guidance" role="status" aria-live="polite" hidden></div>
 
-
-    <!-- PRINT SHEET COMPOSER LINK -->
-    <a id="print-sheet-link" href="print.html" target="_blank" rel="noopener" style="display:none;align-items:center;gap:14px;background:linear-gradient(135deg,#F0FDF4,#ECFDF5);border:1.5px solid var(--teal);border-radius:12px;padding:14px 16px;text-decoration:none;margin-top:14px;transition:all .2s;" onmouseover="this.style.background='linear-gradient(135deg,#d6eef4,#D1FAE5)'" onmouseout="this.style.background='linear-gradient(135deg,#F0FDF4,#ECFDF5)'">
-      <div style="width:40px;height:40px;border-radius:10px;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🖨</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:14px;font-weight:700;color:var(--teal-dark);">🖨 Print Sheet Composer</div>
-        <div style="font-size:12px;color:var(--teal);margin-top:2px;">You've saved labels — arrange them on an A4 sheet for home printing or a print company.</div>
-        
-      </div>
-      <div style="font-size:18px;color:var(--teal);flex-shrink:0;">→</div>
-    </a>
-
-    
     <div style="margin-top:20px;display:flex;justify-content:center;">
       <button onclick="prevStep()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;padding:8px;">← Edit label</button>
       <button onclick="startOver()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;padding:8px;">↺ New label</button>
@@ -3200,7 +3200,7 @@ async function saveLabel(){
       btn.style.background=_draft?'#FFFBEB':'#ECFDF5';btn.style.borderColor=_draft?'#FDE68A':'var(--teal)';
     }
     showSaveStatus();
-    setTimeout(()=>{if(btn){btn.textContent='💾 Save to my label library';btn.style.background='';btn.style.borderColor='';}},2000);
+    setTimeout(()=>{if(btn){btn.textContent='💾 Save to library';btn.style.background='';btn.style.borderColor='';}},2000);
   }catch(err){
     console.log('saveLabel mutate() failed:',err);
     showSaveErrorToast(err);
@@ -3438,6 +3438,8 @@ function renderSaved(){
     psLink.style.display=canPrintCurrent?'flex':'none';
     if(canPrintCurrent) psLink.href=buildPrintSheetUrl(editingLabelId);
   }
+  const composerSaveFirst=document.getElementById('composer-save-first');
+  if(composerSaveFirst)composerSaveFirst.hidden=canPrintCurrent;
   if(psLinkPreview){
     psLinkPreview.style.display=(canPrintCurrent&&S.step===5)?'flex':'none';
     if(canPrintCurrent) psLinkPreview.href=buildPrintSheetUrl(editingLabelId);
