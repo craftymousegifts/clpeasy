@@ -5430,7 +5430,7 @@ function updateLabel(){
     : 'The required hazard and precautionary information cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, use the size controls below to select a larger label size. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>';
 
   const _compactRecDims=_sizeRec?(_sizeRec.mmW===_sizeRec.mmH?_sizeRec.mmW+' mm':_sizeRec.mmW+' × '+_sizeRec.mmH+' mm'):'';
-  const _fitAdvice = '<div class="fit-heading"><span aria-hidden="true">●</span> '+(_advice.pending?'Checking sizes…':_sizeRec?'Needs '+_compactRecDims+' to fit everything clearly <small>('+escapeBuilderText(_sizeRec.shape)+')</small>':'Try another shape or size')+'</div><div class="fit-actions">'+
+  const _fitAdvice = '<div class="fit-heading"><span aria-hidden="true">●</span> '+(_advice.pending?'Checking sizes…':_sizeRec?'Smallest tested '+escapeBuilderText(_sizeRec.shape)+' that fits all your details: '+_compactRecDims:'Try another shape or size')+'</div><div class="fit-actions">'+
     (_sizeRec?'<button type="button" class="fit-primary" onclick="applySuggestedLabelSize()">Use '+_compactRecDims+'</button>':(_advice.pending||_advice.failed?'':'<p class="fit-helper">No tested size up to 150 mm fits.</p>'))+
     '<details class="fit-size-picker"><summary>Other shape or size ▾</summary>'+inlineSizeEditor()+'</details></div>'+
     (typeof optionalItemAdviceHTML==='function'?optionalItemAdviceHTML():'')+
