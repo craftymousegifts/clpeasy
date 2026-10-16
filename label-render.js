@@ -834,14 +834,17 @@ function choosePictoMmAndRender(rawData, opts){
     return renderLabel(rawData, Object.assign({}, opts, {_pictoMmOverride: pictoOuterBoundingBoxMm(squareSideMm)}));
   }
   const atTarget = renderAt(PICTO_TARGET_SQUARE_MM);
-  if(atTarget.fits) return atTarget;
+  // Care-edge clearance must not make this search shrink GHS pictograms or
+  // alter text sizes to rescue the footer. Choose the same layout as before,
+  // then keep its new care-edge failure blocked if necessary.
+  if(atTarget.metrics.pictoSearchFits) return atTarget;
   const atFloor = renderAt(PICTO_FLOOR_SQUARE_MM);
-  if(!atFloor.fits) return atFloor; // even the floor doesn't fit -- keep the floor size; fits:false blocks export exactly as any other overflow already does
+  if(!atFloor.metrics.pictoSearchFits) return atFloor; // even the floor doesn't fit -- keep the floor size; fits:false blocks export exactly as any other overflow already does
   let lo=PICTO_FLOOR_SQUARE_MM, loResult=atFloor, hi=PICTO_TARGET_SQUARE_MM;
   while(hi-lo > PICTO_SEARCH_PRECISION_MM){
     const mid=(lo+hi)/2;
     const midResult=renderAt(mid);
-    if(midResult.fits){ lo=mid; loResult=midResult; } else { hi=mid; }
+    if(midResult.metrics.pictoSearchFits){ lo=mid; loResult=midResult; } else { hi=mid; }
   }
   return loResult;
 }
@@ -1922,19 +1925,28 @@ function renderLabel(rawData, opts){
   // `warnings`/`fits` handling further down), exactly like
   // hazard-text-overflow/footer-clipped.
   let _bcfTooSmall = false;
-  // All five care-icon boxes must fit the actual circle at their lowest
-  // corners, not merely its full diameter. Keep icon sizes and row height;
-  // reduce only the gaps where necessary, down to 10% of an icon side.
+  let _bcfEdgeClipped = false;
+  // Keep every care-icon corner at least 1 mm inside the circular cut edge,
+  // matching the footer text's physical clearance. Use spare space above the
+  // footer first, without moving or resizing hazard text; narrow gaps only
+  // when needed. If neither placement fits, the existing export block applies.
   // The small canonical-unit allowance covers one-decimal SVG rounding.
   function candleCareGeometry(sz){
-    const y=botY+sz*0.1;
+    const originalY=botY+sz*0.1;
+    let y=originalY;
     let gap=sz*0.25;
     let fits=true;
     if(isCircle){
+      const safeR=r-1.1*pxPerMm;
+      const halfRow=3*sz+0.2;
+      const desiredY=safeR>halfRow?cy+Math.sqrt(safeR*safeR-halfRow*halfRow)-sz:-Infinity;
+      // _L.endY includes the complete hazard/precautionary layout. Leave
+      // breathing room above the icon row and never push it down instead.
+      y=Math.max(_L.endY+_sharedFS*0.3,Math.min(originalY,desiredY));
       const dy=Math.max(Math.abs(y-cy),Math.abs(y+sz-cy));
-      const available=dy<r?2*Math.sqrt(r*r-dy*dy)-0.4:0;
+      const available=dy<safeR?2*Math.sqrt(safeR*safeR-dy*dy)-0.4:0;
       gap=Math.min(gap,(available-5*sz)/4);
-      fits=gap>=sz*0.1;
+      fits=y<=originalY && gap>=sz*0.1;
     }
     return {y,gap,x:cx-(5*sz+4*gap)/2,fits};
   }
@@ -1964,7 +1976,7 @@ function renderLabel(rawData, opts){
       // legal floor -- matches the render block below exactly.
       const _bcfMaxSzPre = Math.max(_bcfFloorSzPre, Math.min(sW * 0.07, _bcfTargetMmPre * pxPerMm, _bcfPhysicalCapPre, _bcfRoomForIconsPre/BCF_ROW_HEIGHT_RATIO));
       _bcfRowH = _bcfMaxSzPre * BCF_ROW_HEIGHT_RATIO; // matches the icons' actual vertical footprint
-      if(!candleCareGeometry(_bcfMaxSzPre).fits) _bcfTooSmall=true;
+      if(!candleCareGeometry(_bcfMaxSzPre).fits) _bcfEdgeClipped=true;
     } else {
       _bcfTooSmall = true;
     }
@@ -2092,10 +2104,11 @@ function renderLabel(rawData, opts){
   // free to drift apart if either was ever edited without the other. Every
   // flag `fits` has ever included is included here; if a new blocking
   // condition is ever added, add it to THIS line, not to a second copy.
-  const _contentBlocked = _labelLegibilityWarn || _footerLegibilityClipped
+  const _contentBlockedWithoutCareEdge = _labelLegibilityWarn || _footerLegibilityClipped
     || _unrecognizedCodes.length>0 || _bcfTooSmall || _scentTooSmall
     || _bizNameTooSmall || _typeTooSmall || _signalTooSmall
     || _invalidPictograms.length>0;
+  const _contentBlocked = _contentBlockedWithoutCareEdge || _bcfEdgeClipped;
   // ── STRUCTURED BLOCK REASON -- never inferred from fits:false alone ─────
   // A code absent from H_LIB is either a CONFIRMED code that the ACTIVE
   // regulatory profile (currently Great Britain only -- see
@@ -2128,7 +2141,7 @@ function renderLabel(rawData, opts){
   // merits, so a caller can tell "is there ALSO a genuine fit problem"
   // even when a code issue is the headline reason.
   const _contentOverflow = _labelLegibilityWarn || _footerLegibilityClipped
-    || _bcfTooSmall || _scentTooSmall || _bizNameTooSmall || _typeTooSmall || _signalTooSmall;
+    || _bcfTooSmall || _bcfEdgeClipped || _scentTooSmall || _bizNameTooSmall || _typeTooSmall || _signalTooSmall;
   const _blockReason = !_contentBlocked ? null
     : _unsupportedCodesFound.length>0 ? 'unsupported-gb-clp-code'
     : _genericUnrecognizedFound.length>0 ? 'unrecognised-code'
@@ -2183,7 +2196,7 @@ function renderLabel(rawData, opts){
   // render, when shown -- exposed on `metrics` below for transparency/
   // testing, mirroring `pictoSquareSideMm`/`pictoOuterBoundingBoxMm`.
   let _bcfSizeMm = null;
-    if(_showBCF && !_bcfTooSmall){
+    if(_showBCF && !_bcfTooSmall && !_bcfEdgeClipped){
     const _bcfKeys=['burn_within_sight','keep_from_fire','keep_from_children','no_draught','trim_wick'];
     const _nBcf = _bcfKeys.length;
     // Size icons based on the shorter label dimension to prevent overflow
@@ -2292,6 +2305,7 @@ function renderLabel(rawData, opts){
   if(_labelLegibilityWarn) warnings.push('hazard-text-overflow');
   if(_footerLegibilityClipped) warnings.push('footer-clipped');
   if(_bcfTooSmall) warnings.push('candle-safety-symbols-too-small');
+  if(_bcfEdgeClipped) warnings.push('candle-safety-edge-clearance');
   // Regression fix (2026-09-06): mandatory text outside the hazard/footer
   // blocks (product name, business name, product type, signal word) now
   // gets the same physical-floor fail-closed treatment those blocks
@@ -2306,6 +2320,8 @@ function renderLabel(rawData, opts){
   const _pictoHalfW = chordW(pictoBlockTopY+pictoBlockH/2, 0.06)/2;
 
   const metrics = {
+    pictoSearchFits: !_contentBlockedWithoutCareEdge,
+    candleCareEdgeClipped: _bcfEdgeClipped,
     labelDims: {mmW, mmH, pw, ph},
     fontSizes: {scent: scentFS, biz: _bizFSf, web: _webFSf, type: typeFS, signal: sigFS, hazard: hFS, footer: footerElems.length?footerElems[0].fs:null},
     hazardBounds: {x0: cx-_hazardHalfW, x1: cx+_hazardHalfW, y0: _curY0, y1: _L.endY},
