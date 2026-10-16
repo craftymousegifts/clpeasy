@@ -560,6 +560,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .preview-sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;align-items:flex-start;justify-content:center;padding-top:max(12px,env(safe-area-inset-top,0px));box-sizing:border-box;}
 .preview-sheet.open{display:flex;}
 @media(min-width:861px){.preview-sheet.open .preview-sheet-inner{max-width:920px;border-radius:16px;}.preview-sheet-label>svg{max-height:50dvh!important;}}
+
+.fit-advice-card{background:#fff!important;color:#26313b!important;border:1px solid #dce2e8!important;border-radius:14px!important;padding:20px!important;line-height:1.5;}
+.fit-heading{font-size:17px;font-weight:650;color:#9b6200;}.fit-heading>span{color:#e4a11b;margin-right:6px;}.fit-heading small{font-size:13px;font-weight:400;color:#737d87;}
+.fit-actions{display:flex;flex-wrap:wrap;align-items:flex-start;gap:12px;margin:16px 0;}.fit-primary,.fit-size-picker>summary{box-sizing:border-box;min-height:44px;border:1px solid #2f8aa6;border-radius:8px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;}.fit-primary{background:#2f8aa6;color:#fff;}.fit-size-picker>summary{background:white;color:#2f8aa6;list-style:none;}.fit-size-picker>summary::-webkit-details-marker{display:none;}.fit-size-picker .inline-size-editor{max-width:100%;}.fit-size-picker .inline-size-editor>strong,.fit-size-picker .inline-size-editor>p,.fit-size-picker .inline-size-editor>small{display:none;}
+.fit-advice-card .optional-item-review{border:0;border-top:1px solid #e5e8eb;border-radius:0;padding:16px 0 0;margin:0;color:#26313b;}.fit-advice-card .optional-item-review summary{color:#26313b;}.omission-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}.omission-chip{display:flex;align-items:center;gap:7px;border:1px solid #dce2e8;border-radius:8px;padding:9px;min-height:44px;box-sizing:border-box;cursor:pointer;}.omission-chip:has(input:checked){border-color:#2f8aa6;background:#f0f8fa;}.omission-chip small{background:#eef1f3;color:#68737d;border-radius:10px;padding:1px 6px;font-size:10px;}.omission-chip input,.omission-confirm input{accent-color:#2f8aa6;min-width:20px;min-height:20px;flex-shrink:0;}.omission-confirm{display:flex;align-items:center;gap:8px;margin:10px 0;font-size:13px;}.fit-helper{color:#717b85;font-size:12px;margin:10px 0;}.fit-status{font-size:13px;margin:12px 0;}.fit-status-blocked{color:#b53333;}.fit-status-ok{color:#23754a;}.fit-footnote{color:#7b838c;font-size:11px;margin:12px 0 0;}.fit-advice-card .optional-item-review button{background:#2f8aa6;}.fit-advice-card .optional-item-review button:disabled{background:#e5e7eb;}
+
 .optional-item-review{color:var(--text,#152333);background:white;border:1px solid var(--teal,#4c9bb0);border-radius:10px;padding:14px;margin-top:14px;}
 .optional-item-review summary{font-weight:700;color:var(--teal-dark,#286579);cursor:pointer;}
 .optional-item-review button{background:var(--teal,#4c9bb0);color:white;border:0;border-radius:8px;padding:10px;min-height:44px;cursor:pointer;}
@@ -5395,25 +5401,26 @@ function updateLabel(){
     ? 'Your '+_mandatoryTextTooSmallLabel+' cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, use the size controls below to select a larger label size, or shorten the affected text.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
     : 'The required hazard and precautionary information cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, use the size controls below to select a larger label size. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>';
 
-  const _fitAdvice = '<strong>Your label needs more space.</strong><p>Choose a larger size to keep all required information clearly readable.</p>'+
-    (_sizeRec ? '<p>Smallest tested size for your current content: <strong>'+_sizeRecDims+'</strong> ('+_sizeRec.shape+').</p><button type="button" onclick="applySuggestedLabelSize()" style="padding:10px;min-height:44px;border:1px solid #4c9bb0;border-radius:8px;background:white;color:#111;">Use '+_sizeRecDims+'</button>'
-    : '<p>No supported size tested up to 150mm fits this content. Try a different shape.</p>')+
-    (typeof optionalItemAdviceHTML==='function'?optionalItemAdviceHTML():'')+
-    '<p style="margin-top:8px;">We will check the fit again when you add more details.</p>'+
-    '<details style="margin-top:8px;"><summary>Label too large for your packaging?</summary><p>An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.</p></details>';
+  const _compactRecDims=_sizeRec?(_sizeRec.mmW===_sizeRec.mmH?_sizeRec.mmW+' mm':_sizeRec.mmW+' × '+_sizeRec.mmH+' mm'):'';
+  const _fitAdvice = '<div class="fit-heading"><span aria-hidden="true">●</span> '+(_sizeRec?'Needs '+_compactRecDims+' to fit everything clearly <small>('+escapeBuilderText(_sizeRec.shape)+')</small>':'Try another shape or size')+'</div><div class="fit-actions">'+
+    (_sizeRec?'<button type="button" class="fit-primary" onclick="applySuggestedLabelSize()">Use '+_compactRecDims+'</button>':'<p class="fit-helper">No tested size up to 150 mm fits.</p>')+
+    '<details class="fit-size-picker"><summary>Other shape or size ▾</summary>'+inlineSizeEditor()+'</details></div>'+
+    (typeof optionalItemAdviceHTML==='function'?optionalItemAdviceHTML():'');
   const pasteFit=document.getElementById('smart-paste-size-warning');
   if(pasteFit){
     const showFit=!!S.hazardFromExtraction&&!!window._labelBlockDownload&&!_codeBlockParts.length;
     pasteFit.style.display=showFit?'block':'none';
-    pasteFit.innerHTML=showFit?_fitAdvice+inlineSizeEditor():'';
+    pasteFit.classList.toggle('fit-advice-card',showFit);
+    pasteFit.innerHTML=showFit?_fitAdvice:'';
   }
   const sheetFit=document.getElementById('sheet-fit-advice');
-  if(sheetFit){sheetFit.innerHTML=window._labelBlockDownload&&!_codeBlockParts.length?_fitAdvice:'';}
+  if(sheetFit){sheetFit.classList.toggle('fit-advice-card',!!window._labelBlockDownload&&!_codeBlockParts.length);sheetFit.innerHTML=window._labelBlockDownload&&!_codeBlockParts.length?_fitAdvice:'';}
   [document.getElementById('label-warn-stage4'), document.getElementById('label-warn-step5')].forEach(_labelWarnEl=>{
     if(!_labelWarnEl)return;
     if(window._labelBlockDownload){
       _labelWarnEl.style.display='block';
-      _labelWarnEl.innerHTML = _codeBlockParts.length?'<strong>'+_blockHeading+'</strong><br><br>'+_blockBody:_fitAdvice+inlineSizeEditor();
+      _labelWarnEl.classList.toggle('fit-advice-card',!_codeBlockParts.length);
+      _labelWarnEl.innerHTML = _codeBlockParts.length?'<strong>'+_blockHeading+'</strong><br><br>'+_blockBody:_fitAdvice;
     } else {
       _labelWarnEl.style.display='none';
     }

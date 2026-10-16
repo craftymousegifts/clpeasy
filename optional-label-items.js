@@ -79,16 +79,17 @@ function optionalItemAdviceHTML(){
   const data=window._lastLabelData,normalized=LabelRenderer.normalizeLabel(data);
   const present=LabelOptionalItems.keys.filter(k=>normalized[k]);
   const dims=LabelRenderer.getLabelDims(data),size=dims.mmW===dims.mmH?dims.mmW+' mm':dims.mmW+' × '+dims.mmH+' mm';
-  let html='<p>Text stays within supported size limits. Required information is kept.</p><details open class="optional-item-review"><summary>Keep '+size+' by leaving optional details off</summary><p><strong>Choose items to leave off.</strong> Unticked items stay on the label. Values are saved for restoring later.</p>';
-  html+='<p>Suggested selection: '+options.map(o=>escapeBuilderText(o.omit.map(k=>LabelOptionalItems.labels[k]).join(' + '))).join('; ')+'.</p>';
+  const suggested=options[0].omit;
+  let html='<details open class="optional-item-review"><summary>Or keep '+size+' by leaving off:</summary><div class="omission-chips">';
   for(const key of present){
-    html+='<label style="display:flex;gap:8px;margin:12px 0;"><input type="checkbox" data-omit-select="'+key+'" data-entered-value="'+escapeBuilderText(data[key])+'" onchange="refreshOptionalReview(this.closest(\'.optional-item-review\'))"><span>Leave off '+escapeBuilderText(LabelOptionalItems.labels[key]+' ('+data[key]+')')+'</span></label>';
-    if(LabelOptionalItems.protectedKeys.includes(key)){
-      const text=key==='netWeight'?'The net quantity ('+data[key]+') is shown elsewhere on the packaging.':'The batch ('+data[key]+') is shown elsewhere on the product or its packaging.';
-      html+='<div data-omission-confirm="'+key+'" hidden style="margin-left:24px;"><label style="display:flex;gap:8px;margin:10px 0;"><input type="checkbox" data-omission-key="'+key+'" onchange="refreshOptionalReview(this.closest(\'.optional-item-review\'))"><span>'+escapeBuilderText(text)+'</span></label></div>';
-    }
+    html+='<label class="omission-chip"><input type="checkbox" data-omit-select="'+key+'" data-entered-value="'+escapeBuilderText(data[key])+'" onchange="refreshOptionalReview(this.closest(\'.optional-item-review\'))"><span>'+escapeBuilderText(LabelOptionalItems.labels[key]+' ('+data[key]+')')+'</span>'+(suggested.includes(key)?'<small>suggested</small>':'')+'</label>';
   }
-  return html+'<p>A layout fit does not confirm legal compliance.</p><p data-omission-comparison></p><p data-omission-status role="status" aria-live="polite">Select items to check the fit.</p><button type="button" disabled onclick="applyOptionalOmission(0,this)">Leave selected items off this label</button></details>';
+  html+='</div><p class="fit-helper">Hidden details are saved, so you can add them back later.</p>';
+  for(const key of present.filter(k=>LabelOptionalItems.protectedKeys.includes(k))){
+    const text=key==='netWeight'?'Net quantity ('+data[key]+'): shown elsewhere on the packaging.':'Batch ('+data[key]+'): shown elsewhere on the product or its packaging.';
+    html+='<div data-omission-confirm="'+key+'" hidden><label class="omission-confirm"><input type="checkbox" data-omission-key="'+key+'" onchange="refreshOptionalReview(this.closest(\'.optional-item-review\'))"><span>'+escapeBuilderText(text)+'</span></label></div>';
+  }
+  return html+'<p data-omission-status role="status" aria-live="polite" class="fit-status fit-status-blocked">Still too full: tick another or choose a larger size.</p><p data-omission-comparison class="fit-helper" hidden></p><button type="button" disabled onclick="applyOptionalOmission(0,this)">Apply choices</button><p class="fit-footnote">Fit check only. It doesn’t confirm legal compliance.</p></details>';
 }
 function selectedOptionalItems(panel){
   return Array.from(panel.querySelectorAll('[data-omit-select]:checked')).map(c=>c.dataset.omitSelect);
@@ -101,18 +102,20 @@ function refreshOptionalReview(panel){
   }
   const button=panel.querySelector('button'),status=panel.querySelector('[data-omission-status]'),comparison=panel.querySelector('[data-omission-comparison]');
   button.disabled=true;comparison.textContent='';
-  button.textContent=omit.length===1?'Leave this item off this label':'Leave these '+omit.length+' items off this label';
-  if(!omit.length){button.textContent='Leave selected items off this label';status.textContent='Select items to check the fit.';return;}
+  button.textContent='Apply choices';status.className='fit-status fit-status-blocked';
+  if(!omit.length){status.textContent='Still too full: tick another or choose a larger size.';return;}
   const data=window._lastLabelData;
   if(Array.from(panel.querySelectorAll('[data-omit-select]')).some(c=>c.dataset.enteredValue!==String(data[c.dataset.omitSelect]))){status.textContent='Details changed. Review the updated options before applying.';return;}
   const result=LabelRenderer.renderLabel(LabelOptionalItems.candidate(data,omit),window._ftLastOpts);
-  if(!result.fits){status.textContent='Still too full. Select more items or use a larger label.';return;}
+  if(!result.fits){status.textContent='Still too full: tick another or choose a larger size.';return;}
   const dims=LabelRenderer.getLabelDims(data),hazardMm=result.metrics.fontSizes.hazard*dims.mmW/260;
   const larger=(window._omissionOptions||[])[0]?.largerHazardMm;
   comparison.textContent='Hazard text: about '+hazardMm.toFixed(1)+' mm here'+(Number.isFinite(larger)?', versus '+larger.toFixed(1)+' mm on the larger label':'')+' (font size).';
+  status.className='fit-status fit-status-ok';
+  const fitSize=dims.mmW===dims.mmH?dims.mmW+' mm':dims.mmW+' × '+dims.mmH+' mm';
   const missing=omit.filter(k=>LabelOptionalItems.protectedKeys.includes(k)&&!panel.querySelector('[data-omission-key="'+k+'"]')?.checked);
-  if(missing.length){status.textContent='Fits. Confirm where you show '+missing.map(k=>LabelOptionalItems.labels[k].toLowerCase()).join(' and ')+'.';return;}
-  button.disabled=false;status.textContent='Fits. Apply your selection.';
+  if(missing.length){status.textContent='✓ Fits at '+fitSize+'. Confirm where you show '+missing.map(k=>LabelOptionalItems.labels[k].toLowerCase()).join(' and ')+'.';return;}
+  button.disabled=false;status.textContent='✓ Fits at '+fitSize;
 }
 function applyOptionalOmission(index,button){
   const panel=button.closest('.optional-item-review');if(!panel)return;
