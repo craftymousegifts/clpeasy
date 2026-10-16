@@ -865,11 +865,14 @@ function choosePictoMmAndRender(rawData, opts){
 // content-does-not-fit branch, which is BYTE-IDENTICAL to the overlay this
 // replaced, so genuine layout overflow with only recognised, GB-supported
 // codes is completely unaffected by this change.
-function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, genericCodes, invalidPictograms){
+function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, genericCodes, invalidPictograms, incompletePreview=false){
   unsupportedCodes = unsupportedCodes||[]; genericCodes = genericCodes||[]; invalidPictograms = invalidPictograms||[];
   const hasIssue = unsupportedCodes.length>0 || genericCodes.length>0 || invalidPictograms.length>0;
 
   if(!hasIssue){
+    if(incompletePreview){
+      return `<g class="clp-fit-block clp-draft-preview"><rect x="0" y="0" width="${pw}" height="${ph}" fill="#fff"/><text x="${cx}" y="${(ph*.46).toFixed(1)}" text-anchor="middle" font-family="sans-serif" font-size="${Math.max(8,pw*.035).toFixed(1)}" fill="#666">Preview in progress</text><text x="${cx}" y="${(ph*.55).toFixed(1)}" text-anchor="middle" font-family="sans-serif" font-size="${Math.max(6,pw*.025).toFixed(1)}" fill="#666">Complete all steps to check fit</text></g>`;
+    }
     // Genuine physical overflow with only recognised/supported codes --
     // byte-identical to the original single-line overlay this replaced.
     // Correction 2 only changes the code-related wording below; this
@@ -1919,6 +1922,22 @@ function renderLabel(rawData, opts){
   // `warnings`/`fits` handling further down), exactly like
   // hazard-text-overflow/footer-clipped.
   let _bcfTooSmall = false;
+  // All five care-icon boxes must fit the actual circle at their lowest
+  // corners, not merely its full diameter. Keep icon sizes and row height;
+  // reduce only the gaps where necessary, down to 10% of an icon side.
+  // The small canonical-unit allowance covers one-decimal SVG rounding.
+  function candleCareGeometry(sz){
+    const y=botY+sz*0.1;
+    let gap=sz*0.25;
+    let fits=true;
+    if(isCircle){
+      const dy=Math.max(Math.abs(y-cy),Math.abs(y+sz-cy));
+      const available=dy<r?2*Math.sqrt(r*r-dy*dy)-0.4:0;
+      gap=Math.min(gap,(available-5*sz)/4);
+      fits=gap>=sz*0.1;
+    }
+    return {y,gap,x:cx-(5*sz+4*gap)/2,fits};
+  }
   if(_showBCF){
     const _bcfMinDimPre  = Math.min(mmW, mmH);
     const _bcfTargetMmPre = _bcfMinDimPre <= 50 ? 5.5 : 8; // nice-to-have, above the 5mm floor
@@ -1945,6 +1964,7 @@ function renderLabel(rawData, opts){
       // legal floor -- matches the render block below exactly.
       const _bcfMaxSzPre = Math.max(_bcfFloorSzPre, Math.min(sW * 0.07, _bcfTargetMmPre * pxPerMm, _bcfPhysicalCapPre, _bcfRoomForIconsPre/BCF_ROW_HEIGHT_RATIO));
       _bcfRowH = _bcfMaxSzPre * BCF_ROW_HEIGHT_RATIO; // matches the icons' actual vertical footprint
+      if(!candleCareGeometry(_bcfMaxSzPre).fits) _bcfTooSmall=true;
     } else {
       _bcfTooSmall = true;
     }
@@ -2127,7 +2147,7 @@ function renderLabel(rawData, opts){
   // recognised/supported codes is unaffected by this change. Both code
   // groups are passed through in full (not just the leading-reason one),
   // so a mixed unsupported+generic input shows both in the overlay too.
-  const overflowOverlay=_contentBlocked?buildBlockedOverlaySVG(pw,ph,cx,cy,chordW,_unsupportedCodesFound,_genericUnrecognizedFound,_invalidPictograms):'';
+  const overflowOverlay=_contentBlocked?buildBlockedOverlaySVG(pw,ph,cx,cy,chordW,_unsupportedCodesFound,_genericUnrecognizedFound,_invalidPictograms,!!opts.incompletePreview&&!opts.forExport):'';
   // Y positions already set per-slot — no global recompute needed
   const footerRendered = footerElems.map(elem=>{
     if(elem.slotY > sBot - 1) return '';
@@ -2182,11 +2202,12 @@ function renderLabel(rawData, opts){
     // first (see _footerTextMinH/_footerBandTotalEarly's own comment).
     const _bcfRoomForIcons = Math.max(_bcfFloorSz*BCF_ROW_HEIGHT_RATIO, _footerBandTotalEarly - _footerTextMinH);
     const _bcfMaxSz = Math.max(_bcfFloorSz, Math.min(sW * 0.07, _bcfTargetMm * _pxPerMm, _bcfPhysicalCap, _bcfRoomForIcons/BCF_ROW_HEIGHT_RATIO));
-    const _bcfGap   = _bcfMaxSz * 0.25;
+    const _bcfGeometry = candleCareGeometry(_bcfMaxSz);
+    const _bcfGap   = _bcfGeometry.gap;
     const _bcfTotW  = _nBcf * _bcfMaxSz + (_nBcf - 1) * _bcfGap;
     // Position at top of footer band with small padding
-    const _bcfY = botY + _bcfMaxSz * 0.6;
-    const _bcfStartX = cx - _bcfTotW / 2;
+    const _bcfY = _bcfGeometry.y + _bcfMaxSz / 2;
+    const _bcfStartX = _bcfGeometry.x;
     bcfRow = _bcfKeys.map((key, i) => {
       const bx = _bcfStartX + i * (_bcfMaxSz + _bcfGap);
       const by = _bcfY - _bcfMaxSz / 2;
