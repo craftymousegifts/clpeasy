@@ -147,6 +147,16 @@ const GB_ACTIVE_MIN_FS_MM = 1.2;
 // implementation already treated a missing text field.
 function normalizeLabel(data){
   data = data || {};
+  // Visibility is applied here so Builder, saved labels and Composer agree.
+  // Protected omissions fail closed unless the exact current value was confirmed.
+  const visible = key => {
+    if(!data.showOnLabel || data.showOnLabel[key] !== false)return true;
+    if(key==='netWeight'||key==='batchNum'){
+      const c=data.omissionConfirmations && data.omissionConfirmations[key];
+      return !(c && c.confirmed===true && c.value===data[key]);
+    }
+    return false;
+  };
   return {
     schemaVersion: data.schemaVersion || 0,
     shape: data.shape || 'circle',
@@ -171,10 +181,10 @@ function normalizeLabel(data){
     bizName: data.bizName || 'Your Brand',
     bizAddress: data.bizAddress || '',
     bizPhone: data.bizPhone || '',
-    bizWebsite: data.bizWebsite || '',
-    netWeight: data.netWeight || '',
-    burnTime: data.burnTime || '',
-    batchNum: data.batchNum || '',
+    bizWebsite: visible('bizWebsite') ? (data.bizWebsite || '') : '',
+    netWeight: visible('netWeight') ? (data.netWeight || '') : '',
+    burnTime: visible('burnTime') ? (data.burnTime || '') : '',
+    batchNum: visible('batchNum') ? (data.batchNum || '') : '',
     hideEN15494: !!data.hideEN15494,
     textColour: data.textColour === 'light' ? 'light' : 'dark',
     showBorder: data.showBorder !== false,

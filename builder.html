@@ -442,6 +442,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .dl-pg-more li{margin:2px 0;}
 .dl-pg-note{font-size:12px;opacity:.9;}
 .dl-pg-close{flex-shrink:0;background:none;border:1px solid currentColor;border-radius:6px;color:inherit;font:600 12px 'DM Sans',sans-serif;padding:4px 8px;cursor:pointer;}
+
+#step-5 .watermark-note{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;font-size:12px;background:#f3f4f6;}.watermark-note button{min-height:36px;flex-shrink:0;background:#2f8aa6!important;}
+.export-confirmation-card{border:1px solid #dce2e8;border-radius:12px;padding:14px;margin-bottom:14px;background:#fff;}.export-confirmation-label{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.55;color:var(--text);cursor:pointer;}.export-confirmation-label input{width:20px;height:20px;flex-shrink:0;margin-top:2px;accent-color:#2f8aa6;}.export-role-info{margin:6px 0 0 30px;font-size:12px;color:var(--muted);}.export-role-info summary,.export-file-types summary{color:#2f8aa6;cursor:pointer;}.export-role-info p{margin:8px 0 0;}
+#omission-download-summary{font-size:12px!important;color:var(--muted);}#btn-view-label{background:#2f8aa6;}.export-file-types{font-size:12px;margin-top:5px;}.export-file-box{background:#f5f6f7;border-radius:8px;padding:10px 12px;margin-top:8px;}.export-file-box p{margin:3px 0;}
+.export-secondary-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:16px;align-items:start;}.export-save,.export-composer{box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;padding:10px 8px;border-radius:9px;font:inherit;font-size:13px;font-weight:600;text-align:center;line-height:1.35;text-decoration:none;cursor:pointer;}.export-save{border:1px solid #62717c;background:white;color:var(--text);}.export-composer{border:1px solid #a4d8c6;background:#eefaf5;color:#286e67;}.export-composer:disabled{opacity:.55;cursor:not-allowed;}.export-composer-action small{display:block;text-align:center;font-size:11px;color:var(--muted);margin-top:4px;}#composer-save-first[hidden]{display:none;}
+
 .dl-format-help{margin:10px 0 0;font-size:13.5px;line-height:1.55;color:var(--muted);}
 .dl-format-help p{margin:0;}
 .dl-format-help ul{margin:4px 0 0 18px;padding:0;}
@@ -508,11 +514,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .preview-legend{flex:0 0 220px;background:white;border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:12px;align-self:stretch;overflow-y:auto;max-height:100%;}
 .preview-legend .fine-tune-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
 .preview-legend .fine-tune-sub{font-size:10.5px;color:var(--muted);margin-bottom:10px;line-height:1.35;}
-.preview-legend .ft-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);}
+.preview-legend .ft-row{display:grid;grid-template-columns:minmax(0,1fr) 112px;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);}
 .preview-legend .ft-row span{font-size:11.5px;font-weight:600;color:var(--text);}
-.preview-legend .ft-controls{display:flex;align-items:center;gap:4px;}
+.preview-legend .ft-controls{display:grid;grid-template-columns:24px 56px 24px;align-items:center;gap:4px;}
 .preview-legend .ft-btn{background:var(--off);border:1px solid var(--border);color:var(--text);border-radius:4px;width:19px;height:19px;font-size:11px;cursor:pointer;line-height:1;padding:0;}
-.preview-legend .ft-pct{font-size:10.5px;color:var(--muted);min-width:28px;text-align:center;font-weight:600;}
+.preview-legend .ft-pct{font-size:10.5px;color:var(--muted);width:56px;min-width:0;text-align:center;font-weight:600;}
 .preview-legend .ft-pct .ft-min,.preview-legend .ft-pct .ft-max{display:block;font-size:8.5px;font-weight:600;color:var(--muted);line-height:1;}
 .preview-legend .ft-btn:disabled{opacity:.4;cursor:not-allowed;}
 .preview-legend .ft-reset{font-size:9.5px;color:var(--teal);font-weight:600;cursor:pointer;display:none;text-align:right;padding:2px 0 4px;}
@@ -559,6 +565,18 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 }
 .preview-sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;align-items:flex-start;justify-content:center;padding-top:max(12px,env(safe-area-inset-top,0px));box-sizing:border-box;}
 .preview-sheet.open{display:flex;}
+@media(min-width:861px){.preview-sheet.open .preview-sheet-inner{max-width:920px;border-radius:16px;}.preview-sheet-label>svg{max-height:50dvh!important;}}
+
+.fit-advice-card{background:#fff!important;color:#26313b!important;border:1px solid #dce2e8!important;border-radius:14px!important;padding:20px!important;line-height:1.5;}
+.fit-heading{font-size:17px;font-weight:650;color:#9b6200;}.fit-heading>span{color:#e4a11b;margin-right:6px;}.fit-heading small{font-size:13px;font-weight:400;color:#737d87;}
+.fit-actions{display:flex;flex-wrap:wrap;align-items:flex-start;gap:12px;margin:16px 0;}.fit-primary,.fit-size-picker>summary{box-sizing:border-box;min-height:44px;border:1px solid #2f8aa6;border-radius:8px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;}.fit-primary{background:#2f8aa6;color:#fff;}.fit-size-picker>summary{background:white;color:#2f8aa6;list-style:none;}.fit-size-picker>summary::-webkit-details-marker{display:none;}.fit-size-picker .inline-size-editor{max-width:100%;}.fit-size-picker .inline-size-editor>strong,.fit-size-picker .inline-size-editor>p,.fit-size-picker .inline-size-editor>small{display:none;}
+.fit-advice-card .optional-item-review{border:0;border-top:1px solid #e5e8eb;border-radius:0;padding:16px 0 0;margin:0;color:#26313b;}.fit-advice-card .optional-item-review summary{color:#26313b;}.omission-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}.omission-chip{display:flex;align-items:center;gap:7px;border:1px solid #dce2e8;border-radius:8px;padding:9px;min-height:44px;box-sizing:border-box;cursor:pointer;}.omission-chip:has(input:checked){border-color:#2f8aa6;background:#f0f8fa;}.omission-chip small{background:#eef1f3;color:#68737d;border-radius:10px;padding:1px 6px;font-size:10px;}.omission-chip input,.omission-confirm input{accent-color:#2f8aa6;min-width:20px;min-height:20px;flex-shrink:0;}.omission-confirm{display:flex;align-items:center;gap:8px;margin:10px 0;font-size:13px;}.fit-helper{color:#717b85;font-size:12px;margin:10px 0;}.fit-status{font-size:13px;margin:12px 0;}.fit-status-blocked{color:#b53333;}.fit-status-ok{color:#23754a;}.fit-footnote{color:#7b838c;font-size:11px;margin:12px 0 0;}.fit-advice-card .optional-item-review button{background:#2f8aa6;}.fit-advice-card .optional-item-review button:disabled{background:#e5e7eb;}
+
+.optional-item-review{color:var(--text,#152333);background:white;border:1px solid var(--teal,#4c9bb0);border-radius:10px;padding:14px;margin-top:14px;}
+.optional-item-review summary{font-weight:700;color:var(--teal-dark,#286579);cursor:pointer;}
+.optional-item-review button{background:var(--teal,#4c9bb0);color:white;border:0;border-radius:8px;padding:10px;min-height:44px;cursor:pointer;}
+.optional-item-review button:disabled{background:#e5e7eb;color:#596273;cursor:not-allowed;}
+.download-lock-note{padding:10px;border-radius:8px;background:#f0f5f7;color:#283e4a;font-size:13px;line-height:1.5;margin:10px 0;}
 .preview-sheet-inner{background:#1a1f2e;border-radius:20px 20px 0 0;padding:20px;width:100%;height:calc(100dvh - max(12px,env(safe-area-inset-top,0px)));max-height:none;overflow-y:auto;box-sizing:border-box;}
 .preview-sheet-handle{width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:100px;margin:0 auto 12px;}
 .preview-sheet-label{display:flex;align-items:center;justify-content:center;margin:0 auto 16px;width:100%;max-width:100%;min-height:0;overflow:visible;}
@@ -579,6 +597,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 #sheet-finetune-slot:empty{display:none;}
 #sheet-finetune-slot .preview-legend{width:100%;box-sizing:border-box;max-height:none;overflow:visible;margin:12px 0;}
 #sheet-finetune-slot .ft-btn{width:44px;height:44px;font-size:20px;}
+#sheet-finetune-slot .ft-row{grid-template-columns:minmax(0,1fr) 152px;}
+#sheet-finetune-slot .ft-controls{grid-template-columns:44px 56px 44px;}
 #sheet-finetune-slot .ft-reset{font-size:14px;padding:12px 0;}
 #sheet-finetune-slot .ft-pct{min-width:48px;}
 .sheet-edit-details{color:white;margin:8px 0;}
@@ -1339,7 +1359,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="step-panel" id="step-5">
     <h2 class="step-heading">Your label is ready!</h2>
     <p class="step-sub">Review your label, then download in your preferred format.</p>
-    <div class="watermark-note">🆓 Free trial — labels include a CLPeasy watermark. <button onclick="window.open('pricing.html','_blank','noopener')" style="background:var(--teal,#4C9BB0);color:white;border:none;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;">Subscribe to remove →</button></div>
+    <div class="watermark-note">Free trial: labels are watermarked. <button onclick="window.open('pricing.html','_blank','noopener')" style="background:var(--teal,#4C9BB0);color:white;border:none;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;">Remove watermark →</button></div>
     <div id="finetune-panel-el" class="preview-legend">
         <div class="fine-tune-title">Fine-tune your label</div>
         <div class="fine-tune-sub">Within the supported size limits. Pictogram size is set automatically for this label and isn't manually adjustable here. H/P/sensitisers move as one block.</div>
@@ -1390,11 +1410,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
         <div class="ft-reset" id="bizname-fs-reset" onclick="resetBizNameFS()">Reset</div>
     </div>
-    <div style="background:#F8FAFC;border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;">
-      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:var(--text);font-weight:500;line-height:1.5;">
-        <input type="checkbox" id="verify-checkbox" onchange="toggleDownload()" style="width:18px;height:18px;margin-top:1px;flex-shrink:0;accent-color:var(--teal);">
-        I confirm I have reviewed the finished label and checked the hazard information against my fragrance supplier's current SDS/CLP information for the fragrance load used. CLPeasy has helped extract, organise, check and format the information provided; I understand I remain responsible for the product I place on the market and for reviewing the finished label before printing and selling.
+    <div class="export-confirmation-card">
+      <label for="verify-checkbox" class="export-confirmation-label">
+        <input type="checkbox" id="verify-checkbox" onchange="toggleDownload()">
+        <span><strong>I've checked this label against my supplier's current SDS for the fragrance load used.</strong> I'm responsible for the product and for checking the label before I print and sell it.</span>
       </label>
+      <details class="export-role-info"><summary>What CLPeasy does ⓘ</summary><p>CLPeasy helps extract, organise, check and format the information you provide. It does not independently classify your product.</p></details>
     </div>
     <!-- Visible on Step 5 (unlike #label-warn, which lives in Step 3's hidden panel) so the
          download-block reason is shown right next to the disabled buttons it explains. -->
@@ -1403,34 +1424,29 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div id="business-details-export-note" class="field-alert field-alert-warn" role="status" style="display:none;margin-bottom:16px;font-size:13px;"></div>
     <div class="hazard-review-notice field-alert field-alert-warn" role="alert" style="display:none;margin-bottom:16px;font-size:13px;"></div>
 
+      <div id="omission-download-summary" role="status" style="display:none;margin-bottom:12px;font-size:13px;"></div>
+      <div class="download-lock-note" role="status" aria-live="polite" style="display:none;"></div>
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
       <button type="button" id="btn-view-label" class="btn-next" onclick="viewReviewLabel()" aria-controls="preview-panel-el preview-sheet" style="width:100%;padding:14px;font-size:16px;margin-top:10px;">View label ↗</button>
-      <!-- Stage 2: the two current printing routes (single label: PDF; several on A4: Print Sheet Composer). -->
       <div class="dl-format-help" id="dl-format-help">
-        <p><strong>Printing your labels?</strong> For a single label, use <strong>PDF</strong>. For several labels on A4, use the <strong>Print Sheet Composer</strong>. Always print at <strong>Actual Size / 100%</strong>.</p>
-        <ul>
-          <li><strong>PDF</strong> is an individual label file at the label's exact size.</li>
-          <li><strong>SVG</strong> keeps the label's size in millimetres, for design and cutting-machine software.</li>
-          <li><strong>PNG</strong> is a high-resolution image. The app you open it in may choose its own print size.</li>
-        </ul>
+        <p><strong>Print at Actual size / 100%.</strong></p>
+        <details class="export-file-types"><summary>Which file type?</summary><div class="export-file-box">
+          <p><strong>PDF:</strong> one label at its exact size</p>
+          <p><strong>SVG:</strong> for design or cutting-machine software</p>
+          <p><strong>PNG:</strong> image only, so print size may vary</p>
+        </div></details>
       </div>
       <div id="dl-print-guidance" class="field-alert field-alert-success dl-print-guidance" role="status" aria-live="polite" hidden></div>
-      <button id="btn-save" onclick="saveLabel()" style="background:var(--off);color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">💾 Save to my label library</button>
+      <div class="export-secondary-actions">
+        <button type="button" id="btn-save" onclick="saveLabel()" class="export-save" style="opacity:0.4;pointer-events:none;">💾 Save to library</button>
+        <div class="export-composer-action">
+          <a id="print-sheet-link" href="print.html" target="_blank" rel="noopener" style="display:none;" class="export-composer">🖨 Print Sheet Composer</a>
+          <button type="button" id="composer-save-first" class="export-composer" disabled title="Save this label to your library first">🖨 Print Sheet Composer</button>
+          <small>Several labels on A4</small>
+        </div>
+      </div>
       <div id="save-status" class="field-alert field-alert-success dl-print-guidance" role="status" aria-live="polite" hidden></div>
 
-
-    <!-- PRINT SHEET COMPOSER LINK -->
-    <a id="print-sheet-link" href="print.html" target="_blank" rel="noopener" style="display:none;align-items:center;gap:14px;background:linear-gradient(135deg,#F0FDF4,#ECFDF5);border:1.5px solid var(--teal);border-radius:12px;padding:14px 16px;text-decoration:none;margin-top:14px;transition:all .2s;" onmouseover="this.style.background='linear-gradient(135deg,#d6eef4,#D1FAE5)'" onmouseout="this.style.background='linear-gradient(135deg,#F0FDF4,#ECFDF5)'">
-      <div style="width:40px;height:40px;border-radius:10px;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🖨</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:14px;font-weight:700;color:var(--teal-dark);">🖨 Print Sheet Composer</div>
-        <div style="font-size:12px;color:var(--teal);margin-top:2px;">You've saved labels — arrange them on an A4 sheet for home printing or a print company.</div>
-        
-      </div>
-      <div style="font-size:18px;color:var(--teal);flex-shrink:0;">→</div>
-    </a>
-
-    
     <div style="margin-top:20px;display:flex;justify-content:center;">
       <button onclick="prevStep()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;padding:8px;">← Edit label</button>
       <button onclick="startOver()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;padding:8px;">↺ New label</button>
@@ -1510,7 +1526,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 <!-- MOBILE PREVIEW SHEET -->
 <div class="preview-sheet" id="preview-sheet" onclick="closeSheet(event)">
-  <div class="preview-sheet-inner">
+  <div class="preview-sheet-inner" role="dialog" aria-modal="true" aria-label="Label review" tabindex="-1">
     <div class="preview-sheet-handle"></div>
     <div class="preview-sheet-label" id="sheet-label-container"></div>
     <div style="font-size:12px;color:rgba(255,255,255,0.4);text-align:center;margin-bottom:4px;" id="sheet-size-info"></div>
@@ -1521,6 +1537,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div></details>
     <button type="button" onclick="showSheetSizeEditor()" style="color:white;background:none;border:1px solid white;border-radius:8px;padding:10px;min-height:44px;margin:8px 0;">Adjust shape &amp; size</button><div id="sheet-fit-advice" role="status" aria-live="polite" style="color:white;font-size:14px;"></div><div id="sheet-size-editor" style="color:white;"></div>
     <div id="sheet-finetune-slot"></div>
+    <div class="download-lock-note" role="status" aria-live="polite" style="display:none;"></div>
+    <button type="button" id="sheet-review-confirmation-link" onclick="closeSheet();document.getElementById('verify-checkbox').scrollIntoView({block:'center'});document.getElementById('verify-checkbox').focus();" style="display:none;min-height:44px;">Go to final review confirmation</button>
     <div class="preview-sheet-actions">
       <button class="btn-dl" id="btn-png-sheet" onclick="downloadPNG();closeSheet()">⬇ PNG (single)</button>
       <button class="btn-dl" id="btn-pdf-sheet" onclick="printToPDF()">▣ PDF</button>
@@ -1547,6 +1565,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
      is scoped in its own IIFE so it cannot collide with this page's own
      top-level names. -->
 <script src="label-render.js"></script>
+<script src="optional-label-items.js"></script>
 <script src="sds-doc-check.js"></script>
 
 <!-- Checkpoint B (connected print-workflow task, 1 Sep 2026): shared
@@ -1674,7 +1693,7 @@ const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product contai
 // only P_LIB definitions in the app; this is not a third copy.
 {code:'P280',desc:'Wear the applicable protective equipment (select which items apply when adding this code)'}];
 // ── STATE ─────────────────────────────────────────────────────
-const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',sdsSignal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,hazardFSOverride:null,scentFSOverride:null,bizNameFSOverride:null,hazardYOffset:null,typeFSOverride:null,sigFSOverride:null,
+const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',sdsSignal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,showOnLabel:{},omissionConfirmations:{},bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,hazardFSOverride:null,scentFSOverride:null,bizNameFSOverride:null,hazardYOffset:null,typeFSOverride:null,sigFSOverride:null,
   // P280's own selected protection items (see openP280Modal()/buildP280Wording
   // in label-render.js). p280Items: subset of LabelRenderer.P280_ITEMS keys;
   // p280Other: optional free-text extra item. Empty = no valid selection yet.
@@ -3100,6 +3119,7 @@ async function saveLabel(){
     hStatements:S.hStatements,pictograms:[...S.pictograms],sensitisers:[...S.sensitisers],bizName:S.bizName,bizAddress:S.bizAddress,
     bizPhone:S.bizPhone,bizWebsite:S.bizWebsite,netWeight:S.netWeight,fragLoad:S.fragLoad,burnTime:S.burnTime,batchNum:S.batchNum,
     supplier:S.supplier||'',hideEN15494:!!S.hideEN15494,
+    showOnLabel:JSON.parse(JSON.stringify(S.showOnLabel||{})),omissionConfirmations:JSON.parse(JSON.stringify(S.omissionConfirmations||{})),
     hazardFromExtraction:!!S.hazardFromExtraction,
     sdsDoc:S.sdsDoc?Object.assign({kind:S.sdsDoc.kind||'',pct:S.sdsDoc.pct||'',base:S.sdsDoc.base||''},
       ...['coverage','rangeFrom','rangeTo','where','rangeStated','docVersion','supplier','cdate','cref'].filter(k=>S.sdsDoc[k]!==undefined).map(k=>({[k]:S.sdsDoc[k]})),
@@ -3180,7 +3200,7 @@ async function saveLabel(){
       btn.style.background=_draft?'#FFFBEB':'#ECFDF5';btn.style.borderColor=_draft?'#FDE68A':'var(--teal)';
     }
     showSaveStatus();
-    setTimeout(()=>{if(btn){btn.textContent='💾 Save to my label library';btn.style.background='';btn.style.borderColor='';}},2000);
+    setTimeout(()=>{if(btn){btn.textContent='💾 Save to library';btn.style.background='';btn.style.borderColor='';}},2000);
   }catch(err){
     console.log('saveLabel mutate() failed:',err);
     showSaveErrorToast(err);
@@ -3219,6 +3239,7 @@ function loadLabelRecord(e){
   // product type and fragrance load.
   _snapshotHazardSource({name:e.scentName,type:e.productType,load:e.fragLoad});
   S.bizName=e.bizName||'';S.bizAddress=e.bizAddress||'';S.bizPhone=e.bizPhone||'';
+  S.showOnLabel=Object.assign({},e.showOnLabel||{});S.omissionConfirmations=JSON.parse(JSON.stringify(e.omissionConfirmations||{}));S._omissionNeedsConfirm={};
   S.bizWebsite=e.bizWebsite||'';S.netWeight=e.netWeight||'';S.fragLoad=e.fragLoad||'';S.burnTime=e.burnTime||'';S.batchNum=e.batchNum||'';S.sdsDoc=e.sdsDoc||null;
   S.supplier=e.supplier||'';S.hideEN15494=!!e.hideEN15494;
   if(e.textColour)S.textColour=e.textColour;
@@ -3417,6 +3438,8 @@ function renderSaved(){
     psLink.style.display=canPrintCurrent?'flex':'none';
     if(canPrintCurrent) psLink.href=buildPrintSheetUrl(editingLabelId);
   }
+  const composerSaveFirst=document.getElementById('composer-save-first');
+  if(composerSaveFirst)composerSaveFirst.hidden=canPrintCurrent;
   if(psLinkPreview){
     psLinkPreview.style.display=(canPrintCurrent&&S.step===5)?'flex':'none';
     if(canPrintCurrent) psLinkPreview.href=buildPrintSheetUrl(editingLabelId);
@@ -3743,9 +3766,19 @@ function toggleDownload(){
     const btn=document.getElementById(id);
     if(!btn)return;
     const ok=id==='btn-save'?saveAllowed:allowed;
+    btn.disabled=!ok;
+    btn.setAttribute('aria-disabled',String(!ok));
     btn.style.opacity=ok?'1':'0.4';
     btn.style.pointerEvents=ok?'auto':'none';
   });
+  const reason=allowed?'':_businessDetailsBlockedMessage()||_requiredLabelContentMessage()||
+    (_hazardReviewRequired()?'Review the changed product information in Step 2 before downloading.':'')||
+    (window._labelBlockDownload?'This label does not pass the current content and size checks. Resolve the warning above or choose a tested larger size.':'')||
+    SdsDocCheck.exportBlockMessage(_sdsDocRecord())||
+    (!document.getElementById('verify-checkbox')?.checked?'Tick the final review confirmation to enable downloads.':'Downloads are unavailable. Review the label information before trying again.');
+  document.querySelectorAll('.download-lock-note').forEach(note=>{note.style.display=reason?'block':'none';note.textContent=reason;});
+  const reviewLink=document.getElementById('sheet-review-confirmation-link');
+  if(reviewLink)reviewLink.style.display=approvedBuilderStep===5&&!document.getElementById('verify-checkbox')?.checked?'block':'none';
   const _sdsNote=document.getElementById('sds-doc-export-note');
   if(_sdsNote){
     const m=SdsDocCheck.exportBlockMessage(_sdsDocRecord());
@@ -4461,6 +4494,8 @@ function renderBuilderAccordion(){
         // appearance/dimensions). Desktop CSS places these same siblings in
         // two columns without changing their DOM order.
         if(labelAppearance)body.appendChild(labelAppearance);
+      }
+      if(n===1||n===4){
         const labelFitWarning=staging.querySelector('#label-warn-stage4');
         if(labelFitWarning)body.appendChild(labelFitWarning);
       }
@@ -4905,7 +4940,7 @@ function restoreBurnTime(value){
 }
 function inlineSizeEditor(){
   const d=getDims();
-  return '<div class="inline-size-editor" style="margin:12px 0;padding:12px;border:1px solid currentColor;border-radius:10px;"><strong>Adjust shape and size here</strong><label style="display:block;margin-top:8px;">Shape<select data-size-shape onchange="applyInlineShape(this)" style="display:block;padding:8px;min-height:44px;background:white;color:#111;">'+['circle','rectangle','square'].map(shape=>'<option value="'+shape+'"'+(S.shape===shape?' selected':'')+'>'+shape.charAt(0).toUpperCase()+shape.slice(1)+'</option>').join('')+'</select></label><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;"><label>'+ (S.shape==='rectangle'?'Width':'Size')+' (mm)<input data-size-width type="number" inputmode="numeric" min="10" max="150" step="1" value="'+d.mmW+'" style="display:block;width:100px;padding:8px;color:#111;background:white;"></label>'+(S.shape==='rectangle'?'<label>Height (mm)<input data-size-height type="number" inputmode="numeric" min="10" max="150" step="1" value="'+d.mmH+'" style="display:block;width:100px;padding:8px;color:#111;background:white;"></label>':'')+'<button type="button" onclick="applyInlineSize(this)" style="padding:10px;border-radius:8px;background:white;color:#111;border:1px solid #4c9bb0;min-height:44px;">Apply size</button></div><small>Your entered information is kept. The preview will check the new size.</small></div>';
+  return '<div class="inline-size-editor" style="margin:12px 0;padding:12px;border:1px solid currentColor;border-radius:10px;"><strong>Choose another shape or size</strong><p>The recommendation above is for your current shape and content. You can try a different shape or size here; every choice is checked again against the supported size limits.</p><label style="display:block;margin-top:8px;">Shape<select data-size-shape onchange="applyInlineShape(this)" style="display:block;padding:8px;min-height:44px;background:white;color:#111;">'+['circle','rectangle','square'].map(shape=>'<option value="'+shape+'"'+(S.shape===shape?' selected':'')+'>'+shape.charAt(0).toUpperCase()+shape.slice(1)+'</option>').join('')+'</select></label><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;"><label>'+ (S.shape==='rectangle'?'Width':'Size')+' (mm)<input data-size-width type="number" inputmode="numeric" min="10" max="150" step="1" value="'+d.mmW+'" style="display:block;width:100px;padding:8px;color:#111;background:white;"></label>'+(S.shape==='rectangle'?'<label>Height (mm)<input data-size-height type="number" inputmode="numeric" min="10" max="150" step="1" value="'+d.mmH+'" style="display:block;width:100px;padding:8px;color:#111;background:white;"></label>':'')+'<button type="button" onclick="applyInlineSize(this)" style="padding:10px;border-radius:8px;background:white;color:#111;border:1px solid #4c9bb0;min-height:44px;">Apply size</button></div><small>Your entered information is kept. Nothing is removed automatically.</small></div>';
 }
 function applyInlineShape(select){
   const shape=select.value;
@@ -5087,6 +5122,7 @@ function buildSVG(forExport=false){
     sensitisers:S.sensitisers, pictograms:S.pictograms,
     textColour:S.textColour, showBorder:S.showBorder,
     hideEN15494:S.hideEN15494, labelLang:S.labelLang,
+    showOnLabel:S.showOnLabel,omissionConfirmations:S.omissionConfirmations,
     p280Items:S.p280Items, p280Other:S.p280Other,
   };
   // Exposed so updateLabel()'s fail-closed block message can look up
@@ -5249,6 +5285,7 @@ function nudgeBizNameFS(delta){
 function resetBizNameFS(){S.bizNameFSOverride=null;updateLabel();}
 function updateLabel(){
   readForm();
+  if(typeof reconcileOptionalItems==='function')reconcileOptionalItems();
   // Shared GB-CLP resolver: Smart Paste and manual chip changes must never
   // drift into different signal-word rules.
   const _autoH=(S.hStatements||'').split(',').map(h=>h.trim()).filter(Boolean);
@@ -5309,6 +5346,9 @@ function updateLabel(){
     ? LabelRenderer.findSmallestFittingSize(window._lastLabelData, {instanceId:'builder-main'})
     : null;
   window._suggestedLabelSize=_sizeRec;
+  window._omissionOptions=(!_isCustomSizeTooSmall&&_sizeHelpsIfBlocked)
+    &&typeof LabelOptionalItems!=='undefined'? LabelOptionalItems.findOptions(window._lastLabelData,window._ftLastOpts,_sizeRec) : [];
+  if(typeof refreshOptionalItemBadges==='function')refreshOptionalItemBadges();
   // Genuine-size fix (2026-09-07): findSmallestFittingSize() now tries the
   // two real size-card presets (52mm/63mm) before any custom size, and
   // reports which kind of size it found (source/presetMm) so this message
@@ -5363,24 +5403,26 @@ function updateLabel(){
     ? 'Your '+_mandatoryTextTooSmallLabel+' cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, use the size controls below to select a larger label size, or shorten the affected text.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
     : 'The required hazard and precautionary information cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, use the size controls below to select a larger label size. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>';
 
-  const _fitAdvice = '<strong>Your label needs more space.</strong><p>Choose a larger size to keep all required information clearly readable.</p>'+
-    (_sizeRec ? '<p>Smallest tested size for your current content: <strong>'+_sizeRecDims+'</strong> ('+_sizeRec.shape+').</p><button type="button" onclick="applySuggestedLabelSize()" style="padding:10px;min-height:44px;border:1px solid #4c9bb0;border-radius:8px;background:white;color:#111;">Use '+_sizeRecDims+'</button>'
-    : '<p>No supported size tested up to 150mm fits this content. Try a different shape.</p>')+
-    '<p style="margin-top:8px;">We will check the fit again when you add more details.</p>'+
-    '<details style="margin-top:8px;"><summary>Label too large for your packaging?</summary><p>An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.</p></details>';
+  const _compactRecDims=_sizeRec?(_sizeRec.mmW===_sizeRec.mmH?_sizeRec.mmW+' mm':_sizeRec.mmW+' × '+_sizeRec.mmH+' mm'):'';
+  const _fitAdvice = '<div class="fit-heading"><span aria-hidden="true">●</span> '+(_sizeRec?'Needs '+_compactRecDims+' to fit everything clearly <small>('+escapeBuilderText(_sizeRec.shape)+')</small>':'Try another shape or size')+'</div><div class="fit-actions">'+
+    (_sizeRec?'<button type="button" class="fit-primary" onclick="applySuggestedLabelSize()">Use '+_compactRecDims+'</button>':'<p class="fit-helper">No tested size up to 150 mm fits.</p>')+
+    '<details class="fit-size-picker"><summary>Other shape or size ▾</summary>'+inlineSizeEditor()+'</details></div>'+
+    (typeof optionalItemAdviceHTML==='function'?optionalItemAdviceHTML():'');
   const pasteFit=document.getElementById('smart-paste-size-warning');
   if(pasteFit){
     const showFit=!!S.hazardFromExtraction&&!!window._labelBlockDownload&&!_codeBlockParts.length;
     pasteFit.style.display=showFit?'block':'none';
-    pasteFit.innerHTML=showFit?_fitAdvice+inlineSizeEditor():'';
+    pasteFit.classList.toggle('fit-advice-card',showFit);
+    pasteFit.innerHTML=showFit?_fitAdvice:'';
   }
   const sheetFit=document.getElementById('sheet-fit-advice');
-  if(sheetFit){sheetFit.innerHTML=window._labelBlockDownload&&!_codeBlockParts.length?_fitAdvice:'';}
+  if(sheetFit){sheetFit.classList.toggle('fit-advice-card',!!window._labelBlockDownload&&!_codeBlockParts.length);sheetFit.innerHTML=window._labelBlockDownload&&!_codeBlockParts.length?_fitAdvice:'';}
   [document.getElementById('label-warn-stage4'), document.getElementById('label-warn-step5')].forEach(_labelWarnEl=>{
     if(!_labelWarnEl)return;
     if(window._labelBlockDownload){
       _labelWarnEl.style.display='block';
-      _labelWarnEl.innerHTML = _codeBlockParts.length?'<strong>'+_blockHeading+'</strong><br><br>'+_blockBody:_fitAdvice+inlineSizeEditor();
+      _labelWarnEl.classList.toggle('fit-advice-card',!_codeBlockParts.length);
+      _labelWarnEl.innerHTML = _codeBlockParts.length?'<strong>'+_blockHeading+'</strong><br><br>'+_blockBody:_fitAdvice;
     } else {
       _labelWarnEl.style.display='none';
     }
@@ -5814,23 +5856,22 @@ function wizClearChat(){
 }
 function viewReviewLabel(){
   updateLabel();
-  if(window.matchMedia('(max-width:860px)').matches){openPreviewSheet();return;}
-  const preview=document.getElementById('preview-panel-el');
-  if(preview){preview.setAttribute('tabindex','-1');preview.scrollIntoView({behavior:'smooth',block:'center'});preview.focus({preventScroll:true});}
+  openPreviewSheet();
 }
 function syncFineTuneLocation(){
   const panel=document.getElementById('finetune-panel-el');if(!panel)return;
   const mobile=window.matchMedia&&window.matchMedia('(max-width:860px)').matches;
-  const inSheet=mobile&&document.getElementById('preview-sheet')?.classList.contains('open');
+  const inSheet=document.getElementById('preview-sheet')?.classList.contains('open');
   const target=document.getElementById(approvedBuilderStep===5?
     (inSheet?'sheet-finetune-slot':'preview-canvas-area'):'builder-source-staging');
   if(target&&panel.parentElement!==target)target.appendChild(panel);
 }
-function openPreviewSheet(){const sheet=document.getElementById('preview-sheet');if(sheet){sheet.classList.add('open');document.body.style.overflow='hidden';syncFineTuneLocation();}}
+function openPreviewSheet(){const sheet=document.getElementById('preview-sheet');if(sheet){sheet.dataset.openedOnMobile=String(window.matchMedia('(max-width:860px)').matches);sheet.classList.add('open');document.body.style.overflow='hidden';syncFineTuneLocation();sheet.querySelector('[role="dialog"]')?.focus();}}
 function closeSheet(e){if(!e||e.target===document.getElementById('preview-sheet')){document.getElementById('preview-sheet').classList.remove('open');document.body.style.overflow='';syncFineTuneLocation();}}
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.getElementById('preview-sheet')?.classList.contains('open'))closeSheet();});
 function editDetailsFromSheet(step){closeSheet();setApprovedBuilderStep(step);}
 window.addEventListener('resize',()=>{
-  if(window.matchMedia&&!window.matchMedia('(max-width:860px)').matches)closeSheet();
+  if(document.getElementById('preview-sheet')?.dataset.openedOnMobile==='true'&&!window.matchMedia('(max-width:860px)').matches)closeSheet();
   else syncFineTuneLocation();
 });
 
