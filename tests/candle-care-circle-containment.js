@@ -10,7 +10,7 @@ w.eval(fs.readFileSync('label-render.js','utf8'));
 const R=w.LabelRenderer;
 const base={shape:'circle',size:'custom',scentName:'Mint',productType:'Scented Candle',bizName:'Test Maker',bizAddress:'1 Test Lane, EX1 2AB',bizPhone:'01632 960000',hStatements:'H317',pStatements:'P102,P501',pictograms:['exclamation'],sensitisers:[]};
 let renders=0,passing=0,checked=0,edgeOnly=0,minClearance=Infinity;
-for(let mm=52;mm<=150;mm++)for(const footer of [{},{netWeight:'180g',burnTime:'40 hrs',batchNum:'B2310'}])for(const opts of [{},{forExport:true},{incompletePreview:true}]){
+for(let mm=52;mm<=150;mm++)for(const footer of [{},{netWeight:'180g',burnTime:'40 hrs',batchNum:'B2310'}])for(const opts of [{},{forExport:true},{livePreview:true}]){
  const d={...base,customW:mm,customH:mm,...footer};
  const result=R.renderLabel(d,{instanceId:'care-containment',...opts});renders++;
  const row=result.svg.split('<!-- EN 15494 CANDLE SAFETY PICTOGRAMS -->')[1].split('<!-- WATERMARK -->')[0];
@@ -39,10 +39,10 @@ for(let mm=52;mm<=150;mm++)for(const footer of [{},{netWeight:'180g',burnTime:'4
 // Before final review only the presentation changes; fit and export guards do not.
 const small={...base,customW:52,customH:52,netWeight:'180g'};
 const final=R.renderLabel(small,{instanceId:'care-final'});
-const draft=R.renderLabel(small,{instanceId:'care-draft',incompletePreview:true});
+const draft=R.renderLabel(small,{instanceId:'care-draft',livePreview:true});
 assert(!final.fits);assert.equal(draft.fits,final.fits);assert.deepStrictEqual(draft.warnings,final.warnings);
-assert(draft.svg.includes('Preview in progress'));assert(!draft.svg.includes('FULL CONTENT DOES NOT FIT'));
-const exported=R.renderLabel(small,{instanceId:'care-export',incompletePreview:true,forExport:true});
+assert(!draft.svg.includes('clp-fit-block'));assert(draft.svg.includes('Mint'),'live preview retains the actual label');
+const exported=R.renderLabel(small,{instanceId:'care-export',livePreview:true,forExport:true});
 assert(exported.svg.includes('FULL CONTENT DOES NOT FIT'));assert(!exported.svg.includes('Preview in progress'));
 assert(passing>0&&passing<renders);
 assert(edgeOnly>0,'matrix exercises care-clearance-only blocking without resizing GHS/text');

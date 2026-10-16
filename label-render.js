@@ -490,9 +490,26 @@ const BCF_IMG={
 // ============================================================
 
 const _cvs=document.createElement('canvas'),_ctx=_cvs.getContext('2d');
+// Reuse identical canvas measurements only during one synchronous operation.
+// The cache is discarded before returning, so font loads or later edits cannot
+// reuse stale metrics. Nested pictogram searches share this bounded cache; each
+// candidate label size starts fresh instead of exhausting one search-wide cache.
+let _measurementCache=null;
+function withMeasurementCache(fn){
+  if(_measurementCache)return fn();
+  _measurementCache=new Map();
+  try{return fn();}finally{_measurementCache=null;}
+}
+function canvasMeasurement(txt,font){
+  const key=font+'\0'+String(txt);
+  if(_measurementCache&&_measurementCache.has(key))return _measurementCache.get(key);
+  _ctx.font=font;
+  const result=_ctx.measureText(txt);
+  if(_measurementCache&&_measurementCache.size<25000)_measurementCache.set(key,result);
+  return result;
+}
 function measureText(txt,sizePx,bold,serif){
-  _ctx.font=`${bold?'700':'400'} ${sizePx}px ${serif?'serif':'sans-serif'}`;
-  return _ctx.measureText(txt).width;
+  return canvasMeasurement(txt,`${bold?'700':'400'} ${sizePx}px ${serif?'serif':'sans-serif'}`).width;
 }
 // Ink bounds of one character (relative to its own start on the baseline):
 // left/right edge, height above and depth below the baseline. Uses the
@@ -504,13 +521,11 @@ function measureText(txt,sizePx,bold,serif){
 // make results imprecise and dependent on the device's pixel ratio.
 const _INK_REF_PX=1000;
 function measureInk(ch,sizePx,bold,serif,fallbackDesc){
-  _ctx.font=`${bold?'700':'400'} ${_INK_REF_PX}px ${serif?'serif':'sans-serif'}`;
-  const m=_ctx.measureText(ch), k=sizePx/_INK_REF_PX;
+  const m=canvasMeasurement(ch,`${bold?'700':'400'} ${_INK_REF_PX}px ${serif?'serif':'sans-serif'}`), k=sizePx/_INK_REF_PX;
   if(m && typeof m.actualBoundingBoxAscent==='number' && isFinite(m.actualBoundingBoxAscent)){
     return {l:-(m.actualBoundingBoxLeft||0)*k, r:(m.actualBoundingBoxRight||0)*k, asc:m.actualBoundingBoxAscent*k, desc:(m.actualBoundingBoxDescent||0)*k, w:m.width*k};
   }
-  _ctx.font=`${bold?'700':'400'} ${sizePx}px ${serif?'serif':'sans-serif'}`;
-  const w=_ctx.measureText(ch).width||0;
+  const w=canvasMeasurement(ch,`${bold?'700':'400'} ${sizePx}px ${serif?'serif':'sans-serif'}`).width||0;
   return {l:0, r:w, asc:sizePx*0.75, desc:fallbackDesc, w};
 }
 
@@ -868,14 +883,11 @@ function choosePictoMmAndRender(rawData, opts){
 // content-does-not-fit branch, which is BYTE-IDENTICAL to the overlay this
 // replaced, so genuine layout overflow with only recognised, GB-supported
 // codes is completely unaffected by this change.
-function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, genericCodes, invalidPictograms, incompletePreview=false){
+function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, genericCodes, invalidPictograms){
   unsupportedCodes = unsupportedCodes||[]; genericCodes = genericCodes||[]; invalidPictograms = invalidPictograms||[];
   const hasIssue = unsupportedCodes.length>0 || genericCodes.length>0 || invalidPictograms.length>0;
 
   if(!hasIssue){
-    if(incompletePreview){
-      return `<g class="clp-fit-block clp-draft-preview"><rect x="0" y="0" width="${pw}" height="${ph}" fill="#fff"/><text x="${cx}" y="${(ph*.46).toFixed(1)}" text-anchor="middle" font-family="sans-serif" font-size="${Math.max(8,pw*.035).toFixed(1)}" fill="#666">Preview in progress</text><text x="${cx}" y="${(ph*.55).toFixed(1)}" text-anchor="middle" font-family="sans-serif" font-size="${Math.max(6,pw*.025).toFixed(1)}" fill="#666">Complete all steps to check fit</text></g>`;
-    }
     // Genuine physical overflow with only recognised/supported codes --
     // byte-identical to the original single-line overlay this replaced.
     // Correction 2 only changes the code-related wording below; this
@@ -980,6 +992,9 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
 }
 
 function renderLabel(rawData, opts){
+  return withMeasurementCache(()=>renderLabelMeasured(rawData,opts));
+}
+function renderLabelMeasured(rawData, opts){
   opts = opts || {};
   if(!opts.instanceId) throw new Error('renderLabel: opts.instanceId is required (must be unique per rendered label in a document)');
   // A top-level call (no _pictoMmOverride yet) always resolves the physical
@@ -2160,7 +2175,11 @@ function renderLabel(rawData, opts){
   // recognised/supported codes is unaffected by this change. Both code
   // groups are passed through in full (not just the leading-reason one),
   // so a mixed unsupported+generic input shows both in the overlay too.
-  const overflowOverlay=_contentBlocked?buildBlockedOverlaySVG(pw,ph,cx,cy,chordW,_unsupportedCodesFound,_genericUnrecognizedFound,_invalidPictograms,!!opts.incompletePreview&&!opts.forExport):'';
+  // Builder previews stay visible while being edited, even when layout does
+  // not fit. This presentation option never changes fits/blocked or exports.
+  const _showBlockOverlay = _contentBlocked && !(opts.livePreview && !opts.forExport
+    && !_unsupportedCodesFound.length && !_genericUnrecognizedFound.length && !_invalidPictograms.length);
+  const overflowOverlay=_showBlockOverlay?buildBlockedOverlaySVG(pw,ph,cx,cy,chordW,_unsupportedCodesFound,_genericUnrecognizedFound,_invalidPictograms):'';
   // Y positions already set per-slot — no global recompute needed
   const footerRendered = footerElems.map(elem=>{
     if(elem.slotY > sBot - 1) return '';
@@ -2450,9 +2469,8 @@ function renderLabel(rawData, opts){
 // that fits, or null if nothing up to the renderer's own 150mm ceiling (see
 // getLabelDims()) fits -- meaning the content itself needs to be reduced, or
 // supplementary labelling considered, not just a larger size.
-function findSmallestFittingSize(rawData, opts){
+function fittingSizeCandidates(rawData, opts){
   opts=opts||{};
-  const cleanOpts={instanceId:opts.instanceId,bgColour:opts.bgColour};
   const shape=rawData.shape,cur=getLabelDims(rawData,opts),candidates=[];
   // Test presets AND enterable custom sizes in ascending area order.
   // Rectangle custom candidates preserve the current aspect ratio; this
@@ -2476,11 +2494,36 @@ function findSmallestFittingSize(rawData, opts){
     }
   }
   candidates.sort((a,b)=>a.mmW*a.mmH-b.mmW*b.mmH||Number(a.source==='custom')-Number(b.source==='custom')||a.mmW-b.mmW);
+  return candidates;
+}
+function findSmallestFittingSize(rawData, opts){
+  opts=opts||{};
+  const cleanOpts={instanceId:opts.instanceId,bgColour:opts.bgColour};
+  const candidates=fittingSizeCandidates(rawData,opts);
   const seen=new Set();
   for(const rec of candidates){
     const key=rec.mmW+'x'+rec.mmH;
     if(seen.has(key))continue;
     seen.add(key);
+    const candidate=Object.assign({},rawData,{size:rec.source==='preset'?rec.presetMm:'custom',customW:rec.mmW,customH:rec.mmH});
+    if(renderLabel(candidate,cleanOpts).fits)return rec;
+  }
+  return null;
+}
+
+// Same candidates, order and full fit check as the synchronous API. Yield
+// between candidates so Builder can paint and accept edits. A superseded
+// request stops before rendering its next candidate.
+async function findSmallestFittingSizeAsync(rawData, opts, isCurrent=()=>true){
+  opts=opts||{};
+  const cleanOpts={instanceId:opts.instanceId,bgColour:opts.bgColour};
+  const seen=new Set();
+  for(const rec of fittingSizeCandidates(rawData,opts)){
+    const key=rec.mmW+'x'+rec.mmH;
+    if(seen.has(key))continue;
+    seen.add(key);
+    await new Promise(resolve=>setTimeout(resolve,0));
+    if(!isCurrent())return null;
     const candidate=Object.assign({},rawData,{size:rec.source==='preset'?rec.presetMm:'custom',customW:rec.mmW,customH:rec.mmH});
     if(renderLabel(candidate,cleanOpts).fits)return rec;
   }
@@ -2724,7 +2767,7 @@ function getMissingBusinessDetails(data){
 
   const LabelRenderer = {
     getMissingBusinessDetails, checkRequiredContent, isValidPictogramKey, describeInvalidPictograms,
-    renderLabel, normalizeLabel, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, GB_UNSUPPORTED_CODES, H_SUFFIXED_VERIFIED, extractHazardCodesFromText, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
+    renderLabel, normalizeLabel, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, GB_UNSUPPORTED_CODES, H_SUFFIXED_VERIFIED, extractHazardCodesFromText, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize, findSmallestFittingSizeAsync,
     // GHS pictogram geometry -- exposed so tests/consumers measuring
     // compliance never have to re-derive or hardcode the sqrt(2)
     // square<->bounding-box relationship themselves.

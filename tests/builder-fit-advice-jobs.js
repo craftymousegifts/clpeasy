@@ -1,0 +1,24 @@
+const fs=require('fs'),assert=require('assert'),{JSDOM}=require('jsdom');
+const w=new JSDOM('',{runScripts:'outside-only'}).window;
+const source=fs.readFileSync('builder.html','utf8');
+const jobs=[],fonts=new w.EventTarget();Object.defineProperty(w.document,'fonts',{value:fonts});
+let updates=0,omissions=0;
+w.updateLabel=()=>updates++;
+w.LabelRenderer={findSmallestFittingSizeAsync:(data,opts,current)=>new Promise(resolve=>jobs.push({data,current,resolve}))};
+w.LabelOptionalItems={findOptions:()=>{omissions++;return ['current-option']}};
+w.eval(source.slice(source.indexOf('let _fitAdviceJob=null'),source.indexOf('function updateLabel(){')));
+const call=(data)=>w.currentFitAdvice(true,data,{instanceId:'qa'},true);
+const flush=()=>new Promise(r=>setImmediate(r));
+(async()=>{try{
+ const first=call({netWeight:'180g'});assert(first.pending);
+ assert.strictEqual(call({netWeight:'180g'}),first,'identical updates reuse search');
+ const second=call({netWeight:'200g'});assert(!jobs[0].current(),'edit cancels old search');
+ jobs[0].resolve({mmW:55});await flush();assert.equal(updates,0);assert.equal(omissions,0,'old results cannot create omission choices');
+ jobs[1].resolve({mmW:60});await flush();assert.equal(updates,1);assert.equal(second.size.mmW,60);assert.equal(omissions,1);
+ assert.strictEqual(call({netWeight:'200g'}),second,'settled result reused');
+ fonts.dispatchEvent(new w.Event('loadingdone'));assert(!jobs[1].current(),'loaded fonts invalidate reference');
+ const fontJob=call({netWeight:'200g'});assert.notStrictEqual(fontJob,second);assert(fontJob.pending);
+ w.currentFitAdvice(false,{},null,false);assert(!jobs[2].current(),'leaving final review cancels pending job');
+ jobs[2].resolve({mmW:90});await flush();assert.equal(updates,2,'canceled font search cannot update UI');
+ console.log('PASS Builder advice jobs: deduplication, edit/step cancellation, stale-result rejection and font invalidation');
+ }catch(e){console.error(e);process.exitCode=1}finally{w.close()}})();

@@ -5132,7 +5132,7 @@ function buildSVG(forExport=false){
   window._lastLabelData=data;
   const opts={
     instanceId:'builder-main', forExport,
-    incompletePreview:!forExport && approvedBuilderStep<5,
+    livePreview:!forExport,
     bgColour:document.getElementById('label-bg-colour')?.value,
     hazardFSOverride:S.hazardFSOverride, hazardYOffset:S.hazardYOffset,
     scentFSOverride:S.scentFSOverride, bizNameFSOverride:S.bizNameFSOverride,
@@ -5286,6 +5286,31 @@ function nudgeBizNameFS(delta){
   updateLabel();
 }
 function resetBizNameFS(){S.bizNameFSOverride=null;updateLabel();}
+// One cancellable advice search for the current complete label. Keep rendering
+// synchronous previews, but yield between size candidates instead of blocking
+// the browser for the entire search. Identical updates reuse the last result.
+let _fitAdviceJob=null, _fitAdviceFontRevision=0;
+if(document.fonts&&document.fonts.addEventListener)document.fonts.addEventListener('loadingdone',()=>{
+  _fitAdviceFontRevision++;_fitAdviceJob=null;updateLabel();
+});
+function currentFitAdvice(enabled,data,opts,allowOmissions){
+  if(!enabled){_fitAdviceJob=null;return {pending:false,size:null,options:[]};}
+  const key=JSON.stringify([data,opts,allowOmissions,_fitAdviceFontRevision]);
+  if(_fitAdviceJob&&_fitAdviceJob.key===key)return _fitAdviceJob;
+  const job={key,pending:true,size:null,options:[]};_fitAdviceJob=job;
+  const snapshot=JSON.parse(JSON.stringify(data)), renderOpts=Object.assign({},opts);
+  const current=()=>_fitAdviceJob===job;
+  LabelRenderer.findSmallestFittingSizeAsync(snapshot,{instanceId:'builder-main'},current).then(size=>{
+    if(!current())return;
+    job.size=size;
+    job.options=allowOmissions&&typeof LabelOptionalItems!=='undefined'?LabelOptionalItems.findOptions(snapshot,renderOpts,size):[];
+    job.pending=false;updateLabel();
+  }).catch(error=>{
+    if(!current())return;
+    console.error('Label fit advice failed',error);job.pending=false;job.failed=true;updateLabel();
+  });
+  return job;
+}
 function updateLabel(){
   readForm();
   if(typeof reconcileOptionalItems==='function')reconcileOptionalItems();
@@ -5348,12 +5373,10 @@ function updateLabel(){
   // findSmallestFittingSize(). Read-only: this never changes S.size itself:
   // the maker always makes that choice, in Step 1, themselves.
   const _sizeHelpsIfBlocked = _showFinalFit && window._labelBlockDownload && !_hasUnrecognizedCodes;
-  const _sizeRec = (_sizeHelpsIfBlocked && window._lastLabelData && typeof LabelRenderer!=='undefined' && LabelRenderer.findSmallestFittingSize)
-    ? LabelRenderer.findSmallestFittingSize(window._lastLabelData, {instanceId:'builder-main'})
-    : null;
+  const _advice=currentFitAdvice(_sizeHelpsIfBlocked,window._lastLabelData,window._ftLastOpts,!_isCustomSizeTooSmall);
+  const _sizeRec=_advice.size;
   window._suggestedLabelSize=_sizeRec;
-  window._omissionOptions=(!_isCustomSizeTooSmall&&_sizeHelpsIfBlocked)
-    &&typeof LabelOptionalItems!=='undefined'? LabelOptionalItems.findOptions(window._lastLabelData,window._ftLastOpts,_sizeRec) : [];
+  window._omissionOptions=_advice.options;
   if(typeof refreshOptionalItemBadges==='function')refreshOptionalItemBadges();
   // Genuine-size fix (2026-09-07): findSmallestFittingSize() now tries the
   // two real size-card presets (52mm/63mm) before any custom size, and
@@ -5364,7 +5387,7 @@ function updateLabel(){
   const _sizeRecKind = _sizeRec ? (_sizeRec.source==='preset' ? ', the built-in '+_sizeRec.presetMm+'mm preset' : ', a custom size') : '';
   const _sizeRecMsg = _sizeRec
     ? ' The smallest size that fits this exact content is <strong>'+_sizeRecDims+'</strong> ('+_sizeRec.shape+_sizeRecKind+') — try that size using the controls below.'
-    : (_sizeHelpsIfBlocked ? ' CLPeasy checked every supported size up to 150mm and none of them fit this exact content, so consider a different label shape or suitable fold-out labelling; do not remove required safety information.' : '');
+    : (_sizeHelpsIfBlocked && !_advice.pending && !_advice.failed ? ' CLPeasy checked every supported size up to 150mm and none of them fit this exact content, so consider a different label shape or suitable fold-out labelling; do not remove required safety information.' : '');
   // Wording (updated 3 Aug 2026, round 2 — per Michaela's CLP-labelling-focused
   // request): name the CLP labelling requirement specifically rather than
   // "required information" generically.
@@ -5410,8 +5433,8 @@ function updateLabel(){
     : 'The required hazard and precautionary information cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, use the size controls below to select a larger label size. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>';
 
   const _compactRecDims=_sizeRec?(_sizeRec.mmW===_sizeRec.mmH?_sizeRec.mmW+' mm':_sizeRec.mmW+' × '+_sizeRec.mmH+' mm'):'';
-  const _fitAdvice = '<div class="fit-heading"><span aria-hidden="true">●</span> '+(_sizeRec?'Needs '+_compactRecDims+' to fit everything clearly <small>('+escapeBuilderText(_sizeRec.shape)+')</small>':'Try another shape or size')+'</div><div class="fit-actions">'+
-    (_sizeRec?'<button type="button" class="fit-primary" onclick="applySuggestedLabelSize()">Use '+_compactRecDims+'</button>':'<p class="fit-helper">No tested size up to 150 mm fits.</p>')+
+  const _fitAdvice = '<div class="fit-heading"><span aria-hidden="true">●</span> '+(_advice.pending?'Checking sizes…':_sizeRec?'Needs '+_compactRecDims+' to fit everything clearly <small>('+escapeBuilderText(_sizeRec.shape)+')</small>':'Try another shape or size')+'</div><div class="fit-actions">'+
+    (_sizeRec?'<button type="button" class="fit-primary" onclick="applySuggestedLabelSize()">Use '+_compactRecDims+'</button>':(_advice.pending||_advice.failed?'':'<p class="fit-helper">No tested size up to 150 mm fits.</p>'))+
     '<details class="fit-size-picker"><summary>Other shape or size ▾</summary>'+inlineSizeEditor()+'</details></div>'+
     (typeof optionalItemAdviceHTML==='function'?optionalItemAdviceHTML():'');
   const pasteFit=document.getElementById('smart-paste-size-warning');

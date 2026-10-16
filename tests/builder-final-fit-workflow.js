@@ -79,6 +79,7 @@ setTimeout(async () => {
   const set=(id,value)=>{document.getElementById(id).value=value;};
   const state=()=>window.eval('S');
   const step=()=>window.eval('approvedBuilderStep');
+  const settle=async()=>{for(let n=0;n<500&&window.eval('_fitAdviceJob?.pending');n++)await new Promise(r=>setTimeout(r,10));assert(!window.eval('_fitAdviceJob?.pending'),'advice search finishes');};
   const hidden=id=>assert.strictEqual(document.getElementById(id).style.display,'none',id+' must not warn before final review');
   const early=()=>{
    for(const id of ['smart-paste-size-warning','label-warn-stage4','label-warn-step5'])hidden(id);
@@ -101,7 +102,7 @@ setTimeout(async () => {
   set('biz-name','Test Maker');set('biz-address','1 Test Lane, EX1 2AB');set('biz-phone','01632 960000');
   window.restoreNetWeight('200g');window.updateLabel();
   assert(window._labelBlockDownload,'retained footer plus weight really overflows at 52mm');early();
-  assert(window.buildSVG(false).includes('Preview in progress'));
+  assert(!window.buildSVG(false).includes('clp-fit-block'),'actual label stays visible during editing');
   assert(window.buildSVG(true).includes('FULL CONTENT DOES NOT FIT'),'exports never receive draft presentation');
   window.restoreNetWeight('');window.restoreBurnTime('40 hrs');window.updateLabel();early();
   window.restoreNetWeight('180g');
@@ -114,13 +115,19 @@ setTimeout(async () => {
   set('batch-num','B2310');window.updateLabel();early();
   window.setApprovedBuilderStep(5);assert.strictEqual(step(),5);
   assert(window._labelBlockDownload);assert.notStrictEqual(document.getElementById('label-warn-step5').style.display,'none');
-  assert(window.buildSVG(false).includes('FULL CONTENT DOES NOT FIT'));
-  assert(document.querySelector('#label-warn-step5 [data-omit-select="batchNum"]'),'final panel knows the batch entered in Step 4');
+  assert(document.getElementById('label-warn-step5').textContent.includes('Checking sizes'));
+  assert(!document.getElementById('label-warn-step5').textContent.includes('No tested size'),'pending search is not a failed search');
+  const oldJob=window.eval('_fitAdviceJob');window.updateLabel();assert.strictEqual(window.eval('_fitAdviceJob'),oldJob,'identical update reuses in-flight search');
+  window.restoreNetWeight('181g');window.updateLabel();assert.notStrictEqual(window.eval('_fitAdviceJob'),oldJob,'edits supersede pending advice');
+  window.restoreNetWeight('180g');window.updateLabel();
+
+  assert(!window.buildSVG(false).includes('clp-fit-block'),'actual label stays visible at final review');
+  await settle();assert(document.querySelector('#label-warn-step5 [data-omit-select="batchNum"]'),'final panel knows the batch entered in Step 4');
   // Try the suggested larger size, then return to a deliberately smaller label.
-  const rec=window._suggestedLabelSize;assert(rec);
+  await settle();const rec=window._suggestedLabelSize;assert(rec);
   window.applySuggestedLabelSize();assert(!window._labelBlockDownload,'larger-size action genuinely fits');
   window.eval("S.size='custom';S.customW=58;S.customH=58;");set('custom-w','58');set('custom-h','58');window.updateLabel();
-  assert(window._labelBlockDownload);assert(window._omissionOptions.length);
+  await settle();assert(window._labelBlockDownload);assert(window._omissionOptions.length);
   const card=document.querySelector('#label-warn-step5 details.optional-fit-options')||document.querySelector('#label-warn-step5 [data-omission-status]').closest('details');
   const select=k=>card.querySelector('[data-omit-select="'+k+'"]');
   select('burnTime').checked=true;window.refreshOptionalReview(card);
