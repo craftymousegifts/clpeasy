@@ -79,16 +79,13 @@ function optionalItemAdviceHTML(){
   const data=window._lastLabelData,normalized=LabelRenderer.normalizeLabel(data);
   const present=LabelOptionalItems.keys.filter(k=>normalized[k]);
   const dims=LabelRenderer.getLabelDims(data),size=dims.mmW===dims.mmH?dims.mmW+' mm':dims.mmW+' × '+dims.mmH+' mm';
-  const suggested=options[0].omit;
-  let html='<details open class="optional-item-review"><summary>Or keep '+size+' by leaving off:</summary><div class="omission-chips">';
+  let html='<details open class="optional-item-review"><summary>Or keep '+size+' by leaving off:</summary><div class="omission-chips" style="display:grid;grid-template-columns:minmax(0,1fr);">';
   for(const key of present){
-    html+='<label class="omission-chip"><input type="checkbox" data-omit-select="'+key+'" data-entered-value="'+escapeBuilderText(data[key])+'" onchange="refreshOptionalReview(this.closest(\'.optional-item-review\'))"><span>'+escapeBuilderText(LabelOptionalItems.labels[key]+' ('+data[key]+')')+'</span>'+(suggested.includes(key)?'<small>suggested</small>':'')+'</label>';
+    const protectedItem=LabelOptionalItems.protectedKeys.includes(key);
+    const explanation=key==='netWeight'?'Leave off — I confirm this quantity is shown elsewhere on the packaging.':key==='batchNum'?'Leave off — I confirm this batch is shown elsewhere on the product or packaging.':'Leave off this label.';
+    html+='<label class="omission-chip"><input type="checkbox" data-omit-select="'+key+'" '+(protectedItem?'data-omission-key="'+key+'" ':'')+'data-entered-value="'+escapeBuilderText(data[key])+'" onchange="refreshOptionalReview(this.closest(\'.optional-item-review\'))"><span><strong>'+escapeBuilderText(LabelOptionalItems.labels[key]+' ('+data[key]+')')+'</strong><span style="display:block;font-size:12px;font-weight:400;color:#68737d;">'+escapeBuilderText(explanation)+'</span></span></label>';
   }
   html+='</div><p class="fit-helper">Hidden details are saved, so you can add them back later.</p>';
-  for(const key of present.filter(k=>LabelOptionalItems.protectedKeys.includes(k))){
-    const text=key==='netWeight'?'Quantity shown elsewhere on packaging.':'Batch shown elsewhere on product or packaging.';
-    html+='<div data-omission-confirm="'+key+'" hidden><label class="omission-confirm"><input type="checkbox" data-omission-key="'+key+'" onchange="refreshOptionalReview(this.closest(\'.optional-item-review\'))"><span>'+escapeBuilderText(text)+'</span></label></div>';
-  }
   return html+'<p data-omission-status role="status" aria-live="polite" class="fit-status fit-status-blocked">Still too full: tick another or choose a larger size.</p><p data-omission-comparison class="fit-helper" hidden></p><button type="button" disabled onclick="applyOptionalOmission(0,this)">Apply choices</button><p class="fit-footnote">Fit check only. It doesn’t confirm legal compliance.</p></details>';
 }
 function selectedOptionalItems(panel){
@@ -96,10 +93,6 @@ function selectedOptionalItems(panel){
 }
 function refreshOptionalReview(panel){
   const omit=selectedOptionalItems(panel);
-  for(const key of LabelOptionalItems.protectedKeys){
-    const box=panel.querySelector('[data-omission-confirm="'+key+'"]');
-    if(box){box.hidden=!omit.includes(key);if(box.hidden)box.querySelector('input').checked=false;}
-  }
   const button=panel.querySelector('button'),status=panel.querySelector('[data-omission-status]'),comparison=panel.querySelector('[data-omission-comparison]');
   button.disabled=true;comparison.textContent='';
   button.textContent='Apply choices';status.className='fit-status fit-status-blocked';
