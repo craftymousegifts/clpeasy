@@ -129,7 +129,8 @@ footer a:hover{color:white;}
 <div class="hero">
   <div class="hero-eyebrow">🛠️ Support</div>
   <h1>We're here to <em>help</em></h1>
-  <p>Before submitting a request, try the quick fixes below — most issues are resolved in seconds. If you're still stuck, fill in the form and Michaela will get back to you personally.</p>
+  <p>For technical problems, try the quick fixes below. For any question, fill in the form and Michaela will get back to you personally.</p>
+  <p style="margin-top:12px;">Question about a payment, receipt or download balance? <a href="#form-card" style="color:var(--teal-dark);font-weight:700;" onclick="selectPaymentSupport()">Get payment support</a> or email <a href="mailto:support@clpeasy.com" style="color:var(--teal-dark);">support@clpeasy.com</a>.</p>
 </div>
 
 <div class="container">
@@ -214,7 +215,7 @@ footer a:hover{color:white;}
 
   <!-- SUPPORT FORM -->
   <div class="still-stuck" id="form-card">
-    <div class="still-stuck-header">Still having trouble? Tell us what's happening</div>
+    <div class="still-stuck-header">How can we help?</div>
     <div class="still-stuck-sub">Fill in as much detail as you can — it helps us fix your issue much faster.</div>
 
     <div class="msg error" id="msg"></div>
@@ -230,9 +231,9 @@ footer a:hover{color:white;}
     </div>
 
     <div class="form-group">
-      <label>What were you trying to do? <span>(required)</span></label>
-      <select id="step">
-        <option value="">Select the step you were on...</option>
+      <label for="step">What do you need help with? <span>(required)</span></label>
+      <select id="step" onchange="updateSupportQuestions()">
+        <option value="">Select a topic...</option>
         <option>Logging in or creating an account</option>
         <option>Choosing a label size and shape</option>
         <option>Entering fragrance details</option>
@@ -242,7 +243,7 @@ footer a:hover{color:white;}
         <option>Using the A4 Print Sheet Composer</option>
         <option>Exporting for Cricut</option>
         <option>Managing my label library</option>
-        <option>Billing or subscription</option>
+        <option>Payments, subscriptions or PAYG credits</option>
         <option>Something else</option>
       </select>
     </div>
@@ -257,7 +258,7 @@ footer a:hover{color:white;}
       <textarea id="errors" style="min-height:70px;" placeholder='e.g. "Something went wrong. Please try again." or "Invalid login credentials."'></textarea>
     </div>
 
-    <div class="form-group">
+    <div class="form-group" data-technical-question>
       <label>Did the issue still happen after a hard refresh? <span>(Ctrl + Shift + R)</span></label>
       <div class="radio-group">
         <div class="radio-item" onclick="selectRadio(this,'refresh')">
@@ -272,7 +273,7 @@ footer a:hover{color:white;}
       </div>
     </div>
 
-    <div class="form-group">
+    <div class="form-group" data-technical-question>
       <label>Did the issue happen in Incognito mode?</label>
       <div class="radio-group">
         <div class="radio-item" onclick="selectRadio(this,'incognito')">
@@ -287,7 +288,7 @@ footer a:hover{color:white;}
       </div>
     </div>
 
-    <div class="form-group">
+    <div class="form-group" data-technical-question>
       <label>What browser and device are you using? <span>(optional but helpful)</span></label>
       <input type="text" id="browser" placeholder="e.g. Chrome on Windows 11, Safari on iPhone">
     </div>
@@ -317,6 +318,21 @@ footer a:hover{color:white;}
 </footer>
 
 <script>
+function isPaymentSupport() {
+  return document.getElementById('step').value === 'Payments, subscriptions or PAYG credits';
+}
+
+function updateSupportQuestions() {
+  document.querySelectorAll('[data-technical-question]').forEach(el => {
+    el.hidden = isPaymentSupport();
+  });
+}
+
+function selectPaymentSupport() {
+  document.getElementById('step').value = 'Payments, subscriptions or PAYG credits';
+  updateSupportQuestions();
+}
+
 function toggleCheck(el) {
   el.classList.toggle('checked');
 }
@@ -345,7 +361,7 @@ async function submitForm() {
 
   if (!name) { showMsg('Please enter your name.'); return; }
   if (!email || !email.includes('@')) { showMsg('Please enter a valid email address.'); return; }
-  if (!step) { showMsg('Please select the step you were on.'); return; }
+  if (!step) { showMsg('Please select a support topic.'); return; }
   if (!description) { showMsg('Please describe what happened.'); return; }
 
   const btn = document.getElementById('submit-btn');
@@ -354,10 +370,10 @@ async function submitForm() {
 
   // Collect all fields
   const errors = document.getElementById('errors').value.trim();
-  const browser = document.getElementById('browser').value.trim();
+  const browser = isPaymentSupport() ? '' : document.getElementById('browser').value.trim();
   const other = document.getElementById('other').value.trim();
-  const refresh = document.querySelector('.radio-item[onclick*="refresh"].selected .radio-label')?.textContent || 'Not answered';
-  const incognito = document.querySelector('.radio-item[onclick*="incognito"].selected .radio-label')?.textContent || 'Not answered';
+  const refresh = isPaymentSupport() ? 'Not applicable — payment enquiry' : document.querySelector('.radio-item[onclick*="refresh"].selected .radio-label')?.textContent || 'Not answered';
+  const incognito = isPaymentSupport() ? 'Not applicable — payment enquiry' : document.querySelector('.radio-item[onclick*="incognito"].selected .radio-label')?.textContent || 'Not answered';
 
   const body = `
 New CLPeasy Support Request
