@@ -90,6 +90,7 @@ setTimeout(async () => {
   const home=new JSDOM(fs.readFileSync('index.html','utf8'));
   assert.strictEqual(home.window.document.querySelectorAll('#features').length,1,'How it works has one real anchor target');
   assert(home.window.document.querySelector('#features').textContent.includes('From SDS to printed label in 5 steps'));home.window.close();
+  assert(Number(window.getComputedStyle(document.getElementById('preview-sheet')).zIndex)>Number(window.getComputedStyle(document.querySelector('.sidebar')).zIndex||0),'enlarged preview must sit above sidebar');
   const help=document.getElementById('supplier-information-help');
   assert(!help.open,'supplier guidance starts collapsed');
   help.open=true;window.updateLabel();assert(help.open,'user may expand supplier guidance');help.open=false;
