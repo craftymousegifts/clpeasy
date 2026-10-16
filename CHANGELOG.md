@@ -4,6 +4,19 @@ All notable changes to CLPeasy are documented here. Customer-friendly notes
 covering the same releases live at `release-notes.html`. Versioning rules
 and the release procedure are documented in `VERSIONING.md`.
 
+## [1.2.0] - 2026-10-16
+
+### Added
+- Net-weight dropdown (5–1000g in 5g steps) with exact custom quantities. (#247)
+- Optional-item fit choices with individual selection, exact-value quantity/batch confirmations, retained saved values and restore controls. (#248)
+
+### Changed
+- Compact size warnings, conditional item explanations and simplified export review with unchanged fit/authorisation gates. (#248)
+- Expandable file guidance, full SDS/fragrance-load responsibility declaration and Save/Composer actions. (#248)
+
+Founder approved #247/#248 after iPhone checks on 16 October. #249 is a
+combined QA preview only and is not part of the production merge.
+
 ## [1.1.1] - 2026-10-15
 
 ### Fixed
