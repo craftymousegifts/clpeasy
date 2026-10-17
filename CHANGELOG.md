@@ -14,6 +14,13 @@ and the release procedure are documented in `VERSIONING.md`.
 - Compact size warnings, conditional item explanations and simplified export review with unchanged fit/authorisation gates. (#248)
 - Expandable file guidance, full SDS/fragrance-load responsibility declaration and Save/Composer actions. (#248)
 
+### Fixed (added to 1.2.0 on 17 October, no new version number)
+- Builder preview stays visible when a label needs more space; batch field
+  full width with a normal keyboard on phones. (#251)
+- Candle-care (EN 15494) icons kept at least 1 mm inside the circle cut edge;
+  52–55 mm candles showing the icons need 56 mm or the existing "show on
+  packaging" option, now offered at those sizes. (#252)
+
 Founder approved #247/#248 after iPhone checks on 16 October. #249 is a
 combined QA preview only and is not part of the production merge.
 
