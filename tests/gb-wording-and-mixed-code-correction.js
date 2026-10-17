@@ -244,11 +244,11 @@ async function run(){
     const singular = window.eval("clpUnrecognisedCodesMessage(['H999'])");
     const plural = window.eval("clpUnrecognisedCodesMessage(['H999','H998'])");
     results.genericMessages = { singular, plural };
-    assert.strictEqual(singular.heading, 'CLP code not recognised');
+    assert.strictEqual(singular.heading, "A code can't be added to this label"); // Release C wording (approved 17 Oct 2026)
     assert(/did not recognise the following code: H999/.test(singular.body));
     assert(/check that the sds text was copied correctly/i.test(singular.body));
     assert(/current great britain-market sds or classification documentation/i.test(singular.body));
-    assert.strictEqual(plural.heading, 'CLP code not recognised');
+    assert.strictEqual(plural.heading, "Some codes can't be added to this label");
     assert(/did not recognise the following codes: H999, H998/.test(plural.body));
     assert(!/not supported under the selected great britain rules/i.test(singular.body+plural.body), 'generic message must never claim confirmed-unsupported status');
   }
@@ -272,9 +272,9 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     assert(/\bH316\b/.test(gate.alert), 'mixed alert must name H316 (unsupported group)');
     assert(/\bH999\b/.test(gate.alert), 'mixed alert must ALSO name H999 (generic-unrecognised group) -- must not be hidden by the unsupported-code priority');
     assert(gate.alert.includes('needs supplier confirmation for a Great Britain CLP label'), 'mixed alert must include the supplier-confirmation message');
-    assert(gate.alert.includes('CLP code not recognised'), 'mixed alert must ALSO include the generic-unrecognised-code message');
+    assert(gate.alert.includes("A code can't be added to this label"), 'mixed alert must ALSO include the generic-unrecognised-code message');
     // Regulatory issue shown first.
-    assert(gate.alert.indexOf('needs supplier confirmation for a Great Britain CLP label') < gate.alert.indexOf('CLP code not recognised'), 'the supplier-confirmation message must appear before the generic-unrecognised message');
+    assert(gate.alert.indexOf('needs supplier confirmation for a Great Britain CLP label') < gate.alert.indexOf("A code can't be added to this label"), 'the supplier-confirmation message must appear before the generic-unrecognised message');
   }
 
   // ─────────────────────────────────────────────────────────────────────
@@ -286,7 +286,7 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     assert.strictEqual(r.bannerVisible, true, 'mixed input must show the download-blocking banner');
     assert(r.bannerHTML.includes('H316') && r.bannerHTML.includes('H999'), 'download banner must name BOTH H316 and H999');
     assert(r.bannerHTML.includes('needs supplier confirmation for a Great Britain CLP label'), 'download banner must include the supplier-confirmation message');
-    assert(r.bannerHTML.includes('CLP code not recognised'), 'download banner must ALSO include the generic-unrecognised message');
+    assert(r.bannerHTML.includes('did not recognise the following code: H999'), 'download banner must ALSO include the generic-unrecognised message');
     assert.deepStrictEqual(r.unsupportedCodes, ['H316'], 'structured field unsupportedCodes must be exactly [H316]');
     assert.deepStrictEqual(r.unrecognizedCodesGeneric, ['H999'], 'structured field unrecognizedCodesGeneric must be exactly [H999]');
   }
