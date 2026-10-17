@@ -1919,6 +1919,15 @@ function renderLabel(rawData, opts){
   // `warnings`/`fits` handling further down), exactly like
   // hazard-text-overflow/footer-clipped.
   let _bcfTooSmall = false;
+  // Care-icon row vs the circular cut edge (17 Oct 2026, Michaela's approved
+  // fix): on circles every icon corner must stay at least 1 mm inside the
+  // cut edge (1.1 mm target, matching the footer's physical clearance). If
+  // the normal row already clears it, nothing changes. Otherwise the gaps
+  // between icons narrow (never below 0.1x icon size; icon size, row
+  // position, hazard text and footer unchanged). If even that cannot clear
+  // the edge, the label is blocked like any other fit failure.
+  let _bcfGapFrac = 0.25;
+  let _bcfEdgeClipped = false;
   if(_showBCF){
     const _bcfMinDimPre  = Math.min(mmW, mmH);
     const _bcfTargetMmPre = _bcfMinDimPre <= 50 ? 5.5 : 8; // nice-to-have, above the 5mm floor
@@ -1945,6 +1954,16 @@ function renderLabel(rawData, opts){
       // legal floor -- matches the render block below exactly.
       const _bcfMaxSzPre = Math.max(_bcfFloorSzPre, Math.min(sW * 0.07, _bcfTargetMmPre * pxPerMm, _bcfPhysicalCapPre, _bcfRoomForIconsPre/BCF_ROW_HEIGHT_RATIO));
       _bcfRowH = _bcfMaxSzPre * BCF_ROW_HEIGHT_RATIO; // matches the icons' actual vertical footprint
+      if(isCircle){
+        const _sz=_bcfMaxSzPre, _top=botY+_sz*0.1, _bot=_top+_sz;
+        const _dy=Math.max(Math.abs(_top-cy),Math.abs(_bot-cy));
+        const _safeR=r-1.1*pxPerMm;
+        const _avail=_dy<_safeR?2*Math.sqrt(_safeR*_safeR-_dy*_dy):0;
+        if(5*_sz+4*0.25*_sz>_avail){
+          const _g=(_avail-5*_sz)/(4*_sz);
+          if(_g>=0.1) _bcfGapFrac=_g; else _bcfEdgeClipped=true;
+        }
+      }
     } else {
       _bcfTooSmall = true;
     }
@@ -2073,7 +2092,7 @@ function renderLabel(rawData, opts){
   // flag `fits` has ever included is included here; if a new blocking
   // condition is ever added, add it to THIS line, not to a second copy.
   const _contentBlocked = _labelLegibilityWarn || _footerLegibilityClipped
-    || _unrecognizedCodes.length>0 || _bcfTooSmall || _scentTooSmall
+    || _unrecognizedCodes.length>0 || _bcfTooSmall || _bcfEdgeClipped || _scentTooSmall
     || _bizNameTooSmall || _typeTooSmall || _signalTooSmall
     || _invalidPictograms.length>0;
   // ── STRUCTURED BLOCK REASON -- never inferred from fits:false alone ─────
@@ -2108,7 +2127,7 @@ function renderLabel(rawData, opts){
   // merits, so a caller can tell "is there ALSO a genuine fit problem"
   // even when a code issue is the headline reason.
   const _contentOverflow = _labelLegibilityWarn || _footerLegibilityClipped
-    || _bcfTooSmall || _scentTooSmall || _bizNameTooSmall || _typeTooSmall || _signalTooSmall;
+    || _bcfTooSmall || _bcfEdgeClipped || _scentTooSmall || _bizNameTooSmall || _typeTooSmall || _signalTooSmall;
   const _blockReason = !_contentBlocked ? null
     : _unsupportedCodesFound.length>0 ? 'unsupported-gb-clp-code'
     : _genericUnrecognizedFound.length>0 ? 'unrecognised-code'
@@ -2187,7 +2206,7 @@ function renderLabel(rawData, opts){
     // first (see _footerTextMinH/_footerBandTotalEarly's own comment).
     const _bcfRoomForIcons = Math.max(_bcfFloorSz*BCF_ROW_HEIGHT_RATIO, _footerBandTotalEarly - _footerTextMinH);
     const _bcfMaxSz = Math.max(_bcfFloorSz, Math.min(sW * 0.07, _bcfTargetMm * _pxPerMm, _bcfPhysicalCap, _bcfRoomForIcons/BCF_ROW_HEIGHT_RATIO));
-    const _bcfGap   = _bcfMaxSz * 0.25;
+    const _bcfGap   = _bcfMaxSz * _bcfGapFrac;
     const _bcfTotW  = _nBcf * _bcfMaxSz + (_nBcf - 1) * _bcfGap;
     // Position at top of footer band with small padding
     const _bcfY = botY + _bcfMaxSz * 0.6;
@@ -2276,6 +2295,7 @@ function renderLabel(rawData, opts){
   if(_labelLegibilityWarn) warnings.push('hazard-text-overflow');
   if(_footerLegibilityClipped) warnings.push('footer-clipped');
   if(_bcfTooSmall) warnings.push('candle-safety-symbols-too-small');
+  if(_bcfEdgeClipped) warnings.push('candle-safety-edge-clearance');
   // Regression fix (2026-09-06): mandatory text outside the hazard/footer
   // blocks (product name, business name, product type, signal word) now
   // gets the same physical-floor fail-closed treatment those blocks
@@ -2348,6 +2368,7 @@ function renderLabel(rawData, opts){
     // requested, or _bcfTooSmall, see `warnings`), for transparency/testing.
     bcfSizeMm: _bcfSizeMm,
     bcfTooSmall: _bcfTooSmall,
+    bcfEdgeClipped: _bcfEdgeClipped,
     // Regression fix (2026-09-06): per-category "hit the GB legibility
     // floor and still doesn't fit" flags, exposed for
     // transparency/testing alongside the existing footerClipped/bcfTooSmall.

@@ -5169,6 +5169,7 @@ function buildSVG(forExport=false){
   window._labelLegibilityWarn=result.metrics.overflow;
   window._hazardYSlack=result.metrics.hazardYSlack;
   window._footerLegibilityClipped=result.metrics.footerClipped;
+  window._bcfEdgeClipped=!!result.metrics.bcfEdgeClipped;
   // Regression fix (2026-09-06, Michaela's manual review of Preview #105):
   // mandatory text outside the hazard/footer blocks (product name,
   // business name, product type, signal word) now gets the same
@@ -5336,7 +5337,7 @@ function updateLabel(){
   // not fitting must block download exactly like hazard-text-overflow and
   // footer-clipped already do -- see label-render.js's _mandatoryMinFS.
   const _hasMandatoryTextTooSmall = !!(window._scentTooSmall || window._businessNameTooSmall || window._productTypeTooSmall || window._signalWordTooSmall);
-  window._labelBlockDownload = !!(window._labelLegibilityWarn || window._footerLegibilityClipped || _hasUnrecognizedCodes || _isCustomSizeTooSmall || _hasMandatoryTextTooSmall);
+  window._labelBlockDownload = !!(window._labelLegibilityWarn || window._footerLegibilityClipped || _hasUnrecognizedCodes || _isCustomSizeTooSmall || _hasMandatoryTextTooSmall || window._contentOverflow);
   // Fail-closed design (2026-09-07): when the label is blocked for a reason a
   // bigger label might actually fix (not the unrecognised-code or below-
   // minimum-size cases, which have their own specific remedy), tell the
@@ -5402,6 +5403,8 @@ function updateLabel(){
     ? getCustomSizeMinMsg()+'<br><br>To create a downloadable label, use the size controls below to '+(S.shape==='rectangle'?'set the long side to '+LabelRenderer.CUSTOM_RECT_LONG_MIN_MM+'mm or larger and the short side to '+LabelRenderer.CUSTOM_RECT_SHORT_MIN_MM+'mm or larger':'increase the custom size to '+LabelRenderer.CUSTOM_SIZE_MIN_MM+'mm or larger')+'.'
     : window._footerLegibilityClipped
     ? 'Your business/supplier details cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling, so some required information would be left off.<br><br>To create a downloadable label, use the size controls below to select a larger label size, or shorten your business details.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
+    : (window._bcfEdgeClipped && !window._labelLegibilityWarn)
+    ? 'The candle safety symbols cannot sit far enough inside the circle edge at this size to print without being trimmed.<br><br>To create a downloadable label, use the size controls below to select a larger label size, or, if you will show these symbols on the packaging instead, remove them from this label.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the candle safety symbols would be too close to the cut edge.</strong>'
     : _hasMandatoryTextTooSmall
     ? 'Your '+_mandatoryTextTooSmallLabel+' cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, use the size controls below to select a larger label size, or shorten the affected text.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
     : 'The required hazard and precautionary information cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, use the size controls below to select a larger label size. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>';
