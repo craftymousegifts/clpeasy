@@ -184,6 +184,7 @@ const emptyQuery = {
         window.alert = message => { window.__lastAlert = String(message); };
         window.confirm = () => true;
         window.scrollTo = () => {};
+        window.HTMLElement.prototype.scrollIntoView=()=>{}; // jsdom has no scrollIntoView; a blocked label's fit notice is scrolled into view (care-icon edge rule blocks 52 mm candles)
         window.fetch = async () => ({ ok:true, json:async()=>({}) });
         window.open = () => ({ location:{ href:'' }, close(){}, opener:null });
         window.URL.createObjectURL = () => 'blob:test';

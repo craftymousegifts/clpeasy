@@ -97,8 +97,12 @@ const RENDERER = fs.readFileSync(process.env.LABEL_RENDERER_PATH || path.join(__
         if (r.fits) row.lines = await footer(d, r.svg);
         rows.push(row);
       }
-      // The 52 mm preset with ordinary content must still fit.
-      const preset = LabelRenderer.renderLabel(label('circle', 52, 'Scented Candle', {}), { instanceId: 'p52' }).fits;
+      // The 52 mm preset with ordinary content: the footer rule must not block
+      // it. (Since 17 Oct 2026 a 52 mm candle is blocked only by the separate
+      // care-icon edge rule; a 52 mm wax melt, without icons, must still fit.)
+      const _p52 = LabelRenderer.renderLabel(label('circle', 52, 'Scented Candle', {}), { instanceId: 'p52' });
+      const preset = !_p52.metrics.footerClipped && (_p52.fits || (_p52.warnings.length === 1 && _p52.warnings[0] === 'candle-safety-edge-clearance'))
+        && LabelRenderer.renderLabel(label('circle', 52, 'Wax Melt', {}), { instanceId: 'p52w' }).fits;
       // The labels that newly block under the 1 mm rule, and the Builder's
       // own size recommendation for each.
       const blocked = [];
@@ -151,11 +155,11 @@ const RENDERER = fs.readFileSync(process.env.LABEL_RENDERER_PATH || path.join(__
       assert.strictEqual(b.recFits, true, `${id}: recommended ${b.rec.mmW} mm does not fit`);
       assert(b.recLines.every(l => !l.missing && l.clearMm >= 0.95), `${id}: recommended size does not keep 1 mm footer clearance`);
     }
-    assert.strictEqual(out.preset, true, '52 mm circle candle with ordinary content (address + phone) must still fit');
+    assert.strictEqual(out.preset, true, '52 mm circle with ordinary content (address + phone): footer must fit (candle blocked only by the care-icon edge rule; wax melt fits)');
     assert.strictEqual(out.sqPhoneWeight, '600', 'square labels must keep their existing footer (phone semi-bold)');
 
     console.log(`PASS: ${fitting.length} fitting circle labels keep every footer line >= 1 mm from the cut edge, at one shared size >= the floor, regular-weight phone, longest line on top, all text present; ` +
-      '52 mm preset fits; ' + out.blocked.map(b => `${b.mm} mm ${b.v} blocked -> ${b.rec.mmW} mm`).join(', ') + '; squares unchanged');
+      '52 mm preset footer fits; ' + out.blocked.map(b => `${b.mm} mm ${b.v} blocked -> ${b.rec.mmW} mm`).join(', ') + '; squares unchanged');
   } finally {
     await browser.close();
   }
