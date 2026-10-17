@@ -1272,6 +1272,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <p>Copy the complete Section 2.2 (Label elements) from your current supplier SDS PDF and paste it here. CLPeasy extracts the information it can identify; review the result against your SDS before continuing.</p>
       <textarea id="smart-paste-input" placeholder="Paste SDS Section 2.2 text here..."></textarea>
       <br><br><button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
+      <div id="sds-source-suitability-warning" aria-live="polite" style="display:none;"></div>
+      <div id="smart-paste-excluded-note" class="field-alert" role="status" aria-live="polite" style="display:none;margin-top:12px;margin-bottom:0;font-size:13px;background:var(--off);border:1.5px solid var(--border);color:var(--text);"></div>
       <div id="smart-paste-size-warning" class="field-alert field-alert-danger" role="status" aria-live="polite" style="display:none;margin-top:14px;font-size:14px;"></div>
       <button type="button" id="hazard-clear-link" onclick="clearHazardData()" style="display:none;margin-left:14px;font-size:12px;color:var(--teal-dark);text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">Clear hazard data and start again</button>
     </div>
@@ -1570,6 +1572,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <script src="label-render.js"></script>
 <script src="optional-label-items.js"></script>
 <script src="sds-doc-check.js"></script>
+<script src="sds-source-suitability.js"></script>
 
 <!-- Checkpoint B (connected print-workflow task, 1 Sep 2026): shared
      saved-label identity/coordinated-mutation module. Every saved-label
@@ -3220,6 +3223,9 @@ async function saveLabel(){
 function loadLabelRecord(e){
   if(!e)return;
   editingLabelId=e.id||null;
+  // Smart Paste guidance from an earlier paste does not apply to this label.
+  window._smartPasteExcludedCodes=[];
+  ['sds-source-suitability-warning','smart-paste-excluded-note'].forEach(id=>{const b=document.getElementById(id);if(b){b.textContent='';b.style.display='none';}});
   S.scentName=e.scentName;S.productType=e.productType;S.shape=e.shape;S.size=e.size;S.customW=e.customW||S.customW;S.customH=e.customH||S.customH;
   S.signal=e.signal||'';S.sdsSignal=e.sdsSignal!==undefined?e.sdsSignal:(e.signal||'');S.hStatements=e.hStatements||'';S.sensitisers=e.sensitisers||[];
   S.hSelected=(S.hStatements||'').split(',').map(code=>code.trim()).filter(Boolean);
@@ -4017,6 +4023,48 @@ function _requireSdsDoc(){
   }
   return r.ok;
 }
+// Release C (Oct 2026): Smart Paste guidance. Display only -- these never
+// change the extracted codes, the label, fit, blocking or exports.
+function updateSdsSourceSuitabilityWarning(){
+  const box=document.getElementById('sds-source-suitability-warning');
+  if(!box)return;
+  const raw=document.getElementById('smart-paste-input')?.value||'';
+  if(!S.hazardFromExtraction||!raw.trim()){box.textContent='';box.style.display='none';return;}
+  const result=window.SdsSourceSuitability
+    ?SdsSourceSuitability.inspect(raw,document.getElementById('product-type')?.value||S.productType,document.getElementById('frag-load')?.value||S.fragLoad)
+    :{level:'unverified',message:'Section 2.2 does not confirm whether this SDS covers your finished product. CLPeasy does not adjust hazards for fragrance percentages. Check the applicable finished-product classification information with your supplier or a competent CLP specialist.'};
+  box.textContent='';
+  box.dataset.suitability=result.level;
+  if(result.level==='unverified'){
+    // Shown after every extraction, deliberately low-key.
+    box.className='';box.setAttribute('role','status');
+    box.style.cssText='display:block;margin-top:10px;font-size:12px;line-height:1.5;color:var(--muted);';
+    box.textContent='ℹ️ '+result.message;
+  }else{
+    box.className='field-alert field-alert-warn';box.setAttribute('role','alert');
+    box.style.cssText='display:block;margin-top:12px;margin-bottom:0;font-size:13px;';
+    const h=document.createElement('strong');h.style.display='block';h.style.marginBottom='4px';
+    h.textContent='⚠️ Check this is information for your finished product';
+    box.appendChild(h);box.appendChild(document.createTextNode(result.message));
+  }
+}
+function updateSmartPasteExcludedNote(){
+  const box=document.getElementById('smart-paste-excluded-note');
+  if(!box)return;
+  const codes=S.hazardFromExtraction?(window._smartPasteExcludedCodes||[]):[];
+  if(!codes.length){box.textContent='';box.style.display='none';return;}
+  box.textContent='';
+  const h=document.createElement('strong');h.style.display='block';h.style.marginBottom='4px';
+  h.textContent='Not added automatically: '+codes.join(', ');
+  box.appendChild(h);
+  box.appendChild(document.createTextNode((codes.length>1?'Smart Paste has not added these precautionary statements':'Smart Paste has not added this precautionary statement')+' to your label. You need to establish whether '+(codes.length>1?'they apply':'it applies')+' to your finished product, using the applicable finished-product classification information from your supplier or a competent CLP specialist.'+(codes.includes('P280')?' If P280 applies, add it in the precautionary statements below and choose the protection items.':'')+(codes.some(c=>c!=='P280')?' For any other code that applies, contact support@clpeasy.com.':'')));
+  box.style.display='block';
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  ['frag-load','product-type'].forEach(id=>{
+    document.getElementById(id)?.addEventListener('change',updateSdsSourceSuitabilityWarning);
+  });
+});
 function extractSDS(){
   // NOTE (2026-08-02, reversal — see smart-paste-pro-gating / reverify):
   // A plan gate was added here believing Smart Paste was Easy-Pro-exclusive.
@@ -4082,6 +4130,7 @@ function extractSDS(){
     'P405'             // Store locked up — controlled substances/workplace
   ]; // codes not applicable to finished consumer home fragrance products
   const pRaw=_pAllCodes.filter(c=>!_pExclude.some(x=>c===x||c.startsWith(x+'+')||c.endsWith('+'+x)));
+  window._smartPasteExcludedCodes=_pAllCodes.filter(c=>!pRaw.includes(c));
   const pEl=document.getElementById('p-statements');
   if(pEl){pEl.value=pRaw.join(', ');}
   S.pStatements=pRaw.join(', ');
@@ -4192,6 +4241,8 @@ function extractSDS(){
   // SDS of the product currently named in Step 2.
   S.hazardFromExtraction=true;
   _snapshotHazardSource();
+  updateSdsSourceSuitabilityWarning();
+  updateSmartPasteExcludedNote();
   updateLabel();
   lockHazardFields(true);
   showExtractToast(allH.length,pRaw.length,S.sensitisers.length);
@@ -4316,8 +4367,8 @@ function clpUnrecognisedCodesMessage(codes, escapeFn){
   const esc=escapeFn||(v=>v);
   const plural=codes.length>1, codeWord=plural?'codes':'code';
   return {
-    heading:'CLP code not recognised',
-    body:'CLPeasy did not recognise the following '+codeWord+': '+codes.map(esc).join(', ')+'. Check that the SDS text was copied correctly and that you are using the current Great Britain-market SDS or classification documentation. Do not change the SDS code just to make the label generate. For help, contact support@clpeasy.com with the SDS and flagged code.'
+    heading:plural?'Some codes can\'t be added to this label':'A code can\'t be added to this label',
+    body:'CLPeasy did not recognise the following '+codeWord+': '+codes.map(esc).join(', ')+'. Check that the SDS text was copied correctly and that you are using the current Great Britain-market SDS or classification documentation. CLPeasy only prints precautionary statements it can show with the correct GB wording, so this label stays blocked until '+(plural?'these codes are':'this code is')+' resolved. Required codes must be resolved, not removed or changed just to enable downloads. Use the classification information for your finished product: an ingredient\'s own SDS (for example a fragrance oil at 100%) can list different hazards and statements from your finished candle, wax melt, diffuser or spray at your fragrance percentage, so check the applicable finished-product classification information with your supplier or a competent CLP specialist. Combining the Section 2.2 statements from several ingredient SDSs does not establish the classification of the finished mixture. For help, contact support@clpeasy.com with the SDS and the flagged '+codeWord+'.'
   };
 }
 // Combines the two message types for a MIXED input (some codes confirmed
@@ -4869,6 +4920,9 @@ function clearHazardData(){
   const hzCb=document.getElementById('hazard-confirm');
   if(hzCb)hzCb.checked=false;
   S.hazardFromExtraction=false;S.hazardSource=null;
+  window._smartPasteExcludedCodes=[];
+  updateSdsSourceSuitabilityWarning();
+  updateSmartPasteExcludedNote();
   // Clear signal word
   S.signal='';
   S.sdsSignal='';
@@ -5405,10 +5459,10 @@ function updateLabel(){
   // support path it always has.
   const _blockBody = _codeBlockParts.length
     ? _gbUnsupportedCodesFound.length && _genericUnrecognizedCodesFound.length
-      ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br>'+clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+' Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than print a code CLPeasy could not safely include on your label.</strong>'
+      ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br>'+clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+' Double-check this code against your SDS Section 2.2, correct it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than print a code CLPeasy could not safely include on your label.</strong>'
       : _gbUnsupportedCodesFound.length
       ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br><strong>CLPeasy has blocked the download rather than remove, replace or print a code it cannot safely resolve for a Great Britain CLP label.</strong>'
-      : clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+'<br><br>Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
+      : clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+'<br><br>Double-check this code against your SDS Section 2.2, correct it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
     : _isCustomSizeTooSmall
     ? getCustomSizeMinMsg()+'<br><br>To create a downloadable label, use the size controls below to '+(S.shape==='rectangle'?'set the long side to '+LabelRenderer.CUSTOM_RECT_LONG_MIN_MM+'mm or larger and the short side to '+LabelRenderer.CUSTOM_RECT_SHORT_MIN_MM+'mm or larger':'increase the custom size to '+LabelRenderer.CUSTOM_SIZE_MIN_MM+'mm or larger')+'.'
     : window._footerLegibilityClipped
@@ -6263,7 +6317,7 @@ function calcFragLoad(){
   const pct=String(Number(exact.toFixed(4)));
   const rounded=Math.abs(Number(pct)-exact)>1e-9;
   const pctOfWax=((frag/wax)*100).toFixed(1);
-  res.textContent=`${pct}%${rounded?' (rounded to 4 decimal places)':''} of the finished product (${frag} g fragrance in ${total} g total). For reference: ${pctOfWax}% of the wax/base weight. CLPeasy compares this figure exactly with your supplier document and never rounds it to make a match.`;
+  res.textContent=`${pct}%${rounded?' (rounded to 4 decimal places)':''} of the finished product (${frag} g fragrance in ${total} g total). For reference: ${pctOfWax}% of the wax/base weight. Check that your supplier’s CLP information applies to this finished-product percentage. CLPeasy does not verify this or recalculate hazards.`;
   res.style.color='var(--teal)';
   if(applyBtn)applyBtn.style.display='';
   if(applyBtn)applyBtn.dataset.pct=pct;
