@@ -172,27 +172,34 @@ const server = http.createServer((req, res) => {
     }, SDS);
 
     const fail = [];
+    // Expected percentages are worked out from the SVG's rounded font-size
+    // attributes, so they can differ from the panel's exact figure by 0.1.
+    const near = (shown, expected) => Math.abs(parseFloat(shown) - expected) <= 0.1001;
+    // At automatic/Reset the figure is exactly 100%. "maximum" may follow it
+    // when the automatic size is already the largest allowed (e.g. a short
+    // product name), which is correct; "minimum" must not.
+    const isAuto = v => parseFloat(v.text) === 100 && !v.min;
     for (const r of out.rows) {
       const id = r.name;
-      if (r.auto.text !== '100%' || r.auto.min) fail.push(`${id}: automatic shows "${r.auto.text}"`);
-      for (const s of r.steps) if (parseFloat(s.text) !== s.expected) fail.push(`${id} ${s.step}: shows ${s.text}, drawn size is ${s.expected}% of automatic`);
+      if (!isAuto(r.auto)) fail.push(`${id}: automatic shows "${r.auto.text}"`);
+      for (const s of r.steps) if (!near(s.text, s.expected)) fail.push(`${id} ${s.step}: shows ${s.text}, drawn size is ${s.expected}% of automatic`);
       if (!(r.steps[0].size < r.auto.size)) fail.push(`${id}: one decrease did not reduce the drawn size`);
-      if (parseFloat(r.minimum.text) !== r.minimum.expected) fail.push(`${id} minimum: shows ${r.minimum.text}, expected ${r.minimum.expected}%`);
+      if (!near(r.minimum.text, r.minimum.expected)) fail.push(`${id} minimum: shows ${r.minimum.text}, expected ${r.minimum.expected}%`);
       if (!r.minimum.disabled[0] || r.minimum.disabled[1]) fail.push(`${id}: wrong button states at minimum`);
       if (!r.minimum.min) fail.push(`${id}: "minimum" not shown at the lower limit`);
       if (Math.abs(r.minimum.size - r.minimum.boundMin) > 0.01) fail.push(`${id}: lower limit drawn at ${r.minimum.size}, renderer minimum ${r.minimum.boundMin}`);
       if (r.minimum.afterOneMore !== r.minimum.size) fail.push(`${id}: decreasing past the minimum changed the size`);
-      if (parseFloat(r.maximum.text) !== r.maximum.expected) fail.push(`${id} maximum: shows ${r.maximum.text}, expected ${r.maximum.expected}%`);
+      if (!near(r.maximum.text, r.maximum.expected)) fail.push(`${id} maximum: shows ${r.maximum.text}, expected ${r.maximum.expected}%`);
       if (!r.maximum.max || r.maximum.disabled[0] || !r.maximum.disabled[1]) fail.push(`${id}: wrong maximum status/button states`);
       if (r.maximum.min) fail.push(`${id}: "minimum" shown at the upper limit`);
       for (const k of ['reset1', 'reset2']) {
-        if (r[k].text !== '100%' || r[k].min) fail.push(`${id} ${k}: shows "${r[k].text}"`);
+        if (!isAuto(r[k])) fail.push(`${id} ${k}: shows "${r[k].text}"`);
         if (r[k].size !== r.auto.size) fail.push(`${id} ${k}: drawn size ${r[k].size} differs from automatic ${r.auto.size}`);
       }
     }
     if (!out.same) fail.push('refreshing the fine-tune display changed the label SVG');
-    if (parseFloat(out.refresh.text) !== out.refresh.expected) fail.push(`after resizing to 70 mm: shows ${out.refresh.text}, expected ${out.refresh.expected}% of the new automatic size`);
-    if (out.reset70.text !== '100%') fail.push(`after resizing and Reset: shows "${out.reset70.text}"`);
+    if (!near(out.refresh.text, out.refresh.expected)) fail.push(`after resizing to 70 mm: shows ${out.refresh.text}, expected ${out.refresh.expected}% of the new automatic size`);
+    if (!isAuto(out.reset70)) fail.push(`after resizing and Reset: shows "${out.reset70.text}"`);
     const R = out.rect;
     for (const [k, v] of Object.entries(R)) if (v.shown !== v.truth) fail.push(`rectangle 90x63 ${k}: hazard shows ${v.shown}%, actual ${v.truth}% of its automatic size`);
     if (!(R.r2.staleBefore - R.r2.truth >= 5)) fail.push(`rectangle 90x63: case no longer exercises a changed automatic size (${R.r2.staleBefore}% -> ${R.r2.truth}%)`);
