@@ -242,11 +242,13 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
 <script>
   try { if (localStorage.getItem('sb-qvkosdqcryrcfbjtaxic-auth-token')) document.documentElement.classList.add('clp-auth-pending'); } catch (e) {}
 </script>
-<link rel="stylesheet" href="public-nav.css">\n<script src="public-nav.js" defer></script>\n</head>
+<link rel="stylesheet" href="public-nav.css">\n<script src="public-nav.js" defer></script>\n<style>.checkout-indicator-slot{display:flex;align-items:center;margin-left:auto;margin-right:10px;}.checkout-indicator-slot:empty{display:none;}.checkout-indicator-slot:not(:empty)~.public-nav-links{margin-left:0!important;}@media(min-width:1121px){.checkout-indicator-slot{margin-right:24px;}}</style>
+</head>
 <body>
 
 <nav class="public-site-nav" aria-label="Main navigation">
   <a href="index.html" class="nav-logo" aria-label="CLPeasy home"><span class="nav-badge">CLP</span><span class="nav-easy">easy</span><sup class="nav-mark">®</sup></a>
+  <span class="checkout-indicator-slot" id="checkout-indicator-slot"></span>
   <button class="public-nav-toggle" type="button" aria-expanded="false" aria-controls="public-nav-links" aria-label="Menu">☰</button>
   <div class="public-nav-links" id="public-nav-links">
     <a href="index.html" data-page="index.html">Home</a>
@@ -734,7 +736,10 @@ async function initSupabase(){
   // while this browser knows a subscription checkout was started for this
   // account within the last 5 minutes.
   if(window.CLPCheckoutNotice&&!document.getElementById('clp-checkout-indicator')){
-    window.CLPCheckoutNotice.mountIndicator(document.querySelector('nav .public-nav-links'),()=>currentUser&&currentUser.id);
+    // Its own slot beside the menu button: public-nav.js rebuilds the nav
+    // links (which would remove it) and the links are hidden behind the menu
+    // button on phones.
+    window.CLPCheckoutNotice.mountIndicator(document.getElementById('checkout-indicator-slot'),()=>currentUser&&currentUser.id);
   }
 }
 initSupabase();
