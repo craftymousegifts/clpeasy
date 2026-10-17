@@ -4982,6 +4982,12 @@ function showSheetSizeEditor(){
   document.getElementById('sheet-size-editor').scrollIntoView?.({block:'nearest'});
 }
 
+function removeCareSymbolsForFit(){
+  S.hideEN15494=true;
+  const _box=document.getElementById('hide-en15494');if(_box)_box.checked=true;
+  const _warn=document.getElementById('en15494-warn');if(_warn)_warn.style.display='block';
+  updateLabel();
+}
 function updateSizeWarnings(){
   const rawW = parseInt(document.getElementById('custom-w').value)||50;
   const rawH = S.shape==='rectangle'?(parseInt(document.getElementById('custom-h').value)||40):rawW;
@@ -5001,7 +5007,11 @@ function updateSizeWarnings(){
     const _en15494Warn = document.getElementById('en15494-warn');
     if(_en15494Warn){
       const _isCandle = ['Scented Candle','Soy Candle','Votive Candle','Tea Light Candle','Pillar Candle','Advent Calendar Candle'].indexOf(S.productType||'') >= 0;
-      if(_isCandle && _isSmallForCLP){
+      // Care-icon edge rule (17 Oct 2026): also offer the tick box when the
+      // EN 15494 icons would sit too close to the circle's cut edge.
+      const _careIconsNeedRoom = _isCandle && !_isSmallForCLP && S.shape==='circle' && window._lastLabelData && typeof LabelRenderer!=='undefined'
+        && !!LabelRenderer.renderLabel(Object.assign({},window._lastLabelData,{shape:S.shape,size:S.size,customW:S.customW,customH:S.customH,productType:S.productType,hideEN15494:false}),{instanceId:'builder-care-probe'}).metrics.bcfEdgeClipped;
+      if(_isCandle && (_isSmallForCLP || _careIconsNeedRoom)){
         _en15494Warn.style.display='block';
       } else {
         _en15494Warn.style.display='none';
@@ -5413,6 +5423,7 @@ function updateLabel(){
   const _fitAdvice = '<div class="fit-heading"><span aria-hidden="true">●</span> '+(_sizeRec?'Needs '+_compactRecDims+' to fit everything clearly <small>('+escapeBuilderText(_sizeRec.shape)+')</small>':'Try another shape or size')+'</div><div class="fit-actions">'+
     (_sizeRec?'<button type="button" class="fit-primary" onclick="applySuggestedLabelSize()">Use '+_compactRecDims+'</button>':'<p class="fit-helper">No tested size up to 150 mm fits.</p>')+
     '<details class="fit-size-picker"><summary>Other shape or size ▾</summary>'+inlineSizeEditor()+'</details></div>'+
+    (window._bcfEdgeClipped&&!S.hideEN15494?'<div class="optional-item-review"><p class="fit-helper">Or keep this size: the candle safety symbols do not have to be on the CLP label.</p><label class="omission-chip"><input type="checkbox" onchange="if(this.checked)removeCareSymbolsForFit()"> <span>Remove EN 15494 pictograms from this label <em>(I will display them on the packaging instead)</em></span></label></div>':'')+
     (typeof optionalItemAdviceHTML==='function'?optionalItemAdviceHTML():'');
   const pasteFit=document.getElementById('smart-paste-size-warning');
   if(pasteFit){
