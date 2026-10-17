@@ -1,0 +1,304 @@
+{
+ "input": {
+  "id": "045",
+  "supplier": "Nikura",
+  "name": "Juniper Berry Essential Oil 10% full SDS",
+  "url": "https://nikura.blob.core.windows.net/pdfs/CLP10_Juniper_Berry_Essential_Oil_EO-JUN.pdf",
+  "pdf_sha256": "82040b0a683555d66bb64e614b1ca06e15f312c82f6301ec6d672dd17d485441",
+  "manifest_sha256": "82040b0a683555d66bb64e614b1ca06e15f312c82f6301ec6d672dd17d485441",
+  "text_sha256": "0a078279af5279ecafd48ccb7cbab874225a1101ce2e536d96579b29d40219aa",
+  "manifest_text_sha256": "0a078279af5279ecafd48ccb7cbab874225a1101ce2e536d96579b29d40219aa",
+  "input_verified": true
+ },
+ "product_name": "Juniper Berry Essential Oil Candle",
+ "sizes": {
+  "63x44": {
+   "size": "63x44",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-3"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 63,
+     "mmH": 44,
+     "pw": 260,
+     "ph": 182
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "H317, H411, H316, EUH208",
+    "p_field": "P261, P273, P302+P352, P333+P313, P391, P501",
+    "signal": "Warning",
+    "h_codes": [
+     "H317",
+     "H411",
+     "H316",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P261",
+     "P273",
+     "P302+P352",
+     "P333+P313",
+     "P391",
+     "P501"
+    ],
+    "sensitisers": [
+     "Caryophyllene",
+     "Terpinen-4-ol",
+     "Terpinolene",
+     "alpha-Phellandrene",
+     "beta- Information:             Pinene",
+     "d-Limonene",
+     "p-Mentha-1,3-diene"
+    ],
+    "pictograms_state": [
+     "exclamation",
+     "aquatic"
+    ],
+    "pictograms_ui": [
+     "exclamation",
+     "aquatic"
+    ],
+    "allergen_tags": "CaryophylleneTerpinen-4-olTerpinolenealpha-Phellandrenebeta- Information: Pinened-Limonenep-Mentha-1,3-diene",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "H317, H411, H316, EUH208",
+    "p_field": "P261, P273, P302+P352, P333+P313, P391, P501",
+    "signal": "Warning",
+    "h_codes": [
+     "H317",
+     "H411",
+     "H316",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P261",
+     "P273",
+     "P302+P352",
+     "P333+P313",
+     "P391",
+     "P501"
+    ],
+    "sensitisers": [
+     "Caryophyllene",
+     "Terpinen-4-ol",
+     "Terpinolene",
+     "alpha-Phellandrene",
+     "beta- Information:             Pinene",
+     "d-Limonene",
+     "p-Mentha-1,3-diene"
+    ],
+    "pictograms_state": [
+     "exclamation",
+     "aquatic"
+    ],
+    "pictograms_ui": [
+     "exclamation",
+     "aquatic"
+    ],
+    "allergen_tags": "CaryophylleneTerpinen-4-olTerpinolenealpha-Phellandrenebeta- Information: Pinened-Limonenep-Mentha-1,3-diene",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "stopped_at": "step-3",
+   "dialogs": [
+    "This code needs supplier confirmation for a Great Britain CLP label\n\nThe following code appears in your supplier SDS: H316. CLPeasy does not recognise it as a hazard statement in the current Great Britain CLP information checked by the service. It may be recognised under another national or international classification system, or the supplier may need to clarify the Great Britain classification. CLPeasy currently supports products placed on the market in Great Britain (England, Scotland and Wales). Please ask your supplier for the current Great Britain-market SDS or classification information applicable to your final formulation and concentration. CLPeasy has not added, removed, translated or substituted this code. Do not change the SDS code just to make the label generate. For help, contact support@clpeasy.com with the SDS and flagged code."
+   ],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [],
+   "downloads_seen": [],
+   "ms": 13193
+  },
+  "76x51": {
+   "size": "76x51",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-3"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 76,
+     "mmH": 51,
+     "pw": 260,
+     "ph": 174
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "H317, H411, H316, EUH208",
+    "p_field": "P261, P273, P302+P352, P333+P313, P391, P501",
+    "signal": "Warning",
+    "h_codes": [
+     "H317",
+     "H411",
+     "H316",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P261",
+     "P273",
+     "P302+P352",
+     "P333+P313",
+     "P391",
+     "P501"
+    ],
+    "sensitisers": [
+     "Caryophyllene",
+     "Terpinen-4-ol",
+     "Terpinolene",
+     "alpha-Phellandrene",
+     "beta- Information:             Pinene",
+     "d-Limonene",
+     "p-Mentha-1,3-diene"
+    ],
+    "pictograms_state": [
+     "exclamation",
+     "aquatic"
+    ],
+    "pictograms_ui": [
+     "exclamation",
+     "aquatic"
+    ],
+    "allergen_tags": "CaryophylleneTerpinen-4-olTerpinolenealpha-Phellandrenebeta- Information: Pinened-Limonenep-Mentha-1,3-diene",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "H317, H411, H316, EUH208",
+    "p_field": "P261, P273, P302+P352, P333+P313, P391, P501",
+    "signal": "Warning",
+    "h_codes": [
+     "H317",
+     "H411",
+     "H316",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P261",
+     "P273",
+     "P302+P352",
+     "P333+P313",
+     "P391",
+     "P501"
+    ],
+    "sensitisers": [
+     "Caryophyllene",
+     "Terpinen-4-ol",
+     "Terpinolene",
+     "alpha-Phellandrene",
+     "beta- Information:             Pinene",
+     "d-Limonene",
+     "p-Mentha-1,3-diene"
+    ],
+    "pictograms_state": [
+     "exclamation",
+     "aquatic"
+    ],
+    "pictograms_ui": [
+     "exclamation",
+     "aquatic"
+    ],
+    "allergen_tags": "CaryophylleneTerpinen-4-olTerpinolenealpha-Phellandrenebeta- Information: Pinened-Limonenep-Mentha-1,3-diene",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "stopped_at": "step-3",
+   "dialogs": [
+    "This code needs supplier confirmation for a Great Britain CLP label\n\nThe following code appears in your supplier SDS: H316. CLPeasy does not recognise it as a hazard statement in the current Great Britain CLP information checked by the service. It may be recognised under another national or international classification system, or the supplier may need to clarify the Great Britain classification. CLPeasy currently supports products placed on the market in Great Britain (England, Scotland and Wales). Please ask your supplier for the current Great Britain-market SDS or classification information applicable to your final formulation and concentration. CLPeasy has not added, removed, translated or substituted this code. Do not change the SDS code just to make the label generate. For help, contact support@clpeasy.com with the SDS and flagged code."
+   ],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [],
+   "downloads_seen": [],
+   "ms": 11964
+  }
+ }
+}

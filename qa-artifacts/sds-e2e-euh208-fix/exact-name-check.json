@@ -1,0 +1,86 @@
+{
+"state_exact": 72,
+"state_table_case_only": [
+20,
+[
+[
+"021",
+"63x44",
+[
+"Geranyl Acetate"
+]
+],
+[
+"021",
+"76x51",
+[
+"Geranyl Acetate"
+]
+],
+[
+"023",
+"63x44",
+[
+"Geranyl Acetate"
+]
+],
+[
+"023",
+"76x51",
+[
+"Geranyl Acetate"
+]
+],
+[
+"054",
+"63x44",
+[
+"Geranyl Acetate"
+]
+],
+[
+"054",
+"76x51",
+[
+"Geranyl Acetate"
+]
+]
+]
+],
+"state_wrong": [
+0,
+[]
+],
+"other_extraction_changed": [
+0,
+[]
+],
+"files_checked": 163,
+"file_missing_name": [
+0,
+[]
+],
+"layout_text_in_file": [
+0,
+[]
+],
+"console_errors": [
+2,
+[
+[
+"010",
+"63x44",
+[
+"HTTP 404 http://127.0.0.1:34965/favicon.ico"
+]
+],
+[
+"011",
+"63x44",
+[
+"HTTP 404 http://127.0.0.1:41385/favicon.ico"
+]
+]
+]
+]
+}

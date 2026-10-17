@@ -1,0 +1,248 @@
+{
+ "input": {
+  "id": "044",
+  "supplier": "Nikura",
+  "name": "Jasmine Indian Essential Oil 10% full SDS",
+  "url": "https://nikura.blob.core.windows.net/pdfs/CLP10_Jasmine_Indian_Essential_Oil_EO-JIN.pdf",
+  "pdf_sha256": "90c509bd334edcaeb345659923f1a944821afed64b46f5a1d167adff726201e3",
+  "manifest_sha256": "90c509bd334edcaeb345659923f1a944821afed64b46f5a1d167adff726201e3",
+  "text_sha256": "e025268d69218b99050dd3a5a1d5c9efc7fd7fb29fca17df7be4a838c77472bf",
+  "manifest_text_sha256": "e025268d69218b99050dd3a5a1d5c9efc7fd7fb29fca17df7be4a838c77472bf",
+  "input_verified": true
+ },
+ "product_name": "Jasmine Indian Essential Oil Candle",
+ "sizes": {
+  "63x44": {
+   "size": "63x44",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-3"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 63,
+     "mmH": 44,
+     "pw": 260,
+     "ph": 182
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "H412, H401, EUH208",
+    "p_field": "P273, P501",
+    "signal": "",
+    "h_codes": [
+     "H412",
+     "H401",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P273",
+     "P501"
+    ],
+    "sensitisers": [
+     "Eugenol",
+     "Isoeugenol",
+     "Linalool",
+     "Phytol"
+    ],
+    "pictograms_state": [],
+    "pictograms_ui": [],
+    "allergen_tags": "EugenolIsoeugenolLinaloolPhytol",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "H412, H401, EUH208",
+    "p_field": "P273, P501",
+    "signal": "",
+    "h_codes": [
+     "H412",
+     "H401",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P273",
+     "P501"
+    ],
+    "sensitisers": [
+     "Eugenol",
+     "Isoeugenol",
+     "Linalool",
+     "Phytol"
+    ],
+    "pictograms_state": [],
+    "pictograms_ui": [],
+    "allergen_tags": "EugenolIsoeugenolLinaloolPhytol",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "stopped_at": "step-3",
+   "dialogs": [
+    "This code needs supplier confirmation for a Great Britain CLP label\n\nThe following code appears in your supplier SDS: H401. CLPeasy does not recognise it as a hazard statement in the current Great Britain CLP information checked by the service. It may be recognised under another national or international classification system, or the supplier may need to clarify the Great Britain classification. CLPeasy currently supports products placed on the market in Great Britain (England, Scotland and Wales). Please ask your supplier for the current Great Britain-market SDS or classification information applicable to your final formulation and concentration. CLPeasy has not added, removed, translated or substituted this code. Do not change the SDS code just to make the label generate. For help, contact support@clpeasy.com with the SDS and flagged code."
+   ],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [],
+   "downloads_seen": [],
+   "ms": 11757
+  },
+  "76x51": {
+   "size": "76x51",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-3"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 76,
+     "mmH": 51,
+     "pw": 260,
+     "ph": 174
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "H412, H401, EUH208",
+    "p_field": "P273, P501",
+    "signal": "",
+    "h_codes": [
+     "H412",
+     "H401",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P273",
+     "P501"
+    ],
+    "sensitisers": [
+     "Eugenol",
+     "Isoeugenol",
+     "Linalool",
+     "Phytol"
+    ],
+    "pictograms_state": [],
+    "pictograms_ui": [],
+    "allergen_tags": "EugenolIsoeugenolLinaloolPhytol",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "H412, H401, EUH208",
+    "p_field": "P273, P501",
+    "signal": "",
+    "h_codes": [
+     "H412",
+     "H401",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P273",
+     "P501"
+    ],
+    "sensitisers": [
+     "Eugenol",
+     "Isoeugenol",
+     "Linalool",
+     "Phytol"
+    ],
+    "pictograms_state": [],
+    "pictograms_ui": [],
+    "allergen_tags": "EugenolIsoeugenolLinaloolPhytol",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "stopped_at": "step-3",
+   "dialogs": [
+    "This code needs supplier confirmation for a Great Britain CLP label\n\nThe following code appears in your supplier SDS: H401. CLPeasy does not recognise it as a hazard statement in the current Great Britain CLP information checked by the service. It may be recognised under another national or international classification system, or the supplier may need to clarify the Great Britain classification. CLPeasy currently supports products placed on the market in Great Britain (England, Scotland and Wales). Please ask your supplier for the current Great Britain-market SDS or classification information applicable to your final formulation and concentration. CLPeasy has not added, removed, translated or substituted this code. Do not change the SDS code just to make the label generate. For help, contact support@clpeasy.com with the SDS and flagged code."
+   ],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [],
+   "downloads_seen": [],
+   "ms": 12250
+  }
+ }
+}
