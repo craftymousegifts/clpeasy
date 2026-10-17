@@ -52,7 +52,8 @@ assert(!builderSrc.includes('compares this figure exactly with your supplier doc
 assert(builderSrc.includes('Check that your supplier’s CLP information applies to this finished-product percentage. CLPeasy does not verify this or recalculate hazards.'));
 for (const code of ['P272', 'P264', 'P270', 'P280', 'P303+P361+P353', 'P362', 'P362+P364', 'P363', 'P405'])
   assert(new RegExp(`const _pExclude=\\[[^\\]]*'${code.replace(/\+/g,'\\+')}'`).test(builderSrc), `Smart Paste exclusion list must still contain ${code}`);
-ok('builder wiring present; calculator wording corrected; exclusion list unchanged');
+assert(!builderSrc.includes('remove it if it was entered in error') && (builderSrc.match(/correct it if it was entered in error/g)||[]).length === 2, 'download banner says correct, not remove');
+ok('builder wiring present; calculator and banner wording corrected; exclusion list unchanged');
 
 // ── 3. Behaviour in the Builder (jsdom) ──────────────────────────────────
 const source = builderSrc.replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
@@ -128,6 +129,14 @@ assert(/Required codes must be resolved, not removed or changed just to enable d
 assert(/Combining the Section 2\.2 statements from several ingredient SDSs does not establish the classification of the finished mixture/.test(msg));
 assert(/competent CLP specialist/.test(msg));
 ok('unrecognised codes kept and blocked; guidance explains resolve-not-remove and mixtures');
+
+// Loading a different saved label hides both notes (display only).
+paste('2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nP102 P261 P264 P280 P302+P352 P501');
+assert(shown('smart-paste-excluded-note') && shown('sds-source-suitability-warning'));
+try { window.loadLabelRecord({ id:'saved-other', scentName:'Other', productType:'Wax Melt', shape:'circle', size:63, hStatements:'', pStatements:'', sensitisers:[], pictograms:[] }); } catch (e) { /* saved-label list refresh needs a signed-in library; not under test */ }
+assert(!shown('sds-source-suitability-warning') && !shown('smart-paste-excluded-note'), 'notes from an earlier paste must not stay on a loaded label');
+assert.deepStrictEqual([...(window._smartPasteExcludedCodes || [])], []);
+ok('loading a different saved label hides the earlier guidance');
 
 // Clearing hazard data hides both notes.
 window.clearHazardData();

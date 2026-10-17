@@ -3223,6 +3223,9 @@ async function saveLabel(){
 function loadLabelRecord(e){
   if(!e)return;
   editingLabelId=e.id||null;
+  // Smart Paste guidance from an earlier paste does not apply to this label.
+  window._smartPasteExcludedCodes=[];
+  ['sds-source-suitability-warning','smart-paste-excluded-note'].forEach(id=>{const b=document.getElementById(id);if(b){b.textContent='';b.style.display='none';}});
   S.scentName=e.scentName;S.productType=e.productType;S.shape=e.shape;S.size=e.size;S.customW=e.customW||S.customW;S.customH=e.customH||S.customH;
   S.signal=e.signal||'';S.sdsSignal=e.sdsSignal!==undefined?e.sdsSignal:(e.signal||'');S.hStatements=e.hStatements||'';S.sensitisers=e.sensitisers||[];
   S.hSelected=(S.hStatements||'').split(',').map(code=>code.trim()).filter(Boolean);
@@ -5456,10 +5459,10 @@ function updateLabel(){
   // support path it always has.
   const _blockBody = _codeBlockParts.length
     ? _gbUnsupportedCodesFound.length && _genericUnrecognizedCodesFound.length
-      ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br>'+clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+' Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than print a code CLPeasy could not safely include on your label.</strong>'
+      ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br>'+clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+' Double-check this code against your SDS Section 2.2, correct it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than print a code CLPeasy could not safely include on your label.</strong>'
       : _gbUnsupportedCodesFound.length
       ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br><strong>CLPeasy has blocked the download rather than remove, replace or print a code it cannot safely resolve for a Great Britain CLP label.</strong>'
-      : clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+'<br><br>Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
+      : clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+'<br><br>Double-check this code against your SDS Section 2.2, correct it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
     : _isCustomSizeTooSmall
     ? getCustomSizeMinMsg()+'<br><br>To create a downloadable label, use the size controls below to '+(S.shape==='rectangle'?'set the long side to '+LabelRenderer.CUSTOM_RECT_LONG_MIN_MM+'mm or larger and the short side to '+LabelRenderer.CUSTOM_RECT_SHORT_MIN_MM+'mm or larger':'increase the custom size to '+LabelRenderer.CUSTOM_SIZE_MIN_MM+'mm or larger')+'.'
     : window._footerLegibilityClipped

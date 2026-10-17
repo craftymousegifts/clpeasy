@@ -286,6 +286,7 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     assert.strictEqual(r.bannerVisible, true, 'mixed input must show the download-blocking banner');
     assert(r.bannerHTML.includes('H316') && r.bannerHTML.includes('H999'), 'download banner must name BOTH H316 and H999');
     assert(r.bannerHTML.includes('needs supplier confirmation for a Great Britain CLP label'), 'download banner must include the supplier-confirmation message');
+    assert(r.bannerHTML.includes("A code can't be added to this label"), 'download banner must ALSO include the generic-unrecognised heading');
     assert(r.bannerHTML.includes('did not recognise the following code: H999'), 'download banner must ALSO include the generic-unrecognised message');
     assert.deepStrictEqual(r.unsupportedCodes, ['H316'], 'structured field unsupportedCodes must be exactly [H316]');
     assert.deepStrictEqual(r.unrecognizedCodesGeneric, ['H999'], 'structured field unrecognizedCodesGeneric must be exactly [H999]');
