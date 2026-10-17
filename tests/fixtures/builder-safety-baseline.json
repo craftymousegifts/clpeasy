@@ -1,11 +1,13 @@
 {
  "circle-52-light": {
   "builder": {
-   "allowed": true,
-   "fits": true,
-   "fitBlocked": false,
+   "allowed": false,
+   "fits": false,
+   "fitBlocked": true,
    "requiredComplete": true,
-   "warnings": [],
+   "warnings": [
+    "candle-safety-edge-clearance"
+   ],
    "signal": "Warning",
    "h": "H317",
    "p": "P102, P501",
@@ -24,33 +26,27 @@
     "01234 567890"
    ],
    "exports": {
-    "svg": 1,
-    "png": 1,
-    "pdf": 1
+    "svg": 0,
+    "png": 0,
+    "pdf": 0
    },
-   "png": [
-    1228,
-    1228
-   ],
-   "pdfPage": "52mm 52mm"
+   "png": null,
+   "pdfPage": null
   },
   "reopen": {
    "step": 5,
-   "allowed": true
+   "allowed": false
   },
   "composer": {
-   "fitIssues": 0,
+   "fitIssues": 1,
    "contentIssues": 0,
-   "pdf": true,
-   "pdfRenderPx": [
-    614,
-    614
-   ],
+   "pdf": false,
+   "pdfRenderPx": null,
    "cutPng": [
     614,
     614
    ],
-   "accountingCalls": 1
+   "accountingCalls": 0
   }
  },
  "circle-63-medium-euh208": {

@@ -100,7 +100,9 @@ setTimeout(async () => {
     // stepper drives the existing setApprovedBuilderStep()/
     // canLeaveApprovedBuilderStep() gate rather than a parallel path.
     window.selectShape('circle');
-    window.selectSize(52);
+    // 56 mm: since 17 Oct 2026 a 52 mm candle is blocked by the care-icon
+    // edge rule (recommends 56 mm); this test checks navigation, not fit.
+    window.selectSize(56);
     document.getElementById('scent-name').value = 'Test Scent';
     document.getElementById('product-type').value = 'Scented Candle';
     items[1].click(); // -> step 2 (valid: step 1 complete)

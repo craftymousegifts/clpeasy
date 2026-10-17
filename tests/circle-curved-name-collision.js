@@ -41,7 +41,8 @@ const server = http.createServer((req, res) => {
     // Render + measure the smallest ink gap between the curved name and the
     // named texts (all other elements hidden; clip paths kept).
     const measure = d => page.evaluate(async d => {
-      const r = LabelRenderer.renderLabel(d, { instanceId: 'cc' + Math.random().toString(36).slice(2) });
+      // livePreview only omits the blocked-label overlay; the layout is identical to export.
+      const r = LabelRenderer.renderLabel(d, { instanceId: 'cc' + Math.random().toString(36).slice(2), livePreview: true });
       const S = 1040, doc = new DOMParser().parseFromString(r.svg, 'image/svg+xml'), svg = doc.documentElement;
       const vb = svg.getAttribute('viewBox').split(' ').map(Number);
       svg.setAttribute('width', S); svg.setAttribute('height', Math.round(S * vb[3] / vb[2]));
@@ -69,10 +70,14 @@ const server = http.createServer((req, res) => {
         gap: best === Infinity ? null : best * unit - 0.25 };
     }, d);
 
+    // 17 Oct 2026: 52 mm candles are now blocked only because the five
+    // candle-care icons cannot keep 1 mm from the circular cut edge. That is
+    // independent of the curved product name, whose layout is still checked.
+    const edgeOnly = m => m.warnings.length === 1 && m.warnings[0] === 'candle-safety-edge-clearance';
     // 1. Previously clear labels: unchanged layout, still clear.
     for (const mm of [52, 63, 97]) for (const name of ['Mint', 'Lavender']) {
       const m = await measure(label(mm, name, 'Crafty Mouse Gifts'));
-      check(m.fits, `${name} ${mm}mm should fit`);
+      check(m.fits || edgeOnly(m), `${name} ${mm}mm should fit (or be blocked only by the care-icon edge rule)`);
       check(m.adjusted === false, `${name} ${mm}mm was already clear and must not be adjusted`);
       check(m.gap > 0.25, `${name} ${mm}mm curved name touches the text below (gap ${m.gap})`);
     }
@@ -94,7 +99,7 @@ const server = http.createServer((req, res) => {
     adjustedCases.push([label(63, 'Lemongrass & Lime Candle', 'Crafty Mouse Gifts', REED), 'DANGER reed diffuser 63mm']);
     for (const [d, what] of adjustedCases) {
       const m = await measure(d);
-      if (!m.fits) { check(m.warnings.includes('scent-name-too-small'), `${what}: blocked, but not through the product-name flag (${m.warnings})`); continue; }
+      if (!m.fits && !edgeOnly(m)) { check(m.warnings.includes('scent-name-too-small'), `${what}: blocked, but not through the product-name flag (${m.warnings})`); continue; }
       check(m.gap !== null && m.gap >= MIN_GAP, `${what}: curved name too close to the text below (gap ${m.gap})`);
       check(m.fs >= m.floor - 1e-6, `${what}: curved name ${m.fs} below the renderer minimum ${m.floor}`);
     }
