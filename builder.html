@@ -4057,7 +4057,7 @@ function updateSmartPasteExcludedNote(){
   const h=document.createElement('strong');h.style.display='block';h.style.marginBottom='4px';
   h.textContent='Not added automatically: '+codes.join(', ');
   box.appendChild(h);
-  box.appendChild(document.createTextNode((codes.length>1?'Smart Paste has not added these precautionary statements':'Smart Paste has not added this precautionary statement')+' to your label. You need to establish whether '+(codes.length>1?'they apply':'it applies')+' to your finished product, using the applicable finished-product classification information from your supplier or a competent CLP specialist.'+(codes.includes('P280')?' If P280 applies, add it in the precautionary statements below and choose the protection items.':'')+(codes.some(c=>c!=='P280')?' For any other code that applies, contact support@clpeasy.com.':'')));
+  box.appendChild(document.createTextNode((codes.length>1?'Smart Paste has not added these precautionary statements':'Smart Paste has not added this precautionary statement')+' to your label. You need to establish whether '+(codes.length>1?'they apply':'it applies')+' to your finished product, using the applicable finished-product classification information from your supplier or a competent CLP specialist. If '+(codes.length>1?'any of them apply':'it applies')+', contact support@clpeasy.com.'));
   box.style.display='block';
 }
 document.addEventListener('DOMContentLoaded',()=>{
