@@ -149,6 +149,43 @@ try { window.loadLabelRecord({ id: 'saved', scentName: 'Other', productType: 'Wa
 assert.strictEqual(box('smart-paste-scope-error').style.display, 'none');
 ok('message clears after a good extraction, Clear hazard data, or loading a saved label');
 
+// ── 3b. Boundary layouts seen in copied PDFs (independent review, Oct 2026) ──
+const LAYOUTS = {
+  'unnumbered later headings': S1 + S2.replace('2.3 Other hazards', 'Other hazards') + S3PLUS.replace('SECTION 3: Composition/information on ingredients', 'Composition/information on ingredients').replace('3.2 Mixtures', 'Mixtures').replace('SECTION 4: First aid measures', 'First aid measures').replace('SECTION 16: Other information', 'Other information'),
+  'colon numbering ("3: Composition")': S1 + S2.replace('2.3 Other hazards\nNot applicable.\n', '') + S3PLUS.replace('SECTION 3: Composition', '3: Composition'),
+  'heading numbers on their own line': S1 + S2.replace('2.2 Label elements', '2.2\nLabel elements').replace('2.3 Other hazards', '2.3\nOther hazards') + S3PLUS,
+  'ALL-CAPS headings': (S1 + S2 + S3PLUS).replace(/(^|\n)((?:SECTION|\d+\.\d)[^\n]*)/g, (m, a, b) => a + b.toUpperCase()),
+};
+for (const [name, text] of Object.entries(LAYOUTS)) same(extract(text), base, name);
+const inside = only22.replace('P273 Avoid release to the environment.', 'P273 Avoid release to the environment; see other hazards below.');
+same(extract(inside + '2.3 Other hazards\n'), extract(inside), 'a sentence mentioning other hazards does not end Section 2.2');
+assert.strictEqual(extract('Hazards identification\nLabel elements\nSignal word: Warning\nH317\nComposition/information on ingredients\nH226 H304\n').error, MSG, 'unnumbered whole SDS without a numbered 2.2 stops');
+ok('Section 2.2 ends at unnumbered, colon-numbered, split and capitalised 2.3/Section 3 headings; a fully unnumbered SDS stops');
+
+// ── 3c. Repeated 2.2 heading without a "continued" marker stops (never merges) ──
+const repeated = only22.replace('P302+P352', 'Example Fragrances Ltd   Page 2 of 9\n2.2 Label elements\nP302+P352');
+assert.strictEqual(extract(repeated).error, MSG, 'an unmarked repeated 2.2 heading stops rather than merging');
+ok('an unmarked repeated Section 2.2 heading stops rather than being merged or split');
+
+// ── 3d. Scoping file failed to load: clear message, nothing extracted ──────
+{
+  const dom2 = new JSDOM(source, { url: 'https://local.clpeasy.test/builder.html', runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: new VirtualConsole(),
+    beforeParse(w) {
+      w.HTMLElement.prototype.scrollIntoView = () => {};
+      w.HTMLCanvasElement.prototype.getContext = () => ({ font: '', measureText(t){ return { width: String(t).length * 6 }; }, drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data: [] }; } });
+      for (const f of ['label-render.js', 'sds-doc-check.js', 'label-library.js', 'entitlement.js']) w.eval(fs.readFileSync(path.join(__dirname, '..', f), 'utf8')); // no sds-section-scope.js
+      w.alert = () => {}; w.confirm = () => true; w.scrollTo = () => {}; w.fetch = async () => ({ ok: true, json: async () => ({}) });
+      w.supabase = { createClient: () => ({ auth: { getSession: async () => ({ data: { session: null } }), onAuthStateChange: () => ({ data: { subscription: { unsubscribe(){} } } }), signOut: async () => ({}) }, from: () => Object.create(emptyQuery), rpc: async () => ({ data: false, error: null }) }) };
+    } });
+  const w2 = dom2.window, d2 = w2.document;
+  w2.setApprovedBuilderStep(3); d2.getElementById('smart-paste-input').value = S1 + S2 + S3PLUS;
+  assert.doesNotThrow(() => w2.extractSDS(), 'Extract does not throw when the scoping file is missing');
+  const e2 = d2.getElementById('smart-paste-scope-error');
+  assert(e2.style.display !== 'none' && /couldn’t start because part of this page didn’t load\. Please refresh the page and try again\. Nothing has been extracted\./.test(e2.textContent), 'load-failure message shown');
+  assert.strictEqual(w2.eval('S.hStatements'), '', 'nothing extracted');
+}
+ok('if the scoping file fails to load, Extract shows a refresh message and extracts nothing');
+
 // ── 4. Bare extracts unchanged (and the documented limitation) ──────────
 const bare = extract('Signal word: Warning\nH317 May cause an allergic skin reaction.\nP261 P302+P352 P501\nEUH208 Contains Linalool. May produce an allergic reaction.');
 assert.strictEqual(bare.error, null); assert(bare.h.startsWith('H317') && bare.signal === 'Warning');

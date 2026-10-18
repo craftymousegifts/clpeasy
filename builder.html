@@ -4034,8 +4034,14 @@ function extractSDS(){
   // all pasted text put Section 3 ingredient hazards and later-section codes
   // on the finished-product label. If one Section 2.2 can't be identified,
   // extract nothing: clear any earlier extraction and explain why.
-  const scope=SdsSectionScope.scope(pasted);
   const scopeErr=document.getElementById('smart-paste-scope-error');
+  // If the scoping file failed to load, say so instead of doing nothing.
+  // Nothing is extracted; hazard data already on the label is left as it is.
+  if(!window.SdsSectionScope||typeof window.SdsSectionScope.scope!=='function'){
+    if(scopeErr){scopeErr.textContent='Smart Paste couldn’t start because part of this page didn’t load. Please refresh the page and try again. Nothing has been extracted.';scopeErr.style.display='block';}
+    return;
+  }
+  const scope=SdsSectionScope.scope(pasted);
   if(scope.status==='unsafe'){
     clearHazardData();
     if(scopeErr){scopeErr.textContent=SdsSectionScope.MESSAGE;scopeErr.style.display='block';}

@@ -17,16 +17,23 @@
 (function (root) {
   'use strict';
   // A Section 2.2 heading at the start of a line: "2.2 Label elements",
-  // "SECTION 2.2: Labelling", "2.2. Label Elements".
-  const H22 = /(?:^|\n)[ \t]*(?:section[ \t]*)?2\.2\.?[ \t]*:?[ \t]*label(?:l?ing)?(?:[ \t]+elements?)?\b/gi;
-  // Where Section 2.2 ends: 2.3, or any heading from Section 3 onwards.
+  // "SECTION 2.2: Labelling", "2.2. Label Elements", or "2.2" with the title
+  // on the next line (two-column PDF copies).
+  const H22 = /(?:^|\n)[ \t]*(?:section[ \t]*)?2\.2\.?[ \t]*:?[ \t]*\n?[ \t]*label(?:l?ing)?(?:[ \t]+elements?)?\b/gi;
+  // Section titles that end Section 2.2, numbered or not. Unnumbered titles
+  // only count as a heading when they are (almost) the whole line.
+  const LATER_TITLES = 'other[ \\t]+hazards|composition|mixtures?|substances?|information[ \\t]+on[ \\t]+ingredients|first[- \\t]*aid|fire|fire-?fighting|accidental|handling|exposure|physical|stability|toxicolog|ecolog|disposal|transport|regulatory|other[ \\t]+information';
   const END = new RegExp('(?:^|\\n)[ \\t]*(?:' + [
     '(?:section[ \\t]*)?2\\.3\\b',
     'section[ \\t]*(?:[3-9]|1[0-6])\\b',
-    '(?:[3-9]|1[0-6])\\.?\\d?\\.?[ \\t]+(?:composition|mixtures?|substances?|first[ \\t]+aid|fire|fire-?fighting|accidental|handling|exposure|physical|stability|toxicolog|ecolog|disposal|transport|regulatory|other[ \\t]+information)',
+    // "3. Composition", "3: Composition", "3 - Composition", "3.2 Mixtures"
+    '(?:[3-9]|1[0-6])(?:\\.\\d+)?[.:)]?[ \\t]*[-–:]?[ \\t]*(?:' + LATER_TITLES + ')',
+    // Unnumbered "Other hazards", "Composition/information on ingredients", "First aid measures"
+    '(?:other[ \\t]+hazards|composition[ \\t]*\\/?[ \\t]*information[ \\t]+on[ \\t]+ingredients|information[ \\t]+on[ \\t]+ingredients|first[- \\t]*aid[ \\t]+measures)[^\\n]{0,40}(?=\\n|$)',
   ].join('|') + ')', 'i');
-  // Signs that the text is (part of) a structured SDS rather than a bare extract.
-  const STRUCTURE = /(?:^|\n)[ \t]*(?:section[ \t]*(?:[1-9]|1[0-6])\b|(?:[1-9]|1[0-6])\.\d?\.?[ \t]+(?:identification|hazards?[ \t]+identification|classification|label|other[ \t]+hazards|composition|first[ \t]+aid))/i;
+  // Signs that the text is (part of) a structured SDS rather than a bare
+  // extract, including unnumbered section titles.
+  const STRUCTURE = /(?:^|\n)[ \t]*(?:section[ \t]*(?:[1-9]|1[0-6])\b|(?:[1-9]|1[0-6])\.\d?\.?[ \t]+(?:identification|hazards?[ \t]+identification|classification|label|other[ \t]+hazards|composition|first[ \t]+aid)|(?:hazards?[ \t]+identification|composition[ \t]*\/?[ \t]*information[ \t]+on[ \t]+ingredients|first[- \t]*aid[ \t]+measures|identification[ \t]+of[ \t]+the[ \t]+(?:substance|mixture))[^\n]{0,40}(?=\n|$))/i;
   const LABEL_CONTENT = /signal[ \t]*word|\bH\d{3}|\bP\d{3}|\bEUH\d{3}/i;
   const CONTINUED = /^[\s:.\-–—]*\(?\s*(?:continued|cont(?:'d|\.|d))\b/i;
   const SIGNAL_LINE = /(?:^|\n)[ \t]*signal[ \t]*words?\b/gi;
