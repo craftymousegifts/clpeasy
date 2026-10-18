@@ -4042,6 +4042,10 @@ function _sdsSuitability(){
 }
 function _smartPasteExcluded(){return S.hazardFromExtraction?(window._smartPasteExcludedCodes||[]):[];}
 function _guideEl(tag,text,css){const el=document.createElement(tag);el.style.color='inherit';if(css)el.style.cssText+=css;if(text)el.textContent=text;return el;}
+// Owner-approved emphasis: "not" in "does not recalculate" and "not added"
+// in "... not added to your label" are <strong>; the wording is unchanged.
+const _GUIDE_EMPH=/(?<=does )not(?= recalculate)|not added(?= to your label)/g;
+function _guideEmph(el,text){let last=0;for(const m of text.matchAll(_GUIDE_EMPH)){if(m.index>last)el.appendChild(document.createTextNode(text.slice(last,m.index)));el.appendChild(_guideEl('strong',m[0]));last=m.index+m[0].length;}if(last<text.length)el.appendChild(document.createTextNode(text.slice(last)));return el;}
 function _guideSupportBlock(box,supplierLine=true){
   if(supplierLine)box.appendChild(_guideEl('p','Before using this label, check with your supplier for the appropriate CLP classification information for your finished product.','margin-top:8px;'));
   const help=_guideEl('p','','margin-top:6px;');help.appendChild(document.createTextNode('Need assistance? Contact '));
@@ -4065,10 +4069,7 @@ function updateSdsSourceSuitabilityWarning(){
     const body=_guideEl('div','','min-width:0;');
     body.appendChild(_guideEl('strong','Check your SDS suitability','display:block;margin-bottom:4px;color:'+SDS_GUIDE_LINK+';'));
     body.appendChild(_guideEl('p','Section 2.2 may not confirm whether this SDS applies to '+(result.target||'your finished product')+'.'));
-    const lim=_guideEl('p','','margin-top:6px;');
-    lim.appendChild(document.createTextNode('CLPeasy does '));lim.appendChild(_guideEl('strong','not'));
-    lim.appendChild(document.createTextNode(' recalculate hazards for different fragrance percentages. Check that your supplier’s classification information applies to your finished product.'));
-    body.appendChild(lim);box.appendChild(body);
+    body.appendChild(_guideEmph(_guideEl('p','','margin-top:6px;'),'CLPeasy does not recalculate hazards for different fragrance percentages. Check that your supplier’s classification information applies to your finished product.'));box.appendChild(body);
   }else{
     box.className='field-alert field-alert-warn';box.setAttribute('role','alert');
     box.style.cssText='display:block;margin-top:12px;margin-bottom:0;font-size:13px;';
@@ -4078,7 +4079,7 @@ function updateSdsSourceSuitabilityWarning(){
     const hasPct=Number.isFinite(pct)&&pct>0&&pct<100;
     box.insertAdjacentHTML('beforeend',_sdsBottleCompareHtml(hasPct?pct:null));
     const ul=_guideEl('ul','','margin:0;padding-left:18px;');
-    const item=(title,text)=>{const li=_guideEl('li','','margin-top:6px;');li.appendChild(_guideEl('strong',title,'display:block;'));li.appendChild(document.createTextNode(text));ul.appendChild(li);};
+    const item=(title,text)=>{const li=_guideEl('li','','margin-top:6px;');li.appendChild(_guideEl('strong',title,'display:block;'));_guideEmph(li,text);ul.appendChild(li);};
     item('Fragrance concentration','This appears to be information for concentrated fragrance oil, rather than your finished product. CLPeasy does not recalculate hazards for different fragrance percentages.');
     const codes=_smartPasteExcluded();
     if(codes.length){
@@ -4124,7 +4125,7 @@ function updateSmartPasteExcludedNote(){
   // Standalone neutral note: actual codes, no bottles or fragrance-specific claims.
   const one=codes.length===1;
   box.appendChild(_guideEl('strong',(one?'Precautionary statement not added: ':'Precautionary statements not added: ')+codes.join(', '),'display:block;margin-bottom:4px;'));
-  box.appendChild(_guideEl('p',one?'This precautionary statement appears in your SDS but was not added to your label. Check whether it is required for your finished product before using the label.'
+  box.appendChild(_guideEmph(_guideEl('p'),one?'This precautionary statement appears in your SDS but was not added to your label. Check whether it is required for your finished product before using the label.'
     :'These precautionary statements appear in your SDS but were not added to your label. Check whether they are required for your finished product before using the label.'));
   _guideSupportBlock(box,false);
   box.style.display='block';

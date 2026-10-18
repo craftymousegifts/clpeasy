@@ -115,7 +115,10 @@ assert.strictEqual(r.blocked, false);
 const SUPPLIER = 'Before using this label, check with your supplier for the appropriate CLP classification information for your finished product.';
 const SUPPORT = 'Need assistance? Contact support@clpeasy.com.';
 const amber = () => box('sds-source-suitability-warning');
-const parts = el => [...el.querySelectorAll('strong,p,li')].map(e => e.childNodes.length && e.tagName === 'LI' ? e.lastChild.textContent : e.textContent);
+const EMPH = e => e.tagName === 'STRONG' && /^(not|not added)$/.test(e.textContent); // inline emphasis, not a heading
+const liText = li => li.textContent.slice(li.querySelector('strong').textContent.length);
+const parts = el => [...el.querySelectorAll('strong,p,li')].filter(e => !EMPH(e)).map(e => e.tagName === 'LI' ? liText(e) : e.textContent);
+const emph = el => [...el.querySelectorAll('strong')].filter(EMPH).map(e => e.textContent);
 const linkOk = el => { const a = el.querySelector('a'); return a && a.getAttribute('href') === 'mailto:support@clpeasy.com' && a.textContent === 'support@clpeasy.com' && a.style.textDecoration === 'underline' && a.style.color !== ''; };
 assert(shown('smart-paste-excluded-note'));
 const note = box('smart-paste-excluded-note').textContent;
@@ -154,7 +157,7 @@ ok('neither condition: no warning boxes');
 
 // --- Fragrance cue only: amber box, no P-statement bullet. ---
 const FRAG = 'This appears to be information for concentrated fragrance oil, rather than your finished product. CLPeasy does not recalculate hazards for different fragrance percentages.';
-const bullets = () => [...amber().querySelectorAll('li')].map(li => [li.querySelector('strong').textContent, li.lastChild.textContent]);
+const bullets = () => [...amber().querySelectorAll('li')].map(li => [li.querySelector('strong').textContent, liText(li)]);
 r = paste('Fragrance oil supplied at 100% concentration\n2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nP102 P261 P302+P352 P501');
 assert.deepStrictEqual(r.p, ['P102', 'P261', 'P302+P352', 'P501']);
 assert(amber().classList.contains('field-alert-warn') && !shown('smart-paste-excluded-note'));
@@ -228,6 +231,17 @@ paste(SDS + '\n' + SDS.replace('Signal word: Warning', 'Signal word: Danger'));
 assert(shown('smart-paste-scope-error') && !shown('sds-source-suitability-warning') && !shown('smart-paste-excluded-note'), 'stop hides guidance');
 assert.deepStrictEqual([...window.eval('S.hStatements')], []);
 ok('with the Section 2.2 scope: note names only Section 2.2 codes; a stopped paste shows no guidance');
+
+// Owner-requested emphasis (Oct 2026): semantic <strong> on "not" in "does not
+// recalculate" and on "not added" in "... not added to your label".
+paste('2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nP261 P280 P501');
+assert.deepStrictEqual(emph(amber()), ['not'], 'teal notice: "not" in strong');
+assert.deepStrictEqual(emph(box('smart-paste-excluded-note')), ['not added'], 'codes notice: "not added" in strong');
+paste('Fragrance oil supplied at 100% concentration\n2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nP261 P280 P501');
+assert(amber().classList.contains('field-alert-warn'));
+assert.deepStrictEqual(emph(amber()), ['not', 'not added'], 'amber box: both emphases in strong');
+assert(/CLPeasy does not recalculate hazards/.test(amber().textContent) && /was not added to your label/.test(amber().textContent), 'wording unchanged');
+ok('emphasis: "not" and "not added" are <strong> in the teal, codes and amber notices; wording unchanged');
 
 assert.deepStrictEqual(jsErrors.filter(e => !/Not implemented/.test(e)), [], 'no page errors');
 console.log(`\nAll ${n} Release C checks passed.`);
