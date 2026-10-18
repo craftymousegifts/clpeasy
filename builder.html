@@ -4051,8 +4051,8 @@ function _sdsSuitability(){
 }
 function _smartPasteExcluded(){return S.hazardFromExtraction?(window._smartPasteExcludedCodes||[]):[];}
 function _guideEl(tag,text,css){const el=document.createElement(tag);el.style.color='inherit';if(css)el.style.cssText+=css;if(text)el.textContent=text;return el;}
-function _guideSupportBlock(box){
-  box.appendChild(_guideEl('p','Before using this label, check with your supplier for the appropriate CLP classification information for your finished product.','margin-top:8px;'));
+function _guideSupportBlock(box,supplierLine=true){
+  if(supplierLine)box.appendChild(_guideEl('p','Before using this label, check with your supplier for the appropriate CLP classification information for your finished product.','margin-top:8px;'));
   const help=_guideEl('p','','margin-top:6px;');help.appendChild(document.createTextNode('Need assistance? Contact '));
   const a=document.createElement('a');a.href='mailto:support@clpeasy.com';a.textContent='support@clpeasy.com';
   a.style.cssText='color:'+SDS_GUIDE_LINK+';text-decoration:underline;font-weight:600;';
@@ -4066,10 +4066,18 @@ function updateSdsSourceSuitabilityWarning(){
   box.textContent='';
   box.dataset.suitability=result.level;
   if(result.level==='unverified'){
-    // Shown after every extraction, deliberately low-key.
-    box.className='';box.setAttribute('role','status');
-    box.style.cssText='display:block;margin-top:10px;font-size:12px;line-height:1.5;color:var(--muted);';
-    box.textContent='ℹ️ '+result.message;
+    // Shown after every extraction: a neutral teal information notice
+    // (never amber or red), separate from the "not added" codes notice.
+    box.className='field-alert field-alert-info';box.setAttribute('role','status');
+    box.style.cssText='display:flex;gap:10px;align-items:flex-start;margin-top:12px;margin-bottom:0;font-size:13px;color:var(--text);';
+    box.insertAdjacentHTML('beforeend','<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10" fill="none" stroke="'+SDS_GUIDE_LINK+'" stroke-width="2"/><path d="M12 11v6" stroke="'+SDS_GUIDE_LINK+'" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="7.5" r="1.3" fill="'+SDS_GUIDE_LINK+'"/></svg>');
+    const body=_guideEl('div','','min-width:0;');
+    body.appendChild(_guideEl('strong','Check your SDS suitability','display:block;margin-bottom:4px;color:'+SDS_GUIDE_LINK+';'));
+    body.appendChild(_guideEl('p','Section 2.2 may not confirm whether this SDS applies to '+(result.target||'your finished product')+'.'));
+    const lim=_guideEl('p','','margin-top:6px;');
+    lim.appendChild(document.createTextNode('CLPeasy does '));lim.appendChild(_guideEl('strong','not'));
+    lim.appendChild(document.createTextNode(' recalculate hazards for different fragrance percentages. Check that your supplier’s classification information applies to your finished product.'));
+    body.appendChild(lim);box.appendChild(body);
   }else{
     box.className='field-alert field-alert-warn';box.setAttribute('role','alert');
     box.style.cssText='display:block;margin-top:12px;margin-bottom:0;font-size:13px;';
@@ -4125,8 +4133,9 @@ function updateSmartPasteExcludedNote(){
   // Standalone neutral note: actual codes, no bottles or fragrance-specific claims.
   const one=codes.length===1;
   box.appendChild(_guideEl('strong',(one?'Precautionary statement not added: ':'Precautionary statements not added: ')+codes.join(', '),'display:block;margin-bottom:4px;'));
-  box.appendChild(_guideEl('p',one?'This statement was found in your SDS but was not added to your label.':'These statements were found in your SDS but were not added to your label.'));
-  _guideSupportBlock(box);
+  box.appendChild(_guideEl('p',one?'This precautionary statement appears in your SDS but was not added to your label. Check whether it is required for your finished product before using the label.'
+    :'These precautionary statements appear in your SDS but were not added to your label. Check whether they are required for your finished product before using the label.'));
+  _guideSupportBlock(box,false);
   box.style.display='block';
 }
 document.addEventListener('DOMContentLoaded',()=>{
