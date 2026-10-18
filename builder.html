@@ -1272,6 +1272,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <p>Copy the complete Section 2.2 (Label elements) from your current supplier SDS PDF and paste it here. CLPeasy extracts the information it can identify; review the result against your SDS before continuing.</p>
       <textarea id="smart-paste-input" placeholder="Paste SDS Section 2.2 text here..."></textarea>
       <br><br><button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
+      <div id="smart-paste-scope-error" class="field-alert field-alert-danger" role="alert" style="display:none;margin-top:12px;margin-bottom:0;font-size:13px;"></div>
       <div id="smart-paste-size-warning" class="field-alert field-alert-danger" role="status" aria-live="polite" style="display:none;margin-top:14px;font-size:14px;"></div>
       <button type="button" id="hazard-clear-link" onclick="clearHazardData()" style="display:none;margin-left:14px;font-size:12px;color:var(--teal-dark);text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">Clear hazard data and start again</button>
     </div>
@@ -1570,6 +1571,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <script src="label-render.js"></script>
 <script src="optional-label-items.js"></script>
 <script src="sds-doc-check.js"></script>
+<script src="sds-section-scope.js"></script>
 
 <!-- Checkpoint B (connected print-workflow task, 1 Sep 2026): shared
      saved-label identity/coordinated-mutation module. Every saved-label
@@ -3220,6 +3222,7 @@ async function saveLabel(){
 function loadLabelRecord(e){
   if(!e)return;
   editingLabelId=e.id||null;
+  {const se=document.getElementById('smart-paste-scope-error');if(se){se.textContent='';se.style.display='none';}}
   S.scentName=e.scentName;S.productType=e.productType;S.shape=e.shape;S.size=e.size;S.customW=e.customW||S.customW;S.customH=e.customH||S.customH;
   S.signal=e.signal||'';S.sdsSignal=e.sdsSignal!==undefined?e.sdsSignal:(e.signal||'');S.hStatements=e.hStatements||'';S.sensitisers=e.sensitisers||[];
   S.hSelected=(S.hStatements||'').split(',').map(code=>code.trim()).filter(Boolean);
@@ -4025,8 +4028,21 @@ function extractSDS(){
   // use — it is not an Easy Pro-exclusive feature. Gate removed; restored
   // to unconditional behaviour. Do not re-add a plan check here without a
   // fresh, explicit product-rules confirmation.
-  const text=document.getElementById('smart-paste-input').value.trim();
-  if(!text){alert('Please paste SDS Section 2.2 text first.');return;}
+  const pasted=document.getElementById('smart-paste-input').value.trim();
+  if(!pasted){alert('Please paste SDS Section 2.2 text first.');return;}
+  // Safety fix (Oct 2026): read only Section 2.2 (Label elements). Reading
+  // all pasted text put Section 3 ingredient hazards and later-section codes
+  // on the finished-product label. If one Section 2.2 can't be identified,
+  // extract nothing: clear any earlier extraction and explain why.
+  const scope=SdsSectionScope.scope(pasted);
+  const scopeErr=document.getElementById('smart-paste-scope-error');
+  if(scope.status==='unsafe'){
+    clearHazardData();
+    if(scopeErr){scopeErr.textContent=SdsSectionScope.MESSAGE;scopeErr.style.display='block';}
+    return;
+  }
+  if(scopeErr){scopeErr.textContent='';scopeErr.style.display='none';}
+  const text=scope.text.trim();
   // Extraction lets the maker review the pasted data. Document coverage is
   // still required at Step 3 exit and by every export gate.
 
@@ -4899,6 +4915,8 @@ function clearHazardData(){
   // Clear smart paste
   const sp=document.getElementById('smart-paste-input');
   if(sp)sp.value='';
+  const scopeErr=document.getElementById('smart-paste-scope-error');
+  if(scopeErr){scopeErr.textContent='';scopeErr.style.display='none';}
   updateLabel();
   lockHazardFields(false);
   // Re-lock the download button

@@ -485,3 +485,34 @@ place them off the A4 page.
 - Guide Me prompt: removed Avery Sheet / Print Shop PDF / PNG-for-printing
   advice; distinguishes single label (PDF) from several on A4 (Composer); cutting-machine PNGs described.
 - Tests: `tests/stage2-print-guidance.js` (new, in `npm test`).
+
+## Smart Paste Section 2.2 extraction scope — safety defect (found 18 Oct 2026)
+
+- **Defect:** `extractSDS()` read H codes, P codes and the signal word from
+  *all* pasted text. Pasting a complete SDS put Section 3 ingredient hazards
+  and later-section codes (first aid, Section 16 phrase lists) on the
+  finished-product label. On 100 real 10%-in-candle-wax SDSs, a whole-document
+  paste changed the label in 92 (84 became "Danger"); 8 used only recognised
+  codes and could be downloaded. Reproduced on production (signed out,
+  synthetic label details).
+- **History:** present since the first Builder (25 May 2026, `dc4eb10`) and
+  live at launch. From 11 Jun (`5b92c9c`) to 18 Sep the site told users to
+  paste the complete document and that CLPeasy "finds Section 2.2
+  automatically" (it never did). On 18 Sep (`4fef135`, PR #119) the risk was
+  recognised and 20 instructions were corrected, but the code was not
+  changed and no issue was opened.
+- **Why testing missed it:** the 100-SDS QA corpus collector cut out Section
+  2.2 before pasting, so tests never pasted what a user might. No test checked
+  that text outside Section 2.2 cannot change the label. Code validation only
+  checks that codes are recognised, not where they came from. The 4 Oct removal
+  of the supplier questionnaire was unrelated.
+- **Fix (draft PR, not yet approved for release):** `sds-section-scope.js`
+  reads only the Section 2.2 block (page-break continuations kept); stops with
+  an approved message when there is not exactly one Section 2.2, or more than
+  one signal word (two SDSs, GB + US blocks). Bare extracts without headings
+  behave as before. Regression test: `tests/smart-paste-section-scope.js`
+  (optional real-document mode).
+- **Lessons:** test harnesses must paste what users paste; keep "outside
+  Section 2.2 must not change the label" tests for every Smart Paste change;
+  when a safety risk is handled by wording only, open a tracked issue for an
+  enforced fix.
