@@ -506,7 +506,7 @@ place them off the A4 page.
   that text outside Section 2.2 cannot change the label. Code validation only
   checks that codes are recognised, not where they came from. The 4 Oct removal
   of the supplier questionnaire was unrelated.
-- **Fix (draft PR, not yet approved for release):** `sds-section-scope.js`
+- **Fix (PR #261, founder-approved for production 18 Oct 2026):** `sds-section-scope.js`
   reads only the Section 2.2 block (page-break continuations kept); stops with
   an approved message when there is not exactly one Section 2.2, or more than
   one signal word (two SDSs, GB + US blocks). Bare extracts without headings
@@ -516,3 +516,29 @@ place them off the A4 page.
   Section 2.2 must not change the label" tests for every Smart Paste change;
   when a safety risk is handled by wording only, open a tracked issue for an
   enforced fix.
+- **Release verification (18 Oct 2026):** boundaries checked on 100 real
+  Nikura whole SDSs (2 reading orders x 5 layout variants, 0 wrong codes,
+  0 false stops); by eye against PDFs for Discount Candle Supplies, NI Candle
+  Supplies and Nikura; 9 founder-supplied documents (5 Nikura full SDSs, neat
+  and 10% in wax; 2 Supplies for Candles / The Soap Kitchen CLP advice sheets;
+  an allergen list and an IFRA certificate) all correct, the allergen list and
+  IFRA certificate cannot produce a label. Released as a squash commit on
+  `main`; see `docs/reports/SMART-PASTE-SECTION-2-2-RELEASE-2026-10-18.md`.
+- **Known limitations at release:**
+  - *Unfamiliar SDS layouts:* real full-SDS coverage is one layout family
+    (Nikura / DCS / NI Candle Supplies share a template). No real reed
+    diffuser, room spray or other full-SDS template tested. Expected failure
+    is a false stop (safe); a Section 2.2 cut short by an unrecognised
+    in-section heading is possible in theory, not seen.
+  - *Unstructured pastes* (no SDS headings) are read as pasted, as before.
+    The Supplies for Candles advice sheets ("SDS SECTION 2.2 LABEL
+    ELEMENTS") are read this way, correctly; that heading form is not
+    recognised as a Section 2.2 heading.
+  - *P-only continuation exception:* a repeated Section 2.2 heading that adds
+    only P statements is joined to the previous block, so a second document
+    holding only P statements could be combined.
+  - *H401 (separate regulatory issue, not changed by #261):* a supplier SDS
+    (Nikura Positivity, neat) lists H401, which is not a GB CLP hazard
+    statement; Smart Paste carries it through as printed. Needs review.
+  - CLPeasy helps makers prepare labels from supplier information; it does
+    not guarantee regulatory compliance.
