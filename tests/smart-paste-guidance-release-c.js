@@ -66,7 +66,7 @@ const dom = new JSDOM(source, {
     window.HTMLCanvasElement.prototype.getContext = () => ({ font:'',
       measureText(t){ const s=Number((String(this.font).match(/([\d.]+)px/)||[])[1])||12; return { width:[...String(t)].reduce((w,c)=>w+s*(/[MW@%]/.test(c)?.82:/[ilI1.,' ]/.test(c)?.28:.54),0) }; },
       drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; } });
-    window.eval(read('label-render.js')); window.eval(read('sds-doc-check.js')); window.eval(read('sds-source-suitability.js'));
+    window.eval(read('label-render.js')); window.eval(read('sds-doc-check.js')); window.eval(read('sds-section-scope.js')); window.eval(read('sds-source-suitability.js'));
     window.eval(read('label-library.js')); window.eval(read('entitlement.js'));
     window.alert = m => { window.__lastAlert = String(m); }; window.confirm = () => true; window.scrollTo = () => {};
     window.HTMLElement.prototype.scrollIntoView = () => {};
@@ -188,6 +188,20 @@ ok('loading a different saved label hides the earlier guidance');
 window.clearHazardData();
 assert(!shown('sds-source-suitability-warning') && !shown('smart-paste-excluded-note'));
 ok('clearing hazard data hides the guidance');
+
+// With the Section 2.2 scope fix (#261): the "not added" note names only
+// Section 2.2 codes, and a stopped paste shows no guidance boxes.
+const SDS = 'SECTION 1: Identification\nProduct name: Synthetic\nSECTION 2: Hazards identification\n' +
+  '2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nP261 P280 P501\n2.3 Other hazards\nNone.\n' +
+  'SECTION 3: Composition\nH226 H304 P264 P405\nSECTION 4: First aid measures\nP362+P364\n';
+r = paste(SDS);
+const wholeNote = box('smart-paste-excluded-note').textContent + amber().textContent;
+assert(/P280/.test(wholeNote) && !/P264|P405|P362/.test(wholeNote), 'only Section 2.2 codes named: ' + wholeNote);
+assert.deepStrictEqual(r.p, ['P261', 'P501']);
+paste(SDS + '\n' + SDS.replace('Signal word: Warning', 'Signal word: Danger'));
+assert(shown('smart-paste-scope-error') && !shown('sds-source-suitability-warning') && !shown('smart-paste-excluded-note'), 'stop hides guidance');
+assert.deepStrictEqual([...window.eval('S.hStatements')], []);
+ok('with the Section 2.2 scope: note names only Section 2.2 codes; a stopped paste shows no guidance');
 
 assert.deepStrictEqual(jsErrors.filter(e => !/Not implemented/.test(e)), [], 'no page errors');
 console.log(`\nAll ${n} Release C checks passed.`);
