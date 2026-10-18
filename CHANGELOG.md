@@ -4,6 +4,23 @@ All notable changes to CLPeasy are documented here. Customer-friendly notes
 covering the same releases live at `release-notes.html`. Versioning rules
 and the release procedure are documented in `VERSIONING.md`.
 
+## [1.3.0] - 2026-10-18 (proposed; date set on release)
+
+### Added
+- Smart Paste guidance: suitability note after extraction, amber "Check your
+  finished-product CLP information" box for concentrated fragrance-oil SDSs,
+  and a list of precautionary-statement codes not added automatically. The
+  exclusion list itself is unchanged. (#257)
+- "Using more than one fragrance oil?" drop-down in Builder Step 3 linking to
+  the Knowledge Base; knowledge.html opens the topic named in the address. (#259)
+- Contact form: more than one topic can be selected. (#258)
+
+### Changed
+- Knowledge Base "Blended Fragrances" wording. (#260)
+
+Customer release notes for 1.3.0 also describe the Smart Paste Section 2.2
+correction (#261), live since 18 October and recorded under 1.2.0 below.
+
 ## [1.2.0] - 2026-10-16
 
 ### Added

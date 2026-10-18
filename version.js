@@ -3,4 +3,4 @@
    release-notes.html, and any future page that needs it) reads from
    window.CLPEASY_VERSION instead of hard-coding its own copy.
    Update this file only when cutting a release -- see VERSIONING.md. */
-window.CLPEASY_VERSION = { number: '1.2.0', released: '2026-10-16' };
+window.CLPEASY_VERSION = { number: '1.3.0', released: '2026-10-18' };
