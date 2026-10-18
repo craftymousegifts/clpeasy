@@ -563,3 +563,8 @@ place them off the A4 page.
   P statements (#257 only names codes the existing exclusion already leaves
   out) and H401 (no H-statement handling is changed).
 - Report: `docs/reports/V1.3.0-COMBINED-RELEASE-2026-10-18.md`.
+- **Round 2 (owner iPhone review):** teal "Check your SDS suitability" notice;
+  diluted-form SDS product names (e.g. "(10% in Candle Wax)") get the neutral
+  notice instead of the amber concentrated-oil box; shorter "not added"
+  wording. Contact header overlap not reproducible; 57 mm is a supported
+  custom size. No change to the exclusion list or classification logic.
