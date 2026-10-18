@@ -4,12 +4,13 @@
 // classification change.
 //   1. Exact approved wording, collapsed by default, same styling classes.
 //   2. Sits directly after the GB CLP drop-down, inside Step 3.
-//   3. The Knowledge Base link points at an anchor that exists.
+//   3. The Knowledge Base link points at an anchor that exists, and opening
+//      knowledge.html#blended shows that topic (topics are hidden by default).
 // Run from the repo root: node tests/multi-fragrance-guidance.js
 'use strict';
 const fs = require('fs');
 const assert = require('assert');
-const { JSDOM } = require('jsdom');
+const { JSDOM, VirtualConsole } = require('jsdom');
 
 const builder = new JSDOM(fs.readFileSync('builder.html', 'utf8')).window.document;
 const knowledge = new JSDOM(fs.readFileSync('knowledge.html', 'utf8')).window.document;
@@ -40,5 +41,16 @@ assert.strictEqual(a.getAttribute('target'), '_blank');
 assert(/noopener/.test(a.getAttribute('rel')), 'new tab without opener access');
 assert(knowledge.getElementById('blended'), 'knowledge.html#blended exists');
 ok('Knowledge Base link opens the existing blended-fragrances section');
+
+// Opening the link's target shows the section (it is display:none until its
+// topic card is chosen).
+const html = fs.readFileSync('knowledge.html', 'utf8').replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
+for (const [hash, shown] of [['#blended', true], ['', false], ['#nonexistent', false]]) {
+  const w = new JSDOM(html, { url: 'https://clpeasy.com/knowledge.html' + hash, runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: new VirtualConsole(), beforeParse(win) { win.matchMedia = () => ({ matches: false, addListener() {}, addEventListener() {} }); win.scrollTo = () => {}; } }).window;
+  w.scrollTo = () => {}; w.matchMedia = () => ({ matches: false, addListener() {}, addEventListener() {} });
+  w.dispatchEvent(new w.Event('load'));
+  assert.strictEqual(w.document.getElementById('blended').style.display === 'block', shown, 'blended shown for ' + (hash || 'no hash'));
+}
+ok('knowledge.html#blended opens the blended topic; other addresses leave topics closed');
 
 console.log(`\nAll ${n} multi-fragrance guidance checks passed.`);
