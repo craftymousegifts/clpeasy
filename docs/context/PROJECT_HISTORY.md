@@ -568,3 +568,11 @@ place them off the A4 page.
   notice instead of the amber concentrated-oil box; shorter "not added"
   wording. Contact header overlap not reproducible; 57 mm is a supported
   custom size. No change to the exclusion list or classification logic.
+- **Round 3 (owner-approved simplification):** Smart Paste guidance has four
+  states: teal apparent match (SDS product name states the same product kind
+  and fragrance % entered), teal "Check your SDS suitability" (cannot be
+  confirmed, incl. any ambiguity), amber detected mismatch (other % or
+  product kind; no bottles) and amber concentrated oil (unchanged two
+  bottles). Excluded P codes shown once in their own notice; support link
+  once. Step 3 size panel says a larger label does not resolve an amber SDS
+  warning. Display only.
