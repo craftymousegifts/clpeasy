@@ -162,10 +162,24 @@ same(extract(inside + '2.3 Other hazards\n'), extract(inside), 'a sentence menti
 assert.strictEqual(extract('Hazards identification\nLabel elements\nSignal word: Warning\nH317\nComposition/information on ingredients\nH226 H304\n').error, MSG, 'unnumbered whole SDS without a numbered 2.2 stops');
 ok('Section 2.2 ends at unnumbered, colon-numbered, split and capitalised 2.3/Section 3 headings; a fully unnumbered SDS stops');
 
-// ── 3c. Repeated 2.2 heading without a "continued" marker stops (never merges) ──
-const repeated = only22.replace('P302+P352', 'Example Fragrances Ltd   Page 2 of 9\n2.2 Label elements\nP302+P352');
-assert.strictEqual(extract(repeated).error, MSG, 'an unmarked repeated 2.2 heading stops rather than merging');
-ok('an unmarked repeated Section 2.2 heading stops rather than being merged or split');
+// ── 3c. Repeated 2.2 heading without a "continued" marker (owner-approved narrow rule) ──
+// Genuine page continuation: the heading is repeated on the next page and that
+// part only holds P statements -> joined, label identical to the unsplit text.
+const atP = only22.indexOf('P302+P352');
+const pageHeader = 'Example Fragrances Ltd   Page 2 of 9\n2.2 Label elements\n';
+const supp = only22.indexOf('Supplemental information');
+const pOnlyPage2 = only22.slice(atP, supp);                         // P302+P352 ... P501 only
+const page1 = only22.slice(0, atP) + only22.slice(supp);            // heading, signal word, H, first P codes, EUH208
+same(extract(S1 + 'SECTION 2: Hazards identification\n' + page1 + pageHeader + pOnlyPage2 + '2.3 Other hazards\n' + S3PLUS), base, 'P-only continuation after an unmarked repeated heading is joined');
+// The continuation part adds an H/EUH code or a signal word -> ambiguous -> stops.
+assert.strictEqual(extract(only22.slice(0, supp) + pageHeader + only22.slice(supp)).error, MSG, 'repeated heading followed by an EUH code stops');
+assert.strictEqual(extract(only22.replace('H412 Harmful', pageHeader + 'H412 Harmful')).error, MSG, 'repeated heading followed by an H code stops');
+// Another section or sub-section heading between the two 2.2 headings -> stops.
+assert.strictEqual(extract(only22.slice(0, atP) + '2.1 Classification\n' + pageHeader + only22.slice(atP)).error, MSG, 'heading in between stops');
+// Two separate SDSs are never combined (each has a signal word / H codes).
+assert.strictEqual(extract(only22 + '\n' + only22.replace('Linalool', 'Citral').replace('H412', 'H411')).error, MSG, 'second Section 2.2 with its own label content stops');
+assert.strictEqual(extract(S1 + S2 + S3PLUS + '\n' + S1 + OTHER22).error, MSG, 'two complete SDSs stop');
+ok('unmarked repeated 2.2 heading: P-only page continuation joined; extra signal word/H/EUH codes or an intervening heading stop; separate SDSs never combined');
 
 // ── 3d. Scoping file failed to load: clear message, nothing extracted ──────
 {

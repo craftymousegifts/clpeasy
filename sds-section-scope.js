@@ -37,6 +37,10 @@
   const LABEL_CONTENT = /signal[ \t]*word|\bH\d{3}|\bP\d{3}|\bEUH\d{3}/i;
   const CONTINUED = /^[\s:.\-–—]*\(?\s*(?:continued|cont(?:'d|\.|d))\b/i;
   const SIGNAL_LINE = /(?:^|\n)[ \t]*signal[ \t]*words?\b/gi;
+  // Any section or numbered sub-section heading (e.g. "SECTION 1", "1.1", "2.1").
+  const INTERVENING = /(?:^|\n)[ \t]*(?:section[ \t]*\d|\d{1,2}\.\d{1,2}\b)/i;
+  // Content that starts a new label: a signal word, H code or EUH code.
+  const NEW_LABEL = /signal[ \t]*words?|\bH\d{3}|\bEUH\d{3}/i;
   const SIGNAL_VALUE = /signal[ \t]*words?[ \t]*[:\-|]?[ \t]*(?:warning|danger)\b/gi;
 
   function scope(raw) {
@@ -47,12 +51,25 @@
       out = STRUCTURE.test(text) ? { status: 'unsafe', reason: 'no-section-2-2' } : { status: 'whole', text };
     } else {
       const blocks = [];
+      let prevOpen = false, prevBody = '';   // previous 2.2 block ran straight into this heading
       heads.forEach((h, i) => {
         let seg = text.slice(h.at, i + 1 < heads.length ? heads[i + 1].at : undefined);
         const end = seg.slice(h.len).search(END);
         if (end >= 0) seg = seg.slice(0, h.len + end);
-        if (CONTINUED.test(seg.slice(h.len))) { if (blocks.length) blocks[blocks.length - 1] += '\n' + seg; return; }
-        if (LABEL_CONTENT.test(seg.slice(h.len))) blocks.push(seg);
+        const body = seg.slice(h.len);
+        const wasOpen = prevOpen, before = prevBody;
+        prevOpen = end < 0; prevBody = body;
+        if (CONTINUED.test(body)) { if (blocks.length) blocks[blocks.length - 1] += '\n' + seg; return; }
+        if (!LABEL_CONTENT.test(body)) return;
+        // Unmarked repeat of the heading at the top of a new page (owner-approved,
+        // Oct 2026): a continuation only when the previous 2.2 block runs straight
+        // into it with no other section heading in between, and this part adds no
+        // signal word, H code or EUH code (P statements only). Anything else is
+        // treated as a separate block, so two SDSs are never combined.
+        if (wasOpen && blocks.length && !INTERVENING.test(before) && !NEW_LABEL.test(body)) {
+          blocks[blocks.length - 1] += '\n' + seg; return;
+        }
+        blocks.push(seg);
       });
       out = blocks.length === 1 ? { status: 'scoped', text: blocks[0] }
         : { status: 'unsafe', reason: blocks.length ? 'several-section-2-2' : 'empty-section-2-2' };
