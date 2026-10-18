@@ -4025,14 +4025,32 @@ function _requireSdsDoc(){
 }
 // Release C (Oct 2026): Smart Paste guidance. Display only -- these never
 // change the extracted codes, the label, fit, blocking or exports.
+// Release C guidance (approved combined design, presentation only).
+// Fragrance-oil cue + excluded codes -> one amber box; cue only -> amber box
+// without the P-statement bullet; codes only -> neutral note; neither -> none.
+// Detection (SdsSourceSuitability) and the exclusion list are unchanged.
+const SDS_GUIDE_LINK='#2c6a79'; // CLPeasy teal, darkened for >=4.5:1 contrast on the amber and grey backgrounds
+function _sdsSuitability(){
+  const raw=document.getElementById('smart-paste-input')?.value||'';
+  if(!S.hazardFromExtraction||!raw.trim())return null;
+  return window.SdsSourceSuitability
+    ?SdsSourceSuitability.inspect(raw,document.getElementById('product-type')?.value||S.productType,document.getElementById('frag-load')?.value||S.fragLoad)
+    :{level:'unverified',message:'Section 2.2 does not confirm whether this SDS covers your finished product. CLPeasy does not adjust hazards for fragrance percentages. Check the applicable finished-product classification information with your supplier or a competent CLP specialist.'};
+}
+function _smartPasteExcluded(){return S.hazardFromExtraction?(window._smartPasteExcludedCodes||[]):[];}
+function _guideEl(tag,text,css){const el=document.createElement(tag);el.style.color='inherit';if(css)el.style.cssText+=css;if(text)el.textContent=text;return el;}
+function _guideSupportBlock(box){
+  box.appendChild(_guideEl('p','Before using this label, check with your supplier for the appropriate CLP classification information for your finished product.','margin-top:8px;'));
+  const help=_guideEl('p','','margin-top:6px;');help.appendChild(document.createTextNode('Need assistance? Contact '));
+  const a=document.createElement('a');a.href='mailto:support@clpeasy.com';a.textContent='support@clpeasy.com';
+  a.style.cssText='color:'+SDS_GUIDE_LINK+';text-decoration:underline;font-weight:600;';
+  help.appendChild(a);help.appendChild(document.createTextNode('.'));box.appendChild(help);
+}
 function updateSdsSourceSuitabilityWarning(){
   const box=document.getElementById('sds-source-suitability-warning');
   if(!box)return;
-  const raw=document.getElementById('smart-paste-input')?.value||'';
-  if(!S.hazardFromExtraction||!raw.trim()){box.textContent='';box.style.display='none';return;}
-  const result=window.SdsSourceSuitability
-    ?SdsSourceSuitability.inspect(raw,document.getElementById('product-type')?.value||S.productType,document.getElementById('frag-load')?.value||S.fragLoad)
-    :{level:'unverified',message:'Section 2.2 does not confirm whether this SDS covers your finished product. CLPeasy does not adjust hazards for fragrance percentages. Check the applicable finished-product classification information with your supplier or a competent CLP specialist.'};
+  const result=_sdsSuitability();
+  if(!result){box.textContent='';box.style.display='none';updateSmartPasteExcludedNote();return;}
   box.textContent='';
   box.dataset.suitability=result.level;
   if(result.level==='unverified'){
@@ -4043,19 +4061,26 @@ function updateSdsSourceSuitabilityWarning(){
   }else{
     box.className='field-alert field-alert-warn';box.setAttribute('role','alert');
     box.style.cssText='display:block;margin-top:12px;margin-bottom:0;font-size:13px;';
-    const h=document.createElement('strong');h.style.display='block';h.style.marginBottom='4px';
-    h.textContent='⚠️ Check this is information for your finished product';
-    box.appendChild(h);
-    // Approved two-bottle comparison (presentation only). The percentage is
-    // the existing Step 2 fragrance load; nothing is invented when it is blank.
+    box.appendChild(_guideEl('strong','⚠️ Check your finished-product CLP information','display:block;margin-bottom:4px;'));
+    // The percentage is the existing Step 2 fragrance load; nothing is invented when it is blank.
     const pct=parseFloat(String(document.getElementById('frag-load')?.value||S.fragLoad||'').replace(',','.'));
     const hasPct=Number.isFinite(pct)&&pct>0&&pct<100;
     box.insertAdjacentHTML('beforeend',_sdsBottleCompareHtml(hasPct?pct:null));
-    ['This appears to be information for concentrated fragrance oil, rather than your finished product.',
-     'CLPeasy does not recalculate hazards for different fragrance percentages.',
-     'Check with your supplier for the appropriate CLP classification information for your finished product before using this label.']
-      .forEach((t,i)=>{const para=document.createElement('p');para.style.color='inherit';para.textContent=t;if(i)para.style.marginTop='6px';box.appendChild(para);});
+    const ul=_guideEl('ul','','margin:0;padding-left:18px;');
+    const item=(title,text)=>{const li=_guideEl('li','','margin-top:6px;');li.appendChild(_guideEl('strong',title,'display:block;'));li.appendChild(document.createTextNode(text));ul.appendChild(li);};
+    item('Fragrance concentration','This appears to be information for concentrated fragrance oil, rather than your finished product. CLPeasy does not recalculate hazards for different fragrance percentages.');
+    const codes=_smartPasteExcluded();
+    if(codes.length){
+      const one=codes.length===1;
+      item((one?'Precautionary statement not added: ':'Precautionary statements not added: ')+codes.join(', '),
+        one?'This statement was found in your SDS but was not added to your label. It may relate to concentrated fragrance oil rather than your finished product.'
+           :'These statements were found in your SDS but were not added to your label. Some may relate to concentrated fragrance oil rather than your finished product.');
+    }
+    ul.firstChild.style.marginTop='0';
+    box.appendChild(ul);
+    _guideSupportBlock(box);
   }
+  updateSmartPasteExcludedNote();
 }
 function _sdsBottleSvg(fillPct,fragPct,id){
   // Bottle body 8..60 (52 units tall); fills rise from the bottom.
@@ -4070,31 +4095,26 @@ function _sdsBottleSvg(fillPct,fragPct,id){
     `</g><path d="${body}" fill="none" stroke="#92400E" stroke-width="1.5" stroke-linejoin="round"/><rect x="13" y="3" width="14" height="5" rx="1" fill="#92400E"/></svg>`;
 }
 function _sdsBottleCompareHtml(pct){
-  const cap='display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:12px;line-height:1.35;max-width:130px;';
-  const yours=pct==null?'Fragrance % not entered':`<strong>${pct}%</strong> fragrance oil`;
-  return `<div class="sds-bottle-compare" style="display:flex;justify-content:center;align-items:flex-start;gap:24px;margin:8px 0 10px;">`+
-    `<div style="${cap}">${_sdsBottleSvg(100,100,'sds-bottle-supplier')}<span><strong style="display:block;">Supplier SDS</strong><strong>100%</strong> concentrated fragrance oil</span></div>`+
-    `<div style="${cap}">${_sdsBottleSvg(100,pct,'sds-bottle-yours')}<span><strong style="display:block;">Your product</strong>${yours}</span></div></div>`;
+  const cap='display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:12px;line-height:1.35;width:120px;';
+  const b='<strong style="color:inherit;">';
+  const yours=pct==null?'Fragrance % not entered':`${b}${pct}%</strong> fragrance load`;
+  return `<div class="sds-bottle-compare" style="display:flex;justify-content:center;align-items:flex-start;gap:16px;margin:8px 0 10px;">`+
+    `<div style="${cap}">${_sdsBottleSvg(100,100,'sds-bottle-supplier')}<span>${b.replace('">',';display:block;">')}Supplier SDS</strong>${b}100%</strong> concentrated fragrance oil</span></div>`+
+    `<div style="${cap}">${_sdsBottleSvg(100,pct,'sds-bottle-yours')}<span>${b.replace('">',';display:block;">')}Finished product</strong>${yours}</span></div></div>`;
 }
 function updateSmartPasteExcludedNote(){
   const box=document.getElementById('smart-paste-excluded-note');
   if(!box)return;
-  const codes=S.hazardFromExtraction?(window._smartPasteExcludedCodes||[]):[];
-  if(!codes.length){box.textContent='';box.style.display='none';return;}
+  const codes=_smartPasteExcluded();
+  const r=codes.length?_sdsSuitability():null;
+  // Combined into the amber box when the fragrance-oil cue applies.
+  if(!codes.length||(r&&r.level!=='unverified')){box.textContent='';box.style.display='none';return;}
   box.textContent='';
-  // Approved wording (Release C). Lists the actual codes left out; this note
-  // does not say whether they apply to the finished product.
+  // Standalone neutral note: actual codes, no bottles or fragrance-specific claims.
   const one=codes.length===1;
-  const h=document.createElement('strong');h.style.display='block';h.style.marginBottom='4px';
-  h.textContent=(one?'Precautionary statement not added: ':'Precautionary statements not added: ')+codes.join(', ');
-  box.appendChild(h);
-  const para=t=>{const el=document.createElement('p');el.style.color='inherit';el.style.marginTop='6px';if(t)el.textContent=t;box.appendChild(el);return el;};
-  para(one?'This statement was found in your SDS but was not added to your label. It may relate to concentrated fragrance oil rather than your finished product.'
-    :'These statements were found in your SDS but were not added to your label. Some may relate to concentrated fragrance oil rather than your finished product.').style.marginTop='0';
-  para('Please check with your supplier that you have the appropriate CLP classification information for your finished product before using this label.');
-  const help=para('');help.appendChild(document.createTextNode('If you need further assistance, contact '));
-  const a=document.createElement('a');a.href='mailto:support@clpeasy.com';a.textContent='support@clpeasy.com';a.style.color='var(--teal-dark)';a.style.textDecoration='underline';
-  help.appendChild(a);help.appendChild(document.createTextNode('.'));
+  box.appendChild(_guideEl('strong',(one?'Precautionary statement not added: ':'Precautionary statements not added: ')+codes.join(', '),'display:block;margin-bottom:4px;'));
+  box.appendChild(_guideEl('p',one?'This statement was found in your SDS but was not added to your label.':'These statements were found in your SDS but were not added to your label.'));
+  _guideSupportBlock(box);
   box.style.display='block';
 }
 document.addEventListener('DOMContentLoaded',()=>{
