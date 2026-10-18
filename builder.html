@@ -4082,10 +4082,19 @@ function updateSmartPasteExcludedNote(){
   const codes=S.hazardFromExtraction?(window._smartPasteExcludedCodes||[]):[];
   if(!codes.length){box.textContent='';box.style.display='none';return;}
   box.textContent='';
+  // Approved wording (Release C). Lists the actual codes left out; this note
+  // does not say whether they apply to the finished product.
+  const one=codes.length===1;
   const h=document.createElement('strong');h.style.display='block';h.style.marginBottom='4px';
-  h.textContent='Not added automatically: '+codes.join(', ');
+  h.textContent=(one?'Precautionary statement not added: ':'Precautionary statements not added: ')+codes.join(', ');
   box.appendChild(h);
-  box.appendChild(document.createTextNode((codes.length>1?'Smart Paste has not added these precautionary statements':'Smart Paste has not added this precautionary statement')+' to your label. You need to establish whether '+(codes.length>1?'they apply':'it applies')+' to your finished product, using the applicable finished-product classification information from your supplier or a competent CLP specialist. If '+(codes.length>1?'any of them apply':'it applies')+', contact support@clpeasy.com.'));
+  const para=t=>{const el=document.createElement('p');el.style.color='inherit';el.style.marginTop='6px';if(t)el.textContent=t;box.appendChild(el);return el;};
+  para(one?'This statement was found in your SDS but was not added to your label. It may relate to concentrated fragrance oil rather than your finished product.'
+    :'These statements were found in your SDS but were not added to your label. Some may relate to concentrated fragrance oil rather than your finished product.').style.marginTop='0';
+  para('Please check with your supplier that you have the appropriate CLP classification information for your finished product before using this label.');
+  const help=para('');help.appendChild(document.createTextNode('If you need further assistance, contact '));
+  const a=document.createElement('a');a.href='mailto:support@clpeasy.com';a.textContent='support@clpeasy.com';a.style.color='var(--teal-dark)';a.style.textDecoration='underline';
+  help.appendChild(a);help.appendChild(document.createTextNode('.'));
   box.style.display='block';
 }
 document.addEventListener('DOMContentLoaded',()=>{

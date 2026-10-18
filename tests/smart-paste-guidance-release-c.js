@@ -97,14 +97,27 @@ assert.deepStrictEqual(r.p, ['P102', 'P261', 'P302+P352', 'P501'], 'extracted co
 assert.strictEqual(r.blocked, false);
 assert(shown('smart-paste-excluded-note'));
 const note = box('smart-paste-excluded-note').textContent;
-assert(note.startsWith('Not added automatically: P264, P280, P362+P364'), note);
-assert(/establish whether they apply to your finished product/.test(note) && /competent CLP specialist/.test(note));
-assert(note.endsWith('competent CLP specialist. If any of them apply, contact support@clpeasy.com.'), note);
-assert(!/P280 applies|precautionary statements below|protection items/.test(note), 'P280 handled like the other left-out codes');
+const noteParts = () => [...box('smart-paste-excluded-note').querySelectorAll('strong,p')].map(e => e.textContent);
+assert.deepStrictEqual(noteParts(), [
+  'Precautionary statements not added: P264, P280, P362+P364',
+  'These statements were found in your SDS but were not added to your label. Some may relate to concentrated fragrance oil rather than your finished product.',
+  'Please check with your supplier that you have the appropriate CLP classification information for your finished product before using this label.',
+  'If you need further assistance, contact support@clpeasy.com.'], 'approved plural wording with the actual codes');
+const mail = box('smart-paste-excluded-note').querySelector('a');
+assert(mail && mail.getAttribute('href') === 'mailto:support@clpeasy.com' && mail.textContent === 'support@clpeasy.com', 'support address is an email link');
+assert(!box('smart-paste-excluded-note').querySelector('button'), 'no action buttons');
 assert(!/workplace|unnecessary|not required|don't apply|do not apply/i.test(note), 'must not describe excluded codes categorically');
 assert(shown('sds-source-suitability-warning') && box('sds-source-suitability-warning').dataset.suitability === 'unverified');
 assert(!box('sds-source-suitability-warning').classList.contains('field-alert-warn'), 'neutral note stays low-key');
 ok('excluded codes listed exactly; selection, blocking and neutral note correct');
+
+// One code left out: singular wording.
+r = paste('2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nP102 P261 P270 P302+P352 P501');
+assert.deepStrictEqual(r.p, ['P102', 'P261', 'P302+P352', 'P501']);
+assert.deepStrictEqual(noteParts().slice(0, 2), [
+  'Precautionary statement not added: P270',
+  'This statement was found in your SDS but was not added to your label. It may relate to concentrated fragrance oil rather than your finished product.']);
+ok('singular wording when one code was left out');
 
 // No excluded codes: no excluded note.
 r = paste('2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nP102 P261 P302+P352 P501');
