@@ -542,3 +542,37 @@ place them off the A4 page.
     statement; Smart Paste carries it through as printed. Needs review.
   - CLPeasy helps makers prepare labels from supplier information; it does
     not guarantee regulatory compliance.
+
+## v1.3.0 coordinated release candidate (prepared 18 Oct 2026)
+
+- **Contents:** #257 (Smart Paste guidance: suitability note, amber
+  finished-product box, list of P codes not added), #258 (Contact form
+  multi-topic), #259 ("Using more than one fragrance oil?" drop-down and
+  knowledge.html hash opening), #260 (Knowledge Base blended-fragrance
+  wording). Built on production `main` `2e7af46`, which already has #261.
+- **Integration:** #257 had 3 textual conflicts with #261 in `builder.html`
+  (boxes under Extract, script tags, `loadLabelRecord()` resets), resolved by
+  keeping both. #257's excluded-code note now uses the Section 2.2 text only;
+  a stopped paste clears and hides all #257 guidance. The suitability check
+  still reads the full pasted text; on the 9 founder-supplied documents it
+  gives the same result as on the Section 2.2 text. #258–#260 merged without
+  conflicts.
+- **Version:** 1.3.0 (MINOR: new backward-compatible guidance and form
+  features). Customer release notes also describe #261.
+- **Not blocking this release:** the open regulatory review of the 9 excluded
+  P statements (#257 only names codes the existing exclusion already leaves
+  out) and H401 (no H-statement handling is changed).
+- Report: `docs/reports/V1.3.0-COMBINED-RELEASE-2026-10-18.md`.
+- **Round 2 (owner iPhone review):** teal "Check your SDS suitability" notice;
+  diluted-form SDS product names (e.g. "(10% in Candle Wax)") get the neutral
+  notice instead of the amber concentrated-oil box; shorter "not added"
+  wording. Contact header overlap not reproducible; 57 mm is a supported
+  custom size. No change to the exclusion list or classification logic.
+- **Round 3 (owner-approved simplification):** Smart Paste guidance has four
+  states: teal apparent match (SDS product name states the same product kind
+  and fragrance % entered), teal "Check your SDS suitability" (cannot be
+  confirmed, incl. any ambiguity), amber detected mismatch (other % or
+  product kind; no bottles) and amber concentrated oil (unchanged two
+  bottles). Excluded P codes shown once in their own notice; support link
+  once. Step 3 size panel says a larger label does not resolve an amber SDS
+  warning. Display only.

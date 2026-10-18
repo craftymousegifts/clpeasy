@@ -102,7 +102,29 @@
 <main>
 
   <details class="release-block">
-    <summary><span class="release-header"><span class="release-version">v1.2.0</span> <span class="new-badge">Current</span> <span class="release-date">16 October 2026</span></span><span class="release-hint">View changes</span></summary>
+    <summary><span class="release-header"><span class="release-version">v1.3.0</span> <span class="new-badge">Current</span> <span class="release-date">18 October 2026</span></span><span class="release-hint">View changes</span></summary>
+    <div class="release-content">
+      <div class="release-section-title">Smart Paste safety correction</div>
+      <ul class="release-list">
+        <li>Smart Paste now reads hazard information only from Section 2.2 (Label elements) of the safety data sheet you paste. Text from other sections, such as the ingredient list in Section 3, is no longer added to your label. (Live since 18 October.)</li>
+        <li>If Smart Paste can't find exactly one Section 2.2, for example when two safety data sheets are pasted together, it stops and asks you to paste Section 2.2 from the safety data sheet for your finished product. Nothing is extracted until you do.</li>
+      </ul>
+      <div class="release-section-title">Smart Paste guidance</div>
+      <ul class="release-list">
+        <li>After extracting, Smart Paste guidance now tells apart three cases: a safety data sheet that appears to match your product type and fragrance %, one where this can't be confirmed, and a detected mismatch or concentrated fragrance-oil safety data sheet, which is shown as an amber warning. CLPeasy does not verify or recalculate the classification.</li>
+        <li>If your safety data sheet includes precautionary statements that Smart Paste doesn't add automatically, their codes are now listed once, so you can check whether they are required for your finished product.</li>
+        <li>New "Using more than one fragrance oil?" guidance in Step 3, with a link to the Knowledge Base.</li>
+      </ul>
+      <div class="release-section-title">Knowledge Base and support</div>
+      <ul class="release-list">
+        <li>Clearer "Blended Fragrances — What You Need to Know" guidance: a blend is a new mixture, so your label must be based on classification information for your finished product.</li>
+        <li>On the Contact page, you can now choose more than one topic under "What do you need help with?".</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="release-block">
+    <summary><span class="release-header"><span class="release-version">v1.2.0</span> <span class="release-date">16 October 2026</span></span><span class="release-hint">View changes</span></summary>
     <div class="release-content">
       <div class="release-section-title">Label details and fit</div>
       <ul class="release-list">
