@@ -14,7 +14,7 @@ function buildDom(){
   const dom=new JSDOM(source,{url:'https://local.clpeasy.test/builder.html',runScripts:'dangerously',pretendToBeVisual:true,virtualConsole:vc,beforeParse(window){
     window.HTMLElement.prototype.scrollIntoView=()=>{};
     window.HTMLCanvasElement.prototype.getContext=()=>({font:'',measureText(text){return{width:String(text).length*7}},drawImage(){},fillRect(){},clearRect(){},getImageData(){return{data:[]}}});
-    window.eval(renderer); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(library);
+    window.eval(renderer); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8')); window.eval(library);
     window.alert=m=>{window.__lastAlert=String(m)}; window.confirm=()=>true; window.scrollTo=()=>{};
     window.fetch=async()=>({ok:true,json:async()=>({})}); window.open=()=>({location:{href:''},close(){},opener:null});
     window.URL.createObjectURL=()=> 'blob:test'; window.URL.revokeObjectURL=()=>{};

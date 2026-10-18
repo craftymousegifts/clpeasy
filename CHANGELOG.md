@@ -21,6 +21,12 @@ and the release procedure are documented in `VERSIONING.md`.
   52–55 mm candles showing the icons need 56 mm or the existing "show on
   packaging" option, now offered at those sizes. (#252)
 
+### Fixed (added to 1.2.0 on 18 October, no new version number)
+- Smart Paste reads hazard data only from one Section 2.2 (Label elements)
+  and stops with a message when it cannot identify exactly one, so codes
+  from other SDS sections (e.g. Section 3 ingredients) can no longer reach
+  the label. (#261)
+
 Founder approved #247/#248 after iPhone checks on 16 October. #249 is a
 combined QA preview only and is not part of the production merge.
 

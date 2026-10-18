@@ -66,7 +66,7 @@ const emptyQuery = {
     // ── Shared renderer: buildP280Wording() itself ──────────────────────
     const rendererDom = new JSDOM('<!doctype html><html><body></body></html>', {
       runScripts: 'dangerously',
-      beforeParse(window) { stubCanvas(window); window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); }
+      beforeParse(window) { stubCanvas(window); window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8')); }
     });
     const LR = rendererDom.window.LabelRenderer;
     assert(Array.isArray(LR.P280_ITEMS) && LR.P280_ITEMS.length === 5, 'LabelRenderer.P280_ITEMS must offer exactly the 5 standard items');
@@ -175,7 +175,7 @@ const emptyQuery = {
       virtualConsole: builderVC,
       beforeParse(window) {
         stubCanvas(window);
-        window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
+        window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
         // Checkpoint B: builder.html now also loads label-library.js via
         // <script src="...">, stripped by the same generic regex above for
         // the same reason label-render.js already was -- injected
@@ -414,7 +414,7 @@ const emptyQuery = {
         // evaluated below. Print Sheet Composer (Checkpoint C1) now requires
         // label-library.js for getSaved()/addToSheet() in print.html.
         try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
-        window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
+        window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
         window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
         window.alert = message => { window.__lastAlert = String(message); };
         window.confirm = () => true;
