@@ -38,11 +38,27 @@ assert.strictEqual(inspect('Fragrance oil supplied at 100% concentration\nH317')
 assert.strictEqual(inspect('Product name: Heather Fragrance Oil\nH317').message,
   'This SDS names fragrance oil, but may not cover your finished scented candle at 10% fragrance. CLPeasy does not adjust hazards for fragrance percentages. Check the original supplier document.');
 assert.strictEqual(inspect('SECTION 2.2\nH317').message,
-  'Section 2.2 does not confirm whether this SDS covers your finished scented candle at 10% fragrance. CLPeasy does not adjust hazards for fragrance percentages. Check the applicable finished-product classification information with your supplier or a competent CLP specialist.');
+  'Section 2.2 may not confirm whether this SDS applies to your finished scented candle at 10% fragrance. CLPeasy does not recalculate hazards for different fragrance percentages. Check that your supplier’s classification information applies to your finished product.');
+assert.strictEqual(inspect('SECTION 2.2\nH317').target, 'your finished scented candle at 10% fragrance');
+ok('suitability checker: levels, approved wording, concise');
+
+// Option B (owner-approved, Oct 2026): a product name that states a diluted
+// form is not a neat-oil SDS, so it gets the neutral notice, not the amber
+// "concentrated fragrance oil" box. Stated percentages never prove suitability.
+for (const name of ['Nikura | Nag Champa Fragrance Oil (10% in Candle Wax)', 'Positivity Essential Oil Blend (10% in Candle Wax)',
+  'FRAG0541 Elderflower Fragrance Oil (@10% Dilution)', 'Rose Fragrance Oil 6% in wax', 'Lavender Fragrance Oil (10.5% in soy wax)'])
+  for (const pct of [10, 6, ''])
+    assert.strictEqual(checker.inspect('Product: ' + name + '\nH317', 'Scented Candle', pct).level, 'unverified', name + ' @ ' + pct);
+// Neat-oil names, and neat-oil cues, keep the amber warning.
+for (const name of ['Nikura | Nag Champa Fragrance Oil', 'Nikura | Snow Angel Inspired Fragrance Oil | Snow Pixie', 'Heather Fragrance Oil 100ml'])
+  assert.strictEqual(inspect('Product: ' + name + '\nH317').level, 'possible', name);
+assert.strictEqual(inspect('Product: Rose Fragrance Oil (10% in Candle Wax)\nConcentration: 100% fragrance oil').level, 'concentrate', 'a neat-oil statement still wins');
+assert.strictEqual(inspect('Product: Rose Fragrance Oil\nProduct name: Rose Fragrance Oil (10% in Candle Wax)\nH317').level, 'unverified');
+assert.strictEqual(inspect('Product: Scented candle 10% in wax\nH317').level, 'unverified', 'no oil named: unchanged neutral');
 assert(checker.inspect('SECTION 2.2\nH317', 'Scented Candle', '').message.includes('at your fragrance percentage'));
 for (const raw of ['Product: Heather Fragrance Oil\nConcentration: 100% fragrance oil', 'Product name: Heather Fragrance Oil\nH317', 'SECTION 2.2\nH317'])
   assert(inspect(raw).message.length < 320, 'note stays concise on mobile');
-ok('suitability checker: levels, approved wording, concise');
+ok('suitability checker: diluted-form product names get the neutral notice; neat oils keep the amber warning');
 
 // ── 2. Builder wiring, calculator wording, unchanged exclusion list ───────
 const builderSrc = read('builder.html');
@@ -105,20 +121,30 @@ assert(shown('smart-paste-excluded-note'));
 const note = box('smart-paste-excluded-note').textContent;
 assert.deepStrictEqual(parts(box('smart-paste-excluded-note')), [
   'Precautionary statements not added: P264, P280, P362+P364',
-  'These statements were found in your SDS but were not added to your label.',
-  SUPPLIER, SUPPORT], 'standalone note: actual codes, no fragrance-specific claims');
+  'These precautionary statements appear in your SDS but were not added to your label. Check whether they are required for your finished product before using the label.',
+  SUPPORT], 'standalone note: actual codes, owner-approved shorter wording, no repeated supplier advice');
 assert(!/fragrance/i.test(note) && !box('smart-paste-excluded-note').querySelector('svg'), 'no bottles or fragrance claims in the neutral note');
 assert(linkOk(box('smart-paste-excluded-note')), 'support address is a tappable underlined link');
 assert(!box('smart-paste-excluded-note').querySelector('button'), 'no action buttons');
 assert(!/workplace|unnecessary|not required|don't apply|do not apply/i.test(note), 'must not describe excluded codes categorically');
 assert(shown('sds-source-suitability-warning') && amber().dataset.suitability === 'unverified');
-assert(!amber().classList.contains('field-alert-warn'), 'neutral info line stays low-key');
-ok('codes only: standalone neutral note with the actual codes');
+// Neutral suitability notice: teal information style, never amber or red.
+assert(amber().classList.contains('field-alert-info') && !amber().classList.contains('field-alert-warn') && !amber().classList.contains('field-alert-danger'));
+assert.strictEqual(amber().getAttribute('role'), 'status');
+assert(amber().querySelector('svg[aria-hidden="true"]'), 'information icon');
+assert.deepStrictEqual([...amber().querySelectorAll('strong,p')].map(e => e.textContent), [
+  'Check your SDS suitability',
+  'Section 2.2 may not confirm whether this SDS applies to your finished scented candle at 10% fragrance.',
+  'CLPeasy does not recalculate hazards for different fragrance percentages. Check that your supplier’s classification information applies to your finished product.',
+  'not']);
+assert.strictEqual(amber().querySelector('p strong').textContent, 'not', '"not" is bold');
+assert(!amber().contains(box('smart-paste-excluded-note')) && !box('smart-paste-excluded-note').contains(amber()), 'separate notices');
+ok('codes only: standalone neutral note with the actual codes; teal suitability notice');
 
 r = paste('2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nP102 P261 P270 P302+P352 P501');
 assert.deepStrictEqual(r.p, ['P102', 'P261', 'P302+P352', 'P501']);
 assert.deepStrictEqual(parts(box('smart-paste-excluded-note')).slice(0, 2), [
-  'Precautionary statement not added: P270', 'This statement was found in your SDS but was not added to your label.']);
+  'Precautionary statement not added: P270', 'This precautionary statement appears in your SDS but was not added to your label. Check whether it is required for your finished product before using the label.']);
 ok('codes only: singular wording');
 
 // --- Neither: no warning boxes. ---
