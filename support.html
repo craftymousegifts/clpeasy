@@ -81,6 +81,18 @@ select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='htt
 .radio-item.selected .radio-dot::after{content:'';width:6px;height:6px;background:white;border-radius:50%;display:block;}
 .radio-label{font-size:14px;color:var(--text);}
 
+/* HELP TOPICS (select all that apply) */
+.help-topics{border:0;padding:0;min-width:0;}
+.help-topics legend{display:block;font-size:13px;font-weight:700;margin-bottom:2px;color:var(--text);padding:0;}
+.help-topics legend span{font-weight:400;color:var(--muted);}
+.topic-hint{font-size:12px;color:var(--muted);margin-bottom:8px;}
+.topic-grid{display:grid;grid-template-columns:1fr;gap:8px;}
+@media(min-width:560px){.topic-grid{grid-template-columns:1fr 1fr;}}
+.topic-item{display:flex;align-items:center;gap:10px;margin:0;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:white;font-size:14px;font-weight:400;line-height:1.35;transition:all .2s;}
+.topic-item:hover{border-color:var(--teal-mid);}
+.topic-item:has(input:checked){border-color:var(--teal);background:var(--teal-light);}
+.topic-item input{width:18px;height:18px;flex-shrink:0;margin:0;accent-color:var(--teal-dark);}
+
 /* SUBMIT */
 .btn-submit{width:100%;background:var(--teal);color:white;border:none;padding:14px;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;box-shadow:0 4px 14px rgba(13,148,136,0.25);margin-top:8px;}
 .btn-submit:hover{background:var(--teal-dark);}
@@ -229,23 +241,23 @@ footer a:hover{color:white;}
       <input type="email" id="email" placeholder="you@example.com">
     </div>
 
-    <div class="form-group">
-      <label>What were you trying to do? <span>(required)</span></label>
-      <select id="step">
-        <option value="">Select the step you were on...</option>
-        <option>Logging in or creating an account</option>
-        <option>Choosing a label size and shape</option>
-        <option>Entering fragrance details</option>
-        <option>Adding hazard data / H statements</option>
-        <option>Using Smart Paste — Section 2.2 paste</option>
-        <option>Downloading a label (PNG, SVG, PDF)</option>
-        <option>Using the A4 Print Sheet Composer</option>
-        <option>Exporting for Cricut</option>
-        <option>Managing my label library</option>
-        <option>Billing or subscription</option>
-        <option>Something else</option>
-      </select>
-    </div>
+    <fieldset class="form-group help-topics" id="help-topics" aria-describedby="help-topics-hint">
+      <legend>What do you need help with? <span>(required)</span></legend>
+      <div class="topic-hint" id="help-topics-hint">Select all that apply.</div>
+      <div class="topic-grid">
+        <label class="topic-item"><input type="checkbox" name="help-topic" value="Smart Paste / SDS extraction" data-topic="smart-paste"> Smart Paste / SDS extraction</label>
+        <label class="topic-item"><input type="checkbox" name="help-topic" value="CLP classification information" data-topic="clp-info"> CLP classification information</label>
+        <label class="topic-item"><input type="checkbox" name="help-topic" value="Missing or excluded H/P statements" data-topic="excluded-statements"> Missing or excluded H/P statements</label>
+        <label class="topic-item"><input type="checkbox" name="help-topic" value="Product or fragrance details" data-topic="product-details"> Product or fragrance details</label>
+        <label class="topic-item"><input type="checkbox" name="help-topic" value="Label layout, size or fitting" data-topic="label-layout"> Label layout, size or fitting</label>
+        <label class="topic-item"><input type="checkbox" name="help-topic" value="Printing, cutting or downloads" data-topic="printing"> Printing, cutting or downloads</label>
+        <label class="topic-item"><input type="checkbox" name="help-topic" value="Saved labels / label library" data-topic="saved-labels"> Saved labels / label library</label>
+        <label class="topic-item"><input type="checkbox" name="help-topic" value="Account, login, trial or subscription" data-topic="account"> Account, login, trial or subscription</label>
+        <label class="topic-item"><input type="checkbox" name="help-topic" value="Payments or billing" data-topic="billing"> Payments or billing</label>
+        <label class="topic-item"><input type="checkbox" name="help-topic" value="Technical problem / bug" data-topic="bug"> Technical problem / bug</label>
+        <label class="topic-item"><input type="checkbox" name="help-topic" value="Other enquiry" data-topic="other"> Other enquiry</label>
+      </div>
+    </fieldset>
 
     <div class="form-group">
       <label>Describe what happened <span>(required)</span></label>
@@ -326,6 +338,15 @@ function toggleIncognito() {
   steps.classList.toggle('show');
 }
 
+// A link can preselect one help topic by its fixed key. Nothing else from the
+// URL is used, so no SDS text, label or personal data can arrive this way.
+document.addEventListener('DOMContentLoaded', function () {
+  let key = '';
+  try { key = new URLSearchParams(location.search).get('topic') || ''; } catch (e) {}
+  const box = key && /^[a-z-]{1,40}$/.test(key) ? document.querySelector('input[name="help-topic"][data-topic="' + key + '"]') : null;
+  if (box) box.checked = true;
+});
+
 function selectRadio(el, group) {
   document.querySelectorAll(`.radio-item[onclick*="${group}"]`).forEach(r => r.classList.remove('selected'));
   el.classList.add('selected');
@@ -340,12 +361,15 @@ function showMsg(text) {
 async function submitForm() {
   const name = document.getElementById('name').value.trim();
   const email = document.getElementById('email').value.trim();
-  const step = document.getElementById('step').value;
+  // Several help topics can be chosen. They travel in the existing "step"
+  // field (joined) so the current send-support-email function is unchanged.
+  const categories = [...document.querySelectorAll('input[name="help-topic"]:checked')].map(c => c.value);
+  const step = categories.join('; ');
   const description = document.getElementById('description').value.trim();
 
   if (!name) { showMsg('Please enter your name.'); return; }
   if (!email || !email.includes('@')) { showMsg('Please enter a valid email address.'); return; }
-  if (!step) { showMsg('Please select the step you were on.'); return; }
+  if (!categories.length) { showMsg('Please select at least one topic you need help with.'); return; }
   if (!description) { showMsg('Please describe what happened.'); return; }
 
   const btn = document.getElementById('submit-btn');
@@ -364,7 +388,7 @@ New CLPeasy Support Request
 ===========================
 Name: ${name}
 Email: ${email}
-Step: ${step}
+Help with: ${step}
 
 What happened:
 ${description}
@@ -389,7 +413,7 @@ ${other || 'None'}
     const resp = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/send-support-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, step, description, errors, refresh, incognito, browser, other })
+      body: JSON.stringify({ name, email, step, categories, description, errors, refresh, incognito, browser, other })
     });
 
     if (!resp.ok) throw new Error('Support email send failed: ' + resp.status);
