@@ -787,6 +787,16 @@ function showTopic(id, card) {
   }, 50);
 }
 
+// A link such as knowledge.html#blended opens that topic (sections are
+// hidden until their card is chosen). Only existing topic ids are used.
+window.addEventListener('load', function () {
+  const id = (location.hash || '').slice(1);
+  if (!/^[a-z0-9-]{1,40}$/i.test(id)) return;
+  const section = document.getElementById(id);
+  const card = document.querySelector('.cat-card[onclick*="showTopic(\'' + id + '\'"]');
+  if (section && section.classList.contains('section-card') && card) showTopic(id, card);
+});
+
 function toggleAcc(btn) {
   const body = btn.nextElementSibling;
   const isOpen = btn.classList.contains('open');
