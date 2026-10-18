@@ -116,7 +116,26 @@ r = paste('Fragrance oil supplied at 100% concentration\n2.2 Label elements\nSig
 assert.deepStrictEqual(r.p, ['P102', 'P261', 'P302+P352', 'P501']);
 assert(box('sds-source-suitability-warning').classList.contains('field-alert-warn'));
 assert(box('sds-source-suitability-warning').textContent.includes('Check this is information for your finished product'));
-ok('neat-oil SDS shows the amber suitability warning without changing extraction');
+const AMBER_WORDING = ['This appears to be information for concentrated fragrance oil, rather than your finished product.',
+  'CLPeasy does not recalculate hazards for different fragrance percentages.',
+  'Check with your supplier for the appropriate CLP classification information for your finished product before using this label.'];
+const amber = () => box('sds-source-suitability-warning');
+assert.deepStrictEqual([...amber().querySelectorAll('p')].map(e => e.textContent), AMBER_WORDING, 'exact approved amber wording');
+assert.strictEqual(amber().querySelectorAll('.sds-bottle-compare svg').length, 2, 'two bottles');
+assert.deepStrictEqual([...amber().querySelectorAll('.sds-bottle-compare strong')].map(e => e.textContent), ['Supplier SDS', '100%', 'Your product', '10%'], 'percentages bold');
+assert(!/90%|100%[^]*100%/.test(amber().querySelector('.sds-bottle-compare').textContent.replace('100% concentrated', '')), 'no second 100% or remainder');
+// Blank percentage: neutral placeholder, nothing invented.
+r = paste('Fragrance oil supplied at 100% concentration\n2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nP102 P261 P302+P352 P501');
+box('frag-load').value = ''; window.readForm(); window.updateSdsSourceSuitabilityWarning();
+assert(amber().querySelector('.sds-bottle-compare').textContent.includes('Fragrance % not entered'));
+assert.deepStrictEqual([...amber().querySelectorAll('.sds-bottle-compare strong')].map(e => e.textContent), ['Supplier SDS', '100%', 'Your product']);
+assert.deepStrictEqual(r.p, ['P102', 'P261', 'P302+P352', 'P501'], 'extraction unchanged');
+// "Names fragrance oil" amber level uses the same approved design.
+r = paste('Product name: Rose Fragrance Oil\n2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nP102 P261 P302+P352 P501');
+assert.strictEqual(amber().dataset.suitability, 'possible');
+assert.deepStrictEqual([...amber().querySelectorAll('p')].map(e => e.textContent), AMBER_WORDING);
+assert.deepStrictEqual(r.p, ['P102', 'P261', 'P302+P352', 'P501']);
+ok('neat-oil SDS shows the amber suitability warning and approved two-bottle design without changing extraction');
 
 // Unrecognised codes still kept and still block; new guidance shown.
 r = paste('2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction. H319 Causes serious eye irritation.\nP102 P240 P310 P305+P351+P338 P501');

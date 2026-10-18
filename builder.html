@@ -4045,8 +4045,36 @@ function updateSdsSourceSuitabilityWarning(){
     box.style.cssText='display:block;margin-top:12px;margin-bottom:0;font-size:13px;';
     const h=document.createElement('strong');h.style.display='block';h.style.marginBottom='4px';
     h.textContent='⚠️ Check this is information for your finished product';
-    box.appendChild(h);box.appendChild(document.createTextNode(result.message));
+    box.appendChild(h);
+    // Approved two-bottle comparison (presentation only). The percentage is
+    // the existing Step 2 fragrance load; nothing is invented when it is blank.
+    const pct=parseFloat(String(document.getElementById('frag-load')?.value||S.fragLoad||'').replace(',','.'));
+    const hasPct=Number.isFinite(pct)&&pct>0&&pct<100;
+    box.insertAdjacentHTML('beforeend',_sdsBottleCompareHtml(hasPct?pct:null));
+    ['This appears to be information for concentrated fragrance oil, rather than your finished product.',
+     'CLPeasy does not recalculate hazards for different fragrance percentages.',
+     'Check with your supplier for the appropriate CLP classification information for your finished product before using this label.']
+      .forEach((t,i)=>{const para=document.createElement('p');para.style.color='inherit';para.textContent=t;if(i)para.style.marginTop='6px';box.appendChild(para);});
   }
+}
+function _sdsBottleSvg(fillPct,fragPct,id){
+  // Bottle body 8..60 (52 units tall); fills rise from the bottom.
+  const body='M14 8h12v6l6 6v36a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4V20l6-6z';
+  const bodyH=52,top=60-bodyH*fillPct/100,gold=fragPct==null?0:Math.max(3,bodyH*fragPct/100);
+  return `<svg width="40" height="64" viewBox="0 0 40 64" aria-hidden="true" focusable="false"><defs><clipPath id="${id}"><path d="${body}"/></clipPath></defs>`+
+    `<g clip-path="url(#${id})">`+(fragPct==null
+      ?`<rect x="0" y="${top}" width="40" height="${60-top}" fill="#E5F3F7"/>`
+      :fillPct===100&&fragPct===100
+        ?`<rect x="0" y="${top}" width="40" height="${60-top}" fill="#E0A82E"/>`
+        :`<rect x="0" y="${top}" width="40" height="${60-top}" fill="#d6eef4"/><rect x="0" y="${60-gold}" width="40" height="${gold}" fill="#E0A82E"/>`)+
+    `</g><path d="${body}" fill="none" stroke="#92400E" stroke-width="1.5" stroke-linejoin="round"/><rect x="13" y="3" width="14" height="5" rx="1" fill="#92400E"/></svg>`;
+}
+function _sdsBottleCompareHtml(pct){
+  const cap='display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:12px;line-height:1.35;max-width:130px;';
+  const yours=pct==null?'Fragrance % not entered':`<strong>${pct}%</strong> fragrance oil`;
+  return `<div class="sds-bottle-compare" style="display:flex;justify-content:center;align-items:flex-start;gap:24px;margin:8px 0 10px;">`+
+    `<div style="${cap}">${_sdsBottleSvg(100,100,'sds-bottle-supplier')}<span><strong style="display:block;">Supplier SDS</strong><strong>100%</strong> concentrated fragrance oil</span></div>`+
+    `<div style="${cap}">${_sdsBottleSvg(100,pct,'sds-bottle-yours')}<span><strong style="display:block;">Your product</strong>${yours}</span></div></div>`;
 }
 function updateSmartPasteExcludedNote(){
   const box=document.getElementById('smart-paste-excluded-note');
