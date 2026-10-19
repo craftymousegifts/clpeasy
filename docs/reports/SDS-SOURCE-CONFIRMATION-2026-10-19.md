@@ -27,3 +27,7 @@ Full repository suite, desktop/mobile visual and interaction checks on the previ
 ## Rollback
 
 Revert this isolated change. No data migration or stored acknowledgement to remove.
+
+## iPhone feedback follow-up — general SDS help link
+
+Owner reported that the broad “Unsure?” link opened the blended-fragrance topic. It now targets `compliance.html#sds-guidance`, the existing “Documentation the Builder can use” section from merged #263, covering product type, concentration, neat oil, blends and unclear documentation. A heading anchor with scroll margin avoids the fixed navigation. The separate blended-fragrance help link is unchanged. No regulatory wording or extraction logic changed. Current main `1925764` merged into this review branch; both project-history additions preserved. Production is not changed.

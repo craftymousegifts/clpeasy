@@ -59,7 +59,8 @@ box('smart-paste-input').value=paste;confirm();
 try{window.loadLabelRecord({id:'different',scentName:'Other',productType:'Wax Melt',shape:'circle',size:63,hStatements:'',pStatements:'',sensitisers:[],pictograms:[]});}catch(e){}
 assert(!box('sds-source-confirm').checked);
 ok('clear and loading another saved label reset confirmation');
-assert(box('sds-source-confirm-help').querySelector('a').getAttribute('href')==='knowledge.html#blended');
+assert(box('sds-source-confirm-help').querySelector('a').getAttribute('href')==='compliance.html#sds-guidance');
+assert(fs.readFileSync('compliance.html','utf8').includes('id="sds-guidance"'), 'general SDS guidance target exists');
 assert(!window.localStorage.getItem('sds-source-confirm'));
 assert(!jsErrors.some(e=>/sdsSource|confirmSdsSource|ReferenceError/.test(e)),jsErrors.join('\n'));
 ok('educational link present; confirmation is transient');
