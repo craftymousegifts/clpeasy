@@ -1,4 +1,4 @@
-// Knowledge Base "Blended Fragrances" section wording (Oct 2026, approved in
+// Knowledge Base blended-fragrance guidance navigation and retired claims (Oct 2026, approved in
 // principle by Michaela). Only this section changes.
 //   1. Retired claims are gone: every blend legally requires a new SDS, and
 //      CLPeasy supports single-fragrance products only.
@@ -26,13 +26,17 @@ for (const retired of [/requires its own SDS/i, /single-fragrance products only/
 assert(!/Important legal warning/i.test(doc.querySelector('.cat-card[onclick*="showTopic(\'blended\'"]').textContent));
 ok('retired claims removed from the section and its topic card');
 
-assert(/finished product needs appropriate GB CLP classification information that covers the product as a whole/.test(text));
-assert(/cannot be established simply by combining the hazard and precautionary statements from each fragrance oil’s safety data sheet/.test(text));
-assert(/CLPeasy cannot calculate the classification of a custom fragrance blend\. It can build your label from suitable classification information that covers your blend/.test(text));
-assert(/fragrance supplier may be able to provide classification information, or an SDS, for a custom blend on request\. A qualified CLP specialist can also help\./.test(text));
-ok('section explains finished-product classification, combining SDSs, what CLPeasy can do, and where to get information');
+const articleLink = section.querySelector('a[href="/knowledge/combining-fragrance-oils"]');
+assert(articleLink, 'existing blended topic must lead to the full article');
+const redirects = fs.readFileSync('_redirects', 'utf8');
+assert(/\/knowledge\/combining-fragrance-oils\s+\/combining-fragrance-oils\.html\s+200/.test(redirects), 'article route must resolve');
+const article = new JSDOM(fs.readFileSync('combining-fragrance-oils.html', 'utf8')).window.document;
+for (const retired of [/requires its own SDS/i, /single-fragrance products only/i, /legally a new chemical mixture/i]) {
+  assert(!retired.test(article.body.textContent), 'retired claim in article: ' + retired);
+}
+assert(article.querySelector('a[href*="hse.gov.uk/chemical-classification/what-to-do/use-chemicals.htm"]'), 'classification guidance source retained');
+ok('existing topic links to the full article and authoritative source, without retired claims');
 
-assert.strictEqual(doc.querySelectorAll('#blended .info-block').length, 2, 'same two-block structure');
 assert(doc.querySelector('#blended .accordion-trigger'), 'existing accordion kept');
 ok('existing section structure kept');
 
