@@ -581,5 +581,5 @@ place them off the A4 page.
 
 - Owner approved the full page-by-page content proposal in chat; implemented against main `3a9524e` in a separate content branch. Support/Compliance/FAQ/homepage/Knowledge Base updated; blend article and separate hand-cut/Cricut guides added. Existing blended hash route preserved; no Builder or form submission behaviour changes.
 - High-tier wording: authoritative HSE, GOV.UK, Business Companion and Cricut evidence plus one focused independent review. Scope and limitations match the approved proposal; CLP Ready, no certification or blend-classification promise.
-- Targeted checks and 160-link audit pass. Full npm suite interrupted in an unrelated consent test after earlier groups passed; local browser blocked, visual sign-off pending. See `docs/reports/CUSTOMER-SUPPORT-CONTENT-2026-10-19.md`.
+- Targeted checks and 160-link audit pass. Full npm suite interrupted in an unrelated consent test after earlier groups passed; local browser blocked; hosted desktop Support and blend article inspected, full desktop/mobile sign-off pending. See `docs/reports/CUSTOMER-SUPPORT-CONTENT-2026-10-19.md`.
 - Publication holds: private HSE correspondence verification, physical current SVG/Design Space/Maker 3 test, hosted desktop/mobile preview, founder release approval and out-of-hours release process. No production deployment.

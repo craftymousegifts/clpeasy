@@ -28,7 +28,7 @@ PASS: JSDOM structure/local-link audit of nine content pages, exactly one H1 per
 
 Broader npm test run: passed Smart Paste scope, PNG accounting, live Builder export guard, site scroll/accessibility, static audit, Builder regression, PAYG accounting, PAYG display and PAYG pricing checks. It then made no progress during the unrelated immediate-supply-consent test and was interrupted; the full suite is NOT reported as passed. No failures were emitted before interruption.
 
-Local Chrome visual QA could not start: environment denied its process-singleton socket. No desktop/mobile screenshots or browser review claimed. Hosted preview checks remain pending. Existing form code/values preserved and tests pass; no live support request sent.
+Local Chrome visual QA could not start: environment denied its process-singleton socket. Hosted Netlify preview `https://deploy-preview-263--clpeasy.netlify.app` succeeded for commit `1f351bc`. Desktop Support and blend-article layout were inspected in the Cloud Browser. Two minor follow-ups: give Support eyebrow clearance below fixed nav; add explicit same-article skip links because the root base URL would otherwise resolve the generated fragment to the homepage. Full desktop/mobile sign-off remains pending. Existing form code/values preserved and tests pass; no live support request sent.
 
 ## Publication holds
 
