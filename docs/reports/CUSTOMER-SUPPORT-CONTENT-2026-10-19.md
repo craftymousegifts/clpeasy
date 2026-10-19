@@ -1,5 +1,17 @@
 # Customer support and website content revision
 
+## Current status — HSE evidence correction approved and implemented
+
+The owner supplied the original HSE reply dated 16 June 2026 and approved the exact replacement passages on 19 October 2026. The earlier HSE source-access hold below is resolved by correcting the unsupported claims, not by treating HSE's reply as a software exemption. Compliance, FAQ and homepage use the approved factual summary; the regulatory statements in Compliance and Terms match exactly. The pre-launch HSE badge is removed. Terms' last-updated date is 19 October 2026. No other Terms clauses change.
+
+The HSE source says supplier classification/labelling responsibility remains with the supplier, use of tools is the supplier's choice, errors causing loss may lead to redress, and HSE cannot advise on software development/disclaimers or recommend guidance. It does not confirm that no specific obligations apply to CLPeasy. The 16 June reply also says the original message could not be found; no pre-launch assessment is asserted. Full private correspondence has not been published in the repository.
+
+A focused independent review of this correction found no material source mismatch or lost surrounding structure. Exact Compliance/Terms statement equality, unchanged inline scripts, removal of unsupported claims and static content checks pass. Desktop/mobile-size browser checks cover the four revised pages. The separate concentration/Article 18 questions remain outside this correction and unresolved.
+
+Cricut-specific guide remains outside public release. Remaining release requirement is founder approval under the agreed out-of-hours process; no merge or production deployment has been performed. The unrelated baseline plan-finder test failure remains documented below; the full suite is not claimed green.
+
+The remainder of this report preserves the earlier implementation and investigation history; earlier statements that the HSE reply is unavailable or remains REVIEW are superseded by this current status.
+
 Owner approved the complete CLPeasy-Content-Review-Proposal.md in chat on 19 October 2026. Base: main `3a9524e8184538bdd1ead12b0cbe1ac867e7a913` (v1.3.0).
 
 ## Scope
