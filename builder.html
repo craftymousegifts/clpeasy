@@ -1271,7 +1271,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <h4>✨ Smart Paste — paste SDS Section 2.2</h4>
       <p>Copy the complete Section 2.2 (Label elements) from your current supplier SDS PDF and paste it here. CLPeasy extracts the information it can identify; review the result against your SDS before continuing.</p>
       <textarea id="smart-paste-input" placeholder="Paste SDS Section 2.2 text here..."></textarea>
-      <br><br><button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
+      <div class="field-alert field-alert-info" style="margin-top:12px;">
+        <label style="display:flex;gap:10px;align-items:flex-start;font-size:13px;cursor:pointer;">
+          <input type="checkbox" id="sds-source-confirm" onchange="confirmSdsSource()" aria-describedby="sds-source-confirm-help sds-source-confirm-error" style="width:18px;height:18px;flex-shrink:0;margin-top:3px;accent-color:var(--teal);">
+          <span>I confirm that this paste comes from one current SDS whose classification information applies to my finished product, including its formulation and fragrance percentage. I understand that CLPeasy extracts label information; it does not combine SDSs or calculate classifications for fragrance blends.</span>
+        </label>
+        <p id="sds-source-confirm-help" style="margin:8px 0 0;font-size:12px;">You remain responsible for ensuring that the classification information applies to your finished product. This confirmation does not validate the SDS or the extracted result. <a href="knowledge.html#blended" target="_blank" rel="noopener noreferrer">Unsure? Check which information you need</a> or <a href="mailto:support@clpeasy.com">contact support</a>.</p>
+      </div>
+      <div id="sds-source-confirm-error" class="field-alert field-alert-danger" role="alert" style="display:none;font-size:13px;"></div>
+      <button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
       <div id="smart-paste-scope-error" class="field-alert field-alert-danger" role="alert" style="display:none;margin-top:12px;margin-bottom:0;font-size:13px;"></div>
       <div id="sds-source-suitability-warning" aria-live="polite" style="display:none;"></div>
       <div id="smart-paste-excluded-note" class="field-alert" role="status" aria-live="polite" style="display:none;margin-top:12px;margin-bottom:0;font-size:13px;background:var(--off);border:1.5px solid var(--border);color:var(--text);"></div>
@@ -3233,6 +3241,7 @@ async function saveLabel(){
 // dedupe or creating a duplicate.
 function loadLabelRecord(e){
   if(!e)return;
+  resetSdsSourceConfirmation();
   editingLabelId=e.id||null;
   {const se=document.getElementById('smart-paste-scope-error');if(se){se.textContent='';se.style.display='none';}}
   // Smart Paste guidance from an earlier paste does not apply to this label.
@@ -4153,6 +4162,32 @@ document.addEventListener('DOMContentLoaded',()=>{
     document.getElementById(id)?.addEventListener('change',updateSdsSourceSuitabilityWarning);
   });
 });
+// Source acknowledgement is transient: never saved as SDS validation or consent.
+// Compare actual controls as well as listening to input, so calculator/programmatic
+// changes cannot reuse an acknowledgement made for different source information.
+let sdsSourceConfirmation = null;
+function sdsSourceContext(){
+  return JSON.stringify(['smart-paste-input','product-type','frag-load'].map(id=>document.getElementById(id)?.value||''));
+}
+function resetSdsSourceConfirmation(){
+  sdsSourceConfirmation=null;
+  const cb=document.getElementById('sds-source-confirm');if(cb)cb.checked=false;
+  const error=document.getElementById('sds-source-confirm-error');
+  if(error){error.textContent='';error.style.display='none';}
+}
+function confirmSdsSource(){
+  const cb=document.getElementById('sds-source-confirm');
+  sdsSourceConfirmation=cb?.checked?sdsSourceContext():null;
+  const error=document.getElementById('sds-source-confirm-error');
+  if(error){error.textContent='';error.style.display='none';}
+}
+function reconcileSdsSourceConfirmation(){
+  if(sdsSourceConfirmation!==null&&sdsSourceConfirmation!==sdsSourceContext())resetSdsSourceConfirmation();
+}
+['smart-paste-input','product-type','frag-load'].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el){el.addEventListener('input',resetSdsSourceConfirmation);el.addEventListener('change',resetSdsSourceConfirmation);}
+});
 function extractSDS(){
   // NOTE (2026-08-02, reversal — see smart-paste-pro-gating / reverify):
   // A plan gate was added here believing Smart Paste was Easy-Pro-exclusive.
@@ -4163,6 +4198,13 @@ function extractSDS(){
   // fresh, explicit product-rules confirmation.
   const pasted=document.getElementById('smart-paste-input').value.trim();
   if(!pasted){alert('Please paste SDS Section 2.2 text first.');return;}
+  reconcileSdsSourceConfirmation();
+  if(!document.getElementById('sds-source-confirm')?.checked||sdsSourceConfirmation!==sdsSourceContext()){
+    const error=document.getElementById('sds-source-confirm-error');
+    if(error){error.textContent='Before extracting, confirm that this paste comes from one current SDS with classification information that applies to your finished product. If you are unsure, use the help link or contact support.';error.style.display='block';}
+    document.getElementById('sds-source-confirm')?.focus();
+    return;
+  }
   // Safety fix (Oct 2026): read only Section 2.2 (Label elements). Reading
   // all pasted text put Section 3 ingredient hazards and later-section codes
   // on the finished-product label. If one Section 2.2 can't be identified,
@@ -5017,6 +5059,7 @@ function splashGoLibrary(){
 
 function startOver(){location.reload();}
 function clearHazardData(){
+  resetSdsSourceConfirmation();
   // Correction (2026-09, Clear hazard data restoration): pre-emptively
   // uncheck the Step 3 hazard-confirm checkbox before updateLabel() runs
   // below. Without this, if the maker had already ticked it,
@@ -5461,6 +5504,7 @@ function nudgeBizNameFS(delta){
 }
 function resetBizNameFS(){S.bizNameFSOverride=null;updateLabel();}
 function updateLabel(){
+  reconcileSdsSourceConfirmation();
   readForm();
   if(typeof reconcileOptionalItems==='function')reconcileOptionalItems();
   // Shared GB-CLP resolver: Smart Paste and manual chip changes must never

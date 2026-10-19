@@ -53,7 +53,7 @@ function extract(text) {
   box('scent-name').value = 'Synthetic'; box('product-type').value = 'Scented Candle'; box('frag-load').value = '10%';
   window.setApprovedBuilderStep(3);
   box('smart-paste-input').value = text; window.__lastAlert = undefined;
-  window.extractSDS();
+  document.getElementById('sds-source-confirm').checked=true; window.confirmSdsSource(); window.extractSDS();
   const S = window.eval('S');
   return { h: S.hStatements, p: S.pStatements, signal: S.signal, pictos: [...S.pictograms].sort().join(','), sens: [...S.sensitisers].join('|'),
     fromExtraction: !!S.hazardFromExtraction, error: (e => e && e.style.display !== 'none' ? e.textContent : null)(box('smart-paste-scope-error')) };
@@ -193,6 +193,7 @@ ok('unmarked repeated 2.2 heading: P-only page continuation joined; extra signal
     } });
   const w2 = dom2.window, d2 = w2.document;
   w2.setApprovedBuilderStep(3); d2.getElementById('smart-paste-input').value = S1 + S2 + S3PLUS;
+  d2.getElementById('sds-source-confirm').checked=true; w2.confirmSdsSource();
   assert.doesNotThrow(() => w2.extractSDS(), 'Extract does not throw when the scoping file is missing');
   const e2 = d2.getElementById('smart-paste-scope-error');
   assert(e2.style.display !== 'none' && /couldn’t start because part of this page didn’t load\. Please refresh the page and try again\. Nothing has been extracted\./.test(e2.textContent), 'load-failure message shown');
@@ -225,3 +226,4 @@ if (C22 && CFULL && fs.existsSync(C22) && fs.existsSync(CFULL)) {
 
 assert.deepStrictEqual(jsErrors.filter(e => !/Not implemented/.test(e)), [], 'no page errors');
 console.log(`\nAll ${n} Smart Paste section-scope checks passed.`);
+
