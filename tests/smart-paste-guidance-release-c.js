@@ -237,7 +237,7 @@ ok('size note: shown with amber concentrated-oil and mismatch warnings only; fit
 
 // Unrecognised codes still kept and still block; new guidance shown. (P998/P999
 // are not real codes; P240 and P310 were used here until Stage A, #233,
-// made them recognised.)
+// made P240 recognised. P310 stays unrecognised but may be added later.)
 r = paste('2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction. H319 Causes serious eye irritation.\nP102 P998 P999 P305+P351+P338 P501');
 assert.deepStrictEqual(r.p, ['P102', 'P998', 'P999', 'P305+P351+P338', 'P501'], 'unrecognised codes are kept, not discarded');
 assert.strictEqual(r.blocked, true, 'unrecognised codes still block downloads');

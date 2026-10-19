@@ -78,7 +78,10 @@ function paste(text) {
   box('custom-w').value = '150'; box('custom-h').value = '110'; window.onDimInput();
   box('scent-name').value = 'Synthetic'; box('product-type').value = 'Room Spray'; box('frag-load').value = '10%';
   window.setApprovedBuilderStep(3); window.clearHazardData();
-  box('smart-paste-input').value = text; window.extractSDS();
+  box('smart-paste-input').value = text;
+  // #264: extraction needs the SDS source confirmation (absent before #264).
+  if (box('sds-source-confirm')) { box('sds-source-confirm').checked = true; window.confirmSdsSource(); }
+  window.extractSDS();
   for (const [id, v] of [['biz-name', 'Test Maker'], ['biz-address', '1 Test Lane, Exeter, EX1 2AB'], ['biz-phone', '01632 960000']]) box(id).value = v;
   window.readForm(); window.updateLabel();
   const S = window.eval('S');

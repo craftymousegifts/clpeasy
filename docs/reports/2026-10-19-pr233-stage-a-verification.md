@@ -7,7 +7,7 @@
 
 | What | Anchor |
 |---|---|
-| Code | #233 head `42123e5` (main `1925764` merged in), plus this local change. `main` is now `b233631` (#264, #265), not merged here. |
+| Code | Stage A change `18386e7` (on top of `42123e5`, main `1925764`). Later merged with `main` `b233631` (#264, #265) with no conflicts. After #264, extraction needs the SDS source confirmation, so `tests/d3-r4-precautionary-statements.js` now ticks it before extracting (a test-only change). |
 | GB wording | legislation.gov.uk, Regulation (EC) No 1272/2008, Annex IV, https://www.legislation.gov.uk/eur/2008/1272/annex/IV (data `dc:modified` 2026-06-10, retrieved 19 Oct 2026). Part 1 Tables 6.1, 6.2 and 6.4 give columns (2) and (5); Part 2 gives the English rows. |
 | GB amendments after 17 Oct 2020 | The same page says "There are currently no known outstanding effects by UK legislation for … ANNEX IV". Its version timeline ends at 17/10/2020 and 31/12/2020 (end of the implementation period). |
 | Wording rule | Article 22(4), https://www.legislation.gov.uk/eur/2008/1272/article/22: statements "shall be worded in accordance with Part 2 of Annex IV". |
@@ -55,4 +55,4 @@ Run locally on the Stage A working tree (Node 24, jsdom), 19 Oct 2026: **32 of 3
 - P308+P313 "advice/attention": founder decision or authoritative confirmation needed. Existing library entries P313 and P332+P313 also print "advice/attention"; that's tracked in `docs/reports/P-LIBRARY-WORDING-AUDIT-2026-10-19.md` (on `fix/p-statement`).
 - P310 completion: REVIEW. Evidence needed on what counts as an appropriate GB source of emergency medical advice, or a supplier SDS that specifies one.
 - H316 on the genuine Nag Champa SDS: supplier confirmation needed (an existing, unchanged block).
-- `main` `b233631` not merged into #233.
+- Unrelated and separate: `tests/smart-paste-user-guidance-wording.js` already fails on `main` `b233631`. #263 changed the Smart Paste troubleshooting wording in `support.html`, so the test's "approved replacement wording" check no longer finds its expected text. This PR doesn't touch `support.html` or that test.
