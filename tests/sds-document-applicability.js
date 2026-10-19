@@ -75,7 +75,7 @@ assert.strictEqual(movedNext,true,'Step 2 Next accepts a blank fragrance percent
 set('biz-name','QA Candles');set('biz-address','1 Test Street, Testtown, TE1 1ST');set('biz-phone','01234 567890');
 window.selectShape('circle');set('custom-w','100');window.onDimInput();
 set('smart-paste-input','Warning\nH317 May cause an allergic skin reaction.\nP261 Avoid breathing vapours.\nP501 Dispose of contents in accordance with local regulations.\nContains Linalool. May produce an allergic reaction.');
-window.extractSDS();window.readForm();window.updateLabel();
+document.getElementById('sds-source-confirm').checked=true;window.confirmSdsSource();window.extractSDS();window.readForm();window.updateLabel();
 assert(/H317/.test(S('S.hStatements')),'extract hazards without questionnaire');
 assert.strictEqual(window.canLeaveApprovedBuilderStep(3),false,'hazard review checkbox still required');
 document.getElementById('hazard-confirm').checked=true;window.toggleHazardNext();
@@ -94,3 +94,4 @@ assert.strictEqual(S('JSON.stringify(S.sdsDoc)'),prior,'previous metadata preser
 window.eval('window._labelBlockDownload=true');assert.strictEqual(window._downloadAllowed(),false,'fit block remains enforced');
 console.log('PASS: questionnaire absent, extraction/review/verification/fit gates correct, old labels unblocked, evidence not fabricated');
 window.close();
+
