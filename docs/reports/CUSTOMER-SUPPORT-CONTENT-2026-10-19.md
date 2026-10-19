@@ -38,3 +38,32 @@ Local Chrome visual QA could not start: environment denied its process-singleton
 4. Founder release approval and agreed out-of-hours process before merge/production deployment.
 
 Only the disputed/unverified items are held. This draft PR is reviewable work, not a production release.
+
+## Completion update — 19 October 2026
+
+### Content and browser verification
+
+- Desktop (1280 px) and mobile-size (390 px) browser checks completed on the actual changed source for all eight release-candidate public pages. No horizontal page overflow, missing H1, header-obscured H1 or broken internal links. All FAQ answers expand. Desktop/mobile screenshot layouts inspected.
+- Browser interactions pass: retained `/knowledge#blended` opens its topic; expanding the accordion exposes the full article link; link navigates to the nested article; keyboard skip link stays on the article; mobile menu Home link resolves correctly from nested route; Support `?topic=excluded-statements` preselects the existing topic.
+- Local QA intentionally blocked third-party requests. Home/Knowledge Base therefore report the expected absent Supabase CDN `createClient` error; no unexpected page errors. Inline application scripts remain unchanged. These are content/navigation checks, not auth, live AI or billing verification.
+- Headless Shell resolved the earlier full-Chrome startup restriction, enabling the responsive checks without changing application code or environment permissions.
+
+### Test status correction
+
+The earlier suspicion that the consent test stalled was not established: run independently, `payg-immediate-supply-consent.js` passes. A subsequent broader sequence exposed `tests/plan-checker-decision.js:298`: expected `frequency`, actual `labels`. Its test, `plan-checker.js`, `plan-picker.html`, `entitlement.js` and checkout function are byte-identical to main `3a9524e`; outside this content diff. This is recorded as an unrelated baseline issue, not fixed here. The full suite is not green.
+
+The subsequent sequence completed account next-payment, pause wording, preview watermark/export authorization and hazard-source integrity checks successfully. PostgreSQL and Deno checks skipped because those runtimes are absent; the pre-existing print-guidance scripts skipped because their browser discovery does not find the installed Headless Shell. The independent content browser checks above did run. A duplicate time-bounded export-test attempt timed out early; it does not invalidate the earlier completed 23-assertion run and is not reported as another pass.
+
+### HSE source access
+
+Original HSE correspondence not found in the connected Gmail account (exact reference, HSE-domain and CLPeasy/HSE searches) or available file search. Zoho Mail opened without a signed-in mailbox. No correspondence was sent, login attempted or source claim marked verified. The existing HSE engagement statement therefore remains REVIEW until the original reply is supplied or mailbox access is available. This does not settle the outstanding fragrance-concentration or Article 18 questions.
+
+### Cricut publication separation
+
+The export-specific Cricut article is now retained only at `docs/reports/customer-support-content/cricut-print-then-cut-DRAFT.html`, under the existing publicly blocked `/docs/*` path. Its public root file and article rewrite are removed, and public pages have no links to it. The printing hub and homepage instead link to Cricut's official instructions. This lets hand-cut guidance proceed independently. No physical test is claimed.
+
+Physical validation still needed before releasing the CLPeasy-specific draft: import one current SVG into Design Space; confirm intended dimensions and intact text/symbols; flatten with the full label background; print through Design Space; measure the print; cut it with Maker 3 and inspect its outer edge. Record the export file, size and result.
+
+### Remaining release actions
+
+The digital content implementation and responsive/navigation checks are complete. HSE correspondence verification remains blocked on source access. The Cricut guide is excluded from public release pending physical testing. Founder release approval and agreed out-of-hours process still apply. No merge or production deployment has occurred.
