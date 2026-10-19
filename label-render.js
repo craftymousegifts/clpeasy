@@ -147,6 +147,16 @@ const GB_ACTIVE_MIN_FS_MM = 1.2;
 // implementation already treated a missing text field.
 function normalizeLabel(data){
   data = data || {};
+  // Visibility is applied here so Builder, saved labels and Composer agree.
+  // Protected omissions fail closed unless the exact current value was confirmed.
+  const visible = key => {
+    if(!data.showOnLabel || data.showOnLabel[key] !== false)return true;
+    if(key==='netWeight'||key==='batchNum'){
+      const c=data.omissionConfirmations && data.omissionConfirmations[key];
+      return !(c && c.confirmed===true && c.value===data[key]);
+    }
+    return false;
+  };
   return {
     schemaVersion: data.schemaVersion || 0,
     shape: data.shape || 'circle',
@@ -171,10 +181,10 @@ function normalizeLabel(data){
     bizName: data.bizName || 'Your Brand',
     bizAddress: data.bizAddress || '',
     bizPhone: data.bizPhone || '',
-    bizWebsite: data.bizWebsite || '',
-    netWeight: data.netWeight || '',
-    burnTime: data.burnTime || '',
-    batchNum: data.batchNum || '',
+    bizWebsite: visible('bizWebsite') ? (data.bizWebsite || '') : '',
+    netWeight: visible('netWeight') ? (data.netWeight || '') : '',
+    burnTime: visible('burnTime') ? (data.burnTime || '') : '',
+    batchNum: visible('batchNum') ? (data.batchNum || '') : '',
     hideEN15494: !!data.hideEN15494,
     textColour: data.textColour === 'light' ? 'light' : 'dark',
     showBorder: data.showBorder !== false,
@@ -325,7 +335,7 @@ function assetMarkup(src, x, y, size, pool, poolKey){
 // rather than just silently unrecognised. Kept in sync with builder.html's
 // own H_LIB copy -- both must change together.
 const H_LIB=[{code:'H225',desc:'Highly flammable liquid and vapour'},{code:'H226',desc:'Flammable liquid and vapour'},{code:'H228',desc:'Flammable solid'},{code:'H301',desc:'Toxic if swallowed'},{code:'H302',desc:'Harmful if swallowed'},{code:'H304',desc:'May be fatal if swallowed and enters airways'},{code:'H311',desc:'Toxic in contact with skin'},{code:'H312',desc:'Harmful in contact with skin'},{code:'H314',desc:'Causes severe skin burns and eye damage'},{code:'H315',desc:'Causes skin irritation'},{code:'H317',desc:'May cause an allergic skin reaction'},{code:'H318',desc:'Causes serious eye damage'},{code:'H319',desc:'Causes serious eye irritation'},{code:'H331',desc:'Toxic if inhaled'},{code:'H332',desc:'Harmful if inhaled'},{code:'H334',desc:'May cause allergy or asthma symptoms if inhaled'},{code:'H335',desc:'May cause respiratory irritation'},{code:'H336',desc:'May cause drowsiness or dizziness'},{code:'H361',desc:'Suspected of damaging fertility or the unborn child'},{code:'H371',desc:'May cause damage to organs'},{code:'H373',desc:'May cause damage to organs through prolonged or repeated exposure'},{code:'H400',desc:'Very toxic to aquatic life'},{code:'H410',desc:'Very toxic to aquatic life with long lasting effects'},{code:'H411',desc:'Toxic to aquatic life with long lasting effects'},{code:'H412',desc:'Harmful to aquatic life with long lasting effects'},{code:'H413',desc:'May cause long lasting harmful effects to aquatic life'},{code:'EUH066',desc:'Repeated exposure may cause skin dryness or cracking'},{code:'EUH208',desc:'Contains sensitiser — may produce an allergic reaction'},{code:'EUH071',desc:'Corrosive to the respiratory tract'},{code:'EUH210',desc:'Safety data sheet available on request'},{code:'H200',desc:'Unstable explosive'},{code:'H201',desc:'Explosive; mass explosion hazard'},{code:'H202',desc:'Explosive; severe projection hazard'},{code:'H203',desc:'Explosive; fire, blast or projection hazard'},{code:'H204',desc:'Fire or projection hazard'},{code:'H205',desc:'May mass explode in fire'},{code:'H223',desc:'Flammable aerosol'},{code:'H224',desc:'Extremely flammable liquid and vapour'},{code:'H240',desc:'Heating may cause an explosion'},{code:'H241',desc:'Heating may cause a fire or explosion'},{code:'H242',desc:'Heating may cause a fire'},{code:'H250',desc:'Catches fire spontaneously if exposed to air'},{code:'H251',desc:'Self-heating; may catch fire'},{code:'H252',desc:'Self-heating in large quantities; may catch fire'},{code:'H260',desc:'In contact with water releases flammable gases which may ignite spontaneously'},{code:'H261',desc:'In contact with water releases flammable gas'},{code:'H270',desc:'May cause or intensify fire; oxidiser'},{code:'H271',desc:'May cause fire or explosion; strong oxidiser'},{code:'H272',desc:'May intensify fire; oxidiser'},{code:'H280',desc:'Contains gas under pressure; may explode if heated'},{code:'H281',desc:'Contains refrigerated gas; may cause cryogenic burns or injury'},{code:'H282',desc:'Extremely flammable chemical under pressure: may explode if heated'},{code:'H283',desc:'Flammable chemical under pressure: may explode if heated'},{code:'H284',desc:'Chemical under pressure: may explode if heated'},{code:'H290',desc:'May be corrosive to metals'},{code:'H300',desc:'Fatal if swallowed'},{code:'H310',desc:'Fatal in contact with skin'},{code:'H330',desc:'Fatal if inhaled'},{code:'H340',desc:'May cause genetic defects'},{code:'H341',desc:'Suspected of causing genetic defects'},{code:'H350',desc:'May cause cancer'},{code:'H351',desc:'Suspected of causing cancer'},{code:'H360',desc:'May damage fertility or the unborn child'},{code:'H362',desc:'May cause harm to breast-fed children'},{code:'H370',desc:'Causes damage to organs'},{code:'H372',desc:'Causes damage to organs through prolonged or repeated exposure'},{code:'H350i',desc:'May cause cancer by inhalation'},{code:'H360F',desc:'May damage fertility'},{code:'H360D',desc:'May damage the unborn child'},{code:'H360FD',desc:'May damage fertility. May damage the unborn child'},{code:'H360Fd',desc:'May damage fertility. Suspected of damaging the unborn child'},{code:'H360Df',desc:'May damage the unborn child. Suspected of damaging fertility'},{code:'H361f',desc:'Suspected of damaging fertility'},{code:'H361d',desc:'Suspected of damaging the unborn child'},{code:'H361fd',desc:'Suspected of damaging fertility. Suspected of damaging the unborn child'}];
-const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product container or label at hand'},{code:'P102',desc:'Keep out of reach of children'},{code:'P103',desc:'Read label before use'},{code:'P210',desc:'Keep away from heat and ignition sources. No smoking'},{code:'P233',desc:'Keep container tightly closed'},{code:'P260',desc:'Do not breathe vapours or dust'},{code:'P261',desc:'Avoid breathing vapours and dust'},{code:'P271',desc:'Use only outdoors or in a well-ventilated area'},{code:'P273',desc:'Avoid release to the environment'},{code:'P301+P310',desc:'IF SWALLOWED: immediately call a POISON CENTRE or doctor'},{code:'P301+P312',desc:'IF SWALLOWED: call a POISON CENTRE or doctor if unwell'},{code:'P302+P352',desc:'IF ON SKIN: wash with plenty of water'},{code:'P304+P340',desc:'IF INHALED: remove to fresh air and keep comfortable for breathing'},{code:'P202',desc:'Do not handle until all safety precautions have been read and understood'},{code:'P308+P313',desc:'IF exposed or concerned: Get medical advice/attention'},{code:'P310',desc:'Immediately call a POISON CENTRE/doctor'},{code:'P305+P351+P338',desc:'IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.'},{code:'P312',desc:'Call a POISON CENTRE or doctor if you feel unwell'},{code:'P313',desc:'Get medical advice/attention'},{code:'P314',desc:'Get medical advice if you feel unwell'},{code:'P321',desc:'Specific treatment: see label'},{code:'P330',desc:'Rinse mouth'},{code:'P331',desc:'Do NOT induce vomiting'},{code:'P332+P313',desc:'If skin irritation occurs: get medical advice/attention'},{code:'P333+P313',desc:'If skin irritation or rash occurs: get medical advice'},{code:'P337+P313',desc:'If eye irritation persists: get medical advice'},{code:'P370+P378',desc:'In case of fire: use appropriate media for extinction'},{code:'P391',desc:'Collect spillage'},{code:'P403+P233',desc:'Store in a well-ventilated place. Keep container tightly closed'},{code:'P211',desc:'Do not spray on an open flame or other ignition source'},{code:'P501',desc:'Dispose of contents and container in accordance with local regulations'},
+const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product container or label at hand'},{code:'P102',desc:'Keep out of reach of children'},{code:'P103',desc:'Read label before use'},{code:'P202',desc:'Do not handle until all safety precautions have been read and understood'},{code:'P210',desc:'Keep away from heat, hot surfaces, sparks, open flames and other ignition sources. No smoking'},{code:'P233',desc:'Keep container tightly closed'},{code:'P240',desc:'Ground and bond container and receiving equipment'},{code:'P241',desc:'Use explosion-proof equipment'},{code:'P242',desc:'Use non-sparking tools'},{code:'P243',desc:'Take action to prevent static discharges'},{code:'P260',desc:'Do not breathe vapours or dust'},{code:'P261',desc:'Avoid breathing vapours and dust'},{code:'P271',desc:'Use only outdoors or in a well-ventilated area'},{code:'P273',desc:'Avoid release to the environment'},{code:'P301+P310',desc:'IF SWALLOWED: immediately call a POISON CENTRE or doctor'},{code:'P301+P312',desc:'IF SWALLOWED: call a POISON CENTRE or doctor if unwell'},{code:'P302+P352',desc:'IF ON SKIN: wash with plenty of water'},{code:'P304+P340',desc:'IF INHALED: Remove person to fresh air and keep comfortable for breathing'},{code:'P305+P351+P338',desc:'IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing'},{code:'P308+P313',desc:'IF exposed or concerned: Get medical advice/attention'},{code:'P310',desc:'Immediately call a POISON CENTRE or doctor'},{code:'P312',desc:'Call a POISON CENTRE or doctor if you feel unwell'},{code:'P313',desc:'Get medical advice/attention'},{code:'P314',desc:'Get medical advice if you feel unwell'},{code:'P321',desc:'Specific treatment: see label'},{code:'P330',desc:'Rinse mouth'},{code:'P331',desc:'Do NOT induce vomiting'},{code:'P332+P313',desc:'If skin irritation occurs: get medical advice/attention'},{code:'P333+P313',desc:'If skin irritation or rash occurs: get medical advice'},{code:'P337+P313',desc:'If eye irritation persists: get medical advice'},{code:'P370+P378',desc:'In case of fire: use appropriate media for extinction'},{code:'P391',desc:'Collect spillage'},{code:'P403+P233',desc:'Store in a well-ventilated place. Keep container tightly closed'},{code:'P403+P235',desc:'Store in a well-ventilated place. Keep cool'},{code:'P211',desc:'Do not spray on an open flame or other ignition source'},{code:'P501',desc:'Dispose of contents and container in accordance with local regulations'},
 // P280 (verified against the retained GB-CLP Regulation (EC) No 1272/2008,
 // Annex IV, Table 6.2, legislation.gov.uk, current in-force UK text) is a
 // SELECTABLE statement, not one fixed sentence: "Wear protective
@@ -484,6 +494,25 @@ function measureText(txt,sizePx,bold,serif){
   _ctx.font=`${bold?'700':'400'} ${sizePx}px ${serif?'serif':'sans-serif'}`;
   return _ctx.measureText(txt).width;
 }
+// Ink bounds of one character (relative to its own start on the baseline):
+// left/right edge, height above and depth below the baseline. Uses the
+// canvas TextMetrics actualBoundingBox* values where the browser provides
+// them; otherwise (e.g. a stubbed canvas) falls back to the full advance
+// width, 0.75em above and fallbackDesc below the baseline.
+// Measured at a 1000px reference size and scaled: browsers round ink
+// bounds to whole pixels, which at label font sizes (often under 15px) would
+// make results imprecise and dependent on the device's pixel ratio.
+const _INK_REF_PX=1000;
+function measureInk(ch,sizePx,bold,serif,fallbackDesc){
+  _ctx.font=`${bold?'700':'400'} ${_INK_REF_PX}px ${serif?'serif':'sans-serif'}`;
+  const m=_ctx.measureText(ch), k=sizePx/_INK_REF_PX;
+  if(m && typeof m.actualBoundingBoxAscent==='number' && isFinite(m.actualBoundingBoxAscent)){
+    return {l:-(m.actualBoundingBoxLeft||0)*k, r:(m.actualBoundingBoxRight||0)*k, asc:m.actualBoundingBoxAscent*k, desc:(m.actualBoundingBoxDescent||0)*k, w:m.width*k};
+  }
+  _ctx.font=`${bold?'700':'400'} ${sizePx}px ${serif?'serif':'sans-serif'}`;
+  const w=_ctx.measureText(ch).width||0;
+  return {l:0, r:w, asc:sizePx*0.75, desc:fallbackDesc, w};
+}
 
 // ── HELPER: fit font size to a max pixel width ────────────────
 function fitFont(txt,maxPx,startPx,minPx,bold=true,serif=false,step=0.5){
@@ -548,7 +577,7 @@ function svgWrapped(lines,x,startY,lineH,sizePx,bold,serif,fill,anchor='middle',
   if(!lines.length)return'';
   const ls=letterSpacing?` letter-spacing="${letterSpacing}"`:'';
   const fw=bold?'700':'400';
-  const ff=serif?'Georgia,serif':'DM Sans,sans-serif';
+  const ff=serif?'Georgia,serif':'sans-serif';
   return`<text x="${x}" y="${startY}" font-family="${ff}" font-size="${sizePx.toFixed(2)}" font-weight="${fw}" fill="${fill}" text-anchor="${anchor}" dominant-baseline="middle"${ls}>${
     lines.map((l,i)=>i===0?xe(l):`<tspan x="${x}" dy="${lineH.toFixed(2)}">${xe(l)}</tspan>`).join('')
   }</text>`;
@@ -609,7 +638,7 @@ function svgArcText(instanceId, text, cx, cy, r, fontSize, color, arcPos){
   const path = `M ${startX},${startY} A ${arcR},${arcR} 0 0,1 ${endX},${endY}`;
   const arcId = `${instanceId}-scentArc`;
   return `<defs><path id="${arcId}" d="${path}"/></defs>` +
-    `<text font-family="DM Sans,sans-serif" font-size="${fontSize.toFixed(2)}" font-weight="700" fill="${color}" text-anchor="middle">` +
+    `<text font-family="sans-serif" font-size="${fontSize.toFixed(2)}" font-weight="700" fill="${color}" text-anchor="middle">` +
     `<textPath href="#${arcId}" startOffset="50%">${xe(text)}</textPath></text>`;
 }
 
@@ -847,7 +876,7 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
     // branch (and its exact markup) is deliberately left untouched.
     const titleY = (ph*.46).toFixed(1), bodyY = (ph*.55).toFixed(1);
     const titleFS = Math.max(8,pw*.035).toFixed(1), bodyFS = Math.max(6,pw*.025).toFixed(1);
-    return `<g class="clp-fit-block"><rect x="0" y="0" width="${pw}" height="${ph}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${titleY}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${titleFS}" font-weight="800" fill="#991b1b">FULL CONTENT DOES NOT FIT</text><text x="${cx}" y="${bodyY}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${bodyFS}" fill="#991b1b">Adjust size below the preview</text></g>`;
+    return `<g class="clp-fit-block"><rect x="0" y="0" width="${pw}" height="${ph}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${titleY}" text-anchor="middle" font-family="sans-serif" font-size="${titleFS}" font-weight="800" fill="#991b1b">FULL CONTENT DOES NOT FIT</text><text x="${cx}" y="${bodyY}" text-anchor="middle" font-family="sans-serif" font-size="${bodyFS}" fill="#991b1b">Adjust size below the preview</text></g>`;
   }
 
   // ── Correction 2 (2026-09, readable blocked-preview wording) ──────────
@@ -941,7 +970,7 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
   const headY = (y + headFS*0.85).toFixed(1);
   y += headFS*1.1 + gap;
   const bodyTspans = wrapped.map((ln,i)=>`<tspan x="${cx}" y="${(y+i*lineH).toFixed(1)}">${ln}</tspan>`).join('');
-  return `<g class="clp-fit-block"><rect x="0" y="0" width="${pw}" height="${ph}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${headY}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${headFS.toFixed(1)}" font-weight="800" fill="#991b1b">${heading}</text><text x="${cx}" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="${bodyFS.toFixed(1)}" fill="#991b1b">${bodyTspans}</text></g>`;
+  return `<g class="clp-fit-block"><rect x="0" y="0" width="${pw}" height="${ph}" rx="8" fill="#fff" stroke="#dc2626" stroke-width="2"/><text x="${cx}" y="${headY}" text-anchor="middle" font-family="sans-serif" font-size="${headFS.toFixed(1)}" font-weight="800" fill="#991b1b">${heading}</text><text x="${cx}" text-anchor="middle" font-family="sans-serif" font-size="${bodyFS.toFixed(1)}" fill="#991b1b">${bodyTspans}</text></g>`;
 }
 
 function renderLabel(rawData, opts){
@@ -1289,6 +1318,162 @@ function renderLabel(rawData, opts){
     if(measureText(bizName, _bizFSf, true, true) > bizSW*0.84) _bizNameTooSmall = true;
   }
 
+  // ── CIRCLE: CURVED PRODUCT NAME vs THE TEXT BELOW IT ─────────
+  // (Oct 2026, Michaela's approved option A.) On circles the product name
+  // is drawn along an arc (svgArcText), but the business name/website were
+  // placed by the straight-text rules, so a longer name curved down into
+  // them (and could reach the product-type heading) while fits stayed true.
+  // Geometry: each curved letter is placed at its real angle on the arc
+  // baseline (radius _arcR) and its ink box (canvas TextMetrics, same
+  // measuring font as the rest of the layout) is rotated with it, giving
+  // its real lowest point and horizontal extent. The business name and
+  // website are checked letter by letter against the curved letters above
+  // them; the product type and signal word against the lowest curved
+  // letter within their width. Collisions are judged on letter shapes and
+  // positions, not on name length. Labels that are already clear (closer
+  // than _arcGapMin nowhere) keep their existing layout exactly. Otherwise
+  // the curved name is reduced in steps (never below _mandatoryMinFS) with
+  // its arc capped at 72 degrees either side, sizes needing no extra push of
+  // the hazard area are preferred, the business name/website move below its
+  // lowest letters, and the product type moves down only within the
+  // existing breathing-pad allowance. If nothing fits, the label is blocked
+  // through the existing product-name flag (scentTooSmall).
+  const _arcR = Math.min(pw,ph)/2*0.85;   // svgArcText's own baseline radius
+  const _arcMaxHalf = Math.PI/2*0.8;      // 72 degrees either side of the top
+  // Per-letter geometry: each letter sits at its measured position along
+  // the arc (same canvas measurement as the rest of the layout) and its
+  // ink box (measureInk) is rotated with it. Where the canvas gives no ink
+  // metrics, descender letters are assumed to reach about 0.24em below the
+  // baseline and others about 0.03em.
+  const _ARC_DESC = /[gjpqyQ,;()\[\]{}]/;
+  const _arcGeom = fs => {
+    const k = 1, W = measureText(scent, fs, true, false)*k;
+    const glyphs = []; const chars = [...scent]; let acc = 0;
+    chars.forEach((ch, i) => {
+      const ink = measureInk(ch, fs, true, false, fs*(_ARC_DESC.test(ch)?0.24:0.03));
+      const w = ink.w*k;
+      const phi = (-W/2 + acc + w/2)/_arcR;              // angle of the letter's midpoint
+      acc = measureText(chars.slice(0, i+1).join(''), fs, true, false)*k;
+      if(!ch.trim()) return;
+      // ink corners in the letter's own frame: u along the arc from its midpoint, v outwards
+      const us = [ink.l*k - w/2, ink.r*k - w/2], vs = [-ink.desc, ink.asc];
+      // corners in order around the box (so it can be clipped as a polygon)
+      const pts = [[us[0],vs[0]],[us[1],vs[0]],[us[1],vs[1]],[us[0],vs[1]]].map(([u,v]) =>
+        [cx + _arcR*Math.sin(phi) + u*Math.cos(phi) + v*Math.sin(phi), cy - _arcR*Math.cos(phi) + u*Math.sin(phi) - v*Math.cos(phi)]);
+      const xs = pts.map(q => q[0]), ys = pts.map(q => q[1]);
+      glyphs.push({pts, xl: Math.min(...xs), xr: Math.max(...xs), low: Math.max(...ys)});
+    });
+    return {fs, half: W/2/_arcR, glyphs};
+  };
+  // Lowest point of one tilted letter within the horizontal span [a, b]
+  // (its box clipped to that span), or -Infinity if it does not reach it.
+  const _glyphLowIn = (gl, a, b) => {
+    if(gl.xr <= a || gl.xl >= b) return -Infinity;
+    let poly = gl.pts;
+    for(const [lim, keep] of [[a, (x)=>x >= a], [b, (x)=>x <= b]]){
+      const out = [];
+      for(let i = 0; i < poly.length; i++){
+        const P = poly[i], Q = poly[(i+1) % poly.length], inP = keep(P[0]), inQ = keep(Q[0]);
+        if(inP) out.push(P);
+        if(inP !== inQ){ const t = (lim - P[0])/(Q[0] - P[0]); out.push([lim, P[1] + t*(Q[1] - P[1])]); }
+      }
+      poly = out; if(!poly.length) return -Infinity;
+    }
+    return Math.max(...poly.map(q => q[1]));
+  };
+  const _arcLow = (g, hw) => {
+    let low = -Infinity;
+    for(const gl of g.glyphs) low = Math.max(low, isFinite(hw) ? _glyphLowIn(gl, cx - hw, cx + hw) : gl.low);
+    return low;
+  };
+
+  // Straight centred line (business name / website): each letter's x-range
+  // and how far its ink rises above the line's centre (dominant-baseline
+  // middle): capitals, digits and ascender letters about 0.5em, x-height
+  // letters about 0.28em. _arcLineShift() returns how far that line must
+  // move down so no curved letter above any of its letters is closer than
+  // the gap -- 0 when already clear.
+  const _LINE_TALL = /[^acemnorsuvwxz .,\-]/;
+  const _lineGlyphs = (text, fs, bold, serif) => {
+    const W = measureText(text, fs, bold, serif), chars = [...text], out = [];
+    // dominant-baseline="middle": the line's y is half an x-height above its baseline
+    const xInk = measureInk('x', fs, bold, serif, 0);
+    const xh = (xInk.asc && isFinite(xInk.asc)) ? xInk.asc : fs*0.5;
+    let x0 = cx - W/2;
+    chars.forEach((ch, i) => {
+      const x1 = cx - W/2 + measureText(chars.slice(0, i+1).join(''), fs, bold, serif);
+      if(ch.trim()){
+        const ink = measureInk(ch, fs, bold, serif, 0);
+        const up = ink.asc === fs*0.75 ? fs*(_LINE_TALL.test(ch) ? 0.5 : 0.28) : ink.asc - xh/2;
+        out.push({l: x0 + ink.l, r: x0 + ink.r, up});
+      }
+      x0 = x1;
+    });
+    return out;
+  };
+  const _arcLineShift = (g, line, lineY, gap) => {
+    let need = 0;
+    for(const gl of g.glyphs) for(const lg of line){
+      const low = _glyphLowIn(gl, lg.l - 0.5, lg.r + 0.5);
+      if(low > -Infinity) need = Math.max(need, low + gap - (lineY - lg.up));
+    }
+    return need;
+  };
+  // Two clearances: a label only counts as colliding when the curved name
+  // comes closer than _arcGapMin (so labels that are already clear keep
+  // their exact layout); once a label has to be adjusted, it is laid out
+  // with the more comfortable _arcGap.
+  const _arcGapMin = Math.max(1, _bizFSf*0.1);
+  const _arcGap = Math.max(2.5, _bizFSf*0.2);
+  let _arcFS = scentFS, _arcTypeFloor = -Infinity, _arcEngaged = false;
+  if(isCircle && data.scentName){
+    // Same expressions as the breathing block below (natural product-type top).
+    const _arcTypeFS  = Math.min(slot.type*0.68*1.5, clamp(BASE*0.060*1.5,4,21));
+    const _arcTypeTop = curY + slot.type*0.5 + midH*0.15*(0.6-1) - _arcTypeFS*0.5;
+    const _arcWantGap    = Math.max(midH*0.07, topH*0.08);
+    const _arcPadCap     = midH*0.12;
+    const _arcTypeHW     = (measureText(type, _arcTypeFS, true, false) + 0.6*type.length)/2;
+    const _bizLine = _lineGlyphs(bizName, _bizFSf, true, true);
+    const _webLine = webLine ? _lineGlyphs(webLine, _webFSf, false, false) : [];
+    const _place = g => {
+      const bY = _bizYf + _arcLineShift(g, _bizLine, _bizYf, _arcGap);
+      const wY0 = webLine ? Math.max(_webYf, bY + _bizFSf*0.5 + _arcGap + _webFSf*0.5) : _webYf;
+      const wY = webLine ? wY0 + _arcLineShift(g, _webLine, wY0, _arcGap) : _webYf;
+      const stackBot = webLine ? wY + _webFSf*0.5 : bY + _bizFSf*0.5;
+      const typeFloor = _arcLow(g, _arcTypeHW) + _arcGap;
+      const pad = Math.max(0, Math.max(stackBot + _arcWantGap, typeFloor) - _arcTypeTop);
+      return {bY, wY, typeFloor, pad};
+    };
+    const g0 = _arcGeom(_arcFS), p0 = _place(g0);
+    const _existingPad = Math.max(0, Math.min(((webLine ? _webYf + _webFSf*0.5 : _bizYf + _bizFSf*0.5) + _arcWantGap) - _arcTypeTop, _arcPadCap));
+    const _collides = _arcLineShift(g0, _bizLine, _bizYf, _arcGapMin) > 0.01
+      || (webLine && _arcLineShift(g0, _webLine, _webYf, _arcGapMin) > 0.01)
+      || _arcLow(g0, _arcTypeHW) + _arcGapMin > _arcTypeTop + _existingPad;
+    if(_collides){
+      _arcEngaged = true;
+      // Prefer the largest name size that needs no more push than the
+      // label already has (hazard area untouched); otherwise the size
+      // needing the least extra push within the existing allowance.
+      let found = null, least = null;
+      for(let fs = _arcFS; fs >= _mandatoryMinFS - 1e-9; fs -= 0.25){
+        const g = _arcGeom(fs);
+        if(g.half > _arcMaxHalf) continue;
+        const pl = _place(g);
+        if(pl.pad <= _existingPad + 0.01){ found = {fs, pl}; break; }
+        if(pl.pad <= _arcPadCap && (!least || pl.pad < least.pl.pad - 0.01)) least = {fs, pl};
+      }
+      if(!found) found = least;
+      if(!found){
+        // Cannot fit legibly: keep the floor size, still clear the business
+        // name, and block export (same flag as any product-name overflow).
+        const fs = Math.max(_mandatoryMinFS, Math.min(_arcFS, _mandatoryMinFS));
+        found = {fs, pl: _place(_arcGeom(fs))};
+        _scentTooSmall = true;
+      }
+      _arcFS = found.fs; _bizYf = found.pl.bY; _webYf = found.pl.wY; _arcTypeFloor = found.pl.typeFloor;
+    }
+  }
+
   // ── HEADER → MID-BAND BREATHING ──────────────────────────────
   // The product type slot is nudged upward; combined with the website sitting
   // low in the header band, the URL and the product type can end up almost
@@ -1316,7 +1501,7 @@ function renderLabel(rawData, opts){
     // conflict this avoids.
     const _wantGap    = _isRect ? Math.max(midH*0.05, topH*0.06) : Math.max(midH*0.07, topH*0.08);
     const _padCap     = _isRect ? midH*0.06 : midH*0.12;
-    const _pad        = Math.max(0, Math.min((_hdrBottom + _wantGap) - _typeTopNat, _padCap));
+    const _pad        = Math.max(0, Math.min(Math.max(_hdrBottom + _wantGap, _arcTypeFloor) - _typeTopNat, _padCap));
     curY += _pad;
   }
 
@@ -1363,6 +1548,25 @@ function renderLabel(rawData, opts){
   const _sigFSBounds={min:sigFSMin,max:sigFSMax,auto:_sigFSAuto};
   const sigY    = curY + slot.signal*0.5 + (_isRect?0:midH*0.15*(0.55-1));
   curY += slot.signal;
+
+  // Final check for circles (see the curved-name block above): with every
+  // header element and the signal word at their real positions and sizes,
+  // the curved name must clear each of them within their own width, and
+  // must end above the bottom of the signal word (pictograms and hazard
+  // text all start below it). Anything else blocks export.
+  if(isCircle && data.scentName){
+    const g = _arcGeom(_arcFS);
+    const typeHW = (measureText(type, typeFS, true, false) + 0.6*type.length)/2;
+    const sigHW = measureText(sig, sigFS, true, false)/2;
+    const clearOf = (hw, top) => _arcLow(g, hw) + _arcGapMin*0.5 <= top;
+    const ok = _arcLineShift(g, _lineGlyphs(bizName, _bizFSf, true, true), _bizYf, _arcGapMin*0.5) <= 0
+      && (!webLine || _arcLineShift(g, _lineGlyphs(webLine, _webFSf, false, false), _webYf, _arcGapMin*0.5) <= 0)
+      && (!type || clearOf(typeHW, typeY - typeFS*0.5))
+      && (!sig || clearOf(sigHW, sigY - sigFS*0.5))
+      && _arcLow(g, Infinity) <= sigY + sigFS*0.5
+      && g.half <= _arcMaxHalf;
+    if(!ok) _scentTooSmall = true;
+  }
 
   // Pictograms: wrap into extra rows rather than shrinking below the CLP 10mm legal minimum.
   const nP        = pictos.length;
@@ -1514,11 +1718,37 @@ function renderLabel(rawData, opts){
     // EU/NI-mode information, not an active GB requirement.
     const hLH=fs*1.25, sLH=fs*1.25, pLH=fs*1.15;
     const _edgeMargin=2*pxPerMm; // fixed 2mm from the label edge, both sides
+    // Circle-edge fix (Oct 2026): each block used to be wrapped once at the
+    // width of its FIRST line, so below the centre of a circle its later,
+    // lower lines could be wider than the circle allows there and were cut
+    // off by the label clip while the label still reported fits:true. Each
+    // line is now wrapped to the narrower of that same block width and the
+    // circle's width at the line's own centre (minus the same 2mm margin), so
+    // a line that already fitted keeps exactly its old width. Squares and
+    // rectangles are unchanged (their width does not vary with height).
+    // overX records how far any line still exceeds its own allowance (only
+    // possible where the fs*3 minimum width applies); _fits() treats that as
+    // not fitting, so such a label is blocked rather than exported clipped.
+    let _overX=0;
+    const _lineAllow=(yc)=>chordW(yc,0)-_edgeMargin*2;
+    const _wrapBlock=(txt,sw,yTop,LH,i0)=>{
+      if(!txt) return [];
+      if(!isCircle) return wrapText(txt,sw,fs,false,false);
+      let rest=txt.split(/\s+/).join(' ').trim(); const out=[]; let i=i0;
+      while(rest){
+        const w=Math.max(fs*3, Math.min(sw, _lineAllow(yTop+(i+0.5)*LH)));
+        const ls=wrapText(rest,w,fs,false,false);
+        if(ls.length<=1 || !rest.startsWith(ls[0])){ out.push(...ls); break; }
+        out.push(ls[0]); rest=rest.slice(ls[0].length).trim(); i++;
+      }
+      out.forEach((l,k)=>{ _overX=Math.max(_overX, measureText(l,fs,false,false)-_lineAllow(yTop+(i0+k+0.5)*LH)); });
+      return out;
+    };
     let y=y0;
     let hLines=[];
     if(hText){
       const sw=Math.max(fs*3, chordW(y+hLH*0.5,0)-_edgeMargin*2);
-      hLines=wrapText(hText,sw,fs,false,false);
+      hLines=_wrapBlock(hText,sw,y,hLH,0);
     }
     const hStartY=y+hLH*0.5;
     y+=hLines.length*hLH;
@@ -1527,8 +1757,8 @@ function renderLabel(rawData, opts){
     let sLines=[],eLines=[];
     if(sensText){
       const sw=Math.max(fs*3, chordW(y+sLH*0.5,0)-_edgeMargin*2);
-      sLines=_sensBase?wrapText(_sensBase,sw,fs,false,false):[];
-      eLines=_euhSuffix?wrapText(_euhSuffix,sw,fs,false,false):[];
+      sLines=_sensBase?_wrapBlock(_sensBase,sw,y,sLH,0):[];
+      eLines=_euhSuffix?_wrapBlock(_euhSuffix,sw,y,sLH,sLines.length):[];
     }
     const sStartY=y+sLH*0.5;
     const allS=[...sLines,...eLines];
@@ -1538,12 +1768,12 @@ function renderLabel(rawData, opts){
     let pLines=[];
     if(pText){
       const sw=Math.max(fs*3, chordW(y+pLH*0.5,0)-_edgeMargin*2);
-      pLines=wrapText(pText,sw,fs,false,false);
+      pLines=_wrapBlock(pText,sw,y,pLH,0);
     }
     const pStartY=y+pLH*0.5;
     y+=pLines.length*pLH;
 
-    return {fs,hLH,sLH,pLH,hLines,hStartY,allS,sStartY,pLines,pStartY,endY:y};
+    return {fs,hLH,sLH,pLH,hLines,hStartY,allS,sStartY,pLines,pStartY,endY:y,overX:_overX};
   }
 
   // Fit = block laid from the top of the avail zone ends at/above botY minus a
@@ -1551,7 +1781,11 @@ function renderLabel(rawData, opts){
   // this margin only governs aesthetics/warning, not overflow — keep it modest
   // so a block that genuinely fits doesn't trip a false legibility warning.)
   const _fitMargin=(fs)=> fs*0.3;
-  const _fits=(fs)=> _layoutHazard(fs,_curY0).endY <= _hardBot - _fitMargin(fs);
+  // A layout also fails if any line is wider than the circle allows at its
+  // own height (overX; always 0 on squares/rectangles). 0.5 units tolerance.
+  const _OVER_X_TOL=0.5;
+  const _fitsLayout=(L,bottom)=> L.endY <= bottom && L.overX <= _OVER_X_TOL;
+  const _fits=(fs)=> _fitsLayout(_layoutHazard(fs,_curY0), _hardBot - _fitMargin(fs));
 
   // Binary search for the largest fitting font size.
   let _bsLo=_minLegibleFS, _bsHi=clamp(BASE*0.13,8,28);
@@ -1570,7 +1804,7 @@ function renderLabel(rawData, opts){
   let _sharedFS=_bsLo;
   // Manual override gets its own ceiling using zero breathing margin — right up
   // to the label boundary itself, not auto-fit's cautious buffer.
-  const _fitsExact=(fs)=> _layoutHazard(fs,_curY0).endY <= _hardBot;
+  const _fitsExact=(fs)=> _fitsLayout(_layoutHazard(fs,_curY0), _hardBot);
   let _manualHi=_bsHi;
   if(_fitsAtMin){
     let _mLo=_bsHi, _mHi=clamp(BASE*0.30,8,60);
@@ -1603,12 +1837,12 @@ function renderLabel(rawData, opts){
   // Step the offset back toward 0 until it fits, rather than snapping the
   // whole way to top-aligned — keeps the control visibly responsive.
   let _yTries=0;
-  while(_L.endY > _hardBot && _yFrac>0 && _yTries<20){
+  while(!_fitsLayout(_L,_hardBot) && _yFrac>0 && _yTries<20){
     _yFrac=Math.max(0,_yFrac-0.05);
     _L=_layoutHazard(_sharedFS,_curY0+_slack*_yFrac);
     _yTries++;
   }
-  if(_L.endY > _hardBot) _L=_topLayout;
+  if(!_fitsLayout(_L,_hardBot)) _L=_topLayout;
 
   // Derive render variables from the chosen layout.
   const hFS=_sharedFS, hLH=_L.hLH;
@@ -1624,7 +1858,7 @@ function renderLabel(rawData, opts){
   // If the full layout exceeds the available area, block it. The preview shows
   // an unmistakable non-exportable state instead of replacing mandatory text
   // with dots or silently omitting statements.
-  const _labelLegibilityWarn = !_fitsAtMin || _L.endY>_hardBot;
+  const _labelLegibilityWarn = !_fitsAtMin || !_fitsLayout(_L,_hardBot);
 
   const showP   = pLines.length > 0;
 
@@ -1685,6 +1919,15 @@ function renderLabel(rawData, opts){
   // `warnings`/`fits` handling further down), exactly like
   // hazard-text-overflow/footer-clipped.
   let _bcfTooSmall = false;
+  // Care-icon row vs the circular cut edge (17 Oct 2026, Michaela's approved
+  // fix): on circles every icon corner must stay at least 1 mm inside the
+  // cut edge (1.1 mm target, matching the footer's physical clearance). If
+  // the normal row already clears it, nothing changes. Otherwise the gaps
+  // between icons narrow (never below 0.1x icon size; icon size, row
+  // position, hazard text and footer unchanged). If even that cannot clear
+  // the edge, the label is blocked like any other fit failure.
+  let _bcfGapFrac = 0.25;
+  let _bcfEdgeClipped = false;
   if(_showBCF){
     const _bcfMinDimPre  = Math.min(mmW, mmH);
     const _bcfTargetMmPre = _bcfMinDimPre <= 50 ? 5.5 : 8; // nice-to-have, above the 5mm floor
@@ -1711,6 +1954,16 @@ function renderLabel(rawData, opts){
       // legal floor -- matches the render block below exactly.
       const _bcfMaxSzPre = Math.max(_bcfFloorSzPre, Math.min(sW * 0.07, _bcfTargetMmPre * pxPerMm, _bcfPhysicalCapPre, _bcfRoomForIconsPre/BCF_ROW_HEIGHT_RATIO));
       _bcfRowH = _bcfMaxSzPre * BCF_ROW_HEIGHT_RATIO; // matches the icons' actual vertical footprint
+      if(isCircle){
+        const _sz=_bcfMaxSzPre, _top=botY+_sz*0.1, _bot=_top+_sz;
+        const _dy=Math.max(Math.abs(_top-cy),Math.abs(_bot-cy));
+        const _safeR=r-1.1*pxPerMm;
+        const _avail=_dy<_safeR?2*Math.sqrt(_safeR*_safeR-_dy*_dy):0;
+        if(5*_sz+4*0.25*_sz>_avail){
+          const _g=(_avail-5*_sz)/(4*_sz);
+          if(_g>=0.1) _bcfGapFrac=_g; else _bcfEdgeClipped=true;
+        }
+      }
     } else {
       _bcfTooSmall = true;
     }
@@ -1743,17 +1996,44 @@ function renderLabel(rawData, opts){
   // lines can never overlap vertically. The EN15494 row occupies the reserved
   // strip above (_footerBase), so the text always sits clear of the icons.
   const nSlots = Math.min(footerSlots.length, 3);
-  const slotLH = nSlots > 0 ? fUsable / nSlots : fUsable;
   const _footerBase = botY + fTopPad + _bcfRowH; // top of footer text zone (below EN row)
+  // Circle footer balance (Oct 2026, Michaela's approved option P6b; circles
+  // only -- squares and rectangles keep the layout below unchanged):
+  //  - every footer line keeps at least 1 mm from the circular cut edge:
+  //    the rows end 1 mm above the bottom of the circle, and each line's
+  //    width is measured at its lowest ink point, 1 mm in from each side;
+  //  - the longest line goes in the top (widest) row, so the order follows
+  //    the measured line widths and can vary with the content;
+  //  - all footer lines share one size (the smallest of their fitted sizes,
+  //    never below the existing _mandatoryMinFS floor), and the phone is
+  //    drawn in regular weight like the other lines.
+  // A footer that cannot fit this way still blocks export (_footerClipped).
+  const _footerEdgeClear = 1.0*pxPerMm;
+  let slotLH = nSlots > 0 ? fUsable / nSlots : fUsable;
+  if(isCircle && nSlots > 0){
+    // The rows end 1 mm above the bottom of the circle. If that would leave a
+    // row too short for the floor size at the existing >=122% spacing (the
+    // 52 mm preset with address + phone), the rows keep just that minimum
+    // height instead; the edge check after sizing still guarantees 1 mm.
+    const _rowsTo1mm = Math.max(0, Math.min(fUsable, (cy + r - _footerEdgeClear) - _footerBase)) / nSlots;
+    const _rowForFloor = _mandatoryMinFS / 0.82 + 0.01;
+    slotLH = (_rowsTo1mm < _rowForFloor) ? Math.min(fUsable / nSlots, _rowForFloor) : _rowsTo1mm;
+  }
   const _slotFSCap  = slotLH * 0.82;             // hard vertical cap per row
   let footerElems = [];
   let _footerClipped = false;
-  footerSlots.slice(0, nSlots).forEach((slot, i)=>{
-    const _isDetail = !slot.isPhone && i>0;
-    const _fsMax  = Math.min(maxFooterFS * (slot.isPhone?1.05:_isDetail?1.15:1.0), _slotFSCap);
+  let _footerRows = footerSlots.slice(0, nSlots);
+  if(isCircle){
+    const _w = s => measureText(s.text, 10, s.bold, false);
+    _footerRows = _footerRows.map((s,k)=>({s,k})).sort((a,b)=>(_w(b.s)-_w(a.s))||(a.k-b.k)).map(o=>o.s);
+  }
+  _footerRows.forEach((slot, i)=>{
+    const _isDetail = !slot.isPhone && footerSlots.indexOf(slot)>0;
+    const _fsMax  = isCircle ? Math.min(maxFooterFS, _slotFSCap) : Math.min(maxFooterFS * (slot.isPhone?1.05:_isDetail?1.15:1.0), _slotFSCap);
     const slotY   = _footerBase + slotLH * (i + 0.5);
     const chordAtY = Math.min(chordW(slotY, 0.09), sW * 0.88);
-    const availW  = chordAtY * 0.88;
+    let availW  = chordAtY * 0.88;
+    if(isCircle) availW = Math.min(availW, chordW(slotY + _fsMax*0.5, 0) - 2*_footerEdgeClear);
     const fs = fitFont(slot.text, availW, _fsMax, _mandatoryMinFS, slot.bold, false);
     // fitFont() never returns below the floor it's given (Math.max(sz,
     // minPx)) -- but that alone doesn't prove the text actually FITS at
@@ -1785,8 +2065,18 @@ function renderLabel(rawData, opts){
     // text still renders, at its true mandatory size and position, so the
     // overlap itself is visible evidence of the block, not hidden by it).
     if(fs / 0.82 > slotLH) _footerClipped = true;
-    footerElems.push({text: slot.text, fs, bold: slot.bold, isPhone: slot.isPhone||false, slotY});
+    // isPhone only selects the semi-bold drawing weight below; on circles the
+    // phone is drawn regular (P6b), matching how it is measured here.
+    footerElems.push({text: slot.text, fs, bold: slot.bold, isPhone: (!isCircle && slot.isPhone)||false, slotY, availW});
   });
+  if(isCircle && footerElems.length){
+    const _shared = Math.min(...footerElems.map(e=>e.fs));
+    footerElems.forEach(e=>{ e.fs=_shared; });
+    // Final check at the real size: each line's lowest point (about half a
+    // font height below its row centre) must be at least 1 mm above the
+    // bottom of the circle; the sideways rule above keeps its ends 1 mm in.
+    footerElems.forEach(e=>{ if(e.slotY + e.fs*0.5 > cy + r - _footerEdgeClear) _footerClipped = true; });
+  }
   const _footerLegibilityClipped = _footerClipped;
 
   // ── SHARED NON-FIT BOOLEAN ──────────────────────────────────────────────
@@ -1802,7 +2092,7 @@ function renderLabel(rawData, opts){
   // flag `fits` has ever included is included here; if a new blocking
   // condition is ever added, add it to THIS line, not to a second copy.
   const _contentBlocked = _labelLegibilityWarn || _footerLegibilityClipped
-    || _unrecognizedCodes.length>0 || _bcfTooSmall || _scentTooSmall
+    || _unrecognizedCodes.length>0 || _bcfTooSmall || _bcfEdgeClipped || _scentTooSmall
     || _bizNameTooSmall || _typeTooSmall || _signalTooSmall
     || _invalidPictograms.length>0;
   // ── STRUCTURED BLOCK REASON -- never inferred from fits:false alone ─────
@@ -1837,7 +2127,7 @@ function renderLabel(rawData, opts){
   // merits, so a caller can tell "is there ALSO a genuine fit problem"
   // even when a code issue is the headline reason.
   const _contentOverflow = _labelLegibilityWarn || _footerLegibilityClipped
-    || _bcfTooSmall || _scentTooSmall || _bizNameTooSmall || _typeTooSmall || _signalTooSmall;
+    || _bcfTooSmall || _bcfEdgeClipped || _scentTooSmall || _bizNameTooSmall || _typeTooSmall || _signalTooSmall;
   const _blockReason = !_contentBlocked ? null
     : _unsupportedCodesFound.length>0 ? 'unsupported-gb-clp-code'
     : _genericUnrecognizedFound.length>0 ? 'unrecognised-code'
@@ -1856,12 +2146,17 @@ function renderLabel(rawData, opts){
   // recognised/supported codes is unaffected by this change. Both code
   // groups are passed through in full (not just the leading-reason one),
   // so a mixed unsupported+generic input shows both in the overlay too.
-  const overflowOverlay=_contentBlocked?buildBlockedOverlaySVG(pw,ph,cx,cy,chordW,_unsupportedCodesFound,_genericUnrecognizedFound,_invalidPictograms):'';
+  // Hotfix (16 Oct 2026): Builder previews stay visible while being edited,
+  // even when the layout does not fit. Presentation only -- fits/blocked,
+  // warnings and every export are unchanged; code problems keep the overlay.
+  const _showBlockOverlay = _contentBlocked && !(opts.livePreview && !opts.forExport
+    && !_unsupportedCodesFound.length && !_genericUnrecognizedFound.length && !_invalidPictograms.length);
+  const overflowOverlay=_showBlockOverlay?buildBlockedOverlaySVG(pw,ph,cx,cy,chordW,_unsupportedCodesFound,_genericUnrecognizedFound,_invalidPictograms):'';
   // Y positions already set per-slot — no global recompute needed
   const footerRendered = footerElems.map(elem=>{
     if(elem.slotY > sBot - 1) return '';
     const chordAtY = Math.min(chordW(elem.slotY, 0.09), sW * 0.88);
-    const availW = chordAtY * 0.88;
+    const availW = isCircle ? elem.availW : chordAtY * 0.88;
     // Final fit at actual Y — catches any rounding. Bug fix (read-only
     // impact assessment, 2026-09): this recompute previously floored at
     // Math.max(minFooterFS*0.5, 1.5) -- a tiny, purely aesthetic value far
@@ -1880,7 +2175,7 @@ function renderLabel(rawData, opts){
     // than shrinking further.
     const fs = fitFont(elem.text, availW, elem.fs, _mandatoryMinFS, elem.bold, false);
     // CLP compliance: all supplier/footer text must be solid black, not muted.
-    return`<text x="${cx}" y="${elem.slotY.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${fs.toFixed(2)}" font-weight="${elem.isPhone?'600':'400'}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(elem.text)}</text>`;
+    return`<text x="${cx}" y="${elem.slotY.toFixed(1)}" font-family="sans-serif" font-size="${fs.toFixed(2)}" font-weight="${elem.isPhone?'600':'400'}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(elem.text)}</text>`;
   }).join('');
 
   // ── EN 15494:2019 CANDLE SAFETY PICTOGRAMS ────────────────────
@@ -1911,7 +2206,7 @@ function renderLabel(rawData, opts){
     // first (see _footerTextMinH/_footerBandTotalEarly's own comment).
     const _bcfRoomForIcons = Math.max(_bcfFloorSz*BCF_ROW_HEIGHT_RATIO, _footerBandTotalEarly - _footerTextMinH);
     const _bcfMaxSz = Math.max(_bcfFloorSz, Math.min(sW * 0.07, _bcfTargetMm * _pxPerMm, _bcfPhysicalCap, _bcfRoomForIcons/BCF_ROW_HEIGHT_RATIO));
-    const _bcfGap   = _bcfMaxSz * 0.25;
+    const _bcfGap   = _bcfMaxSz * _bcfGapFrac;
     const _bcfTotW  = _nBcf * _bcfMaxSz + (_nBcf - 1) * _bcfGap;
     // Position at top of footer band with small padding
     const _bcfY = botY + _bcfMaxSz * 0.6;
@@ -1929,9 +2224,9 @@ function renderLabel(rawData, opts){
   // ── WATERMARK ─────────────────────────────────────────────────
   const wmSz=sW*0.12;
   const wm=opts.watermark?`<g transform="translate(${cx},${cy}) rotate(-35)" style="mix-blend-mode:difference">
-    <text x="0" y="${(-wmSz*0.6).toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${Math.max(wmSz,6).toFixed(1)}" fill="rgba(128,128,128,0.55)" text-anchor="middle" font-weight="900" letter-spacing="1">CLPeasy</text>
-    <text x="0" y="${(wmSz*0.55).toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${Math.max(wmSz*0.60,4).toFixed(1)}" fill="rgba(128,128,128,0.45)" text-anchor="middle" font-weight="700">PREVIEW ONLY</text>
-    <text x="0" y="${(wmSz*1.4).toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${Math.max(wmSz*0.42,3).toFixed(1)}" fill="rgba(128,128,128,0.38)" text-anchor="middle">clpeasy.com</text>
+    <text x="0" y="${(-wmSz*0.6).toFixed(1)}" font-family="sans-serif" font-size="${Math.max(wmSz,6).toFixed(1)}" fill="rgba(128,128,128,0.55)" text-anchor="middle" font-weight="900" letter-spacing="1">CLPeasy</text>
+    <text x="0" y="${(wmSz*0.55).toFixed(1)}" font-family="sans-serif" font-size="${Math.max(wmSz*0.60,4).toFixed(1)}" fill="rgba(128,128,128,0.45)" text-anchor="middle" font-weight="700">PREVIEW ONLY</text>
+    <text x="0" y="${(wmSz*1.4).toFixed(1)}" font-family="sans-serif" font-size="${Math.max(wmSz*0.42,3).toFixed(1)}" fill="rgba(128,128,128,0.38)" text-anchor="middle">clpeasy.com</text>
   </g>`:'';
 
   // ── ASSEMBLE ──────────────────────────────────────────────────
@@ -1955,22 +2250,22 @@ function renderLabel(rawData, opts){
   const svgH = opts.ph || (forExport ? Math.round(mmH*exportPxPerMm) : ph);
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgW}" height="${svgH}" viewBox="0 0 ${pw} ${ph}" text-rendering="geometricPrecision" shape-rendering="geometricPrecision" image-rendering="optimizeQuality">
-<defs>${clip}<style>@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700;900&amp;display=swap');</style></defs>
+<defs>${clip}</defs>
 <g clip-path="url(#${instanceId}-lc)">
   ${bg}
 
   <!-- HEADER: scent at top, then biz, then web -->
   ${isCircle
-    ? svgArcText(instanceId, scent, cx, cy, Math.min(pw,ph)/2, scentFS, txtCol, Math.min(1.1, 38/mmW))
+    ? svgArcText(instanceId, scent, cx, cy, Math.min(pw,ph)/2, _arcFS, txtCol, Math.min(1.1, 38/mmW))
     : svgWrapped(scentLines,cx,scentTopY,scentLH,scentFS,true,true,txtCol)}
   ${svgWrapped([bizName],cx,_bizYf,_bizFSf*1.2,_bizFSf,true,true,txtCol)}
-  ${webLine?`<text x="${cx}" y="${_webYf.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${_webFSf.toFixed(2)}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(webLine)}</text>`:''}
+  ${webLine?`<text x="${cx}" y="${_webYf.toFixed(1)}" font-family="sans-serif" font-size="${_webFSf.toFixed(2)}" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(webLine)}</text>`:''}
 
   <!-- PRODUCT TYPE -->
-  <text x="${cx}" y="${typeY.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${typeFS.toFixed(2)}" font-weight="700" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle" letter-spacing="0.6">${xe(type)}</text>
+  <text x="${cx}" y="${typeY.toFixed(1)}" font-family="sans-serif" font-size="${typeFS.toFixed(2)}" font-weight="700" fill="${txtCol}" text-anchor="middle" dominant-baseline="middle" letter-spacing="0.6">${xe(type)}</text>
 
   <!-- SIGNAL WORD -->
-  <text x="${cx}" y="${sigY.toFixed(1)}" font-family="DM Sans,sans-serif" font-size="${sigFS.toFixed(2)}" font-weight="800" fill="${sig==='DANGER'?'#cc0000':txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(sig)}</text>
+  <text x="${cx}" y="${sigY.toFixed(1)}" font-family="sans-serif" font-size="${sigFS.toFixed(2)}" font-weight="800" fill="${sig==='DANGER'?'#cc0000':txtCol}" text-anchor="middle" dominant-baseline="middle">${xe(sig)}</text>
 
   <!-- PICTOGRAMS -->
   ${pictoRow}
@@ -2000,6 +2295,7 @@ function renderLabel(rawData, opts){
   if(_labelLegibilityWarn) warnings.push('hazard-text-overflow');
   if(_footerLegibilityClipped) warnings.push('footer-clipped');
   if(_bcfTooSmall) warnings.push('candle-safety-symbols-too-small');
+  if(_bcfEdgeClipped) warnings.push('candle-safety-edge-clearance');
   // Regression fix (2026-09-06): mandatory text outside the hazard/footer
   // blocks (product name, business name, product type, signal word) now
   // gets the same physical-floor fail-closed treatment those blocks
@@ -2072,10 +2368,15 @@ function renderLabel(rawData, opts){
     // requested, or _bcfTooSmall, see `warnings`), for transparency/testing.
     bcfSizeMm: _bcfSizeMm,
     bcfTooSmall: _bcfTooSmall,
+    bcfEdgeClipped: _bcfEdgeClipped,
     // Regression fix (2026-09-06): per-category "hit the GB legibility
     // floor and still doesn't fit" flags, exposed for
     // transparency/testing alongside the existing footerClipped/bcfTooSmall.
     scentTooSmall: _scentTooSmall,
+    // Circle curved product name (see the curved-name block): whether the
+    // collision rule adjusted this label, and the declared font size used.
+    curvedNameAdjusted: _arcEngaged,
+    curvedNameFS: isCircle ? _arcFS : null,
     businessNameTooSmall: _bizNameTooSmall,
     productTypeTooSmall: _typeTooSmall,
     signalWordTooSmall: _signalTooSmall,

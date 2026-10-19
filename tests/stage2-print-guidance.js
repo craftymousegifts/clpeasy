@@ -148,13 +148,13 @@ const server = http.createServer((req, res) => {
       await readyBuilder(t);
       const fh = await t.evaluate(() => { const e = document.getElementById('dl-format-help'); return { shown: e.offsetParent !== null, text: e.innerText.replace(/\s+/g, ' ') }; });
       assert(fh.shown, 'Step 5 format help visible');
-      assert(/Printing your labels\? For a single label, use PDF\. For several labels on A4, use the Print Sheet Composer\. Always print at Actual Size \/ 100%/.test(fh.text), 'two neutral routes: ' + fh.text);
-      assert(!/most reliable printed size|Printing at home\? Choose PDF/.test(fh.text), 'PDF must not be presented as the home-printing route');
-      assert(/PDF is an individual label file/.test(fh.text), 'PDF described as an individual label file');
-      assert(/Actual Size \/ 100%/.test(fh.text), 'Step 5 mentions Actual Size / 100%');
-      assert(/PNG[^.]*high-resolution image/.test(fh.text) && /may choose its own print size/.test(fh.text), 'PNG explained (app may choose print size): ' + fh.text);
-      assert(!/PNG[^.]*(prints at the correct size|correct print size)/i.test(fh.text), 'PNG never claimed to print at the correct size');
-      ok('Step 5 format help: single label → PDF, several on A4 → Composer, Actual Size / 100%; SVG keeps mm; PNG size set by the app');
+      assert(/Print at Actual size \/ 100%/.test(fh.text), 'print scale instruction stays visible');
+      await t.click('.export-file-types summary');
+      const guidance=await t.evaluate(()=>document.querySelector('.export-file-types').innerText);
+      assert(/PDF: one label at its exact size/.test(guidance),'PDF exact size advice');
+      assert(/SVG: for design or cutting-machine software/.test(guidance),'SVG guidance');
+      assert(/PNG: image only, so print size may vary/.test(guidance),'PNG print size caution');
+      ok('Step 5 compact file guidance expands; PDF/SVG/PNG meanings preserved');
 
       // ── Save: visible confirmation, auto-hides ───────────────────────
       let s = await panel(t, 'save-status');
@@ -263,7 +263,7 @@ const server = http.createServer((req, res) => {
     for (const [name, vp] of [['desktop', { width: 1366, height: 900 }], ['mobile', { width: 390, height: 844, isMobile: true, hasTouch: true, deviceScaleFactor: 2 }]]) {
       const t = await open('print.html', vp);
       await t.evaluate(async () => {
-        const rec = { id: '11111111-2222-4333-8444-555555555555', schemaVersion: 1, scentName: 'Sheet QA', productType: 'Scented Candle', shape: 'circle', size: 52, signal: 'Warning', sdsSignal: 'Warning', hStatements: 'H317', pictograms: ['exclamation'], sensitisers: ['Linalool'], bizName: 'QA', bizAddress: '1 Test St', bizPhone: '0123', pStatements: '', p280Items: [], savedAt: '27/09/2026' };
+        const rec = { id: '11111111-2222-4333-8444-555555555555', schemaVersion: 1, scentName: 'Sheet QA', productType: 'Scented Candle', shape: 'circle', size: 56, /* 56 mm: 52 mm candles are blocked by the care-icon edge rule (17 Oct 2026) */ signal: 'Warning', sdsSignal: 'Warning', hStatements: 'H317', pictograms: ['exclamation'], sensitisers: ['Linalool'], bizName: 'QA', bizAddress: '1 Test St', bizPhone: '0123', pStatements: '', p280Items: [], savedAt: '27/09/2026' };
         // 3 Oct 2026: a label completed in the Builder carries its supplier-document confirmation.
         if (window.SdsDocCheck) { rec.fragLoad = '10%'; rec.sdsDoc = { kind: 'finished', pct: '10', base: SdsDocCheck.GROUP_BY_TYPE[rec.productType] }; rec.sdsDoc.confirmed = SdsDocCheck.confirmationFor(rec); } 
         await LabelLibrary.mutate(() => ({ collection: [rec], usedId: rec.id }));

@@ -4,6 +4,65 @@ All notable changes to CLPeasy are documented here. Customer-friendly notes
 covering the same releases live at `release-notes.html`. Versioning rules
 and the release procedure are documented in `VERSIONING.md`.
 
+## [1.3.0] - 2026-10-18 (proposed; date set on release)
+
+### Added
+- Smart Paste guidance: suitability note after extraction, amber "Check your
+  finished-product CLP information" box for concentrated fragrance-oil SDSs,
+  and a list of precautionary-statement codes not added automatically. The
+  exclusion list itself is unchanged. (#257)
+- "Using more than one fragrance oil?" drop-down in Builder Step 3 linking to
+  the Knowledge Base; knowledge.html opens the topic named in the address. (#259)
+- Contact form: more than one topic can be selected. (#258)
+
+### Changed
+- Knowledge Base "Blended Fragrances" wording. (#260)
+
+Customer release notes for 1.3.0 also describe the Smart Paste Section 2.2
+correction (#261), live since 18 October and recorded under 1.2.0 below.
+
+## [1.2.0] - 2026-10-16
+
+### Added
+- Net-weight dropdown (5–1000g in 5g steps) with exact custom quantities. (#247)
+- Optional-item fit choices with individual selection, exact-value quantity/batch confirmations, retained saved values and restore controls. (#248)
+
+### Changed
+- Compact size warnings, conditional item explanations and simplified export review with unchanged fit/authorisation gates. (#248)
+- Expandable file guidance, full SDS/fragrance-load responsibility declaration and Save/Composer actions. (#248)
+
+### Fixed (added to 1.2.0 on 17 October, no new version number)
+- Builder preview stays visible when a label needs more space; batch field
+  full width with a normal keyboard on phones. (#251)
+- Candle-care (EN 15494) icons kept at least 1 mm inside the circle cut edge;
+  52–55 mm candles showing the icons need 56 mm or the existing "show on
+  packaging" option, now offered at those sizes. (#252)
+
+### Fixed (added to 1.2.0 on 18 October, no new version number)
+- Smart Paste reads hazard data only from one Section 2.2 (Label elements)
+  and stops with a message when it cannot identify exactly one, so codes
+  from other SDS sections (e.g. Section 3 ingredients) can no longer reach
+  the label. (#261)
+
+Founder approved #247/#248 after iPhone checks on 16 October. #249 is a
+combined QA preview only and is not part of the production merge.
+
+## [1.1.1] - 2026-10-15
+
+### Fixed
+- Curved-name/business-name collision protection with hazard-text priority. (#236)
+- Consistent measured and drawn font families for label output. (#237)
+- Circle statement wrapping and edge containment. (#240)
+- Balanced circle footer sizes, regular phone text and edge clearance. (#241)
+- Fine-tune percentage references, cross-control refresh, decimal changes,
+  limit button states and Reset. (#242)
+- Mobile preview fine-tuning, edit-details navigation, shape/size editor
+  overlap and supported-size wording. (#244)
+
+Delivered together through #244, production commit `aa33efb`, Netlify deploy
+`6ad133053abdc7febf967f53` (15 October 2026, 21:09 BST). The version number
+and these notes were completed in a subsequent metadata-only update.
+
 ## [1.1.0] - 2026-09-22
 
 ### Added

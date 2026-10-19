@@ -100,7 +100,7 @@ const dom = new JSDOM(source, {
     window.HTMLCanvasElement.prototype.toDataURL = () => 'data:image/png;base64,AA==';
     window.HTMLCanvasElement.prototype.toBlob = function(cb){ cb({ size:1, type:'image/png' }); };
     try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
-    window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
+    window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
     window.eval(labelLibrarySource);
     window.eval(entitlementSource);
     window.alert = message => { window.__lastAlert = String(message); };

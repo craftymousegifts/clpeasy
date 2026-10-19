@@ -485,3 +485,105 @@ place them off the A4 page.
 - Guide Me prompt: removed Avery Sheet / Print Shop PDF / PNG-for-printing
   advice; distinguishes single label (PDF) from several on A4 (Composer); cutting-machine PNGs described.
 - Tests: `tests/stage2-print-guidance.js` (new, in `npm test`).
+
+## Smart Paste Section 2.2 extraction scope — safety defect (found 18 Oct 2026)
+
+- **Defect:** `extractSDS()` read H codes, P codes and the signal word from
+  *all* pasted text. Pasting a complete SDS put Section 3 ingredient hazards
+  and later-section codes (first aid, Section 16 phrase lists) on the
+  finished-product label. On 100 real 10%-in-candle-wax SDSs, a whole-document
+  paste changed the label in 92 (84 became "Danger"); 8 used only recognised
+  codes and could be downloaded. Reproduced on production (signed out,
+  synthetic label details).
+- **History:** present since the first Builder (25 May 2026, `dc4eb10`) and
+  live at launch. From 11 Jun (`5b92c9c`) to 18 Sep the site told users to
+  paste the complete document and that CLPeasy "finds Section 2.2
+  automatically" (it never did). On 18 Sep (`4fef135`, PR #119) the risk was
+  recognised and 20 instructions were corrected, but the code was not
+  changed and no issue was opened.
+- **Why testing missed it:** the 100-SDS QA corpus collector cut out Section
+  2.2 before pasting, so tests never pasted what a user might. No test checked
+  that text outside Section 2.2 cannot change the label. Code validation only
+  checks that codes are recognised, not where they came from. The 4 Oct removal
+  of the supplier questionnaire was unrelated.
+- **Fix (PR #261, founder-approved for production 18 Oct 2026):** `sds-section-scope.js`
+  reads only the Section 2.2 block (page-break continuations kept); stops with
+  an approved message when there is not exactly one Section 2.2, or more than
+  one signal word (two SDSs, GB + US blocks). Bare extracts without headings
+  behave as before. Regression test: `tests/smart-paste-section-scope.js`
+  (optional real-document mode).
+- **Lessons:** test harnesses must paste what users paste; keep "outside
+  Section 2.2 must not change the label" tests for every Smart Paste change;
+  when a safety risk is handled by wording only, open a tracked issue for an
+  enforced fix.
+- **Release verification (18 Oct 2026):** boundaries checked on 100 real
+  Nikura whole SDSs (2 reading orders x 5 layout variants, 0 wrong codes,
+  0 false stops); by eye against PDFs for Discount Candle Supplies, NI Candle
+  Supplies and Nikura; 9 founder-supplied documents (5 Nikura full SDSs, neat
+  and 10% in wax; 2 Supplies for Candles / The Soap Kitchen CLP advice sheets;
+  an allergen list and an IFRA certificate) all correct, the allergen list and
+  IFRA certificate cannot produce a label. Released as a squash commit on
+  `main`; see `docs/reports/SMART-PASTE-SECTION-2-2-RELEASE-2026-10-18.md`.
+- **Known limitations at release:**
+  - *Unfamiliar SDS layouts:* real full-SDS coverage is one layout family
+    (Nikura / DCS / NI Candle Supplies share a template). No real reed
+    diffuser, room spray or other full-SDS template tested. Expected failure
+    is a false stop (safe); a Section 2.2 cut short by an unrecognised
+    in-section heading is possible in theory, not seen.
+  - *Unstructured pastes* (no SDS headings) are read as pasted, as before.
+    The Supplies for Candles advice sheets ("SDS SECTION 2.2 LABEL
+    ELEMENTS") are read this way, correctly; that heading form is not
+    recognised as a Section 2.2 heading.
+  - *P-only continuation exception:* a repeated Section 2.2 heading that adds
+    only P statements is joined to the previous block, so a second document
+    holding only P statements could be combined.
+  - *H401 (separate regulatory issue, not changed by #261):* a supplier SDS
+    (Nikura Positivity, neat) lists H401, which is not a GB CLP hazard
+    statement; Smart Paste carries it through as printed. Needs review.
+  - CLPeasy helps makers prepare labels from supplier information; it does
+    not guarantee regulatory compliance.
+
+## v1.3.0 coordinated release candidate (prepared 18 Oct 2026)
+
+- **Contents:** #257 (Smart Paste guidance: suitability note, amber
+  finished-product box, list of P codes not added), #258 (Contact form
+  multi-topic), #259 ("Using more than one fragrance oil?" drop-down and
+  knowledge.html hash opening), #260 (Knowledge Base blended-fragrance
+  wording). Built on production `main` `2e7af46`, which already has #261.
+- **Integration:** #257 had 3 textual conflicts with #261 in `builder.html`
+  (boxes under Extract, script tags, `loadLabelRecord()` resets), resolved by
+  keeping both. #257's excluded-code note now uses the Section 2.2 text only;
+  a stopped paste clears and hides all #257 guidance. The suitability check
+  still reads the full pasted text; on the 9 founder-supplied documents it
+  gives the same result as on the Section 2.2 text. #258–#260 merged without
+  conflicts.
+- **Version:** 1.3.0 (MINOR: new backward-compatible guidance and form
+  features). Customer release notes also describe #261.
+- **Not blocking this release:** the open regulatory review of the 9 excluded
+  P statements (#257 only names codes the existing exclusion already leaves
+  out) and H401 (no H-statement handling is changed).
+- Report: `docs/reports/V1.3.0-COMBINED-RELEASE-2026-10-18.md`.
+- **Round 2 (owner iPhone review):** teal "Check your SDS suitability" notice;
+  diluted-form SDS product names (e.g. "(10% in Candle Wax)") get the neutral
+  notice instead of the amber concentrated-oil box; shorter "not added"
+  wording. Contact header overlap not reproducible; 57 mm is a supported
+  custom size. No change to the exclusion list or classification logic.
+- **Round 3 (owner-approved simplification):** Smart Paste guidance has four
+  states: teal apparent match (SDS product name states the same product kind
+  and fragrance % entered), teal "Check your SDS suitability" (cannot be
+  confirmed, incl. any ambiguity), amber detected mismatch (other % or
+  product kind; no bottles) and amber concentrated oil (unchanged two
+  bottles). Excluded P codes shown once in their own notice; support link
+  once. Step 3 size panel says a larger label does not resolve an amber SDS
+  warning. Display only.
+
+## Customer support and content revision — approved draft implementation (19 Oct 2026)
+
+- Owner approved the full page-by-page content proposal in chat; implemented against main `3a9524e` in a separate content branch. Support/Compliance/FAQ/homepage/Knowledge Base updated; blend article and separate hand-cut/Cricut guides added. Existing blended hash route preserved; no Builder or form submission behaviour changes.
+- High-tier wording: authoritative HSE, GOV.UK, Business Companion and Cricut evidence plus one focused independent review. Scope and limitations match the approved proposal; CLP Ready, no certification or blend-classification promise.
+- Targeted checks and 160-link audit pass. Full npm suite interrupted in an unrelated consent test after earlier groups passed; local browser blocked; hosted desktop Support and blend article inspected, full desktop/mobile sign-off pending. See `docs/reports/CUSTOMER-SUPPORT-CONTENT-2026-10-19.md`.
+- Publication holds: private HSE correspondence verification, physical current SVG/Design Space/Maker 3 test, hosted desktop/mobile preview, founder release approval and out-of-hours release process. No production deployment.
+
+- Completion update (19 Oct): desktop 1280/mobile-size 390 checks completed across eight public pages; FAQ, blend topic/link, nested mobile navigation, keyboard skip and Support deep link pass. Cricut-specific guide moved to publicly blocked report directory; public links use official Cricut instructions. Original HSE reply not found in connected mail/file sources; Zoho mailbox requires sign-in, so engagement claim remains REVIEW. Consent test passes individually; unrelated plan-finder baseline assertion fails (`frequency` vs `labels`), full suite not green. No production release.
+
+- HSE correction completed (19 Oct): owner supplied original reply dated 16 June 2026 and approved the exact replacements. Compliance/FAQ/homepage no longer claim an exemption or pre-launch review; Compliance/Terms regulatory statements match and preserve customer rights. Pre-launch HSE fact badge removed; Terms date updated. Focused independent review passed; earlier HSE source-access hold is superseded. Cricut guide remains unpublished and production release awaits founder approval/OOH process.

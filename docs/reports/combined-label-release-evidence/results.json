@@ -1,0 +1,828 @@
+{
+  "base": "http://127.0.0.1:40871",
+  "backend": "mocked; signed out; external requests intercepted",
+  "cases": [
+    {
+      "mm": 52,
+      "manual": false,
+      "step": 5,
+      "allowed": false,
+      "blocked": true,
+      "pCodes": "P261, P273, P302+P352, P333+P313, P501",
+      "warning": "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 62mm (circle).Use 62mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareSize (mm)Apply sizeYour entered information is kept. The preview will check the new size.",
+      "recommendation": {
+        "shape": "circle",
+        "mmW": 62,
+        "mmH": 62,
+        "source": "custom",
+        "presetMm": null
+      },
+      "fonts": [
+        {
+          "text": "Synthetic Test",
+          "fs": 9.13,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Synthetic Test Business",
+          "fs": 9.5,
+          "family": "Georgia,serif"
+        },
+        {
+          "text": "https://example.invalid",
+          "fs": 9.45,
+          "family": "sans-serif"
+        },
+        {
+          "text": "SCENTED CANDLE",
+          "fs": 15.75,
+          "family": "sans-serif"
+        },
+        {
+          "text": "WARNING",
+          "fs": 17.96,
+          "family": "sans-serif"
+        },
+        {
+          "text": "May cause an allergic skin reaction. Toxic to aquatic life with longlasting effects.",
+          "fs": 6,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Contains: Linalool, LimoneneMay produce an allergic reaction.",
+          "fs": 6,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Avoid breathing vapours and dust. Avoid release to theenvironment. IF ON SKIN: wash with plenty of water. Ifskin irritation or rash occurs: get medical advice.Dispose of contents and container inaccordance with local regulations.",
+          "fs": 6,
+          "family": "sans-serif"
+        },
+        {
+          "text": "1 Test Street, Test Town, TE1 1ST",
+          "fs": 6,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Batch: TEST-001",
+          "fs": 6,
+          "family": "sans-serif"
+        },
+        {
+          "text": "00000000000",
+          "fs": 6,
+          "family": "sans-serif"
+        },
+        {
+          "text": "CLPeasy",
+          "fs": 30.8,
+          "family": "sans-serif"
+        },
+        {
+          "text": "PREVIEW ONLY",
+          "fs": 18.5,
+          "family": "sans-serif"
+        },
+        {
+          "text": "clpeasy.com",
+          "fs": 13,
+          "family": "sans-serif"
+        }
+      ],
+      "hazardPct": "100%minimum",
+      "exports": "blocked before download"
+    },
+    {
+      "mm": 63,
+      "manual": false,
+      "step": 5,
+      "allowed": true,
+      "blocked": false,
+      "pCodes": "P261, P273, P302+P352, P333+P313, P501",
+      "warning": "",
+      "recommendation": {
+        "shape": "circle",
+        "mmW": 62,
+        "mmH": 62,
+        "source": "custom",
+        "presetMm": null
+      },
+      "fonts": [
+        {
+          "text": "Synthetic Test",
+          "fs": 9.13,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Synthetic Test Business",
+          "fs": 9.5,
+          "family": "Georgia,serif"
+        },
+        {
+          "text": "https://example.invalid",
+          "fs": 9.45,
+          "family": "sans-serif"
+        },
+        {
+          "text": "SCENTED CANDLE",
+          "fs": 17.58,
+          "family": "sans-serif"
+        },
+        {
+          "text": "WARNING",
+          "fs": 20.06,
+          "family": "sans-serif"
+        },
+        {
+          "text": "May cause an allergic skin reaction. Toxic to aquatic life with long lasting effects.",
+          "fs": 4.95,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Contains: Linalool, LimoneneMay produce an allergic reaction.",
+          "fs": 4.95,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Avoid breathing vapours and dust. Avoid release to the environment. IF ON SKIN:wash with plenty of water. If skin irritation or rash occurs: get medical advice.Dispose of contents and container in accordance with local regulations.",
+          "fs": 4.95,
+          "family": "sans-serif"
+        },
+        {
+          "text": "1 Test Street, Test Town, TE1 1ST",
+          "fs": 5.6,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Batch: TEST-001",
+          "fs": 5.6,
+          "family": "sans-serif"
+        },
+        {
+          "text": "00000000000",
+          "fs": 5.6,
+          "family": "sans-serif"
+        },
+        {
+          "text": "CLPeasy",
+          "fs": 30.8,
+          "family": "sans-serif"
+        },
+        {
+          "text": "PREVIEW ONLY",
+          "fs": 18.5,
+          "family": "sans-serif"
+        },
+        {
+          "text": "clpeasy.com",
+          "fs": 13,
+          "family": "sans-serif"
+        }
+      ],
+      "hazardPct": "100%minimum",
+      "printView": {
+        "svgW": "63mm",
+        "svgH": "63mm",
+        "pageCss": [
+          "@page { size: 63mm 63mm; margin: 0px; }"
+        ]
+      },
+      "exports": [
+        "SVG",
+        "PNG",
+        "PDF"
+      ]
+    },
+    {
+      "mm": 75,
+      "manual": false,
+      "step": 5,
+      "allowed": true,
+      "blocked": false,
+      "pCodes": "P261, P273, P302+P352, P333+P313, P501",
+      "warning": "",
+      "recommendation": {
+        "shape": "circle",
+        "mmW": 62,
+        "mmH": 62,
+        "source": "custom",
+        "presetMm": null
+      },
+      "fonts": [
+        {
+          "text": "Synthetic Test",
+          "fs": 9.13,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Synthetic Test Business",
+          "fs": 9.5,
+          "family": "Georgia,serif"
+        },
+        {
+          "text": "https://example.invalid",
+          "fs": 9.45,
+          "family": "sans-serif"
+        },
+        {
+          "text": "SCENTED CANDLE",
+          "fs": 18.5,
+          "family": "sans-serif"
+        },
+        {
+          "text": "WARNING",
+          "fs": 21.11,
+          "family": "sans-serif"
+        },
+        {
+          "text": "May cause an allergic skin reaction. Toxic to aquatic life with long lasting effects.",
+          "fs": 5.18,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Contains: Linalool, LimoneneMay produce an allergic reaction.",
+          "fs": 5.18,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Avoid breathing vapours and dust. Avoid release to the environment. IF ON SKIN:wash with plenty of water. If skin irritation or rash occurs: get medical advice.Dispose of contents and container in accordance with local regulations.",
+          "fs": 5.18,
+          "family": "sans-serif"
+        },
+        {
+          "text": "1 Test Street, Test Town, TE1 1ST",
+          "fs": 6.61,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Batch: TEST-001",
+          "fs": 6.61,
+          "family": "sans-serif"
+        },
+        {
+          "text": "00000000000",
+          "fs": 6.61,
+          "family": "sans-serif"
+        },
+        {
+          "text": "CLPeasy",
+          "fs": 30.8,
+          "family": "sans-serif"
+        },
+        {
+          "text": "PREVIEW ONLY",
+          "fs": 18.5,
+          "family": "sans-serif"
+        },
+        {
+          "text": "clpeasy.com",
+          "fs": 13,
+          "family": "sans-serif"
+        }
+      ],
+      "hazardPct": "100%",
+      "printView": {
+        "svgW": "75mm",
+        "svgH": "75mm",
+        "pageCss": [
+          "@page { size: 75mm 75mm; margin: 0px; }"
+        ]
+      },
+      "exports": [
+        "SVG",
+        "PNG",
+        "PDF"
+      ]
+    },
+    {
+      "mm": 52,
+      "manual": true,
+      "step": 5,
+      "allowed": false,
+      "blocked": true,
+      "pCodes": "P261, P273, P302+P352, P333+P313, P501, P280",
+      "warning": "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 68mm (circle).Use 68mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareSize (mm)Apply sizeYour entered information is kept. The preview will check the new size.",
+      "recommendation": {
+        "shape": "circle",
+        "mmW": 68,
+        "mmH": 68,
+        "source": "custom",
+        "presetMm": null
+      },
+      "fonts": [
+        {
+          "text": "Synthetic Test",
+          "fs": 9.13,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Synthetic Test Business",
+          "fs": 9.5,
+          "family": "Georgia,serif"
+        },
+        {
+          "text": "https://example.invalid",
+          "fs": 9.45,
+          "family": "sans-serif"
+        },
+        {
+          "text": "SCENTED CANDLE",
+          "fs": 15.75,
+          "family": "sans-serif"
+        },
+        {
+          "text": "WARNING",
+          "fs": 17.96,
+          "family": "sans-serif"
+        },
+        {
+          "text": "May cause an allergic skin reaction. Toxic to aquatic life with longlasting effects.",
+          "fs": 6,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Contains: Linalool, LimoneneMay produce an allergic reaction.",
+          "fs": 6,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Avoid breathing vapours and dust. Avoid release to theenvironment. IF ON SKIN: wash with plenty of water. Ifskin irritation or rash occurs: get medical advice.Dispose of contents and container inaccordance with local regulations.Wear protective gloves.",
+          "fs": 6,
+          "family": "sans-serif"
+        },
+        {
+          "text": "1 Test Street, Test Town, TE1 1ST",
+          "fs": 6,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Batch: TEST-001",
+          "fs": 6,
+          "family": "sans-serif"
+        },
+        {
+          "text": "00000000000",
+          "fs": 6,
+          "family": "sans-serif"
+        },
+        {
+          "text": "CLPeasy",
+          "fs": 30.8,
+          "family": "sans-serif"
+        },
+        {
+          "text": "PREVIEW ONLY",
+          "fs": 18.5,
+          "family": "sans-serif"
+        },
+        {
+          "text": "clpeasy.com",
+          "fs": 13,
+          "family": "sans-serif"
+        }
+      ],
+      "hazardPct": "100%minimum",
+      "exports": "blocked before download"
+    },
+    {
+      "mm": 63,
+      "manual": true,
+      "step": 5,
+      "allowed": false,
+      "blocked": true,
+      "pCodes": "P261, P273, P302+P352, P333+P313, P501, P280",
+      "warning": "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 68mm (circle).Use 68mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareSize (mm)Apply sizeYour entered information is kept. The preview will check the new size.",
+      "recommendation": {
+        "shape": "circle",
+        "mmW": 68,
+        "mmH": 68,
+        "source": "custom",
+        "presetMm": null
+      },
+      "fonts": [
+        {
+          "text": "Synthetic Test",
+          "fs": 9.13,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Synthetic Test Business",
+          "fs": 9.5,
+          "family": "Georgia,serif"
+        },
+        {
+          "text": "https://example.invalid",
+          "fs": 9.45,
+          "family": "sans-serif"
+        },
+        {
+          "text": "SCENTED CANDLE",
+          "fs": 17.95,
+          "family": "sans-serif"
+        },
+        {
+          "text": "WARNING",
+          "fs": 20.48,
+          "family": "sans-serif"
+        },
+        {
+          "text": "May cause an allergic skin reaction. Toxic to aquatic life with long lasting effects.",
+          "fs": 4.95,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Contains: Linalool, LimoneneMay produce an allergic reaction.",
+          "fs": 4.95,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Avoid breathing vapours and dust. Avoid release to the environment. IF ON SKIN:wash with plenty of water. If skin irritation or rash occurs: get medical advice.Dispose of contents and container in accordance with local regulations. Wearprotective gloves.",
+          "fs": 4.95,
+          "family": "sans-serif"
+        },
+        {
+          "text": "1 Test Street, Test Town, TE1 1ST",
+          "fs": 5.6,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Batch: TEST-001",
+          "fs": 5.6,
+          "family": "sans-serif"
+        },
+        {
+          "text": "00000000000",
+          "fs": 5.6,
+          "family": "sans-serif"
+        },
+        {
+          "text": "CLPeasy",
+          "fs": 30.8,
+          "family": "sans-serif"
+        },
+        {
+          "text": "PREVIEW ONLY",
+          "fs": 18.5,
+          "family": "sans-serif"
+        },
+        {
+          "text": "clpeasy.com",
+          "fs": 13,
+          "family": "sans-serif"
+        }
+      ],
+      "hazardPct": "100%minimum",
+      "exports": "blocked before download"
+    },
+    {
+      "mm": 75,
+      "manual": true,
+      "step": 5,
+      "allowed": true,
+      "blocked": false,
+      "pCodes": "P261, P273, P302+P352, P333+P313, P501, P280",
+      "warning": "",
+      "recommendation": {
+        "shape": "circle",
+        "mmW": 68,
+        "mmH": 68,
+        "source": "custom",
+        "presetMm": null
+      },
+      "fonts": [
+        {
+          "text": "Synthetic Test",
+          "fs": 9.13,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Synthetic Test Business",
+          "fs": 9.5,
+          "family": "Georgia,serif"
+        },
+        {
+          "text": "https://example.invalid",
+          "fs": 9.45,
+          "family": "sans-serif"
+        },
+        {
+          "text": "SCENTED CANDLE",
+          "fs": 18.5,
+          "family": "sans-serif"
+        },
+        {
+          "text": "WARNING",
+          "fs": 21.11,
+          "family": "sans-serif"
+        },
+        {
+          "text": "May cause an allergic skin reaction. Toxic to aquatic life with long lasting effects.",
+          "fs": 4.72,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Contains: Linalool, LimoneneMay produce an allergic reaction.",
+          "fs": 4.72,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Avoid breathing vapours and dust. Avoid release to the environment. IF ON SKIN: washwith plenty of water. If skin irritation or rash occurs: get medical advice. Dispose ofcontents and container in accordance with local regulations. Wear protective gloves.",
+          "fs": 4.72,
+          "family": "sans-serif"
+        },
+        {
+          "text": "1 Test Street, Test Town, TE1 1ST",
+          "fs": 6.61,
+          "family": "sans-serif"
+        },
+        {
+          "text": "Batch: TEST-001",
+          "fs": 6.61,
+          "family": "sans-serif"
+        },
+        {
+          "text": "00000000000",
+          "fs": 6.61,
+          "family": "sans-serif"
+        },
+        {
+          "text": "CLPeasy",
+          "fs": 30.8,
+          "family": "sans-serif"
+        },
+        {
+          "text": "PREVIEW ONLY",
+          "fs": 18.5,
+          "family": "sans-serif"
+        },
+        {
+          "text": "clpeasy.com",
+          "fs": 13,
+          "family": "sans-serif"
+        }
+      ],
+      "hazardPct": "100%",
+      "printView": {
+        "svgW": "75mm",
+        "svgH": "75mm",
+        "pageCss": [
+          "@page { size: 75mm 75mm; margin: 0px; }"
+        ]
+      },
+      "exports": [
+        "SVG",
+        "PNG",
+        "PDF"
+      ]
+    }
+  ],
+  "mobile": [
+    {
+      "viewport": 375,
+      "documentWidth": 375,
+      "fields": [
+        {
+          "id": "biz-website",
+          "x": 41,
+          "y": 955.921875,
+          "width": 139.5,
+          "height": 43,
+          "right": 180.5,
+          "bottom": 998.921875,
+          "scrollWidth": 210,
+          "clientWidth": 138
+        },
+        {
+          "id": "batch-num",
+          "x": 194.5,
+          "y": 976.71875,
+          "width": 43.015625,
+          "height": 43,
+          "right": 237.515625,
+          "bottom": 1019.71875,
+          "scrollWidth": 101,
+          "clientWidth": 41
+        }
+      ],
+      "controls": [
+        {
+          "text": "✕",
+          "rect": {
+            "x": 245.515625,
+            "y": 976.71875,
+            "width": 33,
+            "height": 43,
+            "top": 976.71875,
+            "right": 278.515625,
+            "bottom": 1019.71875,
+            "left": 245.515625
+          }
+        },
+        {
+          "text": "+1",
+          "rect": {
+            "x": 286.515625,
+            "y": 976.71875,
+            "width": 47.484375,
+            "height": 43,
+            "top": 976.71875,
+            "right": 334,
+            "bottom": 1019.71875,
+            "left": 286.515625
+          }
+        },
+        {
+          "text": "← Back",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          }
+        },
+        {
+          "text": "Preview & download →",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          }
+        }
+      ]
+    },
+    {
+      "viewport": 390,
+      "documentWidth": 390,
+      "fields": [
+        {
+          "id": "biz-website",
+          "x": 41,
+          "y": 935.125,
+          "width": 147,
+          "height": 43,
+          "right": 188,
+          "bottom": 978.125,
+          "scrollWidth": 210,
+          "clientWidth": 145
+        },
+        {
+          "id": "batch-num",
+          "x": 202,
+          "y": 955.921875,
+          "width": 50.515625,
+          "height": 43,
+          "right": 252.515625,
+          "bottom": 998.921875,
+          "scrollWidth": 101,
+          "clientWidth": 49
+        }
+      ],
+      "controls": [
+        {
+          "text": "✕",
+          "rect": {
+            "x": 260.515625,
+            "y": 955.921875,
+            "width": 33,
+            "height": 43,
+            "top": 955.921875,
+            "right": 293.515625,
+            "bottom": 998.921875,
+            "left": 260.515625
+          }
+        },
+        {
+          "text": "+1",
+          "rect": {
+            "x": 301.515625,
+            "y": 955.921875,
+            "width": 47.484375,
+            "height": 43,
+            "top": 955.921875,
+            "right": 349,
+            "bottom": 998.921875,
+            "left": 301.515625
+          }
+        },
+        {
+          "text": "← Back",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          }
+        },
+        {
+          "text": "Preview & download →",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          }
+        }
+      ]
+    },
+    {
+      "viewport": 430,
+      "documentWidth": 430,
+      "fields": [
+        {
+          "id": "biz-website",
+          "x": 41,
+          "y": 913.53125,
+          "width": 167,
+          "height": 43,
+          "right": 208,
+          "bottom": 956.53125,
+          "scrollWidth": 210,
+          "clientWidth": 165
+        },
+        {
+          "id": "batch-num",
+          "x": 222,
+          "y": 934.328125,
+          "width": 70.515625,
+          "height": 43,
+          "right": 292.515625,
+          "bottom": 977.328125,
+          "scrollWidth": 101,
+          "clientWidth": 69
+        }
+      ],
+      "controls": [
+        {
+          "text": "✕",
+          "rect": {
+            "x": 300.515625,
+            "y": 934.328125,
+            "width": 33,
+            "height": 43,
+            "top": 934.328125,
+            "right": 333.515625,
+            "bottom": 977.328125,
+            "left": 300.515625
+          }
+        },
+        {
+          "text": "+1",
+          "rect": {
+            "x": 341.515625,
+            "y": 934.328125,
+            "width": 47.484375,
+            "height": 43,
+            "top": 934.328125,
+            "right": 389,
+            "bottom": 977.328125,
+            "left": 341.515625
+          }
+        },
+        {
+          "text": "← Back",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          }
+        },
+        {
+          "text": "Preview & download →",
+          "rect": {
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0,
+            "top": 0,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          }
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

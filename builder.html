@@ -339,6 +339,9 @@ a.trust-item:hover .trust-icon{background:var(--teal);color:white;}
    the general .form-row phone rule above is overridden by this later base
    rule (pre-existing, recorded separately). */
 @media(max-width:600px){#frag-row{grid-template-columns:1fr;}}
+/* Same for Step 4's Website / Batch row: on phones the batch box was squeezed
+   to ~50px beside its clear/+1 buttons, hiding the batch number. */
+@media(max-width:600px){#biz-extra-row{grid-template-columns:1fr;}}
 label{display:block;font-size:13px;font-weight:600;margin-bottom:5px;}
 label span{font-weight:400;color:var(--muted);}
 input[type=text],input[type=number],select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:16px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;transition:border-color .2s;outline:none;-webkit-appearance:none;appearance:none;}
@@ -442,6 +445,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .dl-pg-more li{margin:2px 0;}
 .dl-pg-note{font-size:12px;opacity:.9;}
 .dl-pg-close{flex-shrink:0;background:none;border:1px solid currentColor;border-radius:6px;color:inherit;font:600 12px 'DM Sans',sans-serif;padding:4px 8px;cursor:pointer;}
+
+#step-5 .watermark-note{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;font-size:12px;background:#f3f4f6;}.watermark-note button{min-height:36px;flex-shrink:0;background:#2f8aa6!important;}
+.export-confirmation-card{border:1px solid #dce2e8;border-radius:12px;padding:14px;margin-bottom:14px;background:#fff;}.export-confirmation-label{display:flex;align-items:flex-start;gap:10px;font-size:13px;line-height:1.55;color:var(--text);cursor:pointer;}.export-confirmation-label input{width:20px;height:20px;flex-shrink:0;margin-top:2px;accent-color:#2f8aa6;}.export-role-info{margin:6px 0 0 30px;font-size:12px;color:var(--muted);}.export-role-info summary,.export-file-types summary{color:#2f8aa6;cursor:pointer;}.export-role-info p{margin:8px 0 0;}
+#omission-download-summary{font-size:12px!important;color:var(--muted);}#btn-view-label{background:#2f8aa6;}.export-file-types{font-size:12px;margin-top:5px;}.export-file-box{background:#f5f6f7;border-radius:8px;padding:10px 12px;margin-top:8px;}.export-file-box p{margin:3px 0;}
+.export-secondary-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:16px;align-items:start;}.export-save,.export-composer{box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;padding:10px 8px;border-radius:9px;font:inherit;font-size:13px;font-weight:600;text-align:center;line-height:1.35;text-decoration:none;cursor:pointer;}.export-save{border:1px solid #62717c;background:white;color:var(--text);}.export-composer{border:1px solid #a4d8c6;background:#eefaf5;color:#286e67;}.export-composer:disabled{opacity:.55;cursor:not-allowed;}.export-composer-action small{display:block;text-align:center;font-size:11px;color:var(--muted);margin-top:4px;}#composer-save-first[hidden]{display:none;}
+
 .dl-format-help{margin:10px 0 0;font-size:13.5px;line-height:1.55;color:var(--muted);}
 .dl-format-help p{margin:0;}
 .dl-format-help ul{margin:4px 0 0 18px;padding:0;}
@@ -508,11 +517,13 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .preview-legend{flex:0 0 220px;background:white;border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:12px;align-self:stretch;overflow-y:auto;max-height:100%;}
 .preview-legend .fine-tune-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
 .preview-legend .fine-tune-sub{font-size:10.5px;color:var(--muted);margin-bottom:10px;line-height:1.35;}
-.preview-legend .ft-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);}
+.preview-legend .ft-row{display:grid;grid-template-columns:minmax(0,1fr) 112px;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);}
 .preview-legend .ft-row span{font-size:11.5px;font-weight:600;color:var(--text);}
-.preview-legend .ft-controls{display:flex;align-items:center;gap:4px;}
+.preview-legend .ft-controls{display:grid;grid-template-columns:24px 56px 24px;align-items:center;gap:4px;}
 .preview-legend .ft-btn{background:var(--off);border:1px solid var(--border);color:var(--text);border-radius:4px;width:19px;height:19px;font-size:11px;cursor:pointer;line-height:1;padding:0;}
-.preview-legend .ft-pct{font-size:10.5px;color:var(--muted);min-width:28px;text-align:center;font-weight:600;}
+.preview-legend .ft-pct{font-size:10.5px;color:var(--muted);width:56px;min-width:0;text-align:center;font-weight:600;}
+.preview-legend .ft-pct .ft-min,.preview-legend .ft-pct .ft-max{display:block;font-size:8.5px;font-weight:600;color:var(--muted);line-height:1;}
+.preview-legend .ft-btn:disabled{opacity:.4;cursor:not-allowed;}
 .preview-legend .ft-reset{font-size:9.5px;color:var(--teal);font-weight:600;cursor:pointer;display:none;text-align:right;padding:2px 0 4px;}
 #label-svg-container{
   -webkit-user-select:none;-moz-user-select:none;user-select:none;
@@ -557,6 +568,18 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 }
 .preview-sheet{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;align-items:flex-start;justify-content:center;padding-top:max(12px,env(safe-area-inset-top,0px));box-sizing:border-box;}
 .preview-sheet.open{display:flex;}
+@media(min-width:861px){.preview-sheet.open .preview-sheet-inner{max-width:920px;border-radius:16px;}.preview-sheet-label>svg{max-height:50dvh!important;}}
+
+.fit-advice-card{background:#fff!important;color:#26313b!important;border:1px solid #dce2e8!important;border-radius:14px!important;padding:20px!important;line-height:1.5;}
+.fit-heading{font-size:17px;font-weight:650;color:#9b6200;}.fit-heading>span{color:#e4a11b;margin-right:6px;}.fit-heading small{font-size:13px;font-weight:400;color:#737d87;}
+.fit-actions{display:flex;flex-wrap:wrap;align-items:flex-start;gap:12px;margin:16px 0;}.fit-primary,.fit-size-picker>summary{box-sizing:border-box;min-height:44px;border:1px solid #2f8aa6;border-radius:8px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;}.fit-primary{background:#2f8aa6;color:#fff;}.fit-size-picker>summary{background:white;color:#2f8aa6;list-style:none;}.fit-size-picker>summary::-webkit-details-marker{display:none;}.fit-size-picker .inline-size-editor{max-width:100%;}.fit-size-picker .inline-size-editor>strong,.fit-size-picker .inline-size-editor>p,.fit-size-picker .inline-size-editor>small{display:none;}
+.fit-advice-card .optional-item-review{border:0;border-top:1px solid #e5e8eb;border-radius:0;padding:16px 0 0;margin:0;color:#26313b;}.fit-advice-card .optional-item-review summary{color:#26313b;}.omission-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}.omission-chip{display:flex;align-items:center;gap:7px;border:1px solid #dce2e8;border-radius:8px;padding:9px;min-height:44px;box-sizing:border-box;cursor:pointer;}.omission-chip:has(input:checked){border-color:#2f8aa6;background:#f0f8fa;}.omission-chip small{background:#eef1f3;color:#68737d;border-radius:10px;padding:1px 6px;font-size:10px;}.omission-chip input,.omission-confirm input{accent-color:#2f8aa6;min-width:20px;min-height:20px;flex-shrink:0;}.omission-confirm{display:flex;align-items:center;gap:8px;margin:10px 0;font-size:13px;}.fit-helper{color:#717b85;font-size:12px;margin:10px 0;}.fit-status{font-size:13px;margin:12px 0;}.fit-status-blocked{color:#b53333;}.fit-status-ok{color:#23754a;}.fit-footnote{color:#7b838c;font-size:11px;margin:12px 0 0;}.fit-advice-card .optional-item-review button{background:#2f8aa6;}.fit-advice-card .optional-item-review button:disabled{background:#e5e7eb;}
+
+.optional-item-review{color:var(--text,#152333);background:white;border:1px solid var(--teal,#4c9bb0);border-radius:10px;padding:14px;margin-top:14px;}
+.optional-item-review summary{font-weight:700;color:var(--teal-dark,#286579);cursor:pointer;}
+.optional-item-review button{background:var(--teal,#4c9bb0);color:white;border:0;border-radius:8px;padding:10px;min-height:44px;cursor:pointer;}
+.optional-item-review button:disabled{background:#e5e7eb;color:#596273;cursor:not-allowed;}
+.download-lock-note{padding:10px;border-radius:8px;background:#f0f5f7;color:#283e4a;font-size:13px;line-height:1.5;margin:10px 0;}
 .preview-sheet-inner{background:#1a1f2e;border-radius:20px 20px 0 0;padding:20px;width:100%;height:calc(100dvh - max(12px,env(safe-area-inset-top,0px)));max-height:none;overflow-y:auto;box-sizing:border-box;}
 .preview-sheet-handle{width:40px;height:4px;background:rgba(255,255,255,0.2);border-radius:100px;margin:0 auto 12px;}
 .preview-sheet-label{display:flex;align-items:center;justify-content:center;margin:0 auto 16px;width:100%;max-width:100%;min-height:0;overflow:visible;}
@@ -564,13 +587,27 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .preview-sheet-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;}
 @media(max-width:860px){
   .preview-sheet-inner{padding:12px 20px calc(10px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;}
+  /* The sheet scrolls; opening editors must not compress the label's box
+     while its SVG keeps its height and paints over neighbouring controls. */
+  .preview-sheet-inner>*{flex-shrink:0;}
   .preview-sheet-handle{margin-bottom:8px;flex:0 0 auto;}
-  .preview-sheet-label{margin-bottom:8px;flex:0 1 auto;}
+  .preview-sheet-label{margin-bottom:8px;flex:0 0 auto;}
   .preview-sheet-label>svg{max-height:min(36dvh,320px)!important;}
   .preview-sheet-actions{margin-top:8px;}
   .preview-sheet-inner>div:last-child{margin-top:4px!important;}
   .preview-sheet-inner>div:last-child button{padding:6px 20px!important;min-height:40px!important;}
 }
+#sheet-finetune-slot:empty{display:none;}
+#sheet-finetune-slot .preview-legend{width:100%;box-sizing:border-box;max-height:none;overflow:visible;margin:12px 0;}
+#sheet-finetune-slot .ft-btn{width:44px;height:44px;font-size:20px;}
+#sheet-finetune-slot .ft-row{grid-template-columns:minmax(0,1fr) 152px;}
+#sheet-finetune-slot .ft-controls{grid-template-columns:44px 56px 44px;}
+#sheet-finetune-slot .ft-reset{font-size:14px;padding:12px 0;}
+#sheet-finetune-slot .ft-pct{min-width:48px;}
+.sheet-edit-details{color:white;margin:8px 0;}
+.sheet-edit-details summary{cursor:pointer;padding:12px 0;min-height:44px;box-sizing:border-box;}
+.sheet-edit-details div{display:flex;flex-wrap:wrap;gap:8px;}
+.sheet-edit-details button{min-height:44px;padding:10px;border-radius:8px;border:1px solid white;background:none;color:white;font:inherit;}
 
 /* SUPPLIER LIBRARY */
 .supplier-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:16px;}
@@ -1184,7 +1221,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
           <option>Potpourri</option>
         </optgroup>
       </select></div>
-      <div class="form-group"><label>Net weight <span>(optional)</span></label><input type="text" id="net-weight" placeholder="e.g. 200g" inputmode="text" oninput="updateLabel();saveProdDetails()"><div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4;">Not required by CLP if shown elsewhere on the pack (Art. 17(1)(b)) — but check Weights &amp; Measures rules for your product.</div></div>
+      <div class="form-group"><label for="net-weight-choice">Net weight <span>(optional)</span></label><select id="net-weight-choice" onchange="chooseNetWeight(this.value)"><option value="">— Select weight —</option><option value="5g">5g</option><option value="10g">10g</option><option value="15g">15g</option><option value="20g">20g</option><option value="25g">25g</option><option value="30g">30g</option><option value="35g">35g</option><option value="40g">40g</option><option value="45g">45g</option><option value="50g">50g</option><option value="55g">55g</option><option value="60g">60g</option><option value="65g">65g</option><option value="70g">70g</option><option value="75g">75g</option><option value="80g">80g</option><option value="85g">85g</option><option value="90g">90g</option><option value="95g">95g</option><option value="100g">100g</option><option value="105g">105g</option><option value="110g">110g</option><option value="115g">115g</option><option value="120g">120g</option><option value="125g">125g</option><option value="130g">130g</option><option value="135g">135g</option><option value="140g">140g</option><option value="145g">145g</option><option value="150g">150g</option><option value="155g">155g</option><option value="160g">160g</option><option value="165g">165g</option><option value="170g">170g</option><option value="175g">175g</option><option value="180g">180g</option><option value="185g">185g</option><option value="190g">190g</option><option value="195g">195g</option><option value="200g">200g</option><option value="205g">205g</option><option value="210g">210g</option><option value="215g">215g</option><option value="220g">220g</option><option value="225g">225g</option><option value="230g">230g</option><option value="235g">235g</option><option value="240g">240g</option><option value="245g">245g</option><option value="250g">250g</option><option value="255g">255g</option><option value="260g">260g</option><option value="265g">265g</option><option value="270g">270g</option><option value="275g">275g</option><option value="280g">280g</option><option value="285g">285g</option><option value="290g">290g</option><option value="295g">295g</option><option value="300g">300g</option><option value="305g">305g</option><option value="310g">310g</option><option value="315g">315g</option><option value="320g">320g</option><option value="325g">325g</option><option value="330g">330g</option><option value="335g">335g</option><option value="340g">340g</option><option value="345g">345g</option><option value="350g">350g</option><option value="355g">355g</option><option value="360g">360g</option><option value="365g">365g</option><option value="370g">370g</option><option value="375g">375g</option><option value="380g">380g</option><option value="385g">385g</option><option value="390g">390g</option><option value="395g">395g</option><option value="400g">400g</option><option value="405g">405g</option><option value="410g">410g</option><option value="415g">415g</option><option value="420g">420g</option><option value="425g">425g</option><option value="430g">430g</option><option value="435g">435g</option><option value="440g">440g</option><option value="445g">445g</option><option value="450g">450g</option><option value="455g">455g</option><option value="460g">460g</option><option value="465g">465g</option><option value="470g">470g</option><option value="475g">475g</option><option value="480g">480g</option><option value="485g">485g</option><option value="490g">490g</option><option value="495g">495g</option><option value="500g">500g</option><option value="505g">505g</option><option value="510g">510g</option><option value="515g">515g</option><option value="520g">520g</option><option value="525g">525g</option><option value="530g">530g</option><option value="535g">535g</option><option value="540g">540g</option><option value="545g">545g</option><option value="550g">550g</option><option value="555g">555g</option><option value="560g">560g</option><option value="565g">565g</option><option value="570g">570g</option><option value="575g">575g</option><option value="580g">580g</option><option value="585g">585g</option><option value="590g">590g</option><option value="595g">595g</option><option value="600g">600g</option><option value="605g">605g</option><option value="610g">610g</option><option value="615g">615g</option><option value="620g">620g</option><option value="625g">625g</option><option value="630g">630g</option><option value="635g">635g</option><option value="640g">640g</option><option value="645g">645g</option><option value="650g">650g</option><option value="655g">655g</option><option value="660g">660g</option><option value="665g">665g</option><option value="670g">670g</option><option value="675g">675g</option><option value="680g">680g</option><option value="685g">685g</option><option value="690g">690g</option><option value="695g">695g</option><option value="700g">700g</option><option value="705g">705g</option><option value="710g">710g</option><option value="715g">715g</option><option value="720g">720g</option><option value="725g">725g</option><option value="730g">730g</option><option value="735g">735g</option><option value="740g">740g</option><option value="745g">745g</option><option value="750g">750g</option><option value="755g">755g</option><option value="760g">760g</option><option value="765g">765g</option><option value="770g">770g</option><option value="775g">775g</option><option value="780g">780g</option><option value="785g">785g</option><option value="790g">790g</option><option value="795g">795g</option><option value="800g">800g</option><option value="805g">805g</option><option value="810g">810g</option><option value="815g">815g</option><option value="820g">820g</option><option value="825g">825g</option><option value="830g">830g</option><option value="835g">835g</option><option value="840g">840g</option><option value="845g">845g</option><option value="850g">850g</option><option value="855g">855g</option><option value="860g">860g</option><option value="865g">865g</option><option value="870g">870g</option><option value="875g">875g</option><option value="880g">880g</option><option value="885g">885g</option><option value="890g">890g</option><option value="895g">895g</option><option value="900g">900g</option><option value="905g">905g</option><option value="910g">910g</option><option value="915g">915g</option><option value="920g">920g</option><option value="925g">925g</option><option value="930g">930g</option><option value="935g">935g</option><option value="940g">940g</option><option value="945g">945g</option><option value="950g">950g</option><option value="955g">955g</option><option value="960g">960g</option><option value="965g">965g</option><option value="970g">970g</option><option value="975g">975g</option><option value="980g">980g</option><option value="985g">985g</option><option value="990g">990g</option><option value="995g">995g</option><option value="1000g">1000g</option><option value="custom">Other quantity…</option></select><div id="net-weight-custom" hidden style="margin-top:8px;"><label for="net-weight">Exact quantity <span>(include the unit)</span></label><input type="text" id="net-weight" placeholder="e.g. 212.5g or 100ml" inputmode="text" oninput="updateLabel();saveProdDetails()"></div><div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.4;">Not required by CLP if shown elsewhere on the pack (Art. 17(1)(b)) — but check Weights &amp; Measures rules for your product.</div></div>
     </div>
     <div class="form-row" id="frag-row">
       <div class="form-group">
@@ -1235,6 +1272,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <p>Copy the complete Section 2.2 (Label elements) from your current supplier SDS PDF and paste it here. CLPeasy extracts the information it can identify; review the result against your SDS before continuing.</p>
       <textarea id="smart-paste-input" placeholder="Paste SDS Section 2.2 text here..."></textarea>
       <br><br><button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
+      <div id="smart-paste-scope-error" class="field-alert field-alert-danger" role="alert" style="display:none;margin-top:12px;margin-bottom:0;font-size:13px;"></div>
+      <div id="sds-source-suitability-warning" aria-live="polite" style="display:none;"></div>
+      <div id="smart-paste-excluded-note" class="field-alert" role="status" aria-live="polite" style="display:none;margin-top:12px;margin-bottom:0;font-size:13px;background:var(--off);border:1.5px solid var(--border);color:var(--text);"></div>
       <div id="smart-paste-size-warning" class="field-alert field-alert-danger" role="status" aria-live="polite" style="display:none;margin-top:14px;font-size:14px;"></div>
       <button type="button" id="hazard-clear-link" onclick="clearHazardData()" style="display:none;margin-left:14px;font-size:12px;color:var(--teal-dark);text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">Clear hazard data and start again</button>
     </div>
@@ -1248,6 +1288,15 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       </ul>
       <p>Why it matters: an incorrect classification could leave warnings, pictograms or precautions wrong or missing. That can put people or the environment at risk and may lead to enforcement action under GB CLP.</p>
       <p><a href="mailto:support@clpeasy.com?subject=SDS%20classification%20query">Email CLPeasy Support</a> with the SDS and the flagged code. We can investigate what CLPeasy identified and, where appropriate, help you seek clarification from your supplier. <a href="https://www.hse.gov.uk/chemical-classification/legal/clp-regulation.htm" target="_blank" rel="noopener noreferrer">Read the official HSE GB CLP guidance ↗</a></p>
+    </aside>
+    </details>
+    <details class="sds-help" id="multi-fragrance-help"><summary>Using more than one fragrance oil?</summary>
+    <aside class="sds-gb-note" aria-label="Using more than one fragrance oil">
+      <p>Combining safety statements from different SDS documents does not necessarily produce the correct CLP classification for your finished product.</p>
+      <p>A custom fragrance blend may require its own classification.</p>
+      <p>Check with your fragrance supplier for suitable classification information before creating your label.</p>
+      <p>Your label should reflect your finished product as a whole, not each fragrance oil separately.</p>
+      <p><a href="knowledge.html#blended" target="_blank" rel="noopener">Read more about blended fragrances</a></p>
     </aside>
     </details>
     <div class="sdiv">Signal word</div>
@@ -1307,12 +1356,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="form-group"><label>Business / Brand name <span>(required)</span></label><input type="text" id="biz-name" aria-required="true" placeholder="As you want it to appear on the label" oninput="updateLabel();saveBizDetails()"></div>
     <div class="form-group"><label>Address <span>(required)</span></label><input type="text" id="biz-address" aria-required="true" placeholder="Your business address" oninput="updateLabel();saveBizDetails()"></div>
     <div class="form-group"><label>Phone number <span>(required for CLP compliance)</span></label><input type="tel" id="biz-phone" placeholder="e.g. 07700 900000" oninput="updateLabel();saveBizDetails()"></div>
-    <div class="form-row">
+    <div class="form-row" id="biz-extra-row">
       <div class="form-group"><label>Website <span>(optional)</span></label><input type="text" id="biz-website" placeholder="e.g. clpeasy.com" oninput="updateLabel();saveBizDetails()"></div>
       <div class="form-group">
         <label>Batch / Lot number <span>(optional)</span></label>
         <div style="display:flex;gap:8px;">
-          <input type="text" id="batch-num" placeholder="e.g. BN-001" oninput="updateLabel()" style="flex:1;" inputmode="numeric"><button type="button" onclick="clearBatchNum()" title="Clear batch number" style="background:white;border:1.5px solid var(--border);color:var(--muted);border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;flex-shrink:0;" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444';" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';">✕</button>
+          <input type="text" id="batch-num" placeholder="e.g. BN-001" oninput="updateLabel()" style="flex:1;" autocorrect="off" spellcheck="false"><button type="button" onclick="clearBatchNum()" title="Clear batch number" style="background:white;border:1.5px solid var(--border);color:var(--muted);border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;flex-shrink:0;" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444';" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';">✕</button>
           <button type="button" onclick="autoIncrementBatch()" style="background:var(--teal-light);border:1.5px solid rgba(13,148,136,0.3);color:var(--teal);border-radius:8px;padding:8px 12px;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0;font-family:'DM Sans',sans-serif;">+1</button>
         </div>
         <div style="margin-top:4px;font-size:11px;color:var(--muted);">Last used: <span id="last-batch-display">—</span></div>
@@ -1325,10 +1374,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   <div class="step-panel" id="step-5">
     <h2 class="step-heading">Your label is ready!</h2>
     <p class="step-sub">Review your label, then download in your preferred format.</p>
-    <div class="watermark-note">🆓 Free trial — labels include a CLPeasy watermark. <button onclick="window.open('pricing.html','_blank','noopener')" style="background:var(--teal,#4C9BB0);color:white;border:none;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;">Subscribe to remove →</button></div>
+    <div class="watermark-note">Free trial: labels are watermarked. <button onclick="window.open('pricing.html','_blank','noopener')" style="background:var(--teal,#4C9BB0);color:white;border:none;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;">Remove watermark →</button></div>
     <div id="finetune-panel-el" class="preview-legend">
         <div class="fine-tune-title">Fine-tune your label</div>
-        <div class="fine-tune-sub">Within the compliant range. Pictogram size is set automatically for this label and isn't manually adjustable here. H/P/sensitisers move as one block.</div>
+        <div class="fine-tune-sub">Within the supported size limits. Pictogram size is set automatically for this label and isn't manually adjustable here. H/P/sensitisers move as one block.</div>
 
         <div class="ft-row">
           <span>Product type</span>
@@ -1376,11 +1425,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
         </div>
         <div class="ft-reset" id="bizname-fs-reset" onclick="resetBizNameFS()">Reset</div>
     </div>
-    <div style="background:#F8FAFC;border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;">
-      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:var(--text);font-weight:500;line-height:1.5;">
-        <input type="checkbox" id="verify-checkbox" onchange="toggleDownload()" style="width:18px;height:18px;margin-top:1px;flex-shrink:0;accent-color:var(--teal);">
-        I confirm I have reviewed the finished label and checked the hazard information against my fragrance supplier's current SDS/CLP information for the fragrance load used. CLPeasy has helped extract, organise, check and format the information provided; I understand I remain responsible for the product I place on the market and for reviewing the finished label before printing and selling.
+    <div class="export-confirmation-card">
+      <label for="verify-checkbox" class="export-confirmation-label">
+        <input type="checkbox" id="verify-checkbox" onchange="toggleDownload()">
+        <span><strong>I've checked this label against my supplier's current SDS for the fragrance load used.</strong> I'm responsible for the product and for checking the label before I print and sell it.</span>
       </label>
+      <details class="export-role-info"><summary>What CLPeasy does ⓘ</summary><p>CLPeasy helps extract, organise, check and format the information you provide. It does not independently classify your product.</p></details>
     </div>
     <!-- Visible on Step 5 (unlike #label-warn, which lives in Step 3's hidden panel) so the
          download-block reason is shown right next to the disabled buttons it explains. -->
@@ -1389,34 +1439,29 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div id="business-details-export-note" class="field-alert field-alert-warn" role="status" style="display:none;margin-bottom:16px;font-size:13px;"></div>
     <div class="hazard-review-notice field-alert field-alert-warn" role="alert" style="display:none;margin-bottom:16px;font-size:13px;"></div>
 
+      <div id="omission-download-summary" role="status" style="display:none;margin-bottom:12px;font-size:13px;"></div>
+      <div class="download-lock-note" role="status" aria-live="polite" style="display:none;"></div>
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
       <button type="button" id="btn-view-label" class="btn-next" onclick="viewReviewLabel()" aria-controls="preview-panel-el preview-sheet" style="width:100%;padding:14px;font-size:16px;margin-top:10px;">View label ↗</button>
-      <!-- Stage 2: the two current printing routes (single label: PDF; several on A4: Print Sheet Composer). -->
       <div class="dl-format-help" id="dl-format-help">
-        <p><strong>Printing your labels?</strong> For a single label, use <strong>PDF</strong>. For several labels on A4, use the <strong>Print Sheet Composer</strong>. Always print at <strong>Actual Size / 100%</strong>.</p>
-        <ul>
-          <li><strong>PDF</strong> is an individual label file at the label's exact size.</li>
-          <li><strong>SVG</strong> keeps the label's size in millimetres, for design and cutting-machine software.</li>
-          <li><strong>PNG</strong> is a high-resolution image. The app you open it in may choose its own print size.</li>
-        </ul>
+        <p><strong>Print at Actual size / 100%.</strong></p>
+        <details class="export-file-types"><summary>Which file type?</summary><div class="export-file-box">
+          <p><strong>PDF:</strong> one label at its exact size</p>
+          <p><strong>SVG:</strong> for design or cutting-machine software</p>
+          <p><strong>PNG:</strong> image only, so print size may vary</p>
+        </div></details>
       </div>
       <div id="dl-print-guidance" class="field-alert field-alert-success dl-print-guidance" role="status" aria-live="polite" hidden></div>
-      <button id="btn-save" onclick="saveLabel()" style="background:var(--off);color:var(--text);border:1.5px solid var(--border);padding:14px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:all .2s;opacity:0.4;pointer-events:none;margin-top:10px;">💾 Save to my label library</button>
+      <div class="export-secondary-actions">
+        <button type="button" id="btn-save" onclick="saveLabel()" class="export-save" style="opacity:0.4;pointer-events:none;">💾 Save to library</button>
+        <div class="export-composer-action">
+          <a id="print-sheet-link" href="print.html" target="_blank" rel="noopener" style="display:none;" class="export-composer">🖨 Print Sheet Composer</a>
+          <button type="button" id="composer-save-first" class="export-composer" disabled title="Save this label to your library first">🖨 Print Sheet Composer</button>
+          <small>Several labels on A4</small>
+        </div>
+      </div>
       <div id="save-status" class="field-alert field-alert-success dl-print-guidance" role="status" aria-live="polite" hidden></div>
 
-
-    <!-- PRINT SHEET COMPOSER LINK -->
-    <a id="print-sheet-link" href="print.html" target="_blank" rel="noopener" style="display:none;align-items:center;gap:14px;background:linear-gradient(135deg,#F0FDF4,#ECFDF5);border:1.5px solid var(--teal);border-radius:12px;padding:14px 16px;text-decoration:none;margin-top:14px;transition:all .2s;" onmouseover="this.style.background='linear-gradient(135deg,#d6eef4,#D1FAE5)'" onmouseout="this.style.background='linear-gradient(135deg,#F0FDF4,#ECFDF5)'">
-      <div style="width:40px;height:40px;border-radius:10px;background:var(--teal);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🖨</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:14px;font-weight:700;color:var(--teal-dark);">🖨 Print Sheet Composer</div>
-        <div style="font-size:12px;color:var(--teal);margin-top:2px;">You've saved labels — arrange them on an A4 sheet for home printing or a print company.</div>
-        
-      </div>
-      <div style="font-size:18px;color:var(--teal);flex-shrink:0;">→</div>
-    </a>
-
-    
     <div style="margin-top:20px;display:flex;justify-content:center;">
       <button onclick="prevStep()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;padding:8px;">← Edit label</button>
       <button onclick="startOver()" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;padding:8px;">↺ New label</button>
@@ -1496,11 +1541,19 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
 <!-- MOBILE PREVIEW SHEET -->
 <div class="preview-sheet" id="preview-sheet" onclick="closeSheet(event)">
-  <div class="preview-sheet-inner">
+  <div class="preview-sheet-inner" role="dialog" aria-modal="true" aria-label="Label review" tabindex="-1">
     <div class="preview-sheet-handle"></div>
     <div class="preview-sheet-label" id="sheet-label-container"></div>
     <div style="font-size:12px;color:rgba(255,255,255,0.4);text-align:center;margin-bottom:4px;" id="sheet-size-info"></div>
+    <details class="sheet-edit-details"><summary>Edit label details</summary><div>
+      <button type="button" onclick="editDetailsFromSheet(2)">Product</button>
+      <button type="button" onclick="editDetailsFromSheet(3)">Hazards</button>
+      <button type="button" onclick="editDetailsFromSheet(4)">Business</button>
+    </div></details>
     <button type="button" onclick="showSheetSizeEditor()" style="color:white;background:none;border:1px solid white;border-radius:8px;padding:10px;min-height:44px;margin:8px 0;">Adjust shape &amp; size</button><div id="sheet-fit-advice" role="status" aria-live="polite" style="color:white;font-size:14px;"></div><div id="sheet-size-editor" style="color:white;"></div>
+    <div id="sheet-finetune-slot"></div>
+    <div class="download-lock-note" role="status" aria-live="polite" style="display:none;"></div>
+    <button type="button" id="sheet-review-confirmation-link" onclick="closeSheet();document.getElementById('verify-checkbox').scrollIntoView({block:'center'});document.getElementById('verify-checkbox').focus();" style="display:none;min-height:44px;">Go to final review confirmation</button>
     <div class="preview-sheet-actions">
       <button class="btn-dl" id="btn-png-sheet" onclick="downloadPNG();closeSheet()">⬇ PNG (single)</button>
       <button class="btn-dl" id="btn-pdf-sheet" onclick="printToPDF()">▣ PDF</button>
@@ -1527,7 +1580,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
      is scoped in its own IIFE so it cannot collide with this page's own
      top-level names. -->
 <script src="label-render.js"></script>
+<script src="optional-label-items.js"></script>
 <script src="sds-doc-check.js"></script>
+<script src="sds-section-scope.js"></script>
+<script src="sds-source-suitability.js"></script>
 
 <!-- Checkpoint B (connected print-workflow task, 1 Sep 2026): shared
      saved-label identity/coordinated-mutation module. Every saved-label
@@ -1640,7 +1696,7 @@ function resolveGbClpSignalWord(codes, suppliedSignal){
   if(ambiguous)return 'Warning';
   return '';
 }
-const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product container or label at hand'},{code:'P102',desc:'Keep out of reach of children'},{code:'P103',desc:'Read label before use'},{code:'P210',desc:'Keep away from heat and ignition sources. No smoking'},{code:'P233',desc:'Keep container tightly closed'},{code:'P260',desc:'Do not breathe vapours or dust'},{code:'P261',desc:'Avoid breathing vapours and dust'},{code:'P271',desc:'Use only outdoors or in a well-ventilated area'},{code:'P273',desc:'Avoid release to the environment'},{code:'P301+P310',desc:'IF SWALLOWED: immediately call a POISON CENTRE or doctor'},{code:'P301+P312',desc:'IF SWALLOWED: call a POISON CENTRE or doctor if unwell'},{code:'P302+P352',desc:'IF ON SKIN: wash with plenty of water'},{code:'P304+P340',desc:'IF INHALED: remove to fresh air and keep comfortable for breathing'},{code:'P202',desc:'Do not handle until all safety precautions have been read and understood'},{code:'P308+P313',desc:'IF exposed or concerned: Get medical advice/attention'},{code:'P310',desc:'Immediately call a POISON CENTRE/doctor'},{code:'P305+P351+P338',desc:'IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.'},{code:'P312',desc:'Call a POISON CENTRE or doctor if you feel unwell'},{code:'P313',desc:'Get medical advice/attention'},{code:'P314',desc:'Get medical advice if you feel unwell'},{code:'P321',desc:'Specific treatment: see label'},{code:'P330',desc:'Rinse mouth'},{code:'P331',desc:'Do NOT induce vomiting'},{code:'P332+P313',desc:'If skin irritation occurs: get medical advice/attention'},{code:'P333+P313',desc:'If skin irritation or rash occurs: get medical advice'},{code:'P337+P313',desc:'If eye irritation persists: get medical advice'},{code:'P370+P378',desc:'In case of fire: use appropriate media for extinction'},{code:'P391',desc:'Collect spillage'},{code:'P403+P233',desc:'Store in a well-ventilated place. Keep container tightly closed'},{code:'P211',desc:'Do not spray on an open flame or other ignition source'},{code:'P501',desc:'Dispose of contents and container in accordance with local regulations'},
+const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product container or label at hand'},{code:'P102',desc:'Keep out of reach of children'},{code:'P103',desc:'Read label before use'},{code:'P202',desc:'Do not handle until all safety precautions have been read and understood'},{code:'P210',desc:'Keep away from heat, hot surfaces, sparks, open flames and other ignition sources. No smoking'},{code:'P233',desc:'Keep container tightly closed'},{code:'P240',desc:'Ground and bond container and receiving equipment'},{code:'P241',desc:'Use explosion-proof equipment'},{code:'P242',desc:'Use non-sparking tools'},{code:'P243',desc:'Take action to prevent static discharges'},{code:'P260',desc:'Do not breathe vapours or dust'},{code:'P261',desc:'Avoid breathing vapours and dust'},{code:'P271',desc:'Use only outdoors or in a well-ventilated area'},{code:'P273',desc:'Avoid release to the environment'},{code:'P301+P310',desc:'IF SWALLOWED: immediately call a POISON CENTRE or doctor'},{code:'P301+P312',desc:'IF SWALLOWED: call a POISON CENTRE or doctor if unwell'},{code:'P302+P352',desc:'IF ON SKIN: wash with plenty of water'},{code:'P304+P340',desc:'IF INHALED: Remove person to fresh air and keep comfortable for breathing'},{code:'P305+P351+P338',desc:'IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing'},{code:'P308+P313',desc:'IF exposed or concerned: Get medical advice/attention'},{code:'P310',desc:'Immediately call a POISON CENTRE or doctor'},{code:'P312',desc:'Call a POISON CENTRE or doctor if you feel unwell'},{code:'P313',desc:'Get medical advice/attention'},{code:'P314',desc:'Get medical advice if you feel unwell'},{code:'P321',desc:'Specific treatment: see label'},{code:'P330',desc:'Rinse mouth'},{code:'P331',desc:'Do NOT induce vomiting'},{code:'P332+P313',desc:'If skin irritation occurs: get medical advice/attention'},{code:'P333+P313',desc:'If skin irritation or rash occurs: get medical advice'},{code:'P337+P313',desc:'If eye irritation persists: get medical advice'},{code:'P370+P378',desc:'In case of fire: use appropriate media for extinction'},{code:'P391',desc:'Collect spillage'},{code:'P403+P233',desc:'Store in a well-ventilated place. Keep container tightly closed'},{code:'P403+P235',desc:'Store in a well-ventilated place. Keep cool'},{code:'P211',desc:'Do not spray on an open flame or other ignition source'},{code:'P501',desc:'Dispose of contents and container in accordance with local regulations'},
 // P280 (verified against the retained GB-CLP Regulation (EC) No 1272/2008,
 // Annex IV, Table 6.2, legislation.gov.uk, current in-force UK text) is a
 // SELECTABLE statement, not one fixed sentence -- only the items that
@@ -1654,7 +1710,7 @@ const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product contai
 // only P_LIB definitions in the app; this is not a third copy.
 {code:'P280',desc:'Wear the applicable protective equipment (select which items apply when adding this code)'}];
 // ── STATE ─────────────────────────────────────────────────────
-const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',sdsSignal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,hazardFSOverride:null,scentFSOverride:null,bizNameFSOverride:null,hazardYOffset:null,typeFSOverride:null,sigFSOverride:null,
+const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',productType:'',netWeight:'',fragLoad:'',burnTime:'',signal:'',sdsSignal:'',pictograms:[],hSelected:[],pSelected:[],sensitisers:[],hideEN15494:false,showOnLabel:{},omissionConfirmations:{},bizName:'',bizAddress:'',bizPhone:'',bizWebsite:'',batchNum:'',isPro:false,supplier:'',textColour:'dark',showBorder:true,hazardFSOverride:null,scentFSOverride:null,bizNameFSOverride:null,hazardYOffset:null,typeFSOverride:null,sigFSOverride:null,
   // P280's own selected protection items (see openP280Modal()/buildP280Wording
   // in label-render.js). p280Items: subset of LabelRenderer.P280_ITEMS keys;
   // p280Other: optional free-text extra item. Empty = no valid selection yet.
@@ -1664,6 +1720,22 @@ const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',produc
   // saved with the label). hazardSource is the product name, product type and
   // fragrance load the current hazard data was entered/confirmed for.
   hazardFromExtraction:false,hazardSource:null};
+// Net quantity remains a string: legacy saves and non-gram units are preserved.
+function restoreNetWeight(value){
+  const input=document.getElementById('net-weight');
+  const choice=document.getElementById('net-weight-choice');
+  if(!input||!choice)return;
+  input.value=value||'';
+  choice.value=Array.from(choice.options).some(o=>o.value===input.value&&o.value!=='custom')?input.value:'custom';
+  document.getElementById('net-weight-custom').hidden=choice.value!=='custom';
+}
+function chooseNetWeight(value){
+  const custom=value==='custom';
+  document.getElementById('net-weight-custom').hidden=!custom;
+  if(!custom)document.getElementById('net-weight').value=value;
+  else document.getElementById('net-weight').focus();
+  updateLabel();saveProdDetails();
+}
 // ── PRODUCT TYPE GUIDANCE ─────────────────────────────────────
 const FRAG_LOAD_TIPS={
   'Scented Candle':'Recommended: 6–10%. Your supplier CLP information must be for the exact % you use.',
@@ -3064,6 +3136,7 @@ async function saveLabel(){
     hStatements:S.hStatements,pictograms:[...S.pictograms],sensitisers:[...S.sensitisers],bizName:S.bizName,bizAddress:S.bizAddress,
     bizPhone:S.bizPhone,bizWebsite:S.bizWebsite,netWeight:S.netWeight,fragLoad:S.fragLoad,burnTime:S.burnTime,batchNum:S.batchNum,
     supplier:S.supplier||'',hideEN15494:!!S.hideEN15494,
+    showOnLabel:JSON.parse(JSON.stringify(S.showOnLabel||{})),omissionConfirmations:JSON.parse(JSON.stringify(S.omissionConfirmations||{})),
     hazardFromExtraction:!!S.hazardFromExtraction,
     sdsDoc:S.sdsDoc?Object.assign({kind:S.sdsDoc.kind||'',pct:S.sdsDoc.pct||'',base:S.sdsDoc.base||''},
       ...['coverage','rangeFrom','rangeTo','where','rangeStated','docVersion','supplier','cdate','cref'].filter(k=>S.sdsDoc[k]!==undefined).map(k=>({[k]:S.sdsDoc[k]})),
@@ -3144,7 +3217,7 @@ async function saveLabel(){
       btn.style.background=_draft?'#FFFBEB':'#ECFDF5';btn.style.borderColor=_draft?'#FDE68A':'var(--teal)';
     }
     showSaveStatus();
-    setTimeout(()=>{if(btn){btn.textContent='💾 Save to my label library';btn.style.background='';btn.style.borderColor='';}},2000);
+    setTimeout(()=>{if(btn){btn.textContent='💾 Save to library';btn.style.background='';btn.style.borderColor='';}},2000);
   }catch(err){
     console.log('saveLabel mutate() failed:',err);
     showSaveErrorToast(err);
@@ -3161,6 +3234,10 @@ async function saveLabel(){
 function loadLabelRecord(e){
   if(!e)return;
   editingLabelId=e.id||null;
+  {const se=document.getElementById('smart-paste-scope-error');if(se){se.textContent='';se.style.display='none';}}
+  // Smart Paste guidance from an earlier paste does not apply to this label.
+  window._smartPasteExcludedCodes=[];
+  ['sds-source-suitability-warning','smart-paste-excluded-note'].forEach(id=>{const b=document.getElementById(id);if(b){b.textContent='';b.style.display='none';}});
   S.scentName=e.scentName;S.productType=e.productType;S.shape=e.shape;S.size=e.size;S.customW=e.customW||S.customW;S.customH=e.customH||S.customH;
   S.signal=e.signal||'';S.sdsSignal=e.sdsSignal!==undefined?e.sdsSignal:(e.signal||'');S.hStatements=e.hStatements||'';S.sensitisers=e.sensitisers||[];
   S.hSelected=(S.hStatements||'').split(',').map(code=>code.trim()).filter(Boolean);
@@ -3183,6 +3260,7 @@ function loadLabelRecord(e){
   // product type and fragrance load.
   _snapshotHazardSource({name:e.scentName,type:e.productType,load:e.fragLoad});
   S.bizName=e.bizName||'';S.bizAddress=e.bizAddress||'';S.bizPhone=e.bizPhone||'';
+  S.showOnLabel=Object.assign({},e.showOnLabel||{});S.omissionConfirmations=JSON.parse(JSON.stringify(e.omissionConfirmations||{}));S._omissionNeedsConfirm={};
   S.bizWebsite=e.bizWebsite||'';S.netWeight=e.netWeight||'';S.fragLoad=e.fragLoad||'';S.burnTime=e.burnTime||'';S.batchNum=e.batchNum||'';S.sdsDoc=e.sdsDoc||null;
   S.supplier=e.supplier||'';S.hideEN15494=!!e.hideEN15494;
   if(e.textColour)S.textColour=e.textColour;
@@ -3197,7 +3275,7 @@ function loadLabelRecord(e){
   const set=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val;};
   set('scent-name',e.scentName);set('product-type',e.productType);set('h-statements',e.hStatements||'');set('p-statements',e.pStatements||'');
   set('biz-name',e.bizName||'');set('biz-address',e.bizAddress||'');set('biz-phone',e.bizPhone||'');
-  set('biz-website',e.bizWebsite||'');set('net-weight',e.netWeight||'');set('frag-load',e.fragLoad||'');restoreBurnTime(e.burnTime||'');
+  set('biz-website',e.bizWebsite||'');restoreNetWeight(e.netWeight||'');set('frag-load',e.fragLoad||'');restoreBurnTime(e.burnTime||'');
   {const _d=e.sdsDoc||{};document.querySelectorAll('input[name="sds-doc-kind"]').forEach(r=>{r.checked=r.value===(_d.kind||'');});set('sds-doc-pct',_d.pct||'');set('sds-doc-base',_d.base||'');set('sds-doc-coverage',_d.coverage==='range'?'range':'single');set('sds-doc-from',_d.rangeFrom||'');set('sds-doc-to',_d.rangeTo||'');set('sds-doc-where',_d.where||'');{const _rs=document.getElementById('sds-doc-range-stated');if(_rs)_rs.checked=!!_d.rangeStated;}set('sds-doc-version',_d.docVersion||'');set('sds-doc-supplier',_d.supplier||'');set('sds-doc-cdate',_d.cdate||'');set('sds-doc-cref',_d.cref||'');if(typeof updateSdsDocCheck==='function')updateSdsDocCheck();}
   set('batch-num',e.batchNum||'');set('custom-w',e.customW||'');set('custom-h',e.customH||'');
   const hideCandleWarnings=document.getElementById('hide-en15494');
@@ -3381,6 +3459,8 @@ function renderSaved(){
     psLink.style.display=canPrintCurrent?'flex':'none';
     if(canPrintCurrent) psLink.href=buildPrintSheetUrl(editingLabelId);
   }
+  const composerSaveFirst=document.getElementById('composer-save-first');
+  if(composerSaveFirst)composerSaveFirst.hidden=canPrintCurrent;
   if(psLinkPreview){
     psLinkPreview.style.display=(canPrintCurrent&&S.step===5)?'flex':'none';
     if(canPrintCurrent) psLinkPreview.href=buildPrintSheetUrl(editingLabelId);
@@ -3707,9 +3787,19 @@ function toggleDownload(){
     const btn=document.getElementById(id);
     if(!btn)return;
     const ok=id==='btn-save'?saveAllowed:allowed;
+    btn.disabled=!ok;
+    btn.setAttribute('aria-disabled',String(!ok));
     btn.style.opacity=ok?'1':'0.4';
     btn.style.pointerEvents=ok?'auto':'none';
   });
+  const reason=allowed?'':_businessDetailsBlockedMessage()||_requiredLabelContentMessage()||
+    (_hazardReviewRequired()?'Review the changed product information in Step 2 before downloading.':'')||
+    (window._labelBlockDownload?'This label does not pass the current content and size checks. Resolve the warning above or choose a tested larger size.':'')||
+    SdsDocCheck.exportBlockMessage(_sdsDocRecord())||
+    (!document.getElementById('verify-checkbox')?.checked?'Tick the final review confirmation to enable downloads.':'Downloads are unavailable. Review the label information before trying again.');
+  document.querySelectorAll('.download-lock-note').forEach(note=>{note.style.display=reason?'block':'none';note.textContent=reason;});
+  const reviewLink=document.getElementById('sheet-review-confirmation-link');
+  if(reviewLink)reviewLink.style.display=approvedBuilderStep===5&&!document.getElementById('verify-checkbox')?.checked?'block':'none';
   const _sdsNote=document.getElementById('sds-doc-export-note');
   if(_sdsNote){
     const m=SdsDocCheck.exportBlockMessage(_sdsDocRecord());
@@ -3945,6 +4035,124 @@ function _requireSdsDoc(){
   }
   return r.ok;
 }
+// Release C (Oct 2026): Smart Paste guidance. Display only -- these never
+// change the extracted codes, the label, fit, blocking or exports.
+// Release C guidance (approved combined design, presentation only).
+// Fragrance-oil cue + excluded codes -> one amber box; cue only -> amber box
+// without the P-statement bullet; codes only -> neutral note; neither -> none.
+// Detection (SdsSourceSuitability) and the exclusion list are unchanged.
+const SDS_GUIDE_LINK='#2c6a79'; // CLPeasy teal, darkened for >=4.5:1 contrast on the amber and grey backgrounds
+function _sdsSuitability(){
+  const raw=document.getElementById('smart-paste-input')?.value||'';
+  if(!S.hazardFromExtraction||!raw.trim())return null;
+  return window.SdsSourceSuitability
+    ?SdsSourceSuitability.inspect(raw,document.getElementById('product-type')?.value||S.productType,document.getElementById('frag-load')?.value||S.fragLoad)
+    :{level:'unverified',message:'Section 2.2 does not confirm whether this SDS covers your finished product. CLPeasy does not adjust hazards for fragrance percentages. Check the applicable finished-product classification information with your supplier or a competent CLP specialist.'};
+}
+function _smartPasteExcluded(){return S.hazardFromExtraction?(window._smartPasteExcludedCodes||[]):[];}
+function _guideEl(tag,text,css){const el=document.createElement(tag);el.style.color='inherit';if(css)el.style.cssText+=css;if(text)el.textContent=text;return el;}
+// Emphasis uses semantic <strong>: a paragraph is built from text parts,
+// where ['b', text] parts are bold.
+function _guideP(parts,css){const p=_guideEl('p','',css);parts.forEach(x=>p.appendChild(Array.isArray(x)?_guideEl('strong',x[1]):document.createTextNode(x)));return p;}
+function _guideSupportLine(box){
+  const help=_guideEl('p','','margin-top:8px;');help.appendChild(document.createTextNode('Need help? Contact '));
+  const a=document.createElement('a');a.href='mailto:support@clpeasy.com';a.textContent='support@clpeasy.com';
+  a.style.cssText='color:'+SDS_GUIDE_LINK+';text-decoration:underline;font-weight:600;';
+  help.appendChild(a);help.appendChild(document.createTextNode('.'));box.appendChild(help);
+}
+const _GUIDE_INFO_ICON='<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10" fill="none" stroke="'+SDS_GUIDE_LINK+'" stroke-width="2"/><path d="M12 11v6" stroke="'+SDS_GUIDE_LINK+'" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="7.5" r="1.3" fill="'+SDS_GUIDE_LINK+'"/></svg>';
+// Amber levels: concentrated-oil SDS (bottles) and a detected mismatch.
+function _sdsWarnLevel(r){return !!r&&['concentrate','possible','mismatch'].includes(r.level);}
+function _sdsSizeNoteHtml(){return _sdsWarnLevel(_sdsSuitability())?'<p class="fit-helper fit-sds-note">A larger label makes room for the text. It does <strong>not</strong> resolve the SDS warning above.</p>':'';}
+function updateSdsSourceSuitabilityWarning(){
+  const box=document.getElementById('sds-source-suitability-warning');
+  if(!box)return;
+  const result=_sdsSuitability();
+  if(!result){box.textContent='';box.style.display='none';updateSmartPasteExcludedNote();return;}
+  box.textContent='';
+  box.dataset.suitability=result.level;
+  const fragPct=parseFloat(String(document.getElementById('frag-load')?.value||S.fragLoad||'').replace(',','.'));
+  const hasPct=Number.isFinite(fragPct)&&fragPct>0&&fragPct<100;
+  const productName=String(document.getElementById('product-type')?.value||S.productType||'product').toLowerCase();
+  if(result.level==='unverified'||result.level==='match'){
+    // Teal information notice (never amber or red).
+    box.className='field-alert field-alert-info';box.setAttribute('role','status');
+    box.style.cssText='display:flex;gap:10px;align-items:flex-start;margin-top:12px;margin-bottom:0;font-size:13px;color:var(--text);';
+    box.insertAdjacentHTML('beforeend',_GUIDE_INFO_ICON);
+    const body=_guideEl('div','','min-width:0;');
+    if(result.level==='match'){
+      body.appendChild(_guideEl('strong','SDS appears to match your product','display:block;margin-bottom:4px;color:'+SDS_GUIDE_LINK+';'));
+      body.appendChild(_guideP(['This SDS describes '+result.describes+', which appears to match '+result.productPhrase+'.']));
+      body.appendChild(_guideP(['CLPeasy does ',['b','not'],' independently verify or recalculate this classification. Check that the SDS is current and applies to your finished product.'],'margin-top:6px;'));
+    }else{
+      body.appendChild(_guideEl('strong','Check your SDS suitability','display:block;margin-bottom:4px;color:'+SDS_GUIDE_LINK+';'));
+      body.appendChild(_guideP(['Section 2.2 may not confirm whether this SDS applies to '+(result.target||'your finished product')+'.']));
+      body.appendChild(_guideP(['CLPeasy does ',['b','not'],' recalculate hazards for different fragrance percentages. Check that your supplier’s classification information applies to your finished product.'],'margin-top:6px;'));
+    }
+    if(!_smartPasteExcluded().length)_guideSupportLine(body);
+    box.appendChild(body);
+  }else{
+    box.className='field-alert field-alert-warn';box.setAttribute('role','alert');
+    box.style.cssText='display:block;margin-top:12px;margin-bottom:0;font-size:13px;';
+    if(result.level==='mismatch'){
+      // A diluted SDS for another percentage or product: no bottle illustration.
+      const pctText=result.userPct+'%';
+      const article=/^[aeiou]/.test(productName)?'an ':'a ';
+      box.appendChild(_guideEl('strong','⚠️ Check your SDS suitability','display:block;margin-bottom:6px;'));
+      box.appendChild(_guideP(['This SDS describes ',['b',result.describes],', but your product is '+article+productName+' at ',['b',pctText],' fragrance.']));
+      box.appendChild(_guideP(['CLPeasy does ',['b','not'],' recalculate hazards for different fragrance percentages. Ask your supplier for classification information for your finished product at '+pctText+'.'],'margin-top:6px;'));
+    }else{
+      box.appendChild(_guideEl('strong','⚠️ This SDS may be for concentrated fragrance oil','display:block;margin-bottom:4px;'));
+      // The percentage is the existing Step 2 fragrance load; nothing is invented when it is blank.
+      box.insertAdjacentHTML('beforeend',_sdsBottleCompareHtml(hasPct?fragPct:null));
+      box.appendChild(_guideP(['Your supplier’s SDS appears to describe ',['b','concentrated fragrance oil'],', ',['b','not'],' your finished product.']));
+      box.appendChild(_guideP(['You need classification information for '+(result.target||'your finished product')+'. Ask your supplier for it before using this label.'],'margin-top:6px;'));
+      box.appendChild(_guideP(['CLPeasy does ',['b','not'],' recalculate hazards for different fragrance percentages.'],'margin-top:6px;'));
+    }
+    if(!_smartPasteExcluded().length)_guideSupportLine(box);
+  }
+  updateSmartPasteExcludedNote();
+}
+function _sdsBottleSvg(fillPct,fragPct,id){
+  // Bottle body 8..60 (52 units tall); fills rise from the bottom.
+  const body='M14 8h12v6l6 6v36a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4V20l6-6z';
+  const bodyH=52,top=60-bodyH*fillPct/100,gold=fragPct==null?0:Math.max(3,bodyH*fragPct/100);
+  return `<svg width="40" height="64" viewBox="0 0 40 64" aria-hidden="true" focusable="false"><defs><clipPath id="${id}"><path d="${body}"/></clipPath></defs>`+
+    `<g clip-path="url(#${id})">`+(fragPct==null
+      ?`<rect x="0" y="${top}" width="40" height="${60-top}" fill="#E5F3F7"/>`
+      :fillPct===100&&fragPct===100
+        ?`<rect x="0" y="${top}" width="40" height="${60-top}" fill="#E0A82E"/>`
+        :`<rect x="0" y="${top}" width="40" height="${60-top}" fill="#d6eef4"/><rect x="0" y="${60-gold}" width="40" height="${gold}" fill="#E0A82E"/>`)+
+    `</g><path d="${body}" fill="none" stroke="#92400E" stroke-width="1.5" stroke-linejoin="round"/><rect x="13" y="3" width="14" height="5" rx="1" fill="#92400E"/></svg>`;
+}
+function _sdsBottleCompareHtml(pct){
+  const cap='display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:12px;line-height:1.35;width:120px;';
+  const b='<strong style="color:inherit;">';
+  const yours=pct==null?'Fragrance % not entered':`${b}${pct}%</strong> fragrance load`;
+  return `<div class="sds-bottle-compare" style="display:flex;justify-content:center;align-items:flex-start;gap:16px;margin:8px 0 10px;">`+
+    `<div style="${cap}">${_sdsBottleSvg(100,100,'sds-bottle-supplier')}<span>${b.replace('">',';display:block;">')}Supplier SDS</strong>${b}100%</strong> concentrated fragrance oil</span></div>`+
+    `<div style="${cap}">${_sdsBottleSvg(100,pct,'sds-bottle-yours')}<span>${b.replace('">',';display:block;">')}Finished product</strong>${yours}</span></div></div>`;
+}
+function updateSmartPasteExcludedNote(){
+  const box=document.getElementById('smart-paste-excluded-note');
+  if(!box)return;
+  const codes=_smartPasteExcluded();
+  if(!codes.length){box.textContent='';box.style.display='none';return;}
+  box.textContent='';
+  // Shown once, always separate from the teal/amber SDS notice.
+  const one=codes.length===1;
+  box.appendChild(_guideEl('strong',(one?'Precautionary statement not added: ':'Precautionary statements not added: ')+codes.join(', '),'display:block;margin-bottom:4px;'));
+  box.appendChild(one
+    ?_guideP(['This appears in your SDS but was ',['b','not added'],' to your label automatically. This does ',['b','not'],' mean it is optional. Check whether it is required for your finished product before using the label.'])
+    :_guideP(['These appear in your SDS but were ',['b','not added'],' to your label automatically. This does ',['b','not'],' mean they are optional. Check whether each one is required for your finished product before using the label.']));
+  _guideSupportLine(box);
+  box.style.display='block';
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  ['frag-load','product-type'].forEach(id=>{
+    document.getElementById(id)?.addEventListener('change',updateSdsSourceSuitabilityWarning);
+  });
+});
 function extractSDS(){
   // NOTE (2026-08-02, reversal — see smart-paste-pro-gating / reverify):
   // A plan gate was added here believing Smart Paste was Easy-Pro-exclusive.
@@ -3953,8 +4161,27 @@ function extractSDS(){
   // use — it is not an Easy Pro-exclusive feature. Gate removed; restored
   // to unconditional behaviour. Do not re-add a plan check here without a
   // fresh, explicit product-rules confirmation.
-  const text=document.getElementById('smart-paste-input').value.trim();
-  if(!text){alert('Please paste SDS Section 2.2 text first.');return;}
+  const pasted=document.getElementById('smart-paste-input').value.trim();
+  if(!pasted){alert('Please paste SDS Section 2.2 text first.');return;}
+  // Safety fix (Oct 2026): read only Section 2.2 (Label elements). Reading
+  // all pasted text put Section 3 ingredient hazards and later-section codes
+  // on the finished-product label. If one Section 2.2 can't be identified,
+  // extract nothing: clear any earlier extraction and explain why.
+  const scopeErr=document.getElementById('smart-paste-scope-error');
+  // If the scoping file failed to load, say so instead of doing nothing.
+  // Nothing is extracted; hazard data already on the label is left as it is.
+  if(!window.SdsSectionScope||typeof window.SdsSectionScope.scope!=='function'){
+    if(scopeErr){scopeErr.textContent='Smart Paste couldn’t start because part of this page didn’t load. Please refresh the page and try again. Nothing has been extracted.';scopeErr.style.display='block';}
+    return;
+  }
+  const scope=SdsSectionScope.scope(pasted);
+  if(scope.status==='unsafe'){
+    clearHazardData();
+    if(scopeErr){scopeErr.textContent=SdsSectionScope.MESSAGE;scopeErr.style.display='block';}
+    return;
+  }
+  if(scopeErr){scopeErr.textContent='';scopeErr.style.display='none';}
+  const text=scope.text.trim();
   // Extraction lets the maker review the pasted data. Document coverage is
   // still required at Step 3 exit and by every export gate.
 
@@ -4010,6 +4237,7 @@ function extractSDS(){
     'P405'             // Store locked up — controlled substances/workplace
   ]; // codes not applicable to finished consumer home fragrance products
   const pRaw=_pAllCodes.filter(c=>!_pExclude.some(x=>c===x||c.startsWith(x+'+')||c.endsWith('+'+x)));
+  window._smartPasteExcludedCodes=_pAllCodes.filter(c=>!pRaw.includes(c));
   const pEl=document.getElementById('p-statements');
   if(pEl){pEl.value=pRaw.join(', ');}
   S.pStatements=pRaw.join(', ');
@@ -4120,6 +4348,8 @@ function extractSDS(){
   // SDS of the product currently named in Step 2.
   S.hazardFromExtraction=true;
   _snapshotHazardSource();
+  updateSdsSourceSuitabilityWarning();
+  updateSmartPasteExcludedNote();
   updateLabel();
   lockHazardFields(true);
   showExtractToast(allH.length,pRaw.length,S.sensitisers.length);
@@ -4244,8 +4474,8 @@ function clpUnrecognisedCodesMessage(codes, escapeFn){
   const esc=escapeFn||(v=>v);
   const plural=codes.length>1, codeWord=plural?'codes':'code';
   return {
-    heading:'CLP code not recognised',
-    body:'CLPeasy did not recognise the following '+codeWord+': '+codes.map(esc).join(', ')+'. Check that the SDS text was copied correctly and that you are using the current Great Britain-market SDS or classification documentation. Do not change the SDS code just to make the label generate. For help, contact support@clpeasy.com with the SDS and flagged code.'
+    heading:plural?'Some codes can\'t be added to this label':'A code can\'t be added to this label',
+    body:'CLPeasy did not recognise the following '+codeWord+': '+codes.map(esc).join(', ')+'. Check that the SDS text was copied correctly and that you are using the current Great Britain-market SDS or classification documentation. CLPeasy only prints precautionary statements it can show with the correct GB wording, so this label stays blocked until '+(plural?'these codes are':'this code is')+' resolved. Required codes must be resolved, not removed or changed just to enable downloads. Use the classification information for your finished product: an ingredient\'s own SDS (for example a fragrance oil at 100%) can list different hazards and statements from your finished candle, wax melt, diffuser or spray at your fragrance percentage, so check the applicable finished-product classification information with your supplier or a competent CLP specialist. Combining the Section 2.2 statements from several ingredient SDSs does not establish the classification of the finished mixture. For help, contact support@clpeasy.com with the SDS and the flagged '+codeWord+'.'
   };
 }
 // Combines the two message types for a MIXED input (some codes confirmed
@@ -4405,14 +4635,8 @@ function renderBuilderAccordion(){
   // Step 5 form; on any other step it's parked in the same staging area
   // used for #label-appearance-section/#label-warn-stage4 above, so it
   // doesn't sit visible in the preview column when Step 5 isn't active.
-  const finetune=document.getElementById('finetune-panel-el');
-  if(finetune){
-    if(approvedBuilderStep===5){
-      document.getElementById('preview-canvas-area')?.appendChild(finetune);
-    } else if(finetune.parentElement && finetune.parentElement.id==='preview-canvas-area'){
-      staging.appendChild(finetune);
-    }
-  }
+  // On mobile the same panel moves into the open preview sheet instead.
+  syncFineTuneLocation();
   const panelMap={1:[1],2:[2],3:[3],4:[4],5:[5]};
   BUILDER_STEP_LABELS.forEach((label,index)=>{
     const n=index+1,section=document.createElement('section');
@@ -4431,6 +4655,8 @@ function renderBuilderAccordion(){
         // appearance/dimensions). Desktop CSS places these same siblings in
         // two columns without changing their DOM order.
         if(labelAppearance)body.appendChild(labelAppearance);
+      }
+      if(n===1||n===4){
         const labelFitWarning=staging.querySelector('#label-warn-stage4');
         if(labelFitWarning)body.appendChild(labelFitWarning);
       }
@@ -4801,6 +5027,9 @@ function clearHazardData(){
   const hzCb=document.getElementById('hazard-confirm');
   if(hzCb)hzCb.checked=false;
   S.hazardFromExtraction=false;S.hazardSource=null;
+  window._smartPasteExcludedCodes=[];
+  updateSdsSourceSuitabilityWarning();
+  updateSmartPasteExcludedNote();
   // Clear signal word
   S.signal='';
   S.sdsSignal='';
@@ -4831,6 +5060,8 @@ function clearHazardData(){
   // Clear smart paste
   const sp=document.getElementById('smart-paste-input');
   if(sp)sp.value='';
+  const scopeErr=document.getElementById('smart-paste-scope-error');
+  if(scopeErr){scopeErr.textContent='';scopeErr.style.display='none';}
   updateLabel();
   lockHazardFields(false);
   // Re-lock the download button
@@ -4875,7 +5106,7 @@ function restoreBurnTime(value){
 }
 function inlineSizeEditor(){
   const d=getDims();
-  return '<div class="inline-size-editor" style="margin:12px 0;padding:12px;border:1px solid currentColor;border-radius:10px;"><strong>Adjust shape and size here</strong><label style="display:block;margin-top:8px;">Shape<select data-size-shape onchange="applyInlineShape(this)" style="display:block;padding:8px;min-height:44px;background:white;color:#111;">'+['circle','rectangle','square'].map(shape=>'<option value="'+shape+'"'+(S.shape===shape?' selected':'')+'>'+shape.charAt(0).toUpperCase()+shape.slice(1)+'</option>').join('')+'</select></label><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;"><label>'+ (S.shape==='rectangle'?'Width':'Size')+' (mm)<input data-size-width type="number" inputmode="numeric" min="10" max="150" step="1" value="'+d.mmW+'" style="display:block;width:100px;padding:8px;color:#111;background:white;"></label>'+(S.shape==='rectangle'?'<label>Height (mm)<input data-size-height type="number" inputmode="numeric" min="10" max="150" step="1" value="'+d.mmH+'" style="display:block;width:100px;padding:8px;color:#111;background:white;"></label>':'')+'<button type="button" onclick="applyInlineSize(this)" style="padding:10px;border-radius:8px;background:white;color:#111;border:1px solid #4c9bb0;min-height:44px;">Apply size</button></div><small>Your entered information is kept. The preview will check the new size.</small></div>';
+  return '<div class="inline-size-editor" style="margin:12px 0;padding:12px;border:1px solid currentColor;border-radius:10px;"><strong>Choose another shape or size</strong><p>The recommendation above is for your current shape and content. You can try a different shape or size here; every choice is checked again against the supported size limits.</p><label style="display:block;margin-top:8px;">Shape<select data-size-shape onchange="applyInlineShape(this)" style="display:block;padding:8px;min-height:44px;background:white;color:#111;">'+['circle','rectangle','square'].map(shape=>'<option value="'+shape+'"'+(S.shape===shape?' selected':'')+'>'+shape.charAt(0).toUpperCase()+shape.slice(1)+'</option>').join('')+'</select></label><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;"><label>'+ (S.shape==='rectangle'?'Width':'Size')+' (mm)<input data-size-width type="number" inputmode="numeric" min="10" max="150" step="1" value="'+d.mmW+'" style="display:block;width:100px;padding:8px;color:#111;background:white;"></label>'+(S.shape==='rectangle'?'<label>Height (mm)<input data-size-height type="number" inputmode="numeric" min="10" max="150" step="1" value="'+d.mmH+'" style="display:block;width:100px;padding:8px;color:#111;background:white;"></label>':'')+'<button type="button" onclick="applyInlineSize(this)" style="padding:10px;border-radius:8px;background:white;color:#111;border:1px solid #4c9bb0;min-height:44px;">Apply size</button></div><small>Your entered information is kept. Nothing is removed automatically.</small></div>';
 }
 function applyInlineShape(select){
   const shape=select.value;
@@ -4911,8 +5142,15 @@ function applySuggestedLabelSize(){
 }
 function showSheetSizeEditor(){
   document.getElementById('sheet-size-editor').innerHTML=inlineSizeEditor();
+  document.getElementById('sheet-size-editor').scrollIntoView?.({block:'nearest'});
 }
 
+function removeCareSymbolsForFit(){
+  S.hideEN15494=true;
+  const _box=document.getElementById('hide-en15494');if(_box)_box.checked=true;
+  const _warn=document.getElementById('en15494-warn');if(_warn)_warn.style.display='block';
+  updateLabel();
+}
 function updateSizeWarnings(){
   const rawW = parseInt(document.getElementById('custom-w').value)||50;
   const rawH = S.shape==='rectangle'?(parseInt(document.getElementById('custom-h').value)||40):rawW;
@@ -4932,7 +5170,11 @@ function updateSizeWarnings(){
     const _en15494Warn = document.getElementById('en15494-warn');
     if(_en15494Warn){
       const _isCandle = ['Scented Candle','Soy Candle','Votive Candle','Tea Light Candle','Pillar Candle','Advent Calendar Candle'].indexOf(S.productType||'') >= 0;
-      if(_isCandle && _isSmallForCLP){
+      // Care-icon edge rule (17 Oct 2026): also offer the tick box when the
+      // EN 15494 icons would sit too close to the circle's cut edge.
+      const _careIconsNeedRoom = _isCandle && !_isSmallForCLP && S.shape==='circle' && window._lastLabelData && typeof LabelRenderer!=='undefined'
+        && !!LabelRenderer.renderLabel(Object.assign({},window._lastLabelData,{shape:S.shape,size:S.size,customW:S.customW,customH:S.customH,productType:S.productType,hideEN15494:false}),{instanceId:'builder-care-probe'}).metrics.bcfEdgeClipped;
+      if(_isCandle && (_isSmallForCLP || _careIconsNeedRoom)){
         _en15494Warn.style.display='block';
       } else {
         _en15494Warn.style.display='none';
@@ -5056,6 +5298,7 @@ function buildSVG(forExport=false){
     sensitisers:S.sensitisers, pictograms:S.pictograms,
     textColour:S.textColour, showBorder:S.showBorder,
     hideEN15494:S.hideEN15494, labelLang:S.labelLang,
+    showOnLabel:S.showOnLabel,omissionConfirmations:S.omissionConfirmations,
     p280Items:S.p280Items, p280Other:S.p280Other,
   };
   // Exposed so updateLabel()'s fail-closed block message can look up
@@ -5063,7 +5306,7 @@ function buildSVG(forExport=false){
   // findSmallestFittingSize() -- read-only, never used to change S.size.
   window._lastLabelData=data;
   const opts={
-    instanceId:'builder-main', forExport,
+    instanceId:'builder-main', forExport, livePreview:!forExport,
     bgColour:document.getElementById('label-bg-colour')?.value,
     hazardFSOverride:S.hazardFSOverride, hazardYOffset:S.hazardYOffset,
     scentFSOverride:S.scentFSOverride, bizNameFSOverride:S.bizNameFSOverride,
@@ -5076,6 +5319,10 @@ function buildSVG(forExport=false){
   window._typeFSBounds=result.metrics.fsBounds.type;
   window._sigFSBounds=result.metrics.fsBounds.signal;
   window._hazardFSBounds=result.metrics.fsBounds.hazard;
+  // Fine-tune display only (Oct 2026): the sizes actually drawn, and the
+  // inputs of this preview render, so syncAdjustPanel() can show each
+  // adjusted size as a percentage of its automatic size.
+  if(!forExport){window._ftRenderedFS=result.metrics.fontSizes;window._ftLastData=data;window._ftLastOpts=opts;}
   window._unrecognizedCodes=result.metrics.unrecognizedCodes;
   // Structured failure fields: the renderer's own determination of WHY
   // this render is blocked, never re-derived here. blockReason/
@@ -5095,6 +5342,7 @@ function buildSVG(forExport=false){
   window._labelLegibilityWarn=result.metrics.overflow;
   window._hazardYSlack=result.metrics.hazardYSlack;
   window._footerLegibilityClipped=result.metrics.footerClipped;
+  window._bcfEdgeClipped=!!result.metrics.bcfEdgeClipped;
   // Regression fix (2026-09-06, Michaela's manual review of Preview #105):
   // mandatory text outside the hazard/footer blocks (product name,
   // business name, product type, signal word) now gets the same
@@ -5109,19 +5357,65 @@ function buildSVG(forExport=false){
 }
 
 // ── UPDATE PREVIEW ────────────────────────────────────────────
-function _fsPct(override,bounds){
-  if(!bounds)return 100;
-  const v=override!=null?Math.min(Math.max(override,bounds.min),bounds.max):bounds.auto;
-  return bounds.max>bounds.min?Math.round((v-bounds.min)/(bounds.max-bounds.min)*100):100;
+// Fine-tune display (Oct 2026, Michaela's approved correction): each size is
+// shown as a percentage of its AUTOMATIC size -- 100% when automatic or
+// after Reset -- instead of its position between the allowed minimum and
+// maximum (which showed e.g. "3%" for text at 59% of its automatic size).
+// Display only: sizes, steps, limits, fit checks and exports are unchanged.
+// The automatic reference for an adjusted control is held steady while the
+// customer adjusts THAT control, and re-measured (one extra render with that
+// control on automatic) when the label's content, size or other settings
+// change -- including any of the OTHER four fine-tune controls, since their
+// sizes change the room available to this text (#242 review, 14 Oct 2026).
+const _FT_CONTROLS=[
+  {el:'hazard-fs-pct', ov:'hazardFSOverride', bounds:'_hazardFSBounds', fs:'hazard'},
+  {el:'scent-fs-pct', ov:'scentFSOverride', bounds:'_scentFSBounds', fs:'scent'},
+  {el:'bizname-fs-pct', ov:'bizNameFSOverride', bounds:'_bizNameFSBounds', fs:'biz'},
+  {el:'type-fs-pct', ov:'typeFSOverride', bounds:'_typeFSBounds', fs:'type'},
+  {el:'sig-fs-pct', ov:'sigFSOverride', bounds:'_sigFSBounds', fs:'signal'},
+];
+let _ftAutoRef={}, _ftAutoRefKey={};
+function _ftContextKey(){
+  const o=Object.assign({},window._ftLastOpts||{});
+  _FT_CONTROLS.forEach(c=>{delete o[c.ov];});
+  return JSON.stringify([window._ftLastData||null,o]);
+}
+function _ftAutoSize(c){
+  const fsNow=window._ftRenderedFS||{};
+  if(S[c.ov]==null)return fsNow[c.fs];
+  try{
+    const o=Object.assign({},window._ftLastOpts,{instanceId:'builder-ft-ref'});o[c.ov]=null;
+    return LabelRenderer.renderLabel(window._ftLastData,o).metrics.fontSizes[c.fs];
+  }catch(e){return null;}
+}
+function _ftLimits(c){
+  const b=window[c.bounds], cur=S[c.ov]!=null?S[c.ov]:(b?b.auto:null);
+  return {min:!b||cur==null||b.max<=b.min||cur<=b.min,
+    max:!b||cur==null||b.max<=b.min||cur>=b.max};
+}
+function _ftPctHtml(c){
+  const b=window[c.bounds], fsNow=window._ftRenderedFS||{};
+  const limits=_ftLimits(c);
+  const ref=_ftAutoRef[c.ov], drawn=fsNow[c.fs];
+  const pct=(S[c.ov]==null||!(ref>0)||!(drawn>0))?100:Number((drawn/ref*100).toFixed(1));
+  return pct+'%'+(b&&limits.min?'<span class="ft-min">minimum</span>':'')+
+    (b&&limits.max?'<span class="ft-max">maximum</span>':'');
 }
 function syncAdjustPanel(){
-  const hb=window._hazardFSBounds, sb=window._scentFSBounds, bb=window._bizNameFSBounds;
-  const tb=window._typeFSBounds, gb=window._sigFSBounds;
-  const hEl=document.getElementById('hazard-fs-pct'); if(hEl)hEl.textContent=_fsPct(S.hazardFSOverride,hb)+'%';
-  const sEl=document.getElementById('scent-fs-pct'); if(sEl)sEl.textContent=_fsPct(S.scentFSOverride,sb)+'%';
-  const zEl=document.getElementById('bizname-fs-pct'); if(zEl)zEl.textContent=_fsPct(S.bizNameFSOverride,bb)+'%';
-  const tEl=document.getElementById('type-fs-pct'); if(tEl)tEl.textContent=_fsPct(S.typeFSOverride,tb)+'%';
-  const gEl=document.getElementById('sig-fs-pct'); if(gEl)gEl.textContent=_fsPct(S.sigFSOverride,gb)+'%';
+  const ctx=_ftContextKey();
+  _FT_CONTROLS.forEach(c=>{
+    // This control's reference depends on the label and on the other four
+    // controls' settings, never on its own adjustment.
+    const key=ctx+'|'+JSON.stringify(_FT_CONTROLS.filter(o=>o!==c).map(o=>S[o.ov]));
+    if(key!==_ftAutoRefKey[c.ov]||S[c.ov]==null||!(_ftAutoRef[c.ov]>0))_ftAutoRef[c.ov]=_ftAutoSize(c);
+    _ftAutoRefKey[c.ov]=key;
+  });
+  _FT_CONTROLS.forEach(c=>{
+    const e=document.getElementById(c.el);if(!e)return;
+    e.innerHTML=_ftPctHtml(c);
+    const limits=_ftLimits(c), buttons=e.closest('.ft-controls').querySelectorAll('button');
+    buttons[0].disabled=limits.min;buttons[1].disabled=limits.max;
+  });
   const yPct=Math.round((S.hazardYOffset!=null?S.hazardYOffset:0.5)*100);
   const yEl=document.getElementById('hazard-y-pct'); if(yEl)yEl.textContent=yPct+'%';
   const hR=document.getElementById('hazard-fs-reset'); if(hR)hR.style.display=S.hazardFSOverride!=null?'block':'none';
@@ -5168,6 +5462,7 @@ function nudgeBizNameFS(delta){
 function resetBizNameFS(){S.bizNameFSOverride=null;updateLabel();}
 function updateLabel(){
   readForm();
+  if(typeof reconcileOptionalItems==='function')reconcileOptionalItems();
   // Shared GB-CLP resolver: Smart Paste and manual chip changes must never
   // drift into different signal-word rules.
   const _autoH=(S.hStatements||'').split(',').map(h=>h.trim()).filter(Boolean);
@@ -5215,7 +5510,7 @@ function updateLabel(){
   // not fitting must block download exactly like hazard-text-overflow and
   // footer-clipped already do -- see label-render.js's _mandatoryMinFS.
   const _hasMandatoryTextTooSmall = !!(window._scentTooSmall || window._businessNameTooSmall || window._productTypeTooSmall || window._signalWordTooSmall);
-  window._labelBlockDownload = !!(window._labelLegibilityWarn || window._footerLegibilityClipped || _hasUnrecognizedCodes || _isCustomSizeTooSmall || _hasMandatoryTextTooSmall);
+  window._labelBlockDownload = !!(window._labelLegibilityWarn || window._footerLegibilityClipped || _hasUnrecognizedCodes || _isCustomSizeTooSmall || _hasMandatoryTextTooSmall || window._contentOverflow);
   // Fail-closed design (2026-09-07): when the label is blocked for a reason a
   // bigger label might actually fix (not the unrecognised-code or below-
   // minimum-size cases, which have their own specific remedy), tell the
@@ -5228,6 +5523,9 @@ function updateLabel(){
     ? LabelRenderer.findSmallestFittingSize(window._lastLabelData, {instanceId:'builder-main'})
     : null;
   window._suggestedLabelSize=_sizeRec;
+  window._omissionOptions=(!_isCustomSizeTooSmall&&_sizeHelpsIfBlocked)
+    &&typeof LabelOptionalItems!=='undefined'? LabelOptionalItems.findOptions(window._lastLabelData,window._ftLastOpts,_sizeRec) : [];
+  if(typeof refreshOptionalItemBadges==='function')refreshOptionalItemBadges();
   // Genuine-size fix (2026-09-07): findSmallestFittingSize() now tries the
   // two real size-card presets (52mm/63mm) before any custom size, and
   // reports which kind of size it found (source/presetMm) so this message
@@ -5270,36 +5568,42 @@ function updateLabel(){
   // support path it always has.
   const _blockBody = _codeBlockParts.length
     ? _gbUnsupportedCodesFound.length && _genericUnrecognizedCodesFound.length
-      ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br>'+clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+' Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than print a code CLPeasy could not safely include on your label.</strong>'
+      ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br>'+clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+' Double-check this code against your SDS Section 2.2, correct it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than print a code CLPeasy could not safely include on your label.</strong>'
       : _gbUnsupportedCodesFound.length
       ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br><strong>CLPeasy has blocked the download rather than remove, replace or print a code it cannot safely resolve for a Great Britain CLP label.</strong>'
-      : clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+'<br><br>Double-check this code against your SDS Section 2.2, remove it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
+      : clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+'<br><br>Double-check this code against your SDS Section 2.2, correct it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
     : _isCustomSizeTooSmall
     ? getCustomSizeMinMsg()+'<br><br>To create a downloadable label, use the size controls below to '+(S.shape==='rectangle'?'set the long side to '+LabelRenderer.CUSTOM_RECT_LONG_MIN_MM+'mm or larger and the short side to '+LabelRenderer.CUSTOM_RECT_SHORT_MIN_MM+'mm or larger':'increase the custom size to '+LabelRenderer.CUSTOM_SIZE_MIN_MM+'mm or larger')+'.'
     : window._footerLegibilityClipped
     ? 'Your business/supplier details cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling, so some required information would be left off.<br><br>To create a downloadable label, use the size controls below to select a larger label size, or shorten your business details.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
+    : (window._bcfEdgeClipped && !window._labelLegibilityWarn)
+    ? 'The candle safety symbols cannot sit far enough inside the circle edge at this size to print without being trimmed.<br><br>To create a downloadable label, use the size controls below to select a larger label size, or, if you will show these symbols on the packaging instead, remove them from this label.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the candle safety symbols would be too close to the cut edge.</strong>'
     : _hasMandatoryTextTooSmall
     ? 'Your '+_mandatoryTextTooSmallLabel+' cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, use the size controls below to select a larger label size, or shorten the affected text.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>'
     : 'The required hazard and precautionary information cannot fit on this label while meeting the minimum legibility requirements required for CLP labelling.<br><br>To create a downloadable label, use the size controls below to select a larger label size. If appropriate for your product and packaging, you may also need to consider supplementary labelling, such as a fold-out leaflet, where permitted.'+_sizeRecMsg+'<br><br><strong>CLPeasy has blocked the download because the label cannot currently accommodate the required information at the necessary legibility level.</strong>';
 
-  const _fitAdvice = '<strong>Your label needs more space.</strong><p>Choose a larger size to keep all required information clearly readable.</p>'+
-    (_sizeRec ? '<p>Smallest tested size for your current content: <strong>'+_sizeRecDims+'</strong> ('+_sizeRec.shape+').</p><button type="button" onclick="applySuggestedLabelSize()" style="padding:10px;min-height:44px;border:1px solid #4c9bb0;border-radius:8px;background:white;color:#111;">Use '+_sizeRecDims+'</button>'
-    : '<p>No supported size tested up to 150mm fits this content. Try a different shape.</p>')+
-    '<p style="margin-top:8px;">We will check the fit again when you add more details.</p>'+
-    '<details style="margin-top:8px;"><summary>Label too large for your packaging?</summary><p>An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.</p></details>';
+  const _compactRecDims=_sizeRec?(_sizeRec.mmW===_sizeRec.mmH?_sizeRec.mmW+' mm':_sizeRec.mmW+' × '+_sizeRec.mmH+' mm'):'';
+  const _fitAdvice = '<div class="fit-heading"><span aria-hidden="true">●</span> '+(_sizeRec?'Needs '+_compactRecDims+' to fit everything clearly <small>('+escapeBuilderText(_sizeRec.shape)+')</small>':'Try another shape or size')+'</div><div class="fit-actions">'+
+    (_sizeRec?'<button type="button" class="fit-primary" onclick="applySuggestedLabelSize()">Use '+_compactRecDims+'</button>':'<p class="fit-helper">No tested size up to 150 mm fits.</p>')+
+    '<details class="fit-size-picker"><summary>Other shape or size ▾</summary>'+inlineSizeEditor()+'</details></div>'+
+    (window._bcfEdgeClipped&&!S.hideEN15494?'<div class="optional-item-review"><p class="fit-helper">Or keep this size: the candle safety symbols do not have to be on the CLP label.</p><label class="omission-chip"><input type="checkbox" onchange="if(this.checked)removeCareSymbolsForFit()"> <span>Remove EN 15494 pictograms from this label <em>(I will display them on the packaging instead)</em></span></label></div>':'')+
+    (typeof optionalItemAdviceHTML==='function'?optionalItemAdviceHTML():'');
   const pasteFit=document.getElementById('smart-paste-size-warning');
   if(pasteFit){
     const showFit=!!S.hazardFromExtraction&&!!window._labelBlockDownload&&!_codeBlockParts.length;
     pasteFit.style.display=showFit?'block':'none';
-    pasteFit.innerHTML=showFit?_fitAdvice+inlineSizeEditor():'';
+    pasteFit.classList.toggle('fit-advice-card',showFit);
+    // Step 3 only: say that a larger size does not resolve an amber SDS warning.
+    pasteFit.innerHTML=showFit?_fitAdvice.replace('</div><div class="fit-actions">','</div>'+_sdsSizeNoteHtml()+'<div class="fit-actions">'):'';
   }
   const sheetFit=document.getElementById('sheet-fit-advice');
-  if(sheetFit){sheetFit.innerHTML=window._labelBlockDownload&&!_codeBlockParts.length?_fitAdvice:'';}
+  if(sheetFit){sheetFit.classList.toggle('fit-advice-card',!!window._labelBlockDownload&&!_codeBlockParts.length);sheetFit.innerHTML=window._labelBlockDownload&&!_codeBlockParts.length?_fitAdvice:'';}
   [document.getElementById('label-warn-stage4'), document.getElementById('label-warn-step5')].forEach(_labelWarnEl=>{
     if(!_labelWarnEl)return;
     if(window._labelBlockDownload){
       _labelWarnEl.style.display='block';
-      _labelWarnEl.innerHTML = _codeBlockParts.length?'<strong>'+_blockHeading+'</strong><br><br>'+_blockBody:_fitAdvice+inlineSizeEditor();
+      _labelWarnEl.classList.toggle('fit-advice-card',!_codeBlockParts.length);
+      _labelWarnEl.innerHTML = _codeBlockParts.length?'<strong>'+_blockHeading+'</strong><br><br>'+_blockBody:_fitAdvice;
     } else {
       _labelWarnEl.style.display='none';
     }
@@ -5733,12 +6037,24 @@ function wizClearChat(){
 }
 function viewReviewLabel(){
   updateLabel();
-  if(window.matchMedia('(max-width:860px)').matches){openPreviewSheet();return;}
-  const preview=document.getElementById('preview-panel-el');
-  if(preview){preview.setAttribute('tabindex','-1');preview.scrollIntoView({behavior:'smooth',block:'center'});preview.focus({preventScroll:true});}
+  openPreviewSheet();
 }
-function openPreviewSheet(){const sheet=document.getElementById('preview-sheet');if(sheet){sheet.classList.add('open');document.body.style.overflow='hidden';}}
-function closeSheet(e){if(!e||e.target===document.getElementById('preview-sheet')||e===undefined){document.getElementById('preview-sheet').classList.remove('open');document.body.style.overflow='';}}
+function syncFineTuneLocation(){
+  const panel=document.getElementById('finetune-panel-el');if(!panel)return;
+  const mobile=window.matchMedia&&window.matchMedia('(max-width:860px)').matches;
+  const inSheet=document.getElementById('preview-sheet')?.classList.contains('open');
+  const target=document.getElementById(approvedBuilderStep===5?
+    (inSheet?'sheet-finetune-slot':'preview-canvas-area'):'builder-source-staging');
+  if(target&&panel.parentElement!==target)target.appendChild(panel);
+}
+function openPreviewSheet(){const sheet=document.getElementById('preview-sheet');if(sheet){sheet.dataset.openedOnMobile=String(window.matchMedia('(max-width:860px)').matches);sheet.classList.add('open');document.body.style.overflow='hidden';syncFineTuneLocation();sheet.querySelector('[role="dialog"]')?.focus();}}
+function closeSheet(e){if(!e||e.target===document.getElementById('preview-sheet')){document.getElementById('preview-sheet').classList.remove('open');document.body.style.overflow='';syncFineTuneLocation();}}
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.getElementById('preview-sheet')?.classList.contains('open'))closeSheet();});
+function editDetailsFromSheet(step){closeSheet();setApprovedBuilderStep(step);}
+window.addEventListener('resize',()=>{
+  if(document.getElementById('preview-sheet')?.dataset.openedOnMobile==='true'&&!window.matchMedia('(max-width:860px)').matches)closeSheet();
+  else syncFineTuneLocation();
+});
 
 // ══════════════════════════════════════════════════════════════
 // LABEL WIZARD — AI-powered natural language guide
@@ -5972,7 +6288,7 @@ function wizAutoFill(data){
     if(data.customH){ document.getElementById('custom-h').value=data.customH; S.customH=data.customH; }
     if(data.scentName){ document.getElementById('scent-name').value=data.scentName; S.scentName=data.scentName; }
     if(data.productType){const ptEl=document.getElementById('product-type');if(ptEl){ptEl.value=data.productType;onProductTypeChange();}}
-    if(data.netWeight){ document.getElementById('net-weight').value=data.netWeight; }
+    if(data.netWeight){ restoreNetWeight(data.netWeight); }
     if(data.signal) selectSignal(data.signal);
     if(data.bizName){ document.getElementById('biz-name').value=data.bizName; }
     if(data.bgColour){ document.getElementById('label-bg-colour').value=data.bgColour; document.getElementById('label-bg-hex').value=data.bgColour; }
@@ -6111,7 +6427,7 @@ function calcFragLoad(){
   const pct=String(Number(exact.toFixed(4)));
   const rounded=Math.abs(Number(pct)-exact)>1e-9;
   const pctOfWax=((frag/wax)*100).toFixed(1);
-  res.textContent=`${pct}%${rounded?' (rounded to 4 decimal places)':''} of the finished product (${frag} g fragrance in ${total} g total). For reference: ${pctOfWax}% of the wax/base weight. CLPeasy compares this figure exactly with your supplier document and never rounds it to make a match.`;
+  res.textContent=`${pct}%${rounded?' (rounded to 4 decimal places)':''} of the finished product (${frag} g fragrance in ${total} g total). For reference: ${pctOfWax}% of the wax/base weight. Check that your supplier’s CLP information applies to this finished-product percentage. CLPeasy does not verify this or recalculate hazards.`;
   res.style.color='var(--teal)';
   if(applyBtn)applyBtn.style.display='';
   if(applyBtn)applyBtn.dataset.pct=pct;

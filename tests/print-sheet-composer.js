@@ -100,7 +100,7 @@ const dom = new JSDOM(source, {
     // proven pattern in tests/label-identity-and-spec.js, BEFORE
     // label-library.js is evaluated below.
     try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
-    window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
+    window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
     window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
@@ -310,8 +310,11 @@ setTimeout(async () => {
     // that stays intact on one line, plus the wrapped continuation.
     assert(canvasHTML.includes('occurs: get medical'), `combined P-code P333+P313 truncated/missing from sheet render (opening clause)`);
     assert(canvasHTML.includes('advice. IF IN EYES'), `combined P-code P333+P313 truncated/missing from sheet render (wrapped continuation)`);
-    assert(canvasHTML.includes('IF IN EYES: rinse'), `combined P-code P305+P351+P338 truncated/missing from sheet render (opening clause)`);
-    assert(canvasHTML.includes('cautiously with water for several minutes'), `combined P-code P305+P351+P338 truncated/missing from sheet render (wrapped continuation)`);
+    // Correction A (17 Oct 2026): P305+P351+P338 now prints its complete GB
+    // wording, which wraps across several lines -- check the whole sentence
+    // with the line breaks (tags) removed.
+    const sheetText = canvasHTML.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+    assert(sheetText.includes('IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.'), `combined P-code P305+P351+P338 truncated/missing from sheet render`);
     // NOTE: buildLabelSVGFromData() (pre-existing, unmodified by Phase 1)
     // caps sensitisers at sensArr.slice(0,5) — the label above intentionally
     // supplies 6 to document that real, pre-existing cap rather than assert

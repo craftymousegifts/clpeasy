@@ -47,7 +47,7 @@ const dom = new JSDOM(source, {
       },
       drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
     });
-    window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
+    window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
     window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
@@ -353,7 +353,7 @@ setTimeout(async () => {
     window.updateLabel();
     assert.strictEqual(window.eval('isCustomSizeBelowSupportedMinimum()'), false, 'the approved 63×44mm preset must still be exempt from the 52mm custom-size floor at export-blocking time');
     const warnStep5 = document.getElementById('label-warn-step5').innerHTML;
-    assert(/choose a larger size/i.test(warnStep5), `dense 63×44mm fixture (approved preset): export-blocked message must recommend a larger label size, got: ${warnStep5}`);
+    assert(/Needs [\d ×.]+ mm to fit everything clearly/.test(document.getElementById('label-warn-step5').textContent) && document.querySelector('#label-warn-step5 .fit-primary[onclick="applySuggestedLabelSize()"]'), `dense 63×44mm fixture (approved preset): export-blocked message must recommend a larger label size, got: ${warnStep5}`);
     assert(!/52mm or larger|supported minimum/i.test(warnStep5), `dense 63×44mm fixture (approved preset): must NOT show the generic custom-size-minimum message -- that gate must not apply to an approved preset, got: ${warnStep5}`);
     assert(!/not supported|unsupported/i.test(warnStep5), `dense 63×44mm fixture: export-blocked message must not describe 63×44mm as universally unsupported, got: ${warnStep5}`);
 

@@ -108,6 +108,7 @@ const server = http.createServer((req, res) => {
         document.getElementById('biz-name').value = 'QA Candles';
         document.getElementById('biz-address').value = '1 Test Street, Testtown, TE1 1ST';
         document.getElementById('biz-phone').value = '01234 567890';
+        selectSize(56); // the 52 mm default candle is blocked by the care-icon edge rule (17 Oct 2026)
         readForm(); updateLabel();
         // Walk the real stage gates 1 -> 5 (confirming Step 3 like a customer).
         for (let n = 2; n <= 5; n++) {
@@ -311,7 +312,7 @@ const server = http.createServer((req, res) => {
     // Composer
     async function readyComposer(t) {
       await t.evaluate(async () => {
-        const rec = { id: '11111111-2222-4333-8444-555555555555', schemaVersion: 1, scentName: 'Sheet QA', productType: 'Scented Candle', shape: 'circle', size: 52, signal: 'Warning', sdsSignal: 'Warning', hStatements: 'H317', pictograms: ['exclamation'], sensitisers: ['Linalool'], bizName: 'QA', bizAddress: '1 Test St', bizPhone: '0123', pStatements: '', p280Items: [], savedAt: '26/09/2026' };
+        const rec = { id: '11111111-2222-4333-8444-555555555555', schemaVersion: 1, scentName: 'Sheet QA', productType: 'Scented Candle', shape: 'circle', size: 56, /* 56 mm: 52 mm candles are blocked by the care-icon edge rule (17 Oct 2026) */ signal: 'Warning', sdsSignal: 'Warning', hStatements: 'H317', pictograms: ['exclamation'], sensitisers: ['Linalool'], bizName: 'QA', bizAddress: '1 Test St', bizPhone: '0123', pStatements: '', p280Items: [], savedAt: '26/09/2026' };
         // 3 Oct 2026: a label completed in the Builder carries its supplier-document confirmation.
         if (window.SdsDocCheck) { rec.fragLoad = '10%'; rec.sdsDoc = { kind: 'finished', pct: '10', base: SdsDocCheck.GROUP_BY_TYPE[rec.productType] }; rec.sdsDoc.confirmed = SdsDocCheck.confirmationFor(rec); } 
         await LabelLibrary.mutate(() => ({ collection: [rec], usedId: rec.id }));

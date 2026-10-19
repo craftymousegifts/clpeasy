@@ -1,0 +1,116 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> test
+> node tests/png-generation-before-credit.js && node tests/live-builder-export-hotfix.js && node tests/site-scroll-accessibility.js && node tests/app-static-audit.js && node tests/builder-regression.js && node tests/payg-download-accounting.js && node tests/payg-account-display.js && node tests/payg-pricing-checkout.js && node tests/payg-immediate-supply-consent.js && node tests/plan-checker-decision.js && node tests/account-next-payment.js && node tests/pause-duration-wording.js && node tests/preview-watermark-and-export-authorization.js && node tests/download-entitlement-sql.js && node tests/post-download-print-guidance.js && node tests/stage2-print-guidance.js && node tests/hazard-source-integrity.js && node tests/deno/run.js
+
+PASS png-generation-before-credit: generation failure costs zero; clean/trial choice obeys RPC; accounting and changed-input refusal; image/encoder failures and cleanup; 600 DPI dimensions
+PASS live-builder-export-hotfix: fresh/return navigation, required Business fields, pre-charge Builder guard and saved-sheet export guard
+site scroll/accessibility regression checks: PASS
+static application audit passed across 29 HTML files
+builder regression checks passed
+PAYG download accounting checks passed
+PASS: entitlement.js plan names, totals and clean-export rules
+PASS: account.html: expired trial + PAYG shows Pay As You Go, 8 downloads, and no "choose a plan to continue"
+PASS: account.html: expired trial with no purchases is unchanged except its sidebar no longer counts unusable trial downloads
+PASS: account.html: scheduled cancellation stays unlimited until the period ends
+PASS: account.html: cancelled accounts render completely (fmtDate crash fixed)
+PASS: account.html: active Easy Start Unlimited shows unlimited downloads
+PASS: dashboard.html: main card and sidebar show PAYG balance
+PASS: dashboard.html: ended subscription with purchased downloads shows them
+PASS: dashboard.html: expired trial shows 0 remaining
+PASS: builder.html: sidebar plan name and balance use the shared rules
+PASS: my-labels.html: sidebar shows paused plan with purchased balance
+PASS: account.html: trial -> Pay As You Go conversion, including at zero balance
+PASS: dashboard.html: trial -> Pay As You Go conversion, including at zero balance
+PASS: Account, Dashboard, My Labels and Builder: no subscriber top-ups; unlimited subscribers see no purchase link, everyone else is routed to Pay As You Go
+PASS: complete entitlement matrix: PAYG vs subscriber top-ups vs plan name for every account state
+PASS: annual Easy Start Unlimited shows unlimited downloads everywhere
+PAYG account display checks passed (16 groups)
+PAYG pricing checkout checks passed
+PAYG immediate-supply consent checks passed
+plan checker checks passed (27 branching paths, invariants, auto-advance, Back/branch clearing, 8 account-state page cases, CTA matrix, offer expiry)
+PASS: actual next payment shown for promo, standard, annual, expired-promo and other-discount customers
+PASS: when the next charge cannot be determined no amount is shown (never a guessed £9.99/£14.99)
+PASS: billing-status is only called for active subscriptions
+PASS: resubscribe modal matches the server-side 2026 promotion
+account next-payment checks passed
+pause-duration-wording checks passed
+PASS: buildSVG(false) still bakes the watermark into its raw SVG string as before
+PASS: the live preview DOM for an unpaid user is a single flattened raster image with zero separable vector/text/group content -- the exact devtools deletion this fix addresses has nothing left to expose
+PASS: an authorised user's live preview DOM remains full, sharp, live vector -- unaffected by the unpaid-preview raster fix
+PASS: deleting the visible watermark-note banner does not alter or clean the rendered label SVG
+PASS: an unpaid/guest user's real SVG download contains the watermark
+PASS: tampering S.isPro via console does not authorise a clean export -- the wrapped download re-verifies and fails closed
+PASS: a failed/erroring accounting check fails closed -- no export at all
+PASS: an authorised Pro subscriber still receives a clean, unwatermarked export
+PASS: an Easy Start subscriber (not just Easy Pro) receives a clean, unwatermarked export -- confirms the isPro variable name does not translate into a Pro-only restriction
+PASS: expired trial, ended/paused/past-due subscriptions are blocked; live trial is watermarked; scheduled cancellation and every PAYG balance export clean
+PASS: every clean-export function is wrapped by the same authorisation choke point, and printToPDF reaches the identical fresh, fail-closed entitlement decision as SVG
+PASS: guests are not counted or blocked, and always receive a watermarked export
+PASS: an Easy Start Unlimited subscriber past the old 20-download limit still exports clean and consumes nothing
+PASS: print.html's Composer preview is watermarked for a non-Pro user
+PASS: the Composer grid DOM for an unpaid user is a single flattened raster image per cell, with zero separable vector/text/group content
+PASS: a guest/unpaid user cannot export a print-sheet PDF at all (Pro-only export surface)
+PASS: tampering isPro via console on print.html does not authorise an export -- fails closed exactly like builder.html
+PASS: an authorised Pro subscriber's print-sheet export on print.html remains clean
+PASS: an Easy Start subscriber (not just Easy Pro) receives a clean print-sheet export on print.html
+PASS: Composer: live trial alone cannot export (no charge, never clean); PAYG exports a clean sheet for exactly one download and the sidebar shows plan + balance
+PASS: D1: Composer exports only for Easy Start, Easy Pro (incl. scheduled cancellation) and Pay As You Go
+PASS: D5: converted trial -> Pay As You Go account gets clean Builder exports from purchased downloads
+PASS: Unlimited: subscribers past the old limit keep exporting; PAYG accounts at zero are sent to PAYG; no top-ups anywhere
+preview watermark and export authorisation checks passed (23 assertions)
+SKIP download-entitlement-sql: no local PostgreSQL available
+PASS: 1/9: PAYG successful Builder PNG download shows the approved guidance (role=status, ✓ + text, one charge)
+PASS: 2: successful Builder SVG download shows the guidance
+PASS: 3: successful Builder PDF (print window) shows the guidance, headed "Print view ready"
+PASS: 14a: no console errors on the Builder success paths
+PASS: 4: blocked export (unconfirmed / overflow-blocked) shows no guidance and charges nothing
+PASS: 4b: PDF with the pop-up blocked: no guidance, no download consumed, pop-up warning shown (C6)
+PASS: 4c: after allowing pop-ups the PDF is charged once and delivered into the pre-opened window (C6)
+PASS: 4d: label without a key: blocked pop-up free, successful PDF charged once (C6)
+PASS: 4e: refused PDF download closes the pre-opened window without a label (C6)
+PASS: 5: zero entitlement — export refused, no guidance, no file
+PASS: 5b: accounting failure — no guidance, no file
+PASS: 6: free eligible re-download shows guidance; still a single consume_download call (no extra charge)
+PASS: 10: Trial (watermarked), Easy Start and Easy Pro keep their entitlement outcome; one charge each; guidance shown
+PASS: 10b: signed-out guest export unchanged (watermarked file, no guidance)
+PASS: 11-13: Builder desktop: in-flow panel, no overlay, no horizontal overflow, preview not covered or moved
+PASS: 11-13: Builder mobile: in-flow panel, no overlay, no horizontal overflow
+PASS: 7/9/12/13: Composer desktop: successful PAYG print-sheet export shows the sheet guidance + working "Printing tips →", one charge, no overflow, no console errors
+PASS: 7/9/12/13: Composer mobile: successful PAYG print-sheet export shows the sheet guidance + working "Printing tips →", one charge, no overflow, no console errors
+PASS: 8: blocked Composer export (trial-only, zero balance) shows no guidance and charges nothing
+post-download print guidance checks passed (19 groups)
+PASS: Guide Me: obsolete Avery Sheet / Print Shop PDF / PNG-for-printing advice gone; two routes (PDF single / Composer several on A4); scaling rule present
+PASS: Help Guide: dashed cut line described accurately (it prints; Hide border turns it off)
+PASS: mobile preview caption no longer recommends PNG for printing
+PASS: Help Guide has a short "Printing your CLPeasy labels" section (single, sheet, format, first check, two problems)
+PASS: Composer Printing help: saved size kept, A4, Actual Size / 100%, avoid Fit/Shrink, test print + alignment
+PASS: Step 5 format help: single label → PDF, several on A4 → Composer, Actual Size / 100%; SVG keeps mm; PNG size set by the app
+PASS: Save: visible "Label saved" status (role=status, link to My Labels) that hides itself after ~8s
+PASS: Save failure shows no success confirmation
+PASS: PNG download: approved confirmation + "PNG files don't store a print size ... use PDF"
+PASS: SVG download: states the saved mm size and to check it after importing
+PASS: PDF: size + first-test guidance, "How to print" expander (Use / Avoid in words, control note), Dismiss works
+PASS: single-label print window: note screen-only (hidden in print), page stays 59.94 x 59.94 mm, one page
+PASS: mobile 390px: format help, save status and download guidance fit, no horizontal overflow; print window note + button on screen
+PASS: Composer desktop: export hint, sheet guidance (test print + alignment, dismissible), geometry unchanged, print note hidden in print, PDF stays A4 (209.89 x 297.01 mm)
+PASS: Composer mobile: export hint, sheet guidance (test print + alignment, dismissible), geometry unchanged, print note hidden in print, PDF stays A4 (209.89 x 297.01 mm)
+stage 2 print guidance checks passed (15 groups)
+PASS: C3: successful extraction locks Step 3 and the saved label records the processed-extraction flag
+PASS: F1: fresh extraction shows the approved "hazard data shown in this step" confirmation next to the extracted data; raw SDS text is not stored
+PASS: C3/SDS-06: reopened extracted label is locked exactly like straight after extraction
+PASS: F1: reopened saved label (blank Smart Paste box) shows the same accurate confirmation; the hazard data it refers to is displayed in Step 3
+PASS: C3: legacy extracted labels lock, manual/legacy-manual labels stay editable, no lock carry-over
+PASS: C4: cosmetic rename (case/spacing/punctuation) causes no friction
+PASS: C4/SDS-15: renamed reopened label is blocked from save, download and Steps 2/3 until answered
+PASS: C4: "same fragrance oil and SDS" keeps the hazard data with one click
+PASS: C4: "different fragrance or SDS" invalidates all old regulatory data and blocks export
+PASS: C4: after re-extraction only the new SDS data is used and export is allowed again
+PASS: C4: first naming adopts the name; later renames need an answer
+PASS: C4 load: fragrance-load change blocks save/export until re-checked (with both confirmations again) or cleared
+PASS: C4 load: adding a load is a change; "Clear hazard data and extract again" removes all old hazard data
+PASS: C4 type: product-type change blocks until re-checked or cleared; re-extraction resolves it
+PASS: C4 combo: reopened label with name/type/load changes; each is detected, reverting removes it
+PASS: Suffixed codes: all nine preserve code/wording/signal/GHS08/save/reopen; unknown and wrong-case suffixes block output
+hazard source integrity checks passed (C3 + C4)
+SKIP Edge Function tests: Deno is not installed

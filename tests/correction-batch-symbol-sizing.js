@@ -78,7 +78,7 @@ function stubCanvas(window){
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { pretendToBeVisual:true, runScripts:'dangerously' });
 const { window } = dom;
 stubCanvas(window);
-window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
+window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
 const LR = window.LabelRenderer;
 assert(LR && typeof LR.renderLabel === 'function', 'LabelRenderer.renderLabel must be exposed on window for this harness to work');
 assert(typeof LR.pictoOuterBoundingBoxMm === 'function' && typeof LR.pictoSquareSideFromBoundingBoxMm === 'function' && typeof LR.pictoSquareAreaMm2 === 'function', 'the three named GHS geometry helpers must be exported on LabelRenderer, not left as unexported/magic-constant internals');
@@ -317,7 +317,15 @@ function measureBcfSvgHeightMm(svg, mmW){
     // unaffected: both remain genuinely footer-clipped, same as before.
     const targets = [
       { label:'EU30009 registry template (99.1x57.3mm)', w:99.1, h:57.3, shape:'rectangle', footerClippedExpected:false, fitsExpected:true },
-      { label:'63mm circle candle (full address+phone+netWeight+burnTime+batch footer content)', w:63, h:63, shape:'circle', footerClippedExpected:true, fitsExpected:false },
+      // Updated (Oct 2026, Michaela's approved circle footer balance P6b --
+      // see tests/circle-footer-balance.js): on circles the longest footer
+      // line now takes the top (widest) row and all footer lines share one
+      // size, so this content now genuinely fits -- every footer line at the
+      // 1.2 mm-floor-or-above shared size and at least 1 mm from the cut edge
+      // (measured: 1.36 mm text, >= 1.19 mm clearance). Before, the batch line
+      // was forced into the narrow bottom row and ran past the circle edge.
+      // The 63x44mm rectangle below is unaffected (rectangles unchanged).
+      { label:'63mm circle candle (full address+phone+netWeight+burnTime+batch footer content)', w:63, h:63, shape:'circle', footerClippedExpected:false, fitsExpected:true },
       { label:'63x44mm rectangle candle, full candleFixture() footer content', w:63, h:44, shape:'rectangle', footerClippedExpected:true, fitsExpected:false },
     ];
     for(const t of targets){

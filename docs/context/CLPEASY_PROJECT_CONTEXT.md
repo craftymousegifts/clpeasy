@@ -35,6 +35,8 @@ An AI-assisted feature intended to guide users through the information they need
 ### Smart Paste SDS
 A feature intended to help users paste SDS information and extract/reuse relevant information.
 
+Owner decision (18 Oct 2026): only offer options, choices and guidance that are relevant to candles, wax melts, reed diffusers and room sprays. Do not ask makers to make judgements they can't reasonably make (for example choosing P280 protective equipment). Precautionary statements that Smart Paste leaves out, including P280, are listed with a "contact support@clpeasy.com" route rather than an in-Builder add option.
+
 ### Output formats
 Known print-ready formats:
 - PNG

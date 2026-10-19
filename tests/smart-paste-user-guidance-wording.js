@@ -88,7 +88,7 @@ const LOCATIONS = [
   ['knowledge.html:498', 'knowledge', 'Paste your complete SDS into Smart Paste and CLPeasy extracts the sensitiser information automatically alongside the H and P statements',
     'Copy Section 2.2 (Label elements) into Smart Paste and CLPeasy extracts the available sensitiser information for you to review against your SDS.'],
   ['support.html:238 (dropdown option)', 'support', 'Using Smart Paste — full SDS or Section 2.2 paste',
-    'Using Smart Paste — Section 2.2 paste'],
+    'Using Smart Paste — Section 2.2 paste', 'support form multi-select help topics (Oct 2026): the dropdown was replaced by checkboxes'],
   // Added in this pass -- the two leftover standard-Smart-Paste claims found
   // after the first 17, plus the "Works with any supplier" heading.
   ['index.html:~1061 (FAQ: How does Smart Paste work?)', 'index', "Paste the complete document into the Smart Paste box in CLPeasy. The tool automatically locates Section 2.2",
@@ -236,9 +236,10 @@ function run(){
     // guard-parity.js download-gate suites, which continue to run against
     // this file unchanged).
     // Label text deliberately reworded in c5c1d57 / PR #136 ("Improve builder responsibility and CLP Ready wording").
-    const step5CheckboxLabel = 'I confirm I have reviewed the finished label and checked the hazard information against my fragrance supplier\'s current SDS/CLP information for the fragrance load used. CLPeasy has helped extract, organise, check and format the information provided; I understand I remain responsible for the product I place on the market and for reviewing the finished label before printing and selling.';
-    results.correction1.step5CheckboxPreserved = builderSource.includes('id="verify-checkbox"') && builderSource.includes(step5CheckboxLabel);
-    assert(results.correction1.step5CheckboxPreserved, 'Step 5 verification checkbox and its label text must remain exactly as before');
+    const step5CheckboxLabel = "I've checked this label against my supplier's current SDS for the fragrance load used.";
+    const responsibility = "I'm responsible for the product and for checking the label before I print and sell it.";
+    results.correction1.step5CheckboxPreserved = builderSource.includes('id="verify-checkbox"') && builderSource.includes(step5CheckboxLabel) && builderSource.includes(responsibility);
+    assert(results.correction1.step5CheckboxPreserved, 'Step 5 must retain the owner-approved SDS, fragrance-load and responsibility declaration');
   }
 
   console.log('smart-paste-user-guidance-wording checks passed (20 approved locations)');

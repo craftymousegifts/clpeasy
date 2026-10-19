@@ -39,7 +39,7 @@ const dom = new JSDOM(source, {
       },
       drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
     });
-    window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8'));
+    window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
     window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
@@ -201,7 +201,13 @@ setTimeout(async () => {
     // names elsewhere in a full SDS must not be pulled forward into, or
     // merged with, an authoritative bounded EUH208 list -- the bounded
     // clause's own order is the only ordering that survives.
+    // Oct 2026 Section 2.2 scope fix: a pasted "Section 3:" heading with no
+    // Section 2.2 now stops extraction entirely (nothing is read from it).
     sens = pasteAndExtract('Section 3: contains Coumarin (a known table entry) at 2%. ' + WITCHY_WOO_TEXT);
+    assert.deepStrictEqual([...sens], [], 'Section 3 heading without Section 2.2 must stop extraction');
+    assert.notStrictEqual(document.getElementById('smart-paste-scope-error').style.display, 'none', 'stop message shown');
+    // The bounded-list rule itself: a table entry elsewhere in unstructured text.
+    sens = pasteAndExtract('Composition table: contains Coumarin (a known table entry) at 2%. ' + WITCHY_WOO_TEXT);
     assert.deepStrictEqual(
       [...sens],
       ['ACETATE PTBCH','Cedramber','Limonene','Linalyl acetate','2-acetoxy-2,3,8,8-tetramethyloctahydronaphthalene'],
