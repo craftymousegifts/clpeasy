@@ -1274,9 +1274,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="field-alert field-alert-info" style="margin-top:12px;">
         <label style="display:flex;gap:10px;align-items:flex-start;font-size:13px;cursor:pointer;">
           <input type="checkbox" id="sds-source-confirm" onchange="confirmSdsSource()" aria-describedby="sds-source-confirm-help sds-source-confirm-error" style="width:18px;height:18px;flex-shrink:0;margin-top:3px;accent-color:var(--teal);">
-          <span>I confirm that this paste comes from one current SDS whose classification information applies to my finished product, including its formulation and fragrance percentage. I understand that CLPeasy extracts label information; it does not combine SDSs or calculate classifications for fragrance blends.</span>
+          <span>I confirm this information comes from one current SDS that applies to my finished product, its formulation and fragrance percentage.</span>
         </label>
-        <p id="sds-source-confirm-help" style="margin:8px 0 0;font-size:12px;">You remain responsible for ensuring that the classification information applies to your finished product. This confirmation does not validate the SDS or the extracted result. <a href="compliance.html#sds-guidance" target="_blank" rel="noopener noreferrer">Unsure? Check which information you need</a> or <a href="mailto:support@clpeasy.com">contact support</a>.</p>
+        <p id="sds-source-confirm-help" style="margin:8px 0 0;font-size:12px;">CLPeasy extracts label information. It does not combine SDSs, calculate blend classifications or validate your SDS. You remain responsible for checking the classification and label are correct for your finished product. <a href="compliance.html#sds-guidance" target="_blank" rel="noopener noreferrer">Unsure? Check which information you need</a> or <a href="mailto:support@clpeasy.com">contact support</a>.</p>
       </div>
       <div id="sds-source-confirm-error" class="field-alert field-alert-danger" role="alert" style="display:none;font-size:13px;"></div>
       <button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
