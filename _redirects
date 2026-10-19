@@ -1,3 +1,8 @@
+
+# Knowledge Base articles
+/knowledge/combining-fragrance-oils /combining-fragrance-oils.html 200
+/knowledge/printing-and-cutting /printing-and-cutting.html 200
+/knowledge/print-and-cut-by-hand /print-and-cut-by-hand.html 200
 # Reverse proxy: auth.clpeasy.com → Supabase auth endpoint
 # Makes Google OAuth show "auth.clpeasy.com" instead of Supabase project URL
 https://auth.clpeasy.com/*  https://qvkosdqcryrcfbjtaxic.supabase.co/:splat  200!
