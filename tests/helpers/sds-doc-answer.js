@@ -29,7 +29,19 @@ const SCRIPT = `(function(){
   // type is left unanswered, so the production check blocks it exactly as
   // it would for a maker (3 Oct 2026: no product-type substitution).
   function wrap(fn){ return function(){ answer(); return fn.apply(this, arguments); }; }
-  window.extractSDS = wrap(window.extractSDS);
+  // Existing extraction regression journeys model a maker who has supplied
+  // suitable source information. Tick the real source acknowledgement; do
+  // not bypass the extraction guard. Its negative/reset cases are tested
+  // separately in sds-source-confirmation.js without this helper.
+  var extract = window.extractSDS;
+  window.extractSDS = function(){
+    answer();
+    var source = document.getElementById('sds-source-confirm');
+    if (source && typeof window.confirmSdsSource === 'function') {
+      source.checked = true; window.confirmSdsSource();
+    }
+    return extract.apply(this, arguments);
+  };
   var leave = window.canLeaveApprovedBuilderStep;
   window.canLeaveApprovedBuilderStep = function(step){ if (step === 2 || step === 3) answer(); return leave.apply(this, arguments); };
   window.toggleHazardNext = wrap(window.toggleHazardNext);
@@ -41,3 +53,4 @@ const SCRIPT = `(function(){
 function install(window){ try { if (window && typeof window.eval === 'function') window.eval(SCRIPT); } catch (e) {} return window; }
 function installed(dom){ install(dom && dom.window); return dom; }
 module.exports = { SCRIPT, install, installed };
+

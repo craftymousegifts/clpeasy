@@ -577,6 +577,14 @@ place them off the A4 page.
   once. Step 3 size panel says a larger label does not resolve an amber SDS
   warning. Display only.
 
+
+## Builder source acknowledgement — 19 Oct 2026 (review candidate)
+
+- Owner approved implementing the pre-extraction source confirmation and Knowledge Base link; production release remains separately gated.
+- Unticked acknowledgement prevents extraction without changing existing hazards. It is bound to pasted text, product type and fragrance percentage; relevant edits, Clear and loading another saved label reset it. An unchanged retry retains it.
+- Transient UI state only: no audit logging, timestamp, storage or schema changes. Does not validate an SDS or transfer liability. Existing extraction/classification/selection logic, suitability warnings, excluded-P-code notices and later confirmations remain unchanged.
+- Focused evidence and outstanding visual checks: `docs/reports/SDS-SOURCE-CONFIRMATION-2026-10-19.md`. P-statement investigation remains independent.
+
 ## Customer support and content revision — approved draft implementation (19 Oct 2026)
 
 - Owner approved the full page-by-page content proposal in chat; implemented against main `3a9524e` in a separate content branch. Support/Compliance/FAQ/homepage/Knowledge Base updated; blend article and separate hand-cut/Cricut guides added. Existing blended hash route preserved; no Builder or form submission behaviour changes.

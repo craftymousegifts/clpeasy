@@ -76,7 +76,7 @@ const server = http.createServer((req, res) => {
         selectShape('circle');document.getElementById('custom-w').value=100;onDimInput();readForm();updateLabel();
         setApprovedBuilderStep(2);checkStep2Next();
         if(approvedBuilderStep!==3)throw new Error("Blank fragrance percentage blocked Step 2 Next");
-        document.getElementById('smart-paste-input').value=SDS;extractSDS();
+        document.getElementById('smart-paste-input').value=SDS;document.getElementById('sds-source-confirm').checked=true;confirmSdsSource();extractSDS();
         const unchecked=canLeaveApprovedBuilderStep(3);
         document.getElementById('hazard-confirm').checked=true;toggleHazardNext();
         setApprovedBuilderStep(4);setApprovedBuilderStep(5);
@@ -104,3 +104,4 @@ const server = http.createServer((req, res) => {
     console.log('SDS simple-flow journey passed ('+passed+' groups)');
   }
 });
+
