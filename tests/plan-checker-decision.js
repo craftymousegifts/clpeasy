@@ -205,6 +205,31 @@ async function openPage(state, opts = {}){
   const dom = new JSDOM(pageSource, {
     url: 'https://clpeasy.com/plan-picker.html', runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole: vc,
     beforeParse(w){
+      // Control only this page's timers for exact transition-boundary checks.
+      // Real-time waits can resume after the boundary on a busy test runner.
+      if (opts.controlledTime) {
+        let now = 0, nextId = 0;
+        const timers = new Map();
+        w.setTimeout = (fn, delay = 0, ...args) => {
+          const id = ++nextId;
+          timers.set(id, { at: now + Number(delay), run: () => fn(...args) });
+          return id;
+        };
+        w.clearTimeout = id => timers.delete(id);
+        Object.defineProperty(w.performance, 'now', { value: () => now });
+        w.__advanceTime = ms => {
+          const end = now + ms;
+          for (;;) {
+            const due = [...timers].filter(([, timer]) => timer.at <= end)
+              .sort((a, b) => a[1].at - b[1].at || a[0] - b[0])[0];
+            if (!due) break;
+            now = due[1].at;
+            timers.delete(due[0]);
+            due[1].run();
+          }
+          now = end;
+        };
+      }
       w.__scrolls = [];
       w.scrollTo = (...args) => w.__scrolls.push(['scrollTo', args]);
       w.scrollBy = (...args) => w.__scrolls.push(['scrollBy', args]);
@@ -289,19 +314,23 @@ function readResult(w){
   // Auto-advance: selection shows first, the next question follows ~250ms
   // later, repeated clicks during the transition are ignored, focus moves.
   {
-    const { w } = await openPage('signedOut');
+    const { w, errors } = await openPage('signedOut', { controlledTime: true });
     click(w, 'frequency', 'ongoing');
     assert.deepStrictEqual(pressed(w, 'frequency'), ['ongoing'], 'answer visibly selected immediately');
     assert.strictEqual(activeQ(w), 'frequency', 'no instant jump');
     click(w, 'frequency', 'occasional');
-    await sleep(120);
-    assert.strictEqual(activeQ(w), 'frequency');
-    await sleep(200);
+    w.__advanceTime(120);
+    assert.strictEqual(activeQ(w), 'frequency', 'selection remains visible at 120ms');
+    w.__advanceTime(129);
+    assert.strictEqual(activeQ(w), 'frequency', 'no advance before the 250ms boundary');
+    w.__advanceTime(1);
     assert.strictEqual(activeQ(w), 'labels', 'advanced automatically to the volume question');
     assert.deepStrictEqual(pressed(w, 'frequency'), ['ongoing'], 'repeated click during the transition ignored');
     assert.strictEqual(w.document.activeElement, w.document.querySelector('#q-labels .q-text'), 'focus moves to the new question');
     assert.strictEqual(w.document.querySelectorAll('.btn-next').length, 0);
     assert(![...w.document.querySelectorAll('button')].some(b => /^\s*Next/.test(b.textContent)), 'no Next button anywhere');
+    assert.deepStrictEqual(errors, [], errors.join('; '));
+    w.close();
   }
 
   // Back follows the actual branch and keeps the previous selection; a
