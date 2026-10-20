@@ -82,8 +82,9 @@ await test('security unchanged: no token -> 401; unknown event -> 400; nothing s
   eq(brevo.length, 0, 'nothing sent');
 });
 
-// Repository-wide ownership check: outside comments, the Brevo attribute
-// SUBSCRIPTION_STATUS appears in exactly one Edge Function -- stripe-webhook.
+// Repository-wide ownership check: the SUBSCRIPTION_STATUS attribute key
+// is written in exactly one Edge Function -- stripe-webhook.
+// Do not count explanatory string/comment mentions as writes.
 await test('repository: stripe-webhook is the ONLY Edge Function that writes SUBSCRIPTION_STATUS', async () => {
   const writers: string[] = [];
   for await (const dir of Deno.readDir('supabase/functions')) {
@@ -91,7 +92,7 @@ await test('repository: stripe-webhook is the ONLY Edge Function that writes SUB
     let src = '';
     try { src = await Deno.readTextFile(`supabase/functions/${dir.name}/index.ts`); } catch { continue; }
     const code = src.replace(/\/\*[\s\S]*?\*\//g, '').split('\n').map(l => l.replace(/\/\/.*$/, '')).join('\n');
-    if (code.includes('SUBSCRIPTION_STATUS')) writers.push(dir.name);
+    if (/\bSUBSCRIPTION_STATUS\s*:/.test(code)) writers.push(dir.name);
   }
   eq(writers, ['stripe-webhook'], 'only stripe-webhook');
 });

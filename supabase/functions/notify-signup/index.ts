@@ -9,7 +9,6 @@ const BREVO_API_KEY       = Deno.env.get("BREVO_API_KEY")!;
 const ALERT_TO            = "support@clpeasy.com";
 const FROM_EMAIL          = "support@clpeasy.com";
 const FROM_NAME           = "CLPeasy®";
-const BREVO_AUTOMATION_ID = Deno.env.get("BREVO_AUTOMATION_ID") ?? "";
 const BREVO_LIST_ID       = parseInt(Deno.env.get("BREVO_LIST_ID") ?? "2");
 
 const supabase = createClient(
@@ -74,20 +73,9 @@ serve(async (req) => {
     const contactResult = await brevoContact.text();
     console.log("Brevo contact upsert:", brevoContact.status, contactResult);
 
-    // ── STEP 2: Trigger onboarding automation ────────────────
-    let automationResult = "skipped — no BREVO_AUTOMATION_ID set";
-    if (BREVO_AUTOMATION_ID) {
-      const automationResp = await fetch(
-        `https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}/automations`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "api-key": BREVO_API_KEY },
-          body: JSON.stringify({ automationId: parseInt(BREVO_AUTOMATION_ID) })
-        }
-      );
-      automationResult = `status ${automationResp.status}`;
-      console.log("Brevo automation trigger:", automationResult);
-    }
+    // Onboarding is triggered by adding the contact to the configured Brevo list.
+    // No separate automation API call is required.
+    const automationResult = "list-triggered onboarding";
 
     // ── IDEMPOTENCY GATE: only ever send ONE admin alert per user_id ──
     // notify-signup is called twice per real signup (auth.html frontend +

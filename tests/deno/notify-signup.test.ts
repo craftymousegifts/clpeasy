@@ -25,7 +25,7 @@ const contact = calls.find(c => c.url === 'https://api.brevo.com/v3/contacts');
 eq(contact.body, { email: 'new.maker@example.com', updateEnabled: true, listIds: [3], attributes: { FIRSTNAME: 'new.maker' } }, 'sign-up contact: list + FIRSTNAME only');
 const all = JSON.stringify(calls.filter(c => !c.url.endsWith('/smtp/email')));
 for (const k of ['CLPEASY_', 'SUBSCRIPTION_STATUS', 'PLAN']) if (all.includes(k)) throw new Error('ASSERTION FAILED: sign-up must not write ' + k);
-eq(calls.some(c => c.url.includes('/automations')), true, 'onboarding automation still triggered (unchanged)');
+eq(calls.some(c => c.url.includes('/automations')), false, 'onboarding relies on list membership; no invalid automation request');
 eq(calls.filter(c => c.url.endsWith('/smtp/email')).length, 1, 'admin alert still sent (unchanged)');
 out('PASS: notify-signup writes only FIRSTNAME + list, never a plan/status (cannot reset a paying customer)');
 out('notify-signup offline checks passed (1 scenario)');
