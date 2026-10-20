@@ -22,7 +22,7 @@ The Part 1 and Part 2 English wording is identical for all eight codes.
 |---|---|---|---|
 | P202 | Do not handle until all safety precautions have been read and understood. | none | **Print**: complete |
 | P240 | Ground and bond container and receiving equipment. | selection conditions only ("if…") | **Print**: complete |
-| P241 | Use explosion-proof [electrical/ventilating/lighting/…] equipment. | bracketed text "may be used… if necessary and as appropriate" | **Print** "Use explosion-proof equipment." The bracket is optional, so the text without it is complete. *Note:* if a supplier does specify equipment inside the brackets, CLPeasy prints the shorter text. |
+| P241 | Use explosion-proof [electrical/ventilating/lighting/…] equipment. | bracketed text "may be used… if necessary and as appropriate" | **Print the supplier's own wording** (corrected 20 Oct, see "P241 supplier equipment wording" below). Base text only when the SDS gives no equipment words. Unverifiable words block. |
 | P242 | Use non-sparking tools. | selection conditions only | **Print**: complete |
 | P243 | Take action to prevent static discharges. | selection conditions only | **Print**: complete |
 | P403+P235 | Store in a well-ventilated place. Keep cool. | selection conditions only | **Print**: complete |
@@ -30,6 +30,37 @@ The Part 1 and Part 2 English wording is identical for all eight codes.
 | P310 | Immediately call a POISON CENTER/doctor/… | "…Manufacturer/supplier to specify the appropriate source of emergency medical advice." | **Not added**: the supplier must complete it. The previous #233 text, "POISON CENTRE or doctor", isn't statutory wording. Stays unrecognised (blocks). **REVIEW.** |
 
 **Change from `42123e5`:** P308+P313 and P310 are removed from both P_LIB copies. The other six stay as #233 had them. No existing library entry changes.
+
+## P241 supplier equipment wording (20 Oct 2026, founder-approved approach)
+
+**Problem.** Stage A printed P241 as "Use explosion-proof equipment." whatever the SDS said, so it silently dropped equipment the supplier had specified.
+
+**Evidence.**
+- **Annex IV:** the introduction says "[…] text … is not appropriate in every case and should be used only in certain circumstances". P241's column (5) says "text in square brackets may be used to specify specific electrical, ventilating, lighting or other equipment if necessary and as appropriate". That makes it a supplier choice.
+- **Genuine Nikura SDSs:** all four print "Use explosion-proof electrical, ventilating and lighting equipment." somewhere in the document. **Only the neat Positivity Essential Oil Blend (15/09/2025) lists P241 in Section 2.2.** Bergamot (10% in candle wax, 04/06/2025), Snow Angel (neat, 08/08/2025) and Nag Champa (10% in candle wax, 21/07/2025) print it only outside Section 2.2, which Smart Paste doesn't read.
+
+**Correction (smallest safe change, modelled on P280's per-label wording).**
+- **Reading the SDS:** Smart Paste looks for the supplier's "explosion-proof … equipment" sentence anywhere in Section 2.2 and keeps the equipment words exactly as written (`p241Equipment`).
+- **Verification:** each word must be one of the Annex IV terms electrical, ventilating or lighting, joined by commas, "/", "and" or "or". The separators are a minor textual variation the Annex IV introduction allows; the equipment itself isn't changed.
+- **No equipment words:** if Section 2.2 has no explosion-proof sentence (code only), the statutory base text "Use explosion-proof equipment." prints. Nothing is discarded.
+- **Blocks Step 3 and every export, printing nothing:**
+  - "…" left in;
+  - equipment outside the list;
+  - a cut-off sentence;
+  - conflicting sentences;
+  - a Smart Paste label saved before this field existed.
+- **Same result everywhere:** the words are saved with the label and re-verified by the shared renderer, so the Builder preview, SVG, PNG, PDF print view and the Composer print the same text.
+- **Unchanged:** a manually entered P241 (no SDS) prints the base text. Re-extraction and Clear reset the field. No other P-statement changes.
+
+**Results.**
+- **Genuine Positivity Section 2.2:** prints "Use explosion-proof electrical, ventilating and lighting equipment." The genuine label stays blocked by H401 (GB-unsupported), unchanged.
+- **Bergamot, Snow Angel, Nag Champa:** no P241 extracted. Nag Champa stays blocked by H316.
+- **Tests:** `tests/p241-supplier-equipment-wording.js` (6 checks), using the genuine Section 2.2 texts in `tests/fixtures/p241-nikura-section-2-2.json`.
+- **Real browser, local copy of this branch:**
+  - the Builder PNG at 600 dpi and the Composer label, sheet position and 300 dpi PNG print the full supplier wording;
+  - an older Smart Paste record without the field shows the review block.
+
+  The Positivity wording was rendered with H401 taken out of the H list only so the label could render.
 
 ## Real-case results (jsdom Builder harness; desktop emulation, not a device)
 

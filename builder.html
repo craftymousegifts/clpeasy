@@ -1723,6 +1723,10 @@ const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',produc
   // in label-render.js). p280Items: subset of LabelRenderer.P280_ITEMS keys;
   // p280Other: optional free-text extra item. Empty = no valid selection yet.
   p280Items:[],p280Other:'',
+  // P241 equipment words copied from the supplier's Section 2.2 by Smart
+  // Paste (LabelRenderer.extractP241Equipment): '' = none given, null =
+  // can't be verified (blocks), undefined = not extracted.
+  p241Equipment:undefined,
   // Owner decisions C3/C4: hazardFromExtraction is true only while the hazard
   // data on this label came from a successful Smart Paste extraction (it is
   // saved with the label). hazardSource is the product name, product type and
@@ -3153,6 +3157,7 @@ async function saveLabel(){
     pStatements:S.pStatements||'',textColour:S.textColour||'dark',showBorder:S.showBorder!==false,
     labelLang:document.getElementById('label-lang')?.value||'en',
     p280Items:Array.isArray(S.p280Items)?[...S.p280Items]:[],p280Other:S.p280Other||'',
+    p241Equipment:typeof S.p241Equipment==='string'?S.p241Equipment:undefined,
     hazardFSOverride:S.hazardFSOverride,scentFSOverride:S.scentFSOverride,
     bizNameFSOverride:S.bizNameFSOverride,hazardYOffset:S.hazardYOffset,
     typeFSOverride:S.typeFSOverride,sigFSOverride:S.sigFSOverride,
@@ -3259,6 +3264,9 @@ function loadLabelRecord(e){
   // rather than silently showing every protection item.
   S.p280Items=Array.isArray(e.p280Items)?[...e.p280Items]:[];
   S.p280Other=e.p280Other||'';
+  // An extracted label saved before p241Equipment existed restores undefined,
+  // so its P241 blocks until Smart Paste is run again (never base text).
+  S.p241Equipment=typeof e.p241Equipment==='string'?e.p241Equipment:undefined;
   // C3: restore the processed-extraction state. Labels saved from v12 carry
   // hazardFromExtraction. Older labels do not; for them the one field only a
   // successful Smart Paste extraction ever writes (sdsSignal, which Clear
@@ -4284,6 +4292,8 @@ function extractSDS(){
   if(pEl){pEl.value=pRaw.join(', ');}
   S.pStatements=pRaw.join(', ');
   S.pSelected=pRaw;
+  // P241: keep the supplier's own equipment words, never drop or choose them.
+  S.p241Equipment=pRaw.includes('P241')?LabelRenderer.extractP241Equipment(text):undefined;
   document.querySelectorAll('#p-chips .h-chip').forEach(chip=>{
     const code=chip.dataset.code||chip.textContent.trim();
     if(pRaw.includes(code)){chip.classList.add('selected');}else{chip.classList.remove('selected');}
@@ -4604,6 +4614,10 @@ function canLeaveApprovedBuilderStep(step){
     // saved label reopened here without ever completing the picker).
     if(pCodes.includes('P280') && !LabelRenderer.buildP280Wording({p280Items:S.p280Items,p280Other:S.p280Other})){
       alert('P280 needs at least one applicable protection item selected before continuing. Click the P280 chip to choose.');
+      return false;
+    }
+    if(pCodes.includes('P241') && !LabelRenderer.buildP241Wording({p241Equipment:S.p241Equipment,hazardFromExtraction:S.hazardFromExtraction})){
+      alert('P241 can\'t be added to this label yet\n\nYour SDS Section 2.2 gives explosion-proof equipment wording that CLPeasy can\'t print exactly as written, or this label was saved before CLPeasy kept that wording. Paste Section 2.2 again. If this message remains, contact support@clpeasy.com.');
       return false;
     }
   }
@@ -5093,7 +5107,7 @@ function clearHazardData(){
   // Correction (2026-09): P280 sub-selections were not previously cleared,
   // leaving stale precautionary-statement wording selections behind after
   // a Clear even though P statements themselves were reset.
-  S.p280Items=[];S.p280Other='';
+  S.p280Items=[];S.p280Other='';S.p241Equipment=undefined;
   // Clear pictograms
   S.pictograms=[];
   document.querySelectorAll('.picto-btn').forEach(c=>c.classList.remove('selected'));
@@ -5343,6 +5357,7 @@ function buildSVG(forExport=false){
     hideEN15494:S.hideEN15494, labelLang:S.labelLang,
     showOnLabel:S.showOnLabel,omissionConfirmations:S.omissionConfirmations,
     p280Items:S.p280Items, p280Other:S.p280Other,
+    p241Equipment:S.p241Equipment, hazardFromExtraction:S.hazardFromExtraction,
   };
   // Exposed so updateLabel()'s fail-closed block message can look up
   // "what size WOULD fit this exact content" via LabelRenderer's own

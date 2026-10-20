@@ -176,6 +176,10 @@ function normalizeLabel(data){
     // selection" here, not defaulted to every item.
     p280Items: Array.isArray(data.p280Items) ? data.p280Items : [],
     p280Other: data.p280Other || '',
+    // P241 supplier equipment words (see buildP241Wording); kept undefined
+    // when absent so an extracted label saved before this field blocks.
+    p241Equipment: typeof data.p241Equipment === 'string' ? data.p241Equipment : undefined,
+    hazardFromExtraction: data.hazardFromExtraction === true,
     sensitisers: data.sensitisers || [],
     pictograms: data.pictograms || [],
     bizName: data.bizName || 'Your Brand',
@@ -463,6 +467,45 @@ function buildP280Wording(data){
   if(other) parts.push(other);
   if(!parts.length) return null;
   return 'Wear '+parts.join('/');
+}
+// P241 (GB CLP Annex IV, legislation.gov.uk, checked 20 Oct 2026):
+// "Use explosion-proof [electrical/ventilating/lighting/…] equipment." The
+// bracketed text "may be used to specify specific electrical, ventilating,
+// lighting or other equipment if necessary and as appropriate" -- a
+// supplier choice. CLPeasy never chooses it and never drops it: Smart Paste
+// copies the equipment words from the supplier's own Section 2.2 sentence
+// (data.p241Equipment) only when every word is one of the three listed
+// terms. '' = the SDS gives no equipment words (base text). Anything else --
+// "…", other equipment, an extracted label saved before this field existed
+// (undefined) -- is unprintable and blocks like any incomplete code.
+const P241_EQUIPMENT_TERMS=['electrical','ventilating','lighting'];
+function verifyP241Equipment(words){
+  const w=String(words==null?'':words).replace(/\s+/g,' ').trim();
+  if(!w) return '';
+  const parts=w.toLowerCase().split(/\s*(?:,|\/|\band\b|\bor\b)\s*/).filter(Boolean);
+  if(!parts.length || !parts.every(p=>P241_EQUIPMENT_TERMS.includes(p))) return null;
+  return w;
+}
+// Finds the supplier's P241 sentence anywhere in Section 2.2 text (PDF
+// layouts can separate a code from its sentence). Returns '' when the text
+// has no explosion-proof sentence, the verified equipment words when every
+// sentence agrees, or null when any sentence can't be verified or they
+// conflict.
+function extractP241Equipment(text){
+  const src=String(text||'');
+  if(!/explosion\s*-?\s*proof/i.test(src)) return '';
+  const found=[...src.matchAll(/explosion\s*-?\s*proof\b([^.]*?)\bequipment\b/gi)];
+  const mentions=(src.match(/explosion\s*-?\s*proof/gi)||[]).length;
+  if(!found.length || found.length!==mentions) return null;
+  const words=[...new Set(found.map(m=>verifyP241Equipment(m[1])))];
+  return words.length===1 && words[0]!==null ? words[0] : null;
+}
+function buildP241Wording(data){
+  const eq=data && data.p241Equipment;
+  if(typeof eq!=='string') return data && data.hazardFromExtraction ? null : 'Use explosion-proof equipment';
+  const w=verifyP241Equipment(eq);
+  if(w===null) return null;
+  return w ? 'Use explosion-proof '+w+' equipment' : 'Use explosion-proof equipment';
 }
 // GHS pictogram SVG symbols — black and white, diamond shaped, industry standard
 const GHS_IMG={
@@ -1650,6 +1693,11 @@ function renderLabel(rawData, opts){
       if(!w)_unrecognizedCodes.push(c);
       return w;
     }
+    if(c==='P241'){
+      const w=buildP241Wording(data);
+      if(!w)_unrecognizedCodes.push(c);
+      return w;
+    }
     const e=P_LIB.find(x=>x.code===c);
     if(!e)_unrecognizedCodes.push(c);
     return e?e.desc:null;
@@ -2713,7 +2761,7 @@ function getMissingBusinessDetails(data){
 
   const LabelRenderer = {
     getMissingBusinessDetails, checkRequiredContent, isValidPictogramKey, describeInvalidPictograms,
-    renderLabel, normalizeLabel, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, GB_UNSUPPORTED_CODES, H_SUFFIXED_VERIFIED, extractHazardCodesFromText, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
+    renderLabel, normalizeLabel, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, GB_UNSUPPORTED_CODES, H_SUFFIXED_VERIFIED, extractHazardCodesFromText, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, extractP241Equipment, buildP241Wording, findSmallestFittingSize,
     // GHS pictogram geometry -- exposed so tests/consumers measuring
     // compliance never have to re-derive or hardcode the sqrt(2)
     // square<->bounding-box relationship themselves.
