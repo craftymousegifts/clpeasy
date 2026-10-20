@@ -2219,8 +2219,10 @@ function closeSupport(){
 let _clpCodeHelpReturnFocus=null;
 function openClpCodeHelp(){
   const unsupported=(window._unsupportedCodes||[]).map(String);
-  const generic=(window._unrecognizedCodesGeneric||[]).map(String);
-  if(!unsupported.length&&!generic.length)return;
+  const allGeneric=(window._unrecognizedCodesGeneric||[]).map(String);
+  const p241Missing=allGeneric.includes('P241');
+  const generic=allGeneric.filter(c=>c!=='P241');
+  if(!unsupported.length&&!generic.length&&!p241Missing)return;
   const copy=document.getElementById('clp-code-help-copy');
   const overlay=document.getElementById('clp-code-help-overlay');
   if(!copy||!overlay)return;
@@ -2232,6 +2234,9 @@ function openClpCodeHelp(){
   }
   if(generic.length){
     paragraphs.push('CLPeasy could not identify <strong>'+g+'</strong>. This may be a copying error, a code that is not yet recognised by the service, or information from a different classification system.');
+  }
+  if(p241Missing){
+    paragraphs.push('<strong>P241</strong> (explosion-proof equipment): '+escapeBuilderText(clpP241WordingMessage().body));
   }
   paragraphs.push('CLPeasy cannot determine the correct replacement, remove the '+(unsupported.length+generic.length>1?'codes':'code')+', or substitute a different classification on the supplier\'s behalf. The label has therefore been blocked to avoid creating a label that may be incomplete or incorrect.');
   paragraphs.push('Check that you copied only Section 2.2 from the SDS for the correct product and concentration. If the '+(unsupported.length+generic.length>1?'codes are':'code is')+' shown there, ask your supplier for the current Great Britain-market SDS or written Great Britain CLP classification information.');
@@ -4538,10 +4543,21 @@ function clpUnrecognisedCodesMessage(codes, escapeFn){
 // codes (that was a real bug: a maker with one confirmed-unsupported code
 // and one genuinely unrelated unrecognised code must be told about both,
 // not just whichever one this app currently treats as "more important").
+// P241 is in P_LIB, so it is only ever blocked because the supplier's
+// explosion-proof equipment wording couldn't be read exactly (see
+// LabelRenderer.buildP241Wording). Explain that, not "not recognised".
+function clpP241WordingMessage(){
+  return {
+    heading:'P241 needs the equipment wording from your SDS',
+    body:'This label includes P241 (explosion-proof equipment), but CLPeasy couldn\'t read the supplier\'s equipment wording exactly, or the label was saved before CLPeasy kept that wording. CLPeasy won\'t shorten or guess this statement. Paste the complete Section 2.2 from your supplier\'s SDS again. If your SDS doesn\'t list P241, clear the hazard data and start again. If this message remains, contact support@clpeasy.com.'
+  };
+}
 function clpCombinedCodeBlockMessage(unsupportedCodes, genericCodes, escapeFn){
   const parts=[];
+  const generic=(genericCodes||[]).filter(c=>c!=='P241');
   if(unsupportedCodes && unsupportedCodes.length) parts.push(clpUnsupportedCodesMessage(unsupportedCodes, escapeFn));
-  if(genericCodes && genericCodes.length) parts.push(clpUnrecognisedCodesMessage(genericCodes, escapeFn));
+  if(generic.length) parts.push(clpUnrecognisedCodesMessage(generic, escapeFn));
+  if((genericCodes||[]).includes('P241')) parts.push(clpP241WordingMessage());
   return parts;
 }
 function canLeaveApprovedBuilderStep(step){
@@ -4617,7 +4633,7 @@ function canLeaveApprovedBuilderStep(step){
       return false;
     }
     if(pCodes.includes('P241') && !LabelRenderer.buildP241Wording({p241Equipment:S.p241Equipment,hazardFromExtraction:S.hazardFromExtraction})){
-      alert('P241 can\'t be added to this label yet\n\nYour SDS Section 2.2 gives explosion-proof equipment wording that CLPeasy can\'t print exactly as written, or this label was saved before CLPeasy kept that wording. Paste Section 2.2 again. If this message remains, contact support@clpeasy.com.');
+      const m=clpP241WordingMessage();alert(m.heading+'\n\n'+m.body);
       return false;
     }
   }

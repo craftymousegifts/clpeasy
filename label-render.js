@@ -179,7 +179,11 @@ function normalizeLabel(data){
     // P241 supplier equipment words (see buildP241Wording); kept undefined
     // when absent so an extracted label saved before this field blocks.
     p241Equipment: typeof data.p241Equipment === 'string' ? data.p241Equipment : undefined,
-    hazardFromExtraction: data.hazardFromExtraction === true,
+    // Same rule as builder.html loadLabelRecord(): a record saved before this
+    // field existed counts as extracted when it carries the supplier signal
+    // word only Smart Paste writes, so Builder and Composer agree.
+    hazardFromExtraction: data.hazardFromExtraction === true ||
+      (data.hazardFromExtraction === undefined && typeof data.sdsSignal === 'string' && data.sdsSignal.trim() !== ''),
     sensitisers: data.sensitisers || [],
     pictograms: data.pictograms || [],
     bizName: data.bizName || 'Your Brand',
@@ -479,24 +483,47 @@ function buildP280Wording(data){
 // "…", other equipment, an extracted label saved before this field existed
 // (undefined) -- is unprintable and blocks like any incomplete code.
 const P241_EQUIPMENT_TERMS=['electrical','ventilating','lighting'];
+// The supplier's equipment words and separators, kept as written; only
+// spacing is tidied ("a/ b" -> "a/b", "a ,b" -> "a, b") and letters are set
+// to the Annex IV lower case (every word is verified to be one of its three
+// terms, so no word changes). An empty part (",,", a trailing "/") can't be
+// verified.
 function verifyP241Equipment(words){
-  const w=String(words==null?'':words).replace(/\s+/g,' ').trim();
+  const w=String(words==null?'':words).replace(/\s+/g,' ').trim().toLowerCase()
+    .replace(/\s*\/\s*/g,'/').replace(/\s*,\s*/g,', ');
   if(!w) return '';
-  const parts=w.toLowerCase().split(/\s*(?:,|\/|\band\b|\bor\b)\s*/).filter(Boolean);
-  if(!parts.length || !parts.every(p=>P241_EQUIPMENT_TERMS.includes(p))) return null;
+  const parts=w.split(/\s*(?:,\s*(?:and|or)\b|,|\/|\band\b|\bor\b)\s*/);
+  if(!parts.every(p=>P241_EQUIPMENT_TERMS.includes(p))) return null;
   return w;
 }
+// PDF copy-paste turns hyphens into look-alike characters and wraps words
+// across lines. Normalise those before looking for the supplier's sentence:
+// Unicode hyphens/dashes/minus -> "-", soft and zero-width characters
+// removed, non-breaking spaces -> " ", a word hyphenated at a line end
+// ("explo-\nsion") rejoined.
+function normaliseP241Text(text){
+  return String(text||'')
+    .replace(/[­​-‍⁠﻿]/g,'')
+    .replace(/[‐-―−﹘﹣－]/g,'-')
+    .replace(/[  ]/g,' ')
+    .replace(/([A-Za-z])-[ \t]*\r?\n\s*([a-z])/g,'$1$2');
+}
 // Finds the supplier's P241 sentence anywhere in Section 2.2 text (PDF
-// layouts can separate a code from its sentence). Returns '' when the text
-// has no explosion-proof sentence, the verified equipment words when every
-// sentence agrees, or null when any sentence can't be verified or they
-// conflict.
+// layouts can separate a code from its sentence). Returns:
+//   ''   -- no evidence of equipment wording at all (code only): base text;
+//   words -- every explosion-proof sentence verified and agreeing;
+//   null -- any sign of equipment wording that can't be read exactly
+//           (an unmatched "...proof" word, "ventilating"/"lighting" outside
+//           a verified sentence, "…", other equipment, conflicts). Blocks;
+//           CLPeasy never shortens or guesses the supplier's wording.
 function extractP241Equipment(text){
-  const src=String(text||'');
-  if(!/explosion\s*-?\s*proof/i.test(src)) return '';
+  const src=normaliseP241Text(text);
   const found=[...src.matchAll(/explosion\s*-?\s*proof\b([^.]*?)\bequipment\b/gi)];
-  const mentions=(src.match(/explosion\s*-?\s*proof/gi)||[]).length;
-  if(!found.length || found.length!==mentions) return null;
+  const proofMentions=(src.match(/proof\b/gi)||[]).length;
+  if(!proofMentions){
+    return /\bventilat|\blighting\b|explosion\s*-?\s*(?:protected|safe)\b/i.test(src) ? null : '';
+  }
+  if(found.length!==proofMentions) return null;
   const words=[...new Set(found.map(m=>verifyP241Equipment(m[1])))];
   return words.length===1 && words[0]!==null ? words[0] : null;
 }
@@ -931,9 +958,19 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
   // version did, so a malformed/adversarial code value still can't break
   // out of the <text>/<tspan> elements.
   const heading = 'LABEL DATA NEEDS REVIEW';
-  const uCodes = unsupportedCodes.map(xe), gCodes = genericCodes.map(xe);
+  // P241 is in P_LIB, so it only reaches genericCodes when its supplier
+  // equipment wording couldn't be read exactly (buildP241Wording). Say that
+  // instead of "not recognised"; the block itself is unchanged.
+  const p241Missing = genericCodes.includes('P241');
+  const uCodes = unsupportedCodes.map(xe), gCodes = genericCodes.filter(c=>c!=='P241').map(xe);
   let sentences;
-  if(uCodes.length && gCodes.length){
+  if(p241Missing && !uCodes.length && !gCodes.length){
+    sentences = [
+      'P241 needs the explosion-proof equipment wording from your SDS.',
+      'Paste the complete Section 2.2 again.',
+      'If this remains, contact CLPeasy support.'
+    ];
+  } else if(uCodes.length && gCodes.length){
     // Mixed: identify both groups by name -- neither hides the other --
     // plus the one instruction both groups share.
     sentences = [
@@ -956,6 +993,11 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
       'Check you pasted Section 2.2 from the correct supplier SDS.',
       'If the code is present in Section 2.2, contact CLPeasy support.'
     ];
+  }
+
+  // P241 alongside other code issues: its own sentence after theirs.
+  if(p241Missing && (uCodes.length || gCodes.length)){
+    sentences.splice(uCodes.length && gCodes.length ? 2 : 1, 0, 'P241 needs the explosion-proof equipment wording from your SDS.');
   }
 
   // M38 (Issue #7): name any unrecognised pictogram key (escaped -- untrusted

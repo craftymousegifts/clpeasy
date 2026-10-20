@@ -15,6 +15,10 @@
 //      blocks; a manually entered P241 prints the base text.
 //   4. The same saved record prints the same wording through the shared
 //      renderer (preview and export SVG, as used by the Composer).
+//   5. Remediation after independent review: Unicode hyphens, invisible
+//      characters and wrapped lines (B1); empty parts and spacing (N1);
+//      legacy records in the shared renderer (S1); P241-specific block
+//      messages in Builder, overlay, help panel and Composer (S2).
 // Run from the repo root: node tests/p241-supplier-equipment-wording.js
 'use strict';
 const fs = require('fs');
@@ -107,9 +111,9 @@ ok('genuine Bergamot, Snow Angel and Nag Champa Section 2.2: P241 is not extract
 // Step 3 gate for unverifiable wording.
 const head = '2.2 Label elements\nSignal word: Danger\nH226 Flammable liquid and vapour.\n';
 r = paste(head + 'P210 Keep away from heat.\nP241 Use explosion-proof electrical/ventilating/lighting/… equipment.\nP501 Dispose of contents.');
-assert(r.eq === null && !r.leave && /P241 can't be added/.test(r.alert), r.alert);
+assert(r.eq === null && !r.leave && /^P241 needs the equipment wording from your SDS/.test(r.alert) && /won't shorten or guess/.test(r.alert), r.alert);
 let out = LR.renderLabel(Object.assign({}, window.eval('S')), { instanceId: 'p241-blocked', forExport: true });
-assert(out.blocked && out.warnings.includes('unrecognized-code:P241') && !/explosion-proof/.test(drawn(out.svg)), 'unverifiable P241 blocks rendering and prints nothing');
+assert(out.blocked && out.warnings.includes('unrecognized-code:P241') && !/Use explosion-proof/.test(drawn(out.svg)), 'unverifiable P241 blocks rendering and prints nothing');
 ok('unverifiable equipment wording blocks Step 3 and export; nothing is printed or chosen');
 
 // Re-extraction and Clear never keep stale wording.
@@ -135,6 +139,84 @@ assert(out.blocked && out.warnings.includes('unrecognized-code:P241'), 'extracte
 out = LR.renderLabel(Object.assign({}, base, { hazardFromExtraction: false }), { instanceId: 'p241-manual', forExport: true });
 assert(!out.blocked && drawn(out.svg).includes(BASE + '.'), 'manually entered P241 prints the base text');
 ok('saved records reopen with the same wording; renderer (Builder and Composer) prints it; legacy extracted P241 blocks');
+
+// ── Remediation (independent review B1, S1, S2, N1) ─────────────────────
+// B1: Unicode hyphens, invisible characters and line-wrapped words from PDF
+// copy-paste must never turn supplier equipment wording into base text.
+const SUPPLIER = 'electrical/ventilating/lighting';
+for (const [label, dash] of [['U+2010 hyphen', '‐'], ['U+2011 non-breaking hyphen', '‑'], ['U+2012 figure dash', '‒'], ['U+2013 en dash', '–'], ['U+2014 em dash', '—'], ['U+2212 minus', '−'], ['U+FE63 small hyphen', '﹣'], ['U+FF0D fullwidth hyphen', '－']]) {
+  assert.strictEqual(ex('P241 Use explosion' + dash + 'proof ' + SUPPLIER + ' equipment.'), SUPPLIER, label);
+}
+assert.strictEqual(ex('P241 Use explo­sion-proof electrical equipment.'), 'electrical', 'soft hyphen');
+assert.strictEqual(ex('P241 Use explosion​-proof lighting equipment.'), 'lighting', 'zero-width space');
+assert.strictEqual(ex('P241 Use explosion-proof electrical equipment.'), 'electrical', 'non-breaking spaces');
+assert.strictEqual(ex('P241 Use explo-\nsion-proof electrical equipment.'), 'electrical', 'word hyphenated across lines');
+assert.strictEqual(ex('P241 Use explosion-\r\nproof electrical equipment.'), 'electrical', 'hyphen at line end (CRLF)');
+assert.strictEqual(ex('P241 Use explosion-proof electrical, venti-\n    lating and lighting equipment.'), 'electrical, ventilating and lighting', 'equipment word wrapped across lines');
+assert.strictEqual(ex('P241 Use explosion-proof electrical,\n    ventilating and lighting\n    equipment.'), 'electrical, ventilating and lighting', 'sentence wrapped across lines');
+// Evidence of equipment wording that can't be read exactly blocks (never '').
+assert.strictEqual(ex('P241 Use explo sion-proof electrical equipment.'), null, 'broken word with an unmatched "proof"');
+assert.strictEqual(ex('P241 Use explo sion pr oof ventilating equipment.'), null, '"ventilating" without a readable sentence');
+assert.strictEqual(ex('P241 Use explosion-protected lighting equipment.'), null, 'non-standard sentence');
+assert.strictEqual(ex('P241 Use explosion-proof electrical equipment. P282 Wear flameproof gloves.'), null, 'an extra "proof" mention can\'t be accounted for');
+// Founder N2 rule: code only, no evidence of equipment wording -> base text.
+assert.strictEqual(ex('P210 Keep away from heat.\nP241\nP501 Dispose of contents.'), '', 'code only, no equipment words: base text');
+ok('B1: Unicode hyphens, invisible characters and wrapped lines keep the supplier wording; unreadable wording blocks; code only prints base text');
+
+// N1: punctuation.
+assert.strictEqual(ex('P241 Use explosion-proof electrical/ equipment.'), null, 'trailing "/" blocks');
+assert.strictEqual(ex('P241 Use explosion-proof electrical,,lighting equipment.'), null, 'double comma blocks');
+assert.strictEqual(ex('P241 Use explosion-proof /lighting equipment.'), null, 'leading "/" blocks');
+assert.strictEqual(ex('P241 Use explosion-proof electrical, ventilating, and lighting equipment.'), 'electrical, ventilating, and lighting', 'serial comma accepted');
+assert.strictEqual(ex('P241 Use explosion-proof electrical / ventilating /lighting equipment.'), 'electrical/ventilating/lighting', 'spacing around "/" tidied');
+assert.strictEqual(ex('P241 Use explosion-proof electrical ,ventilating and lighting equipment.'), 'electrical, ventilating and lighting', 'spacing around "," tidied');
+assert.strictEqual(ex('P241 USE EXPLOSION-PROOF ELECTRICAL/VENTILATING/LIGHTING EQUIPMENT.'), 'electrical/ventilating/lighting', 'capitals set to Annex IV lower case');
+assert.strictEqual(LR.buildP241Wording({ p241Equipment: 'electrical/', hazardFromExtraction: true }), null, 'stored empty part blocks');
+ok('N1: empty parts block; spacing and capitals tidied without changing any word');
+
+// B1 end to end: genuine Positivity Section 2.2 with Unicode hyphens.
+for (const dash of ['‑', '–']) {
+  r = paste(pos.section22.replace('explosion-proof', 'explosion' + dash + 'proof'));
+  assert.strictEqual(r.eq, 'electrical, ventilating and lighting', 'Positivity with ' + JSON.stringify(dash));
+  const o = LR.renderLabel(Object.assign({}, window.eval('S'), { hStatements: window.eval('S').hStatements.split(', ').filter(c => c !== 'H401').join(', '), customW: 200, customH: 200 }), { instanceId: 'p241-uni', forExport: true });
+  assert(drawn(o.svg).includes(FULL + '.') && !drawn(o.svg).includes(BASE + '.'), 'export keeps the full wording with ' + JSON.stringify(dash));
+}
+ok('B1 end to end: genuine Positivity text with Unicode hyphens keeps the full supplier wording in export');
+
+// S1: a legacy saved record (no hazardFromExtraction, but the supplier signal
+// word only Smart Paste writes) blocks in the shared renderer (Composer)
+// exactly as it does in the Builder; a manual legacy record prints base text.
+const legacy = Object.assign({}, base, { sdsSignal: 'Danger' });
+assert.strictEqual(LR.normalizeLabel(legacy).hazardFromExtraction, true);
+out = LR.renderLabel(legacy, { instanceId: 'p241-legacy-sds', forExport: true });
+assert(out.blocked && out.warnings.includes('unrecognized-code:P241') && !/Use explosion-proof/.test(drawn(out.svg)), 'legacy extracted record blocks in the renderer: ' + JSON.stringify(out.warnings));
+S = reopen(legacy);
+assert(S.hazardFromExtraction === true && LR.buildP241Wording(S) === null, 'and in the Builder');
+out = LR.renderLabel(Object.assign({}, base, { sdsSignal: '' }), { instanceId: 'p241-legacy-manual', forExport: true });
+assert(!out.blocked && drawn(out.svg).includes(BASE + '.'), 'legacy manual record prints base text');
+assert.strictEqual(LR.normalizeLabel(Object.assign({}, base, { hazardFromExtraction: false, sdsSignal: 'Danger' })).hazardFromExtraction, false, 'an explicit false is kept');
+ok('S1: legacy saved records are treated the same in the Builder and the Composer renderer');
+
+// S2: messages say what P241 needs, not "not recognised", everywhere.
+const overlay = drawn(LR.renderLabel(Object.assign({}, base, { hazardFromExtraction: true }), { instanceId: 'p241-msg', forExport: true }).svg);
+assert(/P241 needs the explosion-proof equipment wording from your SDS/.test(overlay) && !/P241 was not recognised/.test(overlay), 'renderer overlay: ' + overlay.slice(0, 300));
+const mixed = drawn(LR.renderLabel(Object.assign({}, base, { hazardFromExtraction: true, pStatements: 'P210, P241, P999' }), { instanceId: 'p241-msg2', forExport: true }).svg);
+assert(/P999 was not recognised/.test(mixed) && /P241 needs the explosion-proof equipment wording/.test(mixed) && !/P241, P999|P999, P241/.test(mixed), 'mixed overlay keeps both: ' + mixed.slice(0, 300));
+const parts = window.clpCombinedCodeBlockMessage([], ['P241', 'P999']);
+assert(parts.length === 2 && /P999/.test(parts[0].body) && !/P241/.test(parts[0].body) && /^P241 needs/.test(parts[1].heading), 'Builder block message parts: ' + JSON.stringify(parts));
+window.eval("window._unsupportedCodes=[];window._unrecognizedCodesGeneric=['P241'];");
+window.openClpCodeHelp();
+const help = (box('clp-code-help-copy') || {}).textContent || '';
+assert(/P241 \(explosion-proof equipment\)/.test(help) && !/could not identify P241/.test(help), 'help panel: ' + help.slice(0, 300));
+// Composer message (print.html describeFitWarnings), evaluated in isolation.
+const printSrc = fs.readFileSync('print.html', 'utf8').split('\r\n').join('\n');
+const fStart = printSrc.indexOf('function describeFitWarnings(');
+const fEnd = printSrc.indexOf('\n}\n', fStart) + 2;
+const describe = new Function('LabelRenderer', printSrc.slice(fStart, fEnd) + '\nreturn describeFitWarnings;')(LR);
+assert.strictEqual(describe(['unrecognized-code:P241']), "P241 needs the explosion-proof equipment wording from the supplier's SDS: open this label in the Builder and paste Section 2.2 again.");
+assert(/doesn't recognise: P999\. P241 needs/.test(describe(['unrecognized-code:P999', 'unrecognized-code:P241'])), 'Composer mixed message');
+assert.strictEqual(describe(['unrecognized-code:P999']), "Contains a hazard/precautionary code CLPeasy doesn't recognise: P999.", 'other codes unchanged');
+ok('S2: Step 3 alert, preview overlay, help panel and Composer explain what P241 needs; other codes unchanged');
 
 assert.deepStrictEqual(jsErrors.filter(e => !/Not implemented/.test(e)), [], 'no page errors');
 console.log(`\nAll ${n} P241 supplier-wording checks passed.`);
