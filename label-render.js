@@ -513,17 +513,24 @@ function normaliseP241Text(text){
 //   ''   -- no evidence of equipment wording at all (code only): base text;
 //   words -- every explosion-proof sentence verified and agreeing;
 //   null -- any sign of equipment wording that can't be read exactly
-//           (an unmatched "...proof" word, "ventilating"/"lighting" outside
-//           a verified sentence, "…", other equipment, conflicts). Blocks;
-//           CLPeasy never shortens or guesses the supplier's wording.
+//           (an unmatched "...proof" word; electrical/ventilating/lighting
+//           or other explosion-protection wording left anywhere outside a
+//           verified sentence, e.g. "equipment (electrical, lighting)";
+//           "…", other equipment, conflicts). Blocks; CLPeasy never
+//           shortens or guesses the supplier's wording.
+// "ventilating" (not "ventilat") so P403/P271's "well-ventilated" is not
+// mistaken for P241 equipment wording.
+const P241_EQUIPMENT_EVIDENCE=/\belectrical\b|\bventilating\b|\blighting\b|explosion\s*-?\s*(?:protected|safe|resistant)\b|anti\s*-?\s*explosion|\bATEX\b|explosive\s+atmospheres?/i;
 function extractP241Equipment(text){
   const src=normaliseP241Text(text);
-  const found=[...src.matchAll(/explosion\s*-?\s*proof\b([^.]*?)\bequipment\b/gi)];
+  const sentenceRe=/explosion\s*-?\s*proof\b([^.]*?)\bequipment\b/gi;
+  const found=[...src.matchAll(sentenceRe)];
   const proofMentions=(src.match(/proof\b/gi)||[]).length;
-  if(!proofMentions){
-    return /\bventilat|\blighting\b|explosion\s*-?\s*(?:protected|safe)\b/i.test(src) ? null : '';
-  }
   if(found.length!==proofMentions) return null;
+  // Whatever is left once the verified sentences are taken out must carry no
+  // further equipment wording.
+  if(P241_EQUIPMENT_EVIDENCE.test(src.replace(sentenceRe,' '))) return null;
+  if(!found.length) return '';
   const words=[...new Set(found.map(m=>verifyP241Equipment(m[1])))];
   return words.length===1 && words[0]!==null ? words[0] : null;
 }

@@ -159,6 +159,22 @@ assert.strictEqual(ex('P241 Use explo sion-proof electrical equipment.'), null, 
 assert.strictEqual(ex('P241 Use explo sion pr oof ventilating equipment.'), null, '"ventilating" without a readable sentence');
 assert.strictEqual(ex('P241 Use explosion-protected lighting equipment.'), null, 'non-standard sentence');
 assert.strictEqual(ex('P241 Use explosion-proof electrical equipment. P282 Wear flameproof gloves.'), null, 'an extra "proof" mention can\'t be accounted for');
+// Re-review F1: equipment words placed after "equipment", or a second
+// unmatched explosion-protection phrase, must block (never base text or a
+// shortened list).
+for (const t of ['P241 Use explosion-proof equipment (electrical, ventilating, lighting).',
+  'P241 Use explosion-proof equipment: electrical/ventilating/lighting.',
+  'P241 Use explosion-proof equipment, e.g. electrical, ventilating and lighting equipment.',
+  'P241 Use explosion-proof equipment\n(electrical/ventilating/lighting)',
+  'P241 Use explosion-proof electrical equipment. Use explosion-protected lighting equipment.',
+  'P241 Use explosion resistant electrical equipment.', 'P241 Use anti-explosion electrical equipment.',
+  'P241 Use ATEX electrical equipment.', 'P241 Use electrical equipment rated for explosive atmospheres.']) {
+  assert.strictEqual(ex(t), null, 'blocks: ' + JSON.stringify(t));
+}
+// ...without blocking genuine code-only text that mentions "well-ventilated".
+assert.strictEqual(ex('P241\nP403+P235 Store in a well-ventilated place. Keep cool.'), '', 'P403 "well-ventilated" is not P241 wording');
+assert.strictEqual(ex('P241 P271 Use only outdoors or in a well-ventilated area.'), '', 'P271 "well-ventilated" is not P241 wording');
+assert.strictEqual(ex('P241 Use explosion-proof electrical, ventilating and lighting equipment.\nP403+P235 Store in a well-ventilated place. Keep cool.'), 'electrical, ventilating and lighting');
 // Founder N2 rule: code only, no evidence of equipment wording -> base text.
 assert.strictEqual(ex('P210 Keep away from heat.\nP241\nP501 Dispose of contents.'), '', 'code only, no equipment words: base text');
 ok('B1: Unicode hyphens, invisible characters and wrapped lines keep the supplier wording; unreadable wording blocks; code only prints base text');
@@ -216,7 +232,21 @@ const describe = new Function('LabelRenderer', printSrc.slice(fStart, fEnd) + '\
 assert.strictEqual(describe(['unrecognized-code:P241']), "P241 needs the explosion-proof equipment wording from the supplier's SDS: open this label in the Builder and paste Section 2.2 again.");
 assert(/doesn't recognise: P999\. P241 needs/.test(describe(['unrecognized-code:P999', 'unrecognized-code:P241'])), 'Composer mixed message');
 assert.strictEqual(describe(['unrecognized-code:P999']), "Contains a hazard/precautionary code CLPeasy doesn't recognise: P999.", 'other codes unchanged');
-ok('S2: Step 3 alert, preview overlay, help panel and Composer explain what P241 needs; other codes unchanged');
+// Re-review F2: the Builder download warning (Step 4/5 panels) explains
+// P241 too, never "did not recognise ... so we can add it".
+r = paste(head + 'P210 Keep away from heat.\nP241 Use explosion-proof equipment (electrical, lighting).\nP501 Dispose of contents.');
+assert(r.eq === null && !r.leave, 'parenthetical equipment wording blocks in the Builder');
+for (const id of ['label-warn-stage4', 'label-warn-step5']) {
+  const el = box(id);
+  if (!el) continue;
+  const t = el.textContent;
+  assert(/P241 needs the equipment wording from your SDS/.test(t) && /won't shorten or guess/.test(t) && !/did not recognise/.test(t) && !/so we can add it/.test(t), id + ': ' + t.slice(0, 400));
+}
+assert(box('label-warn-stage4') || box('label-warn-step5'), 'a Builder download warning panel exists');
+r = paste(head + 'P210 P241 P999 Mystery code.\nP241 Use explosion-proof equipment (lighting).\nP501');
+const w4 = (box('label-warn-stage4') || box('label-warn-step5')).textContent;
+assert(/P999/.test(w4) && /so we can add it/.test(w4) && /P241 needs the equipment wording/.test(w4) && !/following code: P241|P241, P999|P999, P241/.test(w4), 'mixed warning keeps both: ' + w4.slice(0, 500));
+ok('S2: Step 3 alert, preview overlay, help panel, Builder download warning and Composer explain what P241 needs; other codes unchanged');
 
 assert.deepStrictEqual(jsErrors.filter(e => !/Not implemented/.test(e)), [], 'no page errors');
 console.log(`\nAll ${n} P241 supplier-wording checks passed.`);

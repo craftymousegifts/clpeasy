@@ -62,6 +62,29 @@ The Part 1 and Part 2 English wording is identical for all eight codes.
 
   The Positivity wording was rendered with H401 taken out of the H list only so the label could render.
 
+## Independent review and remediation (20 Oct 2026, `c8f2d1e`)
+
+An independent read-only review of `ffb15e7` passed the scope, wording, escaping and blocked-code export checks. It found one blocker and three further issues. You approved fixing them, with the N2 rule below.
+
+| Finding | Problem | Fix in `c8f2d1e` |
+|---|---|---|
+| **B1** (blocker) | Only an ASCII "-" was recognised. PDF text with Unicode hyphens or dashes, soft hyphens, or a word split across lines hid the supplier's sentence, so base text printed. | Text is normalised first. Any evidence of equipment wording that can't be read exactly now blocks: an unmatched "…proof" word, "ventilating"/"lighting" outside a verified sentence, or "explosion-protected/-safe". |
+| **S1** | A legacy saved record was treated as a Smart Paste label by the Builder but not by the renderer, so the Composer printed base text. | `normalizeLabel` applies the Builder's rule. |
+| **S2** | A blocked P241 was described as "not recognised", and one message was a dead end. | The Step 3 alert, preview overlay, help panel and Composer say that P241 needs the supplier's equipment wording, and what to do if the SDS has no P241. Blocking is unchanged. |
+| **N1** | Empty parts were accepted, and spacing and capitals printed oddly. | Empty parts block. Spacing is tidied and capitals are set to Annex IV lower case; no word changes. |
+
+**Independent re-review of `c8f2d1e`:** B1, S1 and N1 confirmed fixed. Two further gaps were found and fixed in the follow-up commit:
+- **F1 (blocker):** equipment words placed *after* "equipment" (e.g. "Use explosion-proof equipment (electrical, ventilating, lighting)"), or a second, unmatched explosion-protection phrase, still printed the base text or a shortened list.
+
+  Now, once the verified sentences are taken out, any remaining electrical/ventilating/lighting or explosion-protection wording ("-protected", "-safe", "resistant", "anti-explosion", ATEX, "explosive atmospheres") blocks. "Ventilating" is matched, not "ventilated", so the "well-ventilated" in P403 and P271 isn't mistaken for P241 wording.
+- **F2:** the Builder's Step 4/5 download warning still described P241 as "not recognised … so we can add it". It now shows the P241 explanation; other codes' wording is unchanged.
+
+Checked against the genuine fixtures and all 100 Nikura 10% corpus cases: no false blocks.
+
+**N2 (founder decision, 20 Oct):** if the supplier gives only the code and there's no evidence of equipment wording, print the standard P241 wording. If supplier wording is present but can't be extracted reliably, block.
+
+**Tests:** `tests/p241-supplier-equipment-wording.js` now has 11 checks covering Unicode hyphens, wrapped lines, punctuation, legacy records and every message surface.
+
 ## Real-case results (jsdom Builder harness; desktop emulation, not a device)
 
 | Case | v1.3.0 `3a9524e` | #233 Stage A (local) |

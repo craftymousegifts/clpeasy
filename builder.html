@@ -5641,12 +5641,22 @@ function updateLabel(){
   // add codes the active regulatory profile doesn't support), while a
   // genuinely unrecognised code still offers the double-check/contact-
   // support path it always has.
-  const _blockBody = _codeBlockParts.length
-    ? _gbUnsupportedCodesFound.length && _genericUnrecognizedCodesFound.length
-      ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br>'+clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+' Double-check this code against your SDS Section 2.2, correct it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than print a code CLPeasy could not safely include on your label.</strong>'
+  // P241 is only ever "unrecognised" when its supplier equipment wording
+  // couldn't be read exactly: it gets its own explanation (never "so we can
+  // add it"); every other code keeps the wording below unchanged.
+  const _genericOtherFound = _genericUnrecognizedCodesFound.filter(c=>c!=='P241');
+  const _p241BlockBody = _genericUnrecognizedCodesFound.includes('P241')
+    ? escapeBuilderText(clpP241WordingMessage().body)+'<br><br><strong>CLPeasy has blocked the download rather than shorten or guess this statement.</strong>'
+    : '';
+  const _otherCodeBlockBody = _gbUnsupportedCodesFound.length && _genericOtherFound.length
+      ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br>'+clpUnrecognisedCodesMessage(_genericOtherFound, escapeBuilderText).body+' Double-check this code against your SDS Section 2.2, correct it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than print a code CLPeasy could not safely include on your label.</strong>'
       : _gbUnsupportedCodesFound.length
       ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br><strong>CLPeasy has blocked the download rather than remove, replace or print a code it cannot safely resolve for a Great Britain CLP label.</strong>'
-      : clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+'<br><br>Double-check this code against your SDS Section 2.2, correct it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
+      : _genericOtherFound.length
+      ? clpUnrecognisedCodesMessage(_genericOtherFound, escapeBuilderText).body+'<br><br>Double-check this code against your SDS Section 2.2, correct it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
+      : '';
+  const _blockBody = _codeBlockParts.length
+    ? [_otherCodeBlockBody, _p241BlockBody].filter(Boolean).join('<br><br>')
     : _isCustomSizeTooSmall
     ? getCustomSizeMinMsg()+'<br><br>To create a downloadable label, use the size controls below to '+(S.shape==='rectangle'?'set the long side to '+LabelRenderer.CUSTOM_RECT_LONG_MIN_MM+'mm or larger and the short side to '+LabelRenderer.CUSTOM_RECT_SHORT_MIN_MM+'mm or larger':'increase the custom size to '+LabelRenderer.CUSTOM_SIZE_MIN_MM+'mm or larger')+'.'
     : window._footerLegibilityClipped
