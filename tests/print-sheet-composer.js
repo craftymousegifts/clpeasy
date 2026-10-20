@@ -229,6 +229,13 @@ setTimeout(async () => {
 
     window.setReservedUsed(2);
     assert.strictEqual(window.eval('reservedUsed'), 2);
+    // The Composer draws live vector cells only while the simulated Pro check
+    // is fresh (print.html PREVIEW_VERIFY_TTL_MS, 10 s). Reaching this point
+    // can take longer than that on a busy machine (about 16 s measured on
+    // 20 Oct 2026), which made the cells fall back to pending raster images
+    // and this content check fail intermittently. Renew the simulated check
+    // immediately before the rebuild; the Composer code is unchanged.
+    window.eval('_previewVerifiedAt=Date.now()');
     window.rebuildSheet();
 
     const canvasHTML = document.getElementById('sheet-canvas').innerHTML;
