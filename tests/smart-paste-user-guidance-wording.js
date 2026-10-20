@@ -94,7 +94,8 @@ const LOCATIONS = [
   ['index.html:~1061 (FAQ: How does Smart Paste work?)', 'index', "Paste the complete document into the Smart Paste box in CLPeasy. The tool automatically locates Section 2.2",
     'Open your current supplier SDS PDF and copy the complete Section 2.2 (Label elements), from its heading through the final hazard, precautionary and supplemental information. Paste only that section into Smart Paste. CLPeasy extracts the information it can identify; review the result against your SDS before continuing.'],
   ['support.html:~162 (Smart Paste troubleshooting panel)', 'support', 'Smart Paste accepts your complete SDS document — paste the full text and CLPeasy finds Section 2.2 automatically',
-    'Smart Paste reads Section 2.2 (Label elements) from your SDS. Copy and paste that complete section—not the full document—and review the extracted information against your current supplier SDS.'],
+    'Smart Paste reads Section 2.2 (Label elements) from your SDS. Copy and paste that complete section—not the full document—and review the extracted information against your current supplier SDS.',
+    '1925764 Clarify customer support, SDS scope and maker guidance (#263, founder-approved 19 Oct 2026): the "Smart Paste on iOS/Safari" panel was replaced by "Something missing after Smart Paste?"'],
   ['index.html:~1012 ("Works with any supplier" heading)', 'index', '<strong style="font-size:14px;">Works with any supplier</strong>',
     '<strong style="font-size:14px;">Works from your current SDS</strong>'],
 ];
