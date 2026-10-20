@@ -151,6 +151,7 @@ assert.strictEqual(ex('P241 Use explo­sion-proof electrical equipment.'), 'elec
 assert.strictEqual(ex('P241 Use explosion​-proof lighting equipment.'), 'lighting', 'zero-width space');
 assert.strictEqual(ex('P241 Use explosion-proof electrical equipment.'), 'electrical', 'non-breaking spaces');
 assert.strictEqual(ex('P241 Use explo-\nsion-proof electrical equipment.'), 'electrical', 'word hyphenated across lines');
+assert.strictEqual(ex('P241 USE EXPLO-\nSION-PROOF ELECTRICAL EQUIPMENT.'), 'electrical', 'capitals hyphenated across lines');
 assert.strictEqual(ex('P241 Use explosion-\r\nproof electrical equipment.'), 'electrical', 'hyphen at line end (CRLF)');
 assert.strictEqual(ex('P241 Use explosion-proof electrical, venti-\n    lating and lighting equipment.'), 'electrical, ventilating and lighting', 'equipment word wrapped across lines');
 assert.strictEqual(ex('P241 Use explosion-proof electrical,\n    ventilating and lighting\n    equipment.'), 'electrical, ventilating and lighting', 'sentence wrapped across lines');
@@ -168,7 +169,11 @@ for (const t of ['P241 Use explosion-proof equipment (electrical, ventilating, l
   'P241 Use explosion-proof equipment\n(electrical/ventilating/lighting)',
   'P241 Use explosion-proof electrical equipment. Use explosion-protected lighting equipment.',
   'P241 Use explosion resistant electrical equipment.', 'P241 Use anti-explosion electrical equipment.',
-  'P241 Use ATEX electrical equipment.', 'P241 Use electrical equipment rated for explosive atmospheres.']) {
+  'P241 Use ATEX electrical equipment.', 'P241 Use electrical equipment rated for explosive atmospheres.',
+  // confirmation review notes: capitals split across lines, a hidden
+  // direction mark, and supplier synonyms for the Annex IV terms
+  'P241 Use explosion-proof equipment (ELEC-\nTRICAL).', 'P241 Use explosion-proof equipment (elec‏trical).',
+  'P241 Use explosion-proof equipment (ventilation, lights).', 'P241 Use explosion-proof equipment, i.e. lights and fans.']) {
   assert.strictEqual(ex(t), null, 'blocks: ' + JSON.stringify(t));
 }
 // ...without blocking genuine code-only text that mentions "well-ventilated".

@@ -499,14 +499,15 @@ function verifyP241Equipment(words){
 // PDF copy-paste turns hyphens into look-alike characters and wraps words
 // across lines. Normalise those before looking for the supplier's sentence:
 // Unicode hyphens/dashes/minus -> "-", soft and zero-width characters
-// removed, non-breaking spaces -> " ", a word hyphenated at a line end
-// ("explo-\nsion") rejoined.
+// (including direction marks) removed, non-breaking spaces -> " ", a word
+// hyphenated at a line end ("explo-" + newline + "sion", "ELEC-" + newline +
+// "TRICAL") rejoined.
 function normaliseP241Text(text){
   return String(text||'')
-    .replace(/[­​-‍⁠﻿]/g,'')
+    .replace(/[­​-‏⁠﻿]/g,'')
     .replace(/[‐-―−﹘﹣－]/g,'-')
     .replace(/[  ]/g,' ')
-    .replace(/([A-Za-z])-[ \t]*\r?\n\s*([a-z])/g,'$1$2');
+    .replace(/([A-Za-z])-[ \t]*\r?\n\s*([A-Za-z])/g,'$1$2');
 }
 // Finds the supplier's P241 sentence anywhere in Section 2.2 text (PDF
 // layouts can separate a code from its sentence). Returns:
@@ -518,9 +519,10 @@ function normaliseP241Text(text){
 //           verified sentence, e.g. "equipment (electrical, lighting)";
 //           "…", other equipment, conflicts). Blocks; CLPeasy never
 //           shortens or guesses the supplier's wording.
-// "ventilating" (not "ventilat") so P403/P271's "well-ventilated" is not
-// mistaken for P241 equipment wording.
-const P241_EQUIPMENT_EVIDENCE=/\belectrical\b|\bventilating\b|\blighting\b|explosion\s*-?\s*(?:protected|safe|resistant)\b|anti\s*-?\s*explosion|\bATEX\b|explosive\s+atmospheres?/i;
+// "ventilating"/"ventilation" (not "ventilat") so P403/P271's
+// "well-ventilated" is not mistaken for P241 equipment wording; "ventilation"
+// and "light(s)" catch supplier synonyms for the Annex IV terms.
+const P241_EQUIPMENT_EVIDENCE=/\belectrical\b|\bventilating\b|\bventilation\b|\blighting\b|\blights?\b|explosion\s*-?\s*(?:protected|safe|resistant)\b|anti\s*-?\s*explosion|\bATEX\b|explosive\s+atmospheres?/i;
 function extractP241Equipment(text){
   const src=normaliseP241Text(text);
   const sentenceRe=/explosion\s*-?\s*proof\b([^.]*?)\bequipment\b/gi;
