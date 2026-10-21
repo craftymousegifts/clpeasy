@@ -1,0 +1,17 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const {extract}=require('../sds-supplier-wording.js');
+const source='2.2 Label elements\nP333+P313 If skin irritation or rash occurs: Get medical advice/attention.\nP103 Read carefully and follow all instructions.\nP280 Wear protective gloves.';
+const got=extract(source);
+assert.equal(got['P333+P313'],'If skin irritation or rash occurs: Get medical advice/attention.');
+assert.equal(got.P103,'Read carefully and follow all instructions.');
+assert.equal(got.P280,'Wear protective gloves.');
+assert.equal(Object.keys(extract('')).length,0);
+const builder=fs.readFileSync('builder.html','utf8');
+const renderer=fs.readFileSync('label-render.js','utf8');
+assert(builder.includes('sds-supplier-wording.js'));
+assert(builder.includes("window.ClpeasySupplierWording.extract(S.sourceSection22||'')"));
+assert(renderer.includes("if(typeof supplierText==='string' && supplierText.trim())return supplierText.trim();"));
+assert(renderer.includes("supplierWording: data.supplierWording && typeof data.supplierWording==='object'"));
+console.log('Supplier wording source and renderer wiring checks PASS');
