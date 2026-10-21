@@ -1634,7 +1634,14 @@ function renderLabel(rawData, opts){
   // need attention, consistent with the existing "block, don't silently drop"
   // compliance pattern used elsewhere on this page.
   const _unrecognizedCodes = [];
-  const hText   = hCodes.map(c=>{const e=H_LIB.find(x=>x.code===c);if(!e)_unrecognizedCodes.push(c);return e?e.desc:'';}).filter(Boolean).join('. ')+(hCodes.filter(c=>H_LIB.find(x=>x.code===c)).length>0?'.':'') || '';
+  const _hResolved=hCodes.map(c=>{
+    const supplierText=data.supplierWording && data.supplierWording[c];
+    if(typeof supplierText==='string' && supplierText.trim())return supplierText.trim();
+    const e=H_LIB.find(x=>x.code===c);
+    if(!e)_unrecognizedCodes.push(c);
+    return e?e.desc:'';
+  }).filter(Boolean);
+  const hText=_hResolved.map(v=>String(v).trim().replace(/[.]+$/,'')).join('. ')+(_hResolved.length?'.':'');
   // Normalise P codes
   const _pNorm=[];
   const _pRaw=pCodes;
