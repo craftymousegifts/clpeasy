@@ -1,0 +1,17 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const {extract}=require('../sds-supplier-wording.js');
+const supplier='P280 Wear protective gloves.\nP313 Get medical advice/attention.';
+const map=extract(supplier);
+assert.equal(map.P280,'Wear protective gloves.');
+assert.equal(map.P313,'Get medical advice/attention.');
+const renderer=fs.readFileSync('label-render.js','utf8');
+const print=fs.readFileSync('print.html','utf8');
+assert(renderer.includes('data.hazardFromExtraction===true'));
+assert(renderer.includes('ClpeasySupplierWording.extract(data.sourceSection22)'));
+assert(renderer.includes("if(typeof supplierText==='string' && supplierText.trim())return supplierText.trim();"));
+assert(renderer.indexOf('const supplierText=data.supplierWording')<renderer.indexOf("if(c==='P280'){",renderer.indexOf('const supplierText=data.supplierWording')));
+assert(renderer.includes("String(v).trim().replace(/[.]+$/,'')"));
+assert(print.includes('<script src="sds-supplier-wording.js"></script>'));
+console.log('Print, P280, and punctuation wiring checks PASS');
