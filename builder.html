@@ -1591,6 +1591,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <script src="optional-label-items.js"></script>
 <script src="sds-doc-check.js"></script>
 <script src="sds-section-scope.js"></script>
+<script src="sds-supplier-wording.js"></script>
 <script src="sds-source-suitability.js"></script>
 
 <!-- Checkpoint B (connected print-workflow task, 1 Sep 2026): shared
@@ -5344,6 +5345,7 @@ function buildSVG(forExport=false){
     bizAddress:S.bizAddress, bizPhone:S.bizPhone, bizWebsite:S.bizWebsite,
     netWeight:S.netWeight, batchNum:S.batchNum, burnTime:S.burnTime,
     signal:S.signal, hStatements:S.hStatements, pStatements:S.pStatements,
+    supplierWording: S.hazardFromExtraction && window.ClpeasySupplierWording ? window.ClpeasySupplierWording.extract(S.sourceSection22||'') : null,
     sensitisers:S.sensitisers, pictograms:S.pictograms,
     textColour:S.textColour, showBorder:S.showBorder,
     hideEN15494:S.hideEN15494, labelLang:S.labelLang,
