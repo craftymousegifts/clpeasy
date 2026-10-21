@@ -169,7 +169,13 @@ function normalizeLabel(data){
     labelLang: data.labelLang || '',
     hStatements: data.hStatements || '',
     pStatements: data.pStatements || '',
-    supplierWording: data.supplierWording && typeof data.supplierWording==='object' ? data.supplierWording : null,
+    // Print Composer receives saved label records, not Builder's live data.
+    // Resolve their source snapshot through the same conservative parser.
+    supplierWording: data.supplierWording && typeof data.supplierWording==='object'
+      ? data.supplierWording
+      : (data.hazardFromExtraction===true && typeof data.sourceSection22==='string'
+          && typeof ClpeasySupplierWording!=='undefined'
+          ? ClpeasySupplierWording.extract(data.sourceSection22) : null),
     // P280's own selected protection items -- see buildP280Wording() and
     // the P_LIB comment above it. Missing/empty on a label saved before
     // this feature existed, or on a label where P280 was added without
