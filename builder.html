@@ -2606,12 +2606,31 @@ async function refreshProEntitlement(){
 
 const PREVIEW_VERIFY_TTL_MS=10000;
 let _previewVerifiedAt=0;
-function previewTrustIsFresh(){return S.isPro&&(Date.now()-_previewVerifiedAt<PREVIEW_VERIFY_TTL_MS);}
+let _previewVerifiedUserId=null;
+let _previewVerificationPending=null;
+// Cache both clean and watermarked preview entitlements. Previously only
+// clean previews were cached, so every trial preview update queried profiles.
+// Keep this preview-only: exports still use the server-authoritative gate.
+function previewTrustIsFresh(){
+  return !!currentUser && _previewVerifiedUserId===currentUser.id &&
+    _previewVerifiedAt>0 && (Date.now()-_previewVerifiedAt<PREVIEW_VERIFY_TTL_MS);
+}
 async function verifiedProForPreview(){
-  if(previewTrustIsFresh())return true;
-  try{await refreshProEntitlement();}catch(e){S.isPro=false;}
-  _previewVerifiedAt=Date.now();
-  return S.isPro;
+  if(!currentUser || !sbClient){S.isPro=false;return false;}
+  if(previewTrustIsFresh())return S.isPro;
+  if(_previewVerificationPending)return _previewVerificationPending;
+  const userId=currentUser.id;
+  _previewVerificationPending=(async()=>{
+    try{await refreshProEntitlement();}catch(e){S.isPro=false;}
+    // Never cache another account's result if the active session changes.
+    if(currentUser && currentUser.id===userId){
+      _previewVerifiedUserId=userId;
+      _previewVerifiedAt=Date.now();
+    }
+    return S.isPro;
+  })();
+  try{return await _previewVerificationPending;}
+  finally{_previewVerificationPending=null;}
 }
 
 const PREVIEW_RASTER_SCALE=2;
