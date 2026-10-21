@@ -1727,7 +1727,7 @@ const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',produc
   // data on this label came from a successful Smart Paste extraction (it is
   // saved with the label). hazardSource is the product name, product type and
   // fragrance load the current hazard data was entered/confirmed for.
-  hazardFromExtraction:false,hazardSource:null};
+  hazardFromExtraction:false,hazardSource:null,sourceSection22:''};
 // Net quantity remains a string: legacy saves and non-gram units are preserved.
 function restoreNetWeight(value){
   const input=document.getElementById('net-weight');
@@ -3146,6 +3146,7 @@ async function saveLabel(){
     supplier:S.supplier||'',hideEN15494:!!S.hideEN15494,
     showOnLabel:JSON.parse(JSON.stringify(S.showOnLabel||{})),omissionConfirmations:JSON.parse(JSON.stringify(S.omissionConfirmations||{})),
     hazardFromExtraction:!!S.hazardFromExtraction,
+    sourceSection22:S.hazardFromExtraction?(S.sourceSection22||''):'',
     sdsDoc:S.sdsDoc?Object.assign({kind:S.sdsDoc.kind||'',pct:S.sdsDoc.pct||'',base:S.sdsDoc.base||''},
       ...['coverage','rangeFrom','rangeTo','where','rangeStated','docVersion','supplier','cdate','cref'].filter(k=>S.sdsDoc[k]!==undefined).map(k=>({[k]:S.sdsDoc[k]})),
       {confirmed:S.sdsDoc.confirmed||null}):null,
@@ -3263,6 +3264,7 @@ function loadLabelRecord(e){
   // hazardFromExtraction. Older labels do not; for them the one field only a
   // successful Smart Paste extraction ever writes (sdsSignal, which Clear
   // empties) is the evidence. Manually entered hazard data stays editable.
+  S.sourceSection22=typeof e.sourceSection22==='string'?e.sourceSection22:'';
   S.hazardFromExtraction=e.hazardFromExtraction===true||
     (e.hazardFromExtraction===undefined&&typeof e.sdsSignal==='string'&&e.sdsSignal.trim()!=='');
   // C4: the reopened hazard data belongs to this label's saved product name,
@@ -4218,6 +4220,7 @@ function extractSDS(){
   }
   const scope=SdsSectionScope.scope(pasted);
   if(scope.status==='unsafe'){
+    S.sourceSection22='';
     clearHazardData();
     if(scopeErr){scopeErr.textContent=SdsSectionScope.MESSAGE;scopeErr.style.display='block';}
     return;
@@ -4385,6 +4388,9 @@ function extractSDS(){
   }
   renderTags();
 
+  // Preserve the exact scoped supplier text as a reference for future faithful
+  // rendering. This is NOT yet used by the renderer; no output behaviour changes.
+  S.sourceSection22=text;
   // ── LOCK & FINISH ─────────────────────────────────────────────────────────
   // C3/C4: this hazard data now comes from a successful extraction, for the
   // SDS of the product currently named in Step 2.
