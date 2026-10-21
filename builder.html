@@ -3640,7 +3640,7 @@ function init(){
   // Ensure hazard data is always clear on page load — never cached
   S.signal=''; S.sdsSignal=''; S.pictograms=[]; S.hSelected=[]; S.pSelected=[]; S.sensitisers=[];
   S.hStatements=''; S.pStatements='';
-  S.hazardFromExtraction=false; S.hazardSource=null;
+  S.hazardFromExtraction=false; S.hazardSource=null; S.sourceSection22='';
   lockHazardFields(false);
   updateLabel();
 }
@@ -5075,7 +5075,7 @@ function clearHazardData(){
   // an unwanted side effect of clicking Clear.
   const hzCb=document.getElementById('hazard-confirm');
   if(hzCb)hzCb.checked=false;
-  S.hazardFromExtraction=false;S.hazardSource=null;
+  S.hazardFromExtraction=false;S.hazardSource=null;S.sourceSection22='';
   window._smartPasteExcludedCodes=[];
   updateSdsSourceSuitabilityWarning();
   updateSmartPasteExcludedNote();
