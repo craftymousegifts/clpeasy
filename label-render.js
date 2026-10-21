@@ -1646,19 +1646,22 @@ function renderLabel(rawData, opts){
   // printing every possible item. Every other P-code's behaviour (fixed
   // desc lookup, unrecognised-code handling) is unchanged.
   const _pResolved = _pNorm.map(c=>{
+    // Exact supplier wording takes precedence, including P280. Only use the
+    // manual P280 picker when no supplier source wording is available.
+    const supplierText=data.supplierWording && data.supplierWording[c];
+    if(typeof supplierText==='string' && supplierText.trim())return supplierText.trim();
     if(c==='P280'){
       const w=buildP280Wording(data);
       if(!w)_unrecognizedCodes.push(c);
       return w;
     }
-    const supplierText=data.supplierWording && data.supplierWording[c];
-    if(typeof supplierText==='string' && supplierText.trim())return supplierText.trim();
     const e=P_LIB.find(x=>x.code===c);
     if(!e)_unrecognizedCodes.push(c);
     return e?e.desc:null;
   });
   const _pFound = _pResolved.filter(Boolean);
-  const pText = _pFound.join('. ')+(_pFound.length>0?'.':'');
+  // Join complete supplier sentences without inserting duplicate punctuation.
+  const pText = _pFound.map(v=>String(v).trim().replace(/[.]+$/,'')).filter(Boolean).join('. ')+(_pFound.length>0?'.':'');
   // U8 fix (19 Aug 2026): sensitisers were previously hard-capped to the first
   // 3 named substances (+ "..."), silently omitting any beyond that -- for a
   // fragrance with 4+ sensitisers above threshold, the printed label would
