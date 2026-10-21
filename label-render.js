@@ -169,6 +169,7 @@ function normalizeLabel(data){
     labelLang: data.labelLang || '',
     hStatements: data.hStatements || '',
     pStatements: data.pStatements || '',
+    supplierWording: data.supplierWording && typeof data.supplierWording==='object' ? data.supplierWording : null,
     // P280's own selected protection items -- see buildP280Wording() and
     // the P_LIB comment above it. Missing/empty on a label saved before
     // this feature existed, or on a label where P280 was added without
@@ -1650,6 +1651,8 @@ function renderLabel(rawData, opts){
       if(!w)_unrecognizedCodes.push(c);
       return w;
     }
+    const supplierText=data.supplierWording && data.supplierWording[c];
+    if(typeof supplierText==='string' && supplierText.trim())return supplierText.trim();
     const e=P_LIB.find(x=>x.code===c);
     if(!e)_unrecognizedCodes.push(c);
     return e?e.desc:null;
