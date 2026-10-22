@@ -442,35 +442,34 @@
     stripe.style.cssText = `height:4px;width:100%;background:${m.topStripe};position:fixed;top:0;left:0;z-index:9999;`;
     if (m.particle === 'trees+snowmen') {
       stripe.setAttribute('aria-hidden', 'true');
-      stripe.style.background = 'transparent';
-      stripe.style.borderTop = '1px solid #567365';
-      stripe.style.boxSizing = 'border-box';
-      stripe.style.display = 'flex';
-      stripe.style.justifyContent = 'space-around';
+      stripe.style.height = '24px';
       stripe.style.pointerEvents = 'none';
-      if (!document.getElementById('clpeasy-christmas-lights-style')) {
+      const garland = `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="48" viewBox="0 0 320 48">
+        <defs><radialGradient id="glow"><stop stop-color="#ffe9b0" stop-opacity=".9"/><stop offset="1" stop-color="#ffe9b0" stop-opacity="0"/></radialGradient></defs>
+        <path fill="#10243a" d="M0 0h320v48H0z"/>
+        <g fill="none" stroke="#728c91" stroke-width="1.3">
+          <path d="M0 6L80 18 160 5 240 17 320 5"/>
+          <path d="M16 8l-12 17m19-16L10 31m22-20L22 35m27-21L36 39m24-23L50 35M92 16l9 20m2-23l12 22m0-24l14 17M176 7l-12 23m23-21l-11 28m22-27l-10 30M255 16l12 22m-1-23l14 19m-1-22l15 17"/>
+        </g>
+        <g stroke="#d4e4e7" stroke-width="1" opacity=".9"><path d="M10 19l10 0m0 7l-10 0m18-2l10 1m-19 7l10 0M98 26h11m0 4h11M169 22h11m-5 6h11m-6 5h11M264 26h10m0 4h11"/></g>
+        <g fill="none" stroke="#f2f6f7" stroke-width=".7"><path d="M70 16v17m74-25v20m79-13v18m81-26v21"/></g>
+        <g fill="#eff5f6"><circle cx="70" cy="36" r="6"/><circle cx="144" cy="31" r="5"/><circle cx="223" cy="36" r="6"/><circle cx="304" cy="31" r="5"/></g>
+        <g fill="#fff" font-size="15" text-anchor="middle"><text x="42" y="20">❄</text><text x="126" y="44">❄</text><text x="208" y="22">❄</text><text x="280" y="45">❄</text></g>
+        <g fill="url(#glow)"><circle cx="9" cy="9" r="9"/><circle cx="88" cy="19" r="9"/><circle cx="166" cy="8" r="9"/><circle cx="247" cy="18" r="9"/></g>
+        <g fill="#fff0c3"><circle cx="9" cy="9" r="2"/><circle cx="88" cy="19" r="2"/><circle cx="166" cy="8" r="2"/><circle cx="247" cy="18" r="2"/></g>
+      </svg>`;
+      stripe.style.background = `#10243a url("data:image/svg+xml,${encodeURIComponent(garland)}") repeat-x top left / 160px 24px`;
+      if (!document.getElementById('clpeasy-winter-garland-style')) {
         const style = document.createElement('style');
-        style.id = 'clpeasy-christmas-lights-style';
-        style.textContent = `
-          .clpeasy-christmas-light{width:5px;height:4px;flex-shrink:0;border-radius:0 0 50% 50%;background:var(--light-color);box-shadow:0 0 5px 1px var(--light-color);animation:clpeasy-light-twinkle 1.8s ease-in-out infinite alternate;animation-delay:var(--light-delay)}
-          @keyframes clpeasy-light-twinkle{from{opacity:.4}to{opacity:1}}
-          @media(prefers-reduced-motion:reduce){.clpeasy-christmas-light{animation:none;opacity:1}}
-        `;
+        style.id = 'clpeasy-winter-garland-style';
+        style.textContent = `.public-site-nav{top:24px!important}.public-site-nav::before{display:none!important}#homepage-offer-banner{margin-top:100px!important}@media(max-width:480px){#homepage-offer-banner{margin-top:94px!important}}`;
         document.head.appendChild(style);
-      }
-      const colors = ['#FF4949', '#38DA78', '#55A7FF', '#FFD65A'];
-      for (let i = 0; i < 40; i++) {
-        const bulb = document.createElement('span');
-        bulb.className = 'clpeasy-christmas-light';
-        bulb.style.setProperty('--light-color', colors[i % colors.length]);
-        bulb.style.setProperty('--light-delay', `${-(i % 5) * 0.45}s`);
-        stripe.appendChild(bulb);
       }
     }
     document.body.prepend(stripe);
     // Push nav down to avoid overlap
     const nav = document.querySelector('nav');
-    if (nav) nav.style.top = '4px';
+    if (nav) nav.style.top = m.particle === 'trees+snowmen' ? '24px' : '4px';
   }
 
   // ── HERO PILL ──────────────────────────────────────────────────
