@@ -445,7 +445,7 @@
       stripe.style.height = '24px';
       stripe.style.pointerEvents = 'none';
       const garland = `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="48" viewBox="0 0 320 48">
-        <style>@keyframes winter-twinkle{0%,100%{opacity:.3}50%{opacity:1}}.winter-light{animation:winter-twinkle 6s ease-in-out infinite}@media(prefers-reduced-motion:reduce){.winter-light{animation:none;opacity:1}}</style>\n        <defs><radialGradient id="glow"><stop stop-color="#ffe9b0" stop-opacity=".9"/><stop offset="1" stop-color="#ffe9b0" stop-opacity="0"/></radialGradient></defs>
+<defs><radialGradient id="glow"><stop stop-color="#ffe9b0" stop-opacity=".9"/><stop offset="1" stop-color="#ffe9b0" stop-opacity="0"/></radialGradient></defs>
         <path fill="#10243a" d="M0 0h320v48H0z"/>
         <g fill="none" stroke="#728c91" stroke-width="1.3">
           <path d="M0 6L80 18 160 5 240 17 320 5"/>
@@ -455,14 +455,24 @@
         <g fill="none" stroke="#f2f6f7" stroke-width=".7"><path d="M70 16v17m74-25v20m79-13v18m81-26v21"/></g>
         <g fill="#eff5f6"><circle cx="70" cy="36" r="6"/><circle cx="144" cy="31" r="5"/><circle cx="223" cy="36" r="6"/><circle cx="304" cy="31" r="5"/></g>
         <g fill="#fff" font-size="15" text-anchor="middle"><text x="42" y="20">❄</text><text x="126" y="44">❄</text><text x="208" y="22">❄</text><text x="280" y="45">❄</text></g>
-        <g fill="url(#glow)"><circle class="winter-light" style="animation-delay:-0.0s" cx="9" cy="9" r="9"/><circle class="winter-light" style="animation-delay:-1.5s" cx="88" cy="19" r="9"/><circle class="winter-light" style="animation-delay:-3.0s" cx="166" cy="8" r="9"/><circle class="winter-light" style="animation-delay:-4.5s" cx="247" cy="18" r="9"/></g>
-        <g fill="#fff0c3"><circle class="winter-light" style="animation-delay:-0.0s" cx="9" cy="9" r="2"/><circle class="winter-light" style="animation-delay:-1.5s" cx="88" cy="19" r="2"/><circle class="winter-light" style="animation-delay:-3.0s" cx="166" cy="8" r="2"/><circle class="winter-light" style="animation-delay:-4.5s" cx="247" cy="18" r="2"/></g>
+        <g fill="url(#glow)"><circle cx="9" cy="9" r="9"/><circle cx="88" cy="19" r="9"/><circle cx="166" cy="8" r="9"/><circle cx="247" cy="18" r="9"/></g>
+        <g fill="#fff0c3"><circle cx="9" cy="9" r="2"/><circle cx="88" cy="19" r="2"/><circle cx="166" cy="8" r="2"/><circle cx="247" cy="18" r="2"/></g>
       </svg>`;
       stripe.style.background = `#10243a url("data:image/svg+xml,${encodeURIComponent(garland)}") repeat-x top left / 160px 24px`;
+      const lights = document.createElement('div');
+      lights.className = 'winter-live-lights';
+      lights.style.cssText = 'position:absolute;inset:0;display:flex;justify-content:space-around;pointer-events:none';
+      for (let i = 0; i < 32; i++) {
+        const light = document.createElement('span');
+        light.style.cssText = `width:3px;height:3px;margin-top:${i % 2 ? 8 : 3}px;border-radius:50%;background:#fff2bd;box-shadow:0 0 5px 2px #ffe6a2;animation:winter-live-twinkle 4s ease-in-out infinite;animation-delay:-${(i % 4)}s`;
+        lights.appendChild(light);
+      }
+      stripe.appendChild(lights);
+      setTimeout(() => lights.querySelectorAll('span').forEach(light => { light.style.animation = 'none'; light.style.opacity = '1'; }), 12000);
       if (!document.getElementById('clpeasy-winter-garland-style')) {
         const style = document.createElement('style');
         style.id = 'clpeasy-winter-garland-style';
-        style.textContent = `.public-site-nav{top:24px!important}.public-site-nav::before{display:none!important}#homepage-offer-banner{margin-top:100px!important}@media(max-width:480px){#homepage-offer-banner{margin-top:94px!important}}`;
+        style.textContent = `@keyframes winter-live-twinkle{0%,100%{opacity:.2}50%{opacity:1}}@media(prefers-reduced-motion:reduce){.winter-live-lights span{animation:none!important;opacity:1!important}}.public-site-nav{top:24px!important}.public-site-nav::before{display:none!important}#homepage-offer-banner{margin-top:100px!important}@media(max-width:480px){#homepage-offer-banner{margin-top:94px!important}}`;
         document.head.appendChild(style);
       }
     }
