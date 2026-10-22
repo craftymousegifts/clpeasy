@@ -8,6 +8,8 @@ assert.equal(got['P333+P313'],'If skin irritation or rash occurs: Get medical ad
 assert.equal(got.P103,'Read carefully and follow all instructions.');
 assert.equal(got.P280,'Wear protective gloves.');
 assert.equal(Object.keys(extract('')).length,0);
+const repeated=extract('P313 First text.\nP313 Different text.\nP313 Third text.');
+assert.equal(repeated.P313,undefined,'ambiguous repeated codes must never silently select a wording');
 const builder=fs.readFileSync('builder.html','utf8');
 const renderer=fs.readFileSync('label-render.js','utf8');
 assert(builder.includes('sds-supplier-wording.js'));
