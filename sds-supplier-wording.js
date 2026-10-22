@@ -13,9 +13,9 @@ function extract(source){
   for(let i=0;i<lines.length;i++){
     const match=lines[i].match(CODE_LINE);
     if(!match)continue;
-    const code=match[1].replace(/\\s+/g,'').toUpperCase();
+    const code=match[1].replace(/\s+/g,'').toUpperCase();
     let wording=match[2].trim();
-    if(!wording || /^(?:SECTION|2\\.\\d)/i.test(wording))continue;
+    if(!wording || /^(?:SECTION|2\.\d)/i.test(wording))continue;
     // Continue wrapped supplier statements until a blank, new code or
     // recognisable label-field heading. Never silently drop continuation text.
     while(i+1<lines.length){
