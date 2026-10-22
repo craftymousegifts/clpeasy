@@ -357,21 +357,11 @@
           p.swingPhase += p.swingSpeed;
         } else if (p.kind === 'snowflake') {
           ctx.rotate(p.rot * Math.PI / 180);
-          ctx.strokeStyle = '#4689B1';
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          for (let arm = 0; arm < 6; arm++) {
-            const angle = arm * Math.PI / 3;
-            ctx.moveTo(0, 0);
-            ctx.lineTo(Math.cos(angle) * p.r, Math.sin(angle) * p.r);
-            for (const side of [-1, 1]) {
-              const x = Math.cos(angle) * p.r * 0.6;
-              const y = Math.sin(angle) * p.r * 0.6;
-              ctx.moveTo(x, y);
-              ctx.lineTo(x + Math.cos(angle + side * Math.PI / 3) * p.r * 0.35, y + Math.sin(angle + side * Math.PI / 3) * p.r * 0.35);
-            }
-          }
-          ctx.stroke();
+          ctx.fillStyle = '#286A96';
+          ctx.font = `${(p.r * 3).toFixed(1)}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('\u2744', 0, 0);
         } else if (p.kind === 'petals') {
           ctx.rotate(p.rot * Math.PI / 180);
           ctx.fillStyle = 'rgba(249,168,212,0.6)';
