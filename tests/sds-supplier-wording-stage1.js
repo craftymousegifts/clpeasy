@@ -11,7 +11,7 @@ assert.equal(extract('H317 May cause an allergic skin reaction.').H317,'May caus
 assert.equal(extract('EUH208 Contains Limonene. May produce an allergic reaction.').EUH208,'Contains Limonene. May produce an allergic reaction.');
 assert.equal(extract('P305 + P351 + P338 IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.')['P305+P351+P338'], 'IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.');
 
-const wrapped=extract('P305+P351+P338 IF IN EYES: Rinse cautiously with water for several minutes.\\nRemove contact lenses, if present and easy to do.\\nContinue rinsing.\\nP313 Get medical advice/attention.');
+const wrapped=extract('P305+P351+P338 IF IN EYES: Rinse cautiously with water for several minutes.\nRemove contact lenses, if present and easy to do.\nContinue rinsing.\nP313 Get medical advice/attention.');
 assert.equal(wrapped['P305+P351+P338'],'IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.');
 assert.equal(wrapped.P313,'Get medical advice/attention.');
 const headings=extract('P101 If medical advice is needed, have product container or label at hand.\\nPrecautionary statements:\\nP102 Keep out of reach of children.');
