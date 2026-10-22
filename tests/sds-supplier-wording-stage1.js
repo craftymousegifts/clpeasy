@@ -17,6 +17,7 @@ assert.equal(wrapped.P313,'Get medical advice/attention.');
 const headings=extract('P101 If medical advice is needed, have product container or label at hand.\nPrecautionary statements:\nP102 Keep out of reach of children.');
 assert.equal(headings.P101,'If medical advice is needed, have product container or label at hand.');
 assert.equal(Object.keys(extract('')).length,0);
+assert.equal(extract('H350i May cause cancer by inhalation.').H350i,'May cause cancer by inhalation.');
 const repeated=extract('P313 First text.\nP313 Different text.\nP313 Third text.');
 assert.equal(repeated.P313,undefined,'ambiguous repeated codes must never silently select a wording');
 const builder=fs.readFileSync('builder.html','utf8');
