@@ -1,7 +1,6 @@
 // Conservative source-line preservation for Smart Paste.
-// Only a complete, single-line statement beginning with its code is eligible.
-// Multi-line/ambiguous statements are not rewritten; the caller can retain
-// its existing library behaviour pending a dedicated multiline parser.
+// Capture code-led supplier statements and their wrapped continuation lines.
+// Repeated/ambiguous codes are excluded rather than choosing one arbitrarily.
 (function(root){
 'use strict';
 function extract(source){
@@ -9,8 +8,8 @@ function extract(source){
   const ambiguous=new Set();
   if(typeof source!=='string')return result;
   const lines=source.replace(/\r\n?/g,'\n').split('\n');
-  const CODE_LINE=/^\\s*((?:EUH|H|P)\\d{3}[A-Za-z]?(?:\\s*\\+\\s*P\\d{3}[A-Za-z]?)*)\\s*[:\\-–]?\\s+(.+?)\\s*$/i;
-  const SECTION_LINE=/^\\s*(?:(?:section\\s*)?\\d+(?:\\.\\d+)*[.:]?\\s+|(?:hazard|precautionary|supplemental)\\s+(?:statements?|information)|signal\\s+word|pictograms?|label\\s+elements?|contains\\s*:)\\b/i;
+  const CODE_LINE=/^\s*((?:EUH|H|P)\d{3}[A-Za-z]?(?:\s*\+\s*P\d{3}[A-Za-z]?)*)\s*[:\-–]?\s+(.+?)\s*$/i;
+  const SECTION_LINE=/^\s*(?:(?:section\s*)?\d+(?:\.\d+)*[.:]?\s+|(?:hazard|precautionary|supplemental)\s+(?:statements?|information)|signal\s+word|pictograms?|label\s+elements?|contains\s*:)\b/i;
   for(let i=0;i<lines.length;i++){
     const match=lines[i].match(CODE_LINE);
     if(!match)continue;
