@@ -305,7 +305,7 @@
       return laneW * lane + Math.random() * laneW;
     }
     for (let i = 0; i < count; i++) {
-      const kind = isFestive ? (i >= 22 ? 'snowflake' : (i % 2 === 0 ? 'tree' : 'snowman')) : baseType === 'leaves'
+      const kind = isFestive ? (i % 4 === 0 ? 'tree' : (i % 4 === 2 || i === 41) ? 'snowman' : 'snowflake') : baseType === 'leaves'
         ? (isMixed && Math.random() < PUMPKIN_SHARE ? 'pumpkin' : 'leaf')
         : baseType; // 'snow' | 'petals'
       particles.push({
