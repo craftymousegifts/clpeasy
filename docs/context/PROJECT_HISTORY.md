@@ -595,3 +595,11 @@ place them off the A4 page.
 - Completion update (19 Oct): desktop 1280/mobile-size 390 checks completed across eight public pages; FAQ, blend topic/link, nested mobile navigation, keyboard skip and Support deep link pass. Cricut-specific guide moved to publicly blocked report directory; public links use official Cricut instructions. Original HSE reply not found in connected mail/file sources; Zoho mailbox requires sign-in, so engagement claim remains REVIEW. Consent test passes individually; unrelated plan-finder baseline assertion fails (`frequency` vs `labels`), full suite not green. No production release.
 
 - HSE correction completed (19 Oct): owner supplied original reply dated 16 June 2026 and approved the exact replacements. Compliance/FAQ/homepage no longer claim an exemption or pre-launch review; Compliance/Terms regulatory statements match and preserve customer rights. Pre-launch HSE fact badge removed; Terms date updated. Focused independent review passed; earlier HSE source-access hold is superseded. Cricut guide remains unpublished and production release awaits founder approval/OOH process.
+
+
+## PR #270 supplier wording — 22 October 2026, development only
+
+- On `feat/sds-faithful-section22-stage1-20261021`, implementation `d8fd2bb` preserves supplier H/P/EUH text and explicit signal/GHS values, freezes saved wording, retains reliable unknown descriptions, and keeps physical-fit and separately maintained GB safeguards. Legacy/manual labels keep their existing path.
+- Executed focused and broader Node/jsdom checks; 31/35 broader modules pass, four time out on both branch and main. Genuine corpus coverage is 100 stored Nikura 10%-in-wax Section 2.2 extracts, not a multi-supplier full-document sign-off.
+- HOLD: missing-pictogram inference policy, wider supplier-format support and actual browser/iPhone/PNG/PDF/physical print QA remain. Chromium installation unavailable. No merge, production deployment or live services changed.
+- Evidence and next step: `docs/reports/PR270-SUPPLIER-FAITHFUL-QA-2026-10-22.md`.
