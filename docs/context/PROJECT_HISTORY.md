@@ -605,3 +605,7 @@ place them off the A4 page.
 - Evidence and next step: `docs/reports/PR270-SUPPLIER-FAITHFUL-QA-2026-10-22.md`.
 
 - Founder follow-up (22 Oct): keep Section 2.2 transfer automatic without the proposed extra pictogram choice. Standalone Contains text now passes through and survives saving/reopening; no new customer step. Existing review remains; unreadable graphics and wider formats still require QA.
+
+### 22 October 2026 — PR #270 supplier-preservation QA follow-up
+
+Founder confirmed automatic Section 2.2 preservation without extra missing-pictogram choices. Fresh source checks cover Nikura 10% wax, Candle Shack neat fragrance, historical 151 finished room spray, and Supplies for Candles diffuser base (different applicability, not interchangeable). Preserved supplier UFI and verified PDF hyphen artifacts; saved source labels retain explicit empty pictograms and reset review checks on opening. Actual signed-out Chrome SVG/PNG downloads and guest save/reopen/Composer preview checked on `bbe1f01`; latest fixes have local and independent review coverage. PDF view blocked by browser policy; iPhone, signed-in sheets and physical print remain open. See `docs/reports/PR270-SUPPLIER-FAITHFUL-QA-2026-10-22.md`. Draft/HOLD; no merge or production deployment.

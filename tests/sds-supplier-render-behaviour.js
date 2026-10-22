@@ -42,6 +42,10 @@ try{
  assert.equal(parser.extract('P313 Get medical advice.\n2.2 Label elements (continued)\nContinue supplier text.').P313,'Get medical advice. Continue supplier text.');
  const plainSupplement=parser.analyse('H317 Supplier wording.\nSupplemental information: Safety data sheet available on request.');assert.equal(plainSupplement.supplemental[0],'Safety data sheet available on request.');
  const plainOutput=render({...legacy,hazardFromExtraction:true,sourceSection22:'H317 Supplier wording.\nSupplemental information:\nSafety data sheet available on request.'});assert(plainOutput.fits);assert(text(plainOutput).includes('Safety data sheet available on request.'));
+ const ufi='2TDC-F04Y-Y005-5RAR';for(const field of ['UFI: '+ufi,'Unique Formula\nIdentifier (UFI):\n'+ufi,'Unique Formula           '+ufi+'\nIdentifier (UFI):']){const u=render({...legacy,hazardFromExtraction:true,sourceSection22:'H317 Supplier wording.\n'+field});assert(u.fits);assert(text(u).includes('UFI: '+ufi),'supplier UFI stays on label');}
+ assert.equal(parser.extract('EUH208 Contains 6,7-Dihydro\x021,1-dimethyl. May produce an allergic reaction.').EUH208,'Contains 6,7-Dihydro-1,1-dimethyl. May produce an allergic reaction.');
+ assert(parser.analyse('H317 Supplier text.\nUFI: unreadable').issues.includes('UFI information'),'unreadable UFI must not attach to previous statement');
+ assert(parser.analyse('H317 Broken\x01text.').issues.includes('H317'),'unresolved invalid XML glyph is flagged');
  const containsReview=render({...legacy,hazardFromExtraction:true,sourceSection22:'H317 Supplier text.\nContains: Linalool.',sensitisers:['Linalool']});
  assert(containsReview.fits,'standalone supplier Contains needs no extra customer decision');
  assert(text(containsReview).includes('Contains: Linalool.'),'preserve the explicit supplier Contains statement');

@@ -108,3 +108,28 @@ SVG creation uses the shared renderer; inspected PNG/PDF routes consume Builder 
 ## Follow-up: simplify the customer flow (22 October)
 
 Founder rejected the extra pictogram decision and asked for all Section 2.2 label data to flow through automatically. No new choice or missing-pictogram block was added. Fixed an unnecessary stop for standalone Contains statements and missing unencoded supplemental wording: preserve the exact supplier text, freeze it in saved labels and render it in Builder/Composer. Focused seven-module suite passes; additional Builder save/reopen, fit contract and Composer checks pass. The 35-module results above describe the earlier broader run; those four known baseline timeouts and outstanding browser/supplier coverage are not reclassified as passed.
+
+## Follow-up: real browser and wider supplier formats (22 October)
+
+This supersedes the earlier browser-unavailable and no-fresh-supplier statements **only for the checks listed here**. Browser evidence anchors to preview head `bbe1f0181b90107340824844019e2260eedc50e7` at https://deploy-preview-270--clpeasy.netlify.app. Subsequent UFI/reopen fixes are separately covered by local tests and independent diff review; no claim those fixes were browser-tested yet.
+
+Actual cloud Chrome, signed out: pasted a complete synthetic room-spray SDS with deliberately conflicting Section 3 H300/Danger text. Builder retained only Section 2.2, including full combined P305+P351+P338/contact-lens paragraphs, supplier P280, reliable test P999, Contains and uncoded supplemental information. Saved a guest test label, reopened it and opened it in Print Sheet Composer. Composer showed the same safety text on a 90 mm circle, with the expected guest watermark. Screenshot: [Composer synthetic preview](pr270-qa/composer-synthetic-preview.jpg). No real customer, account, payment or credit operation.
+
+Actual guest SVG download: 90 × 90 mm, 108,734 bytes; XML checks retained all seven expected source phrases and excluded the outside-section fatal-swallowing statement. Actual guest PNG: 2,126 × 2,126 px, 586,662 bytes; visually inspected full label, no safety-text clipping observed. PDF opened a blob print view, whose observation was blocked by browser policy; **PDF output remains unverified**, with no workaround attempted. Signed-out sheet export remained gated. iPhone Safari, signed-in sheet export, real font/size coverage across the matrix and physical printing remain open.
+
+Fresh source-format checks used three complete supplier PDFs converted with `pdftotext -layout`, plus a web reading-order extraction of a fourth supplier PDF. These documents cover different products and dates: they are copying tests, not approval to substitute one concentration or product SDS for another.
+
+| Source | Version/date and input | Section 2.2 outcome |
+|---|---|---|
+| Nikura Nag Champa, 10% in candle wax | v1, 21 July 2025; supplied full PDF | All 11 H/EUH/P statements; no Section 3/16 pollution |
+| Candle Shack Black Pomegranate FRAG0130, neat fragrance | UK v4, 17 August 2026; full PDF and web reading order | All 15 statements plus UFI; identical output from both text orders |
+| 151 PAN AROMA Fluffy Towels room spray PAN0363 | revision 1, 20 March 2017; historical full PDF | EUH208 and all four P statements; Section 3 ethanol H225 excluded |
+| Supplies for Candles Natural Diffuser Base | v1, 14 June 2023; web extraction of complete PDF | Both H and all three P statements, preserving punctuation |
+
+Primary sources: [Candle Shack document listing](https://platform.candle-shack.co.uk/regulatory/black-pomegranate?region=UK), [151 PDF](https://www.151.co.uk/media_files/file/datasheet/PAN0363%20-%20v1%20SDS.pdf), [Supplies for Candles PDF](https://www.suppliesforcandles.co.uk/wp-content/uploads/saved_attachments/NATURAL%20DIFFUSER%20BASE%20(EN)%20(2023-07-13)%20-%20SDS-23037.pdf). Nikura was the existing supplied document. Source text hashes are enforced by `tests/sds-multi-supplier-full-documents.js`; source texts remain in the QA working directory rather than republishing supplier PDFs. Run `node tests/sds-multi-supplier-full-documents.js ../qa-sds` with those retained files. All four cases retain every parsed statement and supplemental line in 150 mm shared-renderer output (stub canvas, not browser/physical fit sign-off). Graphical pictograms are supplied test metadata in this harness; it does not prove automatic extraction of PDF images.
+
+Found and fixed: Candle Shack's two-column UFI was previously omitted. Preserve the supplied identifier automatically, including common one-line and reading-order forms. An unreadable UFI is flagged rather than silently dropped. A PDF text layer exposed a printed chemical-name hyphen as STX: the original rendered PDF confirmed the glyph, and normalization now preserves it. Other invalid XML control characters trigger integrity review. Source labels with an explicitly empty saved pictogram list retain it on reopening. Opening a saved label also clears previous hazard/final-review checks so they cannot be carried from a different label.
+
+Validation: seven-module `npm run test:sds-faithful` PASS, including 100 stored Nikura extracts; four wider source-format cases PASS (36 statements plus one UFI), including Candle Shack text-order parity. Targeted independent review found no blocker in this delta and reran renderer, saved-label, unreadable-UFI and corpus checks. Earlier baseline timeouts remain unresolved; no full-suite pass claimed.
+
+**Result: HOLD / draft.** Continue preview verification of the latest fixes, PDF/iPhone/signed-in Composer/physical-print checks and existing release gates. No merge or production deployment authorized or performed.

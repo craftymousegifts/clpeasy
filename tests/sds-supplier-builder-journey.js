@@ -54,7 +54,7 @@ function extract(text=ptext){
  const saved=window.getSaved().find(e=>e.scentName==='Synthetic');assert(saved,'saveLabel wrote a record');
  assert(saved.supplierWording.P999==='Supplier-selected precaution.');assert.equal(saved.supplierWordingVersion,1);
  window.clearHazardData();assert.equal(state().supplierWording,null);
- window.loadLabelRecord(saved);assert.equal(labelText(),before,'clean Builder reopening keeps supplier wording');
+ box('verify-checkbox').checked=true;window.loadLabelRecord(saved);assert(!box('verify-checkbox').checked,'opening a saved label needs its own final review');assert(!box('hazard-confirm').checked,'previous hazard review cannot carry over');assert.equal(labelText(),before,'clean Builder reopening keeps supplier wording');
  const composer=window.LabelRenderer.renderLabel(saved,{instanceId:'composer',forExport:true,watermark:true});
  const bd=new window.DOMParser().parseFromString(composer.svg,'image/svg+xml');
  const composerText=[...bd.querySelectorAll('text')].filter(n=>!n.closest('.clp-fit-block')).map(n=>[...n.childNodes].map(t=>t.textContent).join(' ')).join(' ');
@@ -71,7 +71,7 @@ function extract(text=ptext){
  extract(ptext+'\nContains: Supplier-only substance.');assert(labelText().includes('Contains: Supplier-only substance.'),'standalone source text appears automatically');await window.saveLabel();
  const supplementalSaved=window.getSaved().find(e=>e.scentName==='Synthetic');window.clearHazardData();window.loadLabelRecord(supplementalSaved);assert(labelText().includes('Contains: Supplier-only substance.'),'standalone supplier text survives save/reopen');
  extract('2.2 Label elements\nPictograms: GHS08\nH999 Supplier hazard.');assert.equal([...state().pictograms].join(','),'health','explicit source pictogram overrides library inference');
- extract('2.2 Label elements\nPictograms: None\nH317 Supplier hazard.');assert.equal(state().pictograms.length,0,'explicit source None is retained');
+ extract('2.2 Label elements\nPictograms: None\nH317 Supplier hazard.');assert.equal(state().pictograms.length,0,'explicit source None is retained');box('verify-checkbox').checked=true;await window.saveLabel();const noneSaved=window.getSaved().find(e=>e.scentName==='Synthetic');window.clearHazardData();window.loadLabelRecord(noneSaved);assert.equal(state().pictograms.length,0,'saved explicit None is not silently inferred on reopening');
  extract('2.2 Label elements\nSignal word: None\nH317 Supplier statement.');assert.equal(state().signal,'','explicit None must not be inferred as Warning');window.updateLabel();assert.equal(state().signal,'');
  extract('2.2 Label elements\nSignal word: Warning\nH304 Supplier aspiration statement.');assert.equal(state().signal,'Warning','supplier Warning must not be escalated to Danger');
  window.clearHazardData();assert.equal(state().sourceSection22,'');assert.equal(state().supplierWording,null);

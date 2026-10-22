@@ -3248,6 +3248,8 @@ async function saveLabel(){
 function loadLabelRecord(e){
   if(!e)return;
   resetSdsSourceConfirmation();
+  // Review belongs to the label being opened, not a previous label.
+  ['hazard-confirm','verify-checkbox'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
   editingLabelId=e.id||null;
   {const se=document.getElementById('smart-paste-scope-error');if(se){se.textContent='';se.style.display='none';}}
   // Smart Paste guidance from an earlier paste does not apply to this label.
@@ -3308,7 +3310,7 @@ function loadLabelRecord(e){
   // Restore pictograms — clear first, then re-select from saved array or fall back to H-code sync
   S.pictograms=[];
   document.querySelectorAll('.picto-btn').forEach(b=>b.classList.remove('selected'));
-  if(e.pictograms&&e.pictograms.length){
+  if(Array.isArray(e.pictograms)&&(e.pictograms.length||(S.hazardFromExtraction&&S.sourceSection22))){
     e.pictograms.forEach(k=>{S.pictograms.push(k);const b=document.querySelector(`.picto-btn[data-picto="${k}"]`);if(b)b.classList.add('selected');});
   } else {
     syncPictogramsFromH();
