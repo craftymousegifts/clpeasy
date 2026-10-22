@@ -2,6 +2,20 @@
 
 **Status: HOLD — not release-ready.** High tier. Development branch only; no merge, production deployment, live-service change, payment or real download entitlement consumption authorised or performed.
 
+## Current verification position (latest follow-up)
+
+Earlier sections retain the chronological evidence; the later browser and supplier follow-ups supersede their original environment limitations only where explicitly stated.
+
+| Check | Latest result |
+|---|---|
+| Seven-module source-preservation suite, stored Nikura corpus, four wider supplier formats, targeted Builder/Composer regressions | PASS; details and applicability limits below |
+| Chrome extraction, guest save/reopen, UFI and complete Composer text | PASS on implementation preview `5c93d4c` |
+| Saved explicit None signal/pictograms and reset reviews | PASS in Chrome on `a70ed86` (documentation-only successor of the same implementation) |
+| 63 mm synthetic Room Spray / Black Pomegranate preview | Full source text retained in Builder and Composer; visually clear header in this fixture |
+| Actual individual SVG/PNG files | Earlier 90 mm files verified; this later 63 mm run did not return a completed download and is unverified |
+| PDF, iPhone Safari, signed-in sheet exports and physical printing | OPEN; browser PDF observation blocked, no workaround attempted |
+| Automated pixel-gap/DPR matrix, four main-reproduced timeouts | OPEN; the one visual 63 mm check does not replace those tests |
+
 ## Evidence anchors
 
 - Repository: `craftymousegifts/clpeasy`; branch `feat/sds-faithful-section22-stage1-20261021`; draft PR #270.
@@ -139,3 +153,12 @@ Validation: seven-module `npm run test:sds-faithful` PASS, including 100 stored 
 Netlify reported successful preview deployment for implementation head `5c93d4c08a012de4df3e2133978ddab5c613cd5b`. Reloaded Chrome and verified that checking final review then reopening the saved label resets the checkbox and disables exports pending review. On the updated preview, added a deliberately synthetic UFI `TEST-0000-0000-0000` using the two-column supplier field format. It survived automatic extraction, guest save, the actual downloaded SVG (valid XML, full contact-lens wording still present) and Composer's saved-label text. [Updated Composer screenshot](pr270-qa/composer-ufi-preview.jpg). Explicit-empty-pictogram reopening remains covered by behavioural/local tests, not a separate browser assertion. No change to the PDF/iPhone/signed-in sheet/physical-print limitations above.
 
 Additional targeted commands after the final implementation edits: `sds-source-confirmation`, `hazard-source-integrity`, `renderer-block-reason-messaging`, `print-sheet-composer`, `print-sheet-size-integrity` and `builder-regression` all PASS; `git diff --check` PASS.
+
+
+### Further Chrome checks: explicit None and 63 mm layout
+
+Preview branch head `a70ed86b76c7da78ca348a931d3b32093a5032d4`, same implementation tree apart from evidence files. A deliberately synthetic source containing H317 plus explicit `Signal word: None` and `Pictograms: None` exercised persistence independently of classification correctness. Extracted, saved and reopened: zero selected pictograms, neither signal button selected, hazard review false and final review false. This is a software preservation test, not approval of that fictional classification.
+
+Re-extracted the full synthetic Warning/GHS07 fixture at 63 mm, with product name Black Pomegranate, business name Synthetic QA — Not for sale and Room Spray type. Builder and Composer retained H317, full EUH208, Contains, uncoded supplemental information, P280, full P305+P351+P338 including contact-lens/continue-rinsing sentences and the reliable synthetic P999 description. Composer DOM text was checked with explicit tspan spacing. [Builder 63 mm screenshot](pr270-qa/builder-63mm-label.jpg) shows clear product-name/business-name/type/signal spacing in this fixture; no automated pixel-gap or device-ratio matrix pass is claimed.
+
+The later SVG/PNG clicks did not produce a confirmed download event or synchronized file; a pre-click SVG download wait timed out at five seconds. No product error was observed. Chrome's downloads page could not be inspected because the browser URL policy disallows `chrome:`; no alternate route to that blocked surface was attempted. Therefore this run does not extend the earlier actual 90 mm export sign-off to 63 mm. PDF, iPhone Safari, authenticated sheets and physical checks remain open. No further production-code change was made during these checks.
