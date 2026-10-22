@@ -16,6 +16,22 @@ Earlier sections retain the chronological evidence; the later browser and suppli
 | PDF, iPhone Safari, signed-in sheet exports and physical printing | OPEN; browser PDF observation blocked, no workaround attempted |
 | Automated pixel-gap/DPR matrix, four main-reproduced timeouts | OPEN; the one visual 63 mm check does not replace those tests |
 
+## Cross-chat reconciliation — Digital visibility plan
+
+Michaela asked on 22 October to reuse checks completed in that conversation. Retrieved conversation evidence confirms the mobile pricing text check after a reload: trial watermark wording, PAYG/Unlimited watermark-removal text and no sideways scrolling. Those are accepted as completed for PR #274; do not request them again for #270. PR #272 separately records passing quantity/restoration/Builder and SVG/PDF-source rendering checks at `0f5ae88`; these are retained at that scope. Its PR description still lists mobile and actual binary exports as unverified and is not evidence that #270 supplier text was tested.
+
+PR metadata checked: #274 at `ca45e6a` and #272 at `0f5ae88`, both separate draft branches. Neither is incorporated into #270. Their tests establish their own wording/quantity behaviour, rather than #270's longer supplier statements. The exact test attached to the later “Let's treat that as passed” reply was not recovered; no additional pass is inferred from that phrase alone.
+
+### Remaining checks specifically for this change
+
+1. Inspect actual #270 63 mm SVG/PNG and PDF output for complete supplier wording, including contact-lens paragraphs, EUH208, supplemental text and UFI. Earlier 90 mm SVG/PNG checks stay passed.
+2. Verify the changed supplier-text path on real iPhone Safari, reusing earlier general mobile checks rather than repeating pricing/homepage tests.
+3. Verify complete supplier text in a signed-in Composer sheet export. Guest saved-label/Composer text checks stay passed.
+4. Confirm actual-size physical output preserves dimensions, legibility and full text. Earlier print calibration is background evidence, not a measurement of these changed dense labels.
+5. Close the existing automated layout/DPR and baseline-timeout checks at the final release gate. A timeout reproduced on main is not a newly identified #270 defect.
+
+No repeated pricing, plan-watermark-copy or grams/ml feature test is requested. This reconciliation changes evidence tracking only; no additional implementation, merge or production deployment.
+
 ## Evidence anchors
 
 - Repository: `craftymousegifts/clpeasy`; branch `feat/sds-faithful-section22-stage1-20261021`; draft PR #270.
