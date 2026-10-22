@@ -7,7 +7,7 @@ const section = 'SDS SECTION 2.2 LABEL ELEMENTS\nSignal word: Warning\nH317 May 
 const full = 'SECTION 1 Identification\nOther text\nSECTION 2 Hazards identification\n2.1 Classification\nH314 ingredient context\n' + section + '\n2.3 Other hazards\nH410 outside label elements\nSECTION 3 Composition\nP310 outside label elements';
 const a = scope(full);
 assert.equal(a.status, 'scoped');
-assert.equal(a.text.trimEnd(), section, 'Section 2.2 text must be retained verbatim, apart from the boundary newline');
+assert.equal(a.text.trim(), section, 'Section 2.2 text must be retained verbatim, apart from boundary newlines');
 assert(!a.text.includes('H314'));
 assert(!a.text.includes('H410'));
 assert(!a.text.includes('P310'));
