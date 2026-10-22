@@ -13,7 +13,8 @@ function extract(source){
   for(let i=0;i<lines.length;i++){
     const match=lines[i].match(CODE_LINE);
     if(!match)continue;
-    const code=match[1].replace(/\s+/g,'').toUpperCase();
+    // Capitalise the code prefix, but retain case-sensitive suffixes (H350i).
+    const code=match[1].replace(/\s+/g,'').replace(/^(EUH|H|P)/i,p=>p.toUpperCase()).replace(/\+p(?=\d{3})/gi,'+P');
     let wording=match[2].trim();
     if(!wording || /^(?:SECTION|2\.\d)/i.test(wording))continue;
     // Continue wrapped supplier statements until a blank, new code or
