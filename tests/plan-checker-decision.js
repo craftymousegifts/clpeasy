@@ -14,6 +14,8 @@
 const fs = require('fs');
 const assert = require('assert');
 const { JSDOM, VirtualConsole } = require('jsdom');
+// Dispose of test-owned pages once all asynchronous assertions finish.
+const testDoms = [];
 const PC = require('../plan-checker.js');
 const ENT = require('../entitlement.js');
 
@@ -247,6 +249,7 @@ async function openPage(state, opts = {}){
       }) };
     }
   });
+  testDoms.push(dom);
   return { w: dom.window, errors };
 }
 const $ = (w, id) => w.document.getElementById(id);
@@ -517,4 +520,5 @@ function readResult(w){
     assert.deepStrictEqual(errors, [], errors.join('; '));
   }
   console.log('plan checker checks passed (27 branching paths, invariants, auto-advance, Back/branch clearing, ' + pageCases.length + ' account-state page cases, CTA matrix, offer expiry)');
-})().catch(e => { console.error(e); process.exit(1); });
+})().catch(e => { console.error(e); process.exitCode = 1; })
+  .finally(() => { for (const dom of testDoms) dom.window.close(); });

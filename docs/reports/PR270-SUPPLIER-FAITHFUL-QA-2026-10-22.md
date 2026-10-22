@@ -14,7 +14,8 @@ Earlier sections retain the chronological evidence; the later browser and suppli
 | 63 mm synthetic Room Spray / Black Pomegranate preview | Full source text retained in Builder and Composer; visually clear header in this fixture |
 | Actual individual SVG/PNG files | Earlier 90 mm files verified; this later 63 mm run did not return a completed download and is unverified |
 | PDF, iPhone Safari, signed-in sheet exports and physical printing | OPEN; browser PDF observation blocked, no workaround attempted |
-| Automated pixel-gap/DPR matrix, four main-reproduced timeouts | OPEN; the one visual 63 mm check does not replace those tests |
+| Four earlier timeout modules | PASS after test-page cleanup and adequate runtime; see final follow-up |
+| Automated pixel-gap/DPR matrix | OPEN; the one visual 63 mm check does not replace those tests |
 
 ## Cross-chat reconciliation — Digital visibility plan
 
@@ -28,7 +29,7 @@ PR metadata checked: #274 at `ca45e6a` and #272 at `0f5ae88`, both separate draf
 2. Verify the changed supplier-text path on real iPhone Safari, reusing earlier general mobile checks rather than repeating pricing/homepage tests.
 3. Verify complete supplier text in a signed-in Composer sheet export. Guest saved-label/Composer text checks stay passed.
 4. Confirm actual-size physical output preserves dimensions, legibility and full text. Earlier print calibration is background evidence, not a measurement of these changed dense labels.
-5. Close the existing automated layout/DPR and baseline-timeout checks at the final release gate. A timeout reproduced on main is not a newly identified #270 defect.
+5. Close the existing automated layout/DPR checks at the final release gate. The four previously timed-out modules now pass after harness cleanup and an adequate runtime window; see final follow-up.
 
 No repeated pricing, plan-watermark-copy or grams/ml feature test is requested. This reconciliation changes evidence tracking only; no additional implementation, merge or production deployment.
 
@@ -178,3 +179,17 @@ Preview branch head `a70ed86b76c7da78ca348a931d3b32093a5032d4`, same implementat
 Re-extracted the full synthetic Warning/GHS07 fixture at 63 mm, with product name Black Pomegranate, business name Synthetic QA — Not for sale and Room Spray type. Builder and Composer retained H317, full EUH208, Contains, uncoded supplemental information, P280, full P305+P351+P338 including contact-lens/continue-rinsing sentences and the reliable synthetic P999 description. Composer DOM text was checked with explicit tspan spacing. [Builder 63 mm screenshot](pr270-qa/builder-63mm-label.jpg) shows clear product-name/business-name/type/signal spacing in this fixture; no automated pixel-gap or device-ratio matrix pass is claimed.
 
 The later SVG/PNG clicks did not produce a confirmed download event or synchronized file; a pre-click SVG download wait timed out at five seconds. No product error was observed. Chrome's downloads page could not be inspected because the browser URL policy disallows `chrome:`; no alternate route to that blocked surface was attempted. Therefore this run does not extend the earlier actual 90 mm export sign-off to 63 mm. PDF, iPhone Safari, authenticated sheets and physical checks remain open. No further production-code change was made during these checks.
+
+
+## Follow-up: automated timeout investigation
+
+Investigated the four earlier 25-second timeouts without changing production code. Test-owned jsdom pages were never closed in the account-display, checkout and preview-authorisation modules, leaving page timers alive after assertions. Their harnesses now register their pages and close them in `finally`, after all assertions or on failure. The plan checker receives the same cleanup; its numerous real-time UI transitions require a longer observation window. Existing assertion code is byte-for-byte unchanged. No forced-success exit or skipped assertion was added. An intentional error injected in memory after pricing-page creation still exits with status 1, confirming failure propagation and cleanup.
+
+| Module | Complete post-cleanup run |
+|---|---|
+| PAYG account display | PASS, exit 0, 30.82 s, 16 groups |
+| PAYG pricing checkout | PASS, exit 0, 5.80 s |
+| Preview watermark/export authorisation | PASS, exit 0, 23.84 s, 23 assertions |
+| Plan checker | PASS, exit 0, 108.57 s; 27 branching paths and 8 account-state page cases |
+
+The original 25-second account-display deadline was also shorter than its observed complete run. The unchanged plan-checker run was separately stopped at 90 seconds without a result; that cutoff is not an assertion failure or a pass. Production payment, entitlement, auth and label-rendering code are unchanged by this follow-up. These mocked checks do not replace actual signed-in sheet exports, PDF/iPhone output or physical printing. Earlier broader results remain historical; the complete chained `npm test` has not been rerun or signed off.
