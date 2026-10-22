@@ -12,7 +12,7 @@ assert(renderer.includes('data.hazardFromExtraction===true'));
 assert(renderer.includes('ClpeasySupplierWording.extract(data.sourceSection22)'));
 assert(renderer.includes("if(typeof supplierText==='string' && supplierText.trim())return supplierText.trim();"));
 assert(renderer.indexOf('const supplierText=data.supplierWording')<renderer.indexOf("if(c==='P280'){",renderer.indexOf('const supplierText=data.supplierWording')));
-assert(renderer.includes("String(v).trim().replace(/[.]+$/,'')"));
+assert(renderer.includes("return /[.!?]$/.test(t)?t:t+'.';"));
 assert(renderer.includes('const _hResolved=hCodes.map(c=>{'), 'H statements use supplier wording where captured');
 assert(renderer.includes('const hText=_hResolved.map('), 'H statement punctuation is normalised');
 const builder=fs.readFileSync('builder.html','utf8');
