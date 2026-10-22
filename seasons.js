@@ -225,7 +225,7 @@
       name: 'November',
       accent: '#7DD3FC',
       accentDark: '#0369A1',
-      particle: 'snow',
+      particle: 'trees+snowmen',
       pillBg: '#F0F9FF',
       pillColor: '#0369A1',
       icon: '🎄',
@@ -243,7 +243,7 @@
       name: 'December',
       accent: '#7DD3FC',
       accentDark: '#0369A1',
-      particle: 'snow',
+      particle: 'trees+snowmen',
       pillBg: '#F0F9FF',
       pillColor: '#0369A1',
       icon: '🎅',
@@ -260,7 +260,7 @@
   ];
 
   // ── PARTICLES ──────────────────────────────────────────────────
-  // `type` can be 'snow' | 'petals' | 'leaves' | 'leaves+pumpkins' | 'none'.
+  // `type` can be 'snow' | 'petals' | 'leaves' | 'leaves+pumpkins' | 'trees+snowmen' | 'none'.
   // 'leaves+pumpkins' (October) mixes a minority of pumpkins in among the
   // same falling leaves, sharing one particle set/animation loop.
   //
@@ -285,14 +285,15 @@
     if (particleResizeHandler) { window.removeEventListener('resize', particleResizeHandler); particleResizeHandler = null; }
     const canvas = document.createElement('canvas');
     canvas.id = 'clpeasy-particles';
-    canvas.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:${type.indexOf('leaves') === 0 ? '0.72' : '0.4'};`;
+    canvas.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:${(type.indexOf('leaves') === 0 || type === 'trees+snowmen') ? '0.72' : '0.4'};`;
     document.body.appendChild(canvas);
     particleCanvasEl = canvas;
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     const particles = [];
-    const isMixed = type === 'leaves+pumpkins';
+    const isFestive = type === 'trees+snowmen';
+    const isMixed = type === 'leaves+pumpkins' || isFestive;
     const baseType = isMixed ? 'leaves' : type;
     const count = type === 'snow' ? 35 : (isMixed ? 22 : 18);
     const leafColors = ['#F97316','#EA580C','#FDE68A','#DC2626','#B45309'];
@@ -304,15 +305,15 @@
       return laneW * lane + Math.random() * laneW;
     }
     for (let i = 0; i < count; i++) {
-      const kind = baseType === 'leaves'
+      const kind = isFestive ? (i % 2 === 0 ? 'tree' : 'snowman') : baseType === 'leaves'
         ? (isMixed && Math.random() < PUMPKIN_SHARE ? 'pumpkin' : 'leaf')
         : baseType; // 'snow' | 'petals'
       particles.push({
         lane: i,
         x: laneX(i),
         y: Math.random() * canvas.height,
-        r: kind === 'pumpkin' ? Math.random() * 4 + 8 : (kind === 'snow' ? Math.random() * 3 + 1 : Math.random() * 9 + 5),
-        speed: (kind === 'pumpkin' ? 0.75 : 1) * (Math.random() * 0.5 + 0.2),
+        r: (kind === 'pumpkin' || isFestive) ? Math.random() * 4 + 8 : (kind === 'snow' ? Math.random() * 3 + 1 : Math.random() * 9 + 5),
+        speed: ((kind === 'pumpkin' || isFestive) ? 0.75 : 1) * (Math.random() * 0.5 + 0.2),
         drift: (Math.random() - 0.5) * 0.4,
         rot: Math.random() * 360,
         rotSpeed: (Math.random() - 0.5) * 2,
@@ -346,13 +347,13 @@
           ctx.moveTo(0, -p.r * 0.72);
           ctx.lineTo(0, p.r * 1.22);
           ctx.stroke();
-        } else if (p.kind === 'pumpkin') {
+        } else if (p.kind === 'pumpkin' || p.kind === 'tree' || p.kind === 'snowman') {
           const swing = Math.sin(p.swingPhase) * 10;
           ctx.rotate(swing * Math.PI / 180);
           ctx.font = `${(p.r * 2).toFixed(1)}px serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText('\u{1F383}', 0, 0);
+          ctx.fillText(p.kind === 'tree' ? '\u{1F384}' : p.kind === 'snowman' ? '\u{26C4}' : '\u{1F383}', 0, 0);
           p.swingPhase += p.swingSpeed;
         } else if (p.kind === 'petals') {
           ctx.rotate(p.rot * Math.PI / 180);
