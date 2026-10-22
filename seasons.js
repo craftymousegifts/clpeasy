@@ -440,6 +440,31 @@
     const stripe = document.createElement('div');
     stripe.id = 'clpeasy-top-stripe';
     stripe.style.cssText = `height:4px;width:100%;background:${m.topStripe};position:fixed;top:0;left:0;z-index:9999;`;
+    if (m.particle === 'trees+snowmen') {
+      stripe.setAttribute('aria-hidden', 'true');
+      stripe.style.background = '#173D32';
+      stripe.style.display = 'flex';
+      stripe.style.justifyContent = 'space-around';
+      stripe.style.pointerEvents = 'none';
+      if (!document.getElementById('clpeasy-christmas-lights-style')) {
+        const style = document.createElement('style');
+        style.id = 'clpeasy-christmas-lights-style';
+        style.textContent = `
+          .clpeasy-christmas-light{width:6px;height:4px;border-radius:0 0 50% 50%;background:var(--light-color);box-shadow:0 0 5px 1px var(--light-color);animation:clpeasy-light-twinkle 2.4s ease-in-out infinite alternate;animation-delay:var(--light-delay)}
+          @keyframes clpeasy-light-twinkle{from{opacity:.4}to{opacity:1}}
+          @media(prefers-reduced-motion:reduce){.clpeasy-christmas-light{animation:none;opacity:1}}
+        `;
+        document.head.appendChild(style);
+      }
+      const colors = ['#FF4949', '#38DA78', '#55A7FF', '#FFD65A'];
+      for (let i = 0; i < 40; i++) {
+        const bulb = document.createElement('span');
+        bulb.className = 'clpeasy-christmas-light';
+        bulb.style.setProperty('--light-color', colors[i % colors.length]);
+        bulb.style.setProperty('--light-delay', `${-(i % 5) * 0.6}s`);
+        stripe.appendChild(bulb);
+      }
+    }
     document.body.prepend(stripe);
     // Push nav down to avoid overlap
     const nav = document.querySelector('nav');
