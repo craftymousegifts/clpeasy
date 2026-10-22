@@ -13,5 +13,10 @@ assert(renderer.includes('ClpeasySupplierWording.extract(data.sourceSection22)')
 assert(renderer.includes("if(typeof supplierText==='string' && supplierText.trim())return supplierText.trim();"));
 assert(renderer.indexOf('const supplierText=data.supplierWording')<renderer.indexOf("if(c==='P280'){",renderer.indexOf('const supplierText=data.supplierWording')));
 assert(renderer.includes("String(v).trim().replace(/[.]+$/,'')"));
+assert(renderer.includes('const _hResolved=hCodes.map(c=>{'), 'H statements use supplier wording where captured');
+assert(renderer.includes('const hText=_hResolved.map('), 'H statement punctuation is normalised');
+const builder=fs.readFileSync('builder.html','utf8');
+assert(builder.includes('const sig=S.sdsSignal || resolveGbClpSignalWord(allH,S.sdsSignal);'), 'explicit supplier signal word is retained at extraction');
+assert(builder.includes('S.hazardFromExtraction && S.sourceSection22 && S.sdsSignal'), 'explicit supplier signal word survives preview refresh');
 assert(print.includes('<script src="sds-supplier-wording.js"></script>'));
 console.log('Print, P280, and punctuation wiring checks PASS');
