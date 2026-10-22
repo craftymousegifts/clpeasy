@@ -102,7 +102,7 @@
 <main>
 
   <details class="release-block" open>
-    <summary><span class="release-header"><span class="release-version">Website and Builder updates</span> <span class="new-badge">Latest</span> <span class="release-date">22 October 2026</span></span><span class="release-hint">View changes</span></summary>
+    <summary><span class="release-header"><span class="release-version"><span id="current-release-version">v1.4.0</span> — Website and Builder updates</span> <span class="new-badge">Current</span> <span class="release-date">22 October 2026</span></span><span class="release-hint">View changes</span></summary>
     <div class="release-content">
       <div class="release-section-title">Maker Resources</div>
       <ul class="release-list">
@@ -112,8 +112,10 @@
       <div class="release-section-title">A clearer start</div>
       <ul class="release-list">
         <li>Refreshed the homepage presentation and free-trial links. “See how it works” now takes you directly to the CLPeasy video walkthrough.</li>
-        <li>Made it clearer before choosing a plan that trial downloads have a watermark and paid-plan downloads remove it.</li>
-        <li>Updated seasonal decorations, including Christmas trees, snowmen and snowflakes across the page.</li>
+        <li>Made it clearer before choosing a plan that trial downloads have a watermark and paid-plan downloads remove it. Previously downloaded trial files keep their watermark; reopen a browser-saved label and download again after upgrading.</li>
+        <li>Added a short explanation of CLP’s origins to the homepage and Knowledge Base, with links to official sources.</li>
+        <li>Added a snowy winter header garland. Its warm lights twinkle for 12 seconds after loading, then stay steadily lit; reduced-motion settings keep the lights static.</li>
+        <li>Christmas trees, snowmen and snowflakes fall across the page for 12 seconds. The launch offer stays visible beneath the shared public navigation as you move between pages.</li>
       </ul>
       <div class="release-section-title">Builder and website fixes</div>
       <ul class="release-list">
@@ -124,7 +126,7 @@
   </details>
 
   <details class="release-block">
-    <summary><span class="release-header"><span class="release-version">Support and SDS guidance</span> <span class="release-date">19 October 2026</span></span><span class="release-hint">View changes</span></summary>
+    <summary><span class="release-header"><span class="release-version">v1.3.1 — Support and SDS guidance</span> <span class="release-date">19 October 2026</span></span><span class="release-hint">View changes</span></summary>
     <div class="release-content">
       <div class="release-section-title">Before using Smart Paste</div>
       <ul class="release-list">
@@ -279,5 +281,7 @@
   <p style="margin-top:6px;">© 2026 Michaela Feeley · <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a> · <a href="compliance.html">Compliance &amp; Transparency</a></p>
 </footer>
 
+<script src="version.js"></script>
+<script>if(window.CLPEASY_VERSION){document.getElementById("current-release-version").textContent="v"+window.CLPEASY_VERSION.number;}</script>
 </body>
 </html>
