@@ -295,7 +295,7 @@
     const isFestive = type === 'trees+snowmen';
     const isMixed = type === 'leaves+pumpkins' || isFestive;
     const baseType = isMixed ? 'leaves' : type;
-    const count = type === 'snow' ? 35 : (isMixed ? 22 : 18);
+    const count = isFestive ? 34 : (type === 'snow' ? 35 : (isMixed ? 22 : 18));
     const leafColors = ['#F97316','#EA580C','#FDE68A','#DC2626','#B45309'];
     // Roughly 1 in 5 particles is a pumpkin when mixed -- a minority accent
     // among the leaves, not a replacement for them (both fall together).
@@ -305,15 +305,15 @@
       return laneW * lane + Math.random() * laneW;
     }
     for (let i = 0; i < count; i++) {
-      const kind = isFestive ? (i % 2 === 0 ? 'tree' : 'snowman') : baseType === 'leaves'
+      const kind = isFestive ? (i >= 22 ? 'snowflake' : (i % 2 === 0 ? 'tree' : 'snowman')) : baseType === 'leaves'
         ? (isMixed && Math.random() < PUMPKIN_SHARE ? 'pumpkin' : 'leaf')
         : baseType; // 'snow' | 'petals'
       particles.push({
         lane: i,
         x: laneX(i),
         y: Math.random() * canvas.height,
-        r: (kind === 'pumpkin' || isFestive) ? Math.random() * 4 + 8 : (kind === 'snow' ? Math.random() * 3 + 1 : Math.random() * 9 + 5),
-        speed: ((kind === 'pumpkin' || isFestive) ? 0.75 : 1) * (Math.random() * 0.5 + 0.2),
+        r: kind === 'snowflake' ? Math.random() * 2 + 3 : (kind === 'pumpkin' || isFestive) ? Math.random() * 4 + 8 : (kind === 'snow' ? Math.random() * 3 + 1 : Math.random() * 9 + 5),
+        speed: (isFestive ? 1.125 : kind === 'pumpkin' ? 0.75 : 1) * (Math.random() * 0.5 + 0.2),
         drift: (Math.random() - 0.5) * 0.4,
         rot: Math.random() * 360,
         rotSpeed: (Math.random() - 0.5) * 2,
@@ -355,6 +355,17 @@
           ctx.textBaseline = 'middle';
           ctx.fillText(p.kind === 'tree' ? '\u{1F384}' : p.kind === 'snowman' ? '\u{26C4}' : '\u{1F383}', 0, 0);
           p.swingPhase += p.swingSpeed;
+        } else if (p.kind === 'snowflake') {
+          ctx.rotate(p.rot * Math.PI / 180);
+          ctx.strokeStyle = 'rgba(148,190,213,0.9)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          for (let arm = 0; arm < 6; arm++) {
+            const angle = arm * Math.PI / 3;
+            ctx.moveTo(0, 0);
+            ctx.lineTo(Math.cos(angle) * p.r, Math.sin(angle) * p.r);
+          }
+          ctx.stroke();
         } else if (p.kind === 'petals') {
           ctx.rotate(p.rot * Math.PI / 180);
           ctx.fillStyle = 'rgba(249,168,212,0.6)';
