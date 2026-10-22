@@ -133,3 +133,9 @@ Found and fixed: Candle Shack's two-column UFI was previously omitted. Preserve 
 Validation: seven-module `npm run test:sds-faithful` PASS, including 100 stored Nikura extracts; four wider source-format cases PASS (36 statements plus one UFI), including Candle Shack text-order parity. Targeted independent review found no blocker in this delta and reran renderer, saved-label, unreadable-UFI and corpus checks. Earlier baseline timeouts remain unresolved; no full-suite pass claimed.
 
 **Result: HOLD / draft.** Continue preview verification of the latest fixes, PDF/iPhone/signed-in Composer/physical-print checks and existing release gates. No merge or production deployment authorized or performed.
+
+### Updated-preview verification
+
+Netlify reported successful preview deployment for implementation head `5c93d4c08a012de4df3e2133978ddab5c613cd5b`. Reloaded Chrome and verified that checking final review then reopening the saved label resets the checkbox and disables exports pending review. On the updated preview, added a deliberately synthetic UFI `TEST-0000-0000-0000` using the two-column supplier field format. It survived automatic extraction, guest save, the actual downloaded SVG (valid XML, full contact-lens wording still present) and Composer's saved-label text. [Updated Composer screenshot](pr270-qa/composer-ufi-preview.jpg). Explicit-empty-pictogram reopening remains covered by behavioural/local tests, not a separate browser assertion. No change to the PDF/iPhone/signed-in sheet/physical-print limitations above.
+
+Additional targeted commands after the final implementation edits: `sds-source-confirmation`, `hazard-source-integrity`, `renderer-block-reason-messaging`, `print-sheet-composer`, `print-sheet-size-integrity` and `builder-regression` all PASS; `git diff --check` PASS.
