@@ -4299,7 +4299,7 @@ function extractSDS(){
   // category/signal word. All deterministic codes use the GB Annex I registry
   // above. Crucially, H411/H412/H413 and EUH-only inputs resolve to blank.
   S.sdsSignal=extractSdsSignalWord(text);
-  const sig=resolveGbClpSignalWord(allH,S.sdsSignal);
+  const sig=S.sdsSignal || resolveGbClpSignalWord(allH,S.sdsSignal);
   S.signal=sig;
   document.getElementById('signal-warning').className='signal-btn'+(sig==='Warning'?' sel-warn':'');
   document.getElementById('signal-danger').className='signal-btn'+(sig==='Danger'?' sel-danger':'');
@@ -5519,7 +5519,8 @@ function updateLabel(){
   // drift into different signal-word rules.
   const _autoH=(S.hStatements||'').split(',').map(h=>h.trim()).filter(Boolean);
   {
-    const _sig=resolveGbClpSignalWord(_autoH,S.sdsSignal);
+    const _sig=(S.hazardFromExtraction && S.sourceSection22 && S.sdsSignal)
+      ? S.sdsSignal : resolveGbClpSignalWord(_autoH,S.sdsSignal);
     S.signal=_sig;
     document.getElementById('signal-warning').className='signal-btn'+(_sig==='Warning'?' sel-warn':'');
     document.getElementById('signal-danger').className='signal-btn'+(_sig==='Danger'?' sel-danger':'');
