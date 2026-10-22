@@ -14,7 +14,7 @@ assert.equal(extract('P305 + P351 + P338 IF IN EYES: Rinse cautiously with water
 const wrapped=extract('P305+P351+P338 IF IN EYES: Rinse cautiously with water for several minutes.\nRemove contact lenses, if present and easy to do.\nContinue rinsing.\nP313 Get medical advice/attention.');
 assert.equal(wrapped['P305+P351+P338'],'IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing.');
 assert.equal(wrapped.P313,'Get medical advice/attention.');
-const headings=extract('P101 If medical advice is needed, have product container or label at hand.\\nPrecautionary statements:\\nP102 Keep out of reach of children.');
+const headings=extract('P101 If medical advice is needed, have product container or label at hand.\nPrecautionary statements:\nP102 Keep out of reach of children.');
 assert.equal(headings.P101,'If medical advice is needed, have product container or label at hand.');
 assert.equal(Object.keys(extract('')).length,0);
 const repeated=extract('P313 First text.\nP313 Different text.\nP313 Third text.');
