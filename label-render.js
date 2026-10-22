@@ -176,6 +176,8 @@ function normalizeLabel(data){
       : (data.hazardFromExtraction===true && typeof data.sourceSection22==='string'
           && typeof ClpeasySupplierWording!=='undefined'
           ? ClpeasySupplierWording.extract(data.sourceSection22) : null),
+    supplierSupplemental: Array.isArray(data.supplierSupplemental)?data.supplierSupplemental
+      : (data.hazardFromExtraction && data.sourceSection22 && typeof ClpeasySupplierWording!=='undefined'?ClpeasySupplierWording.analyse(data.sourceSection22).supplemental:[]),
     supplierWordingIssues: Array.isArray(data.supplierWordingIssues)?data.supplierWordingIssues
       : (data.hazardFromExtraction && data.sourceSection22 && typeof ClpeasySupplierWording!=='undefined'?ClpeasySupplierWording.analyse(data.sourceSection22).issues:[]),
     supplierSourceActive: !!(data.supplierWording || (data.hazardFromExtraction && data.sourceSection22)),
@@ -1717,8 +1719,8 @@ function renderLabel(rawData, opts){
   // names, punctuation or selected wording from the sensitiser library.
   const _supplierEUH208=data.supplierWording && data.supplierWording.EUH208;
   if(hasEUH208 && data.supplierSourceActive && !_supplierEUH208)_unrecognizedCodes.push('EUH208');
-  const sensText = hasEUH208 && _supplierEUH208 ? _supplierEUH208
-    : data.supplierSourceActive && hasEUH208 ? '' : [_sensBase, _euhSuffix].filter(Boolean).join(' ');
+  const sourceSupplemental=[_supplierEUH208,...data.supplierSupplemental].filter(Boolean).join(' ');
+  const sensText = data.supplierSourceActive ? sourceSupplemental : [_sensBase, _euhSuffix].filter(Boolean).join(' ');
 
   // ── HAZARD TEXT AUTO-SIZING ──────────────────────────────────────────────
   // Spec: CLPeasy SVG Hazard Label Auto-Sizing Requirements
@@ -1798,7 +1800,7 @@ function renderLabel(rawData, opts){
     let sLines=[],eLines=[];
     if(sensText){
       const sw=Math.max(fs*3, chordW(y+sLH*0.5,0)-_edgeMargin*2);
-      if(hasEUH208 && _supplierEUH208){sLines=_wrapBlock(sensText,sw,y,sLH,0);}
+      if(data.supplierSourceActive){sLines=_wrapBlock(sensText,sw,y,sLH,0);}
       else{
         sLines=_sensBase?_wrapBlock(_sensBase,sw,y,sLH,0):[];
         eLines=_euhSuffix?_wrapBlock(_euhSuffix,sw,y,sLH,sLines.length):[];

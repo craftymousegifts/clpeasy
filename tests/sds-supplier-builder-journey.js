@@ -68,6 +68,8 @@ function extract(text=ptext){
  window.ClpeasySupplierWording={...window.ClpeasySupplierWording,extract:()=>({H317:'Changed library or parser wording'})};
  window.loadLabelRecord(saved);assert.equal(labelText(),before);
  window.eval(fs.readFileSync('sds-supplier-wording.js','utf8'));
+ extract(ptext+'\nContains: Supplier-only substance.');assert(labelText().includes('Contains: Supplier-only substance.'),'standalone source text appears automatically');await window.saveLabel();
+ const supplementalSaved=window.getSaved().find(e=>e.scentName==='Synthetic');window.clearHazardData();window.loadLabelRecord(supplementalSaved);assert(labelText().includes('Contains: Supplier-only substance.'),'standalone supplier text survives save/reopen');
  extract('2.2 Label elements\nPictograms: GHS08\nH999 Supplier hazard.');assert.equal([...state().pictograms].join(','),'health','explicit source pictogram overrides library inference');
  extract('2.2 Label elements\nPictograms: None\nH317 Supplier hazard.');assert.equal(state().pictograms.length,0,'explicit source None is retained');
  extract('2.2 Label elements\nSignal word: None\nH317 Supplier statement.');assert.equal(state().signal,'','explicit None must not be inferred as Warning');window.updateLabel();assert.equal(state().signal,'');

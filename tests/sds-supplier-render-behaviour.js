@@ -40,9 +40,11 @@ try{
  const continued=parser.extract('EUH208 Contains Linalool.\nContains: Limonene.\nMay produce an allergic reaction.');
  assert.equal(continued.EUH208,'Contains Linalool. Contains: Limonene. May produce an allergic reaction.');
  assert.equal(parser.extract('P313 Get medical advice.\n2.2 Label elements (continued)\nContinue supplier text.').P313,'Get medical advice. Continue supplier text.');
+ const plainSupplement=parser.analyse('H317 Supplier wording.\nSupplemental information: Safety data sheet available on request.');assert.equal(plainSupplement.supplemental[0],'Safety data sheet available on request.');
+ const plainOutput=render({...legacy,hazardFromExtraction:true,sourceSection22:'H317 Supplier wording.\nSupplemental information:\nSafety data sheet available on request.'});assert(plainOutput.fits);assert(text(plainOutput).includes('Safety data sheet available on request.'));
  const containsReview=render({...legacy,hazardFromExtraction:true,sourceSection22:'H317 Supplier text.\nContains: Linalool.',sensitisers:['Linalool']});
- assert(!containsReview.fits&&!containsReview.contentOverflow,'uncoded Contains is an extraction review, not silently rebuilt');
- assert(!text(containsReview).includes('Contains: Linalool'),'never invent source-active Contains from a table scan');
+ assert(containsReview.fits,'standalone supplier Contains needs no extra customer decision');
+ assert(text(containsReview).includes('Contains: Linalool.'),'preserve the explicit supplier Contains statement');
  let matrixFits=0,matrixBlocked=0;
  for(const productType of ['Scented Candle','Wax Melt','Reed Diffuser','Room Spray'])for(const shape of ['circle','square','rectangle'])for(const mm of [52,90]){
    const m=render({...base,productType,shape,customW:mm,customH:shape==='rectangle'?Math.round(mm*.7):mm});

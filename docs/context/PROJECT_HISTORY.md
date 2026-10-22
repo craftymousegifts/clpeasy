@@ -603,3 +603,5 @@ place them off the A4 page.
 - Executed focused and broader Node/jsdom checks; 31/35 broader modules pass, four time out on both branch and main. Genuine corpus coverage is 100 stored Nikura 10%-in-wax Section 2.2 extracts, not a multi-supplier full-document sign-off.
 - HOLD: missing-pictogram inference policy, wider supplier-format support and actual browser/iPhone/PNG/PDF/physical print QA remain. Chromium installation unavailable. No merge, production deployment or live services changed.
 - Evidence and next step: `docs/reports/PR270-SUPPLIER-FAITHFUL-QA-2026-10-22.md`.
+
+- Founder follow-up (22 Oct): keep Section 2.2 transfer automatic without the proposed extra pictogram choice. Standalone Contains text now passes through and survives saving/reopening; no new customer step. Existing review remains; unreadable graphics and wider formats still require QA.

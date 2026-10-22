@@ -1728,7 +1728,7 @@ const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',produc
   // data on this label came from a successful Smart Paste extraction (it is
   // saved with the label). hazardSource is the product name, product type and
   // fragrance load the current hazard data was entered/confirmed for.
-  hazardFromExtraction:false,hazardSource:null,sourceSection22:'',supplierWording:null,supplierWordingIssues:[],supplierWordingVersion:null};
+  hazardFromExtraction:false,hazardSource:null,sourceSection22:'',supplierWording:null,supplierSupplemental:[],supplierWordingIssues:[],supplierWordingVersion:null};
 // Net quantity remains a string: legacy saves and non-gram units are preserved.
 function restoreNetWeight(value){
   const input=document.getElementById('net-weight');
@@ -3149,6 +3149,7 @@ async function saveLabel(){
     hazardFromExtraction:!!S.hazardFromExtraction,
     sourceSection22:S.hazardFromExtraction?(S.sourceSection22||''):'',
     supplierWording:S.hazardFromExtraction?S.supplierWording:null,
+    supplierSupplemental:S.hazardFromExtraction?S.supplierSupplemental:[],
     supplierWordingIssues:S.hazardFromExtraction?S.supplierWordingIssues:[],
     supplierWordingVersion:S.hazardFromExtraction?S.supplierWordingVersion:null,
     sdsDoc:S.sdsDoc?Object.assign({kind:S.sdsDoc.kind||'',pct:S.sdsDoc.pct||'',base:S.sdsDoc.base||''},
@@ -3272,6 +3273,7 @@ function loadLabelRecord(e){
     (e.hazardFromExtraction===undefined&&typeof e.sdsSignal==='string'&&e.sdsSignal.trim()!=='');
   S.sourceSection22=typeof e.sourceSection22==='string'?e.sourceSection22:'';
   S.supplierWording=S.hazardFromExtraction && S.sourceSection22 ? (e.supplierWording || window.ClpeasySupplierWording?.extract(S.sourceSection22) || Object.create(null)) : null;
+  S.supplierSupplemental=S.supplierWording?(e.supplierSupplemental||window.ClpeasySupplierWording?.analyse(S.sourceSection22).supplemental||[]):[];
   S.supplierWordingIssues=S.supplierWording?(e.supplierWordingIssues||window.ClpeasySupplierWording?.analyse(S.sourceSection22).issues||[]):[];
   S.supplierWordingVersion=S.supplierWording?(e.supplierWordingVersion||1):null;
   // C4: the reopened hazard data belongs to this label's saved product name,
@@ -3647,7 +3649,7 @@ function init(){
   // Ensure hazard data is always clear on page load — never cached
   S.signal=''; S.sdsSignal=''; S.pictograms=[]; S.hSelected=[]; S.pSelected=[]; S.sensitisers=[];
   S.hStatements=''; S.pStatements='';
-  S.hazardFromExtraction=false; S.hazardSource=null; S.sourceSection22='';S.supplierWording=null;S.supplierWordingIssues=[];S.supplierWordingVersion=null;
+  S.hazardFromExtraction=false; S.hazardSource=null; S.sourceSection22='';S.supplierWording=null;S.supplierSupplemental=[];S.supplierWordingIssues=[];S.supplierWordingVersion=null;
   lockHazardFields(false);
   updateLabel();
 }
@@ -4228,7 +4230,7 @@ function extractSDS(){
   }
   const scope=SdsSectionScope.scope(pasted);
   if(scope.status==='unsafe'){
-    S.sourceSection22='';S.supplierWording=null;S.supplierWordingIssues=[];S.supplierWordingVersion=null;
+    S.sourceSection22='';S.supplierWording=null;S.supplierSupplemental=[];S.supplierWordingIssues=[];S.supplierWordingVersion=null;
     clearHazardData();
     if(scopeErr){scopeErr.textContent=SdsSectionScope.MESSAGE;scopeErr.style.display='block';}
     return;
@@ -4399,6 +4401,7 @@ function extractSDS(){
   // Freeze scoped supplier wording for preview, reopening and printing.
   S.sourceSection22=text;
   S.supplierWording=window.ClpeasySupplierWording ? window.ClpeasySupplierWording.extract(text) : Object.create(null);
+  S.supplierSupplemental=window.ClpeasySupplierWording?.analyse(text).supplemental||[];
   S.supplierWordingIssues=window.ClpeasySupplierWording?.analyse(text).issues||['Source text'];
   S.supplierWordingVersion=window.ClpeasySupplierWording?.VERSION||1;
   // ── LOCK & FINISH ─────────────────────────────────────────────────────────
@@ -5092,7 +5095,7 @@ function clearHazardData(){
   // an unwanted side effect of clicking Clear.
   const hzCb=document.getElementById('hazard-confirm');
   if(hzCb)hzCb.checked=false;
-  S.hazardFromExtraction=false;S.hazardSource=null;S.sourceSection22='';S.supplierWording=null;S.supplierWordingIssues=[];S.supplierWordingVersion=null;
+  S.hazardFromExtraction=false;S.hazardSource=null;S.sourceSection22='';S.supplierWording=null;S.supplierSupplemental=[];S.supplierWordingIssues=[];S.supplierWordingVersion=null;
   window._smartPasteExcludedCodes=[];
   updateSdsSourceSuitabilityWarning();
   updateSmartPasteExcludedNote();
@@ -5362,6 +5365,7 @@ function buildSVG(forExport=false){
     netWeight:S.netWeight, batchNum:S.batchNum, burnTime:S.burnTime,
     signal:S.signal, hStatements:S.hStatements, pStatements:S.pStatements,
     supplierWording: S.hazardFromExtraction ? S.supplierWording : null,
+    supplierSupplemental:S.hazardFromExtraction?S.supplierSupplemental:[],
     supplierWordingIssues:S.hazardFromExtraction?S.supplierWordingIssues:[],
     sensitisers:S.sensitisers, pictograms:S.pictograms,
     textColour:S.textColour, showBorder:S.showBorder,
