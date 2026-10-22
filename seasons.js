@@ -527,7 +527,7 @@
 
     // Place the seasonal strip directly beneath the homepage hero so it is
     // part of the page rather than a temporary fixed footer notification.
-    const hero = document.querySelector('.homepage-image-hero');
+    const hero = document.querySelector('.approved-hero, .homepage-image-hero');
     if (hero && hero.parentNode) hero.parentNode.insertBefore(banner, hero.nextSibling);
     else document.body.insertBefore(banner, document.body.firstChild);
 
