@@ -6,6 +6,7 @@
 'use strict';
 function extract(source){
   const result=Object.create(null);
+  const ambiguous=new Set();
   if(typeof source!=='string')return result;
   const lines=source.replace(/\r\n?/g,'\n').split('\n');
   for(const line of lines){
@@ -14,7 +15,12 @@ function extract(source){
     const code=match[1].replace(/\s+/g,'').toUpperCase();
     const wording=match[2].trim();
     if(!wording || /^(?:SECTION|2\.\d)/i.test(wording))continue;
-    if(Object.hasOwn(result,code)){delete result[code];continue;}
+    // Repeated code lines may be headings or distinct statement variants.
+    // Never choose one based on its position (including 3+ occurrences).
+    if(ambiguous.has(code))continue;
+    if(Object.hasOwn(result,code)){
+      delete result[code];ambiguous.add(code);continue;
+    }
     result[code]=wording;
   }
   return result;
