@@ -228,11 +228,9 @@ footer a{color:#6B7280;text-decoration:none;}
 </style>
 <!-- Privacy-friendly analytics by Plausible -->
 <script>/* Analytics preference: "Essential only" turns Plausible off via its own opt-out flag */try{if(localStorage.getItem('clpeasy-cookie-consent')==='essential')localStorage.setItem('plausible_ignore','true')}catch(e){}</script>
-<script async src="https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"></script>
-<script>
-  window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
-  plausible.init()
-</script>
+<script>window.plausible = window.plausible || function(){(window.plausible.q=window.plausible.q||[]).push(arguments);};</script>
+<script defer data-domain="clpeasy.com" src="https://plausible.io/js/script.js"></script>
+
 <style>
 /* Signed-in CTAs: while a stored session is being confirmed, hide the trial
    CTAs so a signed-in visitor never sees "Start free trial" flash. Signed-out
@@ -242,7 +240,9 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
 <script>
   try { if (localStorage.getItem('sb-qvkosdqcryrcfbjtaxic-auth-token')) document.documentElement.classList.add('clp-auth-pending'); } catch (e) {}
 </script>
-<link rel="stylesheet" href="public-nav.css">\n<script src="public-nav.js" defer></script>\n<style>.checkout-indicator-slot{display:flex;align-items:center;margin-left:auto;margin-right:10px;}.checkout-indicator-slot:empty{display:none;}.checkout-indicator-slot:not(:empty)~.public-nav-links{margin-left:0!important;}@media(min-width:1121px){.checkout-indicator-slot{margin-right:24px;}}</style>
+<link rel="stylesheet" href="public-nav.css">
+<script src="public-nav.js" defer></script>
+<style>.checkout-indicator-slot{display:flex;align-items:center;margin-left:auto;margin-right:10px;}.checkout-indicator-slot:empty{display:none;}.checkout-indicator-slot:not(:empty)~.public-nav-links{margin-left:0!important;}@media(min-width:1121px){.checkout-indicator-slot{margin-right:24px;}}</style>
 </head>
 <body>
 
@@ -293,7 +293,7 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
       <div class="card-name">Easy Trial</div>
       <div class="card-desc">Full access for 14 days so you can try everything before you commit.</div>
       <div class="price-row"><div class="price-amount">Free</div></div>
-      <div class="price-sub">14-day trial &nbsp;&#183;&nbsp; No card needed</div>
+      <div class="price-sub">14-day trial &nbsp;&#183;&nbsp; No card needed<br><strong>10 watermarked downloads to try the full workflow.</strong></div>
       <div class="trial-offer-spacer" aria-hidden="true"></div>
       <a href="auth.html?mode=signup" class="btn btn-outline" data-trial-cta>Start free trial &#8594;</a>
       <hr class="divider">
@@ -302,7 +302,7 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
       <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>All download formats<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">PNG, SVG and PDF &mdash; download your label for home printing, Cricut or a print company.</div></div>
       <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>All hazard data &amp; product types<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Candles, wax melts, reed diffusers, room sprays and more &mdash; all product types with their associated GHS hazard and precautionary statements.</div></div>
       <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Every Easy Start Unlimited feature<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">The trial gives you full access to every feature so you can properly test what works for your business.</div></div>
-      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>10 downloads during your trial<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">10 label downloads across your 14-day trial in PNG, SVG or PDF. No card needed.</div></div>
+      <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>10 watermarked downloads during your trial<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">10 watermarked label downloads across your 14-day trial in PNG, SVG or PDF. No card needed.</div></div>
       <div class="feature-item"><button class="feature-trigger" onclick="toggleFeature(this)"><svg class="tick" width="14" height="14" viewBox="0 0 14 14"><path d="M11.5 3L5.5 9.5L2.5 6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>No credit card required<span class="feature-chevron">&#9660;</span></button><div class="feature-desc">Sign up with just your email. No payment details needed until you decide to buy Pay As You Go downloads or subscribe.</div></div>
       
     </div>
@@ -320,6 +320,7 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
         <span>I ask for my Pay As You Go download credits to be added to my account straight after payment so I can use them straight away. I understand that if I cancel within 14 days I will be refunded for any credits I have not used, but not for downloads I have already made, unless they were faulty.</span>
       </label>
       <div class="payg-consent-error" id="payg-consent-error" role="alert">Please tick the box above to continue to payment.</div>
+      <p style="font-size:14px;line-height:1.5;margin:0 0 12px;"><strong>Watermark removed on downloads using purchased credits.</strong></p>
       <button id="btn-payg" onclick="startPaygCheckout()" class="btn btn-teal">Buy 8 downloads — £4.99 →</button>
       <hr class="divider">
       <div class="features-label">What&#39;s included</div>
@@ -339,6 +340,7 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
       <div class="card-desc">Unlimited downloads while subscribed, with practical tools for creating organised, print-ready CLP labels from supplier SDS data.</div>
       <div class="price-row"><div class="price-amount" id="maker-price">&pound;8.99</div><div class="price-period" id="maker-period">/mo</div></div><div id="maker-promo" class="offer-block paid-offer"><div class="offer-main"><span class="offer-free">🎉 10% OFF</span></div><div class="offer-then">Until 31 Dec 2026 · Then £9.99/mo</div></div><div id="maker-annual-eq" style="font-size:12px;color:var(--teal-dark);font-weight:700;margin-top:-5px;margin-bottom:10px;display:none;"></div>
       <div class="price-sub paid-sub" id="maker-sub">&pound;89/year available &middot; Save &pound;30.88</div>
+      <p style="font-size:14px;line-height:1.5;margin:0 0 12px;"><strong>Unlimited watermark-free downloads while subscribed.</strong></p>
       <button id="btn-easy_start" onclick="startCheckout('easy_start')" class="btn btn-teal">Get started &#8594;</button>
       <hr class="divider">
       <div class="features-label">What&#39;s included</div>
@@ -367,14 +369,14 @@ html.clp-auth-pending [data-trial-cta]{visibility:hidden;}
 
   <div style="text-align:center;margin:28px 0 0;"><h2 style="font-family:'DM Serif Display',serif;font-size:26px;color:#0f2236;">Why move beyond the trial?</h2><p style="font-size:13px;color:var(--muted);line-height:1.6;margin-top:6px;">Pay As You Go and Easy Start Unlimited both include these everyday maker tools.</p></div>
   <div class="plan-benefits">
-    <div class="plan-benefit"><h3>Download labels without a watermark</h3><p>Move beyond the 10 watermarked trial downloads. Pay As You Go and Easy Start Unlimited provide clean PNG, SVG and PDF label files: buy downloads when you need them, or download as often as you like while subscribed.</p></div>
+    <div class="plan-benefit"><h3>Download labels without a watermark</h3><p>Move beyond the 10 watermarked trial downloads. Pay As You Go and Easy Start Unlimited provide clean PNG, SVG and PDF label files: buy downloads when you need them, or download as often as you like while subscribed.</p><p>Already created your label? Reopen your browser-saved label on the same device and browser, then download it again after buying downloads or subscribing. Previously downloaded files keep their watermark.</p></div>
     <div class="plan-benefit"><h3>Mix fragrances on one A4 sheet</h3><p>Put different saved fragrance labels together on a single print sheet, so a small run needn&rsquo;t use a separate sheet for every scent. This can reduce unused label spaces and wasted paper.</p></div>
     <div class="plan-benefit"><h3>Reuse your labels for the next batch</h3><p>Reopen browser-saved labels, adjust the scent or batch details, review against the current supplier SDS and download your revised labels. Keep your own copies of final files and source records.</p></div>
     <div class="plan-benefit"><h3>Choose how you print</h3><p>Download individual labels for home printing or a print company, compose an A4 sheet, or use the Cricut ZIP. Pick the format that fits the way you make and fulfil orders.</p></div>
     <div class="plan-benefit"><h3>Spend less time entering SDS details</h3><p>For a new scent, paste Section 2.2 of your current supplier SDS into Smart Paste to extract the available hazard information. Check the result against the SDS, then finish your label.</p></div>
     <div class="plan-benefit"><h3>Check the layout before you download</h3><p>Use the live preview as you build. CLPeasy warns when text is too small and blocks downloads when content does not fit, helping you spot layout problems before printing.</p></div>
   </div>
-  <div class="trial-strip">The Easy Trial gives you full access to every Easy Start Unlimited feature for 14 days &nbsp;&middot;&nbsp; No credit card required<br><span style="display:inline-block;margin-top:8px;font-size:12px;">Easy Start Unlimited auto-renews (monthly or annually) until cancelled. You can cancel anytime from your account — no notice period — and keep access until the end of your paid period.</span></div>
+  <div class="trial-strip">The Easy Trial gives you full access to every Easy Start Unlimited feature for 14 days, with 10 watermarked downloads &nbsp;&middot;&nbsp; No credit card required<br><span style="display:inline-block;margin-top:8px;font-size:12px;">Easy Start Unlimited auto-renews (monthly or annually) until cancelled. You can cancel anytime from your account — no notice period — and keep access until the end of your paid period.</span></div>
 </div>
 
 <!-- EMOTIONAL HOOK -->
