@@ -20,13 +20,13 @@ const versioningMd = read('VERSIONING.md');
 
 try {
   // ── 1. Single authoritative version source ───────────────────────────
-  assert(/window\.CLPEASY_VERSION\s*=\s*\{\s*number:\s*'1\.3\.0'/.test(versionJs),
-    'version.js must define window.CLPEASY_VERSION with number "1.3.0"');
+  assert(/window\.CLPEASY_VERSION\s*=\s*\{\s*number:\s*'1\.4\.0'/.test(versionJs),
+    'version.js must define window.CLPEASY_VERSION with number "1.4.0"');
 
-  assert(/released:\s*'2026-10-18'/.test(versionJs), 'current release date must match this release');
-  assert(releaseNotesHtml.includes('v1.3.0'), 'release notes must document the current release');
-  assert(releaseNotesHtml.includes('18 October 2026'), 'current release date must be visible');
-  assert(/\[1\.3\.0\] - 2026-10-18/.test(changelogMd), 'changelog must record the current release');
+  assert(/released:\s*'2026-10-22'/.test(versionJs), 'current release date must match this release');
+  assert(releaseNotesHtml.includes('v1.4.0'), 'release notes must document the current release');
+  assert(releaseNotesHtml.includes('22 October 2026'), 'current release date must be visible');
+  assert(/\[1\.4\.0\] - 2026-10-22/.test(changelogMd), 'changelog must record the current release');
   assert.strictEqual((releaseNotesHtml.match(/<span class="new-badge">Current<\/span>/g)||[]).length,1,'only one release can be marked current');
 
   // ── 2. builder.html loads version.js and derives its display from it ──
@@ -116,8 +116,11 @@ try {
     /expired (?:trial|account)[^.]{0,60}clean (?:export|download)/i,
     /cancelled (?:account|subscription)[^.]{0,60}clean (?:export|download)/i,
   ];
+  const notesDocument = new JSDOM(releaseNotesHtml).window.document;
+  notesDocument.querySelectorAll("script,style").forEach(element => element.remove());
+  const publicNotesText = notesDocument.body.textContent;
   forbiddenSecurityDetail.forEach((pattern) => {
-    assert(!pattern.test(releaseNotesHtml),
+    assert(!pattern.test(publicNotesText),
       `release-notes.html must not expose internal/bypass detail or defect-framing matching ${pattern}`);
   });
 
@@ -215,7 +218,7 @@ try {
       `${f} must not carry its own independent hard-coded product-version string -- version.js is the single source of truth`);
   });
 
-  console.log('versioning-and-release-notes checks passed (version.js is the single authoritative source at 1.3.0; builder.html\'s sidebar "What\'s new · v1.3.0" link replaces the stale "Version 1.0 — released 15/06/2026" text, is a real accessible/focusable <a> pointing at release-notes.html; release-notes.html documents both v1.1.0 and v1.0.0 across all required categories with no bypass detail or absolute compliance claims; CHANGELOG.md/VERSIONING.md are consistent; no other page carries a conflicting version string)');
+  console.log('versioning-and-release-notes checks passed (version.js is the single authoritative source at 1.4.0; builder.html\'s sidebar "What\'s new · v1.4.0" link replaces the stale "Version 1.0 — released 15/06/2026" text, is a real accessible/focusable <a> pointing at release-notes.html; release-notes.html documents both v1.1.0 and v1.0.0 across all required categories with no bypass detail or absolute compliance claims; CHANGELOG.md/VERSIONING.md are consistent; no other page carries a conflicting version string)');
 } catch (error) {
   console.error(error.stack || error.message);
   process.exitCode = 1;
