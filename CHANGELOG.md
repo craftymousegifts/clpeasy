@@ -4,6 +4,14 @@ All notable changes to CLPeasy are documented here. Customer-friendly notes
 covering the same releases live at `release-notes.html`. Versioning rules
 and the release procedure are documented in `VERSIONING.md`.
 
+## Documentation - 2026-10-23
+
+- Expanded the existing printing page into full-width visual guides with 24 searchable printing Q&As. (#295)
+- Linked help from Resources, Builder, Composer, FAQ, Support and Knowledge Base; retained existing printing URLs and added contextual return navigation.
+- Refreshed Step 2 screenshot for grams/millilitres; net quantity and fragrance percentage are explicitly distinguished.
+- Included the six existing-logo registered-mark corrections from #282 in the same production deployment.
+- Documentation update: product version remains 1.4.0 under VERSIONING.md. No label generation, classification, payment or authentication behaviour changes.
+
 ## [1.4.0] - 2026-10-22
 
 ### Added
