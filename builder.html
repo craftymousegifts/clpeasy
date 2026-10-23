@@ -1449,6 +1449,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="download-lock-note" role="status" aria-live="polite" style="display:none;"></div>
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
       <button type="button" id="btn-view-label" class="btn-next" onclick="viewReviewLabel()" aria-controls="preview-panel-el preview-sheet" style="width:100%;padding:14px;font-size:16px;margin-top:10px;">View label ↗</button>
+      <p style="margin:12px 0;"><button type="button" class="btn-dl" id="btn-size-test" onclick="openBuilderSizeTest()">Print a size test</button><small style="display:block;margin-top:5px;">Blank outline at your selected size · free · no download credit</small></p>
       <div class="dl-format-help" id="dl-format-help">
         <p><strong>Print at Actual size / 100%.</strong></p>
         <details class="export-file-types"><summary>Which file type?</summary><div class="export-file-box">
@@ -6761,5 +6762,7 @@ function initExtensions(){
   })();
 </script>
 
+<script src="/print-size-test.js"></script>
+<script>function openBuilderSizeTest(){const d=getDims();CLPSizeTest.open(CLPSizeTest.single(S.shape,d.mmW,d.mmH));}</script>
 </body>
 </html>
