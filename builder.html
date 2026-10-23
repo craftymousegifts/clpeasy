@@ -1267,14 +1267,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
          (unchanged) remains the mandatory "I confirm..." checkbox. -->
     <div class="smart-paste-box">
       <h4>✨ Smart Paste — paste SDS Section 2.2</h4>
-      <p>Copy the complete Section 2.2 (Label elements) from your current supplier SDS PDF and paste it here. CLPeasy extracts the information it can identify; review the result against your SDS before continuing.</p>
+      <p>Paste the complete Section 2.2 (Label elements) from your current supplier SDS. Check the extracted details against your SDS before continuing.</p>
       <textarea id="smart-paste-input" placeholder="Paste SDS Section 2.2 text here..."></textarea>
       <div class="field-alert field-alert-info" style="margin-top:12px;">
         <label style="display:flex;gap:10px;align-items:flex-start;font-size:13px;cursor:pointer;">
-          <input type="checkbox" id="sds-source-confirm" onchange="confirmSdsSource()" aria-describedby="sds-source-confirm-help sds-source-confirm-error" style="width:18px;height:18px;flex-shrink:0;margin-top:3px;accent-color:var(--teal);">
-          <span>I confirm this information comes from one current SDS that applies to my finished product, its formulation and fragrance percentage.</span>
+          <input type="checkbox" id="sds-source-confirm" onchange="confirmSdsSource()" aria-describedby="sds-source-confirm-error" style="width:18px;height:18px;flex-shrink:0;margin-top:3px;accent-color:var(--teal);">
+          <span>I confirm I’m using one current SDS for my finished product, formulation and fragrance percentage.</span>
         </label>
-        <p id="sds-source-confirm-help" style="margin:8px 0 0;font-size:12px;">CLPeasy extracts label information. It does not combine SDSs, calculate blend classifications or validate your SDS. You remain responsible for checking the classification and label are correct for your finished product. <a href="compliance.html#sds-guidance" target="_blank" rel="noopener noreferrer">Unsure? Check which information you need</a> or <a href="mailto:support@clpeasy.com">contact support</a>.</p>
+        <details style="margin-top:10px;font-size:12px;"><summary style="cursor:pointer;font-weight:600;">More information</summary><p id="sds-source-confirm-help" style="margin:8px 0 0;font-size:12px;">CLPeasy extracts label information. It does not combine SDSs, calculate blend classifications or validate your SDS. You remain responsible for checking the classification and label are correct for your finished product. <a href="compliance.html#sds-guidance" target="_blank" rel="noopener noreferrer">Unsure? Check which information you need</a> or <a href="mailto:support@clpeasy.com">contact support</a>.</p></details>
       </div>
       <div id="sds-source-confirm-error" class="field-alert field-alert-danger" role="alert" style="display:none;font-size:13px;"></div>
       <button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
