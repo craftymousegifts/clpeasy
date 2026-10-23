@@ -4,6 +4,7 @@ from pathlib import Path
 import json,subprocess
 from weasyprint import HTML
 import fitz
+Path('tmp/pdfs').mkdir(parents=True, exist_ok=True)
 html=Path('print-size-test.html').read_text()
 samples={
  'circle-63':{'boxes':[{'shape':'circle','x':20,'y':65,'w':63,'h':63}]},
