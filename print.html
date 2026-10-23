@@ -663,6 +663,8 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
         <strong>🔒 Sign in to download</strong>
         Please <a href="auth.html">sign in to your CLPeasy account</a> to download your print sheet.
       </div>
+      <button class="btn-secondary" type="button" id="btn-size-test" onclick="openComposerSizeTest()">Print a free alignment test</button>
+      <p style="font-size:12px;">Blank outlines only · no download credit</p>
       <button class="btn-primary" id="btn-pdf" onclick="downloadPDF()">🖨 Print / Save as PDF</button>
       <button class="btn-secondary" id="btn-png-all" onclick="openCricutModal()">✂️ Download for cutting machine</button>
       <p class="export-print-hint" id="export-print-hint">Prints on <strong>A4</strong> with every label at its saved size. Use <strong>Actual Size / 100%</strong>; avoid Fit to page or Shrink. <a href="#printing-help" onclick="return openPrintingHelp()">Printing help</a></p>
@@ -2937,6 +2939,22 @@ init();
     document.addEventListener('click',closeProfileMenu);
     document.addEventListener('keydown',event=>{if(event.key==='Escape')closeProfileMenu();});
   })();
+</script>
+<script src="/print-size-test.js"></script>
+<script>
+function openComposerSizeTest(){
+  const t=getTplConfig();
+  if(t.rows*t.cols>500){alert('Please use a sheet layout with no more than 500 positions.');return;}
+  const placed=getSheetPlacementsMM();
+  const boxes=placed.map(p=>({shape:p.labelData.shape||t.shape||'circle',x:p.x,y:p.y,w:p.w,h:p.h}));
+  if(!boxes.length){
+    const cell=getCellSizeMM(t);let pos=0;
+    for(let row=0;row<t.rows;row++)for(let col=0;col<t.cols;col++,pos++){
+      if(pos>=reservedUsed)boxes.push({shape:t.shape||'circle',x:t.marginL+col*(cell.w+t.gapH),y:t.marginT+row*(cell.h+t.gapV),w:cell.w,h:cell.h});
+    }
+  }
+  CLPSizeTest.open({sheet:true,boxes});
+}
 </script>
 </body>
 </html>
