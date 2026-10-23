@@ -589,6 +589,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
     <details class="collapsible" id="printing-help">
       <summary>Printing help</summary>
       <div class="collapsible-body no-pad">
+        <p style="font-size:13px;line-height:1.6;padding:10px 12px;"><a href="/knowledge/printing-and-cutting?from=composer#sheets" target="_blank" rel="noopener">Follow the visual A4 printing guide →</a> · <a href="/knowledge/printing-and-cutting?from=composer#cricut" target="_blank" rel="noopener">Cricut route</a></p>
         <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 12px;font-size:12px;color:#166534;line-height:1.6;">
           <strong>🖨 A4 printing:</strong> Use the PDF sheet. In your printer settings choose <strong>100% / Actual Size</strong> and A4 paper. Do not use “Fit to page” or “Scale to fit”, as these can change the physical label size.<br>
           <strong>📐 Label size:</strong> The Composer keeps every label at the size it was saved in the Label Builder. It never resizes labels to fit the sheet.<br>
@@ -665,6 +666,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
       <button class="btn-primary" id="btn-pdf" onclick="downloadPDF()">🖨 Print / Save as PDF</button>
       <button class="btn-secondary" id="btn-png-all" onclick="openCricutModal()">✂️ Download for cutting machine</button>
       <p class="export-print-hint" id="export-print-hint">Prints on <strong>A4</strong> with every label at its saved size. Use <strong>Actual Size / 100%</strong>; avoid Fit to page or Shrink. <a href="#printing-help" onclick="return openPrintingHelp()">Printing help</a></p>
+      <p style="font-size:12px;line-height:1.6;margin:8px 0;"><a href="/knowledge/printing-and-cutting?from=composer#sheets" target="_blank" rel="noopener">Step-by-step printing guide &amp; Q&amp;A →</a></p>
       <div id="sheet-print-guidance" class="sheet-print-guidance" role="status" aria-live="polite" hidden></div>
     </div>
   </div><!-- /right-panel -->
