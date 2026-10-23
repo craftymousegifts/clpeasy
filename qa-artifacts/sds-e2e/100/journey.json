@@ -1,0 +1,284 @@
+{
+ "input": {
+  "id": "100",
+  "supplier": "Nikura",
+  "name": "Wintergreen Essential Oil 10% full SDS",
+  "url": "https://nikura.blob.core.windows.net/pdfs/CLP10_Wintergreen_Essential_Oil_EO-WIN.pdf",
+  "pdf_sha256": "bc8161bb90b676984c6971fee76f1872d76e1fd5d27a7c19b9eb99f0d770cd89",
+  "manifest_sha256": "bc8161bb90b676984c6971fee76f1872d76e1fd5d27a7c19b9eb99f0d770cd89",
+  "text_sha256": "d455deba47b1e0ad6ddf111e44864b1307832150f0373816861a618b82ccdfdf",
+  "manifest_text_sha256": "d455deba47b1e0ad6ddf111e44864b1307832150f0373816861a618b82ccdfdf",
+  "input_verified": true
+ },
+ "product_name": "Wintergreen Essential Oil Candle",
+ "sizes": {
+  "63x44": {
+   "size": "63x44",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-3"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 63,
+     "mmH": 44,
+     "pw": 260,
+     "ph": 182
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "H317, H318, H361",
+    "p_field": "P202, P261, P302+P352, P305+P351+P338, P308+P313, P310, P333+P313, P501",
+    "signal": "Danger",
+    "h_codes": [
+     "H317",
+     "H318",
+     "H361"
+    ],
+    "p_codes": [
+     "P202",
+     "P261",
+     "P302+P352",
+     "P305+P351+P338",
+     "P308+P313",
+     "P310",
+     "P333+P313",
+     "P501"
+    ],
+    "sensitisers": [],
+    "pictograms_state": [
+     "exclamation",
+     "corrosive",
+     "health"
+    ],
+    "pictograms_ui": [
+     "exclamation",
+     "health",
+     "corrosive"
+    ],
+    "allergen_tags": "None detected — paste Section 2.2 data and click Extract",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "H317, H318, H361",
+    "p_field": "P202, P261, P302+P352, P305+P351+P338, P308+P313, P310, P333+P313, P501",
+    "signal": "Danger",
+    "h_codes": [
+     "H317",
+     "H318",
+     "H361"
+    ],
+    "p_codes": [
+     "P202",
+     "P261",
+     "P302+P352",
+     "P305+P351+P338",
+     "P308+P313",
+     "P310",
+     "P333+P313",
+     "P501"
+    ],
+    "sensitisers": [],
+    "pictograms_state": [
+     "exclamation",
+     "corrosive",
+     "health"
+    ],
+    "pictograms_ui": [
+     "exclamation",
+     "health",
+     "corrosive"
+    ],
+    "allergen_tags": "None detected — paste Section 2.2 data and click Extract",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "stopped_at": "step-3",
+   "dialogs": [
+    "CLP code not recognised\n\nCLPeasy did not recognise the following codes: P202, P308+P313, P310. Check that the SDS text was copied correctly and that you are using the current Great Britain-market SDS or classification documentation. Do not change the SDS code just to make the label generate. For help, contact support@clpeasy.com with the SDS and flagged code."
+   ],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [],
+   "downloads_seen": [],
+   "ms": 11490
+  },
+  "76x51": {
+   "size": "76x51",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-3"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 76,
+     "mmH": 51,
+     "pw": 260,
+     "ph": 174
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "H317, H318, H361",
+    "p_field": "P202, P261, P302+P352, P305+P351+P338, P308+P313, P310, P333+P313, P501",
+    "signal": "Danger",
+    "h_codes": [
+     "H317",
+     "H318",
+     "H361"
+    ],
+    "p_codes": [
+     "P202",
+     "P261",
+     "P302+P352",
+     "P305+P351+P338",
+     "P308+P313",
+     "P310",
+     "P333+P313",
+     "P501"
+    ],
+    "sensitisers": [],
+    "pictograms_state": [
+     "exclamation",
+     "corrosive",
+     "health"
+    ],
+    "pictograms_ui": [
+     "exclamation",
+     "health",
+     "corrosive"
+    ],
+    "allergen_tags": "None detected — paste Section 2.2 data and click Extract",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "H317, H318, H361",
+    "p_field": "P202, P261, P302+P352, P305+P351+P338, P308+P313, P310, P333+P313, P501",
+    "signal": "Danger",
+    "h_codes": [
+     "H317",
+     "H318",
+     "H361"
+    ],
+    "p_codes": [
+     "P202",
+     "P261",
+     "P302+P352",
+     "P305+P351+P338",
+     "P308+P313",
+     "P310",
+     "P333+P313",
+     "P501"
+    ],
+    "sensitisers": [],
+    "pictograms_state": [
+     "exclamation",
+     "corrosive",
+     "health"
+    ],
+    "pictograms_ui": [
+     "exclamation",
+     "health",
+     "corrosive"
+    ],
+    "allergen_tags": "None detected — paste Section 2.2 data and click Extract",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "stopped_at": "step-3",
+   "dialogs": [
+    "CLP code not recognised\n\nCLPeasy did not recognise the following codes: P202, P308+P313, P310. Check that the SDS text was copied correctly and that you are using the current Great Britain-market SDS or classification documentation. Do not change the SDS code just to make the label generate. For help, contact support@clpeasy.com with the SDS and flagged code."
+   ],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [],
+   "downloads_seen": [],
+   "ms": 11537
+  }
+ }
+}

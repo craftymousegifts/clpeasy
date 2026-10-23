@@ -1,0 +1,485 @@
+{
+ "input": {
+  "id": "075",
+  "supplier": "Nikura",
+  "name": "Patchouli Indian Essential Oil 10% full SDS",
+  "url": "https://nikura.blob.core.windows.net/pdfs/CLP10_Patchouli_Indian_Essential_Oil_EO-PAT.pdf",
+  "pdf_sha256": "29c33f4b22141afcd2f3966e1b98cb0b3bf6575d695899f9d5d77b8bf0de9c82",
+  "manifest_sha256": "29c33f4b22141afcd2f3966e1b98cb0b3bf6575d695899f9d5d77b8bf0de9c82",
+  "text_sha256": "b7e290c83e1258bec49dd16f9a7c9b092901346b829c568d92d9a01123e0b1f0",
+  "manifest_text_sha256": "b7e290c83e1258bec49dd16f9a7c9b092901346b829c568d92d9a01123e0b1f0",
+  "input_verified": true
+ },
+ "product_name": "Patchouli Indian Essential Oil Candle",
+ "sizes": {
+  "63x44": {
+   "size": "63x44",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-4",
+    "step-5"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 63,
+     "mmH": 44,
+     "pw": 260,
+     "ph": 182
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "H412, EUH208",
+    "p_field": "P273, P501",
+    "signal": "",
+    "h_codes": [
+     "H412",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P273",
+     "P501"
+    ],
+    "sensitisers": [
+     "beta-Caryophyllene"
+    ],
+    "pictograms_state": [],
+    "pictograms_ui": [],
+    "allergen_tags": "beta-Caryophyllene",
+    "visible_notices": [
+     "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 70×49mm (rectangle).Use 70×49mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareWidth (mm)Height (mm)Apply sizeYour entered information is kept. The preview will check the new size.",
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "H412, EUH208",
+    "p_field": "P273, P501",
+    "signal": "",
+    "h_codes": [
+     "H412",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P273",
+     "P501"
+    ],
+    "sensitisers": [
+     "beta-Caryophyllene"
+    ],
+    "pictograms_state": [],
+    "pictograms_ui": [],
+    "allergen_tags": "beta-Caryophyllene",
+    "visible_notices": [
+     "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 70×49mm (rectangle).Use 70×49mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareWidth (mm)Height (mm)Apply sizeYour entered information is kept. The preview will check the new size.",
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "preview_before_confirm": {
+    "warnings": [
+     {
+      "id": "label-warn-step5",
+      "text": "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 70×49mm (rectangle).Use 70×49mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareWidth (mm)Height (mm)Apply sizeYour entered information is kept. The preview will check the new size."
+     }
+    ],
+    "download_allowed": false,
+    "blocked_message": "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+    "label_block_download": true,
+    "block_reason": "content-does-not-fit",
+    "content_overflow": true,
+    "legibility_warn": true,
+    "footer_clipped": true,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": true,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": true,
+      "enabled": false
+     },
+     "svg": {
+      "visible": true,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 63,
+     "mmH": 44,
+     "pw": 260,
+     "ph": 182
+    }
+   },
+   "preview": {
+    "warnings": [
+     {
+      "id": "label-warn-step5",
+      "text": "Your label needs more space.Choose a larger size to keep all required information clearly readable.Smallest tested size for your current content: 70×49mm (rectangle).Use 70×49mmWe will check the fit again when you add more details.Label too large for your packaging?An attached fold-out label may be an option where GB CLP small-packaging rules permit it. Keep all required information. Fold-out export is not yet available.Adjust shape and size hereShapeCircleRectangleSquareWidth (mm)Height (mm)Apply sizeYour entered information is kept. The preview will check the new size."
+     }
+    ],
+    "download_allowed": false,
+    "blocked_message": "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+    "label_block_download": true,
+    "block_reason": "content-does-not-fit",
+    "content_overflow": true,
+    "legibility_warn": true,
+    "footer_clipped": true,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": true,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": true,
+      "enabled": false
+     },
+     "svg": {
+      "visible": true,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 63,
+     "mmH": 44,
+     "pw": 260,
+     "ph": 182
+    }
+   },
+   "verify_checked": true,
+   "exports": {
+    "png": {
+     "status": "blocked",
+     "clickable": false,
+     "dialog": "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+     "rpc_calls": 0
+    },
+    "svg": {
+     "status": "blocked",
+     "clickable": false,
+     "dialog": "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+     "rpc_calls": 0
+    },
+    "pdf": {
+     "status": "blocked",
+     "clickable": false,
+     "dialog": "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+     "rpc_calls": 0
+    }
+   },
+   "reset": {
+    "input": false,
+    "h": 0,
+    "p": 0,
+    "sens": 0
+   },
+   "dialogs": [
+    "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+    "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+    "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading."
+   ],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [],
+   "downloads_seen": [],
+   "ms": 26841
+  },
+  "76x51": {
+   "size": "76x51",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-4",
+    "step-5"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 76,
+     "mmH": 51,
+     "pw": 260,
+     "ph": 174
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "H412, EUH208",
+    "p_field": "P273, P501",
+    "signal": "",
+    "h_codes": [
+     "H412",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P273",
+     "P501"
+    ],
+    "sensitisers": [
+     "beta-Caryophyllene"
+    ],
+    "pictograms_state": [],
+    "pictograms_ui": [],
+    "allergen_tags": "beta-Caryophyllene",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "H412, EUH208",
+    "p_field": "P273, P501",
+    "signal": "",
+    "h_codes": [
+     "H412",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P273",
+     "P501"
+    ],
+    "sensitisers": [
+     "beta-Caryophyllene"
+    ],
+    "pictograms_state": [],
+    "pictograms_ui": [],
+    "allergen_tags": "beta-Caryophyllene",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "preview_before_confirm": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please confirm the compliance checkbox above, and make sure your label content fits at a readable size, before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": true,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": true,
+      "enabled": false
+     },
+     "svg": {
+      "visible": true,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 76,
+     "mmH": 51,
+     "pw": 260,
+     "ph": 174
+    }
+   },
+   "preview": {
+    "warnings": [],
+    "download_allowed": true,
+    "blocked_message": "",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": true,
+      "enabled": true
+     },
+     "pdf": {
+      "visible": true,
+      "enabled": true
+     },
+     "svg": {
+      "visible": true,
+      "enabled": true
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 76,
+     "mmH": 51,
+     "pw": 260,
+     "ph": 174
+    }
+   },
+   "verify_checked": true,
+   "exports": {
+    "png": {
+     "status": "exported",
+     "file": "export-76x51.png",
+     "original_name": "clpeasy-patchouli-indian-essential-oil-candle-76x51mm.png",
+     "rpc_calls": 1,
+     "clickable": true,
+     "dialog": ""
+    },
+    "svg": {
+     "status": "exported",
+     "file": "export-76x51.svg",
+     "original_name": "clpeasy-patchouli-indian-essential-oil-candle-76x51mm.svg",
+     "rpc_calls": 1,
+     "clickable": true,
+     "dialog": ""
+    },
+    "pdf": {
+     "status": "exported",
+     "file": "export-76x51.pdf",
+     "via": "print view → Chromium Save as PDF",
+     "rpc_calls": 1,
+     "clickable": true,
+     "dialog": ""
+    }
+   },
+   "reset": {
+    "input": false,
+    "h": 0,
+    "p": 0,
+    "sens": 0
+   },
+   "dialogs": [],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [
+    [
+     "consume_download",
+     {
+      "p_label_key": "patchouli indian essential oil candle::scented candle::rectangle::76x51mm",
+      "p_legacy_label_key": "patchouli indian essential oil candle::scented candle"
+     }
+    ],
+    [
+     "consume_download",
+     {
+      "p_label_key": "patchouli indian essential oil candle::scented candle::rectangle::76x51mm",
+      "p_legacy_label_key": "patchouli indian essential oil candle::scented candle"
+     }
+    ],
+    [
+     "consume_download",
+     {
+      "p_label_key": "patchouli indian essential oil candle::scented candle::rectangle::76x51mm",
+      "p_legacy_label_key": "patchouli indian essential oil candle::scented candle"
+     }
+    ]
+   ],
+   "downloads_seen": [
+    {
+     "guid": "478ee7ea-7c83-4dcc-a7cf-2355cbe68ffa",
+     "name": "clpeasy-patchouli-indian-essential-oil-candle-76x51mm.png",
+     "state": "completed"
+    },
+    {
+     "guid": "b1ec53d1-6c3e-4466-9119-3f8626fe50bc",
+     "name": "clpeasy-patchouli-indian-essential-oil-candle-76x51mm.svg",
+     "state": "completed"
+    }
+   ],
+   "ms": 23800
+  }
+ }
+}
