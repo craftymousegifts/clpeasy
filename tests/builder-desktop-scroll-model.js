@@ -289,7 +289,15 @@ setTimeout(() => {
     // The former 💡 .field-alert-info note was removed at Michaela's request
     // (duplicated by .sds-gb-note); its finished-product guidance now lives
     // in .sds-gb-note, within expandable help after the coverage check.
-    assert.strictEqual(step3.querySelectorAll('.field-alert-info').length, 0, 'the removed Step 3 info note is back');
+    // Corrected 21 Oct 2026: check for the retired note itself (its 💡 marker
+    // and its wording), not for the shared .field-alert-info class. Later
+    // approved Step 3 boxes reuse that class -- the v1.3.0 SDS suitability
+    // box (#sds-source-suitability-warning) and the #264 SDS source
+    // confirmation -- and must not be flagged. textContent excludes the HTML
+    // comment in builder.html that records the note's removal.
+    const RETIRED_STEP3_NOTE = 'Use safety information that matches your finished product';
+    assert(!step3.textContent.includes('💡'), 'the removed Step 3 info note is back (its 💡 marker was found)');
+    assert(!step3.textContent.includes(RETIRED_STEP3_NOTE), 'the removed Step 3 info note is back (its wording was found)');
     const smartPasteBox = step3.querySelector('.smart-paste-box');
     assert(smartPasteBox, 'Smart Paste box is missing from Step 3');
     const sdsNote = step3.querySelector('.sds-gb-note');
