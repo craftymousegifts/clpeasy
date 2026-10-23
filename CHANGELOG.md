@@ -4,7 +4,54 @@ All notable changes to CLPeasy are documented here. Customer-friendly notes
 covering the same releases live at `release-notes.html`. Versioning rules
 and the release procedure are documented in `VERSIONING.md`.
 
-## [1.3.0] - 2026-10-18 (proposed; date set on release)
+## [1.4.1] - 2026-10-23
+
+### Fixed
+- Expanded mobile menus scroll within the visible screen, keeping all submenu and account links reachable. (#297)
+
+### Documentation
+- Added a concise service/cost comparison, with verified provider names, dated sources, upfront PAYG pricing and clear printing responsibilities. Linked from Pricing and printing help. (#296)
+- Published together following founder approval, preserving the homepage, Maker Resources imagery and current branding.
+
+## Documentation - 2026-10-23
+
+- Expanded the existing printing page into full-width visual guides with 24 searchable printing Q&As. (#295)
+- Linked help from Resources, Builder, Composer, FAQ, Support and Knowledge Base; retained existing printing URLs and added contextual return navigation.
+- Refreshed Step 2 screenshot for grams/millilitres; net quantity and fragrance percentage are explicitly distinguished.
+- Included the six existing-logo registered-mark corrections from #282 in the same production deployment.
+- Documentation update: product version remains 1.4.0 under VERSIONING.md. No label generation, classification, payment or authentication behaviour changes.
+
+## [1.4.0] - 2026-10-22
+
+### Added
+- Making Guides and Design Inspiration resource pages with category imagery.
+- Visible grams/millilitres quantity selector, without automatic conversion. (#272)
+- CLP history explanation with official source links. (#273)
+- Shared fixed launch-offer header and 12-second winter light effect. (#293)
+
+### Changed
+- Approved homepage, live-site headline font, clearer maker benefit and real trial signup link. (#273)
+- Homepage walkthrough link points directly to the video. (#284)
+- Clear trial-watermark and paid-download wording on pricing and plan selection. (#274)
+- Winter garland and full-width trees, snowmen and visible snowflakes; timed effects settle or stop after 12 seconds. (#283–#293)
+
+### Fixed
+- Unavailable analytics loader, preserving the event-queue fallback. (#276)
+- Stray navigation newline text and seasonal banner placement. (#273, #283)
+
+Version metadata reconciled after the production changes were verified.
+Final binary PNG/PDF download check for #272 was waived by the founder,
+not recorded as an executed test.
+
+## [1.3.1] - 2026-10-19
+
+### Fixed
+- Smart Paste source confirmation and one-SDS guidance. (#265)
+- Support, FAQ, Knowledge Base and transparency explanations, plus practical printing/cutting and mixed-fragrance guidance. (#264)
+
+Version assigned retrospectively when reconciling the published release history.
+
+## [1.3.0] - 2026-10-18
 
 ### Added
 - Smart Paste guidance: suitability note after extraction, amber "Check your

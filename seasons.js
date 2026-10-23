@@ -225,13 +225,13 @@
       name: 'November',
       accent: '#7DD3FC',
       accentDark: '#0369A1',
-      particle: 'snow',
+      particle: 'trees+snowmen',
       pillBg: '#F0F9FF',
       pillColor: '#0369A1',
       icon: '🎄',
       iconLabel: 'Build your Christmas labels now',
       heroItalicColor: '#0EA5E9',
-      topStripe: 'linear-gradient(90deg, #7DD3FC, #4C9BB0, #7DD3FC)',
+      topStripe: 'linear-gradient(90deg, #DC2626, #15803D, #DC2626)',
       bannerBg: '#F0F9FF',
       bannerBorder: '#7DD3FC',
       bannerEmoji: '🎄',
@@ -243,13 +243,13 @@
       name: 'December',
       accent: '#7DD3FC',
       accentDark: '#0369A1',
-      particle: 'snow',
+      particle: 'trees+snowmen',
       pillBg: '#F0F9FF',
       pillColor: '#0369A1',
       icon: '🎅',
       iconLabel: 'Festive scents — label them right',
       heroItalicColor: '#0EA5E9',
-      topStripe: 'linear-gradient(90deg, #7DD3FC, #4C9BB0, #7DD3FC)',
+      topStripe: 'linear-gradient(90deg, #DC2626, #15803D, #DC2626)',
       bannerBg: '#F0F9FF',
       bannerBorder: '#7DD3FC',
       bannerEmoji: '🎅',
@@ -260,7 +260,7 @@
   ];
 
   // ── PARTICLES ──────────────────────────────────────────────────
-  // `type` can be 'snow' | 'petals' | 'leaves' | 'leaves+pumpkins' | 'none'.
+  // `type` can be 'snow' | 'petals' | 'leaves' | 'leaves+pumpkins' | 'trees+snowmen' | 'none'.
   // 'leaves+pumpkins' (October) mixes a minority of pumpkins in among the
   // same falling leaves, sharing one particle set/animation loop.
   //
@@ -285,16 +285,17 @@
     if (particleResizeHandler) { window.removeEventListener('resize', particleResizeHandler); particleResizeHandler = null; }
     const canvas = document.createElement('canvas');
     canvas.id = 'clpeasy-particles';
-    canvas.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:${type.indexOf('leaves') === 0 ? '0.72' : '0.4'};`;
+    canvas.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:${(type.indexOf('leaves') === 0 || type === 'trees+snowmen') ? '0.72' : '0.4'};`;
     document.body.appendChild(canvas);
     particleCanvasEl = canvas;
     const ctx = canvas.getContext('2d');
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     const particles = [];
-    const isMixed = type === 'leaves+pumpkins';
+    const isFestive = type === 'trees+snowmen';
+    const isMixed = type === 'leaves+pumpkins' || isFestive;
     const baseType = isMixed ? 'leaves' : type;
-    const count = type === 'snow' ? 35 : (isMixed ? 22 : 18);
+    const count = isFestive ? 42 : (type === 'snow' ? 35 : (isMixed ? 22 : 18));
     const leafColors = ['#F97316','#EA580C','#FDE68A','#DC2626','#B45309'];
     // Roughly 1 in 5 particles is a pumpkin when mixed -- a minority accent
     // among the leaves, not a replacement for them (both fall together).
@@ -304,15 +305,15 @@
       return laneW * lane + Math.random() * laneW;
     }
     for (let i = 0; i < count; i++) {
-      const kind = baseType === 'leaves'
+      const kind = isFestive ? (i % 4 === 0 ? 'tree' : (i % 4 === 2 || i === 41) ? 'snowman' : 'snowflake') : baseType === 'leaves'
         ? (isMixed && Math.random() < PUMPKIN_SHARE ? 'pumpkin' : 'leaf')
         : baseType; // 'snow' | 'petals'
       particles.push({
         lane: i,
         x: laneX(i),
         y: Math.random() * canvas.height,
-        r: kind === 'pumpkin' ? Math.random() * 4 + 8 : (kind === 'snow' ? Math.random() * 3 + 1 : Math.random() * 9 + 5),
-        speed: (kind === 'pumpkin' ? 0.75 : 1) * (Math.random() * 0.5 + 0.2),
+        r: kind === 'snowflake' ? Math.random() * 2 + 6 : (kind === 'pumpkin' || isFestive) ? Math.random() * 4 + 8 : (kind === 'snow' ? Math.random() * 3 + 1 : Math.random() * 9 + 5),
+        speed: isFestive ? Math.random() * 1.2 + 1.8 : (kind === 'pumpkin' ? 0.75 : 1) * (Math.random() * 0.5 + 0.2),
         drift: (Math.random() - 0.5) * 0.4,
         rot: Math.random() * 360,
         rotSpeed: (Math.random() - 0.5) * 2,
@@ -346,14 +347,21 @@
           ctx.moveTo(0, -p.r * 0.72);
           ctx.lineTo(0, p.r * 1.22);
           ctx.stroke();
-        } else if (p.kind === 'pumpkin') {
+        } else if (p.kind === 'pumpkin' || p.kind === 'tree' || p.kind === 'snowman') {
           const swing = Math.sin(p.swingPhase) * 10;
           ctx.rotate(swing * Math.PI / 180);
           ctx.font = `${(p.r * 2).toFixed(1)}px serif`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillText('\u{1F383}', 0, 0);
+          ctx.fillText(p.kind === 'tree' ? '\u{1F384}' : p.kind === 'snowman' ? '\u{26C4}' : '\u{1F383}', 0, 0);
           p.swingPhase += p.swingSpeed;
+        } else if (p.kind === 'snowflake') {
+          ctx.rotate(p.rot * Math.PI / 180);
+          ctx.fillStyle = '#286A96';
+          ctx.font = `${(p.r * 3).toFixed(1)}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('\u2744', 0, 0);
         } else if (p.kind === 'petals') {
           ctx.rotate(p.rot * Math.PI / 180);
           ctx.fillStyle = 'rgba(249,168,212,0.6)';
@@ -432,10 +440,46 @@
     const stripe = document.createElement('div');
     stripe.id = 'clpeasy-top-stripe';
     stripe.style.cssText = `height:4px;width:100%;background:${m.topStripe};position:fixed;top:0;left:0;z-index:9999;`;
+    if (m.particle === 'trees+snowmen') {
+      stripe.setAttribute('aria-hidden', 'true');
+      stripe.style.height = '24px';
+      stripe.style.pointerEvents = 'none';
+      const garland = `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="48" viewBox="0 0 320 48">
+<defs><radialGradient id="glow"><stop stop-color="#ffe9b0" stop-opacity=".9"/><stop offset="1" stop-color="#ffe9b0" stop-opacity="0"/></radialGradient></defs>
+        <path fill="#10243a" d="M0 0h320v48H0z"/>
+        <g fill="none" stroke="#728c91" stroke-width="1.3">
+          <path d="M0 6L80 18 160 5 240 17 320 5"/>
+          <path d="M16 8l-12 17m19-16L10 31m22-20L22 35m27-21L36 39m24-23L50 35M92 16l9 20m2-23l12 22m0-24l14 17M176 7l-12 23m23-21l-11 28m22-27l-10 30M255 16l12 22m-1-23l14 19m-1-22l15 17"/>
+        </g>
+        <g stroke="#d4e4e7" stroke-width="1" opacity=".9"><path d="M10 19l10 0m0 7l-10 0m18-2l10 1m-19 7l10 0M98 26h11m0 4h11M169 22h11m-5 6h11m-6 5h11M264 26h10m0 4h11"/></g>
+        <g fill="none" stroke="#f2f6f7" stroke-width=".7"><path d="M70 16v17m74-25v20m79-13v18m81-26v21"/></g>
+        <g fill="#eff5f6"><circle cx="70" cy="36" r="6"/><circle cx="144" cy="31" r="5"/><circle cx="223" cy="36" r="6"/><circle cx="304" cy="31" r="5"/></g>
+        <g fill="#fff" font-size="15" text-anchor="middle"><text x="42" y="20">❄</text><text x="126" y="44">❄</text><text x="208" y="22">❄</text><text x="280" y="45">❄</text></g>
+        <g fill="url(#glow)"><circle cx="9" cy="9" r="9"/><circle cx="88" cy="19" r="9"/><circle cx="166" cy="8" r="9"/><circle cx="247" cy="18" r="9"/></g>
+        <g fill="#fff0c3"><circle cx="9" cy="9" r="2"/><circle cx="88" cy="19" r="2"/><circle cx="166" cy="8" r="2"/><circle cx="247" cy="18" r="2"/></g>
+      </svg>`;
+      stripe.style.background = `#10243a url("data:image/svg+xml,${encodeURIComponent(garland)}") repeat-x top left / 160px 24px`;
+      const lights = document.createElement('div');
+      lights.className = 'winter-live-lights';
+      lights.style.cssText = 'position:absolute;inset:0;display:flex;justify-content:space-around;pointer-events:none';
+      for (let i = 0; i < 32; i++) {
+        const light = document.createElement('span');
+        light.style.cssText = `width:3px;height:3px;margin-top:${i % 2 ? 8 : 3}px;border-radius:50%;background:#fff2bd;box-shadow:0 0 5px 2px #ffe6a2;animation:winter-live-twinkle 4s ease-in-out infinite;animation-delay:-${(i % 4)}s`;
+        lights.appendChild(light);
+      }
+      stripe.appendChild(lights);
+      setTimeout(() => lights.querySelectorAll('span').forEach(light => { light.style.animation = 'none'; light.style.opacity = '1'; }), 12000);
+      if (!document.getElementById('clpeasy-winter-garland-style')) {
+        const style = document.createElement('style');
+        style.id = 'clpeasy-winter-garland-style';
+        style.textContent = `@keyframes winter-live-twinkle{0%,100%{opacity:.2}50%{opacity:1}}@media(prefers-reduced-motion:reduce){.winter-live-lights span{animation:none!important;opacity:1!important}}.public-site-nav{top:24px!important}.public-site-nav::before{display:none!important}#homepage-offer-banner{margin-top:100px!important}@media(max-width:480px){#homepage-offer-banner{margin-top:94px!important}}`;
+        document.head.appendChild(style);
+      }
+    }
     document.body.prepend(stripe);
     // Push nav down to avoid overlap
     const nav = document.querySelector('nav');
-    if (nav) nav.style.top = '4px';
+    if (nav) nav.style.top = m.particle === 'trees+snowmen' ? '24px' : '4px';
   }
 
   // ── HERO PILL ──────────────────────────────────────────────────
@@ -527,7 +571,7 @@
 
     // Place the seasonal strip directly beneath the homepage hero so it is
     // part of the page rather than a temporary fixed footer notification.
-    const hero = document.querySelector('.homepage-image-hero');
+    const hero = document.querySelector('.approved-hero, .homepage-image-hero');
     if (hero && hero.parentNode) hero.parentNode.insertBefore(banner, hero.nextSibling);
     else document.body.insertBefore(banner, document.body.firstChild);
 

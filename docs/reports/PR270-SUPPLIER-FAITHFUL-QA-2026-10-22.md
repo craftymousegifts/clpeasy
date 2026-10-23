@@ -1,6 +1,6 @@
 # PR #270 supplier wording preservation — development readiness
 
-**Status: HOLD — not release-ready.** High tier. Development branch only; no merge, production deployment, live-service change, payment or real download entitlement consumption authorised or performed.
+**Status: HOLD — not release-ready.** High tier. Development branch only; no merge into main, production deployment, live-service change, payment or real download entitlement consumption authorised or performed.
 
 ## Current verification position (latest follow-up)
 
@@ -193,3 +193,14 @@ Investigated the four earlier 25-second timeouts without changing production cod
 | Plan checker | PASS, exit 0, 108.57 s; 27 branching paths and 8 account-state page cases |
 
 The original 25-second account-display deadline was also shorter than its observed complete run. The unchanged plan-checker run was separately stopped at 90 seconds without a result; that cutoff is not an assertion failure or a pass. Production payment, entitlement, auth and label-rendering code are unchanged by this follow-up. These mocked checks do not replace actual signed-in sheet exports, PDF/iPhone output or physical printing. Earlier broader results remain historical; the complete chained `npm test` has not been rerun or signed off.
+
+
+## 23 October — integrate the intervening released changes
+
+Main advanced from the original `872c8ff` baseline to `19da3734f9912813fdbc0672636ffc4333ccfc13` (v1.4.1). Integrated that main commit into the draft feature branch from actual remote head `5d994e22ee8ab5e4cdd00589eba0cb24f06e9ffe`, using an isolated worktree. This updates the development preview; it does not merge #270 into main or publish this feature.
+
+One conflict in `printing-and-cutting.html`: retained the entire newly released visual printing guide and inserted the original PR270 printer/source-review sentence into its existing intro note. Builder, Knowledge Base and Composer auto-merged. All other files changed by intervening main releases are byte-identical to main, including maker images/resources, registered branding, homepage, public navigation, pricing, seasons, release notes and version 1.4.1. Grams/ml controls and newer printing links survive the overlapping Builder changes. The supplier parser, scope, renderer and storage modules are byte-identical to reviewed #270 `5d994e2`.
+
+Executed on the integrated tree: all seven `test:sds-faithful` modules PASS; targeted `net-weight-dropdown`, `printing-help-journey`, `versioning-and-release-notes`, `builder-regression`, `hazard-source-integrity`, `print-sheet-composer` and `print-sheet-size-integrity` PASS. Independent integration review found no blocker, confirmed byte preservation and also passed shared-renderer integrity. `git diff origin/main --check` PASS. A whitespace warning comparing the whole merge against the old feature head belongs to an existing main EOF in printing-help.js; that released file is unchanged here. Locked dependencies were reinstalled locally after yesterday's scratch dependency directory expired; no dependency versions or lockfile changed.
+
+Earlier cross-chat results remain credited at their recorded scope. #272/#274 changes are now present through released main rather than separately imported draft branches. No additional customer choices introduced. The earlier 90 mm Chrome evidence and later source/saved-label checks are retained; an updated integrated preview browser check is still needed. Actual 63 mm/PDF, iPhone supplier-text flow, authenticated sheets, physical printing and full layout/DPR verification remain open. HOLD / draft; no merge into main or production deployment.

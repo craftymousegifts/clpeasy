@@ -34,3 +34,22 @@ img,video,svg,canvas{max-width:100%}
   .public-nav-links{max-width:100vw!important;overflow-x:hidden!important}
   body> :not(.public-site-nav){max-width:100%}
 }
+
+/* Keep every expanded mobile-menu link reachable below the fixed header. */
+@media(max-width:1120px){
+  .public-site-nav .public-nav-links{
+    max-height:calc(100vh - 80px)!important;
+    max-height:calc(100dvh - 80px)!important;
+    overflow-y:auto!important;
+    overscroll-behavior-y:contain;
+    -webkit-overflow-scrolling:touch;
+    padding-bottom:calc(18px + env(safe-area-inset-bottom,0px))!important;
+  }
+  .public-site-nav .public-nav-links>*{flex-shrink:0}
+}
+@media(max-width:480px){
+  .public-site-nav .public-nav-links{
+    max-height:calc(100vh - 74px)!important;
+    max-height:calc(100dvh - 74px)!important;
+  }
+}
