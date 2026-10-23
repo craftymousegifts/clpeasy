@@ -47,7 +47,7 @@ const dom = new JSDOM(source, {
       },
       drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
     });
-    window.eval(fs.readFileSync('label-render.js', 'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
+    window.eval(fs.readFileSync('sds-supplier-wording.js', 'utf8')); window.eval(fs.readFileSync('label-render.js', 'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
     window.eval(fs.readFileSync('label-library.js', 'utf8'));
     window.eval(fs.readFileSync(path.join(__dirname, '..', 'entitlement.js'), 'utf8'));
     window.alert = message => { window.__lastAlert = String(message); };
@@ -77,13 +77,13 @@ const S = expr => window.eval(expr);
 
 const SDS_A = `2.2 Label elements
 Signal word: Warning
-Hazard statements: H317 May cause an allergic skin reaction. H412 Harmful to aquatic life with long lasting effects.
+Hazard statements: H317 May cause an allergic skin reaction.\nH412 Harmful to aquatic life with long lasting effects.
 EUH208 Contains Linalool, Limonene. May produce an allergic reaction.
-Precautionary statements: P261 P302+P352 P501`;
+Precautionary statements:\nP261 Avoid breathing vapours.\nP302+P352 IF ON SKIN: Wash with plenty of water.\nP501 Dispose of contents/container in accordance with local regulations.`;
 const SDS_B = `2.2 Label elements
 Signal word: Danger
 Hazard statements: H318 Causes serious eye damage.
-Precautionary statements: P280 P305+P351+P338 P501`;
+Precautionary statements:\nP280 Wear protective gloves.\nP305+P351+P338 IF IN EYES: Rinse cautiously with water. Remove contact lenses, if present and easy to do. Continue rinsing.\nP501 Dispose of contents/container in accordance with local regulations.`;
 
 function setName(name){
   document.getElementById('scent-name').value = name;
@@ -167,8 +167,9 @@ function f1Check(context){
   ok('C3: successful extraction locks Step 3 and the saved label records the processed-extraction flag');
   f1Check('F1 fresh extraction');
   assert.strictEqual(document.getElementById('smart-paste-input').value.includes('Label elements'), true, 'F1 fresh extraction: the pasted text is still visible in the box');
-  assert(!JSON.stringify(saved).includes('Label elements') && !JSON.stringify(saved).includes('May produce an allergic reaction'), 'F1: the saved label does not store the raw Section 2.2 text');
-  ok('F1: fresh extraction shows the approved "hazard data shown in this step" confirmation next to the extracted data; raw SDS text is not stored');
+  assert(saved.sourceSection22.includes('Label elements'),'saved label retains source');
+  assert(saved.supplierWording && saved.supplierWordingVersion===1,'saved wording version retained');
+  ok('F1: fresh extraction shows the approved "hazard data shown in this step" confirmation next to the extracted data; scoped SDS wording is saved');
 
   // Reopen in a fresh state (Clear first, so nothing is carried in memory).
   window.clearHazardData();
@@ -176,7 +177,7 @@ function f1Check(context){
   assert.strictEqual(S('S.hazardFromExtraction'), false, 'Clear resets the extraction flag');
   window.loadLabelRecord(saved);
   assert.deepStrictEqual(lockState(), fresh, 'C3/SDS-06: a reopened extracted label has exactly the post-extraction lock state');
-  assert.strictEqual(document.getElementById('smart-paste-input').value, '', 'raw SDS text is still not stored (unchanged design)');
+  assert.strictEqual(document.getElementById('smart-paste-input').value, '', 'reopening uses saved source without repopulating paste box');
   assert.deepStrictEqual(hazardSnapshot(), extracted, 'reopened label restores the same processed hazard state');
   ok('C3/SDS-06: reopened extracted label is locked exactly like straight after extraction');
   f1Check('F1 reopened saved label');
@@ -397,7 +398,7 @@ function f1Check(context){
   for(const [code,[wording,signal]] of Object.entries(suffixed)){
     window.splashNewLabel(); fillBasics('Suffix QA '+code);
     document.getElementById('custom-w').value='150'; window.onDimInput();
-    extract('2.2 Label elements\n'+code+' '+wording+'.\nP102 Keep out of reach of children.');
+    extract('2.2 Label elements\nSignal word: '+signal+'\n'+code+' '+wording+'.\nP102 Keep out of reach of children.');
     assert.strictEqual(S('S.hStatements'), code, code+': full code retained');
     assert.strictEqual(document.getElementById('h-statements').value, code, code+': visible field retains code');
     assert.strictEqual(S('S.signal'), signal, code+': signal word');
@@ -424,12 +425,12 @@ function f1Check(context){
     extract('2.2 Label elements\nH317 May cause an allergic skin reaction.\n'+code+' Unresolved statement.\nP102 Keep out of reach of children.');
     assert(S('S.hStatements').split(', ').includes(code), code+': never silently omitted or reduced');
     document.getElementById('hazard-confirm').checked=true; tickVerify();
-    assert.strictEqual(window.canLeaveApprovedBuilderStep(3),false, code+': blocked in Step 3');
-    assert.strictEqual(window._downloadAllowed(),false, code+': export blocked');
+    assert.strictEqual(window.canLeaveApprovedBuilderStep(3),true, code+': supplier text supports unknown suffix without library substitution');
+    assert.strictEqual(window._downloadAllowed(),true, code+': full supplier wording may export');
     const before=downloads; await window.downloadSVG();
-    assert.strictEqual(downloads,before,code+': no output handover');
+    assert.strictEqual(downloads,before+1,code+': output uses preserved supplier wording');
   }
-  ok('Suffixed codes: all nine preserve code/wording/signal/GHS08/save/reopen; unknown and wrong-case suffixes block output');
+  ok('Suffixed codes: all nine preserve code/wording/signal/GHS08/save/reopen; unknown suffixes retain supplied wording');
 
   assert.deepStrictEqual(errors, [], 'no page errors');
   console.log('hazard source integrity checks passed (C3 + C4)');

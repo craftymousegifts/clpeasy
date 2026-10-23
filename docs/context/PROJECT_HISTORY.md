@@ -595,3 +595,23 @@ place them off the A4 page.
 - Completion update (19 Oct): desktop 1280/mobile-size 390 checks completed across eight public pages; FAQ, blend topic/link, nested mobile navigation, keyboard skip and Support deep link pass. Cricut-specific guide moved to publicly blocked report directory; public links use official Cricut instructions. Original HSE reply not found in connected mail/file sources; Zoho mailbox requires sign-in, so engagement claim remains REVIEW. Consent test passes individually; unrelated plan-finder baseline assertion fails (`frequency` vs `labels`), full suite not green. No production release.
 
 - HSE correction completed (19 Oct): owner supplied original reply dated 16 June 2026 and approved the exact replacements. Compliance/FAQ/homepage no longer claim an exemption or pre-launch review; Compliance/Terms regulatory statements match and preserve customer rights. Pre-launch HSE fact badge removed; Terms date updated. Focused independent review passed; earlier HSE source-access hold is superseded. Cricut guide remains unpublished and production release awaits founder approval/OOH process.
+
+
+## PR #270 supplier wording — 22 October 2026, development only
+
+- On `feat/sds-faithful-section22-stage1-20261021`, implementation `d8fd2bb` preserves supplier H/P/EUH text and explicit signal/GHS values, freezes saved wording, retains reliable unknown descriptions, and keeps physical-fit and separately maintained GB safeguards. Legacy/manual labels keep their existing path.
+- Executed focused and broader Node/jsdom checks; 31/35 broader modules pass, four time out on both branch and main. Genuine corpus coverage is 100 stored Nikura 10%-in-wax Section 2.2 extracts, not a multi-supplier full-document sign-off.
+- HOLD: missing-pictogram inference policy, wider supplier-format support and actual browser/iPhone/PNG/PDF/physical print QA remain. Chromium installation unavailable. No merge, production deployment or live services changed.
+- Evidence and next step: `docs/reports/PR270-SUPPLIER-FAITHFUL-QA-2026-10-22.md`.
+
+- Founder follow-up (22 Oct): keep Section 2.2 transfer automatic without the proposed extra pictogram choice. Standalone Contains text now passes through and survives saving/reopening; no new customer step. Existing review remains; unreadable graphics and wider formats still require QA.
+
+### 22 October 2026 — PR #270 supplier-preservation QA follow-up
+
+Founder confirmed automatic Section 2.2 preservation without extra missing-pictogram choices. Fresh source checks cover Nikura 10% wax, Candle Shack neat fragrance, historical 151 finished room spray, and Supplies for Candles diffuser base (different applicability, not interchangeable). Preserved supplier UFI and verified PDF hyphen artifacts; saved source labels retain explicit empty pictograms and reset review checks on opening. Actual signed-out Chrome SVG/PNG downloads and guest save/reopen/Composer preview checked on `bbe1f01`; latest fixes have local and independent review coverage. PDF view blocked by browser policy; iPhone, signed-in sheets and physical print remain open. See `docs/reports/PR270-SUPPLIER-FAITHFUL-QA-2026-10-22.md`. Draft/HOLD; no merge or production deployment.
+
+### 23 October 2026 — PR #270 current-main integration
+
+Updated the isolated supplier-preservation draft with released main `19da373` (v1.4.1), preserving the newer maker resources/images, branding, public navigation, pricing, seasons, quantity selector and printing guides. One printing-guide conflict resolved by retaining the new guide plus the existing source-review sentence. Seven supplier modules and seven integration regressions pass; scoped independent review found no blockers. No dependency/lockfile change. Updated preview verification and actual device/export/physical-print gates remain open; no merge into main or production deployment. See the existing PR270 QA report.
+
+- Integration verification follow-up: Chrome at `e02da8f` preserves 100ml alongside full Section 2.2 wording/UFI through save and Composer, with Section 3 excluded; new printing-guide links and the resolved guide pass visible checks. Configured npm test exits 0 (Deno Edge Function suite explicitly skipped: runtime absent), supplier suite and targeted integration modules pass. Evidence/screenshots remain in the PR270 QA report; still draft and not released.

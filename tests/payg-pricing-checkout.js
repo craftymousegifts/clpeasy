@@ -7,6 +7,8 @@
 const fs = require('fs');
 const assert = require('assert');
 const { JSDOM, VirtualConsole } = require('jsdom');
+// Close test-owned pages after every assertion finishes, including on failure.
+const testDoms = [];
 
 const source = fs.readFileSync('pricing.html', 'utf8').replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
 
@@ -29,6 +31,7 @@ async function open({ signedIn, pending, response, notice }){
       } }) };
     }
   });
+  testDoms.push(dom);
   await new Promise(r => setTimeout(r, 200));
   return { w: dom.window, calls, alerts, errors };
 }
@@ -216,4 +219,5 @@ function tick(w){ const b = w.document.getElementById('payg-consent'); b.checked
     assert(/Something went wrong starting checkout/.test(alerts[0]), 'unknown failures keep the generic message');
   }
   console.log('PAYG pricing checkout checks passed');
-})().catch(e => { console.error(e.stack || e.message); process.exitCode = 1; });
+})().catch(e => { console.error(e.stack || e.message); process.exitCode = 1; })
+  .finally(() => { for (const dom of testDoms) dom.window.close(); });

@@ -14,7 +14,7 @@ const dom = new JSDOM(source, { url: 'https://local.clpeasy.test/builder.html', 
   beforeParse(w) {
     w.HTMLElement.prototype.scrollIntoView = () => {};
     w.HTMLCanvasElement.prototype.getContext = () => ({ font: '', measureText(t){ const s = Number((String(this.font).match(/([\d.]+)px/) || [])[1]) || 12; return { width: [...String(t)].reduce((a, c) => a + s * (/[MW@%]/.test(c) ? .82 : /[ilI1.,' ]/.test(c) ? .28 : .54), 0) }; }, drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data: [] }; } });
-    for (const f of ['label-render.js', 'sds-doc-check.js', 'sds-section-scope.js', 'label-library.js', 'entitlement.js']) w.eval(fs.readFileSync(path.join(__dirname, '..', f), 'utf8'));
+    for (const f of ['sds-supplier-wording.js','label-render.js', 'sds-doc-check.js', 'sds-section-scope.js', 'label-library.js', 'entitlement.js']) w.eval(fs.readFileSync(path.join(__dirname, '..', f), 'utf8'));
     w.alert = m => { w.__lastAlert = String(m); }; w.confirm = () => true; w.scrollTo = () => {};
     w.fetch = async () => ({ ok: true, json: async () => ({}) });
     w.supabase = { createClient: () => ({ auth: { getSession: async () => ({ data: { session: null } }), onAuthStateChange: () => ({ data: { subscription: { unsubscribe(){} } } }), signOut: async () => ({}) }, from: () => Object.create(emptyQuery), rpc: async () => ({ data: false, error: null }) }) };
@@ -36,10 +36,11 @@ assert.strictEqual(state(),before);assert.strictEqual(document.activeElement.id,
 assert(box('sds-source-confirm-error').textContent.includes('Before extracting'));
 ok('unticked extraction is refused without changing existing data');
 confirm();window.extractSDS();assert(window.eval('S.hStatements').includes('H317'));
-assert(box('smart-paste-excluded-note').textContent.includes('P264'));
+assert(window.eval('S.pStatements').includes('P264'),'supplier code retained');
+assert(box('smart-paste-excluded-note').style.display==='none','no statement silently excluded');
 assert(!box('hazard-confirm').checked && !box('verify-checkbox').checked);
 const accepted=state();window.extractSDS();assert.strictEqual(state(),accepted);
-ok('confirmed extraction retains excluded-code guidance and both later confirmations; unchanged retry works');
+ok('confirmed extraction retains all supplier codes and both later confirmations; unchanged retry works');
 for(const [id,value,event] of [['smart-paste-input',paste+'\nP273','input'],['product-type','Wax Melt','change'],['frag-load','8%','input']]){
  confirm();box(id).value=value;box(id).dispatchEvent(new window.Event(event,{bubbles:true}));
  assert(!box('sds-source-confirm').checked,id+' reset');

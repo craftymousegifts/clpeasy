@@ -169,6 +169,18 @@ function normalizeLabel(data){
     labelLang: data.labelLang || '',
     hStatements: data.hStatements || '',
     pStatements: data.pStatements || '',
+    // New records freeze the parsed wording; older draft source snapshots use
+    // the same parser as Builder. Legacy records without a source stay unchanged.
+    supplierWording: data.supplierWording && typeof data.supplierWording==='object'
+      ? data.supplierWording
+      : (data.hazardFromExtraction===true && typeof data.sourceSection22==='string'
+          && typeof ClpeasySupplierWording!=='undefined'
+          ? ClpeasySupplierWording.extract(data.sourceSection22) : null),
+    supplierSupplemental: Array.isArray(data.supplierSupplemental)?data.supplierSupplemental
+      : (data.hazardFromExtraction && data.sourceSection22 && typeof ClpeasySupplierWording!=='undefined'?ClpeasySupplierWording.analyse(data.sourceSection22).supplemental:[]),
+    supplierWordingIssues: Array.isArray(data.supplierWordingIssues)?data.supplierWordingIssues
+      : (data.hazardFromExtraction && data.sourceSection22 && typeof ClpeasySupplierWording!=='undefined'?ClpeasySupplierWording.analyse(data.sourceSection22).issues:[]),
+    supplierSourceActive: !!(data.supplierWording || (data.hazardFromExtraction && data.sourceSection22)),
     // P280's own selected protection items -- see buildP280Wording() and
     // the P_LIB comment above it. Missing/empty on a label saved before
     // this feature existed, or on a label where P280 was added without
@@ -865,7 +877,7 @@ function choosePictoMmAndRender(rawData, opts){
 // content-does-not-fit branch, which is BYTE-IDENTICAL to the overlay this
 // replaced, so genuine layout overflow with only recognised, GB-supported
 // codes is completely unaffected by this change.
-function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, genericCodes, invalidPictograms){
+function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, genericCodes, invalidPictograms, supplierSourceActive){
   unsupportedCodes = unsupportedCodes||[]; genericCodes = genericCodes||[]; invalidPictograms = invalidPictograms||[];
   const hasIssue = unsupportedCodes.length>0 || genericCodes.length>0 || invalidPictograms.length>0;
 
@@ -895,7 +907,7 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
     // plus the one instruction both groups share.
     sentences = [
       uCodes.join(', ')+' need'+(uCodes.length>1?'':'s')+' supplier confirmation for a Great Britain CLP label.',
-      gCodes.join(', ')+' '+(gCodes.length>1?'were':'was')+' not recognised by CLPeasy.',
+      gCodes.join(', ')+(supplierSourceActive?' need complete, unambiguous supplier wording.':' '+(gCodes.length>1?'were':'was')+' not recognised by CLPeasy.'),
       'Check you pasted Section 2.2 from the correct supplier SDS.'
     ];
   } else if(uCodes.length){
@@ -909,7 +921,7 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
     // Generic/unrecognised code(s) -- must NOT state or imply the code is
     // legally unsupported under GB rules, since that has not been verified.
     sentences = [
-      gCodes.join(', ')+' '+(gCodes.length>1?'were':'was')+' not recognised by CLPeasy.',
+      gCodes.join(', ')+(supplierSourceActive?' need complete, unambiguous supplier wording.':' '+(gCodes.length>1?'were':'was')+' not recognised by CLPeasy.'),
       'Check you pasted Section 2.2 from the correct supplier SDS.',
       'If the code is present in Section 2.2, contact CLPeasy support.'
     ];
@@ -1626,15 +1638,32 @@ function renderLabel(rawData, opts){
   // updateLabel() can block the download and explain exactly which code(s)
   // need attention, consistent with the existing "block, don't silently drop"
   // compliance pattern used elsewhere on this page.
-  const _unrecognizedCodes = [];
-  const hText   = hCodes.map(c=>{const e=H_LIB.find(x=>x.code===c);if(!e)_unrecognizedCodes.push(c);return e?e.desc:'';}).filter(Boolean).join('. ')+(hCodes.filter(c=>H_LIB.find(x=>x.code===c)).length>0?'.':'') || '';
+  const _unrecognizedCodes = data.supplierSourceActive?[...data.supplierWordingIssues]:[];
+  // Removing a code while retaining a supplier snapshot must not omit source
+  // wording silently. Normal UI edits unlock and clear the source together.
+  if(data.supplierSourceActive){
+    const selected=new Set([..._allCodes,...pCodes]);
+    Object.keys(data.supplierWording||{}).forEach(c=>{if(!selected.has(c))_unrecognizedCodes.push(c);});
+  }
+  const _hResolved=hCodes.map(c=>{
+    const supplierText=data.supplierWording && data.supplierWording[c];
+    if(typeof supplierText==='string' && supplierText.trim()){
+      if(GB_UNSUPPORTED_CODES.includes(c)){_unrecognizedCodes.push(c);return '';}
+      return supplierText.trim();
+    }
+    if(data.supplierSourceActive){_unrecognizedCodes.push(c);return '';}
+    const e=H_LIB.find(x=>x.code===c);
+    if(!e)_unrecognizedCodes.push(c);
+    return e?e.desc:'';
+  }).filter(Boolean);
+  const hText=data.supplierSourceActive?_hResolved.join(' '):_hResolved.map(v=>{const t=String(v).trim();return /[.!?]$/.test(t)?t:t+'.';}).join(' ');
   // Normalise P codes
   const _pNorm=[];
   const _pRaw=pCodes;
   for(let _i=0;_i<_pRaw.length;_i++){
     const _c=_pRaw[_i];
     const _comb=_i<_pRaw.length-1?_c+'+'+_pRaw[_i+1]:null;
-    if(_comb&&P_LIB.find(x=>x.code===_comb)){_pNorm.push(_comb);_i++;}
+    if(!data.supplierSourceActive&&_comb&&P_LIB.find(x=>x.code===_comb)){_pNorm.push(_comb);_i++;}
     else _pNorm.push(_c);
   }
   // P280 is resolved to its per-label selected wording (buildP280Wording),
@@ -1645,6 +1674,14 @@ function renderLabel(rawData, opts){
   // printing every possible item. Every other P-code's behaviour (fixed
   // desc lookup, unrecognised-code handling) is unchanged.
   const _pResolved = _pNorm.map(c=>{
+    // Exact supplier wording takes precedence, including P280. Only use the
+    // manual P280 picker when no supplier source wording is available.
+    const supplierText=data.supplierWording && data.supplierWording[c];
+    if(typeof supplierText==='string' && supplierText.trim()){
+      if(GB_UNSUPPORTED_CODES.includes(c)){_unrecognizedCodes.push(c);return '';}
+      return supplierText.trim();
+    }
+    if(data.supplierSourceActive){_unrecognizedCodes.push(c);return '';}
     if(c==='P280'){
       const w=buildP280Wording(data);
       if(!w)_unrecognizedCodes.push(c);
@@ -1655,7 +1692,8 @@ function renderLabel(rawData, opts){
     return e?e.desc:null;
   });
   const _pFound = _pResolved.filter(Boolean);
-  const pText = _pFound.join('. ')+(_pFound.length>0?'.':'');
+  // Join complete supplier sentences without inserting duplicate punctuation.
+  const pText = data.supplierSourceActive?_pFound.join(' '):_pFound.map(v=>{const t=String(v).trim();return /[.!?]$/.test(t)?t:t+'.';}).join(' ');
   // U8 fix (19 Aug 2026): sensitisers were previously hard-capped to the first
   // 3 named substances (+ "..."), silently omitting any beyond that -- for a
   // fragrance with 4+ sensitisers above threshold, the printed label would
@@ -1675,9 +1713,14 @@ function renderLabel(rawData, opts){
   // shrinks font size to fit the full text -- so no separate truncation is
   // needed here; removing it lets that existing engine handle sensitiser
   // names the same way it already handles H/P statement text.
-  const _sensBase = sensArr.length>0 ? _containsPrefix+' '+sensArr.join(', ') : (hasEUH208 ? _containsPrefix+' sensitising substance' : '');
+  const _sensBase = data.supplierSourceActive ? '' : sensArr.length>0 ? _containsPrefix+' '+sensArr.join(', ') : (hasEUH208 ? _containsPrefix+' sensitising substance' : '');
   const _euhSuffix = hasEUH208 ? 'May produce an allergic reaction.' : '';
-  const sensText = [_sensBase, _euhSuffix].filter(Boolean).join(' ');
+  // EUH208 is itself a supplier statement. Do not rebuild its substance
+  // names, punctuation or selected wording from the sensitiser library.
+  const _supplierEUH208=data.supplierWording && data.supplierWording.EUH208;
+  if(hasEUH208 && data.supplierSourceActive && !_supplierEUH208)_unrecognizedCodes.push('EUH208');
+  const sourceSupplemental=[_supplierEUH208,...data.supplierSupplemental].filter(Boolean).join(' ');
+  const sensText = data.supplierSourceActive ? sourceSupplemental : [_sensBase, _euhSuffix].filter(Boolean).join(' ');
 
   // ── HAZARD TEXT AUTO-SIZING ──────────────────────────────────────────────
   // Spec: CLPeasy SVG Hazard Label Auto-Sizing Requirements
@@ -1757,8 +1800,11 @@ function renderLabel(rawData, opts){
     let sLines=[],eLines=[];
     if(sensText){
       const sw=Math.max(fs*3, chordW(y+sLH*0.5,0)-_edgeMargin*2);
-      sLines=_sensBase?_wrapBlock(_sensBase,sw,y,sLH,0):[];
-      eLines=_euhSuffix?_wrapBlock(_euhSuffix,sw,y,sLH,sLines.length):[];
+      if(data.supplierSourceActive){sLines=_wrapBlock(sensText,sw,y,sLH,0);}
+      else{
+        sLines=_sensBase?_wrapBlock(_sensBase,sw,y,sLH,0):[];
+        eLines=_euhSuffix?_wrapBlock(_euhSuffix,sw,y,sLH,sLines.length):[];
+      }
     }
     const sStartY=y+sLH*0.5;
     const allS=[...sLines,...eLines];
@@ -2151,7 +2197,7 @@ function renderLabel(rawData, opts){
   // warnings and every export are unchanged; code problems keep the overlay.
   const _showBlockOverlay = _contentBlocked && !(opts.livePreview && !opts.forExport
     && !_unsupportedCodesFound.length && !_genericUnrecognizedFound.length && !_invalidPictograms.length);
-  const overflowOverlay=_showBlockOverlay?buildBlockedOverlaySVG(pw,ph,cx,cy,chordW,_unsupportedCodesFound,_genericUnrecognizedFound,_invalidPictograms):'';
+  const overflowOverlay=_showBlockOverlay?buildBlockedOverlaySVG(pw,ph,cx,cy,chordW,_unsupportedCodesFound,_genericUnrecognizedFound,_invalidPictograms,data.supplierSourceActive):'';
   // Y positions already set per-slot — no global recompute needed
   const footerRendered = footerElems.map(elem=>{
     if(elem.slotY > sBot - 1) return '';
