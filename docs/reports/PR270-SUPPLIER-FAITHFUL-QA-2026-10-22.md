@@ -15,6 +15,7 @@ Earlier sections retain the chronological evidence; the later browser and suppli
 | Actual individual SVG/PNG files | Earlier 90 mm files verified; this later 63 mm run did not return a completed download and is unverified |
 | PDF, iPhone Safari, signed-in sheet exports and physical printing | OPEN; browser PDF observation blocked, no workaround attempted |
 | Four earlier timeout modules | PASS after test-page cleanup and adequate runtime; see final follow-up |
+| Integrated current-main Node regression run | `npm test` exit 0 on 23 October; Deno Edge Function suite explicitly SKIPPED (Deno unavailable) |
 | Automated pixel-gap/DPR matrix | OPEN; the one visual 63 mm check does not replace those tests |
 
 ## Cross-chat reconciliation — Digital visibility plan
@@ -204,3 +205,14 @@ One conflict in `printing-and-cutting.html`: retained the entire newly released 
 Executed on the integrated tree: all seven `test:sds-faithful` modules PASS; targeted `net-weight-dropdown`, `printing-help-journey`, `versioning-and-release-notes`, `builder-regression`, `hazard-source-integrity`, `print-sheet-composer` and `print-sheet-size-integrity` PASS. Independent integration review found no blocker, confirmed byte preservation and also passed shared-renderer integrity. `git diff origin/main --check` PASS. A whitespace warning comparing the whole merge against the old feature head belongs to an existing main EOF in printing-help.js; that released file is unchanged here. Locked dependencies were reinstalled locally after yesterday's scratch dependency directory expired; no dependency versions or lockfile changed.
 
 Earlier cross-chat results remain credited at their recorded scope. #272/#274 changes are now present through released main rather than separately imported draft branches. No additional customer choices introduced. The earlier 90 mm Chrome evidence and later source/saved-label checks are retained; an updated integrated preview browser check is still needed. Actual 63 mm/PDF, iPhone supplier-text flow, authenticated sheets, physical printing and full layout/DPR verification remain open. HOLD / draft; no merge into main or production deployment.
+
+### Integrated Chrome preview check
+
+Netlify preview deployment for integration commit `e02da8f2b2bbc54e122b63e0a9fc36dacb05e813` succeeded. On https://deploy-preview-270--clpeasy.netlify.app/builder.html, created a signed-out synthetic 90 mm Room Spray with the released 100ml selector and a full synthetic SDS. Extraction retained Section 2.2 Warning/GHS07 and excluded conflicting Section 3 H300/Danger. Saved successfully and opened in Composer. DOM text checks confirmed 100ml, UFI, Contains, supplemental wording and the entire contact-lens/continue-rinsing paragraph. Composer retained its signed-out export gate and the newer step-by-step printing-guide link. [Integrated preview screenshot](pr270-qa/integrated-composer-20261023.jpg). No actual file export, account login or credit consumption attempted in this integration smoke check; earlier export/device/physical limitations remain.
+
+Also followed Composer's current printing-guide deep link, verified the correct A4-sheets panel and return-context instruction, then opened Choose a route. The entire released guide, navigation, fixed offer bar and brand mark remain visible, with the source-review sentence in the existing intro note. [Integrated guide screenshot](pr270-qa/integrated-printing-guide-20261023.jpg).
+
+
+### Integrated chained regression result
+
+On the integrated implementation `e02da8f`, the configured `npm test` command completed with exit 0 on 23 October. All included Node modules completed, including the real-time plan checker and the cleaned-up entitlement/checkout/authorisation harnesses. `tests/deno/run.js` explicitly SKIPPED Edge Function tests because Deno is not installed. No Edge Function files changed relative to main. This supersedes earlier “full chained npm test not rerun/signed off” statements for this integrated tree only, and is not a claim that the skipped Deno suite executed. The separate seven-module supplier suite and seven targeted integration modules also pass. Browser checks above establish the integrated signed-out extraction/save/Composer and printing-guide flows; actual exports/device/physical/layout gates remain open. No production release.
