@@ -176,6 +176,14 @@ function normalizeLabel(data){
     // selection" here, not defaulted to every item.
     p280Items: Array.isArray(data.p280Items) ? data.p280Items : [],
     p280Other: data.p280Other || '',
+    // P241 supplier equipment words (see buildP241Wording); kept undefined
+    // when absent so an extracted label saved before this field blocks.
+    p241Equipment: typeof data.p241Equipment === 'string' ? data.p241Equipment : undefined,
+    // Same rule as builder.html loadLabelRecord(): a record saved before this
+    // field existed counts as extracted when it carries the supplier signal
+    // word only Smart Paste writes, so Builder and Composer agree.
+    hazardFromExtraction: data.hazardFromExtraction === true ||
+      (data.hazardFromExtraction === undefined && typeof data.sdsSignal === 'string' && data.sdsSignal.trim() !== ''),
     sensitisers: data.sensitisers || [],
     pictograms: data.pictograms || [],
     bizName: data.bizName || 'Your Brand',
@@ -335,7 +343,7 @@ function assetMarkup(src, x, y, size, pool, poolKey){
 // rather than just silently unrecognised. Kept in sync with builder.html's
 // own H_LIB copy -- both must change together.
 const H_LIB=[{code:'H225',desc:'Highly flammable liquid and vapour'},{code:'H226',desc:'Flammable liquid and vapour'},{code:'H228',desc:'Flammable solid'},{code:'H301',desc:'Toxic if swallowed'},{code:'H302',desc:'Harmful if swallowed'},{code:'H304',desc:'May be fatal if swallowed and enters airways'},{code:'H311',desc:'Toxic in contact with skin'},{code:'H312',desc:'Harmful in contact with skin'},{code:'H314',desc:'Causes severe skin burns and eye damage'},{code:'H315',desc:'Causes skin irritation'},{code:'H317',desc:'May cause an allergic skin reaction'},{code:'H318',desc:'Causes serious eye damage'},{code:'H319',desc:'Causes serious eye irritation'},{code:'H331',desc:'Toxic if inhaled'},{code:'H332',desc:'Harmful if inhaled'},{code:'H334',desc:'May cause allergy or asthma symptoms if inhaled'},{code:'H335',desc:'May cause respiratory irritation'},{code:'H336',desc:'May cause drowsiness or dizziness'},{code:'H361',desc:'Suspected of damaging fertility or the unborn child'},{code:'H371',desc:'May cause damage to organs'},{code:'H373',desc:'May cause damage to organs through prolonged or repeated exposure'},{code:'H400',desc:'Very toxic to aquatic life'},{code:'H410',desc:'Very toxic to aquatic life with long lasting effects'},{code:'H411',desc:'Toxic to aquatic life with long lasting effects'},{code:'H412',desc:'Harmful to aquatic life with long lasting effects'},{code:'H413',desc:'May cause long lasting harmful effects to aquatic life'},{code:'EUH066',desc:'Repeated exposure may cause skin dryness or cracking'},{code:'EUH208',desc:'Contains sensitiser — may produce an allergic reaction'},{code:'EUH071',desc:'Corrosive to the respiratory tract'},{code:'EUH210',desc:'Safety data sheet available on request'},{code:'H200',desc:'Unstable explosive'},{code:'H201',desc:'Explosive; mass explosion hazard'},{code:'H202',desc:'Explosive; severe projection hazard'},{code:'H203',desc:'Explosive; fire, blast or projection hazard'},{code:'H204',desc:'Fire or projection hazard'},{code:'H205',desc:'May mass explode in fire'},{code:'H223',desc:'Flammable aerosol'},{code:'H224',desc:'Extremely flammable liquid and vapour'},{code:'H240',desc:'Heating may cause an explosion'},{code:'H241',desc:'Heating may cause a fire or explosion'},{code:'H242',desc:'Heating may cause a fire'},{code:'H250',desc:'Catches fire spontaneously if exposed to air'},{code:'H251',desc:'Self-heating; may catch fire'},{code:'H252',desc:'Self-heating in large quantities; may catch fire'},{code:'H260',desc:'In contact with water releases flammable gases which may ignite spontaneously'},{code:'H261',desc:'In contact with water releases flammable gas'},{code:'H270',desc:'May cause or intensify fire; oxidiser'},{code:'H271',desc:'May cause fire or explosion; strong oxidiser'},{code:'H272',desc:'May intensify fire; oxidiser'},{code:'H280',desc:'Contains gas under pressure; may explode if heated'},{code:'H281',desc:'Contains refrigerated gas; may cause cryogenic burns or injury'},{code:'H282',desc:'Extremely flammable chemical under pressure: may explode if heated'},{code:'H283',desc:'Flammable chemical under pressure: may explode if heated'},{code:'H284',desc:'Chemical under pressure: may explode if heated'},{code:'H290',desc:'May be corrosive to metals'},{code:'H300',desc:'Fatal if swallowed'},{code:'H310',desc:'Fatal in contact with skin'},{code:'H330',desc:'Fatal if inhaled'},{code:'H340',desc:'May cause genetic defects'},{code:'H341',desc:'Suspected of causing genetic defects'},{code:'H350',desc:'May cause cancer'},{code:'H351',desc:'Suspected of causing cancer'},{code:'H360',desc:'May damage fertility or the unborn child'},{code:'H362',desc:'May cause harm to breast-fed children'},{code:'H370',desc:'Causes damage to organs'},{code:'H372',desc:'Causes damage to organs through prolonged or repeated exposure'},{code:'H350i',desc:'May cause cancer by inhalation'},{code:'H360F',desc:'May damage fertility'},{code:'H360D',desc:'May damage the unborn child'},{code:'H360FD',desc:'May damage fertility. May damage the unborn child'},{code:'H360Fd',desc:'May damage fertility. Suspected of damaging the unborn child'},{code:'H360Df',desc:'May damage the unborn child. Suspected of damaging fertility'},{code:'H361f',desc:'Suspected of damaging fertility'},{code:'H361d',desc:'Suspected of damaging the unborn child'},{code:'H361fd',desc:'Suspected of damaging fertility. Suspected of damaging the unborn child'}];
-const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product container or label at hand'},{code:'P102',desc:'Keep out of reach of children'},{code:'P103',desc:'Read label before use'},{code:'P210',desc:'Keep away from heat, hot surfaces, sparks, open flames and other ignition sources. No smoking'},{code:'P233',desc:'Keep container tightly closed'},{code:'P260',desc:'Do not breathe vapours or dust'},{code:'P261',desc:'Avoid breathing vapours and dust'},{code:'P271',desc:'Use only outdoors or in a well-ventilated area'},{code:'P273',desc:'Avoid release to the environment'},{code:'P301+P310',desc:'IF SWALLOWED: immediately call a POISON CENTRE or doctor'},{code:'P301+P312',desc:'IF SWALLOWED: call a POISON CENTRE or doctor if unwell'},{code:'P302+P352',desc:'IF ON SKIN: wash with plenty of water'},{code:'P304+P340',desc:'IF INHALED: Remove person to fresh air and keep comfortable for breathing'},{code:'P305+P351+P338',desc:'IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing'},{code:'P312',desc:'Call a POISON CENTRE or doctor if you feel unwell'},{code:'P313',desc:'Get medical advice/attention'},{code:'P314',desc:'Get medical advice if you feel unwell'},{code:'P321',desc:'Specific treatment: see label'},{code:'P330',desc:'Rinse mouth'},{code:'P331',desc:'Do NOT induce vomiting'},{code:'P332+P313',desc:'If skin irritation occurs: get medical advice/attention'},{code:'P333+P313',desc:'If skin irritation or rash occurs: get medical advice'},{code:'P337+P313',desc:'If eye irritation persists: get medical advice'},{code:'P370+P378',desc:'In case of fire: use appropriate media for extinction'},{code:'P391',desc:'Collect spillage'},{code:'P403+P233',desc:'Store in a well-ventilated place. Keep container tightly closed'},{code:'P211',desc:'Do not spray on an open flame or other ignition source'},{code:'P501',desc:'Dispose of contents and container in accordance with local regulations'},
+const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product container or label at hand'},{code:'P102',desc:'Keep out of reach of children'},{code:'P103',desc:'Read label before use'},{code:'P202',desc:'Do not handle until all safety precautions have been read and understood'},{code:'P210',desc:'Keep away from heat, hot surfaces, sparks, open flames and other ignition sources. No smoking'},{code:'P233',desc:'Keep container tightly closed'},{code:'P240',desc:'Ground and bond container and receiving equipment'},{code:'P241',desc:'Use explosion-proof equipment'},{code:'P242',desc:'Use non-sparking tools'},{code:'P243',desc:'Take action to prevent static discharges'},{code:'P260',desc:'Do not breathe vapours or dust'},{code:'P261',desc:'Avoid breathing vapours and dust'},{code:'P271',desc:'Use only outdoors or in a well-ventilated area'},{code:'P273',desc:'Avoid release to the environment'},{code:'P301+P310',desc:'IF SWALLOWED: immediately call a POISON CENTRE or doctor'},{code:'P301+P312',desc:'IF SWALLOWED: call a POISON CENTRE or doctor if unwell'},{code:'P302+P352',desc:'IF ON SKIN: wash with plenty of water'},{code:'P304+P340',desc:'IF INHALED: Remove person to fresh air and keep comfortable for breathing'},{code:'P305+P351+P338',desc:'IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing'},{code:'P312',desc:'Call a POISON CENTRE or doctor if you feel unwell'},{code:'P313',desc:'Get medical advice/attention'},{code:'P314',desc:'Get medical advice if you feel unwell'},{code:'P321',desc:'Specific treatment: see label'},{code:'P330',desc:'Rinse mouth'},{code:'P331',desc:'Do NOT induce vomiting'},{code:'P332+P313',desc:'If skin irritation occurs: get medical advice/attention'},{code:'P333+P313',desc:'If skin irritation or rash occurs: get medical advice'},{code:'P337+P313',desc:'If eye irritation persists: get medical advice'},{code:'P370+P378',desc:'In case of fire: use appropriate media for extinction'},{code:'P391',desc:'Collect spillage'},{code:'P403+P233',desc:'Store in a well-ventilated place. Keep container tightly closed'},{code:'P403+P235',desc:'Store in a well-ventilated place. Keep cool'},{code:'P211',desc:'Do not spray on an open flame or other ignition source'},{code:'P501',desc:'Dispose of contents and container in accordance with local regulations'},
 // P280 (verified against the retained GB-CLP Regulation (EC) No 1272/2008,
 // Annex IV, Table 6.2, legislation.gov.uk, current in-force UK text) is a
 // SELECTABLE statement, not one fixed sentence: "Wear protective
@@ -463,6 +471,77 @@ function buildP280Wording(data){
   if(other) parts.push(other);
   if(!parts.length) return null;
   return 'Wear '+parts.join('/');
+}
+// P241 (GB CLP Annex IV, legislation.gov.uk, checked 20 Oct 2026):
+// "Use explosion-proof [electrical/ventilating/lighting/…] equipment." The
+// bracketed text "may be used to specify specific electrical, ventilating,
+// lighting or other equipment if necessary and as appropriate" -- a
+// supplier choice. CLPeasy never chooses it and never drops it: Smart Paste
+// copies the equipment words from the supplier's own Section 2.2 sentence
+// (data.p241Equipment) only when every word is one of the three listed
+// terms. '' = the SDS gives no equipment words (base text). Anything else --
+// "…", other equipment, an extracted label saved before this field existed
+// (undefined) -- is unprintable and blocks like any incomplete code.
+const P241_EQUIPMENT_TERMS=['electrical','ventilating','lighting'];
+// The supplier's equipment words and separators, kept as written; only
+// spacing is tidied ("a/ b" -> "a/b", "a ,b" -> "a, b") and letters are set
+// to the Annex IV lower case (every word is verified to be one of its three
+// terms, so no word changes). An empty part (",,", a trailing "/") can't be
+// verified.
+function verifyP241Equipment(words){
+  const w=String(words==null?'':words).replace(/\s+/g,' ').trim().toLowerCase()
+    .replace(/\s*\/\s*/g,'/').replace(/\s*,\s*/g,', ');
+  if(!w) return '';
+  const parts=w.split(/\s*(?:,\s*(?:and|or)\b|,|\/|\band\b|\bor\b)\s*/);
+  if(!parts.every(p=>P241_EQUIPMENT_TERMS.includes(p))) return null;
+  return w;
+}
+// PDF copy-paste turns hyphens into look-alike characters and wraps words
+// across lines. Normalise those before looking for the supplier's sentence:
+// Unicode hyphens/dashes/minus -> "-", soft and zero-width characters
+// (including direction marks) removed, non-breaking spaces -> " ", a word
+// hyphenated at a line end ("explo-" + newline + "sion", "ELEC-" + newline +
+// "TRICAL") rejoined.
+function normaliseP241Text(text){
+  return String(text||'')
+    .replace(/[­​-‏⁠﻿]/g,'')
+    .replace(/[‐-―−﹘﹣－]/g,'-')
+    .replace(/[  ]/g,' ')
+    .replace(/([A-Za-z])-[ \t]*\r?\n\s*([A-Za-z])/g,'$1$2');
+}
+// Finds the supplier's P241 sentence anywhere in Section 2.2 text (PDF
+// layouts can separate a code from its sentence). Returns:
+//   ''   -- no evidence of equipment wording at all (code only): base text;
+//   words -- every explosion-proof sentence verified and agreeing;
+//   null -- any sign of equipment wording that can't be read exactly
+//           (an unmatched "...proof" word; electrical/ventilating/lighting
+//           or other explosion-protection wording left anywhere outside a
+//           verified sentence, e.g. "equipment (electrical, lighting)";
+//           "…", other equipment, conflicts). Blocks; CLPeasy never
+//           shortens or guesses the supplier's wording.
+// "ventilating"/"ventilation" (not "ventilat") so P403/P271's
+// "well-ventilated" is not mistaken for P241 equipment wording; "ventilation"
+// and "light(s)" catch supplier synonyms for the Annex IV terms.
+const P241_EQUIPMENT_EVIDENCE=/\belectrical\b|\bventilating\b|\bventilation\b|\blighting\b|\blights?\b|explosion\s*-?\s*(?:protected|safe|resistant)\b|anti\s*-?\s*explosion|\bATEX\b|explosive\s+atmospheres?/i;
+function extractP241Equipment(text){
+  const src=normaliseP241Text(text);
+  const sentenceRe=/explosion\s*-?\s*proof\b([^.]*?)\bequipment\b/gi;
+  const found=[...src.matchAll(sentenceRe)];
+  const proofMentions=(src.match(/proof\b/gi)||[]).length;
+  if(found.length!==proofMentions) return null;
+  // Whatever is left once the verified sentences are taken out must carry no
+  // further equipment wording.
+  if(P241_EQUIPMENT_EVIDENCE.test(src.replace(sentenceRe,' '))) return null;
+  if(!found.length) return '';
+  const words=[...new Set(found.map(m=>verifyP241Equipment(m[1])))];
+  return words.length===1 && words[0]!==null ? words[0] : null;
+}
+function buildP241Wording(data){
+  const eq=data && data.p241Equipment;
+  if(typeof eq!=='string') return data && data.hazardFromExtraction ? null : 'Use explosion-proof equipment';
+  const w=verifyP241Equipment(eq);
+  if(w===null) return null;
+  return w ? 'Use explosion-proof '+w+' equipment' : 'Use explosion-proof equipment';
 }
 // GHS pictogram SVG symbols — black and white, diamond shaped, industry standard
 const GHS_IMG={
@@ -888,9 +967,19 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
   // version did, so a malformed/adversarial code value still can't break
   // out of the <text>/<tspan> elements.
   const heading = 'LABEL DATA NEEDS REVIEW';
-  const uCodes = unsupportedCodes.map(xe), gCodes = genericCodes.map(xe);
+  // P241 is in P_LIB, so it only reaches genericCodes when its supplier
+  // equipment wording couldn't be read exactly (buildP241Wording). Say that
+  // instead of "not recognised"; the block itself is unchanged.
+  const p241Missing = genericCodes.includes('P241');
+  const uCodes = unsupportedCodes.map(xe), gCodes = genericCodes.filter(c=>c!=='P241').map(xe);
   let sentences;
-  if(uCodes.length && gCodes.length){
+  if(p241Missing && !uCodes.length && !gCodes.length){
+    sentences = [
+      'P241 needs the explosion-proof equipment wording from your SDS.',
+      'Paste the complete Section 2.2 again.',
+      'If this remains, contact CLPeasy support.'
+    ];
+  } else if(uCodes.length && gCodes.length){
     // Mixed: identify both groups by name -- neither hides the other --
     // plus the one instruction both groups share.
     sentences = [
@@ -913,6 +1002,11 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
       'Check you pasted Section 2.2 from the correct supplier SDS.',
       'If the code is present in Section 2.2, contact CLPeasy support.'
     ];
+  }
+
+  // P241 alongside other code issues: its own sentence after theirs.
+  if(p241Missing && (uCodes.length || gCodes.length)){
+    sentences.splice(uCodes.length && gCodes.length ? 2 : 1, 0, 'P241 needs the explosion-proof equipment wording from your SDS.');
   }
 
   // M38 (Issue #7): name any unrecognised pictogram key (escaped -- untrusted
@@ -1647,6 +1741,11 @@ function renderLabel(rawData, opts){
   const _pResolved = _pNorm.map(c=>{
     if(c==='P280'){
       const w=buildP280Wording(data);
+      if(!w)_unrecognizedCodes.push(c);
+      return w;
+    }
+    if(c==='P241'){
+      const w=buildP241Wording(data);
       if(!w)_unrecognizedCodes.push(c);
       return w;
     }
@@ -2713,7 +2812,7 @@ function getMissingBusinessDetails(data){
 
   const LabelRenderer = {
     getMissingBusinessDetails, checkRequiredContent, isValidPictogramKey, describeInvalidPictograms,
-    renderLabel, normalizeLabel, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, GB_UNSUPPORTED_CODES, H_SUFFIXED_VERIFIED, extractHazardCodesFromText, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
+    renderLabel, normalizeLabel, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, GB_UNSUPPORTED_CODES, H_SUFFIXED_VERIFIED, extractHazardCodesFromText, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, extractP241Equipment, buildP241Wording, findSmallestFittingSize,
     // GHS pictogram geometry -- exposed so tests/consumers measuring
     // compliance never have to re-derive or hardcode the sqrt(2)
     // square<->bounding-box relationship themselves.

@@ -2450,7 +2450,13 @@ function describeFitWarnings(warnings, ld){
   }
   if(warnings.includes('hazard-text-overflow')) return "The hazard/precautionary text doesn't fit at this label size, even at the smallest legible size."+sizeMsg;
   if(warnings.includes('footer-clipped')) return 'The business/footer details are being cut off at this label size.'+sizeMsg;
-  if(unrecognized.length) return `Contains a hazard/precautionary code CLPeasy doesn't recognise: ${unrecognized.join(', ')}.`;
+  // P241 is only "unrecognised" when the supplier's explosion-proof
+  // equipment wording couldn't be read exactly -- say so (block unchanged).
+  if(unrecognized.length){
+    const others=unrecognized.filter(c=>c!=='P241');
+    const p241=unrecognized.length!==others.length?"P241 needs the explosion-proof equipment wording from the supplier's SDS: open this label in the Builder and paste Section 2.2 again.":'';
+    return [others.length?`Contains a hazard/precautionary code CLPeasy doesn't recognise: ${others.join(', ')}.`:'',p241].filter(Boolean).join(' ');
+  }
   if(warnings.includes('candle-safety-symbols-too-small')) return "The candle-safety symbols can't fit at their required minimum size (5mm, BS EN 15494:2019) at this label size."+sizeMsg;
   // Read-only-impact-assessment fix: these four warnings existed already
   // (label-render.js's mandatory-text-floor fix) but weren't described

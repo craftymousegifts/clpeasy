@@ -235,14 +235,16 @@ assert.strictEqual(sizeNote(), null, 'teal 1B: no size note');
 assert(!/fit-sds-note/.test(box('label-warning') ? box('label-warning').innerHTML : ''), 'only the Step 3 size panel carries the note');
 ok('size note: shown with amber concentrated-oil and mismatch warnings only; fitting unchanged');
 
-// Unrecognised codes still kept and still block; new guidance shown.
-r = paste('2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction. H319 Causes serious eye irritation.\nP102 P240 P310 P305+P351+P338 P501');
-assert.deepStrictEqual(r.p, ['P102', 'P240', 'P310', 'P305+P351+P338', 'P501'], 'unrecognised codes are kept, not discarded');
+// Unrecognised codes still kept and still block; new guidance shown. (P998/P999
+// are not real codes; P240 and P310 were used here until Stage A, #233,
+// made P240 recognised. P310 stays unrecognised but may be added later.)
+r = paste('2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction. H319 Causes serious eye irritation.\nP102 P998 P999 P305+P351+P338 P501');
+assert.deepStrictEqual(r.p, ['P102', 'P998', 'P999', 'P305+P351+P338', 'P501'], 'unrecognised codes are kept, not discarded');
 assert.strictEqual(r.blocked, true, 'unrecognised codes still block downloads');
 box('hazard-confirm').checked = true; window.__lastAlert = undefined;
 assert.strictEqual(window.canLeaveApprovedBuilderStep(3), false, 'Step 3 still blocked');
 const msg = window.__lastAlert || '';
-assert(msg.startsWith("Some codes can't be added to this label") && /P240, P310/.test(msg), msg);
+assert(msg.startsWith("Some codes can't be added to this label") && /P998, P999/.test(msg), msg);
 assert(/Required codes must be resolved, not removed or changed just to enable downloads/.test(msg));
 assert(/Combining the Section 2\.2 statements from several ingredient SDSs does not establish the classification of the finished mixture/.test(msg));
 assert(/competent CLP specialist/.test(msg));
