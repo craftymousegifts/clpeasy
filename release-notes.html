@@ -83,7 +83,9 @@
 <body>
 
 <nav>
-  <a class="nav-logo" href="index.html"><img src="/assets/clpeasy-approved-logo.png" alt="CLPeasy" width="156" height="62" style="display:block;width:156px;height:auto;max-width:100%;flex-shrink:0;object-fit:contain"></a>
+  <a class="nav-logo" href="index.html">
+    <div class="nav-badge">CLP</div><span class="nav-easy">easy</span><sup style="font-size:9px;font-weight:700;color:#4C9BB0;vertical-align:super;line-height:0;margin-left:1px;">®</sup>
+  </a>
   <div class="nav-links">
     <a href="index.html">Home</a>
     <a href="pricing.html" target="_blank" rel="noopener">Pricing</a>
@@ -99,8 +101,49 @@
 
 <main>
 
+  <details class="release-block" open>
+    <summary><span class="release-header"><span class="release-version"><span id="current-release-version">v1.4.0</span> — Website and Builder updates</span> <span class="new-badge">Current</span> <span class="release-date">22 October 2026</span></span><span class="release-hint">View changes</span></summary>
+    <div class="release-content">
+      <div class="release-section-title">Maker Resources</div>
+      <ul class="release-list">
+        <li>New separate <a href="/making-guides.html">Making Guides</a> and <a href="/design-ideas.html">Design Inspiration</a> pages for candles, wax melts, reed diffusers and room sprays.</li>
+        <li>Added matching category images to both resource pages, with clearer navigation, more balanced text and layouts that stack on smaller screens.</li>
+      </ul>
+      <div class="release-section-title">A clearer start</div>
+      <ul class="release-list">
+        <li>Refreshed the homepage presentation and free-trial links. “See how it works” now takes you directly to the CLPeasy video walkthrough.</li>
+        <li>Made it clearer before choosing a plan that trial downloads have a watermark and paid-plan downloads remove it. Previously downloaded trial files keep their watermark; reopen a browser-saved label and download again after upgrading.</li>
+        <li>Added a short explanation of CLP’s origins to the homepage and Knowledge Base, with links to official sources.</li>
+        <li>Added a snowy winter header garland. Its warm lights twinkle for 12 seconds after loading, then stay steadily lit; reduced-motion settings keep the lights static.</li>
+        <li>Christmas trees, snowmen and snowflakes fall across the page for 12 seconds. The launch offer stays visible beneath the shared public navigation as you move between pages.</li>
+      </ul>
+      <div class="release-section-title">Builder and website fixes</div>
+      <ul class="release-list">
+        <li>Net quantity now has a visible choice of grams (g) or millilitres (ml), alongside the exact-quantity option. Changing the unit does not convert the amount.</li>
+        <li>Removed stray navigation text from affected public pages and corrected an unavailable analytics script address.</li>
+      </ul>
+    </div>
+  </details>
+
   <details class="release-block">
-    <summary><span class="release-header"><span class="release-version">v1.3.0</span> <span class="new-badge">Current</span> <span class="release-date">18 October 2026</span></span><span class="release-hint">View changes</span></summary>
+    <summary><span class="release-header"><span class="release-version">v1.3.1 — Support and SDS guidance</span> <span class="release-date">19 October 2026</span></span><span class="release-hint">View changes</span></summary>
+    <div class="release-content">
+      <div class="release-section-title">Before using Smart Paste</div>
+      <ul class="release-list">
+        <li>Added a short source confirmation before extraction, with a link to SDS guidance. The confirmation resets when the pasted text, product type or fragrance percentage changes.</li>
+        <li>Clarified that Smart Paste reads one SDS and does not combine safety data sheets or calculate a fragrance blend’s classification.</li>
+      </ul>
+      <div class="release-section-title">Practical help for makers</div>
+      <ul class="release-list">
+        <li>Updated Support, FAQ, Knowledge Base and Compliance &amp; Transparency pages to explain what CLPeasy does and what makers need to check.</li>
+        <li>Added guidance on combining fragrance oils, printing and cutting labels, and cutting labels by hand. Cutting-machine information links to official instructions.</li>
+        <li>Clarified regulatory responsibility and Terms wording. CLPeasy helps prepare labels; makers remain responsible for their finished product information.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="release-block">
+    <summary><span class="release-header"><span class="release-version">v1.3.0</span> <span class="release-date">18 October 2026</span></span><span class="release-hint">View changes</span></summary>
     <div class="release-content">
       <div class="release-section-title">Smart Paste safety correction</div>
       <ul class="release-list">
@@ -238,5 +281,7 @@
   <p style="margin-top:6px;">© 2026 Michaela Feeley · <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a> · <a href="compliance.html">Compliance &amp; Transparency</a></p>
 </footer>
 
+<script src="version.js"></script>
+<script>if(window.CLPEASY_VERSION){document.getElementById("current-release-version").textContent="v"+window.CLPEASY_VERSION.number;}</script>
 </body>
 </html>

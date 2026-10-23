@@ -207,7 +207,3 @@ CLPeasy V1.0 was planned/launched around Monday 15 June 2026, with a "LIVE TODAY
 6. Validate locally where possible.
 7. Summarize files changed and tests/checks performed.
 
-
-## Approved brand artwork
-
-Use `assets/clpeasy-approved-logo.png` as the sole approved logo for website headers, app screens and new artwork. Michaela supplied this exact artwork on 22 October 2026: teal CLP circle followed by easy. Preserve the artwork, colours and proportions; do not recreate a text-only wordmark or substitute fonts. Obtain a higher-resolution master from the owner before enlarging beyond the supplied image resolution. This asset is the owner-provided image, not a redrawn logo.
