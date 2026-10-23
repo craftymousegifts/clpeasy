@@ -4,6 +4,15 @@ All notable changes to CLPeasy are documented here. Customer-friendly notes
 covering the same releases live at `release-notes.html`. Versioning rules
 and the release procedure are documented in `VERSIONING.md`.
 
+## [1.4.1] - 2026-10-23
+
+### Fixed
+- Expanded mobile menus scroll within the visible screen, keeping all submenu and account links reachable. (#297)
+
+### Documentation
+- Added a concise service/cost comparison, with verified provider names, dated sources, upfront PAYG pricing and clear printing responsibilities. Linked from Pricing and printing help. (#296)
+- Published together following founder approval, preserving the homepage, Maker Resources imagery and current branding.
+
 ## Documentation - 2026-10-23
 
 - Expanded the existing printing page into full-width visual guides with 24 searchable printing Q&As. (#295)
