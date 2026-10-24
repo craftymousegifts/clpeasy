@@ -22,14 +22,44 @@ function safeDate(val: unknown): Date {
   return isNaN(d.getTime()) ? new Date() : d;
 }
 
+// ── CALLER AUTHENTICATION (CLP-001, Oct 2026) ─────────────────────
+// Only the notify_signup_webhook() trigger on auth.users may call this
+// function. It sends a shared secret, generated inside the database and
+// held only in Supabase Vault, in the x-clpeasy-webhook-secret header.
+// The secret is checked by the service-role-only SQL function
+// verify_notify_signup_secret(), so it never exists in source code, Edge
+// Function secrets, or logs. Requests without the correct secret (including
+// browser calls with the public anon key) are rejected before any Brevo
+// contact is created or any email is sent. verify_jwt stays false because the
+// trigger sends no JWT.
+const WEBHOOK_SECRET_HEADER = "x-clpeasy-webhook-secret";
+
+async function isAuthorisedCaller(req: Request): Promise<boolean> {
+  const provided = req.headers.get(WEBHOOK_SECRET_HEADER) ?? "";
+  if (!provided) return false;
+  const { data, error } = await supabase.rpc("verify_notify_signup_secret", { p_secret: provided });
+  if (error) {
+    console.error("notify-signup: webhook secret check failed:", error.message);
+    return false;
+  }
+  return data === true;
+}
+
 serve(async (req) => {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }
 
+  if (!(await isAuthorisedCaller(req))) {
+    console.warn("notify-signup: rejected unauthorised request");
+    return new Response(JSON.stringify({ error: "unauthorised" }), { status: 401 });
+  }
+
   try {
     const body = await req.json();
-    console.log("notify-signup received:", JSON.stringify(body));
+    // Log identifiers only. The old Dashboard webhook posted the whole
+    // auth.users row, which this line used to write to the function logs.
+    console.log("notify-signup received for user_id:", body.user_id ?? body.record?.id ?? "(none)");
 
     const email      = body.email      ?? body.record?.email ?? "";
     const user_id    = body.user_id    ?? body.record?.id    ?? "";
@@ -78,10 +108,10 @@ serve(async (req) => {
     const automationResult = "list-triggered onboarding";
 
     // ── IDEMPOTENCY GATE: only ever send ONE admin alert per user_id ──
-    // notify-signup is called twice per real signup (auth.html frontend +
-    // the "on-user-signup" DB webhook), ~150ms apart. Claim the user_id via
-    // a primary-key insert; whichever call wins the insert sends the alert,
-    // the loser skips it. Steps 1-2 (Brevo contact + automation) above are
+    // Originally notify-signup was called twice per signup (auth.html +
+    // the DB webhook). Since CLP-001 only the trigger can call it, but the
+    // claim stays as protection against any repeated delivery: whichever
+    // call wins the primary-key insert sends the alert, any other skips it. Steps 1-2 (Brevo contact + automation) above are
     // unaffected and still run on every call as before.
     let shouldSendAlert = true;
     if (user_id) {

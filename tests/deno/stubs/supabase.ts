@@ -47,6 +47,7 @@ class Query {
         return { data: null, error: { code: '', message: 'TypeError: fetch failed' } };
       }
       if (this.table === 'checkout_locks' && rows.some(r => r.user_id === this.payload.user_id)) return { data: null, error: { code: '23505', message: 'duplicate key' } };
+      if (this.table === 'signup_notifications' && rows.some(r => r.user_id === this.payload.user_id)) return { data: null, error: { code: '23505', message: 'duplicate key' } };
       rows.push({ created_at: new Date().toISOString(), ...this.payload });
       return { data: null, error: null };
     }
@@ -90,6 +91,11 @@ export function createClient(_url: string, _key: string, _opts?: unknown) {
         if (!p) return { data: null, error: { message: 'Profile not found' } };
         p.topup_credits = (p.topup_credits ?? 0) + args.p_downloads;
         return { data: p.topup_credits, error: null };
+      }
+      if (name === 'verify_notify_signup_secret') {
+        // Mirrors the SQL function: true only for the exact Vault secret.
+        if (db().failVerifyRpc) return { data: null, error: { message: 'simulated database failure' } };
+        return { data: !!db().webhookSecret && args.p_secret === db().webhookSecret, error: null };
       }
       return { data: null, error: { message: 'unknown rpc ' + name } };
     },
