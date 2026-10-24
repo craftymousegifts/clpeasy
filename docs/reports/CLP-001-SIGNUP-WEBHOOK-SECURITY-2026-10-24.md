@@ -83,7 +83,7 @@ Verified on CLPeasy Test (real Supabase), 24 Oct 2026. Test has no `BREVO_API_KE
 
 Left in Test on purpose: the migration, Vault entries `notify_signup_webhook_secret` and `notify_signup_function_url` (Test URL, not secret), `notify-signup` v1 and a boolean-only `qa-clp001-env-check` function (the connector cannot delete functions; delete it in the Dashboard when convenient).
 
-Not verified: the real production Brevo contact, welcome email and admin alert (Test has no Brevo key) — covered by §5 step 5. `npm test` as a whole stops at an unrelated suite needing `jsdom`, which this sandbox could not install (same on main).
+Not verified: the real production Brevo contact, welcome email and admin alert (Test has no Brevo key) — covered by §5 Step 4. `npm test` as a whole stops at an unrelated suite needing `jsdom`, which this sandbox could not install (same on main).
 
 ## 4. Test-environment plan (completed 24 Oct 2026, see §3)
 
@@ -100,35 +100,135 @@ Not verified: the real production Brevo contact, welcome email and admin alert (
 6. Sign in with an existing Test user, and run a billing-status call to confirm auth is unaffected.
 7. Clean up the Test users. Leave the Test notify-signup in place.
 
-## 5. Production release steps (each needs owner approval)
+## 5. Production release steps (each step needs separate owner approval)
 
-Order matters: the migration first, the function second. The old function ignores the new header, so there is no gap.
+Project `qvkosdqcryrcfbjtaxic`. Run the steps in this order. The migration goes first: the currently live `notify-signup` (v53) accepts the new trigger's call, so there is no gap.
+- This was checked locally against v53's source with the exact trigger payload: 200, one Brevo contact, one admin alert, one claim, secret not logged.
+- Deploying the function first would make the old trigger's calls fail (401).
 
-1. **Merge.** Merge the PR to `main` with `[skip netlify]` in the title for commit 1. Batch the `auth.html` commit with the next approved front-end release, or include it; it is safe either way.
-2. **Apply the migration** to production (`supabase db push`, or apply via MCP). Check that it logged no warning.
-3. **Verify, read-only.**
-   - Run `select tgname, tgenabled from pg_trigger where tgrelid='auth.users'::regclass and not tgisinternal;`
-   - Expect `notify_signup_webhook` and `on_auth_user_created` only.
-   - If "on-user-signup" is still listed, delete it in **Dashboard → Database → Webhooks**. Both triggers firing briefly is harmless: one admin alert, an idempotent Brevo upsert.
-4. **Deploy the function:**
-   `supabase functions deploy notify-signup --project-ref qvkosdqcryrcfbjtaxic --no-verify-jwt --use-api`
-5. **Smoke test.**
-   - One real trial sign-up with an address you control. Expect a Brevo contact, a welcome email and one admin alert.
-   - Logs should show one `notify-signup` 200 from `pg_net`, and no 401s.
-   - A curl POST to notify-signup without the header must return 401.
-6. **Confirm the old key is gone from the database:**
-   - Run `select count(*) from pg_trigger where pg_get_triggerdef(oid) ~ 'eyJ';`. Expect 0.
-   - Do not print any definitions.
+**Never use `supabase db push` for this release.**
+- Production's migration history does not match `supabase/migrations/`. Of the repo's 11 files, only `20260729000000` is recorded in production.
+- `db push` would try to re-run about 10 older migrations against production.
 
-## 6. Rollback
+### Step 1 — Merge (approval: merge)
+- Merge `security/clp-001-signup-webhook-secret` to `main` with `[skip netlify]` in the PR title.
+- Merging changes nothing in Supabase.
+- The `auth.html` commit is safe whether it ships now or with the next front-end batch. Production's current browser call is harmless before and after the function deploy.
 
-- **Function:** redeploy the previous version (`main@5c6dd9d` copy of `supabase/functions/notify-signup/index.ts`) with `--no-verify-jwt`. It ignores the header, so it works with either trigger.
-- **Trigger:**
-  - Run `drop trigger notify_signup_webhook on auth.users;`. Sign-ups keep working; only the notifications pause.
-  - To restore notifications without reinstating a hardcoded key, recreate the webhook in Dashboard → Database → Webhooks. Point it at notify-signup with **no** auth header; the old function accepts it.
-  - Do **not** recreate it with "add auth header with service key".
-- **auth.html:** revert the commit (it is self-contained).
-- The Vault secret can stay; it is unused if the trigger is removed.
+### Step 2 — Apply the single migration (approval: step 2)
+1. **Pre-check (read-only).** Run:
+   ```sql
+   select tgname, tgenabled from pg_trigger where tgrelid='auth.users'::regclass and not tgisinternal;
+   select count(*) from vault.secrets where name in ('notify_signup_webhook_secret','notify_signup_function_url');
+   ```
+   Expect `on-user-signup` and `on_auth_user_created`, then `0`.
+   - The production URL is the default. **Do not** create `notify_signup_function_url` in production; that entry is for the Test project only.
+2. **Apply** the exact contents of `supabase/migrations/20261024000000_secure_signup_webhook.sql`, once, by **one** of these routes:
+   - the Supabase connector (`apply_migration`, name `secure_signup_webhook`);
+   - Dashboard → SQL Editor: paste the whole file and run it once.
+   - It runs as one transaction. If it errors, nothing changes and the old trigger stays in place: the current state, no worse.
+   - Production will record it under a new version timestamp (see §8).
+3. **Verify (read-only).** Run:
+   ```sql
+   select tgname, tgenabled from pg_trigger where tgrelid='auth.users'::regclass and not tgisinternal;
+   select count(*) from pg_trigger where pg_get_triggerdef(oid) ~ 'eyJ';
+   select length(decrypted_secret) from vault.decrypted_secrets where name='notify_signup_webhook_secret';
+   ```
+   - Expect `notify_signup_webhook`, `on_auth_user_created` (both `O`), then `0`, then `64`.
+   - Never select or print `decrypted_secret` itself.
+4. If `on-user-signup` is still listed (the drop was not permitted):
+   - Delete it in **Dashboard → Database → Webhooks → on-user-signup → Delete**, then re-run the verify queries.
+   - Until then both triggers fire. That is harmless: the claim table stops a second admin alert, and the Brevo upsert is idempotent.
+5. **Optional live confirmation** before Step 3: the next real sign-up should show one `notify-signup` 200 from `pg_net` in the logs.
+
+### Step 3 — Deploy notify-signup (approval: step 3)
+1. **Pre-check:** live `notify-signup` is version 53 with `verify_jwt: false` (Dashboard → Edge Functions, or the connector's function list). If it isn't, stop and re-review.
+2. **Deploy from the merged `main`.** The JWT check **must stay off**: the trigger sends no JWT, and the repo has no `config.toml`, so without the flag the platform defaults to `verify_jwt = true` and every notification would fail with 401.
+   ```
+   supabase functions deploy notify-signup --project-ref qvkosdqcryrcfbjtaxic --no-verify-jwt --use-api
+   ```
+   If you deploy through the connector instead, set `verify_jwt: false`.
+3. **Post-check:** the new version is listed with `verify_jwt: false`. If it shows `true`, redeploy immediately with the flag.
+
+### Step 4 — Brevo smoke test and cleanup (approval: step 4)
+This creates real production records for an address you own, and cleans them up afterwards.
+
+1. **Unauthorised request** (sends no key):
+   ```
+   curl -i -X POST https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/notify-signup -H "Content-Type: application/json" -d "{}"
+   ```
+   Expect `401 {"error":"unauthorised"}`.
+2. **Sign up** at clpeasy.com/auth.html?mode=signup as `support+clp001-prod@clpeasy.com`, using a throwaway password and email/password sign-up (not Google).
+3. **Pass criteria.** Everything must hold:
+   - **Supabase logs** (Edge Functions → notify-signup):
+     - one `POST | 200` from user agent `pg_net`, and no "rejected unauthorised request" line for this sign-up;
+     - the log line reads `notify-signup received for user_id: …` with no request body;
+     - `Brevo contact upsert: 201` (or `204` if the contact already existed).
+   - **Database (read-only):** run
+     ```sql
+     select count(*) from public.profiles p join auth.users u on u.id=p.id where u.email='support+clp001-prod@clpeasy.com';
+     select count(*) from public.signup_notifications s join auth.users u on u.id=s.user_id where u.email='support+clp001-prod@clpeasy.com';
+     ```
+     Expect `1` and `1`.
+   - **Brevo:** the contact `support+clp001-prod@clpeasy.com` exists, is on the sign-up list `notify-signup` uses (`BREVO_LIST_ID`; list 3 per the 5 Oct Brevo audit), and has FIRSTNAME `support+clp001-prod` with no plan or status attributes.
+   - **Inbox:** the Supabase confirmation email and the Brevo welcome email both arrive at support@; **exactly one** "New CLPeasy® trial signup" admin alert arrives at support@.
+4. **Fail rule.** If any criterion fails, go to §6 (R1 if the fault is in the function, R2 if no call was made) and don't retry until reviewed.
+5. **Cleanup (production, same session).**
+   1. Brevo → Contacts: delete `support+clp001-prod@clpeasy.com`. This also stops the onboarding sequence.
+   2. Supabase → Authentication → Users: delete that user.
+   3. Read-only: re-run the two counts above. Expect `0` and `0`.
+      - If the profile or claim row remains, delete only that row: `delete from public.signup_notifications where user_id='<id>';` and the matching profile.
+   4. Do not keep the test password anywhere.
+
+### Step 5 — Final checks (read-only)
+- The old-key count from Step 2.3 is still `0`.
+- Watch notify-signup logs for the next 48 h of real sign-ups: one 200 per sign-up, and no 401 from `pg_net`.
+- CLP-001 can then be recorded as remediated for the trigger. The legacy-key retirement in §7 stays open.
+
+## 6. Rollback and recovery
+
+None of these paths restores, re-creates or re-enters the old service-role JWT. Its trigger definition is not kept anywhere.
+
+**Forbidden in every scenario:**
+- recreating a Dashboard webhook with "add auth header with service key";
+- putting any API key, JWT or the Vault secret into SQL text, a webhook header field, source code, a commit or a report;
+- running `supabase db push`;
+- pasting `decrypted_secret` output anywhere.
+
+**R0 — Migration errors during Step 2.**
+- It is one transaction, so nothing changed and the old trigger still runs as today.
+- Record the error text (it contains no secret) and stop for review.
+
+**R1 — Fault in the new function** (after Step 3: wrong verify setting, errors, failed smoke test).
+1. Redeploy the previous code, `supabase/functions/notify-signup/index.ts` from `main@5c6dd9d`:
+   ```
+   supabase functions deploy notify-signup --project-ref qvkosdqcryrcfbjtaxic --no-verify-jwt --use-api
+   ```
+2. That code works with the new trigger (checked locally). Notifications resume, and the trigger stays secured.
+3. Confirm `verify_jwt: false`.
+4. Trade-off: until re-fixed, the endpoint again accepts unauthenticated callers. That was the pre-release state, with no key exposed.
+
+**R2 — Fault in the new trigger** (sign-ups fine but no `pg_net` call, or bad payload).
+1. Stop it: `drop trigger if exists notify_signup_webhook on auth.users;`
+   - Sign-ups continue; only notifications pause.
+   - Sign-ups during the pause are visible in Authentication → Users.
+2. Restore: re-run the whole migration file through the connector or the SQL Editor.
+   - It is re-runnable: it keeps the existing secret and creates a single trigger.
+   - It handles no secret value.
+3. Do **not** re-create the Dashboard webhook as a stand-in.
+
+**R3 — The Vault secret is suspected exposed.** Rotate it in place:
+```sql
+select vault.update_secret((select id from vault.secrets where name='notify_signup_webhook_secret'), encode(extensions.gen_random_bytes(32),'hex'));
+```
+- The trigger and the check read Vault on every call, so this takes effect at once, with no deploy.
+- The value is generated server-side and never shown.
+
+**R4 — The `auth.html` change.**
+- Revert only if the sign-up page itself misbehaves.
+- With the new function live, the restored browser call just gets 401. Notifications are unaffected.
+
+**Unchanged by any rollback:** the legacy service_role key is still enabled until §7. Its retirement is separate and never needed to recover this release.
 
 ## 7. Legacy credential retirement plan (nothing rotated, revoked or disabled yet)
 
@@ -192,6 +292,8 @@ Not dependent on the CLPeasy legacy keys:
 - Deactivate the legacy keys.
 
 ## 8. Unrelated findings (not changed)
+
+- Production migration history does not match `supabase/migrations/` (only `20260729000000` matches). Migrations applied through the connector get new version timestamps. Reconcile separately before anyone uses `supabase db push` again.
 
 - `finn-chat` is still deployed and ACTIVE although Finn was retired.
 - `new_user_alert.sql` (repo root) refers to a non-existent `notify-new-user` function.
