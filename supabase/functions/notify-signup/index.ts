@@ -111,8 +111,9 @@ serve(async (req) => {
     // Originally notify-signup was called twice per signup (auth.html +
     // the DB webhook). Since CLP-001 only the trigger can call it, but the
     // claim stays as protection against any repeated delivery: whichever
-    // call wins the primary-key insert sends the alert, any other skips it. Steps 1-2 (Brevo contact + automation) above are
-    // unaffected and still run on every call as before.
+    // call wins the primary-key insert sends the alert, any other skips it.
+    // Steps 1-2 (Brevo contact + automation) above are unaffected and still
+    // run on every call as before.
     let shouldSendAlert = true;
     if (user_id) {
       const { error: claimError } = await supabase
