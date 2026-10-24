@@ -2,7 +2,7 @@
 
 - **Date:** 24 Oct 2026 · **Tier:** High (auth, edge function, database trigger)
 - **Branch:** `security/clp-001-signup-webhook-secret` (from `main` @ `5c6dd9d`)
-- **Status:** prepared and locally tested. **Not** deployed, merged or applied anywhere. CLPeasy Test verification still pending (deployment to Test needs owner approval).
+- **Status:** prepared, locally tested and verified on CLPeasy Test (`wwjhvpphlbgtywxskqnf`, 24 Oct 2026). **Nothing** deployed, merged or applied in production.
 - No secret value appears in this report, the code, the migration, the tests or the Git history.
 
 ## 1. Root cause
@@ -67,15 +67,25 @@ Unchanged: sign-up itself, `handle_new_user` (profile seeding), the Brevo contac
 | All other Deno suites (stripe-webhook 74, checkout 50, billing-status 26, account-events 6, manage-subscription 8) | Deno | PASS (unchanged) |
 | No JWT or API key in the branch diff or the migration | grep and test | PASS |
 
-Not yet verified:
-- **Real Supabase (Test project `wwjhvpphlbgtywxskqnf`):**
-  - Vault and pg_net behaviour, whether `postgres` may drop the Dashboard trigger on `auth.users`, and the edge runtime.
-  - Test has pg_net, Vault, `signup_notifications` and the profile trigger, but no `notify-signup` function and no webhook.
-  - The deploy to Test was not approved. See §4.
-- **Whether Test holds a live `BREVO_API_KEY`.** If it does, a Test sign-up would create a real Brevo contact and send a real admin alert. A boolean-only env check must run first.
-- **`npm test` as a whole:** it stops at an unrelated suite needing `jsdom`, which this sandbox could not install. Main behaves the same here (environment limitation).
+Verified on CLPeasy Test (real Supabase), 24 Oct 2026. Test has no `BREVO_API_KEY` (checked as a boolean only), so no live Brevo data could be touched:
 
-## 4. Test-environment plan (needs owner approval: Test only, no paid resources)
+| Check | Result |
+|---|---|
+| Migration applied as `postgres`: old "on-user-signup" (stand-in) **dropped without needing the Dashboard fallback**; `notify_signup_webhook` + `on_auth_user_created` remain | PASS |
+| Vault secret created (64 hex chars); anon/authenticated cannot execute the check; service_role can; wrong secret false, right secret true | PASS |
+| `notify-signup` (branch, `dfc7477`) deployed to Test, `verify_jwt: false` | done |
+| No header / wrong secret / legacy anon Bearer + apikey / publishable apikey / secret sent in `Authorization` → 401 each, no claim, no Brevo call | PASS |
+| Real sign-up through Auth API → user + profile created → trigger → notify-signup authenticated → 200, one claim, reached the Brevo step (Brevo 401: no key in Test, expected) | PASS |
+| Same authorised payload re-sent → 200, admin alert skipped as duplicate, still one claim | PASS |
+| Function logs: only `user_id` lines; no request body, no `encrypted_password`, no secret header captured in edge-log attributes | PASS |
+| Existing auth: password sign-in returned a session; JWT-protected `billing-status` accepted it (200) | PASS |
+| Cleanup: test user, profile, claim, pg_net responses and stand-in trigger function removed; Test back to 3 users | done |
+
+Left in Test on purpose: the migration, Vault entries `notify_signup_webhook_secret` and `notify_signup_function_url` (Test URL, not secret), `notify-signup` v1 and a boolean-only `qa-clp001-env-check` function (the connector cannot delete functions; delete it in the Dashboard when convenient).
+
+Not verified: the real production Brevo contact, welcome email and admin alert (Test has no Brevo key) — covered by §5 step 5. `npm test` as a whole stops at an unrelated suite needing `jsdom`, which this sandbox could not install (same on main).
+
+## 4. Test-environment plan (completed 24 Oct 2026, see §3)
 
 1. In Test, deploy a boolean-only env check and confirm whether `BREVO_API_KEY` is set. If it is live, use a dedicated test email, or stop.
 2. In Test, apply the migration. Then create the Vault entry `notify_signup_function_url` pointing at Test's own URL (this is not a secret). Deploy `notify-signup` from the branch with `verify_jwt: false`.
