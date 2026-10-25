@@ -4,6 +4,15 @@ All notable changes to CLPeasy are documented here. Customer-friendly notes
 covering the same releases live at `release-notes.html`. Versioning rules
 and the release procedure are documented in `VERSIONING.md`.
 
+## [1.5.0] - 2026-10-23
+
+### Added
+- Free A4 blank size tests from Builder Steps 1 and 5 and desktop/mobile View label panels. Selected dimensions and a 50 mm reference line help check printing size. (#299)
+- Free Composer alignment tests using occupied placements or empty template cells excluding already-used positions. No label artwork or download credits are used. (#299)
+
+### Changed
+- Shortened Step 3 Smart Paste instruction and one-SDS confirmation; unchanged supporting explanation/help links moved under More information. Extraction and confirmation logic is unchanged. (#300)
+
 ## [1.4.1] - 2026-10-23
 
 ### Fixed

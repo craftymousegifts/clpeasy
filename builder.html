@@ -1175,6 +1175,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     </div>
     </div><!-- /#label-appearance-section -->
     <div id="label-warn-stage4" class="field-alert field-alert-danger" style="display:none;margin-top:14px;font-size:13px;"></div>
+    <p style="margin:12px 0;"><button type="button" class="btn-dl" id="btn-size-test-start" onclick="openBuilderSizeTest()">Print a size test</button><small style="display:block;margin-top:5px;">Check this size on plain paper · free · no download credit</small></p>
     <div class="step-nav"><div></div><button class="btn-next" onclick="nextStep()">Next: Product details →</button></div>
   </div>
 
@@ -1271,10 +1272,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <textarea id="smart-paste-input" placeholder="Paste one complete SDS or Section 2.2 here..."></textarea>
       <div class="field-alert field-alert-info" style="margin-top:12px;">
         <label style="display:flex;gap:10px;align-items:flex-start;font-size:13px;cursor:pointer;">
-          <input type="checkbox" id="sds-source-confirm" onchange="confirmSdsSource()" aria-describedby="sds-source-confirm-help sds-source-confirm-error" style="width:18px;height:18px;flex-shrink:0;margin-top:3px;accent-color:var(--teal);">
-          <span>I confirm this information comes from one current SDS that applies to my finished product, its formulation and fragrance percentage.</span>
+          <input type="checkbox" id="sds-source-confirm" onchange="confirmSdsSource()" aria-describedby="sds-source-confirm-error" style="width:18px;height:18px;flex-shrink:0;margin-top:3px;accent-color:var(--teal);">
+          <span>I confirm I’m using one current SDS for my finished product, formulation and fragrance percentage.</span>
         </label>
-        <p id="sds-source-confirm-help" style="margin:8px 0 0;font-size:12px;">CLPeasy extracts label information. It does not combine SDSs, calculate blend classifications or validate your SDS. You remain responsible for checking the classification and label are correct for your finished product. <a href="compliance.html#sds-guidance" target="_blank" rel="noopener noreferrer">Unsure? Check which information you need</a> or <a href="mailto:support@clpeasy.com">contact support</a>.</p>
+        <details style="margin-top:10px;font-size:12px;"><summary style="cursor:pointer;font-weight:600;">More information</summary><p id="sds-source-confirm-help" style="margin:8px 0 0;font-size:12px;">CLPeasy extracts label information. It does not combine SDSs, calculate blend classifications or validate your SDS. You remain responsible for checking the classification and label are correct for your finished product. <a href="compliance.html#sds-guidance" target="_blank" rel="noopener noreferrer">Unsure? Check which information you need</a> or <a href="mailto:support@clpeasy.com">contact support</a>.</p></details>
       </div>
       <div id="sds-source-confirm-error" class="field-alert field-alert-danger" role="alert" style="display:none;font-size:13px;"></div>
       <button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
@@ -1449,6 +1450,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <div class="download-lock-note" role="status" aria-live="polite" style="display:none;"></div>
       <div id="dl-counter" style="display:none;font-size:13px;font-weight:600;text-align:center;margin-bottom:10px;color:var(--muted);"></div>
       <button type="button" id="btn-view-label" class="btn-next" onclick="viewReviewLabel()" aria-controls="preview-panel-el preview-sheet" style="width:100%;padding:14px;font-size:16px;margin-top:10px;">View label ↗</button>
+      <p style="margin:12px 0;"><button type="button" class="btn-dl" id="btn-size-test" onclick="openBuilderSizeTest()">Print a size test</button><small style="display:block;margin-top:5px;">Blank outline at your selected size · free · no download credit</small></p>
       <div class="dl-format-help" id="dl-format-help">
         <p><strong>Print at Actual size / 100%.</strong></p>
         <details class="export-file-types"><summary>Which file type?</summary><div class="export-file-box">
@@ -1503,6 +1505,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button class="btn-dl" id="btn-png-preview" onclick="downloadPNG()" style="opacity:0.4;pointer-events:none;">⬇ PNG</button>
       <button class="btn-dl" id="btn-pdf-preview" onclick="printToPDF()" style="opacity:0.4;pointer-events:none;">▣ PDF</button>
       <button class="btn-dl-svg" id="btn-svg-preview" onclick="downloadSVG()" style="opacity:0.4;pointer-events:none;">⬡ SVG</button>
+      <button type="button" class="btn-dl-svg" id="btn-size-test-preview" onclick="openBuilderSizeTest()">Print a size test</button>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
 
@@ -1565,6 +1568,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button class="btn-dl" id="btn-png-sheet" onclick="downloadPNG();closeSheet()">⬇ PNG (single)</button>
       <button class="btn-dl" id="btn-pdf-sheet" onclick="printToPDF()">▣ PDF</button>
       <button class="btn-dl-svg" id="btn-svg-sheet" onclick="downloadSVG();closeSheet()">⬡ SVG</button>
+      <button type="button" class="btn-dl-svg" id="btn-size-test-sheet" onclick="openBuilderSizeTest()">Print a size test</button>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;">
 
@@ -6793,5 +6797,7 @@ function initExtensions(){
   })();
 </script>
 
+<script src="/print-size-test.js"></script>
+<script>function openBuilderSizeTest(){const d=getDims();CLPSizeTest.open(CLPSizeTest.single(S.shape,d.mmW,d.mmH));}</script>
 </body>
 </html>
