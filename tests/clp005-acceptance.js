@@ -70,5 +70,13 @@ setImmediate(() => { try {
   o = r('10 P272 supplied, P363 without matching H'); assert.equal(o.p, 'P272, P363', 'supplied P272/P363 retained, not inferred or dropped');
   o = r('11 signal None, pictograms None'); assert.equal(o.signal, ''); assert.equal(o.pictograms.length, 0);
   o = r('12 UFI + Contains'); assert(o.text.includes('UFI: TEST-0000-0000-0000') && o.text.includes('Contains: Linalool, Citral.'));
-  console.log('PASS CLP-005 minimum Smart Paste cases (15 cases; real Builder, mock services, measured canvas stub)');
+  o = r('13 bare Supplemental information heading');
+  assert(o.text.includes('Dispose of contents/container in accordance with local regulations.') && !/\binformation\b/.test(o.text) && o.text.includes('Contains Citral. May produce an allergic reaction.'), 'a bare heading adds no stray words');
+  o = r('14 page number + supplier address block after P501');
+  assert(o.text.includes('Dispose of contents/container to an approved waste disposal plant') && !/1\/2|2\/2|Synthetic Supplies Ltd|Testtown|TEL|customerservice|Additional Information on Sensitisers/.test(o.text), 'page number and address block are not printed');
+  assert(o.h.includes('EUH208') && !o.issues.length, 'EUH208 named by the heading takes the Contains wording beneath it');
+  assert(o.text.includes('This document is given for information only.'), 'supplier text after EUH208 is kept for review, not dropped');assert(o.text.includes('Contains Linalool, Citral. May produce an allergic reaction.') && !o.blocked, 'supplemental EUH208 text kept');
+  o = r('15 statement continues across a page break');
+  assert(o.issues.includes('P305+P351+P338') && o.blocked && !o.text.includes('Remove contact lenses,'), 'a statement split by a page break is flagged, never printed half');
+  console.log('PASS CLP-005 minimum Smart Paste cases (18 cases; real Builder, mock services, measured canvas stub)');
 } catch (e) { console.error(e); process.exitCode = 1; } finally { window.close(); } });

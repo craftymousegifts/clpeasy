@@ -90,6 +90,35 @@ P363 Wash contaminated clothing before reuse.`,
 Pictograms: None
 Signal word: None
 EUH208 Contains Citral. May produce an allergic reaction.`,
+  '13 bare Supplemental information heading': `2.2 Label elements
+Signal word: Warning
+H317 May cause an allergic skin reaction.
+P501 Dispose of contents/container in accordance with local regulations.
+Supplemental information
+EUH208 Contains Citral. May produce an allergic reaction.`,
+  '14 page number + supplier address block after P501': `2.2 Label elements
+Signal word: Warning
+H317 - May cause an allergic skin reaction.
+P501 - Dispose of contents/container to an approved waste disposal plant
+1/2
+Synthetic Supplies Ltd
+Unit 1 Test Estate
+Testtown
+TE1 1ST
+customerservice@example.invalid
+TEL: 01632 960000
+
+Supplemental Information - Additional Information on Sensitisers (EUH208):
+Contains Linalool, Citral. May produce an allergic reaction.
+This document is given for information only.
+2/2`,
+  '15 statement continues across a page break': `2.2 Label elements
+Signal word: Warning
+H319 Causes serious eye irritation.
+P305+P351+P338 IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses,
+Page 2 of 9
+
+if present and easy to do. Continue rinsing.`,
   '12 UFI + Contains': `2.2 Label elements
 Signal word: Warning
 H317 May cause an allergic skin reaction.
