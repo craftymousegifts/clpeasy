@@ -1281,7 +1281,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
       <div id="smart-paste-scope-error" class="field-alert field-alert-danger" role="alert" style="display:none;margin-top:12px;margin-bottom:0;font-size:13px;"></div>
       <div id="sds-source-suitability-warning" aria-live="polite" style="display:none;"></div>
-      <div id="smart-paste-excluded-note" class="field-alert" role="status" aria-live="polite" style="display:none;margin-top:12px;margin-bottom:0;font-size:13px;background:var(--off);border:1.5px solid var(--border);color:var(--text);"></div>
       <div id="smart-paste-size-warning" class="field-alert field-alert-danger" role="status" aria-live="polite" style="display:none;margin-top:14px;font-size:14px;"></div>
       <button type="button" id="hazard-clear-link" onclick="clearHazardData()" style="display:none;margin-left:14px;font-size:12px;color:var(--teal-dark);text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">Clear hazard data and start again</button>
     </div>
@@ -3276,8 +3275,7 @@ function loadLabelRecord(e){
   editingLabelId=e.id||null;
   {const se=document.getElementById('smart-paste-scope-error');if(se){se.textContent='';se.style.display='none';}}
   // Smart Paste guidance from an earlier paste does not apply to this label.
-  window._smartPasteExcludedCodes=[];
-  ['sds-source-suitability-warning','smart-paste-excluded-note'].forEach(id=>{const b=document.getElementById(id);if(b){b.textContent='';b.style.display='none';}});
+  ['sds-source-suitability-warning'].forEach(id=>{const b=document.getElementById(id);if(b){b.textContent='';b.style.display='none';}});
   S.scentName=e.scentName;S.productType=e.productType;S.shape=e.shape;S.size=e.size;S.customW=e.customW||S.customW;S.customH=e.customH||S.customH;
   S.signal=e.signal||'';S.sdsSignal=e.sdsSignal!==undefined?e.sdsSignal:(e.signal||'');S.hStatements=e.hStatements||'';S.sensitisers=e.sensitisers||[];
   S.hSelected=(S.hStatements||'').split(',').map(code=>code.trim()).filter(Boolean);
@@ -4095,7 +4093,6 @@ function _sdsSuitability(){
     ?SdsSourceSuitability.inspect(raw,document.getElementById('product-type')?.value||S.productType,document.getElementById('frag-load')?.value||S.fragLoad)
     :{level:'unverified',message:'Section 2.2 does not confirm whether this SDS covers your finished product. CLPeasy does not adjust hazards for fragrance percentages. Check the applicable finished-product classification information with your supplier or a competent CLP specialist.'};
 }
-function _smartPasteExcluded(){return S.hazardFromExtraction?(window._smartPasteExcludedCodes||[]):[];}
 function _guideEl(tag,text,css){const el=document.createElement(tag);el.style.color='inherit';if(css)el.style.cssText+=css;if(text)el.textContent=text;return el;}
 // Emphasis uses semantic <strong>: a paragraph is built from text parts,
 // where ['b', text] parts are bold.
@@ -4114,7 +4111,7 @@ function updateSdsSourceSuitabilityWarning(){
   const box=document.getElementById('sds-source-suitability-warning');
   if(!box)return;
   const result=_sdsSuitability();
-  if(!result){box.textContent='';box.style.display='none';updateSmartPasteExcludedNote();return;}
+  if(!result){box.textContent='';box.style.display='none';return;}
   box.textContent='';
   box.dataset.suitability=result.level;
   const fragPct=parseFloat(String(document.getElementById('frag-load')?.value||S.fragLoad||'').replace(',','.'));
@@ -4135,7 +4132,7 @@ function updateSdsSourceSuitabilityWarning(){
       body.appendChild(_guideP(['Section 2.2 may not confirm whether this SDS applies to '+(result.target||'your finished product')+'.']));
       body.appendChild(_guideP(['CLPeasy does ',['b','not'],' recalculate hazards for different fragrance percentages. Check that your supplier’s classification information applies to your finished product.'],'margin-top:6px;'));
     }
-    if(!_smartPasteExcluded().length)_guideSupportLine(body);
+    _guideSupportLine(body);
     box.appendChild(body);
   }else{
     box.className='field-alert field-alert-warn';box.setAttribute('role','alert');
@@ -4155,9 +4152,8 @@ function updateSdsSourceSuitabilityWarning(){
       box.appendChild(_guideP(['You need classification information for '+(result.target||'your finished product')+'. Ask your supplier for it before using this label.'],'margin-top:6px;'));
       box.appendChild(_guideP(['CLPeasy does ',['b','not'],' recalculate hazards for different fragrance percentages.'],'margin-top:6px;'));
     }
-    if(!_smartPasteExcluded().length)_guideSupportLine(box);
+    _guideSupportLine(box);
   }
-  updateSmartPasteExcludedNote();
 }
 function _sdsBottleSvg(fillPct,fragPct,id){
   // Bottle body 8..60 (52 units tall); fills rise from the bottom.
@@ -4178,21 +4174,6 @@ function _sdsBottleCompareHtml(pct){
   return `<div class="sds-bottle-compare" style="display:flex;justify-content:center;align-items:flex-start;gap:16px;margin:8px 0 10px;">`+
     `<div style="${cap}">${_sdsBottleSvg(100,100,'sds-bottle-supplier')}<span>${b.replace('">',';display:block;">')}Supplier SDS</strong>${b}100%</strong> concentrated fragrance oil</span></div>`+
     `<div style="${cap}">${_sdsBottleSvg(100,pct,'sds-bottle-yours')}<span>${b.replace('">',';display:block;">')}Finished product</strong>${yours}</span></div></div>`;
-}
-function updateSmartPasteExcludedNote(){
-  const box=document.getElementById('smart-paste-excluded-note');
-  if(!box)return;
-  const codes=_smartPasteExcluded();
-  if(!codes.length){box.textContent='';box.style.display='none';return;}
-  box.textContent='';
-  // Shown once, always separate from the teal/amber SDS notice.
-  const one=codes.length===1;
-  box.appendChild(_guideEl('strong',(one?'Precautionary statement not added: ':'Precautionary statements not added: ')+codes.join(', '),'display:block;margin-bottom:4px;'));
-  box.appendChild(one
-    ?_guideP(['This appears in your SDS but was ',['b','not added'],' to your label automatically. This does ',['b','not'],' mean it is optional. Check whether it is required for your finished product before using the label.'])
-    :_guideP(['These appear in your SDS but were ',['b','not added'],' to your label automatically. This does ',['b','not'],' mean they are optional. Check whether each one is required for your finished product before using the label.']));
-  _guideSupportLine(box);
-  box.style.display='block';
 }
 document.addEventListener('DOMContentLoaded',()=>{
   ['frag-load','product-type'].forEach(id=>{
@@ -4308,7 +4289,6 @@ function extractSDS(){
   // Supplier-faithful mode retains every extracted P code. Unknown or
   // incomplete wording is reviewed/blocked separately, never silently omitted.
   const pRaw=_pAllCodes;
-  window._smartPasteExcludedCodes=[];
   const pEl=document.getElementById('p-statements');
   if(pEl){pEl.value=pRaw.join(', ');}
   S.pStatements=pRaw.join(', ');
@@ -4435,7 +4415,6 @@ function extractSDS(){
   S.hazardFromExtraction=true;
   _snapshotHazardSource();
   updateSdsSourceSuitabilityWarning();
-  updateSmartPasteExcludedNote();
   updateLabel();
   lockHazardFields(true);
   showExtractToast(allH.length,pRaw.length,S.sensitisers.length);
@@ -5124,9 +5103,7 @@ function clearHazardData(){
   const hzCb=document.getElementById('hazard-confirm');
   if(hzCb)hzCb.checked=false;
   S.hazardFromExtraction=false;S.hazardSource=null;S.sourceSection22='';S.supplierWording=null;S.supplierSupplemental=[];S.supplierWordingIssues=[];S.supplierWordingVersion=null;
-  window._smartPasteExcludedCodes=[];
   updateSdsSourceSuitabilityWarning();
-  updateSmartPasteExcludedNote();
   // Clear signal word
   S.signal='';
   S.sdsSignal='';

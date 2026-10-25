@@ -37,7 +37,7 @@ assert(box('sds-source-confirm-error').textContent.includes('Before extracting')
 ok('unticked extraction is refused without changing existing data');
 confirm();window.extractSDS();assert(window.eval('S.hStatements').includes('H317'));
 assert(window.eval('S.pStatements').includes('P264'),'supplier code retained');
-assert(box('smart-paste-excluded-note').style.display==='none','no statement silently excluded');
+assert(!box('smart-paste-excluded-note'),'no exclusion notice: no supplier statement is excluded (D5)');
 assert(!box('hazard-confirm').checked && !box('verify-checkbox').checked);
 const accepted=state();window.extractSDS();assert.strictEqual(state(),accepted);
 ok('confirmed extraction retains all supplier codes and both later confirmations; unchanged retry works');

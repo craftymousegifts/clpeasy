@@ -119,6 +119,13 @@ P305+P351+P338 IF IN EYES: Rinse cautiously with water for several minutes. Remo
 Page 2 of 9
 
 if present and easy to do. Continue rinsing.`,
+  '16 administrative note vs safety note': `2.2 Label elements
+Signal word: Warning
+H317 May cause an allergic skin reaction.
+P501 Dispose of contents/container in accordance with local regulations.
+Supplemental information: For professional use only. This document is given for information only.
+EUH208 Contains Linalool, Citral. May produce an allergic reaction.
+This document is given for information only. It is the final product manufacturer's responsibility to establish the labelling of the product placed on the market.`,
   '12 UFI + Contains': `2.2 Label elements
 Signal word: Warning
 H317 May cause an allergic skin reaction.

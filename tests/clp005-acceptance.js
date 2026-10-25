@@ -75,8 +75,12 @@ setImmediate(() => { try {
   o = r('14 page number + supplier address block after P501');
   assert(o.text.includes('Dispose of contents/container to an approved waste disposal plant') && !/1\/2|2\/2|Synthetic Supplies Ltd|Testtown|TEL|customerservice|Additional Information on Sensitisers/.test(o.text), 'page number and address block are not printed');
   assert(o.h.includes('EUH208') && !o.issues.length, 'EUH208 named by the heading takes the Contains wording beneath it');
-  assert(o.text.includes('This document is given for information only.'), 'supplier text after EUH208 is kept for review, not dropped');assert(o.text.includes('Contains Linalool, Citral. May produce an allergic reaction.') && !o.blocked, 'supplemental EUH208 text kept');
+  assert(!o.text.includes('This document is given for information only.'), 'D2: a clearly administrative document note is not printed');
+  o = r('16 administrative note vs safety note');
+  assert(!/given for information only|manufacturer's responsibility/.test(o.text), 'D2: administrative notes left off the label');
+  assert(o.text.includes('For professional use only.') && o.text.includes('Contains Linalool, Citral. May produce an allergic reaction.'), 'D2: safety-related or uncertain notes still print');
+  assert(window.eval('S.sourceSection22').includes('This document is given for information only.'), 'D2: original SDS text is preserved');assert(o.text.includes('Contains Linalool, Citral. May produce an allergic reaction.') && !o.blocked, 'supplemental EUH208 text kept');
   o = r('15 statement continues across a page break');
   assert(o.issues.includes('P305+P351+P338') && o.blocked && !o.text.includes('Remove contact lenses,'), 'a statement split by a page break is flagged, never printed half');
-  console.log('PASS CLP-005 minimum Smart Paste cases (18 cases; real Builder, mock services, measured canvas stub)');
+  console.log('PASS CLP-005 minimum Smart Paste cases (19 cases; real Builder, mock services, measured canvas stub)');
 } catch (e) { console.error(e); process.exitCode = 1; } finally { window.close(); } });

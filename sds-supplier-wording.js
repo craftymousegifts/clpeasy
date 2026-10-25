@@ -6,13 +6,28 @@ const CODE='(?:EUH|H|P)\\d{3}[A-Za-z]{0,2}(?:[ \\t]*[+/][ \\t]*(?:P)?\\d{3})*';
 const START=new RegExp('^[ \\t]*('+CODE+')(?=$|[ \\t,:–—-])(?:[ \\t]*[,:–—-])?[ \\t]*(.*)$','i');
 const HEADING=/^(?:__CLPEASY_SUPPLEMENTAL__\b|(?:SDS\s+)?(?:SECTION\s+)?\d+(?:\.\d+)*[.:]?\s+|(?:hazard|precautionary|supplemental)\s+(?:statements?|information|None)|Precautionary$|(?:Unique\s+Formula|Identifier\s*\(UFI\)|UFI\b)|signal\s+words?\b|(?:hazard\s+)?pictograms?\b|label\s+elements?\b|contains\s*:|Nikura\s+Ltd,|Issue date:|Version:|Product:|In accordance with REACH|other\s+hazards\b|composition\b|safety\s+data\s+sheet\s*$|page\s+\d+\b)/i;
 const PAGE_FURNITURE=/\bPage[ \t]+\d+[ \t]*(?:of|\/)[ \t]*\d+\b|^[ \t]*(?:Page[ \t]+)?\d{1,3}[ \t]*\/[ \t]*\d{1,3}[ \t]*$|^[ \t]*Page[ \t]+\d+[ \t]*$|^[ \t]*(?:Issue|Revision|Print(?:ed)?)[ \t]+date\b|^[ \t]*Version(?:[ \t]+No\.?)?[ \t]*:/i;
+// D2 (Michaela, 25 Oct 2026): clearly identifiable administrative document
+// notes are not label wording. Only whole sentences matching these narrow
+// forms are left off the label; they stay in the saved source text and are
+// listed in `administrative`. Anything less certain is printed for review.
+const ADMIN_NOTES=[
+  /^This (?:(?:safety )?data sheet|document|SDS|information) is (?:given|provided|supplied|intended) for information(?:al purposes)? only\.?$/i,
+  /^It is the (?:final )?(?:product )?(?:manufacturer|user|customer|purchaser)['’]?s? responsibility to (?:establish|determine|ensure|check) (?:the )?(?:correct )?label(?:l)?ing(?: of| for)? (?:the|their|any|your) (?:final |finished )?products?(?: placed on the market)?\.?$/i,
+];
+function splitAdministrative(text){
+  const sentences=String(text).split(/(?<=[.!?])\s+(?=[A-Z])/);
+  const keep=[],admin=[];
+  sentences.forEach(x=>(ADMIN_NOTES.some(re=>re.test(x.trim()))?admin:keep).push(x));
+  return {keep:keep.join(' ').trim(),admin};
+}
 const INCOMPLETE=/…|\.\.\.|\[[^\]]*\/[^\]]*\]/;
 function canonical(code){
   if(/^P/i.test(code))return (code.match(/\d{3}/g)||[]).map(n=>'P'+n).join('+');
   return code.replace(/\s+/g,'').replace(/^(EUH|H)/i,p=>p.toUpperCase());
 }
 function analyse(source){
-  const wording=Object.create(null), supplemental=[], issues=[], ambiguous=new Set();
+  const wording=Object.create(null), supplemental=[], issues=[], ambiguous=new Set(), administrative=[];
+  const addSupplemental=t=>{const r=splitAdministrative(t);administrative.push(...r.admin);if(r.keep&&!supplemental.includes(r.keep))supplemental.push(r.keep);};
   const lines=String(source||'').replace(/\r\n?/g,'\n')
     // Some PDF text layers expose a printed hyphen as STX between name parts.
     .replace(/([A-Za-z0-9])\x02(?=[A-Za-z0-9])/g,'$1-')
@@ -76,7 +91,7 @@ function analyse(source){
     // EUH208 ends with its own closing sentence. Further supplier text that ran
     // on (e.g. a document note) is kept separately for review, never merged
     // into the EUH208 statement and never dropped.
-    if(code==='EUH208'){const end=text.match(/^(.*?May produce an allergic reaction\.)\s+(\S.*)$/i);if(end){text=end[1];if(!supplemental.includes(end[2]))supplemental.push(end[2]);}}
+    if(code==='EUH208'){const end=text.match(/^(.*?May produce an allergic reaction\.)\s+(\S.*)$/i);if(end){text=end[1];addSupplemental(end[2]);}}
     if(/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(text)){issues.push(code);ambiguous.add(code);delete wording[code];continue;}
     if(!text || new RegExp('(?:^|\\s)'+CODE+'\\b','i').test(text)){
       issues.push(code);ambiguous.add(code);delete wording[code];continue;
@@ -85,13 +100,13 @@ function analyse(source){
     // is not complete label wording. Never print it or choose for the maker.
     if(/^P/.test(code)&&INCOMPLETE.test(text)){issues.push(code);ambiguous.add(code);delete wording[code];continue;}
     if(ambiguous.has(code)){delete wording[code];continue;}
-    if(standaloneContains){if(/^Contains\s*:\s*$/i.test(text)){issues.push(code);continue;}if(!supplemental.includes(text))supplemental.push(text);continue;}
+    if(standaloneContains){if(/^Contains\s*:\s*$/i.test(text)){issues.push(code);continue;}addSupplemental(text);continue;}
     if(Object.hasOwn(wording,code)&&wording[code]!==text){
       delete wording[code];ambiguous.add(code);issues.push(code);continue;
     }
     wording[code]=text;
   }
-  return {version:VERSION,wording,supplemental,issues:[...new Set(issues)]};
+  return {version:VERSION,wording,supplemental,issues:[...new Set(issues)],administrative};
 }
 function extract(source){return analyse(source).wording;}
 const api=Object.freeze({VERSION,analyse,extract});

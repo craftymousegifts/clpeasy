@@ -76,18 +76,27 @@ assert.strictEqual(inspect('Product: Rose Fragrance Oil (10% in Candle Wax)\nCon
 assert(checker.inspect('SECTION 2.2\nH317', 'Scented Candle', '').message.includes('at your fragrance percentage'));
 ok('suitability checker: apparent match, known mismatch, neutral when ambiguous; neat oils keep the amber warning');
 
-// ── 2. Builder wiring, calculator wording, unchanged exclusion list ───────
+// ── 2. Builder wiring and calculator wording; retired exclusion (D5) ─────
 const builderSrc = read('builder.html');
 assert(builderSrc.includes('<script src="sds-source-suitability.js"></script>'));
-assert(builderSrc.includes('id="sds-source-suitability-warning"') && builderSrc.includes('id="smart-paste-excluded-note"'));
+assert(builderSrc.includes('id="sds-source-suitability-warning"'));
+// D5 (Michaela, 25 Oct 2026): supplier statements are no longer excluded, so the
+// "Precautionary statements not added" notice is removed with its code.
+assert(!builderSrc.includes('smart-paste-excluded-note') && !builderSrc.includes('_smartPasteExcluded') && !/Precautionary statements? not added/.test(builderSrc), 'obsolete "not added" notice removed');
 assert(!builderSrc.includes('compares this figure exactly with your supplier document'), 'calculator must not claim a supplier-document comparison');
 assert(builderSrc.includes('Check that your supplier’s CLP information applies to this finished-product percentage. CLPeasy does not verify this or recalculate hazards.'));
-for (const code of ['P272', 'P264', 'P270', 'P280', 'P303+P361+P353', 'P362', 'P362+P364', 'P363', 'P405'])
-  assert(new RegExp(`const _pExclude=\\[[^\\]]*'${code.replace(/\+/g,'\\+')}'`).test(builderSrc), `Smart Paste exclusion list must still contain ${code}`);
+assert(!/const _pExclude=/.test(builderSrc), 'no Smart Paste exclusion list (#270, founder direction 22/25 Oct 2026)');
 assert(!builderSrc.includes('remove it if it was entered in error') && (builderSrc.match(/correct it if it was entered in error/g)||[]).length === 2, 'download banner says correct, not remove');
-ok('builder wiring present; calculator and banner wording corrected; exclusion list unchanged');
+ok('builder wiring present; calculator and banner wording corrected; exclusion list and its notice removed');
 
 // ── 3. Behaviour in the Builder (jsdom) ──────────────────────────────────
+// #270 keeps the supplier's own Section 2.2 wording, so fixtures paste full
+// statements rather than bare codes (bare codes are blocked, never completed).
+const PW = { P102:'Keep out of reach of children.', P261:'Avoid breathing vapours.', P264:'Wash hands thoroughly after handling.',
+  P270:'Do not eat, drink or smoke when using this product.', P273:'Avoid release to the environment.', P280:'Wear protective gloves.',
+  'P302+P352':'IF ON SKIN: Wash with plenty of water.', 'P333+P313':'If skin irritation or rash occurs: Get medical advice/attention.',
+  'P362+P364':'Take off contaminated clothing and wash it before reuse.', P501:'Dispose of contents/container in accordance with local regulations.' };
+const W = codes => codes.split(' ').map(c => c + ' ' + PW[c]).join('\n');
 const source = builderSrc.replace(/<script\s+[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, '');
 const emptyQuery = { select(){ return this; }, eq(){ return this; }, update(){ return this; }, upsert(){ return this; },
   single(){ return Promise.resolve({ data:null, error:null }); }, then(r){ return Promise.resolve({ data:null, error:null }).then(r); } };
@@ -123,64 +132,55 @@ function paste(text){
   return { p: [...window.eval('S.pSelected')], blocked: !!window._labelBlockDownload };
 }
 
-// Workplace codes: removed exactly as before, and now named.
-let r = paste('2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nP102 P261 P264 P280 P302+P352 P362+P364 P501');
-assert.deepStrictEqual(r.p, ['P102', 'P261', 'P302+P352', 'P501'], 'extracted codes unchanged by Release C');
+// Formerly excluded supplier statements are now kept with their wording.
+let r = paste('2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\n' + W('P102 P261 P264 P280 P302+P352 P362+P364 P501'));
+assert.deepStrictEqual(r.p, ['P102', 'P261', 'P264', 'P280', 'P302+P352', 'P362+P364', 'P501'], 'every supplied P statement is kept');
 assert.strictEqual(r.blocked, false);
-// --- Codes only (no fragrance-oil cue): teal 1B notice + separate codes notice. ---
+// --- No fragrance-oil cue: teal 1B notice only (no codes notice any more). ---
 const SUPPORT = 'Need help? Contact support@clpeasy.com.';
 const amber = () => box('sds-source-suitability-warning');
 const EMPH = e => e.tagName === 'STRONG' && !e.style.display; // inline emphasis, not a heading
 const parts = el => [...el.querySelectorAll('strong,p')].filter(e => !EMPH(e)).map(e => e.textContent);
 const emph = el => [...el.querySelectorAll('strong')].filter(EMPH).map(e => e.textContent);
 const linkOk = el => { const a = el.querySelector('a'); return a && a.getAttribute('href') === 'mailto:support@clpeasy.com' && a.textContent === 'support@clpeasy.com' && a.style.textDecoration === 'underline' && a.style.color !== ''; };
-const links = () => document.querySelectorAll('#sds-source-suitability-warning a, #smart-paste-excluded-note a').length;
-const NOTE_PL = 'These appear in your SDS but were not added to your label automatically. This does not mean they are optional. Check whether each one is required for your finished product before using the label.';
-const NOTE_1 = 'This appears in your SDS but was not added to your label automatically. This does not mean it is optional. Check whether it is required for your finished product before using the label.';
-assert(shown('smart-paste-excluded-note'));
-const note = box('smart-paste-excluded-note').textContent;
-assert.deepStrictEqual(parts(box('smart-paste-excluded-note')), ['Precautionary statements not added: P264, P280, P362+P364', NOTE_PL, SUPPORT]);
-assert.deepStrictEqual(emph(box('smart-paste-excluded-note')), ['not added', 'not']);
-assert(!/fragrance/i.test(note) && !box('smart-paste-excluded-note').querySelector('svg,button'), 'no bottles, claims or buttons');
-assert(linkOk(box('smart-paste-excluded-note')) && links() === 1, 'support link shown once, in the last notice');
-assert(!/workplace|unnecessary|not required|don't apply|do not apply/i.test(note), 'must not describe excluded codes categorically');
+const links = () => document.querySelectorAll('#sds-source-suitability-warning a').length;
+assert(!document.getElementById('smart-paste-excluded-note'), 'no "not added" notice element');
 assert(shown('sds-source-suitability-warning') && amber().dataset.suitability === 'unverified');
 assert(amber().classList.contains('field-alert-info') && !amber().classList.contains('field-alert-warn') && amber().getAttribute('role') === 'status');
 assert(amber().querySelector('svg[aria-hidden="true"]'), 'information icon');
 assert.deepStrictEqual(parts(amber()), ['Check your SDS suitability',
   'Section 2.2 may not confirm whether this SDS applies to your finished scented candle at 10% fragrance.',
-  'CLPeasy does not recalculate hazards for different fragrance percentages. Check that your supplier’s classification information applies to your finished product.']);
+  'CLPeasy does not recalculate hazards for different fragrance percentages. Check that your supplier’s classification information applies to your finished product.', SUPPORT]);
 assert.deepStrictEqual(emph(amber()), ['not']);
-assert(!amber().contains(box('smart-paste-excluded-note')) && !box('smart-paste-excluded-note').contains(amber()), 'separate notices');
-ok('1B neutral notice and a separate codes notice (shown once, with the support link)');
+assert(linkOk(amber()) && links() === 1, 'support link shown once, on the teal notice');
+ok('1B neutral notice with the support link; supplied statements kept');
 
-r = paste('2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nP102 P261 P270 P302+P352 P501');
-assert.deepStrictEqual(r.p, ['P102', 'P261', 'P302+P352', 'P501']);
-assert.deepStrictEqual(parts(box('smart-paste-excluded-note')).slice(0, 2), ['Precautionary statement not added: P270', NOTE_1]);
-ok('codes notice: singular wording');
+r = paste('2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\n' + W('P102 P261 P270 P302+P352 P501'));
+assert.deepStrictEqual(r.p, ['P102', 'P261', 'P270', 'P302+P352', 'P501']);
+ok('formerly excluded P270 kept with its supplier wording');
 
 // --- No excluded codes: teal notice carries the support link. ---
-r = paste('2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nP102 P261 P302+P352 P501');
-assert(!shown('smart-paste-excluded-note') && !amber().classList.contains('field-alert-warn'));
+r = paste('2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\n' + W('P102 P261 P302+P352 P501'));
+assert(!amber().classList.contains('field-alert-warn'));
 assert(linkOk(amber()) && links() === 1);
-ok('no excluded codes: no codes notice; support link on the teal notice');
+ok('support link on the teal notice');
 
 // --- 1A apparent match (teal). ---
-const S22 = '2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nP102 P261 P280 P302+P352 P501';
+const S22 = '2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\n' + W('P102 P261 P280 P302+P352 P501');
 r = paste('Product: ' + NAG10 + '\n' + S22);
-assert.deepStrictEqual(r.p, ['P102', 'P261', 'P302+P352', 'P501'], 'extraction unchanged');
+assert.deepStrictEqual(r.p, ['P102', 'P261', 'P280', 'P302+P352', 'P501'], 'extraction keeps every supplied statement');
 assert.strictEqual(amber().dataset.suitability, 'match');
 assert(amber().classList.contains('field-alert-info') && !amber().querySelector('.sds-bottle-compare'));
 assert.deepStrictEqual(parts(amber()), ['SDS appears to match your product',
   'This SDS describes 10% in candle wax, which appears to match your scented candle at 10% fragrance.',
-  'CLPeasy does not independently verify or recalculate this classification. Check that the SDS is current and applies to your finished product.']);
+  'CLPeasy does not independently verify or recalculate this classification. Check that the SDS is current and applies to your finished product.', SUPPORT]);
 assert.deepStrictEqual(emph(amber()), ['not']);
 assert(!/approved|verified|compliant/i.test(amber().textContent.replace('does not independently verify', '')), 'no approval claim');
-assert(shown('smart-paste-excluded-note') && links() === 1);
+assert(links() === 1);
 ok('1A apparent match: teal, approved wording, no bottles, no approval claim');
 
 // --- 1C known mismatch (amber, no bottles) + size note. ---
-r = paste('Product: ' + NAG10 + '\n' + S22.replace('P280 ', ''));
+r = paste('Product: ' + NAG10 + '\n' + S22.replace('\nP280 Wear protective gloves.', ''));
 box('frag-load').value = '6%'; window.readForm(); window.updateSdsSourceSuitabilityWarning();
 assert.strictEqual(amber().dataset.suitability, 'mismatch');
 assert(amber().classList.contains('field-alert-warn') && amber().getAttribute('role') === 'alert');
@@ -189,7 +189,7 @@ assert.deepStrictEqual(parts(amber()), ['⚠️ Check your SDS suitability',
   'This SDS describes 10% in candle wax, but your product is a scented candle at 6% fragrance.',
   'CLPeasy does not recalculate hazards for different fragrance percentages. Ask your supplier for classification information for your finished product at 6%.', SUPPORT]);
 assert.deepStrictEqual(emph(amber()), ['10% in candle wax', '6%', 'not']);
-assert(linkOk(amber()) && links() === 1, 'no codes: support link on the amber warning');
+assert(linkOk(amber()) && links() === 1, 'support link on the amber warning');
 box('product-type').value = 'Room Spray'; box('frag-load').value = '10%'; window.readForm(); window.updateSdsSourceSuitabilityWarning();
 assert.strictEqual(amber().dataset.suitability, 'mismatch');
 assert(amber().textContent.includes('but your product is a room spray at 10% fragrance.'));
@@ -197,18 +197,18 @@ ok('1C known mismatch: amber, no bottles, percentage and product-type wording');
 
 // --- 2 concentrated fragrance oil (amber with the unchanged bottles). ---
 r = paste('Fragrance oil supplied at 100% concentration\n' + S22);
-assert.deepStrictEqual(r.p, ['P102', 'P261', 'P302+P352', 'P501']);
+assert.deepStrictEqual(r.p, ['P102', 'P261', 'P280', 'P302+P352', 'P501']);
 assert(amber().classList.contains('field-alert-warn'));
 assert.deepStrictEqual(parts(amber()).filter(t => !/^(Supplier SDS|100%|Finished product|10%)$/.test(t)), ['⚠️ This SDS may be for concentrated fragrance oil',
   'Your supplier’s SDS appears to describe concentrated fragrance oil, not your finished product.',
   'You need classification information for your finished scented candle at 10% fragrance. Ask your supplier for it before using this label.',
-  'CLPeasy does not recalculate hazards for different fragrance percentages.']);
+  'CLPeasy does not recalculate hazards for different fragrance percentages.', SUPPORT]);
 assert.deepStrictEqual(emph(amber()).filter(t => !/^(Supplier SDS|100%|Finished product|10%)$/.test(t)), ['concentrated fragrance oil', 'not', 'not']);
 assert.strictEqual(amber().querySelectorAll('.sds-bottle-compare svg').length, 2, 'two bottles');
 assert.deepStrictEqual([...amber().querySelectorAll('.sds-bottle-compare strong')].map(e => e.textContent), ['Supplier SDS', '100%', 'Finished product', '10%'], 'captions and bold %');
 assert(amber().querySelector('.sds-bottle-compare').textContent.includes('10% fragrance load') && !/90%|volume|v\/v/i.test(amber().textContent));
 assert(!amber().querySelector('li') && !/not added/.test(amber().textContent), 'codes are not repeated inside the amber warning');
-assert(shown('smart-paste-excluded-note') && /P280/.test(box('smart-paste-excluded-note').textContent) && links() === 1, 'codes shown once, separately');
+assert(links() === 1, 'support link shown once');
 box('frag-load').value = ''; window.readForm(); window.updateSdsSourceSuitabilityWarning();
 assert(amber().querySelector('.sds-bottle-compare').textContent.includes('Fragrance % not entered'));
 box('frag-load').value = '6.5%'; window.readForm(); window.updateSdsSourceSuitabilityWarning();
@@ -216,12 +216,12 @@ assert(amber().querySelector('.sds-bottle-compare').textContent.includes('6.5% f
 r = paste('Product name: Rose Fragrance Oil\n' + S22);
 assert.strictEqual(amber().dataset.suitability, 'possible');
 assert.strictEqual(amber().querySelector('strong').textContent, '⚠️ This SDS may be for concentrated fragrance oil');
-ok('2 concentrated oil: amber with unchanged bottles; codes shown once in the separate notice');
+ok('2 concentrated oil: amber with unchanged bottles');
 
 // --- Label-size note: Step 3 size panel, amber warnings only. ---
 const sizeNote = () => (box('smart-paste-size-warning').querySelector('.fit-sds-note') || {}).textContent || null;
 const tooSmall = () => { window.selectShape('circle'); window.selectSize('custom'); box('custom-w').value = '52'; box('custom-h').value = '52'; window.onDimInput(); window.readForm(); window.updateLabel(); };
-const BIG = '2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nH412 Harmful to aquatic life with long lasting effects.\nEUH208 Contains Amyl cinnamic aldehyde, Citronellol, Coumarin, Linalyl acetate, d-Limonene. May produce an allergic reaction.\nP261 P273 P302+P352 P333+P313 P501';
+const BIG = '2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nH412 Harmful to aquatic life with long lasting effects.\nEUH208 Contains Amyl cinnamic aldehyde, Citronellol, Coumarin, Linalyl acetate, d-Limonene. May produce an allergic reaction.\n' + W('P261 P273 P302+P352 P333+P313 P501');
 paste('Fragrance oil supplied at 100% concentration\n' + BIG); tooSmall();
 assert(window._labelBlockDownload && box('smart-paste-size-warning').innerHTML.includes('fit-heading'), 'size panel shown');
 assert.strictEqual(sizeNote(), 'A larger label makes room for the text. It does not resolve the SDS warning above.');
@@ -235,45 +235,39 @@ assert.strictEqual(sizeNote(), null, 'teal 1B: no size note');
 assert(!/fit-sds-note/.test(box('label-warning') ? box('label-warning').innerHTML : ''), 'only the Step 3 size panel carries the note');
 ok('size note: shown with amber concentrated-oil and mismatch warnings only; fitting unchanged');
 
-// Unrecognised codes still kept and still block; new guidance shown.
+// Codes copied without supplier wording are kept and block; never completed by CLPeasy.
 r = paste('2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction. H319 Causes serious eye irritation.\nP102 P240 P310 P305+P351+P338 P501');
-assert.deepStrictEqual(r.p, ['P102', 'P240', 'P310', 'P305+P351+P338', 'P501'], 'unrecognised codes are kept, not discarded');
-assert.strictEqual(r.blocked, true, 'unrecognised codes still block downloads');
+assert.deepStrictEqual(r.p, ['P102', 'P240', 'P310', 'P305+P351+P338', 'P501'], 'codes are kept, not discarded');
+assert.strictEqual(r.blocked, true, 'codes without supplier wording block downloads');
 box('hazard-confirm').checked = true; window.__lastAlert = undefined;
 assert.strictEqual(window.canLeaveApprovedBuilderStep(3), false, 'Step 3 still blocked');
 const msg = window.__lastAlert || '';
-assert(msg.startsWith("Some codes can't be added to this label") && /P240, P310/.test(msg), msg);
-assert(/Required codes must be resolved, not removed or changed just to enable downloads/.test(msg));
-assert(/Combining the Section 2\.2 statements from several ingredient SDSs does not establish the classification of the finished mixture/.test(msg));
-assert(/competent CLP specialist/.test(msg));
-ok('unrecognised codes kept and blocked; guidance explains resolve-not-remove and mixtures');
+assert(/Supplier statement wording needs review/.test(msg) && /P102/.test(msg), msg);
+ok('codes without supplier wording kept and blocked; Step 3 asks for supplier wording');
 
 // Loading a different saved label hides both notes (display only).
-paste('2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nP102 P261 P264 P280 P302+P352 P501');
-assert(shown('smart-paste-excluded-note') && shown('sds-source-suitability-warning'));
+paste('2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\n' + W('P102 P261 P264 P280 P302+P352 P501'));
+assert(shown('sds-source-suitability-warning'));
 try { window.loadLabelRecord({ id:'saved-other', scentName:'Other', productType:'Wax Melt', shape:'circle', size:63, hStatements:'', pStatements:'', sensitisers:[], pictograms:[] }); } catch (e) { /* saved-label list refresh needs a signed-in library; not under test */ }
-assert(!shown('sds-source-suitability-warning') && !shown('smart-paste-excluded-note'), 'notes from an earlier paste must not stay on a loaded label');
-assert.deepStrictEqual([...(window._smartPasteExcludedCodes || [])], []);
+assert(!shown('sds-source-suitability-warning'), 'notes from an earlier paste must not stay on a loaded label');
 ok('loading a different saved label hides the earlier guidance');
 
 // Clearing hazard data hides both notes.
 window.clearHazardData();
-assert(!shown('sds-source-suitability-warning') && !shown('smart-paste-excluded-note'));
+assert(!shown('sds-source-suitability-warning'));
 ok('clearing hazard data hides the guidance');
 
-// With the Section 2.2 scope fix (#261): the "not added" note names only
-// Section 2.2 codes, and a stopped paste shows no guidance boxes.
+// With the Section 2.2 scope fix (#261): only Section 2.2 statements are
+// extracted, and a stopped paste shows no guidance boxes.
 const SDS = 'SECTION 1: Identification\nProduct name: Synthetic\nSECTION 2: Hazards identification\n' +
-  '2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nP261 P280 P501\n2.3 Other hazards\nNone.\n' +
+  '2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\n' + W('P261 P280 P501') + '\n2.3 Other hazards\nNone.\n' +
   'SECTION 3: Composition\nH226 H304 P264 P405\nSECTION 4: First aid measures\nP362+P364\n';
 r = paste(SDS);
-const wholeNote = box('smart-paste-excluded-note').textContent + amber().textContent;
-assert(/P280/.test(wholeNote) && !/P264|P405|P362/.test(wholeNote), 'only Section 2.2 codes named: ' + wholeNote);
-assert.deepStrictEqual(r.p, ['P261', 'P501']);
+assert.deepStrictEqual(r.p, ['P261', 'P280', 'P501'], 'only Section 2.2 statements extracted');
 paste(SDS + '\n' + SDS.replace('Signal word: Warning', 'Signal word: Danger'));
-assert(shown('smart-paste-scope-error') && !shown('sds-source-suitability-warning') && !shown('smart-paste-excluded-note'), 'stop hides guidance');
+assert(shown('smart-paste-scope-error') && !shown('sds-source-suitability-warning'), 'stop hides guidance');
 assert.deepStrictEqual([...window.eval('S.hStatements')], []);
-ok('with the Section 2.2 scope: note names only Section 2.2 codes; a stopped paste shows no guidance');
+ok('with the Section 2.2 scope: only Section 2.2 statements; a stopped paste shows no guidance');
 
 assert.deepStrictEqual(jsErrors.filter(e => !/Not implemented/.test(e)), [], 'no page errors');
 console.log(`\nAll ${n} Release C checks passed.`);
