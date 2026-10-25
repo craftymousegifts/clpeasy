@@ -88,7 +88,7 @@ const dom = new JSDOM(source, {
       },
       drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
     });
-    window.eval(rawLabelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
+    window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-supplier-wording.js'),'utf8')); window.eval(rawLabelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
     window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
@@ -159,6 +159,8 @@ function runStep3Gate(){
 // readForm(), so those remain safe to set directly via eval.
 function renderDirectAndUpdate(hStatementsCsv, opts, shapeOverride){
   opts = opts || {};
+  // A directly entered (manual) label has no Smart Paste source (#270).
+  window.eval("S.hazardFromExtraction=false;S.sourceSection22='';S.supplierWording=null;S.supplierWordingIssues=[];S.supplierSupplemental=[]");
   if(shapeOverride) setupBuilderState(shapeOverride.shape, shapeOverride.customW, shapeOverride.customH);
   else setupBuilderState();
   const domFields = Object.assign({
@@ -261,7 +263,7 @@ async function run(){
 Signal word: Warning
 Hazard statements: H315, Causes skin irritation.
 H316, Causes mild skin irritation.
-H999, Not a real code.
+H999
 Precautionary statements:
 P273, Avoid release to the environment.
 P501, Dispose of contents and container in accordance with local regulations.`;
@@ -272,9 +274,12 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     assert(/\bH316\b/.test(gate.alert), 'mixed alert must name H316 (unsupported group)');
     assert(/\bH999\b/.test(gate.alert), 'mixed alert must ALSO name H999 (generic-unrecognised group) -- must not be hidden by the unsupported-code priority');
     assert(gate.alert.includes('needs supplier confirmation for a Great Britain CLP label'), 'mixed alert must include the supplier-confirmation message');
-    assert(gate.alert.includes("A code can't be added to this label"), 'mixed alert must ALSO include the generic-unrecognised-code message');
+    // #270: with a Smart Paste source, a code without supplier wording gets the
+    // supplier-wording review message (an unknown code WITH supplier wording is
+    // accepted by design), shown together with the GB-unsupported message.
+    assert(gate.alert.includes('Supplier statement wording needs review'), 'mixed alert must ALSO include the supplier-wording review message');
     // Regulatory issue shown first.
-    assert(gate.alert.indexOf('needs supplier confirmation for a Great Britain CLP label') < gate.alert.indexOf("A code can't be added to this label"), 'the supplier-confirmation message must appear before the generic-unrecognised message');
+    assert(gate.alert.indexOf('needs supplier confirmation for a Great Britain CLP label') < gate.alert.indexOf('Supplier statement wording needs review'), 'the supplier-confirmation message must appear before the generic-unrecognised message');
   }
 
   // ─────────────────────────────────────────────────────────────────────
@@ -585,7 +590,7 @@ P501, Dispose of contents and container in accordance with local regulations.`;
   const MIXED_H316_H999_TEXT = `2.2 Label elements
 Signal word: Warning
 Hazard statements: H316, Causes mild skin irritation.
-H999, Not a real code.
+H999
 Precautionary statements:
 P501, Dispose of contents and container in accordance with local regulations.`;
 

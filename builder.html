@@ -4611,7 +4611,13 @@ function canLeaveApprovedBuilderStep(step){
     const pCodes=(S.pStatements||'').split(',').map(v=>v.trim()).filter(Boolean);
     const hasSupplierText=code=>S.hazardFromExtraction && typeof S.supplierWording?.[code]==='string' && S.supplierWording[code].trim() && !LabelRenderer.GB_UNSUPPORTED_CODES.includes(code);
     const sourceActive=!!(S.hazardFromExtraction && S.sourceSection22);
-    if(sourceActive && S.supplierWordingIssues?.length){const review=clpUnrecognisedCodesMessage(S.supplierWordingIssues);alert(review.heading+'\n\n'+review.body);return false;}
+    if(sourceActive && S.supplierWordingIssues?.length){
+      // Wording problems and confirmed GB-unsupported codes are shown together
+      // (regulatory issue first), so neither hides the other.
+      const gbUnsupported=[...hCodes,...pCodes].filter(code=>LabelRenderer.GB_UNSUPPORTED_CODES.includes(code)&&!S.supplierWordingIssues.includes(code));
+      const parts=[...(gbUnsupported.length?[clpUnsupportedCodesMessage(gbUnsupported)]:[]),clpUnrecognisedCodesMessage(S.supplierWordingIssues)];
+      alert(parts.map(p=>p.heading+'\n\n'+p.body).join('\n\n'));return false;
+    }
     const unknown=[...hCodes.filter(code=>sourceActive?!hasSupplierText(code):!H_LIB.some(x=>x.code===code)),...pCodes.filter(code=>sourceActive?!hasSupplierText(code):!P_LIB.some(x=>x.code===code))];
     if(unknown.length){
       // Structured failure reason: a CONFIRMED code unsupported under the
