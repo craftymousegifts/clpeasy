@@ -98,7 +98,7 @@ const dom = new JSDOM(source, {
     window.HTMLCanvasElement.prototype.getContext = () => ({ font:'',
       measureText(t){ const s=Number((String(this.font).match(/([\d.]+)px/)||[])[1])||12; return { width:[...String(t)].reduce((w,c)=>w+s*(/[MW@%]/.test(c)?.82:/[ilI1.,' ]/.test(c)?.28:.54),0) }; },
       drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; } });
-    window.eval(read('label-render.js')); window.eval(read('sds-doc-check.js')); window.eval(read('sds-section-scope.js')); window.eval(read('sds-source-suitability.js'));
+    window.eval(read('sds-supplier-wording.js')); window.eval(read('label-render.js')); window.eval(read('sds-doc-check.js')); window.eval(read('sds-section-scope.js')); window.eval(read('sds-source-suitability.js'));
     window.eval(read('label-library.js')); window.eval(read('entitlement.js'));
     window.alert = m => { window.__lastAlert = String(m); }; window.confirm = () => true; window.scrollTo = () => {};
     window.HTMLElement.prototype.scrollIntoView = () => {};

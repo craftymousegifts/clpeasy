@@ -140,10 +140,15 @@ const server = http.createServer((req, res) => {
       const single = {};
       for (const k of K) {
         const val = k === 'hazardYOffset' ? 0 : A[k];
-        const rec = mk({ [k]: val });
+        // #270: with supplier wording this fixture's hazard text fills its
+        // area, leaving no height for a vertical offset to use. For that one
+        // check, give both renders the same slightly smaller hazard font so
+        // there is spare height; the override itself is unchanged.
+        const room = k === 'hazardYOffset' ? { hazardFSOverride: L.renderLabel(C, { instanceId: 'room', pw: cw, ph: cw, watermark: true }).metrics.fontSizes.hazard - 2 } : {};
+        const rec = mk(Object.assign({}, room, { [k]: val }));
         const comp = renderSheetPosition(rec, cw, cw, { watermark: true, instanceId: 's-' + k });
-        const direct = L.renderLabel(rec, { instanceId: 's-' + k, pw: cw, ph: cw, bgColour: rec.bgColour, watermark: true, [k]: val });
-        const auto = L.renderLabel(C, { instanceId: 's-' + k, pw: cw, ph: cw, bgColour: C.bgColour, watermark: true });
+        const direct = L.renderLabel(rec, Object.assign({ instanceId: 's-' + k, pw: cw, ph: cw, bgColour: rec.bgColour, watermark: true, [k]: val }, room));
+        const auto = L.renderLabel(mk(room), Object.assign({ instanceId: 's-' + k, pw: cw, ph: cw, bgColour: C.bgColour, watermark: true }, room));
         single[k] = { same: comp.svg === direct.svg, differsFromAuto: comp.svg !== auto.svg, passed: window.__calls[window.__calls.length - 3].ov[k] === val,
           hb: [comp.metrics.hazardBounds.y0, auto.metrics.hazardBounds.y0] };
       }

@@ -51,7 +51,7 @@ function buildDom(builderSourcePath){
         },
         drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
       });
-      window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
+      window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-supplier-wording.js'),'utf8')); window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
       window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
@@ -122,7 +122,7 @@ async function run(){
     { label: 'P302/352 -> P302+P352', text: 'Precautionary statements: P302/352, IF ON SKIN: Wash with plenty of soap and water. P501, Dispose of contents.', expect: ['P302+P352','P501'] },
     { label: 'P302/P352 -> P302+P352', text: 'Precautionary statements: P302/P352, IF ON SKIN: Wash with plenty of soap and water. P501, Dispose of contents.', expect: ['P302+P352','P501'] },
     { label: 'P333/313 -> P333+P313', text: 'Precautionary statements: P333/313, If skin irritation or rash occurs: Get medical advice/attention. P501, Dispose of contents.', expect: ['P333+P313','P501'] },
-    { label: 'P303/361/353 -> P303+P361+P353 (then excluded, unchanged behaviour)', text: 'Precautionary statements: P303/361/353, IF ON SKIN (or hair): Remove contaminated clothing. P501, Dispose of contents.', expect: ['P501'] },
+    { label: 'P303/361/353 -> P303+P361+P353 (supplier code retained since #270, founder direction 22/25 Oct 2026)', text: 'Precautionary statements: P303/361/353, IF ON SKIN (or hair): Remove contaminated clothing. P501, Dispose of contents.', expect: ['P303+P361+P353','P501'] },
     { label: 'optional spaces around / : "P302 / 352"', text: 'Precautionary statements: P302 / 352, IF ON SKIN: Wash. P501, Dispose of contents.', expect: ['P302+P352','P501'] },
     { label: 'optional spaces around + : "P403 + P233"', text: 'Precautionary statements: P403 + P233, Store in a well-ventilated place. P501, Dispose of contents.', expect: ['P403+P233','P501'] },
     { label: 'existing "+" notation unchanged: "P302+P352"', text: 'Precautionary statements: P302+P352, IF ON SKIN: Wash. P501, Dispose of contents.', expect: ['P302+P352','P501'] },
