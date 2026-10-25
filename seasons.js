@@ -327,6 +327,19 @@
     }
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Keep the effect to the top of the homepage (25 Oct 2026, owner
+      // request): particles are only painted above the bottom edge of the
+      // seasonal banner, so they never fall over "How it works" or the rest
+      // of the page. The particles keep moving underneath, so scrolling back
+      // up shows them again. With no banner on the page, nothing is clipped.
+      const seasonBanner = document.getElementById('clpeasy-season-banner');
+      ctx.save();
+      if (seasonBanner) {
+        const limit = Math.max(0, Math.min(canvas.height, seasonBanner.getBoundingClientRect().bottom));
+        ctx.beginPath();
+        ctx.rect(0, 0, canvas.width, limit);
+        ctx.clip();
+      }
       particles.forEach(p => {
         ctx.save();
         ctx.translate(p.x, p.y);
@@ -382,6 +395,7 @@
         if (p.x > canvas.width + 20) p.x = -20;
         if (p.x < -20) p.x = canvas.width + 20;
       });
+      ctx.restore();
       particleRAF = requestAnimationFrame(draw);
     }
     draw();
