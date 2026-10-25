@@ -1,0 +1,112 @@
+# PR #233 Stage A: precautionary-statement verification (19 Oct 2026)
+
+**Tier:** High (CLP wording). **Status:** draft, local only. Not pushed, merged or deployed.
+**Scope (coordination record on #233, 19 Oct 2026):** verify P202, P240, P241, P242, P243, P308+P313, P310 and P403+P235. Print a code only when its verified wording is complete without a supplier choice the SDS doesn't make. Otherwise leave it unrecognised, which blocks the download as production does today. Unchanged: the nine Smart Paste exclusions, P280, unknown-code blocking and the fit/export gates.
+
+## Evidence anchors
+
+| What | Anchor |
+|---|---|
+| Code | Stage A change `18386e7` (on top of `42123e5`, main `1925764`). Later merged with `main` `b233631` (#264, #265) with no conflicts. After #264, extraction needs the SDS source confirmation, so `tests/d3-r4-precautionary-statements.js` now ticks it before extracting (a test-only change). |
+| GB wording | legislation.gov.uk, Regulation (EC) No 1272/2008, Annex IV, https://www.legislation.gov.uk/eur/2008/1272/annex/IV (data `dc:modified` 2026-06-10, retrieved 19 Oct 2026). Part 1 Tables 6.1, 6.2 and 6.4 give columns (2) and (5); Part 2 gives the English rows. |
+| GB amendments after 17 Oct 2020 | The same page says "There are currently no known outstanding effects by UK legislation for … ANNEX IV". Its version timeline ends at 17/10/2020 and 31/12/2020 (end of the implementation period). |
+| Wording rule | Article 22(4), https://www.legislation.gov.uk/eur/2008/1272/article/22: statements "shall be worded in accordance with Part 2 of Annex IV". |
+| Annex IV conventions | Annex IV introduction: "/" means a choice must be made "in accordance with the indications provided in column (5)"; "…" means information must be supplied; "[…]" text is "not appropriate in every case". |
+| Genuine SDS | Nikura, "Nag Champa Fragrance Oil (10% in Candle Wax)", issue date 21/07/2025, version 1, 9 pages (owner's copy, `Downloads/Nag Champa SDS.pdf`). Section 2.2 text extracted with `pdftotext -layout`. |
+
+## Verification per code
+
+The Part 1 and Part 2 English wording is identical for all eight codes.
+
+| Code | GB Annex IV wording | Column (5) | Result |
+|---|---|---|---|
+| P202 | Do not handle until all safety precautions have been read and understood. | none | **Print**: complete |
+| P240 | Ground and bond container and receiving equipment. | selection conditions only ("if…") | **Print**: complete |
+| P241 | Use explosion-proof [electrical/ventilating/lighting/…] equipment. | bracketed text "may be used… if necessary and as appropriate" | **Print the supplier's own wording** (corrected 20 Oct, see "P241 supplier equipment wording" below). Base text only when the SDS gives no equipment words. Unverifiable words block. |
+| P242 | Use non-sparking tools. | selection conditions only | **Print**: complete |
+| P243 | Take action to prevent static discharges. | selection conditions only | **Print**: complete |
+| P403+P235 | Store in a well-ventilated place. Keep cool. | selection conditions only | **Print**: complete |
+| P308+P313 | IF exposed or concerned: Get medical advice/attention. | none | **Not added**: "/" is defined as a choice, and column (5) gives no indication, so complete wording can't be verified. Stays unrecognised (blocks). **Decision/REVIEW.** |
+| P310 | Immediately call a POISON CENTER/doctor/… | "…Manufacturer/supplier to specify the appropriate source of emergency medical advice." | **Not added**: the supplier must complete it. The previous #233 text, "POISON CENTRE or doctor", isn't statutory wording. Stays unrecognised (blocks). **REVIEW.** |
+
+**Change from `42123e5`:** P308+P313 and P310 are removed from both P_LIB copies. The other six stay as #233 had them. No existing library entry changes.
+
+## P241 supplier equipment wording (20 Oct 2026, founder-approved approach)
+
+**Problem.** Stage A printed P241 as "Use explosion-proof equipment." whatever the SDS said, so it silently dropped equipment the supplier had specified.
+
+**Evidence.**
+- **Annex IV:** the introduction says "[…] text … is not appropriate in every case and should be used only in certain circumstances". P241's column (5) says "text in square brackets may be used to specify specific electrical, ventilating, lighting or other equipment if necessary and as appropriate". That makes it a supplier choice.
+- **Genuine Nikura SDSs:** all four print "Use explosion-proof electrical, ventilating and lighting equipment." somewhere in the document. **Only the neat Positivity Essential Oil Blend (15/09/2025) lists P241 in Section 2.2.** Bergamot (10% in candle wax, 04/06/2025), Snow Angel (neat, 08/08/2025) and Nag Champa (10% in candle wax, 21/07/2025) print it only outside Section 2.2, which Smart Paste doesn't read.
+
+**Correction (smallest safe change, modelled on P280's per-label wording).**
+- **Reading the SDS:** Smart Paste looks for the supplier's "explosion-proof … equipment" sentence anywhere in Section 2.2 and keeps the equipment words exactly as written (`p241Equipment`).
+- **Verification:** each word must be one of the Annex IV terms electrical, ventilating or lighting, joined by commas, "/", "and" or "or". The separators are a minor textual variation the Annex IV introduction allows; the equipment itself isn't changed.
+- **No equipment words:** if Section 2.2 has no explosion-proof sentence (code only), the statutory base text "Use explosion-proof equipment." prints. Nothing is discarded.
+- **Blocks Step 3 and every export, printing nothing:**
+  - "…" left in;
+  - equipment outside the list;
+  - a cut-off sentence;
+  - conflicting sentences;
+  - a Smart Paste label saved before this field existed.
+- **Same result everywhere:** the words are saved with the label and re-verified by the shared renderer, so the Builder preview, SVG, PNG, PDF print view and the Composer print the same text.
+- **Unchanged:** a manually entered P241 (no SDS) prints the base text. Re-extraction and Clear reset the field. No other P-statement changes.
+
+**Results.**
+- **Genuine Positivity Section 2.2:** prints "Use explosion-proof electrical, ventilating and lighting equipment." The genuine label stays blocked by H401 (GB-unsupported), unchanged.
+- **Bergamot, Snow Angel, Nag Champa:** no P241 extracted. Nag Champa stays blocked by H316.
+- **Tests:** `tests/p241-supplier-equipment-wording.js` (6 checks), using the genuine Section 2.2 texts in `tests/fixtures/p241-nikura-section-2-2.json`.
+- **Real browser, local copy of this branch:**
+  - the Builder PNG at 600 dpi and the Composer label, sheet position and 300 dpi PNG print the full supplier wording;
+  - an older Smart Paste record without the field shows the review block.
+
+  The Positivity wording was rendered with H401 taken out of the H list only so the label could render.
+
+## Independent review and remediation (20 Oct 2026, `c8f2d1e`)
+
+An independent read-only review of `ffb15e7` passed the scope, wording, escaping and blocked-code export checks. It found one blocker and three further issues. You approved fixing them, with the N2 rule below.
+
+| Finding | Problem | Fix in `c8f2d1e` |
+|---|---|---|
+| **B1** (blocker) | Only an ASCII "-" was recognised. PDF text with Unicode hyphens or dashes, soft hyphens, or a word split across lines hid the supplier's sentence, so base text printed. | Text is normalised first. Any evidence of equipment wording that can't be read exactly now blocks: an unmatched "…proof" word, "ventilating"/"lighting" outside a verified sentence, or "explosion-protected/-safe". |
+| **S1** | A legacy saved record was treated as a Smart Paste label by the Builder but not by the renderer, so the Composer printed base text. | `normalizeLabel` applies the Builder's rule. |
+| **S2** | A blocked P241 was described as "not recognised", and one message was a dead end. | The Step 3 alert, preview overlay, help panel and Composer say that P241 needs the supplier's equipment wording, and what to do if the SDS has no P241. Blocking is unchanged. |
+| **N1** | Empty parts were accepted, and spacing and capitals printed oddly. | Empty parts block. Spacing is tidied and capitals are set to Annex IV lower case; no word changes. |
+
+**Independent re-review of `c8f2d1e`:** B1, S1 and N1 confirmed fixed. Two further gaps were found and fixed in the follow-up commit:
+- **F1 (blocker):** equipment words placed *after* "equipment" (e.g. "Use explosion-proof equipment (electrical, ventilating, lighting)"), or a second, unmatched explosion-protection phrase, still printed the base text or a shortened list.
+
+  Now, once the verified sentences are taken out, any remaining electrical/ventilating/lighting or explosion-protection wording ("-protected", "-safe", "resistant", "anti-explosion", ATEX, "explosive atmospheres") blocks. "Ventilating" is matched, not "ventilated", so the "well-ventilated" in P403 and P271 isn't mistaken for P241 wording.
+- **F2:** the Builder's Step 4/5 download warning still described P241 as "not recognised … so we can add it". It now shows the P241 explanation; other codes' wording is unchanged.
+
+Checked against the genuine fixtures and all 100 Nikura 10% corpus cases: no false blocks.
+
+**N2 (founder decision, 20 Oct):** if the supplier gives only the code and there's no evidence of equipment wording, print the standard P241 wording. If supplier wording is present but can't be extracted reliably, block.
+
+**Tests:** `tests/p241-supplier-equipment-wording.js` now has 11 checks covering Unicode hyphens, wrapped lines, punctuation, legacy records and every message surface.
+
+## Real-case results (jsdom Builder harness; desktop emulation, not a device)
+
+| Case | v1.3.0 `3a9524e` | #233 Stage A (local) |
+|---|---|---|
+| Genuine Nikura Nag Champa 10% in candle wax, 90 mm circle, Scented Candle, 10% | H317, H412, **H316**, EUH208; five sensitisers; P261, P273, P302+P352, P333+P313, P501 added; P272, P280, P363 not added (note shown). **Blocked by H316** (GB-unsupported). | Identical |
+| Samantha's reported codes (P202, P240–P243, P308+P313, P310, P403+P235, as recorded in #257) on a **synthetic** Section 2.2 with H226/H304/H317 | All eight unrecognised; Step 3 and download blocked | P202, P240–P243 and P403+P235 recognised and printed; **P308+P313 and P310 still block** Step 3 and the download |
+
+Samantha's genuine SDS isn't available in the repository or the owner's records, so her case was checked only with the reported codes.
+
+**Nag Champa finding:** the genuine SDS's Section 2.2 lists "H316, Causes mild skin irritation." H316 isn't a GB CLP code, so this label stays blocked in production and in Stage A whatever happens with the P-statements. The 19 Oct production report on #233 didn't mention H316. That difference wasn't reproduced here and may come from how the text was copied.
+
+## Tests
+
+Run locally on the Stage A working tree (Node 24, jsdom), 19 Oct 2026: **32 of 32 pass**.
+- **The `npm test` list (except `tests/deno/run.js`):** smart-paste-section-scope, png-generation-before-credit, live-builder-export-hotfix, site-scroll-accessibility, app-static-audit, builder-regression, payg-download-accounting, payg-account-display, payg-pricing-checkout (about 313 s, the same on v1.3.0), payg-immediate-supply-consent, plan-checker-decision, account-next-payment, pause-duration-wording, preview-watermark-and-export-authorization, download-entitlement-sql, post-download-print-guidance, stage2-print-guidance, hazard-source-integrity.
+- **P-statement and safety suites:** d3-r4-precautionary-statements (updated, 7 checks), smart-paste-guidance-release-c, p280-precautionary-statement, slash-p-code-normalisation, p-statement-wording-correction-a, renderer-block-reason-messaging, h316-h401-gb-unsupported-removal, circle-hazard-line-width, label-render-fit-contract, blocked-overlay-and-download-guard-parity, builder-safety-baseline, gb-wording-and-mixed-code-correction, euh208-bounded-substance-extraction, pictogram-parity.
+
+**Not run:** the Deno edge-function tests (no edge function changed). **Not separately tested:** PNG, PDF and Composer files, a real browser, an iPhone. Those outputs are built from the renderer SVG that the updated test checks for both preview and export.
+
+## Open
+
+- P308+P313 "advice/attention": founder decision or authoritative confirmation needed. Existing library entries P313 and P332+P313 also print "advice/attention"; that's tracked in `docs/reports/P-LIBRARY-WORDING-AUDIT-2026-10-19.md` (on `fix/p-statement`).
+- P310 completion: REVIEW. Evidence needed on what counts as an appropriate GB source of emergency medical advice, or a supplier SDS that specifies one.
+- H316 on the genuine Nag Champa SDS: supplier confirmation needed (an existing, unchanged block).
+- Unrelated and separate: `tests/smart-paste-user-guidance-wording.js` already fails on `main` `b233631`. #263 changed the Smart Paste troubleshooting wording in `support.html`, so the test's "approved replacement wording" check no longer finds its expected text. This PR doesn't touch `support.html` or that test.

@@ -1707,7 +1707,7 @@ function resolveGbClpSignalWord(codes, suppliedSignal){
   if(ambiguous)return 'Warning';
   return '';
 }
-const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product container or label at hand'},{code:'P102',desc:'Keep out of reach of children'},{code:'P103',desc:'Read label before use'},{code:'P210',desc:'Keep away from heat, hot surfaces, sparks, open flames and other ignition sources. No smoking'},{code:'P233',desc:'Keep container tightly closed'},{code:'P260',desc:'Do not breathe vapours or dust'},{code:'P261',desc:'Avoid breathing vapours and dust'},{code:'P271',desc:'Use only outdoors or in a well-ventilated area'},{code:'P273',desc:'Avoid release to the environment'},{code:'P301+P310',desc:'IF SWALLOWED: immediately call a POISON CENTRE or doctor'},{code:'P301+P312',desc:'IF SWALLOWED: call a POISON CENTRE or doctor if unwell'},{code:'P302+P352',desc:'IF ON SKIN: wash with plenty of water'},{code:'P304+P340',desc:'IF INHALED: Remove person to fresh air and keep comfortable for breathing'},{code:'P305+P351+P338',desc:'IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing'},{code:'P312',desc:'Call a POISON CENTRE or doctor if you feel unwell'},{code:'P313',desc:'Get medical advice/attention'},{code:'P314',desc:'Get medical advice if you feel unwell'},{code:'P321',desc:'Specific treatment: see label'},{code:'P330',desc:'Rinse mouth'},{code:'P331',desc:'Do NOT induce vomiting'},{code:'P332+P313',desc:'If skin irritation occurs: get medical advice/attention'},{code:'P333+P313',desc:'If skin irritation or rash occurs: get medical advice'},{code:'P337+P313',desc:'If eye irritation persists: get medical advice'},{code:'P370+P378',desc:'In case of fire: use appropriate media for extinction'},{code:'P391',desc:'Collect spillage'},{code:'P403+P233',desc:'Store in a well-ventilated place. Keep container tightly closed'},{code:'P211',desc:'Do not spray on an open flame or other ignition source'},{code:'P501',desc:'Dispose of contents and container in accordance with local regulations'},
+const P_LIB=[{code:'P101',desc:'If medical advice is needed, have product container or label at hand'},{code:'P102',desc:'Keep out of reach of children'},{code:'P103',desc:'Read label before use'},{code:'P202',desc:'Do not handle until all safety precautions have been read and understood'},{code:'P210',desc:'Keep away from heat, hot surfaces, sparks, open flames and other ignition sources. No smoking'},{code:'P233',desc:'Keep container tightly closed'},{code:'P240',desc:'Ground and bond container and receiving equipment'},{code:'P241',desc:'Use explosion-proof equipment'},{code:'P242',desc:'Use non-sparking tools'},{code:'P243',desc:'Take action to prevent static discharges'},{code:'P260',desc:'Do not breathe vapours or dust'},{code:'P261',desc:'Avoid breathing vapours and dust'},{code:'P271',desc:'Use only outdoors or in a well-ventilated area'},{code:'P273',desc:'Avoid release to the environment'},{code:'P301+P310',desc:'IF SWALLOWED: immediately call a POISON CENTRE or doctor'},{code:'P301+P312',desc:'IF SWALLOWED: call a POISON CENTRE or doctor if unwell'},{code:'P302+P352',desc:'IF ON SKIN: wash with plenty of water'},{code:'P304+P340',desc:'IF INHALED: Remove person to fresh air and keep comfortable for breathing'},{code:'P305+P351+P338',desc:'IF IN EYES: Rinse cautiously with water for several minutes. Remove contact lenses, if present and easy to do. Continue rinsing'},{code:'P312',desc:'Call a POISON CENTRE or doctor if you feel unwell'},{code:'P313',desc:'Get medical advice/attention'},{code:'P314',desc:'Get medical advice if you feel unwell'},{code:'P321',desc:'Specific treatment: see label'},{code:'P330',desc:'Rinse mouth'},{code:'P331',desc:'Do NOT induce vomiting'},{code:'P332+P313',desc:'If skin irritation occurs: get medical advice/attention'},{code:'P333+P313',desc:'If skin irritation or rash occurs: get medical advice'},{code:'P337+P313',desc:'If eye irritation persists: get medical advice'},{code:'P370+P378',desc:'In case of fire: use appropriate media for extinction'},{code:'P391',desc:'Collect spillage'},{code:'P403+P233',desc:'Store in a well-ventilated place. Keep container tightly closed'},{code:'P403+P235',desc:'Store in a well-ventilated place. Keep cool'},{code:'P211',desc:'Do not spray on an open flame or other ignition source'},{code:'P501',desc:'Dispose of contents and container in accordance with local regulations'},
 // P280 (verified against the retained GB-CLP Regulation (EC) No 1272/2008,
 // Annex IV, Table 6.2, legislation.gov.uk, current in-force UK text) is a
 // SELECTABLE statement, not one fixed sentence -- only the items that
@@ -1726,6 +1726,10 @@ const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',produc
   // in label-render.js). p280Items: subset of LabelRenderer.P280_ITEMS keys;
   // p280Other: optional free-text extra item. Empty = no valid selection yet.
   p280Items:[],p280Other:'',
+  // P241 equipment words copied from the supplier's Section 2.2 by Smart
+  // Paste (LabelRenderer.extractP241Equipment): '' = none given, null =
+  // can't be verified (blocks), undefined = not extracted.
+  p241Equipment:undefined,
   // Owner decisions C3/C4: hazardFromExtraction is true only while the hazard
   // data on this label came from a successful Smart Paste extraction (it is
   // saved with the label). hazardSource is the product name, product type and
@@ -2238,8 +2242,10 @@ function closeSupport(){
 let _clpCodeHelpReturnFocus=null;
 function openClpCodeHelp(){
   const unsupported=(window._unsupportedCodes||[]).map(String);
-  const generic=(window._unrecognizedCodesGeneric||[]).map(String);
-  if(!unsupported.length&&!generic.length)return;
+  const allGeneric=(window._unrecognizedCodesGeneric||[]).map(String);
+  const p241Missing=allGeneric.includes('P241');
+  const generic=allGeneric.filter(c=>c!=='P241');
+  if(!unsupported.length&&!generic.length&&!p241Missing)return;
   const copy=document.getElementById('clp-code-help-copy');
   const overlay=document.getElementById('clp-code-help-overlay');
   if(!copy||!overlay)return;
@@ -2251,6 +2257,9 @@ function openClpCodeHelp(){
   }
   if(generic.length){
     paragraphs.push('CLPeasy could not identify <strong>'+g+'</strong>. This may be a copying error, a code that is not yet recognised by the service, or information from a different classification system.');
+  }
+  if(p241Missing){
+    paragraphs.push('<strong>P241</strong> (explosion-proof equipment): '+escapeBuilderText(clpP241WordingMessage().body));
   }
   paragraphs.push('CLPeasy cannot determine the correct replacement, remove the '+(unsupported.length+generic.length>1?'codes':'code')+', or substitute a different classification on the supplier\'s behalf. The label has therefore been blocked to avoid creating a label that may be incomplete or incorrect.');
   paragraphs.push('Check that you copied only Section 2.2 from the SDS for the correct product and concentration. If the '+(unsupported.length+generic.length>1?'codes are':'code is')+' shown there, ask your supplier for the current Great Britain-market SDS or written Great Britain CLP classification information.');
@@ -3176,6 +3185,7 @@ async function saveLabel(){
     pStatements:S.pStatements||'',textColour:S.textColour||'dark',showBorder:S.showBorder!==false,
     labelLang:document.getElementById('label-lang')?.value||'en',
     p280Items:Array.isArray(S.p280Items)?[...S.p280Items]:[],p280Other:S.p280Other||'',
+    p241Equipment:typeof S.p241Equipment==='string'?S.p241Equipment:undefined,
     hazardFSOverride:S.hazardFSOverride,scentFSOverride:S.scentFSOverride,
     bizNameFSOverride:S.bizNameFSOverride,hazardYOffset:S.hazardYOffset,
     typeFSOverride:S.typeFSOverride,sigFSOverride:S.sigFSOverride,
@@ -3282,6 +3292,9 @@ function loadLabelRecord(e){
   // rather than silently showing every protection item.
   S.p280Items=Array.isArray(e.p280Items)?[...e.p280Items]:[];
   S.p280Other=e.p280Other||'';
+  // An extracted label saved before p241Equipment existed restores undefined,
+  // so its P241 blocks until Smart Paste is run again (never base text).
+  S.p241Equipment=typeof e.p241Equipment==='string'?e.p241Equipment:undefined;
   // C3: restore the processed-extraction state. Labels saved from v12 carry
   // hazardFromExtraction. Older labels do not; for them the one field only a
   // successful Smart Paste extraction ever writes (sdsSignal, which Clear
@@ -4307,6 +4320,8 @@ function extractSDS(){
   if(pEl){pEl.value=pRaw.join(', ');}
   S.pStatements=pRaw.join(', ');
   S.pSelected=pRaw;
+  // P241: keep the supplier's own equipment words, never drop or choose them.
+  S.p241Equipment=pRaw.includes('P241')?LabelRenderer.extractP241Equipment(text):undefined;
   document.querySelectorAll('#p-chips .h-chip').forEach(chip=>{
     const code=chip.dataset.code||chip.textContent.trim();
     if(pRaw.includes(code)){chip.classList.add('selected');}else{chip.classList.remove('selected');}
@@ -4551,10 +4566,21 @@ function clpUnrecognisedCodesMessage(codes, escapeFn){
 // codes (that was a real bug: a maker with one confirmed-unsupported code
 // and one genuinely unrelated unrecognised code must be told about both,
 // not just whichever one this app currently treats as "more important").
+// P241 is in P_LIB, so it is only ever blocked because the supplier's
+// explosion-proof equipment wording couldn't be read exactly (see
+// LabelRenderer.buildP241Wording). Explain that, not "not recognised".
+function clpP241WordingMessage(){
+  return {
+    heading:'P241 needs the equipment wording from your SDS',
+    body:'This label includes P241 (explosion-proof equipment), but CLPeasy couldn\'t read the supplier\'s equipment wording exactly, or the label was saved before CLPeasy kept that wording. CLPeasy won\'t shorten or guess this statement. Paste the complete Section 2.2 from your supplier\'s SDS again. If your SDS doesn\'t list P241, clear the hazard data and start again. If this message remains, contact support@clpeasy.com.'
+  };
+}
 function clpCombinedCodeBlockMessage(unsupportedCodes, genericCodes, escapeFn){
   const parts=[];
+  const generic=(genericCodes||[]).filter(c=>c!=='P241');
   if(unsupportedCodes && unsupportedCodes.length) parts.push(clpUnsupportedCodesMessage(unsupportedCodes, escapeFn));
-  if(genericCodes && genericCodes.length) parts.push(clpUnrecognisedCodesMessage(genericCodes, escapeFn));
+  if(generic.length) parts.push(clpUnrecognisedCodesMessage(generic, escapeFn));
+  if((genericCodes||[]).includes('P241')) parts.push(clpP241WordingMessage());
   return parts;
 }
 function canLeaveApprovedBuilderStep(step){
@@ -4627,6 +4653,10 @@ function canLeaveApprovedBuilderStep(step){
     // saved label reopened here without ever completing the picker).
     if(pCodes.includes('P280') && !LabelRenderer.buildP280Wording({p280Items:S.p280Items,p280Other:S.p280Other})){
       alert('P280 needs at least one applicable protection item selected before continuing. Click the P280 chip to choose.');
+      return false;
+    }
+    if(pCodes.includes('P241') && !LabelRenderer.buildP241Wording({p241Equipment:S.p241Equipment,hazardFromExtraction:S.hazardFromExtraction})){
+      const m=clpP241WordingMessage();alert(m.heading+'\n\n'+m.body);
       return false;
     }
   }
@@ -5116,7 +5146,7 @@ function clearHazardData(){
   // Correction (2026-09): P280 sub-selections were not previously cleared,
   // leaving stale precautionary-statement wording selections behind after
   // a Clear even though P statements themselves were reset.
-  S.p280Items=[];S.p280Other='';
+  S.p280Items=[];S.p280Other='';S.p241Equipment=undefined;
   // Clear pictograms
   S.pictograms=[];
   document.querySelectorAll('.picto-btn').forEach(c=>c.classList.remove('selected'));
@@ -5366,6 +5396,7 @@ function buildSVG(forExport=false){
     hideEN15494:S.hideEN15494, labelLang:S.labelLang,
     showOnLabel:S.showOnLabel,omissionConfirmations:S.omissionConfirmations,
     p280Items:S.p280Items, p280Other:S.p280Other,
+    p241Equipment:S.p241Equipment, hazardFromExtraction:S.hazardFromExtraction,
   };
   // Exposed so updateLabel()'s fail-closed block message can look up
   // "what size WOULD fit this exact content" via LabelRenderer's own
@@ -5633,12 +5664,22 @@ function updateLabel(){
   // add codes the active regulatory profile doesn't support), while a
   // genuinely unrecognised code still offers the double-check/contact-
   // support path it always has.
-  const _blockBody = _codeBlockParts.length
-    ? _gbUnsupportedCodesFound.length && _genericUnrecognizedCodesFound.length
-      ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br>'+clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+' Double-check this code against your SDS Section 2.2, correct it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than print a code CLPeasy could not safely include on your label.</strong>'
+  // P241 is only ever "unrecognised" when its supplier equipment wording
+  // couldn't be read exactly: it gets its own explanation (never "so we can
+  // add it"); every other code keeps the wording below unchanged.
+  const _genericOtherFound = _genericUnrecognizedCodesFound.filter(c=>c!=='P241');
+  const _p241BlockBody = _genericUnrecognizedCodesFound.includes('P241')
+    ? escapeBuilderText(clpP241WordingMessage().body)+'<br><br><strong>CLPeasy has blocked the download rather than shorten or guess this statement.</strong>'
+    : '';
+  const _otherCodeBlockBody = _gbUnsupportedCodesFound.length && _genericOtherFound.length
+      ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br>'+clpUnrecognisedCodesMessage(_genericOtherFound, escapeBuilderText).body+' Double-check this code against your SDS Section 2.2, correct it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than print a code CLPeasy could not safely include on your label.</strong>'
       : _gbUnsupportedCodesFound.length
       ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br><strong>CLPeasy has blocked the download rather than remove, replace or print a code it cannot safely resolve for a Great Britain CLP label.</strong>'
-      : clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+'<br><br>Double-check this code against your SDS Section 2.2, correct it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
+      : _genericOtherFound.length
+      ? clpUnrecognisedCodesMessage(_genericOtherFound, escapeBuilderText).body+'<br><br>Double-check this code against your SDS Section 2.2, correct it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
+      : '';
+  const _blockBody = _codeBlockParts.length
+    ? [_otherCodeBlockBody, _p241BlockBody].filter(Boolean).join('<br><br>')
     : _isCustomSizeTooSmall
     ? getCustomSizeMinMsg()+'<br><br>To create a downloadable label, use the size controls below to '+(S.shape==='rectangle'?'set the long side to '+LabelRenderer.CUSTOM_RECT_LONG_MIN_MM+'mm or larger and the short side to '+LabelRenderer.CUSTOM_RECT_SHORT_MIN_MM+'mm or larger':'increase the custom size to '+LabelRenderer.CUSTOM_SIZE_MIN_MM+'mm or larger')+'.'
     : window._footerLegibilityClipped
