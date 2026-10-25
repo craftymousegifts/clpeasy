@@ -546,6 +546,13 @@
   <script defer data-domain="clpeasy.com" src="https://plausible.io/js/script.js"></script>
 <link rel="stylesheet" href="public-nav.css">
 <script src="public-nav.js" defer></script>
+<!-- Winter garland months: hide the red/teal brand bar and reserve the 24px
+     garland space from first paint, so the bar no longer flashes before
+     seasons.js (loaded at the end of the page) adds the garland. Uses the
+     same month rule as seasons.js init(); garland months are November and
+     December (particle 'trees+snowmen'). -->
+<script>(function(){var d=new Date(),m=d.getMonth(),left=new Date(d.getFullYear(),m+1,0).getDate()-d.getDate(),t=left<14?(m+1)%12:m;if(t===10||t===11)document.documentElement.classList.add('season-garland');})();</script>
+<style>html.season-garland .public-site-nav::before{display:none!important}html.season-garland body::before{content:"";position:fixed;top:0;left:0;right:0;height:24px;background:#10243a;z-index:9998;pointer-events:none}html.season-garland .public-site-nav{top:24px!important}html.season-garland #homepage-offer-banner{margin-top:100px!important}@media(max-width:480px){html.season-garland #homepage-offer-banner{margin-top:94px!important}}</style>
 </head>
 <body>
 
