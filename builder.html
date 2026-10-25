@@ -5604,6 +5604,15 @@ function updateLabel(){
   // findSmallestFittingSize(). Read-only: this never changes S.size itself:
   // the maker always makes that choice, in Step 1, themselves.
   const _sizeHelpsIfBlocked = window._labelBlockDownload && !_hasUnrecognizedCodes;
+  // Typing performance (25 Oct 2026): the size search renders the label at
+  // every candidate size and took seconds per keystroke on a phone, so the
+  // page appeared to hang. While a field is being typed in, the fit advice
+  // below is refreshed once typing pauses instead of on every key. The
+  // download block above is still recalculated immediately on every key.
+  const _deferFitAdvice = _sizeHelpsIfBlocked && !!window.event && window.event.type==='input';
+  clearTimeout(window._fitAdviceTimer);
+  if(_deferFitAdvice)window._fitAdviceTimer=setTimeout(updateLabel,400);
+  if(!_deferFitAdvice){
   const _sizeRec = (_sizeHelpsIfBlocked && window._lastLabelData && typeof LabelRenderer!=='undefined' && LabelRenderer.findSmallestFittingSize)
     ? LabelRenderer.findSmallestFittingSize(window._lastLabelData, {instanceId:'builder-main'})
     : null;
@@ -5693,6 +5702,7 @@ function updateLabel(){
       _labelWarnEl.style.display='none';
     }
   });
+  }
   // U5 fix (2026-08-03): Step 3 shouldn't offer a confirm-and-continue path when
   // the label is already known to be undownloadable at this size.
   if(typeof _refreshHazardReview==='function')_refreshHazardReview();

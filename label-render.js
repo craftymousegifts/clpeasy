@@ -502,9 +502,21 @@ const BCF_IMG={
 // ============================================================
 
 const _cvs=document.createElement('canvas'),_ctx=_cvs.getContext('2d');
+// Widths are memoised: the size search (findSmallestFittingSize) re-renders
+// the same text at the same sizes for every candidate label size, and
+// re-measuring made each keystroke block the page for seconds on circles.
+// Generic system fonts only, so a cached width never goes stale.
+const _measureCache=new Map();
 function measureText(txt,sizePx,bold,serif){
-  _ctx.font=`${bold?'700':'400'} ${sizePx}px ${serif?'serif':'sans-serif'}`;
-  return _ctx.measureText(txt).width;
+  const key=(bold?'b':'n')+(serif?'s':'a')+sizePx+'|'+txt;
+  let w=_measureCache.get(key);
+  if(w===undefined){
+    if(_measureCache.size>=50000)_measureCache.clear();
+    _ctx.font=`${bold?'700':'400'} ${sizePx}px ${serif?'serif':'sans-serif'}`;
+    w=_ctx.measureText(txt).width;
+    _measureCache.set(key,w);
+  }
+  return w;
 }
 // Ink bounds of one character (relative to its own start on the baseline):
 // left/right edge, height above and depth below the baseline. Uses the
