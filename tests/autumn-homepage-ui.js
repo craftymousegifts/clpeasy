@@ -12,7 +12,7 @@
 //    labelled as a region, with an accessible "Start your 14-day free trial"
 //    link that stays on CLPeasy's own site (a relative sign-up link, never
 //    another host such as a Netlify deploy preview);
-//  * September leaves are visible (opacity 0.72), run before 12s and are
+//  * September leaves are visible (opacity 0.45), run before 12s and are
 //    removed after the 12s stop, and never come back.
 //
 // The clock is pinned (9 September 2026, local time) and setTimeout /
@@ -29,7 +29,7 @@ assert(source.includes('ctx.bezierCurveTo('),
   'autumn particles must use a pointed curved leaf silhouette');
 assert(source.includes("ctx.strokeStyle = 'rgba(92,45,12,0.55)'"),
   'autumn leaves must draw a visible centre vein/stem');
-assert(source.includes("type.indexOf('leaves') === 0 ? '0.72' : '0.4'"),
+assert(source.includes("type.indexOf('leaves') === 0 || type === 'trees+snowmen') ? '0.45' : '0.3'"),
   "autumn leaves (and October's mixed leaves+pumpkins) must be clearly visible without changing other seasonal particles");
 assert(source.includes("particle: 'leaves+pumpkins'"),
   "October must use the mixed 'leaves+pumpkins' particle type, not plain leaves");
@@ -212,10 +212,10 @@ async function main() {
 
   // Particles: visible leaves, running before 12s, removed after, never back.
   let particles = doc.getElementById('clpeasy-particles');
-  assert(particles && particles.style.opacity === '0.72', 'September leaves visible at load');
+  assert(particles && particles.style.opacity === '0.45', 'September leaves visible at load');
   dom.window.__advanceClock(11000);
   particles = doc.getElementById('clpeasy-particles');
-  assert(particles && particles.style.opacity === '0.72', 'leaves still running before 12s');
+  assert(particles && particles.style.opacity === '0.45', 'leaves still running before 12s');
   dom.window.__advanceClock(1000);
   particles = doc.getElementById('clpeasy-particles');
   assert(particles && particles.style.opacity === '0', 'leaves fading out at 12s');

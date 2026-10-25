@@ -285,7 +285,9 @@
     if (particleResizeHandler) { window.removeEventListener('resize', particleResizeHandler); particleResizeHandler = null; }
     const canvas = document.createElement('canvas');
     canvas.id = 'clpeasy-particles';
-    canvas.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:${(type.indexOf('leaves') === 0 || type === 'trees+snowmen') ? '0.72' : '0.4'};`;
+    // Softer effect (25 Oct 2026, owner request) so it doesn't overpower the
+    // page: leaves/festive 0.72 -> 0.45, other particles 0.4 -> 0.3.
+    canvas.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:${(type.indexOf('leaves') === 0 || type === 'trees+snowmen') ? '0.45' : '0.3'};`;
     document.body.appendChild(canvas);
     particleCanvasEl = canvas;
     const ctx = canvas.getContext('2d');
@@ -313,7 +315,9 @@
         x: laneX(i),
         y: Math.random() * canvas.height,
         r: kind === 'snowflake' ? Math.random() * 2 + 6 : (kind === 'pumpkin' || isFestive) ? Math.random() * 4 + 8 : (kind === 'snow' ? Math.random() * 3 + 1 : Math.random() * 9 + 5),
-        speed: isFestive ? Math.random() * 1.2 + 1.8 : (kind === 'pumpkin' ? 0.75 : 1) * (Math.random() * 0.5 + 0.2),
+        // Festive slowed (25 Oct 2026): was 1.8-3.0 px/frame.
+        speed: isFestive ? Math.random() * 0.6 + 0.8 :
+           (kind === 'pumpkin' ? 0.75 : 1) * (Math.random() * 0.5 + 0.2),
         drift: (Math.random() - 0.5) * 0.4,
         rot: Math.random() * 360,
         rotSpeed: (Math.random() - 0.5) * 2,
