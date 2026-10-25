@@ -62,7 +62,7 @@ function makeWindow() {
     runScripts: 'dangerously',
     beforeParse(window) {
       // Fixed clock: 9 September 2026 -> 'leaves' particles, 18 of them,
-      // opacity 0.72 (matches tests/autumn-homepage-ui.js's own scenario A).
+      // opacity 0.45 (matches tests/autumn-homepage-ui.js's own scenario A).
       const RealDate = window.Date;
       const FIXED_MS = new RealDate(2026, 8, 9, 12, 0, 0).getTime();
       class FixedDate extends RealDate {
