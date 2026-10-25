@@ -122,7 +122,7 @@ function makeWindow() {
       window.__getRecord = () => currentRecord;
       window.__resetRecord = () => { currentRecord = []; };
       window.HTMLCanvasElement.prototype.getContext = () => ({
-        clearRect(){}, save(){}, restore(){},
+        clearRect(){}, save(){}, restore(){}, rect(){}, clip(){},
         translate(x, y) { currentRecord.push([x, y]); },
         rotate(){}, beginPath(){}, moveTo(){}, bezierCurveTo(){}, closePath(){}, fill(){},
         lineTo(){}, stroke(){}, ellipse(){}, arc(){}, fillText(){},
