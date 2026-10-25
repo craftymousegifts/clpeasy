@@ -4558,9 +4558,12 @@ function clpUnsupportedCodesMessage(codes, escapeFn){
 }
 function clpUnrecognisedCodesMessage(codes, escapeFn){
   const esc=escapeFn||(v=>v);
+  // CLP-007 (25 Oct 2026): P280/P241 copied as a code only, or with the
+  // supplier's equipment choice left open, get the approved wording first.
+  const supplierChoice=codes.some(c=>c==='P280'||c==='P241')?'This precautionary statement needs the full wording from your supplier’s SDS Section 2.2. Check the source document before continuing. ':'';
   if(S.hazardFromExtraction && S.sourceSection22)return {
     heading:'Supplier statement wording needs review',
-    body:'CLPeasy could not reliably preserve the complete supplier wording for: '+codes.map(esc).join(', ')+'. Check Section 2.2 for missing, conflicting or incorrectly copied statements and extract it again. A larger label will not fix this. CLPeasy has blocked export rather than substitute library wording or omit information. Contact support@clpeasy.com if you need help.'
+    body:supplierChoice+'CLPeasy could not reliably preserve the complete supplier wording for: '+codes.map(esc).join(', ')+'. Check Section 2.2 for missing, conflicting or incorrectly copied statements and extract it again. A larger label will not fix this. CLPeasy has blocked export rather than substitute library wording or omit information. Contact support@clpeasy.com if you need help.'
   };
   const plural=codes.length>1, codeWord=plural?'codes':'code';
   return {
