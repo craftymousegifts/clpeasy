@@ -1687,7 +1687,11 @@ function normaliseSdsSignalWord(value){
   return '';
 }
 function extractSdsSignalWord(text){
-  const m=String(text||'').match(/\bSignal\s+word\s*:?\s*(Danger|Warning|None|No\s+signal\s+word(?:\s+is\s+used)?)/i);
+  const t=String(text||'');
+  const m=t.match(/\bSignal\s+word\s*:?\s*(Danger|Warning|None|No\s+signal\s+word(?:\s+is\s+used)?)/i)
+    // Two-column PDFs copy the value on the line before an empty label
+    // ("Warning" / "Signal word:").
+    ||t.match(/^[ \t]*(Danger|Warning)[ \t]*\n[ \t]*Signal\s+words?\s*:?[ \t]*$/im);
   return normaliseSdsSignalWord(m?m[1]:'');
 }
 function resolveGbClpSignalWord(codes, suppliedSignal){
@@ -5551,8 +5555,12 @@ function updateLabel(){
   // drift into different signal-word rules.
   const _autoH=(S.hStatements||'').split(',').map(h=>h.trim()).filter(Boolean);
   {
-    const _sig=(S.hazardFromExtraction && S.sourceSection22)
-      ? S.sdsSignal : resolveGbClpSignalWord(_autoH,S.sdsSignal);
+    // The supplier's signal word wins, including an explicit "None". If no
+    // signal word could be read at all, fall back to the code-based resolver
+    // so a hazard label never silently loses its signal word.
+    const _supplierSignal=!!(S.hazardFromExtraction && S.sourceSection22) && (!!S.sdsSignal
+      || /\bSignal\s+words?\s*:?\s*(?:None|No\s+signal\s+word)/i.test(S.sourceSection22));
+    const _sig=_supplierSignal ? S.sdsSignal : resolveGbClpSignalWord(_autoH,S.sdsSignal);
     S.signal=_sig;
     document.getElementById('signal-warning').className='signal-btn'+(_sig==='Warning'?' sel-warn':'');
     document.getElementById('signal-danger').className='signal-btn'+(_sig==='Danger'?' sel-danger':'');
