@@ -19,6 +19,7 @@
 <script src="entitlement.js"></script>
 <script src="label-render.js"></script>
 <script src="sds-doc-check.js"></script>
+<script src="hazard-provenance.js"></script>
 <style>
 :root{
   --teal:#4C9BB0;--teal-dark:#3a7d8f;--teal-light:#d6eef4;
@@ -475,6 +476,7 @@ function renderGrid(){
             <span class="tag">${escapeHtml(e.productType||'—')}</span>
             <span class="tag">${escapeHtml(dimensionLabel(e))}</span>
             ${(window.SdsDocCheck&&!SdsDocCheck.isExportAllowed(e))?'<span class="tag tag-draft" title="Saved, but not ready to download: open it and complete the supplier document check in Step 3">Draft: document check needed</span>':''}
+            ${(window.HazardProvenance&&HazardProvenance.classify(e,window._clpLegacyRegister||{})==='unverified')?'<span class="tag tag-draft" title="'+HazardProvenance.BLOCK_MESSAGE.replace(/"/g,'&quot;')+'">'+HazardProvenance.TAG+'</span>':''}
           </div>
         </div>
       </div>
@@ -635,6 +637,12 @@ async function initPage(){
     showLibraryErrorState(e);
     return;
   }
+  // CLP-007: one-time registration of older manually created labels
+  // (hazard-provenance.js), then keep their frozen wording on the records.
+  try{
+    window._clpLegacyRegister=HazardProvenance.runMigration({ns:libNS(),records:LabelLibrary.getSaved(),wordingFor:LabelRenderer.libraryWordingFor});
+    await LabelLibrary.mutate(cur=>HazardProvenance.reconcile(cur,window._clpLegacyRegister)||LabelLibrary.NO_CHANGE);
+  }catch(err){console.log('Legacy hazard register:',err);}
   renderFolderTabs();
   renderGrid();
   // Checkpoint B, requirement 8: re-render safely whenever another tab

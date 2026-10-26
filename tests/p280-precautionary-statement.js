@@ -66,7 +66,7 @@ const emptyQuery = {
     // ── Shared renderer: buildP280Wording() itself ──────────────────────
     const rendererDom = new JSDOM('<!doctype html><html><body></body></html>', {
       runScripts: 'dangerously',
-      beforeParse(window) { stubCanvas(window); window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8')); }
+      beforeParse(window) { stubCanvas(window); window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','hazard-provenance.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8')); }
     });
     const LR = rendererDom.window.LabelRenderer;
     assert(Array.isArray(LR.P280_ITEMS) && LR.P280_ITEMS.length === 5, 'LabelRenderer.P280_ITEMS must offer exactly the 5 standard items');
@@ -175,7 +175,7 @@ const emptyQuery = {
       virtualConsole: builderVC,
       beforeParse(window) {
         stubCanvas(window);
-        window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-supplier-wording.js'),'utf8')); window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
+        window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-supplier-wording.js'),'utf8')); window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','hazard-provenance.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
         // Checkpoint B: builder.html now also loads label-library.js via
         // <script src="...">, stripped by the same generic regex above for
         // the same reason label-render.js already was -- injected
@@ -218,33 +218,21 @@ const emptyQuery = {
     assert(bwindow._labelBlockDownload, 'code-only P280 blocks the label: CLPeasy never invents protective equipment');
     assert(bwindow.eval('S.pSelected').includes('P501'), 'setup: Smart Paste should still extract an ordinary, non-excluded P-code (P501) normally');
 
-    // Manual entry: continue as a manually edited label (no Smart Paste source)
-    // without the supplier's P280, so the chip opens the picker as before.
+    // Continue as a label without a Smart Paste source and without the
+    // supplier's P280 (CLP-007: only an older, pre-lockdown label can be one).
     bwindow.eval("S.hazardFromExtraction=false;S.sourceSection22='';S.supplierWording=null;S.supplierWordingIssues=[];S.pSelected=S.pSelected.filter(c=>c!=='P280');S.pStatements=S.pSelected.join(', ');document.getElementById('p-statements').value=S.pStatements");
-    // 2. Manual entry: clicking the P280 chip opens the picker; confirming
-    // with nothing selected must be refused.
+    // 2. CLP-007 Smart Paste lockdown: the P280 chip and picker can no
+    // longer add P280 or choose its items (only Smart Paste, or an older
+    // label's own saved selection).
     const p280Chip = bdocument.querySelector('.h-chip[data-code="P280"]');
     assert(p280Chip, 'P280 chip is missing from Builder\'s P-statement chip list');
     bwindow.togglePChip(p280Chip, 'P280');
-    assert.strictEqual(bdocument.getElementById('p280Modal').classList.contains('show'), true, 'clicking the P280 chip must open the protection-item picker, not add it directly');
-    assert(!bwindow.eval('S.pSelected').includes('P280'), 'P280 must not be added to state merely by opening the picker');
-
-    bdocument.getElementById('p280-other-input').value = '';
+    assert.strictEqual(bdocument.getElementById('p280Modal').classList.contains('show'), false, 'the P280 picker must not open (Smart Paste lockdown)');
     bwindow.confirmP280Modal();
-    assert.strictEqual(bdocument.getElementById('p280-modal-error').style.display, 'block', 'confirming with nothing selected and no "other" text must show the validation error');
-    assert(!bwindow.eval('S.pSelected').includes('P280'), 'P280 must not be accepted with no applicable wording selected');
-    assert.strictEqual(bdocument.getElementById('p280Modal').classList.contains('show'), true, 'the picker must stay open after a rejected empty confirm');
-
-    // Now tick two items and confirm -- must succeed.
-    const glovesCb = bdocument.querySelector('#p280-item-opts input[value="gloves"]');
-    const eyeCb = bdocument.querySelector('#p280-item-opts input[value="eye"]');
-    assert(glovesCb && eyeCb, 'expected gloves/eye checkboxes in the P280 picker');
-    glovesCb.checked = true; eyeCb.checked = true;
-    bwindow.confirmP280Modal();
-    assert.strictEqual(bdocument.getElementById('p280Modal').classList.contains('show'), false, 'the picker must close after a valid confirm');
-    assert(bwindow.eval('S.pSelected').includes('P280'), 'a valid confirm must add P280 to Builder state');
-    assert.deepStrictEqual([...bwindow.eval('S.p280Items')].sort(), ['eye','gloves'], 'the confirmed selection must be stored on Builder state');
-    assert(p280Chip.classList.contains('selected'), 'P280 chip must visibly show as selected after a valid confirm');
+    assert(!bwindow.eval('S.pSelected').includes('P280'), 'P280 must not be added by the chip or picker');
+    assert.deepStrictEqual([...bwindow.eval('S.p280Items')], [], 'no P280 items can be chosen by hand');
+    // An older (pre-lockdown) label's own saved P280 selection.
+    bwindow.eval("S.p280Items=['gloves','eye'];S.p280Other=''");
 
     // Complete a full, valid label and confirm the render + Step 3 gate.
     //
@@ -275,6 +263,7 @@ const emptyQuery = {
     bdocument.getElementById('h-statements').value = 'H317';
     bdocument.getElementById('p-statements').value = 'P280';
     bdocument.getElementById('hazard-confirm').checked = true;
+    bwindow.eval("window._clpLegacyRegister=Object.assign({},window._clpLegacyRegister,{[HazardProvenance.fingerprint(_hazardProvenanceRecord())]:{wording:{},acceptedAt:'test'}})"); // CLP-007: a registered older label
     // saveLabel()/canLeaveApprovedBuilderStep() both call readForm(), which
     // re-reads these fields from the DOM (not from S directly) -- set the
     // DOM values too so readForm() doesn't wipe the S state just set above.
@@ -317,9 +306,10 @@ const emptyQuery = {
     // must not silently receive every option, and must be caught by the
     // Step 3 gate rather than sailing through.
     bwindow.eval(`S.pStatements='P280'; S.pSelected=['P280']; S.p280Items=[]; S.p280Other='';`);
+    bwindow.eval("window._clpLegacyRegister=Object.assign({},window._clpLegacyRegister,{[HazardProvenance.fingerprint(_hazardProvenanceRecord())]:{wording:{},acceptedAt:'test'}})"); // CLP-007: a registered older label
     bdocument.getElementById('hazard-confirm').checked = true; // #270: a reopened label needs its own hazard review first
     assert.strictEqual(bwindow.canLeaveApprovedBuilderStep(3), false, 'Step 3 must block progression when P280 is present with no valid selection (legacy-compatible, not silently accepted)');
-    assert(bwindow.eval('window.__lastAlert') && /P280/.test(bwindow.eval('window.__lastAlert')), 'Step 3 must explain that P280 needs a selection');
+    assert(bwindow.eval('window.__lastAlert') && /P280/.test(bwindow.eval('window.__lastAlert')), 'Step 3 must explain that P280 needs its protection items');
 
     // 5. p280Other is free text -- prove it is safe at every Builder output
     // boundary: reopened picker (input.value, not HTML interpolation),
@@ -327,13 +317,10 @@ const emptyQuery = {
     // (retained as the exact original plain value, never escaped at rest).
     bwindow.eval(`S.pSelected=['P280']; S.pStatements='P280'; S.p280Items=['gloves']; S.p280Other=${JSON.stringify(XSS_OTHER)};`);
 
-    // Reopening the picker must assign the raw value through input.value
-    // (which can never execute markup), not template/HTML interpolation.
+    // CLP-007: the picker can no longer be opened, so it is no longer an
+    // output boundary for p280Other.
     bwindow.openP280Modal();
-    const reopenedOtherInput = bdocument.getElementById('p280-other-input');
-    assert.strictEqual(reopenedOtherInput.value, XSS_OTHER, 'reopening the picker must restore the exact raw p280Other text via input.value');
-    assert(!bdocument.getElementById('p280-item-opts').querySelector('img'), 'no injected element may appear in the picker\'s own DOM when reopened with a malicious "other" value');
-    bwindow.closeP280Modal();
+    assert.strictEqual(bdocument.getElementById('p280Modal').classList.contains('show'), false, 'the P280 picker must not open (Smart Paste lockdown)');
 
     // Builder's real live preview (the Step 5 "Label summary" panel this used
     // to check has been removed -- the live preview is now the only Builder
@@ -404,6 +391,7 @@ const emptyQuery = {
       signal:'Warning', hStatements:'H317', pStatements:'P280', p280Items:['gloves','eye'],
       sensitisers:['Linalool'], pictograms:['exclamation'], textColour:'dark', showBorder:true,
       hideEN15494:false, labelLang:'en',
+      savedAt:'01/10/2026', // CLP-007: an older label saved before the Smart Paste lockdown
     };
     const p280LabelLegacy = { ...p280LabelValid, scentName:'Legacy Label No Selection', p280Items:undefined };
     const printDom = new JSDOM(printStrippedSource, {
@@ -423,7 +411,7 @@ const emptyQuery = {
         // evaluated below. Print Sheet Composer (Checkpoint C1) now requires
         // label-library.js for getSaved()/addToSheet() in print.html.
         try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
-        window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-supplier-wording.js'),'utf8')); window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
+        window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-supplier-wording.js'),'utf8')); window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','hazard-provenance.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
         window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
         window.alert = message => { window.__lastAlert = String(message); };
         window.confirm = () => true;
@@ -523,7 +511,7 @@ const emptyQuery = {
 
     if (printErrors.length) throw new Error('jsdom runtime errors (print): ' + printErrors.join('; '));
 
-    console.log('P280 selectable-statement checks passed (supplier P280 retained and code-only P280 blocked, picker requires a selection, save/reopen round-trips, Builder + Composer render identical selected wording, legacy no-selection labels are blocked not auto-filled, fit gate still applies)');
+    console.log('P280 selectable-statement checks passed (supplier P280 retained and code-only P280 blocked, manual picker disabled by the Smart Paste lockdown, save/reopen round-trips, Builder + Composer render identical selected wording, legacy no-selection labels are blocked not auto-filled, fit gate still applies)');
   } catch (error) {
     console.error(error.stack || error.message);
     process.exitCode = 1;

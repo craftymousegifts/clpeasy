@@ -95,7 +95,7 @@ function buildDom(){
         },
         drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
       });
-      window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
+      window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','hazard-provenance.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
       window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.HTMLElement.prototype.scrollIntoView=()=>{}; // jsdom has no scrollIntoView; a blocked label's fit notice is scrolled into view (care-icon edge rule blocks 52 mm candles)

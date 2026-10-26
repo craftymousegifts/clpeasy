@@ -14,7 +14,7 @@ const dom = new JSDOM(source, { url: 'https://local.clpeasy.test/builder.html', 
   beforeParse(w) {
     w.HTMLElement.prototype.scrollIntoView = () => {};
     w.HTMLCanvasElement.prototype.getContext = () => ({ font: '', measureText(t){ const s = Number((String(this.font).match(/([\d.]+)px/) || [])[1]) || 12; return { width: [...String(t)].reduce((a, c) => a + s * (/[MW@%]/.test(c) ? .82 : /[ilI1.,' ]/.test(c) ? .28 : .54), 0) }; }, drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data: [] }; } });
-    for (const f of ['sds-supplier-wording.js','label-render.js', 'sds-doc-check.js', 'sds-section-scope.js', 'label-library.js', 'entitlement.js']) w.eval(fs.readFileSync(path.join(__dirname, '..', f), 'utf8'));
+    for (const f of ['sds-supplier-wording.js','label-render.js', 'sds-doc-check.js', 'hazard-provenance.js', 'sds-section-scope.js', 'label-library.js', 'entitlement.js']) w.eval(fs.readFileSync(path.join(__dirname, '..', f), 'utf8'));
     w.alert = m => { w.__lastAlert = String(m); }; w.confirm = () => true; w.scrollTo = () => {};
     w.fetch = async () => ({ ok: true, json: async () => ({}) });
     w.supabase = { createClient: () => ({ auth: { getSession: async () => ({ data: { session: null } }), onAuthStateChange: () => ({ data: { subscription: { unsubscribe(){} } } }), signOut: async () => ({}) }, from: () => Object.create(emptyQuery), rpc: async () => ({ data: false, error: null }) }) };
@@ -59,7 +59,8 @@ function extract(text=ptext){
  const bd=new window.DOMParser().parseFromString(composer.svg,'image/svg+xml');
  const composerText=[...bd.querySelectorAll('text')].filter(n=>!n.closest('.clp-fit-block')).map(n=>[...n.childNodes].map(t=>t.textContent).join(' ')).join(' ');
  assert.equal(composerText,before,'Composer saved-data path equals Builder safety text');
- box('p-statements').value='';window.updateLabel();assert.equal(state().pStatements,'','cleared P field does not retain old codes');assert(window._labelBlockDownload,'source mismatch blocks instead of dropping original P wording');
+ box('p-statements').value='';window.updateLabel();assert.notEqual(state().pStatements,'','CLP-007: the P box is display-only -- emptying it cannot change the label');
+window.eval("S.pStatements=''");window.updateLabel();assert.equal(state().pStatements,'','cleared P state does not retain old codes');assert(window._labelBlockDownload,'source mismatch blocks instead of dropping original P wording');
  window.loadLabelRecord(saved);
  const legacy={...saved,sourceSection22:undefined,supplierWording:undefined,supplierWordingVersion:undefined,hStatements:'H317',pStatements:''};
  window.loadLabelRecord(legacy);assert(labelText().includes('May cause an allergic skin reaction.'));

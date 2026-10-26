@@ -137,7 +137,7 @@ async function openBuilder(opts){
     runScripts: 'dangerously', pretendToBeVisual: true, virtualConsole,
     beforeParse(window){
       window.HTMLCanvasElement.prototype.getContext = canvasStub();
-      window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
+      window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','hazard-provenance.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
       window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
@@ -229,7 +229,7 @@ async function openComposer(opts){
       window.HTMLCanvasElement.prototype.getContext = canvasStub();
       window.HTMLCanvasElement.prototype.toDataURL = () => 'data:image/png;base64,AA==';
       try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
-      window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
+      window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','hazard-provenance.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
       window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
@@ -258,6 +258,7 @@ function candleFixture(overrides){
     bizAddress:'1 Test Street', bizPhone:'00000000000', bizWebsite:'', netWeight:'220g', batchNum:'B001', burnTime:'20 hrs',
     signal:'Warning', hStatements:'H315', pStatements:'', sensitisers:[], pictograms:['exclamation'],
     textColour:'dark', showBorder:true, hideEN15494:false, labelLang:'en',
+    savedAt:'01/10/2026', // CLP-007: an older label saved before the Smart Paste lockdown
   }, overrides), '10%');
 }
 

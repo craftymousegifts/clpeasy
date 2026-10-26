@@ -1043,7 +1043,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <details class="help-faq"><summary>Where do I find my SDS sheet?</summary><p>On your fragrance supplier's website — usually on the individual product page. Look for a Download SDS or Safety Data Sheet link. Contact your supplier if you can't find it.</p></details>
       <details class="help-faq"><summary>What is EUH208?</summary><p>EUH208 means "Contains [substance name] — may produce an allergic reaction." You need it if your fragrance contains certain sensitiser substances above the threshold level. Your SDS Section 2.2 will tell you if it applies.</p></details>
       <details class="help-faq"><summary>What size label should I use?</summary><p>CLPeasy supports circle and square labels from 52mm, and rectangles from 52mm on the long side and 36mm on the short side. This is a CLPeasy minimum, not a universal GB CLP legal label-size rule — the space needed depends on the required information. 63mm suits many larger jars. The Builder checks that everything fits at a readable size before you can download.</p></details>
-      <details class="help-faq"><summary>Smart Paste didn't extract everything correctly</summary><p>Make sure you copied only Section 2.2 of the SDS. If it still doesn't work, use the H statement chips and sensitiser library to enter the data manually.</p></details>
+      <details class="help-faq"><summary>Smart Paste didn't extract everything correctly</summary><p>Make sure you copied the complete Section 2.2 from your supplier's current SDS, then extract again. Hazard and precautionary statements come only from Smart Paste and can't be chosen or typed in by hand. If the result still doesn't match your SDS, don't use the label. Contact support.</p></details>
       <details class="help-faq"><summary>Can I use this on my phone?</summary><p>Yes — CLPeasy works on iPhone and Android. PNG files save to your camera roll and SVG files save to your Files app.</p></details>
       <details class="help-faq"><summary>What's the difference between Pay As You Go and Easy Start Unlimited?</summary><p>Pay As You Go is a one-off £4.99 pack of downloads (5 + 3 free during the 2026 launch offer) that never expire — buy another pack whenever you need more. Easy Start Unlimited gives you unlimited downloads while you're subscribed: £9.99/month (£8.99/month until 31 December 2026) or £89/year. Both give clean, watermark-free labels, the full label builder and A4 print sheets. Every account starts with a 14-day free trial — no card needed.</p></details>
     </div>
@@ -1599,6 +1599,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <script src="guide-me.js"></script>
 <script src="optional-label-items.js"></script>
 <script src="sds-doc-check.js"></script>
+<script src="hazard-provenance.js"></script>
 <script src="sds-section-scope.js"></script>
 <script src="sds-supplier-wording.js"></script>
 <script src="sds-source-suitability.js"></script>
@@ -2482,6 +2483,23 @@ function showSavedLibraryErrorState(err){
 // branch above). Requirement 8: also registers the single onChange
 // handler that keeps the saved-label panel in sync with other tabs
 // without ever touching in-progress Step 1-5 form state.
+// CLP-007: one-time registration of older manually created labels (frozen
+// after the first run for this namespace), then keep their frozen wording on
+// the records. Never blocks the library from loading.
+async function _initLegacyHazardRegister(){
+  try{
+    window._clpLegacyRegister=HazardProvenance.runMigration({ns:libNS(),records:LabelLibrary.getSaved(),wordingFor:LabelRenderer.libraryWordingFor});
+    await LabelLibrary.mutate(cur=>HazardProvenance.reconcile(cur,window._clpLegacyRegister)||LabelLibrary.NO_CHANGE);
+  }catch(err){console.log('Legacy hazard register:',err);}
+}
+function _hazardProvenanceRecord(){
+  return {hStatements:S.hStatements,pStatements:S.pStatements,signal:S.signal,pictograms:S.pictograms,sensitisers:S.sensitisers,
+    p280Items:S.p280Items,p280Other:S.p280Other,hazardFromExtraction:!!S.hazardFromExtraction};
+}
+// Hazard data that came neither from Smart Paste nor from a registered older label.
+function _hazardUnverified(){
+  return HazardProvenance.classify(_hazardProvenanceRecord(),window._clpLegacyRegister||{})==='unverified';
+}
 async function initSavedLabelLibrary(){
   showSavedLibraryLoadingState();
   try{
@@ -2491,6 +2509,7 @@ async function initSavedLabelLibrary(){
     showSavedLibraryErrorState(err);
     return;
   }
+  await _initLegacyHazardRegister();
   renderSaved();
   populateLibraryDropdown();
   try{ _clpHandleOpenParam(); }catch(e){}
@@ -3092,7 +3111,7 @@ document.addEventListener('click',function(e){
 // existed" (see normalizeLabel's own doc comment). Existing saved labels
 // are never rewritten to this version automatically; they keep loading,
 // editing, saving and printing correctly via normalizeLabel's defaults.
-const LABEL_SCHEMA_VERSION=1;
+const LABEL_SCHEMA_VERSION=2; // 2 = saved after the CLP-007 Smart Paste lockdown (hazard-provenance.js)
 
 // Checkpoint B, requirement 3: which saved record (if any) the wizard is
 // currently editing. Set when an existing label is opened (loadLabelRecord
@@ -3192,6 +3211,7 @@ async function saveLabel(){
     pStatements:S.pStatements||'',textColour:S.textColour||'dark',showBorder:S.showBorder!==false,
     labelLang:document.getElementById('label-lang')?.value||'en',
     p280Items:Array.isArray(S.p280Items)?[...S.p280Items]:[],p280Other:S.p280Other||'',
+    legacyWording:S.legacyWording||null,
     hazardFSOverride:S.hazardFSOverride,scentFSOverride:S.scentFSOverride,
     bizNameFSOverride:S.bizNameFSOverride,hazardYOffset:S.hazardYOffset,
     typeFSOverride:S.typeFSOverride,sigFSOverride:S.sigFSOverride,
@@ -3314,6 +3334,8 @@ function loadLabelRecord(e){
   if(S.supplierWording&&!S.sdsSignal)S.sdsSignal=extractSdsSignalWord(S.sourceSection22);
   if(S.supplierWording&&!S.sdsSignal&&!S.supplierWordingIssues.includes('Signal word')&&resolveGbClpSignalWord(LabelRenderer.extractHazardCodesFromText(S.sourceSection22),'')&&!/\bSignal\s+words?\s*:?\s*(?:None|No\s+signal\s+word)/i.test(S.sourceSection22))S.supplierWordingIssues=[...S.supplierWordingIssues,'Signal word'];
   S.supplierWordingVersion=S.supplierWording?(e.supplierWordingVersion||1):null;
+  // CLP-007: an older manually created label keeps its frozen wording.
+  {const _lg=HazardProvenance.legacyEntry(e,window._clpLegacyRegister||{});S.legacyWording=_lg?(_lg.wording||{}):null;}
   // C4: the reopened hazard data belongs to this label's saved product name,
   // product type and fragrance load.
   _snapshotHazardSource({name:e.scentName,type:e.productType,load:e.fragLoad});
@@ -3352,9 +3374,10 @@ function loadLabelRecord(e){
     syncPictogramsFromH();
   }
   onProductTypeChange();renderTags();updateLabel();
-  // C3: same lock state as straight after a successful extraction (and
-  // unlocked for manual or no hazard data, even if another label was locked).
-  lockHazardFields(!!S.hazardFromExtraction&&_hasStep3HazardData());
+  // C3: same lock state as straight after a successful extraction. CLP-007:
+  // any saved hazard data (extracted, older manual or unverified) keeps Smart
+  // Paste locked until Clear; manual H/P entry is never available.
+  lockHazardFields(_hasStep3HazardData());
   goToStep(1);
   // Regression fix (2026-09-05, reported against Preview #105 commit 6087b05):
   // renderSaved() is the ONLY place that computes and applies the contextual
@@ -3687,7 +3710,7 @@ function init(){
   // Ensure hazard data is always clear on page load — never cached
   S.signal=''; S.sdsSignal=''; S.pictograms=[]; S.hSelected=[]; S.pSelected=[]; S.sensitisers=[];
   S.hStatements=''; S.pStatements='';
-  S.hazardFromExtraction=false; S.hazardSource=null; S.sourceSection22='';S.supplierWording=null;S.supplierSupplemental=[];S.supplierWordingIssues=[];S.supplierWordingVersion=null;
+  S.hazardFromExtraction=false; S.hazardSource=null; S.sourceSection22='';S.supplierWording=null;S.supplierSupplemental=[];S.supplierWordingIssues=[];S.supplierWordingVersion=null;S.legacyWording=null;
   lockHazardFields(false);
   updateLabel();
 }
@@ -3803,13 +3826,14 @@ function _requiredLabelContentMessage(){
 }
 function _downloadAllowed(){
   const checked=document.getElementById('verify-checkbox')?.checked;
-  return !!checked && _requiredLabelContent().complete && !_missingBusinessDetails().length && !window._labelBlockDownload && !_hazardReviewRequired() && SdsDocCheck.isExportAllowed(_sdsDocRecord());
+  return !!checked && _requiredLabelContent().complete && !_missingBusinessDetails().length && !window._labelBlockDownload && !_hazardReviewRequired() && !_hazardUnverified() && SdsDocCheck.isExportAllowed(_sdsDocRecord());
 }
 function _downloadBlockedMessage(){
   const businessMessage=_businessDetailsBlockedMessage();
   if(businessMessage)return businessMessage;
   const contentMessage=_requiredLabelContentMessage();
   if(contentMessage)return contentMessage;
+  if(_hazardUnverified())return HazardProvenance.BLOCK_MESSAGE;
   if(_hazardReviewRequired())return _hazardReviewMessage();
   if(S.hazardFromExtraction && S.sourceSection22 && window._unrecognizedCodesGeneric?.length)return clpUnrecognisedCodesMessage(window._unrecognizedCodesGeneric).body;
   const invalid=(Array.isArray(S.pictograms)?S.pictograms:[S.pictograms]).filter(key=>!LabelRenderer.isValidPictogramKey(key));
@@ -3873,7 +3897,11 @@ function toggleLib(id,tog){
   el.style.display=vis?'none':'block';
   tog.textContent=(vis?'▼ Show':'▲ Hide')+tog.textContent.slice(tog.textContent.indexOf(' ',2));
 }
-function toggleHChip(el,code){el.classList.toggle('selected');const i=S.hSelected.indexOf(code);if(i>-1)S.hSelected.splice(i,1);else S.hSelected.push(code);document.getElementById('h-statements').value=S.hSelected.join(', ');syncPictogramsFromH();}
+// CLP-007 Smart Paste lockdown: H/P statements and P280 items come only from
+// Smart Paste. The chip and P280 handlers below are kept for reference but
+// do nothing (the chips are also not clickable).
+const MANUAL_HAZARD_ENTRY_DISABLED=true;
+function toggleHChip(el,code){if(MANUAL_HAZARD_ENTRY_DISABLED)return;el.classList.toggle('selected');const i=S.hSelected.indexOf(code);if(i>-1)S.hSelected.splice(i,1);else S.hSelected.push(code);document.getElementById('h-statements').value=S.hSelected.join(', ');syncPictogramsFromH();}
 // P280 ("Wear protective gloves/protective clothing/eye protection/face
 // protection/hearing protection/…") is a SELECTABLE GB-CLP statement, not
 // one fixed sentence -- only the items that actually apply to the finished
@@ -3885,6 +3913,7 @@ function toggleHChip(el,code){el.classList.toggle('selected');const i=S.hSelecte
 // and clears its saved selection. Every other P-code's toggle behaviour is
 // unchanged below.
 function togglePChip(el,code){
+  if(MANUAL_HAZARD_ENTRY_DISABLED)return;
   if(code==='P280'){
     if(S.pSelected.includes('P280')){
       el.classList.remove('selected');
@@ -3900,6 +3929,7 @@ function togglePChip(el,code){
   el.classList.toggle('selected');const i=S.pSelected.indexOf(code);if(i>-1)S.pSelected.splice(i,1);else S.pSelected.push(code);document.getElementById('p-statements').value=S.pSelected.join(', ');updateLabel();
 }
 function openP280Modal(){
+  if(MANUAL_HAZARD_ENTRY_DISABLED)return;
   const opts=document.getElementById('p280-item-opts');
   opts.innerHTML=LabelRenderer.P280_ITEMS.map(it=>`
     <label class="p280-item-row">
@@ -3912,6 +3942,7 @@ function openP280Modal(){
 }
 function closeP280Modal(){document.getElementById('p280Modal').classList.remove('show');}
 function confirmP280Modal(){
+  if(MANUAL_HAZARD_ENTRY_DISABLED){closeP280Modal();return;}
   const checked=[...document.querySelectorAll('#p280-item-opts input[type="checkbox"]:checked')].map(cb=>cb.value);
   const other=(document.getElementById('p280-other-input').value||'').trim();
   // At least one applicable item (a standard tick, or a genuine "other")
@@ -4431,7 +4462,7 @@ function extractSDS(){
   // ── LOCK & FINISH ─────────────────────────────────────────────────────────
   // C3/C4: this hazard data now comes from a successful extraction, for the
   // SDS of the product currently named in Step 2.
-  S.hazardFromExtraction=true;
+  S.hazardFromExtraction=true;S.legacyWording=null;
   _snapshotHazardSource();
   updateSdsSourceSuitabilityWarning();
   updateLabel();
@@ -4573,9 +4604,12 @@ function clpUnrecognisedCodesMessage(codes, escapeFn){
     body:supplierChoice+'CLPeasy could not reliably preserve the complete supplier wording for: '+codes.map(esc).join(', ')+'. Check Section 2.2 for missing, conflicting or incorrectly copied statements and extract it again. A larger label will not fix this. CLPeasy has blocked export rather than substitute library wording or omit information. Contact support@clpeasy.com if you need help.'
   };
   const sep=escapeFn?'<br><br>':'\n\n';
-  const legacyP241=codes.includes('P241')?'P241: '+LEGACY_P241_GUIDANCE.join(sep):'';
-  if(legacyP241)codes=codes.filter(c=>c!=='P241');
-  if(legacyP241&&!codes.length)return {heading:'A code can\'t be added to this label',body:legacyP241};
+  // CLP-007: the same approved guidance for every code that needs the
+  // supplier's own wording (P241, P370+P378, P321), each named once.
+  const _needsSupplier=codes.filter(c=>LabelRenderer.SUPPLIER_WORDING_REQUIRED.includes(c));
+  const legacyP241=_needsSupplier.map(c=>c+': '+LEGACY_P241_GUIDANCE.join(sep)).join(sep);
+  if(legacyP241)codes=codes.filter(c=>!_needsSupplier.includes(c));
+  if(legacyP241&&!codes.length)return {heading:_needsSupplier.length>1?'Some codes can\'t be added to this label':'A code can\'t be added to this label',body:legacyP241};
   const plural=codes.length>1, codeWord=plural?'codes':'code';
   return {
     heading:(plural||legacyP241)?'Some codes can\'t be added to this label':'A code can\'t be added to this label',
@@ -4637,6 +4671,7 @@ function canLeaveApprovedBuilderStep(step){
     if(_hazardReviewRequired()){alert(_hazardReviewMessage());return false;}
     const confirmed=!!document.getElementById('hazard-confirm')?.checked;
     if(!(S.hStatements||'').trim()){alert('Please extract and review the hazard data from your supplier SDS before continuing.');return false;}
+    if(_hazardUnverified()){alert(HazardProvenance.BLOCK_MESSAGE);return false;}
     if(!_requireSdsDoc())return false;
     if(!confirmed){alert('Please confirm that the extracted hazard data matches your supplier SDS before continuing.');document.getElementById('hazard-confirm')?.focus();return false;}
     const hCodes=(S.hStatements||'').split(',').map(v=>v.trim()).filter(Boolean);
@@ -4650,7 +4685,7 @@ function canLeaveApprovedBuilderStep(step){
       const parts=[...(gbUnsupported.length?[clpUnsupportedCodesMessage(gbUnsupported)]:[]),clpUnrecognisedCodesMessage(S.supplierWordingIssues)];
       alert(parts.map(p=>p.heading+'\n\n'+p.body).join('\n\n'));return false;
     }
-    const unknown=[...hCodes.filter(code=>sourceActive?!hasSupplierText(code):!H_LIB.some(x=>x.code===code)),...pCodes.filter(code=>sourceActive?!hasSupplierText(code):!P_LIB.some(x=>x.code===code))];
+    const unknown=[...hCodes.filter(code=>sourceActive?!hasSupplierText(code):!H_LIB.some(x=>x.code===code)),...pCodes.filter(code=>sourceActive?!hasSupplierText(code):(!P_LIB.some(x=>x.code===code)||LabelRenderer.SUPPLIER_WORDING_REQUIRED.includes(code)))];
     if(unknown.length){
       // Structured failure reason: a CONFIRMED code unsupported under the
       // active regulatory profile (LabelRenderer.GB_UNSUPPORTED_CODES) gets
@@ -4674,7 +4709,7 @@ function canLeaveApprovedBuilderStep(step){
     // for any path that could otherwise leave it incomplete, e.g. a legacy
     // saved label reopened here without ever completing the picker).
     if(pCodes.includes('P280') && !hasSupplierText('P280') && !LabelRenderer.buildP280Wording({p280Items:S.p280Items,p280Other:S.p280Other})){
-      alert('P280 needs at least one applicable protection item selected before continuing. Click the P280 chip to choose.');
+      alert('P280 needs the applicable protection items from your supplier\'s SDS before continuing. Clear the hazard data and use Smart Paste with Section 2.2 of your supplier\'s SDS.');
       return false;
     }
   }
@@ -4936,7 +4971,7 @@ function _hazardReviewRequired(){return _hazardReviewReasons().length>0;}
 function _hazardReviewMessage(){
   const r=_hazardReviewReasons();
   if(r.length===1&&r[0]==='name')return 'You changed the product name after the hazard data was entered. Please confirm whether this product uses the same fragrance oil and SDS before continuing.';
-  return 'You changed the '+r.map(k=>({name:'product name',type:'product type',load:'fragrance load'})[k]).join(' and ')+' after the hazard data was entered. Please re-check the hazard data against your supplier SDS/CLP information, or clear it and extract again, before continuing.';
+  return 'You changed the '+r.map(k=>({name:'product name',type:'product type',load:'fragrance load'})[k]).join(' and ')+' after the hazard data was entered. This can change the hazard information, so it needs a fresh Smart Paste. Choose "Clear hazard data and extract again", or change it back.';
 }
 function _refreshHazardReview(){
   if(!_hasStep3HazardData())S.hazardSource=null;
@@ -4962,19 +4997,23 @@ function _refreshHazardReview(){
     if(reasons.includes('load'))parts.push('the fragrance load from "'+(src.loadLabel||'not entered')+'" to "'+(cur.load.trim()||'not entered')+'"');
     p.textContent='The hazard data on this label was entered before you changed '+parts.join(' and ')+'. '+
       (nameOnly?'If this product uses a different fragrance oil or SDS, that hazard data must not be used.'
-        :'The hazard statements, pictograms, signal word, precautionary statements and sensitisers can differ with the product type and fragrance load. Check them against your supplier SDS/CLP information before continuing.');
+        :'This can change the hazard information, so it needs a fresh Smart Paste. Choose "Clear hazard data and extract again", or change it back.');
     const keep=document.createElement('button');keep.type='button';keep.className='hazard-review-keep';
     keep.textContent=nameOnly?'Same fragrance oil and SDS: keep hazard data':'I have re-checked it: keep hazard data';
     keep.onclick=confirmSameHazardSource;
     const clear=document.createElement('button');clear.type='button';clear.className='hazard-review-clear';
     clear.textContent=nameOnly?'Different fragrance or SDS: clear hazard data':'Clear hazard data and extract again';
     clear.onclick=useNewHazardSource;
-    [keep,clear].forEach(b=>{b.style.cssText='margin:4px 8px 0 0;padding:7px 12px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;border:1.5px solid var(--teal);background:white;color:var(--teal-dark);';});
-    box.append(h,p,keep,clear);
+    // CLP-007 (founder decision 7): a product type or fragrance load change
+    // needs fresh Smart Paste -- the hazard data can no longer be kept.
+    const buttons=nameOnly?[keep,clear]:[clear];
+    buttons.forEach(b=>{b.style.cssText='margin:4px 8px 0 0;padding:7px 12px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;border:1.5px solid var(--teal);background:white;color:var(--teal-dark);';});
+    box.append(h,p,...buttons);
   });
 }
 function confirmSameHazardSource(){
   const reasons=_hazardReviewReasons();
+  if(reasons.includes('type')||reasons.includes('load'))return; // CLP-007: fresh Smart Paste only
   _snapshotHazardSource();
   if(reasons.includes('type')||reasons.includes('load')){
     // Keeping hazard data across a product-type/fragrance-load change needs
@@ -5022,7 +5061,9 @@ function lockHazardFields(lock){
   ids.forEach(id=>{
     const el=document.getElementById(id);
     if(!el)return;
-    el.readOnly=lock;
+    // CLP-007: the H/P boxes are never editable (display only); `lock` now
+    // only decides whether Smart Paste can be used.
+    el.readOnly=lock||id!=='smart-paste-input';
     el.style.opacity=lock?'0.6':'1';
     el.style.pointerEvents=lock?'none':'auto';
     el.style.background=lock?'#F8FAFC':'';
@@ -5045,9 +5086,11 @@ function lockHazardFields(lock){
   // left the underlying H_LIB/P_LIB chip grids -- which drive S.hSelected/
   // S.pSelected and, via syncPictogramsFromH(), the auto-derived pictograms
   // -- independently clickable after Smart Paste extraction.
+  // CLP-007: the libraries stay viewable but are never selectable (same
+  // locked look as after extraction).
   document.querySelectorAll('#h-chips .h-chip,#p-chips .h-chip').forEach(el=>{
-    el.style.pointerEvents=lock?'none':'auto';
-    el.style.opacity=lock?'0.6':'1';
+    el.style.pointerEvents='none';
+    el.style.opacity='0.6';
   });
   // Lock/unlock extract button
   const extractBtn=document.querySelector('.btn-extract');
@@ -5140,7 +5183,7 @@ function clearHazardData(){
   // an unwanted side effect of clicking Clear.
   const hzCb=document.getElementById('hazard-confirm');
   if(hzCb)hzCb.checked=false;
-  S.hazardFromExtraction=false;S.hazardSource=null;S.sourceSection22='';S.supplierWording=null;S.supplierSupplemental=[];S.supplierWordingIssues=[];S.supplierWordingVersion=null;
+  S.hazardFromExtraction=false;S.hazardSource=null;S.sourceSection22='';S.supplierWording=null;S.supplierSupplemental=[];S.supplierWordingIssues=[];S.supplierWordingVersion=null;S.legacyWording=null;
   updateSdsSourceSuitabilityWarning();
   // Clear signal word
   S.signal='';
@@ -5378,8 +5421,8 @@ function readForm(){
   S.netWeight=document.getElementById('net-weight')?.value||'';
   S.fragLoad=document.getElementById('frag-load')?.value||'';
   S.burnTime=document.getElementById('burn-time')?.value||'';
-  S.hStatements=document.getElementById('h-statements')?.value||'';
-  const _pField=document.getElementById('p-statements'); if(_pField)S.pStatements=_pField.value||''; // an explicit clear must not retain old codes
+  // CLP-007: the H/P boxes are display-only. S.hStatements/S.pStatements are
+  // set only by Smart Paste, by reopening a saved label and by Clear.
   S.bizName=document.getElementById('biz-name')?.value||'';
   S.bizAddress=document.getElementById('biz-address')?.value||'';
   S.bizPhone=document.getElementById('biz-phone')?.value||'';
@@ -5415,6 +5458,7 @@ function buildSVG(forExport=false){
     hideEN15494:S.hideEN15494, labelLang:S.labelLang,
     showOnLabel:S.showOnLabel,omissionConfirmations:S.omissionConfirmations,
     p280Items:S.p280Items, p280Other:S.p280Other,
+    legacyWording:S.legacyWording||null,
   };
   // Exposed so updateLabel()'s fail-closed block message can look up
   // "what size WOULD fit this exact content" via LabelRenderer's own
@@ -5693,10 +5737,11 @@ function updateLabel(){
   // genuinely unrecognised code still offers the double-check/contact-
   // support path it always has.
   // CLP-007: an older label (no saved supplier wording) whose only code
-  // issue is P241 shows just the approved P241 guidance, which already says
-  // the label stays blocked.
+  // issues need the supplier's own wording (P241, and since the Smart Paste
+  // lockdown P370+P378 / P321) shows just the approved guidance, which
+  // already says the label stays blocked.
   const _legacyP241OnlyBlock = !(S.hazardFromExtraction && S.sourceSection22)
-    && [...new Set(_genericUnrecognizedCodesFound||[])].join()==='P241';
+    && (u=>u.length>0 && u.every(c=>LabelRenderer.SUPPLIER_WORDING_REQUIRED.includes(c)))([...new Set(_genericUnrecognizedCodesFound||[])]);
   const _blockBody = _codeBlockParts.length
     ? _gbUnsupportedCodesFound.length && _genericUnrecognizedCodesFound.length
       ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br>'+clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+(_legacyP241OnlyBlock?'':' Double-check this code against your SDS Section 2.2, correct it if it was entered in error, or contact support@clpeasy.com so we can review the source text.')+'<br><br><strong>CLPeasy has blocked the download rather than print a code CLPeasy could not safely include on your label.</strong>'
@@ -6615,6 +6660,9 @@ async function showLabelHistory(encodedScent,encodedProduct){
   // pre-existing design not touched by this checkpoint's id work).
   let result;
   try{
+    // CLP-007: a version whose hazard information didn't come from Smart
+    // Paste (and isn't a registered older label) is never restored.
+    if(HazardProvenance.classify(match,window._clpLegacyRegister||{})==='unverified'){alert(HazardProvenance.RESTORE_REFUSED);return;}
     result=await LabelLibrary.mutate(function(current){
       const idx=current.findIndex(x=>x.scentName===scent&&x.productType===product);
       if(idx<0)return LabelLibrary.NO_CHANGE;

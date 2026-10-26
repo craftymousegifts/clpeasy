@@ -80,7 +80,13 @@ const server = http.createServer((req, res) => {
           builderMsgHtml: (window._unrecognizedCodesGeneric || []).length ? clpUnrecognisedCodesMessage(window._unrecognizedCodesGeneric, escapeBuilderText) : null
         };
       }
-      async function reopen(rec) { loadLabelRecord(Object.assign({}, base, rec)); await sleep(300); return snap(); }
+      // CLP-007 lockdown: an older label without Smart Paste data is one
+      // registered before the lockdown (hazard-provenance.js).
+      async function reopen(rec) {
+        const r = Object.assign({}, base, rec);
+        if (!HazardProvenance.isExtracted(r)) window._clpLegacyRegister = Object.assign({}, window._clpLegacyRegister, { [HazardProvenance.fingerprint(r)]: { wording: {}, acceptedAt: 'test' } });
+        loadLabelRecord(r); await sleep(300); return snap();
+      }
       async function paste(sds) {
         clearHazardData(); document.getElementById('scent-name').value = 'CLP007 QA'; document.getElementById('product-type').value = 'Scented Candle'; onProductTypeChange();
         document.getElementById('smart-paste-input').value = sds; extractSDS(); await sleep(200); return snap();
