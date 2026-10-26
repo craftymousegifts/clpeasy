@@ -298,3 +298,22 @@ Not dependent on the CLPeasy legacy keys:
 - `finn-chat` is still deployed and ACTIVE although Finn was retired.
 - `new_user_alert.sql` (repo root) refers to a non-existent `notify-new-user` function.
 - `npm test` stops at a suite needing `jsdom`, which this sandbox could not install (same on main).
+
+## 9. Production release status (26 Oct 2026)
+
+Each step was separately approved by the owner. No secret value was displayed or recorded.
+
+| Step | Result |
+|---|---|
+| 1. Merge | PR #306 merged to `main` as `e3a1a35`. The migration and function files are byte-identical to the reviewed `b7b0003`. |
+| 2. Migration | Applied once, unchanged, through the Dashboard SQL Editor; the connector's confirmation prompt could not be answered. The history row `20261024000000 secure_signup_webhook` was then recorded on its own, without re-running the SQL. |
+| 2. Verification | Triggers on `auth.users`: `notify_signup_webhook` and `on_auth_user_created`, both enabled. `on-user-signup` was dropped by the migration, so no Dashboard fallback was needed. Triggers or functions containing a JWT: 0. Vault secret: 1, length 64. Only `service_role` can run the secret check. The function bodies match the reviewed file (the only difference was line endings from pasting). |
+| 3. Function | `notify-signup` v54 ACTIVE, `verify_jwt=false`. The deployed source matches `main` (apart from one trailing newline). No deployment errors. |
+| 4. Rejection checks | No header, a wrong secret, the anon key as Bearer + apikey, a secret-shaped value in `Authorization`, and an empty header: each returned 401. No Brevo contact or sign-up record was created. |
+| 4. Smoke test | One sign-up of `support+clp001-prod@clpeasy.com` through the Auth API; the live page's library CDN was blocked in the test environment. Profile created. One `pg_net` call → 200. Brevo contact upsert → 201 (list 3, FIRSTNAME only). Admin alert → 201. One sign-up record. No duplicates. Logs show only `user_id`. |
+| 4. Cleanup | The test user, its profile and its sign-up record were deleted (26 users and 12 records, as before the test). The Brevo test contact must be deleted manually in Brevo. |
+| Front end | This update is merged without `[skip netlify]`, so the normal GitHub-to-Netlify build publishes `auth.html` from #306, which removes the browser call. `_redirects` keeps `/docs/*`, `/tests/*`, `/supabase/*`, `*.sql` and `*.ts` private. |
+
+Still open: the Brevo test-contact deletion, confirming the support@ emails, 48-hour log monitoring (one 200 per sign-up, no 401 from `pg_net`), and legacy key retirement (§7).
+
+Platform note: notify-signup, clp-wizard and clp-search log `event loop error … runMicrotasks` when an idle worker shuts down. It predates this release and affects no request.
