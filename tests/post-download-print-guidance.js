@@ -60,7 +60,7 @@ const RECORDER = `window.__downloads=[];window.__opened=[];
 (function(){var oc=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){if(this.download)window.__downloads.push(this.download);return oc.apply(this,arguments);};
 window.open=function(u){window.__opened.push(String(u||''));if(window.__popupBlocked)return null;var w={closed:false,close:function(){this.closed=true;},focus:function(){},written:0,location:{replace:function(x){w.navigated=String(x);}},document:{open:function(){},write:function(){w.written++;},close:function(){}}};window.__lastPopup=w;return w;};})();`;
 
-const SDS = '2.2 Label elements\\nSignal word: Warning\\nH317 May cause an allergic skin reaction.\\nH412 Harmful to aquatic life with long lasting effects.\\nP261 P302+P352 P501';
+const SDS = '2.2 Label elements\\nSignal word: Warning\\nH317 May cause an allergic skin reaction.\\nH412 Harmful to aquatic life with long lasting effects.\\nP261 Avoid breathing vapours.\\nP302+P352 IF ON SKIN: Wash with plenty of water.\\nP501 Dispose of contents/container in accordance with local regulations.'; // #270: supplier wording, not code-only P statements
 
 let passed = 0;
 function ok(label) { passed++; console.log('PASS:', label); }

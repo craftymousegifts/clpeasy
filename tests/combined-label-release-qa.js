@@ -56,7 +56,7 @@ let browser;
   }
   for(const manual of [false,true])for(const mm of [52,63,75]){
     const p=await newPage();const row=await fixture(p,mm,manual);const tag=(manual?'manual-six':'extracted-five')+'-'+mm;
-    if(manual)assert(row.pCodes.includes('P280'),'manual fixture must include P280');else assert(!row.pCodes.includes('P280'),'existing exclusion policy stays unchanged');
+    if(manual)assert(row.pCodes.includes('P280'),'manual fixture must include P280');else assert(row.pCodes.includes('P280'),'supplier P280 is retained (#270, founder direction 22/25 Oct 2026: no automatic exclusion of supplier statements)');
     if(row.allowed){
       const old=downloads.length;await p.click('#btn-svg-preview');
       await p.waitForFunction(()=>!document.querySelector('#btn-svg-preview').disabled);

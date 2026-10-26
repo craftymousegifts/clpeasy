@@ -45,7 +45,7 @@ const dom = new JSDOM(source, {
       },
       drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
     });
-    window.eval(fs.readFileSync('label-render.js', 'utf8')); window.eval(fs.readFileSync('sds-doc-check.js', 'utf8')); window.eval(fs.readFileSync('sds-section-scope.js', 'utf8'));
+    window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-supplier-wording.js'),'utf8')); window.eval(fs.readFileSync('label-render.js', 'utf8')); window.eval(fs.readFileSync('sds-doc-check.js', 'utf8')); window.eval(fs.readFileSync('sds-section-scope.js', 'utf8'));
     window.eval(fs.readFileSync('label-library.js', 'utf8')); window.eval(fs.readFileSync('entitlement.js', 'utf8'));
     window.alert = () => {};
     window.confirm = () => true;
@@ -110,8 +110,13 @@ setTimeout(() => {
       counts[c.group]++;
       const got = pasteAndExtract(c.section_2_2);
       // Other extraction steps keep using the original pasted text.
-      for (const f of ['signal', 'hSelected', 'pSelected', 'pictograms'])
+      for (const f of ['signal', 'hSelected', 'pictograms'])
         assert.deepStrictEqual(got[f], c.baseline_before_fix[f], `${c.id}: ${f} changed from main 85af515`);
+      // #270 (founder direction 22/25 Oct 2026) stopped excluding nine
+      // supplier P statements. Every other P code is unchanged from 85af515;
+      // the only additions are those formerly excluded codes.
+      const FORMERLY_EXCLUDED = ['P272','P264','P270','P280','P303+P361+P353','P362','P362+P364','P363','P405'];
+      assert.deepStrictEqual(got.pSelected.filter(x => !FORMERLY_EXCLUDED.includes(x)), c.baseline_before_fix.pSelected, `${c.id}: pSelected changed from main 85af515 beyond the formerly excluded codes`);
       if (c.group === 'no_euh208') {
         assert.deepStrictEqual(got.sensitisers, c.baseline_before_fix.sensitisers, `${c.id}: sensitisers changed for an SDS with no EUH208 statement`);
         continue;

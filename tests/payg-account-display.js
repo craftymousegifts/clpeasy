@@ -10,6 +10,8 @@
 const fs = require('fs');
 const assert = require('assert');
 const { JSDOM, VirtualConsole } = require('jsdom');
+// Close test-owned pages after every assertion finishes, including on failure.
+const testDoms = [];
 const E = require('../entitlement.js');
 
 const DAY = 86400000;
@@ -89,6 +91,7 @@ async function open(file, profile, extraBeforeParse){
       }) };
     }
   });
+  testDoms.push(dom);
   await new Promise(r => setTimeout(r, 300));
   return { window: dom.window, doc: dom.window.document, errors };
 }
@@ -292,4 +295,5 @@ const text = (doc, id) => (doc.getElementById(id) || { textContent:'' }).textCon
     ok('annual Easy Start Unlimited shows unlimited downloads everywhere');
   }
   console.log(`PAYG account display checks passed (${passed} groups)`);
-})().catch(e => { console.error(e.stack || e.message); process.exitCode = 1; });
+})().catch(e => { console.error(e.stack || e.message); process.exitCode = 1; })
+  .finally(() => { for (const dom of testDoms) dom.window.close(); });

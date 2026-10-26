@@ -86,7 +86,7 @@ const STUB = `window.supabase={createClient:function(){var row=${JSON.stringify(
   from:function(){return Object.create(q)},
   rpc:async function(n){if(n!=='consume_download')return {data:null,error:null};return {data:res,error:null};},
   functions:{invoke:async function(){return {data:null,error:null}}}};}};`;
-const SDS = '2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nP261 P302+P352 P501';
+const SDS = '2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nP261 Avoid breathing vapours.\nP302+P352 IF ON SKIN: Wash with plenty of water.\nP501 Dispose of contents/container in accordance with local regulations.'; // #270: supplier wording, not code-only P statements
 
 const server = http.createServer((req, res) => {
   let f = decodeURIComponent(req.url.split('?')[0]); if (f === '/') f = '/index.html';
