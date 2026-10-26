@@ -37,7 +37,7 @@ function ok(label) { passed++; console.log('PASS:', label); }
   assert.strictEqual(other.headers.get('access-control-allow-origin'), 'https://clpeasy.com', 'other origins are not echoed');
   const pre = await handler(new Request('https://x/functions/v1/clp-search', { method: 'OPTIONS', headers: { origin: 'https://www.clpeasy.com' } }));
   assert.strictEqual(pre.status, 204);
-  const get = await handler(new Request('https://x/functions/v1/finn-chat'));
+  const get = await handler(new Request('https://x/functions/v1/clp-wizard'));
   assert.strictEqual(get.status, 410);
   assert.deepStrictEqual(calls, [], 'no fetch / secret access: ' + calls.join(', '));
   ok('stub: POST/GET → 410 with a plain message, OPTIONS → 204; no AI call, no email, no secret read, no database');
@@ -46,12 +46,12 @@ function ok(label) { passed++; console.log('PASS:', label); }
     const f = path.join(DIR, 'rollback', slug, 'index.ts');
     assert(fs.existsSync(f) && fs.statSync(f).size > 500, 'rollback copy for ' + slug);
   }
-  ok('rollback copies of the live clp-wizard v40, clp-search v47, finn-chat v21 and beta-tester-email v40 are kept');
+  ok('rollback copies of the live clp-wizard v40, clp-search v47, beta-tester-email v40 are kept (finn-chat v21 copy kept as a backup only — Finn is preserved, not retired)');
 
   const callers = [];
   for (const f of fs.readdirSync(ROOT).filter(n => /\.(html|js)$/.test(n))) {
     const t = fs.readFileSync(path.join(ROOT, f), 'utf8');
-    for (const slug of ['clp-wizard', 'clp-search', 'finn-chat', 'beta-tester-email']) if (t.includes('functions/v1/' + slug)) callers.push(f + ' → ' + slug);
+    for (const slug of ['clp-wizard', 'clp-search', 'beta-tester-email']) if (t.includes('functions/v1/' + slug)) callers.push(f + ' → ' + slug);
   }
   if (callers.length) console.log('INFO: still called by the site (retire only after the local guide is live):', callers.join(', '));
   else ok('no site page calls the endpoints to be retired');
