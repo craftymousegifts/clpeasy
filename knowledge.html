@@ -242,7 +242,7 @@ footer a:hover{color:var(--teal);}
 <!-- STICKY SEARCH -->
 <div class="search-section">
   <div class="search-inner">
-    <div class="search-label">🔍 Ask anything about CLP — answered by AI for general guidance</div>
+    <div class="search-label">🔍 Ask anything about CLP — answered from the CLPeasy Knowledge Base and guides</div>
     <div class="search-row">
       <input type="text" id="clp-search" placeholder="e.g. Do I need a CLP label for wax melts? What is EUH208?" onkeydown="if(event.key==='Enter')askCLP()">
       <button onclick="askCLP()" id="search-btn">Ask CLPeasy</button>
@@ -250,7 +250,7 @@ footer a:hover{color:var(--teal);}
     <div class="search-loading" id="search-loading"><span class="spinner"></span>Getting an answer...</div>
     <div class="search-result" id="search-result">
       <div class="answer" id="search-answer"></div>
-      <div class="disclaimer">⚠️ AI-generated response for guidance only — always verify against official legislation. Not legal advice.</div>
+      <div class="disclaimer">⚠️ Taken from CLPeasy's guidance pages for general information only — always verify against official legislation. Not legal advice.</div>
     </div>
   </div>
 </div>
@@ -702,7 +702,7 @@ footer a:hover{color:var(--teal);}
   </div>
 </div>
 
-<div class="section-card"><h2>Explore your next making project</h2><p>Discover selected external resources for candles, wax melts, reed diffusers and room sprays.</p><p><a href="/making-guides.html">Making Guides &amp; Resources →</a></p><p><a href="/design-ideas.html">Design Ideas &amp; Inspiration →</a></p></div><div class="section-card"><h2>Practical printing and cutting</h2><p><a href="/knowledge/printing-and-cutting">Print your labels: visual guides, A4 sheets, Cricut and printing Q&amp;A →</a></p></div><div class="help-cta"><h3>Need support?</h3><p>Browse our guides, use AI search for general orientation, or contact Michaela for help using CLPeasy. AI answers are not a classification assessment and need checking against authoritative sources.</p><a href="/support">Get friendly support →</a></div>
+<div class="section-card"><h2>Explore your next making project</h2><p>Discover selected external resources for candles, wax melts, reed diffusers and room sprays.</p><p><a href="/making-guides.html">Making Guides &amp; Resources →</a></p><p><a href="/design-ideas.html">Design Ideas &amp; Inspiration →</a></p></div><div class="section-card"><h2>Practical printing and cutting</h2><p><a href="/knowledge/printing-and-cutting">Print your labels: visual guides, A4 sheets, Cricut and printing Q&amp;A →</a></p></div><div class="help-cta"><h3>Need support?</h3><p>Browse our guides, use the search for general orientation, or contact Michaela for help using CLPeasy. Search answers are general guidance, not a classification assessment, and need checking against authoritative sources.</p><a href="/support">Get friendly support →</a></div>
 </main>
 </div>
 
@@ -715,6 +715,8 @@ footer a:hover{color:var(--teal);}
   <p style="margin-top:10px;">© 2026 CLPeasy — CLP Ready label creation for GB makers</p>
 </footer>
 
+<script src="guide-me-content.js"></script>
+<script src="guide-me.js"></script>
 <script>
 function showTopic(id, card) {
   const section = document.getElementById(id);
@@ -802,48 +804,54 @@ backToTop?.addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
 });
 
-// AI Search
-async function askCLP() {
+// Knowledge Base search — answered in the browser from CLPeasy's own
+// guidance (guide-me.js); questions are not sent anywhere.
+function openTopicById(id) {
+  const card = document.querySelector('.cat-card[onclick*="\'' + id + '\'"]');
+  const section = document.getElementById(id);
+  if (!card || !section || !section.classList.contains('section-card')) return false;
+  if (!card.classList.contains('active')) showTopic(id, card);
+  return true;
+}
+function askCLP(text) {
   const input = document.getElementById('clp-search');
   const result = document.getElementById('search-result');
   const answer = document.getElementById('search-answer');
-  const loading = document.getElementById('search-loading');
-  const btn = document.getElementById('search-btn');
+  if (typeof text === 'string') input.value = text;
   const q = input.value.trim();
   if (!q) return;
-  result.style.display = 'none';
-  loading.style.display = 'block';
-  btn.disabled = true;
-  btn.textContent = 'Searching...';
   try {
-    const res = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/clp-search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: q })
-    });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    let txt = data.answer || '';
-    txt = txt.split('\n').map(function(line) {
-      if (line.indexOf('## ') === 0) return '<h4 style="margin:12px 0 6px;font-size:14px;font-weight:700;color:var(--text);">' + line.slice(3) + '</h4>';
-      if (line.indexOf('# ') === 0) return '<h3 style="margin:12px 0 8px;font-size:16px;font-weight:700;color:var(--teal);">' + line.slice(2) + '</h3>';
-      if (line.indexOf('- ') === 0) return '&bull; ' + line.slice(2) + '<br>';
-      if (line.match(/^[0-9]+\. /)) return line + '<br>';
-      return line + '<br>';
-    }).join('');
-    // Bold text
-    txt = txt.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-    answer.innerHTML = txt;
-    result.style.display = 'block';
+    const guard = GuideMe.guard(q);
+    const found = guard ? [{ card: GuideMe.card(guard) }] : GuideMe.search(q, { limit: 4 });
+    if (!found.length) {
+      answer.innerHTML = 'No direct answer found for that question. Try different words, browse the topics below, or see the <a href="faq.html" style="color:var(--teal)">FAQ</a> and <a href="printing-and-cutting.html" style="color:var(--teal)">printing guide</a>. You can also email <a href="mailto:support@clpeasy.com" style="color:var(--teal)">support@clpeasy.com</a>.';
+    } else {
+      const top = found[0].card;
+      const links = (top.links || []).filter(l => !(top.topic && l.href === 'knowledge.html#' + top.topic))
+        .map(l => '<a href="' + GuideMe.esc(l.href) + '" style="color:var(--teal);font-weight:600;">' + GuideMe.esc(l.label) + ' →</a>');
+      if (top.topic) links.unshift('<a href="#' + top.topic + '" data-kb-topic="' + top.topic + '" style="color:var(--teal);font-weight:600;">Open this topic below →</a>');
+      const related = found.slice(1).map(r => '<li><a href="#" data-kb-ask="' + GuideMe.esc(r.card.title) + '" style="color:var(--teal);">' + GuideMe.esc(r.card.title) + '</a></li>').join('');
+      answer.innerHTML = '<h4 style="margin:0 0 6px;font-size:15px;font-weight:700;color:var(--text);">' + GuideMe.esc(top.title) + '</h4>' + top.html +
+        (links.length ? '<p style="margin-top:8px;">' + links.join(' &nbsp;·&nbsp; ') + '</p>' : '') +
+        (related ? '<div style="margin-top:10px;font-size:13px;"><strong>Related questions</strong><ul style="margin:4px 0 0 18px;">' + related + '</ul></div>' : '');
+    }
   } catch (e) {
+    console.error('Knowledge Base search error:', e);
     answer.innerHTML = 'Sorry — something went wrong. Please try again or email <a href="mailto:support@clpeasy.com" style="color:var(--teal)">support@clpeasy.com</a>';
-    result.style.display = 'block';
-  } finally {
-    loading.style.display = 'none';
-    btn.disabled = false;
-    btn.textContent = 'Ask CLPeasy';
   }
+  result.style.display = 'block';
 }
+document.addEventListener('click', function (e) {
+  const t = e.target.closest && e.target.closest('[data-kb-topic],[data-kb-ask]');
+  if (!t) return;
+  e.preventDefault();
+  if (t.dataset.kbTopic) openTopicById(t.dataset.kbTopic);
+  else askCLP(t.dataset.kbAsk);
+});
+// Links such as knowledge.html#euh208 (from Guide Me) open that topic.
+function openTopicFromHash() { const id = location.hash.slice(1); if (id) openTopicById(id); }
+window.addEventListener('hashchange', openTopicFromHash);
+if (document.readyState === 'complete') openTopicFromHash(); else window.addEventListener('load', openTopicFromHash);
 </script>
 <style>
   body { -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; user-select:none; }
