@@ -696,6 +696,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .wiz-mic-btn.listening{background:var(--red);border-color:var(--red);color:white;animation:micPulse 1s ease-in-out infinite;}
 @keyframes micPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
 .wiz-hint{font-size:11px;color:var(--muted);text-align:center;margin-top:6px;}
+.wiz-chip-row{margin:-4px 0 0 40px;}
+.wiz-bubble .wiz-card-body p{margin:6px 0;}
+.wiz-bubble .wiz-card-body ul,.wiz-bubble .wiz-card-body ol,.wiz-bubble ol{margin:6px 0;padding-left:20px;}
+.wiz-bubble .wiz-card-links{margin-top:8px;font-size:12px;}
+.wiz-bubble a{color:var(--teal-dark);font-weight:600;}
 @media(max-width:860px){.wizard-panel-ai{width:100vw;right:-100vw;}.wizard-panel-ai.open{right:0;}}
 .compliance-box{background:var(--teal-light);border:1.5px solid var(--teal);border-radius:14px;padding:14px 16px;margin-bottom:14px;}
 .compliance-box p{font-size:13px;color:var(--teal-dark);font-weight:500;line-height:1.6;}
@@ -941,10 +946,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <button class="wiz-clear-btn" id="wiz-clear-btn" onclick="wizClearChat()" title="Clear conversation">🗑 Clear</button>
     <button class="wiz-close" onclick="closeWizard()">✕</button>
   </div>
-  <div class="wiz-messages" id="wiz-messages"></div>
+  <div class="wiz-messages" id="wiz-messages" aria-live="polite"></div>
   <div class="wiz-input-area">
     <div class="wiz-input-row">
-      <textarea class="wiz-textarea" id="wiz-input" placeholder="e.g. I need an A4 sheet of 75mm circles with 2 different scents..." rows="1"
+      <textarea class="wiz-textarea" id="wiz-input" aria-label="Message Guide Me" placeholder="e.g. I need an A4 sheet of 75mm circles with 2 different scents..." rows="1"
         onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();wizSend();}"
         oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
       <button class="wiz-mic-btn" id="wiz-mic" onclick="wizToggleMic()" title="Speak your requirement">🎤</button>
@@ -1034,10 +1039,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     <div class="help-section">
       <h3>Frequently asked questions</h3>
-      <details class="help-faq"><summary>Do I legally need a CLP label?</summary><p>Yes — if you sell scented candles or wax melts in the UK or EU you are legally required to have a CLP label. Trading Standards can issue fines for non-compliance.</p></details>
+      <details class="help-faq"><summary>Do I legally need a CLP label?</summary><p>Whether a GB CLP label is needed depends on your finished formulation and the applicable classification and supplemental labelling rules. Check appropriate finished-product information before supplying your product. Our <a href="compliance.html" target="_blank" rel="noopener">Compliance &amp; Transparency page</a> explains how CLPeasy supports label creation.</p></details>
       <details class="help-faq"><summary>Where do I find my SDS sheet?</summary><p>On your fragrance supplier's website — usually on the individual product page. Look for a Download SDS or Safety Data Sheet link. Contact your supplier if you can't find it.</p></details>
       <details class="help-faq"><summary>What is EUH208?</summary><p>EUH208 means "Contains [substance name] — may produce an allergic reaction." You need it if your fragrance contains certain sensitiser substances above the threshold level. Your SDS Section 2.2 will tell you if it applies.</p></details>
-      <details class="help-faq"><summary>What size label should I use?</summary><p>52mm is the CLP minimum and suits most standard candle jars — enter 63mm for larger jars. For wax melt clamshells or other small formats below 52mm, enter that size and check the compliance warning that appears — your CLP text may need a larger label or a fold-out leaflet to stay legible.</p></details>
+      <details class="help-faq"><summary>What size label should I use?</summary><p>CLPeasy supports circle and square labels from 52mm, and rectangles from 52mm on the long side and 36mm on the short side. This is a CLPeasy minimum, not a universal GB CLP legal label-size rule — the space needed depends on the required information. 63mm suits many larger jars. The Builder checks that everything fits at a readable size before you can download.</p></details>
       <details class="help-faq"><summary>Smart Paste didn't extract everything correctly</summary><p>Make sure you copied only Section 2.2 of the SDS. If it still doesn't work, use the H statement chips and sensitiser library to enter the data manually.</p></details>
       <details class="help-faq"><summary>Can I use this on my phone?</summary><p>Yes — CLPeasy works on iPhone and Android. PNG files save to your camera roll and SVG files save to your Files app.</p></details>
       <details class="help-faq"><summary>What's the difference between Pay As You Go and Easy Start Unlimited?</summary><p>Pay As You Go is a one-off £4.99 pack of downloads (5 + 3 free during the 2026 launch offer) that never expire — buy another pack whenever you need more. Easy Start Unlimited gives you unlimited downloads while you're subscribed: £9.99/month (£8.99/month until 31 December 2026) or £89/year. Both give clean, watermark-free labels, the full label builder and A4 print sheets. Every account starts with a 14-day free trial — no card needed.</p></details>
@@ -1102,7 +1107,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
        the same way the banner was. Reuses the banner's own sparkle icon. -->
   <div class="builder-utility-actions" style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:10px;">
     <button type="button" class="btn-help" onclick="openHelp()" title="Help Guide" aria-label="Open Help Guide">?</button>
-    <button type="button" class="btn-help" onclick="openWizard()" title="Guide Me — AI Assistant" aria-label="Open AI Assistant">
+    <button type="button" class="btn-help" onclick="openWizard()" title="Guide Me — Label Wizard" aria-label="Open Guide Me">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/><circle cx="12" cy="12" r="3.2"/></svg>
     </button>
   </div>
@@ -1590,6 +1595,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
      is scoped in its own IIFE so it cannot collide with this page's own
      top-level names. -->
 <script src="label-render.js"></script>
+<script src="guide-me-content.js"></script>
+<script src="guide-me.js"></script>
 <script src="optional-label-items.js"></script>
 <script src="sds-doc-check.js"></script>
 <script src="sds-section-scope.js"></script>
@@ -5256,7 +5263,7 @@ function updateSizeWarnings(){
       warn.textContent='⚠️ Labels smaller than 30×12mm may not fit all required CLP text. Consider 35mm or larger.';
     } else if(_isSmallForCLP){
       warn.style.display='block';
-      warn.textContent='⚠️ This label is below the recommended 52mm CLP minimum. Some required information may not be clearly legible. Ensure all mandatory text is visible before printing.';
+      warn.textContent='⚠️ This label is smaller than CLPeasy\'s recommended size. Some required information may not be clearly legible. Ensure all mandatory text is visible before printing.';
     } else {
       warn.style.display='none';
     }
@@ -6134,12 +6141,14 @@ function wizRetry(text){
   document.getElementById('wiz-send').disabled = true;
   wizCallAPI(text).catch(e=>{
     wizHideTyping();
-    wizAddMsg('ai', `Still can\'t reach the AI — please check your connection and try again.`);
+    console.error('Guide Me error:', e);
+    wizAddMsg('ai', `Sorry, something went wrong again. Please open the <strong>Help Guide</strong> (the ? button) or <a href="support.html" target="_blank" rel="noopener">contact support</a>.`);
   }).finally(()=>{ document.getElementById('wiz-send').disabled = false; });
 }
 function wizClearChat(){
   wizHistory=[];
   wizParsed=null;
+  wizSession=GuideMe.createSession();
   document.getElementById('wiz-messages').innerHTML='';
   wizGreet();
 }
@@ -6165,25 +6174,25 @@ window.addEventListener('resize',()=>{
 });
 
 // ══════════════════════════════════════════════════════════════
-// LABEL WIZARD — AI-powered natural language guide
+// LABEL WIZARD — Guide Me. Answers come from guide-me.js in the browser
+// (CLPeasy's own reviewed guidance); nothing is sent to an AI service.
 // ══════════════════════════════════════════════════════════════
 
 let wizHistory = []; // [{role, content}]
 let wizListening = false;
 let wizSpeech = null;
-let wizParsed = null; // parsed requirements from AI
+let wizParsed = null; // kept for compatibility; the plan lives in wizSession
+let wizSession = (typeof GuideMe!=='undefined') ? GuideMe.createSession() : null;
 
 function openWizard(){
   document.getElementById('wiz-overlay').classList.add('open');
   document.getElementById('wiz-panel').classList.add('open');
   document.body.style.overflow='hidden';
   if(!wizHistory.length){
-    // Show a brief "Connecting…" state so user knows something is happening
-    // This covers the edge-function cold-start delay (typically 2–4 s)
     const sendBtn = document.getElementById('wiz-send');
     const input = document.getElementById('wiz-input');
     if(sendBtn) sendBtn.disabled = true;
-    if(input){ input.placeholder = 'Connecting…'; input.disabled = true; }
+    if(input){ input.disabled = true; }
     // Short delay to allow panel to animate open before greeting renders
     setTimeout(()=>{
       wizGreet();
@@ -6204,8 +6213,43 @@ function wizGreet(){
 Tell me what you want to create — in your own words. For example:<br><br>
 <em>"I need an A4 sheet of 75mm circle labels, 6 labels, all with different scents"</em><br>
 <em>"I want 4 of Sea Breeze and 4 of Coconut on one page"</em><br>
-<em>"Just one label for a 50mm circle wax melt"</em><br><br>
-You can type or use the 🎤 microphone button to speak.`);
+<em>"Just one 52mm circle label for a wax melt tin"</em><br><br>
+You can type or use the 🎤 microphone button to speak. You can also ask a question, or pick a topic:`, true);
+  wizAddChips(GuideMe.topicsForStep(S.step));
+}
+
+// Quick-reply buttons under the last message. Each sends its text as if
+// typed; a few run a local action instead (open Help, go to Step 1, reset).
+function wizAddChips(chips){
+  if(!chips||!chips.length)return;
+  const msgs=document.getElementById('wiz-messages');
+  const row=document.createElement('div');
+  row.className='wiz-confirm-row wiz-chip-row';
+  chips.forEach(c=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.className='wiz-confirm-btn';
+    b.textContent=c.label;
+    b.addEventListener('click',()=>wizChip(c));
+    row.appendChild(b);
+  });
+  msgs.appendChild(row);
+  msgs.scrollTop=msgs.scrollHeight;
+}
+function wizChip(c){
+  if(c.action==='help'){closeWizard();openHelp();return;}
+  if(c.action==='step1'){goToStep(1);closeWizard();return;}
+  if(c.action==='reset'){wizClearChat();return;}
+  const input=document.getElementById('wiz-input');
+  input.value=c.send||c.label;
+  wizSend();
+}
+// What the Builder currently says about this label, for contextual help.
+function wizContext(){
+  const ctx={step:S.step};
+  try{ if(S.step===5 && typeof _downloadAllowed==='function' && !_downloadAllowed()) ctx.blockedMessage=_downloadBlockedMessage(); }catch(e){}
+  try{ if(Array.isArray(S.supplierWordingIssues) && S.supplierWordingIssues.length) ctx.issuesMessage=clpUnrecognisedCodesMessage(S.supplierWordingIssues).body; }catch(e){}
+  return ctx;
 }
 
 function wizAddMsg(role, html, skipHistory=false){
@@ -6249,100 +6293,21 @@ async function wizSend(){
     await wizCallAPI(text);
   } catch(e) {
     wizHideTyping();
-    console.error('Wizard API error:', e);
-    wizAddMsg('ai', `Sorry, I couldn\'t reach the AI right now. <button onclick="wizRetry(${JSON.stringify(text)})" style="background:var(--teal);color:white;border:none;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;font-family:\'DM Sans\',sans-serif;">↺ Try again</button>`);
+    console.error('Guide Me error:', e);
+    wizAddMsg('ai', `Sorry, something went wrong. <button onclick="wizRetry(${JSON.stringify(text)})" style="background:var(--teal);color:white;border:none;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;font-family:\'DM Sans\',sans-serif;">↺ Try again</button>`);
   }
   document.getElementById('wiz-send').disabled = false;
 }
 
 async function wizCallAPI(userMessage){
-  const systemPrompt = `You are the CLPeasy Label Wizard — a friendly, expert guide embedded in CLPeasy, a CLP label generator for UK candle and wax melt makers.
-
-Your job is to understand what the user wants to make, confirm their requirements, then provide clear step-by-step instructions to achieve it in CLPeasy.
-
-CLPeasy has these features:
-- BUILDER (builder.html): 5-step workflow — Step 1 Label shape, dimensions and appearance; Step 2 Product details; Step 3 Hazards and SDS Section 2.2 extraction; Step 4 Business details; Step 5 Download with PNG, PDF and SVG. Label fit uses the dimensions selected at the beginning in Step 1.
-- PRINT SHEET COMPOSER (print.html): arrange saved labels (one shape and size per sheet; different designs allowed) on an A4 sheet — Custom sheet or the EU30009 template — and set quantities. Labels always keep their saved physical size. "Print / Save as PDF" opens the A4 sheet for printing; "Download for cutting machine" gives individual PNGs (one per label, as a ZIP or one by one)
-- DOWNLOAD OPTIONS (builder Step 5 and preview panel) — only these three:
-  • ▣ PDF — an individual label file at its exact size (opens for printing or saving as PDF). Use it for a single label, a label printer, or when one label file is needed
-  • ⬡ SVG — vector file that keeps the label's size in mm, for design and cutting-machine software
-  • ⬇ PNG — high-resolution image (e.g. for Canva). A PNG does not store a print size, so the app used to print it may choose its own size — not the recommended route for exact-size printing
-- CHOOSING A PRINTING ROUTE: neither is the default for everyone — one individual label → ▣ PDF; several labels arranged on A4 → Print Sheet Composer; design or cutting-machine workflow → ⬡ SVG or the Composer's "Download for cutting machine" PNGs
-- PRINTING AT THE RIGHT SIZE: print at Actual Size / 100% and turn off Fit to page, Shrink or Scale to fit (wording varies by browser, PDF viewer and printer). First time: test on ordinary paper and measure a label with a ruler before using label stock. CLPeasy creates the file at the correct size but cannot control the user's printer settings
-
-CRITICAL RULES:
-1. First message: extract what you can from the user's request. If key info is missing, ask 1-2 focused clarifying questions — NEVER more than 2 at once.
-2. Once you have enough info, present a clear confirmation summary like: "So you want: [X]mm circle labels, [N] labels total, [description of scents/variants] on one A4 sheet — is that right?"
-3. After confirmation, ask which guide style they prefer using this exact format:
-<STYLE_CHOICE>
-4. When they choose a style, generate the steps using that style. Always end steps with a helpful tip.
-
-Key things to know:
-- "radius" in common usage often means the circle size (diameter). Clarify if unsure.
-- Multiple different scents = multiple labels = save each one in the library, then use Print Sheet
-- All labels same scent = build once, set quantity in Print Sheet
-- For cutting machines: use ⬡ SVG, or "Download for cutting machine" (individual PNGs) in the Print Sheet Composer
-- Sending to a print company: CLPeasy has no dedicated print-shop file with bleed or crop marks — the PDF is the exact label size without bleed, so tell them to check what file they need
-- Printing several labels on A4 sticker paper: save each label, then use the Print Sheet Composer and print the sheet at Actual Size / 100% on A4 paper
-- Printing a single label at home: use ▣ PDF and print at Actual Size / 100%
-- Uploading to Canva to add branding first: use ⬇ PNG, then in Canva use "Upload" and overlay brand elements
-- Sizes: 52mm = standard candle (CLP minimum), 63mm = large jar, Custom = any other size including wax melts (below 52mm triggers a compliance warning)
-- Maximum labels on A4 at 75mm: approximately 6 (3×2 grid with margins)
-
-When generating steps, format them clearly. For WALKTHROUGH style, include visual hints in brackets like [→ Click "Circle" in the shape grid] or [→ Step 1: Label].
-
-Respond in plain HTML suitable for a chat bubble. Use <strong> for key terms. Use line breaks. Keep responses friendly and concise.`;
-
-  const messages = [
-    ...wizHistory.slice(-8)
-  ];
-
-  // Route through Supabase edge function (same as clp-search) — avoids CORS & keeps API key server-side
-  const response = await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/clp-wizard', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${SUPABASE_KEY}`
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      system: systemPrompt,
-      messages: messages
-    })
-  });
-
-  if(!response.ok){
-    const errText = await response.text().catch(()=>'');
-    throw new Error('Edge function error '+response.status+': '+errText);
-  }
-  const data = await response.json();
+  // Local guidance only: no network request is made here.
+  await new Promise(r=>setTimeout(r,250)); // keeps the familiar typing pause
+  const reply = GuideMe.respond(wizSession, userMessage, wizContext());
   wizHideTyping();
-
-  const content = data.content?.[0]?.text || '';
-  wizHistory.push({role:'assistant', content});
-
-  // Check if AI wants to show style choice
-  if(content.includes('<STYLE_CHOICE>')){
-    const beforeChoice = content.replace('<STYLE_CHOICE>','').trim();
-    if(beforeChoice) wizAddMsg('ai', beforeChoice, true);
-    wizShowStyleChoice();
-    return;
-  }
-
-  // Check if content contains auto-fill data
-  if(content.includes('<AUTOFILL>')){
-    const parts = content.split('<AUTOFILL>');
-    if(parts[0]) wizAddMsg('ai', parts[0], true);
-    try {
-      const fillData = JSON.parse(parts[1].split('</AUTOFILL>')[0]);
-      wizAutoFill(fillData);
-      wizAddMsg('ai', `✅ <strong>Done! I've filled in the builder for you.</strong><br>Review each step and make any changes, then click through to complete your label.`, true);
-    } catch(e) { wizAddMsg('ai', content, true); }
-    return;
-  }
-
-  wizAddMsg('ai', content, true);
+  wizHistory.push({role:'assistant', content: reply.html});
+  wizAddMsg('ai', reply.html, true);
+  if(reply.styleChoice){ wizShowStyleChoice(); return; }
+  wizAddChips(reply.chips);
 }
 
 function wizShowStyleChoice(){
@@ -6379,9 +6344,19 @@ async function wizChooseStyle(style){
   wizHistory.push({role:'user', content:`Please use the ${style} style to guide me through the steps.`});
   wizShowTyping();
   try {
-    await wizCallAPI(`Please use the ${style} style to guide me through the steps.`);
+    await new Promise(r=>setTimeout(r,250));
+    const reply = GuideMe.styleReply(wizSession, style);
+    wizHideTyping();
+    wizHistory.push({role:'assistant', content: reply.html});
+    wizAddMsg('ai', reply.html, true);
+    if(reply.autofill){
+      wizAutoFill(reply.autofill);
+      wizAddMsg('ai', `✅ <strong>Done! I've filled in the builder for you.</strong><br>Review each step and make any changes, then click through to complete your label.`, true);
+    }
+    wizAddChips(reply.chips);
   } catch(e) {
     wizHideTyping();
+    console.error('Guide Me error:', e);
     wizAddMsg('ai','Sorry, something went wrong. Try again?');
   }
 }
@@ -6391,13 +6366,16 @@ function wizAutoFill(data){
   if(!data) return;
   try {
     if(data.shape) selectShape(data.shape);
-    if(data.size) selectSize(data.size);
-    if(data.customW){ document.getElementById('custom-w').value=data.customW; S.customW=data.customW; }
-    if(data.customH){ document.getElementById('custom-h').value=data.customH; S.customH=data.customH; }
+    // Sizes are entered exactly as if typed into the Dimensions fields
+    // (onDimInput), so the Builder's own supported-size checks apply. They
+    // are never stored as a preset size, which would skip those checks.
+    const w=data.customW||data.size, h=data.customH||data.size;
+    if(w){ document.getElementById('custom-w').value=w; if(h) document.getElementById('custom-h').value=h; onDimInput(); }
     if(data.scentName){ document.getElementById('scent-name').value=data.scentName; S.scentName=data.scentName; }
     if(data.productType){const ptEl=document.getElementById('product-type');if(ptEl){ptEl.value=data.productType;onProductTypeChange();}}
     if(data.netWeight){ restoreNetWeight(data.netWeight); }
-    if(data.signal) selectSignal(data.signal);
+    // Hazard information (signal word, pictograms, statements) is never
+    // auto-filled: it only comes from the supplier SDS via Smart Paste.
     if(data.bizName){ document.getElementById('biz-name').value=data.bizName; }
     if(data.bgColour){ document.getElementById('label-bg-colour').value=data.bgColour; document.getElementById('label-bg-hex').value=data.bgColour; }
     updateLabel();
