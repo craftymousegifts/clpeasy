@@ -64,7 +64,7 @@ Rollback copies of the four live sources are in `supabase/retirement/rollback/<s
 | C | Merge and release the local Guide Me / Knowledge Base PR (#311). On release day, set the Privacy Policy "Last updated" date. #311 keeps the Anthropic disclosure for pages opened before the release | Founder | Its own tests and visual approval |
 | D | Watch edge logs for `clp-wizard` and `clp-search` for 7 days. Expect only cached pages or bots | — | C |
 | E | **Retire `clp-wizard` and `clp-search`:** deploy the stub to each. Until then they stay live, so pages opened before C keep working | Founder | D, plus #311 verified on production |
-| E2 | Same day as E: publish the final Privacy Policy wording (section 8) with a new "Last updated" date | Founder | E |
+| E2 | Same day as E: publish the final Privacy Policy wording (section 7) with a new "Last updated" date | Founder | E |
 | F | Remove the `ANTHROPIC_API_KEY` Edge Function secret. In the Anthropic Console, revoke that key, and set a low monthly spend limit and email alerts on the workspace | Founder (Console access) | B and E |
 | G | Optional, after 30 quiet days: delete the four functions. Remove the stale sources from the repo | Founder | F |
 
@@ -86,7 +86,7 @@ For each approved slug (via the Supabase connector or CLI):
 - **After step F:** a rolled-back AI function also needs `ANTHROPIC_API_KEY` set again. Until it is, it returns an Anthropic authentication error and costs nothing.
 - **Site:** rolling back the local Guide Me / Knowledge Base release is a normal Netlify rollback to the previous deploy. That restores the old AI calls, so do it only while the AI functions are still live.
 
-## 8. Final Privacy Policy wording (after step E only)
+## 7. Final Privacy Policy wording (after step E only)
 
 Apply this to `privacy.html` in a small follow-up PR **after** `clp-wizard` and `clp-search` have been retired. Before then, the release-day wording in #311 must stay, because an open page can still reach Anthropic.
 
@@ -100,11 +100,11 @@ Apply this to `privacy.html` in a small follow-up PR **after** `clp-wizard` and 
 - **Keep the microphone row unchanged.**
 - **Update "Last updated" and "Effective"** to that day's date.
 
-## 9. Merge note
+## 8. Merge note
 
 #311 and #312 both edit the `"test"` line in `package.json`. Whichever merges second needs a one-line conflict fix that keeps both sets of tests.
 
-## 7. Not done
+## 9. Not done
 
 - No function deployed, disabled or deleted.
 - No secret changed.
