@@ -31,6 +31,20 @@ Prepared 26 Oct 2026. **Nothing in this runbook has been carried out.** Each pro
   - `clp-account-events`, `admin-package-monitor`, `send-support-email`, `send-feedback-email`, `plausible-proxy`, `diag-stripe-price-lookup`;
   - `cmg-*` (Crafty Mouse Gifts).
 
+## 2a. Pre-retirement re-check for `beta-tester-email` and `finn-chat` (26 Oct, later the same day, read-only)
+
+| Check | Result |
+|---|---|
+| Live versions | `beta-tester-email` v40 and `finn-chat` v21. Bundle hashes are unchanged since the first check (`50c4f443…` and `997976de…`). Both have `verify_jwt: false` |
+| Rollback copies | Live source re-downloaded and compared: `rollback/beta-tester-email/index.ts` and `rollback/finn-chat/index.ts` are **identical** to production. `finn-chat` has no `deno.json`, which matches production |
+| Database | The only object that refers to either function is `notify_beta_tester_email()`. Its trigger `on_beta_tester_insert` is **disabled** (0 enabled). No queued `pg_net` requests to either. No `finn:` usage records |
+| Traffic (last 24 h) | None to `beta-tester-email` or `finn-chat` |
+| Site pages | None call either function. `beta-archived.html` only reads `beta_testers`, and the public site already blocks it (404) |
+| Other functions | No function in the repo calls another function by URL. Sign-up (`notify-signup` v54: 8 normal calls today), support (`send-support-email` v10) and feedback (`send-feedback-email` v24) are separate deployments. They keep `BREVO_API_KEY`, which the stub never reads |
+| Replacement | `stub/index.ts` has no imports, never calls fetch, reads no secrets and creates no client (`tests/retired-endpoint-stub.js`). It cannot send email or make an AI request |
+
+Verdict: ready for steps A and B, subject to founder approval. **No production change has been made.**
+
 ## 3. Method: a 410 stub, not deletion
 
 `supabase/retirement/stub/index.ts` answers every request with **410 Gone** and a plain-English message. It makes no AI call, sends no email, and reads no secret or database (`tests/retired-endpoint-stub.js`).
@@ -47,9 +61,10 @@ Rollback copies of the four live sources are in `supabase/retirement/rollback/<s
 |---|---|---|---|
 | A | **Contain `beta-tester-email` now:** deploy the stub to slug `beta-tester-email` (keep `verify_jwt: false` so the response is the 410 message, not a gateway error) | Founder | Nothing: it has no live caller |
 | B | **Retire `finn-chat`:** deploy the stub | Founder | Nothing |
-| C | Merge and release the local Guide Me / Knowledge Base PR | Founder | Its own tests and visual approval |
+| C | Merge and release the local Guide Me / Knowledge Base PR (#311). On release day, set the Privacy Policy "Last updated" date. #311 keeps the Anthropic disclosure for pages opened before the release | Founder | Its own tests and visual approval |
 | D | Watch edge logs for `clp-wizard` and `clp-search` for 7 days. Expect only cached pages or bots | — | C |
-| E | **Retire `clp-wizard` and `clp-search`:** deploy the stub to each | Founder | D |
+| E | **Retire `clp-wizard` and `clp-search`:** deploy the stub to each. Until then they stay live, so pages opened before C keep working | Founder | D, plus #311 verified on production |
+| E2 | Same day as E: publish the final Privacy Policy wording (section 8) with a new "Last updated" date | Founder | E |
 | F | Remove the `ANTHROPIC_API_KEY` Edge Function secret. In the Anthropic Console, revoke that key, and set a low monthly spend limit and email alerts on the workspace | Founder (Console access) | B and E |
 | G | Optional, after 30 quiet days: delete the four functions. Remove the stale sources from the repo | Founder | F |
 
@@ -70,6 +85,24 @@ For each approved slug (via the Supabase connector or CLI):
 - **Redeploy:** deploy `supabase/retirement/rollback/<slug>/index.ts` (plus its `deno.json`) to the same slug, with the same `verify_jwt: false`. The function returns to its 26 Oct behaviour. Re-check with an `OPTIONS` request only. No paid request is needed to confirm a rollback.
 - **After step F:** a rolled-back AI function also needs `ANTHROPIC_API_KEY` set again. Until it is, it returns an Anthropic authentication error and costs nothing.
 - **Site:** rolling back the local Guide Me / Knowledge Base release is a normal Netlify rollback to the previous deploy. That restores the old AI calls, so do it only while the AI functions are still live.
+
+## 8. Final Privacy Policy wording (after step E only)
+
+Apply this to `privacy.html` in a small follow-up PR **after** `clp-wizard` and `clp-search` have been retired. Before then, the release-day wording in #311 must stay, because an open page can still reach Anthropic.
+
+- **§2 "Questions you type…" row:**
+  - Remove the sentence starting "A Builder or Knowledge Base page that was already open before this change…".
+  - Change the lawful-basis cell to "Not applicable (not collected)".
+- **§2 IP address row:** change to "Security and fraud prevention". The per-IP question limits belonged to the retired functions.
+- **§4:** remove the bullet "**Anthropic** (United States): transfers are covered by the Standard Contractual Clauses…".
+- **§5:** remove the bullet "Questions sent to Anthropic: under Anthropic's standard terms…".
+- **§6:** remove the bullet "**Anthropic** — AI service used by earlier versions of Guide Me…".
+- **Keep the microphone row unchanged.**
+- **Update "Last updated" and "Effective"** to that day's date.
+
+## 9. Merge note
+
+#311 and #312 both edit the `"test"` line in `package.json`. Whichever merges second needs a one-line conflict fix that keeps both sets of tests.
 
 ## 7. Not done
 
