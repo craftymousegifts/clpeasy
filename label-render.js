@@ -2184,8 +2184,13 @@ function renderLabel(rawData, opts){
   // fields below instead: `unsupportedCodes`, `unrecognizedCodesGeneric`
   // and `contentOverflow` are each independently complete regardless of
   // which one `_blockReason` leads with.
-  const _unsupportedCodesFound = _unrecognizedCodes.filter(c => GB_UNSUPPORTED_CODES.includes(c));
-  const _genericUnrecognizedFound = _unrecognizedCodes.filter(c => !GB_UNSUPPORTED_CODES.includes(c));
+  // CLP-007 (26 Oct 2026): the same code can be flagged twice (e.g. by the
+  // supplier-wording check and again when its statement is resolved). The
+  // lists shown to makers name each code once; the blocking decision above
+  // still reads _unrecognizedCodes itself, so blocking is unchanged.
+  const _unrecognizedCodesUnique = [...new Set(_unrecognizedCodes)];
+  const _unsupportedCodesFound = _unrecognizedCodesUnique.filter(c => GB_UNSUPPORTED_CODES.includes(c));
+  const _genericUnrecognizedFound = _unrecognizedCodesUnique.filter(c => !GB_UNSUPPORTED_CODES.includes(c));
   // "Physical content overflow" -- every non-code blocking flag, i.e.
   // _contentBlocked minus the unrecognised-code contribution. Independent
   // of blockReason's priority ordering: this is true/false on its own
@@ -2355,7 +2360,7 @@ function renderLabel(rawData, opts){
   ${overflowOverlay}
 </g></svg>`;
 
-  if(_unrecognizedCodes.length) warnings.push(..._unrecognizedCodes.map(c=>'unrecognized-code:'+c));
+  if(_unrecognizedCodesUnique.length) warnings.push(..._unrecognizedCodesUnique.map(c=>'unrecognized-code:'+c));
   if(_invalidPictograms.length) warnings.push(..._invalidPictograms.map(k=>'unrecognized-pictogram:'+k));
   if(_labelLegibilityWarn) warnings.push('hazard-text-overflow');
   if(_footerLegibilityClipped) warnings.push('footer-clipped');
@@ -2396,7 +2401,7 @@ function renderLabel(rawData, opts){
     },
     hazardYSlack: _hazardYSlack,
     footerClipped: _footerLegibilityClipped,
-    unrecognizedCodes: _unrecognizedCodes.slice(),
+    unrecognizedCodes: _unrecognizedCodesUnique.slice(),
     unrecognizedPictograms: _invalidPictograms.slice(),
     // Structured failure fields: the confirmed-unsupported and generic-
     // unrecognised code groups are each exposed IN FULL and independently
