@@ -8,7 +8,7 @@ Approved by the founder for implementation and testing on 26 Oct 2026. **Not for
 |---|---|---|
 | Guide Me (Builder) | Every message was sent to an Anthropic model through `clp-wizard`. It was failing: the model it asked for was retired on 15 Jun 2026 | Answers come from CLPeasy's own guidance, worked out in the browser. No network request and no per-question cost. Guests and signed-in users get the same experience |
 | Knowledge Base "Ask CLPeasy" | The question was sent to Anthropic through `clp-search` | The same search box answers instantly from the same guidance. Related questions are listed, and "Open this topic below" opens the matching topic |
-| Privacy Policy | Listed Anthropic and said typed questions are sent to it | Says questions are answered in the browser and not sent anywhere. The Anthropic processor and transfer entries are removed |
+| Privacy Policy | Listed Anthropic and said typed questions are sent to it | Release-day wording: typed questions are answered in the browser and not sent anywhere. New row: microphone speech may be processed by the browser's speech-recognition provider. Anthropic stays disclosed for pages opened before the change, until `clp-wizard`/`clp-search` are retired; the final wording is in the CLP-004 runbook |
 
 The panel, header, greeting and example requests, Clear button, microphone, typing pause, guide-style cards (Walkthrough / Quick list / Auto-fill) and mobile layout are unchanged. Additions:
 
@@ -25,13 +25,15 @@ The panel, header, greeting and example requests, Clear button, microphone, typi
   - `support.html`, `compliance.html` and `combining-fragrance-oils.html`.
 
   `tests/guide-me-content-sync.js` fails if any of those pages changes without regenerating, so Guide Me can't show stale wording.
-- **Five hand-written cards** need founder sign-off of their wording:
+- **Five hand-written cards** (founder decisions 26 Oct: 1, 2 and 4 approved as written; 3 approved with the review clarification; 5 corrected):
   - Choosing a printing route: the Stage 2 wording previously given to the AI;
   - Sending labels to a print company;
   - Which signal word should my label use?;
   - Can CLPeasy tell me my hazards or classification?;
   - Why can't I download my label?
-- **One Help Guide FAQ is deliberately not used.** "Do I legally need a CLP label?" says "Yes … UK or EU", while `faq.html` has the newer GB wording. See the pre-existing issues below.
+- **One Help Guide FAQ is not used as a separate card.** "Do I legally need a CLP label?" now has the same wording as `faq.html` (CLP-042), so the FAQ card answers it.
+- **Supported sizes.** Guide Me uses the Builder's own rule (`LabelRenderer.isCustomSizeBelowSupportedMinimum`): circles and squares from 52 mm, rectangles from 52 × 36 mm (either way round), up to 150 mm. These are CLPeasy design limits, not GB CLP legal minimums. Unsupported sizes are explained and never confirmed or auto-filled. Auto-fill enters sizes exactly as if typed (`onDimInput`), so the Builder's checks always apply.
+- **Copied answers.** Source markers such as [L1] are dropped; the guidance and links are kept.
 - **`guide-me.js`** does four things:
   - **Request parser:** reads shape, size (mm, cm, W×H, radius check), quantities, named scents, product type and print route.
   - **Conversation:** asks at most 2 questions at a time, then shows a confirmation summary and the existing style choice.
@@ -62,14 +64,17 @@ The panel, header, greeting and example requests, Clear button, microphone, typi
 - The Help Guide and its search.
 - The Edge Functions: retiring them is a separate package (CLP-004 runbook).
 
+## CLP-042 (fixed here, approved 26 Oct)
+
+- Help FAQ "Do I legally need a CLP label?" now uses the GB wording from `faq.html`.
+- Help FAQ "What size label should I use?" now states CLPeasy's supported sizes as a CLPeasy minimum, not a legal rule (wording from `index.html` and `showcase.html`).
+- The Step 1 size warning now says "smaller than CLPeasy's recommended size" instead of "below the recommended 52mm CLP minimum".
+
 ## Pre-existing issues found (not fixed here)
 
-1. The Builder Help FAQ "Do I legally need a CLP label?" says "Yes — UK or EU…". This differs from the GB-focused answer in `faq.html`.
-2. The Builder Help "What size label should I use?" calls 52 mm "the CLP minimum". The printing guide says not to treat a software preset as a universal legal minimum.
-3. `supabase/functions/finn-chat/index.ts` and the root `clp-wizard-edge-function.ts` in the repository are older, unprotected versions of those functions (see the CLP-004 runbook).
-4. `tests/autumn-homepage-ui.js` and `tests/builder-desktop-scroll-model.js` fail on unchanged `main` too.
+1. `supabase/functions/finn-chat/index.ts` and the root `clp-wizard-edge-function.ts` in the repository are older, unprotected versions of those functions (see the CLP-004 runbook).
+2. `tests/autumn-homepage-ui.js` and `tests/builder-desktop-scroll-model.js` fail on unchanged `main` too.
 
 ## Before release
 
-- Founder review of the five hand-written cards and the privacy wording.
 - Set the Privacy Policy "Last updated" date to the release date.

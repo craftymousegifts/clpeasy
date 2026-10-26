@@ -1039,10 +1039,10 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
     <div class="help-section">
       <h3>Frequently asked questions</h3>
-      <details class="help-faq"><summary>Do I legally need a CLP label?</summary><p>Yes — if you sell scented candles or wax melts in the UK or EU you are legally required to have a CLP label. Trading Standards can issue fines for non-compliance.</p></details>
+      <details class="help-faq"><summary>Do I legally need a CLP label?</summary><p>Whether a GB CLP label is needed depends on your finished formulation and the applicable classification and supplemental labelling rules. Check appropriate finished-product information before supplying your product. Our <a href="compliance.html" target="_blank" rel="noopener">Compliance &amp; Transparency page</a> explains how CLPeasy supports label creation.</p></details>
       <details class="help-faq"><summary>Where do I find my SDS sheet?</summary><p>On your fragrance supplier's website — usually on the individual product page. Look for a Download SDS or Safety Data Sheet link. Contact your supplier if you can't find it.</p></details>
       <details class="help-faq"><summary>What is EUH208?</summary><p>EUH208 means "Contains [substance name] — may produce an allergic reaction." You need it if your fragrance contains certain sensitiser substances above the threshold level. Your SDS Section 2.2 will tell you if it applies.</p></details>
-      <details class="help-faq"><summary>What size label should I use?</summary><p>52mm is the CLP minimum and suits most standard candle jars — enter 63mm for larger jars. For wax melt clamshells or other small formats below 52mm, enter that size and check the compliance warning that appears — your CLP text may need a larger label or a fold-out leaflet to stay legible.</p></details>
+      <details class="help-faq"><summary>What size label should I use?</summary><p>CLPeasy supports circle and square labels from 52mm, and rectangles from 52mm on the long side and 36mm on the short side. This is a CLPeasy minimum, not a universal GB CLP legal label-size rule — the space needed depends on the required information. 63mm suits many larger jars. The Builder checks that everything fits at a readable size before you can download.</p></details>
       <details class="help-faq"><summary>Smart Paste didn't extract everything correctly</summary><p>Make sure you copied only Section 2.2 of the SDS. If it still doesn't work, use the H statement chips and sensitiser library to enter the data manually.</p></details>
       <details class="help-faq"><summary>Can I use this on my phone?</summary><p>Yes — CLPeasy works on iPhone and Android. PNG files save to your camera roll and SVG files save to your Files app.</p></details>
       <details class="help-faq"><summary>What's the difference between Pay As You Go and Easy Start Unlimited?</summary><p>Pay As You Go is a one-off £4.99 pack of downloads (5 + 3 free during the 2026 launch offer) that never expire — buy another pack whenever you need more. Easy Start Unlimited gives you unlimited downloads while you're subscribed: £9.99/month (£8.99/month until 31 December 2026) or £89/year. Both give clean, watermark-free labels, the full label builder and A4 print sheets. Every account starts with a 14-day free trial — no card needed.</p></details>
@@ -5263,7 +5263,7 @@ function updateSizeWarnings(){
       warn.textContent='⚠️ Labels smaller than 30×12mm may not fit all required CLP text. Consider 35mm or larger.';
     } else if(_isSmallForCLP){
       warn.style.display='block';
-      warn.textContent='⚠️ This label is below the recommended 52mm CLP minimum. Some required information may not be clearly legible. Ensure all mandatory text is visible before printing.';
+      warn.textContent='⚠️ This label is smaller than CLPeasy\'s recommended size. Some required information may not be clearly legible. Ensure all mandatory text is visible before printing.';
     } else {
       warn.style.display='none';
     }
@@ -6213,7 +6213,7 @@ function wizGreet(){
 Tell me what you want to create — in your own words. For example:<br><br>
 <em>"I need an A4 sheet of 75mm circle labels, 6 labels, all with different scents"</em><br>
 <em>"I want 4 of Sea Breeze and 4 of Coconut on one page"</em><br>
-<em>"Just one label for a 50mm circle wax melt"</em><br><br>
+<em>"Just one 52mm circle label for a wax melt tin"</em><br><br>
 You can type or use the 🎤 microphone button to speak. You can also ask a question, or pick a topic:`, true);
   wizAddChips(GuideMe.topicsForStep(S.step));
 }
@@ -6237,7 +6237,7 @@ function wizAddChips(chips){
   msgs.scrollTop=msgs.scrollHeight;
 }
 function wizChip(c){
-  if(c.action==='help'){closeWizard();openHelp();const hs=document.getElementById('help-search');if(hs){hs.value=c.send||'';filterHelp(hs.value);}return;}
+  if(c.action==='help'){closeWizard();openHelp();return;}
   if(c.action==='step1'){goToStep(1);closeWizard();return;}
   if(c.action==='reset'){wizClearChat();return;}
   const input=document.getElementById('wiz-input');
@@ -6366,10 +6366,11 @@ function wizAutoFill(data){
   if(!data) return;
   try {
     if(data.shape) selectShape(data.shape);
-    if(data.size) selectSize(data.size);
-    if(data.customW){ document.getElementById('custom-w').value=data.customW; S.customW=data.customW; }
-    if(data.customH){ document.getElementById('custom-h').value=data.customH; S.customH=data.customH; }
-    if(data.customW||data.customH) onDimInput();
+    // Sizes are entered exactly as if typed into the Dimensions fields
+    // (onDimInput), so the Builder's own supported-size checks apply. They
+    // are never stored as a preset size, which would skip those checks.
+    const w=data.customW||data.size, h=data.customH||data.size;
+    if(w){ document.getElementById('custom-w').value=w; if(h) document.getElementById('custom-h').value=h; onDimInput(); }
     if(data.scentName){ document.getElementById('scent-name').value=data.scentName; S.scentName=data.scentName; }
     if(data.productType){const ptEl=document.getElementById('product-type');if(ptEl){ptEl.value=data.productType;onProductTypeChange();}}
     if(data.netWeight){ restoreNetWeight(data.netWeight); }

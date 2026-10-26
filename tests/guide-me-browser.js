@@ -139,10 +139,13 @@ const server = http.createServer((req, res) => {
         txt = await say(t, 'asdfgh');
         assert(/couldn't find an answer/.test(txt), 'fallback');
         if (SHOTS) await t.screenshot({ path: path.join(SHOTS, `builder-${who}-${vpName}-4-answers.png`) });
-        // "Search the Help Guide" hands over to the Help panel.
-        await clickChip(t, 'Search the Help Guide');
-        const help = await t.evaluate(() => ({ open: document.getElementById('help-panel').classList.contains('open'), q: document.getElementById('help-search').value }));
-        assert(help.open && help.q === 'asdfgh', 'fallback opens the Help Guide with the question');
+        // The fallback offers this step's topics, and "Open the Help Guide"
+        // opens the full guide — not a search already known to find nothing.
+        const fbChips = await t.evaluate(() => [...document.querySelectorAll('#wiz-messages .wiz-chip-row')].pop().innerText);
+        assert(/What size label should I use\?/.test(fbChips) && /Open the Help Guide/.test(fbChips), 'fallback chips: ' + fbChips);
+        await clickChip(t, 'Open the Help Guide');
+        const help = await t.evaluate(() => ({ open: document.getElementById('help-panel').classList.contains('open'), q: document.getElementById('help-search').value, none: getComputedStyle(document.getElementById('help-no-results')).display }));
+        assert(help.open && help.q === '' && help.none === 'none', 'Help Guide opens with no search and no "No results": ' + JSON.stringify(help));
         await t.evaluate(() => closeHelp());
 
         // Auto-fill: layout/product fields only.
@@ -152,11 +155,42 @@ const server = http.createServer((req, res) => {
         await clickChip(t, "Yes, that's right");
         await t.evaluate(() => [...document.querySelectorAll('.wiz-style-card')].slice(-1)[0].click());
         await sleep(900);
-        const after = await t.evaluate(() => ({ shape: S.shape, w: S.customW, type: document.getElementById('product-type').value, name: document.getElementById('scent-name').value,
+        const after = await t.evaluate(() => ({ shape: S.shape, w: S.customW, size: S.size, type: document.getElementById('product-type').value, name: document.getElementById('scent-name').value,
           signal: S.signal, sdsSignal: S.sdsSignal, picto: JSON.stringify(S.pictograms), h: JSON.stringify(S.hSelected), p: JSON.stringify(S.pSelected), sens: JSON.stringify(S.sensitisers),
           done: /Done! I've filled in the builder/.test(document.getElementById('wiz-messages').innerText) }));
-        assert(after.shape === 'circle' && after.w === 52 && after.type === 'Soy Candle' && after.name === 'Winter Spice' && after.done, 'auto-fill applied: ' + JSON.stringify(after));
+        assert(after.shape === 'circle' && after.w === 52 && after.size === 'custom' && after.type === 'Soy Candle' && after.name === 'Winter Spice' && after.done, 'auto-fill applied as a typed custom size: ' + JSON.stringify(after));
         for (const k of ['signal', 'sdsSignal', 'picto', 'h', 'p', 'sens']) assert.strictEqual(after[k], before[k], 'auto-fill must not change hazard field ' + k);
+
+        // Size validation: manual entry, Guide Me auto-fill and Guide Me's own
+        // check must agree for every size (CLPeasy design limits, not legal minimums).
+        if (vpName === 'desktop') {
+          const grid = await t.evaluate(() => {
+            const cases = [['circle', 50, 50], ['circle', 51, 51], ['circle', 52, 52], ['circle', 150, 150], ['square', 51, 51], ['square', 52, 52],
+              ['rectangle', 60, 35], ['rectangle', 51, 40], ['rectangle', 52, 36], ['rectangle', 36, 52], ['rectangle', 63, 44], ['rectangle', 35, 60]];
+            const out = [];
+            for (const [shape, w, h] of cases) {
+              selectShape(shape); document.getElementById('custom-w').value = w; document.getElementById('custom-h').value = h; onDimInput();
+              const manual = isCustomSizeBelowSupportedMinimum();
+              wizAutoFill(shape === 'rectangle' ? { shape, size: w, customW: w, customH: h } : { shape, size: w });
+              const auto = isCustomSizeBelowSupportedMinimum();
+              const autoSize = S.size, autoW = S.customW, autoH = S.customH;
+              const guide = GuideMe.sizeProblem(shape === 'rectangle' ? { shape, width: w, height: h } : { shape, size: w }) === 'min';
+              out.push({ shape, w, h, manual, auto, guide, autoSize, autoW, autoH });
+            }
+            closeWizard();
+            selectShape('circle'); document.getElementById('custom-w').value = 52; onDimInput();
+            return out;
+          });
+          for (const g of grid) {
+            assert(g.manual === g.auto && g.auto === g.guide, 'size rule mismatch ' + JSON.stringify(g));
+            assert(g.autoSize === 'custom' && g.autoW === g.w && (g.shape !== 'rectangle' || g.autoH === g.h), 'auto-fill stored as a typed custom size ' + JSON.stringify(g));
+          }
+          const blocked = grid.filter(g => g.auto).map(g => g.shape + ' ' + g.w + '×' + g.h).join(', ');
+          assert.strictEqual(blocked, 'circle 50×50, circle 51×51, square 51×51, rectangle 60×35, rectangle 51×40, rectangle 35×60');
+          // A blocked size cannot be saved or downloaded after auto-fill either.
+          const dl = await t.evaluate(() => { wizAutoFill({ shape: 'circle', size: 50 }); closeWizard(); const r = { below: isCustomSizeBelowSupportedMinimum(), msg: getCustomSizeMinMsg() }; selectShape('circle'); document.getElementById('custom-w').value = 52; onDimInput(); return r; });
+          assert(dl.below && /CLPeasy supports custom label dimensions from 52mm/.test(dl.msg), 'auto-filled 50 mm is refused like manual entry');
+        }
 
         // Contextual help reads the Builder's own blocked-download message.
         const ctx = await t.evaluate(() => { const s = S.step; S.step = 5; const c = wizContext(); S.step = s; return c; });
@@ -167,7 +201,7 @@ const server = http.createServer((req, res) => {
         const fn = await t.evaluate(() => window.__fnInvokes || []);
         assert(!t.outside.length && !fetches.length && !fn.length, `Guide Me made outside requests: ${t.outside.concat(fetches, fn).join(', ')}`);
         assert(!t.errs.length, 'page errors: ' + t.errs.join(' | '));
-        ok(`Builder Guide Me (${who}, ${vpName}): greeting/topics/mic, clarify → confirm → styles → steps, answers, guardrail, fallback → Help, safe auto-fill, context; zero outside requests`);
+        ok(`Builder Guide Me (${who}, ${vpName}): greeting/topics/mic, clarify → confirm → styles → steps, answers, guardrail, fallback → Help, safe auto-fill (size rules identical to manual entry), context; zero outside requests`);
         await t.close();
       }
     }

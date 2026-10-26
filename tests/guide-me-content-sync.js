@@ -25,6 +25,7 @@ const bad = [];
 for (const c of cards) {
   assert(c.id && c.title && c.html, 'card fields: ' + c.id);
   assert(!/<script|on\w+\s*=|javascript:/i.test(c.html), 'unsafe HTML in card ' + c.id);
+  assert(!/\[[A-Z]\d+(?:,\s*[A-Z]?\d+)*\]/.test(c.html), 'source marker left in card ' + c.id);
   const hrefs = (c.links || []).map(l => l.href).concat([...c.html.matchAll(/href="([^"]+)"/g)].map(m => m[1]));
   for (const h of hrefs) {
     if (/^(https?:|mailto:)/.test(h)) continue;
@@ -48,7 +49,13 @@ assert(!/selectSignal\(data/.test(builder), 'Guide Me auto-fill must never set t
 ok('Builder and Knowledge Base load the local guide; no clp-wizard / clp-search calls; auto-fill cannot set the signal word');
 
 const privacy = fs.readFileSync(path.join(ROOT, 'privacy.html'), 'utf8');
-assert(!/Anthropic/.test(privacy) && /not sent to CLPeasy or to any other company/.test(privacy), 'privacy policy matches the local guide');
-ok('Privacy Policy no longer lists Anthropic and says typed questions are not sent anywhere');
+assert(/Answered in your browser from CLPeasy's own guidance pages\. What you type is not sent to CLPeasy or to any other company, and is not stored/.test(privacy), 'typed questions: local');
+// Release-day wording: Anthropic stays disclosed until clp-wizard and
+// clp-search are retired, because a page opened before the release can still call them.
+assert(/already open before this change may still send a typed question to Anthropic/.test(privacy) && /<strong>Anthropic<\/strong> — AI service used by earlier versions/.test(privacy), 'Anthropic kept for pages opened before the release');
+assert(/speech may be processed by the browser's speech-recognition provider/.test(privacy) && /CLPeasy does not receive or store the recording/.test(privacy), 'microphone processing disclosed');
+assert(!/all speech .*(on your device|locally)/i.test(privacy), 'must not claim all speech is processed locally');
+assert(builder.includes('wizSpeech = new SpeechRecognition()') && !/SpeechRecognition[^\n]*fetch|wizSpeech[^\n]*fetch/.test(builder), 'microphone uses the browser speech API only');
+ok('Privacy Policy: typed questions answered locally; microphone handled by the browser\'s speech provider; Anthropic disclosed until the old endpoints are retired');
 
 console.log(`\nguide-me-content-sync: ${passed} checks passed`);

@@ -91,10 +91,44 @@ ok(`parser: ${PARSE.length} phrasings (shape, size incl. cm/radius/W×H, quantit
   ok('conversation: "change something" updates the plan and re-confirms');
 }
 {
-  const s = G.createSession();
-  const r = G.respond(s, 'Just one label for a 50mm circle wax melt');
-  assert(/below the recommended 52 mm/.test(plain(r.html)), 'small size mentions the Builder size warning');
-  ok('conversation: a size below 52 mm points to the Builder\'s own size warning (no new rule)');
+  // Sizes the Builder would refuse are never accepted, confirmed or auto-filled:
+  // Guide Me explains CLPeasy's current design limit (not a legal minimum) and
+  // offers supported sizes instead.
+  const BAD = [
+    ['Just one label for a 50mm circle wax melt', 'circle', /from 52 mm across up to 150 mm/],
+    ['a 51mm square label, just one', 'square', /square labels from 52 mm up to 150 mm/],
+    ['60 x 30mm rectangle labels on an A4 sheet', 'rectangle', /from 52 mm on the long side and 36 mm on the short side/],
+    ['50 x 40mm rectangle labels, just one', 'rectangle', /52 mm on the long side/],
+    ['200mm circle label, just one', 'circle', /up to 150 mm/],
+    ['labels with a 25mm radius', null, null]
+  ];
+  for (const [q, shape, re] of BAD) {
+    const s = G.createSession();
+    let r = G.respond(s, q);
+    if (!shape) { r = G.respond(s, 'Yes, 25 mm across'); r = G.respond(s, 'Circle'); }
+    const t = plain(r.html);
+    assert(/can't make a .* label at the moment/.test(t) && /CLPeasy's own design limit, not a GB CLP legal minimum/.test(t), 'explains the limit for ' + q + ': ' + t);
+    if (re) assert(re.test(t), 'states the supported range for ' + q + ': ' + t);
+    assert(!/So you want/.test(t), 'unsupported size must not be confirmed: ' + q);
+    assert(!s.req.size && !s.req.width && !s.req.height, 'unsupported size is discarded: ' + q);
+    assert(r.chips.length === 3, 'offers supported sizes');
+    // Picking an offered size carries on normally.
+    const r2 = G.respond(s, r.chips[0].send);
+    assert(!/can't make/.test(plain(r2.html)), 'offered size is accepted: ' + r.chips[0].send);
+  }
+  const OK = [['52mm circle label, just one', 'circle', 52, 52], ['150mm square label, just one', 'square', 150, 150], ['52 x 36mm rectangle label, just one', 'rectangle', 52, 36], ['36 x 52mm rectangle label, just one', 'rectangle', 36, 52], ['63 x 44mm rectangle label, just one', 'rectangle', 63, 44]];
+  for (const [q, shape, w, h] of OK) {
+    const s = G.createSession();
+    assert(/So you want/.test(plain(G.respond(s, q).html)), 'supported size confirmed: ' + q);
+    assert.strictEqual(G.sizeProblem({ shape, size: shape === 'rectangle' ? undefined : w, width: w, height: h }), null, q);
+  }
+  ok('size limits: below 52 mm (circle/square), below 52 × 36 mm (rectangle) or above 150 mm is explained as CLPeasy\'s design limit, never confirmed; supported sizes are offered and accepted');
+}
+{
+  // Dimensions are not mistaken for quantities.
+  assert.strictEqual(G.parseRequest('36 x 52mm rectangle labels, just one').count, 1);
+  assert.strictEqual(G.parseRequest('24 labels 63mm round').count, 24);
+  ok('parser: "36 x 52mm labels" is a size, not 36 labels');
 }
 {
   // A question part-way through a plan is answered, and the plan is kept.
@@ -203,9 +237,14 @@ ok(`search: ${SEARCH.length} customer-style questions find the right reviewed an
 for (const q of ['asdfgh', 'qwerty zxcv', 'banana bread recipe', 'football scores tonight', '']) {
   const s = G.createSession();
   const r = G.respond(s, q);
-  if (q) assert(r.noMatch && /couldn't find an answer/.test(plain(r.html)) && /contact support/.test(plain(r.html)) && /Knowledge Base/.test(plain(r.html)), 'fallback for ' + q);
+  if (q) {
+    assert(r.noMatch && /couldn't find an answer/.test(plain(r.html)) && /contact support/.test(plain(r.html)) && /Knowledge Base/.test(plain(r.html)), 'fallback for ' + q);
+    const help = r.chips.find(c => c.action === 'help');
+    assert(help && help.label === 'Open the Help Guide' && help.send === '', 'Help Guide opens without the failed words');
+    assert(r.chips.filter(c => !c.action).length === 3, 'fallback offers this step\'s suggested topics');
+  }
 }
-ok('no match: helpful fallback (try other words, Help Guide, Knowledge Base, contact support)');
+ok('no match: helpful fallback (suggested topics, Help Guide opened without the failed words, Knowledge Base, contact support)');
 
 // Each suggested topic chip finds its own card.
 for (let step = 1; step <= 5; step++) {

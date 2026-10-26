@@ -42,7 +42,9 @@ function clean(node) {
     const t = tag === 'B' ? 'strong' : tag === 'I' ? 'em' : tag.toLowerCase();
     out += `<${t}>${inner.trim()}</${t}>`;
   });
-  return out.replace(/\s*\[C\d+(?:,\s*C?\d+)*\]/g, '').replace(/ {2,}/g, ' ');
+  // Source markers such as [C1] or [L2] only make sense next to the page's
+  // own source list, so they are dropped; the guidance and links are kept.
+  return out.replace(/\s*\[[A-Z]\d+(?:,\s*[A-Z]?\d+)*\]/g, '').replace(/ {2,}/g, ' ');
 }
 const text = html => html.replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim();
 const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
@@ -63,7 +65,7 @@ function add(card) {
     if (faqs.length) {
       faqs.forEach(f => {
         const q = f.querySelector('summary').textContent.trim();
-        // faq.html carries the current wording for this question.
+        // Same wording as faq.html's own answer, which is used instead.
         if (/^Do I legally need a CLP label\?$/.test(q)) return;
         add({ id: 'help-' + slug(q), title: q, html: clean(f.querySelector('p')), source: 'builder-help', links: [] });
       });
@@ -156,7 +158,7 @@ const CURATED = [
   {
     id: 'guide-signal-word', title: 'Which signal word should my label use?', source: 'guide', guard: 'signal',
     html: `<p>CLPeasy doesn't choose a signal word for you. The Builder uses the signal word stated in <strong>Section 2.2</strong> of the SDS you paste into Smart Paste (for example "Signal word: Warning").</p>
-<p>If the signal word could not be read, the Builder stops and asks you to check that the pasted Section 2.2 includes the supplier's "Signal word" line. If the result differs from the applicable SDS, contact support before using the label.</p>`,
+<p>If the Builder can't read the supplier's signal word, and the hazard information on the SDS means the label needs one, it asks you to review it before you can download: check that the pasted Section 2.2 includes the supplier's "Signal word" line. CLPeasy never fills in a signal word itself. If the result differs from the applicable SDS, contact support before using the label.</p>`,
     links: [{ href: 'faq.html', label: 'FAQ: Which SDS should I use?' }, { href: 'support.html', label: 'Contact support' }]
   },
   {
@@ -167,8 +169,13 @@ const CURATED = [
   },
   {
     id: 'guide-why-blocked', title: "Why can't I download my label?", source: 'guide',
-    html: `<p>Downloads unlock in Step 5 once the label is complete: required product, hazard and business details are filled in, the complete label fits at a readable size, and you have ticked the verification checkbox to confirm you have checked all data against your SDS.</p>
-<p>The message under the download buttons says what is still needed.</p>`,
+    html: `<p>Downloads unlock in Step 5 once the label is complete. Depending on your label, the Builder checks that:</p>
+<ul><li>the required product, hazard and business details are filled in</li>
+<li>the hazard information from Smart Paste has been reviewed, if the Builder asked you to review it</li>
+<li>the supplier document confirmation in Step 3 is complete, if the Builder asks you for it</li>
+<li>the complete label fits at a readable size</li>
+<li>you have ticked the verification checkbox in Step 5 to confirm you have checked all data against your SDS</li></ul>
+<p>When something is still needed, the Builder explains it. Some messages appear in Step 5 above the download buttons, and others appear in the step concerned. If you ask "Why can't I download?" here while you're in Step 5, Guide Me shows the Builder's current message.</p>`,
     links: []
   }
 ];

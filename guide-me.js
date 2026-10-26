@@ -7,7 +7,19 @@
 (function (root) {
   'use strict';
 
-  var content = (typeof module !== 'undefined' && module.exports) ? require('./guide-me-content.js') : root.CLPEASY_GUIDE_CONTENT;
+  var isNode = typeof module !== 'undefined' && module.exports;
+  var content = isNode ? require('./guide-me-content.js') : root.CLPEASY_GUIDE_CONTENT;
+  // Supported label sizes come from the Builder's own rule
+  // (LabelRenderer.isCustomSizeBelowSupportedMinimum), so Guide Me can never
+  // accept a size the Builder would refuse. These are CLPeasy design limits,
+  // not GB CLP legal minimums.
+  // (Under Node tests the same constants are used; tests/guide-me-browser.js
+  // checks Guide Me and the Builder agree on every size.)
+  var LR = isNode ? null : root.LabelRenderer;
+  var MIN_MM = (LR && LR.CUSTOM_SIZE_MIN_MM) || 52;
+  var RECT_LONG_MIN_MM = (LR && LR.CUSTOM_RECT_LONG_MIN_MM) || 52;
+  var RECT_SHORT_MIN_MM = (LR && LR.CUSTOM_RECT_SHORT_MIN_MM) || 36;
+  var MAX_MM = 150; // the Builder's Dimensions fields accept up to 150 mm
   var CARDS = (content && content.cards) || [];
 
   function esc(s) {
@@ -163,6 +175,9 @@
     }
 
     // Quantities: "4 of Sea Breeze and 4 of Coconut", "6 labels", "just one".
+    // Dimensions are removed first so "36 x 52mm labels" is not 36 labels.
+    s = s.replace(/\d{1,3}(?:\.\d+)?\s*(?:mm|cm)?\s*(?:x|by)\s*\d{1,3}(?:\.\d+)?\s*(?:mm|cm)?/g, ' ')
+      .replace(/\d{1,3}(?:\.\d+)?\s*(?:mm|millimet(?:re|er)s?|cm|centimet(?:re|er)s?)\b/g, ' ');
     var scents = [], total = 0;
     var re = new RegExp('\\b' + NUMRE + '\\s+(?:x\\s+)?(?:of\\s+)?(?:the\\s+)?([a-z][a-z\'&\\- ]{1,40}?)(?=\\s+(?:and|&|plus)\\s+' + NUMRE + '\\b|\\s*,|\\s+(?:on|in|for|labels?|stickers?)\\b|[.!?]|$)', 'g');
     var ofRe = new RegExp('\\b' + NUMRE + '\\s+(?:x\\s+)?of\\s+', 'g');
@@ -284,7 +299,7 @@
       session.stage = 'collect';
       return next(session);
     }
-    return answer(s, session.stage === 'collect' ? '<p>When you\'re ready, answer the question above to carry on with your labels.</p>' : '');
+    return answer(s, session.stage === 'collect' ? '<p>When you\'re ready, answer the question above to carry on with your labels.</p>' : '', ctx);
   }
 
   function next(session) {
@@ -294,6 +309,16 @@
       return {
         html: 'Just to check — CLPeasy uses the size <strong>across</strong> the circle (the diameter). Is <strong>' + r.size + ' mm</strong> the width across your label?',
         chips: [{ label: 'Yes, ' + r.size + ' mm across', send: r.size + 'mm' }, { label: 'No — ' + (r.size * 2) + ' mm across', send: (r.size * 2) + 'mm' }]
+      };
+    }
+    var problem = sizeProblem(r);
+    if (problem) {
+      var asked = r.shape === 'rectangle' ? r.width + ' × ' + r.height + ' mm' : (r.size || r.width) + ' mm';
+      delete r.size; delete r.width; delete r.height;
+      return {
+        html: 'CLPeasy can\'t make a <strong>' + asked + ' ' + SHAPE_NAME[r.shape] + '</strong> label at the moment. ' + supportedText(r.shape) +
+          ' This is CLPeasy\'s own design limit, not a GB CLP legal minimum.<br>Which size would you like instead?',
+        chips: (r.shape === 'rectangle' ? ['52 × 36 mm', '63 × 44 mm', '70 × 50 mm'] : ['52 mm', '63 mm', '75 mm']).map(function (c) { return { label: c, send: c }; })
       };
     }
     var need = missing(r);
@@ -308,6 +333,23 @@
     return { html: summary(r), chips: [{ label: 'Yes, that\'s right', send: 'Yes, that\'s right' }, { label: 'Change something', send: 'No, change something' }] };
   }
 
+  function supportedText(shape) {
+    return shape === 'rectangle'
+      ? 'The Builder currently supports rectangles from ' + RECT_LONG_MIN_MM + ' mm on the long side and ' + RECT_SHORT_MIN_MM + ' mm on the short side (either way round), up to ' + MAX_MM + ' mm.'
+      : 'The Builder currently supports ' + (shape === 'square' ? 'square' : 'circle') + ' labels from ' + MIN_MM + ' mm' + (shape === 'circle' ? ' across' : '') + ' up to ' + MAX_MM + ' mm.';
+  }
+  // 'min' / 'max' when the Builder would refuse the size; null otherwise.
+  function sizeProblem(r) {
+    if (!r.shape) return null;
+    var w, h;
+    if (r.shape === 'rectangle') { if (!(r.width && r.height)) return null; w = r.width; h = r.height; }
+    else { w = h = r.size || r.width; if (!w) return null; }
+    if (w > MAX_MM || h > MAX_MM) return 'max';
+    var below = LR && LR.isCustomSizeBelowSupportedMinimum ? LR.isCustomSizeBelowSupportedMinimum(r.shape, w, h)
+      : (r.shape === 'rectangle' ? !(Math.max(w, h) >= RECT_LONG_MIN_MM && Math.min(w, h) >= RECT_SHORT_MIN_MM) : !(w >= MIN_MM));
+    return below ? 'min' : null;
+  }
+
   function summary(r) {
     var parts = ['<strong>' + sizeText(r) + ' ' + SHAPE_NAME[r.shape] + '</strong> labels'];
     if (r.productType) parts[0] += ' for <strong>' + esc(r.productType) + '</strong>';
@@ -316,18 +358,15 @@
     else if (r.distinct > 1) parts.push(r.distinct + ' different scents');
     else if (r.distinct === 1 && r.count > 1) parts.push('all the same scent');
     if (r.route) parts.push(routeText(r));
-    var note = '';
-    var small = r.shape === 'rectangle' ? Math.max(r.width, r.height) < 52 : (r.size || r.width) < 52;
-    if (small) note = '<br><br>Note: the Builder shows a size warning below the recommended 52 mm, and checks whether all the required information fits before you can download.';
-    return 'So you want: ' + parts.join(', ') + ' — is that right?' + note;
+    return 'So you want: ' + parts.join(', ') + ' — is that right?';
   }
 
-  function answer(q, prefix) {
+  function answer(q, prefix, ctx) {
     var res = search(q, { limit: 3 });
     if (!res.length) {
       return {
-        html: (prefix || '') + 'I couldn\'t find an answer to that in the CLPeasy guides. You could try different words, search the <strong>Help Guide</strong>, browse the <a href="knowledge.html" target="_blank" rel="noopener">Knowledge Base</a>, or <a href="support.html" target="_blank" rel="noopener">contact support</a>.',
-        chips: [{ label: 'Search the Help Guide', action: 'help', send: q }],
+        html: (prefix || '') + 'I couldn\'t find an answer to that in the CLPeasy guides. You could try different words, pick one of the topics below, open the <strong>Help Guide</strong>, browse the <a href="knowledge.html" target="_blank" rel="noopener">Knowledge Base</a>, or <a href="support.html" target="_blank" rel="noopener">contact support</a>.',
+        chips: topicsForStep((ctx && ctx.step) || 1).concat([{ label: 'Open the Help Guide', action: 'help', send: '' }]),
         noMatch: true
       };
     }
@@ -436,7 +475,7 @@
   var api = {
     search: search, card: card, cards: function () { return CARDS.slice(); }, guard: guard,
     parseRequest: parseRequest, looksLikeRequest: looksLikeRequest, createSession: createSession,
-    respond: respond, styleReply: styleReply, autofillData: autofillData, AUTOFILL_FIELDS: AUTOFILL_FIELDS,
+    respond: respond, styleReply: styleReply, sizeProblem: sizeProblem, autofillData: autofillData, AUTOFILL_FIELDS: AUTOFILL_FIELDS,
     cardHtml: cardHtml, topicsForStep: topicsForStep, esc: esc
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
