@@ -349,20 +349,9 @@ if (mode === 'signin') {
       btn.disabled = false;
       btn.textContent = 'Create account';
     } else {
-      // Call notify-signup edge function to trigger Brevo Day 0 welcome email
-      try {
-        await fetch('https://qvkosdqcryrcfbjtaxic.supabase.co/functions/v1/notify-signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + SUPABASE_KEY },
-          body: JSON.stringify({
-            email: email,
-            user_id: signUpData?.user?.id || '',
-            is_beta: false,
-            trial_ends: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-            created_at: new Date().toISOString()
-          })
-        });
-      } catch(e) { console.warn('notify-signup error:', e); }
+      // Sign-up notification (Brevo welcome + admin alert) is sent by the
+      // notify_signup_webhook trigger on auth.users for every sign-up,
+      // including Google. The function rejects browser calls (CLP-001).
       document.getElementById('auth-form').style.display = 'none';
       document.getElementById('verify-screen').style.display = 'block';
       document.getElementById('verify-sub').textContent = `We've sent a verification link to ${email}. Click the link to activate your CLPeasy account.`;
