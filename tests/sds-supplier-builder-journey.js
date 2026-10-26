@@ -73,6 +73,11 @@ function extract(text=ptext){
  extract('2.2 Label elements\nPictograms: GHS08\nH999 Supplier hazard.');assert.equal([...state().pictograms].join(','),'health','explicit source pictogram overrides library inference');
  extract('2.2 Label elements\nPictograms: None\nH317 Supplier hazard.');assert.equal(state().pictograms.length,0,'explicit source None is retained');box('verify-checkbox').checked=true;await window.saveLabel();const noneSaved=window.getSaved().find(e=>e.scentName==='Synthetic');window.clearHazardData();window.loadLabelRecord(noneSaved);assert.equal(state().pictograms.length,0,'saved explicit None is not silently inferred on reopening');
  extract('2.2 Label elements\nSignal word: None\nH317 Supplier statement.');assert.equal(state().signal,'','explicit None must not be inferred as Warning');window.updateLabel();assert.equal(state().signal,'');
+ assert(!state().supplierWordingIssues.includes('Signal word'),'explicit None is not a missing signal word');
+ // Two-column PDF order: the supplier value precedes an empty label.
+ extract('2.2 Label elements\nWarning\nSignal word:\nH317 Supplier statement.');assert.equal(state().signal,'Warning','supplier signal word read from value-before-label order');assert(!state().supplierWordingIssues.includes('Signal word'));
+ // Unreadable signal word: never substituted; export stops for review.
+ extract('2.2 Label elements\nH317 Supplier statement.');assert.equal(state().signal,'','no signal word is invented');assert(state().supplierWordingIssues.includes('Signal word'),'missing signal word stops for review');window.updateLabel();assert.equal(window._labelBlockDownload,true,'download blocked while the signal word is missing');
  extract('2.2 Label elements\nSignal word: Warning\nH304 Supplier aspiration statement.');assert.equal(state().signal,'Warning','supplier Warning must not be escalated to Danger');
  window.clearHazardData();assert.equal(state().sourceSection22,'');assert.equal(state().supplierWording,null);
  assert(!jsErrors.some(e=>/ReferenceError|SyntaxError/.test(e)),jsErrors.join('\n'));

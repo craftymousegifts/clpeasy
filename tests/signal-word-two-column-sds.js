@@ -17,9 +17,7 @@ assert.strictEqual(extractSdsSignalWord('Signal word: None'), '');
 assert.strictEqual(extractSdsSignalWord('Warning\nKeep away from heat\nSignal word: Danger'), 'Danger');
 assert.strictEqual(extractSdsSignalWord('Warning: do not ingest\nSignal word:\nH412'), '');
 
-// Supplier-faithful labels fall back to the code-based resolver when no
-// supplier signal word was read.
-assert(/const _sig=_supplierSignal \? S\.sdsSignal : resolveGbClpSignalWord\(_autoH,S\.sdsSignal\);/.test(html)
-  && /_supplierSignal=[\s\S]{0,200}Signal\\s\+words\?\\s\*:\?\\s\*\(\?:None\|No\\s\+signal\\s\+word\)/.test(html),
-  'updateLabel must keep an explicit supplier None and otherwise fall back to resolveGbClpSignalWord');
-console.log('PASS signal-word-two-column-sds: value-before-label layout read; empty supplier value falls back to code-based signal word');
+// Fail closed: an unreadable signal word is reported, never substituted.
+assert(/S\.supplierWordingIssues\.push\('Signal word'\)/.test(html),'unreadable signal word must stop for review');
+assert(/const _sig=\(S\.hazardFromExtraction && S\.sourceSection22\)\s*\n\s*\? S\.sdsSignal : resolveGbClpSignalWord/.test(html),'supplier-faithful labels use only the supplier signal word');
+console.log('PASS signal-word-two-column-sds: value-before-label layout read; unreadable signal word stops for review, nothing substituted');

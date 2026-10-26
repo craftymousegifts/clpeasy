@@ -422,7 +422,7 @@ function f1Check(context){
   }
   for(const code of ['H317s','H361F','H360fd']){
     window.clearHazardData(); fillBasics('Unknown suffix QA');
-    extract('2.2 Label elements\nH317 May cause an allergic skin reaction.\n'+code+' Unresolved statement.\nP102 Keep out of reach of children.');
+    extract('2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\n'+code+' Unresolved statement.\nP102 Keep out of reach of children.');
     assert(S('S.hStatements').split(', ').includes(code), code+': never silently omitted or reduced');
     document.getElementById('hazard-confirm').checked=true; tickVerify();
     assert.strictEqual(window.canLeaveApprovedBuilderStep(3),true, code+': supplier text supports unknown suffix without library substitution');

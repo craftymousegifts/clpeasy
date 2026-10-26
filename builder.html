@@ -3302,6 +3302,10 @@ function loadLabelRecord(e){
   S.supplierWording=S.hazardFromExtraction && S.sourceSection22 ? (e.supplierWording || window.ClpeasySupplierWording?.extract(S.sourceSection22) || Object.create(null)) : null;
   S.supplierSupplemental=S.supplierWording?(e.supplierSupplemental||window.ClpeasySupplierWording?.analyse(S.sourceSection22).supplemental||[]):[];
   S.supplierWordingIssues=S.supplierWording?(e.supplierWordingIssues||window.ClpeasySupplierWording?.analyse(S.sourceSection22).issues||[]):[];
+  // Labels saved before the signal-word fix: re-read the supplier's own saved
+  // Section 2.2; if it still can't be read, the same review stop applies.
+  if(S.supplierWording&&!S.sdsSignal)S.sdsSignal=extractSdsSignalWord(S.sourceSection22);
+  if(S.supplierWording&&!S.sdsSignal&&!S.supplierWordingIssues.includes('Signal word')&&resolveGbClpSignalWord(LabelRenderer.extractHazardCodesFromText(S.sourceSection22),'')&&!/\bSignal\s+words?\s*:?\s*(?:None|No\s+signal\s+word)/i.test(S.sourceSection22))S.supplierWordingIssues=[...S.supplierWordingIssues,'Signal word'];
   S.supplierWordingVersion=S.supplierWording?(e.supplierWordingVersion||1):null;
   // C4: the reopened hazard data belongs to this label's saved product name,
   // product type and fragrance load.
@@ -4412,6 +4416,10 @@ function extractSDS(){
   S.supplierWording=window.ClpeasySupplierWording ? window.ClpeasySupplierWording.extract(text) : Object.create(null);
   S.supplierSupplemental=window.ClpeasySupplierWording?.analyse(text).supplemental||[];
   S.supplierWordingIssues=window.ClpeasySupplierWording?.analyse(text).issues||['Source text'];
+  // Never print a hazard label without the supplier's signal word: if these
+  // statements normally carry one but none (not even an explicit "None")
+  // could be read, stop for review. Nothing is substituted.
+  if(!S.sdsSignal && resolveGbClpSignalWord(allH,'') && !/\bSignal\s+words?\s*:?\s*(?:None|No\s+signal\s+word)/i.test(text))S.supplierWordingIssues.push('Signal word');
   S.supplierWordingVersion=window.ClpeasySupplierWording?.VERSION||1;
   // ── LOCK & FINISH ─────────────────────────────────────────────────────────
   // C3/C4: this hazard data now comes from a successful extraction, for the
@@ -4543,7 +4551,8 @@ function clpUnrecognisedCodesMessage(codes, escapeFn){
   const esc=escapeFn||(v=>v);
   // CLP-007 (25 Oct 2026): P280/P241 copied as a code only, or with the
   // supplier's equipment choice left open, get the approved wording first.
-  const supplierChoice=codes.some(c=>c==='P280'||c==='P241')?'This precautionary statement needs the full wording from your supplier’s SDS Section 2.2. Check the source document before continuing. ':'';
+  const supplierChoice=(codes.some(c=>c==='P280'||c==='P241')?'This precautionary statement needs the full wording from your supplier’s SDS Section 2.2. Check the source document before continuing. ':'')
+    +(codes.includes('Signal word')?'The signal word (for example Warning or Danger) could not be read. Make sure the pasted Section 2.2 includes the supplier’s “Signal word” line. ':'');
   if(S.hazardFromExtraction && S.sourceSection22)return {
     heading:'Supplier statement wording needs review',
     body:supplierChoice+'CLPeasy could not reliably preserve the complete supplier wording for: '+codes.map(esc).join(', ')+'. Check Section 2.2 for missing, conflicting or incorrectly copied statements and extract it again. A larger label will not fix this. CLPeasy has blocked export rather than substitute library wording or omit information. Contact support@clpeasy.com if you need help.'
@@ -5555,12 +5564,8 @@ function updateLabel(){
   // drift into different signal-word rules.
   const _autoH=(S.hStatements||'').split(',').map(h=>h.trim()).filter(Boolean);
   {
-    // The supplier's signal word wins, including an explicit "None". If no
-    // signal word could be read at all, fall back to the code-based resolver
-    // so a hazard label never silently loses its signal word.
-    const _supplierSignal=!!(S.hazardFromExtraction && S.sourceSection22) && (!!S.sdsSignal
-      || /\bSignal\s+words?\s*:?\s*(?:None|No\s+signal\s+word)/i.test(S.sourceSection22));
-    const _sig=_supplierSignal ? S.sdsSignal : resolveGbClpSignalWord(_autoH,S.sdsSignal);
+    const _sig=(S.hazardFromExtraction && S.sourceSection22)
+      ? S.sdsSignal : resolveGbClpSignalWord(_autoH,S.sdsSignal);
     S.signal=_sig;
     document.getElementById('signal-warning').className='signal-btn'+(_sig==='Warning'?' sel-warn':'');
     document.getElementById('signal-danger').className='signal-btn'+(_sig==='Danger'?' sel-danger':'');
