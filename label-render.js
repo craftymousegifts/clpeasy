@@ -181,6 +181,9 @@ function normalizeLabel(data){
     supplierWordingIssues: Array.isArray(data.supplierWordingIssues)?data.supplierWordingIssues
       : (data.hazardFromExtraction && data.sourceSection22 && typeof ClpeasySupplierWording!=='undefined'?ClpeasySupplierWording.analyse(data.sourceSection22).issues:[]),
     supplierSourceActive: !!(data.supplierWording || (data.hazardFromExtraction && data.sourceSection22)),
+    // The saved supplier Section 2.2 states a signal word (either text order).
+    supplierStatesSignal: typeof data.sourceSection22==='string'
+      && /\bSignal\s+words?\s*:?\s*(?:Danger|Warning)\b|^[ \t]*(?:Danger|Warning)[ \t]*\n[ \t]*Signal\s+words?\s*:?[ \t]*$/im.test(data.sourceSection22),
     // P280's own selected protection items -- see buildP280Wording() and
     // the P_LIB comment above it. Missing/empty on a label saved before
     // this feature existed, or on a label where P280 was added without
@@ -1651,6 +1654,10 @@ function renderLabel(rawData, opts){
   // need attention, consistent with the existing "block, don't silently drop"
   // compliance pattern used elsewhere on this page.
   const _unrecognizedCodes = data.supplierSourceActive?[...data.supplierWordingIssues]:[];
+  // Every export path (Builder, Composer) blocks a supplier label whose saved
+  // Section 2.2 states a signal word that the label does not show, e.g. a
+  // label saved before the two-column signal-word fix.
+  if(data.supplierSourceActive && data.supplierStatesSignal && !data.signal && !_unrecognizedCodes.includes('Signal word'))_unrecognizedCodes.push('Signal word');
   // Removing a code while retaining a supplier snapshot must not omit source
   // wording silently. Normal UI edits unlock and clear the source together.
   if(data.supplierSourceActive){
