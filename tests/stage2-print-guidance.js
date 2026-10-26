@@ -42,8 +42,11 @@ function ok(label) { passed++; console.log('PASS:', label); }
 
 // ── Static wording checks (concepts, not punctuation) ─────────────────────
 {
-  const prompt = builderSrc.slice(builderSrc.indexOf('CLPeasy has these features:'), builderSrc.indexOf('Respond in plain HTML suitable for a chat bubble'));
-  assert(prompt.length > 500, 'setup: Guide Me system prompt found');
+  // Guide Me now answers from its local guidance (guide-me-content.js and
+  // the step templates in guide-me.js) rather than an AI prompt.
+  const guideCards = require(path.join(ROOT, 'guide-me-content.js')).cards;
+  const prompt = guideCards.map(c => c.title + '\n' + c.html.replace(/<[^>]+>/g, '')).join('\n') + '\n' + fs.readFileSync(path.join(ROOT, 'guide-me.js'), 'utf8');
+  assert(prompt.length > 500, 'setup: Guide Me guidance found');
   assert(!/Avery Sheet/i.test(prompt), 'Guide Me must not offer the removed "Avery Sheet" export');
   assert(!/Print Shop PDF/i.test(prompt), 'Guide Me must not offer the removed "Print Shop PDF" export');
   assert(!/PNG[^\n]*(home printing|printing at home|plain paper)/i.test(prompt), 'Guide Me must not recommend PNG for home printing');

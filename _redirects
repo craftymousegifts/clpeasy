@@ -22,6 +22,7 @@ https://auth.clpeasy.com/*  https://qvkosdqcryrcfbjtaxic.supabase.co/:splat  200
 /docs/*                      /  404!
 /tests/*                     /  404!
 /supabase/*                  /  404!
+/scripts/*                   /  404!
 /*.sql                       /  404!
 /*.ts                        /  404!
 /package.json                /  404!
