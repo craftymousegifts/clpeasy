@@ -175,7 +175,7 @@ const emptyQuery = {
       virtualConsole: builderVC,
       beforeParse(window) {
         stubCanvas(window);
-        window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
+        window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-supplier-wording.js'),'utf8')); window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
         // Checkpoint B: builder.html now also loads label-library.js via
         // <script src="...">, stripped by the same generic regex above for
         // the same reason label-render.js already was -- injected
@@ -205,14 +205,22 @@ const emptyQuery = {
     const bwindow = builderDom.window;
     const bdocument = bwindow.document;
 
-    // 1. Smart Paste must still NOT auto-add P280.
+    // 1. Smart Paste keeps supplier P280 but never completes its wording.
     bdocument.getElementById('scent-name').value = 'Lavender Fields'; // named in Step 2 before Smart Paste
     bdocument.getElementById('product-type').value = 'Scented Candle'; // a real Step 2 product type (supplier-document check)
     bdocument.getElementById('smart-paste-input').value = 'Warning H317 P102 P261 P280 P501 Contains Linalool';
     bwindow.extractSDS();
-    assert(!bwindow.eval('S.pSelected').includes('P280'), 'Smart Paste must still exclude P280 -- occupational PPE wording must not auto-transfer to a finished consumer product label');
+    // #270 (founder direction 22/25 Oct 2026): supplier P280 is no longer
+    // excluded, but a code without the supplier's own wording is never
+    // completed by CLPeasy -- it is retained and blocks until full wording.
+    assert(bwindow.eval('S.pSelected').includes('P280'), 'supplier P280 is retained, not silently excluded');
+    bwindow.updateLabel();
+    assert(bwindow._labelBlockDownload, 'code-only P280 blocks the label: CLPeasy never invents protective equipment');
     assert(bwindow.eval('S.pSelected').includes('P501'), 'setup: Smart Paste should still extract an ordinary, non-excluded P-code (P501) normally');
 
+    // Manual entry: continue as a manually edited label (no Smart Paste source)
+    // without the supplier's P280, so the chip opens the picker as before.
+    bwindow.eval("S.hazardFromExtraction=false;S.sourceSection22='';S.supplierWording=null;S.supplierWordingIssues=[];S.pSelected=S.pSelected.filter(c=>c!=='P280');S.pStatements=S.pSelected.join(', ');document.getElementById('p-statements').value=S.pStatements");
     // 2. Manual entry: clicking the P280 chip opens the picker; confirming
     // with nothing selected must be refused.
     const p280Chip = bdocument.querySelector('.h-chip[data-code="P280"]');
@@ -309,6 +317,7 @@ const emptyQuery = {
     // must not silently receive every option, and must be caught by the
     // Step 3 gate rather than sailing through.
     bwindow.eval(`S.pStatements='P280'; S.pSelected=['P280']; S.p280Items=[]; S.p280Other='';`);
+    bdocument.getElementById('hazard-confirm').checked = true; // #270: a reopened label needs its own hazard review first
     assert.strictEqual(bwindow.canLeaveApprovedBuilderStep(3), false, 'Step 3 must block progression when P280 is present with no valid selection (legacy-compatible, not silently accepted)');
     assert(bwindow.eval('window.__lastAlert') && /P280/.test(bwindow.eval('window.__lastAlert')), 'Step 3 must explain that P280 needs a selection');
 
@@ -414,7 +423,7 @@ const emptyQuery = {
         // evaluated below. Print Sheet Composer (Checkpoint C1) now requires
         // label-library.js for getSaved()/addToSheet() in print.html.
         try{ window.crypto.subtle = webcrypto.subtle; }catch(e){}
-        window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
+        window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-supplier-wording.js'),'utf8')); window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
         window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
         window.alert = message => { window.__lastAlert = String(message); };
         window.confirm = () => true;
@@ -514,7 +523,7 @@ const emptyQuery = {
 
     if (printErrors.length) throw new Error('jsdom runtime errors (print): ' + printErrors.join('; '));
 
-    console.log('P280 selectable-statement checks passed (Smart Paste exclusion intact, picker requires a selection, save/reopen round-trips, Builder + Composer render identical selected wording, legacy no-selection labels are blocked not auto-filled, fit gate still applies)');
+    console.log('P280 selectable-statement checks passed (supplier P280 retained and code-only P280 blocked, picker requires a selection, save/reopen round-trips, Builder + Composer render identical selected wording, legacy no-selection labels are blocked not auto-filled, fit gate still applies)');
   } catch (error) {
     console.error(error.stack || error.message);
     process.exitCode = 1;

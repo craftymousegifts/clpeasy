@@ -47,7 +47,7 @@ const dom = new JSDOM(source, {
       },
       drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
     });
-    window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
+    window.eval(fs.readFileSync('sds-supplier-wording.js','utf8')); window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
     window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
@@ -439,7 +439,7 @@ setTimeout(async () => {
     // earlier rectangle sub-test, netWeight/batchNum/burnTime/website
     // empty, as they are at this point in the flow): blocked at 52mm
     // (hazard-text-overflow) and fits cleanly at 63mm with no warnings.
-    window.eval("S.hSelected=['H315','H411','H373'];S.pSelected=['P273','P302+P352'];S.sensitisers=['Butylphenyl methylpropional']");
+    window.eval("S.hazardFromExtraction=false;S.sourceSection22='';S.supplierWording=null;S.hSelected=['H315','H411','H373'];S.pSelected=['P273','P302+P352'];S.sensitisers=['Butylphenyl methylpropional']");
     document.getElementById('h-statements').value='H315, H411, H373, EUH208';
     document.getElementById('p-statements').value='P273, P302+P352';
     window.updateLabel();

@@ -1267,9 +1267,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
          information note, not a confirmation gate -- #hazard-confirm-block
          (unchanged) remains the mandatory "I confirm..." checkbox. -->
     <div class="smart-paste-box">
-      <h4>✨ Smart Paste — paste SDS Section 2.2</h4>
-      <p>Paste the complete Section 2.2 (Label elements) from your current supplier SDS. Check the extracted details against your SDS before continuing.</p>
-      <textarea id="smart-paste-input" placeholder="Paste SDS Section 2.2 text here..."></textarea>
+      <h4>✨ Smart Paste — paste one SDS or Section 2.2</h4>
+      <p>Paste one complete supplier SDS or its complete Section 2.2 (Label elements). CLPeasy reads Section 2.2 only and preserves statement wording it can reliably identify. If the section or wording is unclear, check the source and try again. Review all extracted information against the SDS before continuing.</p>
+      <textarea id="smart-paste-input" placeholder="Paste one complete SDS or Section 2.2 here..."></textarea>
       <div class="field-alert field-alert-info" style="margin-top:12px;">
         <label style="display:flex;gap:10px;align-items:flex-start;font-size:13px;cursor:pointer;">
           <input type="checkbox" id="sds-source-confirm" onchange="confirmSdsSource()" aria-describedby="sds-source-confirm-error" style="width:18px;height:18px;flex-shrink:0;margin-top:3px;accent-color:var(--teal);">
@@ -1281,7 +1281,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button class="btn-extract" onclick="extractSDS()">Extract hazard data →</button>
       <div id="smart-paste-scope-error" class="field-alert field-alert-danger" role="alert" style="display:none;margin-top:12px;margin-bottom:0;font-size:13px;"></div>
       <div id="sds-source-suitability-warning" aria-live="polite" style="display:none;"></div>
-      <div id="smart-paste-excluded-note" class="field-alert" role="status" aria-live="polite" style="display:none;margin-top:12px;margin-bottom:0;font-size:13px;background:var(--off);border:1.5px solid var(--border);color:var(--text);"></div>
       <div id="smart-paste-size-warning" class="field-alert field-alert-danger" role="status" aria-live="polite" style="display:none;margin-top:14px;font-size:14px;"></div>
       <button type="button" id="hazard-clear-link" onclick="clearHazardData()" style="display:none;margin-left:14px;font-size:12px;color:var(--teal-dark);text-decoration:underline;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;">Clear hazard data and start again</button>
     </div>
@@ -1594,6 +1593,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 <script src="optional-label-items.js"></script>
 <script src="sds-doc-check.js"></script>
 <script src="sds-section-scope.js"></script>
+<script src="sds-supplier-wording.js"></script>
 <script src="sds-source-suitability.js"></script>
 
 <!-- Checkpoint B (connected print-workflow task, 1 Sep 2026): shared
@@ -1730,7 +1730,7 @@ const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',produc
   // data on this label came from a successful Smart Paste extraction (it is
   // saved with the label). hazardSource is the product name, product type and
   // fragrance load the current hazard data was entered/confirmed for.
-  hazardFromExtraction:false,hazardSource:null};
+  hazardFromExtraction:false,hazardSource:null,sourceSection22:'',supplierWording:null,supplierSupplemental:[],supplierWordingIssues:[],supplierWordingVersion:null};
 // Net quantity remains a string: legacy saves and non-gram units are preserved.
 function netQuantityOptions(unit){
   const choice=document.getElementById('net-weight-choice');
@@ -3169,6 +3169,11 @@ async function saveLabel(){
     supplier:S.supplier||'',hideEN15494:!!S.hideEN15494,
     showOnLabel:JSON.parse(JSON.stringify(S.showOnLabel||{})),omissionConfirmations:JSON.parse(JSON.stringify(S.omissionConfirmations||{})),
     hazardFromExtraction:!!S.hazardFromExtraction,
+    sourceSection22:S.hazardFromExtraction?(S.sourceSection22||''):'',
+    supplierWording:S.hazardFromExtraction?S.supplierWording:null,
+    supplierSupplemental:S.hazardFromExtraction?S.supplierSupplemental:[],
+    supplierWordingIssues:S.hazardFromExtraction?S.supplierWordingIssues:[],
+    supplierWordingVersion:S.hazardFromExtraction?S.supplierWordingVersion:null,
     sdsDoc:S.sdsDoc?Object.assign({kind:S.sdsDoc.kind||'',pct:S.sdsDoc.pct||'',base:S.sdsDoc.base||''},
       ...['coverage','rangeFrom','rangeTo','where','rangeStated','docVersion','supplier','cdate','cref'].filter(k=>S.sdsDoc[k]!==undefined).map(k=>({[k]:S.sdsDoc[k]})),
       {confirmed:S.sdsDoc.confirmed||null}):null,
@@ -3265,11 +3270,12 @@ async function saveLabel(){
 function loadLabelRecord(e){
   if(!e)return;
   resetSdsSourceConfirmation();
+  // Review belongs to the label being opened, not a previous label.
+  ['hazard-confirm','verify-checkbox'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
   editingLabelId=e.id||null;
   {const se=document.getElementById('smart-paste-scope-error');if(se){se.textContent='';se.style.display='none';}}
   // Smart Paste guidance from an earlier paste does not apply to this label.
-  window._smartPasteExcludedCodes=[];
-  ['sds-source-suitability-warning','smart-paste-excluded-note'].forEach(id=>{const b=document.getElementById(id);if(b){b.textContent='';b.style.display='none';}});
+  ['sds-source-suitability-warning'].forEach(id=>{const b=document.getElementById(id);if(b){b.textContent='';b.style.display='none';}});
   S.scentName=e.scentName;S.productType=e.productType;S.shape=e.shape;S.size=e.size;S.customW=e.customW||S.customW;S.customH=e.customH||S.customH;
   S.signal=e.signal||'';S.sdsSignal=e.sdsSignal!==undefined?e.sdsSignal:(e.signal||'');S.hStatements=e.hStatements||'';S.sensitisers=e.sensitisers||[];
   S.hSelected=(S.hStatements||'').split(',').map(code=>code.trim()).filter(Boolean);
@@ -3288,6 +3294,11 @@ function loadLabelRecord(e){
   // empties) is the evidence. Manually entered hazard data stays editable.
   S.hazardFromExtraction=e.hazardFromExtraction===true||
     (e.hazardFromExtraction===undefined&&typeof e.sdsSignal==='string'&&e.sdsSignal.trim()!=='');
+  S.sourceSection22=typeof e.sourceSection22==='string'?e.sourceSection22:'';
+  S.supplierWording=S.hazardFromExtraction && S.sourceSection22 ? (e.supplierWording || window.ClpeasySupplierWording?.extract(S.sourceSection22) || Object.create(null)) : null;
+  S.supplierSupplemental=S.supplierWording?(e.supplierSupplemental||window.ClpeasySupplierWording?.analyse(S.sourceSection22).supplemental||[]):[];
+  S.supplierWordingIssues=S.supplierWording?(e.supplierWordingIssues||window.ClpeasySupplierWording?.analyse(S.sourceSection22).issues||[]):[];
+  S.supplierWordingVersion=S.supplierWording?(e.supplierWordingVersion||1):null;
   // C4: the reopened hazard data belongs to this label's saved product name,
   // product type and fragrance load.
   _snapshotHazardSource({name:e.scentName,type:e.productType,load:e.fragLoad});
@@ -3320,7 +3331,7 @@ function loadLabelRecord(e){
   // Restore pictograms — clear first, then re-select from saved array or fall back to H-code sync
   S.pictograms=[];
   document.querySelectorAll('.picto-btn').forEach(b=>b.classList.remove('selected'));
-  if(e.pictograms&&e.pictograms.length){
+  if(Array.isArray(e.pictograms)&&(e.pictograms.length||(S.hazardFromExtraction&&S.sourceSection22))){
     e.pictograms.forEach(k=>{S.pictograms.push(k);const b=document.querySelector(`.picto-btn[data-picto="${k}"]`);if(b)b.classList.add('selected');});
   } else {
     syncPictogramsFromH();
@@ -3661,7 +3672,7 @@ function init(){
   // Ensure hazard data is always clear on page load — never cached
   S.signal=''; S.sdsSignal=''; S.pictograms=[]; S.hSelected=[]; S.pSelected=[]; S.sensitisers=[];
   S.hStatements=''; S.pStatements='';
-  S.hazardFromExtraction=false; S.hazardSource=null;
+  S.hazardFromExtraction=false; S.hazardSource=null; S.sourceSection22='';S.supplierWording=null;S.supplierSupplemental=[];S.supplierWordingIssues=[];S.supplierWordingVersion=null;
   lockHazardFields(false);
   updateLabel();
 }
@@ -3785,6 +3796,7 @@ function _downloadBlockedMessage(){
   const contentMessage=_requiredLabelContentMessage();
   if(contentMessage)return contentMessage;
   if(_hazardReviewRequired())return _hazardReviewMessage();
+  if(S.hazardFromExtraction && S.sourceSection22 && window._unrecognizedCodesGeneric?.length)return clpUnrecognisedCodesMessage(window._unrecognizedCodesGeneric).body;
   const invalid=(Array.isArray(S.pictograms)?S.pictograms:[S.pictograms]).filter(key=>!LabelRenderer.isValidPictogramKey(key));
   if(invalid.length)return LabelRenderer.describeInvalidPictograms(invalid);
   // Existing reasons keep their existing message; the document check (also
@@ -4081,7 +4093,6 @@ function _sdsSuitability(){
     ?SdsSourceSuitability.inspect(raw,document.getElementById('product-type')?.value||S.productType,document.getElementById('frag-load')?.value||S.fragLoad)
     :{level:'unverified',message:'Section 2.2 does not confirm whether this SDS covers your finished product. CLPeasy does not adjust hazards for fragrance percentages. Check the applicable finished-product classification information with your supplier or a competent CLP specialist.'};
 }
-function _smartPasteExcluded(){return S.hazardFromExtraction?(window._smartPasteExcludedCodes||[]):[];}
 function _guideEl(tag,text,css){const el=document.createElement(tag);el.style.color='inherit';if(css)el.style.cssText+=css;if(text)el.textContent=text;return el;}
 // Emphasis uses semantic <strong>: a paragraph is built from text parts,
 // where ['b', text] parts are bold.
@@ -4100,7 +4111,7 @@ function updateSdsSourceSuitabilityWarning(){
   const box=document.getElementById('sds-source-suitability-warning');
   if(!box)return;
   const result=_sdsSuitability();
-  if(!result){box.textContent='';box.style.display='none';updateSmartPasteExcludedNote();return;}
+  if(!result){box.textContent='';box.style.display='none';return;}
   box.textContent='';
   box.dataset.suitability=result.level;
   const fragPct=parseFloat(String(document.getElementById('frag-load')?.value||S.fragLoad||'').replace(',','.'));
@@ -4121,7 +4132,7 @@ function updateSdsSourceSuitabilityWarning(){
       body.appendChild(_guideP(['Section 2.2 may not confirm whether this SDS applies to '+(result.target||'your finished product')+'.']));
       body.appendChild(_guideP(['CLPeasy does ',['b','not'],' recalculate hazards for different fragrance percentages. Check that your supplier’s classification information applies to your finished product.'],'margin-top:6px;'));
     }
-    if(!_smartPasteExcluded().length)_guideSupportLine(body);
+    _guideSupportLine(body);
     box.appendChild(body);
   }else{
     box.className='field-alert field-alert-warn';box.setAttribute('role','alert');
@@ -4141,9 +4152,8 @@ function updateSdsSourceSuitabilityWarning(){
       box.appendChild(_guideP(['You need classification information for '+(result.target||'your finished product')+'. Ask your supplier for it before using this label.'],'margin-top:6px;'));
       box.appendChild(_guideP(['CLPeasy does ',['b','not'],' recalculate hazards for different fragrance percentages.'],'margin-top:6px;'));
     }
-    if(!_smartPasteExcluded().length)_guideSupportLine(box);
+    _guideSupportLine(box);
   }
-  updateSmartPasteExcludedNote();
 }
 function _sdsBottleSvg(fillPct,fragPct,id){
   // Bottle body 8..60 (52 units tall); fills rise from the bottom.
@@ -4164,21 +4174,6 @@ function _sdsBottleCompareHtml(pct){
   return `<div class="sds-bottle-compare" style="display:flex;justify-content:center;align-items:flex-start;gap:16px;margin:8px 0 10px;">`+
     `<div style="${cap}">${_sdsBottleSvg(100,100,'sds-bottle-supplier')}<span>${b.replace('">',';display:block;">')}Supplier SDS</strong>${b}100%</strong> concentrated fragrance oil</span></div>`+
     `<div style="${cap}">${_sdsBottleSvg(100,pct,'sds-bottle-yours')}<span>${b.replace('">',';display:block;">')}Finished product</strong>${yours}</span></div></div>`;
-}
-function updateSmartPasteExcludedNote(){
-  const box=document.getElementById('smart-paste-excluded-note');
-  if(!box)return;
-  const codes=_smartPasteExcluded();
-  if(!codes.length){box.textContent='';box.style.display='none';return;}
-  box.textContent='';
-  // Shown once, always separate from the teal/amber SDS notice.
-  const one=codes.length===1;
-  box.appendChild(_guideEl('strong',(one?'Precautionary statement not added: ':'Precautionary statements not added: ')+codes.join(', '),'display:block;margin-bottom:4px;'));
-  box.appendChild(one
-    ?_guideP(['This appears in your SDS but was ',['b','not added'],' to your label automatically. This does ',['b','not'],' mean it is optional. Check whether it is required for your finished product before using the label.'])
-    :_guideP(['These appear in your SDS but were ',['b','not added'],' to your label automatically. This does ',['b','not'],' mean they are optional. Check whether each one is required for your finished product before using the label.']));
-  _guideSupportLine(box);
-  box.style.display='block';
 }
 document.addEventListener('DOMContentLoaded',()=>{
   ['frag-load','product-type'].forEach(id=>{
@@ -4220,7 +4215,7 @@ function extractSDS(){
   // to unconditional behaviour. Do not re-add a plan check here without a
   // fresh, explicit product-rules confirmation.
   const pasted=document.getElementById('smart-paste-input').value.trim();
-  if(!pasted){alert('Please paste SDS Section 2.2 text first.');return;}
+  if(!pasted){alert('Please paste one supplier SDS or its complete Section 2.2 first.');return;}
   reconcileSdsSourceConfirmation();
   if(!document.getElementById('sds-source-confirm')?.checked||sdsSourceConfirmation!==sdsSourceContext()){
     const error=document.getElementById('sds-source-confirm-error');
@@ -4241,6 +4236,7 @@ function extractSDS(){
   }
   const scope=SdsSectionScope.scope(pasted);
   if(scope.status==='unsafe'){
+    S.sourceSection22='';S.supplierWording=null;S.supplierSupplemental=[];S.supplierWordingIssues=[];S.supplierWordingVersion=null;
     clearHazardData();
     if(scopeErr){scopeErr.textContent=SdsSectionScope.MESSAGE;scopeErr.style.display='block';}
     return;
@@ -4290,19 +4286,9 @@ function extractSDS(){
   // and "P302+P352" normalise to the same official "P302+P352" internal
   // form.
   const _pAllCodes=[...new Set((text.match(/\bP\d{3}(?:\s*[\/+]\s*P?\d{3})*\b/g)||[]).map(c=>(c.match(/\d{3}/g)||[]).map(n=>'P'+n).join('+')))];
-  const _pExclude=[
-    'P272',            // Contaminated work clothing — occupational only
-    'P264',            // Wash hands after handling — workplace handling context
-    'P270',            // Do not eat/drink/smoke when using — workplace ingestion risk
-    'P280',            // Wear protective gloves/eye protection — occupational PPE
-    'P303+P361+P353',  // Remove contaminated clothing — occupational
-    'P362',            // Take off contaminated clothing — occupational
-    'P362+P364',       // Take off contaminated clothing and wash — occupational
-    'P363',            // Wash contaminated clothing before reuse — occupational
-    'P405'             // Store locked up — controlled substances/workplace
-  ]; // codes not applicable to finished consumer home fragrance products
-  const pRaw=_pAllCodes.filter(c=>!_pExclude.some(x=>c===x||c.startsWith(x+'+')||c.endsWith('+'+x)));
-  window._smartPasteExcludedCodes=_pAllCodes.filter(c=>!pRaw.includes(c));
+  // Supplier-faithful mode retains every extracted P code. Unknown or
+  // incomplete wording is reviewed/blocked separately, never silently omitted.
+  const pRaw=_pAllCodes;
   const pEl=document.getElementById('p-statements');
   if(pEl){pEl.value=pRaw.join(', ');}
   S.pStatements=pRaw.join(', ');
@@ -4318,7 +4304,7 @@ function extractSDS(){
   // category/signal word. All deterministic codes use the GB Annex I registry
   // above. Crucially, H411/H412/H413 and EUH-only inputs resolve to blank.
   S.sdsSignal=extractSdsSignalWord(text);
-  const sig=resolveGbClpSignalWord(allH,S.sdsSignal);
+  const sig=S.sdsSignal;
   S.signal=sig;
   document.getElementById('signal-warning').className='signal-btn'+(sig==='Warning'?' sel-warn':'');
   document.getElementById('signal-danger').className='signal-btn'+(sig==='Danger'?' sel-danger':'');
@@ -4408,13 +4394,27 @@ function extractSDS(){
   }
   renderTags();
 
+  // Explicit GHS codes in the scoped supplier text take precedence over
+  // the older H-code inference. Unknown pictogram tokens fail the renderer's
+  // existing invalid-pictogram gate rather than disappearing.
+  const sourceGhs=[...new Set((text.match(/\bGHS\d{2}\b/gi)||[]).map(v=>v.toUpperCase()))];
+  const ghsKeys={GHS01:'explosion',GHS02:'flame',GHS03:'oxidiser',GHS04:'gas',GHS05:'corrosive',GHS06:'skull',GHS07:'exclamation',GHS08:'health',GHS09:'aquatic'};
+  if(sourceGhs.length)S.pictograms=sourceGhs.map(v=>ghsKeys[v]||v);
+  else if(/(?:^|\n)\s*(?:Hazard\s+)?Pictograms?\s*:\s*None\b/i.test(text))S.pictograms=[];
+  document.querySelectorAll('.picto-btn').forEach(b=>b.classList.toggle('selected',S.pictograms.includes(b.dataset.picto)));
+
+  // Freeze scoped supplier wording for preview, reopening and printing.
+  S.sourceSection22=text;
+  S.supplierWording=window.ClpeasySupplierWording ? window.ClpeasySupplierWording.extract(text) : Object.create(null);
+  S.supplierSupplemental=window.ClpeasySupplierWording?.analyse(text).supplemental||[];
+  S.supplierWordingIssues=window.ClpeasySupplierWording?.analyse(text).issues||['Source text'];
+  S.supplierWordingVersion=window.ClpeasySupplierWording?.VERSION||1;
   // ── LOCK & FINISH ─────────────────────────────────────────────────────────
   // C3/C4: this hazard data now comes from a successful extraction, for the
   // SDS of the product currently named in Step 2.
   S.hazardFromExtraction=true;
   _snapshotHazardSource();
   updateSdsSourceSuitabilityWarning();
-  updateSmartPasteExcludedNote();
   updateLabel();
   lockHazardFields(true);
   showExtractToast(allH.length,pRaw.length,S.sensitisers.length);
@@ -4537,6 +4537,13 @@ function clpUnsupportedCodesMessage(codes, escapeFn){
 }
 function clpUnrecognisedCodesMessage(codes, escapeFn){
   const esc=escapeFn||(v=>v);
+  // CLP-007 (25 Oct 2026): P280/P241 copied as a code only, or with the
+  // supplier's equipment choice left open, get the approved wording first.
+  const supplierChoice=codes.some(c=>c==='P280'||c==='P241')?'This precautionary statement needs the full wording from your supplier’s SDS Section 2.2. Check the source document before continuing. ':'';
+  if(S.hazardFromExtraction && S.sourceSection22)return {
+    heading:'Supplier statement wording needs review',
+    body:supplierChoice+'CLPeasy could not reliably preserve the complete supplier wording for: '+codes.map(esc).join(', ')+'. Check Section 2.2 for missing, conflicting or incorrectly copied statements and extract it again. A larger label will not fix this. CLPeasy has blocked export rather than substitute library wording or omit information. Contact support@clpeasy.com if you need help.'
+  };
   const plural=codes.length>1, codeWord=plural?'codes':'code';
   return {
     heading:plural?'Some codes can\'t be added to this label':'A code can\'t be added to this label',
@@ -4602,7 +4609,16 @@ function canLeaveApprovedBuilderStep(step){
     if(!confirmed){alert('Please confirm that the extracted hazard data matches your supplier SDS before continuing.');document.getElementById('hazard-confirm')?.focus();return false;}
     const hCodes=(S.hStatements||'').split(',').map(v=>v.trim()).filter(Boolean);
     const pCodes=(S.pStatements||'').split(',').map(v=>v.trim()).filter(Boolean);
-    const unknown=[...hCodes.filter(code=>!H_LIB.some(x=>x.code===code)),...pCodes.filter(code=>!P_LIB.some(x=>x.code===code))];
+    const hasSupplierText=code=>S.hazardFromExtraction && typeof S.supplierWording?.[code]==='string' && S.supplierWording[code].trim() && !LabelRenderer.GB_UNSUPPORTED_CODES.includes(code);
+    const sourceActive=!!(S.hazardFromExtraction && S.sourceSection22);
+    if(sourceActive && S.supplierWordingIssues?.length){
+      // Wording problems and confirmed GB-unsupported codes are shown together
+      // (regulatory issue first), so neither hides the other.
+      const gbUnsupported=[...hCodes,...pCodes].filter(code=>LabelRenderer.GB_UNSUPPORTED_CODES.includes(code)&&!S.supplierWordingIssues.includes(code));
+      const parts=[...(gbUnsupported.length?[clpUnsupportedCodesMessage(gbUnsupported)]:[]),clpUnrecognisedCodesMessage(S.supplierWordingIssues)];
+      alert(parts.map(p=>p.heading+'\n\n'+p.body).join('\n\n'));return false;
+    }
+    const unknown=[...hCodes.filter(code=>sourceActive?!hasSupplierText(code):!H_LIB.some(x=>x.code===code)),...pCodes.filter(code=>sourceActive?!hasSupplierText(code):!P_LIB.some(x=>x.code===code))];
     if(unknown.length){
       // Structured failure reason: a CONFIRMED code unsupported under the
       // active regulatory profile (LabelRenderer.GB_UNSUPPORTED_CODES) gets
@@ -4625,7 +4641,7 @@ function canLeaveApprovedBuilderStep(step){
     // (mirrors confirmP280Modal()'s own requirement, as a defensive guard
     // for any path that could otherwise leave it incomplete, e.g. a legacy
     // saved label reopened here without ever completing the picker).
-    if(pCodes.includes('P280') && !LabelRenderer.buildP280Wording({p280Items:S.p280Items,p280Other:S.p280Other})){
+    if(pCodes.includes('P280') && !hasSupplierText('P280') && !LabelRenderer.buildP280Wording({p280Items:S.p280Items,p280Other:S.p280Other})){
       alert('P280 needs at least one applicable protection item selected before continuing. Click the P280 chip to choose.');
       return false;
     }
@@ -5092,10 +5108,8 @@ function clearHazardData(){
   // an unwanted side effect of clicking Clear.
   const hzCb=document.getElementById('hazard-confirm');
   if(hzCb)hzCb.checked=false;
-  S.hazardFromExtraction=false;S.hazardSource=null;
-  window._smartPasteExcludedCodes=[];
+  S.hazardFromExtraction=false;S.hazardSource=null;S.sourceSection22='';S.supplierWording=null;S.supplierSupplemental=[];S.supplierWordingIssues=[];S.supplierWordingVersion=null;
   updateSdsSourceSuitabilityWarning();
-  updateSmartPasteExcludedNote();
   // Clear signal word
   S.signal='';
   S.sdsSignal='';
@@ -5333,7 +5347,7 @@ function readForm(){
   S.fragLoad=document.getElementById('frag-load')?.value||'';
   S.burnTime=document.getElementById('burn-time')?.value||'';
   S.hStatements=document.getElementById('h-statements')?.value||'';
-  const _pDom=document.getElementById('p-statements')?.value||''; if(_pDom)S.pStatements=_pDom; // only overwrite if DOM has a value
+  const _pField=document.getElementById('p-statements'); if(_pField)S.pStatements=_pField.value||''; // an explicit clear must not retain old codes
   S.bizName=document.getElementById('biz-name')?.value||'';
   S.bizAddress=document.getElementById('biz-address')?.value||'';
   S.bizPhone=document.getElementById('biz-phone')?.value||'';
@@ -5361,6 +5375,9 @@ function buildSVG(forExport=false){
     bizAddress:S.bizAddress, bizPhone:S.bizPhone, bizWebsite:S.bizWebsite,
     netWeight:S.netWeight, batchNum:S.batchNum, burnTime:S.burnTime,
     signal:S.signal, hStatements:S.hStatements, pStatements:S.pStatements,
+    supplierWording: S.hazardFromExtraction ? S.supplierWording : null,
+    supplierSupplemental:S.hazardFromExtraction?S.supplierSupplemental:[],
+    supplierWordingIssues:S.hazardFromExtraction?S.supplierWordingIssues:[],
     sensitisers:S.sensitisers, pictograms:S.pictograms,
     textColour:S.textColour, showBorder:S.showBorder,
     hideEN15494:S.hideEN15494, labelLang:S.labelLang,
@@ -5534,7 +5551,8 @@ function updateLabel(){
   // drift into different signal-word rules.
   const _autoH=(S.hStatements||'').split(',').map(h=>h.trim()).filter(Boolean);
   {
-    const _sig=resolveGbClpSignalWord(_autoH,S.sdsSignal);
+    const _sig=(S.hazardFromExtraction && S.sourceSection22)
+      ? S.sdsSignal : resolveGbClpSignalWord(_autoH,S.sdsSignal);
     S.signal=_sig;
     document.getElementById('signal-warning').className='signal-btn'+(_sig==='Warning'?' sel-warn':'');
     document.getElementById('signal-danger').className='signal-btn'+(_sig==='Danger'?' sel-danger':'');
@@ -5586,6 +5604,15 @@ function updateLabel(){
   // findSmallestFittingSize(). Read-only: this never changes S.size itself:
   // the maker always makes that choice, in Step 1, themselves.
   const _sizeHelpsIfBlocked = window._labelBlockDownload && !_hasUnrecognizedCodes;
+  // Typing performance (25 Oct 2026): the size search renders the label at
+  // every candidate size and took seconds per keystroke on a phone, so the
+  // page appeared to hang. While a field is being typed in, the fit advice
+  // below is refreshed once typing pauses instead of on every key. The
+  // download block above is still recalculated immediately on every key.
+  const _deferFitAdvice = _sizeHelpsIfBlocked && !!window.event && window.event.type==='input';
+  clearTimeout(window._fitAdviceTimer);
+  if(_deferFitAdvice)window._fitAdviceTimer=setTimeout(updateLabel,400);
+  if(!_deferFitAdvice){
   const _sizeRec = (_sizeHelpsIfBlocked && window._lastLabelData && typeof LabelRenderer!=='undefined' && LabelRenderer.findSmallestFittingSize)
     ? LabelRenderer.findSmallestFittingSize(window._lastLabelData, {instanceId:'builder-main'})
     : null;
@@ -5635,10 +5662,10 @@ function updateLabel(){
   // support path it always has.
   const _blockBody = _codeBlockParts.length
     ? _gbUnsupportedCodesFound.length && _genericUnrecognizedCodesFound.length
-      ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br>'+clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+' Double-check this code against your SDS Section 2.2, correct it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than print a code CLPeasy could not safely include on your label.</strong>'
+      ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br>'+clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+' Double-check this code against your SDS Section 2.2, correct it if it was entered in error, or contact support@clpeasy.com so we can review the source text.<br><br><strong>CLPeasy has blocked the download rather than print a code CLPeasy could not safely include on your label.</strong>'
       : _gbUnsupportedCodesFound.length
       ? clpUnsupportedCodesMessage(_gbUnsupportedCodesFound, escapeBuilderText).body+'<br><br><strong>CLPeasy has blocked the download rather than remove, replace or print a code it cannot safely resolve for a Great Britain CLP label.</strong>'
-      : clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+'<br><br>Double-check this code against your SDS Section 2.2, correct it if it was entered in error, or contact support@clpeasy.com so we can add it.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
+      : clpUnrecognisedCodesMessage(_genericUnrecognizedCodesFound, escapeBuilderText).body+'<br><br>Double-check this code against your SDS Section 2.2, correct it if it was entered in error, or contact support@clpeasy.com so we can review the source text.<br><br><strong>CLPeasy has blocked the download rather than show an unrecognised code on your label.</strong>'
     : _isCustomSizeTooSmall
     ? getCustomSizeMinMsg()+'<br><br>To create a downloadable label, use the size controls below to '+(S.shape==='rectangle'?'set the long side to '+LabelRenderer.CUSTOM_RECT_LONG_MIN_MM+'mm or larger and the short side to '+LabelRenderer.CUSTOM_RECT_SHORT_MIN_MM+'mm or larger':'increase the custom size to '+LabelRenderer.CUSTOM_SIZE_MIN_MM+'mm or larger')+'.'
     : window._footerLegibilityClipped
@@ -5675,6 +5702,7 @@ function updateLabel(){
       _labelWarnEl.style.display='none';
     }
   });
+  }
   // U5 fix (2026-08-03): Step 3 shouldn't offer a confirm-and-continue path when
   // the label is already known to be undownloadable at this size.
   if(typeof _refreshHazardReview==='function')_refreshHazardReview();

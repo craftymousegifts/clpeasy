@@ -19,7 +19,7 @@
   // A Section 2.2 heading at the start of a line: "2.2 Label elements",
   // "SECTION 2.2: Labelling", "2.2. Label Elements", or "2.2" with the title
   // on the next line (two-column PDF copies).
-  const H22 = /(?:^|\n)[ \t]*(?:section[ \t]*)?2\.2\.?[ \t]*:?[ \t]*\n?[ \t]*label(?:l?ing)?(?:[ \t]+elements?)?\b/gi;
+  const H22 = /(?:^|\n)[ \t]*(?:sds[ \t]+)?(?:section[ \t]*)?2\.2\.?[ \t]*:?[ \t]*\n?[ \t]*label(?:l?ing)?(?:[ \t]+elements?)?\b/gi;
   // Section titles that end Section 2.2, numbered or not. Unnumbered titles
   // only count as a heading when they are (almost) the whole line.
   const LATER_TITLES = 'other[ \\t]+hazards|composition|mixtures?|substances?|information[ \\t]+on[ \\t]+ingredients|first[- \\t]*aid|fire|fire-?fighting|accidental|handling|exposure|physical|stability|toxicolog|ecolog|disposal|transport|regulatory|other[ \\t]+information';

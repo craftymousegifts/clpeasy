@@ -44,6 +44,8 @@
 const fs = require('fs');
 const assert = require('assert');
 const { JSDOM, VirtualConsole } = require('jsdom');
+// Close test-owned pages after every assertion finishes, including on failure.
+const testDoms = [];
 const { webcrypto } = require('crypto');
 
 const builderSource = fs.readFileSync('builder.html', 'utf8')
@@ -170,6 +172,7 @@ async function openBuilder(opts){
     }
   });
   const { window } = dom;
+  testDoms.push(dom);
   await new Promise(resolve => setTimeout(resolve, 250));
   return { dom, window, document: window.document, errors, capturedHrefs, capturedBlobs, rpcCalls, profile };
 }
@@ -244,6 +247,7 @@ async function openComposer(opts){
     }
   });
   const { window } = dom;
+  testDoms.push(dom);
   await new Promise(resolve => setTimeout(resolve, 250));
   return { dom, window, document: window.document, errors, capturedImgSrcs, rpcCalls };
 }
@@ -725,4 +729,5 @@ function candleFixture(overrides){
   }
 
   console.log(`preview watermark and export authorisation checks passed (${passed} assertions)`);
-})().catch(e => { console.error(e.stack || e.message); process.exitCode = 1; });
+})().catch(e => { console.error(e.stack || e.message); process.exitCode = 1; })
+  .finally(() => { for (const dom of testDoms) dom.window.close(); });

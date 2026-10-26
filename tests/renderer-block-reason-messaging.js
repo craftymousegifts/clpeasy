@@ -74,7 +74,7 @@ const dom = new JSDOM(source, {
       },
       drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
     });
-    window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
+    window.eval(fs.readFileSync('sds-supplier-wording.js', 'utf8')); window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
     window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
@@ -132,6 +132,7 @@ function runStep3Gate(){
 // entirely -- proves the fail-closed protection and its message live in
 // the renderer itself, not only in the Step-3 gate.
 function renderDirect(hStatementsCsv, forExport){
+  window.clearHazardData(); // This fixture exercises manual data, not a previous source snapshot.
   window.selectShape('rectangle');
   window.selectSize('custom');
   document.getElementById('custom-w').value = '80';
@@ -322,11 +323,15 @@ P501, Dispose of contents and container in accordance with local regulations.`;
     const gate = runStep3Gate();
     results.h999 = { extracted:r, gate };
     assert(r.hSelected.includes('H999'), 'H999 fixture: H999 must be matched by extraction (regex is independent of H_LIB)');
-    assert.strictEqual(gate.ok, false, 'H999 fixture: must be blocked');
-    assert(gate.alert.startsWith("A code can't be added to this label"), `H999 fixture: alert must use the generic heading, got: ${JSON.stringify(gate.alert)}`);
-    assert(/\bH999\b/.test(gate.alert), 'H999 fixture: alert must name H999');
-    assert(!gate.alert.includes('needs supplier confirmation for a Great Britain CLP label') && !gate.alert.includes('another national or international classification system'), 'H999 fixture: must NOT use the confirmed-unsupported wording -- H999 is not a verified unsupported code');
-    assert(!/select a larger|full content|does not fit/i.test(gate.alert), 'H999 fixture: alert must never imply a size problem');
+    assert.strictEqual(gate.ok, true, 'reliable supplier wording is accepted without library recognition');
+    pasteAndExtract(H999_TEXT.replace('H999, Not a real code.','H999'));
+    const incomplete=runStep3Gate();
+    assert.strictEqual(incomplete.ok,false,'missing supplier wording still blocks');
+    results.h999.incomplete=incomplete;
+    assert(incomplete.alert.startsWith('Supplier statement wording needs review'), `H999 fixture: alert must use the generic heading, got: ${JSON.stringify(incomplete.alert)}`);
+    assert(/\bH999\b/.test(incomplete.alert), 'H999 fixture: alert must name H999');
+    assert(!incomplete.alert.includes('needs supplier confirmation for a Great Britain CLP label') && !incomplete.alert.includes('another national or international classification system'), 'H999 fixture: must NOT use the confirmed-unsupported wording -- H999 is not a verified unsupported code');
+    assert(!/select a larger|full content|does not fit/i.test(incomplete.alert), 'H999 fixture: alert must never imply a size problem');
 
     // Renderer-level (bypassing Step 3): same generic distinction.
     const rDirect = renderDirect('H999', true);
