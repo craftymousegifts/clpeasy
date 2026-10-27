@@ -238,6 +238,8 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 .btn-primary{width:100%;background:var(--teal);color:white;border:none;padding:13px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-bottom:8px;}
 .btn-primary:hover{background:var(--teal-dark);}
 .btn-primary:disabled{opacity:0.4;pointer-events:none;}
+/* Disabled cutting-machine button looks disabled too, like Print / PDF. */
+.btn-secondary:disabled{opacity:0.4;pointer-events:none;}
 .btn-secondary{width:100%;background:white;color:var(--text);border:1.5px solid var(--border);padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-bottom:8px;}
 .btn-secondary:hover{border-color:var(--teal);color:var(--teal);}
 .pro-gate{background:var(--amber-light);border:1.5px solid var(--amber);border-radius:10px;padding:12px 14px;font-size:12px;color:#92400E;margin-bottom:8px;line-height:1.6;text-align:center;}
@@ -468,7 +470,11 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
            sheet (Phase 1). Its exact geometry lives in TEMPLATE_REGISTRY,
            sourced from the manufacturer's own published spec so printed
            output lines up with the physical sheet. -->
-      <div class="tpl-card" data-tpl="eu30009" onclick="selectTemplate('eu30009',this)">
+      <!-- EU30009 temporarily hidden from customers (27 Oct 2026): the Builder
+           saves whole-millimetre sizes, so no label can be 99.1 x 57.3mm yet.
+           Its TEMPLATE_REGISTRY entry is unchanged; remove style="display:none"
+           to show it again. -->
+      <div class="tpl-card" data-tpl="eu30009" onclick="selectTemplate('eu30009',this)" style="display:none;">
         <div class="tpl-name">EU30009 <button type="button" class="tpl-info-btn" title="View sheet specification" onclick="event.stopPropagation();openSpecModal('eu30009')">ⓘ</button></div>
         <div class="tpl-detail">OnlineLabels UK · 2×5 · 99.1×57.3mm</div>
         <div class="tpl-reason" style="display:none;"></div>
@@ -2238,7 +2244,7 @@ function renderSheetCanvas(){
     const emptySubEl=document.querySelector('#empty-state .empty-sub');
     if(currentTpl===null){
       if(emptyTitleEl)emptyTitleEl.textContent='Now choose the sheet you want to print on.';
-      if(emptySubEl)emptySubEl.textContent='Pick Custom Sheet or EU30009 on the left to continue.';
+      if(emptySubEl)emptySubEl.textContent='Pick Custom Sheet on the left to continue.';
     } else {
       if(emptyTitleEl)emptyTitleEl.textContent='No labels on sheet yet';
       if(emptySubEl)emptySubEl.textContent='Add labels from your saved library on the left to build your print sheet.';
