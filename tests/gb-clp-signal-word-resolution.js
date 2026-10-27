@@ -14,7 +14,7 @@ function buildDom(){
   const dom=new JSDOM(source,{url:'https://local.clpeasy.test/builder.html',runScripts:'dangerously',pretendToBeVisual:true,virtualConsole:vc,beforeParse(window){
     window.HTMLElement.prototype.scrollIntoView=()=>{};
     window.HTMLCanvasElement.prototype.getContext=()=>({font:'',measureText(text){return{width:String(text).length*7}},drawImage(){},fillRect(){},clearRect(){},getImageData(){return{data:[]}}});
-    window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-supplier-wording.js'),'utf8')); window.eval(renderer); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8')); window.eval(library);
+    window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-supplier-wording.js'),'utf8')); window.eval(renderer); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','hazard-provenance.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8')); window.eval(library);
     window.alert=m=>{window.__lastAlert=String(m)}; window.confirm=()=>true; window.scrollTo=()=>{};
     window.fetch=async()=>({ok:true,json:async()=>({})}); window.open=()=>({location:{href:''},close(){},opener:null});
     window.URL.createObjectURL=()=> 'blob:test'; window.URL.revokeObjectURL=()=>{};
@@ -75,12 +75,14 @@ async function run(){
   // updateLabel() resolver run. No Smart Paste-only copy is allowed.
   // #270: while a Smart Paste source is active the supplier's signal word is
   // kept exactly; a manual label has no source, so unlock it first.
+  // (CLP-007: such labels are older, pre-lockdown labels; the H/P boxes are
+  // display-only, so the state is set directly.)
   window.eval("S.hazardFromExtraction=false;S.sourceSection22='';S.supplierWording=null");
-  document.getElementById('h-statements').value='H412, EUH208'; window.eval("S.sdsSignal=''"); window.updateLabel();
+  window.eval("S.hStatements='H412, EUH208';S.sdsSignal=''"); window.updateLabel();
   assert.strictEqual(window.eval('S.signal'),'','manual H412+EUH208 must match Smart Paste: blank');
-  document.getElementById('h-statements').value='H317'; window.updateLabel();
+  window.eval("S.hStatements='H317'"); window.updateLabel();
   assert.strictEqual(window.eval('S.signal'),'Warning','manual H317 must resolve to Warning');
-  document.getElementById('h-statements').value='H314, H317'; window.updateLabel();
+  window.eval("S.hStatements='H314, H317'"); window.updateLabel();
   assert.strictEqual(window.eval('S.signal'),'Danger','manual mixed Danger+Warning must resolve to Danger');
 
   // Clear must remove the supplier signal source as well as the rendered word.

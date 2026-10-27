@@ -40,12 +40,16 @@ let browser;
       document.getElementById('biz-name').value='Synthetic Test Business';document.getElementById('biz-address').value='1 Test Street, Test Town, TE1 1ST';document.getElementById('biz-phone').value='00000000000';document.getElementById('biz-website').value='https://example.invalid';document.getElementById('batch-num').value='TEST-001';
       document.getElementById('smart-paste-input').value=SDS;extractSDS();
       if(manual){
-        // Exercise the already-supported unlocked/manual route, without
+        // CLP-007 Smart Paste lockdown: manual entry no longer exists. This
+        // exercises an older, manually created label registered before the
+        // lockdown (the only remaining non-Smart-Paste route), without
         // changing the extraction filter or supplying real regulatory data.
         const h=document.getElementById('h-statements').value,pp=document.getElementById('p-statements').value;
         clearHazardData();document.getElementById('h-statements').value=h;document.getElementById('p-statements').value=pp;
+        S.hStatements=h;S.pStatements=pp;
         S.hSelected=h.split(',').map(x=>x.trim());S.pSelected=pp.split(',').map(x=>x.trim());S.sensitisers=['Linalool','Limonene'];S.signal='Warning';S.pictograms=['exclamation','aquatic'];
-        openP280Modal();document.querySelector('#p280-item-opts input[value="gloves"]').checked=true;confirmP280Modal();
+        S.p280Items=['gloves'];S.p280Other='';
+        S.legacySourceId=S.legacySourceId||'00000000-0000-4000-8000-0000000000fe';window._clpLegacyRegister=HazardProvenance.addLegacy(window._clpLegacyRegister,S.legacySourceId,_hazardProvenanceRecord());
       }
       readForm();updateLabel();
       for(let n=2;n<=5;n++){if(n===4){document.getElementById('hazard-confirm').checked=true;toggleHazardNext();}setApprovedBuilderStep(n);}

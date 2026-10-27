@@ -80,7 +80,13 @@ const server = http.createServer((req, res) => {
           builderMsgHtml: (window._unrecognizedCodesGeneric || []).length ? clpUnrecognisedCodesMessage(window._unrecognizedCodesGeneric, escapeBuilderText) : null
         };
       }
-      async function reopen(rec) { loadLabelRecord(Object.assign({}, base, rec)); await sleep(300); return snap(); }
+      // CLP-007 lockdown: an older label without Smart Paste data is one
+      // registered before the lockdown (hazard-provenance.js).
+      async function reopen(rec) {
+        const r = Object.assign({}, base, rec);
+        if (!HazardProvenance.isExtracted(r)) { r.id = r.id || '00000000-0000-4000-8000-0000000000fd'; window._clpLegacyRegister = HazardProvenance.addLegacy(window._clpLegacyRegister, r.id, r); }
+        loadLabelRecord(r); await sleep(300); return snap();
+      }
       async function paste(sds) {
         clearHazardData(); document.getElementById('scent-name').value = 'CLP007 QA'; document.getElementById('product-type').value = 'Scented Candle'; onProductTypeChange();
         document.getElementById('smart-paste-input').value = sds; extractSDS(); await sleep(200); return snap();
@@ -124,7 +130,9 @@ const server = http.createServer((req, res) => {
     assert(!/recognis|entered in error|invalid/i.test(L.builderMsg.heading + L.builderMsg.body), 'P241 not described as unrecognised/invalid');
     assert(!/was copied|you pasted|previously|extracted|saved/i.test(L.builderMsg.body), 'does not imply an SDS was pasted or saved');
     assert(R.step3 === false && alerts.some(a => a.includes('P241: ' + GUIDANCE1 + '\n\n' + GUIDANCE2) && !/did not recognise/.test(a)), 'Step 3 check shows the approved guidance and still stops: ' + alerts.join(' || '));
-    assert(/P241 was not recognised by CLPeasy\./.test(L.text) && (L.text.match(/P241/g) || []).length === 1, 'label preview wording unchanged, P241 named once');
+    // CLP-007 #314 review: the preview overlay no longer calls P241 unrecognised;
+    // it uses the existing supplier-wording sentence.
+    assert(/P241 need complete, unambiguous supplier wording\./.test(L.text) && !/not recognised/.test(L.text) && (L.text.match(/P241/g) || []).length === 1, 'label preview: P241 needs supplier wording (not "not recognised"), named once');
     assert.strictEqual(L.panel, '<strong>⚠️ A code can\'t be added to this label</strong><br><br>P241: ' + GUIDANCE1 + '<br><br>' + GUIDANCE2, 'Step 5 panel shows only the approved guidance: ' + L.panel);
     ok('older label with P241 and no supplier wording: approved P241 guidance in Builder (Step 5 panel, message, Step 3), still blocked; preview wording unchanged');
 
@@ -183,12 +191,12 @@ const server = http.createServer((req, res) => {
       return r;
     }, R.records);
     assert.deepStrictEqual(C.legacyP241.warnings, ['unrecognized-code:P241']);
-    assert.strictEqual(C.legacyP241.msg, 'Contains a hazard/precautionary code CLPeasy doesn\'t recognise: P241.');
+    assert.strictEqual(C.legacyP241.msg, 'P241: This precautionary statement needs the full wording from your supplier’s SDS Section 2.2. Check the source document before continuing.', 'Composer: approved supplier-wording guidance, not "doesn\'t recognise" (#314 review)');
     assert.deepStrictEqual(C.openChoice.warnings, ['unrecognized-code:P241']);
-    assert.strictEqual(C.openChoice.msg, 'Contains a hazard/precautionary code CLPeasy doesn\'t recognise: P241.');
+    assert.strictEqual(C.openChoice.msg, 'P241: This precautionary statement needs the full wording from your supplier’s SDS Section 2.2. Check the source document before continuing.');
     assert(C.legacyP241.fits === false && C.openChoice.fits === false, 'Composer still refuses both labels');
     assert(!c.errs.length, 'Composer page errors: ' + c.errs.join(' | '));
-    ok('Print Sheet Composer: P241 named once (was "P241, P241"), wording unchanged, labels still refused');
+    ok('Print Sheet Composer: P241 named once (was "P241, P241") with the approved supplier-wording guidance; labels still refused');
     await c.close();
   } catch (e) {
     failed = true;

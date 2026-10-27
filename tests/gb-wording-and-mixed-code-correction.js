@@ -88,7 +88,7 @@ const dom = new JSDOM(source, {
       },
       drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
     });
-    window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-supplier-wording.js'),'utf8')); window.eval(rawLabelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
+    window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-supplier-wording.js'),'utf8')); window.eval(rawLabelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','hazard-provenance.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
     window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
@@ -174,7 +174,11 @@ function renderDirectAndUpdate(hStatementsCsv, opts, shapeOverride){
     const el = document.getElementById(id);
     if(el) el.value = val;
   });
+  // CLP-007: the H/P inputs are display-only (no longer read back by
+  // readForm()), so the fixture's codes are also set on the state.
   window.eval(`
+    S.hStatements=${JSON.stringify(domFields['h-statements'] || '')};
+    S.pStatements=${JSON.stringify(domFields['p-statements'] || '')};
     S.signal='Warning';
     S.sensitisers=${JSON.stringify(opts.sensitisers || [])};
     S.pictograms=${JSON.stringify(opts.pictograms || [])};
@@ -630,14 +634,17 @@ P501, Dispose of contents and container in accordance with local regulations.`;
   // confirm the control appears, then clear again and confirm it hides.
   // ─────────────────────────────────────────────────────────────────────
   {
-    // P-only: a maker who manually picks P statements without ever
-    // touching Smart Paste/H statements.
+    // P-only: P statements without any H statements (an older label's data;
+    // CLP-007 removed manual picking).
     setupBuilderState();
     window.setApprovedBuilderStep(2);
     window.setApprovedBuilderStep(3);
     window.clearHazardData();
     assert.strictEqual(clearLinkVisible(), false, 'P-only case: must start from a genuinely untouched Step 3');
+    // CLP-007: P statements can no longer be picked by hand; an older
+    // label's P-only data is set on the state (the box is display-only).
     document.getElementById('p-statements').value = 'P501, Dispose of contents and container in accordance with local regulations.';
+    window.eval("S.pStatements=document.getElementById('p-statements').value");
     window.updateLabel();
     results.clearControlPOnly = { visible: clearLinkVisible(), hStatements: window.eval('S.hStatements') };
     assert.strictEqual(window.eval('S.hStatements'), '', 'P-only case: H statements must remain genuinely empty (proves this is not an H-driven pass)');

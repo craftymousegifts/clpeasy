@@ -23,7 +23,7 @@ const dom = new JSDOM('<!doctype html><html></html>', {
       drawImage() {}, fillRect() {}, clearRect() {}, getImageData() { return { data: [] }; }
     });
     w.eval(source);
-    w.eval(fs.readFileSync(path.join(root, 'sds-doc-check.js'), 'utf8')); w.eval(fs.readFileSync(path.join(root, 'sds-section-scope.js'), 'utf8'));
+    w.eval(fs.readFileSync(path.join(root, 'sds-doc-check.js'), 'utf8')); w.eval(fs.readFileSync(path.join(root, 'hazard-provenance.js'), 'utf8')); w.eval(fs.readFileSync(path.join(root, 'sds-section-scope.js'), 'utf8'));
   }
 });
 let checked = 0;

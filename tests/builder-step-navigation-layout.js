@@ -35,7 +35,7 @@ function buildDom(){
         },
         drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
       });
-      window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
+      window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','hazard-provenance.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
       window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
       window.alert = message => { window.__lastAlert = String(message); };
       window.confirm = () => true;
@@ -152,9 +152,8 @@ setTimeout(async () => {
     assert(nextBtn && nextBtn.getAttribute('onclick').includes('setApprovedBuilderStep'), 'Continue button must call the existing setApprovedBuilderStep(), not a new function');
 
     // ── Step 5 fine-tune relocation beside the preview ────────────────────
-    window.eval('S.hSelected=["H317"];S.pSelected=["P273"]');
-    document.getElementById('h-statements').value = 'H317';
-    document.getElementById('p-statements').value = 'P273';
+    // CLP-007: hand-built hazard fixture registered as a genuine older label.
+    window.eval(require('./helpers/older-label-fixture').script('H317', 'P273'));
     window.updateLabel();
     document.getElementById('hazard-confirm').checked = true;
     window.setApprovedBuilderStep(3);

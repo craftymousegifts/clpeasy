@@ -45,7 +45,7 @@ const dom = new JSDOM(source, {
       },
       drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
     });
-    window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-supplier-wording.js'),'utf8')); window.eval(fs.readFileSync('label-render.js', 'utf8')); window.eval(fs.readFileSync('sds-doc-check.js', 'utf8')); window.eval(fs.readFileSync('sds-section-scope.js', 'utf8'));
+    window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-supplier-wording.js'),'utf8')); window.eval(fs.readFileSync('label-render.js', 'utf8')); window.eval(fs.readFileSync('sds-doc-check.js', 'utf8')); window.eval(fs.readFileSync('hazard-provenance.js', 'utf8')); window.eval(fs.readFileSync('sds-section-scope.js', 'utf8'));
     window.eval(fs.readFileSync('label-library.js', 'utf8')); window.eval(fs.readFileSync('entitlement.js', 'utf8'));
     window.alert = () => {};
     window.confirm = () => true;

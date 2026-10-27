@@ -15,6 +15,11 @@ function withConfirmedDoc(rec, defaultPct) {
   const pct = SdsDocCheck.parsePct(rec.fragLoad);
   if (pct === null) throw new Error('fixture has no single fragrance %: ' + JSON.stringify(rec.fragLoad));
   const out = Object.assign({}, rec, { sdsDoc: { kind: 'finished', pct: String(pct), base: group } });
+  // CLP-007 Smart Paste lockdown (26 Oct 2026): a hand-built fixture without
+  // Smart Paste data stands for an older label saved before the lockdown, so
+  // it carries a pre-lockdown save date and goes through the real one-time
+  // registration (hazard-provenance.js) like a maker's own older label.
+  if (rec.hazardFromExtraction !== true && !rec.savedAt) out.savedAt = '01/10/2026';
   out.sdsDoc.confirmed = SdsDocCheck.confirmationFor(out);
   if (!SdsDocCheck.isVerified(out)) throw new Error('fixture could not be confirmed');
   return out;

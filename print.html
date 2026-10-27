@@ -688,6 +688,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 <script src="sds-supplier-wording.js"></script>
 <script src="label-render.js"></script>
 <script src="sds-doc-check.js"></script>
+<script src="hazard-provenance.js"></script>
 <script src="label-library.js"></script>
 <script src="entitlement.js"></script>
 
@@ -944,8 +945,25 @@ function getSheetGeometryBlockMessage(){
 // on it lacks a current supplier-document confirmation (SdsDocCheck, the
 // same rule as the Builder). Saved designs are not changed: the maker opens
 // the label in Create Label and completes Step 3. Returns message or null.
+// CLP-007: labels whose hazard information came neither from Smart Paste
+// nor from a registered older label can't be printed.
+function getSheetHazardProvenanceBlockMessage(){
+  if(currentTpl===null||typeof HazardProvenance==='undefined')return null;
+  const seen=new Set(), names=[];
+  for(const p of getSheetPlacementsMM()){
+    const ld=p.labelData||{};
+    const key=ld.id||ld.scentName||JSON.stringify(ld).slice(0,200);
+    if(seen.has(key))continue;
+    seen.add(key);
+    if(HazardProvenance.classify(ld,window._clpLegacyRegister||{})==='unverified')names.push(ld.scentName||'Unnamed label');
+  }
+  if(!names.length)return null;
+  return `This sheet can't be printed or downloaded yet. ${HazardProvenance.BLOCK_MESSAGE}\n\n${names.map(n=>`• ${n}`).join('\n')}`;
+}
 function getSheetSdsDocBlockMessage(){
   if(currentTpl===null||typeof SdsDocCheck==='undefined')return null;
+  const hazardMsg=getSheetHazardProvenanceBlockMessage();
+  if(hazardMsg)return hazardMsg;
   const seen=new Set(), names=[];
   for(const p of getSheetPlacementsMM()){
     const ld=p.labelData||{};
@@ -1175,6 +1193,12 @@ async function initComposerLibrary(){
     showLibraryErrorState(err);
     return;
   }
+  // CLP-007: one-time registration of older manually created labels
+  // (hazard-provenance.js), then keep their frozen wording on the records.
+  try{
+    window._clpLegacyRegister=HazardProvenance.runMigration({ns:libNS(),records:LabelLibrary.getSaved(),wordingFor:LabelRenderer.libraryWordingFor});
+    await LabelLibrary.mutate(cur=>HazardProvenance.reconcile(cur,window._clpLegacyRegister)||LabelLibrary.NO_CHANGE);
+  }catch(err){console.log('Legacy hazard register:',err);}
   // Checkpoint C2: resolve ?label= only now that auth AND
   // LabelLibrary.init() have both completed.
   resolvePreloadFromURL();
@@ -1635,6 +1659,7 @@ function savedItemCardHtml(e,qty,compat){
         <div class="sli-name">${xe(e.scentName||'Unnamed')}</div>
         <div class="sli-meta">${xe(e.productType||'')} · ${sizeLabel} ${e.shape||'circle'}${compat.incompatible?' 🔒':''}</div>
         ${(typeof SdsDocCheck!=='undefined'&&!SdsDocCheck.isExportAllowed(e))?'<div class="sli-meta" style="color:#92400E;font-weight:600;">Draft: document check needed before printing</div>':''}
+        ${(typeof HazardProvenance!=='undefined'&&HazardProvenance.classify(e,window._clpLegacyRegister||{})==='unverified')?'<div class="sli-meta" style="color:#92400E;font-weight:600;">'+HazardProvenance.TAG+'</div>':''}
         ${compat.incompatible?`<div class="sli-incompat-reason">${xe(compat.reason)}</div>`:''}
       </div>
       <div class="sli-qty">
@@ -2452,7 +2477,14 @@ function describeFitWarnings(warnings, ld){
   if(warnings.includes('hazard-text-overflow')) return "The hazard/precautionary text doesn't fit at this label size, even at the smallest legible size."+sizeMsg;
   if(warnings.includes('footer-clipped')) return 'The business/footer details are being cut off at this label size.'+sizeMsg;
   if(unrecognized.includes('Signal word')) return `The signal word from the supplier's SDS is missing on this label. Open it with Edit label to update it.`;
-  if(unrecognized.length) return `Contains a hazard/precautionary code CLPeasy doesn't recognise: ${unrecognized.join(', ')}.`;
+  if(unrecognized.length){
+    // CLP-007: codes that need the supplier's own wording (P241, P370+P378,
+    // P321) get the approved #313 guidance, never "doesn't recognise".
+    const req=(typeof LabelRenderer!=='undefined'&&LabelRenderer.SUPPLIER_WORDING_REQUIRED)||[];
+    const codes=[...new Set(unrecognized)], needs=codes.filter(c=>req.includes(c)), other=codes.filter(c=>!req.includes(c));
+    return [...needs.map(c=>`${c}: This precautionary statement needs the full wording from your supplier’s SDS Section 2.2. Check the source document before continuing.`),
+      ...(other.length?[`Contains a hazard/precautionary code CLPeasy doesn't recognise: ${other.join(', ')}.`]:[])].join(' ');
+  }
   if(warnings.includes('candle-safety-symbols-too-small')) return "The candle-safety symbols can't fit at their required minimum size (5mm, BS EN 15494:2019) at this label size."+sizeMsg;
   // Read-only-impact-assessment fix: these four warnings existed already
   // (label-render.js's mandatory-text-floor fix) but weren't described

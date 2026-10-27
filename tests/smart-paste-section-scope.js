@@ -37,7 +37,7 @@ const dom = new JSDOM(source, { url: 'https://local.clpeasy.test/builder.html', 
   beforeParse(w) {
     w.HTMLElement.prototype.scrollIntoView = () => {};
     w.HTMLCanvasElement.prototype.getContext = () => ({ font: '', measureText(t){ const s = Number((String(this.font).match(/([\d.]+)px/) || [])[1]) || 12; return { width: [...String(t)].reduce((a, c) => a + s * (/[MW@%]/.test(c) ? .82 : /[ilI1.,' ]/.test(c) ? .28 : .54), 0) }; }, drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data: [] }; } });
-    for (const f of ['label-render.js', 'sds-doc-check.js', 'sds-section-scope.js', 'label-library.js', 'entitlement.js']) w.eval(fs.readFileSync(path.join(__dirname, '..', f), 'utf8'));
+    for (const f of ['label-render.js', 'sds-doc-check.js', 'hazard-provenance.js', 'sds-section-scope.js', 'label-library.js', 'entitlement.js']) w.eval(fs.readFileSync(path.join(__dirname, '..', f), 'utf8'));
     w.alert = m => { w.__lastAlert = String(m); }; w.confirm = () => true; w.scrollTo = () => {};
     w.fetch = async () => ({ ok: true, json: async () => ({}) });
     w.supabase = { createClient: () => ({ auth: { getSession: async () => ({ data: { session: null } }), onAuthStateChange: () => ({ data: { subscription: { unsubscribe(){} } } }), signOut: async () => ({}) }, from: () => Object.create(emptyQuery), rpc: async () => ({ data: false, error: null }) }) };
@@ -187,7 +187,7 @@ ok('unmarked repeated 2.2 heading: P-only page continuation joined; extra signal
     beforeParse(w) {
       w.HTMLElement.prototype.scrollIntoView = () => {};
       w.HTMLCanvasElement.prototype.getContext = () => ({ font: '', measureText(t){ return { width: String(t).length * 6 }; }, drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data: [] }; } });
-      for (const f of ['label-render.js', 'sds-doc-check.js', 'label-library.js', 'entitlement.js']) w.eval(fs.readFileSync(path.join(__dirname, '..', f), 'utf8')); // no sds-section-scope.js
+      for (const f of ['label-render.js', 'sds-doc-check.js', 'hazard-provenance.js', 'label-library.js', 'entitlement.js']) w.eval(fs.readFileSync(path.join(__dirname, '..', f), 'utf8')); // no sds-section-scope.js
       w.alert = () => {}; w.confirm = () => true; w.scrollTo = () => {}; w.fetch = async () => ({ ok: true, json: async () => ({}) });
       w.supabase = { createClient: () => ({ auth: { getSession: async () => ({ data: { session: null } }), onAuthStateChange: () => ({ data: { subscription: { unsubscribe(){} } } }), signOut: async () => ({}) }, from: () => Object.create(emptyQuery), rpc: async () => ({ data: false, error: null }) }) };
     } });
