@@ -47,7 +47,7 @@ const dom = new JSDOM(source, {
       },
       drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
     });
-    window.eval(fs.readFileSync('sds-supplier-wording.js','utf8')); window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
+    window.eval(fs.readFileSync('sds-supplier-wording.js','utf8')); window.eval(labelRendererSource); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','hazard-provenance.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
     window.eval(labelLibrarySource); window.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
     window.alert = message => { window.__lastAlert = String(message); };
     window.confirm = () => true;
@@ -160,6 +160,8 @@ setTimeout(async () => {
     assert.strictEqual(window.eval('isCustomSizeBelowSupportedMinimum()'), false, 'the approved 63×44mm preset must be exempt from the 52mm custom-size floor, the same way any other preset size is');
     document.getElementById('h-statements').value='H317, H411';
     document.getElementById('p-statements').value='P102, P273';
+    // CLP-007: the H/P boxes are display-only; the fixture sets the state.
+    window.eval("S.hStatements='H317, H411';S.pStatements='P102, P273'");
     document.getElementById('biz-name').value='Crafty Mouse Gifts';
     document.getElementById('biz-address').value='Scottish Borders';
     document.getElementById('biz-phone').value='01234 567890';
@@ -384,7 +386,11 @@ setTimeout(async () => {
 
     const h315 = document.querySelector('.h-chip[data-code="H315"]');
     assert(h315, 'H315 hazard chip missing');
+    // CLP-007 Smart Paste lockdown: the chip no longer adds a code.
     window.toggleHChip(h315, 'H315');
+    assert(!window.eval('S.hSelected').includes('H315'), 'H315 chip must not add a code (Smart Paste lockdown)');
+    window.eval("S.hSelected.push('H315');S.hStatements=S.hSelected.join(', ')");
+    window.syncPictogramsFromH();
     assert(window.eval('S.hSelected').includes('H315'), 'H315 not retained in state');
     assert(window.eval('S.pictograms').includes('exclamation'), 'H315 did not add exclamation pictogram');
     assert(document.querySelector('.picto-btn[data-picto="exclamation"].selected'), 'pictogram control did not render selected state');
@@ -442,6 +448,9 @@ setTimeout(async () => {
     window.eval("S.hazardFromExtraction=false;S.sourceSection22='';S.supplierWording=null;S.hSelected=['H315','H411','H373'];S.pSelected=['P273','P302+P352'];S.sensitisers=['Butylphenyl methylpropional']");
     document.getElementById('h-statements').value='H315, H411, H373, EUH208';
     document.getElementById('p-statements').value='P273, P302+P352';
+    // CLP-007: fixture state set directly (the boxes are display-only) and
+    // registered as a genuine older manually created label.
+    window.eval("S.hStatements='H315, H411, H373, EUH208';S.pStatements='P273, P302+P352';S.legacySourceId=S.legacySourceId||'00000000-0000-4000-8000-0000000000fe';window._clpLegacyRegister=HazardProvenance.addLegacy(window._clpLegacyRegister,S.legacySourceId,_hazardProvenanceRecord())");
     window.updateLabel();
 
     document.getElementById('hazard-confirm').checked = true;
@@ -497,10 +506,9 @@ setTimeout(async () => {
     assert(window.eval('S.pSelected').includes('P273'), 'saved P-code state was not restored');
     assert.strictEqual(document.getElementById('frag-load').value, '10%', 'saved fragrance load was not restored');
     assert.strictEqual(window.eval('editingLabelId'), savedId, 'loading a saved label did not set editingLabelId');
+    // CLP-007: a reopened label's hazard data cannot be edited by chip.
     window.toggleHChip(document.querySelector('.h-chip[data-code="H315"]'), 'H315');
-    assert(!window.eval('S.pictograms').includes('exclamation'), 'editing a reopened label retained a stale pictogram');
-    window.toggleHChip(document.querySelector('.h-chip[data-code="H315"]'), 'H315');
-    assert(window.eval('S.pictograms').includes('exclamation'), 'editing a reopened label did not restore its required pictogram');
+    assert(window.eval('S.hSelected').includes('H315') && window.eval('S.pictograms').includes('exclamation'), 'a reopened label\'s hazard data must not change by chip (Smart Paste lockdown)');
     window.loadLabelAndGotoStep5(savedId);
     assert.strictEqual(window.eval('approvedBuilderStep'), 5, 'reopening a saved label did not return to Download');
     assert(document.querySelector('.right-column > #preview-panel-el'), 'reopening a saved label displaced the live preview');

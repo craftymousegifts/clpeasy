@@ -47,7 +47,7 @@ const dom = new JSDOM(source, {
       },
       drawImage(){}, fillRect(){}, clearRect(){}, getImageData(){ return { data:[] }; }
     });
-    window.eval(fs.readFileSync('sds-supplier-wording.js', 'utf8')); window.eval(fs.readFileSync('label-render.js', 'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
+    window.eval(fs.readFileSync('sds-supplier-wording.js', 'utf8')); window.eval(fs.readFileSync('label-render.js', 'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','hazard-provenance.js'),'utf8')); window.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8'));
     window.eval(fs.readFileSync('label-library.js', 'utf8'));
     window.eval(fs.readFileSync(path.join(__dirname, '..', 'entitlement.js'), 'utf8'));
     window.alert = message => { window.__lastAlert = String(message); };
@@ -173,7 +173,7 @@ function f1Check(context){
 
   // Reopen in a fresh state (Clear first, so nothing is carried in memory).
   window.clearHazardData();
-  assert.deepStrictEqual(lockState(), { box:false, h:false, extractDisabled:false }, 'Clear unlocks Step 3');
+  assert.deepStrictEqual(lockState(), { box:false, h:true, extractDisabled:false }, 'Clear reopens Smart Paste; the H/P boxes stay read-only (CLP-007)');
   assert.strictEqual(S('S.hazardFromExtraction'), false, 'Clear resets the extraction flag');
   window.loadLabelRecord(saved);
   assert.deepStrictEqual(lockState(), fresh, 'C3/SDS-06: a reopened extracted label has exactly the post-extraction lock state');
@@ -189,15 +189,17 @@ function f1Check(context){
   delete legacyExtracted.hazardFromExtraction;
   window.loadLabelRecord(legacyExtracted);
   assert.deepStrictEqual(lockState(), fresh, 'C3: a legacy label whose saved sdsSignal proves an extraction is locked');
-  // Manual label (no extraction evidence) opened AFTER a locked one: unlocked.
+  // Manual label (no extraction evidence). CLP-007 Smart Paste lockdown:
+  // hand-entered hazard data is never editable; Smart Paste stays locked
+  // until Clear (an unregistered one is also blocked from download).
   const manual = Object.assign({}, saved, { id:'manual', scentName:'Manual Label', sdsSignal:'', hazardFromExtraction:false });
   window.loadLabelRecord(manual);
-  assert.deepStrictEqual(lockState(), { box:false, h:false, extractDisabled:false }, 'C3: manually entered hazard data stays editable, and the previous label\'s lock does not carry over');
+  assert.deepStrictEqual(lockState(), fresh, 'CLP-007: manually entered hazard data is read-only (Smart Paste locked until Clear)');
   const legacyManual = Object.assign({}, manual, { id:'legacy-manual' });
   delete legacyManual.hazardFromExtraction; delete legacyManual.sdsSignal;
   window.loadLabelRecord(legacyManual);
-  assert.deepStrictEqual(lockState(), { box:false, h:false, extractDisabled:false }, 'C3: a legacy label without extraction evidence is not locked on arbitrary saved text');
-  ok('C3: legacy extracted labels lock, manual/legacy-manual labels stay editable, no lock carry-over');
+  assert.deepStrictEqual(lockState(), fresh, 'CLP-007: a legacy label without extraction evidence is read-only too');
+  ok('C3: legacy extracted labels lock; CLP-007: manual/legacy-manual labels are read-only (Smart Paste locked until Clear)');
 
   // ── C4: same SDS + cosmetic rename ───────────────────────────────────
   window.loadLabelRecord(saved);
@@ -251,7 +253,7 @@ function f1Check(context){
   assert.deepStrictEqual(cleared, { h:'', p:'', signal:'', sdsSignal:'', pictos:[], sens:[], p280:[], p280Other:'' },
     'C4: old H/EUH/EUH208, P, P280, pictograms, signal word and sensitisers are all cleared');
   assert.strictEqual(S('approvedBuilderStep'), 3, 'C4: the maker is taken back to Step 3 to extract the new SDS');
-  assert.deepStrictEqual(lockState(), { box:false, h:false, extractDisabled:false }, 'C4: Step 3 is unlocked for the new SDS');
+  assert.deepStrictEqual(lockState(), { box:false, h:true, extractDisabled:false }, 'C4: Smart Paste is unlocked for the new SDS (H/P boxes stay read-only, CLP-007)');
   assert.strictEqual(S('S.hazardFromExtraction'), false, 'C4: extraction flag cleared');
   assert.strictEqual(document.getElementById('verify-checkbox').checked, false, 'C4: final verification must be ticked again');
   assert.strictEqual(window._downloadAllowed(), false, 'C4: export stays blocked');
@@ -312,7 +314,10 @@ function f1Check(context){
   assert.deepStrictEqual([...window._hazardReviewReasons()], ['load'], 'C4 load: 10% -> 12% requires review');
   assert(noticeShown(), 'C4 load: review notice shown');
   assert(/fragrance load from "10%" to "12%"/.test(notices()[0].textContent), 'C4 load: notice names the old and new load');
-  assert.strictEqual(notices()[0].querySelector('.hazard-review-keep').textContent, 'I have re-checked it: keep hazard data', 'C4 load: keep wording asks for a re-check, not "same SDS"');
+  // CLP-007 (founder decision 7): fresh Smart Paste only -- no keep option.
+  assert.strictEqual(notices()[0].querySelector('.hazard-review-keep'), null, 'C4 load: no keep option');
+  assert.deepStrictEqual([...notices()[0].querySelectorAll('button')].map(b => b.textContent), ['Clear hazard data and extract again'], 'C4 load: only "Clear hazard data and extract again"');
+  assert(/needs a fresh Smart Paste/.test(notices()[0].textContent), 'C4 load: notice asks for a fresh Smart Paste');
   assert.strictEqual(window._downloadAllowed(), false, 'C4 load: export blocked');
   let dl0 = downloads; await window.downloadSVG();
   assert.strictEqual(downloads, dl0, 'C4 load: no file while unanswered');
@@ -320,25 +325,17 @@ function f1Check(context){
   let n0 = S('getSaved().length'); await window.saveLabel();
   assert.strictEqual(S('getSaved().length'), n0, 'C4 load: nothing saved while unanswered');
   assert.strictEqual(window.canLeaveApprovedBuilderStep(2), false, 'C4 load: cannot leave Step 2');
-  // Keep = explicit re-check: hazard data kept, but both confirmations must be given again.
-  notices()[0].querySelector('.hazard-review-keep').click();
-  assert.strictEqual(window._hazardReviewRequired(), false, 'C4 load: re-check resolves the review');
-  assert.deepStrictEqual(hazardSnapshot(), before, 'C4 load: re-check keeps H/EUH/EUH208/P/P280/pictograms/signal/sensitisers unchanged');
-  assert.strictEqual(document.getElementById('verify-checkbox').checked, false, 'C4 load: final Step 5 verification must be ticked again');
-  assert.strictEqual(document.getElementById('hazard-confirm').checked, false, 'C4 load: Step 3 confirmation must be ticked again');
-  assert.strictEqual(window._downloadAllowed(), false, 'C4 load: still blocked until verification is ticked again');
+  // CLP-007: the review can't be answered by keeping the data; changing
+  // the load back (or Clear + Smart Paste) resolves it.
+  window.confirmSameHazardSource();
+  assert.strictEqual(window._hazardReviewRequired(), true, 'C4 load: the hazard data cannot be kept');
+  assert.deepStrictEqual(hazardSnapshot(), before, 'C4 load: hazard data unchanged while unresolved');
+  setLoad('10%');
+  assert.strictEqual(window._hazardReviewRequired(), false, 'C4 load: changing the load back resolves the review');
   tickVerify();
-  // The owner removed the separate document-percentage stamp. The explicit
-  // same-fragrance review and final verification still govern this export.
-  assert.strictEqual(window._downloadAllowed(), true, 'C4 load: explicit re-check and final verification do not require questionnaire answers');
+  assert.strictEqual(window._downloadAllowed(), true, 'C4 load: allowed again with the original load');
   assert(!/supplier document|document coverage/i.test(window._downloadBlockedMessage()), 'no retired questionnaire instruction');
-  window.setApprovedBuilderStep(3);
-  document.getElementById('hazard-confirm').checked = true;
-  window.setApprovedBuilderStep(4);
-  assert.strictEqual(S('approvedBuilderStep'), 4, 'C4 load: left Step 3 after reviewing updated supplier data ' + (window.__lastAlert || ''));
-  tickVerify();
-  assert.strictEqual(window._downloadAllowed(), true, 'C4 load: allowed once re-verified');
-  ok('C4 load: fragrance-load change blocks save/export until re-checked (with both confirmations again) or cleared');
+  ok('C4 load: fragrance-load change blocks save/export until changed back or cleared and extracted again (CLP-007: no keep option)');
 
   // Adding a fragrance load where none was entered is a change too. (Since 3 Oct
   // 2026 Smart Paste needs a %, so the answer helper enters 10% first and this
@@ -357,13 +354,16 @@ function f1Check(context){
   assert.deepStrictEqual([...window._hazardReviewReasons()], ['type'], 'C4 type: Scented Candle -> Wax Melt requires review');
   assert(/product type from "Scented Candle" to "Wax Melt"/.test(notices()[0].textContent), 'C4 type: notice names old and new type');
   assert.strictEqual(window._downloadAllowed(), false, 'C4 type: export blocked');
+  assert.strictEqual(notices()[0].querySelector('.hazard-review-keep'), null, 'C4 type: no keep option (CLP-007)');
+  window.confirmSameHazardSource();
+  assert.strictEqual(window._hazardReviewRequired(), true, 'C4 type: the hazard data cannot be kept (CLP-007)');
   document.getElementById('hazard-confirm').checked = true;
   assert.strictEqual(window.canLeaveApprovedBuilderStep(3), false, 'C4 type: cannot leave Step 3');
   notices()[1].querySelector('.hazard-review-clear').click();
   assert.strictEqual(S('S.hStatements'), '', 'C4 type: clear removes hazard data');
   extract(SDS_B);
   assert.strictEqual(window._hazardReviewRequired(), false, 'C4 type: new extraction belongs to the new product type');
-  ok('C4 type: product-type change blocks until re-checked or cleared; re-extraction resolves it');
+  ok('C4 type: product-type change blocks until cleared and extracted again (no keep option); re-extraction resolves it');
 
   // Reopened saved label, then type and load changed together (+ name).
   window.clearHazardData();
@@ -373,7 +373,7 @@ function f1Check(context){
   assert.deepStrictEqual([...window._hazardReviewReasons()], ['type','load'], 'C4 combo: reopened label, type + load changed');
   setName('Diffuser Version');
   assert.deepStrictEqual([...window._hazardReviewReasons()], ['name','type','load'], 'C4 combo: name + type + load changed');
-  assert.strictEqual(notices()[0].querySelector('.hazard-review-keep').textContent, 'I have re-checked it: keep hazard data', 'C4 combo: a type/load change always needs the re-check wording');
+  assert.strictEqual(notices()[0].querySelector('.hazard-review-keep'), null, 'C4 combo: a type/load change never offers keep (CLP-007)');
   setType('Scented Candle'); setLoad('10%');
   assert.deepStrictEqual([...window._hazardReviewReasons()], ['name'], 'C4 combo: reverting type and load leaves only the name decision');
   assert.strictEqual(notices()[0].querySelector('.hazard-review-keep').textContent, 'Same fragrance oil and SDS: keep hazard data', 'C4 combo: name-only keeps the same-SDS wording');

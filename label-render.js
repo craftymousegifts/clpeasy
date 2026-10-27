@@ -181,6 +181,10 @@ function normalizeLabel(data){
     supplierWordingIssues: Array.isArray(data.supplierWordingIssues)?data.supplierWordingIssues
       : (data.hazardFromExtraction && data.sourceSection22 && typeof ClpeasySupplierWording!=='undefined'?ClpeasySupplierWording.analyse(data.sourceSection22).issues:[]),
     supplierSourceActive: !!(data.supplierWording || (data.hazardFromExtraction && data.sourceSection22)),
+    // CLP-007: an older manually created label's wording, frozen when it was
+    // registered (see hazard-provenance.js). Only used without supplier wording.
+    legacyWording: (data.legacyWording && typeof data.legacyWording==='object'
+      && !(data.supplierWording || (data.hazardFromExtraction && data.sourceSection22))) ? data.legacyWording : null,
     // The saved supplier Section 2.2 states a signal word (either text order).
     supplierStatesSignal: typeof data.sourceSection22==='string'
       && /\bSignal\s+words?\s*:?\s*(?:Danger|Warning)\b|^[ \t]*(?:Danger|Warning)[ \t]*\n[ \t]*Signal\s+words?\s*:?[ \t]*$/im.test(data.sourceSection22),
@@ -404,6 +408,13 @@ const ACTIVE_REGULATORY_PROFILE = 'GB';
 // statement -- it blocks and tells the maker to check their supplier's
 // current Great Britain-market SDS instead.
 const GB_UNSUPPORTED_CODES=['H316','H401','H402'];
+// CLP-007 lockdown (founder-approved, 26 Oct 2026): precautionary statements
+// whose wording must be completed from the supplier's SDS ("…" or a choice
+// the supplier makes). Without the supplier's own Section 2.2 wording they
+// are never printed from P_LIB -- they block like any unrecognised code.
+// P241 is not in P_LIB, so it already blocks; it is listed for the Builder's
+// guidance message. Supplier-extracted labels are unaffected.
+const SUPPLIER_WORDING_REQUIRED=['P241','P370+P378','P321'];
 
 // ── M21 (Issue #6): suffixed hazard-statement codes ──────────────────────
 // Verified against the CLP material on legislation.gov.uk and supplied by
@@ -892,6 +903,38 @@ function choosePictoMmAndRender(rawData, opts){
 // content-does-not-fit branch, which is BYTE-IDENTICAL to the overlay this
 // replaced, so genuine layout overflow with only recognised, GB-supported
 // codes is completely unaffected by this change.
+// Combined P codes ("P301, P310" -> "P301+P310") are only joined from the
+// library, never for supplier wording (moved unchanged from renderLabel()).
+function _normalisePCodes(pCodes,supplierSourceActive){
+  const _pNorm=[];
+  for(let _i=0;_i<pCodes.length;_i++){
+    const _c=pCodes[_i];
+    const _comb=_i<pCodes.length-1?_c+'+'+pCodes[_i+1]:null;
+    if(!supplierSourceActive&&_comb&&P_LIB.find(x=>x.code===_comb)){_pNorm.push(_comb);_i++;}
+    else _pNorm.push(_c);
+  }
+  return _pNorm;
+}
+// CLP-007: an older label prints its frozen wording for a code the library
+// still holds (blocking rules above are applied first and are unchanged).
+function _legacyText(data,code,libraryText){
+  const w=data.legacyWording&&data.legacyWording[code];
+  return (typeof w==='string'&&w.trim())?w:libraryText;
+}
+// The library wording a label without supplier wording prints today, per
+// code, for freezing an older label's wording. P280 (built from the label's
+// own items) and codes that need supplier wording are left out.
+function libraryWordingFor(raw){
+  const r=raw||{};
+  const split=v=>String(v||'').split(',').map(x=>x.trim()).filter(Boolean);
+  const out={};
+  split(r.hStatements).filter(c=>c!=='EUH208').forEach(c=>{const e=H_LIB.find(x=>x.code===c);if(e)out[c]=e.desc;});
+  _normalisePCodes(split(r.pStatements),false).forEach(c=>{
+    if(c==='P280'||SUPPLIER_WORDING_REQUIRED.includes(c))return;
+    const e=P_LIB.find(x=>x.code===c);if(e)out[c]=e.desc;
+  });
+  return out;
+}
 function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, genericCodes, invalidPictograms, supplierSourceActive){
   unsupportedCodes = unsupportedCodes||[]; genericCodes = genericCodes||[]; invalidPictograms = invalidPictograms||[];
   const hasIssue = unsupportedCodes.length>0 || genericCodes.length>0 || invalidPictograms.length>0;
@@ -916,13 +959,19 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
   // out of the <text>/<tspan> elements.
   const heading = 'LABEL DATA NEEDS REVIEW';
   const uCodes = unsupportedCodes.map(xe), gCodes = genericCodes.map(xe);
+  // CLP-007: codes that need the supplier's own wording are never described
+  // as unrecognised; they use the existing supplier-wording sentence.
+  const gReq = gCodes.filter(c=>SUPPLIER_WORDING_REQUIRED.includes(c)), gOther = gCodes.filter(c=>!SUPPLIER_WORDING_REQUIRED.includes(c));
+  const gSentence = supplierSourceActive ? gCodes.join(', ')+' need complete, unambiguous supplier wording.'
+    : [gReq.length?gReq.join(', ')+' need complete, unambiguous supplier wording.':'',
+       gOther.length?gOther.join(', ')+' '+(gOther.length>1?'were':'was')+' not recognised by CLPeasy.':''].filter(Boolean).join(' ');
   let sentences;
   if(uCodes.length && gCodes.length){
     // Mixed: identify both groups by name -- neither hides the other --
     // plus the one instruction both groups share.
     sentences = [
       uCodes.join(', ')+' need'+(uCodes.length>1?'':'s')+' supplier confirmation for a Great Britain CLP label.',
-      gCodes.join(', ')+(supplierSourceActive?' need complete, unambiguous supplier wording.':' '+(gCodes.length>1?'were':'was')+' not recognised by CLPeasy.'),
+      gSentence,
       'Check you pasted Section 2.2 from the correct supplier SDS.'
     ];
   } else if(uCodes.length){
@@ -936,7 +985,7 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
     // Generic/unrecognised code(s) -- must NOT state or imply the code is
     // legally unsupported under GB rules, since that has not been verified.
     sentences = [
-      gCodes.join(', ')+(supplierSourceActive?' need complete, unambiguous supplier wording.':' '+(gCodes.length>1?'were':'was')+' not recognised by CLPeasy.'),
+      gSentence,
       'Check you pasted Section 2.2 from the correct supplier SDS.',
       'If the code is present in Section 2.2, contact CLPeasy support.'
     ];
@@ -1673,18 +1722,11 @@ function renderLabel(rawData, opts){
     if(data.supplierSourceActive){_unrecognizedCodes.push(c);return '';}
     const e=H_LIB.find(x=>x.code===c);
     if(!e)_unrecognizedCodes.push(c);
-    return e?e.desc:'';
+    return e?_legacyText(data,c,e.desc):'';
   }).filter(Boolean);
   const hText=data.supplierSourceActive?_hResolved.join(' '):_hResolved.map(v=>{const t=String(v).trim();return /[.!?]$/.test(t)?t:t+'.';}).join(' ');
   // Normalise P codes
-  const _pNorm=[];
-  const _pRaw=pCodes;
-  for(let _i=0;_i<_pRaw.length;_i++){
-    const _c=_pRaw[_i];
-    const _comb=_i<_pRaw.length-1?_c+'+'+_pRaw[_i+1]:null;
-    if(!data.supplierSourceActive&&_comb&&P_LIB.find(x=>x.code===_comb)){_pNorm.push(_comb);_i++;}
-    else _pNorm.push(_c);
-  }
+  const _pNorm=_normalisePCodes(pCodes,data.supplierSourceActive);
   // P280 is resolved to its per-label selected wording (buildP280Wording),
   // not P_LIB's fixed desc -- a label carrying P280 with no valid selection
   // (never configured, or saved before this feature existed) resolves to
@@ -1701,6 +1743,8 @@ function renderLabel(rawData, opts){
       return supplierText.trim();
     }
     if(data.supplierSourceActive){_unrecognizedCodes.push(c);return '';}
+    // CLP-007: never print CLPeasy's generic text for these (see the list).
+    if(SUPPLIER_WORDING_REQUIRED.includes(c)){_unrecognizedCodes.push(c);return null;}
     if(c==='P280'){
       const w=buildP280Wording(data);
       if(!w)_unrecognizedCodes.push(c);
@@ -1708,7 +1752,7 @@ function renderLabel(rawData, opts){
     }
     const e=P_LIB.find(x=>x.code===c);
     if(!e)_unrecognizedCodes.push(c);
-    return e?e.desc:null;
+    return e?_legacyText(data,c,e.desc):null;
   });
   const _pFound = _pResolved.filter(Boolean);
   // Join complete supplier sentences without inserting duplicate punctuation.
@@ -2184,8 +2228,13 @@ function renderLabel(rawData, opts){
   // fields below instead: `unsupportedCodes`, `unrecognizedCodesGeneric`
   // and `contentOverflow` are each independently complete regardless of
   // which one `_blockReason` leads with.
-  const _unsupportedCodesFound = _unrecognizedCodes.filter(c => GB_UNSUPPORTED_CODES.includes(c));
-  const _genericUnrecognizedFound = _unrecognizedCodes.filter(c => !GB_UNSUPPORTED_CODES.includes(c));
+  // CLP-007 (26 Oct 2026): the same code can be flagged twice (e.g. by the
+  // supplier-wording check and again when its statement is resolved). The
+  // lists shown to makers name each code once; the blocking decision above
+  // still reads _unrecognizedCodes itself, so blocking is unchanged.
+  const _unrecognizedCodesUnique = [...new Set(_unrecognizedCodes)];
+  const _unsupportedCodesFound = _unrecognizedCodesUnique.filter(c => GB_UNSUPPORTED_CODES.includes(c));
+  const _genericUnrecognizedFound = _unrecognizedCodesUnique.filter(c => !GB_UNSUPPORTED_CODES.includes(c));
   // "Physical content overflow" -- every non-code blocking flag, i.e.
   // _contentBlocked minus the unrecognised-code contribution. Independent
   // of blockReason's priority ordering: this is true/false on its own
@@ -2355,7 +2404,7 @@ function renderLabel(rawData, opts){
   ${overflowOverlay}
 </g></svg>`;
 
-  if(_unrecognizedCodes.length) warnings.push(..._unrecognizedCodes.map(c=>'unrecognized-code:'+c));
+  if(_unrecognizedCodesUnique.length) warnings.push(..._unrecognizedCodesUnique.map(c=>'unrecognized-code:'+c));
   if(_invalidPictograms.length) warnings.push(..._invalidPictograms.map(k=>'unrecognized-pictogram:'+k));
   if(_labelLegibilityWarn) warnings.push('hazard-text-overflow');
   if(_footerLegibilityClipped) warnings.push('footer-clipped');
@@ -2396,7 +2445,7 @@ function renderLabel(rawData, opts){
     },
     hazardYSlack: _hazardYSlack,
     footerClipped: _footerLegibilityClipped,
-    unrecognizedCodes: _unrecognizedCodes.slice(),
+    unrecognizedCodes: _unrecognizedCodesUnique.slice(),
     unrecognizedPictograms: _invalidPictograms.slice(),
     // Structured failure fields: the confirmed-unsupported and generic-
     // unrecognised code groups are each exposed IN FULL and independently
@@ -2778,7 +2827,7 @@ function getMissingBusinessDetails(data){
 
   const LabelRenderer = {
     getMissingBusinessDetails, checkRequiredContent, isValidPictogramKey, describeInvalidPictograms,
-    renderLabel, normalizeLabel, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, GB_UNSUPPORTED_CODES, H_SUFFIXED_VERIFIED, extractHazardCodesFromText, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
+    renderLabel, normalizeLabel, getLabelDims, getPhysicalSpec, checkCompatibility, SharedAssetPool, assetMarkup, RENDERER_VERSION, H_LIB, P_LIB, GB_UNSUPPORTED_CODES, SUPPLIER_WORDING_REQUIRED, libraryWordingFor, H_SUFFIXED_VERIFIED, extractHazardCodesFromText, ACTIVE_REGULATORY_PROFILE, P280_ITEMS, buildP280Wording, findSmallestFittingSize,
     // GHS pictogram geometry -- exposed so tests/consumers measuring
     // compliance never have to re-derive or hardcode the sqrt(2)
     // square<->bounding-box relationship themselves.

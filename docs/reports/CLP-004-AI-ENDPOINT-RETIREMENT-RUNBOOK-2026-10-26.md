@@ -2,11 +2,14 @@
 
 Prepared 26 Oct 2026. Each production step needs separate founder approval.
 
-**Status (26 Oct 2026, 18:20 UTC):**
+**Status (27 Oct 2026, 11:35 UTC):**
 - Step A (`beta-tester-email`) is done; see section 4a.
 - Step C (#311) is released.
 - **`finn-chat` is preserved by founder decision and is out of scope.**
-- `clp-wizard` and `clp-search` are unchanged and in their 7-day observation period.
+- Step E (`clp-wizard`, `clp-search`) is done, with founder approval on 27 Oct to skip the rest of the 7-day observation. See section 4a.
+- Still open:
+  - E2 (final Privacy Policy wording, separate approval);
+  - F (Anthropic spend limit, alerts and October costs: founder console check). CLP-004 stays open until F is verified.
 
 ## 1. What is being retired and why
 
@@ -71,7 +74,7 @@ Rollback copies of the four live sources are in `supabase/retirement/rollback/<s
 | B | ~~Retire `finn-chat`~~ **Removed from scope (founder decision, 26 Oct): `finn-chat` is preserved unchanged** | — | — |
 | C | Merge and release the local Guide Me / Knowledge Base PR (#311). On release day, set the Privacy Policy "Last updated" date. #311 keeps the Anthropic disclosure for pages opened before the release | Founder | Its own tests and visual approval |
 | D | Watch edge logs for `clp-wizard` and `clp-search` for 7 days. Expect only cached pages or bots | — | C |
-| E | **Retire `clp-wizard` and `clp-search`:** deploy the stub to each. Until then they stay live, so pages opened before C keep working | Founder | D, plus #311 verified on production |
+| E | **Retire `clp-wizard` and `clp-search`:** deploy the stub to each. **Done 27 Oct 2026** (founder approved skipping the rest of D: no live caller and no traffic since C) | Founder | D, plus #311 verified on production |
 | E2 | Same day as E: publish the final Privacy Policy wording (section 7) with a new "Last updated" date | Founder | E |
 | F | **While `finn-chat` is preserved, `ANTHROPIC_API_KEY` must stay** (Finn uses it). Set a low monthly spend limit and email alerts in the Anthropic Console. Removing or revoking the key is a separate founder decision | Founder (Console access) | E |
 | G | Optional, after 30 quiet days: delete the retired functions (`beta-tester-email`, `clp-wizard`, `clp-search`) and remove the stale `clp-wizard-edge-function.ts`. `finn-chat` and its source are kept | Founder | E |
@@ -97,6 +100,27 @@ Rollback copies of the four live sources are in `supabase/retirement/rollback/<s
 
 **Step C: #311 (26 Oct 2026, 18:18 UTC)**
 - Squash commit `c90c726`; Netlify production deploy `6adf99714c54f3e27367feac`.
+
+**Step E: `clp-search` and `clp-wizard` (27 Oct 2026, 11:32–11:33 UTC, founder-approved)**
+- **Before:**
+  - `clp-search` v47 (bundle `56eb1e66…`) and `clp-wizard` v40 (`c22f2cb2…`), both `verify_jwt: false`.
+  - Each live source was re-downloaded and matched `rollback/<slug>/index.ts` and `deno.json` byte for byte.
+  - **Usage:** no site page called either function (production pages and `main` checked). There were no calls after step C. The last calls were the 26 Oct read-only probes.
+- **Deploy:** the same `stub/index.ts` (sha256 `97e0e707559a8a33…`) as `beta-tester-email`, plus an empty `deno.json` as the import map, `verify_jwt: false`.
+  - `clp-search`: **v48**, bundle `49fa4f01…`, at 11:32:44 UTC.
+  - `clp-wizard`: **v41**, bundle `29dcae48…`, at 11:33:10 UTC.
+- **Verified (zero cost):**
+  - Both: `OPTIONS` returns 204; `POST {}` with `origin: https://clpeasy.com` returns **410**; `GET` without an origin returns **410**.
+  - Both return the plain "This CLPeasy service has been retired…" message.
+  - The deployed source equals the stub. It has no imports and no `fetch`, and reads no secret, so it cannot call Anthropic or read `ANTHROPIC_API_KEY`.
+  - The edge logs show only start-ups and the 204/410 responses. `api_rate_limits` is unchanged, so the old code path did not run.
+- **Unaffected (same versions and bundle hashes before and after):**
+  - **`finn-chat` v21 (`997976de…`, own sign-in check unchanged)**;
+  - `notify-signup` v54, `stripe-webhook` v68, `send-support-email` v10, `send-feedback-email` v24;
+  - `beta-tester-email` v41;
+  - all other functions.
+- **Not changed:** `ANTHROPIC_API_KEY` (still used by `finn-chat`) and `BREVO_API_KEY`.
+- **Rollback (ready):** deploy `rollback/<slug>/index.ts` and `rollback/<slug>/deno.json` to the same slug (`import_map_path: deno.json`, `verify_jwt: false`). That returns the slug to its v47/v40 behaviour. Check it with `OPTIONS` only, so no paid request is made.
 
 ## 5. How each deploy step is done
 
@@ -136,6 +160,6 @@ Apply this to `privacy.html` in a small follow-up PR **after** `clp-wizard` and 
 
 ## 9. Not done
 
-- No function deployed, disabled or deleted.
-- No secret changed.
+- No function deleted. Only the steps recorded in section 4a were deployed.
+- No secret changed or revoked (`ANTHROPIC_API_KEY` stays for `finn-chat`).
 - No paid or email-sending request made.
