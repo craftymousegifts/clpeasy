@@ -2494,7 +2494,7 @@ async function _initLegacyHazardRegister(){
 }
 function _hazardProvenanceRecord(){
   return {hStatements:S.hStatements,pStatements:S.pStatements,signal:S.signal,pictograms:S.pictograms,sensitisers:S.sensitisers,
-    p280Items:S.p280Items,p280Other:S.p280Other,hazardFromExtraction:!!S.hazardFromExtraction};
+    p280Items:S.p280Items,p280Other:S.p280Other,hazardFromExtraction:!!S.hazardFromExtraction,id:S.legacySourceId||editingLabelId||null};
 }
 // Hazard data that came neither from Smart Paste nor from a registered older label.
 function _hazardUnverified(){
@@ -3276,6 +3276,12 @@ async function saveLabel(){
     // clears editingLabelId then calls saveLabel() again, which lands
     // here on its own successful commit and attaches ITS new id.
     editingLabelId=result.usedId;
+    // CLP-007: "save as new" from a registered older label passes its status
+    // to the new id (same hazard information only -- see inheritLegacy()).
+    if(S.legacySourceId&&result.usedId&&result.usedId!==S.legacySourceId){
+      window._clpLegacyRegister=HazardProvenance.inheritLegacy({ns:libNS(),register:window._clpLegacyRegister,sourceId:S.legacySourceId,newId:result.usedId,record:_hazardProvenanceRecord()});
+      S.legacySourceId=result.usedId;
+    }
     renderSaved();
     if(btn){
       // Matches the notice beneath it: an unchecked label is a draft.
@@ -3335,7 +3341,7 @@ function loadLabelRecord(e){
   if(S.supplierWording&&!S.sdsSignal&&!S.supplierWordingIssues.includes('Signal word')&&resolveGbClpSignalWord(LabelRenderer.extractHazardCodesFromText(S.sourceSection22),'')&&!/\bSignal\s+words?\s*:?\s*(?:None|No\s+signal\s+word)/i.test(S.sourceSection22))S.supplierWordingIssues=[...S.supplierWordingIssues,'Signal word'];
   S.supplierWordingVersion=S.supplierWording?(e.supplierWordingVersion||1):null;
   // CLP-007: an older manually created label keeps its frozen wording.
-  {const _lg=HazardProvenance.legacyEntry(e,window._clpLegacyRegister||{});S.legacyWording=_lg?(_lg.wording||{}):null;}
+  {const _lg=HazardProvenance.legacyEntry(e,window._clpLegacyRegister||{});S.legacyWording=_lg?(_lg.wording||{}):null;S.legacySourceId=_lg?e.id:null;}
   // C4: the reopened hazard data belongs to this label's saved product name,
   // product type and fragrance load.
   _snapshotHazardSource({name:e.scentName,type:e.productType,load:e.fragLoad});
@@ -3710,7 +3716,7 @@ function init(){
   // Ensure hazard data is always clear on page load — never cached
   S.signal=''; S.sdsSignal=''; S.pictograms=[]; S.hSelected=[]; S.pSelected=[]; S.sensitisers=[];
   S.hStatements=''; S.pStatements='';
-  S.hazardFromExtraction=false; S.hazardSource=null; S.sourceSection22='';S.supplierWording=null;S.supplierSupplemental=[];S.supplierWordingIssues=[];S.supplierWordingVersion=null;S.legacyWording=null;
+  S.hazardFromExtraction=false; S.hazardSource=null; S.sourceSection22='';S.supplierWording=null;S.supplierSupplemental=[];S.supplierWordingIssues=[];S.supplierWordingVersion=null;S.legacyWording=null;S.legacySourceId=null;
   lockHazardFields(false);
   updateLabel();
 }
@@ -4462,7 +4468,7 @@ function extractSDS(){
   // ── LOCK & FINISH ─────────────────────────────────────────────────────────
   // C3/C4: this hazard data now comes from a successful extraction, for the
   // SDS of the product currently named in Step 2.
-  S.hazardFromExtraction=true;S.legacyWording=null;
+  S.hazardFromExtraction=true;S.legacyWording=null;S.legacySourceId=null;
   _snapshotHazardSource();
   updateSdsSourceSuitabilityWarning();
   updateLabel();
@@ -5183,7 +5189,7 @@ function clearHazardData(){
   // an unwanted side effect of clicking Clear.
   const hzCb=document.getElementById('hazard-confirm');
   if(hzCb)hzCb.checked=false;
-  S.hazardFromExtraction=false;S.hazardSource=null;S.sourceSection22='';S.supplierWording=null;S.supplierSupplemental=[];S.supplierWordingIssues=[];S.supplierWordingVersion=null;S.legacyWording=null;
+  S.hazardFromExtraction=false;S.hazardSource=null;S.sourceSection22='';S.supplierWording=null;S.supplierSupplemental=[];S.supplierWordingIssues=[];S.supplierWordingVersion=null;S.legacyWording=null;S.legacySourceId=null;
   updateSdsSourceSuitabilityWarning();
   // Clear signal word
   S.signal='';
@@ -6662,7 +6668,8 @@ async function showLabelHistory(encodedScent,encodedProduct){
   try{
     // CLP-007: a version whose hazard information didn't come from Smart
     // Paste (and isn't a registered older label) is never restored.
-    if(HazardProvenance.classify(match,window._clpLegacyRegister||{})==='unverified'){alert(HazardProvenance.RESTORE_REFUSED);return;}
+    {const cur=getSaved().find(x=>x.scentName===scent&&x.productType===product);
+     if(HazardProvenance.classify(Object.assign({},cur,match,{id:cur&&cur.id}),window._clpLegacyRegister||{})==='unverified'){alert(HazardProvenance.RESTORE_REFUSED);return;}}
     result=await LabelLibrary.mutate(function(current){
       const idx=current.findIndex(x=>x.scentName===scent&&x.productType===product);
       if(idx<0)return LabelLibrary.NO_CHANGE;

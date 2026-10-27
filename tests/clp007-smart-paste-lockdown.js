@@ -41,10 +41,13 @@ const BASE = { productType: 'Scented Candle', shape: 'circle', size: 'custom', c
   bizName: 'QA Candles', bizAddress: '1 Test Street, Testtown, TE1 1ST', bizPhone: '01234 567890', pictograms: ['exclamation'], signal: 'Warning', sensitisers: [] };
 const OLD = { schemaVersion: 1, hazardFromExtraction: false, sdsSignal: '', savedAt: '01/10/2026' };
 const S22 = '2.2 Label elements\nHazard pictograms: GHS07\nSignal word: Warning\nHazard statements:\nH317 May cause an allergic skin reaction.\nPrecautionary statements:\nP261 Avoid breathing vapours.\nP280 Wear protective gloves.\nP370+P378 In case of fire: Use dry sand, dry chemical or alcohol-resistant foam to extinguish.\nP501 Dispose of contents/container to an approved waste disposal plant.\n';
+// The first run in the test browser is today, so today is the release-day
+// cut-off (LOCKDOWN_RELEASE_DATE is not set until the release commit).
+const TODAY = HP.localDay(new Date()).split('-').reverse().join('/');
 const REC = {
   legacy: Object.assign({}, BASE, OLD, { id: id(1), scentName: 'Legacy Lavender', hStatements: 'H317', pStatements: 'P261, P280, P302+P352, P501', p280Items: ['gloves'] }),
-  releaseDay: Object.assign({}, BASE, OLD, { id: id(2), scentName: 'Release Day', hStatements: 'H317', pStatements: 'P102, P501', savedAt: HP.LOCKDOWN_RELEASE_DATE.split('-').reverse().join('/') }),
-  releaseDayHist: Object.assign({}, BASE, OLD, { id: id(3), scentName: 'Release Day History', hStatements: 'H317', pStatements: 'P101, P501', savedAt: HP.LOCKDOWN_RELEASE_DATE.split('-').reverse().join('/') }),
+  releaseDay: Object.assign({}, BASE, OLD, { id: id(2), scentName: 'Release Day', hStatements: 'H317', pStatements: 'P102, P501', savedAt: TODAY }),
+  releaseDayHist: Object.assign({}, BASE, OLD, { id: id(3), scentName: 'Release Day History', hStatements: 'H317', pStatements: 'P101, P501', savedAt: TODAY }),
   newManual: Object.assign({}, BASE, { id: id(4), scentName: 'New Manual', schemaVersion: 2, hazardFromExtraction: false, sdsSignal: '', hStatements: 'H317', pStatements: 'P102, P333+P313', savedAt: '01/10/2026' }),
   fire: Object.assign({}, BASE, OLD, { id: id(5), scentName: 'Fire Legacy', hStatements: 'H317', pStatements: 'P261, P370+P378, P501' }),
   treat: Object.assign({}, BASE, OLD, { id: id(6), scentName: 'Treatment Legacy', hStatements: 'H317', pStatements: 'P261, P321, P501' }),
@@ -99,6 +102,54 @@ const server = http.createServer((req, res) => {
     return t;
   }
   try {
+    // ── 0. Pure rules (no browser): identity, inheritance, cut-off ─────────
+    {
+      const mem = () => { const m = {}; return { getItem: k => (k in m ? m[k] : null), setItem: (k, v) => { m[k] = String(v); }, m }; };
+      const W = () => ({});
+      const L = (n, extra) => Object.assign({ id: id(n), scentName: 'U' + n, productType: 'Scented Candle', schemaVersion: 1, hazardFromExtraction: false, sdsSignal: '', hStatements: 'H317', pStatements: 'P261, P501', savedAt: '01/10/2026' }, extra);
+      // Identity: an unrelated label with identical codes never inherits.
+      const reg = HP.buildRegister([L(1)], {}, W, '2026-10-27');
+      assert.strictEqual(HP.classify(L(1), reg), 'legacy-manual', 'registered label');
+      assert.strictEqual(HP.classify(L(2, { schemaVersion: 2, savedAt: '05/11/2026' }), reg), 'unverified', 'unrelated new label with identical codes stays unverified');
+      assert.strictEqual(HP.classify(L(1, { pStatements: 'P261, P501, P102' }), reg), 'unverified', 'same label with different hazard data stays unverified');
+      assert.strictEqual(HP.classify(Object.assign(L(1), { id: undefined }), reg), 'unverified', 'no id: never legacy');
+      // History corroborates only the same label.
+      const hist = { 'U3|Scented Candle': [L(3, { savedAt: '20/10/2026' })], 'Other|Scented Candle': [L(9, { scentName: 'Other', savedAt: '20/10/2026' })] };
+      const reg2 = HP.buildRegister([L(3, { savedAt: '27/10/2026' }), L(4, { savedAt: '27/10/2026' })], hist, W, '2026-10-27');
+      assert.strictEqual(HP.classify(L(3, { savedAt: '27/10/2026' }), reg2), 'legacy-manual', 'release-day label with its own earlier version');
+      assert.strictEqual(HP.classify(L(4, { savedAt: '27/10/2026' }), reg2), 'unverified', 'release-day label is not rescued by another label\'s history with identical codes');
+      // Inheritance: only from a registered source with exactly that data.
+      const st = mem(); st.setItem('clpeasy_legacy_hazard__u_g', JSON.stringify(reg));
+      let r = HP.inheritLegacy({ ns: 'g', storage: st, sourceId: id(1), newId: id(5), record: L(1) });
+      assert.strictEqual(HP.classify(L(5), r), 'legacy-manual', 'duplicate / save-as-new of a registered label inherits');
+      r = HP.inheritLegacy({ ns: 'g', storage: st, sourceId: id(1), newId: id(6), record: L(1, { pStatements: 'P102' }) });
+      assert.strictEqual(HP.classify(L(6, { pStatements: 'P102' }), r), 'unverified', 'different hazard data never inherits');
+      r = HP.inheritLegacy({ ns: 'g', storage: st, sourceId: id(7), newId: id(8), record: L(7) });
+      assert.strictEqual(HP.classify(L(8), r), 'unverified', 'copy of an unregistered label never inherits');
+      ok('identity: legacy status is tied to the label id + its exact hazard data; unrelated labels with identical codes, other labels\' history and unregistered copies never inherit');
+
+      // Cut-off: the earlier of the configured release day and this browser's first run.
+      const at = (d) => new Date(d + 'T12:00:00');
+      assert.strictEqual(HP.LOCKDOWN_RELEASE_DATE, null, 'release day is not hard-coded in this draft (set in the release commit)');
+      assert.strictEqual(HP.cutoffDay(at('2026-11-03'), null), '2026-11-03', 'not set: first-run day');
+      assert.strictEqual(HP.cutoffDay(at('2026-11-05'), '2026-11-03'), '2026-11-03', 'set to the real release day, browser first opened later: release day');
+      assert.strictEqual(HP.cutoffDay(at('2026-11-05'), '2026-11-10'), '2026-11-05', 'set later than this browser\'s first run: first-run day (never later)');
+      assert.strictEqual(HP.cutoffDay(at('2026-11-05'), 'not-a-date'), '2026-11-05', 'malformed setting ignored');
+      // Deployment on a later day than planned (release 3 Nov, not 27 Oct).
+      const run = (records, releaseDate, now) => { const s2 = mem(); return HP.runMigration({ ns: 'g', storage: s2, records, wordingFor: W, releaseDate, now: at(now) }); };
+      const day = (n, d) => L(n, { savedAt: d });
+      let g = run([day(1, '01/11/2026'), day(2, '02/11/2026'), day(3, '03/11/2026')], null, '2026-11-03');
+      assert.deepStrictEqual([1, 2, 3].map(n => HP.classify(day(n, ''), g)), ['legacy-manual', 'legacy-manual', 'unverified'], 'later release, setting not used: labels before the first-run day accepted, that day not');
+      g = run([day(1, '02/11/2026'), day(2, '03/11/2026'), day(3, '04/11/2026')], '2026-11-03', '2026-11-05');
+      assert.deepStrictEqual([1, 2, 3].map(n => HP.classify(day(n, ''), g)), ['legacy-manual', 'unverified', 'unverified'], 'release day set: a stale pre-release tab\'s label saved after release (4 Nov) is not accepted even though this browser first ran on 5 Nov');
+      // Frozen: a later run never adds records.
+      const s3 = mem();
+      HP.runMigration({ ns: 'g', storage: s3, records: [day(1, '01/11/2026')], wordingFor: W, releaseDate: null, now: at('2026-11-03') });
+      const later = HP.runMigration({ ns: 'g', storage: s3, records: [day(1, '01/11/2026'), day(2, '02/11/2026')], wordingFor: W, releaseDate: null, now: at('2026-11-20') });
+      assert.strictEqual(HP.classify(day(2, ''), later), 'unverified', 'frozen after the first run');
+      assert.strictEqual(later.cutoff, '2026-11-03', 'cut-off recorded at the first run');
+      ok('release-date handling: cut-off = earlier of the configured release day and first-run day; later-than-planned deployment and stale tabs handled; frozen after first run');
+    }
     // ── 1/2. New label, Smart Paste and Clear — desktop and mobile ────────
     for (const vp of [{ name: 'desktop', viewport: { width: 1280, height: 900 } }, { name: 'mobile', viewport: { width: 390, height: 844, isMobile: true, hasTouch: true } }]) {
       const t = await open('builder.html', { viewport: vp.viewport });
@@ -179,7 +230,7 @@ const server = http.createServer((req, res) => {
     const legacySaved = reg.saved.find(r => r.id === id(1));
     assert(legacySaved.legacyWording && legacySaved.legacyWording.P261 && legacySaved.legacyWording.H317 && !('P280' in legacySaved.legacyWording), 'older label carries its frozen wording (P280 built from its own items)');
     assert(!reg.saved.find(r => r.id === id(4)).legacyWording, 'unverified label gets no wording');
-    assert(!('P370+P378' in reg.reg[HP.fingerprint(REC.fire)].wording), 'P370+P378 never frozen');
+    assert(!('P370+P378' in reg.reg.wording[HP.fingerprint(REC.fire)]), 'P370+P378 never frozen');
     ok('one-time registration: pre-release manual labels accepted; release-day (no earlier history), undated and post-lockdown manual data not accepted; release-day label with earlier history accepted; extracted labels unchanged');
 
     // Frozen: a manual label written later by a stale pre-release tab is never registered.
@@ -193,6 +244,35 @@ const server = http.createServer((req, res) => {
     const resaved = await t.evaluate(() => { const r = getSaved().find(x => x.scentName === 'Legacy Lavender'); return { c: HazardProvenance.classify(r, window._clpLegacyRegister), w: !!(r.legacyWording && r.legacyWording.P261) }; });
     assert(resaved.c === 'legacy-manual' && resaved.w, 'older label resaved by a stale tab keeps legacy status; wording restored');
     ok('freeze: manual data saved after the first run (stale pre-release tab) is never registered; a stale-tab resave of a genuine older label keeps its status');
+
+    // #314 review: identity, not just codes.
+    await t.evaluate(() => { const k = 'clpeasy_labels__u_guest'; const a = JSON.parse(localStorage.getItem(k)); const src = a.find(r => r.scentName === 'Legacy Lavender');
+      a.push(Object.assign({}, src, { id: '00000000-0000-4000-8000-000000000098', scentName: 'Unrelated Twin', schemaVersion: 2, legacyWording: undefined }));
+      localStorage.setItem(k, JSON.stringify(a)); });
+    await t.reload({ waitUntil: 'load' }); await t.evaluate(HELPER).catch(() => {}); await new Promise(r => setTimeout(r, 1800));
+    t.alerts.length = 0;
+    const twin = await t.evaluate(async () => {
+      const sleep = ms => new Promise(r => setTimeout(r, ms));
+      const r = getSaved().find(x => x.scentName === 'Unrelated Twin');
+      const cls = HazardProvenance.classify(r, window._clpLegacyRegister);
+      loadLabelRecord(r); await sleep(300); const hc = document.getElementById('hazard-confirm'); if (hc) hc.checked = true;
+      return { cls, leave: canLeaveApprovedBuilderStep(3), allowed: _downloadAllowed(), wording: !!r.legacyWording };
+    });
+    assert(twin.cls === 'unverified' && twin.leave === false && twin.allowed === false && !twin.wording, 'an unrelated label with identical codes (even with a copied wording field) is unverified and blocked: ' + JSON.stringify(twin));
+    // Save as new from a genuine older label (rename, same fragrance/SDS) inherits.
+    const san = await t.evaluate(async () => {
+      const sleep = ms => new Promise(r => setTimeout(r, ms));
+      const src = getSaved().find(x => x.scentName === 'Legacy Lavender');
+      loadLabelRecord(src); await sleep(300);
+      editingLabelId = null; // "Save as new"
+      document.getElementById('scent-name').value = 'Legacy Lavender Travel Tin'; readForm(); updateLabel(); await sleep(200);
+      confirmSameHazardSource(); await saveLabel(); await sleep(500);
+      const n = getSaved().find(x => x.scentName === 'Legacy Lavender Travel Tin');
+      return { newId: !!n && n.id !== src.id, cls: n && HazardProvenance.classify(n, window._clpLegacyRegister),
+        stored: n && HazardProvenance.classify(n, HazardProvenance.readRegister('guest')) };
+    });
+    assert(san.newId && san.cls === 'legacy-manual' && san.stored === 'legacy-manual', '"save as new" of a genuine older label keeps read-only legacy status (stored): ' + JSON.stringify(san));
+    ok('#314 review: an unrelated label with identical codes is blocked; "save as new" and duplicate of a genuine older label keep its status');
 
     // Builder: older label read-only, printable, wording frozen, resize/save/reopen.
     const L = await t.evaluate(async (ids) => {
@@ -353,12 +433,16 @@ const server = http.createServer((req, res) => {
       addToSheet(ids.legacy); addToSheet(ids.extracted); await sleep(500); out.good = state();
       addToSheet(ids.newManual); await sleep(500); out.withUnverified = state();
       sheetItems.length = 0; if (typeof renderSheet === 'function') renderSheet(); addToSheet(ids.fire); await sleep(500); out.fire = state();
+      // The canvas is a flattened raster for guests: read the same label's overlay from the shared renderer.
+      out.fire.canvas = LabelRenderer.renderLabel(getSaved().find(r => r.id === ids.fire), { instanceId: 'clp007-fire' }).svg.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
       out.list = document.body.innerHTML.includes('Needs Smart Paste');
       return out;
     }, { legacy: id(1), newManual: id(4), fire: id(5), extracted: id(8) });
     assert(!P.good.msg && !P.good.fit.length, 'Composer: older label and extracted label print: ' + JSON.stringify(P.good));
     assert(P.withUnverified.msg && P.withUnverified.msg.includes(BLOCK) && P.withUnverified.msg.includes('New Manual'), 'Composer: unverified label blocks the sheet with the approved message');
-    assert(P.fire.fit.some(f => /Fire Legacy/.test(f) && /P370\+P378/.test(f)), 'Composer: older label with P370+P378 blocked as a label that needs attention: ' + JSON.stringify(P.fire));
+    assert(P.fire.fit.some(f => /Fire Legacy/.test(f) && f.includes('P370+P378: This precautionary statement needs the full wording from your supplier’s SDS Section 2.2.')), 'Composer: older P370+P378 label blocked with the approved supplier-wording guidance: ' + JSON.stringify(P.fire));
+    assert(!P.fire.fit.some(f => /recognise/.test(f)), 'Composer: never says CLPeasy doesn\'t recognise P370+P378');
+    assert(/P370\+P378 need complete, unambiguous supplier wording/.test(P.fire.canvas) && !/not recognised/.test(P.fire.canvas), 'Composer canvas overlay: supplier wording needed, not "not recognised"');
     assert(P.list, 'Composer: library list marks the unverified label');
     ok('Print Sheet Composer: older and extracted labels print; unverified labels and older P370+P378 labels are blocked');
     assert.deepStrictEqual(t.errs, [], 'Composer: no page errors: ' + t.errs.join(' | '));

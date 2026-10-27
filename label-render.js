@@ -959,13 +959,19 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
   // out of the <text>/<tspan> elements.
   const heading = 'LABEL DATA NEEDS REVIEW';
   const uCodes = unsupportedCodes.map(xe), gCodes = genericCodes.map(xe);
+  // CLP-007: codes that need the supplier's own wording are never described
+  // as unrecognised; they use the existing supplier-wording sentence.
+  const gReq = gCodes.filter(c=>SUPPLIER_WORDING_REQUIRED.includes(c)), gOther = gCodes.filter(c=>!SUPPLIER_WORDING_REQUIRED.includes(c));
+  const gSentence = supplierSourceActive ? gCodes.join(', ')+' need complete, unambiguous supplier wording.'
+    : [gReq.length?gReq.join(', ')+' need complete, unambiguous supplier wording.':'',
+       gOther.length?gOther.join(', ')+' '+(gOther.length>1?'were':'was')+' not recognised by CLPeasy.':''].filter(Boolean).join(' ');
   let sentences;
   if(uCodes.length && gCodes.length){
     // Mixed: identify both groups by name -- neither hides the other --
     // plus the one instruction both groups share.
     sentences = [
       uCodes.join(', ')+' need'+(uCodes.length>1?'':'s')+' supplier confirmation for a Great Britain CLP label.',
-      gCodes.join(', ')+(supplierSourceActive?' need complete, unambiguous supplier wording.':' '+(gCodes.length>1?'were':'was')+' not recognised by CLPeasy.'),
+      gSentence,
       'Check you pasted Section 2.2 from the correct supplier SDS.'
     ];
   } else if(uCodes.length){
@@ -979,7 +985,7 @@ function buildBlockedOverlaySVG(pw, ph, cx, cy, chordWFn, unsupportedCodes, gene
     // Generic/unrecognised code(s) -- must NOT state or imply the code is
     // legally unsupported under GB rules, since that has not been verified.
     sentences = [
-      gCodes.join(', ')+(supplierSourceActive?' need complete, unambiguous supplier wording.':' '+(gCodes.length>1?'were':'was')+' not recognised by CLPeasy.'),
+      gSentence,
       'Check you pasted Section 2.2 from the correct supplier SDS.',
       'If the code is present in Section 2.2, contact CLPeasy support.'
     ];

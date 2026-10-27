@@ -148,7 +148,7 @@ const dom = new JSDOM(source, {
       rpc: async () => ({ data:false, error:null })
     }) };
     const confirmed = __confirmed([fitsA])[0];
-    const legacy = Object.assign({}, fitsA, { scentName:'Older Saved Label', productType:'Wax Melt', fragLoad:'10%' });
+    const legacy = Object.assign({}, fitsA, { scentName:'Older Saved Label', productType:'Wax Melt', fragLoad:'10%', savedAt:'01/10/2026' }); // CLP-007: saved before the Smart Paste lockdown
     const stale = Object.assign(__confirmed([Object.assign({}, fitsA, { scentName:'Changed After Confirming' })])[0], { hStatements:fitsA.hStatements + ', H319' });
     window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify([confirmed, legacy, stale]));
   }

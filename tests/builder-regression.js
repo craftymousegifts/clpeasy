@@ -450,7 +450,7 @@ setTimeout(async () => {
     document.getElementById('p-statements').value='P273, P302+P352';
     // CLP-007: fixture state set directly (the boxes are display-only) and
     // registered as a genuine older manually created label.
-    window.eval("S.hStatements='H315, H411, H373, EUH208';S.pStatements='P273, P302+P352';window._clpLegacyRegister=Object.assign({},window._clpLegacyRegister,{[HazardProvenance.fingerprint(_hazardProvenanceRecord())]:{wording:{},acceptedAt:'test'}})");
+    window.eval("S.hStatements='H315, H411, H373, EUH208';S.pStatements='P273, P302+P352';S.legacySourceId=S.legacySourceId||'00000000-0000-4000-8000-0000000000fe';window._clpLegacyRegister=HazardProvenance.addLegacy(window._clpLegacyRegister,S.legacySourceId,_hazardProvenanceRecord())");
     window.updateLabel();
 
     document.getElementById('hazard-confirm').checked = true;

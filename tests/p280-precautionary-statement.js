@@ -263,7 +263,7 @@ const emptyQuery = {
     bdocument.getElementById('h-statements').value = 'H317';
     bdocument.getElementById('p-statements').value = 'P280';
     bdocument.getElementById('hazard-confirm').checked = true;
-    bwindow.eval("window._clpLegacyRegister=Object.assign({},window._clpLegacyRegister,{[HazardProvenance.fingerprint(_hazardProvenanceRecord())]:{wording:{},acceptedAt:'test'}})"); // CLP-007: a registered older label
+    bwindow.eval("S.legacySourceId=S.legacySourceId||'00000000-0000-4000-8000-0000000000fe';window._clpLegacyRegister=HazardProvenance.addLegacy(window._clpLegacyRegister,S.legacySourceId,_hazardProvenanceRecord())"); // CLP-007: a registered older label
     // saveLabel()/canLeaveApprovedBuilderStep() both call readForm(), which
     // re-reads these fields from the DOM (not from S directly) -- set the
     // DOM values too so readForm() doesn't wipe the S state just set above.
@@ -306,7 +306,7 @@ const emptyQuery = {
     // must not silently receive every option, and must be caught by the
     // Step 3 gate rather than sailing through.
     bwindow.eval(`S.pStatements='P280'; S.pSelected=['P280']; S.p280Items=[]; S.p280Other='';`);
-    bwindow.eval("window._clpLegacyRegister=Object.assign({},window._clpLegacyRegister,{[HazardProvenance.fingerprint(_hazardProvenanceRecord())]:{wording:{},acceptedAt:'test'}})"); // CLP-007: a registered older label
+    bwindow.eval("S.legacySourceId=S.legacySourceId||'00000000-0000-4000-8000-0000000000fe';window._clpLegacyRegister=HazardProvenance.addLegacy(window._clpLegacyRegister,S.legacySourceId,_hazardProvenanceRecord())"); // CLP-007: a registered older label
     bdocument.getElementById('hazard-confirm').checked = true; // #270: a reopened label needs its own hazard review first
     assert.strictEqual(bwindow.canLeaveApprovedBuilderStep(3), false, 'Step 3 must block progression when P280 is present with no valid selection (legacy-compatible, not silently accepted)');
     assert(bwindow.eval('window.__lastAlert') && /P280/.test(bwindow.eval('window.__lastAlert')), 'Step 3 must explain that P280 needs its protection items');

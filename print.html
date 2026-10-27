@@ -2477,7 +2477,14 @@ function describeFitWarnings(warnings, ld){
   if(warnings.includes('hazard-text-overflow')) return "The hazard/precautionary text doesn't fit at this label size, even at the smallest legible size."+sizeMsg;
   if(warnings.includes('footer-clipped')) return 'The business/footer details are being cut off at this label size.'+sizeMsg;
   if(unrecognized.includes('Signal word')) return `The signal word from the supplier's SDS is missing on this label. Open it with Edit label to update it.`;
-  if(unrecognized.length) return `Contains a hazard/precautionary code CLPeasy doesn't recognise: ${unrecognized.join(', ')}.`;
+  if(unrecognized.length){
+    // CLP-007: codes that need the supplier's own wording (P241, P370+P378,
+    // P321) get the approved #313 guidance, never "doesn't recognise".
+    const req=(typeof LabelRenderer!=='undefined'&&LabelRenderer.SUPPLIER_WORDING_REQUIRED)||[];
+    const codes=[...new Set(unrecognized)], needs=codes.filter(c=>req.includes(c)), other=codes.filter(c=>!req.includes(c));
+    return [...needs.map(c=>`${c}: This precautionary statement needs the full wording from your supplier’s SDS Section 2.2. Check the source document before continuing.`),
+      ...(other.length?[`Contains a hazard/precautionary code CLPeasy doesn't recognise: ${other.join(', ')}.`]:[])].join(' ');
+  }
   if(warnings.includes('candle-safety-symbols-too-small')) return "The candle-safety symbols can't fit at their required minimum size (5mm, BS EN 15494:2019) at this label size."+sizeMsg;
   // Read-only-impact-assessment fix: these four warnings existed already
   // (label-render.js's mandatory-text-floor fix) but weren't described

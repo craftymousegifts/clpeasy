@@ -10,6 +10,6 @@ function script(h, p) {
   return `S.hStatements=${JSON.stringify(h)};S.pStatements=${JSON.stringify(p)};` +
     `S.hSelected=S.hStatements.split(',').map(x=>x.trim()).filter(Boolean);S.pSelected=S.pStatements.split(',').map(x=>x.trim()).filter(Boolean);` +
     `document.getElementById('h-statements').value=S.hStatements;document.getElementById('p-statements').value=S.pStatements;` +
-    `window._clpLegacyRegister=Object.assign({},window._clpLegacyRegister,{[HazardProvenance.fingerprint(_hazardProvenanceRecord())]:{wording:{},acceptedAt:'test'}});`;
+`S.legacySourceId=S.legacySourceId||'00000000-0000-4000-8000-0000000000fe';window._clpLegacyRegister=HazardProvenance.addLegacy(window._clpLegacyRegister,S.legacySourceId,_hazardProvenanceRecord());`;
 }
 module.exports = { script };

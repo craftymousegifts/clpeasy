@@ -49,7 +49,7 @@ let browser;
         S.hStatements=h;S.pStatements=pp;
         S.hSelected=h.split(',').map(x=>x.trim());S.pSelected=pp.split(',').map(x=>x.trim());S.sensitisers=['Linalool','Limonene'];S.signal='Warning';S.pictograms=['exclamation','aquatic'];
         S.p280Items=['gloves'];S.p280Other='';
-        window._clpLegacyRegister=Object.assign({},window._clpLegacyRegister,{[HazardProvenance.fingerprint(_hazardProvenanceRecord())]:{wording:{},acceptedAt:'test'}});
+        S.legacySourceId=S.legacySourceId||'00000000-0000-4000-8000-0000000000fe';window._clpLegacyRegister=HazardProvenance.addLegacy(window._clpLegacyRegister,S.legacySourceId,_hazardProvenanceRecord());
       }
       readForm();updateLabel();
       for(let n=2;n<=5;n++){if(n===4){document.getElementById('hazard-confirm').checked=true;toggleHazardNext();}setApprovedBuilderStep(n);}
