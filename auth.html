@@ -255,6 +255,15 @@ function getSafeNextDestination() {
       !resolved.hash &&
       SAFE_AUTH_DESTINATIONS.has(filename)
     ) return filename;
+    // One exception: a saved-label link back into the Builder, and only when
+    // the query is exactly ?label=<label id (a UUID)>.
+    const labelOnly = /^\?label=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (
+      resolved.origin === window.location.origin &&
+      filename === 'builder.html' &&
+      labelOnly.test(resolved.search) &&
+      !resolved.hash
+    ) return filename + resolved.search;
   } catch (_) {}
 
   return 'builder.html';

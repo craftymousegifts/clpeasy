@@ -60,12 +60,13 @@ const dom = new JSDOM(source, {
     window.HTMLAnchorElement.prototype.click = function(){ if (this.hasAttribute('download')) downloads++; };
     window.supabase = { createClient: () => ({
       auth: {
-        getSession: async () => ({ data:{ session:null } }),
+        getSession: async () => ({ data:{ session:{user:{id:'00000000-0000-4000-8000-00000000a11d',email:'qa-trial@example.invalid',user_metadata:{}}} } }),
         onAuthStateChange: () => ({ data:{ subscription:{ unsubscribe(){} } } }),
         signOut: async () => ({})
       },
       from: () => Object.create(emptyQuery),
-      rpc: async () => ({ data:null, error:null })
+      // trial customer: consume_download() allows a watermarked export
+      rpc: async () => ({ data:{ ok:true, source:'plan', clean_export:false }, error:null })
     }) };
   }
 });

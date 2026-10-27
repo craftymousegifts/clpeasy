@@ -124,8 +124,8 @@ setTimeout(() => {
         w.eval(labelRendererSource); w.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-doc-check.js'),'utf8')); w.eval(require('fs').readFileSync(require('path').join(__dirname,'..','hazard-provenance.js'),'utf8')); w.eval(require('fs').readFileSync(require('path').join(__dirname,'..','sds-section-scope.js'),'utf8')); w.eval(labelLibrarySource); w.eval(require("fs").readFileSync(require("path").join(__dirname,"..","entitlement.js"),"utf8"));
         w.alert=()=>{}; w.confirm=()=>true; w.scrollTo=()=>{};
         w.fetch=async()=>({ok:true,json:async()=>({})});
-        w.supabase={ createClient:()=>({ auth:{ getSession:async()=>({data:{session:null}}), onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}}), signOut:async()=>({}) }, from:()=>Object.create(emptyQuery), rpc:async()=>({data:false,error:null}) }) };
-        w.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify([eu30009ExactCustom]));
+        w.supabase={ createClient:()=>({ auth:{ getSession:async()=>({data:{session:{user:{id:'00000000-0000-4000-8000-00000000a11d',email:'qa-trial@example.invalid',user_metadata:{}}}}}), onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}}), signOut:async()=>({}) }, from:()=>Object.create(emptyQuery), rpc:async()=>({data:false,error:null}) }) };
+        w.localStorage.setItem('clpeasy_labels__u_00000000-0000-4000-8000-00000000a11d', JSON.stringify([eu30009ExactCustom]));
       }
     });
     setTimeout(() => {

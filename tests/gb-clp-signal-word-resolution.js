@@ -18,7 +18,7 @@ function buildDom(){
     window.alert=m=>{window.__lastAlert=String(m)}; window.confirm=()=>true; window.scrollTo=()=>{};
     window.fetch=async()=>({ok:true,json:async()=>({})}); window.open=()=>({location:{href:''},close(){},opener:null});
     window.URL.createObjectURL=()=> 'blob:test'; window.URL.revokeObjectURL=()=>{};
-    window.supabase={createClient:()=>({auth:{getSession:async()=>({data:{session:null}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}}),signOut:async()=>({})},from:()=>Object.create(emptyQuery),rpc:async()=>({data:false,error:null})})};
+    window.supabase={createClient:()=>({auth:{getSession:async()=>({data:{session:{user:{id:'00000000-0000-4000-8000-00000000a11d',email:'qa-trial@example.invalid',user_metadata:{}}}}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}}),signOut:async()=>({})},from:()=>Object.create(emptyQuery),rpc:async()=>({data:false,error:null})})};
   }});
   __sdsAns(dom);
   return {dom,errors};

@@ -30,6 +30,9 @@ const HP = require('../hazard-provenance.js');
 const stub = (session) => `window.supabase={createClient:function(){var q={select:function(){return this},eq:function(){return this},neq:function(){return this},update:function(){return this},upsert:function(){return Promise.resolve({error:null})},insert:function(){return Promise.resolve({error:null})},order:function(){return this},limit:function(){return this},gte:function(){return this},single:function(){return Promise.resolve({data:null,error:null})},maybeSingle:function(){return Promise.resolve({data:null,error:null})},then:function(r){return Promise.resolve({data:[],error:null}).then(r)}};return {auth:{getSession:async function(){return {data:{session:${session}}}},getUser:async function(){return {data:{user:${session}?${session}.user:null}}},onAuthStateChange:function(){return {data:{subscription:{unsubscribe:function(){}}}}},signOut:async function(){return {}}},from:function(){return Object.create(q)},rpc:async function(){return {data:null,error:null}},functions:{invoke:async function(){return {data:null,error:null}}}};}};`;
 const GUEST = stub('null');
 const USER = stub(`({user:{id:'u-clp007',email:'maker@example.com',user_metadata:{}},access_token:'t'})`);
+// The Builder requires sign-in: the Builder journeys below run as a second,
+// separate signed-in maker (namespace 'u-maker'), as the former guest ones did.
+const MAKER = stub(`({user:{id:'u-maker',email:'maker2@example.com',user_metadata:{}},access_token:'t'})`);
 const GUIDANCE1 = 'This precautionary statement needs the full wording from your supplier’s SDS Section 2.2. Check the source document before continuing.';
 const BLOCK = HP.BLOCK_MESSAGE;
 let passed = 0;
@@ -168,7 +171,7 @@ const server = http.createServer((req, res) => {
     }
     // ── 1/2. New label, Smart Paste and Clear — desktop and mobile ────────
     for (const vp of [{ name: 'desktop', viewport: { width: 1280, height: 900 } }, { name: 'mobile', viewport: { width: 390, height: 844, isMobile: true, hasTouch: true } }]) {
-      const t = await open('builder.html', { viewport: vp.viewport });
+      const t = await open('builder.html', { viewport: vp.viewport, session: MAKER });
       const prep = () => t.evaluate(async () => {
         const sleep = ms => new Promise(r => setTimeout(r, ms));
         document.getElementById('scent-name').value = 'Lockdown QA'; document.getElementById('product-type').value = 'Scented Candle'; onProductTypeChange();
@@ -237,8 +240,8 @@ const server = http.createServer((req, res) => {
 
     // ── 3. Older labels: one-time registration and classification ─────────
     const records = Object.values(REC);
-    let t = await open('builder.html', { seed: seedScript('guest', records, HISTORY) });
-    const reg = await t.evaluate(() => ({ reg: window._clpLegacyRegister, frozen: localStorage.getItem('clpeasy_hazard_lockdown__u_guest'), saved: getSaved() }));
+    let t = await open('builder.html', { session: MAKER, seed: seedScript('u-maker', records, HISTORY) });
+    const reg = await t.evaluate(() => ({ reg: window._clpLegacyRegister, frozen: localStorage.getItem('clpeasy_hazard_lockdown__u_u-maker'), saved: getSaved() }));
     const cls = Object.fromEntries(Object.entries(REC).map(([k, r]) => [k, HP.classify(r, reg.reg)]));
     assert.deepStrictEqual(cls, { legacy: 'legacy-manual', releaseDay: 'unverified', releaseDayHist: 'legacy-manual', newManual: 'unverified', fire: 'legacy-manual', treat: 'legacy-manual', noDate: 'unverified', extracted: 'extracted', preC3: 'extracted' }, 'classification');
     assert(reg.frozen, 'register frozen after the first run');
@@ -250,19 +253,19 @@ const server = http.createServer((req, res) => {
     ok('one-time registration: pre-release manual labels accepted; release-day (no earlier history), undated and post-lockdown manual data not accepted; release-day label with earlier history accepted; extracted labels unchanged');
 
     // Frozen: a manual label written later by a stale pre-release tab is never registered.
-    await t.evaluate(() => { const k = 'clpeasy_labels__u_guest'; const a = JSON.parse(localStorage.getItem(k)); a.push(Object.assign({}, a[0], { id: '00000000-0000-4000-8000-000000000099', scentName: 'Stale Tab Manual', schemaVersion: 1, savedAt: '01/10/2026', pStatements: 'P262, P501' })); localStorage.setItem(k, JSON.stringify(a)); });
+    await t.evaluate(() => { const k = 'clpeasy_labels__u_u-maker'; const a = JSON.parse(localStorage.getItem(k)); a.push(Object.assign({}, a[0], { id: '00000000-0000-4000-8000-000000000099', scentName: 'Stale Tab Manual', schemaVersion: 1, savedAt: '01/10/2026', pStatements: 'P262, P501' })); localStorage.setItem(k, JSON.stringify(a)); });
     await t.reload({ waitUntil: 'load' }); await t.evaluate(HELPER).catch(() => {}); await new Promise(r => setTimeout(r, 1800));
     const stale = await t.evaluate(() => HazardProvenance.classify(getSaved().find(r => r.scentName === 'Stale Tab Manual'), window._clpLegacyRegister));
     assert.strictEqual(stale, 'unverified', 'manual label added after the freeze stays unverified');
     // A stale tab resaving a genuine older label (drops the wording field) keeps its status and wording.
-    await t.evaluate(() => { const k = 'clpeasy_labels__u_guest'; const a = JSON.parse(localStorage.getItem(k)); const i = a.findIndex(r => r.scentName === 'Legacy Lavender'); delete a[i].legacyWording; a[i].bizPhone = '09999 999999'; localStorage.setItem(k, JSON.stringify(a)); });
+    await t.evaluate(() => { const k = 'clpeasy_labels__u_u-maker'; const a = JSON.parse(localStorage.getItem(k)); const i = a.findIndex(r => r.scentName === 'Legacy Lavender'); delete a[i].legacyWording; a[i].bizPhone = '09999 999999'; localStorage.setItem(k, JSON.stringify(a)); });
     await t.reload({ waitUntil: 'load' }); await t.evaluate(HELPER).catch(() => {}); await new Promise(r => setTimeout(r, 1800));
     const resaved = await t.evaluate(() => { const r = getSaved().find(x => x.scentName === 'Legacy Lavender'); return { c: HazardProvenance.classify(r, window._clpLegacyRegister), w: !!(r.legacyWording && r.legacyWording.P261) }; });
     assert(resaved.c === 'legacy-manual' && resaved.w, 'older label resaved by a stale tab keeps legacy status; wording restored');
     ok('freeze: manual data saved after the first run (stale pre-release tab) is never registered; a stale-tab resave of a genuine older label keeps its status');
 
     // #314 review: identity, not just codes.
-    await t.evaluate(() => { const k = 'clpeasy_labels__u_guest'; const a = JSON.parse(localStorage.getItem(k)); const src = a.find(r => r.scentName === 'Legacy Lavender');
+    await t.evaluate(() => { const k = 'clpeasy_labels__u_u-maker'; const a = JSON.parse(localStorage.getItem(k)); const src = a.find(r => r.scentName === 'Legacy Lavender');
       a.push(Object.assign({}, src, { id: '00000000-0000-4000-8000-000000000098', scentName: 'Unrelated Twin', schemaVersion: 2, legacyWording: undefined }));
       localStorage.setItem(k, JSON.stringify(a)); });
     await t.reload({ waitUntil: 'load' }); await t.evaluate(HELPER).catch(() => {}); await new Promise(r => setTimeout(r, 1800));
@@ -285,7 +288,7 @@ const server = http.createServer((req, res) => {
       confirmSameHazardSource(); await saveLabel(); await sleep(500);
       const n = getSaved().find(x => x.scentName === 'Legacy Lavender Travel Tin');
       return { newId: !!n && n.id !== src.id, cls: n && HazardProvenance.classify(n, window._clpLegacyRegister),
-        stored: n && HazardProvenance.classify(n, HazardProvenance.readRegister('guest')) };
+        stored: n && HazardProvenance.classify(n, HazardProvenance.readRegister('u-maker')) };
     });
     assert(san.newId && san.cls === 'legacy-manual' && san.stored === 'legacy-manual', '"save as new" of a genuine older label keeps read-only legacy status (stored): ' + JSON.stringify(san));
     ok('#314 review: an unrelated label with identical codes is blocked; "save as new" and duplicate of a genuine older label keep its status');
@@ -381,7 +384,7 @@ const server = http.createServer((req, res) => {
     t.alerts.length = 0;
     const H = await t.evaluate(async () => {
       const sleep = ms => new Promise(r => setTimeout(r, ms));
-      const k = 'clpeasy_history__u_guest'; const all = JSON.parse(localStorage.getItem(k) || '{}');
+      const k = 'clpeasy_history__u_u-maker'; const all = JSON.parse(localStorage.getItem(k) || '{}');
       const before = JSON.stringify(getSaved().find(r => r.scentName === 'Legacy Lavender').pStatements);
       window.__answer = '2'; return { before, versions: (all['Legacy Lavender|Scented Candle'] || []).map(v => v.version) };
     });
