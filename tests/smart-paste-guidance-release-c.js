@@ -112,7 +112,7 @@ const dom = new JSDOM(source, {
     window.alert = m => { window.__lastAlert = String(m); }; window.confirm = () => true; window.scrollTo = () => {};
     window.HTMLElement.prototype.scrollIntoView = () => {};
     window.fetch = async () => ({ ok:true, json:async()=>({}) });
-    window.supabase = { createClient: () => ({ auth: { getSession: async () => ({ data:{ session:null } }),
+    window.supabase = { createClient: () => ({ auth: { getSession: async () => ({ data:{ session:{user:{id:'00000000-0000-4000-8000-00000000a11d',email:'qa-trial@example.invalid',user_metadata:{}}} } }),
       onAuthStateChange: () => ({ data:{ subscription:{ unsubscribe(){} } } }), signOut: async () => ({}) },
       from: () => Object.create(emptyQuery), rpc: async () => ({ data:false, error:null }) }) };
   }

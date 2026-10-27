@@ -276,15 +276,13 @@ const server = http.createServer((req, res) => {
       await t.close();
     }
     ok('10: Trial (watermarked), Easy Start and Easy Pro keep their entitlement outcome; one charge each; guidance shown');
-    // guest (signed out): unchanged, no guidance
+    // signed out: the Builder now requires sign-in, so there is no guest
+    // export -- the visitor is sent to registration before any download.
     {
       const t = await open('builder.html', null, null, undefined, { signedOut: true });
-      await readyBuilder(t);
-      await t.evaluate(() => downloadSVG());
-      assert.ok(await waitFor(t, () => window.__downloads.length === 1), 'guest watermarked export still works');
-      const s = await state(t);
-      assert.strictEqual(s.shown, false);
-      ok('10b: signed-out guest export unchanged (watermarked file, no guidance)');
+      await t.waitForFunction(() => /auth\.html/.test(location.pathname), { timeout: 10000 });
+      assert.strictEqual(await t.evaluate(() => location.pathname + location.search), '/auth.html?mode=signup&next=builder.html');
+      ok('10b: signed-out visitor is sent to registration; no guest export');
       await t.close();
     }
     // 11-13: layout desktop + mobile

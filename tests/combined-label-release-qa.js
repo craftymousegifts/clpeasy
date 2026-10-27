@@ -1,12 +1,13 @@
 // Offline integration QA for PRs #237/#240/#241/#242. Synthetic fixtures,
-// signed out, all non-local requests intercepted; never uses customer services.
+// signed in as a synthetic trial customer, all non-local requests intercepted; never uses customer services.
 // Saves real SVG/PNG downloads and Chromium Save-as-PDF output for measurement.
 const fs=require('fs'),path=require('path'),http=require('http'),assert=require('assert');
 const puppeteer=require('puppeteer');
 const ROOT=process.env.CLPEASY_ROOT||path.resolve(__dirname,'..');
 const OUT=process.env.CLPEASY_QA_OUT||path.join(ROOT,'qa-artifacts','combined-label-release');
 fs.mkdirSync(OUT,{recursive:true});
-const MOCK='window.supabase={createClient:()=>({auth:{getSession:async()=>({data:{session:null}}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},from:()=>({select(){return this},eq(){return this},single:async()=>({data:null}),maybeSingle:async()=>({data:null})}),rpc:async()=>({data:null,error:null})})};';
+// Signed-in trial customer (the Builder requires sign-in): watermarked exports, as before.
+const MOCK=require('./helpers/signed-in-builder-mock').MOCK;
 const SDS='SYNTHETIC TEST DATA — NOT A SUPPLIER SDS\n2.2 Label elements\nSignal word: Warning\nPictograms: GHS07, GHS09\nH317 May cause an allergic skin reaction.\nH411 Toxic to aquatic life with long lasting effects.\nEUH208 Contains Linalool, Limonene. May produce an allergic reaction.\nP261 Avoid breathing vapours.\nP273 Avoid release to the environment.\nP280 Wear protective gloves.\nP302+P352 IF ON SKIN: Wash with plenty of water.\nP333+P313 If skin irritation or rash occurs: Get medical advice/attention.\nP501 Dispose of contents/container in accordance with local regulations.';
 const server=http.createServer((req,res)=>{
   const rel=decodeURIComponent(req.url.split('?')[0]);const file=path.resolve(ROOT,'.'+rel);
@@ -21,7 +22,7 @@ let browser;
   const downloads=[];const cdp=await browser.target().createCDPSession();
   await cdp.send('Browser.setDownloadBehavior',{behavior:'allow',downloadPath:OUT,eventsEnabled:true});
   cdp.on('Browser.downloadWillBegin',e=>downloads.push(e));
-  const results={base,backend:'mocked; signed out; external requests intercepted',cases:[],mobile:[],errors:[]};
+  const results={base,backend:'mocked; signed-in trial; external requests intercepted',cases:[],mobile:[],errors:[]};
   async function newPage(width=1366,height=900){
     const p=await browser.newPage();await p.setViewport({width,height,deviceScaleFactor:1});
     p.on('pageerror',e=>results.errors.push(e.message));p.on('dialog',d=>d.dismiss());

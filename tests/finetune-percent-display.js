@@ -34,7 +34,7 @@ try { puppeteer = require('puppeteer'); } catch (e) { console.log('SKIP finetune
 const EXE = [process.env.PUPPETEER_EXECUTABLE_PATH, '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', '/opt/pw-browsers/chromium'].filter(Boolean).find(p => { try { return fs.existsSync(p); } catch (e) { return false; } });
 if (!EXE) { console.log('SKIP finetune-percent-display: no Chromium'); process.exit(0); }
 
-const SIGNED_OUT = 'window.supabase={createClient:function(){return {auth:{getSession:async function(){return {data:{session:null}}},onAuthStateChange:function(){return {data:{subscription:{unsubscribe:function(){}}}}}},from:function(){return {select:function(){return this},eq:function(){return this},maybeSingle:async function(){return {data:null}},single:async function(){return {data:null}}}},rpc:async function(){return {data:null,error:null}}}}};';
+const SIGNED_IN_TRIAL = 'window.supabase={createClient:function(){return {auth:{getSession:async function(){return {data:{session:{user:{id:"00000000-0000-4000-8000-00000000a11d",email:"qa-trial@example.invalid",user_metadata:{}}}}}},onAuthStateChange:function(){return {data:{subscription:{unsubscribe:function(){}}}}}},from:function(){return {select:function(){return this},eq:function(){return this},maybeSingle:async function(){return {data:null}},single:async function(){return {data:null}}}},rpc:async function(){return {data:null,error:null}}}}};';
 const SDS = '2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nP102 Keep out of reach of children.\nP501 Dispose of contents/container in accordance with local regulations.';
 
 const server = http.createServer((req, res) => {
@@ -54,7 +54,7 @@ const server = http.createServer((req, res) => {
     await t.setRequestInterception(true);
     t.on('request', r => {
       const u = r.url();
-      if (u.includes('supabase-js')) return r.respond({ status: 200, contentType: 'text/javascript', body: SIGNED_OUT });
+      if (u.includes('supabase-js')) return r.respond({ status: 200, contentType: 'text/javascript', body: SIGNED_IN_TRIAL });
       if (u.startsWith(base) || u.startsWith('data:') || u.startsWith('blob:')) return r.continue();
       return r.respond({ status: 204, body: '' });
     });

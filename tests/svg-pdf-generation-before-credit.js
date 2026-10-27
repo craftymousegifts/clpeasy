@@ -39,7 +39,7 @@ function buildDom(pageSource=source,page='builder'){
       window.URL.revokeObjectURL = () => {};
       window.supabase = { createClient: () => ({
         auth: {
-          getSession: async () => ({ data:{session:null} }),
+          getSession: async () => ({ data:{session:{user:{id:'00000000-0000-4000-8000-00000000a11d',email:'qa-trial@example.invalid',user_metadata:{}}}} }),
           onAuthStateChange: () => ({ data:{subscription:{unsubscribe(){}}} }),
           signOut: async () => ({})
         },
@@ -114,13 +114,15 @@ function buildDom(pageSource=source,page='builder'){
   assert.strictEqual(popups[m].url,'blob:print-view','prepared print view handed to the click-time window');
   assert.strictEqual(popups[m].closed,false);
 
-  // ── Signed-out guest: unchanged, watermarked, never charged ──
+  // ── No session: no download at all (watermarked files belong to the trial) ──
   w.eval('currentUser=null;');before=chargeCalls;
-  w.openPrintView=v=>views.push(v);const svgN=svgOut.length,vN=views.length;
+  w.openPrintView=v=>views.push(v);const svgN=svgOut.length,vN=views.length,pN=popups.length;
   await w.downloadSVG();await w.printToPDF();
-  assert.strictEqual(chargeCalls,before,'guests are never charged');
-  assert(/PREVIEW ONLY/.test(decode(svgOut[svgN]))&&/PREVIEW ONLY/.test(views[vN].html),'guest output watermarked');
+  assert.strictEqual(chargeCalls,before,'never charged without an account');
+  assert.strictEqual(svgOut.length,svgN,'no SVG without an account');
+  assert.strictEqual(views.length,vN,'no print view without an account');
+  assert.strictEqual(popups.length,pN,'no print window opened without an account');
   assert.deepStrictEqual(errors.filter(e=>!/Not implemented/.test(e)),[],'no script errors');
   dom.window.close();
-  console.log('PASS svg-pdf-generation-before-credit: SVG and PDF print view built before the credit RPC; generation failure costs zero and opens nothing; clean/trial choice obeys RPC; refused accounting delivers nothing; guests unchanged');
+  console.log('PASS svg-pdf-generation-before-credit: SVG and PDF print view built before the credit RPC; generation failure costs zero and opens nothing; clean/trial choice obeys RPC; refused accounting delivers nothing; signed-out visitors get nothing');
 })().catch(error=>{console.error(error);process.exit(1);});

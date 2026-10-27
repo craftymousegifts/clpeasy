@@ -19,8 +19,9 @@
 //     download counts. Any difference fails the run and lists it -- a change
 //     in behaviour must be understood before anything else is changed.
 //
-// Signed out in the Builder (guest exports are not counted). The Composer
-// uses an in-page signed-in stub (no network, no real account).
+// The Builder runs as a signed-in free-trial customer (the Builder requires
+// sign-in; watermarked exports, each checked by consume_download). The
+// Composer uses an in-page signed-in stub (no network, no real account).
 //   node tests/builder-safety-baseline.js            -- check
 //   node tests/builder-safety-baseline.js --update   -- rewrite the snapshot
 //                                                       (only after review)
@@ -79,7 +80,9 @@ const NAMES = {"circle-52-light": "Lavender Fields", "circle-63-medium-euh208": 
 const PLACEHOLDERS = ['Your Brand', 'Your Scent Name', 'sensitising substance', '…', 'undefined', 'NaN', 'null'];
 const WATERMARK = /^(PREVIEW ONLY|CLPeasy|clpeasy\.com)$/;
 
-const OUT = 'window.supabase={createClient:function(){return {auth:{getSession:async function(){return {data:{session:null}}},onAuthStateChange:function(){return {data:{subscription:{unsubscribe:function(){}}}}}},from:function(){return {select:function(){return this},eq:function(){return this},maybeSingle:async function(){return {data:null}},single:async function(){return {data:null}}}},rpc:async function(){window.__rpc=(window.__rpc||0)+1;return {data:null,error:null}}}}};';
+// Signed-in trial customer (the Builder requires sign-in). The RPC answers
+// like consume_download() for a trial (watermarked) and counts each call.
+const OUT = require('./helpers/signed-in-builder-mock').MOCK.replace('rpc:async()=>(', 'rpc:async()=>(window.__rpc=(window.__rpc||0)+1,');
 const IN = `window.supabase={createClient:function(){var row={id:'u1',email:'qa@example.test',plan:'easy_start',subscription_status:'active',status:'active',created_at:new Date(Date.now()-40*864e5).toISOString()};
 var q={select:function(){return this},eq:function(){return this},neq:function(){return this},update:function(){return this},upsert:function(){return Promise.resolve({error:null})},insert:function(){return Promise.resolve({error:null})},order:function(){return this},limit:function(){return this},gte:function(){return this},single:function(){return Promise.resolve({data:row,error:null})},maybeSingle:function(){return Promise.resolve({data:row,error:null})},then:function(r){return Promise.resolve({data:[],error:null}).then(r)}};
 return {auth:{getSession:async function(){return {data:{session:{access_token:'x',user:{id:'u1',email:row.email,created_at:row.created_at,user_metadata:{}}}}}},getUser:async function(){return {data:{user:{id:'u1'}}}},onAuthStateChange:function(){return {data:{subscription:{unsubscribe:function(){}}}}},signOut:async function(){return {}}},
@@ -143,7 +146,6 @@ const server = http.createServer((req, res) => {
       const B = await t.evaluate(async (c) => {
         const wait = ms => new Promise(r => setTimeout(r, ms));
         const set = (elId, v, ev) => { const el = document.getElementById(elId); el.value = v; el.dispatchEvent(new Event(ev || 'input', { bubbles: true })); };
-        currentUser = null; if (typeof initSavedLabelLibrary === 'function') await initSavedLabelLibrary();
         selectShape(c.shape); set('custom-w', String(c.w)); if (c.shape === 'rectangle') set('custom-h', String(c.h)); onDimInput();
         setApprovedBuilderStep(2); set('scent-name', c.name); set('product-type', c.type, 'change');
         setApprovedBuilderStep(3); document.getElementById('smart-paste-input').value = c.text; extractSDS();
@@ -163,7 +165,8 @@ const server = http.createServer((req, res) => {
         out.svgCount = __svg.length; out.pngCount = __png.length; out.pdfCount = __pdf.length;
         if (__svg[0]) { const s = __svg[0]; out.svgAttr = [(s.match(/<svg[^>]*\swidth="([^"]+)"/) || [])[1], (s.match(/<svg[^>]*\sheight="([^"]+)"/) || [])[1]]; out.exportText = __texts(s); out.exportPictos = __pictos(s, map); }
         if (__png[0]) out.png = [__png[0].w, __png[0].h];
-        if (__pdf[0]) { const html = await (await fetch(__pdf[0])).text(); out.pdfPage = (html.match(/@page\{size:([^;]+);/) || [])[1]; out.pdfSvg = [(html.match(/<svg[^>]*\swidth="([^"]+)"/) || [])[1], (html.match(/<svg[^>]*\sheight="([^"]+)"/) || [])[1]]; }
+        const pdfUrl = __pdf.filter(Boolean)[0]; // signed-in exports open a blank print window first
+        if (pdfUrl) { const html = await (await fetch(pdfUrl)).text(); out.pdfPage = (html.match(/@page\{size:([^;]+);/) || [])[1]; out.pdfSvg = [(html.match(/<svg[^>]*\swidth="([^"]+)"/) || [])[1], (html.match(/<svg[^>]*\sheight="([^"]+)"/) || [])[1]]; }
         // save to My Labels
         await saveLabel(); await wait(300);
         const rec = LabelLibrary.findById(getSaved(), editingLabelId);
@@ -193,14 +196,16 @@ const server = http.createServer((req, res) => {
         const px = mm => Math.round(mm / 25.4 * 600);
         if (JSON.stringify(B.png) !== JSON.stringify([px(w), px(h)])) fail(id, `PNG ${B.png} != ${px(w)}x${px(h)} (600 dpi)`);
       } else if (B.svgCount || B.pngCount || B.pdfCount) fail(id, 'a blocked label produced an export');
-      if (B.rpc) fail(id, 'guest export touched download accounting');
+      // Each allowed export (SVG, PNG, PDF) is checked by the download RPC once;
+      // a blocked label never reaches it.
+      if (B.rpc !== (B.allowed ? 3 : 0)) fail(id, `download RPC called ${B.rpc} times (allowed=${B.allowed})`);
       if (!B.saved) fail(id, 'label was not saved');
 
       // ── Reopen the saved label (the My Labels link) ──────────────────
       let R = null;
       if (B.saved) {
         const t2 = await open('builder.html', OUT);
-        await t2.evaluate(async (rec) => { currentUser = null; if (typeof initSavedLabelLibrary === 'function') await initSavedLabelLibrary(); await LabelLibrary.mutate(() => ({ collection: [rec], usedId: rec.id })); }, B.saved);
+        await t2.evaluate(async (rec) => { await LabelLibrary.mutate(() => ({ collection: [rec], usedId: rec.id })); }, B.saved);
         await t2.goto(base + '/builder.html?label=' + B.saved.id, { waitUntil: 'load' }); await t2.evaluate(require('./helpers/sds-doc-answer').SCRIPT).catch(()=>{});
         await sleep(2000);
         R = await t2.evaluate(async () => {

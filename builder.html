@@ -7,6 +7,7 @@
   <meta name="description" content="Build and download UK CLP label layouts for candles, wax melts, reed diffusers and fragrance products, with GHS pictograms and hazard and precautionary statements.">
   <meta property="og:title" content="CLPeasy — Label Builder">
   <meta property="og:description" content="Create print-ready CLP labels in minutes. Covers candles, wax melts, reed diffusers and all fragrance products.">
+  <meta name="robots" content="noindex, follow">
   <meta property="og:url" content="https://clpeasy.com/builder.html">
   <meta property="og:type" content="website">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -2385,6 +2386,7 @@ async function initAuth(){
 
     if(session){
       currentUser=session.user;
+      try{sessionStorage.removeItem('clpBuilderAuthRedirect');}catch(e){}
       S.isPro=false;
 
       // ── DOWNLOAD ALLOWANCE + CLEAN EXPORT ENTITLEMENT ─────
@@ -2441,23 +2443,37 @@ async function initAuth(){
       // never reads the pre-auth 'guest' library even momentarily.
       await initSavedLabelLibrary();
     } else {
-      const navSignin=document.getElementById('nav-signin');
-      const navSignout=document.getElementById('nav-signout');
-      if(navSignin)navSignin.style.display='';
-      if(navSignout)navSignout.style.display='none';
-      const navAccount=document.getElementById('nav-account');
-      if(navAccount)navAccount.style.display='none';
-      const suUserGuest=document.getElementById('sidebar-user');
-      if(suUserGuest)suUserGuest.style.display='none';
-      const suUsageGuest=document.getElementById('sidebar-usage');
-      if(suUsageGuest)suUsageGuest.style.display='none';
-      // Checkpoint B, requirement 1: a confirmed "no session" result IS a
-      // resolved auth state (the guest namespace) -- library init happens
-      // here too, exactly the same way, rather than ever being read
-      // optimistically before this point.
-      await initSavedLabelLibrary();
+      // Sign-in required: signed-out visitors no longer use the Builder as a
+      // guest. Earlier guest data stays in the browser untouched.
+      requireBuilderSignIn();
     }
-  }catch(e){console.log('Auth init error:',e);}
+  }catch(e){
+    console.log('Auth init error:',e);
+    // Fail closed: if the session could not be checked at all (for example
+    // the sign-in library did not load), there is no guest fallback.
+    if(!currentUser)requireBuilderSignIn();
+  }
+}
+
+// Sends a signed-out visitor to registration (auth.html has a Sign in tab)
+// and back to the Builder afterwards. A saved-label link is carried through
+// only in the exact form auth.html's allow-list accepts. A second redirect
+// within a minute (auth.html sees a session the Builder cannot) shows a
+// message instead, so the two pages can never bounce between each other.
+function requireBuilderSignIn(){
+  document.documentElement.style.visibility='hidden';
+  const params=new URLSearchParams(window.location.search);
+  const label=params.get('label');
+  const next=label&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(label)?'builder.html?label='+label:'builder.html';
+  let recent=false;
+  try{
+    recent=Date.now()-Number(sessionStorage.getItem('clpBuilderAuthRedirect')||0)<60000;
+    sessionStorage.setItem('clpBuilderAuthRedirect',String(Date.now()));
+  }catch(e){}
+  const target='auth.html?mode=signup&next='+encodeURIComponent(next);
+  if(!recent){window.location.replace(target);return;}
+  document.body.innerHTML='<main style="max-width:420px;margin:15vh auto;padding:0 16px;font-family:Nunito,sans-serif;text-align:center;color:#1e293b"><h1 style="font-size:22px">Please sign in to continue</h1><p>Create an account or sign in to use the Label Builder.</p><p><a href="'+target+'" style="color:#0D9488;font-weight:700">Create account</a> &nbsp;·&nbsp; <a href="'+target.replace('mode=signup','mode=signin')+'" style="color:#0D9488;font-weight:700">Sign in</a></p></main>';
+  document.documentElement.style.visibility='';
 }
 
 // Checkpoint B, requirement 1: shown while auth/LabelLibrary.init() are
@@ -2869,15 +2885,13 @@ function wrapDownloads(){
           return;
         }finally{S.isPro=previousPro;}
       }
-      // Signed-out guests keep the long-standing Builder behaviour: a
-      // watermarked export that is not counted against any allowance (there
-      // is no account to count it against). Never clean, whatever S.isPro
-      // says -- a console-tampered flag is reset here.
+      // No anonymous downloads: watermarked files are part of the registered
+      // free trial. This also covers the moment before (or a hang while) the
+      // sign-in check runs, so there is never a guest export.
       if(!currentUser){
         S.isPro=false;
-        const wmGuest=document.querySelector('.watermark-note');
-        if(wmGuest)wmGuest.style.display='';
-        return orig.apply(this,arguments);
+        alert('Please sign in or create an account to download labels.');
+        return;
       }
       // C6 (owner decision): a PDF export needs a print window. Open it now,
       // synchronously inside the customer's click and BEFORE any download is

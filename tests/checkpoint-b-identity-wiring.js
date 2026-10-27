@@ -90,9 +90,10 @@ async function openBuilder(opts){
       window.open = () => ({ location:{ href:'' }, close(){}, opener:null });
       window.URL.createObjectURL = () => 'blob:test';
       window.URL.revokeObjectURL = () => {};
-      window.supabase = makeSupabaseStub(null); // guest, unless the caller seeds storage under 'guest'
+      // The Builder requires sign-in: a signed-in maker, seeded under their own namespace.
+      window.supabase = makeSupabaseStub({ user: { id:'bld-user-1', email:'maker@example.com', user_metadata:{} } });
       if(opts.seed){
-        window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify(opts.seed));
+        window.localStorage.setItem('clpeasy_labels__u_bld-user-1', JSON.stringify(opts.seed));
       }
     }
   });
@@ -133,7 +134,7 @@ async function openMyLabels(opts){
     const seed = [fixture({ id: fakeId(), scentName:'Pre-existing' })];
     const { window, errors } = await openBuilder({ seed });
     assert.deepStrictEqual(errors, [], 'builder.html must never throw reading the library before/after auth resolves: ' + errors.join('; '));
-    assert.strictEqual(window.eval('getSaved().length'), 1, 'library must be readable once init has resolved, reflecting the pre-seeded guest collection');
+    assert.strictEqual(window.eval('getSaved().length'), 1, 'library must be readable once init has resolved, reflecting the pre-seeded collection');
     ok('auth-before-library-init: no premature read, library readable once auth+init resolve (builder)');
   }
   {
@@ -408,8 +409,8 @@ async function openMyLabels(opts){
     // pointing at this window's own localStorage -- handleStorageEvent()
     // only requires the event's storageArea to match global.localStorage,
     // which this genuinely does.
-    window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify([]));
-    const evt = new window.StorageEvent('storage', { key:'clpeasy_labels__u_guest', storageArea: window.localStorage });
+    window.localStorage.setItem('clpeasy_labels__u_bld-user-1', JSON.stringify([]));
+    const evt = new window.StorageEvent('storage', { key:'clpeasy_labels__u_bld-user-1', storageArea: window.localStorage });
     window.dispatchEvent(evt);
     await new Promise(resolve => setTimeout(resolve, 250)); // reconciliation polls internally
     const notice = document.getElementById('stale-edit-notice');
@@ -428,8 +429,8 @@ async function openMyLabels(opts){
     // Another tab renames the OTHER (not currently-edited) label.
     const renamed = JSON.parse(JSON.stringify(seed));
     renamed[1].scentName = 'B Renamed Elsewhere';
-    window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify(renamed));
-    const evt = new window.StorageEvent('storage', { key:'clpeasy_labels__u_guest', storageArea: window.localStorage });
+    window.localStorage.setItem('clpeasy_labels__u_bld-user-1', JSON.stringify(renamed));
+    const evt = new window.StorageEvent('storage', { key:'clpeasy_labels__u_bld-user-1', storageArea: window.localStorage });
     window.dispatchEvent(evt);
     await new Promise(resolve => setTimeout(resolve, 250));
     assert.strictEqual(document.getElementById('scent-name').value, 'My Unsaved Edit', 'a storage event for a DIFFERENT label must never overwrite this tab\'s unsaved form edit');

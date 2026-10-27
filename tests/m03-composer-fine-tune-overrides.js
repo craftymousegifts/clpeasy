@@ -31,7 +31,7 @@ try { puppeteer = require('puppeteer'); } catch (e) { console.log('SKIP m03 brow
 const EXE = [process.env.PUPPETEER_EXECUTABLE_PATH, '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'].filter(Boolean).find(p => { try { return fs.existsSync(p); } catch (e) { return false; } });
 if (!EXE) { console.log('SKIP m03 browser checks: no Chromium'); process.exit(0); }
 
-const SIGNED_OUT = 'window.supabase={createClient:function(){return {auth:{getSession:async function(){return {data:{session:null}}},onAuthStateChange:function(){return {data:{subscription:{unsubscribe:function(){}}}}}},from:function(){return {select:function(){return this},eq:function(){return this},maybeSingle:async function(){return {data:null}},single:async function(){return {data:null}}}},rpc:async function(){return {data:null,error:null}}}}};';
+const SIGNED_IN_TRIAL = 'window.supabase={createClient:function(){return {auth:{getSession:async function(){return {data:{session:{user:{id:"00000000-0000-4000-8000-00000000a11d",email:"qa-trial@example.invalid",user_metadata:{}}}}}},onAuthStateChange:function(){return {data:{subscription:{unsubscribe:function(){}}}}}},from:function(){return {select:function(){return this},eq:function(){return this},maybeSingle:async function(){return {data:null}},single:async function(){return {data:null}}}},rpc:async function(){return {data:null,error:null}}}}};';
 const PAYG = `window.__rpc=[];window.supabase={createClient:function(){var row={id:'u1',email:'qa@example.test',plan:'payg',status:'active',subscription_status:'payg',trial_end:new Date(Date.now()-2*864e5).toISOString(),downloads_used:0,downloads_limit:0,topup_credits:5,created_at:new Date(Date.now()-40*864e5).toISOString()};
 var q={select:function(){return this},eq:function(){return this},neq:function(){return this},update:function(){return this},upsert:function(){return Promise.resolve({error:null})},insert:function(){return Promise.resolve({error:null})},order:function(){return this},limit:function(){return this},gte:function(){return this},single:function(){return Promise.resolve({data:row,error:null})},maybeSingle:function(){return Promise.resolve({data:row,error:null})},then:function(r){return Promise.resolve({data:[],error:null}).then(r)}};
 return {auth:{getSession:async function(){return {data:{session:{access_token:'x',user:{id:'u1',email:row.email,created_at:row.created_at,user_metadata:{}}}}}},getUser:async function(){return {data:{user:{id:'u1'}}}},onAuthStateChange:function(){return {data:{subscription:{unsubscribe:function(){}}}}},signOut:async function(){return {}}},
@@ -80,7 +80,7 @@ const server = http.createServer((req, res) => {
   }
   try {
     // ── Builder: fine-tune and save a real label ──────────────────────────
-    const bt = await open('builder.html', SIGNED_OUT, false);
+    const bt = await open('builder.html', SIGNED_IN_TRIAL, false);
     const B = await bt.evaluate(async (SDS) => {
       currentUser = null; if (typeof initSavedLabelLibrary === 'function') await initSavedLabelLibrary();
       document.getElementById('scent-name').value = 'M03 Fine Tuned';

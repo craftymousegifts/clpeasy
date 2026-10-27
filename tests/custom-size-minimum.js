@@ -84,7 +84,7 @@ const EXPECTED_RECT_MSG = 'CLPeasy supports custom rectangle labels from 52mm on
       window.URL.revokeObjectURL = () => {};
       window.supabase = { createClient: () => ({
         auth: {
-          getSession: async () => ({ data:{ session:null } }),
+          getSession: async () => ({ data:{ session:{user:{id:'00000000-0000-4000-8000-00000000a11d',email:'qa-trial@example.invalid',user_metadata:{}}} } }),
           onAuthStateChange: () => ({ data:{ subscription:{ unsubscribe(){} } } }),
           signOut: async () => ({})
         },
@@ -392,8 +392,12 @@ const EXPECTED_RECT_MSG = 'CLPeasy supports custom rectangle labels from 52mm on
       window.localStorage.setItem('clpeasy_labels__u_guest', JSON.stringify([legacySmallLabel, validCustomLabel, presetBelow52, legacyRect6040]));
     }
   });
-  await new Promise(resolve => setTimeout(resolve, 60));
   const pwindow = pdom.window;
+  // Wait for the Composer's library to finish initialising (a fixed 60ms was
+  // not always enough once the signed-in Builder above is also still busy).
+  for (let i = 0; i < 150; i++) {
+    try { pwindow.eval('getSaved()'); break; } catch (e) { await new Promise(resolve => setTimeout(resolve, 20)); }
+  }
 
   pwindow.eval('isPro=true; _previewVerifiedAt=Date.now(); updateProGate();');
   const legacyErr = pwindow.eval('canAddToSheet(getSaved()[0], 1)');

@@ -45,7 +45,7 @@ const dom = new JSDOM(source, {
     window.URL.revokeObjectURL = () => {};
     window.supabase = { createClient: () => ({
       auth: {
-        getSession: async () => ({ data:{session:null} }),
+        getSession: async () => ({ data:{session:{user:{id:'00000000-0000-4000-8000-00000000a11d',email:'qa-trial@example.invalid',user_metadata:{}}}} }),
         onAuthStateChange: () => ({ data:{subscription:{unsubscribe(){}}} }),
         signOut: async () => ({})
       },

@@ -94,7 +94,9 @@ const server = http.createServer((req, res) => {
   const panelFits = t => t.evaluate(() => { const p = document.getElementById('wiz-panel').getBoundingClientRect(); const m = document.getElementById('wiz-messages'); return p.left >= -1 && p.right <= window.innerWidth + 1 && m.scrollWidth <= m.clientWidth + 1; });
 
   try {
-    for (const [who, signedIn] of [['guest', false], ['signed-in', true]]) {
+    // The Builder requires sign-in, so Guide Me is checked for signed-in customers
+    // only (signed-out visitors are redirected; see builder-requires-sign-in.js).
+    for (const [who, signedIn] of [['signed-in', true]]) {
       for (const [vpName, vp] of [['desktop', { width: 1366, height: 900 }], ['390px', { width: 390, height: 844, isMobile: true, hasTouch: true }]]) {
         const t = await open('builder.html', vp, signedIn);
         const before = await t.evaluate(() => ({ signal: S.signal, sdsSignal: S.sdsSignal, picto: JSON.stringify(S.pictograms), h: JSON.stringify(S.hSelected), p: JSON.stringify(S.pSelected), sens: JSON.stringify(S.sensitisers) }));
