@@ -125,6 +125,54 @@ const server = http.createServer((req, res) => {
   }
   ok('auth.html returns signed-in customers to the saved label; open-redirect protection unchanged');
 
+  // 4b. Every sign-in route returns to the Builder (and the saved label):
+  //     password sign-in, the sign-up confirmation email link, Google.
+  {
+    const AUTH_MOCK = `window.__auth={};window.supabase={createClient:function(){return {auth:{
+      getSession:async function(){return {data:{session:null}}},
+      onAuthStateChange:function(){return {data:{subscription:{unsubscribe:function(){}}}}},
+      signInWithPassword:async function(a){window.__auth.signIn=a.email;return {data:{},error:null}},
+      signUp:async function(a){window.__auth.signUpRedirect=a.options&&a.options.emailRedirectTo;return {data:{user:{}},error:null}},
+      signInWithOAuth:async function(a){window.__auth.oauthRedirect=a.options&&a.options.redirectTo;return {data:{},error:null}}}}}};`;
+    const nextLabel = 'builder.html?label=' + LABEL;
+    const page = async () => {
+      const ctx = await browser.createBrowserContext();
+      const p = await ctx.newPage();
+      await p.setRequestInterception(true);
+      p.on('request', q => {
+        const u = q.url();
+        if (u.includes('supabase-js')) return q.respond({ status: 200, contentType: 'text/javascript', body: AUTH_MOCK });
+        if (u.startsWith(base + '/')) return q.continue();
+        return q.respond({ status: 204, body: '' });
+      });
+      await p.goto(base + '/auth.html?mode=signup&next=' + encodeURIComponent(nextLabel), { waitUntil: 'load' });
+      return { p, ctx };
+    };
+    // Password sign-in (existing customer uses the Sign in tab).
+    let { p, ctx } = await page();
+    // (This mock has no real session, so only the first navigation matters.)
+    const navs = []; p.on('framenavigated', f => { if (f === p.mainFrame()) navs.push(f.url().replace(base, '')); });
+    await p.evaluate(() => { switchTab('signin'); document.getElementById('email').value = 'maker@example.com'; document.getElementById('password').value = 'secret123'; });
+    await Promise.all([p.waitForNavigation({ waitUntil: 'load' }), p.evaluate(() => handleSubmit())]);
+    assert.strictEqual(navs[0], '/builder.html?label=' + LABEL, 'password sign-in returns to the saved label');
+    await ctx.close();
+    // Registration: the confirmation email link comes back through auth.html with the same destination.
+    ({ p, ctx } = await page());
+    const reg = await p.evaluate(async () => {
+      document.getElementById('email').value = 'new@example.com'; document.getElementById('password').value = 'secret123';
+      const t = document.getElementById('terms-agree'); if (t) t.checked = true;
+      await handleSubmit();
+      return { link: window.__auth.signUpRedirect, verify: getComputedStyle(document.getElementById('verify-screen')).display !== 'none', path: location.pathname };
+    });
+    assert.strictEqual(reg.link, base + '/auth.html?next=' + encodeURIComponent(nextLabel), 'confirmation link returns to the saved label');
+    assert(reg.verify && reg.path === '/auth.html', 'registration shows the check-your-email screen; no Builder access before confirming');
+    // Google (from the registration tab, terms ticked).
+    const g = await p.evaluate(async () => { const t = document.getElementById('terms-agree'); if (t) t.checked = true; await signInWithGoogle(); return window.__auth.oauthRedirect; });
+    assert.strictEqual(g, base + '/auth.html?next=' + encodeURIComponent(nextLabel), 'Google sign-in returns to the saved label');
+    await ctx.close();
+    ok('password sign-in, the registration confirmation link and Google all return to the Builder (and the saved label)');
+  }
+
   // 5. Fail closed: no sign-in library, or the session check fails.
   r = await open('/builder.html', null, 1280);
   assert.strictEqual(await where(r.p), '/auth.html?mode=signup&next=builder.html', 'library missing: no guest access');
