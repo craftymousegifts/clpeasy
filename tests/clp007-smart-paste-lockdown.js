@@ -146,7 +146,7 @@ const server = http.createServer((req, res) => {
 
       // Cut-off: the earlier of the configured release day and this browser's first run.
       const at = (d) => new Date(d + 'T12:00:00');
-      assert.strictEqual(HP.LOCKDOWN_RELEASE_DATE, null, 'release day is not hard-coded in this draft (set in the release commit)');
+      assert(HP.LOCKDOWN_RELEASE_DATE === null || /^\d{4}-\d{2}-\d{2}$/.test(HP.LOCKDOWN_RELEASE_DATE), 'release day is null or a YYYY-MM-DD date (set in the release commit)');
       assert.strictEqual(HP.cutoffDay(at('2026-11-03'), null), '2026-11-03', 'not set: first-run day');
       assert.strictEqual(HP.cutoffDay(at('2026-11-05'), '2026-11-03'), '2026-11-03', 'set to the real release day, browser first opened later: release day');
       assert.strictEqual(HP.cutoffDay(at('2026-11-05'), '2026-11-10'), '2026-11-05', 'set later than this browser\'s first run: first-run day (never later)');

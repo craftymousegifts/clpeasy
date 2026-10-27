@@ -33,7 +33,7 @@
   // first runs in each browser. It must NEVER be set earlier than the real
   // deploy day (genuine labels saved in between would be locked out); a
   // later date is harmless (the first-run day then applies).
-  const LOCKDOWN_RELEASE_DATE = null;
+  const LOCKDOWN_RELEASE_DATE = '2026-10-27';
   const SCHEMA_VERSION = 2;
   const REGISTER_BASE = 'clpeasy_legacy_hazard';
   const FREEZE_BASE = 'clpeasy_hazard_lockdown';
