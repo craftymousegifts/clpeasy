@@ -99,6 +99,17 @@ const server = http.createServer((req, res) => {
         };
       });
       assert.deepStrictEqual(s.visibleTemplates, ['custom'], tag + ': only Custom Sheet is offered');
+      // Custom Sheet card centred in the template area at its usual one-column width.
+      const lay = await p.evaluate(() => {
+        const g = document.getElementById('template-grid').getBoundingClientRect(), c = document.querySelector('.tpl-card[data-tpl="custom"]').getBoundingClientRect();
+        return { left: c.left - g.left, right: g.right - c.right, width: c.width, column: (g.width - 8) / 2 };
+      });
+      assert(Math.abs(lay.left - lay.right) <= 1, `${tag}: card centred (left ${lay.left}, right ${lay.right})`);
+      assert(Math.abs(lay.width - lay.column) <= 1, `${tag}: card keeps its one-column width (${lay.width} vs ${lay.column})`);
+      await p.$eval('.tpl-card[data-tpl="custom"]', c => c.scrollIntoView({ block: 'center' }));
+      await p.click('.tpl-card[data-tpl="custom"]');
+      assert.deepStrictEqual(await p.evaluate(() => [currentTpl, document.querySelector('.tpl-card[data-tpl="custom"]').classList.contains('selected')]), ['custom', true], tag + ': Custom Sheet selects');
+      await p.evaluate(id => { if (!sheetItems.length) addToSheet(id); }, LABEL.id);
       assert(s.eu30009InDom, tag + ': EU30009 card kept in the page (hidden)');
       assert.strictEqual(s.onSheet, 1, tag + ': saved label added to the Custom Sheet');
       const want = ENTITLED[name];
@@ -138,7 +149,7 @@ const server = http.createServer((req, res) => {
       assert.deepStrictEqual(errs, [], tag + ': no page errors');
       await ctx.close();
     }
-    ok(`${width}px: only Custom Sheet offered; signed-out and trial see both exports disabled and faded; PAYG and annual enabled; alignment test always works`);
+    ok(`${width}px: only Custom Sheet offered, centred and selectable; signed-out and trial see both exports disabled and faded; PAYG and annual enabled; alignment test always works`);
   }
   ok('EU30009 configuration preserved and still selectable for future testing');
 

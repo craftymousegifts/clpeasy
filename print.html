@@ -135,6 +135,9 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 
 /* TEMPLATE CARDS */
 .template-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;}
+/* While EU30009 is hidden, Custom sheet is the only card: centred at its usual
+   one-column width. Remove the template-grid--single class with EU30009's display:none. */
+.template-grid--single>.tpl-card[data-tpl="custom"]{grid-column:1 / -1;justify-self:center;width:calc((100% - 8px) / 2);}
 .tpl-card{border:1.5px solid var(--border);border-radius:10px;padding:10px 11px;cursor:pointer;background:var(--off);transition:all .2s;-webkit-tap-highlight-color:transparent;}
 .tpl-card:hover{border-color:var(--teal);}
 .tpl-card.selected{border-color:var(--teal);background:var(--teal-light);}
@@ -457,7 +460,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 
     <div class="section-head">Sheet template</div>
 
-    <div class="template-grid" id="template-grid">
+    <div class="template-grid template-grid--single" id="template-grid">
       <!-- Preset circle sizes below 52mm were removed: GHS pictograms and
            other mandatory CLP label elements cannot legibly fit under 52mm,
            so only user-defined sheets (kept to 52mm+ via the input's min
