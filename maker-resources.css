@@ -23,3 +23,5 @@ h1,h2,h3{text-wrap:balance}
 .category-visual figcaption{font-size:12px;color:#4b656b;margin:8px 2px 0}
 .category-visual-layout .cards{grid-template-columns:1fr}
 @media(max-width:760px){.category-visual-layout{grid-template-columns:1fr;gap:18px}}
+/* CLP-016: short introduction under each making-guides category heading */
+.category-summary{margin:0 0 20px;max-width:860px}
