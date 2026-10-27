@@ -118,6 +118,22 @@ const server = http.createServer((req, res) => {
       const reg2 = HP.buildRegister([L(3, { savedAt: '27/10/2026' }), L(4, { savedAt: '27/10/2026' })], hist, W, '2026-10-27');
       assert.strictEqual(HP.classify(L(3, { savedAt: '27/10/2026' }), reg2), 'legacy-manual', 'release-day label with its own earlier version');
       assert.strictEqual(HP.classify(L(4, { savedAt: '27/10/2026' }), reg2), 'unverified', 'release-day label is not rescued by another label\'s history with identical codes');
+      // Two labels with the same name and product type share one history key.
+      {
+        const A = L(11, { scentName: 'Twin', pStatements: 'P102, P501' }), B = L(12, { scentName: 'Twin', savedAt: '27/10/2026' });
+        const idless = L(0, { scentName: 'Twin', savedAt: '20/10/2026' }); delete idless.id;
+        const hk = 'Twin|Scented Candle';
+        let rg = HP.buildRegister([A, B], { [hk]: [L(11, { scentName: 'Twin', savedAt: '20/10/2026' })] }, W, '2026-10-27');
+        assert.strictEqual(HP.classify(B, rg), 'unverified', 'same name/type: a version owned (by id) by label A never rescues label B');
+        rg = HP.buildRegister([A, B], { [hk]: [idless] }, W, '2026-10-27');
+        assert.strictEqual(HP.classify(B, rg), 'unverified', 'same name/type: an id-less version is ambiguous and is not used');
+        assert.strictEqual(HP.classify(A, rg), 'legacy-manual', 'label A is still accepted on its own date');
+        rg = HP.buildRegister([B], { [hk]: [idless] }, W, '2026-10-27');
+        assert.strictEqual(HP.classify(B, rg), 'legacy-manual', 'one label with that name/type: its id-less earlier version counts');
+        rg = HP.buildRegister([A, B], { [hk]: [L(99, { scentName: 'Twin', savedAt: '20/10/2026' })] }, W, '2026-10-27');
+        assert.strictEqual(HP.classify(B, rg), 'unverified', 'a version whose id is not a saved label is not used');
+      }
+      ok('history ownership: versions count only for their own label (by id); id-less versions only when the name + product type is unambiguous');
       // Inheritance: only from a registered source with exactly that data.
       const st = mem(); st.setItem('clpeasy_legacy_hazard__u_g', JSON.stringify(reg));
       let r = HP.inheritLegacy({ ns: 'g', storage: st, sourceId: id(1), newId: id(5), record: L(1) });

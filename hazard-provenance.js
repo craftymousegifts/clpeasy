@@ -132,8 +132,11 @@
     (records || []).forEach(r => { if (r && r.id && isEligible(r, cutoff)) reg = addLegacy(reg, r.id, r, wordingFor); });
     Object.keys(history || {}).forEach(k => (Array.isArray(history[k]) ? history[k] : []).forEach(v => {
       if (!isEligible(v, cutoff)) return;
-      const owners = v && v.id && ids.has(v.id) ? [v.id]
-        : (records || []).filter(r => r && r.id && (r.scentName + '|' + r.productType) === k).map(r => r.id);
+      // A version saved without an id (older history) belongs to its label only
+      // when exactly one saved label has that name + product type; otherwise
+      // it is ambiguous and is not used as evidence.
+      const byKey = (records || []).filter(r => r && r.id && (r.scentName + '|' + r.productType) === k).map(r => r.id);
+      const owners = v && v.id ? (ids.has(v.id) ? [v.id] : []) : (byKey.length === 1 ? byKey : []);
       owners.forEach(id => { reg = addLegacy(reg, id, v, wordingFor); });
     }));
     return reg;
