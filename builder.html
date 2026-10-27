@@ -2885,15 +2885,13 @@ function wrapDownloads(){
           return;
         }finally{S.isPro=previousPro;}
       }
-      // Signed-out guests keep the long-standing Builder behaviour: a
-      // watermarked export that is not counted against any allowance (there
-      // is no account to count it against). Never clean, whatever S.isPro
-      // says -- a console-tampered flag is reset here.
+      // No anonymous downloads: watermarked files are part of the registered
+      // free trial. This also covers the moment before (or a hang while) the
+      // sign-in check runs, so there is never a guest export.
       if(!currentUser){
         S.isPro=false;
-        const wmGuest=document.querySelector('.watermark-note');
-        if(wmGuest)wmGuest.style.display='';
-        return orig.apply(this,arguments);
+        alert('Please sign in or create an account to download labels.');
+        return;
       }
       // C6 (owner decision): a PDF export needs a print window. Open it now,
       // synchronously inside the customer's click and BEFORE any download is

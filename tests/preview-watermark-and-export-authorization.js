@@ -70,6 +70,10 @@ function activeProfile(plan){
   return { plan:plan||'pro', status:'active', subscription_status:'active', trial_end:null, deletion_date:null,
            is_pro:(plan||'pro')!=='easy-start', downloads_used:0, downloads_limit:20, topup_credits:0 };
 }
+function trialProfile(){
+  return { plan:'trial', subscription_status:'trialing', trial_end:new Date(Date.now()+7*864e5).toISOString(), deletion_date:null,
+           is_pro:false, downloads_used:1, downloads_limit:10, topup_credits:0 };
+}
 function profileQuery(profile){
   return {
     select(){ return this; }, eq(){ return this; },
@@ -125,7 +129,12 @@ function decodeDataUri(href){
 // ── builder.html harness ───────────────────────────────────────────────
 async function openBuilder(opts){
   opts = opts || {};
-  const profile = opts.profile || (opts.activeSub ? activeProfile(opts.plan) : null);
+  // The Builder requires sign-in: an "unpaid" customer is a signed-in
+  // customer on the 14-day free trial (watermarked), unless a case asks for
+  // a signed-out visitor explicitly.
+  const trial = !opts.session && !opts.profile && !opts.activeSub && !opts.signedOut;
+  if (trial) opts.session = { user:{ id:'user-trial', email:'trial@example.com', user_metadata:{} } };
+  const profile = opts.profile || (opts.activeSub ? activeProfile(opts.plan) : trial ? trialProfile() : null);
   const rpcCalls = [];
   const capturedHrefs = [];
   const capturedBlobs = [];
@@ -143,7 +152,8 @@ async function openBuilder(opts){
       window.confirm = () => true;
       window.scrollTo = () => {};
       window.fetch = async () => ({ ok:true, json:async()=>({}) });
-      window.open = () => ({ location:{ href:'' }, close(){}, opener:null });
+      // Signed-in PDF exports open the print window first, then load it.
+      window.open = () => ({ location:{ href:'', replace(){} }, document:{ open(){}, write(){}, close(){} }, close(){}, opener:null });
       window.URL.createObjectURL = () => 'blob:test';
       window.URL.revokeObjectURL = () => {};
       // downloadSVG() sets a data-URI directly on an <a> then calls
@@ -346,15 +356,15 @@ function candleFixture(overrides){
     ok('deleting the visible watermark-note banner does not alter or clean the rendered label SVG');
   }
 
-  // 3. A genuinely unpaid guest's real SVG download is watermarked.
+  // 3. A genuinely unpaid (free-trial) customer's real SVG download is watermarked.
   {
     const { window, capturedHrefs } = await openBuilder({});
     fillMinimalLabel(window);
     await window.downloadSVG();
     assert.strictEqual(capturedHrefs.length, 1, 'downloadSVG() must trigger exactly one download');
     const svgOut = decodeDataUri(capturedHrefs[0]);
-    assert(/PREVIEW ONLY/.test(svgOut), "an unpaid guest's SVG download must contain the watermark");
-    ok("an unpaid/guest user's real SVG download contains the watermark");
+    assert(/PREVIEW ONLY/.test(svgOut), "an unpaid (free-trial) customer's SVG download must contain the watermark");
+    ok("an unpaid (free-trial) customer's real SVG download contains the watermark");
   }
 
   // 4. The exact devtools-console bypass (`S.isPro = true`) must NOT
@@ -480,19 +490,19 @@ function candleFixture(overrides){
     ok('every clean-export function is wrapped by the same authorisation choke point, and printToPDF reaches the identical fresh, fail-closed entitlement decision as SVG');
   }
 
-  // 8. Signed-out guests keep the long-standing Builder behaviour: a
-  //    watermarked file that is never counted (no account to count it
-  //    against), and the accounting RPC is never called for them.
+  // 8. No anonymous downloads: watermarked files belong to the registered
+  //    free trial. A visitor with no session (for example while the sign-in
+  //    check is still running) gets no file and no accounting call.
   {
-    const { window, capturedHrefs, rpcCalls } = await openBuilder({});
+    const { window, capturedHrefs, rpcCalls } = await openBuilder({ signedOut:true });
     fillMinimalLabel(window);
-    assert.strictEqual(window.eval('DL.loaded'), false, 'guest session must never load a download-allowance row');
+    assert.strictEqual(window.eval('DL.loaded'), false, 'a signed-out visitor never loads a download-allowance row');
     assert.strictEqual(typeof window.dlGate, 'undefined', 'the dead dlGate() (which called a removed function) must stay removed');
-    await window.downloadSVG();
-    assert.strictEqual(rpcCalls.length, 0, 'a guest export must never call consume_download');
-    assert.strictEqual(capturedHrefs.length, 1, 'a guest still receives the (watermarked) export, as before PR #156');
-    assert(/PREVIEW ONLY/.test(decodeDataUri(capturedHrefs[0])), 'a guest export is watermarked');
-    ok('guests are not counted or blocked, and always receive a watermarked export');
+    for (const fn of ['downloadSVG','downloadPNG','printToPDF']) await window[fn]();
+    assert.strictEqual(rpcCalls.length, 0, 'no consume_download call without an account');
+    assert.strictEqual(capturedHrefs.length, 0, 'no file for a signed-out visitor');
+    assert.strictEqual(window.__lastAlert, 'Please sign in or create an account to download labels.');
+    ok('signed-out visitors get no download (SVG, PNG or PDF) and are asked to sign in');
   }
 
   // 8b. An Easy Start subscriber who has used their whole monthly allowance

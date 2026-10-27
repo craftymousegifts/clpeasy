@@ -19,8 +19,9 @@
 //     download counts. Any difference fails the run and lists it -- a change
 //     in behaviour must be understood before anything else is changed.
 //
-// Signed out in the Builder (guest exports are not counted). The Composer
-// uses an in-page signed-in stub (no network, no real account).
+// The Builder runs as a signed-in free-trial customer (the Builder requires
+// sign-in; watermarked exports, each checked by consume_download). The
+// Composer uses an in-page signed-in stub (no network, no real account).
 //   node tests/builder-safety-baseline.js            -- check
 //   node tests/builder-safety-baseline.js --update   -- rewrite the snapshot
 //                                                       (only after review)

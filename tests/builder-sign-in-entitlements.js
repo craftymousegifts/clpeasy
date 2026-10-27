@@ -7,7 +7,8 @@
 //   expired trial                  → refused (never a renewed trial)
 //   PAYG with credits              → download, clean;  PAYG at zero → refused
 //   annual Easy Start / Easy Pro   → download, clean
-// and a signed-out visitor gets no download at all.
+// and a signed-out visitor, an expired login or a sign-in service that never
+// answers gets no download at all.
 //
 // The mocked consume_download() answers from entitlement.js, the browser
 // mirror that tests/download-entitlement-sql.js proves equal to the real SQL.
@@ -57,6 +58,10 @@ function stub(profile) {
     if(!s.nextSource)return {data:{ok:false,reason:'no_downloads_remaining'},error:null};
     return {data:{ok:true,consumed:true,free_redownload:false,source:s.nextSource==='subscription'?'plan':s.nextSource,clean_export:s.nextClean},error:null};}};}};`;
 }
+// Expired login: supabase-js cannot refresh the session and reports no session.
+const EXPIRED = 'window.supabase={createClient:function(){return {auth:{getSession:async function(){return {data:{session:null},error:{message:"Invalid Refresh Token: Refresh Token Not Found",status:400}}},onAuthStateChange:function(){return {data:{subscription:{unsubscribe:function(){}}}}}}}}};';
+// Sign-in service never answers (the Builder stays open while it waits).
+const HANG = 'window.supabase={createClient:function(){return {auth:{getSession:function(){return new Promise(function(){})},onAuthStateChange:function(){return {data:{subscription:{unsubscribe:function(){}}}}}}}}};';
 const SIGNED_OUT = 'window.supabase={createClient:function(){return {auth:{getSession:async function(){return {data:{session:null}}},onAuthStateChange:function(){return {data:{subscription:{unsubscribe:function(){}}}}}}}}};';
 const RECORDER = `window.__files=[];(function(){var oc=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){
   if(this.download&&/\\.svg$/.test(this.download)){var h=this.href||'';window.__files.push(h.indexOf('data:')===0?decodeURIComponent(h.split(',').slice(1).join(',')):'(blob)');return;}
@@ -143,6 +148,35 @@ const server = http.createServer((req, res) => {
     assert.strictEqual(await p.evaluate(() => typeof downloadSVG), 'undefined', 'Builder export code is not on the page');
     await p.ctx.close();
     ok(`${width}px: anonymous visitor is sent to registration; no guest download`);
+
+    // Expired login session → registration (sign-in tab available), no Builder.
+    const ex = await open(EXPIRED, width);
+    assert.strictEqual(await ex.evaluate(() => location.pathname + location.search), '/auth.html?mode=signup&next=builder.html', 'expired session is sent to sign in again');
+    await ex.ctx.close();
+    ok(`${width}px: expired login session is sent to sign in again`);
+
+    // Sign-in service hangs: even a completed label produces no file.
+    const h = await open(HANG, width);
+    const hr = await h.evaluate(async (SDS) => {
+      const wait = ms => new Promise(res => setTimeout(res, ms));
+      document.getElementById('scent-name').value = 'Hang QA';
+      document.getElementById('product-type').value = 'Scented Candle'; onProductTypeChange();
+      document.getElementById('smart-paste-input').value = SDS; extractSDS();
+      document.getElementById('biz-name').value = 'QA Candles';
+      document.getElementById('biz-address').value = '1 Test Street, Testtown, TE1 1ST';
+      document.getElementById('biz-phone').value = '01234 567890';
+      selectSize(56); readForm(); updateLabel();
+      for (let n = 2; n <= 5; n++) { if (n === 4) { document.getElementById('hazard-confirm').checked = true; toggleHazardNext(); } setApprovedBuilderStep(n); await wait(120); }
+      const v = document.getElementById('verify-checkbox'); v.checked = true; toggleDownload(); await wait(300);
+      const anchors = []; const oc = HTMLAnchorElement.prototype.click; HTMLAnchorElement.prototype.click = function () { if (this.download) anchors.push(this.download); else oc.apply(this, arguments); };
+      let opened = 0; window.open = () => { opened++; return null; };
+      await downloadSVG(); await downloadPNG(); await printToPDF(); await wait(800);
+      return { signedIn: !!currentUser, step: approvedBuilderStep, files: window.__files.length + anchors.length, opened };
+    }, SDS);
+    assert.deepStrictEqual(hr, { signedIn: false, step: 5, files: 0, opened: 0 }, 'no file while sign-in is unconfirmed');
+    assert(h.alerts.every(m => m === 'Please sign in or create an account to download labels.') && h.alerts.length === 3, 'asked to sign in: ' + h.alerts.join(' | '));
+    await h.ctx.close();
+    ok(`${width}px: sign-in service not answering → no guest fallback; SVG, PNG and PDF all refused`);
   }
 
   await browser.close();
