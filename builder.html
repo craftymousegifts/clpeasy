@@ -42,6 +42,9 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
   padding:16px 12px;position:fixed;top:0;left:0;bottom:0;z-index:300;
   transition:transform .25s ease;
 }
+/* Let the sidebar scroll when it is taller than the screen (short iPhone
+   Safari views), so the account card and Log out at the bottom stay reachable. */
+.sidebar{overflow-y:auto;overscroll-behavior:contain;}
 .sidebar-logo{display:flex;align-items:center;gap:0;text-decoration:none;padding:8px 8px 24px;}
 .sidebar-nav{display:flex;flex-direction:column;gap:2px;flex:1;}
 .sidebar-nav-item{
