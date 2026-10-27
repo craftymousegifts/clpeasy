@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const PLAUSIBLE_API_KEY = 'hejAa6p7Cz6cESKYnFwxhk7FZOL9dF0iPjpiD7QLGg9VtIas5Xh-8hIPWMz-XRYl';
+// CLP-001: the Plausible Stats API key is a Supabase Edge Function secret,
+// never a value in this file. Without it the function refuses to run.
+const PLAUSIBLE_API_KEY = Deno.env.get('PLAUSIBLE_API_KEY') ?? '';
 const BASE = 'https://plausible.io/api/v1/stats/';
 
 const corsHeaders = {
@@ -37,6 +39,12 @@ async function fetchSiteStats(siteId: string) {
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
+  }
+
+  if (!PLAUSIBLE_API_KEY) {
+    return new Response(JSON.stringify({ error: 'Analytics not configured' }), {
+      status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 
   try {
