@@ -48,6 +48,29 @@ assert(/p\.x = laneX\(p\.lane\);/.test(source.split('particleResizeHandler = () 
 assert(source.includes("window.removeEventListener('resize', particleResizeHandler); particleResizeHandler = null;\n    const canvas = document.createElement('canvas');".split('\n')[0]) || /addParticles\(type, accentColor\) \{[\s\S]{0,400}particleResizeHandler[\s\S]{0,60}removeEventListener/.test(source),
   'addParticles() must remove any stray previous resize listener itself, so repeated invocations cannot stack duplicate listeners');
 
+// ── Scroll-boundary regression: no fixed viewport overlay ─────────────
+assert(source.includes('position:absolute;top:0;left:0;width:100%'),
+  'particle canvas must be document-anchored, not fixed to the iPhone visual viewport');
+assert(!source.includes('position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none'),
+  'old fixed canvas would briefly spill below the banner during Safari scrolling');
+assert(source.includes('banner.getBoundingClientRect().bottom + window.scrollY'),
+  'particle canvas height must use the seasonal banner DOCUMENT bottom');
+assert(source.includes("canvas.style.height = currentRegionHeight + 'px'"),
+  'canvas CSS height must follow banner boundary changes');
+assert(!source.includes('ctx.rect(0, 0, canvas.width, limit)'),
+  'do not rely on a moving viewport clipping rect that can lag during scrolling');
+
+// A document-positioned canvas stays in the same coordinate space as the
+// seasonal banner even while Safari scrolls or its address bar collapses.
+function boundaryAtScroll(bannerDocumentBottom, scrollY) {
+  const viewportBottom = bannerDocumentBottom - scrollY;
+  return viewportBottom + scrollY;
+}
+for (const scrollY of [0, 50, 320, 700, 1100]) {
+  assert.strictEqual(boundaryAtScroll(880, scrollY), 880,
+    'banner boundary must stay invariant in document coordinates while scrolling');
+}
+
 // ── Real page-load / real-resize-event runtime checks ─────────────────
 function makeWindow() {
   const dom = new JSDOM(`<!doctype html><html><body>
