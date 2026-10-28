@@ -45,6 +45,7 @@
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
+  <url><loc>https://clpeasy.com/knowledge/printing-and-cutting</loc><changefreq>monthly</changefreq></url>
   <url><loc>https://clpeasy.com/making-guides.html</loc><changefreq>monthly</changefreq></url>
   <url><loc>https://clpeasy.com/design-ideas.html</loc><changefreq>monthly</changefreq></url>
 </urlset>
