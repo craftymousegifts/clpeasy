@@ -287,12 +287,25 @@
     canvas.id = 'clpeasy-particles';
     // Softer effect (25 Oct 2026, owner request) so it doesn't overpower the
     // page: leaves/festive 0.72 -> 0.45, other particles 0.4 -> 0.3.
-    canvas.style.cssText = `position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:${(type.indexOf('leaves') === 0 || type === 'trees+snowmen') ? '0.45' : '0.3'};`;
+    canvas.style.cssText = `position:absolute;top:0;left:0;width:100%;pointer-events:none;z-index:1;opacity:${(type.indexOf('leaves') === 0 || type === 'trees+snowmen') ? '0.45' : '0.3'};`;
     document.body.appendChild(canvas);
     particleCanvasEl = canvas;
     const ctx = canvas.getContext('2d');
+    // Anchor the canvas to DOCUMENT coordinates, not the visual viewport.
+    // On iPhone Safari a fixed canvas can briefly paint beyond the moving
+    // banner boundary during fast scroll/address-bar changes. The element's
+    // own bottom edge now provides a hard paint boundary that scrolls with
+    // the page; the particles cannot appear over "How it works".
+    function regionHeight() {
+      const banner = document.getElementById('clpeasy-season-banner');
+      if (!banner) return window.innerHeight;
+      const bottom = banner.getBoundingClientRect().bottom + window.scrollY;
+      // jsdom has no layout and reports zero; retain viewport fallback there.
+      return bottom > 0 ? Math.round(bottom) : window.innerHeight;
+    }
     canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.height = regionHeight();
+    canvas.style.height = canvas.height + 'px';
     const particles = [];
     const isFestive = type === 'trees+snowmen';
     const isMixed = type === 'leaves+pumpkins' || isFestive;
@@ -331,19 +344,15 @@
     }
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // Keep the effect to the top of the homepage (25 Oct 2026, owner
-      // request): particles are only painted above the bottom edge of the
-      // seasonal banner, so they never fall over "How it works" or the rest
-      // of the page. The particles keep moving underneath, so scrolling back
-      // up shows them again. With no banner on the page, nothing is clipped.
-      const seasonBanner = document.getElementById('clpeasy-season-banner');
-      ctx.save();
-      if (seasonBanner) {
-        const limit = Math.max(0, Math.min(canvas.height, seasonBanner.getBoundingClientRect().bottom));
-        ctx.beginPath();
-        ctx.rect(0, 0, canvas.width, limit);
-        ctx.clip();
+      // Keep the physical canvas edge aligned with the banner if a font,
+      // image or responsive layout changes its document position. Unlike a
+      // fixed-viewport clipping rect, this boundary cannot lag behind scroll.
+      const currentRegionHeight = regionHeight();
+      if (currentRegionHeight !== canvas.height) {
+        canvas.height = currentRegionHeight;
+        canvas.style.height = currentRegionHeight + 'px';
       }
+      ctx.save();
       particles.forEach(p => {
         ctx.save();
         ctx.translate(p.x, p.y);
@@ -413,7 +422,7 @@
     // right until particles happened to recycle off the bottom edge.
     particleResizeHandler = () => {
       const newWidth = window.innerWidth;
-      const newHeight = window.innerHeight;
+      const newHeight = regionHeight();
       // Only remap on an ACTUAL dimension change -- mobile browsers fire
       // resize for address-bar show/hide etc. at the same width/height, and
       // remapping then would be pointless work (and risks a visible jump
@@ -423,6 +432,7 @@
       const oldHeight = canvas.height;
       canvas.width = newWidth;
       canvas.height = newHeight;
+      canvas.style.height = newHeight + 'px';
       const scaleX = oldWidth > 0 ? newWidth / oldWidth : 1;
       const scaleY = oldHeight > 0 ? newHeight / oldHeight : 1;
       particles.forEach(p => {
