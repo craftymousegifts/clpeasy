@@ -21,8 +21,10 @@ const MOCK = `window.__signedOut=0;window.supabase={createClient:function(){var 
   single:function(){return Promise.resolve({data:row,error:null})},maybeSingle:function(){return Promise.resolve({data:row,error:null})},then:function(r){return Promise.resolve({data:[],error:null}).then(r)}};
   return {auth:{getSession:async function(){var out=false;try{out=sessionStorage.getItem('qaSignedOut')==='1';}catch(e){}return {data:{session:(window.__signedOut||out)?null:{access_token:'x',user:{id:row.id,email:row.email,created_at:row.created_at,user_metadata:{}}}}}},
   getUser:async function(){return {data:{user:{id:row.id,email:row.email}}}},onAuthStateChange:function(){return {data:{subscription:{unsubscribe:function(){}}}}},
-  signOut:async function(){window.__signedOut++;try{sessionStorage.setItem('qaSignedOut','1');}catch(e){}return {}}},
+  signOut:async function(){window.__signedOut++;try{sessionStorage.setItem('qaSignedOut','1');sessionStorage.setItem('qaSignOutCalls',String(window.__signedOut));}catch(e){}return {}}},
   from:function(){return Object.create(q)},rpc:async function(){return {data:null,error:null}},functions:{invoke:async function(){return {data:null,error:null}}}};}};`;
+const ARTIFACTS = path.join(ROOT, 'qa-artifacts', 'customer-experience');
+fs.mkdirSync(ARTIFACTS, { recursive: true });
 const PAGES = ['builder.html', 'my-labels.html', 'dashboard.html', 'print.html', 'account.html'];
 
 let passed = 0;
@@ -84,12 +86,15 @@ const server = http.createServer((req, res) => {
       assert(card.inView && card.onTop, `${tag}: account card reachable (was cut: ${before.cut}, menu scrolls: ${before.scrollable})`);
       const out = await p.evaluate(() => { const b = document.querySelector('.sidebar-signout'); const q = b.getBoundingClientRect(); const x = q.left + q.width / 2, y = q.top + q.height / 2; return { x, y, visible: q.height > 0 && q.top >= 0 && q.bottom <= innerHeight, onTop: b.contains(document.elementFromPoint(x, y)), text: b.textContent.trim() }; });
       assert(out.visible && out.onTop && /Log out/.test(out.text), tag + ': Log out visible and tappable');
+      const details = await p.evaluate(() => ['su-name', 'su-plan'].map(id => document.getElementById(id).textContent.trim()));
+      assert(details.every(text => text && text !== '—'), tag + ': customer name and plan populated');
+      await p.screenshot({ path: path.join(ARTIFACTS, page.replace('.html', '') + '-' + h + '.png') });
       await Promise.all([p.waitForNavigation({ waitUntil: 'load', timeout: 10000 }).catch(() => {}), p.touchscreen.tap(out.x, out.y)]);
-      const after = await p.evaluate(() => ({ at: location.pathname, signedOut: sessionStorage.getItem('qaSignedOut') === '1' }));
+      const after = await p.evaluate(() => ({ at: location.pathname, signedOut: sessionStorage.getItem('qaSignedOut') === '1', calls: sessionStorage.getItem('qaSignOutCalls') }));
       assert(after.signedOut, tag + ': Log out signs out');
+      assert.strictEqual(after.calls, '1', tag + ': one tap calls signOut exactly once');
       // Each page keeps its existing sign-out destination (Builder/Composer: sign-in page; others: homepage).
       assert(/\/(auth|index)\.html$/.test(after.at), tag + ': left the signed-in page after Log out, at ' + after.at);
-      if (h === 548 && page === 'builder.html') await p.screenshot({ path: path.join(ROOT, 'qa-artifacts', 'mobile-sidebar-logout-548.png') }).catch(() => {});
       await p.ctx.close();
     }
     ok(`iPhone 390x${h}: on all five pages the account card is reachable and Log out signs out`);
@@ -101,6 +106,11 @@ const server = http.createServer((req, res) => {
     const d = await p.evaluate(() => { const sb = document.querySelector('.sidebar'); const c = document.getElementById('sidebar-user').getBoundingClientRect(); return { scrolls: sb.scrollHeight > sb.clientHeight, cardVisible: c.bottom <= innerHeight && c.height > 0 }; });
     assert.deepStrictEqual(d, { scrolls: false, cardVisible: true }, page + ' desktop: sidebar fits, account card visible');
     assert.deepStrictEqual(p.errs, [], page + ' desktop: no page errors');
+    const out = await p.$eval('.sidebar-signout', e => { const r=e.getBoundingClientRect(); return { visible:r.height >= 44 && r.bottom <= innerHeight, below:r.top >= document.getElementById('sidebar-user').getBoundingClientRect().bottom }; });
+    assert(out.visible && out.below, page + ': desktop Log out visible below account card');
+    await p.screenshot({path:path.join(ARTIFACTS, page.replace('.html','')+'-desktop.png')});
+    await Promise.all([p.waitForNavigation({waitUntil:'load',timeout:10000}),p.click('.sidebar-signout')]);
+    assert.strictEqual(await p.evaluate(()=>sessionStorage.getItem('qaSignOutCalls')), '1', page + ': desktop one-click Log out');
     await p.ctx.close();
   }
   ok('desktop 1280x900: sidebars fit without scrolling; account card visible on all five pages');
