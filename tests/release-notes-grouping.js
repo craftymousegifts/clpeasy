@@ -2,7 +2,7 @@
 const assert=require('assert'),fs=require('fs'),cp=require('child_process'),{JSDOM}=require('jsdom');
 const src=fs.readFileSync('release-notes.html','utf8'),doc=new JSDOM(src).window.document;
 const releases=[...doc.querySelectorAll('details.release-block')];
-assert.equal(releases.filter(e=>e.open).length,1);assert(releases[0].open);assert.equal(releases[0].dataset.releaseDate,'2026-10-27');
+assert.equal(releases.filter(e=>e.open).length,1);assert(releases[0].open);assert.equal(releases[0].dataset.releaseDate,'2026-10-28');
 const dates=releases.map(e=>e.querySelector('.release-date').textContent.match(/\d+ \w+ 2026/)[0]);assert.equal(new Set(dates).size,dates.length);
 for(const [i,e] of releases.entries()){
  assert.equal(e.querySelector('.new-badge').textContent,i?'Historical':'Current');
