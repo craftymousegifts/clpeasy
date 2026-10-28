@@ -103,15 +103,31 @@ footer-legal{display:block;text-align:center;padding:32px;border-top:1px solid v
   <h2>5. Third-Party Cookies</h2>
   <p>When you choose to buy Pay As You Go downloads or an Easy Start Unlimited subscription, you will be redirected to Stripe's secure payment page. Stripe may set its own cookies on that page. Please refer to <a href="https://stripe.com/privacy" target="_blank">Stripe's Privacy Policy</a> for details.</p>
   <p>If you choose to sign in with Google, Google may set cookies as part of their OAuth authentication flow. Please refer to <a href="https://policies.google.com/privacy" target="_blank">Google's Privacy Policy</a> for details.</p>
-  <p>CLPeasy does not use Google Analytics, Facebook Pixel, or any other advertising or analytics tracking cookies. We use Plausible Analytics to count page visits and produce aggregated statistics that help us improve CLPeasy. Plausible does not set cookies. Its script does read one setting from your browser's local storage (<code>plausible_ignore</code>), which is how a visitor can tell it not to count their visits.</p>
+  <p>CLPeasy does not use advertising pixels. Google Analytics 4 is optional and loads only after a separate, explicit opt-in. Google Analytics may use cookies and process device, browser and visit information; it is not required to use CLPeasy. We use Plausible Analytics to count page visits and produce aggregated statistics that help us improve CLPeasy. Plausible does not set cookies. Its script does read one setting from your browser's local storage (<code>plausible_ignore</code>), which is how a visitor can tell it not to count their visits.</p>
+  <script src="ga4-consent.js" defer></script>
   <h3 id="analytics-choice" style="font-size:16px;margin:20px 0 8px;">Your analytics choice</h3>
   <p>Analytics is optional. Choosing <strong>Essential only</strong> on the cookie banner, or <strong>Turn analytics off</strong> below, stops Plausible from counting your visits in this browser. You can change your choice at any time.</p>
+  <p>Google Analytics is <strong>off by default</strong>, including for visitors who previously accepted Plausible statistics. You can allow or withdraw Google Analytics separately below. On withdrawal, this page reloads to stop future events; Google Analytics cookies already set may need to be cleared in your browser.</p>
+  <p id="ga4-status" aria-live="polite">Google Analytics: checking…</p>
+  <p style="display:flex;gap:10px;flex-wrap:wrap;">
+    <button type="button" onclick="setGA4Choice(false)" style="background:none;color:var(--text);border:1.5px solid var(--border);padding:10px 16px;border-radius:8px;font-size:14px;cursor:pointer;">Turn Google Analytics off</button>
+    <button type="button" onclick="setGA4Choice(true)" style="background:var(--teal);color:white;border:none;padding:10px 16px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">Allow Google Analytics</button>
+  </p>
   <p id="analytics-status" aria-live="polite" style="font-weight:600;">Analytics is currently: checking…</p>
   <p style="display:flex;gap:10px;flex-wrap:wrap;">
     <button type="button" onclick="setAnalyticsChoice(false)" style="background:none;color:var(--text);border:1.5px solid var(--border);padding:10px 16px;border-radius:8px;font-size:14px;cursor:pointer;">Turn analytics off</button>
     <button type="button" onclick="setAnalyticsChoice(true)" style="background:var(--teal);color:white;border:none;padding:10px 16px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">Allow analytics</button>
   </p>
   <script>
+  function showGA4Choice(){
+    var status=document.getElementById('ga4-status');
+    status.textContent='Google Analytics is currently: '+(window.CLPeasyGA4 && window.CLPeasyGA4.isAllowed()?'allowed':'off')+' in this browser';
+  }
+  function setGA4Choice(allow){
+    if(window.CLPeasyGA4)window.CLPeasyGA4.setConsent(allow);
+    showGA4Choice();
+  }
+  document.addEventListener('DOMContentLoaded',showGA4Choice);
   function showAnalyticsChoice(){
     var off=false;try{off=localStorage.getItem('plausible_ignore')==='true';}catch(e){}
     document.getElementById('analytics-status').textContent='Analytics is currently: '+(off?'off in this browser':'on');
