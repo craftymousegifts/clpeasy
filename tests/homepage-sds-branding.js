@@ -1,0 +1,16 @@
+'use strict';
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const html = fs.readFileSync('index.html', 'utf8');
+const faq = html.slice(html.indexOf('What is an SDS sheet and where do I find mine?'), html.indexOf("My supplier isn't in the library"));
+assert(faq.includes('Smart Paste accepts either the complete SDS or Section 2.2'));
+assert(faq.includes('paste either the complete SDS or the complete Section 2.2'));
+assert(faq.includes("supplier's Section 2.2"));
+assert(!faq.includes('Do not paste the entire SDS'));
+assert(!faq.includes('Paste only that section'));
+assert(html.includes('— Michaela, Founder of CLPeasy®'));
+assert(!html.includes('— Michaela, Crafty Mouse Gifts'));
+assert(!html.includes('www.craftymousegifts.com'));
+assert(html.includes('<title>GB CLP Label Generator for Candle &amp; Wax Melt Makers | CLPeasy®</title>'));
+assert(html.includes('<link rel="canonical" href="https://clpeasy.com/">'));
+console.log('PASS: homepage SDS wording, founder attribution and unchanged SEO title/canonical');
