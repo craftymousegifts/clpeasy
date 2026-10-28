@@ -5,7 +5,16 @@
     const nav=document.querySelector('.public-site-nav');
     if(!nav)return;
     const expiry=new Date('2027-01-01T00:00:00Z').getTime();
-    if(Date.now()>=expiry)return;
+    const isShowcase=/\/showcase(?:\.html)?\/?$/i.test(location.pathname);
+    if(Date.now()>=expiry){
+      if(isShowcase){
+        const reserveNav=()=>{document.body.style.paddingTop=nav.getBoundingClientRect().bottom+'px'};
+        reserveNav();
+        new ResizeObserver(reserveNav).observe(nav);
+        window.addEventListener('resize',reserveNav);
+      }
+      return;
+    }
     let offer=document.getElementById('homepage-offer-banner');
     const wasHomepageOffer=!!offer;
     if(!offer){
@@ -24,7 +33,7 @@
       const navBottom=nav.getBoundingClientRect().bottom;
       offer.style.setProperty('top',navBottom+'px','important');
       offer.style.setProperty('margin-top','0','important');
-      document.body.style.paddingTop=(basePadding+offer.getBoundingClientRect().height+(wasHomepageOffer?navBottom:0))+'px';
+      document.body.style.paddingTop=((isShowcase?Math.max(basePadding,navBottom):basePadding)+offer.getBoundingClientRect().height+(!isShowcase&&wasHomepageOffer?navBottom:0))+'px';
     }
     sync();
     const observer=new ResizeObserver(sync);
