@@ -23,19 +23,31 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Application syntax and account-action checks
+        if: always()
         run: |
           node tests/app-static-audit.js
           if test -f tests/sidebar-account-actions.js; then node tests/sidebar-account-actions.js; fi
       - name: Short-screen and desktop account actions (mock services)
+        if: always()
         run: |
           if test -f tests/mobile-sidebar-logout-reachable.js; then node tests/mobile-sidebar-logout-reachable.js; fi
       - name: Builder sign-in and trial, PAYG and annual download entitlements (mock services)
+        if: always()
         run: |
           node tests/builder-requires-sign-in.js
           node tests/builder-sign-in-entitlements.js
+      - name: Account subscription and checkout UI (mock services)
+        if: always()
+        run: |
+          node tests/account-manage-subscription.js
+          node tests/account-checkout-in-progress.js
+          node tests/account-trial-expiry.js
+          node tests/account-next-payment.js
       - name: Composer controls (mock services)
+        if: always()
         run: node tests/composer-cutting-button-and-eu30009.js
       - name: Release notes checks
+        if: always()
         run: |
           node tests/versioning-and-release-notes.js
           if test -f tests/release-notes-grouping.js; then node tests/release-notes-grouping.js; fi
