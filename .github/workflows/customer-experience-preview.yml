@@ -22,6 +22,15 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - name: Resolve installed Chromium for legacy browser tests
+        run: |
+          node - <<'JS'
+          (async()=>{
+            const executable=await require('puppeteer').executablePath();
+            if(!require('fs').existsSync(executable))throw new Error('Chromium executable missing');
+            require('fs').appendFileSync(process.env.GITHUB_ENV,'PUPPETEER_EXECUTABLE_PATH='+executable+'\n');
+          })().catch(error=>{console.error(error);process.exitCode=1;});
+          JS
       - name: Application syntax and account-action checks
         if: always()
         run: |
