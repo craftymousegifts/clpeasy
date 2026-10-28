@@ -7,10 +7,12 @@ function boot(value) {
   const store = new Map();
   if (value) store.set('clpeasy-ga4-consent', value);
   const appended = [];
-  const document = { head: { appendChild: (node) => appended.push(node) }, createElement: () => ({}) };
-  const window = { localStorage: { getItem: (key) => store.get(key) || null, setItem: (key, val) => store.set(key, val) }, location: { reload: () => { window.reloaded = true; } } };
+  const clearedCookies = [];
+  const document = { cookie: '_ga=abc; _ga_BRNTQTTB5P=xyz; essential=keep', head: { appendChild: (node) => appended.push(node) }, createElement: () => ({}) };
+  Object.defineProperty(document, 'cookie', { get() { return '_ga=abc; _ga_BRNTQTTB5P=xyz; essential=keep'; }, set(value) { clearedCookies.push(value); } });
+  const window = { localStorage: { getItem: (key) => store.get(key) || null, setItem: (key, val) => store.set(key, val) }, location: { hostname: 'clpeasy.com', reload: () => { window.reloaded = true; } } };
   vm.runInNewContext(source, { window, document, Date, encodeURIComponent });
-  return { window, appended, store };
+  return { window, appended, store, clearedCookies };
 }
 for (const state of [null, 'denied', 'accepted', 'essential']) {
   const { window, appended } = boot(state);
@@ -18,13 +20,16 @@ for (const state of [null, 'denied', 'accepted', 'essential']) {
   assert.equal(window.CLPeasyGA4.isAllowed(), false);
 }
 {
-  const { window, appended } = boot('granted');
+  const { window, appended, clearedCookies } = boot('granted');
   assert.equal(appended.length, 1);
   assert.match(appended[0].src, /G-BRNTQTTB5P/);
   assert.equal(window.CLPeasyGA4.start(), false);
   assert.equal(appended.length, 1, 'must not load twice');
   window.CLPeasyGA4.setConsent(false);
   assert.equal(window.reloaded, true, 'revoking an active tag requires reload');
+  assert.ok(clearedCookies.some(x => x.startsWith('_ga=; Max-Age=0')));
+  assert.ok(clearedCookies.some(x => x.startsWith('_ga_BRNTQTTB5P=; Max-Age=0')));
+  assert.ok(!clearedCookies.some(x => x.startsWith('essential=')));
 }
 {
   const { window, appended } = boot(null);
