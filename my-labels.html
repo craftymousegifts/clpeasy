@@ -85,14 +85,11 @@ html,body{font-family:'DM Sans',sans-serif;background:var(--off);color:var(--tex
 .su-topup{display:block;text-align:center;font-size:12px;font-weight:700;color:var(--teal-dark);text-decoration:none;border:1px solid var(--border);border-radius:8px;padding:7px;}
 .su-topup:hover{background:var(--off);}
 .sidebar-profile{position:relative;}
-.sidebar-user{width:100%;display:flex;align-items:center;gap:10px;padding:10px;border:1px solid transparent;border-radius:10px;background:white;cursor:pointer;text-align:left;font-family:inherit;}
-.sidebar-user:hover,.sidebar-profile.open .sidebar-user{border-color:var(--border);box-shadow:0 4px 14px rgba(15,23,42,.08);}
-.sidebar-user-chevron{margin-left:auto;width:16px;height:16px;transition:transform .18s;color:var(--muted);}
-.sidebar-profile.open .sidebar-user-chevron{transform:rotate(180deg);}
-.sidebar-user-menu{display:none;position:absolute;left:0;right:0;bottom:calc(100% + 6px);padding:6px;background:white;border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 28px rgba(15,23,42,.14);z-index:20;}
-.sidebar-profile.open .sidebar-user-menu{display:block;}
-.sidebar-user-menu button{width:100%;display:flex;align-items:center;gap:9px;padding:9px 10px;border:0;border-radius:7px;background:white;color:var(--text);font:600 12px 'DM Sans',sans-serif;cursor:pointer;}
-.sidebar-user-menu button:hover{background:var(--off);color:var(--red);}
+.sidebar-user{width:100%;display:flex;align-items:center;gap:10px;padding:10px;border:1px solid transparent;border-radius:10px;background:white;text-align:left;font-family:inherit;}
+.sidebar-profile:has(.sidebar-user[style*="display:none"]) .sidebar-signout{display:none;}
+.sidebar-signout{width:100%;display:flex;align-items:center;gap:9px;min-height:44px;padding:9px 10px;border:0;border-radius:7px;background:white;color:var(--text);font:600 12px "DM Sans",sans-serif;cursor:pointer;}
+.sidebar-signout:hover{background:var(--off);color:var(--red);}
+.sidebar-signout:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
 .su-avatar{width:36px;height:36px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;}
 .su-info{min-width:0;}
 .su-name{font-size:13px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -256,12 +253,11 @@ a.trust-item:hover .trust-icon{background:var(--teal);color:white;}
         <a href="pricing.html#payg" target="_blank" rel="noopener" class="su-topup">Buy downloads →</a>
       </div>
       <div class="sidebar-profile">
-        <button type="button" class="sidebar-user" id="sidebar-user" style="display:none;" aria-haspopup="true" aria-expanded="false">
+        <div class="sidebar-user" id="sidebar-user" style="display:none;">
           <div class="su-avatar" id="su-avatar">—</div>
           <div class="su-info"><div class="su-name" id="su-name">—</div><div class="su-plan" id="su-plan">—</div></div>
-          <svg class="sidebar-user-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m8 10 4 4 4-4"/></svg>
-        </button>
-        <div class="sidebar-user-menu" role="menu"><button type="button" onclick="signOut()" role="menuitem"><span aria-hidden="true">↪</span> Log out</button></div>
+        </div>
+        <div><button type="button" class="sidebar-signout" onclick="signOut()"><span aria-hidden="true">↪</span> Log out</button></div>
       </div>
       <!-- nav-email kept as a hidden data sink: existing code below writes to it -->
       <span class="nav-email" id="nav-email" style="display:none;"></span>
@@ -691,23 +687,6 @@ initPage();
     overlay.addEventListener('click', closeSidebar);
     document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeSidebar(); });
   })();
-+  (function(){
-    const profile=document.querySelector('.sidebar-profile');
-    const trigger=document.getElementById('sidebar-user');
-    if(!profile||!trigger)return;
-    function closeProfileMenu(){
-      profile.classList.remove('open');
-      trigger.setAttribute('aria-expanded','false');
-    }
-    trigger.addEventListener('click',event=>{
-      event.stopPropagation();
-      const open=profile.classList.toggle('open');
-      trigger.setAttribute('aria-expanded',String(open));
-    });
-    profile.addEventListener('click',event=>event.stopPropagation());
-    document.addEventListener('click',closeProfileMenu);
-    document.addEventListener('keydown',event=>{if(event.key==='Escape')closeProfileMenu();});
-  })();
-</script>
++</script>
 </body>
 </html>

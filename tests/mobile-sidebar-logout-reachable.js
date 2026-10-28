@@ -3,8 +3,8 @@
 // or less the account card at the bottom -- and the Log out item inside it --
 // was cut off and unreachable. The sidebar now scrolls when needed.
 // Each signed-in page (Builder, My Labels, Dashboard, Composer, Account), at
-// iPhone 390x548 and 390x664: open the menu, reach the account card, open it,
-// Log out is visible and on top, and tapping it signs out. Desktop unchanged.
+// iPhone 390x548 and 390x664: open the menu, reach the account card,
+// Log out is visible and on top, and tapping it signs out. Desktop account styling retained; Log out also visible.
 //   node tests/mobile-sidebar-logout-reachable.js
 'use strict';
 const fs = require('fs'), path = require('path'), http = require('http'), assert = require('assert');
@@ -39,6 +39,7 @@ const server = http.createServer((req, res) => {
 (async () => {
   for (const f of PAGES) {
     const src = fs.readFileSync(path.join(ROOT, f), 'utf8');
+    assert(!src.includes('closeProfileMenu') && !src.includes('aria-haspopup="true"'), f + ': account popup removed');
     assert(/\.sidebar\{overflow-y:auto;overscroll-behavior:contain;\}/.test(src), f + ': sidebar scroll rule present');
   }
   ok('all five signed-in pages carry the sidebar scroll rule');
@@ -67,7 +68,7 @@ const server = http.createServer((req, res) => {
     return p;
   }
 
-  for (const h of [548, 664]) {
+  for (const h of [420, 548, 664]) {
     for (const page of PAGES) {
       const p = await open(page, { width: 390, height: h, isMobile: true, hasTouch: true });
       const tag = `${page} 390x${h}`;
@@ -81,9 +82,7 @@ const server = http.createServer((req, res) => {
       await new Promise(r => setTimeout(r, 150));
       const card = await p.evaluate(() => { const e = document.getElementById('sidebar-user'); const q = e.getBoundingClientRect(); const x = q.left + q.width / 2, y = q.top + q.height / 2; return { x, y, inView: q.top >= 0 && q.bottom <= innerHeight, onTop: e.contains(document.elementFromPoint(x, y)) }; });
       assert(card.inView && card.onTop, `${tag}: account card reachable (was cut: ${before.cut}, menu scrolls: ${before.scrollable})`);
-      await p.touchscreen.tap(card.x, card.y);
-      await new Promise(r => setTimeout(r, 250));
-      const out = await p.evaluate(() => { const b = document.querySelector('.sidebar-user-menu button'); const q = b.getBoundingClientRect(); const x = q.left + q.width / 2, y = q.top + q.height / 2; return { x, y, visible: q.height > 0 && q.top >= 0 && q.bottom <= innerHeight, onTop: b.contains(document.elementFromPoint(x, y)), text: b.textContent.trim() }; });
+      const out = await p.evaluate(() => { const b = document.querySelector('.sidebar-signout'); const q = b.getBoundingClientRect(); const x = q.left + q.width / 2, y = q.top + q.height / 2; return { x, y, visible: q.height > 0 && q.top >= 0 && q.bottom <= innerHeight, onTop: b.contains(document.elementFromPoint(x, y)), text: b.textContent.trim() }; });
       assert(out.visible && out.onTop && /Log out/.test(out.text), tag + ': Log out visible and tappable');
       await Promise.all([p.waitForNavigation({ waitUntil: 'load', timeout: 10000 }).catch(() => {}), p.touchscreen.tap(out.x, out.y)]);
       const after = await p.evaluate(() => ({ at: location.pathname, signedOut: sessionStorage.getItem('qaSignedOut') === '1' }));
