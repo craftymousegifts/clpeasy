@@ -11,13 +11,8 @@ for(const [i,e] of releases.entries()){
 }
 const base=new JSDOM(cp.execFileSync('git',['show','5871ed2794f8cb0f7f5001e32cd7deb8e193c807:release-notes.html'],{encoding:'utf8'})).window.document;
 for(const item of base.querySelectorAll('.release-list li'))assert([...doc.querySelectorAll('.release-list li')].some(e=>e.innerHTML===item.innerHTML),'preserve '+item.textContent);
-assert(!src.includes('current-release-version'));assert(src.includes('latest-numbered-version'));
-// Future metadata must update only the intro, preserving every historical heading.
-const runtime=new JSDOM(src,{runScripts:'outside-only'});
-const headings=[...runtime.window.document.querySelectorAll('.release-version')].map(e=>e.textContent);
-runtime.window.CLPEASY_VERSION={number:'9.9.9',released:'2030-01-02'};
-for(const script of runtime.window.document.querySelectorAll('script:not([src])'))runtime.window.eval(script.textContent);
-assert.equal(runtime.window.document.querySelector('#latest-numbered-version').textContent,'v9.9.9');
-assert.equal(runtime.window.document.querySelector('#latest-numbered-date').textContent,'2 January 2030');
-assert.deepEqual([...runtime.window.document.querySelectorAll('.release-version')].map(e=>e.textContent),headings);
+assert(!src.includes('current-release-version'));
+assert(!src.includes('latest-numbered-version'));
+assert(!src.includes('The latest numbered version'));
+assert(!doc.querySelector('script[src="version.js"]'),'version metadata must not overwrite dated release history');
 console.log('PASS unique release dates, only latest expanded, current/historical badges, independent native toggles, every historical list item preserved');

@@ -30,3 +30,7 @@ All previous release list items and links are preserved verbatim. One native det
 ## Release gate
 
 Remain draft until hosted preview checked and founder reviews date grouping and customer wording. Actual iPhone check and explicit merge/deploy approval required. After approved release, verify current production date, one expanded entry, history toggles and unchanged sign-in/Builder/Composer links. No production action performed.
+
+## Founder preview correction
+
+Removed the misleading latest-numbered-version sentence and its metadata script following founder iPhone review. v1.5.0 and its original date remain in historical release information; no replacement version invented. Latest production update remains 27 October, the sole entry with an initial open attribute. Regression test now rejects reintroducing the stale introductory claim. Founder accepted Log out on physical iPhone Safari; no merge/deploy approval given.

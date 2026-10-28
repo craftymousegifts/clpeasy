@@ -100,7 +100,7 @@
 </div>
 
 <main>
-  <p style="margin-bottom:20px;">Updates are grouped by release date. The latest production update is shown first; earlier updates remain available below. The latest numbered version is <span id="latest-numbered-version">v1.5.0</span> (<time id="latest-numbered-date" datetime="2026-10-23">23 October 2026</time>).</p>
+  <p style="margin-bottom:20px;">Updates are grouped by release date. The latest production update is shown first; earlier updates remain available below.</p>
 
   <details class="release-block" data-release-date="2026-10-27" open>
     <summary><span class="release-header"><span class="release-version">Latest production update</span> <span class="new-badge">Current</span> <span class="release-date">27 October 2026</span></span><span class="release-hint">Expand or collapse changes</span></summary>
@@ -319,19 +319,6 @@
 </footer>
 
 
-<script src="version.js"></script>
-<script>
-// Current version metadata belongs in the introduction, never in historical headings.
-(function(){
-  const version=window.CLPEASY_VERSION;
-  if(!version)return;
-  document.getElementById('latest-numbered-version').textContent='v'+version.number;
-  const date=document.getElementById('latest-numbered-date');
-  if(/^\d{4}-\d{2}-\d{2}$/.test(version.released)){
-    date.dateTime=version.released;
-    date.textContent=new Date(version.released+'T00:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
-  }
-})();
-</script>
+
 </body>
 </html>
