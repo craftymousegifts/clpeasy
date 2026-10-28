@@ -1,4 +1,4 @@
-/* CLP-016: GA4 opt-in loader. Staged only; do not include on pages until consent UI, legal copy and QA are approved. */
+/* CLP-016: GA4 opt-in loader. Draft: release only after consent and QA approval. */
 (function (window, document) {
   'use strict';
   var MEASUREMENT_ID = 'G-BRNTQTTB5P';
@@ -22,11 +22,27 @@
     document.head.appendChild(script);
     return true;
   }
+  function clearAnalyticsCookies() {
+    // First-party GA cookies may remain after the tag stops. Clear accessible
+    // cookies on the current hostname and parent domain where applicable.
+    var names = document.cookie.split(';').map(function (part) { return part.trim().split('=')[0]; });
+    var host = window.location.hostname;
+    var domains = ['', host, '.' + host];
+    var bits = host.split('.');
+    if (bits.length > 2) domains.push('.' + bits.slice(-2).join('.'));
+    names.forEach(function (name) {
+      if (!/^_ga(?:_|$)|^_gid$|^_gat(?:_|$)/.test(name)) return;
+      domains.forEach(function (domain) {
+        document.cookie = name + '=; Max-Age=0; Path=/; SameSite=Lax' + (domain ? '; Domain=' + domain : '');
+      });
+    });
+  }
   function setConsent(allowed) {
     try { window.localStorage.setItem(CONSENT_KEY, allowed ? 'granted' : 'denied'); }
     catch (_) { return false; }
     if (allowed) return start();
-    // GA4 may already be loaded. A full reload is needed to stop further events.
+    clearAnalyticsCookies();
+    // GA4 may already be loaded. Reload to stop future events.
     if (loaded) window.location.reload();
     return true;
   }
