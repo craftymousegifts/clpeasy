@@ -31,6 +31,12 @@ for (const file of htmlFiles) {
   for (const script of document.querySelectorAll('script:not([src])')) {
     scriptNumber += 1;
     if (!script.textContent.trim()) continue;
+    // Structured data (JSON-LD) is JSON, not executable JavaScript.
+    if (script.type === 'application/ld+json') {
+      try { JSON.parse(script.textContent); }
+      catch (error) { failures.push(`${file}: invalid JSON-LD: ${error.message}`); }
+      continue;
+    }
     try { new vm.Script(script.textContent, { filename:`${file}#script-${scriptNumber}` }); }
     catch (error) { failures.push(`${file}: ${error.message}`); }
   }
