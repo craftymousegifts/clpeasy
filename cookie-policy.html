@@ -136,6 +136,7 @@ footer-legal{display:block;text-align:center;padding:32px;border-top:1px solid v
     try{
       localStorage.setItem('clpeasy-cookie-consent',allow?'accepted':'essential');
       if(allow)localStorage.removeItem('plausible_ignore');else localStorage.setItem('plausible_ignore','true');
+      if(!allow && window.CLPeasyGA4)window.CLPeasyGA4.setConsent(false);
     }catch(e){}
     showAnalyticsChoice();
   }
