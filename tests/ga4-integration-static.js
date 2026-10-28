@@ -1,0 +1,18 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const home = fs.readFileSync('index.html', 'utf8');
+const policy = fs.readFileSync('cookie-policy.html', 'utf8');
+const privacy = fs.readFileSync('privacy.html', 'utf8');
+const loader = fs.readFileSync('ga4-consent.js', 'utf8');
+assert.match(home, /id="ga4-banner-optin" type="checkbox"/);
+assert.match(home, /CLPeasyGA4\.setConsent\(document\.getElementById\('ga4-banner-optin'\)\.checked\)/);
+assert.match(home, /CLPeasyGA4\.setConsent\(false\)/);
+assert.match(home, /src="ga4-consent\.js" defer/);
+assert.match(policy, /Allow Google Analytics/);
+assert.match(policy, /Turn Google Analytics off/);
+assert.match(policy, /Google Analytics is <strong>off by default/);
+assert.match(privacy, /Optional Google Analytics 4/);
+assert.match(loader, /CONSENT_KEY = 'clpeasy-ga4-consent'/);
+assert.doesNotMatch(home, /gtag\('config'/);
+assert.doesNotMatch(policy, /CLPeasy does not use Google Analytics/);
+console.log('GA4 consent integration static checks passed');
