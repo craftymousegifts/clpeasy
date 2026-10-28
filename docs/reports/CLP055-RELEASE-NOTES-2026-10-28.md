@@ -25,7 +25,7 @@ All previous release list items and links are preserved verbatim. One native det
 - `node tests/release-notes-grouping.js`: PASS, including unique dates, one open entry, independent summary toggle behaviour, badges, and every original history list item preserved.
 - `git diff --check`: PASS.
 - Existing application regression results and baseline comparison are recorded in PR #323; this PR changes no application, auth, billing, label, download or data code.
-- Hosted preview visual and interaction verification: pending below; actual iPhone Safari not available to this environment.
+- Hosted desktop Chrome preview `https://deploy-preview-324--clpeasy.netlify.app/release-notes.html`, commit c749b35 / Netlify preview deploy 6ae146be2b1499c63788b51f: PASS. One current/open date; all historical entries initially closed; opened 26 October alongside current, closed it independently, confirmed only 27 October remained open; no horizontal overflow. Actual iPhone Safari and mobile visual checks are not available in this environment.
 
 ## Release gate
 
