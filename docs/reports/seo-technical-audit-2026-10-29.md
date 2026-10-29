@@ -31,3 +31,9 @@ Status: READ-ONLY findings; no production changes proposed without founder appro
 - PR #333 (GA4) remains on hold.
 - Do not alter Builder, auth, billing, labels, or create duplicate product guides.
 - No merge/deployment without explicit founder approval.
+
+## Consolidated release candidates
+- Added missing self-canonical links to the three sitemap-listed legal pages: terms.html, privacy.html and refund.html. These are metadata-only changes; legal text unchanged.
+- Showcase title and page body unchanged; updated meta description and added sitemap-aligned canonical in draft PR #337.
+- Support self-canonical was already released separately in PR #336.
+- Final release gate: verify both Showcase URL responses and review preview/automated checks before founder approves one consolidated merge.
