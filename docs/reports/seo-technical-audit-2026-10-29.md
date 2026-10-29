@@ -37,3 +37,8 @@ Status: READ-ONLY findings; no production changes proposed without founder appro
 - Showcase title and page body unchanged; updated meta description and added sitemap-aligned canonical in draft PR #337.
 - Support self-canonical was already released separately in PR #336.
 - Final release gate: verify both Showcase URL responses and review preview/automated checks before founder approves one consolidated merge.
+
+## Additional knowledge article SEO
+- `/knowledge/combining-fragrance-oils` and `/knowledge/print-and-cut-by-hand` are existing 200-rewrite routes in `_redirects`. Added canonical links to these public article URLs, rather than to their underlying `.html` files.
+- Added a factual meta description to the combining-fragrance-oils article; print-and-cut-by-hand already had one.
+- No changes to chemical safety guidance, page body, print instructions or rewrite rules.
