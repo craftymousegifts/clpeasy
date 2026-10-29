@@ -87,6 +87,13 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
 .size-list-body{flex:1;min-width:0;}
 .size-list-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px;}
 .size-list-desc{font-size:13px;color:var(--muted);line-height:1.6;}
+/* Stack size badge above copy on narrow screens so neither column is squeezed. */
+@media(max-width:768px){
+  .size-list-item{flex-direction:column;gap:8px;}
+  .size-list-chip{white-space:normal;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere;}
+  .size-list-body{width:100%;}
+}
+
 
 .compliance-section{background:white;padding:72px 24px;}
 .compliance-inner{max-width:1000px;margin:0 auto;}
