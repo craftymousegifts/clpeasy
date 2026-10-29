@@ -87,6 +87,13 @@ nav{background:white;border-bottom:1px solid var(--border);padding:0 32px;height
 .size-list-body{flex:1;min-width:0;}
 .size-list-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:2px;}
 .size-list-desc{font-size:13px;color:var(--muted);line-height:1.6;}
+/* Stack size badge above copy on narrow screens so neither column is squeezed. */
+@media(max-width:768px){
+  .size-list-item{flex-direction:column;gap:8px;}
+  .size-list-chip{white-space:normal;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere;}
+  .size-list-body{width:100%;}
+}
+
 
 .compliance-section{background:white;padding:72px 24px;}
 .compliance-inner{max-width:1000px;margin:0 auto;}
@@ -192,8 +199,8 @@ footer a{color:rgba(76,155,176,0.8);text-decoration:none;margin:0 8px;}
       </div>
       <div class="size-list">
         <div class="size-list-item">
-          <span class="size-list-chip">52mm · CLPeasy min</span>
-          <div class="size-list-body"><div class="size-list-name">52mm Circle</div><div class="size-list-desc">CLPeasy's minimum supported circle size for standalone labels. Whether the complete required information fits depends on the content of the individual label.</div></div>
+          <span class="size-list-chip">52 mm · Smallest supported circle</span>
+          <div class="size-list-body"><div class="size-list-name">52 mm Circle</div><div class="size-list-desc">The smallest circle size supported by CLPeasy. This is a software design limit, not a legal minimum label size. Whether all required information fits depends on the individual label.</div></div>
         </div>
         <div class="size-list-item">
           <span class="size-list-chip">63mm</span>
@@ -260,8 +267,8 @@ footer a{color:rgba(76,155,176,0.8);text-decoration:none;margin:0 8px;}
       </div>
       <div class="size-list">
         <div class="size-list-item">
-          <span class="size-list-chip">52×52mm · CLPeasy min</span>
-          <div class="size-list-body"><div class="size-list-name">52 × 52mm Square</div><div class="size-list-desc">Perfect for candle tin lids and square glass jar fronts. This is CLPeasy's minimum supported square size; always review the finished label for your product and packaging.</div></div>
+          <span class="size-list-chip">52 × 52 mm · Smallest supported square</span>
+          <div class="size-list-body"><div class="size-list-name">52 × 52 mm Square</div><div class="size-list-desc">The smallest square size supported by CLPeasy. This is a software design limit, not a legal minimum label size. Whether all required information fits depends on the individual label; always review the finished label for your product and packaging.</div></div>
         </div>
         <div class="size-list-item">
           <span class="size-list-chip">63×63mm</span>
