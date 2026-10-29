@@ -1,0 +1,35 @@
+name: Authentic supplier SDS corpus (QA only)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  collect-supplier-sds:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify PDF extraction utility
+        run: pdftotext -v
+      - name: Install browser runner dependencies
+        run: npm ci
+      - name: Install isolated Chrome
+        run: npx puppeteer browsers install chrome
+      - name: Download authentic public Nikura SDS and extract Section 2.2
+        id: collect
+        continue-on-error: true
+        run: node scripts/collect-public-sds-corpus.js
+      - name: Exercise real Smart Paste browser UI against collected Section 2.2 text
+        if: always()
+        run: node scripts/browser-test-authentic-sds.js
+      - name: Preserve documents and provenance for QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: authentic-supplier-sds-corpus
+          path: qa-artifacts/sds-corpus/
+          if-no-files-found: warn
+          retention-days: 7

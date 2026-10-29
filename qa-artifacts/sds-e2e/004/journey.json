@@ -1,0 +1,296 @@
+{
+ "input": {
+  "id": "004",
+  "supplier": "Nikura",
+  "name": "Bay Laurel Essential Oil 10% full SDS",
+  "url": "https://nikura.blob.core.windows.net/pdfs/CLP10_Bay_Laurel_Essential_Oil_EO-BAY.pdf",
+  "pdf_sha256": "18d5cd683af7e223ca8e898db26cd30a455ea1d684b085d0c9da4749db6b6631",
+  "manifest_sha256": "18d5cd683af7e223ca8e898db26cd30a455ea1d684b085d0c9da4749db6b6631",
+  "text_sha256": "ffbc7aba5259b2ae8f4fe9758c7511036f0741d3b0934439cde2867fae4dafd9",
+  "manifest_text_sha256": "ffbc7aba5259b2ae8f4fe9758c7511036f0741d3b0934439cde2867fae4dafd9",
+  "input_verified": true
+ },
+ "product_name": "Bay Laurel Essential Oil Candle",
+ "sizes": {
+  "63x44": {
+   "size": "63x44",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-3"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 63,
+     "mmH": 44,
+     "pw": 260,
+     "ph": 182
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "H317, H341, H351, H412, EUH208",
+    "p_field": "P261, P273, P302+P352, P308+P313, P333+P313, P501, P202",
+    "signal": "Warning",
+    "h_codes": [
+     "H317",
+     "H341",
+     "H351",
+     "H412",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P261",
+     "P273",
+     "P302+P352",
+     "P308+P313",
+     "P333+P313",
+     "P501",
+     "P202"
+    ],
+    "sensitisers": [
+     "1-Octen-3-ol",
+     "Linalool",
+     "l-Limonene"
+    ],
+    "pictograms_state": [
+     "exclamation",
+     "health"
+    ],
+    "pictograms_ui": [
+     "exclamation",
+     "health"
+    ],
+    "allergen_tags": "1-Octen-3-olLinalooll-Limonene",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "H317, H341, H351, H412, EUH208",
+    "p_field": "P261, P273, P302+P352, P308+P313, P333+P313, P501, P202",
+    "signal": "Warning",
+    "h_codes": [
+     "H317",
+     "H341",
+     "H351",
+     "H412",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P261",
+     "P273",
+     "P302+P352",
+     "P308+P313",
+     "P333+P313",
+     "P501",
+     "P202"
+    ],
+    "sensitisers": [
+     "1-Octen-3-ol",
+     "Linalool",
+     "l-Limonene"
+    ],
+    "pictograms_state": [
+     "exclamation",
+     "health"
+    ],
+    "pictograms_ui": [
+     "exclamation",
+     "health"
+    ],
+    "allergen_tags": "1-Octen-3-olLinalooll-Limonene",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "stopped_at": "step-3",
+   "dialogs": [
+    "CLP code not recognised\n\nCLPeasy did not recognise the following codes: P308+P313, P202. Check that the SDS text was copied correctly and that you are using the current Great Britain-market SDS or classification documentation. Do not change the SDS code just to make the label generate. For help, contact support@clpeasy.com with the SDS and flagged code."
+   ],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [],
+   "downloads_seen": [],
+   "ms": 11940
+  },
+  "76x51": {
+   "size": "76x51",
+   "steps": [
+    "step-2",
+    "step-3",
+    "step-3"
+   ],
+   "step1": {
+    "warnings": [],
+    "download_allowed": false,
+    "blocked_message": "Please enter your business / brand name, business address, business phone number in Step 4 (Business) before downloading.",
+    "label_block_download": false,
+    "block_reason": null,
+    "content_overflow": null,
+    "legibility_warn": null,
+    "footer_clipped": false,
+    "too_small": {
+     "scent": false,
+     "business": false,
+     "type": false,
+     "signal": false
+    },
+    "buttons": {
+     "png": {
+      "visible": false,
+      "enabled": false
+     },
+     "pdf": {
+      "visible": false,
+      "enabled": false
+     },
+     "svg": {
+      "visible": false,
+      "enabled": false
+     }
+    },
+    "preview_markup_kind": "vector",
+    "dims": {
+     "mmW": 76,
+     "mmH": 51,
+     "pw": 260,
+     "ph": 174
+    }
+   },
+   "pasted_equals_source": true,
+   "extraction": {
+    "h_field": "H317, H341, H351, H412, EUH208",
+    "p_field": "P261, P273, P302+P352, P308+P313, P333+P313, P501, P202",
+    "signal": "Warning",
+    "h_codes": [
+     "H317",
+     "H341",
+     "H351",
+     "H412",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P261",
+     "P273",
+     "P302+P352",
+     "P308+P313",
+     "P333+P313",
+     "P501",
+     "P202"
+    ],
+    "sensitisers": [
+     "1-Octen-3-ol",
+     "Linalool",
+     "l-Limonene"
+    ],
+    "pictograms_state": [
+     "exclamation",
+     "health"
+    ],
+    "pictograms_ui": [
+     "exclamation",
+     "health"
+    ],
+    "allergen_tags": "1-Octen-3-olLinalooll-Limonene",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "after_confirm": {
+    "h_field": "H317, H341, H351, H412, EUH208",
+    "p_field": "P261, P273, P302+P352, P308+P313, P333+P313, P501, P202",
+    "signal": "Warning",
+    "h_codes": [
+     "H317",
+     "H341",
+     "H351",
+     "H412",
+     "EUH208"
+    ],
+    "p_codes": [
+     "P261",
+     "P273",
+     "P302+P352",
+     "P308+P313",
+     "P333+P313",
+     "P501",
+     "P202"
+    ],
+    "sensitisers": [
+     "1-Octen-3-ol",
+     "Linalool",
+     "l-Limonene"
+    ],
+    "pictograms_state": [
+     "exclamation",
+     "health"
+    ],
+    "pictograms_ui": [
+     "exclamation",
+     "health"
+    ],
+    "allergen_tags": "1-Octen-3-olLinalooll-Limonene",
+    "visible_notices": [
+     "I confirm the hazard data shown in this step is correct and matches my fragrance supplier's current SDS/CLP information at the fragrance load used."
+    ],
+    "next_enabled": false,
+    "blocked_cta": ""
+   },
+   "hazard_confirm_visible": true,
+   "step3_button": "Next: Business →",
+   "stopped_at": "step-3",
+   "dialogs": [
+    "CLP code not recognised\n\nCLPeasy did not recognise the following codes: P308+P313, P202. Check that the SDS text was copied correctly and that you are using the current Great Britain-market SDS or classification documentation. Do not change the SDS code just to make the label generate. For help, contact support@clpeasy.com with the SDS and flagged code."
+   ],
+   "console_errors": [],
+   "external_requests_blocked": [
+    "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    "https://plausible.io/js/pa-FjnyL7xWeG8xeWi4i1HeV.js"
+   ],
+   "rpc": [],
+   "downloads_seen": [],
+   "ms": 13396
+  }
+ }
+}
