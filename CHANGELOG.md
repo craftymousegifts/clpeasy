@@ -4,6 +4,16 @@ All notable changes to CLPeasy are documented here. Customer-friendly notes
 covering the same releases live at `release-notes.html`. Versioning rules
 and the release procedure are documented in `VERSIONING.md`.
 
+## Website guidance and accessibility - 2026-10-29
+
+### Changed
+- Clarified whole-SDS or Section 2.2 Smart Paste instructions in the blending guide, and corrected Showcase precautionary-statement guidance. (#338)
+- Improved Showcase text contrast and added a named, keyboard-focusable scrolling size table with a visible focus outline. (#339)
+- Added contextual links to existing label examples on the homepage and FAQ, and a descriptive GB CLP Showcase title. (#340)
+
+These changes were verified in production before this record was added.
+This documentation-only update does not assign a new product version.
+
 ## [1.5.0] - 2026-10-23
 
 ### Added
