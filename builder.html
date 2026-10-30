@@ -836,10 +836,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   .builder-accordion-body.step1-active #label-appearance-section{order:2;min-width:0;align-self:start;}
 }
 </style>
-<!-- Privacy-friendly analytics by Plausible -->
-<script>/* Analytics preference: "Essential only" turns Plausible off via its own opt-out flag */try{if(localStorage.getItem('clpeasy-cookie-consent')==='essential')localStorage.setItem('plausible_ignore','true')}catch(e){}</script>
-<script>window.plausible = window.plausible || function(){(window.plausible.q=window.plausible.q||[]).push(arguments);};</script>
-<script defer data-domain="clpeasy.com" src="https://plausible.io/js/script.js"></script>
 
 </head>
 <body>
@@ -2027,7 +2023,6 @@ function labelToCanvas(cb){
 // ── PDF SHEET — Avery-aligned home printing ───────────────────
 async function downloadPDFSheet(){
   if(!_downloadAllowed()){alert(_downloadBlockedMessage());return;}
-  plausible('Label Downloaded',{props:{format:'PDF Sheet'}});
   await ensureFontsLoaded(); // wait for DM Sans before rasterising
   readForm();
   const{mmW}=getDims();
@@ -2081,7 +2076,6 @@ async function downloadPDFSheet(){
 // Print shops accept this directly — 300 DPI, bleed included
 async function downloadPrintReadyPDF(){
   if(!_downloadAllowed()){alert(_downloadBlockedMessage());return;}
-  plausible('Label Downloaded',{props:{format:'Print-Ready PDF'}});
   await ensureFontsLoaded(); // wait for DM Sans before rasterising
   readForm();
   const{mmW,mmH,pw,ph}=getDims();
@@ -2180,7 +2174,6 @@ async function downloadPrintReadyPDF(){
 // ── CUTTING MACHINE PNGs — download as ZIP ──────────────────
 function downloadCricutPNGs(){
   if(!_downloadAllowed()){alert(_downloadBlockedMessage());return;}
-  plausible('Label Downloaded',{props:{format:'Cricut PNGs'}});
   readForm();
   const qtyEl=document.getElementById('sheet-qty');
   const qty=qtyEl ? (parseInt(qtyEl.value)||1) : 1;
@@ -3198,7 +3191,6 @@ function showSaveErrorToast(err){
 // happens to already use the new name).
 async function saveLabel(){
   if(_saveInFlight)return; // requirement 4: prevent double-click duplicate saves
-  plausible('Label Saved to Library');
   readForm();
   if(!S.scentName){alert('Please enter a scent name before saving.');return;}
   if(_hazardReviewRequired()){alert(_hazardReviewMessage());return;}
@@ -4881,7 +4873,7 @@ function goToStep(n){if(n>S.step+1)return;S.step=n;
   const mobileDlRow=document.getElementById('mobile-dl-row');
   if(mobileDlRow)mobileDlRow.style.display=(n===5)?'flex':'none';document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));document.getElementById('step-'+n).classList.add('active');updateStepsBar();renderBuilderAccordion();if(n===5)buildSummary();updateLabel();if(n===3){const cb=document.getElementById('hazard-confirm');const btn=document.getElementById('btn-next-step3');if(cb){cb.checked=false;}if(btn){btn.style.opacity='0.4';btn.style.pointerEvents='none';}}}
 document.addEventListener('DOMContentLoaded',()=>setTimeout(renderBuilderAccordion,0));
-function nextStep(){if(approvedBuilderStep<5){plausible('Builder: Step '+(approvedBuilderStep+1),{props:{from_step:String(approvedBuilderStep)}});setApprovedBuilderStep(approvedBuilderStep+1);}}
+function nextStep(){if(approvedBuilderStep<5){setApprovedBuilderStep(approvedBuilderStep+1);}}
 function checkStep2Next(){
   const scent=document.getElementById('scent-name')?.value.trim();
   if(!scent){
@@ -6151,7 +6143,7 @@ function handOverBuilderPNG(artifact){
   const url=URL.createObjectURL(artifact.blob);
   const anchor=document.createElement('a');anchor.href=url;anchor.download=artifact.fname;
   document.body.appendChild(anchor);
-  try{anchor.click();plausible('Label Downloaded',{props:{format:'PNG'}});showPrintGuidance('png');}
+  try{anchor.click();showPrintGuidance('png');}
   finally{setTimeout(()=>{if(anchor.parentNode)anchor.parentNode.removeChild(anchor);URL.revokeObjectURL(url);},1500);}
 }
 async function downloadPNG(){
@@ -6197,7 +6189,6 @@ function prepareBuilderSVG(){
   }
 }
 function handOverBuilderSVG(prepared){
-  plausible('Label Downloaded',{props:{format:'SVG'}});
   try{
     const {dataUri,fname}=prepared;
     const a=document.createElement('a');
