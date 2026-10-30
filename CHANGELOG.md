@@ -4,6 +4,15 @@ All notable changes to CLPeasy are documented here. Customer-friendly notes
 covering the same releases live at `release-notes.html`. Versioning rules
 and the release procedure are documented in `VERSIONING.md`.
 
+## Homepage accessibility and mobile speed - 2026-10-30
+
+### Changed
+- Added a main landmark to the homepage, underlined the Cookie Policy link in the essential-storage notice, and preconnected to the Google Fonts origins. (#344)
+- Made the homepage display sooner on mobile: its demo-label pictogram images now load as separate cached files (same images, pixel-identical), Google Fonts no longer blocks the first display, and the page no longer shifts when the launch-offer banner is positioned. (#345)
+
+These changes were verified in production before this record was added.
+This documentation-only update does not assign a new product version.
+
 ## Website guidance and accessibility - 2026-10-29
 
 ### Changed

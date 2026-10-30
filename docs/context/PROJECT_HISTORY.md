@@ -615,3 +615,12 @@ Founder confirmed automatic Section 2.2 preservation without extra missing-picto
 Updated the isolated supplier-preservation draft with released main `19da373` (v1.4.1), preserving the newer maker resources/images, branding, public navigation, pricing, seasons, quantity selector and printing guides. One printing-guide conflict resolved by retaining the new guide plus the existing source-review sentence. Seven supplier modules and seven integration regressions pass; scoped independent review found no blockers. No dependency/lockfile change. Updated preview verification and actual device/export/physical-print gates remain open; no merge into main or production deployment. See the existing PR270 QA report.
 
 - Integration verification follow-up: Chrome at `e02da8f` preserves 100ml alongside full Section 2.2 wording/UFI through save and Composer, with Section 3 excluded; new printing-guide links and the resolved guide pass visible checks. Configured npm test exits 0 (Deno Edge Function suite explicitly skipped: runtime absent), supplier suite and targeted integration modules pass. Evidence/screenshots remain in the PR270 QA report; still draft and not released.
+
+### 30 October 2026 — CLP-015 homepage mobile performance and accessibility (released)
+
+Founder-approved sequential release. #344 (homepage `<main>` landmark, underlined Cookie Policy link, Google Fonts preconnect) was squash-merged as `fa73fbd` and went live in Netlify production deploy `6ae50d36…`. #345 was then squash-merged as `f6c93fe` and went live in deploy `6ae51053…`. #345 made three changes:
+- moved the 10 base64 demo-label pictogram JPEGs out of `index.html` into `assets/homepage-demo/` (lossless, pixel-identical), cutting the page from 691 KB to 121 KB;
+- made Google Fonts non-render-blocking, with a `<noscript>` fallback;
+- added a homepage-only `body{display:flow-root}` and phone banner sizing, removing a pre-existing layout shift caused by `public-nav.js`.
+
+Local Lighthouse mobile went from LCP 4.4 s to 2.9 s and performance from about 66 to 91–94, with CLS 0.001. The founder checked the preview on iPhone. Brand teal, pictogram artwork and shared nav files are unchanged. A post-release PageSpeed Insights rerun, image-weight follow-up and teal contrast remain open. See `docs/reports/CLP-015-MOBILE-PERFORMANCE-2026-10-30.md`.
