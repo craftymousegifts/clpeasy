@@ -12,7 +12,24 @@
 const SCRIPT = `(function(){
   if (window.__sdsDocAutoAnswer || typeof window.evaluateSdsDoc !== 'function') return;
   window.__sdsDocAutoAnswer = true;
+  // Issue #349: a maker with suitable supplier information also confirms the
+  // product-identifier substance names (GB CLP Art 18(3)(b)) through the real
+  // Builder action: the supplier's names when found, otherwise names typed
+  // from the supplier's documents. Never bypasses ProductIdentifierCheck.
+  function answerProductIdentifier(){
+    try {
+      if (!window.ProductIdentifierCheck || typeof window.confirmProductIdentifier !== 'function') return;
+      var rec = { hStatements: S.hStatements, productIdentifier: S.productIdentifier };
+      if (!ProductIdentifierCheck.required(rec) || ProductIdentifierCheck.confirmed(rec)) return;
+      if (S.pidSuggestion && S.pidSuggestion.status === 'found' && S.pidSuggestion.names.length) { window.confirmProductIdentifier('sds'); return; }
+      if (typeof window.renderProductIdentifierPanel === 'function') window.renderProductIdentifierPanel(true);
+      var input = document.getElementById('pid-names');
+      if (input) { input.value = 'Test supplier substance'; window.confirmProductIdentifier('maker'); }
+    } catch (e) {}
+  }
+  window.__answerProductIdentifier = answerProductIdentifier;
   function answer(){
+    answerProductIdentifier();
     try {
       var fl = document.getElementById('frag-load');
       if (fl && _parseFragPct(fl.value) === null) { fl.value = '10%'; S.fragLoad = '10%'; }

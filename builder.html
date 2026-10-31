@@ -428,6 +428,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
    styles with several slightly different hex values for the same colour). */
 .field-alert{border-radius:10px;padding:12px 14px;font-size:12px;line-height:1.6;margin-bottom:20px;}
 .field-alert-warn{background:var(--amber-light);border:1.5px solid #FDE68A;color:#92400E;}
+#pid-panel p{margin:6px 0 0;}
+#pid-panel button{background:white;border:1.5px solid var(--teal);border-radius:8px;color:var(--teal-dark,#0F5E6E);font:700 13px 'DM Sans',sans-serif;padding:8px 12px;min-height:40px;cursor:pointer;text-align:left;max-width:100%;overflow-wrap:anywhere;}
+#pid-panel input[type=text]{border:1.5px solid var(--border,#E5E7EB);border-radius:8px;padding:9px 10px;font:14px 'DM Sans',sans-serif;box-sizing:border-box;}
 .field-alert-info{background:var(--teal-light);border:1.5px solid #B8E0EA;color:var(--teal-dark);margin-bottom:14px;}
 .field-alert-danger{background:#FEF2F2;border:1.5px solid #FECACA;color:#991B1B;}
 .field-alert-success{background:#F0FDF4;border:1.5px solid #BBF7D0;color:#166534;}
@@ -1335,6 +1338,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <span class="library-toggle" onclick="toggleLib('s-library',this)">▼ Show sensitiser library</span>
     <div id="s-library" style="display:none;margin-bottom:10px;"><div class="sensitiser-grid" id="sensitiser-chips"></div></div>
     <div class="allergen-tags" id="allergen-tags"></div>
+    <div id="pid-panel" class="field-alert field-alert-warn" style="display:none;margin-top:14px;font-size:13px;"></div>
     <div class="hazard-review-notice field-alert field-alert-warn" role="alert" style="display:none;margin-top:14px;font-size:13px;"></div>
     <div id="hazard-confirm-block" class="field-alert field-alert-warn" style="margin-top:14px;margin-bottom:4px;">
       <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:13px;color:var(--text);font-weight:500;line-height:1.5;">
@@ -1692,11 +1696,22 @@ function normaliseSdsSignalWord(value){
 }
 function extractSdsSignalWord(text){
   const t=String(text||'');
-  const m=t.match(/\bSignal\s+word\s*:?\s*(Danger|Warning|None|No\s+signal\s+word(?:\s+is\s+used)?)/i)
+  const m=t.match(/\bSignal\s+words?\s*:?\s*(Danger|Warning|None|No\s+signal\s+word(?:\s+is\s+used)?)/i)
     // Two-column PDFs copy the value on the line before an empty label
     // ("Warning" / "Signal word:").
     ||t.match(/^[ \t]*(Danger|Warning)[ \t]*\n[ \t]*Signal\s+words?\s*:?[ \t]*$/im);
-  return normaliseSdsSignalWord(m?m[1]:'');
+  if(m)return normaliseSdsSignalWord(m[1]);
+  // Issue #349: some PDF viewers copy a two-column Section 2.2 column by
+  // column (all labels, then all values), so "Warning" lands several lines
+  // away from an empty "Signal word:" label. Accept it only when the label is
+  // present and empty and the pasted Section 2.2 holds exactly ONE line that
+  // is nothing but "Warning" or "Danger". Anything else (no such line, two
+  // lines, conflicting values) returns '' so the existing review gate stops.
+  if(/^[ \t]*Signal\s+words?\s*:?[ \t]*$/im.test(t)){
+    const values=[...t.matchAll(/^[ \t]*(Danger|Warning)[ \t]*$/gim)];
+    if(values.length===1)return normaliseSdsSignalWord(values[0][1]);
+  }
+  return '';
 }
 function resolveGbClpSignalWord(codes, suppliedSignal){
   const list=Array.isArray(codes)?codes:String(codes||'').split(',');
@@ -1738,7 +1753,10 @@ const S={step:1,shape:'circle',size:52,customW:50,customH:50,scentName:'',produc
   // data on this label came from a successful Smart Paste extraction (it is
   // saved with the label). hazardSource is the product name, product type and
   // fragrance load the current hazard data was entered/confirmed for.
-  hazardFromExtraction:false,hazardSource:null,sourceSection22:'',supplierWording:null,supplierSupplemental:[],supplierWordingIssues:[],supplierWordingVersion:null};
+  hazardFromExtraction:false,hazardSource:null,sourceSection22:'',supplierWording:null,supplierSupplemental:[],supplierWordingIssues:[],supplierWordingVersion:null,
+  // GB CLP Art 18(3)(b) product-identifier substances (issue #349): supplier
+  // evidence found at extraction, and the maker's confirmation of the names.
+  productIdentifier:null,pidSuggestion:null};
 // Net quantity remains a string: legacy saves and non-gram units are preserved.
 function netQuantityOptions(unit){
   const choice=document.getElementById('net-weight-choice');
@@ -3209,6 +3227,8 @@ async function saveLabel(){
     supplierSupplemental:S.hazardFromExtraction?S.supplierSupplemental:[],
     supplierWordingIssues:S.hazardFromExtraction?S.supplierWordingIssues:[],
     supplierWordingVersion:S.hazardFromExtraction?S.supplierWordingVersion:null,
+    productIdentifier:S.productIdentifier?JSON.parse(JSON.stringify(S.productIdentifier)):null,
+    pidSuggestion:S.pidSuggestion?JSON.parse(JSON.stringify(S.pidSuggestion)):null,
     sdsDoc:S.sdsDoc?Object.assign({kind:S.sdsDoc.kind||'',pct:S.sdsDoc.pct||'',base:S.sdsDoc.base||''},
       ...['coverage','rangeFrom','rangeTo','where','rangeStated','docVersion','supplier','cdate','cref'].filter(k=>S.sdsDoc[k]!==undefined).map(k=>({[k]:S.sdsDoc[k]})),
       {confirmed:S.sdsDoc.confirmed||null}):null,
@@ -3340,6 +3360,8 @@ function loadLabelRecord(e){
   S.supplierWording=S.hazardFromExtraction && S.sourceSection22 ? (e.supplierWording || window.ClpeasySupplierWording?.extract(S.sourceSection22) || Object.create(null)) : null;
   S.supplierSupplemental=S.supplierWording?(e.supplierSupplemental||window.ClpeasySupplierWording?.analyse(S.sourceSection22).supplemental||[]):[];
   S.supplierWordingIssues=S.supplierWording?(e.supplierWordingIssues||window.ClpeasySupplierWording?.analyse(S.sourceSection22).issues||[]):[];
+  S.productIdentifier=e.productIdentifier&&typeof e.productIdentifier==='object'?JSON.parse(JSON.stringify(e.productIdentifier)):null;
+  S.pidSuggestion=e.pidSuggestion&&typeof e.pidSuggestion==='object'?JSON.parse(JSON.stringify(e.pidSuggestion)):null;
   // Labels saved before the signal-word fix: re-read the supplier's own saved
   // Section 2.2; if it still can't be read, the same review stop applies.
   if(S.supplierWording&&!S.sdsSignal)S.sdsSignal=extractSdsSignalWord(S.sourceSection22);
@@ -3837,7 +3859,67 @@ function _requiredLabelContentMessage(){
 }
 function _downloadAllowed(){
   const checked=document.getElementById('verify-checkbox')?.checked;
-  return !!checked && _requiredLabelContent().complete && !_missingBusinessDetails().length && !window._labelBlockDownload && !_hazardReviewRequired() && !_hazardUnverified() && SdsDocCheck.isExportAllowed(_sdsDocRecord());
+  return !!checked && _requiredLabelContent().complete && !_missingBusinessDetails().length && !window._labelBlockDownload && !_hazardReviewRequired() && !_hazardUnverified() && SdsDocCheck.isExportAllowed(_sdsDocRecord()) && _productIdentifierComplete();
+}
+// Issue #349 (GB CLP Art 18(3)(b)): the product-identifier substance names
+// must be confirmed for the label's current H statements. Fails closed if the
+// check could not load.
+function _pidRecord(){return {hStatements:S.hStatements,productIdentifier:S.productIdentifier};}
+function _productIdentifierComplete(){return !!window.ProductIdentifierCheck&&ProductIdentifierCheck.isComplete(_pidRecord());}
+const _pidEsc=v=>String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+let _pidPanelSig=null;
+function renderProductIdentifierPanel(force){
+  const el=document.getElementById('pid-panel');
+  if(!el)return;
+  const PIC=window.ProductIdentifierCheck;
+  const rec=_pidRecord();
+  // Re-render only when something it shows changed (keeps typed text).
+  const sig=JSON.stringify([PIC&&PIC.triggeringCodes(rec),S.productIdentifier,S.pidSuggestion]);
+  if(!force&&sig===_pidPanelSig)return;
+  _pidPanelSig=sig;
+  if(!PIC||!PIC.required(rec)){el.style.display='none';el.innerHTML='';return;}
+  const codes=PIC.triggeringCodes(rec).join(', ');
+  const sug=S.pidSuggestion||{names:[],status:'no-section'};
+  const head='<strong>Substances named with your product</strong><p>Your label shows '+_pidEsc(codes)+'. For these hazards the label must also name the substances your supplier identifies as responsible (GB CLP Article 18(3)(b)). Suppliers usually give them in SDS Section 1.1, in the product name, for example “Contains: …”.</p>';
+  if(PIC.confirmed(rec)){
+    const p=S.productIdentifier;
+    el.className='field-alert field-alert-success';
+    el.innerHTML=head+'<p role="status">✓ Confirmed ('+(p.source==='maker'?'typed from your supplier documents':'from your SDS '+(p.source==='sds-2.2'?'Section 2.2':'Section 1.1'))+'): <strong>'+_pidEsc(p.names.join(', '))+'</strong>'+(p.source==='sds-2.2'?' (already printed with your supplier’s Section 2.2 text)':' (printed as “Contains: …” on your label)')+'.</p><p><button type="button" class="pid-change" onclick="changeProductIdentifier()">Change</button></p>';
+  } else {
+    el.className='field-alert field-alert-warn';
+    const found=sug.status==='found'&&sug.names&&sug.names.length;
+    el.innerHTML=head+
+      (found?'<p>Your SDS '+(sug.source==='sds-2.2'?'Section 2.2':'Section 1.1')+' says: <strong>'+_pidEsc(sug.evidence)+'</strong></p><p><button type="button" class="pid-use" onclick="confirmProductIdentifier(\'sds\')">Use these names: '+_pidEsc(sug.names.join(', '))+'</button></p>'
+        :'<p role="alert">We couldn’t find these names in the text you pasted. Check SDS Section 1.1 (the product name) or your supplier’s CLP label.</p>')+
+      '<label for="pid-names" style="display:block;font-weight:600;margin-top:8px;">'+(found?'Or type':'Type')+' the names exactly as your supplier gives them</label>'+
+      '<input type="text" id="pid-names" autocomplete="off" placeholder="e.g. Name one, Name two" style="width:100%;margin:6px 0;">'+
+      '<p><button type="button" class="pid-typed" onclick="confirmProductIdentifier(\'maker\')">Confirm typed names</button></p>'+
+      '<p style="font-size:12px;">Not sure? Ask your supplier. Your label can’t be continued or downloaded until these names are confirmed.</p>';
+  }
+  el.style.display='';
+}
+function confirmProductIdentifier(kind){
+  const PIC=window.ProductIdentifierCheck;
+  if(!PIC)return;
+  const rec=_pidRecord();
+  if(kind==='sds'){
+    const sug=S.pidSuggestion;
+    if(!sug||sug.status!=='found'||!sug.names.length)return;
+    S.productIdentifier=PIC.makeConfirmation(rec,sug.names,sug.source,sug.evidence);
+  } else {
+    const names=PIC.splitNames(document.getElementById('pid-names')?.value||'');
+    if(!names.length){alert('Type the substance names exactly as your supplier gives them, then confirm.');document.getElementById('pid-names')?.focus();return;}
+    S.productIdentifier=PIC.makeConfirmation(rec,names,'maker','');
+  }
+  renderProductIdentifierPanel(true);
+  updateLabel();
+  if(typeof toggleHazardNext==='function')toggleHazardNext();
+}
+function changeProductIdentifier(){
+  S.productIdentifier=null;
+  renderProductIdentifierPanel(true);
+  updateLabel();
+  if(typeof toggleHazardNext==='function')toggleHazardNext();
 }
 function _downloadBlockedMessage(){
   const businessMessage=_businessDetailsBlockedMessage();
@@ -3846,6 +3928,7 @@ function _downloadBlockedMessage(){
   if(contentMessage)return contentMessage;
   if(_hazardUnverified())return HazardProvenance.BLOCK_MESSAGE;
   if(_hazardReviewRequired())return _hazardReviewMessage();
+  if(!_productIdentifierComplete())return window.ProductIdentifierCheck?ProductIdentifierCheck.MESSAGE:'Downloads are unavailable. Please refresh the page and try again.';
   if(S.hazardFromExtraction && S.sourceSection22 && window._unrecognizedCodesGeneric?.length)return clpUnrecognisedCodesMessage(window._unrecognizedCodesGeneric).body;
   const invalid=(Array.isArray(S.pictograms)?S.pictograms:[S.pictograms]).filter(key=>!LabelRenderer.isValidPictogramKey(key));
   if(invalid.length)return LabelRenderer.describeInvalidPictograms(invalid);
@@ -3890,6 +3973,7 @@ function toggleDownload(){
     (_hazardReviewRequired()?'Review the changed product information in Step 2 before downloading.':'')||
     (window._labelBlockDownload?'This label does not pass the current content and size checks. Resolve the warning above or choose a tested larger size.':'')||
     SdsDocCheck.exportBlockMessage(_sdsDocRecord())||
+    (_productIdentifierComplete()?'':(window.ProductIdentifierCheck?ProductIdentifierCheck.MESSAGE:''))||
     (!document.getElementById('verify-checkbox')?.checked?'Tick the final review confirmation to enable downloads.':'Downloads are unavailable. Review the label information before trying again.');
   document.querySelectorAll('.download-lock-note').forEach(note=>{note.style.display=reason?'block':'none';note.textContent=reason;});
   const reviewLink=document.getElementById('sheet-review-confirmation-link');
@@ -4465,6 +4549,12 @@ function extractSDS(){
   S.supplierWording=window.ClpeasySupplierWording ? window.ClpeasySupplierWording.extract(text) : Object.create(null);
   S.supplierSupplemental=window.ClpeasySupplierWording?.analyse(text).supplemental||[];
   S.supplierWordingIssues=window.ClpeasySupplierWording?.analyse(text).issues||['Source text'];
+  // Issue #349: product-identifier substances (GB CLP Art 18(3)(b)). Supplier
+  // evidence comes from the same pasted SDS (Section 1.1, or a supplier
+  // "Contains:" line in Section 2.2). A new extraction always needs a fresh
+  // confirmation from the maker; nothing is accepted automatically.
+  S.pidSuggestion=window.ProductIdentifierCheck?ProductIdentifierCheck.suggestion(pasted,S.supplierSupplemental):null;
+  S.productIdentifier=null;
   // Never print a hazard label without the supplier's signal word: if these
   // statements normally carry one but none (not even an explicit "None")
   // could be read, stop for review. Nothing is substituted.
@@ -4684,6 +4774,7 @@ function canLeaveApprovedBuilderStep(step){
     if(!(S.hStatements||'').trim()){alert('Please extract and review the hazard data from your supplier SDS before continuing.');return false;}
     if(_hazardUnverified()){alert(HazardProvenance.BLOCK_MESSAGE);return false;}
     if(!_requireSdsDoc())return false;
+    if(!_productIdentifierComplete()){alert(ProductIdentifierCheck.MESSAGE);document.getElementById('pid-panel')?.scrollIntoView({block:'center'});return false;}
     if(!confirmed){alert('Please confirm that the extracted hazard data matches your supplier SDS before continuing.');document.getElementById('hazard-confirm')?.focus();return false;}
     const hCodes=(S.hStatements||'').split(',').map(v=>v.trim()).filter(Boolean);
     const pCodes=(S.pStatements||'').split(',').map(v=>v.trim()).filter(Boolean);
@@ -4906,7 +4997,7 @@ function toggleHazardNext(){
     btn.style.opacity='0.4';btn.style.pointerEvents='none';
     return;
   }
-  if(cb&&cb.checked&&hasHazard&&(typeof evaluateSdsDoc!=='function'||evaluateSdsDoc().ok)){btn.style.opacity='1';btn.style.pointerEvents='auto';}
+  if(cb&&cb.checked&&hasHazard&&(typeof evaluateSdsDoc!=='function'||evaluateSdsDoc().ok)&&_productIdentifierComplete()){btn.style.opacity='1';btn.style.pointerEvents='auto';}
   else{btn.style.opacity='0.4';btn.style.pointerEvents='none';}
 }
 // U6 fix (2026-08-03, UX simplification round 2 — per Michaela's request): show
@@ -5194,7 +5285,7 @@ function clearHazardData(){
   // an unwanted side effect of clicking Clear.
   const hzCb=document.getElementById('hazard-confirm');
   if(hzCb)hzCb.checked=false;
-  S.hazardFromExtraction=false;S.hazardSource=null;S.sourceSection22='';S.supplierWording=null;S.supplierSupplemental=[];S.supplierWordingIssues=[];S.supplierWordingVersion=null;S.legacyWording=null;S.legacySourceId=null;
+  S.hazardFromExtraction=false;S.hazardSource=null;S.sourceSection22='';S.supplierWording=null;S.supplierSupplemental=[];S.supplierWordingIssues=[];S.supplierWordingVersion=null;S.legacyWording=null;S.legacySourceId=null;S.productIdentifier=null;S.pidSuggestion=null;
   updateSdsSourceSuitabilityWarning();
   // Clear signal word
   S.signal='';
@@ -5462,6 +5553,7 @@ function buildSVG(forExport=false){
     netWeight:S.netWeight, batchNum:S.batchNum, burnTime:S.burnTime,
     signal:S.signal, hStatements:S.hStatements, pStatements:S.pStatements,
     supplierWording: S.hazardFromExtraction ? S.supplierWording : null,
+    productIdentifier:S.productIdentifier,
     supplierSupplemental:S.hazardFromExtraction?S.supplierSupplemental:[],
     supplierWordingIssues:S.hazardFromExtraction?S.supplierWordingIssues:[],
     sensitisers:S.sensitisers, pictograms:S.pictograms,
@@ -5633,6 +5725,7 @@ function resetBizNameFS(){S.bizNameFSOverride=null;updateLabel();}
 function updateLabel(){
   reconcileSdsSourceConfirmation();
   readForm();
+  if(typeof renderProductIdentifierPanel==='function')renderProductIdentifierPanel();
   if(typeof reconcileOptionalItems==='function')reconcileOptionalItems();
   // Shared GB-CLP resolver: Smart Paste and manual chip changes must never
   // drift into different signal-word rules.

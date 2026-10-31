@@ -21,6 +21,7 @@
     "SCENTED CANDLE",
     "WARNING",
     "May cause an allergic skin reaction.",
+    "Contains: Test supplier substance.",
     "Keep out of reach of children. Dispose of contents/container to an approved waste disposal plant.",
     "12 Mill Lane, Duns, TD11 3AA",
     "01234 567890"
@@ -72,7 +73,7 @@
     "SCENTED CANDLE",
     "WARNING",
     "May cause an allergic skin reaction. Harmful to aquatic life with long lasting effects.",
-    "Contains Linalool, Citral. May produce an allergic reaction.",
+    "Contains: Test supplier substance. Contains Linalool, Citral. May produce an allergic reaction.",
     "Keep out of reach of children. Avoid breathing vapours. IF ON SKIN: Wash with plenty of water. Dispose of contents/container to an approved waste disposal plant.",
     "12 Mill Lane, Duns, TD11 3AA",
     "01234 567890"
@@ -133,7 +134,7 @@
     "SCENTED CANDLE",
     "WARNING",
     "Harmful if swallowed. Causes skin irritation. May cause an allergic skin reaction. Causes serious eye irritation. Toxic to aquatic life with long lasting effects.",
-    "Contains Linalool, Citral, Limonene, Coumarin. May produce an allergic reaction.",
+    "Contains: Test supplier substance. Contains Linalool, Citral, Limonene, Coumarin. May produce an allergic reaction.",
     "If medical advice is needed, have product container or label at hand. Keep out of reach of children. Avoid breathing vapours. Avoid release to the environment. IF ON SKIN: Wash with plenty of water. If skin irritation or rash occurs: Get medical advice/attention. Dispose of contents/container to an approved waste disposal plant.",
     "12 Mill Lane, Duns, TD11 3AA",
     "01234 567890"
@@ -188,6 +189,7 @@
     "WAX MELT",
     "WARNING",
     "May cause an allergic skin reaction.",
+    "Contains: Test supplier substance.",
     "Keep out of reach of children. Dispose of contents/container to an approved waste disposal plant.",
     "12 Mill Lane, Duns, TD11 3AA",
     "01234 567890"
@@ -245,7 +247,7 @@
     "WAX MELT",
     "WARNING",
     "May cause an allergic skin reaction. Harmful to aquatic life with long lasting effects.",
-    "Contains Linalool, Citral. May produce an allergic reaction.",
+    "Contains: Test supplier substance. Contains Linalool, Citral. May produce an allergic reaction.",
     "Keep out of reach of children. Avoid breathing vapours. IF ON SKIN: Wash with plenty of water. Dispose of contents/container to an approved waste disposal plant.",
     "12 Mill Lane, Duns, TD11 3AA",
     "01234 567890"
@@ -306,7 +308,7 @@
     "SCENTED CANDLE",
     "WARNING",
     "Harmful if swallowed. Causes skin irritation. May cause an allergic skin reaction. Causes serious eye irritation. Toxic to aquatic life with long lasting effects.",
-    "Contains Linalool, Citral, Limonene, Coumarin. May produce an allergic reaction.",
+    "Contains: Test supplier substance. Contains Linalool, Citral, Limonene, Coumarin. May produce an allergic reaction.",
     "If medical advice is needed, have product container or label at hand. Keep out of reach of children. Avoid breathing vapours. Avoid release to the environment. IF ON SKIN: Wash with plenty of water. If skin irritation or rash occurs: Get medical advice/attention. Dispose of contents/container to an approved waste disposal plant.",
     "12 Mill Lane, Duns, TD11 3AA",
     "01234 567890"
@@ -361,6 +363,7 @@
     "WAX MELT",
     "WARNING",
     "May cause an allergic skin reaction.",
+    "Contains: Test supplier substance.",
     "Keep out of reach of children. Dispose of contents/container to an approved waste disposal plant.",
     "Duns TD11",
     "01234 567890"
@@ -402,7 +405,8 @@
    "fitBlocked": true,
    "requiredComplete": true,
    "warnings": [
-    "footer-clipped"
+    "footer-clipped",
+    "hazard-text-overflow"
    ],
    "signal": "Warning",
    "h": "H317",
@@ -417,6 +421,7 @@
     "SCENTED CANDLE",
     "WARNING",
     "May cause an allergic skin reaction.",
+    "Contains: Test supplier substance.",
     "Keep out of reach of children. Dispose of contents/container to an approved waste disposal plant.",
     "Duns TD11",
     "01234 567890"
@@ -467,6 +472,7 @@
     "WAX MELT",
     "WARNING",
     "May cause an allergic skin reaction.",
+    "Contains: Test supplier substance.",
     "Keep out of reach of children. Dispose of contents/container to an approved waste disposal plant.",
     "Duns TD11",
     "01234 567890"
@@ -519,7 +525,7 @@
     "REED DIFFUSER",
     "DANGER",
     "May be fatal if swallowed and enters airways. May cause an allergic skin reaction. Toxic to aquatic life with long lasting effects.",
-    "Contains Linalool. May produce an allergic reaction.",
+    "Contains: Test supplier substance. Contains Linalool. May produce an allergic reaction.",
     "If medical advice is needed, have product container or label at hand. Keep out of reach of children. IF SWALLOWED: Immediately call a POISON CENTER/doctor. Do NOT induce vomiting. Dispose of contents/container to an approved waste disposal plant.",
     "12 Mill Lane, Duns, TD11 3AA",
     "01234 567890"
