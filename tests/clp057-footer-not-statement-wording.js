@@ -2,8 +2,9 @@
 // statement's wording. Text that runs into a page-number/date/version block is
 // flagged for review instead of joined. Genuine continuations are preserved
 // when no page block follows them, and flagged (never guessed) when one does.
-// Fixture: founder-pasted Freshskin No5 Reed Diffuser (25% + Augeo) Section 2.2
-// (pages 1-2); other texts are labelled synthetic variants.
+// Fixture: Freshskin No5 Reed Diffuser (25% + Augeo) Section 2.2 (pages 1-2),
+// text extracted from the PDF and supplied by ChatGPT via Michaela; NOT verified
+// browser-copied text. Other texts are labelled synthetic variants.
 //   node tests/clp057-footer-not-statement-wording.js
 'use strict';
 const fs = require('fs');
