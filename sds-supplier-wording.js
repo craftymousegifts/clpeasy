@@ -6,6 +6,8 @@ const CODE='(?:EUH|H|P)\\d{3}[A-Za-z]{0,2}(?:[ \\t]*[+/][ \\t]*(?:P)?\\d{3})*';
 const START=new RegExp('^[ \\t]*('+CODE+')(?=$|[ \\t,:–—-])(?:[ \\t]*[,:–—-])?[ \\t]*(.*)$','i');
 const HEADING=/^(?:__CLPEASY_SUPPLEMENTAL__\b|(?:SDS\s+)?(?:SECTION\s+)?\d+(?:\.\d+)*[.:]?\s+|(?:hazard|precautionary|supplemental)\s+(?:statements?|information|None)|Precautionary$|(?:Unique\s+Formula|Identifier\s*\(UFI\)|UFI\b)|signal\s+words?\b|(?:hazard\s+)?pictograms?\b|label\s+elements?\b|contains\s*:|Nikura\s+Ltd,|Issue date:|Version:|Product:|In accordance with REACH|other\s+hazards\b|composition\b|safety\s+data\s+sheet\s*$|page\s+\d+\b)/i;
 const PAGE_FURNITURE=/\bPage[ \t]+\d+[ \t]*(?:of|\/)[ \t]*\d+\b|^[ \t]*(?:Page[ \t]+)?\d{1,3}[ \t]*\/[ \t]*\d{1,3}[ \t]*$|^[ \t]*Page[ \t]+\d+[ \t]*$|^[ \t]*(?:Issue|Revision|Print(?:ed)?)[ \t]+date\b|^[ \t]*Version(?:[ \t]+No\.?)?[ \t]*:/i;
+// Lines that only appear in a repeated page header/footer (CLP-057).
+const PAGE_HEADER=/^[ \t]*(?:Page[ \t]+\d+\b|Issue[ \t]+date\b|Revision[ \t]+date\b|Version\b[^\n]{0,30}$|Product[ \t]*:|SAFETY[ \t]+DATA[ \t]+SHEET[ \t]*$|In accordance with (?:REACH|Regulation))/i;
 // D2 (Michaela, 25 Oct 2026): clearly identifiable administrative document
 // notes are not label wording. Only whole sentences matching these narrow
 // forms are left off the label; they stay in the saved source text and are
@@ -60,6 +62,17 @@ function analyse(source){
     return k;
   }
   const endsStatement=k=>k>=lines.length||isBoundary(lines[k]);
+  // CLP-057: index of the page header/footer line that plain text at k runs
+  // into (inside its paragraph, or as the next line after it), else -1. Such
+  // text may be a footer, e.g. a supplier address without "Ltd". Page marks
+  // include "Page 2 (9)" and repeated page headers, not just PAGE_FURNITURE.
+  const isPageMark=l=>PAGE_FURNITURE.test(l)||PAGE_HEADER.test(l);
+  function runsIntoPageBlock(k){
+    while(k<lines.length&&lines[k].trim()&&!isBoundary(lines[k])){if(isPageMark(lines[k]))return k;k++;}
+    if(k<lines.length&&lines[k].trim())return isPageMark(lines[k])?k:-1;
+    while(k<lines.length&&!lines[k].trim())k++;
+    return k<lines.length&&isPageMark(lines[k])?k:-1;
+  }
   for(let i=0;i<lines.length;i++){
     const match=lines[i].match(START);
     const field=lines[i].match(/^\s*__CLPEASY_SUPPLEMENTAL__\s*(.*)$/);
@@ -84,6 +97,12 @@ function analyse(source){
         if(/(?:Ltd|Limited|Issue date:|Version:|Product:)/i.test(lines[j])){issues.push(code);ambiguous.add(code);break;}
         i++;continue;
       }
+      // CLP-057: text that runs into a page block is never joined to the
+      // statement (it may be a footer); fail closed for review instead.
+      // A recognised document note (D2) is split off later, never printed.
+      const pb=runsIntoPageBlock(i+1);
+      const before=pb>=0?lines.slice(i+1,pb).map(l=>l.trim()).filter(Boolean).join(' '):'';
+      if(pb>=0&&!(before&&!splitAdministrative(before).keep)){issues.push(code);ambiguous.add(code);i=afterPageBlock(pb)-1;break;}
       // Keep a supplier's chemical-name hyphen across a PDF line break.
       text+=(text.endsWith('-')?'':text?' ':'')+next;i++;
     }
