@@ -37,7 +37,7 @@ var q={select:function(){return this},eq:function(){return this},neq:function(){
 return {auth:{getSession:async function(){return {data:{session:{access_token:'x',user:{id:'u1',email:row.email,created_at:row.created_at,user_metadata:{}}}}}},getUser:async function(){return {data:{user:{id:'u1'}}}},onAuthStateChange:function(){return {data:{subscription:{unsubscribe:function(){}}}}},signOut:async function(){return {}}},
 from:function(){return Object.create(q)},rpc:async function(n){window.__rpc.push(n);return {data:{ok:true,consumed:true,free_redownload:false,source:'purchased',clean_export:true,purchased_downloads:4,downloads_used:0,downloads_limit:0},error:null};},functions:{invoke:async function(){return {data:null,error:null}}}};}};`;
 // Records print-window HTML and records every renderLabel() call's options.
-const RECORDER = `window.__written='';window.open=function(){var w={closed:false,close:function(){this.closed=true;},focus:function(){},location:{replace:function(){}},document:{open:function(){window.__written='';},write:function(h){window.__written+=h;},close:function(){}}};return w;};
+const RECORDER = `window.__written='';window.open=function(){var w={closed:false,close:function(){this.closed=true;},focus:function(){},location:{replace:function(x){window.__navigated=String(x);}},document:{open:function(){window.__written='';},write:function(h){window.__written+=h;},close:function(){}}};return w;};
 window.__calls=[];window.__nf=false;
 Object.defineProperty(window,'LabelRenderer',{configurable:true,set:function(L){var orig=L.renderLabel;L.renderLabel=function(d,o){
   if(o&&o._pictoMmOverride==null){var ov={};${JSON.stringify(KEYS)}.forEach(function(k){if(o&&Object.prototype.hasOwnProperty.call(o,k))ov[k]=o[k];});window.__calls.push({name:d&&d.scentName,ov:ov});}
@@ -196,9 +196,9 @@ const server = http.createServer((req, res) => {
       addToSheet(ids.NF); await new Promise(r => setTimeout(r, 900));
       const issues = sheetFitIssues.map(i => i.itemId);
       const msg = getSheetFitBlockMessage();
-      window.__written = ''; const rpc0 = window.__rpc.length;
+      window.__written = ''; window.__navigated = ''; const rpc0 = window.__rpc.length;
       await downloadPDF(); await new Promise(r => setTimeout(r, 1500));
-      const res = { issues, blocked: !!msg, wrote: window.__written.length, rpc: window.__rpc.length - rpc0 };
+      const res = { issues, blocked: !!msg, wrote: window.__written.length + (window.__navigated || '').length, rpc: window.__rpc.length - rpc0 };
       removeSheetItem(ids.NF); window.__nf = false; await new Promise(r => setTimeout(r, 600));
       return res;
     }, ids);
@@ -211,9 +211,9 @@ const server = http.createServer((req, res) => {
       window.__calls.length = 0;
       addToSheet(ids.A); await new Promise(r => setTimeout(r, 1200));
       const preview = window.__calls.filter(c => c.name === 'M03 Fine Tuned').map(c => c.ov);
-      window.__calls.length = 0;
+      window.__calls.length = 0; window.__navigated = '';
       await downloadPDF();
-      const end = Date.now() + 15000; while (Date.now() < end && !/print-btn/.test(window.__written)) await new Promise(r => setTimeout(r, 200));
+      const end = Date.now() + 15000; while (Date.now() < end && !(/print-btn/.test(window.__written) || /^blob:/.test(window.__navigated || ''))) await new Promise(r => setTimeout(r, 200));
       const pdf = window.__calls.filter(c => c.name === 'M03 Fine Tuned').map(c => c.ov);
       window.__calls.length = 0;
       const A = resolveSheetLabel(ids.A);
@@ -221,7 +221,7 @@ const server = http.createServer((req, res) => {
       const bmp = png.blob ? await createImageBitmap(png.blob) : null;
       const cut = window.__calls.filter(c => c.name === 'M03 Fine Tuned').map(c => c.ov);
       const want = {}; K.forEach(k => { if (typeof A[k] === 'number') want[k] = A[k]; });
-      return { preview, pdf, cut, want, pdfWritten: /print-btn/.test(window.__written), png: bmp ? [bmp.width, bmp.height] : null };
+      return { preview, pdf, cut, want, pdfWritten: (/print-btn/.test(window.__written) || /^blob:/.test(window.__navigated || '')), png: bmp ? [bmp.width, bmp.height] : null };
     }, ids, KEYS);
     assert.ok(P.preview.length >= 1 && P.pdf.length >= 1 && P.cut.length === 1, 'renders captured: ' + JSON.stringify([P.preview.length, P.pdf.length, P.cut.length]));
     for (const [where, list] of [['preview', P.preview], ['PDF', P.pdf], ['cutting PNG', P.cut]]) list.forEach(ov => assert.deepStrictEqual(ov, P.want, `13: ${where} render uses the saved overrides`));

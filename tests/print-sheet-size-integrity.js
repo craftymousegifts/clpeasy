@@ -155,6 +155,10 @@ async function exportSheet() {
   window.__sheetSvg = null;
   const before = windowOpenCalls;
   await window.eval('downloadPDF()');
+  // The FakeImage never "loads", so the export never reaches the point where
+  // the double-click guard (PR #348) is released. Release it as the real image
+  // load would, so the next export in this test can run.
+  window.eval('_sheetExportBusy=false');
   return { svg: window.__sheetSvg, opened: windowOpenCalls - before };
 }
 
