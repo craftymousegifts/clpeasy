@@ -601,6 +601,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
         <p style="font-size:13px;line-height:1.6;padding:10px 12px;"><a href="/knowledge/printing-and-cutting?from=composer#sheets" target="_blank" rel="noopener">Follow the visual A4 printing guide →</a> · <a href="/knowledge/printing-and-cutting?from=composer#cricut" target="_blank" rel="noopener">Cricut route</a></p>
         <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 12px;font-size:12px;color:#166534;line-height:1.6;">
           <strong>🖨 A4 printing:</strong> Use the PDF sheet. In your printer settings choose <strong>100% / Actual Size</strong> and A4 paper. Do not use “Fit to page” or “Scale to fit”, as these can change the physical label size.<br>
+          <strong>📱 iPhone or iPad:</strong> The sheet opens as a PDF file. Tap <strong>Share</strong>, then <strong>Print</strong>, and choose A4 paper.<br>
           <strong>📐 Label size:</strong> The Composer keeps every label at the size it was saved in the Label Builder. It never resizes labels to fit the sheet.<br>
           <strong>⚙ Printer settings:</strong> Set the paper size to <strong>A4</strong> and the scale to <strong>Actual Size</strong> or <strong>100%</strong>. Turn off <strong>Fit to page</strong>, <strong>Shrink</strong> or any automatic scaling. The exact wording varies between browsers, PDF viewers and printers.<br>
           <strong>📏 Size check:</strong> Before using label stock, print a test on ordinary A4 paper and measure a known label dimension. The printed measurement should match the size shown in CLPeasy.<br>
@@ -700,6 +701,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 <script src="hazard-provenance.js"></script>
 <script src="label-library.js"></script>
 <script src="entitlement.js"></script>
+<script src="pdf-sheet.js"></script>
 
 <script>
 // ── SUPABASE AUTH ─────────────────────────────────────────────
@@ -2597,12 +2599,29 @@ function buildLabelSVGFromData(e,pw,ph,opts){
 function buildMiniSVG(e){return buildLabelSVGFromData(e,36);}
 
 // ── PDF EXPORT (print-sheet quality) ─────────────────────────
-function showSheetPrintGuidance(){
+// Genuine PDF delivery: show the already-paid PDF in the holding window. The
+// blob URL stays valid until the next export so the guidance link can open
+// the same file again (no further download is used).
+let _sheetPdfUrl=null;
+function deliverSheetPdf(win,blob){
+  if(_sheetPdfUrl)URL.revokeObjectURL(_sheetPdfUrl);
+  _sheetPdfUrl=URL.createObjectURL(blob);
+  try{
+    if(win&&!win.closed){
+      if(win.location&&typeof win.location.replace==='function')win.location.replace(_sheetPdfUrl);
+      else win.location.href=_sheetPdfUrl;
+    }
+  }catch(e){console.warn('Could not show the PDF in the print window:',e);}
+  return _sheetPdfUrl;
+}
+function showSheetPrintGuidance(pdfUrl){
   const el=document.getElementById('sheet-print-guidance');
   if(!el)return;
+  const pdfName='CLPeasy-print-sheet-'+new Date().toISOString().slice(0,10)+'.pdf';
   el.innerHTML='<span class="spg-icon" aria-hidden="true">✓</span><div><strong>Print sheet downloaded</strong>'+
     '<p>Load the matching label sheet or printable material into your printer. Check your paper size and printer settings, then print at <strong>100% / Actual Size</strong> to preserve the label dimensions.</p>'+
     '<p>First time? Test on ordinary A4 paper and hold it against your label sheet to check the labels line up.</p>'+
+    (pdfUrl?'<p>Your sheet is an A4 PDF file. Print it from the PDF. On iPhone or iPad, tap <strong>Share</strong>, then <strong>Print</strong>. <a class="spg-pdf-link" href="'+pdfUrl+'" download="'+pdfName+'" target="_blank" rel="noopener">Download the PDF again</a> (no extra download is used).</p>':'')+
     '<a href="#printing-help" class="spg-help-link" onclick="return openPrintingHelp()">Printing tips →</a></div>'+
     '<button type="button" class="spg-close" onclick="hideSheetPrintGuidance()" aria-label="Dismiss printing guidance">Dismiss</button>';
   el.hidden=false;
@@ -2679,11 +2698,22 @@ async function downloadPDF(){
     const ctx=cvs.getContext('2d');
     ctx.fillStyle='white';ctx.fillRect(0,0,shWpx,shHpx);
     ctx.drawImage(svgImg,0,0,shWpx,shHpx);
-    const pngDataUri=cvs.toDataURL('image/png');
+    // Genuine PDF (31 Oct 2026, founder-approved): wrap this same finished
+    // canvas, unchanged, in an A4 PDF file BEFORE any download is consumed.
+    // A generation failure therefore never costs a download. Browsers
+    // without PDF support (CLPSheetPDF.supported() false) keep the previous
+    // HTML print page below, unchanged.
+    let sheetPdf=null;
+    if(window.CLPSheetPDF&&CLPSheetPDF.supported()){
+      try{sheetPdf=await CLPSheetPDF.fromCanvas(cvs,{widthMm:shWmm,heightMm:shHmm,title:'CLPeasy Print Sheet'});}
+      catch(err){console.error('Print sheet PDF generation failed:',err);win.close();alert('Could not create your A4 PDF print sheet. No download has been used. Please try again.');return;}
+    }
+    const pngDataUri=sheetPdf?null:cvs.toDataURL('image/png');
     // The artifact is now fully rendered. Consume one download only at the
     // last safe point before handing the finished A4 sheet to the customer.
     const charge=await consumeComposerDownload();
     if(!charge.ok){win.close();alert(charge.reason==='accounting_error'?'We could not verify your download allowance. Please try again.':window.CLPEntitlement.outOfDownloadsMessage(composerEnt));return;}
+    if(sheetPdf){showSheetPrintGuidance(deliverSheetPdf(win,sheetPdf.blob));return;}
     win.document.open();
     win.document.write(`<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>CLPeasy Print Sheet</title>
     <style>

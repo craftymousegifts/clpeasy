@@ -89,7 +89,7 @@ return {auth:{getSession:async function(){return {data:{session:{access_token:'x
 from:function(){return Object.create(q)},rpc:async function(){window.__rpc=(window.__rpc||0)+1;return {data:{ok:true},error:null};},functions:{invoke:async function(){return {data:null,error:null}}}};}};`;
 // Records every file hand-over and print window without changing behaviour.
 const RECORDER = `window.__rpc=0;window.__svg=[];window.__png=[];window.__pdf=[];window.__written='';
-window.open=function(u){window.__pdf.push(String(u||''));var w={closed:false,close:function(){this.closed=true;},focus:function(){},location:{replace:function(x){window.__pdf.push(String(x));}},document:{open:function(){window.__written='';},write:function(h){window.__written+=h;},close:function(){}}};return w;};
+window.open=function(u){window.__pdf.push(String(u||''));var w={closed:false,close:function(){this.closed=true;},focus:function(){},location:{replace:function(x){window.__pdf.push(String(x));window.__navigated=String(x);}},document:{open:function(){window.__written='';},write:function(h){window.__written+=h;},close:function(){}}};return w;};
 (function(){var oc=HTMLAnchorElement.prototype.click;HTMLAnchorElement.prototype.click=function(){var h=this.href,d=this.download;
  if(d&&/\\.svg$/.test(d))window.__svg.push(decodeURIComponent(h.split(',').slice(1).join(',')));
  if(d&&/\\.png$/.test(d)&&h.indexOf('blob:')===0){var i=new Image();var rec={name:d};window.__png.push(rec);i.onload=function(){rec.w=i.naturalWidth;rec.h=i.naturalHeight;};i.src=h;}
@@ -244,9 +244,9 @@ const server = http.createServer((req, res) => {
         const rec = resolveSheetLabel(s.rec.id);
         const text = __texts(renderSheetPosition(rec, 1000, Math.round(1000 * s.h / s.w), { watermark: true }).svg).lines;
         const out = { qty: getTotalQty(), fitIssues: sheetFitIssues.length, contentIssues: (typeof sheetContentIssues !== 'undefined' ? sheetContentIssues.length : 0), text };
-        window.__renders.length = 0; window.__written = ''; const rpc0 = window.__rpc;
-        await downloadPDF(); const end = Date.now() + 12000; while (Date.now() < end && !/print-btn/.test(window.__written)) await wait(200);
-        out.pdf = /print-btn/.test(window.__written);
+        window.__renders.length = 0; window.__written = ''; window.__navigated = ''; const rpc0 = window.__rpc;
+        await downloadPDF(); const end = Date.now() + 12000; while (Date.now() < end && !(/print-btn/.test(window.__written) || /^blob:/.test(window.__navigated || ''))) await wait(200);
+        out.pdf = (/print-btn/.test(window.__written) || /^blob:/.test(window.__navigated || ''));
         out.pdfRenders = window.__renders.filter(r => r.name === rec.scentName).map(r => [r.pw, r.ph]);
         const png = await buildLabelPNGBlob(rec); const bm = png.blob ? await createImageBitmap(png.blob) : null;
         out.png = bm ? [bm.width, bm.height] : null;

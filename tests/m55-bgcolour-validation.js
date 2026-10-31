@@ -39,7 +39,7 @@ const STUB = `window.__rpc=[];window.supabase={createClient:function(){var row={
 var q={select:function(){return this},eq:function(){return this},neq:function(){return this},update:function(){return this},upsert:function(){return Promise.resolve({error:null})},insert:function(){return Promise.resolve({error:null})},order:function(){return this},limit:function(){return this},gte:function(){return this},single:function(){return Promise.resolve({data:row,error:null})},maybeSingle:function(){return Promise.resolve({data:row,error:null})},then:function(r){return Promise.resolve({data:[],error:null}).then(r)}};
 return {auth:{getSession:async function(){return {data:{session:{access_token:'x',user:{id:'u1',email:row.email,created_at:row.created_at,user_metadata:{}}}}}},getUser:async function(){return {data:{user:{id:'u1'}}}},onAuthStateChange:function(){return {data:{subscription:{unsubscribe:function(){}}}}},signOut:async function(){return {}}},
 from:function(){return Object.create(q)},rpc:async function(n){window.__rpc.push(n);return {data:{ok:true},error:null};},functions:{invoke:async function(){return {data:null,error:null}}}};}};`;
-const RECORDER = `window.__written='';window.__m55=[];window.open=function(){var w={closed:false,close:function(){this.closed=true;},focus:function(){},location:{replace:function(){}},document:{open:function(){window.__written='';},write:function(h){window.__written+=h;},close:function(){}}};return w;};`;
+const RECORDER = `window.__written='';window.__m55=[];window.open=function(){var w={closed:false,close:function(){this.closed=true;},focus:function(){},location:{replace:function(x){window.__navigated=String(x);}},document:{open:function(){window.__written='';},write:function(h){window.__written+=h;},close:function(){}}};return w;};`;
 
 const VALID = ['#ffffff', '#ffe4e1', '#FFE4E1', '#000000', '#123456', '#a1b2c3'];
 const INVALID = {
@@ -145,10 +145,10 @@ const server = http.createServer((req, res) => {
         // one sheet per label (a sheet holds one design at a time here)
         sheetItems.length = 0; addToSheet(id); await new Promise(r => setTimeout(r, 900));
         const cells = [...document.querySelectorAll('.sheet-cell')].map(c => [c.style.left, c.style.top, c.style.width, c.style.height].join(','));
-        window.__written = ''; await downloadPDF();
-        const end = Date.now() + 10000; while (Date.now() < end && !/print-btn/.test(window.__written)) await new Promise(r => setTimeout(r, 200));
+        window.__written = ''; window.__navigated = ''; await downloadPDF();
+        const end = Date.now() + 10000; while (Date.now() < end && !(/print-btn/.test(window.__written) || /^blob:/.test(window.__navigated || ''))) await new Promise(r => setTimeout(r, 200));
         const png = await buildLabelPNGBlob(rec); const bm = png.blob ? await createImageBitmap(png.blob) : null;
-        out.perLabel.push({ name: rec.scentName, same, cells: cells.join('|'), pdf: /print-btn/.test(window.__written), png: bm ? [bm.width, bm.height] : null });
+        out.perLabel.push({ name: rec.scentName, same, cells: cells.join('|'), pdf: (/print-btn/.test(window.__written) || /^blob:/.test(window.__navigated || '')), png: bm ? [bm.width, bm.height] : null });
       }
       out.injectedInPage = q('[data-m55]') + q('image[onerror]') + q('.sheet-cell script') + q('.sli-prev script');
       out.executed = window.__m55.slice();

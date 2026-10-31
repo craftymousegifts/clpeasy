@@ -276,6 +276,11 @@ const server = http.createServer((req, res) => {
       const hint = await t.evaluate(() => { const e = document.getElementById('export-print-hint'); return { vis: e.offsetParent !== null, text: e.innerText.replace(/\s+/g, ' ') }; });
       assert(hint.vis && /A4/.test(hint.text) && /saved size/.test(hint.text) && /Actual Size \/ 100%/.test(hint.text) && /Fit to page or Shrink/.test(hint.text), 'Composer export hint: ' + hint.text);
       const before = await t.evaluate(() => JSON.stringify(getSheetPlacementsMM().map(p => [p.x, p.y, p.w, p.h])));
+      // 31 Oct 2026: the Composer now hands over a genuine A4 PDF (covered by
+      // tests/composer-genuine-pdf.js). This test keeps covering the previous
+      // HTML print page, which remains the fallback for browsers without PDF
+      // support, so PDF support is switched off here.
+      await t.evaluate(() => { CLPSheetPDF.supported = () => false; });
       const popupP = new Promise(r => browser.once('targetcreated', async tg => r(await tg.page())));
       await t.evaluate(() => downloadPDF());
       const pop = await popupP;
