@@ -321,6 +321,7 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);background:var(--off);li
 .export-print-hint{margin:2px 0 0;font-size:12px;line-height:1.5;color:rgba(255,255,255,0.78);}
 .export-print-hint strong{color:#fff;}
 .export-print-hint a{color:#9FD8E6;font-weight:700;}
+.sheet-print-guidance .spg-pdf-open{background:white;border:1.5px solid var(--teal-dark);border-radius:6px;color:var(--teal-dark);font:700 13px 'DM Sans',sans-serif;padding:4px 10px;cursor:pointer;}
 .spg-close{flex-shrink:0;background:none;border:1px solid currentColor;border-radius:6px;color:inherit;font:600 12px 'DM Sans',sans-serif;padding:4px 8px;cursor:pointer;}
 .sheet-print-guidance>div{flex:1;min-width:0;}
 
@@ -2599,29 +2600,68 @@ function buildLabelSVGFromData(e,pw,ph,opts){
 function buildMiniSVG(e){return buildLabelSVGFromData(e,36);}
 
 // ── PDF EXPORT (print-sheet quality) ─────────────────────────
-// Genuine PDF delivery: show the already-paid PDF in the holding window. The
-// blob URL stays valid until the next export so the guidance link can open
-// the same file again (no further download is used).
-let _sheetPdfUrl=null;
-function deliverSheetPdf(win,blob){
-  if(_sheetPdfUrl)URL.revokeObjectURL(_sheetPdfUrl);
-  _sheetPdfUrl=URL.createObjectURL(blob);
-  try{
-    if(win&&!win.closed){
-      if(win.location&&typeof win.location.replace==='function')win.location.replace(_sheetPdfUrl);
-      else win.location.href=_sheetPdfUrl;
-    }
-  }catch(e){console.warn('Could not show the PDF in the print window:',e);}
+let _sheetExportBusy=false,_sheetExportTimer=null;
+function _holdSheetExport(){
+  _sheetExportBusy=true;clearTimeout(_sheetExportTimer);
+  _sheetExportTimer=setTimeout(function(){_sheetExportBusy=false;},60000);
+  return function(){clearTimeout(_sheetExportTimer);_sheetExportBusy=false;};
+}
+// Genuine PDF delivery: show the already-paid PDF in the holding window.
+// The PDF is kept (blob + URL) until the next export, so "Open my PDF" can
+// hand over the same file again at any time without another download --
+// including when the holding window was closed or could not show it.
+let _sheetPdfBlob=null,_sheetPdfUrl=null;
+function _sheetPdfObjectUrl(){
+  if(!_sheetPdfUrl&&_sheetPdfBlob){try{_sheetPdfUrl=URL.createObjectURL(_sheetPdfBlob);}catch(e){console.error('Could not prepare the PDF link:',e);}}
   return _sheetPdfUrl;
 }
-function showSheetPrintGuidance(pdfUrl){
+function deliverSheetPdf(win,blob){
+  if(_sheetPdfUrl){try{URL.revokeObjectURL(_sheetPdfUrl);}catch(e){}}
+  _sheetPdfUrl=null;_sheetPdfBlob=blob;
+  const url=_sheetPdfObjectUrl();
+  let opened=false;
+  try{
+    if(url&&win&&!win.closed){
+      if(win.location&&typeof win.location.replace==='function')win.location.replace(url);
+      else win.location.href=url;
+      opened=true;
+    }
+  }catch(e){console.error('Could not show the PDF in the print window:',e);}
+  if(!opened){try{if(win&&!win.closed)win.close();}catch(e){}}
+  return {url:url||'',opened};
+}
+// Opens the already-paid PDF again (user click). Never consumes a download.
+function openSheetPdfAgain(){
+  const url=_sheetPdfObjectUrl();
+  if(!url){alert('Your PDF could not be opened on this device. Your download is recorded: please contact support@clpeasy.com and we will help.');return false;}
+  const w=window.open(url,'_blank');
+  if(!w){
+    const a=document.createElement('a');
+    a.href=url;a.download='CLPeasy-print-sheet-'+new Date().toISOString().slice(0,10)+'.pdf';
+    document.body.appendChild(a);a.click();a.remove();
+  }
+  return false;
+}
+function showSheetPrintGuidance(pdfUrl,pdfNotOpened){
   const el=document.getElementById('sheet-print-guidance');
   if(!el)return;
-  const pdfName='CLPeasy-print-sheet-'+new Date().toISOString().slice(0,10)+'.pdf';
+  // PDF made and paid for, but it could not be shown automatically: say so
+  // plainly and give the free recovery button first.
+  if(pdfNotOpened){
+    el.innerHTML='<span class="spg-icon" aria-hidden="true">!</span><div><strong>Your PDF sheet is ready, but it did not open automatically</strong>'+
+      '<p>Your download has been used for this sheet. Tap <strong>Open my PDF</strong> to open it. This does not use another download.</p>'+
+      '<p><button type="button" class="spg-pdf-open" onclick="return openSheetPdfAgain()">Open my PDF</button></p>'+
+      '<p>Then print it from the PDF at <strong>100% / Actual Size</strong> on A4 paper. On iPhone or iPad, tap <strong>Share</strong>, then <strong>Print</strong>.</p>'+
+      '<a href="#printing-help" class="spg-help-link" onclick="return openPrintingHelp()">Printing tips →</a></div>'+
+      '<button type="button" class="spg-close" onclick="hideSheetPrintGuidance()" aria-label="Dismiss printing guidance">Dismiss</button>';
+    el.hidden=false;
+    try{el.scrollIntoView({block:'center'});}catch(e){}
+    return;
+  }
   el.innerHTML='<span class="spg-icon" aria-hidden="true">✓</span><div><strong>Print sheet downloaded</strong>'+
     '<p>Load the matching label sheet or printable material into your printer. Check your paper size and printer settings, then print at <strong>100% / Actual Size</strong> to preserve the label dimensions.</p>'+
     '<p>First time? Test on ordinary A4 paper and hold it against your label sheet to check the labels line up.</p>'+
-    (pdfUrl?'<p>Your sheet is an A4 PDF file. Print it from the PDF. On iPhone or iPad, tap <strong>Share</strong>, then <strong>Print</strong>. <a class="spg-pdf-link" href="'+pdfUrl+'" download="'+pdfName+'" target="_blank" rel="noopener">Download the PDF again</a> (no extra download is used).</p>':'')+
+    (pdfUrl?'<p>Your sheet is an A4 PDF file. Print it from the PDF. On iPhone or iPad, tap <strong>Share</strong>, then <strong>Print</strong>. <button type="button" class="spg-pdf-open spg-pdf-link" onclick="return openSheetPdfAgain()">Open my PDF again</button> (no extra download is used).</p>':'')+
     '<a href="#printing-help" class="spg-help-link" onclick="return openPrintingHelp()">Printing tips →</a></div>'+
     '<button type="button" class="spg-close" onclick="hideSheetPrintGuidance()" aria-label="Dismiss printing guidance">Dismiss</button>';
   el.hidden=false;
@@ -2648,17 +2688,26 @@ async function downloadPDF(){
   const blockMsg=getSheetFitBlockMessage();
   if(blockMsg){alert(blockMsg);return;}
 
+  // Double-click guard (31 Oct 2026, PR #348 review): while one sheet export
+  // is running, a repeat click is ignored -- no second window, no second
+  // download. Released on every exit path below; a 60 s safety release
+  // covers a sheet image that never finishes loading.
+  if(_sheetExportBusy)return;
+  const release=_holdSheetExport();
+
   // Open the print window while this is still a direct user gesture. If the
   // browser blocks it, stop before consuming a download.
   const win=window.open('','_blank');
-  if(!win){alert('Please allow pop-ups for clpeasy.com to print or save your A4 sheet. No download has been used.');return;}
+  if(!win){release();alert('Please allow pop-ups for clpeasy.com to print or save your A4 sheet. No download has been used.');return;}
   win.document.write('<!DOCTYPE html><html><head><title>Preparing CLPeasy Print Sheet…</title></head><body style="font-family:sans-serif;padding:24px">Preparing your A4 print sheet…</body></html>');
   win.document.close();
 
   // SECURITY: re-verify entitlement fresh from the server before generating
   // the clean export. Close the holding window if there is no allowance.
-  const verifiedPro=await refreshProEntitlement();
-  if(!verifiedPro){win.close();alert(composerBlockedMessage());return;}
+  let verifiedPro=false;
+  try{verifiedPro=await refreshProEntitlement();}catch(e){release();throw e;}
+  if(!verifiedPro){release();win.close();alert(composerBlockedMessage());return;}
+  try{
 
   const DPI=300,MM2PT=2.8346; // PDF points per mm
   const shWmm=A4_W,shHmm=A4_H;
@@ -2693,6 +2742,7 @@ async function downloadPDF(){
   // Convert SVG→canvas PNG then print — prevents 2-page browser split
   const svgImg=new Image();
   svgImg.onload=async function(){
+   try{
     const cvs=document.createElement('canvas');
     cvs.width=shWpx;cvs.height=shHpx;
     const ctx=cvs.getContext('2d');
@@ -2713,7 +2763,7 @@ async function downloadPDF(){
     // last safe point before handing the finished A4 sheet to the customer.
     const charge=await consumeComposerDownload();
     if(!charge.ok){win.close();alert(charge.reason==='accounting_error'?'We could not verify your download allowance. Please try again.':window.CLPEntitlement.outOfDownloadsMessage(composerEnt));return;}
-    if(sheetPdf){showSheetPrintGuidance(deliverSheetPdf(win,sheetPdf.blob));return;}
+    if(sheetPdf){const d=deliverSheetPdf(win,sheetPdf.blob);showSheetPrintGuidance(d.url,!d.opened);return;}
     win.document.open();
     win.document.write(`<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><title>CLPeasy Print Sheet</title>
     <style>
@@ -2739,9 +2789,11 @@ async function downloadPDF(){
     </body></html>`);
     win.document.close();
     showSheetPrintGuidance();
+   }finally{release();}
   };
-  svgImg.onerror=function(){win.close();alert('Could not render sheet. No download has been used. Please try again.');};
+  svgImg.onerror=function(){release();win.close();alert('Could not render sheet. No download has been used. Please try again.');};
   svgImg.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(sheetSVG);
+  }catch(e){release();throw e;}
 }
 
 // ── CRICUT MODAL & DOWNLOAD ──────────────────────────────────

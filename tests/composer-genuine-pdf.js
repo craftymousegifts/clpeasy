@@ -12,7 +12,11 @@
 //   4. Exactly one consume_download per sheet; the PDF is built BEFORE it.
 //   5. PDF generation failure: no charge, holding window closed, clear message.
 //   6. Accounting error / no downloads / pop-up blocked: no charge or no file.
-//   7. "Download the PDF again" link never charges again.
+//   7. "Open my PDF again" never charges again.
+//  10. Delivery failure after the charge (window closed / navigation error):
+//      visible message + "Open my PDF" recovery, no second charge.
+//  11. Double-click guard: a repeat click while exporting is ignored (one
+//      window, one charge); the guard is released after success and failures.
 //   8. Browsers without PDF support keep the previous HTML print page.
 //   9. Same results under iPhone 13 emulation (portrait and landscape).
 // Set QA_PDF_OUT=<dir> to keep the generated PDFs for independent measurement.
@@ -58,9 +62,9 @@ function stub(profile, rpcResult) {
   functions:{invoke:async function(){return {data:null,error:null}}}};}};`;
 }
 // Records the holding window without changing page behaviour.
-const RECORDER = `window.__opened=0;
-window.open=function(){window.__opened++;if(window.__popupBlocked)return null;var w={closed:false,close:function(){this.closed=true;},focus:function(){},written:0,
-location:{replace:function(x){w.navigated=String(x);}},document:{open:function(){},write:function(){w.written++;},close:function(){}}};window.__lastPopup=w;return w;};`;
+const RECORDER = `window.__opened=0;window.__openUrls=[];
+window.open=function(u){window.__opened++;window.__openUrls.push(String(u||''));if(window.__popupBlocked)return null;var w={closed:!!window.__closeHoldingWindow,close:function(){this.closed=true;},focus:function(){},written:0,
+location:{replace:function(x){if(window.__replaceThrows)throw new Error('forced navigation failure');w.navigated=String(x);}},document:{open:function(){},write:function(){w.written++;},close:function(){}}};if(!u)window.__lastPopup=w;return w;};`;
 // Keeps a SHA-256 of the exact canvas pixels handed to the PDF writer (RGB, alpha dropped).
 const CANVAS_HASH = `(function(){var f=CLPSheetPDF.fromCanvas;CLPSheetPDF.fromCanvas=function(c,o){window.__pdfCalls=(window.__pdfCalls||0)+1;
 var d=c.getContext('2d').getImageData(0,0,c.width,c.height).data,rgb=new Uint8Array(c.width*c.height*3);for(var i=0,j=0;i<d.length;i+=4){rgb[j++]=d[i];rgb[j++]=d[i+1];rgb[j++]=d[i+2];}
@@ -179,14 +183,15 @@ const server = http.createServer((req, res) => {
         assert.ok(Math.abs(cx - (p.x + p.w / 2)) < 0.2 && Math.abs(cy - (p.y + p.h / 2)) < 0.2, `label centre ${cx.toFixed(2)},${cy.toFixed(2)} vs ${p.x + p.w / 2},${p.y + p.h / 2}`);
       }
       // Guidance + re-open link: no further charge.
-      const g = await t.evaluate(() => { const el = document.getElementById('sheet-print-guidance'); const a = el.querySelector('.spg-pdf-link'); return { shown: !el.hidden, text: el.innerText.replace(/\s+/g, ' '), href: a && a.getAttribute('href'), dl: a && a.getAttribute('download') }; });
+      const g = await t.evaluate(() => { const el = document.getElementById('sheet-print-guidance'); const a = el.querySelector('.spg-pdf-open'); return { shown: !el.hidden, text: el.innerText.replace(/\s+/g, ' '), btn: a && a.textContent }; });
       assert.ok(g.shown && g.text.startsWith('✓ Print sheet downloaded'), g.text);
       assert.ok(g.text.includes('Load the matching label sheet or printable material into your printer.'), 'existing guidance kept');
       assert.ok(g.text.includes('On iPhone or iPad, tap Share, then Print.'), 'PDF guidance shown');
-      assert.strictEqual(g.href, pop.navigated, 'link opens the same PDF'); assert.ok(/^CLPeasy-print-sheet-\d{4}-\d{2}-\d{2}\.pdf$/.test(g.dl), g.dl);
-      await t.evaluate(() => { const a = document.querySelector('#sheet-print-guidance .spg-pdf-link'); a.addEventListener('click', e => e.preventDefault(), { once: true }); a.click(); });
+      assert.strictEqual(g.btn, 'Open my PDF again');
+      await t.evaluate(() => document.querySelector('#sheet-print-guidance .spg-pdf-open').click());
       await new Promise(r => setTimeout(r, 300));
-      assert.strictEqual(await charges(t), 1, 're-open link does not charge');
+      assert.strictEqual(await t.evaluate(() => window.__openUrls[window.__openUrls.length - 1]), pop.navigated, 'Open my PDF again opens the same PDF');
+      assert.strictEqual(await charges(t), 1, 'Open my PDF again does not charge');
       const hScroll = await t.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
       assert.strictEqual(hScroll, false, 'no horizontal overflow');
       assert.deepStrictEqual(t.errs, []); assert.deepStrictEqual(t.dialogs, []);
@@ -209,16 +214,64 @@ const server = http.createServer((req, res) => {
       const pg = await tg.page().catch(() => null); if (pg) await pg.close().catch(() => {});
       await t.close();
     }
+    // Delivery failure after the charge: visible message, free recovery.
+    for (const [flag, label] of [['__replaceThrows', 'navigation error'], ['__closeHoldingWindow', 'holding window already closed']]) {
+      const t = await open('payg', 'charged', { width: 1366, height: 900 });
+      await t.evaluate(f => { window[f] = true; }, flag);
+      await t.evaluate(() => downloadPDF());
+      assert.ok(await waitFor(t, () => !document.getElementById('sheet-print-guidance').hidden, 15000), label + ': guidance shown');
+      const g = await t.evaluate(() => { const el = document.getElementById('sheet-print-guidance'); const b = el.querySelector('.spg-pdf-open'); const r = el.getBoundingClientRect();
+        return { text: el.innerText.replace(/\s+/g, ' '), btn: b && b.textContent, inView: r.top < innerHeight && r.bottom > 0 }; });
+      assert.ok(g.text.includes('Your PDF sheet is ready, but it did not open automatically'), g.text);
+      assert.ok(g.text.includes('Your download has been used for this sheet.') && g.text.includes('This does not use another download.'), g.text);
+      assert.strictEqual(g.btn, 'Open my PDF'); assert.ok(g.inView, label + ': message scrolled into view');
+      assert.strictEqual(await charges(t), 1, label + ': one charge');
+      await t.evaluate(() => { window.__replaceThrows = false; window.__closeHoldingWindow = false; document.querySelector('#sheet-print-guidance .spg-pdf-open').click(); });
+      await new Promise(r => setTimeout(r, 300));
+      const url = await t.evaluate(() => window.__openUrls[window.__openUrls.length - 1]);
+      assert.ok(url.startsWith('blob:'), label + ': Open my PDF opens the PDF: ' + url);
+      const head = await t.evaluate(async u => (await (await fetch(u)).blob()).slice(0, 8).text(), url);
+      assert.strictEqual(head, '%PDF-1.4');
+      // Pop-ups blocked: the recovery button falls back to a file download.
+      const dl = await t.evaluate(() => { window.__popupBlocked = true; window.__dl = []; const oc = HTMLAnchorElement.prototype.click;
+        HTMLAnchorElement.prototype.click = function () { if (this.download) { window.__dl.push([this.download, this.href]); return; } return oc.apply(this, arguments); };
+        document.querySelector('#sheet-print-guidance .spg-pdf-open').click(); window.__popupBlocked = false; return window.__dl; });
+      assert.ok(dl.length === 1 && /^CLPeasy-print-sheet-\d{4}-\d{2}-\d{2}\.pdf$/.test(dl[0][0]) && dl[0][1] === url, label + ': download fallback ' + JSON.stringify(dl));
+      for (let i = 0; i < 2; i++) await t.evaluate(() => document.querySelector('#sheet-print-guidance .spg-pdf-open').click());
+      assert.strictEqual(await charges(t), 1, label + ': recovery never charges');
+      assert.strictEqual(await t.evaluate('_sheetExportBusy'), false, label + ': guard released');
+      assert.deepStrictEqual(t.errs.filter(e => !/Could not show the PDF/.test(e)), []);
+      ok(`delivery failure (${label}): visible message, "Open my PDF" opens the paid PDF, still one charge`);
+      await t.close();
+    }
+    // Double-click guard.
+    {
+      const t = await open('payg', 'charged', { width: 1366, height: 900 });
+      await t.evaluate(() => { downloadPDF(); downloadPDF(); downloadPDF(); });
+      assert.ok(await waitFor(t, () => (window.__lastPopup || {}).navigated, 15000));
+      await new Promise(r => setTimeout(r, 1500));
+      assert.strictEqual(await t.evaluate(() => window.__opened), 1, 'one holding window for three rapid clicks');
+      assert.strictEqual(await charges(t), 1, 'one charge for three rapid clicks');
+      assert.strictEqual(await t.evaluate(() => window.__pdfCalls), 1, 'one PDF built');
+      await t.evaluate(() => downloadPDF());
+      assert.ok(await waitFor(t, () => window.__opened === 2 && (window.__rpc || []).filter(x => x[0] === 'consume_download').length === 2, 15000), 'a later, separate export works (guard released)');
+      ok('double-click guard: rapid repeat clicks give one window, one PDF, one charge; guard released afterwards');
+      await t.close();
+    }
     // PDF generation failure -> no charge, window closed, message.
     {
       const t = await open('payg', 'charged', { width: 1366, height: 900 });
-      await t.evaluate(() => { CLPSheetPDF.fromCanvas = () => Promise.reject(new Error('forced')); });
+      await t.evaluate(() => { window.__realFromCanvas = CLPSheetPDF.fromCanvas; CLPSheetPDF.fromCanvas = () => Promise.reject(new Error('forced')); });
       await t.evaluate(() => downloadPDF());
       assert.ok(await waitFor(t, () => (window.__lastPopup || {}).closed, 15000), 'holding window closed');
       assert.strictEqual(await charges(t), 0, 'no charge');
       assert.ok(t.dialogs.some(d => /No download has been used/.test(d)), t.dialogs.join('|'));
       assert.strictEqual((await popup(t)).navigated, '');
-      ok('PDF generation failure: no download used, holding window closed, message shown');
+      await t.evaluate(() => { CLPSheetPDF.fromCanvas = window.__realFromCanvas; });
+      await t.evaluate(() => downloadPDF());
+      assert.ok(await waitFor(t, () => window.__opened === 2 && (window.__lastPopup || {}).navigated, 15000), 'guard released after the failure: retry works');
+      assert.strictEqual(await charges(t), 1, 'retry charges once');
+      ok('PDF generation failure: no download used, holding window closed, message shown; retry works and charges once');
       await t.close();
     }
     // Accounting error and no downloads: PDF built but never handed over.
@@ -231,6 +284,7 @@ const server = http.createServer((req, res) => {
       assert.strictEqual(pop.navigated, '', label + ': no PDF handed over');
       assert.strictEqual(await t.evaluate(() => document.getElementById('sheet-print-guidance').hidden), true, label + ': no guidance');
       assert.ok(await charges(t) <= 1, label + ': at most the one refused accounting call');
+      assert.strictEqual(await t.evaluate('_sheetExportBusy'), false, label + ': guard released');
       ok(`${label}: no PDF handed over, no guidance`);
       await t.close();
     }
@@ -241,7 +295,8 @@ const server = http.createServer((req, res) => {
       await new Promise(r => setTimeout(r, 1500));
       assert.strictEqual(await charges(t), 0); assert.strictEqual(await t.evaluate(() => window.__pdfCalls || 0), 0);
       assert.ok(t.dialogs.some(d => /No download has been used/.test(d)));
-      ok('pop-up blocked: no PDF work, no charge');
+      assert.strictEqual(await t.evaluate('_sheetExportBusy'), false, 'pop-up blocked: guard released');
+      ok('pop-up blocked: no PDF work, no charge, guard released');
       await t.close();
     }
     // No PDF support: previous HTML print page, one charge, unchanged.
@@ -251,7 +306,7 @@ const server = http.createServer((req, res) => {
       await t.evaluate(() => downloadPDF());
       assert.ok(await waitFor(t, () => (window.__lastPopup || {}).written > 1, 15000), 'HTML print page written');
       assert.strictEqual(await charges(t), 1); assert.strictEqual((await popup(t)).navigated, '');
-      assert.strictEqual(await t.evaluate(() => !!document.querySelector('#sheet-print-guidance .spg-pdf-link')), false, 'no PDF link on the fallback');
+      assert.strictEqual(await t.evaluate(() => !!document.querySelector('#sheet-print-guidance .spg-pdf-open')), false, 'no PDF button on the fallback');
       ok('no PDF support: previous HTML print page, one charge');
       await t.close();
     }

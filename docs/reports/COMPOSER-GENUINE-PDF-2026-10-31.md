@@ -17,8 +17,16 @@
 - `print.html` `downloadPDF()`: after the existing 300 DPI sheet canvas is drawn, the PDF is built **before** `consumeComposerDownload()`. On success the already-open holding window shows the PDF.
   - Generation failure: holding window closed, "No download has been used", no charge.
   - Browsers without `CompressionStream` (iOS < 16.4, old browsers) keep the previous HTML print page unchanged.
-- Guidance panel: existing text kept. One paragraph added: "Your sheet is an A4 PDF file. Print it from the PDF. On iPhone or iPad, tap Share, then Print." It includes a "Download the PDF again" link to the same file, which uses no download.
+- Guidance panel: existing text kept. One paragraph added: "Your sheet is an A4 PDF file. Print it from the PDF. On iPhone or iPad, tap Share, then Print." It includes an **Open my PDF again** button for the same file, which uses no download.
 - Printing help: one line added for iPhone or iPad (Share → Print, A4 paper).
+- **Review safeguards (31 Oct, ChatGPT review of PR #348):**
+  - **Delivery failure after the charge.** Examples: the holding window was closed, or showing the PDF threw an error. The failure is now detected, not just logged.
+    - The guidance panel shows "Your PDF sheet is ready, but it did not open automatically" and states that the download has been used. It offers an **Open my PDF** button and scrolls into view.
+    - The paid PDF is kept in memory until the next export, so the button can always hand over the same file without charging again.
+    - If pop-ups are blocked, the button falls back to a file download named `CLPeasy-print-sheet-YYYY-MM-DD.pdf`.
+  - **Double-click guard.** While a sheet export is running, repeat clicks are ignored: one holding window, one PDF, one charge.
+    - The guard is released on every exit path: success, PDF failure, accounting error, not entitled, pop-up blocked, render error and synchronous exceptions.
+    - A 60-second safety release covers a sheet image that never loads.
 - Unchanged:
   - placements, sizes, renderer, watermark logic, fit gate and entitlement checks;
   - the button label;
@@ -35,7 +43,9 @@
 | Label centres (1200 dpi render) vs `getSheetPlacementsMM()` | within 0.10 mm. This comes from the existing 300 DPI whole-pixel rounding and is identical on main. |
 | Pictogram red-border extent | 16.00–16.02 mm on all six labels |
 | Credit: success / generation failure / accounting error / no downloads / pop-up blocked | 1 / 0 / no file / no file / 0 |
-| Re-open link | no further charge |
+| "Open my PDF again" / "Open my PDF" recovery | same PDF, no further charge; download fallback when pop-ups are blocked |
+| Delivery failure after charge (navigation error; holding window closed) | visible message + recovery button, still exactly 1 charge |
+| Double-click (3 rapid clicks) | 1 window, 1 PDF, 1 charge; a later separate export works |
 | File size | 192 KB for the test sheet |
 
 ## Regression
@@ -44,15 +54,20 @@
 - On the branch, all pass after updating four Chromium tests that detected the old HTML print page:
   - `m03-composer-fine-tune-overrides`, `m55-bgcolour-validation` and `builder-safety-baseline` now accept either hand-over. Their render and override checks are unchanged.
   - `stage2-print-guidance` switches PDF support off, so it keeps covering the HTML fallback page and its print note.
+- Two further test adjustments were needed for the review safeguards:
+  - `cutting-machine-tip-layout`: the `print.html` size ceiling was raised from 179,500 to 187,500 characters (file is now 183,526), following its documented ~4 KB headroom policy.
+  - `print-sheet-size-integrity`: its stub image never "loads", so its export helper now releases the double-click guard between exports, as a real image load would.
 
 **Full `npm test`, run step by step on the branch:** 35 of 36 steps pass.
 - The one failure is `guide-me-content-sync` ("guide-me-content.js is out of date"). It fails identically on main @ 3c27d2f, because of FAQ and blending-guide text changes from earlier releases.
 - It is not caused by this change and is not fixed here.
 - The Deno Edge Function step was skipped because Deno is not installed. No Edge Function was changed.
 
-**New test:** `tests/composer-genuine-pdf.js` (real Chromium, mocked account, no network), added to `npm test`. It has 9 groups and all pass:
+**New test:** `tests/composer-genuine-pdf.js` (real Chromium, mocked account, no network), added to `npm test`. It has 12 groups and all pass:
 - desktop, iPhone 13, and iPhone 13 landscape;
 - a real (unstubbed) pop-up;
+- delivery failure after the charge (navigation error; holding window closed);
+- double-click guard;
 - PDF generation failure;
 - accounting error;
 - no downloads remaining;
@@ -64,7 +79,7 @@
 - **WebKit:** not available here. Delivery to the holding window (blob URL navigation) and the "Download the PDF again" link need checking in real iOS Safari.
 - **Older iPhones (iOS < 16.4):** stay on the old HTML print page and are still affected by the margin shrink. Not testable here.
 - **Fonts inside the raster:** unchanged from today (pixel-identical). Whether that raster uses DM Sans is a separate, pre-existing question.
-- **Duplicate clicks:** there is no in-flight guard (pre-existing). Each completed click is a separate export and charge, as on main.
+- **Double clicks:** the in-flight guard covers one page. Two separate browser tabs can still each export and charge once, as on main.
 
 ## Follow-ups (not in this change)
 - The free blank size test and alignment test still print through the browser, so on an iPhone they can still show about 44 mm while the Composer PDF prints correctly. A genuine PDF size test is recommended next.
