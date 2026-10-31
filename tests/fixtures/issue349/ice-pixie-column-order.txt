@@ -1,0 +1,509 @@
+Ice Pixie 10% Non Hazardous Base
+Product:
+2
+Version:
+Section 1. Identification of the substance or the mixture and of the supplier
+1.1 Product Identifier
+Product identifier:
+Other identifiers:
+1.2 Relevant identified uses of the substance of mixture and uses advised against
+Product uses:
+1.3 Details of the supplier of the safety data sheet
+Company name:
+Company address:
+Contact:
+E-Mail address:
+Company phone:
+1.4 Emergency telephone number
+Emergency phone:
+2.1 Classification of the substance or mixture
+Class and category of
+danger:
+2.2 Label elements
+Signal word:
+Hazard statements:
+Supplemental
+Information:
+Precautionary
+statements:
+Fizzywhiz, Unit 23, Maritime Enterprise Park, Atlas Rd, Liverpool, Bootle, L20 4DY
+( 8 )
+1
+Page
+Issue date: 16/03/2026
+Version: 2 (16/03/2026)
+SAFETY DATA SHEET
+In accordance with REACH Regulation EC No.1907/2006
+Ice Pixie 10% Non Hazardous Base (Contains:alpha-iso-Methylionone)
+None
+Wax Melt
+Fizzywhiz
+Unit 23, Maritime Enterprise Park
+Atlas Rd
+Liverpool
+Bootle
+L20 4DY
+Regulatory Affairs
+info@fizzywhiz.com
+0151 922 0041
+0151 922 0041
+Section 2. Hazards identification
+Classification under Regulation (EC) No 1272/2008
+Sensitization - Skin Category 1
+H317, May cause an allergic skin reaction.
+Classification under Regulation (EC) No 1272/2008
+Warning
+H317, May cause an allergic skin reaction.
+EUH208, Contains (E)-1-(2,6,6-Trimethyl-2-cyclohexen-1-yl)-2-buten-1-one, Reaction Mass of
+(3E)-3-methyl-4-(2,6,6-trimethyl-2-cyclohexen-1-yl)-3-buten-2-one and (1E)-1-(2,6,6-trimethyl-2-
+cyclohexen-1-yl)-1-penten-3-one, omega-Pentadecalactone. May produce an allergic reaction.
+P261, Avoid breathing vapour or dust.
+P272, Contaminated work clothing should not be allowed out of the workplace.
+Ice Pixie 10% Non Hazardous Base
+Product:
+2
+Version:
+Pictograms:
+2.3 Other hazards
+Other hazards:
+3.2 Mixtures
+Contains:
+Name
+alpha-iso-Methylionone
+127-51-5
+Reaction Mass of (3E)
+-3-methyl-4-(2,6,6-
+trimethyl-2-cyclohexen-
+1-yl)-3-buten-2-one and
+1335-46-2
+(1E)-1-(2,6,6-trimethyl-2-
+cyclohexen-1-yl)-1-
+penten-3-one
+omega-
+106-02-5
+Pentadecalactone
+(E)-1-(2,6,6-Trimethyl-2-
+cyclohexen-1-yl)-2-
+24720-09-0
+buten-1-one
+Substances with Community workplace exposure limits:
+Not Applicable
+Fizzywhiz, Unit 23, Maritime Enterprise Park, Atlas Rd, Liverpool, Bootle, L20 4DY
+( 8 )
+2
+Page
+Issue date: 16/03/2026
+Version: 2 (16/03/2026)
+SAFETY DATA SHEET
+In accordance with REACH Regulation EC No.1907/2006
+P280, Wear protective gloves/eye protection/face protection.
+P302/352, IF ON SKIN: Wash with plenty of soap and water.
+P333/313, If skin irritation or rash occurs: Get medical advice/attention.
+P363, Wash contaminated clothing before reuse.
+P501, Dispose of contents/container to approved disposal site, in accordance with local
+regulations.
+Sensitisers declared on a CLP
+(E)-1-(2,6,6-Trimethyl-2-cyclohexen-1-yl)-2-buten-1-one,
+Hazard Label:
+Reaction Mass of (3E)-3-methyl-4-(2,6,6-trimethyl-2-
+cyclohexen-1-yl)-3-buten-2-one and (1E)-1-(2,6,6-trimethyl-2-
+cyclohexen-1-yl)-1-penten-3-one, omega-Pentadecalactone
+Hydrocarbon Concentration %:
+0.0000%
+Section 3. Composition / information on ingredients
+Specific Conc.
+REACH Registration
+Classification for
+CAS
+EC
+%
+Limits, M-factors
+No.
+(CLP) 1272/2008
+and ATEs
+Skin Sens. 1B-Aquatic
+204-846-3
+1-<5%
+Chronic 2;H317-H411,-
+Skin Irrit. 2-Skin Sens.
+dermal: ATE = 2900
+215-635-0
+0.1-<1%
+1B-Aquatic Chronic 2;
+mg/kg bw
+H315-H317-H411,-
+Skin Sens. 1B-Aquatic
+oral: ATE = 2820
+203-354-6
+0.1-<1%
+Chronic 2;H317-H411,-
+mg/kg bw
+Acute Tox. 4-Skin
+Sens. 1B-Aquatic
+dermal: ATE = 2900
+246-430-4
+0.1-<1%
+Acute 1-Aquatic
+mg/kg bw-oral: ATE =
+Chronic 1;H302-H317-
+1670 mg/kg bw
+H410,-
+Ice Pixie 10% Non Hazardous Base
+Product:
+2
+Version:
+Substances that are endocrine disruptors according to Regulation (EU) 2017/2100 or Regulation (EU) 2018/605,
+greater than 0.1%:
+Not Applicable
+Substances that are persistent, bioaccumulative and toxic or very persistent and very bioaccumulative, greater
+than 0.1%:
+Not Applicable
+4.1 Description of first aid measures
+Inhalation:
+Eye exposure:
+Skin exposure:
+Ingestion:
+4.2 Most important symptoms and effects, both acute and delayed
+May cause an allergic skin reaction.
+4.3 Indication of any immediate medical attention and special treatment needed
+None expected, see Section 4.1 for further information.
+5.1 Extinguishing media
+Suitable media:
+5.2 Special hazards arising from the substance or mixture
+In case of fire, may be liberated:
+5.3 Advice for fire fighters:
+In case of insufficient ventilation, wear suitable respiratory equipment.
+6.1 Personal precautions, protective equipment and emergency procedures:
+Avoid inhalation. Avoid contact with skin and eyes. See protective measures under Section 7 and 8.
+6.2 Environmental precautions:
+Keep away from drains, surface and ground water, and soil.
+Fizzywhiz, Unit 23, Maritime Enterprise Park, Atlas Rd, Liverpool, Bootle, L20 4DY
+( 8 )
+3
+Page
+Issue date: 16/03/2026
+Version: 2 (16/03/2026)
+SAFETY DATA SHEET
+In accordance with REACH Regulation EC No.1907/2006
+Section 4. First-aid measures
+Remove from exposure site to fresh air, keep at rest, and obtain medical attention.
+Flush immediately with water for at least 15 minutes.  Contact physician if symptoms persist.
+IF ON SKIN: Wash with plenty of soap and water.
+Rinse mouth with water and obtain medical attention.
+Section 5: Firefighting measures
+Carbon dioxide, Dry chemical, Foam.
+Carbon monoxide, Unidentified organic compounds.
+Section 6. Accidental release measures
+Ice Pixie 10% Non Hazardous Base
+Product:
+2
+Version:
+6.3 Methods and material for containment and cleaning up:
+Remove ignition sources. Provide adequate ventilation. Avoid excessive inhalation of vapours. Contain spillage
+immediately by use of sand or inert powder. Dispose of according to local regulations.
+6.4 Reference to other sections:
+Also refer to sections 8 and 13.
+7.1 Precautions for safe handling:
+Keep away from heat, sparks, open flames and hot surfaces. - No smoking. Use personal protective equipment as
+required. Use in accordance with good manufacturing and industrial hygiene practices.  Use in areas with adequate
+ventilation  Do not eat, drink or smoke when using this product.
+7.2 Conditions for safe storage, including any incompatibilities:
+Store in a well-ventilated place. Keep container tightly closed. Keep cool. Ground/bond container and receiving
+equipment. Use explosion-proof electrical, ventilating and lighting equipment. Use only non-sparking tools. Take
+precautionary measures against static discharge.
+7.3 Specific end use(s):
+Wax Melt:  Use in accordance with good manufacturing and industrial hygiene practices.
+8.1 Control parameters
+Workplace exposure limits:
+8.2 Exposure Controls
+Eye / Skin Protection
+Wear protective gloves/eye protection/face protection
+Respiratory Protection
+Under normal conditions of use and where adequate ventilation is available to prevent build up of excessive vapour, this
+material should not require special engineering controls.  However, in conditions of high or prolonged use, or high
+temperature or other conditions which increase exposure, the following engineering controls can be used to minimise
+exposure to personnel: a) Increase ventilation of the area with local exhaust ventilation. b) Personnel can use an
+approved, appropriately fitted respirator with organic vapour cartridge or canisters and particulate filters. c) Use closed
+systems for transferring and processing this material.
+Also refer to Sections 2 and 7.
+9.1 Information on basic physical and chemical properties
+Physical State/Colour:
+Fizzywhiz, Unit 23, Maritime Enterprise Park, Atlas Rd, Liverpool, Bootle, L20 4DY
+( 8 )
+4
+Page
+Issue date: 16/03/2026
+Version: 2 (16/03/2026)
+SAFETY DATA SHEET
+In accordance with REACH Regulation EC No.1907/2006
+Section 7. Handling and storage
+Section 8. Exposure controls/personal protection
+Not Applicable
+Section 9. Physical and chemical properties
+Not determined
+Ice Pixie 10% Non Hazardous Base
+Product:
+2
+Version:
+Odour:
+Odour threshold:
+Melting point / freezing point:
+Boiling point or initial boiling point and boiling
+range:
+Flammability:
+Lower and upper explosion limit:
+Flash point:
+Auto-ignition temperature:
+Decomposition temperature:
+pH:
+Kinematic viscosity:
+Solubility:
+Partition coefficient: n-octanol/water (log
+value):
+Vapour pressure:
+Density and/or relative density:
+Relative vapour density:
+Particle characteristics:
+9.2 Other information:
+10.1 Reactivity:
+Presents no significant reactivity hazard, by itself or in contact with water.
+10.2 Chemical stability:
+Good stability under normal storage conditions.
+10.3 Possibility of hazardous reactions:
+Not expected under normal conditions of use.
+10.4 Conditions to avoid:
+Avoid extreme heat.
+10.5 Incompatible materials:
+Avoid contact with strong acids, alkalis or oxidising agents.
+10.6 Hazardous decomposition products:
+Not expected.
+Fizzywhiz, Unit 23, Maritime Enterprise Park, Atlas Rd, Liverpool, Bootle, L20 4DY
+( 8 )
+5
+Page
+Issue date: 16/03/2026
+Version: 2 (16/03/2026)
+SAFETY DATA SHEET
+In accordance with REACH Regulation EC No.1907/2006
+Not determined
+Not determined
+Not determined
+Not determined
+Not determined
+Not determined
+150 °C
+Not determined
+Not relevant
+Not determined
+Not determined
+Not determined
+Not determined
+Not determined
+Not determined
+Not determined
+Not determined
+None available
+Section 10. Stability and reactivity
+Ice Pixie 10% Non Hazardous Base
+Product:
+2
+Version:
+11.1 Information on hazard classes as defined in Regulation (EC) No 1272/2008
+This mixture has not been tested as a whole for health effects. The health effects have been calculated using the
+methods outlined in Regulation (EC) No 1272/2008 (CLP).
+Acute Toxicity:
+Acute Toxicity Oral
+Acute Toxicity Dermal
+Acute Toxicity Inhalation
+Skin corrosion/irritation:
+Serious eye damage/irritation:
+Respiratory or skin sensitisation:
+Germ cell mutagenicity:
+Carcinogenicity:
+Reproductive toxicity:
+STOT-single exposure:
+STOT-repeated exposure:
+Aspiration hazard:
+Information about hazardous ingredients in the mixture
+Not Applicable
+Refer to Sections 2 and 3 for additional information.
+11.2 Information on other hazards
+Not Applicable
+12.1 Toxicity:
+12.2 Persistence and degradability:
+12.3 Bioaccumulative potential:
+12.4 Mobility in soil:
+12.5 Results of PBT and vPvB assessment:
+This substance does not meet the PBT/vPvB criteria of REACH, annex XIII.
+12.6 Endocrine disrupting properties:
+12.7 Other adverse effects:
+13.1 Waste treatment methods:
+Dispose of in accordance with local regulations. Avoid disposing into drainage systems and into the environment.  Empty
+containers should be taken to an approved waste handling site for recycling or disposal.
+Fizzywhiz, Unit 23, Maritime Enterprise Park, Atlas Rd, Liverpool, Bootle, L20 4DY
+( 8 )
+6
+Page
+Issue date: 16/03/2026
+Version: 2 (16/03/2026)
+SAFETY DATA SHEET
+In accordance with REACH Regulation EC No.1907/2006
+Section 11. Toxicological information
+Based on available data the classification criteria are not met.
+Not Applicable
+Not Applicable
+Not Available
+Based on available data the classification criteria are not met.
+Based on available data the classification criteria are not met.
+Sensitization - Skin Category 1
+Based on available data the classification criteria are not met.
+Based on available data the classification criteria are not met.
+Based on available data the classification criteria are not met.
+Based on available data the classification criteria are not met.
+Based on available data the classification criteria are not met.
+Based on available data the classification criteria are not met.
+Section 12. Ecological information
+Not available
+Not available
+Not available
+Not available
+Not Applicable
+Not available
+Section 13. Disposal considerations
+Ice Pixie 10% Non Hazardous Base
+Product:
+2
+Version:
+14.1 UN
+number:
+UN Model
+Not
+Regulations
+classified
+IMDG
+Not
+classified
+ADR,RID,ADN
+Not
+classified
+ICAO TI
+Not
+classified
+14.5 Environmental hazards:
+14.6 Special precautions for user:
+14.7 Transport in bulk according to Annex II of MARPOL73/78 and the IBC Code:
+Not classified
+15.1 Safety, health and environmental regulations/legislation specific for the substance or mixture
+None additional
+15.2 Chemical Safety Assessment
+A Chemical Safety Assessment has not been carried out for this product.
+Concentration % Limits:
+Total Fractional Values:
+Key to revisions:
+SECTION 3: Composition/information on ingredients
+Key to abbreviations:
+Abbreviation
+Acute Tox. 4
+Aquatic Acute 1
+Aquatic Chronic 1
+Aquatic Chronic 2
+H302
+H315
+H317
+H410
+Fizzywhiz, Unit 23, Maritime Enterprise Park, Atlas Rd, Liverpool, Bootle, L20 4DY
+( 8 )
+7
+Page
+Issue date: 16/03/2026
+Version: 2 (16/03/2026)
+SAFETY DATA SHEET
+In accordance with REACH Regulation EC No.1907/2006
+Section 14. Transport information
+14.2 UN Proper Shipping Name:
+14.3
+Sub Risk:
+14.4 Packing
+Transport
+Group:
+hazard class
+(es):
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+-
+Not environmentally hazardous for transport
+None additional
+Section 15. Regulatory information
+Section 16. Other information
+SS 1=71.43%
+SS 1=1.40
+Meaning
+Acute Toxicity - Oral Category 4
+Hazardous to the Aquatic Environment - Acute Hazard Category 1
+Hazardous to the Aquatic Environment - Long-term Hazard Category 1
+Hazardous to the Aquatic Environment - Long-term Hazard Category 2
+Harmful if swallowed.
+Causes skin irritation.
+May cause an allergic skin reaction.
+Very toxic to aquatic life with long lasting effects.
+Ice Pixie 10% Non Hazardous Base
+Product:
+2
+Version:
+H411
+P261
+P264
+P270
+P272
+P273
+P280
+P301/312
+P302/352
+P330
+P333/313
+P362
+P363
+P391
+P501
+Skin Irrit. 2
+Skin Sens. 1B
+The information in this safety data sheet is to the best of our knowledge true and accurate but all data, instructions,
+recommendations and/or suggestions are made without guarantee.
+Fizzywhiz, Unit 23, Maritime Enterprise Park, Atlas Rd, Liverpool, Bootle, L20 4DY
+( 8 )
+8
+Page
+Issue date: 16/03/2026
+Version: 2 (16/03/2026)
+SAFETY DATA SHEET
+In accordance with REACH Regulation EC No.1907/2006
+Toxic to aquatic life with long lasting effects.
+Avoid breathing vapour or dust.
+Wash hands and other contacted skin thoroughly after handling.
+Do not eat, drink or smoke when using this product.
+Contaminated work clothing should not be allowed out of the workplace.
+Avoid release to the environment.
+Wear protective gloves/eye protection/face protection.
+IF SWALLOWED: call a POISON CENTER or doctor/physician if you feel unwell.
+IF ON SKIN: Wash with plenty of soap and water.
+Rinse mouth.
+If skin irritation or rash occurs: Get medical advice/attention.
+Take off contaminated clothing and wash before reuse.
+Wash contaminated clothing before reuse.
+Collect spillage.
+Dispose of contents/container to approved disposal site, in accordance with local regulations.
+Skin Corrosion / Irritation Category 2
+Sensitization - Skin Category 1B

@@ -1,0 +1,22 @@
+2.2 Label elements
+Signal word:
+Hazard statements:
+Supplemental
+Information:
+Precautionary
+statements:
+Pictograms:
+Classification under Regulation (EC) No 1272/2008
+Warning
+H317, May cause an allergic skin reaction.
+EUH208, Contains (E)-1-(2,6,6-Trimethyl-2-cyclohexen-1-yl)-2-buten-1-one, Reaction Mass of
+(3E)-3-methyl-4-(2,6,6-trimethyl-2-cyclohexen-1-yl)-3-buten-2-one and (1E)-1-(2,6,6-trimethyl-2-
+cyclohexen-1-yl)-1-penten-3-one, omega-Pentadecalactone. May produce an allergic reaction.
+P261, Avoid breathing vapour or dust.
+P272, Contaminated work clothing should not be allowed out of the workplace.
+P280, Wear protective gloves/eye protection/face protection.
+P302/352, IF ON SKIN: Wash with plenty of soap and water.
+P333/313, If skin irritation or rash occurs: Get medical advice/attention.
+P363, Wash contaminated clothing before reuse.
+P501, Dispose of contents/container to approved disposal site, in accordance with local
+regulations.

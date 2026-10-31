@@ -1692,11 +1692,22 @@ function normaliseSdsSignalWord(value){
 }
 function extractSdsSignalWord(text){
   const t=String(text||'');
-  const m=t.match(/\bSignal\s+word\s*:?\s*(Danger|Warning|None|No\s+signal\s+word(?:\s+is\s+used)?)/i)
+  const m=t.match(/\bSignal\s+words?\s*:?\s*(Danger|Warning|None|No\s+signal\s+word(?:\s+is\s+used)?)/i)
     // Two-column PDFs copy the value on the line before an empty label
     // ("Warning" / "Signal word:").
     ||t.match(/^[ \t]*(Danger|Warning)[ \t]*\n[ \t]*Signal\s+words?\s*:?[ \t]*$/im);
-  return normaliseSdsSignalWord(m?m[1]:'');
+  if(m)return normaliseSdsSignalWord(m[1]);
+  // Issue #349: some PDF viewers copy a two-column Section 2.2 column by
+  // column (all labels, then all values), so "Warning" lands several lines
+  // away from an empty "Signal word:" label. Accept it only when the label is
+  // present and empty and the pasted Section 2.2 holds exactly ONE line that
+  // is nothing but "Warning" or "Danger". Anything else (no such line, two
+  // lines, conflicting values) returns '' so the existing review gate stops.
+  if(/^[ \t]*Signal\s+words?\s*:?[ \t]*$/im.test(t)){
+    const values=[...t.matchAll(/^[ \t]*(Danger|Warning)[ \t]*$/gim)];
+    if(values.length===1)return normaliseSdsSignalWord(values[0][1]);
+  }
+  return '';
 }
 function resolveGbClpSignalWord(codes, suppliedSignal){
   const list=Array.isArray(codes)?codes:String(codes||'').split(',');
