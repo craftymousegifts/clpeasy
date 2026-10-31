@@ -27,6 +27,8 @@ const LABEL = { id: 'aaaaaaaa-0000-4000-8000-0000000c0e05', scentName: 'Composer
   hSelected: ['H317'], pSelected: ['P261', 'P302+P352', 'P501'], pictograms: ['exclamation'], sensitisers: ['Linalool'], sourceSection22: '2.2 Label elements\nSignal word: Warning\nH317 May cause an allergic skin reaction.\nP261 Avoid breathing vapours.\nP302+P352 IF ON SKIN: Wash with plenty of water.\nP501 Dispose of contents.',
   hazardFromExtraction: true, savedAt: '27/10/2026', schemaVersion: 2 };
 
+// Issue #349: a Builder-completed label carries confirmed product-identifier names.
+{ const PIC = require('../sds-doc-check.js').ProductIdentifierCheck; LABEL.productIdentifier = PIC.makeConfirmation(LABEL, ['Linalool'], 'maker', ''); }
 function stub(profile) {
   if (!profile) return 'window.supabase={createClient:function(){return {auth:{getSession:async function(){return {data:{session:null}}},onAuthStateChange:function(){return {data:{subscription:{unsubscribe:function(){}}}}}}}}};';
   const row = Object.assign({ id: USER, email: 'qa@example.test', created_at: iso(-30 * DAY), deletion_date: null, is_pro: false, billing_cycle: null, downloads_reset_date: null }, profile);

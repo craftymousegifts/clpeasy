@@ -969,10 +969,28 @@ function getSheetHazardProvenanceBlockMessage(){
   if(!names.length)return null;
   return `This sheet can't be printed or downloaded yet. ${HazardProvenance.BLOCK_MESSAGE}\n\n${names.map(n=>`• ${n}`).join('\n')}`;
 }
+// Issue #349 (GB CLP Art 18(3)(b)): every label on the sheet needs its
+// product-identifier substance names confirmed in the Builder for its current
+// H statements. Fails closed if the check could not load.
+function getSheetProductIdentifierBlockMessage(){
+  if(currentTpl===null)return null;
+  const seen=new Set(), names=[];
+  for(const p of getSheetPlacementsMM()){
+    const ld=p.labelData||{};
+    const key=ld.id||ld.scentName||JSON.stringify(ld).slice(0,200);
+    if(seen.has(key))continue;
+    seen.add(key);
+    if(typeof ProductIdentifierCheck==='undefined'||!ProductIdentifierCheck.isComplete(ld))names.push(ld.scentName||'Unnamed label');
+  }
+  if(!names.length)return null;
+  return `This sheet can't be printed or downloaded yet. ${names.length===1?'This label needs':'These labels need'} the substance names from the supplier's product identifier (SDS Section 1.1, for example "Contains: …") confirmed:\n\n${names.map(n=>`• ${n}`).join('\n')}\n\nOpen ${names.length===1?'it':'each one'} in Create Label, confirm the names in Step 3 (Hazards) and save. Your saved designs are kept.`;
+}
 function getSheetSdsDocBlockMessage(){
   if(currentTpl===null||typeof SdsDocCheck==='undefined')return null;
   const hazardMsg=getSheetHazardProvenanceBlockMessage();
   if(hazardMsg)return hazardMsg;
+  const pidMsg=getSheetProductIdentifierBlockMessage();
+  if(pidMsg)return pidMsg;
   const seen=new Set(), names=[];
   for(const p of getSheetPlacementsMM()){
     const ld=p.labelData||{};

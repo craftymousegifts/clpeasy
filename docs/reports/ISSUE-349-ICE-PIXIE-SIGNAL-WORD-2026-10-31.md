@@ -77,3 +77,51 @@ The label shows "snow fairy soy wax melt", WARNING, GHS07, "Causes skin irritati
 ## Still to verify
 1. iPhone Safari: copy the same PDF exactly as before and paste it into the draft PR's deploy preview. Confirm Warning, H317, EUH208, the seven P statements, and that continuation is allowed.
 2. Founder decision on the REVIEW item above.
+
+## Follow-up: product-identifier substances (GB CLP Article 18(3)(b))
+The founder and ChatGPT verified Article 18(3)(b) against legislation.gov.uk: https://www.legislation.gov.uk/eur/2008/1272/article/18/data.xht. That site is blocked from the development session, so the article text was not re-read here.
+
+**Problem:** Ice Pixie's SDS names alpha-iso-Methylionone (Section 3: 1–<5%, Skin Sens. 1B) only in its Section 1.1 product name. CLPeasy read Section 2.2 only, so that name was missing from the label. The three EUH208 names were present.
+
+**Approach.** Supplier evidence, plus maker confirmation, fails closed. Nothing is assumed automatically.
+
+- **`ProductIdentifierCheck`.** Added inside `sds-doc-check.js`, which every page and test harness already loads. It does four things:
+  - Lists the H statements of the Art 18(3)(b) hazard classes. These are acute toxicity, skin corrosion, serious eye damage, mutagenicity, carcinogenicity, reproductive toxicity, respiratory/skin sensitisation, STOT SE/RE and aspiration.
+    - The list is deliberately broad. A listed code only asks for confirmation; it never removes content.
+    - **REVIEW:** the code mapping, especially H335/H336, should be confirmed against the verified text.
+  - Parses Section 1.1 of the same pasted SDS for `(Contains:…)` or `Contains: …`. It handles names wrapped across lines, hyphen-wrapped names and nested brackets. Names are split only at a comma followed by a space, so internal chemical commas such as "2,6,6" are kept.
+  - If Section 1.1 has none, a supplier "Contains:" line kept from Section 2.2 is offered as evidence instead.
+  - Returns "found", "none", "no Section 1.1" or "unclear". The last three never guess.
+- **Builder Step 3 panel:**
+  - It appears only when the label has one of those H codes.
+  - It shows the supplier's exact wording, with **"Use these names"** or **"Confirm typed names"** (typed exactly from supplier documents; empty is refused).
+  - Until a confirmation exists, Step 3 Next, every Builder download and the Composer sheet are blocked with an explanation.
+  - The confirmation is tied to the exact H statements. A changed H code or a new extraction needs a fresh confirmation.
+  - Saved, reopened and Clear behave as expected.
+- **Label (shared renderer, so Builder and Composer match).** Confirmed names print as "Contains: name, name." in the hazard text, ahead of the EUH208 sentence. Names already printed through the supplier's Section 2.2 "Contains:" line are not repeated. The normal fit check still applies.
+
+**Ice Pixie result:**
+- The panel shows "(Contains:alpha-iso-Methylionone)". After "Use these names", the label shows "Contains: alpha-iso-Methylionone." plus the full EUH208 sentence with all three names.
+- Save, reopen and the Composer render are identical.
+
+**Other layouts tested:**
+
+| Layout | Section 1.1 result |
+|---|---|
+| NI Candle "Banded" (Hawaiian Honey Blossom; four names wrapped over two lines) | 4 names |
+| A Word-generated SDS from another supplier (Pixie Dust) | 4 names, upper case kept |
+| Library and Strawberry Fizz | "none" |
+| Plain `Contains:` line with chemical commas | names found, commas kept |
+| Unterminated list | "unclear" |
+| Section 2.2-only paste | "no Section 1.1"; the maker must type the names |
+| Whole-document column copy | not found; the maker must type the names (fail closed) |
+
+**Test adjustments:**
+- The shared test helpers that stand for "a maker who completed the Builder with supplier information" now also confirm names, through the real Builder action or the production module. These are `tests/helpers/sds-doc-answer.js` and `tests/helpers/sds-doc-verified.js`.
+- Three Composer tests that build saved labels in the page do the same: `m55-bgcolour-validation`, `post-download-print-guidance` and `stage2-print-guidance`.
+
+**Decisions for the founder:**
+1. **Existing saved labels.** Every saved label with one of these H codes and no confirmation (all labels saved before this change) will be blocked from Builder download and Composer printing until reopened and confirmed in Step 3. This is fail-closed, as instructed, but it affects existing customers.
+2. **Label wording and position.** "Contains: …" is printed in the hazard text block. FizzyWhiz prints it under the product name. Approve the wording and position, or specify an alternative.
+3. **No "none" option.** A supplier SDS that gives no names leaves the maker blocked until they obtain them. There is deliberately no "my supplier names none" bypass.
+4. **Hazard-code list.** Confirm the Art 18(3)(b) code list (REVIEW).

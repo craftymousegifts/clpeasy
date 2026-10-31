@@ -181,6 +181,9 @@ function normalizeLabel(data){
     supplierWordingIssues: Array.isArray(data.supplierWordingIssues)?data.supplierWordingIssues
       : (data.hazardFromExtraction && data.sourceSection22 && typeof ClpeasySupplierWording!=='undefined'?ClpeasySupplierWording.analyse(data.sourceSection22).issues:[]),
     supplierSourceActive: !!(data.supplierWording || (data.hazardFromExtraction && data.sourceSection22)),
+    // Issue #349 (GB CLP Art 18(3)(b)): maker-confirmed product-identifier
+    // substances. Printed only while confirmed for these H statements.
+    productIdentifier: data.productIdentifier && typeof data.productIdentifier==='object' ? data.productIdentifier : null,
     // CLP-007: an older manually created label's wording, frozen when it was
     // registered (see hazard-provenance.js). Only used without supplier wording.
     legacyWording: (data.legacyWording && typeof data.legacyWording==='object'
@@ -1783,7 +1786,11 @@ function renderLabel(rawData, opts){
   const _supplierEUH208=data.supplierWording && data.supplierWording.EUH208;
   if(hasEUH208 && data.supplierSourceActive && !_supplierEUH208)_unrecognizedCodes.push('EUH208');
   const sourceSupplemental=[_supplierEUH208,...data.supplierSupplemental].filter(Boolean).join(' ');
-  const sensText = data.supplierSourceActive ? sourceSupplemental : [_sensBase, _euhSuffix].filter(Boolean).join(' ');
+  // Product-identifier substances confirmed by the maker (issue #349) come
+  // first, exactly as confirmed: "Contains: name, name."
+  const _pidNames = (typeof ProductIdentifierCheck!=='undefined') ? ProductIdentifierCheck.namesToPrint(data) : [];
+  const _pidText = _pidNames.length ? 'Contains: '+_pidNames.join(', ')+'.' : '';
+  const sensText = [_pidText, data.supplierSourceActive ? sourceSupplemental : [_sensBase, _euhSuffix].filter(Boolean).join(' ')].filter(Boolean).join(' ');
 
   // ── HAZARD TEXT AUTO-SIZING ──────────────────────────────────────────────
   // Spec: CLPeasy SVG Hazard Label Auto-Sizing Requirements

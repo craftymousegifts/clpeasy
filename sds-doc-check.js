@@ -242,3 +242,123 @@
   global.SdsDocCheck = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);
+/* ProductIdentifierCheck — substance identities in the product identifier
+ * (GB CLP Article 18(3)(b); founder/ChatGPT-verified against legislation.gov.uk,
+ * 31 Oct 2026, issue #349 follow-up).
+ *
+ * For a mixture, the product identifier on the label includes the identity of
+ * the substances that contribute to its classification for certain hazard
+ * classes (e.g. skin sensitisation). Supplier SDSs often give these in the
+ * Section 1.1 product name, e.g. "Ice Pixie 10% Non Hazardous Base
+ * (Contains:alpha-iso-Methylionone)", separately from the EUH208 names in
+ * Section 2.2.
+ *
+ * This module never decides which substances are legally required. It:
+ *   - finds supplier evidence (Section 1.1 "Contains:" names) in the pasted SDS;
+ *   - says when a label carries a hazard class that needs those names;
+ *   - treats the names as settled only after the maker confirms them, either
+ *     the supplier's names or names typed from the supplier's documents, and
+ *     only while the label's H statements are unchanged since confirmation.
+ * Incomplete or unclear information keeps the label blocked (fail closed).
+ * Shared by builder.html, print.html and label-render.js. Pure logic. */
+(function (root) {
+  'use strict';
+  // H statements of the hazard classes listed in Article 18(3)(b): acute
+  // toxicity, skin corrosion, serious eye damage, germ cell mutagenicity,
+  // carcinogenicity, reproductive toxicity, respiratory or skin sensitisation,
+  // specific target organ toxicity (single and repeated exposure) and
+  // aspiration hazard. Kept deliberately broad: an extra code only asks the
+  // maker to confirm names; it never removes anything from a label.
+  const CODES = Object.freeze([
+    'H300', 'H301', 'H302', 'H310', 'H311', 'H312', 'H330', 'H331', 'H332',
+    'H314', 'H318',
+    'H340', 'H341', 'H350', 'H350i', 'H351',
+    'H360', 'H360F', 'H360D', 'H360FD', 'H360Fd', 'H360Df', 'H361', 'H361f', 'H361d', 'H361fd', 'H362',
+    'H317', 'H334',
+    'H370', 'H371', 'H335', 'H336', 'H372', 'H373',
+    'H304',
+  ]);
+  const codesOf = v => String(v || '').split(',').map(s => s.trim().replace(/^h(?=\d)/i, 'H')).filter(Boolean);
+  const cleanName = s => String(s || '').replace(/\s+/g, ' ').trim().replace(/^[,;.\s]+|[,;.\s]+$/g, '');
+
+  function triggeringCodes(rec) {
+    return [...new Set(codesOf((rec || {}).hStatements).filter(c => CODES.includes(c)))];
+  }
+  function required(rec) { return triggeringCodes(rec).length > 0; }
+
+  // Section 1.1 (Product identifier) of the pasted text, or null.
+  function section11(text) {
+    const t = String(text || '').replace(/\r\n?/g, '\n');
+    const start = t.search(/(?:^|\n)[ \t]*(?:section[ \t]*)?1\.1\.?[ \t]*[:.-]?[ \t]*(?:product[ \t]+identifier|identification|trade[ \t]+name|product[ \t]+name)/i);
+    if (start < 0) return null;
+    const rest = t.slice(start + 1);
+    const end = rest.search(/\n[ \t]*(?:section[ \t]*)?(?:1\.[2-9]|2\.\d|2\b|section[ \t]*2\b)[^\n]{0,80}/i);
+    return end < 0 ? rest.slice(0, 1200) : rest.slice(0, end);
+  }
+  // Split a supplier list into names. Chemical names keep their internal
+  // commas ("2,6,6-trimethyl") because only comma + whitespace separates names.
+  function splitNames(list) {
+    return String(list).split(/[;]|,\s+/).map(cleanName).filter(Boolean);
+  }
+  // Join wrapped lines; a line ending in "-" continues the same word.
+  const unwrap = s => s.replace(/-\n[ \t]*/g, '-').replace(/\s*\n\s*/g, ' ');
+
+  // -> {status:'found', names, evidence} | {status:'none'} (Section 1.1 present,
+  //    no Contains) | {status:'no-section'} | {status:'unclear', evidence}
+  function fromSds(text) {
+    const s = section11(text);
+    if (s === null) return { status: 'no-section' };
+    const flat = unwrap(s);
+    const paren = flat.match(/\(\s*Contains\s*:\s*([^()]*(?:\([^()]*\)[^()]*)*)\)/i);
+    const plain = !paren && flat.match(/(?:^|\s)Contains\s*:\s*([^\n]+?)(?=\s+(?:Product\s+identifier|Other\s+identifiers|Unique\s+Formula|UFI|Synonyms?|Trade\s+name|Product\s+name|Product\s+code)\b|$)/i);
+    if (!paren && /\(\s*Contains\s*:/i.test(flat)) return { status: 'unclear', evidence: flat.slice(0, 300) };
+    const m = paren || plain;
+    if (!m) return { status: 'none' };
+    const names = splitNames(m[1]);
+    if (!names.length) return { status: 'unclear', evidence: m[0] };
+    return { status: 'found', names, evidence: cleanName(m[0]) };
+  }
+
+  // Confirmation is tied to the exact H statements and names.
+  function key(rec, names) {
+    return JSON.stringify([codesOf((rec || {}).hStatements).sort(), (names || []).map(cleanName)]);
+  }
+  function confirmed(rec) {
+    rec = rec || {};
+    const p = rec.productIdentifier;
+    if (!p || !Array.isArray(p.names) || !p.names.length || !p.confirmedKey) return false;
+    if (!['sds-1.1', 'sds-2.2', 'maker'].includes(p.source)) return false;
+    return p.confirmedKey === key(rec, p.names);
+  }
+  function isComplete(rec) { return !required(rec) || confirmed(rec); }
+  // Names to print on the label (only once confirmed for these hazards).
+  // Names confirmed from a supplier "Contains:" line in Section 2.2 are
+  // already printed with the supplier's own Section 2.2 text: not repeated.
+  function namesToPrint(rec) {
+    if (!confirmed(rec) || rec.productIdentifier.source === 'sds-2.2') return [];
+    return rec.productIdentifier.names.map(cleanName);
+  }
+  function makeConfirmation(rec, names, source, evidence) {
+    const clean = (names || []).map(cleanName).filter(Boolean);
+    return { names: clean, source, evidence: evidence || '', confirmedKey: key(rec, clean), confirmedAt: new Date().toISOString() };
+  }
+  // Supplier evidence for the Builder: Section 1.1 first; otherwise a
+  // standalone supplier "Contains: ..." line kept from Section 2.2.
+  function suggestion(fullText, supplemental) {
+    const r = fromSds(fullText);
+    if (r.status === 'found') return { names: r.names, source: 'sds-1.1', evidence: r.evidence, status: 'found' };
+    for (const line of (supplemental || [])) {
+      const m = String(line).match(/^\s*Contains\s*:\s*(.+?)\.?\s*$/i);
+      if (m) { const names = splitNames(m[1]); if (names.length) return { names, source: 'sds-2.2', evidence: cleanName(line), status: 'found' }; }
+    }
+    return { names: [], source: null, evidence: r.evidence || '', status: r.status };
+  }
+  const MESSAGE = 'Your label needs the names of the substances your supplier gives in the product identifier (SDS Section 1.1, for example "Contains: …"). Confirm them in Step 3 (Hazards) before continuing or downloading.';
+  function blockMessage(rec) { return isComplete(rec) ? '' : MESSAGE; }
+
+  const api = Object.freeze({ CODES, required, triggeringCodes, fromSds, suggestion, section11, splitNames, key, confirmed, isComplete, namesToPrint, makeConfirmation, blockMessage, MESSAGE });
+  // Lives in sds-doc-check.js (loaded by every page and test harness that
+  // loads the supplier-document check). require() callers use .ProductIdentifierCheck.
+  if (typeof module === 'object' && module.exports) module.exports.ProductIdentifierCheck = api;
+  root.ProductIdentifierCheck = api;
+})(typeof window !== 'undefined' ? window : globalThis);

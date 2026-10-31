@@ -268,7 +268,7 @@ const server = http.createServer((req, res) => {
       await t.evaluate(async () => {
         const rec = { id: '11111111-2222-4333-8444-555555555555', schemaVersion: 1, scentName: 'Sheet QA', productType: 'Scented Candle', shape: 'circle', size: 56, /* 56 mm: 52 mm candles are blocked by the care-icon edge rule (17 Oct 2026) */ signal: 'Warning', sdsSignal: 'Warning', hStatements: 'H317', pictograms: ['exclamation'], sensitisers: ['Linalool'], bizName: 'QA', bizAddress: '1 Test St', bizPhone: '0123', pStatements: '', p280Items: [], savedAt: '27/09/2026' };
         // 3 Oct 2026: a label completed in the Builder carries its supplier-document confirmation.
-        if (window.SdsDocCheck) { rec.fragLoad = '10%'; rec.sdsDoc = { kind: 'finished', pct: '10', base: SdsDocCheck.GROUP_BY_TYPE[rec.productType] }; rec.sdsDoc.confirmed = SdsDocCheck.confirmationFor(rec); } 
+        if (window.SdsDocCheck) { rec.fragLoad = '10%'; rec.sdsDoc = { kind: 'finished', pct: '10', base: SdsDocCheck.GROUP_BY_TYPE[rec.productType] }; rec.sdsDoc.confirmed = SdsDocCheck.confirmationFor(rec); /* #349: Builder-completed labels carry confirmed product-identifier names */ if (window.ProductIdentifierCheck && ProductIdentifierCheck.required(rec) && !rec.productIdentifier) rec.productIdentifier = ProductIdentifierCheck.makeConfirmation(rec, ['Linalool'], 'maker', ''); } 
         await LabelLibrary.mutate(() => ({ collection: [rec], usedId: rec.id }));
       });
       await t.goto(t.url().split('?')[0] + '?label=11111111-2222-4333-8444-555555555555', { waitUntil: 'load' }); await t.evaluate(require('./helpers/sds-doc-answer').SCRIPT).catch(()=>{});

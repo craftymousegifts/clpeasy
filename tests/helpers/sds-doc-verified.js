@@ -22,6 +22,11 @@ function withConfirmedDoc(rec, defaultPct) {
   if (rec.hazardFromExtraction !== true && !rec.savedAt) out.savedAt = '01/10/2026';
   out.sdsDoc.confirmed = SdsDocCheck.confirmationFor(out);
   if (!SdsDocCheck.isVerified(out)) throw new Error('fixture could not be confirmed');
+  // Issue #349: a label completed in the Builder also carries the maker's
+  // confirmed product-identifier substance names (GB CLP Art 18(3)(b)) when
+  // its hazards need them. A fixture that already has one keeps it.
+  const PIC = SdsDocCheck.ProductIdentifierCheck;
+  if (PIC.required(out) && !rec.productIdentifier) out.productIdentifier = PIC.makeConfirmation(out, ['Linalool'], 'maker', '');
   return out;
 }
 module.exports = { withConfirmedDoc };

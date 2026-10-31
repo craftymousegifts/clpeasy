@@ -128,7 +128,7 @@ const server = http.createServer((req, res) => {
       const mk = (i, name, bg) => ({ id: '11111111-2222-4333-8444-' + String(555555555500 + i), schemaVersion: 1, scentName: name, productType: 'Scented Candle', shape: 'circle', size: 'custom', customW: 60, customH: 60, signal: 'Warning', sdsSignal: 'Warning', hStatements: 'H317', pictograms: ['exclamation'], sensitisers: ['Linalool'], bizName: 'QA', bizAddress: '1 Test St', bizPhone: '0123', pStatements: '', p280Items: [], savedAt: '28/09/2026', bgColour: bg });
       const recs = [mk(0, 'White control', '#ffffff')].concat(Object.entries(payload).map(([k, v], i) => mk(i + 1, 'BG ' + k, v)));
       // 3 Oct 2026: labels completed in the Builder carry their supplier-document confirmation.
-      recs.forEach(rec => { if (window.SdsDocCheck) { rec.fragLoad = '10%'; rec.sdsDoc = { kind: 'finished', pct: '10', base: SdsDocCheck.GROUP_BY_TYPE[rec.productType] }; rec.sdsDoc.confirmed = SdsDocCheck.confirmationFor(rec); } });
+      recs.forEach(rec => { if (window.SdsDocCheck) { rec.fragLoad = '10%'; rec.sdsDoc = { kind: 'finished', pct: '10', base: SdsDocCheck.GROUP_BY_TYPE[rec.productType] }; rec.sdsDoc.confirmed = SdsDocCheck.confirmationFor(rec); /* #349: Builder-completed labels carry confirmed product-identifier names */ if (window.ProductIdentifierCheck && ProductIdentifierCheck.required(rec) && !rec.productIdentifier) rec.productIdentifier = ProductIdentifierCheck.makeConfirmation(rec, ['Linalool'], 'maker', ''); } });
       await LabelLibrary.mutate(() => ({ collection: recs, usedId: recs[0].id }));
       return recs.map(r => r.id);
     }, payload);

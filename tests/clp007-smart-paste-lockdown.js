@@ -58,6 +58,10 @@ const REC = {
   extracted: Object.assign({}, BASE, { id: id(8), scentName: 'Extracted Rose', schemaVersion: 1, hazardFromExtraction: true, sdsSignal: 'Warning', hStatements: 'H317', pStatements: 'P261, P280, P370+P378, P501', sourceSection22: S22, savedAt: '01/10/2026' }),
   preC3: Object.assign({}, BASE, { id: id(9), scentName: 'Pre C3 Extracted', hazardFromExtraction: undefined, sdsSignal: 'Warning', hStatements: 'H317', pStatements: 'P261, P501', savedAt: '01/09/2026' }),
 };
+// Issue #349: these saved labels stand for labels completed in the Builder,
+// which carry the maker's confirmed product-identifier names (GB CLP Art 18(3)(b)).
+{ const PIC = require('../sds-doc-check.js').ProductIdentifierCheck;
+  for (const r of Object.values(REC)) if (PIC.required(r)) r.productIdentifier = PIC.makeConfirmation(r, ['Linalool'], 'maker', ''); }
 const HISTORY = {
   'Release Day History|Scented Candle': [Object.assign({}, REC.releaseDayHist, { savedAt: '20/10/2026', version: 1 })],
   'Legacy Lavender|Scented Candle': [
